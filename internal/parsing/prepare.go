@@ -61,17 +61,30 @@ func trimCtrlZ(content []byte) []byte {
 	return slices.Concat(content[:start], content[end:])
 }
 
-// isControl reports a C0 control character other than tab, LF and CR, or DEL.
 func isControl(b byte) bool {
 	return b < 0x20 && b != '\t' && b != '\n' && b != '\r' || b == 0x7f
 }
 
-// lineAt returns the 1-based line of offset i. LF, CR LF and a lone CR each end a line.
+// lineAt returns the 1-based line of offset i, which holds no CR or LF. LF, a run of CRs and LF, and a lone CR
+// each end a line, as the PHP pattern /\r+\n|\r/ reads them.
 func lineAt(content []byte, i int) int {
 	line := 1
-	for j, b := range content[:i] {
-		if b == '\n' || b == '\r' && content[j+1] != '\n' {
+	for j := 0; j < i; j++ {
+		switch content[j] {
+		case '\n':
 			line++
+		case '\r':
+			k := j
+			for content[k+1] == '\r' {
+				k++
+			}
+			if content[k+1] == '\n' {
+				line++
+				k++
+			} else {
+				line += k - j + 1
+			}
+			j = k
 		}
 	}
 	return line

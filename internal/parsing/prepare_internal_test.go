@@ -76,6 +76,20 @@ func TestPrepare(t *testing.T) {
 			warnings: []warning{controlWarning(3)},
 		},
 		{
+			name:     "2 CRs and LF end one line",
+			content:  "a\r\r\nb\x01",
+			lenient:  true,
+			want:     "a\r\r\nb",
+			warnings: []warning{controlWarning(2)},
+		},
+		{
+			name:     "2 CRs end 2 lines",
+			content:  "a\r\rb\x01",
+			lenient:  true,
+			want:     "a\r\rb",
+			warnings: []warning{controlWarning(3)},
+		},
+		{
 			name:     "line count with CR LF and lone CR",
 			content:  "a\r\nb\rc\nd\x01",
 			lenient:  true,
@@ -131,6 +145,8 @@ func TestPrepareRejectsNULInStrictMode(t *testing.T) {
 		{"after a lone CR", "a\r\x00", 2},
 		{"after CR LF", "a\r\nb\r\n\x00", 3},
 		{"before a control character", "a\n\x01\n\x00", 3},
+		{"after 2 CRs and LF", "a\r\r\nb\x00", 2},
+		{"after 3 CRs and LF, then a CR", "a\r\r\r\n\r\x00", 3},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
