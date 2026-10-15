@@ -1,0 +1,122 @@
+{
+    "version": 1,
+    "metadata": {},
+    "comments": [],
+    "formatData": {},
+    "cues": [
+        {
+            "start": 1.0,
+            "end": 3.0,
+            "lines": [
+                "Plain first cue"
+            ],
+            "identifier": null,
+            "alignment": null,
+            "formatData": {}
+        },
+        {
+            "start": 3.5,
+            "end": 5.0,
+            "lines": [
+                "This cue has a pixel box"
+            ],
+            "identifier": null,
+            "alignment": null,
+            "formatData": {
+                "srt": {
+                    "coordinates": {
+                        "x1": 0,
+                        "x2": 0,
+                        "y1": 50,
+                        "y2": 100
+                    }
+                }
+            }
+        },
+        {
+            "start": 5.5,
+            "end": 7.0,
+            "lines": [
+                "Top center",
+                "from the first line"
+            ],
+            "identifier": null,
+            "alignment": 8,
+            "formatData": {}
+        },
+        {
+            "start": 7.5,
+            "end": 9.0,
+            "lines": [
+                "Middle left from the",
+                "middle of a line, the second tag is ignored"
+            ],
+            "identifier": null,
+            "alignment": 4,
+            "formatData": {}
+        },
+        {
+            "start": 9.5,
+            "end": 11.0,
+            "lines": [
+                "Top left from the end of a line"
+            ],
+            "identifier": null,
+            "alignment": 7,
+            "formatData": {}
+        },
+        {
+            "start": 11.5,
+            "end": 13.0,
+            "lines": [
+                "<font face=\"Verdana\" size=\"28\" color=\"#9a1a3b\">Alignment inside a font tag</font>"
+            ],
+            "identifier": null,
+            "alignment": 8,
+            "formatData": {}
+        },
+        {
+            "start": 13.5,
+            "end": 15.0,
+            "lines": [
+                "Alignment on its own line"
+            ],
+            "identifier": null,
+            "alignment": 9,
+            "formatData": {}
+        },
+        {
+            "start": 15.5,
+            "end": 17.0,
+            "lines": [
+                "<i>Italic</i> and <b>bold</b>",
+                "<s>struck</s> and <u>underlined</u>"
+            ],
+            "identifier": null,
+            "alignment": null,
+            "formatData": {}
+        },
+        {
+            "start": 17.5,
+            "end": 19.0,
+            "lines": [
+                "Before a line with only an unknown tag",
+                "<foo></foo>",
+                "After that line"
+            ],
+            "identifier": null,
+            "alignment": null,
+            "formatData": {}
+        },
+        {
+            "start": 19.5,
+            "end": 21.0,
+            "lines": [
+                "Keep this: {\\some_unknown_tag} and {normal text}"
+            ],
+            "identifier": null,
+            "alignment": null,
+            "formatData": {}
+        }
+    ]
+}

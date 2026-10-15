@@ -1,0 +1,199 @@
+{
+    "version": 1,
+    "metadata": {
+        "language": "en",
+        "title": "Sample TTML"
+    },
+    "comments": [],
+    "formatData": {
+        "ttml": {
+            "namespace": "http://www.w3.org/ns/ttml",
+            "namespaces": {
+                "": "http://www.w3.org/ns/ttml",
+                "ttm": "http://www.w3.org/ns/ttml#metadata",
+                "ttp": "http://www.w3.org/ns/ttml#parameter",
+                "tts": "http://www.w3.org/ns/ttml#styling"
+            },
+            "attributes": {
+                "ttp:timeBase": "media",
+                "ttp:frameRate": "24"
+            },
+            "head": "<head>\n<metadata>\n</metadata>\n<styling>\n<style xml:id=\"s1\" tts:textAlign=\"center\" tts:fontFamily=\"Arial\" tts:fontSize=\"100%\"/>\n</styling>\n<layout>\n<region xml:id=\"bottom\" tts:displayAlign=\"after\" tts:extent=\"80% 40%\" tts:origin=\"10% 50%\"/>\n<region xml:id=\"top\" tts:displayAlign=\"before\" tts:extent=\"80% 40%\" tts:origin=\"10% 10%\"/>\n</layout>\n</head>"
+        }
+    },
+    "cues": [
+        {
+            "start": 1.375,
+            "end": 5.75,
+            "lines": [
+                "TOP SAMPLE TEXT"
+            ],
+            "identifier": "subtitle1",
+            "alignment": 8,
+            "formatData": {
+                "ttml": {
+                    "attributes": {
+                        "style": "s1",
+                        "region": "top"
+                    }
+                }
+            }
+        },
+        {
+            "start": 5.916,
+            "end": 10.216,
+            "lines": [
+                "BOTTOM SAMPLE TEXT"
+            ],
+            "identifier": "subtitle2",
+            "alignment": 2,
+            "formatData": {
+                "ttml": {
+                    "attributes": {
+                        "style": "s1",
+                        "region": "bottom"
+                    }
+                }
+            }
+        },
+        {
+            "start": 10.418,
+            "end": 15.083,
+            "lines": [
+                "Top Hello"
+            ],
+            "identifier": "subtitle3",
+            "alignment": 8,
+            "formatData": {
+                "ttml": {
+                    "attributes": {
+                        "style": "s1",
+                        "region": "top"
+                    }
+                }
+            }
+        },
+        {
+            "start": 15.391,
+            "end": 20.558,
+            "lines": [
+                "Bottom Hello"
+            ],
+            "identifier": "subtitle4",
+            "alignment": 2,
+            "formatData": {
+                "ttml": {
+                    "attributes": {
+                        "style": "s1",
+                        "region": "bottom"
+                    }
+                }
+            }
+        },
+        {
+            "start": 20.75,
+            "end": 25.041,
+            "lines": [
+                "The bakery opened early today."
+            ],
+            "identifier": "subtitle5",
+            "alignment": 2,
+            "formatData": {
+                "ttml": {
+                    "attributes": {
+                        "style": "s1",
+                        "region": "bottom"
+                    }
+                }
+            }
+        },
+        {
+            "start": 25.875,
+            "end": 30.166,
+            "lines": [
+                "- Did they bake rye bread?",
+                "- They did"
+            ],
+            "identifier": "subtitle6",
+            "alignment": 2,
+            "formatData": {
+                "ttml": {
+                    "attributes": {
+                        "style": "s1",
+                        "region": "bottom"
+                    }
+                }
+            }
+        },
+        {
+            "start": 30.416,
+            "end": 35.558,
+            "lines": [
+                "In the morning, a delivery van",
+                "came from the mill"
+            ],
+            "identifier": "subtitle7",
+            "alignment": 2,
+            "formatData": {
+                "ttml": {
+                    "attributes": {
+                        "style": "s1",
+                        "region": "bottom"
+                    }
+                }
+            }
+        },
+        {
+            "start": 35.858,
+            "end": 40.091,
+            "lines": [
+                "with forty bags of flour"
+            ],
+            "identifier": "subtitle8",
+            "alignment": 2,
+            "formatData": {
+                "ttml": {
+                    "attributes": {
+                        "style": "s1",
+                        "region": "bottom"
+                    }
+                }
+            }
+        },
+        {
+            "start": 40.341,
+            "end": 45.133,
+            "lines": [
+                "and two crates of butter,",
+                "enough for 1,200 rolls"
+            ],
+            "identifier": "subtitle9",
+            "alignment": 2,
+            "formatData": {
+                "ttml": {
+                    "attributes": {
+                        "style": "s1",
+                        "region": "bottom"
+                    }
+                }
+            }
+        },
+        {
+            "start": 45.325,
+            "end": 50.041,
+            "lines": [
+                "for the weekend market."
+            ],
+            "identifier": "subtitle10",
+            "alignment": 2,
+            "formatData": {
+                "ttml": {
+                    "attributes": {
+                        "style": "s1",
+                        "region": "bottom"
+                    }
+                }
+            }
+        }
+    ]
+}
