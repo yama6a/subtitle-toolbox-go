@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"io"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
 )
@@ -38,6 +39,9 @@ type writeOutput struct {
 	to   stbox.Format
 	plan *outputPlan
 	opts stbox.WriteOptions
+	// encode writes s in format f to out. nil means stbox.Write with opts. A command sets it for a writer with a
+	// report, such as the dropped colours of WebVTT, and prints the report with the label of in.
+	encode func(in *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error
 }
 
 // prepare reads --to, -o, --output-dir, --bom, --no-bom and --line-ending.
@@ -97,29 +101,24 @@ func (w *writeOutput) checkInputs(r *runner, inputs, readPaths []string) error {
 
 // write checks the output of in, runs edit on the subtitle when edit is not nil, and writes the result.
 func (w *writeOutput) write(r *runner, in *input, edit func(*stbox.Subtitle) (*stbox.Subtitle, error)) error {
-	if err := w.plan.checkExtension(in.info.Format); err != nil {
-		return err
-	}
-	f := w.to
-	if f == "" {
-		if !in.info.Format.CanWrite() {
-			return usage("The format " + string(in.info.Format) + " can be read but not written. Pass --to with another format.")
-		}
-		f = in.info.Format
-	}
-	target := w.plan.target(in.arg, f)
-	if err := w.plan.checkTarget(in.arg, target); err != nil {
+	f, target, err := w.output(in)
+	if err != nil {
 		return err
 	}
 	s := in.sub
 	if edit != nil {
-		var err error
 		if s, err = edit(s); err != nil {
 			return err
 		}
 	}
 	var buf bytes.Buffer
-	if err := stbox.Write(&buf, s, f, w.opts); err != nil {
+	encode := w.encode
+	if encode == nil {
+		encode = func(_ *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error {
+			return stbox.Write(out, s, f, w.opts)
+		}
+	}
+	if err := encode(in, &buf, s, f); err != nil {
 		return err
 	}
 	if target == stdinArg {
@@ -131,4 +130,20 @@ func (w *writeOutput) write(r *runner, in *input, edit func(*stbox.Subtitle) (*s
 	}
 	r.report(in.label() + " -> " + target + "\n")
 	return nil
+}
+
+// output returns the output format and the checked target of in.
+func (w *writeOutput) output(in *input) (f stbox.Format, target string, err error) {
+	if err := w.plan.checkExtension(in.info.Format); err != nil {
+		return "", "", err
+	}
+	f = w.to
+	if f == "" {
+		if !in.info.Format.CanWrite() {
+			return "", "", usage("The format " + string(in.info.Format) + " can be read but not written. Pass --to with another format.")
+		}
+		f = in.info.Format
+	}
+	target = w.plan.target(in.arg, f)
+	return f, target, w.plan.checkTarget(in.arg, target)
 }

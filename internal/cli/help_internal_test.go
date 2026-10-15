@@ -47,7 +47,7 @@ func TestGlobalHelp(t *testing.T) {
 		t.Parallel()
 
 		want := head + "Commands:\n  help  Show the help of a command.\n" + globalHelpTail
-		assert.Equal(t, result{Stdout: want}, call{commands: []command{}}.run(t))
+		assert.Equal(t, result{Stdout: want}, call{commands: commands()}.run(t))
 	})
 	t.Run("1.0 commands", func(t *testing.T) {
 		t.Parallel()
@@ -249,7 +249,8 @@ func (detailsCommand) details() string {
 func TestEveryCommandHasHelp(t *testing.T) {
 	t.Parallel()
 
-	for _, cmd := range []string{"convert", "info"} {
+	for _, c := range testCommands() {
+		cmd := c.name()
 		t.Run(cmd, func(t *testing.T) {
 			t.Parallel()
 
@@ -268,10 +269,11 @@ func TestEveryHelpPageFitsIn80ColumnsWithoutTrailingSpaces(t *testing.T) {
 	t.Parallel()
 
 	pages := map[string]string{
-		"help":         call{}.run(t, "help").Stdout,
-		"binary help":  call{commands: []command{}}.run(t, "help").Stdout,
-		"help convert": call{}.run(t, "help", "convert").Stdout,
-		"help info":    call{}.run(t, "help", "info").Stdout,
+		"help":        call{}.run(t, "help").Stdout,
+		"binary help": call{commands: commands()}.run(t, "help").Stdout,
+	}
+	for _, cmd := range testCommands() {
+		pages["help "+cmd.name()] = call{}.run(t, "help", cmd.name()).Stdout
 	}
 	for page, text := range pages {
 		require.NotEmpty(t, text, page)
@@ -285,7 +287,7 @@ func TestEveryHelpPageFitsIn80ColumnsWithoutTrailingSpaces(t *testing.T) {
 func TestOptionNamesFollowTheNamingRules(t *testing.T) {
 	t.Parallel()
 
-	for _, cmd := range []command{&stubConvert{}, &stubInfo{}} {
+	for _, cmd := range testCommands() {
 		for _, o := range cmd.options() {
 			where := cmd.name() + " --" + o.name
 			if regexp.MustCompile(`(^|-)no-`).MatchString(o.name) {
@@ -319,7 +321,8 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 	unwrap := regexp.MustCompile(`\n {3,}(\S)`)
 	defaultText := regexp.MustCompile(`(?m)^  (?:-\w, )?--([\w-]+).*? Default: (.+?)\.(?: |$)`)
 	found := map[string]bool{}
-	for _, cmd := range []string{"convert", "info"} {
+	for _, c := range testCommands() {
+		cmd := c.name()
 		help := unwrap.ReplaceAllString(call{}.run(t, cmd, "--help").Stdout, " $1")
 		for _, m := range defaultText.FindAllStringSubmatch(help, -1) {
 			opt, value := m[1], m[2]

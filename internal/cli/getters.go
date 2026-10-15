@@ -73,10 +73,11 @@ func (a *args) Time(name string) (time.Duration, bool, error) {
 		return 0, false, nil
 	}
 	if f, isNumber := parseNumber(v); isNumber {
-		switch {
-		case math.IsInf(f, 0):
+		if math.IsInf(f, 0) {
 			return 0, false, notFinite(name, v)
-		case math.Abs(f) >= timecode.MaxTime.Seconds():
+		}
+		// The limit applies after the rounding, so 359999999.9996 s fails as 100000 h.
+		if math.Abs(f) >= timecode.MaxTime.Seconds() || millis(f).Abs() >= timecode.MaxTime {
 			return 0, false, usage("The option --" + name + " needs a time below " + strconv.Itoa(timecode.MaxHours) +
 				" hours, got " + quote(v) + ".")
 		}

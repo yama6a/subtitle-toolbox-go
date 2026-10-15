@@ -32,7 +32,13 @@ type Env struct {
 
 // Run runs one stbox call. It prints its own messages and returns nil for exit code 0, else an *ExitError.
 func Run(ctx context.Context, args []string, env Env) error {
-	return (&app{}).run(ctx, args, env)
+	return (&app{commands: commands()}).run(ctx, args, env)
+}
+
+// commands returns new instances of the commands of the binary, in help order: convert, info, validate, sync,
+// diff, translate, dual, hls, formats. A command keeps the state of its run, so each call gets its own.
+func commands() []command {
+	return []command{}
 }
 
 // app holds the commands of the binary, in the order of the help.

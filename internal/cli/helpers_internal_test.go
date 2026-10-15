@@ -24,7 +24,7 @@ import (
 const testVersion = "1.2.3"
 
 // The stand-ins of convert and info run the shared parts of a write command and of a report command, without
-// edits and without statistics.
+// edits and without statistics. testCommands drops a stand-in when commands holds the real command.
 type stubConvert struct{ out writeOutput }
 
 var _ fileCommand = &stubConvert{}
@@ -101,6 +101,17 @@ func (s *stubInfo) process(_ context.Context, r *runner, in *input) error {
 
 func (s *stubInfo) finish(r *runner) error { return s.report.finish(r) }
 
+// testCommands returns the commands of the binary, and the stand-ins of the commands that the binary lacks.
+func testCommands() []command {
+	cmds := commands()
+	for _, stub := range []command{&stubConvert{}, &stubInfo{}} {
+		if !slices.ContainsFunc(cmds, func(c command) bool { return c.name() == stub.name() }) {
+			cmds = append(cmds, stub)
+		}
+	}
+	return cmds
+}
+
 // result is what one call prints and its exit code.
 type result struct {
 	Code   int
@@ -136,7 +147,7 @@ func (cl call) run(t *testing.T, words ...string) result {
 	}
 	commands := cl.commands
 	if commands == nil {
-		commands = []command{&stubConvert{}, &stubInfo{}}
+		commands = testCommands()
 	}
 	var stdout, stderr bytes.Buffer
 	env := Env{
@@ -274,7 +285,7 @@ func unusedOptions() []string {
 	usedOptions.Lock()
 	defer usedOptions.Unlock()
 	var missing []string
-	for _, cmd := range []command{&stubConvert{}, &stubInfo{}} {
+	for _, cmd := range testCommands() {
 		for _, o := range cmd.options() {
 			if !usedOptions.byCommand[cmd.name()][o.name] {
 				missing = append(missing, cmd.name()+" --"+o.name)

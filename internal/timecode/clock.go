@@ -5,8 +5,9 @@ import (
 	"time"
 )
 
-// maxClockDigits keeps the hours and minutes of Clock far below an int64 overflow. 7 digits of minutes reach MaxTime.
-const maxClockDigits = 9
+// maxClockDigits is the most digits that the hours or the minutes of Clock can have below MaxTime: 6000000 minutes
+// reach it. Fewer digits keep the sums below an int64 overflow.
+const maxClockDigits = 7
 
 // Clock reads the time codes h:mm:ss and m:ss, each with an optional fraction after "." or ",", such as
 // "01:02:03.456", "00:00:02,500" or "01:02.5". Minutes and seconds after a colon have 2 digits from 00 to 59.
@@ -29,11 +30,15 @@ func Clock(s string) (d time.Duration, ok bool) {
 		}
 		minutes = minutes*60 + int64(atoi(parts[1]))
 	}
-	total := time.Duration(minutes*60+seconds)*time.Second + time.Duration(millis)*time.Millisecond
-	if total >= MaxTime {
+	total := minutes*60 + seconds
+	if total >= int64(MaxTime/time.Second) {
 		return 0, false
 	}
-	return total, true
+	d = time.Duration(total)*time.Second + time.Duration(millis)*time.Millisecond
+	if d >= MaxTime {
+		return 0, false
+	}
+	return d, true
 }
 
 // clockSeconds reads the 2-digit seconds and the optional fraction of the last part of a time code.

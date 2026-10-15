@@ -2,8 +2,10 @@ package cli
 
 import (
 	"context"
+	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -460,4 +462,29 @@ func TestUnwritableContentFailsThatFile(t *testing.T) {
 	assert.Empty(t, got.Stdout)
 	assert.True(t, strings.HasSuffix(got.Stderr, "\nlatin1.srt: JSON cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. "+
 		"Read a file in another encoding with its source encoding. Pass --encoding with the source encoding of the file.\n"), got.Stderr)
+}
+
+// reportingConvert is the convert stand-in with an encode step that prints a report before the write.
+type reportingConvert struct{ stubConvert }
+
+func (s *reportingConvert) run(ctx context.Context, a *args, c *console) error {
+	return runFiles(ctx, a, c, s)
+}
+
+func (s *reportingConvert) prepare(a *args, r *runner) error {
+	s.out.encode = func(in *input, out io.Writer, sub *stbox.Subtitle, f stbox.Format) error {
+		r.c.err(in.label() + ": " + strconv.Itoa(sub.Len()) + " cues as " + string(f) + "\n")
+		return stbox.Write(out, sub, f, s.out.opts)
+	}
+	return s.stubConvert.prepare(a, r)
+}
+
+func TestWriteRunsTheEncodeStepOfTheCommand(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	cl := call{dir: dir, commands: []command{&reportingConvert{}}}
+	assert.Equal(t, result{Stdout: "trip.srt -> out.vtt\n", Stderr: "trip.srt: 3 cues as vtt\n"},
+		cl.run(t, "convert", "trip.srt", "--to", "vtt", "-o", "out.vtt"))
+	assert.Equal(t, convertAs(t, "trip.srt", stbox.WebVTT), readFile(t, dir, "out.vtt"))
 }
