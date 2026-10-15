@@ -84,49 +84,62 @@ func (r *WebVTTReader) Cues() iter.Seq2[model.Cue, error] {
 			return
 		}
 		r.used = true
-		var (
-			rolling vtt.Rolling
-			kept    []vtt.Kept
-		)
-		yieldKept := func() bool {
-			for _, k := range kept {
-				if !yield(k.Cue, nil) {
-					return false
-				}
-			}
-			return true
-		}
-		index := 0
-		for b, err := range r.rd.Blocks(r.lines.Lines()) {
-			var c model.Cue
-			var ok bool
-			if err == nil {
-				c, ok, err = r.rd.ParseBlock(b, index)
-				index++
-			}
-			if err != nil {
-				kept = rolling.Flush(kept[:0])
-				if yieldKept() {
-					yield(model.Cue{}, firstError(r.lines, err))
-				}
-				return
-			}
-			if !ok {
-				continue
-			}
-			kept = rolling.Push(c, kept[:0])
-			if !yieldKept() {
-				return
-			}
-		}
-		kept = rolling.Flush(kept[:0])
-		if !yieldKept() {
-			return
-		}
-		if err := r.lines.Err(); err != nil {
+		stopped := false
+		err := r.run(func(c model.Cue) bool {
+			stopped = !yield(c, nil)
+			return !stopped
+		})
+		if err != nil && !stopped {
 			yield(model.Cue{}, err)
 		}
 	}
+}
+
+// run passes the cues to emit until the input ends, a block fails or emit returns false.
+// The cues that the collapse of rolling cues still holds come out before an error.
+func (r *WebVTTReader) run(emit func(model.Cue) bool) error {
+	var (
+		rolling vtt.Rolling
+		kept    []vtt.Kept
+	)
+	pass := func() bool {
+		for _, k := range kept {
+			if !emit(k.Cue) {
+				return false
+			}
+		}
+		return true
+	}
+	index := 0
+	for b, err := range r.rd.Blocks(r.lines.Lines()) {
+		var (
+			c  model.Cue
+			ok bool
+		)
+		if err == nil {
+			c, ok, err = r.rd.ParseBlock(b, index)
+			index++
+		}
+		if err != nil {
+			kept = rolling.Flush(kept[:0])
+			if !pass() {
+				return nil
+			}
+			return firstError(r.lines, err)
+		}
+		if !ok {
+			continue
+		}
+		kept = rolling.Push(c, kept[:0])
+		if !pass() {
+			return nil
+		}
+	}
+	kept = rolling.Flush(kept[:0])
+	if !pass() {
+		return nil
+	}
+	return r.lines.Err()
 }
 
 // Warnings returns the warnings of the blocks read so far, sorted by line. A warning without a line comes first.

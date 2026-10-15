@@ -46,7 +46,7 @@ func heapGrowth(fn func(sample func())) uint64 {
 }
 
 type cueWriter interface {
-	Write(model.Cue) error
+	Write(c model.Cue) error
 	Close() error
 }
 
@@ -82,8 +82,8 @@ func TestStreamsManyCuesInConstantMemory(t *testing.T) { //nolint:paralleltest /
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) { //nolint:paralleltest // see above
+	for _, tt := range tests { //nolint:paralleltest // see above
+		t.Run(tt.name, func(t *testing.T) {
 			f, err := os.Create(filepath.Join(t.TempDir(), "many."+tt.name))
 			require.NoError(t, err)
 			defer f.Close()

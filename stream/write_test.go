@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"slices"
-	"strings"
 	"testing"
 	"time"
 
@@ -19,8 +18,6 @@ import (
 )
 
 // Ported from tests/Streaming/StreamFixturesTest.php, optionSets.
-//
-//nolint:gochecknoglobals // a read-only table for the tests
 var optionSets = []struct {
 	name   string
 	common model.CommonWriteOptions
@@ -232,7 +229,7 @@ func TestWritesAfterCloseFail(t *testing.T) {
 	vttWriter, err := stream.NewWebVTTWriter(&bytes.Buffer{}, model.CommonWriteOptions{}, webvtt.WriteOptions{}, nil)
 	require.NoError(t, err)
 	for name, w := range map[string]interface {
-		Write(model.Cue) error
+		Write(c model.Cue) error
 		Close() error
 	}{"SubRip": srtWriter, "WebVTT": vttWriter} {
 		require.NoError(t, w.Close(), name)
@@ -262,7 +259,7 @@ func TestWritersReturnTheErrorOfTheWriterWrapped(t *testing.T) {
 	boom := errors.New("disk full")
 	_, err := stream.NewWebVTTWriter(&failingWriter{err: boom}, model.CommonWriteOptions{}, webvtt.WriteOptions{}, nil)
 	require.ErrorIs(t, err, boom)
-	assert.ErrorContains(t, err, "write vtt")
+	require.ErrorContains(t, err, "write vtt")
 
 	fw := &failingWriter{err: boom, after: 1}
 	w, err := stream.NewSubRipWriter(fw, model.CommonWriteOptions{}, srt.WriteOptions{})
@@ -270,7 +267,7 @@ func TestWritersReturnTheErrorOfTheWriterWrapped(t *testing.T) {
 	require.ErrorIs(t, w.Write(model.Cue{Lines: []string{"A"}}), boom)
 	fw.err = nil
 	require.NoError(t, w.Write(model.Cue{Lines: []string{"B"}}))
-	assert.True(t, strings.Contains(fw.String(), "B"))
+	assert.Contains(t, fw.String(), "B")
 }
 
 func TestDroppedColorsReturnsACopy(t *testing.T) {
@@ -309,5 +306,5 @@ func (f *failingWriter) Write(b []byte) (int, error) {
 	if f.err != nil && f.calls > f.after {
 		return 0, f.err
 	}
-	return f.Buffer.Write(b)
+	return f.Buffer.Write(b) //nolint:wrapcheck // a test double passes the error through
 }

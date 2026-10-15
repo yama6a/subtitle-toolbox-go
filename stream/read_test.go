@@ -25,12 +25,10 @@ import (
 const bom = "\xEF\xBB\xBF"
 
 // Ported from tests/Streaming/StreamReaderEdgeCasesTest.php, subRipInputs.
-//
-//nolint:gochecknoglobals // read-only tables for the tests
 var subRipInputs = map[string]string{
 	"BOM and CRLF":               bom + "1\r\n00:00:01,000 --> 00:00:02,000\r\nFirst\r\n\r\n2\r\n00:00:03,000 --> 00:00:04,000\r\nSecond\r\n",
 	"CR only":                    "1\r00:00:01,000 --> 00:00:02,000\rFirst\r\r2\r00:00:03,000 --> 00:00:04,000\rSecond\r",
-	"CR CR LF":                   "1\r\r\n00:00:01,000 --> 00:00:02,000\r\r\nFirst\r\r\n\r\r\n2\r\r\n00:00:03,000 --> 00:00:04,000\r\r\nSecond",
+	"two CRs and LF":             "1\r\r\n00:00:01,000 --> 00:00:02,000\r\r\nFirst\r\r\n\r\r\n2\r\r\n00:00:03,000 --> 00:00:04,000\r\r\nSecond",
 	"blank lines and spaces":     "\n\n  1\n00:00:01,000  -->  00:00:02,000\n\tA \t tab\n \n\t\n\n2\n00:00:03,000 --> 00:00:04,000\nB & <i>c</i> <3\n\n\n",
 	"BOM only":                   bom,
 	"empty":                      "",
@@ -50,12 +48,10 @@ var subRipInputs = map[string]string{
 }
 
 // Ported from tests/Streaming/StreamReaderEdgeCasesTest.php, webVttInputs.
-//
-//nolint:gochecknoglobals // read-only tables for the tests
 var webVTTInputs = map[string]string{
 	"BOM and CRLF":               bom + "WEBVTT\r\n\r\n00:01.000 --> 00:02.000\r\nFirst\r\n",
 	"CR only":                    "WEBVTT\r\r00:01.000 --> 00:02.000\rFirst\r\r00:03.000 --> 00:04.000\rSecond",
-	"CR CR LF":                   "WEBVTT\r\r\n\r\r\n00:01.000 --> 00:02.000\r\r\nFirst\r\r\n",
+	"two CRs and LF":             "WEBVTT\r\r\n\r\r\n00:01.000 --> 00:02.000\r\r\nFirst\r\r\n",
 	"white space around":         "\n \n  WEBVTT  title \nX-Meta: 1 \n\nSTYLE\n::cue { color: red; }  \n\n\n00:01.000 --> 00:02.000\nA\n \n\t\n",
 	"header only":                "WEBVTT\nKind: captions  \n  \n",
 	"style last":                 "WEBVTT\n\nSTYLE\n::cue { color: red; }   \n\n",
@@ -256,13 +252,34 @@ func TestLenientWebVTTReaderWithoutTheSignatureStillFails(t *testing.T) {
 func TestStrictNULFailsOnItsLine(t *testing.T) {
 	t.Parallel()
 
-	content := "1\n00:00:01,000 --> 00:00:02,000\nOne\n\n2\n00:00:03,000 --> 00:00:04,000\nThe fer\x00ry leaves.\n"
-	rd := stream.NewSubRipReader(strings.NewReader(content), stream.ReadOptions{})
-	_, err := collect(rd.Cues())
-	var perr *model.ParseError
-	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, 7, perr.Line)
-	assert.Equal(t, "Line 7 has a NUL character. Check the encoding of the file.", perr.Msg)
+	tests := []struct {
+		name    string
+		content string
+		line    int
+	}{
+		{"in the text", "1\n00:00:01,000 --> 00:00:02,000\nOne\n\n2\n00:00:03,000 --> 00:00:04,000\nThe fer\x00ry leaves.\n", 7},
+		{"between CR and LF", "1\r\x00\n00:00:01,000 --> 00:00:02,000\r\x00\nOne\r\x00\n", 2},
+		{"after a BOM and a Ctrl-Z", bom + "1\x1a\n\x00", 2},
+	}
+	for _, tt := range tests {
+		for _, w := range wraps {
+			t.Run(tt.name+"/"+w.name, func(t *testing.T) {
+				t.Parallel()
+
+				want := "Line " + strconv.Itoa(tt.line) + " has a NUL character. Check the encoding of the file."
+				rd := stream.NewSubRipReader(w.wrap(strings.NewReader(tt.content)), stream.ReadOptions{})
+				_, err := collect(rd.Cues())
+				var perr *model.ParseError
+				require.ErrorAs(t, err, &perr)
+				assert.Equal(t, tt.line, perr.Line)
+				assert.Equal(t, want, perr.Msg)
+
+				_, _, fullErr := srt.Read(strings.NewReader(tt.content), model.CommonReadOptions{}, srt.ReadOptions{})
+				require.ErrorAs(t, fullErr, &perr)
+				assert.Equal(t, want, perr.Msg)
+			})
+		}
+	}
 }
 
 func TestLenientReadersRemoveControlCharactersWithOneWarning(t *testing.T) {
@@ -360,8 +377,9 @@ func TestWebVTTReaderSkipsTheSecondHeaderOfJoinedFiles(t *testing.T) {
 	require.Len(t, cues, 2)
 	assert.Equal(t, []string{"One"}, cues[0].Lines)
 	assert.Equal(t, []string{"Two"}, cues[1].Lines)
-	var lines []int
-	for _, w := range rd.Warnings() {
+	warnings := rd.Warnings()
+	lines := make([]int, 0, len(warnings))
+	for _, w := range warnings {
 		lines = append(lines, w.Line)
 	}
 	assert.Equal(t, []int{6, 9}, lines)
@@ -470,7 +488,7 @@ type countingReader struct {
 func (c *countingReader) Read(b []byte) (int, error) {
 	n, err := c.r.Read(b)
 	c.n += n
-	return n, err
+	return n, err //nolint:wrapcheck // a test double passes the error through
 }
 
 type errReader struct{ err error }

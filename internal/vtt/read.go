@@ -102,103 +102,140 @@ func (r *Reader) Blocks(lines iter.Seq2[int, string]) iter.Seq2[blocks.Block, er
 // space inside the file stays, because the block rules decide whether it ends a block.
 func trimLines(lines iter.Seq2[int, string]) iter.Seq2[int, string] {
 	return func(yield func(int, string) bool) {
-		var held line
-		started := false
-		var pending []line
+		var t trimmer
 		for n, text := range lines {
-			if phpTrim(text) == "" {
-				if started && (text != "" || len(pending) == 0 || pending[len(pending)-1].text != "") {
-					pending = append(pending, line{n: n, text: text})
-				}
-				continue
+			if !t.add(line{n: n, text: text}, yield) {
+				return
 			}
-			if !started {
-				text = strings.TrimLeft(text, phpTrimSet)
-			} else {
-				if !yield(held.n, held.text) {
-					return
-				}
-				for _, p := range pending {
-					if !yield(p.n, p.text) {
-						return
-					}
-				}
-			}
-			held, started = line{n: n, text: text}, true
-			pending = pending[:0]
 		}
-		if started {
-			yield(held.n, strings.TrimRight(held.text, phpTrimSet))
+		if t.started {
+			yield(t.held.n, strings.TrimRight(t.held.text, phpTrimSet))
 		}
 	}
+}
+
+// trimmer holds the last line with text, and the blank lines after it until a line with text follows.
+type trimmer struct {
+	held    line
+	started bool
+	pending []line
+}
+
+func (t *trimmer) add(l line, yield func(int, string) bool) bool {
+	if phpTrim(l.text) == "" {
+		if t.started && (l.text != "" || len(t.pending) == 0 || t.pending[len(t.pending)-1].text != "") {
+			t.pending = append(t.pending, l)
+		}
+		return true
+	}
+	if !t.started {
+		l.text = strings.TrimLeft(l.text, phpTrimSet)
+	} else if !t.flush(yield) {
+		return false
+	}
+	t.held, t.started, t.pending = l, true, t.pending[:0]
+	return true
+}
+
+func (t *trimmer) flush(yield func(int, string) bool) bool {
+	if !yield(t.held.n, t.held.text) {
+		return false
+	}
+	for _, p := range t.pending {
+		if !yield(p.n, p.text) {
+			return false
+		}
+	}
+	return true
 }
 
 // signedLines yields the lines from the signature, each without its leading BOMs, so joined files work.
 // Lenient mode repairs a missing signature. A failure goes to err, and the sequence ends.
 func (r *Reader) signedLines(lines iter.Seq2[int, string], err *error) iter.Seq[line] {
 	return func(yield func(line) bool) {
-		var skipped []line
-		firstLine := 0
-		first, signed := true, false
+		s := signer{r: r}
 		for n, text := range lines {
 			l := line{n: n, text: trimBOMs(text)}
-			if signed {
+			if s.signed {
 				if !yield(l) {
 					return
 				}
 				continue
 			}
-			if first {
-				first = false
-				if HasSignature(text) {
-					signed = true
-					if !yield(l) {
-						return
-					}
-					continue
-				}
-				if !r.st.Lenient() {
-					*err = &model.ParseError{Format: model.WebVTT, Line: n + 1, Msg: noSignature}
-					return
-				}
+			out, perr := s.feed(text, l)
+			if perr != nil {
+				*err = perr
+				return
 			}
-			if firstLine == 0 && phpTrim(l.text) != "" {
-				firstLine = l.n + 1
-			}
-			if HasSignature(l.text) {
-				r.warnMissingSignature(skipped, firstLine, l.n+1)
-				signed = true
-				if !yield(l) {
-					return
-				}
-				continue
-			}
-			if !hasArrow(l.text) {
-				skipped = append(skipped, l)
-				continue
-			}
-			if !isRepairableTimingLine(phpTrim(l.text)) {
-				break
-			}
-			cueStart := l.n
-			var identifier []line
-			if last := len(skipped) - 1; last >= 0 && phpTrim(skipped[last].text) != "" {
-				identifier = []line{skipped[last]}
-				skipped = skipped[:last]
-				cueStart = identifier[0].n
-			}
-			r.warnMissingSignature(skipped, firstLine, cueStart+1)
-			signed = true
-			for _, repaired := range slices.Concat([]line{{n: cueStart - 2, text: signature}, {n: cueStart - 1}}, identifier, []line{l}) {
-				if !yield(repaired) {
+			for _, o := range out {
+				if !yield(o) {
 					return
 				}
 			}
 		}
-		if !signed && !first {
-			*err = &model.ParseError{Format: model.WebVTT, Line: max(firstLine, 1), Msg: noSignature}
+		if s.started && !s.signed {
+			*err = s.noSignature()
 		}
 	}
+}
+
+// signer looks for the signature in the first lines of a file.
+type signer struct {
+	r         *Reader
+	skipped   []line
+	firstLine int
+	started   bool
+	signed    bool
+}
+
+// feed takes the next line before the signature, as read and without BOMs, and returns the lines to pass on.
+// Strict mode fails at the first line without the signature. Lenient mode skips lines until it finds the
+// signature or a timing line.
+func (s *signer) feed(raw string, l line) ([]line, error) {
+	if !s.started {
+		s.started = true
+		if HasSignature(raw) {
+			s.signed = true
+			return []line{l}, nil
+		}
+		if !s.r.st.Lenient() {
+			return nil, &model.ParseError{Format: model.WebVTT, Line: l.n + 1, Msg: noSignature}
+		}
+	}
+	if s.firstLine == 0 && phpTrim(l.text) != "" {
+		s.firstLine = l.n + 1
+	}
+	switch {
+	case HasSignature(l.text):
+		s.r.warnMissingSignature(s.skipped, s.firstLine, l.n+1)
+		s.signed = true
+		return []line{l}, nil
+	case !hasArrow(l.text):
+		s.skipped = append(s.skipped, l)
+		return nil, nil
+	case !isRepairableTimingLine(phpTrim(l.text)):
+		return nil, s.noSignature()
+	}
+	return s.addSignature(l), nil
+}
+
+// addSignature returns a signature line and an empty line, then the cue identifier if the line before the
+// timing line l can be one, then l.
+func (s *signer) addSignature(l line) []line {
+	cueStart := l.n
+	var identifier []line
+	if last := len(s.skipped) - 1; last >= 0 && phpTrim(s.skipped[last].text) != "" {
+		identifier = []line{s.skipped[last]}
+		s.skipped = s.skipped[:last]
+		cueStart = identifier[0].n
+	}
+	s.r.warnMissingSignature(s.skipped, s.firstLine, cueStart+1)
+	s.signed = true
+	return slices.Concat([]line{{n: cueStart - 2, text: signature}, {n: cueStart - 1}}, identifier, []line{l})
+}
+
+func (s *signer) noSignature() error {
+	return &model.ParseError{Format: model.WebVTT, Line: max(s.firstLine, 1), Msg: noSignature}
 }
 
 func isRepairableTimingLine(text string) bool {

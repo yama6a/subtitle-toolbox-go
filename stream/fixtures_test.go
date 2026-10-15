@@ -1,6 +1,7 @@
 package stream_test
 
 import (
+	"fmt"
 	"io/fs"
 	"path/filepath"
 	"testing"
@@ -23,7 +24,7 @@ func fixtureFiles(tb testing.TB, ext string) []string {
 		if !d.IsDir() && filepath.Ext(p) == ext {
 			rel, err := filepath.Rel(root, p)
 			if err != nil {
-				return err
+				return fmt.Errorf("relative path of %s: %w", p, err)
 			}
 			files = append(files, filepath.ToSlash(rel))
 		}
