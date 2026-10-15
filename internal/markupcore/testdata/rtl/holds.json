@@ -1,0 +1,10 @@
+[
+  {"name": "embedded line", "lines": ["\u202bשלום\u202c"], "want": true},
+  {"name": "embedding inside tags", "lines": ["<i>\u202bשלום!\u202c</i>"], "want": true},
+  {"name": "second line embedded", "lines": ["Hello", "\u202bمرحبا\u202c"], "want": true},
+  {"name": "no marks", "lines": ["שלום"], "want": false},
+  {"name": "no lines", "lines": [], "want": false},
+  {"name": "mark in a left-to-right line", "lines": ["\u202bHello\u202c"], "want": true},
+  {"name": "punctuation not moved yet", "lines": ["\u202b.מחר\u202c"], "want": false},
+  {"name": "drawing with a mark", "lines": ["\u202b{\\p1}שלום"], "want": true}
+]

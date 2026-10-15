@@ -18,16 +18,16 @@ func TestCount(t *testing.T) {
 	data, err := os.ReadFile("testdata/count.json")
 	require.NoError(t, err)
 	type row struct {
-		Name string
-		Text string
-		Want int
+		Name string `json:"name"`
+		Text string `json:"text"`
+		Want int    `json:"want"`
 	}
-	var tests []row
-	require.NoError(t, json.Unmarshal(data, &tests))
-	tests = append(tests,
-		row{"invalid UTF-8 counts bytes", "Caf\xe9", 4},
-		row{"invalid UTF-8 counts the invisible characters too", "\xff\u200b", 4},
-	)
+	var rows []row
+	require.NoError(t, json.Unmarshal(data, &rows))
+	tests := slices.Concat(rows, []row{
+		{"invalid UTF-8 counts bytes", "Caf\xe9", 4},
+		{"invalid UTF-8 counts the invisible characters too", "\xff\u200b", 4},
+	})
 	for _, tt := range tests {
 		t.Run(tt.Name, func(t *testing.T) {
 			t.Parallel()

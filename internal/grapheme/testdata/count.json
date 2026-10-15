@@ -12,6 +12,7 @@
   {"name": "zero-width joiner is not invisible", "text": "a\u200db", "want": 2},
   {"name": "regional indicator pair", "text": "\ud83c\udde9\ud83c\uddea", "want": 1},
   {"name": "CRLF is one cluster", "text": "a\r\nb", "want": 3},
+  {"name": "regional indicator plus combining mark", "text": "\ud83c\udde9\u0301", "want": 1},
   {"name": "Hangul syllable of three jamo", "text": "\u1112\u1161\u11ab", "want": 1},
   {"name": "Devanagari conjunct ksha, 2 clusters without rule GB9c of Unicode 15.1", "text": "क्ष", "want": 2}
 ]

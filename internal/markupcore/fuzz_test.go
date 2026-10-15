@@ -1,6 +1,8 @@
 package markupcore_test
 
 import (
+	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 
@@ -25,5 +27,30 @@ func FuzzMarkup(f *testing.F) {
 		if got := markupcore.MapTextRuns([]string{s}, identity); got[0] != s {
 			t.Fatalf("MapTextRuns(%q) with the identity gives %q", s, got[0])
 		}
+	})
+}
+
+func FuzzEmbedRightToLeft(f *testing.F) {
+	data, err := os.ReadFile("testdata/rtl/embed.json")
+	if err != nil {
+		f.Fatal(err)
+	}
+	var rows []struct {
+		In string `json:"in"`
+	}
+	if err := json.Unmarshal(data, &rows); err != nil {
+		f.Fatal(err)
+	}
+	for _, row := range rows {
+		f.Add(row.In)
+	}
+
+	f.Fuzz(func(t *testing.T, s string) {
+		once := markupcore.EmbedRightToLeft(s)
+		if twice := markupcore.EmbedRightToLeft(once); twice != once {
+			t.Fatalf("EmbedRightToLeft(%q) = %q, then %q", s, once, twice)
+		}
+		markupcore.HasRightToLeftLetter(s)
+		markupcore.HoldsRightToLeftEmbedding([]string{s, once})
 	})
 }
