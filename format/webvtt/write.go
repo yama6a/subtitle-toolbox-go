@@ -126,8 +126,9 @@ func values(v any) []any {
 	}
 }
 
-// noteBlock writes a comment as a NOTE block. The block must not hold "-->", and a line of white space would end it,
-// so the text loses each "-->" until none is left and every empty line. See https://www.w3.org/TR/webvtt1/#webvtt-comment-block.
+// noteBlock writes a comment as a NOTE block. The block must not hold "-->", and a line of white space ends it.
+// So the text loses each "-->" until none is left, and it loses every empty line.
+// See https://www.w3.org/TR/webvtt1/#webvtt-comment-block.
 func noteBlock(text string) string {
 	for strings.Contains(text, arrow) {
 		text = strings.ReplaceAll(text, arrow, "->")
