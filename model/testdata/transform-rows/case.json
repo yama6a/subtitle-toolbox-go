@@ -218,5 +218,27 @@
   "want": [
    "İ.e. Now"
   ]
+ },
+ {
+  "name": "final sigma needs a cased letter before it",
+  "texts": [
+   "中Σ"
+  ],
+  "mode": "lower",
+  "language": "",
+  "want": [
+   "中σ"
+  ]
+ },
+ {
+  "name": "no final sigma before an apostrophe and a letter",
+  "texts": [
+   "ΑΣ'Β"
+  ],
+  "mode": "lower",
+  "language": "",
+  "want": [
+   "ασ'β"
+  ]
  }
 ]

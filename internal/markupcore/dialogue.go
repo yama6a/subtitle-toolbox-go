@@ -5,17 +5,14 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
-
-	"github.com/yama6a/subtitle-toolbox-go/internal/grapheme"
 )
 
 const (
-	unicodeHyphen          = 0x2010
-	enDash                 = 0x2013
-	emDash                 = 0x2014
-	rightSingleQuote       = 0x2019
-	noBreakSpace           = 0x00A0
-	englishIContractionSet = "m ll ve d"
+	unicodeHyphen    = 0x2010
+	enDash           = 0x2013
+	emDash           = 0x2014
+	rightSingleQuote = 0x2019
+	noBreakSpace     = 0x00A0
 )
 
 // IsDialogueDash reports whether r is one of the 4 dialogue dash characters: the hyphen-minus, U+2010, U+2013 and U+2014.
@@ -44,7 +41,7 @@ func SplitLeadingBidiControls(text string) (controls, rest string) {
 	if !utf8.ValidString(text) {
 		return "", text
 	}
-	i := strings.IndexFunc(text, func(r rune) bool { return !grapheme.IsBidiControl(r) })
+	i := strings.IndexFunc(text, func(r rune) bool { return !IsBidiControl(r) })
 	if i < 0 {
 		i = len(text)
 	}
@@ -57,7 +54,7 @@ func RemoveBidiControls(text string) string {
 	var b strings.Builder
 	copied := 0
 	for i, r := range text {
-		if grapheme.IsBidiControl(r) {
+		if IsBidiControl(r) {
 			b.WriteString(text[copied:i])
 			copied = i + utf8.RuneLen(r)
 		}
@@ -140,7 +137,7 @@ func (m englishIMatcher) contractionAt(chars []char, j int) bool {
 	if j >= len(chars) || !m.apostrophe(chars[j].r) {
 		return false
 	}
-	for suffix := range strings.FieldsSeq(englishIContractionSet) {
+	for _, suffix := range [...]string{"m", "ll", "ve", "d"} {
 		if end := j + 1 + len(suffix); end <= len(chars) && runesEqual(chars[j+1:end], suffix) && m.boundaryAt(chars, end) {
 			return true
 		}

@@ -162,11 +162,11 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-## github.com/dlclark/regexp2
+## github.com/dlclark/regexp2/v2
 
 - Project: <https://github.com/dlclark/regexp2>
 - Licence: MIT
-- Checked at: `v1.12.0`
+- Checked at: `v2.8.4`
 
 The `stbox` binary links this module. Its `ATTRIB` file credits the .NET and Go code it ports, so it follows the licence.
 

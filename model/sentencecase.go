@@ -36,7 +36,6 @@ type sentenceCaser struct {
 	abbreviationSpace bool
 }
 
-// startCue sets the state for the first text run of c.
 func (sc *sentenceCaser) startCue(c Cue) {
 	visible := markupcore.VisibleText(c.Text())
 	sc.capitalizeNext = sc.endsSentence || startsAnnotation(visible) || sc.started && c.Start-sc.previousEnd >= sentenceGap

@@ -81,7 +81,6 @@ func (s *Subtitle) sentenceCase(turkic, english bool) {
 	}, nil)
 }
 
-// upperCaseEnglishI runs markupcore.UpperCaseEnglishI on the decoded text runs of line.
 func upperCaseEnglishI(line string) string {
 	var runs []string
 	markupcore.MapTextRuns([]string{line}, func(text string, _, _ bool) string {

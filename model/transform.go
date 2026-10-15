@@ -7,7 +7,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/dlclark/regexp2"
+	"github.com/dlclark/regexp2/v2"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/markup"
@@ -20,7 +20,7 @@ var wordTimestampRegexp = regexp.MustCompile(markupcore.WordTimestampPattern)
 
 // ReplaceOptions holds the settings of ReplaceText.
 type ReplaceOptions struct {
-	// Regex reads search as a regular expression in the syntax of github.com/dlclark/regexp2, without delimiters.
+	// Regex reads search as a regular expression in the syntax of github.com/dlclark/regexp2/v2, without delimiters.
 	// False matches search as plain text.
 	Regex bool
 	// IgnoreCase matches search in any case. False matches the case of search.
@@ -116,7 +116,7 @@ func (s *Subtitle) ReplaceText(search, replace string, opts ReplaceOptions) erro
 			return out
 		})
 		if runErr != nil {
-			return invalidArgument(fmt.Sprintf("The regular expression %s took longer than 1 s on cue %d.", quote(search), i))
+			return invalidArgument(fmt.Sprintf("The regular expression %s took longer than 1 s on cue %d.", quote(search), i+1))
 		}
 	}
 	s.EditLines(func(i int, _ Cue) ([]string, bool) { return edited[i], true }, nil)
@@ -128,7 +128,7 @@ func newReplacer(search, replace string, opts ReplaceOptions) (func(string) (str
 	case opts.Regex:
 		return newRegexReplacer(search, replace, opts.IgnoreCase)
 	case opts.IgnoreCase:
-		return newFoldReplacer(search, replace)
+		return newFoldReplacer(search, replace), nil
 	}
 	return func(text string) (string, error) { return strings.ReplaceAll(text, search, replace), nil }, nil
 }
@@ -156,20 +156,17 @@ func newRegexReplacer(search, replace string, ignoreCase bool) (func(string) (st
 
 // newFoldReplacer matches search in any case with the case folding of package regexp. A search or a text run of
 // invalid UTF-8 falls back to the case of ASCII letters, as PHP str_ireplace does.
-func newFoldReplacer(search, replace string) (func(string) (string, error), error) {
+func newFoldReplacer(search, replace string) func(string) (string, error) {
 	if !utf8.ValidString(search) {
-		return func(text string) (string, error) { return replaceASCIIFold(text, search, replace), nil }, nil
+		return func(text string) (string, error) { return replaceASCIIFold(text, search, replace), nil }
 	}
-	re, err := regexp.Compile("(?i)" + regexp.QuoteMeta(search))
-	if err != nil {
-		return nil, invalidArgument(fmt.Sprintf("The search text %s is not valid: %v.", quote(search), err))
-	}
+	re := regexp.MustCompile("(?i)" + regexp.QuoteMeta(search))
 	return func(text string) (string, error) {
 		if !utf8.ValidString(text) {
 			return replaceASCIIFold(text, search, replace), nil
 		}
 		return re.ReplaceAllLiteralString(text, replace), nil
-	}, nil
+	}
 }
 
 // replaceASCIIFold replaces search in text with a match that ignores the case of the ASCII letters only.

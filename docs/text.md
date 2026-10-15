@@ -114,9 +114,10 @@ for _, c := range s.All() {
 // 4s <i>Wait...</i> Tom &amp; Jerry's
 ```
 
-- **Why regexp2**: a user pattern needs lookaround and back references, which the Go `regexp` package lacks. [github.com/dlclark/regexp2](https://github.com/dlclark/regexp2) ports the .NET syntax.
+- **Why regexp2**: a user pattern needs lookaround and back references, which the Go `regexp` package lacks. [github.com/dlclark/regexp2/v2](https://github.com/dlclark/regexp2) ports the .NET syntax.
 - **Pattern**: the bare pattern, without delimiters and flags. Turn on case-insensitive matching with `IgnoreCase`, or with `(?i)` inside the pattern.
-- **Not in regexp2**: the PCRE features `\K`, `\h`, `\R`, `\X`, possessive quantifiers such as `a++`, and `(*VERB)` controls. A pattern with one of them returns the invalid pattern error. Write `[ \t]+` for `\h+`.
+- **Not in regexp2**: the PCRE features `\K`, `\h`, `\o{...}`, `(?|...)` and `(*VERB)` controls. A pattern with one of them returns the invalid pattern error. Write `[ \t]+` for `\h+`.
+- **POSIX classes**: regexp2 has none, and it reports no error for them. `[[:alpha:]]` and `[[:digit:]]` compile, but they match a `[` and no letter or digit. Write `\p{L}` for `[[:alpha:]]` and `\d` for `[[:digit:]]`.
 - **Time limit**: each match may take 1 s. A slower match returns an error that matches `ErrInvalidArgument` and names the cue, and the subtitle stays unchanged. A pattern such as `(a+)+$` takes that long on 40 letters `a` and a `!`.
 - **Errors**: an empty search, an invalid pattern and an invalid replacement return an error that matches `ErrInvalidArgument`.
 - **Invalid UTF-8**: a regex keeps such a run unchanged, because regexp2 reads runes and would write U+FFFD for a bad byte. A plain search that ignores case matches the case of ASCII letters only in such a run.

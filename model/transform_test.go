@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -328,13 +329,28 @@ func TestReplaceTextErrors(t *testing.T) {
 func TestReplaceTextTimeoutChangesNothing(t *testing.T) {
 	t.Parallel()
 
-	s := fromTexts("x marks the spot", strings.Repeat("a", 40)+"!")
-	err := s.ReplaceText(`x|(a+)+$`, "y", model.ReplaceOptions{Regex: true})
-	require.ErrorIs(t, err, model.ErrInvalidArgument)
-	var invalid *model.InvalidArgumentError
-	require.ErrorAs(t, err, &invalid)
-	assert.Equal(t, `The regular expression "x|(a+)+$" took longer than 1 s on cue 1.`, invalid.Msg)
-	assert.Equal(t, []string{"x marks the spot", strings.Repeat("a", 40) + "!"}, texts(s))
+	letters := strings.Repeat("a", 40)
+	tests := []struct {
+		name    string
+		texts   []string
+		pattern string
+	}{
+		{name: "timeout on the first match of a run", texts: []string{"x marks the spot", letters + "!"}, pattern: `x|(a+)+$`},
+		{name: "timeout after a match in the same run", texts: []string{"keep", "x " + letters}, pattern: `x|(a+)+b`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s := fromTexts(tt.texts...)
+			err := s.ReplaceText(tt.pattern, "y", model.ReplaceOptions{Regex: true})
+			require.ErrorIs(t, err, model.ErrInvalidArgument)
+			var invalid *model.InvalidArgumentError
+			require.ErrorAs(t, err, &invalid)
+			assert.Equal(t, `The regular expression "`+tt.pattern+`" took longer than 1 s on cue 2.`, invalid.Msg)
+			assert.Equal(t, tt.texts, texts(s))
+		})
+	}
 }
 
 // Adapted from testRemovesCuesThatBecomeEmptyAndKeepsComments of tests/TextTransformsTest.php of subtitle-toolbox-php.
@@ -585,14 +601,24 @@ var (
 	fixtureEscaper      = strings.NewReplacer("<", "&lt;", ">", "&gt;")
 )
 
-// readTransformFixture reads a fixture of testdata/transforms and escapes the text as the SubRip and WebVTT
-// readers do: a bare & becomes &amp; and a < outside a tag becomes &lt;. SubRip also escapes >.
-// It stands in for the format readers, which package model cannot import.
+// readTransformFixture reads a fixture of testdata/transforms. A .vtt file goes through webvtt.Read. A .srt file
+// goes through readFixture, with the text escaped as the SubRip reader does: a bare & becomes &amp;, and < and >
+// outside a tag become &lt; and &gt;. The .srt branch gives way to srt.Read once #20 merges.
 func readTransformFixture(tb testing.TB, name string) *model.Subtitle {
 	tb.Helper()
 
+	path := filepath.Join("testdata", "transforms", name)
+	if strings.HasSuffix(name, ".vtt") {
+		f, err := os.Open(path)
+		require.NoError(tb, err)
+		defer f.Close()
+		s, warnings, err := webvtt.Read(f, model.CommonReadOptions{}, webvtt.ReadOptions{})
+		require.NoError(tb, err)
+		require.Empty(tb, warnings)
+		return s
+	}
+
 	s := readFixture(tb, filepath.Join("transforms", name))
-	webVTT := strings.HasSuffix(name, ".vtt")
 	for i, c := range s.All() {
 		for k, line := range c.Lines {
 			parts := markupcore.SplitTags(line)
@@ -603,12 +629,7 @@ func readTransformFixture(tb testing.TB, name string) *model.Subtitle {
 					}
 					return m
 				})
-				if webVTT {
-					text = strings.ReplaceAll(text, "<", "&lt;")
-				} else {
-					text = fixtureEscaper.Replace(text)
-				}
-				parts[j] = text
+				parts[j] = fixtureEscaper.Replace(text)
 			}
 			c.Lines[k] = strings.Join(parts, "")
 		}
@@ -617,7 +638,6 @@ func readTransformFixture(tb testing.TB, name string) *model.Subtitle {
 	return s
 }
 
-// TestTransformFixtures switches to the srt and webvtt readers once package model can use them in a test of the root.
 func TestTransformFixtures(t *testing.T) {
 	t.Parallel()
 
