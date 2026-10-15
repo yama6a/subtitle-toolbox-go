@@ -3,9 +3,11 @@ CANONICAL_LINT_URL := https://raw.githubusercontent.com/yama6a/gha/v2/.golangci.
 GOVULNCHECK_URL    := https://raw.githubusercontent.com/yama6a/gha/v2/scripts/govulncheck.sh
 IMAGE              ?= ghcr.io/yama6a/subtitle-toolbox-go
 VERSION            ?= dev
+FUZZTIME           ?= 30s
+BENCHTIME          ?= 1s
 
 .PHONY: lint-config generate fmt fmt-check lint vet test cover vuln tidy tidy-check \
-	generate-check mod image ci build
+	generate-check mod image ci build cross fuzz bench
 
 lint-config:
 	mkdir -p .build
@@ -67,3 +69,23 @@ ci: tidy-check generate-check fmt-check lint vet test vuln
 # The local binary, built like a release binary. VERSION=1.2.3 stamps the version.
 build:
 	CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=$(VERSION)" -o bin/stbox ./cmd/stbox
+
+# go-ci builds linux/amd64 and linux/arm64 only. The release also ships darwin and windows binaries.
+cross:
+	for target in darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do \
+		CGO_ENABLED=0 GOOS=$${target%/*} GOARCH=$${target#*/} go build ./... || exit 1; \
+		CGO_ENABLED=0 GOOS=$${target%/*} GOARCH=$${target#*/} go vet ./... || exit 1; \
+	done
+
+# go test -fuzz takes one package and one target per run.
+fuzz:
+	pkgs=$$(go list ./...) || exit 1; \
+	for pkg in $$pkgs; do \
+		targets=$$(go test -list '^Fuzz' $$pkg) || exit 1; \
+		for target in $$(echo "$$targets" | grep '^Fuzz'); do \
+			go test -run '^$$' -fuzz "^$$target\$$" -fuzztime $(FUZZTIME) $$pkg || exit 1; \
+		done; \
+	done
+
+bench:
+	go test -run '^$$' -bench . -benchmem -benchtime $(BENCHTIME) ./...

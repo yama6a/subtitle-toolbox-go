@@ -36,8 +36,9 @@ make fmt     # rewrite formatting in place
 make test    # go test -race ./...
 make build   # write bin/stbox, VERSION=1.2.3 stamps the version
 make golden  # regenerate Go write goldens, arrives with #9
-make fuzz    # run the fuzz targets briefly, arrives with #3
-make bench   # run the benchmarks, arrives with #3
+make cross   # build and vet for darwin and windows
+make fuzz    # run each fuzz target for 30 s, FUZZTIME=10s shortens it
+make bench   # run the benchmarks, BENCHTIME=1x runs each once
 make image   # build the container image, the Dockerfile arrives with #4
 ```
 
