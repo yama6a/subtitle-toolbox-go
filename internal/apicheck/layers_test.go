@@ -40,6 +40,7 @@ var layers = map[string]layer{
 	"internal/cea708":      layerLeaf,
 	"internal/ebml":        layerLeaf,
 	"internal/orderedjson": layerLeaf,
+	"internal/markupcore":  layerLeaf,
 	"markup":               layerMarkup,
 	"model":                layerModel,
 	"internal/blocks":      layerModelUser,

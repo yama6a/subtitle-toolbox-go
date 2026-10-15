@@ -22,6 +22,7 @@ Each section is `## <project>` with these bullets, then the upstream licence or 
 - Project: <https://go.dev>
 - Licence: BSD-3-Clause
 - Checked at: `go1.27.2`
+- Code adapted from it: `internal/markupcore/entity.go`, the HTML5 entity table, from `src/html/entity.go` at `go1.27.2`
 
 The Go standard library and runtime are part of every `stbox` binary.
 
