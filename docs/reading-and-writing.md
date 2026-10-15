@@ -24,7 +24,7 @@ err = stbox.Write(f, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF}
 
 ## Read steps
 
-1. Read the whole input into memory.
+1. Read the whole input into memory. For a SubRip or WebVTT file too large for that, see [streaming.md](streaming.md).
 2. Decode the text to UTF-8, as [encodings.md](encodings.md) says. `ReadInfo.SourceEncoding` holds the encoding.
 3. Detect the format, unless `Format` is set. [detection.md](detection.md) holds the rules, also for empty content, video files and the extension fallback of `Load`.
 4. Run the reader of the format.

@@ -14,7 +14,9 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
-var errClosed = &model.InvalidArgumentError{Msg: "The writer is closed."}
+func errClosed() error {
+	return &model.InvalidArgumentError{Msg: "The writer is closed."}
+}
 
 // sink writes the parts of one output and remembers whether the caller closed the writer.
 type sink struct {
@@ -68,7 +70,7 @@ func NewSubRipWriter(w io.Writer, common model.CommonWriteOptions, _ srt.WriteOp
 // An error of the io.Writer returns wrapped, and the writer stays usable.
 func (w *SubRipWriter) Write(c model.Cue) error {
 	if w.closed {
-		return errClosed
+		return errClosed()
 	}
 	w.buf = w.buf[:0]
 	if w.n > 0 {
@@ -123,7 +125,7 @@ func NewWebVTTWriter(w io.Writer, common model.CommonWriteOptions, _ webvtt.Writ
 // An error of the io.Writer returns wrapped, and the writer stays usable.
 func (w *WebVTTWriter) Write(c model.Cue) error {
 	if w.closed {
-		return errClosed
+		return errClosed()
 	}
 	w.buf = w.buf[:0]
 	if w.hasBlocks {

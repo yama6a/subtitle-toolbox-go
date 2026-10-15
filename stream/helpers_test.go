@@ -10,6 +10,7 @@ import (
 	"testing/iotest"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
@@ -18,8 +19,6 @@ import (
 )
 
 // wraps are the readers that cut the input at other places than the file does.
-//
-//nolint:gochecknoglobals // a read-only table for the tests
 var wraps = []struct {
 	name string
 	wrap func(io.Reader) io.Reader
@@ -73,9 +72,7 @@ func compareSubRip(tb testing.TB, content []byte, wrap func(io.Reader) io.Reader
 		compareErrors(tb, content, fullErr, err)
 		return
 	}
-	if !assert.NoError(tb, err) {
-		return
-	}
+	require.NoError(tb, err)
 	assert.Equal(tb, cuesOf(s), inStartOrder(cues))
 	assert.Equal(tb, warnings, rd.Warnings())
 }
@@ -91,9 +88,7 @@ func compareWebVTT(tb testing.TB, content []byte, wrap func(io.Reader) io.Reader
 		compareErrors(tb, content, fullErr, err)
 		return
 	}
-	if !assert.NoError(tb, err) {
-		return
-	}
+	require.NoError(tb, err)
 	assert.Equal(tb, cuesOf(s), inStartOrder(cues))
 	assert.Equal(tb, sortedByLine(warnings), rd.Warnings())
 	header, ok := s.FormatData(string(model.WebVTT))
@@ -108,9 +103,7 @@ func compareWebVTT(tb testing.TB, content []byte, wrap func(io.Reader) io.Reader
 func compareErrors(tb testing.TB, content []byte, want, got error) {
 	tb.Helper()
 
-	if !assert.Error(tb, got) {
-		return
-	}
+	require.Error(tb, got)
 	if !bytes.Contains(content, []byte{0}) {
 		assert.Equal(tb, want.Error(), got.Error())
 	}

@@ -7,6 +7,8 @@ import (
 	"io"
 	"iter"
 	"math"
+	"slices"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -30,7 +32,7 @@ func (s *State) NewLineReader(r io.Reader) *LineReader {
 	pp := &prepass{st: s, src: r, in: make([]byte, 32*1024), atStart: true}
 	sc := bufio.NewScanner(pp)
 	sc.Buffer(nil, math.MaxInt)
-	sc.Split(splitLine(&splitState{}))
+	sc.Split((&splitState{}).split)
 	return &LineReader{pp: pp, sc: sc, st: s}
 }
 
@@ -70,10 +72,9 @@ type prepass struct {
 	in  []byte
 	out []byte
 
-	srcDone bool
-	failed  bool
-	err     error
-	empty   int
+	failed bool
+	err    error
+	empty  int
 
 	// The UTF-8 check works on the raw bytes and keeps the incomplete rune at the end of a chunk.
 	raw     int
@@ -140,7 +141,7 @@ func (p *prepass) checkUTF8(chunk []byte, last bool) {
 	}
 	data := chunk
 	if len(p.carry) > 0 {
-		data = append(p.carry, chunk...)
+		data = slices.Concat(p.carry, chunk)
 	}
 	i := 0
 	for i < len(data) {
@@ -199,11 +200,11 @@ func (p *prepass) ctrlZ(c byte) {
 			p.release()
 		}
 		p.zrun++
-	case p.zrun > 0 && bytes.IndexByte([]byte(whiteSpace), c) >= 0:
+	case p.zrun > 0 && strings.IndexByte(whiteSpace, c) >= 0:
 		p.trail = append(p.trail, c)
 	default:
 		p.release()
-		p.control(c)
+		p.emit(c)
 	}
 }
 
@@ -211,10 +212,10 @@ func (p *prepass) release() {
 	zrun, trail := p.zrun, p.trail
 	p.zrun, p.trail = 0, nil
 	for range zrun {
-		p.control(ctrlZ)
+		p.emit(ctrlZ)
 	}
 	for _, c := range trail {
-		p.control(c)
+		p.emit(c)
 	}
 }
 
@@ -227,25 +228,28 @@ func (p *prepass) finish() {
 	trail := p.trail
 	p.zrun, p.trail = 0, nil
 	for _, c := range trail {
-		p.control(c)
+		p.emit(c)
 	}
 }
 
-// control applies the NUL rule and removes the control characters.
-func (p *prepass) control(c byte) {
+// emit passes on a byte, with the NUL rule, and removes the control characters.
+func (p *prepass) emit(c byte) {
 	switch c {
 	case '\r':
 		p.crs++
 		p.out = append(p.out, c)
-		return
 	case '\n':
 		p.lines++
 		p.crs = 0
 		p.out = append(p.out, c)
-		return
+	default:
+		p.lines += p.crs
+		p.crs = 0
+		p.other(c)
 	}
-	p.lines += p.crs
-	p.crs = 0
+}
+
+func (p *prepass) other(c byte) {
 	switch {
 	case c == 0 && p.st.ReplaceNUL:
 		p.out = append(p.out, replacement...)
@@ -263,41 +267,43 @@ func (p *prepass) control(c byte) {
 	}
 }
 
-// splitState is the state of splitLine.
+// splitState is the state of the split function that cuts lines.
 type splitState struct {
 	// lonely is the count of CRs at the start of the next data, each a line end on its own.
 	lonely int
 }
 
-// splitLine splits at LF, at a run of CR before LF, and at each lone CR. A CR at the end of the buffer
+// split cuts at LF, at a run of CR before LF, and at each lone CR. A CR at the end of the buffer
 // needs more input before the split decides.
-func splitLine(s *splitState) bufio.SplitFunc {
-	return func(data []byte, atEOF bool) (int, []byte, error) {
-		if s.lonely > 0 {
-			s.lonely--
-			return 1, data[:0], nil
-		}
-		i := bytes.IndexAny(data, "\r\n")
-		if i < 0 {
-			if atEOF && len(data) > 0 {
-				return len(data), data, nil
-			}
-			return 0, nil, nil
-		}
-		if data[i] == '\n' {
-			return i + 1, data[:i], nil
-		}
-		j := i
-		for j < len(data) && data[j] == '\r' {
-			j++
-		}
-		if j == len(data) && !atEOF {
-			return 0, nil, nil
-		}
-		if j < len(data) && data[j] == '\n' {
-			return j + 1, data[:i], nil
-		}
-		s.lonely = j - i - 1
+func (s *splitState) split(data []byte, atEOF bool) (int, []byte, error) {
+	if s.lonely > 0 {
+		s.lonely--
+		return 1, data[:0], nil
+	}
+	i := bytes.IndexAny(data, "\r\n")
+	switch {
+	case i < 0 && atEOF && len(data) > 0:
+		return len(data), data, nil
+	case i < 0:
+		return 0, nil, nil
+	case data[i] == '\n':
 		return i + 1, data[:i], nil
 	}
+	return s.splitAtCR(data, i, atEOF)
+}
+
+// splitAtCR cuts at the run of CRs that starts at data[i].
+func (s *splitState) splitAtCR(data []byte, i int, atEOF bool) (int, []byte, error) {
+	j := i
+	for j < len(data) && data[j] == '\r' {
+		j++
+	}
+	switch {
+	case j == len(data) && !atEOF:
+		return 0, nil, nil
+	case j < len(data) && data[j] == '\n':
+		return j + 1, data[:i], nil
+	}
+	s.lonely = j - i - 1
+	return i + 1, data[:i], nil
 }
