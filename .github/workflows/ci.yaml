@@ -97,6 +97,25 @@ jobs:
           STBOX_GROWTH: '1'
         run: go test -run Growth -p 1 -parallel 1 -count=1 ./...
 
+  smoke:
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false # one shared key would hand darwin, windows or fuzz builds to the other jobs
+      - run: make dist VERSION=0.0.0-ci
+      - run: make smoke VERSION=0.0.0-ci
+
+  docker:
+    uses: yama6a/gha/.github/workflows/docker-build-check.yaml@v2
+    with:
+      dockerfile: .build/Dockerfile
+      build-args: VERSION=0.0.0-ci
+      smoke-test: .build/smoke-test.sh 0.0.0-ci files docker run --rm -v "$PWD/testdata:/work/files:ro" "$IMAGE"
+
   shell:
     runs-on: ubuntu-26.04-arm
     steps:

@@ -7,7 +7,7 @@ FUZZTIME           ?= 30s
 BENCHTIME          ?= 1s
 
 .PHONY: lint-config generate fmt fmt-check lint vet test cover vuln tidy tidy-check \
-	generate-check mod image ci build cross fuzz bench
+	generate-check mod image ci build cross fuzz bench dist smoke
 
 lint-config:
 	mkdir -p .build
@@ -69,6 +69,17 @@ ci: tidy-check generate-check fmt-check lint vet test vuln
 # The local binary, built like a release binary. VERSION=1.2.3 stamps the version.
 build:
 	CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=$(VERSION)" -o bin/stbox ./cmd/stbox
+
+# The 6 release archives and their checksum file. dist/ must be empty.
+dist:
+	.build/build-release.sh "$(VERSION)" dist
+
+# Runs the archive of this machine's OS and arch, out of dist/.
+smoke:
+	rm -rf bin/smoke
+	mkdir -p bin/smoke
+	tar -xzf dist/stbox_$(VERSION)_$$(go env GOOS)_$$(go env GOARCH).tar.gz -C bin/smoke stbox
+	.build/smoke-test.sh "$(VERSION)" testdata bin/smoke/stbox
 
 # go-ci builds linux/amd64 and linux/arm64 only. The release also ships darwin and windows binaries.
 cross:
