@@ -7,6 +7,53 @@
 - The pull request title becomes the squash commit subject. Write it as a release note line: imperative, for users, one line. Example: "Add the SBV format, read and write".
 - The pull request body ends with a line `Release note: ...` in the same style.
 
+## Packages
+
+A package imports only packages of a lower layer. Every layer may also import the standard library and the allowed modules of [CLAUDE.md](CLAUDE.md), which also lists the package map. `internal/apicheck/layers_test.go` holds the same table. It fails for a forbidden import and for a package without a layer, so the issue that adds a package adds its row in both places.
+
+| Layer | Packages | May import |
+|---:|:--- |:--- |
+| 0 | leaf helpers in `internal/`: `timecode`, `grapheme`, `textenc`, `xmlraw`, later `codepage`, `cea608`, `cea708`, `ebml`, `orderedjson` | other layer 0 packages |
+| 1 | `markup` | layer 0 |
+| 2 | `model` | layers 0 and 1 |
+| 3 | `internal/` helpers that work on model types: `blocks`, `subrip`, `vtt`, later `caption`, `ttmlwrite`, `wordgroup` | layers 0 to 2 |
+| 4 | `format/<name>` | layers 0 to 3. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML. Other shared code goes to `internal/` |
+| 4b | `container/<name>`, from 3.x | layers 0 to 4. A container returns cues, so it calls the format readers |
+| 5 | root `stbox` and the service packages | layers 0 to 4b. A service never imports the root. The root never imports a service |
+| 6 | `internal/cli`, `cmd/stbox` | everything |
+
+### Format packages
+
+Every format package declares `ReadOptions` and `WriteOptions`, empty where the format has no options. Its functions always take them, so a first option is a new field and never a signature change. A format without a reader has no `Read`. A format without a signature has no `Detect`.
+
+```go
+// Read reads UTF-8 text. The root decodes other encodings first.
+func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model.Subtitle, []model.ParseWarning, error)
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error
+// Detect gets the content without leading BOMs or white space, with LF line endings.
+func Detect(content []byte) bool
+```
+
+- **Other formats**: a reader ignores the option fields of other formats, so one `ReadOptions` value serves a batch of mixed files.
+- **Format data**: an option wins over stored format data, and stored format data wins over the format default.
+
+### Format registry
+
+The registry is 2 tables, written by hand, with the same rows in the same order. No package registers itself in `init()`. The rows follow the PHP row order, because the first row that lists an extension owns it in `FormatFromPath`. A later line inserts its rows at the PHP position.
+
+| Table | File | Holds |
+|:--- |:--- |:--- |
+| format facts | `model/format.go` | extensions, can read, can write, auto-detected. The `Format` methods read it |
+| format functions | `registry.go` | the read and write function of each format |
+| detection lists | `registry.go` | the JSON checks and the signatures, in detection order. First match wins |
+
+Every 1.x row and `Format` constant exists from 1.0.0, so `FormatFromPath` gives the same result for the whole 1.x line. The issue that adds a format reader or writer:
+
+1. Sets can read, can write and auto-detected in its facts row.
+2. Sets the `read` and `write` functions of its row in `registry.go`.
+3. Inserts its matcher into `signatures` or `jsonChecks`. `TestDetectionListsFollowTheOrder` in `registry_test.go` holds the order.
+4. Adds a field of its options type to the root `ReadOptions` or `WriteOptions` when the type is not empty. TSV uses the `CSV` field.
+
 ## Credit for ported work
 
 - **Copied file**: add it to the section of its project in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), or add the section. Add an Apache-2.0 `NOTICE` file too when the project has one.

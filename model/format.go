@@ -1,0 +1,84 @@
+package model
+
+import "slices"
+
+// Format is the name of a subtitle format. Its value is the format name of the CLI.
+type Format string
+
+// The formats of the registry, in registry order.
+const (
+	ASS           Format = "ass"
+	CSV           Format = "csv"
+	JSON          Format = "json"
+	LRC           Format = "lrc"
+	MicroDVD      Format = "microdvd"
+	MPSub         Format = "mpsub"
+	SAMI          Format = "sami"
+	SBV           Format = "sbv"
+	SubRip        Format = "srt"
+	SubViewer     Format = "subviewer"
+	TTML          Format = "ttml"
+	TSV           Format = "tsv"
+	PlainText     Format = "txt"
+	MPL2          Format = "mpl2"
+	TMPlayer      Format = "tmplayer"
+	QuickTimeText Format = "qttext"
+	WebVTT        Format = "vtt"
+)
+
+type formatFact struct {
+	format       Format
+	extensions   []string
+	canRead      bool
+	canWrite     bool
+	autoDetected bool
+}
+
+//nolint:gochecknoglobals // lookup table of the format facts
+var formatFacts = []formatFact{
+	{format: ASS, extensions: []string{"ass", "ssa"}},
+	{format: CSV, extensions: []string{"csv"}},
+	{format: JSON, extensions: []string{"json"}},
+	{format: LRC, extensions: []string{"lrc"}},
+	{format: MicroDVD, extensions: []string{"sub"}},
+	{format: MPSub, extensions: []string{"mpsub"}},
+	{format: SAMI, extensions: []string{"smi", "sami"}},
+	{format: SBV, extensions: []string{"sbv"}},
+	{format: SubRip, extensions: []string{"srt"}},
+	{format: SubViewer, extensions: []string{"sub"}},
+	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}},
+	{format: TSV, extensions: []string{"tsv"}},
+	{format: PlainText, extensions: []string{"txt"}, autoDetected: true},
+	{format: MPL2, extensions: []string{"txt"}},
+	{format: TMPlayer, extensions: []string{"txt"}},
+	{format: QuickTimeText, extensions: []string{"txt"}},
+	{format: WebVTT, extensions: []string{"vtt"}},
+}
+
+func (f Format) fact() formatFact {
+	i := slices.IndexFunc(formatFacts, func(r formatFact) bool { return r.format == f })
+	if i < 0 {
+		return formatFact{}
+	}
+	return formatFacts[i]
+}
+
+// Extensions returns the file extensions of f without the dot. The first one is the extension for new files.
+func (f Format) Extensions() []string {
+	return slices.Clone(f.fact().extensions)
+}
+
+// CanRead reports whether the library has a reader for f.
+func (f Format) CanRead() bool {
+	return f.fact().canRead
+}
+
+// CanWrite reports whether the library has a writer for f.
+func (f Format) CanWrite() bool {
+	return f.fact().canWrite
+}
+
+// IsAutoDetected reports whether detection may return f. It does not mean that detection finds f by its content.
+func (f Format) IsAutoDetected() bool {
+	return f.fact().autoDetected
+}
