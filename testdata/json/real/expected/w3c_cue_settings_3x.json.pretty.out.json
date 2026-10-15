@@ -1,0 +1,58 @@
+{
+    "version": 1,
+    "metadata": {},
+    "comments": [],
+    "formatData": {},
+    "cues": [
+        {
+            "start": 0.0,
+            "end": 4.0,
+            "lines": [
+                "Where did he go?"
+            ],
+            "identifier": null,
+            "alignment": 1,
+            "formatData": {
+                "vtt": {
+                    "position": "10%,line-left",
+                    "align": "left",
+                    "size": "35%",
+                    "alignment": 1
+                }
+            }
+        },
+        {
+            "start": 3.0,
+            "end": 6.5,
+            "lines": [
+                "I think he went down this lane."
+            ],
+            "identifier": null,
+            "alignment": 3,
+            "formatData": {
+                "vtt": {
+                    "position": "90%",
+                    "align": "right",
+                    "size": "35%",
+                    "alignment": 3
+                }
+            }
+        },
+        {
+            "start": 4.0,
+            "end": 6.5,
+            "lines": [
+                "What are you waiting for?"
+            ],
+            "identifier": null,
+            "alignment": null,
+            "formatData": {
+                "vtt": {
+                    "position": "45%,line-right",
+                    "align": "center",
+                    "size": "35%"
+                }
+            }
+        }
+    ]
+}

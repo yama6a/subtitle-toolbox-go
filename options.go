@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -31,6 +32,8 @@ type WriteOptions struct {
 	BOM BOM
 	// StripTags writes the text without markup. False keeps the markup that the format can hold.
 	StripTags bool
+	// JSON holds the settings of the library JSON writer. The zero value writes compact JSON with format data.
+	JSON stboxjson.WriteOptions
 }
 
 // ReadInfo holds the facts of a read that are not subtitle content.

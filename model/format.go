@@ -39,7 +39,7 @@ type formatFact struct {
 var formatFacts = []formatFact{
 	{format: ASS, extensions: []string{"ass", "ssa"}},
 	{format: CSV, extensions: []string{"csv"}},
-	{format: JSON, extensions: []string{"json"}},
+	{format: JSON, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: LRC, extensions: []string{"lrc"}},
 	{format: MicroDVD, extensions: []string{"sub"}},
 	{format: MPSub, extensions: []string{"mpsub"}},

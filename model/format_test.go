@@ -20,7 +20,7 @@ func TestFormatFacts(t *testing.T) {
 	}{
 		{model.ASS, []string{"ass", "ssa"}, false, false, false},
 		{model.CSV, []string{"csv"}, false, false, false},
-		{model.JSON, []string{"json"}, false, false, false},
+		{model.JSON, []string{"json"}, true, true, true},
 		{model.LRC, []string{"lrc"}, false, false, false},
 		{model.MicroDVD, []string{"sub"}, false, false, false},
 		{model.MPSub, []string{"mpsub"}, false, false, false},

@@ -1,6 +1,6 @@
 # Format data
 
-An ASS file has a `[V4+ Styles]` section and a `Format:` line in `[Events]`. No field of the model holds them, but the ASS writer needs them to write the file back as it was. The ASS reader keeps them as **format data**, the data of one format under the key `ass`. The file facts go on the subtitle, and the fields of each `Dialogue` line go on its cue. The ASS writer reads them back. Other writers ignore them. Library JSON carries format data, so a trip through JSON keeps it.
+An ASS file has a `[V4+ Styles]` section and a `Format:` line in `[Events]`. No field of the model holds them, but the ASS writer needs them to write the file back as it was. The ASS reader keeps them as **format data**, the data of one format under the key `ass`. The file facts go on the subtitle, and the fields of each `Dialogue` line go on its cue. The ASS writer reads them back. Other writers ignore them. [Library JSON](library-json.md) carries format data, so a trip through JSON keeps it.
 
 ```go
 var s model.Subtitle
