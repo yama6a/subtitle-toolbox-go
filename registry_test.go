@@ -76,6 +76,7 @@ func TestDetectionListsFollowTheOrder(t *testing.T) {
 		"signatures %v do not follow %v", signatureFormats, signatureOrder)
 	for _, f := range slices.Concat(jsonFormats, signatureFormats) {
 		assert.True(t, f.IsAutoDetected(), "%s is in a detection list but not auto-detected", f)
+		assert.True(t, f.CanRead(), "%s is in a detection list but cannot be read", f)
 	}
 }
 

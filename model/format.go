@@ -32,6 +32,7 @@ type formatFact struct {
 	canRead      bool
 	canWrite     bool
 	autoDetected bool
+	binary       bool
 }
 
 //nolint:gochecknoglobals // lookup table of the format facts
@@ -78,7 +79,8 @@ func (f Format) CanWrite() bool {
 	return f.fact().canWrite
 }
 
-// IsAutoDetected reports whether detection may return f. It does not mean that detection finds f by its content.
+// IsAutoDetected reports false for a format that loads only when the caller names it.
+// True does not mean that detection finds f by its content.
 func (f Format) IsAutoDetected() bool {
 	return f.fact().autoDetected
 }
