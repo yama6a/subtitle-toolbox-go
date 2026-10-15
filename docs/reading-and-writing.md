@@ -15,7 +15,7 @@ err = stbox.Write(f, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF}
 | Field | Zero value | Check of `Validate` |
 |:--- |:--- |:--- |
 | `Format` | detect the format | none. A format without a reader returns an error that matches `ErrUnsupportedFormat` at read time |
-| `Encoding` | detect the encoding | |
+| `Encoding` | detect the encoding | a name of [encodings.md](encodings.md), compared without case |
 | `Lenient` | strict mode: the first broken block returns the error. See [lenient-parsing.md](lenient-parsing.md) | |
 | `LastCueDuration` | 5 s | 0 or more. 0 gives a cue that ends where it starts |
 
@@ -25,7 +25,7 @@ err = stbox.Write(f, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF}
 ## Read steps
 
 1. Read the whole input into memory.
-2. Decode the text to UTF-8. `ReadInfo.SourceEncoding` holds the encoding.
+2. Decode the text to UTF-8, as [encodings.md](encodings.md) says. `ReadInfo.SourceEncoding` holds the encoding.
 3. Detect the format, unless `Format` is set. Empty content without `Format` returns `ErrUnknownFormat`.
 4. Run the reader of the format.
 5. Return the subtitle and a `ReadInfo` with the format, the source encoding and the warnings. On error, the subtitle is nil and `ReadInfo` is the zero value.
@@ -36,12 +36,13 @@ Every text reader runs these steps in this order, before its own parsing. [inter
 
 | Step | Both modes | Strict | Lenient |
 |---:|:--- |:--- |:--- |
-| 1 | remove every UTF-8 BOM at the start. Joined files can start with 2 or more | | no warning |
-| 2 | remove the last run of Ctrl-Z (0x1A) when only space, tab, CR and LF follow it. DOS editors end files with it | | no warning |
-| 3 | WebVTT reads each NUL as U+FFFD, as its spec says | | |
-| 4 | | a NUL returns `Line N has a NUL character. Check the encoding of the file.` | step 5 removes the NUL |
-| 5 | remove the bytes 0x00 to 0x08, 0x0B, 0x0C, 0x0E to 0x1F and 0x7F. U+200E, U+200F and other format characters stay | no warning | one warning with the line of the first byte |
-| 6 | content of only space, tab, CR and LF gives an empty subtitle | | the warnings of step 5 stay |
+| 1 | check UTF-8, as [Invalid UTF-8](encodings.md#invalid-utf-8) says | | |
+| 2 | remove every UTF-8 BOM at the start. Joined files can start with 2 or more | | no warning |
+| 3 | remove the last run of Ctrl-Z (0x1A) when only space, tab, CR and LF follow it. DOS editors end files with it | | no warning |
+| 4 | WebVTT reads each NUL as U+FFFD, as its spec says | | |
+| 5 | | a NUL returns `Line N has a NUL character. Check the encoding of the file.` | step 6 removes the NUL |
+| 6 | remove the bytes 0x00 to 0x08, 0x0B, 0x0C, 0x0E to 0x1F and 0x7F. U+200E, U+200F and other format characters stay | no warning | one warning with the line of the first byte |
+| 7 | content of only space, tab, CR and LF gives an empty subtitle | | the warnings of steps 1 and 6 stay |
 
 - **Line numbers**: LF, a run of CRs before LF (CR LF, CR CR LF) and a lone CR each end one line.
 - **Format given**: with `Format` set, empty content gives an empty subtitle with no warning.
