@@ -1,12 +1,11 @@
 package model
 
 import (
-	"fmt"
-	"regexp"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
+
+	"github.com/yama6a/subtitle-toolbox-go/markup"
 )
 
 // Cue is one timed text block. Its fields are plain data. A Subtitle rounds and cleans a cue when it takes it.
@@ -46,9 +45,7 @@ func (c *Cue) AddLine(line string) {
 // The result is rounded to whole milliseconds, and a time below 0 becomes 0.
 func (c *Cue) MapWordTimestamps(fn func(time.Duration) time.Duration) {
 	for i, line := range c.Lines {
-		if strings.Contains(line, "<") {
-			c.Lines[i] = mapWordTimestamps(line, fn)
-		}
+		c.Lines[i] = markup.MapWordTimestamps(line, fn)
 	}
 }
 
@@ -123,25 +120,3 @@ func collapseRuns(s string) string {
 
 // phpTrimSet holds the characters of PHP trim. strings.TrimSpace would also remove U+00A0.
 const phpTrimSet = " \t\n\r\x00\x0b"
-
-var wordTimestamp = regexp.MustCompile(`<(\d{2,}):([0-5]\d):([0-5]\d)\.(\d{3})>`)
-
-const maxWordTimestampHours = int64(time.Duration(1<<63-1) / time.Hour)
-
-func mapWordTimestamps(line string, fn func(time.Duration) time.Duration) string {
-	return wordTimestamp.ReplaceAllStringFunc(line, func(tag string) string {
-		m := wordTimestamp.FindStringSubmatch(tag)
-		hours, err := strconv.ParseInt(m[1], 10, 64)
-		if err != nil || hours >= maxWordTimestampHours {
-			return tag
-		}
-		minutes, _ := strconv.Atoi(m[2])
-		seconds, _ := strconv.Atoi(m[3])
-		millis, _ := strconv.Atoi(m[4])
-		d := time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute +
-			time.Duration(seconds)*time.Second + time.Duration(millis)*time.Millisecond
-		d = max(0, fn(d).Round(time.Millisecond))
-		ms := d.Milliseconds()
-		return fmt.Sprintf("<%02d:%02d:%02d.%03d>", ms/3_600_000, ms/60_000%60, ms/1000%60, ms%1000)
-	})
-}
