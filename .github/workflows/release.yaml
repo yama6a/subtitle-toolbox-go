@@ -28,6 +28,7 @@ jobs:
     needs: version
     if: needs.version.outputs.version != ''
     runs-on: ubuntu-26.04-arm
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
@@ -68,6 +69,7 @@ jobs:
   release:
     needs: [version, archives, image]
     runs-on: ubuntu-26.04-arm
+    timeout-minutes: 15
     permissions:
       contents: write # create the tag and the GitHub release
       id-token: write # mints the OIDC token the archive attestation is signed with
