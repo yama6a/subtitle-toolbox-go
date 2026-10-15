@@ -73,6 +73,15 @@ const (
 	TopRight     = model.TopRight
 )
 
+// The named metadata keys. Other keys are free.
+const (
+	MetadataTitle    = model.MetadataTitle
+	MetadataAuthor   = model.MetadataAuthor
+	MetadataArtist   = model.MetadataArtist
+	MetadataAlbum    = model.MetadataAlbum
+	MetadataLanguage = model.MetadataLanguage
+)
+
 // The line endings.
 const (
 	LF   = model.LF
