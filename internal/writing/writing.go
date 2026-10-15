@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
-
-const utf8BOM = "\ufeff"
 
 // Finish converts the LF output of a writer to the line ending and then applies the BOM rule.
 // formatBOM is the BOM default of the format. Finish never changes body.
@@ -20,15 +19,12 @@ func Finish(body []byte, common model.CommonWriteOptions, formatBOM bool) []byte
 	}
 	switch common.BOM {
 	case model.BOMAdd:
-		return addBOM(out)
+		return textenc.AddUTF8BOM(out)
 	case model.BOMRemove:
-		for bytes.HasPrefix(out, []byte(utf8BOM)) {
-			out = out[len(utf8BOM):]
-		}
-		return out
+		return textenc.TrimUTF8BOMs(out)
 	case model.BOMDefault:
 		if formatBOM {
-			return addBOM(out)
+			return textenc.AddUTF8BOM(out)
 		}
 	}
 	return out
@@ -51,11 +47,4 @@ func toCRLF(body []byte) []byte {
 		out = append(out, b)
 	}
 	return out
-}
-
-func addBOM(out []byte) []byte {
-	if bytes.HasPrefix(out, []byte(utf8BOM)) {
-		return out
-	}
-	return append([]byte(utf8BOM), out...)
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -54,6 +55,29 @@ func stubWrite(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ Writ
 
 var stubRow = formatFuncs{format: stubFormat, read: stubRead, write: stubWrite}
 
+func utf8Text(content string) textenc.Decoded {
+	return textenc.Decoded{Text: []byte(content), Encoding: "UTF-8"}
+}
+
+func TestDecodeWarningComesFirstInLenientMode(t *testing.T) {
+	t.Parallel()
+
+	const msg = "The content is UTF-16LE without a BOM."
+	text := textenc.Decoded{Text: []byte("Hel\x01lo\n"), Encoding: "UTF-16LE", Warning: msg}
+	_, info, err := read(stubRow, text, ReadOptions{Lenient: true})
+	require.NoError(t, err)
+	assert.Equal(t, "UTF-16LE", info.SourceEncoding)
+	assert.Equal(t, []ParseWarning{
+		{Message: msg, Line: NoLine, Block: NoBlock, Action: Repaired},
+		{Message: "The file has control characters, the first on line 1. The parser removed them.", Line: 1, Block: NoBlock, Action: Repaired},
+	}, info.Warnings)
+
+	_, info, err = read(stubRow, text, ReadOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, "UTF-16LE", info.SourceEncoding)
+	assert.Empty(t, info.Warnings)
+}
+
 func TestReadBuildsReadInfo(t *testing.T) {
 	t.Parallel()
 
@@ -74,7 +98,7 @@ func TestReadBuildsReadInfo(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, info, err := read(stubRow, decode([]byte(tt.content)), ReadOptions{Lenient: tt.lenient})
+			s, info, err := read(stubRow, utf8Text(tt.content), ReadOptions{Lenient: tt.lenient})
 			require.NoError(t, err)
 			assert.Equal(t, tt.cues, s.Len())
 			assert.Equal(t, stubFormat, info.Format)
@@ -87,7 +111,7 @@ func TestReadBuildsReadInfo(t *testing.T) {
 func TestReadErrorGivesNoSubtitleAndNoInfo(t *testing.T) {
 	t.Parallel()
 
-	s, info, err := read(stubRow, decode([]byte("Hello\nThe fer\x00ry\n")), ReadOptions{})
+	s, info, err := read(stubRow, utf8Text("Hello\nThe fer\x00ry\n"), ReadOptions{})
 	var perr *ParseError
 	require.ErrorAs(t, err, &perr)
 	assert.Equal(t, 2, perr.Line)
@@ -101,7 +125,7 @@ func TestReadErrorGivesNoSubtitleAndNoInfo(t *testing.T) {
 func TestEachReadStartsWithoutWarnings(t *testing.T) {
 	t.Parallel()
 
-	broken := decode([]byte("Hello\nThe fer\x00ry\n"))
+	broken := utf8Text("Hello\nThe fer\x00ry\n")
 	_, info, err := read(stubRow, broken, ReadOptions{Lenient: true})
 	require.NoError(t, err)
 	assert.Equal(t, []ParseWarning{{
@@ -111,7 +135,7 @@ func TestEachReadStartsWithoutWarnings(t *testing.T) {
 		Action:  Repaired,
 	}}, info.Warnings)
 
-	_, info, err = read(stubRow, decode([]byte("Hello\n")), ReadOptions{Lenient: true})
+	_, info, err = read(stubRow, utf8Text("Hello\n"), ReadOptions{Lenient: true})
 	require.NoError(t, err)
 	assert.Empty(t, info.Warnings)
 
@@ -128,7 +152,7 @@ func TestReadPassesTheCommonOptions(t *testing.T) {
 		return &Subtitle{}, nil, nil
 	}}
 	last := new(7 * time.Second)
-	_, _, err := read(row, decode(nil), ReadOptions{Lenient: true, LastCueDuration: last, Encoding: "UTF-8"})
+	_, _, err := read(row, utf8Text(""), ReadOptions{Lenient: true, LastCueDuration: last, Encoding: "UTF-8"})
 	require.NoError(t, err)
 	assert.Equal(t, model.CommonReadOptions{Lenient: true, LastCueDuration: last}, got)
 }
@@ -155,7 +179,7 @@ func TestEmptyContentGivesAnEmptySubtitle(t *testing.T) {
 				t.Run(fmt.Sprintf("%s, %s, lenient %t", row.format, content.name, lenient), func(t *testing.T) {
 					t.Parallel()
 
-					s, info, err := read(row, decode([]byte(content.text)), ReadOptions{Format: row.format, Lenient: lenient})
+					s, info, err := read(row, utf8Text(content.text), ReadOptions{Format: row.format, Lenient: lenient})
 					require.NoError(t, err)
 					assert.Zero(t, s.Len())
 					assert.Empty(t, info.Warnings)

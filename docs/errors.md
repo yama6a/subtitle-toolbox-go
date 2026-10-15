@@ -17,7 +17,7 @@ fmt.Println(err) // srt: line 6: Block #1 has no timing line on its second line.
 
 | Go | Returned for | PHP class and code |
 |:--- |:--- |:--- |
-| `ErrParse`, `*ParseError` | content that a reader cannot read. A byte that is not valid in the source encoding, in strict mode. A library JSON document with a wrong shape | `ParsingException` 100 |
+| `ErrParse`, `*ParseError` | content that a reader cannot read. A byte that is not valid in the source encoding, in both modes. Invalid UTF-8 in strict mode, for the formats of [Invalid UTF-8](encodings.md#invalid-utf-8). A library JSON document with a wrong shape | `ParsingException` 100 |
 | `ErrUnsupportedFormat` | a read of a format without a reader, such as `txt`. A write of a format without a writer. A `Format` value that no registry row lists, such as `Format("foo")` | `UnsupportedFormatException` 102 |
 | `ErrUnknownFormat` | detection found no format. Also matches `ErrUnsupportedFormat` | `UnknownFormatException` 106, a subclass of 102 |
 | `ErrInvalidArgument`, `*InvalidArgumentError` | an invalid option or argument, for example frame rate 0 or NaN. An unknown `ReadOptions.Encoding`. A retime or `Append` that moves a cue time to 100000 h or more, for example `Scale(1e300)`. MicroDVD output without a frame rate. CSV output with frame times and no frame rate. Format data that fails its type check in a setter | `InvalidArgumentException` 104 |

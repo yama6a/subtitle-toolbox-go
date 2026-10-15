@@ -1,0 +1,19 @@
+<SAMI>
+<HEAD>
+<TITLE>기차 안내</TITLE>
+<STYLE TYPE="text/css">
+<!--
+P { font-family: Gulim; text-align: center; }
+.KRCC { Name: Korean; lang: ko-KR; SAMIType: CC; }
+-->
+</STYLE>
+</HEAD>
+<BODY>
+<SYNC Start=1000><P Class=KRCC>안녕하세요.<br>기차가 곧 도착합니다.
+<SYNC Start=3500><P Class=KRCC>&nbsp;
+<SYNC Start=4000><P Class=KRCC>똠방각하가 왔습니다.
+<SYNC Start=6500><P Class=KRCC>&nbsp;
+<SYNC Start=7000><P Class=KRCC><font color="#ffff00">감사합니다.</font>
+<SYNC Start=9000><P Class=KRCC>&nbsp;
+</BODY>
+</SAMI>
