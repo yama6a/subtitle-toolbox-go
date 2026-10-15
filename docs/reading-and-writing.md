@@ -43,7 +43,7 @@ Every text reader runs these steps in this order, before its own parsing. [inter
 | 5 | remove the bytes 0x00 to 0x08, 0x0B, 0x0C, 0x0E to 0x1F and 0x7F. U+200E, U+200F and other format characters stay | no warning | one warning with the line of the first byte |
 | 6 | content of only space, tab, CR and LF gives an empty subtitle | | the warnings of step 5 stay |
 
-- **Line numbers**: LF, CR LF and a lone CR each end a line.
+- **Line numbers**: LF, a run of CRs before LF (CR LF, CR CR LF) and a lone CR each end one line.
 - **Format given**: with `Format` set, empty content gives an empty subtitle with no warning.
 
 ## Last cue default
