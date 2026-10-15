@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strconv"
+
+	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 )
 
 // Load reads the subtitle file at path. On error the subtitle is nil and ReadInfo is the zero value.
@@ -42,13 +45,15 @@ func parse(content []byte, opts ReadOptions) (*Subtitle, ReadInfo, error) {
 			return nil, ReadInfo{}, err
 		}
 	}
-	text := decode(content)
+	text, err := textenc.Decode(content, opts.Encoding)
+	if err != nil {
+		return nil, ReadInfo{}, &ParseError{Format: opts.Format, Msg: err.Error()}
+	}
 	if opts.Format == "" {
-		f, ok := Detect(text.content)
+		f, ok := Detect(text.Text)
 		if !ok {
 			return nil, ReadInfo{}, ErrUnknownFormat
 		}
-		var err error
 		if row, err = readable(f); err != nil {
 			return nil, ReadInfo{}, err
 		}
@@ -56,24 +61,21 @@ func parse(content []byte, opts ReadOptions) (*Subtitle, ReadInfo, error) {
 	return read(row, text, opts)
 }
 
-// decoded is the UTF-8 content of an input and the encoding it was read in.
-type decoded struct {
-	content  []byte
-	encoding string
-}
-
-// decode passes the content on as UTF-8 until the decoders of
-// https://github.com/yama6a/subtitle-toolbox-go/issues/16 replace it.
-func decode(content []byte) decoded {
-	return decoded{content: content, encoding: "UTF-8"}
-}
-
-func read(row formatFuncs, text decoded, opts ReadOptions) (*Subtitle, ReadInfo, error) {
-	s, warnings, err := row.read(bytes.NewReader(text.content), opts.common(), opts)
+func read(row formatFuncs, text textenc.Decoded, opts ReadOptions) (*Subtitle, ReadInfo, error) {
+	s, warnings, err := row.read(bytes.NewReader(text.Text), opts.common(), opts)
 	if err != nil {
 		return nil, ReadInfo{}, err
 	}
-	return s, ReadInfo{Format: row.format, SourceEncoding: text.encoding, Warnings: warnings}, nil
+	if text.Warning != "" && opts.Lenient {
+		warnings = slices.Insert(warnings, 0, decodeWarning(text.Warning))
+	}
+	return s, ReadInfo{Format: row.format, SourceEncoding: text.Encoding, Warnings: warnings}, nil
+}
+
+// decodeWarning returns a Repaired warning without a line or a block, once model.ParseWarning has the fields of
+// https://github.com/yama6a/subtitle-toolbox-go/issues/17.
+func decodeWarning(string) ParseWarning {
+	return ParseWarning{}
 }
 
 func readable(f Format) (formatFuncs, error) {

@@ -1,0 +1,15 @@
+<SAMI>
+<HEAD>
+<STYLE TYPE="text/css">
+<!--
+.FRFRCC { Name: French; lang: fr-FR; }
+-->
+</STYLE>
+</HEAD>
+<BODY>
+<SYNC Start=1000><P Class=FRFRCC>Le café ouvre à midi.</P></SYNC>
+<SYNC Start=3000><P Class=FRFRCC>&nbsp;</P></SYNC>
+<SYNC Start=4000><P Class=FRFRCC>Caf� noir, s'il vous plaît.</P></SYNC>
+<SYNC Start=6500><P Class=FRFRCC>&nbsp;</P></SYNC>
+</BODY>
+</SAMI>

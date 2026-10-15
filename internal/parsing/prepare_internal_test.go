@@ -215,3 +215,69 @@ func TestNoCues(t *testing.T) {
 		})
 	}
 }
+
+// Ports the invalid UTF-8 cases of tests/EncodingTest.php of subtitle-toolbox-php that the pre-pass decides.
+func TestPrepareInvalidUTF8(t *testing.T) {
+	t.Parallel()
+
+	const (
+		content = "\ufeffCaf\u00e9 noir, caf\xE9 noir\x01\n"
+		msg     = "The content is not valid UTF-8. The first bad byte is at offset 18. Set the source encoding of the file."
+	)
+	tests := []struct {
+		name     string
+		lenient  bool
+		replaces bool
+		want     string
+		warnings []warning
+		wantErr  bool
+	}{
+		{name: "strict keeps the bytes", want: "Caf\u00e9 noir, caf\xE9 noir\n"},
+		{
+			name:     "lenient keeps the bytes and warns first",
+			lenient:  true,
+			want:     "Caf\u00e9 noir, caf\xE9 noir\n",
+			warnings: []warning{{msg: msg, action: model.Repaired}, controlWarning(1)},
+		},
+		{name: "strict fails for a format that replaces", replaces: true, wantErr: true},
+		{
+			name:     "lenient replaces each bad byte",
+			lenient:  true,
+			replaces: true,
+			want:     "Caf\u00e9 noir, caf\ufffd noir\n",
+			warnings: []warning{{msg: msg + " The parser read the bad bytes as U+FFFD.", action: model.Repaired}, controlWarning(1)},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s := NewState(model.SAMI, model.CommonReadOptions{Lenient: tt.lenient})
+			got, ok, err := s.Prepare([]byte(content), tt.replaces)
+			if tt.wantErr {
+				var perr *model.ParseError
+				require.ErrorAs(t, err, &perr)
+				assert.Equal(t, model.ParseError{Format: model.SAMI, Msg: msg}, *perr)
+				assert.Empty(t, s.warnings)
+				return
+			}
+			require.NoError(t, err)
+			assert.True(t, ok)
+			assert.Equal(t, tt.want, string(got))
+			assert.Equal(t, tt.warnings, s.warnings)
+		})
+	}
+}
+
+func TestPrepareValidUTF8GivesNoWarning(t *testing.T) {
+	t.Parallel()
+
+	for _, replaces := range []bool{false, true} {
+		s := NewState(model.SAMI, model.CommonReadOptions{Lenient: true})
+		got, ok, err := s.Prepare([]byte("Caf\u00e9 \ufffd\n"), replaces)
+		require.NoError(t, err)
+		assert.True(t, ok)
+		assert.Equal(t, "Caf\u00e9 \ufffd\n", string(got))
+		assert.Empty(t, s.warnings)
+	}
+}

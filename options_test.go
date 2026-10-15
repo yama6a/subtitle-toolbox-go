@@ -27,6 +27,13 @@ func TestReadOptionsValidate(t *testing.T) {
 		{name: "zero value", opts: stbox.ReadOptions{}},
 		{name: "last cue duration 0", opts: stbox.ReadOptions{LastCueDuration: new(time.Duration(0))}},
 		{name: "last cue duration 7 s", opts: stbox.ReadOptions{LastCueDuration: new(7 * time.Second)}},
+		{name: "known encoding", opts: stbox.ReadOptions{Encoding: "Windows-1252"}},
+		{name: "alias in lower case", opts: stbox.ReadOptions{Encoding: "sjis"}},
+		{
+			name:    "unknown encoding",
+			opts:    stbox.ReadOptions{Encoding: "CP1125"},
+			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.Encoding", Msg: `The encoding "CP1125" is unknown.`},
+		},
 		{
 			name: "negative last cue duration",
 			opts: stbox.ReadOptions{LastCueDuration: new(-time.Second)},

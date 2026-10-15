@@ -1,0 +1,4 @@
+{"events": [
+  {"tStartMs": 1000, "dDurationMs": 2000, "segs": [{"utf8": "Le café ouvre à midi."}]},
+  {"tStartMs": 4000, "dDurationMs": 2500, "segs": [{"utf8": "Caf� noir, s'il vous plaît."}]}
+]}

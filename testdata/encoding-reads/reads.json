@@ -1,0 +1,905 @@
+[
+    {
+        "file": "arabic-iso-8859-6.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "ISO-8859-6",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked ISO-8859-6. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "arabic-iso-8859-6.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "arabic-utf-8.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "UTF-8",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "arabic-utf-8.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "UTF-8",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "arabic-windows-1256.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "Windows-1256",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked Windows-1256. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "arabic-windows-1256.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "chinese-big5.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "CP950",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked CP950. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "chinese-big5.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "chinese-gbk.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "GBK",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked GBK. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "chinese-gbk.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "czech-windows-1250.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "Windows-1250",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked Windows-1250. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "czech-windows-1250.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "estonian-windows-1257.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "Windows-1257",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked Windows-1257. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "estonian-windows-1257.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "french-windows-1252.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked Windows-1252. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "french-windows-1252.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "greek-windows-1253.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "Windows-1253",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked Windows-1253. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "greek-windows-1253.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.ass",
+        "encoding": "",
+        "format": "ass",
+        "sourceEncoding": "UTF-8",
+        "cues": 2,
+        "warnings": [
+            "The content is not valid UTF-8. The first bad byte is at offset 609. Set the source encoding of the file."
+        ]
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.ass",
+        "encoding": "Windows-1252",
+        "format": "ass",
+        "sourceEncoding": "Windows-1252",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.csv",
+        "encoding": "",
+        "format": "csv",
+        "sourceEncoding": "UTF-8",
+        "cues": 2,
+        "warnings": [
+            "The content is not valid UTF-8. The first bad byte is at offset 95. Set the source encoding of the file."
+        ]
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.csv",
+        "encoding": "Windows-1252",
+        "format": "csv",
+        "sourceEncoding": "Windows-1252",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.json3",
+        "encoding": "",
+        "format": "youtube",
+        "sourceEncoding": "UTF-8",
+        "cues": 2,
+        "warnings": [
+            "The content is not valid UTF-8. The first bad byte is at offset 167. Set the source encoding of the file."
+        ]
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.json3",
+        "encoding": "Windows-1252",
+        "format": "youtube",
+        "sourceEncoding": "Windows-1252",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.sbv",
+        "encoding": "",
+        "format": "sbv",
+        "sourceEncoding": "UTF-8",
+        "cues": 2,
+        "warnings": [
+            "The content is not valid UTF-8. The first bad byte is at offset 76. Set the source encoding of the file."
+        ]
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.sbv",
+        "encoding": "Windows-1252",
+        "format": "sbv",
+        "sourceEncoding": "Windows-1252",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.smi",
+        "encoding": "",
+        "format": "sami",
+        "sourceEncoding": "UTF-8",
+        "cues": 2,
+        "warnings": [
+            "The content is not valid UTF-8. The first bad byte is at offset 265. Set the source encoding of the file. The parser read the bad bytes as U+FFFD."
+        ],
+        "strictError": "The content is not valid UTF-8. The first bad byte is at offset 265. Set the source encoding of the file."
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.smi",
+        "encoding": "Windows-1252",
+        "format": "sami",
+        "sourceEncoding": "Windows-1252",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "UTF-8",
+        "cues": 2,
+        "warnings": [
+            "The content is not valid UTF-8. The first bad byte is at offset 92. Set the source encoding of the file."
+        ]
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.srv1",
+        "encoding": "",
+        "format": "youtube",
+        "sourceEncoding": "UTF-8",
+        "cues": 2,
+        "warnings": [
+            "The content is not valid UTF-8. The first bad byte is at offset 140. Set the source encoding of the file. The parser read the bad bytes as U+FFFD."
+        ],
+        "strictError": "The content is not valid UTF-8. The first bad byte is at offset 140. Set the source encoding of the file."
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.srv1",
+        "encoding": "Windows-1252",
+        "format": "youtube",
+        "sourceEncoding": "Windows-1252",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.sub",
+        "encoding": "",
+        "format": "subviewer",
+        "sourceEncoding": "UTF-8",
+        "cues": 2,
+        "warnings": [
+            "The content is not valid UTF-8. The first bad byte is at offset 76. Set the source encoding of the file."
+        ]
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.sub",
+        "encoding": "Windows-1252",
+        "format": "subviewer",
+        "sourceEncoding": "Windows-1252",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.ttml",
+        "encoding": "",
+        "format": "ttml",
+        "sourceEncoding": "UTF-8",
+        "cues": 2,
+        "warnings": [
+            "The content is not valid UTF-8. The first bad byte is at offset 240. Set the source encoding of the file. The parser read the bad bytes as U+FFFD."
+        ],
+        "strictError": "The content is not valid UTF-8. The first bad byte is at offset 240. Set the source encoding of the file."
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.ttml",
+        "encoding": "Windows-1252",
+        "format": "ttml",
+        "sourceEncoding": "Windows-1252",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.vtt",
+        "encoding": "",
+        "format": "vtt",
+        "sourceEncoding": "UTF-8",
+        "cues": 2,
+        "warnings": [
+            "The content is not valid UTF-8. The first bad byte is at offset 96. Set the source encoding of the file."
+        ]
+    },
+    {
+        "file": "invalid-utf-8/one-bad-byte.vtt",
+        "encoding": "Windows-1252",
+        "format": "vtt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "japanese-cp932.ass",
+        "encoding": "",
+        "format": "ass",
+        "sourceEncoding": "CP932",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked CP932. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "japanese-cp932.ass",
+        "encoding": "Windows-1252",
+        "error": "Cannot convert the content from Windows-1252 to UTF-8.",
+        "strictError": "Cannot convert the content from Windows-1252 to UTF-8."
+    },
+    {
+        "file": "japanese-euc-jp.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "EUC-JP",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked EUC-JP. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "japanese-euc-jp.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "japanese-shift_jis.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "CP932",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked CP932. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "japanese-shift_jis.srt",
+        "encoding": "Windows-1252",
+        "error": "Cannot convert the content from Windows-1252 to UTF-8.",
+        "strictError": "Cannot convert the content from Windows-1252 to UTF-8."
+    },
+    {
+        "file": "korean-cp949.smi",
+        "encoding": "",
+        "format": "sami",
+        "sourceEncoding": "CP949",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked CP949. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "korean-cp949.smi",
+        "encoding": "Windows-1252",
+        "format": "sami",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "notepad-utf-16le.vtt",
+        "encoding": "",
+        "format": "vtt",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "notepad-utf-16le.vtt",
+        "encoding": "Windows-1252",
+        "format": "vtt",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "polish-iso-8859-2.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "ISO-8859-2",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked ISO-8859-2. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "polish-iso-8859-2.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "russian-koi8-r.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "KOI8-R",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked KOI8-R. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "russian-koi8-r.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "russian-windows-1251.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "Windows-1251",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked Windows-1251. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "russian-windows-1251.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "thai-tis-620.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "Windows-874",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked Windows-874. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "thai-tis-620.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "thai-windows-874.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "Windows-874",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked Windows-874. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "thai-windows-874.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "turkish-windows-1254.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "Windows-1254",
+        "cues": 3,
+        "warnings": [
+            "The content is not UTF-8. Detection picked Windows-1254. Set the source encoding if that is wrong."
+        ]
+    },
+    {
+        "file": "turkish-windows-1254.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "Windows-1252",
+        "cues": 3,
+        "warnings": []
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.ass",
+        "encoding": "",
+        "format": "ass",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.ass",
+        "encoding": "Windows-1252",
+        "format": "ass",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.csv",
+        "encoding": "",
+        "format": "csv",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.csv",
+        "encoding": "Windows-1252",
+        "format": "csv",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.sbv",
+        "encoding": "",
+        "format": "sbv",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.sbv",
+        "encoding": "Windows-1252",
+        "format": "sbv",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.smi",
+        "encoding": "",
+        "format": "sami",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.smi",
+        "encoding": "Windows-1252",
+        "format": "sami",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.sub",
+        "encoding": "",
+        "format": "microdvd",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.sub",
+        "encoding": "Windows-1252",
+        "format": "microdvd",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.ttml",
+        "encoding": "",
+        "format": "ttml",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.ttml",
+        "encoding": "Windows-1252",
+        "format": "ttml",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.vtt",
+        "encoding": "",
+        "format": "vtt",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16be-no-bom.vtt",
+        "encoding": "Windows-1252",
+        "format": "vtt",
+        "sourceEncoding": "UTF-16BE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16BE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.ass",
+        "encoding": "",
+        "format": "ass",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.ass",
+        "encoding": "Windows-1252",
+        "format": "ass",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.csv",
+        "encoding": "",
+        "format": "csv",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.csv",
+        "encoding": "Windows-1252",
+        "format": "csv",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.sbv",
+        "encoding": "",
+        "format": "sbv",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.sbv",
+        "encoding": "Windows-1252",
+        "format": "sbv",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.smi",
+        "encoding": "",
+        "format": "sami",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.smi",
+        "encoding": "Windows-1252",
+        "format": "sami",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.srt",
+        "encoding": "",
+        "format": "srt",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.srt",
+        "encoding": "Windows-1252",
+        "format": "srt",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.sub",
+        "encoding": "",
+        "format": "microdvd",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.sub",
+        "encoding": "Windows-1252",
+        "format": "microdvd",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.ttml",
+        "encoding": "",
+        "format": "ttml",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.ttml",
+        "encoding": "Windows-1252",
+        "format": "ttml",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.vtt",
+        "encoding": "",
+        "format": "vtt",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16-no-bom/utf-16le-no-bom.vtt",
+        "encoding": "Windows-1252",
+        "format": "vtt",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": [
+            "The content is UTF-16LE without a BOM."
+        ]
+    },
+    {
+        "file": "utf-16le-bom.ttml",
+        "encoding": "",
+        "format": "ttml",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "utf-16le-bom.ttml",
+        "encoding": "Windows-1252",
+        "format": "ttml",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "utf-8-declared-utf-16.ttml",
+        "encoding": "",
+        "format": "ttml",
+        "sourceEncoding": "UTF-8",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "utf-8-declared-utf-16.ttml",
+        "encoding": "Windows-1252",
+        "format": "ttml",
+        "sourceEncoding": "UTF-8",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "youtube-utf-16le-bom.srv1",
+        "encoding": "",
+        "format": "youtube",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": []
+    },
+    {
+        "file": "youtube-utf-16le-bom.srv1",
+        "encoding": "Windows-1252",
+        "format": "youtube",
+        "sourceEncoding": "UTF-16LE",
+        "cues": 2,
+        "warnings": []
+    }
+]

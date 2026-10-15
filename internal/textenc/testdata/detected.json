@@ -1,0 +1,74 @@
+{
+    "arabic-iso-8859-6.srt": {
+        "encoding": "ISO-8859-6",
+        "text": "شكرا، يجب أن أعود إلى البيت."
+    },
+    "arabic-windows-1256.srt": {
+        "encoding": "Windows-1256",
+        "text": "شكرا جزيلا."
+    },
+    "chinese-big5.srt": {
+        "encoding": "CP950",
+        "text": "謝謝，我得回家了。"
+    },
+    "chinese-gbk.srt": {
+        "encoding": "GBK",
+        "text": "谢谢，我得回家了。"
+    },
+    "czech-windows-1250.srt": {
+        "encoding": "Windows-1250",
+        "text": "Děkuji, už musím jít domů."
+    },
+    "estonian-windows-1257.srt": {
+        "encoding": "Windows-1257",
+        "text": "Unustasin jälle võtmed koju!\nNurgal olev kohvik on juba avatud."
+    },
+    "french-windows-1252.srt": {
+        "encoding": "Windows-1252",
+        "text": "<i>Où êtes-vous, Noël ?</i>"
+    },
+    "greek-windows-1253.srt": {
+        "encoding": "Windows-1253",
+        "text": "Ευχαριστώ, πρέπει να φύγω."
+    },
+    "japanese-cp932.ass": {
+        "encoding": "CP932",
+        "text": "時刻表はソファの上です。"
+    },
+    "japanese-euc-jp.srt": {
+        "encoding": "EUC-JP",
+        "text": "ありがとう、もう帰らなきゃ。"
+    },
+    "japanese-shift_jis.srt": {
+        "encoding": "CP932",
+        "text": "駅まで歩きましょう。"
+    },
+    "korean-cp949.smi": {
+        "encoding": "CP949",
+        "text": "똠방각하가 왔습니다."
+    },
+    "polish-iso-8859-2.srt": {
+        "encoding": "ISO-8859-2",
+        "text": "Dziękuję, muszę już iść."
+    },
+    "russian-koi8-r.srt": {
+        "encoding": "KOI8-R",
+        "text": "Спасибо, мне пора домой."
+    },
+    "russian-windows-1251.srt": {
+        "encoding": "Windows-1251",
+        "text": "Ёлка стоит в углу."
+    },
+    "thai-tis-620.srt": {
+        "encoding": "Windows-874",
+        "text": "ฉันลืมกุญแจไว้ที่บ้านอีกแล้ว\nร้านกาแฟตรงหัวมุมเปิดแล้ว"
+    },
+    "thai-windows-874.srt": {
+        "encoding": "Windows-874",
+        "text": "ขอบคุณมาก ฉันต้องกลับบ้านแล้ว"
+    },
+    "turkish-windows-1254.srt": {
+        "encoding": "Windows-1254",
+        "text": "Teşekkürler, şimdi eve gitmeliyim."
+    }
+}

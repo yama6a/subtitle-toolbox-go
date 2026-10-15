@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -18,7 +19,8 @@ func FuzzPrepare(f *testing.F) {
 	f.Fuzz(func(t *testing.T, content []byte, lenient, replaceNUL bool) {
 		s := parsing.NewState(model.SubRip, model.CommonReadOptions{Lenient: lenient})
 		s.ReplaceNUL = replaceNUL
-		got, ok, err := s.Prepare(bytes.Clone(content), false)
+		replaces := replaceNUL && lenient
+		got, ok, err := s.Prepare(bytes.Clone(content), replaces)
 		if err != nil {
 			if lenient || replaceNUL || !bytes.ContainsRune(content, 0) || !errors.Is(err, model.ErrParse) {
 				t.Fatalf("Prepare(%q) returned %v", content, err)
@@ -37,6 +39,9 @@ func FuzzPrepare(f *testing.F) {
 			if b < 0x20 && b != '\t' && b != '\n' && b != '\r' || b == 0x7f {
 				t.Fatalf("Prepare(%q) kept the control byte %#x", content, b)
 			}
+		}
+		if replaces && !utf8.Valid(got) {
+			t.Fatalf("Prepare(%q) kept invalid UTF-8 for a format that replaces it", content)
 		}
 		if len(bytes.Trim(got, " \t\r\n")) == 0 {
 			t.Fatalf("Prepare(%q) returned blank content as text", content)

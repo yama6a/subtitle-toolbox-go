@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
@@ -12,7 +13,8 @@ import (
 type ReadOptions struct {
 	// Format is the format of the input. The zero value detects the format.
 	Format Format
-	// Encoding is the name of the source encoding. The zero value detects the encoding.
+	// Encoding is the name of the source encoding, one of Encodings, compared without case. The zero value detects
+	// the encoding. A BOM and UTF-16 without a BOM win over it, and valid UTF-8 without a NUL byte stays UTF-8.
 	Encoding string
 	// Lenient skips or repairs broken blocks and reports each as a warning. False stops at the first broken block.
 	// A lenient read with warnings returns a nil error.
@@ -35,7 +37,8 @@ type WriteOptions struct {
 type ReadInfo struct {
 	// Format is the format that the read used.
 	Format Format
-	// SourceEncoding is the encoding of the input, "" for a binary format.
+	// SourceEncoding is the encoding of the input: ReadOptions.Encoding as written, or the canonical name of the
+	// encoding that the read picked, for example "UTF-8" or "Windows-1252". It is "" for a binary format.
 	SourceEncoding string
 	// Warnings holds every warning of the read, in read order. A strict read can hold warnings too,
 	// for repairs that a reader makes in both modes.
@@ -44,6 +47,14 @@ type ReadInfo struct {
 
 // Validate checks every field of o, also the fields of formats that a read does not use.
 func (o ReadOptions) Validate() error {
+	if o.Encoding != "" {
+		if _, err := textenc.Lookup(o.Encoding); err != nil {
+			return &InvalidArgumentError{
+				Option: "ReadOptions.Encoding",
+				Msg:    "The encoding " + strconv.Quote(o.Encoding) + " is unknown.",
+			}
+		}
+	}
 	if o.LastCueDuration != nil && *o.LastCueDuration < 0 {
 		return &InvalidArgumentError{
 			Option: "ReadOptions.LastCueDuration",
@@ -76,4 +87,9 @@ func (o ReadOptions) common() model.CommonReadOptions {
 
 func (o WriteOptions) common() model.CommonWriteOptions {
 	return model.CommonWriteOptions{LineEnding: o.LineEnding, BOM: o.BOM, StripTags: o.StripTags}
+}
+
+// Encodings returns the canonical names that ReadOptions.Encoding accepts, without the aliases of docs/encodings.md.
+func Encodings() []string {
+	return textenc.Names()
 }
