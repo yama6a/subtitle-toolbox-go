@@ -1,0 +1,14 @@
+{
+  // The shared presets carry the grouping, automerge and digest-pinning rules. Only what is
+  // specific to this repo lives below.
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "github>yama6a/gha:default.json5",
+    "github>yama6a/gha:go.json5",
+  ],
+
+  // ci.yaml fails a PR without a release label. No PR cuts a release before v1.0.0.
+  labels: ["skip-release"],
+
+  packageRules: [],
+}
