@@ -87,3 +87,53 @@
 | yama6a/subtitle-toolbox-php, yama6a/php-glyph-ocr | MIT, same owner | port freely. Third-party credits in a ported file move with the code |
 | The Go standard library | BSD-3-Clause | adapt with credit |
 | `golang.org/x/text`, `github.com/rivo/uniseg`, `github.com/Eyevinn/mp4ff`, `github.com/asticode/go-astits`, `github.com/dlclark/regexp2` | the `LICENSE` file of each module at the version in `go.mod` | import only. The binary links them, so each has a section in `THIRD_PARTY_NOTICES.md` |
+
+## API rules
+
+Every exported identifier is a promise to importers until the next major release. Reviewers check each PR against these rules. [docs/compatibility.md](docs/compatibility.md) states what a release may change.
+
+`internal/apicheck/names_test.go` checks part of the rules on exported names:
+
+- No name starts with `Get` or `Find` (N5).
+- No name holds `Colour`, `Fps`, `Secs`, `Seconds` or `Millis` (N4 and the time rule).
+- Each exported field of an options struct has a doc comment (N20). An options struct is a struct whose name ends in `Options`, or a struct with a `Validate` method.
+
+Its exception table names the rule and the reason for each exception.
+
+### General rules
+
+| Topic | Rule |
+|:--- |:--- |
+| Time | Every time and duration in the API is a `time.Duration`. Parsers and setters round it to whole milliseconds with `d.Round(time.Millisecond)`, which rounds half away from zero. Example: 1.0005 s becomes 1.001 s. No name carries a unit: `LastCueDuration`, not `LastCueSeconds` |
+| Options | One `ReadOptions` and one `WriteOptions` in the root package, with one typed field per format |
+| Logging | None. The library never writes to stdout, stderr or a logger. It returns warnings and reports. The CLI prints plain messages to stderr. This is a documented exception to the org rule "Go repos log with zap" |
+| Majors | A break lands only in the issue that opens a major line. The major release moves the module path to `/vN` |
+| Errors | Wrap with `%w`. Sentinels `ErrX` live in `errors.go`. Error types `XError` have an `Unwrap` method. Interfaces get compile-time checks |
+| Comments | A doc comment on each exported identifier, one sentence that starts with the name |
+| Go version | `go 1.27.2` in `go.mod`, no `toolchain` line. Renovate raises the `go` line |
+
+### Naming rules
+
+| # | Rule | Example |
+|---:|:--- |:--- |
+| N1 | A `Format` value is the CLI format name. Format data keys use the same value. No aliases | `"srt"`, `"vtt"`, `"ass"`, `"ttml"`, `"sami"`, `"sbv"`, `"microdvd"`, `"mpl2"`, `"tmplayer"`, `"mpsub"`, `"subviewer"`, `"qttext"`, `"lrc"`, `"csv"`, `"tsv"`, `"json"`, `"txt"`. `sub`, `smi` and `ssa` are extensions, never format names |
+| N2 | A format constant carries the format's own name. A format package has the lower-case name from the package map | `SubRip`, `WebVTT`, `ASS`, `TTML`, `SAMI`, `SBV`, `MicroDVD`, `MPL2`, `TMPlayer`, `MPSub`, `SubViewer`, `QuickTimeText`, `LRC`, `CSV`, `TSV`, `JSON`, `PlainText`. Packages `srt`, `webvtt`, `ass` |
+| N3 | Initialisms are all capitals, as Go style and the `revive` linter want. Brand names keep their own capitals | `ID`, `URL`, `BOM`, `CRLF`, `PNG`, `OCR`. `SubRip`, `WebVTT`, `MicroDVD` |
+| N4 | Full words and US spelling | `FrameRate`, not `FPS`. `MaxLinesPerCue`, not `MaxLines`. `Color`, not `Colour` |
+| N5 | A lookup that can miss returns `(T, bool)`. An operation that can fail returns `error`. No `Get` and no `Find` prefix | `FormatFromPath("movie.mkv")` returns `"", false`. `s.CueIndexAt(t)` returns `(int, bool)` |
+| N6 | A method that changes a `*Subtitle` is a verb and never returns a `*Subtitle`. A function or method that returns a `*Subtitle` never changes its input | `s.Shift(2 * time.Second)` changes `s`. `s.Clone()` and `s.Slice(from, to)` return a new subtitle |
+| N7 | A time range is always `From` and `To`. A tolerance is always `TimeTolerance` | `s.CuesBetween(from, to)`, `s.MergeSameTimeCues(timeTolerance)` |
+| N8 | `Append` adds the cues of another subtitle. `Merge` and `Join` combine cues inside one subtitle | `s.Append(other, offset)`, `s.JoinCues(3, 4)`, `s.MergeShortCues(opts)` |
+| N9 | Every closed set of values is a named type with constants. Its zero value is the default and has a name. A set whose values appear in JSON, the CLI or format data is a `string` type with exactly those values. Other sets use `uint8` and `iota`, default first. Each has a `String()` method | `Alignment` zero is `BottomCenter`, and `Numpad()` gives 1 to 9 for JSON. `WarningAction` has `"skipped"` and `"repaired"` |
+| N10 | A setting that may get a third value is an enum from the start, never a `bool` | ellipsis style: none, three dots, the U+2026 character |
+| N11 | Reports and results are structs with named fields. No `map[string]any`, no lists of pairs | `[]WordCount{Word, Count}`, not `map[string]int` |
+| N12 | A service is one package with `Apply(s *model.Subtitle, opts Options) (Report, error)`, or a few functions. It changes the subtitle in place | `hearingimpaired.Apply(s, hearingimpaired.Options{})` |
+| N13 | Plain data uses exported fields: options, reports, results, `Comment`. A type whose values must keep an invariant hides the field and offers methods | `Subtitle` keeps its cues in start order, so its cue list is not an exported field |
+| N14 | Code that users must not call goes in `internal/` or stays unexported. No exported "for internal use" identifiers | `internal/blocks`, `internal/textenc` |
+| N15 | Export an interface only when users implement it. Return concrete types, as the `ireturn` linter wants | OCR engine (3.x), translation engine and HTTP client (4.x) |
+| N16 | A function that starts a process or a network request takes `ctx context.Context` first. A file read does not | `ocr/tesseract`, `translation/deepl` |
+| N17 | Bad input and bad options return an error. A panic is a library bug. No `Must` functions | a fuzz target checks every parser |
+| N18 | No mutable package state and no `init`. A lookup table at package level carries `//nolint:gochecknoglobals // <reason>` | the format registry |
+| N19 | Each options struct has `Validate() error`. Every entry point calls it before it reads or writes | `ReadOptions.Validate()` returns an error that matches `ErrInvalidArgument` |
+| N20 | The zero value of an option is its default. A bool is named so that false is the default. A setting with 3 states is an enum. A pointer appears only where 0 is legal and differs from the default. The doc comment of an option field states what its zero value does and the unit | `OmitHeader`, `BOM`. The 2 pointers of 1.x are `LastCueDuration` and the plain text `ParagraphGap`. `// LastCueDuration is the length of a last cue without an end. Nil means 5 s.` |
+| N21 | A minor release may mark an identifier `// Deprecated: use X.`. Only the next major release removes it | |
