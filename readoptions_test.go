@@ -21,13 +21,11 @@ func TestReadOptionGoldens(t *testing.T) {
 		golden string
 		file   string
 		opts   stbox.ReadOptions
-		needs  string
 	}{
 		{
 			golden: "french_windows_1252",
 			file:   "encoding/french-windows-1252.srt",
 			opts:   stbox.ReadOptions{Format: stbox.SubRip, Encoding: "Windows-1252"},
-			needs:  "the Windows-1252 decoder and its fixture of #16 and the SubRip reader of #20",
 		},
 	}
 	for _, tt := range tests {
@@ -35,9 +33,6 @@ func TestReadOptionGoldens(t *testing.T) {
 			t.Parallel()
 
 			path := filepath.Join("testdata", filepath.FromSlash(tt.file))
-			if _, err := os.Stat(path); err != nil || !tt.opts.Format.CanRead() {
-				t.Skip("needs " + tt.needs)
-			}
 			data, err := os.ReadFile(filepath.Join("testdata", "read-options", tt.golden+".json"))
 			require.NoError(t, err)
 			var want any

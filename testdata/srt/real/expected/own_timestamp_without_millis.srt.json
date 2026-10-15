@@ -1,0 +1,83 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 99.0,
+                "end": 101.04,
+                "lines": [
+                    "(train brakes squeal)"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 124.08,
+                "end": 127.12,
+                "lines": [
+                    "CONDUCTOR:",
+                    "Next stop is the bakery."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "srt": {
+                        "coordinates": {
+                            "x1": 40,
+                            "x2": 600,
+                            "y1": 20,
+                            "y2": 50
+                        }
+                    }
+                }
+            },
+            {
+                "start": 132.16,
+                "end": 135.2,
+                "lines": [
+                    "The rain has stopped."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 140.24,
+                "end": 142.28,
+                "lines": [
+                    "Bread is still warm."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 148.32,
+                "end": 151.36,
+                "lines": [
+                    "We take the last train",
+                    "back to the city."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 151.4,
+                "end": 153.44,
+                "lines": [
+                    "(radio playing",
+                    "soft piano music)"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

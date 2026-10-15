@@ -1,0 +1,43 @@
+﻿1
+00:00:01,000 --> 00:00:03,000
+Plain first cue
+
+2
+00:00:03,500 --> 00:00:05,000 X1:0 X2:0 Y1:50 Y2:100
+This cue has a pixel box
+
+3
+00:00:05,500 --> 00:00:07,000
+{\an8}Top center
+from the first line
+
+4
+00:00:07,500 --> 00:00:09,000
+{\an4}Middle left from the
+middle of a line, the second tag is ignored
+
+5
+00:00:09,500 --> 00:00:11,000
+{\an7}Top left from the end of a line
+
+6
+00:00:11,500 --> 00:00:13,000
+{\an8}<font face="Verdana" size="28" color="#9a1a3b">Alignment inside a font tag</font>
+
+7
+00:00:13,500 --> 00:00:15,000
+{\an9}Alignment on its own line
+
+8
+00:00:15,500 --> 00:00:17,000
+<i>Italic</i> and <b>bold</b>
+<s>struck</s> and <u>underlined</u>
+
+9
+00:00:17,500 --> 00:00:19,000
+Before a line with only an unknown tag
+After that line
+
+10
+00:00:19,500 --> 00:00:21,000
+Keep this: {\some_unknown_tag} and {normal text}

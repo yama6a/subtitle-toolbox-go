@@ -1,0 +1,13 @@
+1
+00:00:01,000 --> 00:00:02,500
+The bus to the airport is full.
+2
+00:00:03,000 --> 00:00:05,000
+The next one leaves at four.
+3
+00:00:05,500 --> 00:00:07,000
+Tickets are on sale inside.
+
+4
+00:00:08,000 --> 00:00:10,000
+Mind the step.

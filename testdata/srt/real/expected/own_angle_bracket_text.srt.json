@@ -1,0 +1,41 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "&lt;a sentence in angle brackets&gt;"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.5,
+                "end": 6.0,
+                "lines": [
+                    "<i>Mind</i> the <font color=\"#ffcc00\">gap</font> <foo>here</foo>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 6.5,
+                "end": 9.0,
+                "lines": [
+                    "<span class=\"exit\">Exit</span> &lt;to the left&gt;"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

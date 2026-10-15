@@ -1,0 +1,19 @@
+﻿1
+00:00:01,000 --> 00:00:03,500
+I <3 bread & jam
+
+2
+00:00:04,000 --> 00:00:06,000
+<i>Salt & pepper</i> on the <b>left</b>
+
+3
+00:00:06,500 --> 00:00:09,000
+Platform 2 > platform 1 < platform 3
+
+4
+00:00:09,500 --> 00:00:12,000
+The sign says &amp; and &lt;b&gt;
+
+5
+00:00:12,500 --> 00:00:15,000
+<font color="#ffcc00">Rain & wind >> 40 km/h</font>

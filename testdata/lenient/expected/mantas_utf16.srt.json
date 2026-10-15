@@ -1,0 +1,23 @@
+{
+    "name": "SubRip in UTF-16 with a start time of 1 seconds digit",
+    "format": "srt",
+    "strict": {
+        "error": "The time \"00:00:0,000\" is not valid.",
+        "line": 2
+    },
+    "cues": [
+        {
+            "start": 0,
+            "end": 1,
+            "text": "ترجمه و تنظيم زيرنويس"
+        }
+    ],
+    "warnings": [
+        {
+            "line": 2,
+            "block": 0,
+            "action": "repaired",
+            "message": "Block #0 has the time \"00:00:0,000\", which is not in the form hh:mm:ss,mmm. The parser read it as 0 s."
+        }
+    ]
+}

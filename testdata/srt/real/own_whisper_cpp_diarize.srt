@@ -1,0 +1,24 @@
+1
+00:00:00,000 --> 00:00:04,120
+(speaker 0) Good morning, this is the station office.
+
+2
+00:00:04,120 --> 00:00:08,760
+(speaker 1) Hello, I have a question about the winter timetable.
+
+3
+00:00:08,760 --> 00:00:12,900
+(speaker 0) Of course. Which line do you take?
+
+4
+00:00:12,900 --> 00:00:17,340
+(speaker 1) The coast line, every morning at seven.
+
+5
+00:00:17,340 --> 00:00:20,100
+(speaker ?) Okay.
+
+6
+00:00:20,100 --> 00:00:25,880
+(speaker 0) That train now leaves at 6:50, ten minutes earlier.
+

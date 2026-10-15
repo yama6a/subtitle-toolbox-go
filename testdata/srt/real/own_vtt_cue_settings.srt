@@ -1,0 +1,16 @@
+1
+00:00:01,000 --> 00:00:03,500 align:start position:0%
+the tram to the old town
+
+2
+00:00:03,500 --> 00:00:06,000 align:start position:0%
+the tram to the old town
+leaves from stop 3
+
+3
+00:00:06,000 --> 00:00:08,200  align:start
+leaves from stop 3
+
+4
+00:00:08,200 --> 00:00:10,000 X1:100 X2:600 Y1:050 Y2:100
+every ten minutes

@@ -74,6 +74,23 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Not WebVTT**: lenient mode still fails without a `WEBVTT` line when the first timing line is no WebVTT timing line, such as `00:00:01,000 --> 00:00:02,000`, or when the file has no timing line. Detection always needs the `WEBVTT` line.
 - **Damaged signature**: the reader skips the header text and the `STYLE` and `REGION` blocks before the first cue.
 
+## SubRip
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| an empty line inside a cue | joins the text to the cue | joins it. `Block #B has an empty line before line N inside the cue. The parser kept the text after it in the cue.` `Repaired` |
+| no empty line before a cue | splits the block before the timing line | splits it. `Block #B has no empty line before line N. The parser split the block there.` `Repaired`, once per new part |
+| no cue number before the timing line | `Block #B has no cue number on its first line. The line is "Q".` | reads the cue. `Block #B has no cue number on line N. The parser read the cue without it.` `Repaired` |
+| `->` or `--->` as the arrow | `Block #B has no timing line on its second line. The line is "Q".` | reads it. `Block #B has the arrow "A" in its timing line. The parser read it as "-->".` `Repaired` |
+| the full-width delimiters U+FF1A, U+FF0C, U+FF0E or U+3002 in the timing line | the error of the time or of the timing line | reads them as `:`, `,` and `.`. `Block #B has full-width delimiters in its timing line. The parser read them as ASCII.` `Repaired` |
+| a time such as `0:0:1,500`, `00:00:01,5000`, `00:00:01:50` or `07:03,920` | `The time "T" is not valid.` | reads it, a 4-digit fraction rounded to whole milliseconds. `Block #B has the time "T", which is not in the form hh:mm:ss,mmm. The parser read it as S s.` `Repaired`, once per time string |
+| a cut-off time such as `00:00:0`, minutes or seconds of 60 or more | `The time "T" is not valid.` | skips the cue |
+| unknown text after the end time | `The text "U" after the end time is not valid.` | keeps the cue settings and ignores the rest. `Block #B has the unknown text "U" after the end time. The parser ignored it.` `Repaired` |
+
+- **Block numbers**: B counts the blocks after the join, from 0.
+- **Line numbers**: the cue warnings report the timing line.
+- **Order** inside a block: the join warnings, the split warnings, then for each cue the swap, the unknown text, the loose times, the full-width delimiters, the arrow and the missing cue number.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

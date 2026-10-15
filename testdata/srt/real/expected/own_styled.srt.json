@@ -1,0 +1,113 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 17.985,
+                "end": 20.521,
+                "lines": [
+                    "<font color=\"#00ff00\"><b>[train horn]</b></font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 47.115,
+                "end": 48.282,
+                "lines": [
+                    "<font color=\"#ff00ff\">[rain]</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 58.192,
+                "end": 59.727,
+                "lines": [
+                    "<font color=\"#00ff00\">[train horn]</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 61.662,
+                "end": 63.063,
+                "lines": [
+                    "<b><u>[oven door opens]</u></b>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 86.787,
+                "end": 89.523,
+                "lines": [
+                    "[whistle]"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 89.59,
+                "end": 91.992,
+                "lines": [
+                    "[station speaker]",
+                    "<i>Thebakeryopensat7:35.</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 480.0,
+                "end": 540.0,
+                "lines": [
+                    "<i>Italics over two lines",
+                    "that close on the second line</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 540.0,
+                "end": 600.0,
+                "lines": [
+                    "<i>Italics that never close"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 600.0,
+                "end": 660.0,
+                "lines": [
+                    "The next cue is not italic"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 720.0,
+                "end": 780.0,
+                "lines": [
+                    "<i>x</i>^3 * <i>x</i> = 100"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

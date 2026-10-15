@@ -1,0 +1,41 @@
+﻿1
+00:00:17,985 --> 00:00:20,521
+<font color="#00ff00"><b>[train horn]</b></font>
+
+2
+00:00:47,115 --> 00:00:48,282
+<font color="#ff00ff">[rain]</font>
+
+3
+00:00:58,192 --> 00:00:59,727
+<font color="#00ff00">[train horn]</font>
+
+4
+00:01:01,662 --> 00:01:03,063
+<b><u>[oven door opens]</u></b>
+
+5
+00:01:26,787 --> 00:01:29,523
+[whistle]
+
+6
+00:01:29,590 --> 00:01:31,992
+[station speaker]
+<i>Thebakeryopensat7:35.</i>
+
+7
+00:08:00,000 --> 00:09:00,000
+<i>Italics over two lines
+that close on the second line</i>
+
+8
+00:09:00,000 --> 00:10:00,000
+<i>Italics that never close
+
+9
+00:10:00,000 --> 00:11:00,000
+The next cue is not italic
+
+10
+00:12:00,000 --> 00:13:00,000
+<i>x</i>^3 * <i>x</i> = 100

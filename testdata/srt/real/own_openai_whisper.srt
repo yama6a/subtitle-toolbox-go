@@ -1,0 +1,32 @@
+1
+00:00:00,000 --> 00:00:04,200
+Good evening and welcome to the timetable meeting.
+
+2
+00:00:04,200 --> 00:00:09,800
+Tonight we look at the new winter timetable for the coast line.
+
+3
+00:00:09,800 --> 00:00:15,360
+The first train now leaves at 5:40, twenty minutes earlier than before.
+
+4
+00:00:15,360 --> 00:00:19,040
+The last train still leaves at 11:15.
+
+5
+00:30:05,520 --> 00:30:11,000
+Some of you asked about the connection to the ferry.
+
+6
+00:30:11,000 --> 00:30:16,480
+The bus waits at the station for ten minutes.
+
+7
+00:59:58,500 --> 01:00:03,240
+Change at Bay Junction -> then take the bus to the pier.
+
+8
+01:00:03,240 --> 01:00:09,000
+Thank you all for coming tonight.
+

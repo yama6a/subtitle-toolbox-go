@@ -33,6 +33,7 @@ const (
 var layers = map[string]layer{
 	"internal/timecode":    layerLeaf,
 	"internal/grapheme":    layerLeaf,
+	"internal/ssatag":      layerLeaf,
 	"internal/textenc":     layerLeaf,
 	"internal/xmlraw":      layerLeaf,
 	"internal/codepage":    layerLeaf,

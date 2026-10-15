@@ -11,7 +11,8 @@ import (
 
 var (
 	// brokenTimeRegexp matches a first line that looks like a broken time or arrow, so its block stays apart.
-	brokenTimeRegexp = regexp.MustCompile(`^\d+[\t\n\v\f\r ]*[:\x{FF1A}]\d`)
+	// PHP reads its pattern with the u flag, so the digits and the white space are those of Unicode.
+	brokenTimeRegexp = regexp.MustCompile(`^\p{Nd}+[\t\n\v\f\r\x{85}\p{Z}]*[:\x{FF1A}]\p{Nd}`)
 	numericRegexp    = regexp.MustCompile(`^[ \t\n\r\v\f]*[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?[ \t\n\r\v\f]*$`)
 )
 
