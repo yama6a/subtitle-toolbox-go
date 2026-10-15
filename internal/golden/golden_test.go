@@ -70,10 +70,13 @@ func TestRoundTrip(t *testing.T) {
 		{name: "no golden, equal to the input", input: "a\n", got: "a\n"},
 		{name: "no golden, BOM and CR LF in the input", input: "\ufeffa\r\nb\r\n", got: "a\nb\n"},
 		{name: "no golden, differs", input: "a\n", got: "b\n", wantFailed: true},
+		{name: "no golden, BOM and CR LF in the output", input: "a\nb\n", got: "\ufeffa\r\nb\r\n"},
+		{name: "golden with a BOM compares byte for byte", input: "a\n", stored: new("\ufeffb\n"), got: "b\n", wantFailed: true, wantGolden: new("\ufeffb\n")},
 		{name: "golden matches", input: "a\n", stored: new("b\n"), got: "b\n", wantGolden: new("b\n")},
 		{name: "golden differs", input: "a\n", stored: new("b\n"), got: "c\n", wantFailed: true, wantGolden: new("b\n")},
 		{name: "update writes a golden", input: "a\n", got: "b\n", update: true, wantGolden: new("b\n")},
 		{name: "update deletes a golden equal to the input", input: "a\r\n", stored: new("b\n"), got: "a\n", update: true},
+		{name: "update deletes a golden that differs only by the BOM", input: "a\n", stored: new("b\n"), got: "\ufeffa\n", update: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

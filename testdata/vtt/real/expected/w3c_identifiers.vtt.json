@@ -1,0 +1,41 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 2.0,
+                "lines": [
+                    "This is a test."
+                ],
+                "identifier": "test",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 0.0,
+                "end": 2.0,
+                "lines": [
+                    "That's an, an, that's an L!"
+                ],
+                "identifier": "123",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.0,
+                "end": 5.0,
+                "lines": [
+                    "Transcrit par Célestes™"
+                ],
+                "identifier": "crédit de transcription",
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

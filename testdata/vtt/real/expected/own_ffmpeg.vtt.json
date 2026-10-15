@@ -1,0 +1,83 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.5,
+                "end": 2.75,
+                "lines": [
+                    "The bakery opens at six."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.0,
+                "end": 5.4,
+                "lines": [
+                    "<i>Fresh bread</i>",
+                    "every morning"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.5,
+                "end": 8.0,
+                "lines": [
+                    "<b>Rye</b> &amp; <b>spelt</b> &lt;today&gt;"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 8.2,
+                "end": 10.0,
+                "lines": [
+                    "Sold out"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 10.1,
+                "end": 12.3,
+                "lines": [
+                    "Closed on Sundays"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 12.4,
+                "end": 15.0,
+                "lines": [
+                    "<u>Pastry</u> of the day:",
+                    "apple cake"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 62.04,
+                "end": 65.96,
+                "lines": [
+                    "Thank you for shopping with us"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

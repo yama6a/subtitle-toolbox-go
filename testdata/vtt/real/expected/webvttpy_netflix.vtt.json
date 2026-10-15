@@ -1,0 +1,542 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [
+            {
+                "text": "Netflix\nNOTE Profile: webvtt-lssdh-ios8\nNOTE Date: 2017/04/16 15:44:03",
+                "beforeCueIndex": 0
+            },
+            {
+                "text": "SegmentIndex\nNOTE Segment=597.080 20887@419 153\nNOTE Segment=592.000 23822@21306 173\nNOTE Segment=572.880 25784@45128 183\nNOTE Segment=575.160 18267@70912 131\nNOTE Segment=591.040 26386@89179 191\nNOTE Segment=220.440 4676@115565 34\nNOTE /SegmentIndex",
+                "beforeCueIndex": 0
+            }
+        ],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 7.96,
+                "end": 9.48,
+                "lines": [
+                    "[Rosa] <i>En 1928,</i>"
+                ],
+                "identifier": "1",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 9.64,
+                "end": 13.08,
+                "lines": [
+                    "<i>la panadería abría</i>",
+                    "<i>a las cinco de la mañana</i>"
+                ],
+                "identifier": "2",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "79.33%"
+                    }
+                }
+            },
+            {
+                "start": 13.24,
+                "end": 16.44,
+                "lines": [
+                    "<i>y olía a pan recién hecho</i>",
+                    "<i>en toda la calle.</i>"
+                ],
+                "identifier": "3",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "79.33%"
+                    }
+                }
+            },
+            {
+                "start": 19.72,
+                "end": 22.16,
+                "lines": [
+                    "<i>El horno de leña calentaba la cocina.</i>"
+                ],
+                "identifier": "4",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 22.64,
+                "end": 24.76,
+                "lines": [
+                    "<i>Es cierto que la masa no era fácil</i>"
+                ],
+                "identifier": "5",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 24.92,
+                "end": 27.68,
+                "lines": [
+                    "<i>de amasar,</i>",
+                    "<i>pero salía mejor con paciencia.</i>"
+                ],
+                "identifier": "6",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "79.33%"
+                    }
+                }
+            },
+            {
+                "start": 29.32,
+                "end": 32.2,
+                "lines": [
+                    "<i>Si llovía, en invierno</i>"
+                ],
+                "identifier": "7",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 32.36,
+                "end": 35.16,
+                "lines": [
+                    "<i>el pan tardaba</i>",
+                    "<i>algo más en subir.</i>"
+                ],
+                "identifier": "8",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "79.33%"
+                    }
+                }
+            },
+            {
+                "start": 35.32,
+                "end": 36.88,
+                "lines": [
+                    "<i>Porque para la harina</i>"
+                ],
+                "identifier": "9",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 37.04,
+                "end": 41.04,
+                "lines": [
+                    "<i>la humedad cambiaba</i>",
+                    "<i>el tiempo, el agua, la sal...</i>"
+                ],
+                "identifier": "10",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "79.33%"
+                    }
+                }
+            },
+            {
+                "start": 42.0,
+                "end": 45.08,
+                "lines": [
+                    "<i>No teníamos reloj</i>",
+                    "<i>en la pared de la cocina.</i>"
+                ],
+                "identifier": "11",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "79.33%"
+                    }
+                }
+            },
+            {
+                "start": 45.24,
+                "end": 49.8,
+                "lines": [
+                    "<i>Para saber la hora</i>",
+                    "<i>mirábamos el tren de las seis.</i>"
+                ],
+                "identifier": "12",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "79.33%"
+                    }
+                }
+            },
+            {
+                "start": 49.96,
+                "end": 51.24,
+                "lines": [
+                    "En el andén de enfrente."
+                ],
+                "identifier": "13",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 52.36,
+                "end": 53.4,
+                "lines": [
+                    "El tren no va a salir"
+                ],
+                "identifier": "14",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 53.56,
+                "end": 54.6,
+                "lines": [
+                    "antes de las seis."
+                ],
+                "identifier": "15",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 54.76,
+                "end": 56.48,
+                "lines": [
+                    "<i>Y los viajeros compraban</i>"
+                ],
+                "identifier": "16",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 56.64,
+                "end": 59.48,
+                "lines": [
+                    "<i>una barra de pan</i>",
+                    "<i>y un café con leche.</i>"
+                ],
+                "identifier": "17",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "79.33%"
+                    }
+                }
+            },
+            {
+                "start": 59.64,
+                "end": 62.0,
+                "lines": [
+                    "- Dos cruasanes.",
+                    "- Ahora mismo. ¡Están calientes!"
+                ],
+                "identifier": "18",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "79.33%"
+                    }
+                }
+            },
+            {
+                "start": 62.16,
+                "end": 66.6,
+                "lines": [
+                    "<i>Al final, todos,</i>",
+                    "<i>jóvenes, mayores, pedían lo mismo:</i>"
+                ],
+                "identifier": "19",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "79.33%"
+                    }
+                }
+            },
+            {
+                "start": 66.76,
+                "end": 69.16,
+                "lines": [
+                    "<i>pan de pueblo. Y si para eso</i>"
+                ],
+                "identifier": "20",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 69.32,
+                "end": 71.96,
+                "lines": [
+                    "<i>había que esperar en la cola,</i>",
+                    "<i>esperaban</i>"
+                ],
+                "identifier": "21",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "79.33%"
+                    }
+                }
+            },
+            {
+                "start": 72.12,
+                "end": 75.56,
+                "lines": [
+                    "<i>con calma</i>",
+                    "<i>sin mirar el reloj.</i>"
+                ],
+                "identifier": "22",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "79.33%"
+                    }
+                }
+            },
+            {
+                "start": 81.96,
+                "end": 83.52,
+                "lines": [
+                    "<i>Solo los que madrugan</i>"
+                ],
+                "identifier": "23",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 83.68,
+                "end": 85.68,
+                "lines": [
+                    "<i>consiguen la primera hornada.</i>"
+                ],
+                "identifier": "24",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 96.56,
+                "end": 97.92,
+                "lines": [
+                    "<i>Eso decían.</i>"
+                ],
+                "identifier": "25",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 98.08,
+                "end": 99.84,
+                "lines": [
+                    "<i>Lo que no sabíamos era</i>"
+                ],
+                "identifier": "26",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 100.0,
+                "end": 102.44,
+                "lines": [
+                    "<i>que el tren cambiaría de horario</i>"
+                ],
+                "identifier": "27",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 102.6,
+                "end": 104.04,
+                "lines": [
+                    "<i>muchas veces.</i>"
+                ],
+                "identifier": "28",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 106.52,
+                "end": 107.6,
+                "lines": [
+                    "Vámonos."
+                ],
+                "identifier": "29",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            },
+            {
+                "start": 107.76,
+                "end": 108.8,
+                "lines": [
+                    "Rápido."
+                ],
+                "identifier": "30",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50.00%,middle",
+                        "align": "middle",
+                        "size": "80.00%",
+                        "line": "84.67%"
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,48 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "vtt": {
+                "headerLines": [
+                    "Kind: captions",
+                    "Language: en"
+                ]
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 2.31,
+                "lines": [
+                    "the<00:00:00.480><c> ferry</c><00:00:00.960><c> leaves</c>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "align": "start",
+                        "position": "0%"
+                    }
+                }
+            },
+            {
+                "start": 2.31,
+                "end": 5.0,
+                "lines": [
+                    "at<00:00:02.800><c> noon</c>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "align": "start",
+                        "position": "0%"
+                    }
+                }
+            }
+        ]
+    }
+}

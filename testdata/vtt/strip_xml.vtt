@@ -1,0 +1,27 @@
+﻿WEBVTT
+
+1
+00:00:00.000 --> 00:00:00.456
+Only milliseconds
+
+2
+00:00:05.222 --> 00:00:46.444
+Seconds and milliseconds
+
+3
+00:15:20.555 --> 00:58:01.888
+Minutes and seconds and milliseconds
+
+4
+01:01:01.000 --> 02:00:00.800
+Full timestamp
+
+5
+02:00:01.000 --> 02:30:00.000
+some <b>bold</b> and <i>italic</i> and <u>underlined</u>
+<c>caption</c> <ruby>ruby <rt>rubyText</rt></ruby>text
+and no <foo>unsupported</foo> and potentially <script>dangerous</script> stuff
+
+6
+03:00:00.000 --> 999:59:59.999
+To maximum

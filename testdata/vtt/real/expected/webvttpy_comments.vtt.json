@@ -1,0 +1,60 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [
+            {
+                "text": "This translation was written for the tests of this\nrepository, so that the Swedish text has a source.",
+                "beforeCueIndex": 0
+            },
+            {
+                "text": "This last line may not translate well.",
+                "beforeCueIndex": 2
+            },
+            {
+                "text": "end of file",
+                "beforeCueIndex": 3
+            }
+        ],
+        "formatData": {
+            "vtt": {
+                "header": "- Translation of a weather report"
+            }
+        },
+        "cues": [
+            {
+                "start": 135.0,
+                "end": 140.0,
+                "lines": [
+                    "- Det regnar i dag.",
+                    "- Det är kallt ute."
+                ],
+                "identifier": "1",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 140.0,
+                "end": 145.0,
+                "lines": [
+                    "- Tåget går klockan tio.",
+                    "- Bageriet öppnar klockan sex."
+                ],
+                "identifier": "2",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 145.0,
+                "end": 150.0,
+                "lines": [
+                    "- Ta ett paraply"
+                ],
+                "identifier": "3",
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

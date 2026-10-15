@@ -1,0 +1,165 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 11.0,
+                "end": 13.0,
+                "lines": [
+                    "<v Anna Berg>We are at the train station"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 13.0,
+                "end": 16.0,
+                "lines": [
+                    "<v Anna Berg>We're standing on platform two, just next to the bakery"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 16.0,
+                "end": 18.0,
+                "lines": [
+                    "<v Anna Berg>across the street from the town library"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 18.0,
+                "end": 20.0,
+                "lines": [
+                    "<v Anna Berg>And with me is Tom Lind"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 20.0,
+                "end": 22.0,
+                "lines": [
+                    "<v Anna Berg>Baker, owner of the corner bakery"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 22.0,
+                "end": 24.0,
+                "lines": [
+                    "<v Anna Berg>since 2010."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 24.0,
+                "end": 26.0,
+                "lines": [
+                    "<v Anna Berg>Thank you for coming out in the rain."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 27.0,
+                "end": 30.0,
+                "lines": [
+                    "<v Anna Berg>And I want to ask about the bread you sell to the travellers."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 30.0,
+                "end": 31.5,
+                "lines": [
+                    "<v Anna Berg>When the train is late—"
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "vtt": {
+                        "align": "right",
+                        "size": "50%",
+                        "alignment": 3
+                    }
+                }
+            },
+            {
+                "start": 30.5,
+                "end": 32.5,
+                "lines": [
+                    "<v Tom Lind>Didn't we talk about the late trains last week?"
+                ],
+                "identifier": null,
+                "alignment": 1,
+                "formatData": {
+                    "vtt": {
+                        "align": "left",
+                        "size": "50%",
+                        "alignment": 1
+                    }
+                }
+            },
+            {
+                "start": 32.0,
+                "end": 35.5,
+                "lines": [
+                    "<v Anna Berg>Yes! Yes we did; but but the timetable but"
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "vtt": {
+                        "align": "right",
+                        "size": "50%",
+                        "alignment": 3
+                    }
+                }
+            },
+            {
+                "start": 32.5,
+                "end": 33.5,
+                "lines": [
+                    "<v Tom Lind><i>Laughs</i>"
+                ],
+                "identifier": null,
+                "alignment": 1,
+                "formatData": {
+                    "vtt": {
+                        "align": "left",
+                        "size": "50%",
+                        "alignment": 1
+                    }
+                }
+            },
+            {
+                "start": 35.5,
+                "end": 38.0,
+                "lines": [
+                    "<v Anna Berg>You know the rain is so heavy my umbrella is leaking here."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

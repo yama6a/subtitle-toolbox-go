@@ -1,0 +1,121 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 0.32,
+                "lines": [
+                    "<u>The</u> next train leaves at nine."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 0.32,
+                "end": 0.6,
+                "lines": [
+                    "The <u>next</u> train leaves at nine."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 0.6,
+                "end": 0.98,
+                "lines": [
+                    "The next <u>train</u> leaves at nine."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 0.98,
+                "end": 1.1,
+                "lines": [
+                    "The next train leaves at nine."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1.1,
+                "end": 1.5,
+                "lines": [
+                    "The next train <u>leaves</u> at nine."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1.5,
+                "end": 1.66,
+                "lines": [
+                    "The next train leaves <u>at</u> nine."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1.66,
+                "end": 2.2,
+                "lines": [
+                    "The next train leaves at <u>nine.</u>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 2.8,
+                "end": 3.3,
+                "lines": [
+                    "<u>Platform</u> four is closed."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.3,
+                "end": 3.6,
+                "lines": [
+                    "Platform <u>four</u> is closed."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.6,
+                "end": 3.8,
+                "lines": [
+                    "Platform four <u>is</u> closed."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.8,
+                "end": 4.4,
+                "lines": [
+                    "Platform four is <u>closed.</u>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

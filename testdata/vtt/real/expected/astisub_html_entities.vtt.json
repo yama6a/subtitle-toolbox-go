@@ -1,0 +1,42 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.331,
+                "end": 3.75,
+                "lines": [
+                    "The morning train left the station on time,  ",
+                    "&amp; the rain stopped at noon."
+                ],
+                "identifier": "1",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.101,
+                "end": 5.43,
+                "lines": [
+                    "Take, then,"
+                ],
+                "identifier": "2",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 6.331,
+                "end": 9.675,
+                "lines": [
+                    "the temperature is &lt; ten degrees today."
+                ],
+                "identifier": "3",
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

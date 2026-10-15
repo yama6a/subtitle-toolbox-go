@@ -59,6 +59,21 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Seconds**: E and S print as PHP prints a float: 3 s gives `3`, 1.5 s gives `1.5`.
 - **Quotes**: a message that quotes a line cuts it to 60 characters. A longer line keeps 57 characters and `...`.
 
+## WebVTT
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| no `WEBVTT` line, a damaged one such as `WEBVTS`, or text before it | `The file does not start with WEBVTT.` | skips the lines before the first `WEBVTT` line. Without one before the first timing line, skips the lines before the first cue. `Repaired`, block 0, the skipped lines |
+| no empty line after the header | `The WEBVTT header has no empty line before the first cue.` | splits the header block before its first timing line. `Repaired`, block 0 |
+| an empty line inside a cue | the text after it fails as an unknown block | joins the text to the cue. `Repaired`, the join warning of the shared table |
+| a time with 1, 2 or 4 fraction digits, or `,` before the fraction, as in `00:01,5` | `The time "T" is not valid.` | reads it. `Block #B has the time "T", which is not in the form hh:mm:ss.mmm. The parser read it as S s.` `Repaired`, once per time string |
+| a cut-off time such as `00:00:0`, minutes or seconds of 60 or more, `->`, `--->` | the error of the block | skips the block |
+| a block that is no cue, comment, style or region, such as the `WEBVTT` header of a second joined file | `Block #B is not a WebVTT cue, comment, style or region. The line is "Q".` | skips the block |
+| a `STYLE` or `REGION` block after the first cue | ignored, as the spec says | skips it with `Block #B is a STYLE block after a cue. The spec allows it only before the first cue, so the parser skipped it.` `Skipped` |
+
+- **Not WebVTT**: lenient mode still fails without a `WEBVTT` line when the first timing line is no WebVTT timing line, such as `00:00:01,000 --> 00:00:02,000`, or when the file has no timing line. Detection always needs the `WEBVTT` line.
+- **Damaged signature**: the reader skips the header text and the `STYLE` and `REGION` blocks before the first cue.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

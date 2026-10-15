@@ -62,10 +62,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 - Project: <https://github.com/mantas-done/subtitles>
 - Licence: MIT
-- Checked at: `959d1705b1ed12cbb9ddba517f8bcb814e1919a8`
+- Checked at: `959d1705b1ed12cbb9ddba517f8bcb814e1919a8`, and `testdata/vtt/real/mantas_styles.vtt` at `e41f318224dc9c38339c2bfcb0199e5bb788abce` with the same licence text
 - Files copied from it:
   - `testdata/lenient/mantas_multiple_new_lines.vtt`, from `tests/files/vtt_with_multiple_new_lines.vtt`
   - `testdata/lenient/mantas_utf16.srt`, from `tests/files/utf16.srt`
+  - `testdata/vtt/real/mantas_styles.vtt`, from `tests/files/vtt_with_styles.vtt`
 
 ```text
 MIT License
@@ -228,6 +229,37 @@ You may add Your own copyright statement to Your modifications and may provide a
 
 END OF TERMS AND CONDITIONS
 
+## asticode/go-astisub
+
+- Project: <https://github.com/asticode/go-astisub>
+- Licence: MIT
+- Checked at: `f285923a0c8d5b2ecce67d8eaf9ed26cce16e5b0`
+- Files written for this repository in the shape of its fixtures:
+  - `testdata/vtt/real/astisub_carriage_return.vtt`
+  - `testdata/vtt/real/astisub_html_entities.vtt`
+
+```text
+MIT License
+
+Copyright (c) 2016 Quentin Renard
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
 
 ## tkarabela/pysubs2
@@ -266,6 +298,13 @@ THE SOFTWARE.
 - Licence: W3C Software and Document License, 2023 version, <https://www.w3.org/copyright/software-license-2023/>
 - Files copied from it:
   - `testdata/json/real/w3c_cue_settings_3x.json`
+  - `testdata/vtt/real/w3c_chapters.vtt`
+  - `testdata/vtt/real/w3c_comments.vtt`
+  - `testdata/vtt/real/w3c_cue_settings.vtt`
+  - `testdata/vtt/real/w3c_identifiers.vtt`
+  - `testdata/vtt/real/w3c_regions.vtt`
+  - `testdata/vtt/real/w3c_styles.vtt`
+  - `testdata/vtt/real/w3c_timestamps.vtt`
 
 This repository includes material copied from or derived from the specifications above. Copyright (c) World Wide Web Consortium. https://www.w3.org/copyright/software-license-2023/
 

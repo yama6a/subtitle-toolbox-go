@@ -1,0 +1,71 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 3.6,
+                "lines": [
+                    "This is the second part of the timetable meeting."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.6,
+                "end": 8.12,
+                "lines": [
+                    "We now talk about the weekend trains."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1200.4,
+                "end": 1205.0,
+                "lines": [
+                    "On Saturdays the first train leaves one hour later."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3594.0,
+                "end": 3599.2,
+                "lines": [
+                    "On Sundays two more trains run in the summer."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3599.2,
+                "end": 3601.5,
+                "lines": [
+                    "Any questions?"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3601.5,
+                "end": 3606.88,
+                "lines": [
+                    "Yes, the timetable starts on the first of December."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

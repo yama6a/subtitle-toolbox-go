@@ -1,0 +1,54 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [
+            {
+                "text": "The door opens before the shop.",
+                "beforeCueIndex": 0
+            },
+            {
+                "text": "The shop opens at nine.",
+                "beforeCueIndex": 1
+            },
+            {
+                "text": "End of the shop scene.",
+                "beforeCueIndex": 3
+            }
+        ],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "The door opens."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.0,
+                "end": 7.0,
+                "lines": [
+                    "The shop is open."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 9.0,
+                "end": 11.0,
+                "lines": [
+                    "The shop closes."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

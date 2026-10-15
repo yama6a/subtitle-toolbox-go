@@ -53,7 +53,7 @@ var formatFacts = []formatFact{
 	{format: MPL2, extensions: []string{"txt"}},
 	{format: TMPlayer, extensions: []string{"txt"}},
 	{format: QuickTimeText, extensions: []string{"txt"}},
-	{format: WebVTT, extensions: []string{"vtt"}},
+	{format: WebVTT, extensions: []string{"vtt"}, canRead: true, canWrite: true, autoDetected: true},
 }
 
 func (f Format) fact() formatFact {

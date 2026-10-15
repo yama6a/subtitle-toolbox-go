@@ -1,0 +1,44 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 3.766,
+                "lines": [
+                    "The bakery on the corner opens",
+                    "at six o'clock every morning."
+                ],
+                "identifier": "1",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.767,
+                "end": 10.732,
+                "lines": [
+                    "That’s early. The baker makes 240",
+                    "loaves of bread before sunrise"
+                ],
+                "identifier": "2",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 10.733,
+                "end": 14.066,
+                "lines": [
+                    "and sells the last one",
+                    "before the noon train."
+                ],
+                "identifier": "3",
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

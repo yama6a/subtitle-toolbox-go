@@ -1,0 +1,23 @@
+WEBVTT - Translation of a weather report
+
+NOTE
+This translation was written for the tests of this
+repository, so that the Swedish text has a source.
+
+1
+00:02:15.000 --> 00:02:20.000
+- Det regnar i dag.
+- Det är kallt ute.
+
+2
+00:02:20.000 --> 00:02:25.000
+- Tåget går klockan tio.
+- Bageriet öppnar klockan sex.  
+
+NOTE This last line may not translate well.
+
+3
+00:02:25.000 --> 00:02:30.000
+- Ta ett paraply
+
+NOTE end of file

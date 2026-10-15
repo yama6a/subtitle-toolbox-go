@@ -9,18 +9,23 @@ import (
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
-// The shapes of the Read and Write functions of a format package.
+// The shapes of the Read, Write and Detect functions of a format package.
 type (
 	readFunc[O any]  func(io.Reader, model.CommonReadOptions, O) (*model.Subtitle, []model.ParseWarning, error)
 	writeFunc[O any] func(io.Writer, *model.Subtitle, model.CommonWriteOptions, O) error
+	detectFunc       func([]byte) bool
 )
 
 var (
 	_ readFunc[stboxjson.ReadOptions]   = stboxjson.Read
 	_ writeFunc[stboxjson.WriteOptions] = stboxjson.Write
+	_ readFunc[webvtt.ReadOptions]      = webvtt.Read
+	_ writeFunc[webvtt.WriteOptions]    = webvtt.Write
+	_ detectFunc                        = webvtt.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -52,7 +57,7 @@ var registry = []formatFuncs{
 	{format: MPL2},
 	{format: TMPlayer},
 	{format: QuickTimeText},
-	{format: WebVTT},
+	{format: WebVTT, read: readWebVTT, write: writeWebVTT},
 }
 
 type jsonCheck struct {
@@ -68,7 +73,9 @@ type signature struct {
 //nolint:gochecknoglobals // ordered detection lists
 var (
 	jsonChecks []jsonCheck
-	signatures []signature
+	signatures = []signature{
+		{format: WebVTT, match: webvtt.Detect},
+	}
 )
 
 // Formats returns every format of the registry, in registry order.
@@ -124,6 +131,14 @@ func readJSON(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subt
 
 func writeJSON(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
 	return stboxjson.Write(w, s, common, opts.JSON)
+}
+
+func readWebVTT(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return webvtt.Read(r, common, webvtt.ReadOptions{})
+}
+
+func writeWebVTT(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+	return webvtt.Write(w, s, common, webvtt.WriteOptions{})
 }
 
 func lookup(f Format) (formatFuncs, bool) {

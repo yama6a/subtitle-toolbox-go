@@ -1,0 +1,86 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "vtt": {
+                "headerLines": [
+                    "Kind: captions",
+                    "Language: en",
+                    "Style:",
+                    "::cue(c.colorCCCCCC) { color: rgb(204,204,204);",
+                    " }",
+                    "::cue(c.colorE5E5E5) { color: rgb(229,229,229);",
+                    " }",
+                    "##"
+                ]
+            }
+        },
+        "cues": [
+            {
+                "start": 286.07,
+                "end": 286.47,
+                "lines": [
+                    "okay"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "align": "start",
+                        "position": "0%"
+                    }
+                }
+            },
+            {
+                "start": 286.47,
+                "end": 304.08,
+                "lines": [
+                    "okay",
+                    "<c.colorCCCCCC>then</c>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "align": "start",
+                        "position": "0%"
+                    }
+                }
+            },
+            {
+                "start": 304.08,
+                "end": 305.069,
+                "lines": [
+                    "the<00:05:04.199><c> train</c><c.colorE5E5E5><00:05:04.379><c> leaves</c></c><c.colorCCCCCC><00:05:04.620><c> at</c><00:05:04.860><c> ten</c><00:05:05.069><c> today</c></c>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "align": "start",
+                        "position": "0%"
+                    }
+                }
+            },
+            {
+                "start": 305.069,
+                "end": 305.4,
+                "lines": [
+                    "the train<c.colorE5E5E5> leaves</c><c.colorCCCCCC> at ten today",
+                    "</c>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "align": "start",
+                        "position": "0%"
+                    }
+                }
+            }
+        ]
+    }
+}

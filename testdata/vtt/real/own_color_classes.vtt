@@ -1,0 +1,41 @@
+WEBVTT
+
+1
+00:00:01.000 --> 00:00:02.000
+<c.white>The tide comes in at noon.</c>
+
+2
+00:00:02.000 --> 00:00:03.000
+<c.lime>Bring the rope.</c>
+
+3
+00:00:03.000 --> 00:00:04.000
+<c.cyan>The boat is ready.</c>
+
+4
+00:00:04.000 --> 00:00:05.000
+<c.red>Mind the step!</c>
+
+5
+00:00:05.000 --> 00:00:06.000
+<c.yellow>(engine starts)</c>
+
+6
+00:00:06.000 --> 00:00:07.000
+<c.magenta>Hold on tight.</c>
+
+7
+00:00:07.000 --> 00:00:08.000
+<c.blue>We are off.</c>
+
+8
+00:00:08.000 --> 00:00:09.000
+<c.black>Quiet now.</c>
+
+9
+00:00:09.000 --> 00:00:10.000
+<c.bg_black.yellow>[radio static]</c>
+
+10
+00:00:10.000 --> 00:00:11.000
+<c.loud>Land ahead!</c> <c.yellow.loud>Look!</c>
