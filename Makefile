@@ -7,7 +7,7 @@ FUZZTIME           ?= 30s
 BENCHTIME          ?= 1s
 
 .PHONY: lint-config generate fmt fmt-check lint vet test cover vuln tidy tidy-check \
-	generate-check mod image ci build cross fuzz bench dist smoke
+	generate-check mod image ci build cross fuzz bench golden dist smoke
 
 lint-config:
 	mkdir -p .build
@@ -100,3 +100,8 @@ fuzz:
 
 bench:
 	go test -run '^$$' -bench . -benchmem -benchtime $(BENCHTIME) ./...
+
+# Only the packages that declare the -update flag, because another test binary rejects the unknown flag.
+golden:
+	pkgs=$$(grep -rl --include='*_test.go' 'flag.Bool("update"' . | xargs -n1 dirname | sort -u) || exit 1; \
+	go test -count=1 -run Golden $$pkgs -update
