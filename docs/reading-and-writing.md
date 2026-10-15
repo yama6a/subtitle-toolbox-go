@@ -26,7 +26,7 @@ err = stbox.Write(f, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF}
 
 1. Read the whole input into memory.
 2. Decode the text to UTF-8, as [encodings.md](encodings.md) says. `ReadInfo.SourceEncoding` holds the encoding.
-3. Detect the format, unless `Format` is set. Empty content without `Format` returns `ErrUnknownFormat`.
+3. Detect the format, unless `Format` is set. [detection.md](detection.md) holds the rules, also for empty content, video files and the extension fallback of `Load`.
 4. Run the reader of the format.
 5. Return the subtitle and a `ReadInfo` with the format, the source encoding and the warnings. On error, the subtitle is nil and `ReadInfo` is the zero value.
 

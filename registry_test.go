@@ -52,8 +52,16 @@ func TestFactsMatchTheFunctions(t *testing.T) {
 
 			assert.Equal(t, row.read != nil, row.format.CanRead(), "CanRead")
 			assert.Equal(t, row.write != nil, row.format.CanWrite(), "CanWrite")
+			if row.read != nil {
+				assert.Equal(t, detected(row.format), row.format.IsAutoDetected(), "IsAutoDetected")
+			}
 		})
 	}
+}
+
+func detected(f Format) bool {
+	return slices.ContainsFunc(jsonChecks, func(c jsonCheck) bool { return c.format == f }) ||
+		slices.ContainsFunc(signatures, func(s signature) bool { return s.format == f })
 }
 
 func TestDetectionListsFollowTheOrder(t *testing.T) {
