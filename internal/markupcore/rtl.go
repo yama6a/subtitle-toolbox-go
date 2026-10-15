@@ -93,7 +93,7 @@ func splitLeadingPunctuation(middle string) (dash, run, rest, space string, ok b
 		return "", "", "", "", false
 	}
 	body := strings.TrimLeft(middle[j:], " \t")
-	rest = strings.TrimRightFunc(body, unicode.IsSpace)
+	rest = strings.TrimRightFunc(body, IsSpace)
 	if rest == "" {
 		return "", "", "", "", false
 	}
