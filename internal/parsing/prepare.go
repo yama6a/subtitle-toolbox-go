@@ -28,17 +28,12 @@ func (s *State) Prepare(content []byte, replacesInvalidUTF8 bool) ([]byte, bool,
 		content = bytes.ReplaceAll(content, []byte{0}, []byte(replacement))
 	}
 	if i := bytes.IndexByte(content, 0); i >= 0 && !s.Lenient() {
-		line := lineAt(content, i)
-		return nil, false, &model.ParseError{
-			Format: s.format,
-			Line:   line,
-			Msg:    "Line " + strconv.Itoa(line) + " has a NUL character. Check the encoding of the file.",
-		}
+		return nil, false, nulError(s.format, lineAt(content, i))
 	}
 	if i := slices.IndexFunc(content, isControl); i >= 0 {
 		if s.Lenient() {
 			line := lineAt(content, i)
-			s.warn("The file has control characters, the first on line "+strconv.Itoa(line)+". The parser removed them.", line, model.Repaired)
+			s.warn(controlsMessage(line), line, model.Repaired)
 		}
 		content = slices.DeleteFunc(slices.Clone(content), isControl)
 	}
@@ -55,7 +50,7 @@ func (s *State) checkUTF8(content []byte, replaces bool) ([]byte, error) {
 	if i < 0 {
 		return content, nil
 	}
-	msg := textenc.InvalidUTF8WarningPrefix + " The first bad byte is at offset " + strconv.Itoa(i) + ". Set the source encoding of the file."
+	msg := badUTF8Message(i)
 	switch {
 	case !replaces:
 		if s.Lenient() {
@@ -67,6 +62,22 @@ func (s *State) checkUTF8(content []byte, replaces bool) ([]byte, error) {
 	default:
 		s.warn(msg+" The parser read the bad bytes as U+FFFD.", model.NoLine, model.Repaired)
 		return textenc.ReplaceInvalidUTF8(content), nil
+	}
+}
+
+func badUTF8Message(offset int) string {
+	return textenc.InvalidUTF8WarningPrefix + " The first bad byte is at offset " + strconv.Itoa(offset) + ". Set the source encoding of the file."
+}
+
+func controlsMessage(line int) string {
+	return "The file has control characters, the first on line " + strconv.Itoa(line) + ". The parser removed them."
+}
+
+func nulError(f model.Format, line int) *model.ParseError {
+	return &model.ParseError{
+		Format: f,
+		Line:   line,
+		Msg:    "Line " + strconv.Itoa(line) + " has a NUL character. Check the encoding of the file.",
 	}
 }
 
