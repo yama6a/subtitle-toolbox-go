@@ -1,0 +1,17 @@
+[
+  {"name": "precomposed letter", "text": "Caf\u00e9", "want": 4},
+  {"name": "base letter plus combining mark", "text": "Cafe\u0301", "want": 4},
+  {"name": "emoji with skin tone, space, family sequence", "text": "\ud83d\udc4d\ud83c\udffd \ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67", "want": 3},
+  {"name": "embedding marks around two Hebrew letters", "text": "\u202b\u05d0\u05d1\u202c", "want": 2},
+  {"name": "all invisible", "text": "\u200e\u200f\u202a\u202d\u202e\u2066\u2069\u200b\ufeff\u00ad", "want": 0},
+  {"name": "every invisible character", "text": "\u00ad\u200b\u200e\u200f\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069\ufeff", "want": 0},
+  {"name": "two Han characters", "text": "你好", "want": 2},
+  {"name": "empty string", "text": "", "want": 0},
+  {"name": "invisible character between letters", "text": "a\u200bb\u00adc", "want": 3},
+  {"name": "combining mark after an invisible character is a cluster of its own", "text": "a\u200b\u0301", "want": 2},
+  {"name": "zero-width joiner is not invisible", "text": "a\u200db", "want": 2},
+  {"name": "regional indicator pair", "text": "\ud83c\udde9\ud83c\uddea", "want": 1},
+  {"name": "CRLF is one cluster", "text": "a\r\nb", "want": 3},
+  {"name": "Hangul syllable of three jamo", "text": "\u1112\u1161\u11ab", "want": 1},
+  {"name": "Devanagari conjunct ksha, 2 clusters without rule GB9c of Unicode 15.1", "text": "क्ष", "want": 2}
+]
