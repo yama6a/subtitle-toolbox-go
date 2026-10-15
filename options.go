@@ -1,6 +1,8 @@
 package stbox
 
 import (
+	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -40,11 +42,29 @@ type ReadInfo struct {
 
 // Validate checks every field of o, also the fields of formats that a read does not use.
 func (o ReadOptions) Validate() error {
+	if o.LastCueDuration != nil && *o.LastCueDuration < 0 {
+		return &InvalidArgumentError{
+			Option: "ReadOptions.LastCueDuration",
+			Msg:    fmt.Sprintf("The last cue duration must be 0 or more, got %s.", *o.LastCueDuration),
+		}
+	}
 	return nil
 }
 
 // Validate checks every field of o, also the fields of formats that a write does not use.
 func (o WriteOptions) Validate() error {
+	if o.LineEnding > CRLF {
+		return &InvalidArgumentError{
+			Option: "WriteOptions.LineEnding",
+			Msg:    "The line ending " + strconv.Itoa(int(o.LineEnding)) + " is unknown.",
+		}
+	}
+	if o.BOM > BOMRemove {
+		return &InvalidArgumentError{
+			Option: "WriteOptions.BOM",
+			Msg:    "The BOM rule " + strconv.Itoa(int(o.BOM)) + " is unknown.",
+		}
+	}
 	return nil
 }
 
