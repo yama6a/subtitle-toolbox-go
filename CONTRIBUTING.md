@@ -39,12 +39,12 @@ func Detect(content []byte) bool
 
 ### Format registry
 
-The registry is 2 tables, written by hand, with the same rows in the same order. No package registers itself in `init()`. The rows follow the PHP row order, because the first row that lists an extension owns it in `FormatFromPath`. A later line inserts its rows at the PHP position.
+The registry is written by hand, and no package registers itself in `init()`. The facts table and the functions table hold the same rows in the same order. The rows follow the PHP row order, because the first row that lists an extension owns it in `FormatFromPath`. A later line inserts its rows at the PHP position.
 
 | Table | File | Holds |
 |:--- |:--- |:--- |
-| format facts | `model/format.go` | extensions, can read, can write, auto-detected. The `Format` methods read it |
-| format functions | `registry.go` | the read and write function of each format |
+| facts | `model/format.go` | extensions, can read, can write, auto-detected. The `Format` methods read it |
+| functions | `registry.go` | the read and write function of each format |
 | detection lists | `registry.go` | the JSON checks and the signatures, in detection order. First match wins |
 
 Every 1.x row and `Format` constant exists from 1.0.0, so `FormatFromPath` gives the same result for the whole 1.x line. The issue that adds a format reader or writer:

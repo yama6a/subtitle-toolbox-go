@@ -45,9 +45,9 @@ func TestEveryModelSentinelIsReexported(t *testing.T) {
 	t.Parallel()
 
 	root := packageValues(t, ".")
-	model := packageValues(t, modelDir)
+	modelValues := packageValues(t, modelDir)
 	var checked int
-	for name := range model {
+	for name := range modelValues {
 		if !strings.HasPrefix(name, "Err") {
 			continue
 		}
