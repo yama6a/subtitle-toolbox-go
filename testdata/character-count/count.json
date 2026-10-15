@@ -17,5 +17,14 @@
   {"name": "regional indicator plus skin tone", "text": "\ud83c\udde9\ud83c\udffd", "want": 1},
   {"name": "regional indicator plus zero-width joiner", "text": "\ud83c\udde9\u200d", "want": 1},
   {"name": "Hangul syllable of three jamo", "text": "\u1112\u1161\u11ab", "want": 1},
-  {"name": "Devanagari conjunct ksha, 2 clusters without rule GB9c of Unicode 15.1", "text": "क्ष", "want": 2}
+  {"name": "Devanagari conjunct ksha, 2 clusters without rule GB9c of Unicode 15.1", "text": "क्ष", "want": 2},
+  {"name": "Prepend character plus thumbs up, rule GB9b (PHP counts 2)", "text": "\u0600\ud83d\udc4d", "want": 1},
+  {"name": "Prepend character plus grinning face, rule GB9b (PHP counts 2)", "text": "\u0600\ud83d\ude00", "want": 1},
+  {"name": "Prepend character plus heart, rule GB9b (PHP counts 2)", "text": "\u0600\u2764", "want": 1},
+  {"name": "Prepend character plus copyright sign, rule GB9b (PHP counts 2)", "text": "\u0600\u00a9", "want": 1},
+  {"name": "Prepend character plus ZWJ emoji sequence, rule GB9b (PHP counts 2)", "text": "\u0600\ud83d\udc68\u200d\ud83d\udc69", "want": 1},
+  {"name": "two Prepend characters plus thumbs up, rule GB9b (PHP counts 2)", "text": "\u0600\u0600\ud83d\udc4d", "want": 1},
+  {"name": "Prepend character plus letter", "text": "\u0600a", "want": 1},
+  {"name": "letter plus Prepend character", "text": "a\u0600", "want": 2},
+  {"name": "Prepend character plus LF, rule GB4", "text": "\u0600\n", "want": 2}
 ]
