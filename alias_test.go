@@ -18,6 +18,7 @@ const modelDir = "model"
 // reexportedTypes names the model types whose constants the root re-exports.
 var reexportedTypes = map[string]bool{
 	"Format": true, "Alignment": true, "LineEnding": true, "BOM": true, "WarningAction": true,
+	"CaseMode": true, "DialogueDashStyle": true,
 }
 
 type constDecl struct {

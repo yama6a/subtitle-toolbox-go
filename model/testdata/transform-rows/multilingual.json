@@ -1,0 +1,24 @@
+[
+ {
+  "name": "lower case",
+  "mode": "lower",
+  "language": "",
+  "want": [
+   "<b>οδος σταθμου 4</b>",
+   "große bäckerei. öffnet um 6 uhr!",
+   "<font color=\"#ffff00\">i̇stasyon kapisi işikli.</font>",
+   "<i>rain &lt;3 &amp; snow</i>"
+  ]
+ },
+ {
+  "name": "Turkish rules apply to every cue",
+  "mode": "sentence",
+  "language": "tr-TR",
+  "want": [
+   "<b>Οδος σταθμου 4</b>",
+   "große bäckereı. Öffnet um 6 uhr!",
+   "<font color=\"#ffff00\">İstasyon kapısı ışıklı.</font>",
+   "<i>Raın &lt;3 &amp; snow</i>"
+  ]
+ }
+]

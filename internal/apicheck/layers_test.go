@@ -76,7 +76,7 @@ var allowedModules = []string{
 	"github.com/rivo/uniseg",
 	"github.com/Eyevinn/mp4ff",
 	"github.com/asticode/go-astits",
-	"github.com/dlclark/regexp2",
+	"github.com/dlclark/regexp2/v2",
 }
 
 func TestPackageLayers(t *testing.T) {
@@ -184,6 +184,17 @@ func TestCheckImports(t *testing.T) {
 			name:    "format imports layers 0 to 3 and an allowed module",
 			rel:     "format/srt",
 			imports: []string{modulePath + "/model", modulePath + "/markup", modulePath + "/internal/blocks", "golang.org/x/text/encoding"},
+		},
+		{
+			name:    "format imports the allowed regexp2 v2 module",
+			rel:     "format/srt",
+			imports: []string{"github.com/dlclark/regexp2/v2"},
+		},
+		{
+			name:    "format imports the regexp2 v1 module",
+			rel:     "format/srt",
+			imports: []string{"github.com/dlclark/regexp2"},
+			want:    []string{"format/srt imports github.com/dlclark/regexp2, which is not an allowed module"},
 		},
 		{
 			name:    "leaf helper imports another leaf helper",

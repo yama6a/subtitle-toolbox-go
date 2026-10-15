@@ -1,0 +1,28 @@
+[
+ {
+  "name": "plain ignore case of a non-ASCII letter",
+  "texts": [
+   "Ärger and ärger"
+  ],
+  "search": "ÄRGER",
+  "replace": "joy",
+  "regex": false,
+  "ignoreCase": true,
+  "want": [
+   "joy and joy"
+  ]
+ },
+ {
+  "name": "regex ignore case of a non-ASCII letter",
+  "texts": [
+   "Ärger and ärger"
+  ],
+  "search": "ä(rger)",
+  "replace": "j$1",
+  "regex": true,
+  "ignoreCase": true,
+  "want": [
+   "jrger and jrger"
+  ]
+ }
+]

@@ -39,6 +39,14 @@ type (
 	UnwritableError = model.UnwritableError
 	// InvalidArgumentError is an error of an invalid option or argument.
 	InvalidArgumentError = model.InvalidArgumentError
+	// ReplaceOptions holds the settings of Subtitle.ReplaceText.
+	ReplaceOptions = model.ReplaceOptions
+	// StripOptions holds the settings of Subtitle.StripFormatting.
+	StripOptions = model.StripOptions
+	// CaseMode is the target case of Subtitle.ChangeCase.
+	CaseMode = model.CaseMode
+	// DialogueDashStyle is the dash, and the space after it, that starts a dialogue line.
+	DialogueDashStyle = model.DialogueDashStyle
 )
 
 // The formats of the registry, in registry order.
@@ -107,4 +115,23 @@ const (
 const (
 	NoLine  = model.NoLine
 	NoBlock = model.NoBlock
+)
+
+// The case modes of ChangeCase.
+const (
+	CaseUpper    = model.CaseUpper
+	CaseLower    = model.CaseLower
+	CaseSentence = model.CaseSentence
+)
+
+// The dialogue dash styles. DialogueDashHyphenSpace is the zero value.
+const (
+	DialogueDashHyphenSpace        = model.DialogueDashHyphenSpace
+	DialogueDashHyphen             = model.DialogueDashHyphen
+	DialogueDashUnicodeHyphen      = model.DialogueDashUnicodeHyphen
+	DialogueDashUnicodeHyphenSpace = model.DialogueDashUnicodeHyphenSpace
+	DialogueDashEnDash             = model.DialogueDashEnDash
+	DialogueDashEnDashSpace        = model.DialogueDashEnDashSpace
+	DialogueDashEmDash             = model.DialogueDashEmDash
+	DialogueDashEmDashSpace        = model.DialogueDashEmDashSpace
 )

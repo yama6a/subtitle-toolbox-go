@@ -244,11 +244,16 @@ func (s *Subtitle) RemoveCue(i int) error {
 // RemoveCuesWhere removes the cues for which match returns true. Match gets a copy of each cue.
 // A comment before a removed cue moves to the next kept cue, or after the last cue.
 func (s *Subtitle) RemoveCuesWhere(match func(Cue) bool) {
+	s.removeWhere(func(i int) bool { return match(s.cues[i].Clone()) })
+}
+
+// removeWhere removes the cues at the indexes for which match returns true, after it called match for every index.
+func (s *Subtitle) removeWhere(match func(i int) bool) {
 	n := len(s.cues)
 	keep := make([]bool, n)
 	kept := 0
-	for i, c := range s.cues {
-		if !match(c.Clone()) {
+	for i := range s.cues {
+		if !match(i) {
 			keep[i] = true
 			kept++
 		}

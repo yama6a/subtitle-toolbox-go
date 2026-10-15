@@ -1,0 +1,20 @@
+[
+ {
+  "name": "embedding",
+  "texts": [
+   "‫مرحبا؟‬"
+  ],
+  "want": [
+   "مرحبا؟"
+  ]
+ },
+ {
+  "name": "marks inside tags",
+  "texts": [
+   "<i>‏שלום‎</i>"
+  ],
+  "want": [
+   "<i>שלום</i>"
+  ]
+ }
+]

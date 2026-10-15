@@ -140,7 +140,7 @@ Every 1.x row and `Format` constant exists from 1.0.0, so `FormatFromPath` gives
 | ISO/IEC, 3GPP, SMPTE, EBU, CEA specs, Adobe docs | specifications | implement from the spec. No code exists to copy |
 | yama6a/subtitle-toolbox-php, yama6a/php-glyph-ocr | MIT, same owner | port freely. Third-party credits in a ported file move with the code |
 | The Go standard library | BSD-3-Clause | adapt with credit |
-| `golang.org/x/text`, `github.com/rivo/uniseg`, `github.com/Eyevinn/mp4ff`, `github.com/asticode/go-astits`, `github.com/dlclark/regexp2` | the `LICENSE` file of each module at the version in `go.mod` | import only. The binary links them, so each has a section in `THIRD_PARTY_NOTICES.md` |
+| `golang.org/x/text`, `github.com/rivo/uniseg`, `github.com/Eyevinn/mp4ff`, `github.com/asticode/go-astits`, `github.com/dlclark/regexp2/v2` | the `LICENSE` file of each module at the version in `go.mod` | import only. The binary links them, so each has a section in `THIRD_PARTY_NOTICES.md` |
 
 ## API rules
 

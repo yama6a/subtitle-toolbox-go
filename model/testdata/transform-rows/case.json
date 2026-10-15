@@ -1,0 +1,244 @@
+[
+ {
+  "name": "German sharp s in upper case",
+  "texts": [
+   "straße",
+   "istanbul"
+  ],
+  "mode": "upper",
+  "language": "",
+  "want": [
+   "STRASSE",
+   "ISTANBUL"
+  ]
+ },
+ {
+  "name": "Turkish dotted capital I in upper case",
+  "texts": [
+   "istanbul kapı"
+  ],
+  "mode": "upper",
+  "language": "tr",
+  "want": [
+   "İSTANBUL KAPI"
+  ]
+ },
+ {
+  "name": "Turkish rule of a tr-TR code",
+  "texts": [
+   "istanbul"
+  ],
+  "mode": "upper",
+  "language": "tr-TR",
+  "want": [
+   "İSTANBUL"
+  ]
+ },
+ {
+  "name": "Azerbaijani dotless i in lower case",
+  "texts": [
+   "İSTANBUL KAPI"
+  ],
+  "mode": "lower",
+  "language": "az",
+  "want": [
+   "istanbul kapı"
+  ]
+ },
+ {
+  "name": "dotted capital I without Turkic rules",
+  "texts": [
+   "İSTANBUL"
+  ],
+  "mode": "lower",
+  "language": "",
+  "want": [
+   "i̇stanbul"
+  ]
+ },
+ {
+  "name": "Turkic rule of an underscore code",
+  "texts": [
+   "ISTANBUL"
+  ],
+  "mode": "lower",
+  "language": "TR_tr",
+  "want": [
+   "ıstanbul"
+  ]
+ },
+ {
+  "name": "Greek final sigma",
+  "texts": [
+   "ΟΔΟΣ ΣΑΣ, Σ"
+  ],
+  "mode": "lower",
+  "language": "",
+  "want": [
+   "οδος σας, σ"
+  ]
+ },
+ {
+  "name": "sentence case title-cases sharp s",
+  "texts": [
+   "STRASSE. ßAD"
+  ],
+  "mode": "sentence",
+  "language": "",
+  "want": [
+   "Strasse. Ssad"
+  ]
+ },
+ {
+  "name": "sentence continues in the next cue",
+  "texts": [
+   "WE WENT TO THE",
+   "STORE ON MONDAY, AND I THINK I SAW JOHN.",
+   "THEN \"BYE.\"",
+   "<i>SO…</i>",
+   "OK"
+  ],
+  "mode": "sentence",
+  "language": "",
+  "want": [
+   "We went to the",
+   "store on monday, and I think I saw john.",
+   "Then \"bye.\"",
+   "<i>So…</i>",
+   "Ok"
+  ]
+ },
+ {
+  "name": "speaker change and dialogue dash start a sentence",
+  "texts": [
+   "WAIT FOR",
+   ">> ME AT THE",
+   ">>>STATION",
+   "AND\n- WHY\n– FOR",
+   "<i>- LUNCH</i>",
+   "AT",
+   "-20 DEGREES"
+  ],
+  "mode": "sentence",
+  "language": "",
+  "want": [
+   "Wait for",
+   ">> Me at the",
+   ">>>Station",
+   "and\n- Why\n– For",
+   "<i>- Lunch</i>",
+   "at",
+   "-20 degrees"
+  ]
+ },
+ {
+  "name": "English pronoun with a right single quote",
+  "texts": [
+   "WELL, I'M HERE AND I'LL STAY. I’VE, I'D, I-I, HI, PI, 3I, I'S, I.E."
+  ],
+  "mode": "sentence",
+  "language": "",
+  "want": [
+   "Well, I'm here and I'll stay. I’ve, I'd, I-I, hi, pi, 3i, i's, i.e."
+  ]
+ },
+ {
+  "name": "English pronoun of en",
+  "texts": [
+   "WELL, I'M HERE AND I'LL STAY. I’VE, I'D, I-I, HI, PI, 3I, I'S, I.E."
+  ],
+  "mode": "sentence",
+  "language": "en",
+  "want": [
+   "Well, I'm here and I'll stay. I’ve, I'd, I-I, hi, pi, 3i, i's, i.e."
+  ]
+ },
+ {
+  "name": "English pronoun of en-GB",
+  "texts": [
+   "WELL, I'M HERE AND I'LL STAY. I’VE, I'D, I-I, HI, PI, 3I, I'S, I.E."
+  ],
+  "mode": "sentence",
+  "language": "en-GB",
+  "want": [
+   "Well, I'm here and I'll stay. I’ve, I'd, I-I, hi, pi, 3i, i's, i.e."
+  ]
+ },
+ {
+  "name": "no English pronoun pass for de",
+  "texts": [
+   "WELL, I'M HERE AND I'LL STAY. I’VE, I'D, I-I, HI, PI, 3I, I'S, I.E."
+  ],
+  "mode": "sentence",
+  "language": "de",
+  "want": [
+   "Well, i'm here and i'll stay. I’ve, i'd, i-i, hi, pi, 3i, i's, i.e."
+  ]
+ },
+ {
+  "name": "Turkic sentence case keeps the dot of I",
+  "texts": [
+   "İSTANBUL KAPI"
+  ],
+  "mode": "sentence",
+  "language": "tr",
+  "want": [
+   "İstanbul kapı"
+  ]
+ },
+ {
+  "name": "sentence case without Turkic rules",
+  "texts": [
+   "ISTANBUL KAPI"
+  ],
+  "mode": "sentence",
+  "language": "",
+  "want": [
+   "Istanbul kapi"
+  ]
+ },
+ {
+  "name": "Turkic sentence case of a dotless I",
+  "texts": [
+   "IRMAK. IŞIK"
+  ],
+  "mode": "sentence",
+  "language": "tr",
+  "want": [
+   "Irmak. Işık"
+  ]
+ },
+ {
+  "name": "lower case changes the char count, so the abbreviation check is skipped",
+  "texts": [
+   "İ.E. now"
+  ],
+  "mode": "sentence",
+  "language": "de",
+  "want": [
+   "İ.e. Now"
+  ]
+ },
+ {
+  "name": "final sigma needs a cased letter before it",
+  "texts": [
+   "中Σ"
+  ],
+  "mode": "lower",
+  "language": "",
+  "want": [
+   "中σ"
+  ]
+ },
+ {
+  "name": "no final sigma before an apostrophe and a letter",
+  "texts": [
+   "ΑΣ'Β"
+  ],
+  "mode": "lower",
+  "language": "",
+  "want": [
+   "ασ'β"
+  ]
+ }
+]

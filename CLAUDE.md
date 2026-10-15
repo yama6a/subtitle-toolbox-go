@@ -7,7 +7,7 @@ The Go port follows the PHP project yama6a/subtitle-toolbox-php.
 
 - **Language**: Go 1.27, one module, root package `stbox`, binary `stbox`. `CGO_ENABLED=0` must build.
 - **Linting**: golangci-lint v2 with the shared config of yama6a/gha. `.golangci.local.yaml` merges over it.
-- **Allowed modules**: `golang.org/x/text`, `github.com/rivo/uniseg`, `github.com/Eyevinn/mp4ff`, `github.com/asticode/go-astits`, `github.com/dlclark/regexp2`.
+- **Allowed modules**: `golang.org/x/text`, `github.com/rivo/uniseg`, `github.com/Eyevinn/mp4ff`, `github.com/asticode/go-astits`, `github.com/dlclark/regexp2/v2`.
 - **Test module**: `github.com/stretchr/testify`.
 - **Written here**: everything else. EBML is written by hand. Tesseract runs through `os/exec`. PNG uses `image/png`.
 
@@ -54,7 +54,7 @@ make smoke   # run the smoke test on this machine's archive in dist/
 - **Cue order.** A `Subtitle` always holds its cues in start order.
 - **PHP read goldens.** A tool never rewrites them. A deliberate difference is a hand edit with a "Changed:" note in `SOURCES.md` (#9).
 - **Test text.** Right-to-left and CJK text lives in testdata files, never in Go string literals. `bidichk` and `gosmopolitan` fail on it.
-- **Regular expressions.** Use `regexp`. Use `github.com/dlclark/regexp2` only where a pattern needs lookaround or back references, and for user-supplied patterns. Always set `regexp2.Regexp.MatchTimeout`, because `regexp` has no timeout and regexp2 matches can run without limit.
+- **Regular expressions.** Use `regexp`. Use `github.com/dlclark/regexp2/v2` only where a pattern needs lookaround or back references, and for user-supplied patterns. Always set `regexp2.Regexp.MatchTimeout`, because `regexp` has no timeout and regexp2 matches can run without limit.
 - **Files.** The CLI never overwrites a file.
 - **Credit.** Ported or copied code carries its credit line, see CONTRIBUTING.md.
 

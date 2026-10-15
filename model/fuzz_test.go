@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
@@ -146,4 +147,43 @@ func (b *treeBuilder) value(depth int) any {
 	default:
 		return nil
 	}
+}
+
+// FuzzChangeCase runs the 3 case modes with and without the Turkic rules and checks that the tags stay in count
+// and order.
+func FuzzChangeCase(f *testing.F) {
+	f.Add(`<i>STOP</i> tom &amp; <font color="#ff0000">jerry</font> &lt;3`)
+	f.Add(">> I'M HERE. ETC. THEN i.e., NOW\u2026 W<b>I</b>NDOW")
+	f.Add("caf\xe9 <i>NO\xebL</i> \u0130STANBUL \u00df \u03a3")
+	f.Add("- WAIT &nbsp; <00:00:01.500>x <v O'Neil>[BELL]")
+
+	f.Fuzz(func(t *testing.T, line string) {
+		for _, mode := range []model.CaseMode{model.CaseUpper, model.CaseLower, model.CaseSentence} {
+			for _, language := range []string{"", "tr"} {
+				s := &model.Subtitle{}
+				s.AddCues(model.Cue{End: time.Second, Lines: []string{line}}, model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{line}})
+				before := tagsOf(s)
+				if err := s.ChangeCase(mode, language); err != nil {
+					t.Fatalf("ChangeCase(%q, %q) of %q: %v", mode, language, line, err)
+				}
+				if after := tagsOf(s); !slices.Equal(before, after) {
+					t.Fatalf("ChangeCase(%q, %q) of %q changed the tags from %q to %q", mode, language, line, before, after)
+				}
+			}
+		}
+	})
+}
+
+func tagsOf(s *model.Subtitle) []string {
+	var tags []string
+	for _, c := range s.All() {
+		for _, line := range c.Lines {
+			for i, part := range markupcore.SplitTags(line) {
+				if i%2 == 1 {
+					tags = append(tags, part)
+				}
+			}
+		}
+	}
+	return tags
 }
