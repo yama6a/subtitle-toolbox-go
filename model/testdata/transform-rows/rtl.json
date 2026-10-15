@@ -1,0 +1,47 @@
+[
+ {
+  "name": "Arabic",
+  "texts": [
+   "مرحبا، كيف حالك؟"
+  ],
+  "want": [
+   "‫مرحبا، كيف حالك؟‬"
+  ]
+ },
+ {
+  "name": "tags stay outside",
+  "texts": [
+   "<i>שלום!</i>"
+  ],
+  "want": [
+   "<i>‫שלום!‬</i>"
+  ]
+ },
+ {
+  "name": "each line",
+  "texts": [
+   "שלום.\nHi.\n- مرحبا."
+  ],
+  "want": [
+   "‫שלום.‬\nHi.\n‫- مرحبا.‬"
+  ]
+ },
+ {
+  "name": "punctuation first",
+  "texts": [
+   ".מחר"
+  ],
+  "want": [
+   "‫מחר.‬"
+  ]
+ },
+ {
+  "name": "left to right",
+  "texts": [
+   "Hello."
+  ],
+  "want": [
+   "Hello."
+  ]
+ }
+]

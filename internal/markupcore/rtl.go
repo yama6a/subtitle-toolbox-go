@@ -76,7 +76,7 @@ func IsBidiControl(r rune) bool {
 // ends with sentence-end punctuation.
 func splitLeadingPunctuation(middle string) (dash, run, rest, space string, ok bool) {
 	i := 0
-	if r, size := utf8.DecodeRuneInString(middle); isDialogueDash(r) {
+	if r, size := utf8.DecodeRuneInString(middle); IsDialogueDash(r) {
 		i = size + len(middle[size:]) - len(strings.TrimLeft(middle[size:], " \t"))
 	}
 	if strings.HasPrefix(middle[i:], "..") {
@@ -101,10 +101,6 @@ func splitLeadingPunctuation(middle string) (dash, run, rest, space string, ok b
 		return "", "", "", "", false
 	}
 	return middle[:i], middle[i:j], rest, body[len(rest):], true
-}
-
-func isDialogueDash(r rune) bool {
-	return r == '-' || r == '\u2010' || r == '\u2013' || r == '\u2014'
 }
 
 func isSentenceEnd(r rune) bool {
