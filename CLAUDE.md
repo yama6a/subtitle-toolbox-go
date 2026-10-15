@@ -26,7 +26,8 @@ stats/ stream/ hearingimpaired/ fixing/ profanity/ refsync/ diff/ dual/
 internal/      Helpers: markupcore, timecode, textenc, grapheme, ssatag, xmlraw, blocks, subrip, vtt, position,
                parsing, writing, cli, and the test helpers testfiles and golden
 cmd/stbox/     The CLI main. Wiring, no business logic
-testdata/      Fixtures and goldens under the PHP folder names. internal/testfiles finds it from any package
+testdata/      All fixtures and goldens, one folder per topic, PHP folder names for PHP data. Packages read
+               them through internal/testfiles. Only fuzz corpora stay in <package>/testdata/fuzz/
 ```
 
 ## Commands

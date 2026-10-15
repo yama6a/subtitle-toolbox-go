@@ -2,7 +2,6 @@ package markupcore_test
 
 import (
 	"encoding/json"
-	"os"
 	"slices"
 	"testing"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 )
 
 type embedRow struct {
@@ -33,10 +33,8 @@ type letterRow struct {
 func readRows[T any](t *testing.T, name string) []T {
 	t.Helper()
 
-	data, err := os.ReadFile("testdata/rtl/" + name)
-	require.NoError(t, err)
 	var rows []T
-	require.NoError(t, json.Unmarshal(data, &rows))
+	require.NoError(t, json.Unmarshal(testfiles.Read(t, "rtl/"+name), &rows))
 	return rows
 }
 

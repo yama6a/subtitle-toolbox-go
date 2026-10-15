@@ -3,8 +3,6 @@ package model_test
 import (
 	"bytes"
 	"math"
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -13,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/markup"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -51,8 +50,7 @@ func secs(pairs ...[2]float64) [][2]time.Duration {
 func readFixture(tb testing.TB, name string) *model.Subtitle {
 	tb.Helper()
 
-	b, err := os.ReadFile(filepath.Join("testdata", name))
-	require.NoError(tb, err)
+	b := testfiles.Read(tb, name)
 	if strings.HasSuffix(name, ".vtt") {
 		s, warnings, err := webvtt.Read(bytes.NewReader(b), model.CommonReadOptions{}, webvtt.ReadOptions{})
 		require.NoError(tb, err)

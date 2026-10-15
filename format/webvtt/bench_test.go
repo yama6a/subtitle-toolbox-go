@@ -2,8 +2,6 @@ package webvtt_test
 
 import (
 	"bytes"
-	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -22,9 +20,7 @@ const benchCues = 20000
 func repeatWithNotes(tb testing.TB, n int) []byte {
 	tb.Helper()
 
-	content, err := os.ReadFile(filepath.Join(filepath.Dir(testfiles.Root(tb)), "model", "testdata", "editing", "harbour_tour.vtt"))
-	require.NoError(tb, err)
-	harbour, _, err := webvtt.Read(bytes.NewReader(content), model.CommonReadOptions{}, webvtt.ReadOptions{})
+	harbour, _, err := webvtt.Read(bytes.NewReader(testfiles.Read(tb, "editing/harbour_tour.vtt")), model.CommonReadOptions{}, webvtt.ReadOptions{})
 	require.NoError(tb, err)
 	cues, comments := harbour.Cues(), harbour.Comments()
 	s := &model.Subtitle{}

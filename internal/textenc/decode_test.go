@@ -3,7 +3,6 @@ package textenc_test
 import (
 	"encoding/json"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -11,17 +10,14 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/text/encoding/charmap"
 
+	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 )
-
-const fixtures = "../../testdata/encoding"
 
 func readFixture(t *testing.T, name string) []byte {
 	t.Helper()
 
-	data, err := os.ReadFile(filepath.Join(fixtures, filepath.FromSlash(name)))
-	require.NoError(t, err)
-	return data
+	return testfiles.Read(t, "encoding/"+name)
 }
 
 type texts struct {
@@ -34,10 +30,8 @@ type texts struct {
 func readTexts(t *testing.T) texts {
 	t.Helper()
 
-	data, err := os.ReadFile(filepath.Join("testdata", "texts.json"))
-	require.NoError(t, err)
 	var tx texts
-	require.NoError(t, json.Unmarshal(data, &tx))
+	require.NoError(t, json.Unmarshal(testfiles.Read(t, "encoding-detection/texts.json"), &tx))
 	return tx
 }
 
@@ -203,7 +197,7 @@ func TestUndetectedTextKeepsItsBytes(t *testing.T) {
 func TestDecodeUTF16Files(t *testing.T) {
 	t.Parallel()
 
-	entries, err := os.ReadDir(filepath.Join(fixtures, "utf-16-no-bom"))
+	entries, err := os.ReadDir(testfiles.Path(t, "encoding/utf-16-no-bom"))
 	require.NoError(t, err)
 	for _, entry := range entries {
 		if entry.Name() == "SOURCES.md" {
