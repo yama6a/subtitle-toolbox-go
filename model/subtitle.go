@@ -115,24 +115,37 @@ func (s *Subtitle) AddCues(cues ...Cue) {
 		return
 	}
 
-	s.place(append(s.cues, added...), s.anchors(nil))
+	s.place(append(s.cues, added...), s.commentAnchors())
 }
 
-// anchors returns the old cue index of each comment, mapped through anchor when it is not nil,
-// or -1 for a comment after the last cue.
-func (s *Subtitle) anchors(anchor func(old int) int) []int {
+// commentAnchors returns, for each comment, the index of the cue it comes before, or -1 for a comment after the last cue.
+// rebuildComments takes the result after a change of the cue list.
+func (s *Subtitle) commentAnchors() []int {
 	out := make([]int, len(s.comments))
 	for k, c := range s.comments {
-		switch {
-		case c.BeforeCue >= len(s.cues):
+		if c.BeforeCue >= len(s.cues) {
 			out[k] = -1
-		case anchor == nil:
+		} else {
 			out[k] = c.BeforeCue
-		default:
-			out[k] = anchor(c.BeforeCue)
 		}
 	}
 	return out
+}
+
+// rebuildComments puts comment k before the cue at newIndex(anchors[k]) and sorts the comments with a stable sort.
+// A comment goes after the last cue when its anchor is -1 or newIndex returns an index outside the cues.
+func (s *Subtitle) rebuildComments(anchors []int, newIndex func(old int) int) {
+	for k, a := range anchors {
+		i := -1
+		if a >= 0 {
+			i = newIndex(a)
+		}
+		if i < 0 || i >= len(s.cues) {
+			i = len(s.cues)
+		}
+		s.comments[k].BeforeCue = i
+	}
+	sortComments(s.comments)
 }
 
 // insert puts c after the stored cues that start at or before it.
@@ -276,10 +289,13 @@ func (s *Subtitle) ReplaceCues(cues []Cue, anchor func(old int) int) {
 	for i, c := range cues {
 		normalized[i] = c.normalized()
 	}
-	anchors := s.anchors(anchor)
-	if anchor == nil {
-		for k, c := range s.comments {
-			anchors[k] = c.BeforeCue
+	anchors := s.commentAnchors()
+	for k, a := range anchors {
+		switch {
+		case anchor == nil:
+			anchors[k] = s.comments[k].BeforeCue
+		case a >= 0:
+			anchors[k] = anchor(a)
 		}
 	}
 	s.place(normalized, anchors)
@@ -302,15 +318,12 @@ func (s *Subtitle) place(cues []Cue, anchors []int) {
 	}
 	s.cues = sorted
 	s.index = nil
-
-	for k, a := range anchors {
-		if a >= 0 && a < len(cues) {
-			s.comments[k].BeforeCue = position[a]
-		} else {
-			s.comments[k].BeforeCue = len(cues)
+	s.rebuildComments(anchors, func(i int) int {
+		if i >= len(position) {
+			return -1
 		}
-	}
-	sortComments(s.comments)
+		return position[i]
+	})
 }
 
 // CuesAt returns the ascending indexes of the cues on screen at t. A cue is on screen when Start <= t < End.

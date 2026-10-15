@@ -148,18 +148,11 @@ func (r retiming) milliseconds(t time.Duration) float64 {
 	return milliseconds(t)*r.segments[i].factor + r.segments[i].offset
 }
 
-// retime checks every cue whose start affected accepts, or every cue when affected is nil, against the time limit,
-// and only then maps the times of these cues through r and sorts the cues once.
+// retime checks the cues whose start affected accepts against the time limit, and only then maps the times
+// of these cues through r and sorts the cues once. A nil affected accepts every cue.
 func (s *Subtitle) retime(r retiming, affected func(start time.Duration) bool) error {
-	limit := timecode.MaxTime.Seconds()
-	for i, c := range s.cues {
-		if affected != nil && !affected(c.Start) {
-			continue
-		}
-		if end := r.seconds(max(c.Start, c.End)); !(end < limit) { // also true for NaN
-			return invalidArgument(fmt.Sprintf("The retimed cue %d would end at %s s. Cue times must be below %d hours.",
-				i+1, timecode.Number(end), timecode.MaxHours))
-		}
+	if err := checkTimeLimit(s.cues, r, affected); err != nil {
+		return err
 	}
 
 	for i := range s.cues {
@@ -172,7 +165,23 @@ func (s *Subtitle) retime(r retiming, affected func(start time.Duration) bool) e
 	}
 	s.index = nil
 	if !startsInOrder(s.cues) {
-		s.place(s.cues, s.anchors(nil))
+		s.place(s.cues, s.commentAnchors())
+	}
+	return nil
+}
+
+// checkTimeLimit returns an error when r moves the end of a cue whose start affected accepts to the time limit or later.
+// A nil affected accepts every cue.
+func checkTimeLimit(cues []Cue, r retiming, affected func(start time.Duration) bool) error {
+	limit := timecode.MaxTime.Seconds()
+	for i, c := range cues {
+		if affected != nil && !affected(c.Start) {
+			continue
+		}
+		if end := r.seconds(max(c.Start, c.End)); !(end < limit) { // also true for NaN
+			return invalidArgument(fmt.Sprintf("The retimed cue %d would end at %s s. Cue times must be below %d hours.",
+				i+1, timecode.Number(end), timecode.MaxHours))
+		}
 	}
 	return nil
 }
