@@ -23,6 +23,9 @@ type State struct {
 	format   model.Format
 	common   model.CommonReadOptions
 	warnings []model.ParseWarning
+	// badUTF8 and controls are the pre-pass warnings of a LineReader. They come first in the list,
+	// also when the reader finds them after the warnings of earlier blocks.
+	badUTF8, controls *model.ParseWarning
 }
 
 // NewState returns the state of one read of format f.
@@ -45,18 +48,31 @@ func (s *State) LastCueDuration() time.Duration {
 
 // Warnings returns a copy of the warnings of the read, in read order.
 func (s *State) Warnings() []model.ParseWarning {
-	return slices.Clone(s.warnings)
+	if s.badUTF8 == nil && s.controls == nil {
+		return slices.Clone(s.warnings)
+	}
+	out := make([]model.ParseWarning, 0, len(s.warnings)+2)
+	for _, w := range []*model.ParseWarning{s.badUTF8, s.controls} {
+		if w != nil {
+			out = append(out, *w)
+		}
+	}
+	return append(out, s.warnings...)
 }
 
 // Warn records a warning with a copy of lines. It does not check the mode, so strict reads can warn too.
 func (s *State) Warn(msg string, line, block int, lines []string, action model.WarningAction) {
-	s.warnings = append(s.warnings, model.ParseWarning{
+	s.warnings = append(s.warnings, newWarning(msg, line, block, lines, action))
+}
+
+func newWarning(msg string, line, block int, lines []string, action model.WarningAction) model.ParseWarning {
+	return model.ParseWarning{
 		Message: msg,
 		Line:    line,
 		Block:   block,
 		Lines:   slices.Clone(lines),
 		Action:  action,
-	})
+	}
 }
 
 func (s *State) warn(msg string, line int, action model.WarningAction) {
