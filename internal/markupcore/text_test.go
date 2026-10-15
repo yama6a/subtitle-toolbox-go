@@ -1,8 +1,6 @@
 package markupcore_test
 
 import (
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -10,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 )
 
 func TestRubyAsText(t *testing.T) {
@@ -49,9 +48,7 @@ func TestRubyFixture(t *testing.T) {
 
 	read := func(name string) string {
 		t.Helper()
-		b, err := os.ReadFile(filepath.Join("testdata", "ruby", name))
-		require.NoError(t, err)
-		return string(b)
+		return string(testfiles.Read(t, "ruby/"+name))
 	}
 	vttCues := cueTexts(read("own_ruby.vtt"))
 	srtCues := cueTexts(read("own_ruby_expected.srt"))

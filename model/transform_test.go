@@ -1,10 +1,9 @@
 package model_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
-	"os"
-	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
@@ -16,6 +15,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
@@ -33,10 +33,8 @@ func fromTexts(texts ...string) *model.Subtitle {
 func readRows[T any](t *testing.T, name string) []T {
 	t.Helper()
 
-	data, err := os.ReadFile(filepath.Join("testdata", "transform-rows", name))
-	require.NoError(t, err)
 	var rows []T
-	require.NoError(t, json.Unmarshal(data, &rows))
+	require.NoError(t, json.Unmarshal(testfiles.Read(t, "transform-rows/"+name), &rows))
 	require.NotEmpty(t, rows)
 	return rows
 }
@@ -600,11 +598,10 @@ func TestDialogueDashStyle(t *testing.T) {
 func readTransformFixture(tb testing.TB, name string) *model.Subtitle {
 	tb.Helper()
 
-	f, err := os.Open(filepath.Join("testdata", "transforms", name))
-	require.NoError(tb, err)
-	defer f.Close()
+	f := bytes.NewReader(testfiles.Read(tb, "transforms/"+name))
 	var s *model.Subtitle
 	var warnings []model.ParseWarning
+	var err error
 	if strings.HasSuffix(name, ".vtt") {
 		s, warnings, err = webvtt.Read(f, model.CommonReadOptions{}, webvtt.ReadOptions{})
 	} else {

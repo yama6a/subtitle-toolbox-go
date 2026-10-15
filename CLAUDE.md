@@ -26,7 +26,8 @@ stats/ stream/ hearingimpaired/ fixing/ profanity/ refsync/ diff/ dual/
 internal/      Helpers: markupcore, timecode, textenc, grapheme, ssatag, xmlraw, blocks, subrip, vtt, position,
                parsing, writing, cli, and the test helpers testfiles and golden
 cmd/stbox/     The CLI main. Wiring, no business logic
-testdata/      Fixtures and goldens, next to the package that uses them
+testdata/      All fixtures and goldens, one folder per topic, PHP folder names for PHP data. Packages read
+               them through internal/testfiles. Only fuzz corpora stay in <package>/testdata/fuzz/
 ```
 
 ## Commands
@@ -36,7 +37,7 @@ make ci      # tidy-check, generate-check, fmt-check, lint, vet, test, vuln
 make fmt     # rewrite formatting in place
 make test    # go test -race ./...
 make build   # write bin/stbox, VERSION=1.2.3 stamps the version
-make golden  # regenerate Go write goldens, arrives with #9
+make golden  # rewrite the Go write goldens, then review each diff by hand
 make cross   # build and vet for darwin and windows
 make fuzz    # run each fuzz target for 30 s, FUZZTIME=10s shortens it
 make bench   # run the benchmarks, BENCHTIME=1x runs each once
@@ -73,8 +74,18 @@ make smoke   # run the smoke test on this machine's archive in dist/
 - testify: `require` for errors and preconditions, `assert` for values.
 - `t.Parallel()` in every test and subtest.
 - Table-driven.
-- Golden files live in testdata. A test rewrites them with the `-update` flag.
+- Black-box `package x_test`. Only `*_internal_test.go` files use `package x`, for unexported helpers.
 - Fixtures come from real or upstream data, never from invented data.
+- **Read goldens**: the PHP read goldens `<folder>/real/expected/<file>.json`. `readgoldens_test.go` reads each real file and compares canonical JSON. A format issue adds its folder row and its per-file read options there. Never rewrite a read golden with a tool.
+- **Write goldens**: Go's own, in `writegoldens_test.go` or the test of a format package. A round trip without a golden must equal its input after `golden.Normalize`. The package declares `var update = flag.Bool("update", false, "rewrite the write golden files")`. `make golden` rewrites them.
+- **Fuzz targets**: `FuzzRead` in `fuzz_test.go` of each format package, `FuzzDetect` in the root package.
+  - Seeds: every file of the format's testdata folders, plus the short inputs of the table tests.
+  - Each input reads once strict and once lenient, with zero options. A format that cannot read without a setting sets it, for example the MicroDVD frame rate 25.
+  - Checks: no panic. An error matches a sentinel or type of `errors.go` with `errors.Is` or `errors.As`. The cues are in start order. Every time is whole milliseconds and below 100000 h. Writing the result in the same format returns nil or an error that matches `ErrUnwritable`.
+  - Commit each crash input under `<package>/testdata/fuzz/FuzzRead/` with its fix.
+- **Examples**: `example_test.go` in the black-box test package, one per exported entry point, each with `// Output:`. Input is an inline raw string or a file under testdata, ASCII only. Output never depends on map order, the clock or the machine.
+- **Benchmarks**: `b.Loop()`, `b.ReportAllocs()`, input built before the loop, sub-benchmark names such as `cues=20000`. `BenchmarkParse/<format>` in `bench_test.go` of the root package gets a row for each format with a reader.
+- **Growth tests**: run the operation at n and 10n, best of 3 runs each, and fail above a ratio of 30. The top-level test name holds `Growth`. The test skips unless `STBOX_GROWTH=1` is set.
 
 ## Don'ts
 

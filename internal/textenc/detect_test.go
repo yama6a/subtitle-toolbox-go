@@ -2,7 +2,6 @@ package textenc_test
 
 import (
 	"encoding/json"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -12,6 +11,7 @@ import (
 	"golang.org/x/text/encoding/korean"
 	"golang.org/x/text/encoding/simplifiedchinese"
 
+	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 )
 
@@ -23,10 +23,8 @@ type detected struct {
 func readDetected(t *testing.T) map[string]detected {
 	t.Helper()
 
-	data, err := os.ReadFile(filepath.Join("testdata", "detected.json"))
-	require.NoError(t, err)
 	var want map[string]detected
-	require.NoError(t, json.Unmarshal(data, &want))
+	require.NoError(t, json.Unmarshal(testfiles.Read(t, "encoding-detection/detected.json"), &want))
 	return want
 }
 
@@ -36,7 +34,7 @@ func TestDetectCodePage(t *testing.T) {
 	t.Parallel()
 
 	want := readDetected(t)
-	bad, err := filepath.Glob(filepath.Join(fixtures, "invalid-utf-8", "one-bad-byte.*"))
+	bad, err := filepath.Glob(testfiles.Path(t, "encoding/invalid-utf-8/one-bad-byte.*"))
 	require.NoError(t, err)
 	require.Len(t, bad, 10)
 	files := make([]string, 0, 2+len(want)+len(bad))

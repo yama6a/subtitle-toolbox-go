@@ -2,11 +2,11 @@ package markupcore_test
 
 import (
 	"encoding/json"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 )
 
 func FuzzMarkup(f *testing.F) {
@@ -31,10 +31,7 @@ func FuzzMarkup(f *testing.F) {
 }
 
 func FuzzEmbedRightToLeft(f *testing.F) {
-	data, err := os.ReadFile("testdata/rtl/embed.json")
-	if err != nil {
-		f.Fatal(err)
-	}
+	data := testfiles.Read(f, "rtl/embed.json")
 	var rows []struct {
 		In string `json:"in"`
 	}

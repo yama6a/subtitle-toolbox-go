@@ -79,3 +79,13 @@ func ExampleWriteWithReport() {
 	// Rain <c.yellow>and sun</c>
 	// Cue #0 at 4 s: dropped the color "#123456", because WebVTT has classes for 8 colors only.
 }
+
+func ExampleDetect() {
+	fmt.Println(webvtt.Detect([]byte("WEBVTT\n\n00:00:01.500 --> 00:00:04.000\nHello\n")))
+	fmt.Println(webvtt.Detect([]byte("WEBVTTX\n\n00:00:01.500 --> 00:00:04.000\nHello\n")))
+	fmt.Println(webvtt.Detect([]byte("1\n00:00:01,500 --> 00:00:04,000\nHello\n")))
+	// Output:
+	// true
+	// false
+	// false
+}

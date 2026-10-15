@@ -2,7 +2,6 @@ package grapheme_test
 
 import (
 	"encoding/json"
-	"os"
 	"slices"
 	"testing"
 
@@ -10,13 +9,13 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/grapheme"
+	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 )
 
 func TestCount(t *testing.T) {
 	t.Parallel()
 
-	data, err := os.ReadFile("testdata/count.json")
-	require.NoError(t, err)
+	data := testfiles.Read(t, "character-count/count.json")
 	type row struct {
 		Name string `json:"name"`
 		Text string `json:"text"`
