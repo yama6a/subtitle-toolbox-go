@@ -459,5 +459,5 @@ func TestUnwritableContentFailsThatFile(t *testing.T) {
 	assert.Equal(t, exitFile, got.Code)
 	assert.Empty(t, got.Stdout)
 	assert.True(t, strings.HasSuffix(got.Stderr, "\nlatin1.srt: JSON cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. "+
-		"Read a file in another encoding with its source encoding.\n"), got.Stderr)
+		"Read a file in another encoding with its source encoding. Pass --encoding with the source encoding of the file.\n"), got.Stderr)
 }

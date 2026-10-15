@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 )
 
 // The exit codes of docs/errors.md.
@@ -111,13 +112,13 @@ func typedMessage(err error) (string, bool) {
 		if e.Line > 0 {
 			msg = "line " + strconv.Itoa(e.Line) + ": " + msg
 		}
-		return withAdvice(msg, e.Option), true
+		return withAdvice(msg, e.Option, e.Err), true
 	}
 	if e, ok := errors.AsType[*stbox.InvalidArgumentError](err); ok {
-		return withAdvice(e.Msg, e.Option), true
+		return withAdvice(e.Msg, e.Option, nil), true
 	}
 	if e, ok := errors.AsType[*stbox.UnwritableError](err); ok {
-		return withCause(e.Reason, e.Err), true
+		return withAdvice(withCause(e.Reason, e.Err), "", e.Err), true
 	}
 	return "", false
 }
@@ -129,10 +130,14 @@ func withCause(msg string, cause error) string {
 	return msg
 }
 
-// withAdvice adds the CLI sentence for the Go option path that an error names.
-func withAdvice(msg, option string) string {
-	if option == "ReadOptions.Encoding" {
+// withAdvice adds the CLI sentence for the Go option path or the sentinel cause that an error names.
+func withAdvice(msg, option string, cause error) string {
+	switch {
+	case option == "ReadOptions.Encoding":
 		return msg + " Known encodings: " + strings.Join(stbox.Encodings(), ", ") + "."
+	case errors.Is(cause, stboxjson.ErrInvalidUTF8):
+		return msg + " Pass --encoding with the source encoding of the file."
+	default:
+		return msg
 	}
-	return msg
 }

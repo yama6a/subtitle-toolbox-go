@@ -44,6 +44,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 - **Cause**: `Unwrap` of `*ParseError` and `*UnwritableError` returns `Err`, for example a `*json.SyntaxError`. `Error()` shows `Err` only when the message field is empty, because the message quotes the cause where it matters.
 - **Message text**: `Msg` and `Reason` hold a full English sentence, as the PHP library writes it. `Error()` adds a lower-case prefix in Go style. People read these messages in the CLI, and the PHP sentences exist already.
 - **No identifiers in messages**: a message never names a Go identifier or a CLI flag. A missing or bad option goes in `Option` as its Go path, such as `ReadOptions.MicroDVD.FrameRate`. A sentinel in `Err` names an edit that the caller must make first.
+- **Sentinel causes**: a JSON write of text that is not valid UTF-8 sets `Err` to `stboxjson.ErrInvalidUTF8`. Read the input again with its source encoding.
 - **Cue index**: `UnwritableError.CueIndex` is the 0-based index of the first cue that the format cannot hold. It is -1 when no single cue causes the error.
 
 ## Line numbers
