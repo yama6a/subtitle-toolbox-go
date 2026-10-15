@@ -1,0 +1,22 @@
+1
+00:00:01,000 --> 00:00:03,000
+- Are you coming?
+- Yes, in a minute, I promise you.
+
+2
+00:00:03,500 --> 00:00:06,000
+<i>- Did you lock</i> <i>the door?</i>
+<i>- I did.</i>
+
+3
+00:00:06,500 --> 00:00:09,000
+The ferry leaves at seven in the morning.
+
+4
+00:00:09,500 --> 00:00:12,000
+- It is very cold tonight. -20 degrees, they said.
+
+5
+00:00:12,500 --> 00:00:14,000
+Who is there?
+- Only me.

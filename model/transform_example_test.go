@@ -128,3 +128,38 @@ func ExampleSubtitle_EditLines() {
 	// Output:
 	// [1] 2 [{Scene 2 1}]
 }
+
+func ExampleSubtitle_WrapLines() {
+	var s model.Subtitle
+	s.AddCues(
+		model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<i>This is a very long subtitle line that does not fit on the screen</i>"}},
+		model.Cue{Start: 5 * time.Second, End: 7 * time.Second, Lines: []string{"- Are you coming with us to the coast tonight?", "- Yes."}},
+	)
+
+	if err := s.WrapLines(42, 2); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for _, c := range s.All() {
+		fmt.Println(c.Text())
+	}
+	// Output:
+	// <i>This is a very long subtitle line</i>
+	// <i>that does not fit on the screen</i>
+	// - Are you coming with
+	// us to the coast tonight?
+	// - Yes.
+}
+
+func ExampleSubtitle_UnwrapLines() {
+	var s model.Subtitle
+	s.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"- Are you coming?", "- Yes, in a minute,", "I promise you."}})
+
+	s.UnwrapLines()
+
+	fmt.Println(s.Cues()[0].Text())
+	// Output:
+	// - Are you coming?
+	// - Yes, in a minute, I promise you.
+}

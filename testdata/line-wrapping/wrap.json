@@ -1,0 +1,363 @@
+[
+    {
+        "name": "Japanese without spaces",
+        "call": "Wrap",
+        "lines": [
+            "東京は今日とても暑いですね本当に"
+        ],
+        "cpl": 10,
+        "maxLines": 2,
+        "want": [
+            "東京は今日とても",
+            "暑いですね本当に"
+        ]
+    },
+    {
+        "name": "Chinese without spaces",
+        "call": "Wrap",
+        "lines": [
+            "我们明天早上八点在火车站见面，然后一起坐车去北京看望奶奶。"
+        ],
+        "cpl": 16,
+        "maxLines": 2,
+        "want": [
+            "我们明天早上八点在火车站见面，",
+            "然后一起坐车去北京看望奶奶。"
+        ]
+    },
+    {
+        "name": "a break after the full-width comma wins over equal lengths",
+        "call": "Wrap",
+        "lines": [
+            "今天的会议改到下午三点，请大家提前十分钟到三楼的会议室。"
+        ],
+        "cpl": 16,
+        "maxLines": 2,
+        "want": [
+            "今天的会议改到下午三点，",
+            "请大家提前十分钟到三楼的会议室。"
+        ]
+    },
+    {
+        "name": "a break after the ideographic space wins over equal lengths",
+        "call": "Wrap",
+        "lines": [
+            "朝ごはんが一日続く　公園はまだ温かい"
+        ],
+        "cpl": 10,
+        "maxLines": 2,
+        "want": [
+            "朝ごはんが一日続く　",
+            "公園はまだ温かい"
+        ]
+    },
+    {
+        "name": "no line starts with the long vowel mark",
+        "call": "Wrap",
+        "lines": [
+            "スーパーマーケットへ"
+        ],
+        "cpl": 5,
+        "maxLines": 2,
+        "want": [
+            "スーパー",
+            "マーケットへ"
+        ]
+    },
+    {
+        "name": "no line starts with a small kana",
+        "call": "Wrap",
+        "lines": [
+            "ちょっと"
+        ],
+        "cpl": 3,
+        "maxLines": 2,
+        "want": [
+            "ちょっ",
+            "と"
+        ]
+    },
+    {
+        "name": "no line starts with a full-width question mark",
+        "call": "Wrap",
+        "lines": [
+            "你好吗？"
+        ],
+        "cpl": 3,
+        "maxLines": 2,
+        "want": [
+            "你好",
+            "吗？"
+        ]
+    },
+    {
+        "name": "corner brackets stay with their character",
+        "call": "Wrap",
+        "lines": [
+            "「あ」"
+        ],
+        "cpl": 1,
+        "maxLines": 3,
+        "want": [
+            "「あ」"
+        ]
+    },
+    {
+        "name": "no line ends with an opening book title bracket",
+        "call": "Wrap",
+        "lines": [
+            "我们一起读《红楼梦》好吗"
+        ],
+        "cpl": 6,
+        "maxLines": 2,
+        "want": [
+            "我们一起读",
+            "《红楼梦》好吗"
+        ]
+    },
+    {
+        "name": "no line ends with an opening corner bracket",
+        "call": "Wrap",
+        "lines": [
+            "彼女は「はい」"
+        ],
+        "cpl": 3,
+        "maxLines": 2,
+        "want": [
+            "彼女は",
+            "「はい」"
+        ]
+    },
+    {
+        "name": "a line of full-width marks stays whole",
+        "call": "Wrap",
+        "lines": [
+            "！？！？……"
+        ],
+        "cpl": 2,
+        "maxLines": 3,
+        "want": [
+            "！？！？……"
+        ]
+    },
+    {
+        "name": "a line of ideographic full stops stays whole",
+        "call": "Wrap",
+        "lines": [
+            "。。。。"
+        ],
+        "cpl": 2,
+        "maxLines": 2,
+        "want": [
+            "。。。。"
+        ]
+    },
+    {
+        "name": "an empty corner bracket pair stays whole",
+        "call": "Wrap",
+        "lines": [
+            "「」"
+        ],
+        "cpl": 1,
+        "maxLines": 2,
+        "want": [
+            "「」"
+        ]
+    },
+    {
+        "name": "Zoom in Chinese stays whole",
+        "call": "Wrap",
+        "lines": [
+            "明天的会议用Zoom开，链接我稍后发到群里。"
+        ],
+        "cpl": 12,
+        "maxLines": 2,
+        "want": [
+            "明天的会议用Zoom开，",
+            "链接我稍后发到群里。"
+        ]
+    },
+    {
+        "name": "WhatsApp in Chinese on 1 line",
+        "call": "Wrap",
+        "lines": [
+            "我们用WhatsApp联系吧"
+        ],
+        "cpl": 2,
+        "maxLines": 1,
+        "want": [
+            "我们用WhatsApp联系吧"
+        ]
+    },
+    {
+        "name": "WhatsApp in Chinese stays whole on 3 lines",
+        "call": "Wrap",
+        "lines": [
+            "我们用WhatsApp联系吧"
+        ],
+        "cpl": 2,
+        "maxLines": 3,
+        "want": [
+            "我们",
+            "用WhatsApp联",
+            "系吧"
+        ]
+    },
+    {
+        "name": "Windows in Japanese with spaces",
+        "call": "Wrap",
+        "lines": [
+            "新しい Windows の設定が分からない"
+        ],
+        "cpl": 14,
+        "maxLines": 2,
+        "want": [
+            "新しい Windows",
+            "の設定が分からない"
+        ]
+    },
+    {
+        "name": "Tokyo and an invalid byte before Chinese",
+        "call": "Wrap",
+        "lines": [
+            "Tokyo\\xff 我们明天早上八点在火车站见"
+        ],
+        "cpl": 10,
+        "maxLines": 2,
+        "want": [
+            "Tokyo\\xff 我们明",
+            "天早上八点在火车站见"
+        ]
+    },
+    {
+        "name": "Korean breaks at spaces",
+        "call": "Wrap",
+        "lines": [
+            "내일 아침 여덟 시에 기차역에서 만나요"
+        ],
+        "cpl": 12,
+        "maxLines": 2,
+        "want": [
+            "내일 아침 여덟 시에",
+            "기차역에서 만나요"
+        ]
+    },
+    {
+        "name": "Korean without spaces stays whole",
+        "call": "Wrap",
+        "lines": [
+            "기차역에서만나요기차역에서만나요"
+        ],
+        "cpl": 8,
+        "maxLines": 2,
+        "want": [
+            "기차역에서만나요기차역에서만나요"
+        ]
+    },
+    {
+        "name": "tags stay with their Han words",
+        "call": "Wrap",
+        "lines": [
+            "<i>东京</i><b>大阪</b>"
+        ],
+        "cpl": 2,
+        "maxLines": 2,
+        "want": [
+            "<i>东京</i>",
+            "<b>大阪</b>"
+        ]
+    },
+    {
+        "name": "italic Chinese closes and opens at the break",
+        "call": "Wrap",
+        "lines": [
+            "<i>我们明天早上八点在火车站见面，然后一起坐车去北京。</i>"
+        ],
+        "cpl": 16,
+        "maxLines": 2,
+        "want": [
+            "<i>我们明天早上八点在火车站见面，</i>",
+            "<i>然后一起坐车去北京。</i>"
+        ]
+    },
+    {
+        "name": "Chinese lines join without a space",
+        "call": "Wrap",
+        "lines": [
+            "这个周末我们一家人打算开车去海边度假，",
+            "顺便看看那边的老朋友。"
+        ],
+        "cpl": 16,
+        "maxLines": 2,
+        "want": [
+            "这个周末我们一家人打算开车去海",
+            "边度假，顺便看看那边的老朋友。"
+        ]
+    },
+    {
+        "name": "Japanese breaks at spaces too",
+        "call": "Wrap",
+        "lines": [
+            "東京は 今日とても 暑いですね 本当に"
+        ],
+        "cpl": 10,
+        "maxLines": 2,
+        "want": [
+            "東京は 今日とても",
+            "暑いですね 本当に"
+        ]
+    },
+    {
+        "name": "Chinese lines unwrap without a space",
+        "call": "UnwrapTurns",
+        "lines": [
+            "我们明天早上八点在火车站见面，",
+            "然后一起坐车去北京。",
+            "- 好的。"
+        ],
+        "want": [
+            "我们明天早上八点在火车站见面，然后一起坐车去北京。",
+            "- 好的。"
+        ]
+    },
+    {
+        "name": "a Latin word and Chinese unwrap with a space",
+        "call": "UnwrapTurns",
+        "lines": [
+            "用Zoom",
+            "开会"
+        ],
+        "want": [
+            "用Zoom 开会"
+        ]
+    },
+    {
+        "name": "Japanese and a Latin word unwrap with a space",
+        "call": "UnwrapTurns",
+        "lines": [
+            "東京",
+            "Tokyo"
+        ],
+        "want": [
+            "東京 Tokyo"
+        ]
+    },
+    {
+        "name": "visible characters of Japanese",
+        "call": "VisibleCharacters",
+        "lines": [
+            "東京は 今日とても",
+            "暑いですね 本当に"
+        ],
+        "wantCount": 18
+    },
+    {
+        "name": "fewest lines of Chinese",
+        "call": "FewestLines",
+        "lines": [
+            "我们明天早上八点在火车站见面，然后一起坐车去北京看望奶奶。"
+        ],
+        "cpl": 16,
+        "wantCount": 2
+    }
+]

@@ -1,0 +1,64 @@
+[
+    {
+        "name": "Arabic breaks at spaces",
+        "call": "WrapLines",
+        "lines": [
+            "هذا سطر طويل من الترجمة لا يتسع على الشاشة بشكل جيد"
+        ],
+        "cpl": 42,
+        "maxLines": 2,
+        "want": [
+            "هذا سطر طويل من الترجمة لا",
+            "يتسع على الشاشة بشكل جيد"
+        ]
+    },
+    {
+        "name": "Japanese without spaces",
+        "call": "WrapLines",
+        "lines": [
+            "これは字幕の長い行で、画面に収まりません。"
+        ],
+        "cpl": 16,
+        "maxLines": 2,
+        "want": [
+            "これは字幕の長い行で、",
+            "画面に収まりません。"
+        ]
+    },
+    {
+        "name": "Japanese on 2 lines",
+        "call": "WrapLines",
+        "lines": [
+            "これは字幕の長い行で、",
+            "画面に収まりません。"
+        ],
+        "cpl": 16,
+        "maxLines": 2,
+        "want": [
+            "これは字幕の長い行で、",
+            "画面に収まりません。"
+        ]
+    },
+    {
+        "name": "own_rtl_long_wrapped.srt cue 1",
+        "call": "UnwrapLines",
+        "lines": [
+            "‫אתה יכול לסגור‬",
+            "‫את החלון, בבקשה?‬"
+        ],
+        "want": [
+            "‫אתה יכול לסגור את החלון, בבקשה?‬"
+        ]
+    },
+    {
+        "name": "own_rtl_long_wrapped.srt cue 2",
+        "call": "UnwrapLines",
+        "lines": [
+            "<i>‫ראית את החתולה‬</i>",
+            "<i>‫שלי בגינה?‬</i>"
+        ],
+        "want": [
+            "<i>‫ראית את החתולה</i> <i>שלי בגינה?‬</i>"
+        ]
+    }
+]
