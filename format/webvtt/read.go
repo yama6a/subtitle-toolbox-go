@@ -117,7 +117,7 @@ func (r *reader) read(content string) (*model.Subtitle, error) {
 	s := &model.Subtitle{}
 	parsing.AddParsed(s, cues, r.comments)
 	if err := s.SetFormatData(string(model.WebVTT), r.file); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s file data: %w", model.WebVTT, err)
 	}
 	return s, nil
 }
@@ -252,6 +252,12 @@ func (r *reader) splitHeader(lines []line) iter.Seq[blocks.Block] {
 	}
 }
 
+// endsBlock reports whether text ends the block of current. The spec ends a cue only at an empty line.
+// YouTube auto captions put a line with one space into each cue.
+func endsBlock(text string, current []string) bool {
+	return text == "" || phpTrim(text) == "" && !slices.ContainsFunc(current, hasArrow)
+}
+
 func firstTimingLine(lines []string) int {
 	for i, l := range lines[1:] {
 		if hasArrow(l) {
@@ -266,36 +272,52 @@ func firstTimingLine(lines []string) int {
 // the header still fails in strict mode. See https://www.w3.org/TR/webvtt1/#collect-a-webvtt-block.
 func collectBlocks(lines []line, hasBlocks bool) iter.Seq[blocks.Block] {
 	return func(yield func(blocks.Block) bool) {
-		var current []string
-		start := 1
+		c := collector{hasBlocks: hasBlocks}
 		for _, l := range lines {
-			// The spec ends a cue only at an empty line. YouTube auto captions put a line with one space into each cue.
-			if l.text == "" || phpTrim(l.text) == "" && !slices.ContainsFunc(current, hasArrow) {
-				if len(current) > 0 {
-					if !yield(blocks.Block{Line: start, Lines: current}) {
-						return
-					}
-					hasBlocks = true
-				}
-				current = nil
-				continue
+			if b, ok := c.add(l); ok && !yield(b) {
+				return
 			}
-			startsCue := len(current) == 0 || len(current) == 1 && !hasArrow(current[0])
-			if hasArrow(l.text) && !startsCue && hasBlocks {
-				if !yield(blocks.Block{Line: start, Lines: current}) {
-					return
-				}
-				current = nil
-			}
-			if len(current) == 0 {
-				start = l.n + 1
-			}
-			current = append(current, l.text)
 		}
-		if len(current) > 0 {
-			yield(blocks.Block{Line: start, Lines: current})
+		if len(c.current) > 0 {
+			yield(c.block())
 		}
 	}
+}
+
+// collector holds the block that collectBlocks builds.
+type collector struct {
+	current   []string
+	start     int
+	hasBlocks bool
+}
+
+// add adds l to the current block. It returns the block that l ends, if any.
+func (c *collector) add(l line) (blocks.Block, bool) {
+	if endsBlock(l.text, c.current) {
+		if len(c.current) == 0 {
+			return blocks.Block{}, false
+		}
+		b := c.block()
+		c.current = nil
+		c.hasBlocks = true
+		return b, true
+	}
+	var ended blocks.Block
+	ok := false
+	startsCue := len(c.current) == 0 || len(c.current) == 1 && !hasArrow(c.current[0])
+	if hasArrow(l.text) && !startsCue && c.hasBlocks {
+		ended, ok = c.block(), true
+		c.current = nil
+	}
+	if len(c.current) == 0 {
+		c.start = l.n + 1
+	}
+	c.current = append(c.current, l.text)
+	return ended, ok
+}
+
+func (c *collector) block() blocks.Block {
+	return blocks.Block{Line: c.start, Lines: c.current}
 }
 
 // parseHeader reads the header block into the file data.
@@ -320,10 +342,8 @@ func (r *reader) parseHeader(b blocks.Block) error {
 
 // parseBlock reads one block after the header. Lenient mode skips a broken block with a warning.
 func (r *reader) parseBlock(b blocks.Block, index int) error {
-	first := phpTrim(b.Lines[0])
 	var perr *model.ParseError
-	switch {
-	case hasArrow(b.Lines[0]) || len(b.Lines) > 1 && hasArrow(b.Lines[1]):
+	if hasArrow(b.Lines[0]) || len(b.Lines) > 1 && hasArrow(b.Lines[1]) {
 		c, err := r.parseCue(b, index)
 		if err == nil {
 			r.cues = append(r.cues, c)
@@ -332,29 +352,50 @@ func (r *reader) parseBlock(b blocks.Block, index int) error {
 		if !errors.As(err, &perr) {
 			return err
 		}
-	case first == "NOTE" || strings.HasPrefix(first, "NOTE ") || strings.HasPrefix(first, "NOTE\t"):
+	} else {
+		perr = r.parseOtherBlock(b, index)
+	}
+	if perr == nil {
+		return nil
+	}
+	return r.st.Fail(perr, perr.Line, index, b.Lines)
+}
+
+// parseOtherBlock reads a block without a timing line: a comment, a STYLE or REGION block, or an error.
+func (r *reader) parseOtherBlock(b blocks.Block, index int) *model.ParseError {
+	first := phpTrim(b.Lines[0])
+	switch {
+	case isNote(first):
 		r.comments = append(r.comments, parsing.ParsedComment{Text: commentText(b.Lines), CuesBefore: len(r.cues)})
 	case len(r.cues) == 0 && first == "STYLE":
 		r.appendFileData("styles", strings.Join(b.Lines[1:], "\n"))
 	case len(r.cues) == 0 && first == "REGION":
 		r.appendFileData("regions", parseSettings(strings.Join(b.Lines[1:], " "), regionSettings))
 	case keywordRegexp.MatchString(first):
-		// The spec parser ignores every block that is not a cue, so these blocks do not fail.
-		if r.st.Lenient() && (first == "STYLE" || first == "REGION") {
-			r.st.Warn("Block #"+strconv.Itoa(index)+" is a "+first+" block after a cue. The spec allows it only before the first cue, so the parser skipped it.",
-				b.Line, index, b.Lines, model.Skipped)
-		}
+		r.warnLateBlock(b, index, first)
 	default:
-		perr = &model.ParseError{
+		return &model.ParseError{
 			Format: model.WebVTT,
 			Line:   b.Line,
 			Msg:    "Block #" + strconv.Itoa(index) + " is not a WebVTT cue, comment, style or region. The line is " + parsing.Quote(first) + ".",
 		}
 	}
-	if perr == nil {
-		return nil
+	return nil
+}
+
+// isNote reports whether the first line, trimmed, starts a comment block. The keyword is case-sensitive.
+// See https://www.w3.org/TR/webvtt1/#webvtt-comment-block.
+func isNote(first string) bool {
+	return first == "NOTE" || strings.HasPrefix(first, "NOTE ") || strings.HasPrefix(first, "NOTE\t")
+}
+
+// warnLateBlock warns in lenient mode about a STYLE or REGION block after a cue. The spec parser ignores every block
+// that is not a cue, so such blocks do not fail.
+func (r *reader) warnLateBlock(b blocks.Block, index int, first string) {
+	if r.st.Lenient() && (first == "STYLE" || first == "REGION") {
+		r.st.Warn("Block #"+strconv.Itoa(index)+" is a "+first+" block after a cue. The spec allows it only before the first cue, so the parser skipped it.",
+			b.Line, index, b.Lines, model.Skipped)
 	}
-	return r.st.Fail(perr, perr.Line, index, b.Lines)
 }
 
 func (r *reader) appendFileData(key string, value any) {
@@ -376,41 +417,19 @@ func (r *reader) parseCue(b blocks.Block, index int) (model.Cue, error) {
 		timingLine++
 	}
 
-	startText, endPart, _ := strings.Cut(lines[0], arrow)
-	endPart = phpTrim(endPart)
-	endText, settingsText, ok := splitEnd(endPart)
-	if !ok {
-		if !r.st.Lenient() {
-			return model.Cue{}, invalidTime(endPart, timingLine)
-		}
-		endText, settingsText = endPart, ""
-		if i := strings.IndexAny(endPart, " \t"); i >= 0 {
-			endText, settingsText = endPart[:i], strings.TrimLeft(endPart[i:], " \t")
-		}
+	startText, endText, settingsText, err := r.splitTimingLine(lines[0], timingLine)
+	if err != nil {
+		return model.Cue{}, err
 	}
-
 	text := textLines(lines[1:])
 	for i, l := range text {
 		if err := parsing.CheckWordTimestamps([]string{l}, timingLine+1+i); err != nil {
 			return model.Cue{}, err
 		}
 	}
-	var loose []looseTime
-	start, err := r.time(startText, timingLine, &loose)
+	start, end, err := r.cueTimes(startText, endText, timingLine, index, lines)
 	if err != nil {
 		return model.Cue{}, err
-	}
-	end, err := r.time(endText, timingLine, &loose)
-	if err != nil {
-		return model.Cue{}, err
-	}
-	start, end, err = r.st.OrderedTimes(start, end, timingLine, index, lines, true)
-	if err != nil {
-		return model.Cue{}, err
-	}
-	for _, lt := range loose {
-		r.st.Warn("Block #"+strconv.Itoa(index)+" has the time \""+lt.text+"\", which is not in the form hh:mm:ss.mmm. The parser read it as "+
-			timecode.Seconds(lt.d)+" s.", timingLine, index, lines, model.Repaired)
 	}
 
 	c := model.Cue{Start: start, End: end, ID: id}
@@ -421,9 +440,48 @@ func (r *reader) parseCue(b blocks.Block, index int) (model.Cue, error) {
 		settings.Set("alignment", int64(a.Numpad()))
 	}
 	if err := c.SetFormatData(string(model.WebVTT), settings); err != nil {
-		return model.Cue{}, err
+		return model.Cue{}, fmt.Errorf("%s cue data: %w", model.WebVTT, err)
 	}
 	return c, nil
+}
+
+// splitTimingLine splits a timing line at the first arrow into the start, the end and the settings.
+func (r *reader) splitTimingLine(timing string, timingLine int) (start, end, settings string, err error) {
+	start, endPart, _ := strings.Cut(timing, arrow)
+	endPart = phpTrim(endPart)
+	end, settings, ok := splitEnd(endPart)
+	if ok {
+		return start, end, settings, nil
+	}
+	if !r.st.Lenient() {
+		return "", "", "", invalidTime(endPart, timingLine)
+	}
+	if i := strings.IndexAny(endPart, " \t"); i >= 0 {
+		return start, endPart[:i], strings.TrimLeft(endPart[i:], " \t"), nil
+	}
+	return start, endPart, "", nil
+}
+
+// cueTimes reads the start and the end, orders them, and warns about each loose time.
+func (r *reader) cueTimes(startText, endText string, timingLine, index int, lines []string) (time.Duration, time.Duration, error) {
+	var loose []looseTime
+	start, err := r.time(startText, timingLine, &loose)
+	if err != nil {
+		return 0, 0, err
+	}
+	end, err := r.time(endText, timingLine, &loose)
+	if err != nil {
+		return 0, 0, err
+	}
+	start, end, err = r.st.OrderedTimes(start, end, timingLine, index, lines, true)
+	if err != nil {
+		return 0, 0, err
+	}
+	for _, lt := range loose {
+		r.st.Warn("Block #"+strconv.Itoa(index)+" has the time \""+lt.text+"\", which is not in the form hh:mm:ss.mmm. The parser read it as "+
+			timecode.Seconds(lt.d)+" s.", timingLine, index, lines, model.Repaired)
+	}
+	return start, end, nil
 }
 
 // splitEnd splits the text after the arrow into the end time and the settings. Settings may follow the end time
@@ -532,31 +590,38 @@ func settingsAlignment(d *model.Data) (model.Alignment, bool) {
 	}
 	lineValue, hasLine := d.String("line")
 	alignValue, hasAlign := d.String("align")
-	if !hasLine && !hasAlign {
-		return model.BottomCenter, false
-	}
-	var row, column int
-	switch {
-	case !hasLine || lineValue == "-1" || lineValue == "100%,end":
-		row = 0
-	case lineValue == "50%,center":
-		row = 1
-	case lineValue == "0" || lineValue == "0%" || lineValue == "0,start":
-		row = 2
-	default:
-		return model.BottomCenter, false
-	}
-	switch {
-	case alignValue == "left":
-		column = 1
-	case !hasAlign || alignValue == "center":
-		column = 2
-	case alignValue == "right":
-		column = 3
-	default:
+	row, rowOK := settingsRow(lineValue, hasLine)
+	column, columnOK := settingsColumn(alignValue, hasAlign)
+	if !rowOK || !columnOK || !hasLine && !hasAlign {
 		return model.BottomCenter, false
 	}
 	return model.AlignmentAt(row, column)
+}
+
+func settingsRow(line string, ok bool) (int, bool) {
+	switch {
+	case !ok || line == "-1" || line == "100%,end":
+		return 0, true
+	case line == "50%,center":
+		return 1, true
+	case line == "0" || line == "0%" || line == "0,start":
+		return 2, true
+	default:
+		return 0, false
+	}
+}
+
+func settingsColumn(align string, ok bool) (int, bool) {
+	switch {
+	case align == "left":
+		return 1, true
+	case !ok || align == "center":
+		return 2, true
+	case align == "right":
+		return 3, true
+	default:
+		return 0, false
+	}
 }
 
 // commentText returns the text of a NOTE block: the text after NOTE and the other lines, trimmed, without empty lines.

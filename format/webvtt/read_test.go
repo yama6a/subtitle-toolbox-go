@@ -76,7 +76,7 @@ func firstCue(t *testing.T, s *model.Subtitle) model.Cue {
 }
 
 func messages(warnings []model.ParseWarning) []string {
-	out := []string{}
+	out := make([]string, 0, len(warnings))
 	for _, w := range warnings {
 		out = append(out, w.Message)
 	}
@@ -145,7 +145,7 @@ func TestReadSignature(t *testing.T) {
 		{name: "WEBVTTX", content: "WEBVTTX\n", wantErr: true},
 		{name: "a BOM pair", content: "\ufeff\ufeffWEBVTT\r\n\r\n00:01.000 --> 00:02.000\r\nHi\r\n"},
 		{name: "CR line ends", content: "WEBVTT\r\r00:01.000 --> 00:02.000\rHi\r"},
-		{name: "CR CR LF line ends", content: "WEBVTT\r\r\n\r\r\n00:01.000 --> 00:02.000\r\r\nHi\r\r\n"},
+		{name: "2 CRs before each LF", content: "WEBVTT\r\r\n\r\r\n00:01.000 --> 00:02.000\r\r\nHi\r\r\n"},
 		{name: "leading white space", content: " \n\t\nWEBVTT\n\n00:01.000 --> 00:02.000\nHi\n"},
 		{name: "lowercase", content: "webvtt\n", wantErr: true},
 	}
@@ -444,8 +444,10 @@ func TestReadBlocks(t *testing.T) {
 				"NOTE\tbetween\n\n00:03.000 --> 00:04.000\nTwo\n\nNOTE end of file\n\nNOTE\n",
 			texts: []string{"One", "Two"}, ids: []string{"", ""},
 			comments: []model.Comment{
-				{Text: "first line\nsecond line", BeforeCue: 0}, {Text: "between", BeforeCue: 1},
-				{Text: "end of file", BeforeCue: 2}, {Text: "", BeforeCue: 2},
+				{Text: "first line\nsecond line", BeforeCue: 0},
+				{Text: "between", BeforeCue: 1},
+				{Text: "end of file", BeforeCue: 2},
+				{Text: "", BeforeCue: 2},
 			},
 		},
 		{
@@ -592,4 +594,21 @@ func TestReadNULInStrictMode(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, warnings)
 	assert.Equal(t, "a\ufffdb", s.Comments()[0].Text)
+}
+
+func TestReadInvalidUTF8StaysAsBytes(t *testing.T) {
+	t.Parallel()
+
+	const content = "WEBVTT\n\n00:01.000 --> 00:02.000\nA\xffB\n"
+	s, warnings := parse(t, content, false)
+	assert.Equal(t, []string{"A\xffB"}, firstCue(t, s).Lines)
+	assert.Empty(t, warnings)
+	assert.Equal(t, bom+"WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.000\nA\xffB\n", write(t, s, model.CommonWriteOptions{}))
+
+	s, warnings = parse(t, content, true)
+	assert.Equal(t, []string{"A\xffB"}, firstCue(t, s).Lines)
+	assert.Equal(t, []model.ParseWarning{{
+		Message: "The content is not valid UTF-8. The first bad byte is at offset 33. Set the source encoding of the file.",
+		Line:    model.NoLine, Block: model.NoBlock, Action: model.Repaired,
+	}}, warnings)
 }

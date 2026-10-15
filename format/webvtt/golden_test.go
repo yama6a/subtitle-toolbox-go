@@ -97,7 +97,7 @@ func canonical(t *testing.T, v any) string {
 }
 
 func warningsJSON(warnings []model.ParseWarning) []any {
-	out := []any{}
+	out := make([]any, 0, len(warnings))
 	for _, w := range warnings {
 		var line, block any
 		if w.Line != model.NoLine {
@@ -117,7 +117,7 @@ func warningsJSON(warnings []model.ParseWarning) []any {
 
 // subtitleJSON builds the library JSON of version 1 that the read goldens hold.
 func subtitleJSON(s *model.Subtitle) map[string]any {
-	comments := []any{}
+	comments := make([]any, 0, len(s.Comments()))
 	for _, c := range s.Comments() {
 		comments = append(comments, map[string]any{"text": c.Text, "beforeCueIndex": c.BeforeCue})
 	}

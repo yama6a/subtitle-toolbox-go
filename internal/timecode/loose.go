@@ -25,16 +25,10 @@ func Loose(s, separators string, hoursOptional bool) (time.Duration, bool) {
 func loose(s, separators string, withHours bool) (time.Duration, bool) {
 	var hours int
 	if withHours {
-		h, rest, ok := strings.Cut(s, ":")
-		digits := strings.TrimLeft(h, "0")
-		if digits == "" && h != "" {
-			digits = "0"
-		}
-		if !ok || !isDigits(h) || len(digits) > maxLooseHourDigits {
+		var ok bool
+		if hours, s, ok = looseHours(s); !ok {
 			return 0, false
 		}
-		hours = atoi(digits)
-		s = rest
 	}
 	minutes, rest, ok := sexagesimal(s)
 	if !ok || !strings.HasPrefix(rest, ":") {
@@ -44,17 +38,38 @@ func loose(s, separators string, withHours bool) (time.Duration, bool) {
 	if !ok {
 		return 0, false
 	}
-	var tenths int // tenths of a millisecond
-	if rest != "" {
-		fraction := rest[1:]
-		if !strings.Contains(separators, rest[:1]) || len(fraction) > maxLooseFractionDigits || !isDigits(fraction) {
-			return 0, false
-		}
-		tenths = atoi(fraction + strings.Repeat("0", maxLooseFractionDigits-len(fraction)))
+	tenths, ok := looseFraction(rest, separators)
+	if !ok {
+		return 0, false
 	}
 	millis := (tenths + 5) / 10
 	return time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute +
 		time.Duration(seconds)*time.Second + time.Duration(millis)*time.Millisecond, true
+}
+
+// looseHours reads the hours and their colon at the start of s.
+func looseHours(s string) (int, string, bool) {
+	h, rest, ok := strings.Cut(s, ":")
+	digits := strings.TrimLeft(h, "0")
+	if digits == "" && h != "" {
+		digits = "0"
+	}
+	if !ok || !isDigits(h) || len(digits) > maxLooseHourDigits {
+		return 0, s, false
+	}
+	return atoi(digits), rest, true
+}
+
+// looseFraction reads an optional separator and fraction, in tenths of a millisecond.
+func looseFraction(s, separators string) (int, bool) {
+	if s == "" {
+		return 0, true
+	}
+	fraction := s[1:]
+	if !strings.Contains(separators, s[:1]) || len(fraction) > maxLooseFractionDigits || !isDigits(fraction) {
+		return 0, false
+	}
+	return atoi(fraction + strings.Repeat("0", maxLooseFractionDigits-len(fraction))), true
 }
 
 // sexagesimal reads a field of 1 digit, or of 2 digits below 60, at the start of s.

@@ -36,7 +36,7 @@ func (r Rules) HasTimingLine(lines []string) bool {
 // A first line that looks like a broken time keeps the block apart, so the reader still skips it with a warning.
 func (r Rules) IsCueTextBlock(lines []string) bool {
 	return !r.HasTimingLine(lines) &&
-		!(r.HasCueNumbers && IsNumeric(lines[0])) &&
+		(!r.HasCueNumbers || !IsNumeric(lines[0])) &&
 		!brokenTimeRegexp.MatchString(lines[0]) && !strings.Contains(lines[0], "->")
 }
 
@@ -49,7 +49,7 @@ func JoinCueTextBlocks(blocks iter.Seq[Block], r Rules, isOther func(lines []str
 		var pending *Block
 		index := 0
 		for b := range blocks {
-			if pending != nil && r.IsCueTextBlock(b.Lines) && (isOther == nil || !isOther(b.Lines)) && r.HasTimingLine(pending.Lines) {
+			if pending != nil && r.joins(pending.Lines, b.Lines, isOther) {
 				if onJoin != nil {
 					onJoin(index, b.Line, b.Lines)
 				}
@@ -68,6 +68,10 @@ func JoinCueTextBlocks(blocks iter.Seq[Block], r Rules, isOther func(lines []str
 			yield(*pending)
 		}
 	}
+}
+
+func (r Rules) joins(pending, lines []string, isOther func(lines []string) bool) bool {
+	return r.IsCueTextBlock(lines) && (isOther == nil || !isOther(lines)) && r.HasTimingLine(pending)
 }
 
 // JoinWarning returns the lenient warning of a join by JoinCueTextBlocks.

@@ -106,6 +106,8 @@ func TestWriteDocument(t *testing.T) {
 		{
 			name: "cue numbers for cues without a usable identifier",
 			s: func(t *testing.T) *model.Subtitle {
+				t.Helper()
+
 				one := cue(sec, 2*sec, "One")
 				one.ID = "intro"
 				three := cue(5*sec, 6*sec, "Three")
@@ -124,23 +126,37 @@ func TestWriteDocument(t *testing.T) {
 		},
 		{
 			name: "a cue without text",
-			s:    func(t *testing.T) *model.Subtitle { return subtitle(t, cue(sec, 2*sec)) },
+			s: func(t *testing.T) *model.Subtitle {
+				t.Helper()
+
+				return subtitle(t, cue(sec, 2*sec))
+			},
 			want: bom + "WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.000\n",
 		},
 		{
 			name: "a negative start and hours of 3 digits",
-			s:    func(t *testing.T) *model.Subtitle { return subtitle(t, cue(-sec, 100*time.Hour, "x")) },
+			s: func(t *testing.T) *model.Subtitle {
+				t.Helper()
+
+				return subtitle(t, cue(-sec, 100*time.Hour, "x"))
+			},
 			want: bom + "WEBVTT\n\n1\n00:00:00.000 --> 100:00:00.000\nx\n",
 		},
 		{
-			name:   "CR LF and no BOM",
-			s:      func(t *testing.T) *model.Subtitle { return subtitle(t, cue(sec, 2*sec, "a", "b")) },
+			name: "CR LF and no BOM",
+			s: func(t *testing.T) *model.Subtitle {
+				t.Helper()
+
+				return subtitle(t, cue(sec, 2*sec, "a", "b"))
+			},
 			common: model.CommonWriteOptions{LineEnding: model.CRLF, BOM: model.BOMRemove},
 			want:   "WEBVTT\r\n\r\n1\r\n00:00:01.000 --> 00:00:02.000\r\na\r\nb\r\n",
 		},
 		{
 			name: "comments past the last cue go after it",
 			s: func(t *testing.T) *model.Subtitle {
+				t.Helper()
+
 				s := subtitle(t, cue(sec, 2*sec, "One"))
 				require.NoError(t, s.AddComment("first", 0))
 				require.NoError(t, s.AddComment("far", 7))
@@ -152,6 +168,8 @@ func TestWriteDocument(t *testing.T) {
 		{
 			name: "file data: header lines, regions in stored order, then styles",
 			s: func(t *testing.T) *model.Subtitle {
+				t.Helper()
+
 				s := &model.Subtitle{}
 				require.NoError(t, s.SetFormatData("vtt", model.NewData(
 					model.Field{Key: "styles", Value: []any{"::cue { color: red }"}},

@@ -89,8 +89,9 @@ func header(file *model.Data) string {
 
 // fileBlocks returns the REGION blocks, then the STYLE blocks.
 func fileBlocks(file *model.Data) []string {
-	var out []string
 	regions, _ := file.Get("regions")
+	styles, _ := file.Strings("styles")
+	out := make([]string, 0, len(values(regions))+len(styles))
 	for _, region := range values(regions) {
 		lines := []string{"REGION"}
 		switch region := region.(type) {
@@ -107,7 +108,6 @@ func fileBlocks(file *model.Data) []string {
 		}
 		out = append(out, strings.Join(lines, "\n"))
 	}
-	styles, _ := file.Strings("styles")
 	for _, style := range styles {
 		out = append(out, "STYLE\n"+style)
 	}

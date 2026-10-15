@@ -117,7 +117,7 @@ func TestReadRealFileDetails(t *testing.T) {
 		s := readFile(t, filepath.Join(realDir, "w3c_regions.vtt"))
 		d, _ := s.FormatData("vtt")
 		regions, _ := d.List("regions")
-		var ids []string
+		ids := make([]string, 0, len(regions))
 		for _, r := range regions {
 			id, _ := r.(*model.Data).String("id")
 			ids = append(ids, id)
@@ -177,7 +177,7 @@ func TestReadRealFileDetails(t *testing.T) {
 		s := readFile(t, filepath.Join(realDir, "webvttpy_comments.vtt"))
 		d, _ := s.FormatData("vtt")
 		assert.Equal(t, vttData(model.Field{Key: "header", Value: "- Translation of a weather report"}), d)
-		var before []int
+		before := make([]int, 0, len(s.Comments()))
 		for _, c := range s.Comments() {
 			before = append(before, c.BeforeCue)
 		}
