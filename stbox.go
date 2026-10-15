@@ -102,3 +102,9 @@ const (
 	Skipped  = model.Skipped
 	Repaired = model.Repaired
 )
+
+// The values of ParseWarning.Line and ParseWarning.Block for a warning without a line or a block.
+const (
+	NoLine  = model.NoLine
+	NoBlock = model.NoBlock
+)
