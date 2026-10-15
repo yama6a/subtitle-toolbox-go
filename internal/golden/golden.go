@@ -27,8 +27,8 @@ func Equal(tb testing.TB, path string, got []byte, update bool) {
 	compare(tb, path, want, got)
 }
 
-// RoundTrip compares got with the golden file at golden when it exists, and with the normalised
-// input file otherwise. With update set, it writes or deletes the golden file first.
+// RoundTrip compares got byte for byte with the golden file at golden when it exists. Otherwise it compares
+// the normalised got with the normalised input file. With update set, it writes or deletes the golden file first.
 func RoundTrip(tb testing.TB, input, golden string, got []byte, update bool) {
 	tb.Helper()
 
@@ -39,7 +39,7 @@ func RoundTrip(tb testing.TB, input, golden string, got []byte, update bool) {
 	}
 	in = Normalize(in)
 	if update {
-		if bytes.Equal(in, got) {
+		if bytes.Equal(in, Normalize(got)) {
 			if err := os.Remove(golden); err != nil && !errors.Is(err, fs.ErrNotExist) {
 				tb.Fatalf("delete golden file: %v", err)
 			}
@@ -50,7 +50,7 @@ func RoundTrip(tb testing.TB, input, golden string, got []byte, update bool) {
 	want, err := os.ReadFile(golden)
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
-		compare(tb, input, in, got)
+		compare(tb, input, in, Normalize(got))
 	case err != nil:
 		tb.Fatalf("read golden file: %v", err)
 	default:
