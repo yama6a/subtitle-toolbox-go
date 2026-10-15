@@ -9,8 +9,8 @@ on:
     branches: [main]  # go-ci saves its caches only from non-PR runs
 
 concurrency:
-  # The action keeps the `opened` and `labeled` runs of `gh pr create --label` from cancelling each other, while two pushes still do.
-  group: ci-${{ github.ref }}-${{ github.event.action }}
+  # Only push runs of a PR share a group, so a label event never cancels another run.
+  group: ci-${{ github.ref }}-${{ github.event.action == 'synchronize' && 'sync' || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }} # a push run on main always finishes
 
 permissions:
