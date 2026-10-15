@@ -1,4 +1,4 @@
-package webvtt
+package vtt
 
 import (
 	"regexp"
@@ -16,35 +16,51 @@ var (
 	whiteSpaceRunRegexp  = regexp.MustCompile(`[\t\n\v\f\r ]+`)
 )
 
-// collapseRollingCues collapses the rolling cues of YouTube automatic captions, as yt-dlp --write-auto-subs saves
+// Rolling collapses the rolling cues of YouTube automatic captions, as yt-dlp --write-auto-subs saves
 // them. Each cue repeats the line of the cue before it above a new line with <c> word timestamps, and a 10 ms cue
 // that repeats the last line follows each cue. The collapse drops the 10 ms cues and the repeated lines, and the
 // next cue starts where the dropped 10 ms cue started. It starts only once a cue has <c> word timestamps.
 //
-// It changes cues in place and returns the indexes of the cues to keep, in file order. It decides about a
-// 10 ms cue at the cue after it, so a stream needs to hold at most 2 cues.
-func collapseRollingCues(cues []model.Cue) []int {
-	kept := make([]int, 0, len(cues))
-	var held []int
-	active := false
-	for i := range cues {
-		active = active || cWordTimestampRegexp.MatchString(cues[i].Text())
-		if len(held) == 2 && active {
-			removeRepeatedLine(&cues[i], cues[held[1]])
-			kept = append(kept, held[0])
-			held = held[:0]
-		}
-		if len(held) == 1 && repeatsLastLine(cues[i], cues[held[0]]) {
-			held = append(held, i)
-			continue
-		}
-		kept = append(kept, held...)
-		held = append(held[:0], i)
+// It decides about a 10 ms cue at the cue after it, so it holds at most 2 cues.
+type Rolling struct {
+	held   []Kept
+	active bool
+	next   int
+}
+
+// Kept is a cue that the collapse keeps and its 0-based index among the cues that went in.
+type Kept struct {
+	Index int
+	Cue   model.Cue
+}
+
+// Push adds the next cue of the file and appends the cues that are now final to out, in file order.
+func (r *Rolling) Push(c model.Cue, out []Kept) []Kept {
+	i := r.next
+	r.next++
+	r.active = r.active || cWordTimestampRegexp.MatchString(c.Text())
+	if len(r.held) == 2 && r.active {
+		removeRepeatedLine(&c, r.held[1].Cue)
+		out = append(out, r.held[0])
+		r.held = r.held[:0]
 	}
-	if len(held) == 2 && active {
-		held = held[:1]
+	if len(r.held) == 1 && repeatsLastLine(c, r.held[0].Cue) {
+		r.held = append(r.held, Kept{Index: i, Cue: c})
+		return out
 	}
-	return append(kept, held...)
+	out = append(out, r.held...)
+	r.held = append(r.held[:0], Kept{Index: i, Cue: c})
+	return out
+}
+
+// Flush appends the cues that are left at the end of the file to out. The collapse drops a last 10 ms cue.
+func (r *Rolling) Flush(out []Kept) []Kept {
+	if len(r.held) == 2 && r.active {
+		r.held = r.held[:1]
+	}
+	out = append(out, r.held...)
+	r.held = r.held[:0]
+	return out
 }
 
 func repeatsLastLine(c, previous model.Cue) bool {
