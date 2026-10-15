@@ -23,7 +23,7 @@ import (
 
 const (
 	memoryLimit = 2 << 20
-	sampleEvery = 512
+	sampleEvery = memoryCues / 20
 	cueBytes    = 50
 )
 
@@ -35,12 +35,16 @@ func liveHeap() uint64 {
 }
 
 // heapGrowth runs fn, which calls sample now and then, and returns the highest live heap size that sample saw
-// above the live heap size before fn. A collection that runs while fn works makes the live size current.
+// above the live heap size before fn. Sample runs a full collection first, so the size holds what fn keeps
+// and no garbage. The garbage between two collections depends on the machine, and the test does not measure it.
 func heapGrowth(fn func(sample func())) uint64 {
 	runtime.GC()
 	before := liveHeap()
 	var peak uint64
-	fn(func() { peak = max(peak, liveHeap()) })
+	fn(func() {
+		runtime.GC()
+		peak = max(peak, liveHeap())
+	})
 	return peak - min(peak, before)
 }
 
