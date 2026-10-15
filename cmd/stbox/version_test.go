@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNormalizeVersion(t *testing.T) {
@@ -39,7 +40,7 @@ func TestBuildVersion(t *testing.T) {
 	t.Parallel()
 
 	got := buildVersion()
-	assert.NotEmpty(t, got)
+	require.NotEmpty(t, got)
 	assert.NotEqual(t, "(devel)", got)
 	assert.NotEqual(t, "v", got[:1])
 }

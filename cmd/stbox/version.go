@@ -5,10 +5,9 @@ import (
 	"strings"
 )
 
-// version is stamped by release builds with -ldflags "-X main.version=1.2.3".
+// Release builds set version with -ldflags "-X main.version=1.2.3".
 var version = "dev"
 
-// buildVersion returns version, or the module version from debug.ReadBuildInfo when version is "dev".
 func buildVersion() string {
 	if version != "dev" {
 		return normalizeVersion(version)

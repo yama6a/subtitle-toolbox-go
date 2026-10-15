@@ -50,7 +50,7 @@ make image   # build the container image, the Dockerfile arrives with #4
 - **Cue order.** A `Subtitle` always holds its cues in start order.
 - **PHP read goldens.** A tool never rewrites them. A deliberate difference is a hand edit with a "Changed:" note in `SOURCES.md` (#9).
 - **Test text.** Right-to-left and CJK text lives in testdata files, never in Go string literals. `bidichk` and `gosmopolitan` fail on it.
-- **Regular expressions.** Use `regexp`. Use `github.com/dlclark/regexp2` only where a pattern needs lookaround or back references, and for user-supplied patterns. Always set a match timeout.
+- **Regular expressions.** Use `regexp`. Use `github.com/dlclark/regexp2` only where a pattern needs lookaround or back references, and for user-supplied patterns. Always set `regexp2.Regexp.MatchTimeout`, because `regexp` has no timeout and regexp2 matches can run without limit.
 - **Files.** The CLI never overwrites a file.
 - **Credit.** Ported or copied code carries its credit line, see CONTRIBUTING.md.
 
