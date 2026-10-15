@@ -137,6 +137,10 @@ func TestVisibleLength(t *testing.T) {
 		{"docs example", "<i>Caf\u00e9</i> &amp; tea ", 10},
 		{"no-break space is not trimmed", "\u00a0a\u00a0", 3},
 		{"invalid UTF-8 counts bytes", "Caf\xe9", 4},
+		{"combining mark", "<i>Cafe\u0301</i>", 4},
+		{"emoji sequence", "\U0001f468\u200d\U0001f469\u200d\U0001f467 \U0001f44d\U0001f3fd", 3},
+		{"bidi marks count 0", "\u202bab\u202c", 2},
+		{"entity of a combining mark", "e&#769;", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

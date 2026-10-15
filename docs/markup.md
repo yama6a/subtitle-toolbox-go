@@ -69,4 +69,4 @@ fmt.Println(markup.HasVisibleText([]string{"<i></i>", " "}))
 ```
 
 - **Word timestamps**: `InsertWordTimestamps` escapes the text and skips a word without a start or a word that it does not find. `MapWordTimestamps` and `Cue.MapWordTimestamps` round each new time to whole milliseconds and make a negative time 0.
-- **Visible length**: `VisibleLength` counts the characters of the text without tags, with entities decoded and trimmed. U+00A0 is not trimmed.
+- **Visible length**: `VisibleLength` counts the characters of the text without tags, with entities decoded and trimmed. U+00A0 is not trimmed. A character is a grapheme cluster of UAX #29, so `Cafe` plus U+0301 counts 4 and a thumbs-up with a skin tone counts 1. The soft hyphen U+00AD, the zero-width space U+200B, the BOM U+FEFF and the bidi controls count 0. Invalid UTF-8 counts its bytes. [grapheme.go](../internal/grapheme/grapheme.go) names the Unicode version.

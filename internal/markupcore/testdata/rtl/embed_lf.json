@@ -1,0 +1,8 @@
+[
+  {"name": "tag before a final LF", "in": "<i>שלום</i>\n", "want": "<i>\u202bשלום\u202c</i>\n"},
+  {"name": "final LF", "in": "مرحبا\n", "want": "\u202bمرحبا\u202c\n"},
+  {"name": "two final LFs", "in": "שלום\n\n", "want": "\u202bשלום\n\u202c\n"},
+  {"name": "punctuation first and a final LF", "in": ".מחר\n", "want": "\u202bמחר.\u202c\n"},
+  {"name": "marks and a final LF", "in": "\u202bשלום\u202c\n", "want": "\u202bשלום\u202c\n"},
+  {"name": "left to right with a final LF", "in": "Hello\n", "want": "Hello\n"}
+]
