@@ -100,9 +100,10 @@ func TestEveryReadGoldenHasARealFile(t *testing.T) {
 					got = append(got, name)
 				}
 			}
-			var want []string
-			for _, file := range g.realFiles(t) {
-				want = append(want, file+".json")
+			files := g.realFiles(t)
+			want := make([]string, len(files))
+			for i, file := range files {
+				want[i] = file + ".json"
 			}
 			assert.ElementsMatch(t, want, got)
 		})
