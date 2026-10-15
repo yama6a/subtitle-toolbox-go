@@ -1,0 +1,26 @@
+﻿1
+00:01:39,000 --> 00:01:41,040
+(train brakes squeal)
+
+2
+00:02:04,080 --> 00:02:07,120 X1:40 X2:600 Y1:20 Y2:50
+CONDUCTOR:
+Next stop is the bakery.
+
+3
+00:02:12,160 --> 00:02:15,200
+The rain has stopped.
+
+4
+00:02:20,240 --> 00:02:22,280
+Bread is still warm.
+
+5
+00:02:28,320 --> 00:02:31,360
+We take the last train
+back to the city.
+
+6
+00:02:31,400 --> 00:02:33,440
+(radio playing
+soft piano music)

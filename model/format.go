@@ -45,7 +45,7 @@ var formatFacts = []formatFact{
 	{format: MPSub, extensions: []string{"mpsub"}},
 	{format: SAMI, extensions: []string{"smi", "sami"}},
 	{format: SBV, extensions: []string{"sbv"}},
-	{format: SubRip, extensions: []string{"srt"}},
+	{format: SubRip, extensions: []string{"srt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubViewer, extensions: []string{"sub"}},
 	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}},
 	{format: TSV, extensions: []string{"tsv"}},
