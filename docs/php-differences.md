@@ -13,3 +13,8 @@ Go matches the PHP library byte for byte, except for the behaviour below. Each r
 | list of the file format data keys | only the cue has `getAllFormatData()` | `FormatDataKeys()` on `Subtitle` and on `Cue` | #12 |
 | order of the format data keys | insertion order | sorted | #12 |
 | cue data `alignment` that is not an integer, such as `"7"` | counts as a changed alignment, also for a bottom center cue | counts as missing, so as 2 | #12 |
+| `Scale` or `SyncByPoints` result on a half millisecond in decimal, such as `Scale(1.5)` of 9 ms or `Scale(1.001)` of 500 ms | computes in seconds. A cue time rounds with `round($x, 3)`: 13 ms and 501 ms. A word timestamp rounds with `round($x * 1000)`: 13 ms and 500 ms | computes in `float64` milliseconds and rounds with `math.Round`: 14 ms and 500 ms, for cue times and word timestamps | #34 |
+| `Shift`, or `SyncByPoints` with 1 point, by a fraction of a millisecond, such as `Shift(500*time.Microsecond)` of 1.001 s or `Shift(-500*time.Microsecond)` of 2.001 s | adds in binary seconds, so 1.001 + 0.0005 is 1.0014999999999998: 1.001 s and 2 s | adds exact nanoseconds and rounds half away from zero: 1.002 s and 2.001 s | #34 |
+| a large number in the time limit message of a retiming, such as `Scale(1e300)` | `8.0E+300` | `8e+300` | #34 |
+| a word timestamp that a retiming moves beyond 2562046:59:59.999, such as `Scale(10)` of `<2000000:00:00.000>` | writes the moved time `<20000000:00:00.000>` | writes `<2562046:59:59.999>`, the largest time that `WordTimestamp` reads | #34 |
+| a shift or a sync point time that is NaN or infinite | `shift()` and `SyncPoint` throw an `InvalidArgumentException` | cannot occur, because a `time.Duration` is an integer | #34 |
