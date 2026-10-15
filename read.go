@@ -47,7 +47,7 @@ func parse(content []byte, opts ReadOptions) (*Subtitle, ReadInfo, error) {
 	}
 	text, err := textenc.Decode(content, opts.Encoding)
 	if err != nil {
-		return nil, ReadInfo{}, &ParseError{Format: opts.Format, Msg: err.Error()}
+		return nil, ReadInfo{}, &ParseError{Format: opts.Format, Msg: err.Error(), Err: err}
 	}
 	if opts.Format == "" {
 		f, ok := Detect(text.Text)
@@ -72,10 +72,8 @@ func read(row formatFuncs, text textenc.Decoded, opts ReadOptions) (*Subtitle, R
 	return s, ReadInfo{Format: row.format, SourceEncoding: text.Encoding, Warnings: warnings}, nil
 }
 
-// decodeWarning returns a Repaired warning without a line or a block, once model.ParseWarning has the fields of
-// https://github.com/yama6a/subtitle-toolbox-go/issues/17.
-func decodeWarning(string) ParseWarning {
-	return ParseWarning{}
+func decodeWarning(msg string) ParseWarning {
+	return ParseWarning{Message: msg, Line: NoLine, Block: NoBlock, Action: Repaired}
 }
 
 func readable(f Format) (formatFuncs, error) {

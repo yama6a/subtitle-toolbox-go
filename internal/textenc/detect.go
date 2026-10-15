@@ -55,8 +55,6 @@ type scored struct {
 	broken bool
 }
 
-// scoreCandidates returns the candidates that decode the sample, best first. A multi-byte candidate that fails
-// scores only the lines that it decodes and is broken.
 func scoreCandidates(s []byte) []scored {
 	var list []scored
 	for _, c := range candidates {
@@ -75,9 +73,9 @@ func scoreCandidates(s []byte) []scored {
 	return list
 }
 
-// ScoreText returns the score per non-ASCII rune of UTF-8 text in the language of languages that fits best, as
-// DetectCodePage scores a candidate. Text without a non-ASCII rune scores 0. languages holds alphabet codes such
-// as "cs" or "zh-Hans".
+// ScoreText returns the score per non-ASCII rune of UTF-8 text in the language of languages that fits best.
+// It scores as DetectCodePage does, without the cut-off that turns a score of 0.5 or less into 0, as PHP scoreText.
+// Text without a non-ASCII rune scores 0. languages holds alphabet codes such as "cs" or "zh-Hans".
 func ScoreText(text string, languages []string) float64 {
 	sum, n := rawScore(text, languages)
 	if n == 0 {
@@ -116,8 +114,6 @@ func decodableLines(e Encoding, s []byte) []byte {
 	return bytes.Join(lines, []byte("\n"))
 }
 
-// candidateScore returns false when e cannot decode s or decodes a C1 control. A score of minScore or less marks
-// implausible text and becomes 0.
 func candidateScore(e Encoding, s []byte, languages []string) (float64, bool) {
 	text, ok := e.Decode(s)
 	if !ok || hasC1(text) {
@@ -131,7 +127,6 @@ func candidateScore(e Encoding, s []byte, languages []string) (float64, bool) {
 	return score, true
 }
 
-// rawScore returns the letter score plus the symbol score minus the penalty, and the count of non-ASCII runes.
 func rawScore(text string, languages []string) (float64, int) {
 	counts := map[rune]int{}
 	n := 0
@@ -156,7 +151,6 @@ func rawScore(text string, languages []string) (float64, int) {
 	return float64(letterScore(letters, languages) + symbols - penalty(text)), n
 }
 
-// letterScore returns the score of the language that fits letters best, 0 without letters.
 func letterScore(letters map[rune]int, languages []string) int {
 	if len(letters) == 0 {
 		return 0
@@ -230,7 +224,6 @@ func linePenalty(line string) (int, bool) {
 	return max(0, upper-lower), lowerStart
 }
 
-// caseChanges counts a small letter followed by a capital, scanned without overlap, when one of the 2 is outside ASCII.
 func caseChanges(text []rune) int {
 	n := 0
 	for i := 0; i+1 < len(text); i++ {
@@ -252,7 +245,6 @@ func isNonLatin(r rune) bool {
 	return unicode.In(r, unicode.Greek, unicode.Cyrillic, unicode.Arabic, unicode.Hebrew, unicode.Thai)
 }
 
-// isScriptSwitch reports a Latin rune next to a Greek, Cyrillic, Arabic, Hebrew or Thai rune at i and i+1.
 func isScriptSwitch(text []rune, i int) bool {
 	if i+1 == len(text) {
 		return false
@@ -261,7 +253,6 @@ func isScriptSwitch(text []rune, i int) bool {
 	return isLatin(a) && isNonLatin(b) || isNonLatin(a) && isLatin(b)
 }
 
-// isSymbolInWord reports a rune between 2 letters that is not a letter, a mark, white space or ASCII.
 func isSymbolInWord(text []rune, i int) bool {
 	return i > 0 && i+1 < len(text) && unicode.IsLetter(text[i-1]) && unicode.IsLetter(text[i+1]) && isWordSymbol(text[i])
 }

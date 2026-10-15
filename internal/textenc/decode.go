@@ -92,7 +92,6 @@ func fromBOM(data []byte) (Decoded, bool, error) {
 	return Decoded{}, false, nil
 }
 
-// guess keeps data as UTF-8 when it is valid, holds a NUL byte or is mostly UTF-8. Else detection picks the code page.
 func guess(data []byte) Decoded {
 	if utf8.Valid(data) || bytes.IndexByte(data, 0) >= 0 || mostlyUTF8(data) {
 		return Decoded{Text: data, Encoding: "UTF-8"}
@@ -116,7 +115,6 @@ func decodeAs(data []byte, name, warning string) (Decoded, error) {
 	return Decoded{Text: text, Encoding: name, Warning: warning}, nil
 }
 
-// isWide reports whether name starts as a UTF-16, UTF-32, UCS-2 or UCS-4 name, as iconv spells them.
 func isWide(name string) bool {
 	name = strings.ToUpper(name)
 	for _, p := range []string{"UTF16", "UTF-16", "UTF32", "UTF-32", "UCS2", "UCS-2", "UCS4", "UCS-4"} {

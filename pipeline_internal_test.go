@@ -62,11 +62,15 @@ func utf8Text(content string) textenc.Decoded {
 func TestDecodeWarningComesFirstInLenientMode(t *testing.T) {
 	t.Parallel()
 
-	text := textenc.Decoded{Text: []byte("Hel\x01lo\n"), Encoding: "UTF-16LE", Warning: "The content is UTF-16LE without a BOM."}
+	const msg = "The content is UTF-16LE without a BOM."
+	text := textenc.Decoded{Text: []byte("Hel\x01lo\n"), Encoding: "UTF-16LE", Warning: msg}
 	_, info, err := read(stubRow, text, ReadOptions{Lenient: true})
 	require.NoError(t, err)
 	assert.Equal(t, "UTF-16LE", info.SourceEncoding)
-	assert.Len(t, info.Warnings, 2)
+	assert.Equal(t, []ParseWarning{
+		{Message: msg, Line: NoLine, Block: NoBlock, Action: Repaired},
+		{Message: "The file has control characters, the first on line 1. The parser removed them.", Line: 1, Block: NoBlock, Action: Repaired},
+	}, info.Warnings)
 
 	_, info, err = read(stubRow, text, ReadOptions{})
 	require.NoError(t, err)
@@ -121,7 +125,7 @@ func TestReadErrorGivesNoSubtitleAndNoInfo(t *testing.T) {
 func TestEachReadStartsWithoutWarnings(t *testing.T) {
 	t.Parallel()
 
-	broken := decode([]byte("Hello\nThe fer\x00ry\n"))
+	broken := utf8Text("Hello\nThe fer\x00ry\n")
 	_, info, err := read(stubRow, broken, ReadOptions{Lenient: true})
 	require.NoError(t, err)
 	assert.Equal(t, []ParseWarning{{
@@ -131,7 +135,7 @@ func TestEachReadStartsWithoutWarnings(t *testing.T) {
 		Action:  Repaired,
 	}}, info.Warnings)
 
-	_, info, err = read(stubRow, decode([]byte("Hello\n")), ReadOptions{Lenient: true})
+	_, info, err = read(stubRow, utf8Text("Hello\n"), ReadOptions{Lenient: true})
 	require.NoError(t, err)
 	assert.Empty(t, info.Warnings)
 

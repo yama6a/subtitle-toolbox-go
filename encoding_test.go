@@ -40,6 +40,9 @@ func TestParseDecodeFailure(t *testing.T) {
 			require.ErrorAs(t, err, &perr)
 			require.ErrorIs(t, err, stbox.ErrParse)
 			assert.Equal(t, "Cannot convert the content from Windows-1252 to UTF-8.", perr.Msg)
+			var cerr *textenc.ConvertError
+			require.ErrorAs(t, err, &cerr)
+			assert.Equal(t, "Windows-1252", cerr.Encoding)
 			assert.Equal(t, "stbox: Cannot convert the content from Windows-1252 to UTF-8.", err.Error())
 			assert.Nil(t, s)
 			assert.Zero(t, info)
@@ -155,7 +158,12 @@ func TestEncodingFixturesLoad(t *testing.T) {
 			assert.Equal(t, f, info.Format)
 			assert.Equal(t, tt.SourceEncoding, info.SourceEncoding)
 			assert.Equal(t, tt.Cues, s.Len())
-			assert.Len(t, info.Warnings, len(tt.Warnings))
+			messages := make([]string, 0, len(info.Warnings))
+			for _, w := range info.Warnings {
+				messages = append(messages, w.Message)
+				assert.Equal(t, stbox.Repaired, w.Action)
+			}
+			assert.Equal(t, tt.Warnings, messages)
 
 			opts.Lenient = false
 			_, strict, err := stbox.Load(path, opts)

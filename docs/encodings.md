@@ -32,7 +32,7 @@ s, info, err = stbox.Load("film.srt", stbox.ReadOptions{Encoding: "cp1250"})
 | CP949 | UHC |
 | CP437, CP850, CP866 | IBM437, IBM850, IBM866 |
 
-- **UTF-16 and UTF-32**: big endian unless a BOM says otherwise, as glibc iconv reads them.
+- **UTF-16 and UTF-32**: little endian unless a BOM says otherwise. glibc iconv reads them in host byte order, which is little endian on x86-64 and arm64, so the results match PHP there.
 - **Shift_JIS**: reads as CP932, so the bytes 0x5C and 0x7E stay `\` and `~`. The ASS line break `\N` and tags such as `{\i1}` survive.
 - **EUC-KR and CP949**: both read the CP949 table.
 - **Decision**: a name is a `string`, and `stbox.Encodings()` lists the names. A constant per name would crowd the root package next to the `Format` constants, and `Validate` catches typos.
@@ -43,7 +43,7 @@ The first rule that matches wins.
 
 1. A UTF-8 BOM: the bytes stay. The parse step removes the BOM.
 2. A UTF-32 or UTF-16 BOM: the rest decodes in that encoding. A BOM wins over `Encoding`.
-3. No BOM, and `Encoding` names no UTF-16, UTF-32, UCS-2 or UCS-4 encoding: content with a zero byte in most even or most odd positions of its first 1024 bytes reads as UTF-16 BE or LE.
+3. No BOM, and `Encoding` names no UTF-16, UTF-32, UCS-2 or UCS-4 encoding: content of an even length can read as UTF-16 without a BOM. The check counts the zero bytes in the byte pairs of the first 1024 bytes. A zero in at least 40% of the pairs on one side, and in at most 5% on the other side, gives UTF-16. A zero on the second side gives LE, on the first side BE.
 4. No `Encoding`: content that is valid UTF-8, holds a NUL byte, or holds more valid multi-byte UTF-8 sequences than bad bytes stays UTF-8.
 5. No `Encoding`: code page detection picks the code page. Without a result, the bytes stay and the encoding is UTF-8.
 6. `Encoding` is UTF-8: the bytes stay.
@@ -91,9 +91,14 @@ PHP decodes with glibc iconv, and Go with the WHATWG tables of `golang.org/x/tex
 | Encoding | Bytes | PHP | Go |
 |:--- |:--- |:--- |:--- |
 | EUC-KR | a CP949 pair such as `8C 63` | U+008C and `c` | U+B620, as CP949 |
+| EUC-KR | a CP949 pair with a first byte from `81` to `A0` and a second byte from `A1`, such as `81 A1` | fails | U+AC7E for `81 A1` |
+| EUC-KR | a CP949 pair with a first byte from `A1` to `C6` and a second byte from `41` to `A0`, such as `A1 41` | fails | U+C8A5 for `A1 41` |
 | EUC-KR | a lone byte from `80` to `9F` | a C1 control | fails |
 | Big5, CP950 | an HKSCS pair such as `87 40` | fails | U+43F0 |
-| Big5, CP950 | 366 pairs, most from `C6 A1` to `C8 FE` | private use, such as U+F6B1 for `C6 A1` | other characters, such as U+2460 for `C6 A1` |
+| Big5, CP950 | 365 pairs from `C6 A1` to `C8 FE` | private use, such as U+F6B1 for `C6 A1` | other characters, such as U+2460 for `C6 A1` |
+| Big5, CP950 | the 43 pairs from `C8 A5` to `C8 F4` | private use, such as U+F7EF for `C8 A5` | fails |
+| Big5, CP950 | the 33 pairs from `A3 C0` to `A3 E0` | fails | U+2400 to U+2421 |
+| Big5, CP950 | `F9 FE` | U+2593 | U+FFED |
 | Big5, CP950 | `80` | U+0080 | fails |
 | Shift_JIS, CP932 | the user-defined pairs `F0 40` to `F9 FC` | private use from U+E000 | fails |
 | Shift_JIS, CP932 | `80` | fails | U+0080 |
@@ -104,7 +109,9 @@ PHP decodes with glibc iconv, and Go with the WHATWG tables of `golang.org/x/tex
 | GB18030 | `80` | fails | U+20AC |
 | GB18030 | the user-defined pairs, such as `A1 40` | private use, such as U+E4C6 | fails |
 | GB18030 | `A3 A0` | U+E5E5 | U+3000 |
+| GB18030 | 19 four-byte sequences: `81 35 F4 37`, `82 35 90 37` to `82 35 91 34`, `84 31 82 36` to `84 31 83 35` | private use, such as U+E7C7 for `81 35 F4 37` | U+1E3F, U+9FB4 to U+9FBB, U+FE10 to U+FE19 |
 | Windows-1255 | `CA` | fails | U+05BA |
 | KOI8-U | `AE`, `BE` | U+255D, U+256C | U+045E, U+040E |
 
 - **Names**: PHP accepts every iconv name, for example `CP1125`. Go accepts only the table above.
+- **Test files**: `chinese-gbk.srt` read with `Encoding: "Big5"` holds `C8 A5`. PHP reads the file, and Go fails with `Cannot convert the content from Big5 to UTF-8.` The x/text table has no entry for these pairs.

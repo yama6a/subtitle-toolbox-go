@@ -34,10 +34,11 @@ var encodings = []Encoding{
 	{Name: "UTF-8", aliases: []string{"UTF8"}, decode: func(b []byte) ([]byte, bool) { return b, true }},
 	{Name: "UTF-16LE", decode: utf16Decoder(binary.LittleEndian)},
 	{Name: "UTF-16BE", decode: utf16Decoder(binary.BigEndian)},
-	{Name: "UTF-16", decode: utf16Decoder(binary.BigEndian)},
+	// glibc iconv reads UTF-16 and UTF-32 without a BOM in host byte order, which is little endian on x86-64 and arm64.
+	{Name: "UTF-16", decode: utf16Decoder(binary.LittleEndian)},
 	{Name: "UTF-32LE", decode: utf32Decoder(binary.LittleEndian)},
 	{Name: "UTF-32BE", decode: utf32Decoder(binary.BigEndian)},
-	{Name: "UTF-32", decode: utf32Decoder(binary.BigEndian)},
+	{Name: "UTF-32", decode: utf32Decoder(binary.LittleEndian)},
 	windows("1250", charmap.Windows1250),
 	windows("1251", charmap.Windows1251),
 	windows("1252", charmap.Windows1252),

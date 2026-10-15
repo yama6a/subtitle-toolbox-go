@@ -68,7 +68,8 @@ func TestDecode(t *testing.T) {
 		{name: "3 UTF-16BE without BOM before the source encoding", data: "\x00H\x00i", source: "Windows-1252", text: "Hi", encoding: "UTF-16BE", warning: noBOM},
 		{name: "3 UTF-16LE without BOM", data: "H\x00i\x00", source: "utf-8", text: "Hi", encoding: "UTF-16LE", warning: noBOMLE},
 		{name: "3 a wide source encoding stops the sniff", data: "\x00H\x00i", source: "UTF-16LE", text: "\u4800\u6900", encoding: "UTF-16LE"},
-		{name: "8 UTF-16 reads big endian", data: "\x00H\x00i", source: "utf-16", text: "Hi", encoding: "utf-16"},
+		{name: "8 UTF-16 reads little endian", data: "\x00H\x00i", source: "utf-16", text: "\u4800\u6900", encoding: "utf-16"},
+		{name: "8 UTF-32 reads little endian", data: "A\x00\x00\x00", source: "UTF-32", text: "A", encoding: "UTF-32"},
 		{name: "3 odd length is not UTF-16", data: "\x00H\x00", text: "\x00H\x00", encoding: "UTF-8"},
 		{name: "4 valid UTF-8", data: "caf\u00e9", text: "caf\u00e9", encoding: "UTF-8"},
 		{name: "4 a NUL byte keeps the bytes", data: "caf\xE9\x00", text: "caf\xE9\x00", encoding: "UTF-8"},
@@ -169,6 +170,20 @@ func TestShiftJISKeepsBackslashes(t *testing.T) {
 	}
 }
 
+// Ports testUtf16WithoutBomKeepsAnExplicitUtf16SourceEncoding of tests/EncodingTest.php of subtitle-toolbox-php.
+// glibc iconv, and so PHP, reads UTF-16 without a BOM as little endian on x86-64 and arm64.
+func TestDecodeNamedUTF16WithoutBOM(t *testing.T) {
+	t.Parallel()
+
+	for _, source := range []string{"UTF-16", "UTF-16LE"} {
+		got, err := textenc.Decode(readFixture(t, "utf-16-no-bom/utf-16le-no-bom.srt"), source)
+		require.NoError(t, err)
+		assert.Equal(t, source, got.Encoding)
+		assert.Empty(t, got.Warning)
+		assert.Contains(t, string(got.Text), "The caf\u00e9 opens at nine.")
+	}
+}
+
 // Ports testTextInAnotherEncodingFamilyKeepsItsBytes of tests/EncodingTest.php of subtitle-toolbox-php.
 func TestUndetectedTextKeepsItsBytes(t *testing.T) {
 	t.Parallel()
@@ -216,4 +231,13 @@ func TestDecodeUTF16Files(t *testing.T) {
 		assert.Empty(t, got.Warning)
 		assert.Contains(t, string(got.Text), "Gr\u00fc\u00dfe aus K\u00f6ln!")
 	}
+}
+
+// glibc iconv reads the pair C8 A5 of this file as private use, and the x/text Big5 table has no entry for it.
+// docs/encodings.md lists the difference.
+func TestGBKFileReadAsBig5Fails(t *testing.T) {
+	t.Parallel()
+
+	_, err := textenc.Decode(readFixture(t, "chinese-gbk.srt"), "Big5")
+	require.EqualError(t, err, "Cannot convert the content from Big5 to UTF-8.")
 }
