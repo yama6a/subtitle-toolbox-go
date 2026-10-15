@@ -43,6 +43,7 @@ func (c *Cue) AddLine(line string) {
 
 // MapWordTimestamps replaces the time of each word timestamp in the lines, such as <00:00:02.000>, with fn of it.
 // The result is rounded to whole milliseconds, and a time below 0 becomes 0.
+// A word timestamp of 2562047 hours or more stays as written.
 func (c *Cue) MapWordTimestamps(fn func(time.Duration) time.Duration) {
 	for i, line := range c.Lines {
 		c.Lines[i] = markup.MapWordTimestamps(line, fn)

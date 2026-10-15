@@ -247,7 +247,6 @@ func UnbalancedTags(lines, names []string) (stray []TagSpan, open []string) {
 	return stray, open
 }
 
-// namedTag returns the name in names that body starts with, followed by white space, a dot or the end.
 func namedTag(body string, names []string) (string, bool) {
 	for _, n := range names {
 		if len(body) >= len(n) && asciiLower(body[:len(n)]) == n &&

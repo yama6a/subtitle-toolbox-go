@@ -53,6 +53,8 @@ func TestWordTimestamp(t *testing.T) {
 		{"<i>", 0, false},
 		{"x<00:00:01.000>", 0, false},
 		{"<00:00:01.000>x", 0, false},
+		{"<2562046:59:59.999>", 2562046*time.Hour + 59*time.Minute + 59999*time.Millisecond, true},
+		{"<2562047:00:00.000>", 0, false},
 		{"<99999999999999999999:00:00.000>", 0, false},
 	}
 	for _, tt := range tests {
@@ -84,6 +86,7 @@ func TestMapWordTimestamps(t *testing.T) {
 		{"each timestamp", "<b>One</b> <00:00:01.500>two <100:59:59.999>", plus(time.Millisecond), "<b>One</b> <00:00:01.501>two <101:00:00.000>"},
 		{"not word timestamps", "<01:02.500> <00:60:00.000> <00:00:01.50> <0:00:01.500>", plus(time.Second), "<01:02.500> <00:60:00.000> <00:00:01.50> <0:00:01.500>"},
 		{"no tag", "plain", plus(time.Second), "plain"},
+		{"beyond the range of time.Duration", "<2562047:00:00.000>a", plus(time.Second), "<2562047:00:00.000>a"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

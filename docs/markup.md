@@ -9,7 +9,7 @@ A SubRip line `<i>Fish & Chips</i>` reads as `<i>Fish &amp; Chips</i>`. An ASS l
 
 - **Tag**: `<` not followed by white space (space, tab, LF, CR, FF, VT), then any characters except `<` and `>`, then `>`. So `< b>` and `a < b > c` are text, `<>` is a tag, and a quote does not hide the `>`: `<v O'Neil>` is one tag.
 - **Tag name**: the text after `<` or `</` up to white space, `/` or `>`. The name of `<c.yellow>` is `c.yellow`.
-- **Word timestamp**: `<hh:mm:ss.mmm>` with 2 or more hour digits, such as `<00:01:02.500>` or `<100:59:59.999>`. `<01:02.500>` and `<00:00:01.50>` are text in tag form.
+- **Word timestamp**: `<hh:mm:ss.mmm>` with 2 or more hour digits, such as `<00:01:02.500>` or `<100:59:59.999>`. `<01:02.500>` and `<00:00:01.50>` are tags, but not word timestamps.
 - **Entity**: `&name;`, `&#digits;` or `&#xhex;`.
 - **Text run**: the text between 2 tags of one line.
 

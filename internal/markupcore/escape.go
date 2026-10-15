@@ -117,11 +117,10 @@ const (
 	alnum         = decimalDigits + "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 )
 
-// decodeNumericEntity decodes an entity such as &#233; or &#xE9; at the start of s.
 func decodeNumericEntity(s string) (string, int, bool) {
 	digits, base, start := decimalDigits, 10, 2
 	if len(s) > 2 && s[2]|0x20 == 'x' {
-		digits, base, start = hexDigits, 16, 3
+		digits, base, start = hexDigits, 16, 3+hexPrefixLength(s[3:])
 	}
 	end := len(s) - len(strings.TrimLeft(s[start:], digits))
 	if end == start || !strings.HasPrefix(s[end:], ";") {
@@ -132,6 +131,15 @@ func decodeNumericEntity(s string) (string, int, bool) {
 		return "", 0, false
 	}
 	return string(rune(cp)), end + 1, true
+}
+
+// hexPrefixLength returns 2 when s starts with 0x and a hex digit. PHP reads hex digits with strtol, which skips
+// such a prefix, so &#x0x41; decodes to A.
+func hexPrefixLength(s string) int {
+	if len(s) > 2 && s[0] == '0' && s[1]|0x20 == 'x' && strings.IndexByte(hexDigits, s[2]) >= 0 {
+		return 2
+	}
+	return 0
 }
 
 // allowedCodePoint reports whether HTML5 allows r in a document, as PHP html_entity_decode checks with ENT_HTML5.

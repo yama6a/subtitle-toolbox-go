@@ -50,6 +50,8 @@ func TestDecodeEntities(t *testing.T) {
 		{"&amp&amp;", "&amp&"},
 		{"&amp;amp;", "&amp;"},
 		{"&nGt;&nGtv;", "\u226b\u20d2\u226b\u0338"},
+		{"&#x0x41; &#X0X42; &#x0X9;", "A B \t"},
+		{"&#x00x41; &#x0x; &#x0xg; &#x0x0x41; &#0x41;", "&#x00x41; &#x0x; &#x0xg; &#x0x0x41; &#0x41;"},
 		{"caf\xe9 &amp;", "caf\xe9 &"},
 	}
 	for _, tt := range tests {

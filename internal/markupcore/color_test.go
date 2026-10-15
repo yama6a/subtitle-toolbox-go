@@ -74,6 +74,7 @@ func TestColorHexWithAlpha(t *testing.T) {
 		{"rgba(255,0,0,5.)", "", false},
 		{"rgba(255,0,0,100.2%)", "", false},
 		{"rgba(255,0,0,256)", "", false},
+		{"rgba(1,2,3,9223372036854775808)", "", false},
 		{"rgb(256,0,0)", "", false},
 		{"rgb(1000,0,0)", "", false},
 		{"#ff00", "", false},

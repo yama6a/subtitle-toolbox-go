@@ -234,8 +234,6 @@ func FontToWebVTTColors(text string) (string, []string) {
 	return strings.Join(parts, ""), dropped
 }
 
-// fontClass returns the WebVTT class of the color of a <font> tag. Drop is true for a color without a class that
-// is not blank.
 func fontClass(tag string) (class, color string, drop bool) {
 	color, ok := FontColor(tag)
 	if !ok {
@@ -258,7 +256,6 @@ func webVTTColorClass(color string) string {
 	return ""
 }
 
-// pop removes the last value of a stack and returns it. An empty stack gives false.
 func pop(stack *[]bool) bool {
 	s := *stack
 	if len(s) == 0 {

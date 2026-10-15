@@ -30,6 +30,7 @@ func CoreTimestamp(d time.Duration) string {
 }
 
 // WordTimestamp returns the time of a word timestamp such as <00:01:02.500>, or false for other text.
+// It also returns false for 2562047 hours or more, which time.Duration cannot hold.
 func WordTimestamp(tag string) (time.Duration, bool) {
 	m := exactWordTimestampRegexp.FindStringSubmatch(tag)
 	if m == nil {
@@ -47,7 +48,7 @@ func WordTimestamp(tag string) (time.Duration, bool) {
 }
 
 // MapWordTimestamps replaces the time of each word timestamp in text with fn of it, rounded to whole milliseconds.
-// A time below 0 becomes 0.
+// A time below 0 becomes 0. A word timestamp of 2562047 hours or more stays as written.
 func MapWordTimestamps(text string, fn func(time.Duration) time.Duration) string {
 	if !strings.Contains(text, "<") {
 		return text
