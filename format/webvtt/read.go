@@ -45,13 +45,11 @@ var (
 	spacesRegexp         = regexp.MustCompile(`[ \t]+`)
 )
 
-// line is one input line and its 0-based line number.
 type line struct {
-	n    int
+	n    int // 0-based
 	text string
 }
 
-// reader holds the state of one read.
 type reader struct {
 	st       *parsing.State
 	file     *model.Data
@@ -59,7 +57,6 @@ type reader struct {
 	comments []parsing.ParsedComment
 }
 
-// looseTime is a time that lenient mode read with timecode.Loose.
 type looseTime struct {
 	text string
 	d    time.Duration
@@ -284,14 +281,12 @@ func collectBlocks(lines []line, hasBlocks bool) iter.Seq[blocks.Block] {
 	}
 }
 
-// collector holds the block that collectBlocks builds.
 type collector struct {
 	current   []string
 	start     int
 	hasBlocks bool
 }
 
-// add adds l to the current block. It returns the block that l ends, if any.
 func (c *collector) add(l line) (blocks.Block, bool) {
 	if endsBlock(l.text, c.current) {
 		if len(c.current) == 0 {
@@ -320,7 +315,6 @@ func (c *collector) block() blocks.Block {
 	return blocks.Block{Line: c.start, Lines: c.current}
 }
 
-// parseHeader reads the header block into the file data.
 func (r *reader) parseHeader(b blocks.Block) error {
 	text, _ := strings.CutPrefix(b.Lines[0], signature)
 	if text = phpTrim(text); text != "" {
@@ -361,7 +355,6 @@ func (r *reader) parseBlock(b blocks.Block, index int) error {
 	return r.st.Fail(perr, perr.Line, index, b.Lines)
 }
 
-// parseOtherBlock reads a block without a timing line: a comment, a STYLE or REGION block, or an error.
 func (r *reader) parseOtherBlock(b blocks.Block, index int) *model.ParseError {
 	first := phpTrim(b.Lines[0])
 	switch {
@@ -445,7 +438,6 @@ func (r *reader) parseCue(b blocks.Block, index int) (model.Cue, error) {
 	return c, nil
 }
 
-// splitTimingLine splits a timing line at the first arrow into the start, the end and the settings.
 func (r *reader) splitTimingLine(timing string, timingLine int) (start, end, settings string, err error) {
 	start, endPart, _ := strings.Cut(timing, arrow)
 	endPart = phpTrim(endPart)
@@ -462,7 +454,6 @@ func (r *reader) splitTimingLine(timing string, timingLine int) (start, end, set
 	return start, endPart, "", nil
 }
 
-// cueTimes reads the start and the end, orders them, and warns about each loose time.
 func (r *reader) cueTimes(startText, endText string, timingLine, index int, lines []string) (time.Duration, time.Duration, error) {
 	var loose []looseTime
 	start, err := r.time(startText, timingLine, &loose)

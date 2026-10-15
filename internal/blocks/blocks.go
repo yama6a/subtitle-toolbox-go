@@ -53,7 +53,7 @@ func JoinCueTextBlocks(blocks iter.Seq[Block], r Rules, isOther func(lines []str
 				if onJoin != nil {
 					onJoin(index, b.Line, b.Lines)
 				}
-				pending.Lines = slices.Concat(pending.Lines, b.Lines)
+				pending.Lines = append(pending.Lines, b.Lines...)
 				continue
 			}
 			if pending != nil {
