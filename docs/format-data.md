@@ -40,8 +40,8 @@ Data enters only through `SetFormatData`, which checks the fields that writers r
 | `string`, `int`, `bool` | a string, an int64, a bool | `a string`, `an integer`, `a boolean` |
 | `number` | an int64 or a finite float64 | `a finite number` |
 | `scalar` | a string, int64, float64, bool or nil | `a string, a number, a boolean or null` |
-| `ttiBlock` | a string of exactly 256 hex digits | `a TTI block of 256 hexadecimal digits` |
-| `timeBase` | a string such as `1/1000`, both parts without a leading 0 | `a time base such as "1/1000"` |
+| `ttiBlock` | a string of exactly 256 hex digits. One final LF passes, as in PHP | `a TTI block of 256 hexadecimal digits` |
+| `timeBase` | a string such as `1/1000`, both parts without a leading 0. One final LF passes, as in PHP | `a time base such as "1/1000"` |
 | `range(min, max)` | an int64 from min to max | `an integer from MIN to MAX` |
 | `oneOf(values)` | one of the strings, exact | `one of "a", "b"` |
 | `list(T)` | a list or an object, each value of type T | `a list or an object` |
