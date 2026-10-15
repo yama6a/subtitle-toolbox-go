@@ -6,6 +6,8 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/yama6a/subtitle-toolbox-go/internal/grapheme"
 )
 
 var (
@@ -27,14 +29,9 @@ func VisibleText(text string) string {
 	return strings.Trim(PlainText(text), phpTrimSet)
 }
 
-// VisibleLength returns the number of characters of VisibleText. Invalid UTF-8 counts its bytes.
+// VisibleLength returns the number of characters of VisibleText, counted as grapheme.Count does.
 func VisibleLength(text string) int {
-	s := VisibleText(text)
-	// TODO(#18): count grapheme clusters and skip invisible characters, as PHP countCharacters does.
-	if !utf8.ValidString(s) {
-		return len(s)
-	}
-	return utf8.RuneCountInString(s)
+	return grapheme.Count(VisibleText(text))
 }
 
 // PlainLines writes ruby as text, then returns the visible text of each line without the empty ones.
