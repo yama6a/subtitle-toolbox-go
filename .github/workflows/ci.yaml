@@ -9,7 +9,7 @@ on:
     branches: [main]  # go-ci saves its caches only from non-PR runs
 
 concurrency:
-  # The action keeps the opened and labeled runs of `gh pr create --label` from cancelling each other.
+  # The action keeps the `opened` and `labeled` runs of `gh pr create --label` from cancelling each other.
   group: ci-${{ github.ref }}-${{ github.event.action }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }} # a push run on main always finishes
 
