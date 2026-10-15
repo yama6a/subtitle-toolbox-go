@@ -63,51 +63,74 @@ func (sc *sentenceCaser) caseRun(text string) string {
 	chars := markupcore.Characters(lowerCase(text, sc.turkic))
 	original := markupcore.Characters(text)
 	// Lowering U+0130 adds a combining dot, so the original case is known only when the counts match.
-	sameCount := len(chars) == len(original)
-	var word strings.Builder
-	var b strings.Builder
+	if len(chars) != len(original) {
+		original = nil
+	}
+	var word, b strings.Builder
 	for i, char := range chars {
 		switch {
 		case isLetterOrDigit(char):
-			keepsLowerCase := sc.abbreviationSpace && sameCount && isLowerLetter(original[i])
-			if sc.capitalizeNext && !keepsLowerCase {
-				char = titleCase(char, sc.turkic)
-			}
-			sc.capitalizeNext = false
-			sc.afterPunctuation = false
-			sc.abbreviationSpace = false
+			char = sc.letter(char, original, i)
 			word.WriteString(char)
 		case isSentencePunctuation(char):
-			sc.afterPunctuation = true
-			sc.abbreviationSpace = false
-			sc.abbreviation = char == "." && isAbbreviation(word.String())
-			before := word.String()
-			word.Reset()
-			if char == "." && before != "" {
-				word.WriteString(before + ".")
-			}
+			sc.punctuation(char, &word)
 		default:
 			word.Reset()
-			space := len(char) == 1 && strings.Contains(asciiSpaces, char)
-			if !space {
-				sc.abbreviationSpace = false
-			}
-			switch {
-			case sc.afterPunctuation && char == ",":
-				sc.afterPunctuation = false
-			case sc.afterPunctuation && space:
-				lower, found := false, false
-				if sameCount {
-					lower, found = lowerCaseFollows(original[i+1:])
-				}
-				sc.abbreviationSpace = sc.abbreviation && !found && sameCount
-				sc.afterPunctuation = !(sc.abbreviation && lower)
-				sc.capitalizeNext = sc.capitalizeNext || sc.afterPunctuation
-			}
+			sc.other(char, original, i)
 		}
 		b.WriteString(char)
 	}
 	return b.String()
+}
+
+// letter returns char, in title case at the start of a sentence. Original holds the characters of the run before
+// lowering, or nil.
+func (sc *sentenceCaser) letter(char string, original []string, i int) string {
+	keepsLowerCase := sc.abbreviationSpace && original != nil && isLowerLetter(original[i])
+	if sc.capitalizeNext && !keepsLowerCase {
+		char = titleCase(char, sc.turkic)
+	}
+	sc.capitalizeNext = false
+	sc.afterPunctuation = false
+	sc.abbreviationSpace = false
+	return char
+}
+
+// punctuation handles a sentence punctuation char after word. A dot inside a word such as e.g stays in the word.
+func (sc *sentenceCaser) punctuation(char string, word *strings.Builder) {
+	sc.afterPunctuation = true
+	sc.abbreviationSpace = false
+	sc.abbreviation = char == "." && isAbbreviation(word.String())
+	if char == "." && word.Len() > 0 {
+		word.WriteString(char)
+		return
+	}
+	word.Reset()
+}
+
+// other handles a character that is no letter, digit or sentence punctuation. A space after the punctuation starts
+// a sentence, except after an abbreviation that a lower case word follows.
+func (sc *sentenceCaser) other(char string, original []string, i int) {
+	space := len(char) == 1 && strings.Contains(asciiSpaces, char)
+	if !space {
+		sc.abbreviationSpace = false
+	}
+	switch {
+	case sc.afterPunctuation && char == ",":
+		sc.afterPunctuation = false
+	case sc.afterPunctuation && space:
+		sc.spaceAfterPunctuation(original, i)
+	}
+}
+
+func (sc *sentenceCaser) spaceAfterPunctuation(original []string, i int) {
+	lower, found := false, true
+	if original != nil {
+		lower, found = lowerCaseFollows(original[i+1:])
+	}
+	sc.abbreviationSpace = sc.abbreviation && !found
+	sc.afterPunctuation = !sc.abbreviation || !lower
+	sc.capitalizeNext = sc.capitalizeNext || sc.afterPunctuation
 }
 
 // lowerCaseFollows reports whether the first letter in chars is in lower case. Found is false when only ASCII
@@ -125,6 +148,9 @@ func lowerCaseFollows(chars []string) (lower, found bool) {
 }
 
 func isAbbreviation(word string) bool {
+	if len(word) > len("etc") {
+		return false
+	}
 	switch asciiLower(word) {
 	case "i.e", "e.g", "etc", "vs":
 		return true

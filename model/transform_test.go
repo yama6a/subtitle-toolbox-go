@@ -2,9 +2,11 @@ package model_test
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -51,7 +53,7 @@ func TestChangeCase(t *testing.T) {
 	t.Parallel()
 
 	const english = "WELL, I'M HERE AND I'LL STAY. I\u2019VE, I'D, I-I, HI, PI, 3I, I'S, I.E."
-	rows := []caseRow{
+	rows := slices.Concat(readRows[caseRow](t, "case.json"), []caseRow{
 		{Name: "upper keeps tags", Texts: []string{"<i>stop</i>"}, Mode: model.CaseUpper, Want: []string{"<i>STOP</i>"}},
 		{
 			Name:  "upper keeps tags and entities",
@@ -100,8 +102,7 @@ func TestChangeCase(t *testing.T) {
 			Want:  []string{"Caf\xe9 [bell]", "Wait \xe9", "no\xeb john:", "Go \xe9", "(Laughs) \xe9", "\u266a La \xe9 \u266a", "Ok"},
 		},
 		{Name: "empty cue keeps the state", Texts: []string{"HELLO.", "<i></i>", "WORLD"}, Mode: model.CaseSentence, Want: []string{"Hello.", "<i></i>", "World"}},
-	}
-	rows = append(rows, readRows[caseRow](t, "case.json")...)
+	})
 
 	for _, tt := range rows {
 		t.Run(tt.Name, func(t *testing.T) {
@@ -178,12 +179,18 @@ type replaceRow struct {
 func TestReplaceText(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
+	type replaceCase struct {
 		name  string
 		texts []string
 		calls []replaceCall
 		want  []string
-	}{
+	}
+	rows := readRows[replaceRow](t, "replace.json")
+	fromJSON := make([]replaceCase, len(rows))
+	for i, row := range rows {
+		fromJSON[i] = replaceCase{name: row.Name, texts: row.Texts, calls: []replaceCall{row.replaceCall}, want: row.Want}
+	}
+	tests := slices.Concat(fromJSON, []replaceCase{
 		{
 			name:  "matches the text between tags",
 			texts: []string{"<i>Colour</i> me surprised", "Tom &amp; Jerry"},
@@ -264,19 +271,11 @@ func TestReplaceText(t *testing.T) {
 		},
 		{
 			name:  "plain case-sensitive replaces bytes",
-			texts: []string{"caf\xe9 caf\xe9"},
+			texts: []string{"caf\xe9 au caf\xe9"},
 			calls: []replaceCall{{Search: "\xe9", Replace: "e"}},
-			want:  []string{"cafe cafe"},
+			want:  []string{"cafe au cafe"},
 		},
-	}
-	for _, row := range readRows[replaceRow](t, "replace.json") {
-		tests = append(tests, struct {
-			name  string
-			texts []string
-			calls []replaceCall
-			want  []string
-		}{name: row.Name, texts: row.Texts, calls: []replaceCall{row.replaceCall}, want: row.Want})
-	}
+	})
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -475,14 +474,13 @@ func TestFixRightToLeft(t *testing.T) {
 func TestRemoveBidiControls(t *testing.T) {
 	t.Parallel()
 
-	rows := []linesRow{
+	rows := slices.Concat(readRows[linesRow](t, "bidi.json"), []linesRow{
 		{Name: "override", Texts: []string{"Hello \u202edlrow"}, Want: []string{"Hello dlrow"}},
 		{Name: "isolates", Texts: []string{"\u2066a\u2069 \u2067b\u2069 \u2068c\u2069\nd\u202ae\u202d"}, Want: []string{"a b c\nde"}},
 		{Name: "no-break space", Texts: []string{"a\u00a0b"}, Want: []string{"a\u00a0b"}},
 		{Name: "invalid UTF-8", Texts: []string{"\xff\u200fa"}, Want: []string{"\xffa"}},
 		{Name: "a cue of controls only goes", Texts: []string{"a", "<i>\u200f</i>", "b"}, Want: []string{"a", "b"}},
-	}
-	rows = append(rows, readRows[linesRow](t, "bidi.json")...)
+	})
 	for _, tt := range rows {
 		t.Run(tt.Name, func(t *testing.T) {
 			t.Parallel()
@@ -623,10 +621,6 @@ func readTransformFixture(tb testing.TB, name string) *model.Subtitle {
 func TestTransformFixtures(t *testing.T) {
 	t.Parallel()
 
-	stripTags := func(s *model.Subtitle) error {
-		s.StripFormatting(model.StripOptions{})
-		return nil
-	}
 	tests := []struct {
 		name       string
 		in, want   string
@@ -648,16 +642,18 @@ func TestTransformFixtures(t *testing.T) {
 		{
 			name: "CEA-608 captions cleaned up", in: "own_cea608_caps.vtt", want: "own_cea608_caps_cleaned.vtt",
 			edit: func(s *model.Subtitle) error {
-				if err := s.ReplaceText(`\[[^\]]*\]`, "", model.ReplaceOptions{Regex: true}); err != nil {
-					return err
-				}
-				if err := s.ReplaceText(`\.{4,}`, "...", model.ReplaceOptions{Regex: true}); err != nil {
-					return err
-				}
-				return stripTags(s)
+				err := errors.Join(
+					s.ReplaceText(`\[[^\]]*\]`, "", model.ReplaceOptions{Regex: true}),
+					s.ReplaceText(`\.{4,}`, "...", model.ReplaceOptions{Regex: true}),
+				)
+				s.StripFormatting(model.StripOptions{})
+				return err
 			},
 		},
-		{name: "CEA-608 captions without tags", in: "own_cea608_caps.vtt", want: "own_cea608_caps_stripped.vtt", edit: stripTags},
+		{
+			name: "CEA-608 captions without tags", in: "own_cea608_caps.vtt", want: "own_cea608_caps_stripped.vtt",
+			edit: func(s *model.Subtitle) error { s.StripFormatting(model.StripOptions{}); return nil },
+		},
 		{
 			name: "multilingual upper case", in: "own_multilingual_caps.srt", want: "own_multilingual_caps_upper.srt",
 			edit: func(s *model.Subtitle) error { return s.ChangeCase(model.CaseUpper, "") },

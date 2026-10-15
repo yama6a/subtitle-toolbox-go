@@ -50,9 +50,9 @@ func (s *Subtitle) ChangeCase(mode CaseMode, language string) error {
 	turkic := primary == "tr" || primary == "az"
 	switch mode {
 	case CaseUpper:
-		s.mapRuns(func(text string, _ Cue, _ bool) string { return upperCase(text, turkic) })
+		s.MapText(func(text string, _ Cue) string { return upperCase(text, turkic) })
 	case CaseLower:
-		s.mapRuns(func(text string, _ Cue, _ bool) string { return lowerCase(text, turkic) })
+		s.MapText(func(text string, _ Cue) string { return lowerCase(text, turkic) })
 	case CaseSentence:
 		s.sentenceCase(turkic, language == "" || primary == "en")
 	default:

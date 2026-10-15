@@ -132,14 +132,16 @@ func (m englishIMatcher) matchesAt(chars []char, k int) bool {
 	if k > 0 && m.word(chars[k-1].r) || k > 1 && chars[k-1].r == '.' && m.letter(chars[k-2].r) {
 		return false
 	}
-	if m.boundaryAt(chars, k+1) {
-		return true
-	}
-	if k+1 >= len(chars) || !m.apostrophe(chars[k+1].r) {
+	return m.boundaryAt(chars, k+1) || m.contractionAt(chars, k+1)
+}
+
+// contractionAt reports whether chars[j:] starts with an apostrophe and m, ll, ve or d, followed by a word boundary.
+func (m englishIMatcher) contractionAt(chars []char, j int) bool {
+	if j >= len(chars) || !m.apostrophe(chars[j].r) {
 		return false
 	}
 	for suffix := range strings.FieldsSeq(englishIContractionSet) {
-		if end := k + 2 + len(suffix); end <= len(chars) && runesEqual(chars[k+2:end], suffix) && m.boundaryAt(chars, end) {
+		if end := j + 1 + len(suffix); end <= len(chars) && runesEqual(chars[j+1:end], suffix) && m.boundaryAt(chars, end) {
 			return true
 		}
 	}

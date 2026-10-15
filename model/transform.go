@@ -39,6 +39,7 @@ type StripOptions struct {
 // returns true. Then it removes each cue that had text before and has none after, by hasText, or by
 // markup.HasVisibleText when hasText is nil. A comment before a removed cue moves to the next cue.
 // A cue without text before stays. EditLines returns the old indexes of the removed cues in ascending order.
+// Fn must not change s.
 func (s *Subtitle) EditLines(fn func(i int, c Cue) (lines []string, ok bool), hasText func(lines []string) bool) []int {
 	if hasText == nil {
 		hasText = markup.HasVisibleText
@@ -69,7 +70,9 @@ func (s *Subtitle) EditLines(fn func(i int, c Cue) (lines []string, ok bool), ha
 // A changed run is escaped again in the style of its raw form, so fn cannot add tags. A run that comes back
 // unchanged keeps its bytes. A cue that loses all its text goes, as EditLines says.
 func (s *Subtitle) MapText(fn func(text string, c Cue) string) {
-	s.mapRuns(func(text string, c Cue, _ bool) string { return fn(text, c) })
+	s.EditLines(func(_ int, c Cue) ([]string, bool) {
+		return markupcore.MapTextRuns(c.Lines, func(text string, _, _ bool) string { return fn(text, c) }), true
+	}, nil)
 }
 
 // MapLines calls fn for each line with its tags and entities, and a copy of its cue. Use it to change tags.
@@ -102,6 +105,9 @@ func (s *Subtitle) ReplaceText(search, replace string, opts ReplaceOptions) erro
 	for i, c := range s.cues {
 		var runErr error
 		edited[i] = markupcore.MapTextRuns(c.Lines, func(text string, _, _ bool) string {
+			if runErr != nil {
+				return text
+			}
 			out, err := replaceRun(text)
 			if err != nil {
 				runErr = err
@@ -120,45 +126,53 @@ func (s *Subtitle) ReplaceText(search, replace string, opts ReplaceOptions) erro
 func newReplacer(search, replace string, opts ReplaceOptions) (func(string) (string, error), error) {
 	switch {
 	case opts.Regex:
-		options := regexp2.None
-		if opts.IgnoreCase {
-			options = regexp2.IgnoreCase
-		}
-		re, err := regexp2.Compile(search, options)
-		if err != nil {
-			return nil, invalidArgument(fmt.Sprintf("The regular expression %s is not valid: %v.", quote(search), err))
-		}
-		re.MatchTimeout = regexTimeout
-		if _, err := re.Replace("", replace, -1, -1); err != nil {
-			return nil, invalidArgument(fmt.Sprintf("The replacement %s is not valid: %v.", quote(replace), err))
-		}
-		return func(text string) (string, error) {
-			if !utf8.ValidString(text) {
-				return text, nil
-			}
-			return re.Replace(text, replace, -1, -1)
-		}, nil
-	case !opts.IgnoreCase:
-		return func(text string) (string, error) { return strings.ReplaceAll(text, search, replace), nil }, nil
+		return newRegexReplacer(search, replace, opts.IgnoreCase)
+	case opts.IgnoreCase:
+		return newFoldReplacer(search, replace)
 	}
+	return func(text string) (string, error) { return strings.ReplaceAll(text, search, replace), nil }, nil
+}
 
-	var re *regexp.Regexp
-	if utf8.ValidString(search) {
-		var err error
-		if re, err = regexp.Compile("(?i)" + regexp.QuoteMeta(search)); err != nil {
-			return nil, invalidArgument(fmt.Sprintf("The search text %s is not valid: %v.", quote(search), err))
-		}
+func newRegexReplacer(search, replace string, ignoreCase bool) (func(string) (string, error), error) {
+	options := regexp2.None
+	if ignoreCase {
+		options = regexp2.IgnoreCase
+	}
+	re, err := regexp2.Compile(search, options)
+	if err != nil {
+		return nil, invalidArgument(fmt.Sprintf("The regular expression %s is not valid: %v.", quote(search), err))
+	}
+	re.MatchTimeout = regexTimeout
+	if _, err := re.Replace("", replace, -1, -1); err != nil {
+		return nil, invalidArgument(fmt.Sprintf("The replacement %s is not valid: %v.", quote(replace), err))
 	}
 	return func(text string) (string, error) {
-		if re == nil || !utf8.ValidString(text) {
+		if !utf8.ValidString(text) {
+			return text, nil
+		}
+		return re.Replace(text, replace, -1, -1)
+	}, nil
+}
+
+// newFoldReplacer matches search in any case with the case folding of package regexp. A search or a text run of
+// invalid UTF-8 falls back to the case of ASCII letters, as PHP str_ireplace does.
+func newFoldReplacer(search, replace string) (func(string) (string, error), error) {
+	if !utf8.ValidString(search) {
+		return func(text string) (string, error) { return replaceASCIIFold(text, search, replace), nil }, nil
+	}
+	re, err := regexp.Compile("(?i)" + regexp.QuoteMeta(search))
+	if err != nil {
+		return nil, invalidArgument(fmt.Sprintf("The search text %s is not valid: %v.", quote(search), err))
+	}
+	return func(text string) (string, error) {
+		if !utf8.ValidString(text) {
 			return replaceASCIIFold(text, search, replace), nil
 		}
 		return re.ReplaceAllLiteralString(text, replace), nil
 	}, nil
 }
 
-// replaceASCIIFold replaces search in text with a match that ignores the case of the ASCII letters only, as PHP
-// str_ireplace does.
+// replaceASCIIFold replaces search in text with a match that ignores the case of the ASCII letters only.
 func replaceASCIIFold(text, search, replace string) string {
 	lowerText, lowerSearch := asciiLower(text), asciiLower(search)
 	var b strings.Builder
@@ -211,13 +225,6 @@ func (s *Subtitle) FixRightToLeft() {
 // It keeps U+00A0 and moves no punctuation back. A cue that loses all its text goes, as EditLines says.
 func (s *Subtitle) RemoveBidiControls() {
 	s.MapText(func(text string, _ Cue) string { return markupcore.RemoveBidiControls(text) })
-}
-
-// mapRuns calls fn for each text run of each cue in cue order. First marks the first run of a line.
-func (s *Subtitle) mapRuns(fn func(text string, c Cue, first bool) string) {
-	s.EditLines(func(_ int, c Cue) ([]string, bool) {
-		return markupcore.MapTextRuns(c.Lines, func(text string, first, _ bool) string { return fn(text, c, first) }), true
-	}, nil)
 }
 
 // quote writes text in double quotes as it is, so a pattern such as \.{4,} keeps its single backslash.
