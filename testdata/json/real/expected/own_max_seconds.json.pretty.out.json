@@ -1,0 +1,28 @@
+{
+    "version": 1,
+    "metadata": {},
+    "comments": [],
+    "formatData": {},
+    "cues": [
+        {
+            "start": 1.0,
+            "end": 3.0,
+            "lines": [
+                "The pool opens at seven."
+            ],
+            "identifier": null,
+            "alignment": null,
+            "formatData": {}
+        },
+        {
+            "start": 359999998.0,
+            "end": 359999999.999,
+            "lines": [
+                "The pool closes."
+            ],
+            "identifier": null,
+            "alignment": null,
+            "formatData": {}
+        }
+    ]
+}

@@ -34,7 +34,7 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 
 ## Shared warnings
 
-`ReadInfo.Warnings` holds the warnings in this order: the decode warning, the warnings of the text pre-pass, then the warnings of the reader in input order.
+`ReadInfo.Warnings` holds the warnings in this order: the decode warning, the warnings of the text pre-pass, then the warnings of the reader in input order. The library JSON reader orders its warnings by cue, see [library-json.md](library-json.md#warnings).
 
 | Message | Action | Line | Block |
 |:--- |:--- |:--- |:--- |

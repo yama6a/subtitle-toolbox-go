@@ -13,7 +13,7 @@ A package imports only packages of a lower layer. Every layer may also import th
 
 | Layer | Packages | May import |
 |---:|:--- |:--- |
-| 0 | leaf helpers in `internal/`: `markupcore`, `timecode`, `grapheme`, `textenc`, `xmlraw`, later `codepage`, `cea608`, `cea708`, `ebml`, `orderedjson` | other layer 0 packages |
+| 0 | leaf helpers in `internal/`: `markupcore`, `timecode`, `grapheme`, `textenc`, `xmlraw`, the test helpers `testfiles` and `golden`, later `codepage`, `cea608`, `cea708`, `ebml`, `orderedjson` | other layer 0 packages |
 | 1 | `markup` | layer 0 |
 | 2 | `model` | layers 0 and 1 |
 | 3 | `internal/` helpers that work on model types: `blocks`, `subrip`, `vtt`, `position`, `parsing`, `writing`, later `caption`, `ttmlwrite`, `wordgroup` | layers 0 to 2 |

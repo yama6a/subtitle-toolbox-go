@@ -1,0 +1,52 @@
+{
+    "version": 1,
+    "metadata": {},
+    "comments": [],
+    "formatData": {},
+    "cues": [
+        {
+            "start": 1.0,
+            "end": 2.5,
+            "lines": [],
+            "identifier": null,
+            "alignment": null,
+            "formatData": {
+                "image": {
+                    "png": {
+                        "base64": "iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAADklEQVR42mP4DwQMQAAAGe8D/XGg2n4AAAAASUVORK5CYII="
+                    },
+                    "x": 640,
+                    "y": 940,
+                    "width": 2,
+                    "height": 1,
+                    "screenWidth": 1920,
+                    "screenHeight": 1080,
+                    "forced": true
+                }
+            }
+        },
+        {
+            "start": 3.0,
+            "end": 4.25,
+            "lines": [
+                "Platform four"
+            ],
+            "identifier": null,
+            "alignment": null,
+            "formatData": {
+                "image": {
+                    "png": {
+                        "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP4/5/hPwAH/QL+ecrXpAAAAABJRU5ErkJggg=="
+                    },
+                    "x": 700,
+                    "y": 960,
+                    "width": 1,
+                    "height": 1,
+                    "screenWidth": 1920,
+                    "screenHeight": 1080,
+                    "forced": false
+                }
+            }
+        }
+    ]
+}

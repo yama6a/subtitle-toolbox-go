@@ -8,7 +8,19 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/model"
+)
+
+// The shapes of the Read and Write functions of a format package.
+type (
+	readFunc[O any]  func(io.Reader, model.CommonReadOptions, O) (*model.Subtitle, []model.ParseWarning, error)
+	writeFunc[O any] func(io.Writer, *model.Subtitle, model.CommonWriteOptions, O) error
+)
+
+var (
+	_ readFunc[stboxjson.ReadOptions]   = stboxjson.Read
+	_ writeFunc[stboxjson.WriteOptions] = stboxjson.Write
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -26,7 +38,7 @@ type formatFuncs struct {
 var registry = []formatFuncs{
 	{format: ASS},
 	{format: CSV},
-	{format: JSON},
+	{format: JSON, read: readJSON, write: writeJSON},
 	{format: LRC},
 	{format: MicroDVD},
 	{format: MPSub},
@@ -104,6 +116,14 @@ func Detect(content []byte) (Format, bool) {
 		}
 	}
 	return "", false
+}
+
+func readJSON(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return stboxjson.Read(r, common, stboxjson.ReadOptions{})
+}
+
+func writeJSON(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+	return stboxjson.Write(w, s, common, opts.JSON)
 }
 
 func lookup(f Format) (formatFuncs, bool) {

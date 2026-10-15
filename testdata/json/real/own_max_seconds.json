@@ -1,0 +1,15 @@
+{
+    "version": 1,
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "lines": ["The pool opens at seven."]
+        },
+        {
+            "start": 359999998,
+            "end": 359999999.999,
+            "lines": ["The pool closes."]
+        }
+    ]
+}

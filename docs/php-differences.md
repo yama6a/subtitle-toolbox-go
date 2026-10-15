@@ -25,3 +25,13 @@ Go matches the PHP library byte for byte, except for the behaviour below. Each r
 | an encoding name outside the list of [encodings.md](encodings.md), such as `CP1125` | iconv reads it | `ReadOptions.Validate` fails with `The encoding "CP1125" is unknown.` | #16 |
 | bytes that glibc iconv and the WHATWG tables of `golang.org/x/text` read differently, such as Big5 `87 40` | iconv decides | x/text decides. [encodings.md](encodings.md#differences-from-glibc-iconv) lists the bytes | #16 |
 | the message of the decode warning and of invalid UTF-8 | names `ReadOptions::$encoding` | names no option: `Set the source encoding if that is wrong.` and `Set the source encoding of the file.` The CLI adds its own hint | #16 |
+| library JSON metadata and format data keys | written in insertion order | written sorted, so the output does not depend on map order | #19 |
+| `{}` and `[]` inside the data of one format in library JSON | both read as an empty array and write as `[]` | each keeps its type | #19 |
+| `cues`, `lines` or `comments` as a JSON object with the keys `"0"`, `"1"` | reads as a list | `The field cues must be a list.` and the same for the others | #19 |
+| a library JSON time of -100000 hours or less, such as `-1e20` | reads | `The field cues[0].start is not above -100000 hours.`, because `time.Duration` cannot hold it | #19 |
+| library JSON that is not valid JSON | `The content is not valid JSON: Syntax error.` | the message of `encoding/json`, such as `The content is not valid JSON: unexpected end of JSON input.` | #19 |
+| a float in library JSON format data, such as 1e25 or 1e-7 | `1.0e+25`, `1.0e-7` | `1e+25`, `1e-7`. A value from 1e-6 up to 1e21 is written without exponent, as `encoding/json` writes it | #19 |
+| the block line of a library JSON warning | writes a float without fraction as `1`, a number such as `1e400` as `0`, and a metadata entry with the key `0` as a list | writes `1.0`, keeps the text `1e400`, and writes `{"0": value}` | #19 |
+| a library JSON time that rounds to 100000 hours, such as `359999999.9996` | reads, and the cue time becomes 360000000 s | `The field cues[0].end is not below 100000 hours.`, because the bound applies after the rounding to whole milliseconds | #19 |
+| a library JSON cue with a negative time that ends before it starts, such as start 5 and end -1 | reads as it is, because the order check needs both times at 0 or more | `The cue ends at -1 s, before it starts at 5 s.` Lenient mode swaps it | #19 |
+| an empty cue identifier `""` in library JSON | written back as `""` | written as `null`, because an empty `Cue.ID` means no identifier | #19 |

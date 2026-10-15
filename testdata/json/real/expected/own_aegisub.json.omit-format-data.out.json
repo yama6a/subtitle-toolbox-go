@@ -1,0 +1,86 @@
+{
+    "version": 1,
+    "metadata": {
+        "title": "Morning train to the coast"
+    },
+    "comments": [
+        {
+            "text": "{\\r\\t($start,$end,\\fscx120\\fscy120)\\t($end,$end,\\fscx100\\fscy100)}",
+            "beforeCueIndex": 0
+        },
+        {
+            "text": "Check the platform number against the station sign",
+            "beforeCueIndex": 2
+        },
+        {
+            "text": "End of the station scene",
+            "beforeCueIndex": 7
+        }
+    ],
+    "cues": [
+        {
+            "start": 1.0,
+            "end": 3.5,
+            "lines": [
+                "<v Conductor>Good morning, everyone."
+            ],
+            "identifier": null,
+            "alignment": null
+        },
+        {
+            "start": 3.6,
+            "end": 6.2,
+            "lines": [
+                "<v Conductor>The train to the coast",
+                "leaves from platform four."
+            ],
+            "identifier": null,
+            "alignment": null
+        },
+        {
+            "start": 6.3,
+            "end": 8.0,
+            "lines": [
+                "<v Passenger><i>Is it on time</i> today?"
+            ],
+            "identifier": null,
+            "alignment": null
+        },
+        {
+            "start": 8.1,
+            "end": 10.9,
+            "lines": [
+                "Platform 4: <font color=\"#ffd700\">Coast Express</font>"
+            ],
+            "identifier": null,
+            "alignment": 8
+        },
+        {
+            "start": 11.0,
+            "end": 13.4,
+            "lines": [
+                "<v Conductor>Yes. <b>Seven minutes</b> to departure."
+            ],
+            "identifier": null,
+            "alignment": null
+        },
+        {
+            "start": 13.5,
+            "end": 16.0,
+            "lines": [
+                "<b><00:00:13.500>The <00:00:13.900>train <00:00:14.250>leaves <00:00:14.750>at <00:00:15.350>noon</b>"
+            ],
+            "identifier": null,
+            "alignment": 8
+        },
+        {
+            "start": 16.1,
+            "end": 18.0,
+            "lines": [
+                "<v Passenger><u>Thank you</u>, and <s>good night</s> good day."
+            ],
+            "identifier": null,
+            "alignment": null
+        }
+    ]
+}
