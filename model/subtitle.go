@@ -7,8 +7,9 @@ import (
 	"maps"
 	"slices"
 	"sort"
-	"strconv"
 	"time"
+
+	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 )
 
 // The named metadata keys. Other keys are free.
@@ -330,7 +331,7 @@ func (s *Subtitle) CueIndexAt(t time.Duration) (int, bool) {
 // the cues with Start < to and End > from. It returns an error that matches ErrInvalidArgument when from is after to.
 func (s *Subtitle) CuesBetween(from, to time.Duration) ([]int, error) {
 	if from > to {
-		return nil, invalidArgument(fmt.Sprintf("The range start %s must not be after the range end %s.", phpSeconds(from), phpSeconds(to)))
+		return nil, invalidArgument(fmt.Sprintf("The range start %s must not be after the range end %s.", timecode.Seconds(from), timecode.Seconds(to)))
 	}
 	return s.lookup().overlapping(from, to, false), nil
 }
@@ -417,11 +418,6 @@ func sortComments(comments []Comment) {
 
 func cueNotFound(i, n int) error {
 	return fmt.Errorf("%w: index %d, the subtitle has %d cues", ErrCueNotFound, i, n)
-}
-
-// phpSeconds formats d as PHP prints a float of seconds, for example "10" or "2.5", so messages keep the PHP text.
-func phpSeconds(d time.Duration) string {
-	return strconv.FormatFloat(d.Seconds(), 'f', -1, 64)
 }
 
 func invalidArgument(msg string) error {
