@@ -46,11 +46,11 @@ This file reads as one cue from 1 s to 4 s with the identifier `intro`, the alig
 ### Write
 
 - **Order**: the header, every `REGION` block, every `STYLE` block, then each cue with the comments before it, then the comments after the last cue. So a `NOTE` before a `STYLE` block in the input comes out after it.
-- **Identifiers**: a cue without an identifier, or with one that holds `-->` or a line end, gets its cue number from 1.
+- **Identifiers**: a cue without an identifier, or with one that holds `-->`, LF or CR, gets its cue number from 1.
 - **Times**: always with hours, at least 2 hour digits. A negative time is written as 0.
 - **Settings**: the stored settings of the 6 names come back in stored order while the cue alignment is unchanged. After a change of the alignment, the writer keeps `vertical`, `size` and `region` and writes the settings of the new alignment: `line:0` or `line:50%,center` for the row, `align:left` or `align:right` for the column. See [format-data.md](format-data.md#an-explicit-alignment-wins-over-a-stored-position).
 - **Tags**: the writer keeps `<b>`, `<i>`, `<u>`, `<strong>`, `<v>`, `<lang>`, `<c>`, `<ruby>` and `<rt>`, their class forms such as `<c.yellow>` or `<v.first.loud Fred>`, and inline timestamps. It drops every other tag and keeps its text. `StripTags` drops every tag and the inline timestamps.
-- **Comments**: `-->` in a comment becomes `->`. A comment of one line is written as `NOTE text`, a longer one starts on the line after `NOTE`.
+- **Comments**: the writer replaces `-->` in a comment with `->` until none is left, trims each line and drops the empty lines, because an empty line would end the `NOTE` block. A comment of one line is written as `NOTE text`, a longer one starts on the line after `NOTE`.
 - **Arrow in text**: `-->` in cue text is written as `--&gt;`, because a raw `-->` would start a new cue.
 - **BOM**: the output starts with a UTF-8 BOM by default.
 - **Lost on write**: `<s>`, colors without a WebVTT class, font faces, unknown tags, the place of comments next to `STYLE` and `REGION` blocks, empty lines inside cue text, the line layout of `NOTE` blocks, settings with other names, and the layout of the header text.

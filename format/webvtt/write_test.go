@@ -116,13 +116,16 @@ func TestWriteDocument(t *testing.T) {
 				four.ID = " \t"
 				five := cue(9*sec, 10*sec, "Five")
 				five.ID = "a\nb"
-				return subtitle(t, one, cue(3*sec, 4*sec, "Two"), three, four, five)
+				six := cue(11*sec, 12*sec, "Six")
+				six.ID = "a\rb"
+				return subtitle(t, one, cue(3*sec, 4*sec, "Two"), three, four, five, six)
 			},
 			want: bom + "WEBVTT\n\nintro\n00:00:01.000 --> 00:00:02.000\nOne\n\n" +
 				"2\n00:00:03.000 --> 00:00:04.000\nTwo\n\n" +
 				"3\n00:00:05.000 --> 00:00:06.000\nThree\n\n" +
 				"4\n00:00:07.000 --> 00:00:08.000\nFour\n\n" +
-				"5\n00:00:09.000 --> 00:00:10.000\nFive\n",
+				"5\n00:00:09.000 --> 00:00:10.000\nFive\n\n" +
+				"6\n00:00:11.000 --> 00:00:12.000\nSix\n",
 		},
 		{
 			name: "a cue without text",
@@ -210,6 +213,9 @@ func TestWriteNote(t *testing.T) {
 		{name: "an arrow", text: "a --> b", want: "NOTE a -> b"},
 		{name: "several lines", text: "end of\nfile", want: "NOTE\nend of\nfile"},
 		{name: "spaces, tabs and empty lines", text: "  a \t b\r\n\r\n\rc  ", want: "NOTE\na b\nc"},
+		{name: "an arrow that a single replace would leave", text: "a ---> b ----> c", want: "NOTE a -> b -> c"},
+		{name: "a line of white space", text: "a\n \t \nb ", want: "NOTE\na\nb"},
+		{name: "white space at the line ends", text: "a \n b", want: "NOTE\na\nb"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -217,7 +223,10 @@ func TestWriteNote(t *testing.T) {
 
 			s := subtitle(t, cue(sec, 2*sec, "One"))
 			require.NoError(t, s.AddComment(tt.text, 1))
-			assert.Equal(t, bom+"WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.000\nOne\n\n"+tt.want+"\n", write(t, s, model.CommonWriteOptions{}))
+			out := write(t, s, model.CommonWriteOptions{})
+			assert.Equal(t, bom+"WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.000\nOne\n\n"+tt.want+"\n", out)
+			again, _ := parse(t, out, false)
+			assert.Len(t, again.Comments(), 1)
 		})
 	}
 }

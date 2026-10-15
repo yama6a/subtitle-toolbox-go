@@ -28,11 +28,8 @@ var (
 var (
 	inlineTimestampRegexp = regexp.MustCompile(`<(?:\d{2,}:)?[0-5]\d:[0-5]\d\.\d{3}>`)
 	spanClassRegexp       = regexp.MustCompile(`(?i)</?((?:strong|b|u|i|v|lang|c|ruby|rt)\.[^\t\n\v\f\r >]*)`)
-	tabsAndSpacesRegexp   = regexp.MustCompile(`[ \t]+`)
-	lineFeedsRegexp       = regexp.MustCompile(`\n+`)
 )
 
-// writer holds the state of one write.
 type writer struct {
 	stripTags bool
 	dropped   []DroppedColor
@@ -87,7 +84,6 @@ func header(file *model.Data) string {
 	return out
 }
 
-// fileBlocks returns the REGION blocks, then the STYLE blocks.
 func fileBlocks(file *model.Data) []string {
 	regions, _ := file.Get("regions")
 	styles, _ := file.Strings("styles")
@@ -114,7 +110,6 @@ func fileBlocks(file *model.Data) []string {
 	return out
 }
 
-// values returns the values of a list, or of an object in key order.
 func values(v any) []any {
 	switch v := v.(type) {
 	case []any:
@@ -131,26 +126,31 @@ func values(v any) []any {
 	}
 }
 
-// noteBlock writes a comment as a NOTE block. A NOTE block must not hold "-->".
-// See https://www.w3.org/TR/webvtt1/#webvtt-comment-block.
+// noteBlock writes a comment as a NOTE block. The block must not hold "-->", and a line of white space would end it,
+// so the text loses each "-->" until none is left and every empty line. See https://www.w3.org/TR/webvtt1/#webvtt-comment-block.
 func noteBlock(text string) string {
-	text = strings.ReplaceAll(text, arrow, "->")
-	text = tabsAndSpacesRegexp.ReplaceAllString(normalizeLineEnds(text), " ")
-	text = phpTrim(lineFeedsRegexp.ReplaceAllString(text, "\n"))
-	switch {
-	case text == "":
+	for strings.Contains(text, arrow) {
+		text = strings.ReplaceAll(text, arrow, "->")
+	}
+	var lines []string
+	for l := range strings.SplitSeq(normalizeLineEnds(text), "\n") {
+		if l = phpTrim(spacesRegexp.ReplaceAllString(l, " ")); l != "" {
+			lines = append(lines, l)
+		}
+	}
+	switch len(lines) {
+	case 0:
 		return "NOTE"
-	case strings.Contains(text, "\n"):
-		return "NOTE\n" + text
+	case 1:
+		return "NOTE " + lines[0]
 	default:
-		return "NOTE " + text
+		return "NOTE\n" + strings.Join(lines, "\n")
 	}
 }
 
-// cueBlock writes the cue at index i: its identifier, its timing line with the settings, and its text.
 func (w *writer) cueBlock(c model.Cue, i int) string {
 	id := c.ID
-	if phpTrim(id) == "" || strings.Contains(id, arrow) || strings.Contains(id, "\n") {
+	if phpTrim(id) == "" || strings.Contains(id, arrow) || strings.ContainsAny(id, "\r\n") {
 		id = strconv.Itoa(i + 1)
 	}
 	out := id + "\n" + markupcore.CoreTimestamp(c.Start) + " " + arrow + " " + markupcore.CoreTimestamp(c.End)
