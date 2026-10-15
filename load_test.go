@@ -147,6 +147,8 @@ func TestReadContainer(t *testing.T) {
 
 	ts := make([]byte, 377)
 	ts[0], ts[188], ts[376] = 0x47, 0x47, 0x47
+	m2ts := make([]byte, 389)
+	m2ts[4], m2ts[196], m2ts[388] = 0x47, 0x47, 0x47
 	tests := []struct {
 		name   string
 		file   string
@@ -154,11 +156,12 @@ func TestReadContainer(t *testing.T) {
 		format stbox.Format
 		label  string
 	}{
-		{"Matroska", "movie.mkv", []byte("\x1A\x45\xDF\xA3\x01\x00\x00\x00"), "", "Matroska"},
-		{"WebM with a format", "movie.webm", []byte("\x1A\x45\xDF\xA3\x01\x00\x00\x00"), stbox.SubRip, "Matroska"},
-		{"MP4", "movie.mp4", []byte("\x00\x00\x00\x20ftypisom\x00\x00\x02\x00"), "", "MP4"},
-		{"MPEG-TS", "movie.ts", ts, "", "MPEG-TS"},
-		{"MPEG-TS with a .srt extension", "movie.srt", ts, "", "MPEG-TS"},
+		{"Matroska", "movie.mkv", []byte("\x1A\x45\xDF\xA3\x01\x00\x00\x00"), "", "a Matroska"},
+		{"WebM with a format", "movie.webm", []byte("\x1A\x45\xDF\xA3\x01\x00\x00\x00"), stbox.SubRip, "a Matroska"},
+		{"MP4", "movie.mp4", []byte("\x00\x00\x00\x20ftypisom\x00\x00\x02\x00"), "", "an MP4"},
+		{"MPEG-TS", "movie.ts", ts, "", "an MPEG-TS"},
+		{"MPEG-TS with a .srt extension", "movie.srt", ts, "", "an MPEG-TS"},
+		{"M2TS", "movie.m2ts", m2ts, "", "an MPEG-TS"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -169,12 +172,12 @@ func TestReadContainer(t *testing.T) {
 			s, info, err := stbox.Load(p, opts)
 			require.ErrorIs(t, err, stbox.ErrUnsupportedFormat)
 			require.NotErrorIs(t, err, stbox.ErrUnknownFormat)
-			require.EqualError(t, err, "stbox: unsupported format: "+p+" is a "+tt.label+" file. This version reads no video files.")
+			require.EqualError(t, err, "stbox: unsupported format: "+p+" is "+tt.label+" file. This version reads no video files.")
 			assert.Nil(t, s)
 			assert.Zero(t, info)
 
 			_, _, err = stbox.Parse(bytes.NewReader(tt.head), opts)
-			require.EqualError(t, err, "stbox: unsupported format: The content is a "+tt.label+" file. This version reads no video files.")
+			require.EqualError(t, err, "stbox: unsupported format: The content is "+tt.label+" file. This version reads no video files.")
 		})
 	}
 }
@@ -184,6 +187,8 @@ func TestReadNoContainer(t *testing.T) {
 
 	ts := "G\n1\n00:00:01,000 --> 00:00:02,000\nHello\n"
 	ts += strings.Repeat("x", 188-len(ts)) + "G" + strings.Repeat("x", 187)
+	m2ts := "abcdG\n1\n00:00:01,000 --> 00:00:02,000\nHello\n"
+	m2ts += strings.Repeat("x", 196-len(m2ts)) + "G" + strings.Repeat("x", 191)
 	tests := []struct {
 		name    string
 		content string
@@ -191,6 +196,7 @@ func TestReadNoContainer(t *testing.T) {
 		{"SubRip in a .mkv file", "1\n00:00:01,000 --> 00:00:02,000\nHello\n"},
 		{"ftyp at byte 0", "ftyp\n1\n00:00:01,000 --> 00:00:02,000\nHello\n"},
 		{"G at bytes 0 and 188 of 376", ts},
+		{"G at bytes 4 and 196 of 388", m2ts},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

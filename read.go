@@ -50,7 +50,7 @@ func parse(content []byte, path string, opts ReadOptions) (*Subtitle, ReadInfo, 
 		if path != "" {
 			subject = path
 		}
-		return nil, ReadInfo{}, unsupported(subject + " is a " + c + " file. This version reads no video files.")
+		return nil, ReadInfo{}, unsupported(subject + " is " + c + " file. This version reads no video files.")
 	}
 	var row formatFuncs
 	if opts.Format != "" {
@@ -94,18 +94,26 @@ func formatOf(text []byte, path string) (f Format, empty bool, err error) {
 	return f, false, nil
 }
 
-// container returns the name of the video container that the head of content shows.
+// container returns the article and name of the video container that the head of content shows.
 func container(content []byte) (string, bool) {
 	switch {
 	case bytes.HasPrefix(content, []byte("\x1A\x45\xDF\xA3")):
-		return "Matroska", true
+		return "a Matroska", true
 	case len(content) >= 8 && string(content[4:8]) == "ftyp":
-		return "MP4", true
-	case len(content) > 376 && content[0] == 0x47 && content[188] == 0x47 && content[376] == 0x47:
-		return "MPEG-TS", true
+		return "an MP4", true
+	case transportStream(content, 188) || transportStream(content, 192):
+		return "an MPEG-TS", true
 	default:
 		return "", false
 	}
+}
+
+// transportStream reports whether content starts with 3 MPEG-TS packets of size bytes. An M2TS packet of 192
+// bytes puts a 4-byte time stamp before the sync byte 0x47.
+func transportStream(content []byte, size int) bool {
+	sync := size - 188
+	return len(content) > 2*size+sync && content[sync] == 0x47 && content[size+sync] == 0x47 &&
+		content[2*size+sync] == 0x47
 }
 
 // formatOfExtension returns the readable format of the extension of path. The extensions json, txt and ffmeta

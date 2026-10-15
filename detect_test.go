@@ -103,6 +103,8 @@ func detectTests() []detectTest {
 		{name: "CR after the header", content: "WEBVTT\r\r00:01.000 --> 00:02.000\rRain\r", want: stbox.WebVTT},
 		{name: "BOM and CR LF before JSON", content: "\xEF\xBB\xBF\r\n{\"version\": 1, \"cues\": []}", want: stbox.JSON},
 		{name: "bad UTF-8 in a JSON string", content: "{\"version\": 1, \"cues\": [], \"metadata\": {\"title\": \"caf\xe9\"}}", want: stbox.JSON},
+		{name: "lone surrogate escape in JSON", content: `{"t": "\ud800", "version": 1, "cues": []}`, want: stbox.JSON},
+		{name: "JSON key that starts with NUL", content: `{"\u0000a": 1, "version": 1, "cues": []}`, want: stbox.JSON},
 		{name: "invalid JSON goes on to the signatures", content: "{24}{72}Hello\n", later: "MicroDVD"},
 	}
 }

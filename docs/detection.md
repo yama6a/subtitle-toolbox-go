@@ -29,13 +29,13 @@
 | 2 | SubRip | a cue number and a timing line. Or a timing line with 2 or more hour digits and a comma, alone or after up to 5 lines of text and a cue number |
 
 - **Order**: WebVTT comes before SubRip, because a WebVTT file without its header looks like SubRip. A new format inserts its signature at its place in the PHP order. `TestDetectionListsFollowTheOrder` in [registry_test.go](../registry_test.go) holds that order.
-- **SubRip hours and comma**: the SubRip timing line needs 2 hour digits and a comma, so a headerless WebVTT file with `00:00:01.000` and SBV with `0:00:01,500` do not match.
+- **SubRip hours and comma**: a timing line without a cue number on the line before it needs 2 hour digits and a comma. So a headerless WebVTT file that starts with `00:00:01.000 -->` and SBV with `0:00:01,500` do not match. A headerless WebVTT file that starts with a cue number, such as `1` LF `00:00:01.000 -->`, detects as SubRip.
 
 ## Load and Parse without a format
 
 | Step | Rule |
 |---:|:--- |
-| 1 | **Video file**: content that starts with a Matroska, MP4 or MPEG-TS head returns an error that matches `ErrUnsupportedFormat`: `movie.mkv is a Matroska file. This version reads no video files.` `Parse` says `The content is a Matroska file.` This step runs with a format too |
+| 1 | **Video file**: content that starts with a Matroska, MP4 or MPEG-TS head returns an error that matches `ErrUnsupportedFormat`: `movie.mkv is a Matroska file. This version reads no video files.` An MP4 file gives `is an MP4 file`, an MPEG-TS file `is an MPEG-TS file`. `Parse` says `The content is a Matroska file.` This step runs with a format too |
 | 2 | **Decode** the content to UTF-8, as [encodings.md](encodings.md) says |
 | 3 | **Empty content**: nothing is left after the BOMs and the bytes of step 1 of `Detect` go, at both ends. `Load` returns an empty subtitle in the format of the extension, under the fallback rule of step 5 |
 | 4 | **Detect** the format of the decoded content |
@@ -47,5 +47,6 @@
 | Matroska and WebM | `1A 45 DF A3` at byte 0 |
 | MP4 | `ftyp` at bytes 4 to 7 |
 | MPEG-TS | `47` at bytes 0, 188 and 376 |
+| M2TS, MPEG-TS with 192-byte packets | `47` at bytes 4, 196 and 388 |
 
 - **Fixed fallback list**: the extensions `json`, `txt` and `ffmeta` also belong to formats of later releases that detection never finds, such as cloud speech-to-text JSON and chapters. So these extensions say nothing about the content. The list stays fixed for the whole 1.x line, so a `.json` file gives the same result in every release.
