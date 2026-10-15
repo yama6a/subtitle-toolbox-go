@@ -14,8 +14,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
@@ -596,45 +596,22 @@ func TestDialogueDashStyle(t *testing.T) {
 	assert.Equal(t, model.DialogueDashHyphenSpace, zero)
 }
 
-var (
-	fixtureEntityRegexp = regexp.MustCompile(markupcore.EntityPattern + `|&`)
-	fixtureEscaper      = strings.NewReplacer("<", "&lt;", ">", "&gt;")
-)
-
-// readTransformFixture reads a fixture of testdata/transforms. A .vtt file goes through webvtt.Read. A .srt file
-// goes through readFixture, with the text escaped as the SubRip reader does: a bare & becomes &amp;, and < and >
-// outside a tag become &lt; and &gt;. The .srt branch gives way to srt.Read once #20 merges.
+// readTransformFixture reads a fixture of testdata/transforms with the SubRip or the WebVTT reader.
 func readTransformFixture(tb testing.TB, name string) *model.Subtitle {
 	tb.Helper()
 
-	path := filepath.Join("testdata", "transforms", name)
+	f, err := os.Open(filepath.Join("testdata", "transforms", name))
+	require.NoError(tb, err)
+	defer f.Close()
+	var s *model.Subtitle
+	var warnings []model.ParseWarning
 	if strings.HasSuffix(name, ".vtt") {
-		f, err := os.Open(path)
-		require.NoError(tb, err)
-		defer f.Close()
-		s, warnings, err := webvtt.Read(f, model.CommonReadOptions{}, webvtt.ReadOptions{})
-		require.NoError(tb, err)
-		require.Empty(tb, warnings)
-		return s
+		s, warnings, err = webvtt.Read(f, model.CommonReadOptions{}, webvtt.ReadOptions{})
+	} else {
+		s, warnings, err = srt.Read(f, model.CommonReadOptions{}, srt.ReadOptions{})
 	}
-
-	s := readFixture(tb, filepath.Join("transforms", name))
-	for i, c := range s.All() {
-		for k, line := range c.Lines {
-			parts := markupcore.SplitTags(line)
-			for j := 0; j < len(parts); j += 2 {
-				text := fixtureEntityRegexp.ReplaceAllStringFunc(parts[j], func(m string) string {
-					if m == "&" {
-						return "&amp;"
-					}
-					return m
-				})
-				parts[j] = fixtureEscaper.Replace(text)
-			}
-			c.Lines[k] = strings.Join(parts, "")
-		}
-		require.NoError(tb, s.SetCue(i, c))
-	}
+	require.NoError(tb, err)
+	require.Empty(tb, warnings)
 	return s
 }
 
