@@ -24,7 +24,7 @@ format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microd
 stats/ stream/ hearingimpaired/ fixing/ profanity/ refsync/ diff/ dual/
                The 1.x services. A service never imports the root package
 internal/      Helpers: markupcore, timecode, textenc, grapheme, xmlraw, blocks, subrip, vtt, position,
-               parsing, writing, cli
+               parsing, writing, cli, and the test helpers testfiles and golden
 cmd/stbox/     The CLI main. Wiring, no business logic
 testdata/      Fixtures and goldens, next to the package that uses them
 ```
