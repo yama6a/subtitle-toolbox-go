@@ -440,7 +440,9 @@ func TestComments(t *testing.T) {
 		s := &model.Subtitle{}
 		err := s.AddComment("text", -1)
 		require.ErrorIs(t, err, model.ErrInvalidArgument)
-		require.ErrorContains(t, err, "The cue index of a comment must not be negative, got -1.")
+		var argErr *model.InvalidArgumentError
+		require.ErrorAs(t, err, &argErr)
+		assert.Equal(t, model.InvalidArgumentError{Msg: "The cue index of a comment must not be negative, got -1."}, *argErr)
 		assert.Empty(t, s.Comments())
 	})
 

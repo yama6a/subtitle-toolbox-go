@@ -393,5 +393,5 @@ func cueNotFound(i, n int) error {
 }
 
 func invalidArgument(msg string) error {
-	return fmt.Errorf("%w: %s", ErrInvalidArgument, msg)
+	return &InvalidArgumentError{Msg: msg}
 }
