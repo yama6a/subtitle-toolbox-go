@@ -1,7 +1,10 @@
 package model_test
 
 import (
+	"cmp"
 	"fmt"
+	"math/rand/v2"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -242,6 +245,129 @@ func TestSetCueGivesTheOrderOfAStableSort(t *testing.T) {
 			assert.Equal(t, tt.want, texts(s))
 		})
 	}
+}
+
+func TestSetCueMovesACommentWithItsCue(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		index int
+		start float64
+		texts []string
+		want  []model.Comment
+	}{
+		{
+			name:  "last cue to an earlier index",
+			index: 3, start: 1.5,
+			texts: []string{"A", "D", "B", "C"},
+			want: []model.Comment{
+				{Text: "before D", BeforeCue: 1},
+				{Text: "before B", BeforeCue: 2},
+				{Text: "before C", BeforeCue: 3},
+				{Text: "at the end", BeforeCue: 4},
+			},
+		},
+		{
+			name:  "middle cue to the first index",
+			index: 2, start: 0.5,
+			texts: []string{"C", "A", "B", "D"},
+			want: []model.Comment{
+				{Text: "before C", BeforeCue: 0},
+				{Text: "before B", BeforeCue: 2},
+				{Text: "before D", BeforeCue: 3},
+				{Text: "at the end", BeforeCue: 4},
+			},
+		},
+		{
+			name:  "cue to a later index",
+			index: 1, start: 3.5,
+			texts: []string{"A", "C", "B", "D"},
+			want: []model.Comment{
+				{Text: "before C", BeforeCue: 1},
+				{Text: "before B", BeforeCue: 2},
+				{Text: "before D", BeforeCue: 3},
+				{Text: "at the end", BeforeCue: 4},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s := &model.Subtitle{}
+			for i, text := range []string{"A", "B", "C", "D"} {
+				s.AddCue(model.Cue{Start: sec(float64(i + 1)), Lines: []string{text}})
+				if i > 0 {
+					require.NoError(t, s.AddComment("before "+text, i))
+				}
+			}
+			require.NoError(t, s.AddComment("at the end", 4))
+
+			c, ok := s.Cue(tt.index)
+			require.True(t, ok)
+			c.Start = sec(tt.start)
+			require.NoError(t, s.SetCue(tt.index, c))
+
+			assert.Equal(t, tt.texts, texts(s))
+			assert.Equal(t, tt.want, s.Comments())
+		})
+	}
+}
+
+func TestRandomSetCueCallsGiveTheOrderOfAStableSort(t *testing.T) {
+	t.Parallel()
+
+	rng := rand.New(rand.NewPCG(712, 300)) //nolint:gosec // reproducible test data needs a seeded generator
+	for round := range 300 {
+		s := &model.Subtitle{}
+		for i := range 1 + rng.IntN(40) {
+			s.AddCue(model.Cue{Start: time.Duration(rng.IntN(21)) * time.Second, End: 30 * time.Second, ID: fmt.Sprintf("cue%d", i)})
+		}
+		for i, c := range s.All() {
+			require.NoError(t, s.AddComment(c.ID, i))
+		}
+		require.NoError(t, s.AddComment("at the end", s.Len()))
+
+		for edit := range 1 + rng.IntN(6) {
+			i := rng.IntN(s.Len())
+			want := s.Cues()
+			want[i].Start = time.Duration(rng.IntN(21)) * time.Second
+			require.NoError(t, s.SetCue(i, want[i]))
+			slices.SortStableFunc(want, func(a, b model.Cue) int { return cmp.Compare(a.Start, b.Start) })
+
+			require.Equal(t, want, s.Cues(), "round %d, edit %d", round, edit)
+			for _, comment := range s.Comments() {
+				if comment.Text == "at the end" {
+					require.Equal(t, s.Len(), comment.BeforeCue, "round %d, edit %d", round, edit)
+					continue
+				}
+				c, ok := s.Cue(comment.BeforeCue)
+				require.True(t, ok, "round %d, edit %d", round, edit)
+				require.Equal(t, comment.Text, c.ID, "round %d, edit %d", round, edit)
+			}
+		}
+	}
+}
+
+func TestAddCueBeforeTheLastCueKeepsTheComments(t *testing.T) {
+	t.Parallel()
+
+	s := fromTimes([2]float64{1, 2}, [2]float64{3, 4}, [2]float64{5, 6})
+	for i := range 3 {
+		require.NoError(t, s.AddComment(fmt.Sprintf("before text%d", i), i))
+	}
+	require.NoError(t, s.AddComment("far after the end", 9))
+
+	s.AddCue(model.Cue{Start: sec(3), Lines: []string{"new"}})
+
+	assert.Equal(t, []string{"text0", "text1", "new", "text2"}, texts(s))
+	assert.Equal(t, []model.Comment{
+		{Text: "before text0", BeforeCue: 0},
+		{Text: "before text1", BeforeCue: 1},
+		{Text: "before text2", BeforeCue: 3},
+		{Text: "far after the end", BeforeCue: 4},
+	}, s.Comments())
 }
 
 func TestSetCueMovesTheCommentsWithTheCue(t *testing.T) {

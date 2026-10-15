@@ -68,14 +68,15 @@ fmt.Println(s.Comments())
 
 - **Reorder**: a comment stays before the same cue through every sort and move.
 - **Removed cue**: a comment before a removed cue comes before the next kept cue, or after the last cue.
-- **Index above the count**: `AddComment` stores it as is. Writers put the comment after the last cue. The next reorder sets it to the cue count.
+- **Index above the count**: `AddComment` stores it as is. Writers put the comment after the last cue. A later change that adds, moves or removes a cue sets it to the cue count, except `ReplaceCues` without an anchor.
 - **Negative index**: `AddComment` returns an error that matches `ErrInvalidArgument`.
-- **ReplaceCues**: the caller maps each old cue index to an index in the new list, and each comment follows its cue there.
+- **ReplaceCues with an anchor**: the anchor maps each old cue index to an index in the new list, and each comment follows its cue there. A comment after the last old cue stays after the last cue.
+- **ReplaceCues without an anchor**: `BeforeCue` counts as an index into the new list. Example: a comment at index 3 of a 3-cue subtitle comes before new cue 3 after `ReplaceCues` with 5 cues. A reader that adds the comments before the cues needs this rule.
 
 ## Metadata, alignment and forced cues
 
 - **Metadata**: free string keys, with the constants `MetadataTitle`, `MetadataAuthor`, `MetadataArtist`, `MetadataAlbum` and `MetadataLanguage`. An empty value is a value. `DeleteMetadata` removes a key.
-- **Alignment**: 9 places on a numeric keypad grid. The zero value is `BottomCenter`. `Numpad()` gives the keypad key, for example 8 for `TopCenter` as in the ASS tag `{\an8}`. Library JSON stores this number.
+- **Alignment**: 9 places on a numeric keypad grid. The zero value is `BottomCenter`. `Numpad()` gives the keypad key, for example 8 for `TopCenter` as in the ASS tag `{\an8}`. Library JSON stores this number. A value outside the 9 constants counts as `BottomCenter`.
 - **Forced**: a forced cue is a forced narrative. The player shows it also when the viewer turned subtitles off.
 - **ID**: the empty string means the cue has no identifier.
 
@@ -89,7 +90,7 @@ fmt.Println(s.Comments())
 | `CuesWhere(match)` | the cues for which `match` returns true |
 
 - **Indexes**: each lookup returns ascending cue indexes. Read each cue with `Cue(i)`.
-- **Speed**: the first lookup after a change builds an index of the cue times. Later lookups use it until the next change. A `SetCue` that keeps the cue at its index updates the index in place. 20,000 rounds of `SetCue` and `CueIndexAt` on 20,000 cues take well under 1 s.
+- **Speed**: the first lookup after a change builds an index of the cue times. Later lookups use it until the next change.
 - **Concurrency**: a `Subtitle` is not safe for concurrent use. A lookup writes the index, so concurrent lookups need a lock too.
 
 ## Copies and equality

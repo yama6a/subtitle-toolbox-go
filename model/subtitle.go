@@ -7,6 +7,7 @@ import (
 	"maps"
 	"slices"
 	"sort"
+	"strconv"
 	"time"
 )
 
@@ -107,14 +108,45 @@ func (s *Subtitle) AddCues(cues ...Cue) {
 		return
 	}
 
-	anchors := make([]int, len(s.comments))
+	if len(added) == 1 {
+		s.insert(added[0])
+		return
+	}
+
+	s.place(append(s.cues, added...), s.anchors(nil))
+}
+
+// anchors returns the old cue index of each comment, mapped through anchor when it is not nil,
+// or -1 for a comment after the last cue.
+func (s *Subtitle) anchors(anchor func(old int) int) []int {
+	out := make([]int, len(s.comments))
 	for k, c := range s.comments {
-		anchors[k] = c.BeforeCue
-		if c.BeforeCue >= n {
-			anchors[k] = -1
+		switch {
+		case c.BeforeCue >= len(s.cues):
+			out[k] = -1
+		case anchor == nil:
+			out[k] = c.BeforeCue
+		default:
+			out[k] = anchor(c.BeforeCue)
 		}
 	}
-	s.place(append(s.cues, added...), anchors)
+	return out
+}
+
+// insert puts c after the stored cues that start at or before it.
+func (s *Subtitle) insert(c Cue) {
+	n := len(s.cues)
+	at := sort.Search(n, func(j int) bool { return s.cues[j].Start > c.Start })
+	s.cues = slices.Insert(s.cues, at, c)
+	s.index = nil
+	for k := range s.comments {
+		switch b := &s.comments[k].BeforeCue; {
+		case *b >= n:
+			*b = n + 1
+		case *b >= at:
+			*b++
+		}
+	}
 }
 
 // SetCue replaces the cue at index i with a rounded and cleaned copy of c.
@@ -143,7 +175,6 @@ func (s *Subtitle) SetCue(i int, c Cue) error {
 	s.cues[to] = c
 	s.index = nil
 	s.moveComments(i, to)
-	sortComments(s.comments)
 	return nil
 }
 
@@ -161,7 +192,6 @@ func (s *Subtitle) sortedPosition(i int) int {
 	return i
 }
 
-// moveComments updates the comments after the cue at from moved to the index to.
 func (s *Subtitle) moveComments(from, to int) {
 	for k := range s.comments {
 		b := &s.comments[k].BeforeCue
@@ -244,15 +274,10 @@ func (s *Subtitle) ReplaceCues(cues []Cue, anchor func(old int) int) {
 	for i, c := range cues {
 		normalized[i] = c.normalized()
 	}
-	anchors := make([]int, len(s.comments))
-	for k, c := range s.comments {
-		switch {
-		case anchor == nil:
+	anchors := s.anchors(anchor)
+	if anchor == nil {
+		for k, c := range s.comments {
 			anchors[k] = c.BeforeCue
-		case c.BeforeCue < len(s.cues):
-			anchors[k] = anchor(c.BeforeCue)
-		default:
-			anchors[k] = -1
 		}
 	}
 	s.place(normalized, anchors)
@@ -304,7 +329,7 @@ func (s *Subtitle) CueIndexAt(t time.Duration) (int, bool) {
 // the cues with Start < to and End > from. It returns an error that matches ErrInvalidArgument when from is after to.
 func (s *Subtitle) CuesBetween(from, to time.Duration) ([]int, error) {
 	if from > to {
-		return nil, invalidArgument(fmt.Sprintf("The range start %v must not be after the range end %v.", from, to))
+		return nil, invalidArgument(fmt.Sprintf("The range start %s must not be after the range end %s.", phpSeconds(from), phpSeconds(to)))
 	}
 	return s.lookup().overlapping(from, to, false), nil
 }
@@ -390,6 +415,11 @@ func sortComments(comments []Comment) {
 
 func cueNotFound(i, n int) error {
 	return fmt.Errorf("%w: index %d, the subtitle has %d cues", ErrCueNotFound, i, n)
+}
+
+// phpSeconds formats d as PHP prints a float of seconds, for example "10" or "2.5", so messages keep the PHP text.
+func phpSeconds(d time.Duration) string {
+	return strconv.FormatFloat(d.Seconds(), 'f', -1, 64)
 }
 
 func invalidArgument(msg string) error {

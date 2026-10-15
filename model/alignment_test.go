@@ -74,7 +74,7 @@ func TestAlignmentOutsideTheGrid(t *testing.T) {
 
 	invalid := model.Alignment(42)
 	assert.Equal(t, "Alignment(42)", invalid.String())
-	assert.Zero(t, invalid.Numpad())
-	assert.Zero(t, invalid.Row())
-	assert.Zero(t, invalid.Column())
+	assert.Equal(t, 2, invalid.Numpad())
+	assert.Equal(t, 0, invalid.Row())
+	assert.Equal(t, 2, invalid.Column())
 }

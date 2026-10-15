@@ -44,36 +44,26 @@ func AlignmentAt(row, column int) (Alignment, bool) {
 	return AlignmentFromNumpad(gridColumns*row + column)
 }
 
-// Numpad returns the numeric keypad key of a, 1 to 9, or 0 for a value outside the 9 constants.
+// Numpad returns the numeric keypad key of a, 1 to 9. A value outside the 9 constants counts as BottomCenter.
 func (a Alignment) Numpad() int {
 	switch {
-	case a == BottomCenter:
-		return 2
 	case a == BottomLeft:
 		return 1
-	case a <= TopRight:
+	case a > BottomLeft && a <= TopRight:
 		return int(a) + 1
 	default:
-		return 0
+		return 2
 	}
 }
 
-// Row returns the grid row of a: 0 bottom, 1 middle, 2 top. It returns 0 for a value outside the 9 constants.
+// Row returns the grid row of a: 0 bottom, 1 middle, 2 top. A value outside the 9 constants counts as BottomCenter.
 func (a Alignment) Row() int {
-	n := a.Numpad()
-	if n == 0 {
-		return 0
-	}
-	return (n - 1) / gridColumns
+	return (a.Numpad() - 1) / gridColumns
 }
 
-// Column returns the grid column of a: 1 left, 2 center, 3 right. It returns 0 for a value outside the 9 constants.
+// Column returns the grid column of a: 1 left, 2 center, 3 right. A value outside the 9 constants counts as BottomCenter.
 func (a Alignment) Column() int {
-	n := a.Numpad()
-	if n == 0 {
-		return 0
-	}
-	return (n-1)%gridColumns + 1
+	return (a.Numpad()-1)%gridColumns + 1
 }
 
 // String returns the name of the constant, for example "TopCenter".
