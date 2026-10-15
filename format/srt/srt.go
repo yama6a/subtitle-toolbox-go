@@ -7,8 +7,6 @@ package srt
 
 import "regexp"
 
-const formatDataKey = "srt"
-
 // ReadOptions holds the settings of the SubRip reader. It has no fields yet.
 type ReadOptions struct{}
 
