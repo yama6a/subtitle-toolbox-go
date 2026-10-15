@@ -1,0 +1,17 @@
+﻿1
+00:00:04,200 --> 00:00:07,450
+The ferry leaves at seven.
+Do not be late.
+
+2
+00:00:08,100 --> 00:00:10,900
+<i>I have never been late in my life.</i>
+
+3
+00:25:31,000 --> 00:25:34,250
+Where did you put the map?
+
+4
+00:51:55,500 --> 00:51:59,800
+We stop here for tonight.
+
