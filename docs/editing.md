@@ -138,13 +138,15 @@ Cues from 1 s to 3 s, 4 s to 6 s and 7 s to 9 s give 2 s to 3 s, 4 s to 6 s and 
 
 - **Touching cues**: a cue drops when `End <= from` or `Start >= to`.
 - **Empty range**: `from == to` is legal. Only a cue across `from` stays, with a length of 0.
-- **moveToZero**: moves the times and the word timestamps back by `from`, as `Shift(-from)` does. Without it, word timestamps stay, also when they fall outside the cut cue.
+- **moveToZero**: subtracts `from` from the times and the word timestamps, then rounds once to whole milliseconds, as PHP does. A time below 0 becomes 0. Without it, word timestamps stay, also when they fall outside the cut cue.
+- **moveToZero and Shift**: for a `from` of whole milliseconds, `Slice(from, to, true)` equals `Slice(from, to, false)` followed by `Shift(-from)`. Otherwise the 2 differ, because the second way rounds twice. Example: a cue from 1 s to 5 s with `from` 2.0005 s starts at 0 with `moveToZero` and at 0.001 s after the shift.
 
 ### Split and join
 
 - **Split**: `SplitCue(2, 9500*time.Millisecond, 1)` of a cue from 6.5 s to 12.5 s with 2 lines gives one cue from 6.5 s to 9.5 s with line 1 and one from 9.5 s to 12.5 s with line 2. `splitAfterLine` counts from 1, so a cue of 1 line cannot split.
 - **Second part**: copies the alignment, the forced flag and the format data, and has no ID. It takes its place in start order after the first part. Word timestamps do not move.
 - **Join**: the joined cue holds the lines of all cues in order and ends at the latest end. The start, the ID, the alignment, the forced flag and the format data come from cue `first`. Join checks no speaker, alignment or forced flag.
+- **Join example**: cues `zero` 0 s to 1 s, `one` 1 s to 2 s, `two` 2 s to 4 s, `three` 5 s to 6 s and `four` 7 s to 8 s, with a comment before each cue from `one` on. `JoinCues(1, 3)` gives `zero`, then `one\ntwo\nthree` from 1 s to 6 s, then `four`. The comments of `one`, `two` and `three` sit before the joined cue.
 
 ### Duplicates
 
@@ -154,7 +156,7 @@ A cue continues the run of the cue before it when all of these hold, compared wi
 
 - the same `Text()`, tags and case included
 - the same alignment, forced flag and set of `<v>` speaker names
-- the same format data, with the same keys, values, value types and key order. An ASS event with style `Glow` and one with `Default` stay apart
+- the same format data: the same format keys, and per format the same keys, values, value types and key order. The order of the format keys does not count. An ASS event with style `Glow` and one with `Default` stay apart
 - a gap of at most `maxGap` to the run, rounded to whole milliseconds
 
 The run joins into its first cue, which keeps its lines and ends at the latest end of the run.

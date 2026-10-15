@@ -345,6 +345,12 @@ func TestSlice(t *testing.T) {
 			want: []cueSpec{{2, 3, "<00:00:01.000>a <00:00:03.500>c"}},
 		},
 		{
+			name: "subtracts a bound between milliseconds before it rounds",
+			s:    subtitleOf(cueSpec{1, 5, "one"}),
+			from: 2*time.Second + 500*time.Microsecond, to: 6800 * time.Millisecond, moveToZero: true,
+			want: []cueSpec{{0, 3, "one"}},
+		},
+		{
 			name: "rounds the bounds to milliseconds",
 			s:    subtitleOf(cueSpec{1, 4, "one"}),
 			from: 2*time.Second + 500*time.Microsecond, to: 3*time.Second + 400*time.Microsecond,
@@ -372,7 +378,7 @@ func TestSlice(t *testing.T) {
 	}
 }
 
-func TestSliceToZeroEqualsSliceThenShift(t *testing.T) {
+func TestSliceToZeroEqualsSliceThenShiftForAWholeMillisecond(t *testing.T) {
 	t.Parallel()
 
 	s := readFixture(t, "editing/own_ferry_drift.vtt")
@@ -554,6 +560,7 @@ func TestRemoveDuplicateCues(t *testing.T) {
 		{"not neighbours", []cueSpec{{1, 2, "Hi"}, {2, 3, "Yes"}, {3, 4, "Hi"}}, 0, []cueSpec{{1, 2, "Hi"}, {2, 3, "Yes"}, {3, 4, "Hi"}}},
 		{"earlier start later", []cueSpec{{2, 4, "Bye"}, {1, 3, "Bye"}}, 0, []cueSpec{{1, 4, "Bye"}}},
 		{"contained", []cueSpec{{1, 5, "Bye"}, {2, 3, "Bye"}, {4.5, 6, "Bye"}}, 0, []cueSpec{{1, 6, "Bye"}}},
+		{"a cue that ends before the run starts", []cueSpec{{1, 3, "Hi"}, {2, 0.5, "Hi"}}, 0, []cueSpec{{1, 3, "Hi"}, {2, 0.5, "Hi"}}},
 		{"tags count", []cueSpec{{1, 2, "<i>Hi</i>"}, {2, 3, "Hi"}}, 0, []cueSpec{{1, 2, "<i>Hi</i>"}, {2, 3, "Hi"}}},
 		{"case counts", []cueSpec{{4, 5, "other"}, {5, 6, "Other"}}, 0, []cueSpec{{4, 5, "other"}, {5, 6, "Other"}}},
 	}
