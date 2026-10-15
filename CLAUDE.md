@@ -40,6 +40,8 @@ make cross   # build and vet for darwin and windows
 make fuzz    # run each fuzz target for 30 s, FUZZTIME=10s shortens it
 make bench   # run the benchmarks, BENCHTIME=1x runs each once
 make image   # build the container image, the Dockerfile arrives with #4
+make dist    # write the 6 release archives and the checksum file to an empty dist/
+make smoke   # run the smoke test on this machine's archive in dist/
 ```
 
 **Always run `make ci` after each work step and fix everything it reports before moving on.**
