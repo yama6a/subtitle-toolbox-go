@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/internal/extfallback"
 	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 )
 
@@ -158,11 +159,7 @@ func (r *runner) peek(arg string) stbox.Format {
 	if f, ok := r.detect(path); ok {
 		return f
 	}
-	switch strings.ToLower(filepath.Ext(arg)) {
-	case ".json", ".txt", ".ffmeta":
-		return ""
-	}
-	if f, ok := stbox.FormatFromPath(arg); ok && f.CanRead() {
+	if f, ok := stbox.FormatFromPath(arg); ok && f.CanRead() && extfallback.Allowed(arg) {
 		return f
 	}
 	return ""
