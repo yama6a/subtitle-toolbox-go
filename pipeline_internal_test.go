@@ -125,13 +125,14 @@ func textReaders() []formatFuncs {
 func TestEmptyContentGivesAnEmptySubtitle(t *testing.T) {
 	t.Parallel()
 
+	contents := []struct{ name, text string }{{"empty", ""}, {"BOM and white space", utf8BOM + " \r\n\t\n"}}
 	for _, row := range textReaders() {
-		for _, content := range []string{"", utf8BOM + " \r\n\t\n"} {
+		for _, content := range contents {
 			for _, lenient := range []bool{false, true} {
-				t.Run(string(row.format), func(t *testing.T) {
+				t.Run(fmt.Sprintf("%s, %s, lenient %t", row.format, content.name, lenient), func(t *testing.T) {
 					t.Parallel()
 
-					s, info, err := read(row, decode([]byte(content)), ReadOptions{Format: row.format, Lenient: lenient})
+					s, info, err := read(row, decode([]byte(content.text)), ReadOptions{Format: row.format, Lenient: lenient})
 					require.NoError(t, err)
 					assert.Zero(t, s.Len())
 					assert.Empty(t, info.Warnings)
