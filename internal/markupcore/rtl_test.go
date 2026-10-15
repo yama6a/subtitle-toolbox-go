@@ -3,6 +3,7 @@ package markupcore_test
 import (
 	"encoding/json"
 	"os"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -42,7 +43,8 @@ func readRows[T any](t *testing.T, name string) []T {
 func TestEmbedRightToLeft(t *testing.T) {
 	t.Parallel()
 
-	for _, tt := range readRows[embedRow](t, "embed.json") {
+	rows := slices.Concat(readRows[embedRow](t, "embed.json"), readRows[embedRow](t, "embed_lf.json"))
+	for _, tt := range rows {
 		t.Run(tt.Name, func(t *testing.T) {
 			t.Parallel()
 
@@ -60,13 +62,6 @@ func TestEmbedRightToLeftKeepsInvalidUTF8(t *testing.T) {
 	for _, in := range []string{"\xff" + rows[0].In, rows[0].In + "\xe9", "<\xff>" + rows[0].In} {
 		assert.Equal(t, in, markupcore.EmbedRightToLeft(in))
 	}
-}
-
-func TestEmbedRightToLeftKeepsFinalLF(t *testing.T) {
-	t.Parallel()
-
-	in := readRows[embedRow](t, "embed.json")[0].In
-	assert.Equal(t, "\u202b"+in+"\n\u202c", markupcore.EmbedRightToLeft(in+"\n"))
 }
 
 func TestHoldsRightToLeftEmbedding(t *testing.T) {

@@ -5,17 +5,21 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/yama6a/subtitle-toolbox-go/internal/grapheme"
 )
 
 const (
 	rightToLeftEmbedding = "\u202B"
 	popFormatting        = "\u202C"
+	anyTagPattern        = `(?:` + TagPattern + `|\{\\[^{}]*\})`
 )
 
 var (
 	// An ASS drawing command such as {\p1} makes the text after it a path, not a line to embed.
 	assDrawingRegexp = regexp.MustCompile(`\{[^{}]*\\p[1-9]`)
-	tagAtStartRegexp = regexp.MustCompile(`\A(?:` + TagPattern + `|\{\\[^{}]*\})`)
+	tagRunsRegexp    = regexp.MustCompile(`(?s)\A(` + anyTagPattern + `*)(.*?)(` + anyTagPattern + `*)(\n?)\z`)
+	markRemover      = strings.NewReplacer(rightToLeftEmbedding, "", popFormatting, "") //nolint:gochecknoglobals // a replacer holds no state
 )
 
 // HasRightToLeftLetter reports whether the visible text of line holds a letter
@@ -25,29 +29,31 @@ func HasRightToLeftLetter(line string) bool {
 	if !utf8.ValidString(text) {
 		return false
 	}
-	for _, r := range text {
-		if unicode.IsLetter(r) && (unicode.Is(unicode.Arabic, r) || unicode.Is(unicode.Hebrew, r) ||
-			unicode.Is(unicode.Syriac, r) || unicode.Is(unicode.Thaana, r) || unicode.Is(unicode.Nko, r)) {
-			return true
-		}
-	}
-	return false
+	return strings.IndexFunc(text, isRightToLeftLetter) >= 0
+}
+
+func isRightToLeftLetter(r rune) bool {
+	// PCRE2 matches \p{Arabic} against Script_Extensions. U+0640 (tatweel) has the script Common but extends to
+	// Arabic and Syriac, and the Go tables hold only the script.
+	return r == 0x0640 || unicode.IsLetter(r) && (unicode.Is(unicode.Arabic, r) || unicode.Is(unicode.Hebrew, r) ||
+		unicode.Is(unicode.Syriac, r) || unicode.Is(unicode.Thaana, r) || unicode.Is(unicode.Nko, r))
 }
 
 // EmbedRightToLeft wraps the text of a right-to-left line in U+202B and U+202C, inside its leading and trailing tags.
-// Sentence-end punctuation at the start of the text moves to its end first. A line without a right-to-left letter,
-// a line with an ASS drawing command and a line of invalid UTF-8 stay as they are.
+// Sentence-end punctuation at the start of the text moves to its end first. A final LF stays after the closing mark.
+// A line without a right-to-left letter, a line with an ASS drawing command and a line of invalid UTF-8 stay as they are.
 func EmbedRightToLeft(line string) string {
-	text := strings.NewReplacer(rightToLeftEmbedding, "", popFormatting, "").Replace(line)
+	text := markRemover.Replace(line)
 	if assDrawingRegexp.MatchString(text) || !HasRightToLeftLetter(text) || !utf8.ValidString(text) {
 		return line
 	}
 
-	leading, middle, trailing := splitTagRuns(text)
+	m := tagRunsRegexp.FindStringSubmatch(text)
+	leading, middle, trailing, lf := m[1], m[2], m[3], m[4]
 	if dash, run, rest, space, ok := splitLeadingPunctuation(middle); ok {
-		return EmbedRightToLeft(leading + dash + rest + run + space + trailing)
+		return EmbedRightToLeft(leading + dash + rest + run + space + trailing + lf)
 	}
-	return leading + rightToLeftEmbedding + middle + popFormatting + trailing
+	return leading + rightToLeftEmbedding + middle + popFormatting + trailing + lf
 }
 
 // HoldsRightToLeftEmbedding reports whether a line already holds the embedding of EmbedRightToLeft.
@@ -62,36 +68,7 @@ func HoldsRightToLeftEmbedding(lines []string) bool {
 
 // IsBidiControl reports whether r is one of the bidi controls that RemoveBidiControls removes.
 func IsBidiControl(r rune) bool {
-	return 0x200E <= r && r <= 0x200F || 0x202A <= r && r <= 0x202E || 0x2066 <= r && r <= 0x2069
-}
-
-// splitTagRuns splits text into the longest run of tags at its start, the middle and the longest run of tags at its end.
-func splitTagRuns(text string) (leading, middle, trailing string) {
-	start := 0
-	for end := tagEnd(text[start:]); end > 0; end = tagEnd(text[start:]) {
-		start += end
-	}
-	// endsInTags[i] is true when text[i:] holds tags only.
-	endsInTags := make([]bool, len(text)+1)
-	endsInTags[len(text)] = true
-	for i := len(text) - 1; i >= start; i-- {
-		if end := tagEnd(text[i:]); end > 0 {
-			endsInTags[i] = endsInTags[i+end]
-		}
-	}
-	stop := start
-	for !endsInTags[stop] {
-		stop++
-	}
-	return text[:start], text[start:stop], text[stop:]
-}
-
-// tagEnd returns the length of the tag at the start of s, or 0 when s starts with none.
-func tagEnd(s string) int {
-	if loc := tagAtStartRegexp.FindStringIndex(s); loc != nil {
-		return loc[1]
-	}
-	return 0
+	return grapheme.IsBidiControl(r)
 }
 
 // splitLeadingPunctuation splits a middle such as "- ?text  " into the dash part "- ", the punctuation run "?", the

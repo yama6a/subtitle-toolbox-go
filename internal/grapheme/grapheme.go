@@ -18,8 +18,10 @@ func Count(s string) int {
 	if !utf8.ValidString(s) {
 		return len(s)
 	}
-	n := 0
-	for c := range Clusters(s) {
+	n, state := 0, -1
+	for s != "" {
+		var c string
+		c, s, _, state = uniseg.FirstGraphemeClusterInString(s, state)
 		if r, _ := utf8.DecodeRuneInString(c); !IsInvisible(r) {
 			n++
 		}
@@ -52,11 +54,10 @@ func Clusters(s string) iter.Seq[string] {
 
 // IsInvisible reports whether r counts 0 characters.
 func IsInvisible(r rune) bool {
-	switch {
-	case r == 0x00AD, r == 0x200B, r == 0xFEFF:
-		return true
-	case 0x200E <= r && r <= 0x200F, 0x202A <= r && r <= 0x202E, 0x2066 <= r && r <= 0x2069:
-		return true
-	}
-	return false
+	return r == 0x00AD || r == 0x200B || r == 0xFEFF || IsBidiControl(r)
+}
+
+// IsBidiControl reports whether r is one of the bidi controls U+200E, U+200F, U+202A to U+202E and U+2066 to U+2069.
+func IsBidiControl(r rune) bool {
+	return 0x200E <= r && r <= 0x200F || 0x202A <= r && r <= 0x202E || 0x2066 <= r && r <= 0x2069
 }

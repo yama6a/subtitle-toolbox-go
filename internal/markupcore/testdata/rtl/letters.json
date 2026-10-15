@@ -4,6 +4,8 @@
   {"name": "Syriac", "line": "\u072b\u0720\u0721\u0710", "want": true},
   {"name": "Thaana", "line": "\u0780\u0781", "want": true},
   {"name": "N'Ko", "line": "\u07ca\u07cb", "want": true},
+  {"name": "tatweel, script Common with Arabic in its extensions", "line": "\u0640", "want": true},
+  {"name": "Arabic letter added in Unicode 16", "line": "\u088f", "want": true},
   {"name": "Latin", "line": "Hello", "want": false},
   {"name": "Han", "line": "你好", "want": false},
   {"name": "empty", "line": "", "want": false},

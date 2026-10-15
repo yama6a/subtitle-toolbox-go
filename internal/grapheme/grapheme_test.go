@@ -86,3 +86,14 @@ func TestIsInvisible(t *testing.T) {
 		assert.False(t, grapheme.IsInvisible(r), "%U", r)
 	}
 }
+
+func TestIsBidiControl(t *testing.T) {
+	t.Parallel()
+
+	for _, r := range []rune{0x200E, 0x200F, 0x202A, 0x202E, 0x2066, 0x2069} {
+		assert.True(t, grapheme.IsBidiControl(r), "%U", r)
+	}
+	for _, r := range []rune{'a', 0x00AD, 0x200B, 0x200D, 0x2029, 0x202F, 0x2065, 0x206A, 0xFEFF} {
+		assert.False(t, grapheme.IsBidiControl(r), "%U", r)
+	}
+}

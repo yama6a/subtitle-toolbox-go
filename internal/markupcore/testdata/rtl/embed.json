@@ -32,5 +32,6 @@
   {"name": "empty middle", "in": "{\\fnשלום}", "want": "{\\fnשלום}\u202b\u202c"},
   {"name": "angle bracket before white space is text", "in": "a < b שלום", "want": "\u202ba < b שלום\u202c"},
   {"name": "several tags on both sides", "in": "{\\an8}<i><b>שלום</b></i>{\\r}", "want": "{\\an8}<i><b>\u202bשלום\u202c</b></i>{\\r}"},
+  {"name": "tatweel has the script Common and extends to Arabic", "in": "\u0640", "want": "\u202b\u0640\u202c"},
   {"name": "marks at the line start are removed", "in": "\u202c\u202bשלום", "want": "\u202bשלום\u202c"}
 ]
