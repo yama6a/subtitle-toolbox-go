@@ -1,0 +1,13 @@
+1
+00:00:01,000 --> 00:00:02,500
+Every line in this file
+ends with CR CR LF
+
+2
+00:00:03,000 --> 00:00:04,500
+A text-mode copy of a CR LF file
+writes these line endings
+
+3
+00:00:05,000 --> 00:00:06,500
+Last cue

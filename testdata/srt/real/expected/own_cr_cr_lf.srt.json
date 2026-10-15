@@ -1,0 +1,43 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 2.5,
+                "lines": [
+                    "Every line in this file",
+                    "ends with CR CR LF"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.0,
+                "end": 4.5,
+                "lines": [
+                    "A text-mode copy of a CR LF file",
+                    "writes these line endings"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.0,
+                "end": 6.5,
+                "lines": [
+                    "Last cue"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

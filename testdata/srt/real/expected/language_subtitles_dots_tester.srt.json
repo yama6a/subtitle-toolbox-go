@@ -1,0 +1,42 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 2.501,
+                "end": 4.5,
+                "lines": [
+                    "Tester for dots instead of commas in timestamps 1.0 by ale5000",
+                    "<b><i>Use VLC 1.0.3 or higher as reference</i></b>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.501,
+                "end": 8.5,
+                "lines": [
+                    "Dots instead of commas"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {}
+            },
+            {
+                "start": 6.501,
+                "end": 8.5,
+                "lines": [
+                    "OK"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {}
+            }
+        ]
+    }
+}

@@ -1,0 +1,18 @@
+1
+00:00:20,105 --> 00:00:23,292
+The ferry to the island leaves at noon.
+
+2
+00:00:23,292 --> 00:00:28,898
+
+3
+00:00:28,898 --> 00:00:31,400
+Buy the tickets at the harbour office.
+
+4
+00:00:32,000 --> 00:00:36,100
+
+
+5
+00:00:36,100 --> 00:00:39,000
+The last boat comes back at six.

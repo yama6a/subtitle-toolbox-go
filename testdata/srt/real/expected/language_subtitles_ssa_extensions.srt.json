@@ -1,0 +1,201 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 4.0,
+                "lines": [
+                    "Top-left: an7"
+                ],
+                "identifier": null,
+                "alignment": 7,
+                "formatData": {}
+            },
+            {
+                "start": 5.0,
+                "end": 8.0,
+                "lines": [
+                    "Top-centre: an8"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {}
+            },
+            {
+                "start": 9.0,
+                "end": 12.0,
+                "lines": [
+                    "Top-right: an9"
+                ],
+                "identifier": null,
+                "alignment": 9,
+                "formatData": {}
+            },
+            {
+                "start": 13.0,
+                "end": 16.0,
+                "lines": [
+                    "Middle-left: an4"
+                ],
+                "identifier": null,
+                "alignment": 4,
+                "formatData": {}
+            },
+            {
+                "start": 17.0,
+                "end": 20.0,
+                "lines": [
+                    "Middle-centre: an5"
+                ],
+                "identifier": null,
+                "alignment": 5,
+                "formatData": {}
+            },
+            {
+                "start": 21.0,
+                "end": 24.0,
+                "lines": [
+                    "Middle-right: an6"
+                ],
+                "identifier": null,
+                "alignment": 6,
+                "formatData": {}
+            },
+            {
+                "start": 25.0,
+                "end": 28.0,
+                "lines": [
+                    "Bottom-left: an1"
+                ],
+                "identifier": null,
+                "alignment": 1,
+                "formatData": {}
+            },
+            {
+                "start": 29.0,
+                "end": 32.0,
+                "lines": [
+                    "Bottom-centre: an2"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 33.0,
+                "end": 36.0,
+                "lines": [
+                    "Bottom-right: an3"
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {}
+            },
+            {
+                "start": 61.0,
+                "end": 64.0,
+                "lines": [
+                    "[Deprecated] Bottom-left: \\a1"
+                ],
+                "identifier": null,
+                "alignment": 1,
+                "formatData": {}
+            },
+            {
+                "start": 65.0,
+                "end": 68.0,
+                "lines": [
+                    "[Deprecated] Bottom-centre: \\a2"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 69.0,
+                "end": 72.0,
+                "lines": [
+                    "[Deprecated] Bottom-right: \\a3"
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {}
+            },
+            {
+                "start": 73.0,
+                "end": 76.0,
+                "lines": [
+                    "[Deprecated] Top-left: \\a5"
+                ],
+                "identifier": null,
+                "alignment": 7,
+                "formatData": {}
+            },
+            {
+                "start": 77.0,
+                "end": 80.0,
+                "lines": [
+                    "[Deprecated] Top-centre: \\a6"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {}
+            },
+            {
+                "start": 81.0,
+                "end": 84.0,
+                "lines": [
+                    "[Deprecated] Top-right: \\a7"
+                ],
+                "identifier": null,
+                "alignment": 9,
+                "formatData": {}
+            },
+            {
+                "start": 85.0,
+                "end": 88.0,
+                "lines": [
+                    "[Deprecated] Middle-left: \\a9"
+                ],
+                "identifier": null,
+                "alignment": 4,
+                "formatData": {}
+            },
+            {
+                "start": 89.0,
+                "end": 92.0,
+                "lines": [
+                    "[Deprecated] Middle-centre: \\a10"
+                ],
+                "identifier": null,
+                "alignment": 5,
+                "formatData": {}
+            },
+            {
+                "start": 93.0,
+                "end": 96.0,
+                "lines": [
+                    "[Deprecated] Middle-right: \\a11"
+                ],
+                "identifier": null,
+                "alignment": 6,
+                "formatData": {}
+            },
+            {
+                "start": 97.0,
+                "end": 105.0,
+                "lines": [
+                    "Back to default"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

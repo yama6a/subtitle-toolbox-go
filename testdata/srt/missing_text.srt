@@ -1,0 +1,18 @@
+﻿1
+00:00:00,123 --> 00:00:00,456
+Only milliseconds
+
+2
+00:00:05,222 --> 00:00:46,444
+
+3
+00:15:20,555 --> 00:58:01,888
+Minutes and seconds and milliseconds
+
+4
+01:01:01,000 --> 80:00:00,800
+Full Timestamp
+
+5
+00:00:00,000 --> 999:99:99,999
+Minimum to Maximum

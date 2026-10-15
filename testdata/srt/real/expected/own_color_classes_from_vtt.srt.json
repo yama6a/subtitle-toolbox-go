@@ -1,0 +1,111 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 2.0,
+                "lines": [
+                    "<font color=\"#ffffff\">The tide comes in at noon.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 2.0,
+                "end": 3.0,
+                "lines": [
+                    "<font color=\"#00ff00\">Bring the rope.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.0,
+                "end": 4.0,
+                "lines": [
+                    "<font color=\"#00ffff\">The boat is ready.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.0,
+                "end": 5.0,
+                "lines": [
+                    "<font color=\"#ff0000\">Mind the step!</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.0,
+                "end": 6.0,
+                "lines": [
+                    "<font color=\"#ffff00\">(engine starts)</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 6.0,
+                "end": 7.0,
+                "lines": [
+                    "<font color=\"#ff00ff\">Hold on tight.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 7.0,
+                "end": 8.0,
+                "lines": [
+                    "<font color=\"#0000ff\">We are off.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 8.0,
+                "end": 9.0,
+                "lines": [
+                    "<font color=\"#000000\">Quiet now.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 9.0,
+                "end": 10.0,
+                "lines": [
+                    "<font color=\"#ffff00\">[radio static]</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 10.0,
+                "end": 11.0,
+                "lines": [
+                    "Land ahead! <font color=\"#ffff00\">Look!</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

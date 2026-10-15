@@ -1,0 +1,45 @@
+{
+    "name": "SubRip without any cue numbers",
+    "format": "srt",
+    "strict": {
+        "error": "Block #0 has no cue number on its first line. The line is \"00:00:01,000 --> 00:00:02,500\".",
+        "line": 1
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 2.5,
+            "text": "The ferry leaves at noon."
+        },
+        {
+            "start": 3,
+            "end": 4.5,
+            "text": "Buy tickets at the pier."
+        },
+        {
+            "start": 5,
+            "end": 7,
+            "text": "The last boat is at six."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 1,
+            "block": 0,
+            "action": "repaired",
+            "message": "Block #0 has no cue number on line 1. The parser read the cue without it."
+        },
+        {
+            "line": 4,
+            "block": 1,
+            "action": "repaired",
+            "message": "Block #1 has no cue number on line 4. The parser read the cue without it."
+        },
+        {
+            "line": 7,
+            "block": 2,
+            "action": "repaired",
+            "message": "Block #2 has no cue number on line 7. The parser read the cue without it."
+        }
+    ]
+}

@@ -1,0 +1,71 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 4.12,
+                "lines": [
+                    "(speaker 0) Good morning, this is the station office."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.12,
+                "end": 8.76,
+                "lines": [
+                    "(speaker 1) Hello, I have a question about the winter timetable."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 8.76,
+                "end": 12.9,
+                "lines": [
+                    "(speaker 0) Of course. Which line do you take?"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 12.9,
+                "end": 17.34,
+                "lines": [
+                    "(speaker 1) The coast line, every morning at seven."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 17.34,
+                "end": 20.1,
+                "lines": [
+                    "(speaker ?) Okay."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 20.1,
+                "end": 25.88,
+                "lines": [
+                    "(speaker 0) That train now leaves at 6:50, ten minutes earlier."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

@@ -1,0 +1,75 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.5,
+                "lines": [
+                    "the tram to the old town"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "align": "start",
+                        "position": "0%"
+                    }
+                }
+            },
+            {
+                "start": 3.5,
+                "end": 6.0,
+                "lines": [
+                    "the tram to the old town",
+                    "leaves from stop 3"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "align": "start",
+                        "position": "0%"
+                    }
+                }
+            },
+            {
+                "start": 6.0,
+                "end": 8.2,
+                "lines": [
+                    "leaves from stop 3"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "align": "start"
+                    }
+                }
+            },
+            {
+                "start": 8.2,
+                "end": 10.0,
+                "lines": [
+                    "every ten minutes"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "srt": {
+                        "coordinates": {
+                            "x1": 100,
+                            "x2": 600,
+                            "y1": 50,
+                            "y2": 100
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

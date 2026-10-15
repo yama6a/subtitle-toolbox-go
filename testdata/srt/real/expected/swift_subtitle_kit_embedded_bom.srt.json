@@ -1,0 +1,41 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 1.5,
+                "lines": [
+                    "Synthetic fixture header"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1.6,
+                "end": 3.0,
+                "lines": [
+                    "<i>Embedded BOM cue line.</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.1,
+                "end": 4.5,
+                "lines": [
+                    "<i>Follow-up cue line.</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}
