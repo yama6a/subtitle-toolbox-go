@@ -1,0 +1,27 @@
+{
+    "name": "SubRip with a truncated last cue",
+    "format": "srt",
+    "strict": {
+        "error": "The time \"00:00:0\" is not valid."
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The next stop is the station."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "Please mind the gap."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 10,
+            "block": 2,
+            "action": "skipped",
+            "message": "The time \"00:00:0\" is not valid."
+        }
+    ]
+}

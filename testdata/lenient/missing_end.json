@@ -1,0 +1,11 @@
+{
+    "version": 1,
+    "metadata": {"title": "Station announcements"},
+    "comments": [{"text": "Platform changes", "beforeCueIndex": 2}],
+    "cues": [
+        {"start": 1, "end": 3, "lines": ["The train to the coast is late."]},
+        {"start": 4, "lines": ["It leaves from platform two."]},
+        {"start": 7, "end": 9, "lines": ["The buffet car is closed."]},
+        {"start": 10, "end": 12, "lines": ["Mind the step.", 5]}
+    ]
+}

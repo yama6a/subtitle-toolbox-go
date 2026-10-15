@@ -56,6 +56,39 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
+## mantas-done/subtitles
+
+- Project: <https://github.com/mantas-done/subtitles>
+- Licence: MIT
+- Checked at: `959d1705b1ed12cbb9ddba517f8bcb814e1919a8`
+- Files copied from it:
+  - `testdata/lenient/mantas_multiple_new_lines.vtt`, from `tests/files/vtt_with_multiple_new_lines.vtt`
+  - `testdata/lenient/mantas_utf16.srt`, from `tests/files/utf16.srt`
+
+```text
+MIT License
+
+Copyright (c) 2021 mantas-done
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## github.com/rivo/uniseg
 
 - Project: <https://github.com/rivo/uniseg>

@@ -1,0 +1,12 @@
+1
+00:00:01,000 --> 00:00:02,500
+The wind is cold today.
+2
+00:00:03,000 --> 00:00:05,000
+Snow falls in the hills.
+00:00:05,500 --> 00:00:07,000
+The roads are closed.
+
+4
+00:00:08,000 --> 00:00:10,000
+Stay at home.

@@ -1,0 +1,38 @@
+{
+    "name": "SubRip with a bad timestamp and a broken arrow",
+    "format": "srt",
+    "strict": {
+        "error": "The time \"00:00:0G,000\" is not valid."
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "Good morning."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "Fresh bread every day."
+        },
+        {
+            "start": 10,
+            "end": 12,
+            "text": "See you tomorrow."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 6,
+            "block": 1,
+            "action": "skipped",
+            "message": "The time \"00:00:0G,000\" is not valid."
+        },
+        {
+            "line": 10,
+            "block": 2,
+            "action": "repaired",
+            "message": "Block #2 has the arrow \"->\" in its timing line. The parser read it as \"-->\"."
+        }
+    ]
+}

@@ -1,0 +1,43 @@
+{
+    "name": "SubRip without cue numbers",
+    "format": "srt",
+    "strict": {
+        "error": "Block #1 has no cue number on its first line."
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3.5,
+            "text": "The train leaves at nine."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "Platform two, next to the bakery."
+        },
+        {
+            "start": 6.5,
+            "end": 8,
+            "text": "Bring an umbrella."
+        },
+        {
+            "start": 9,
+            "end": 11,
+            "text": "It may rain in the afternoon."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 5,
+            "block": 1,
+            "action": "repaired",
+            "message": "Block #1 has no cue number on line 5. The parser read the cue without it."
+        },
+        {
+            "line": 8,
+            "block": 2,
+            "action": "repaired",
+            "message": "Block #2 has no cue number on line 8. The parser read the cue without it."
+        }
+    ]
+}

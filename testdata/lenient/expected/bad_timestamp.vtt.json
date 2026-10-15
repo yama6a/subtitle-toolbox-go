@@ -1,0 +1,32 @@
+{
+    "name": "WebVTT with a comma in a timestamp",
+    "format": "vtt",
+    "strict": {
+        "error": "The time \"00:00:06,000\" is not valid."
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "Good morning."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "The bakery opens at seven."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "See you tomorrow."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 8,
+            "block": 2,
+            "action": "repaired",
+            "message": "Block #2 has the time \"00:00:06,000\", which is not in the form hh:mm:ss.mmm. The parser read it as 6 s."
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "version": 1,
+    "metadata": {"title": "Harbour tour"},
+    "cues": [
+        {"start": 1, "end": 2, "lines": ["Welcome on board."]},
+        {"start": 5, "end": 3, "lines": ["The tour takes one hour."]},
+        {"start": 70, "end": 2, "lines": ["Life jackets are under the seats."]},
+        {"start": 10, "end": 12, "lines": ["Enjoy the view."]}
+    ]
+}

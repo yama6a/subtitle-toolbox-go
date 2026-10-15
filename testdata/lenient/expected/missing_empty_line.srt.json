@@ -1,0 +1,49 @@
+{
+    "name": "SubRip without empty lines between cues",
+    "format": "srt",
+    "strict": {
+        "error": "Block #0 has no cue number on its first line."
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 2.5,
+            "text": "The wind is cold today."
+        },
+        {
+            "start": 3,
+            "end": 5,
+            "text": "Snow falls in the hills."
+        },
+        {
+            "start": 5.5,
+            "end": 7,
+            "text": "The roads are closed."
+        },
+        {
+            "start": 8,
+            "end": 10,
+            "text": "Stay at home."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 4,
+            "block": 0,
+            "action": "repaired",
+            "message": "Block #0 has no empty line before line 4. The parser split the block there."
+        },
+        {
+            "line": 7,
+            "block": 0,
+            "action": "repaired",
+            "message": "Block #0 has no empty line before line 7. The parser split the block there."
+        },
+        {
+            "line": 7,
+            "block": 0,
+            "action": "repaired",
+            "message": "Block #0 has no cue number on line 7. The parser read the cue without it."
+        }
+    ]
+}

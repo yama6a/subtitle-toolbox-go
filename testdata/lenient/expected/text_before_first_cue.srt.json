@@ -1,0 +1,27 @@
+{
+    "name": "SubRip with text before the first cue",
+    "format": "srt",
+    "strict": {
+        "error": "Block #0 has no cue number on its first line."
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "Clouds move in from the west."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "Sun again by Friday."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 1,
+            "block": 0,
+            "action": "skipped",
+            "message": "Block #0 has no cue number on its first line. The line is \"Downloaded from www.example.org\"."
+        }
+    ]
+}

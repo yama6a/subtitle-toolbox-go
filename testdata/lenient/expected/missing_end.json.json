@@ -1,0 +1,33 @@
+{
+    "name": "JSON with a cue without end and a line that is not a string",
+    "format": "json",
+    "strict": {
+        "error": "The field cues[1].end must be a number."
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The train to the coast is late."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "The buffet car is closed."
+        }
+    ],
+    "warnings": [
+        {
+            "line": null,
+            "block": 1,
+            "action": "skipped",
+            "message": "The field cues[1].end must be a number."
+        },
+        {
+            "line": null,
+            "block": 3,
+            "action": "skipped",
+            "message": "The field cues[3].lines[1] must be a string."
+        }
+    ]
+}
