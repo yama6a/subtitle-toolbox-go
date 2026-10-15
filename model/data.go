@@ -2,8 +2,7 @@ package model
 
 import "slices"
 
-// Data is the format data of one format: an ordered object of JSON-like values.
-// A value is nil, bool, int64, float64, string, []any or *Data. A nil *Data is an empty object.
+// Data is the format data of one format: an ordered object of JSON-like values, where a nil *Data reads as empty.
 type Data struct {
 	keys   []string
 	values map[string]any
@@ -17,7 +16,7 @@ type Field struct {
 	Value any
 }
 
-// NewData returns the data of fields in their order. A repeated key keeps its first place and its last value.
+// NewData returns the data of fields in their order, where a repeated key keeps its first place and its last value.
 func NewData(fields ...Field) *Data {
 	d := &Data{}
 	for _, f := range fields {
@@ -51,7 +50,7 @@ func (d *Data) Get(key string) (any, bool) {
 	return v, ok
 }
 
-// Set sets the value of key. A new key goes last, an old key keeps its place.
+// Set sets the value of key on a non-nil d, where a new key goes last and an old key keeps its place.
 func (d *Data) Set(key string, value any) {
 	if d.values == nil {
 		d.values = map[string]any{}
@@ -70,12 +69,16 @@ func (d *Data) Delete(key string) {
 	if _, ok := d.values[key]; !ok {
 		return
 	}
+	if len(d.keys) == 1 {
+		d.keys, d.values = nil, nil
+		return
+	}
 	delete(d.values, key)
 	i := slices.Index(d.keys, key)
 	d.keys = slices.Delete(d.keys, i, i+1)
 }
 
-// Clone returns a deep copy of d. Lists and objects at any depth are copied.
+// Clone returns a deep copy of d.
 func (d *Data) Clone() *Data {
 	if d == nil {
 		return nil

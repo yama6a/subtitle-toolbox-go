@@ -71,7 +71,12 @@ func runSchemaCases(t *testing.T, tests []schemaCase) {
 		t.Run(tt.level+" "+tt.key+" "+tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, setFormatData(t, tt.level, tt.key, tt.data))
+			got := setFormatData(t, tt.level, tt.key, tt.data)
+			assert.Equal(t, tt.want, got)
+			if got != "" {
+				// The library JSON reader puts "cues[N]." after "The field " for cue data.
+				assert.True(t, strings.HasPrefix(got, "The field formatData."+tt.key), got)
+			}
 		})
 	}
 }
@@ -103,7 +108,9 @@ func TestSchemaTypeLanguage(t *testing.T) {
 		{"ttiBlock good", cueLevel, "stl", data("blocks", ttiList), ""},
 		{"ttiBlock bad short", cueLevel, "stl", data("blocks", []any{hex256[1:]}), "The field formatData.stl.blocks[0] must be a TTI block of 256 hexadecimal digits."},
 		{"ttiBlock bad digit", cueLevel, "stl", data("blocks", []any{hex256, "g" + hex256[1:]}), "The field formatData.stl.blocks[1] must be a TTI block of 256 hexadecimal digits."},
-		{"ttiBlock bad trailing LF", cueLevel, "stl", data("blocks", []any{hex256 + "\n"}), "The field formatData.stl.blocks[0] must be a TTI block of 256 hexadecimal digits."},
+		{"ttiBlock good final LF", cueLevel, "stl", data("blocks", []any{hex256 + "\n"}), ""},
+		{"ttiBlock bad 2 final LF", cueLevel, "stl", data("blocks", []any{hex256 + "\n\n"}), "The field formatData.stl.blocks[0] must be a TTI block of 256 hexadecimal digits."},
+		{"ttiBlock bad final CR LF", cueLevel, "stl", data("blocks", []any{hex256 + "\r\n"}), "The field formatData.stl.blocks[0] must be a TTI block of 256 hexadecimal digits."},
 		{"ttiBlock bad int", cueLevel, "stl", data("blocks", []any{int64(1)}), "The field formatData.stl.blocks[0] must be a TTI block of 256 hexadecimal digits."},
 
 		{"timeBase good", cueLevel, "ffmeta-chapters", data("timeBase", "1/1000"), ""},
@@ -112,7 +119,9 @@ func TestSchemaTypeLanguage(t *testing.T) {
 		{"timeBase bad leading zero", cueLevel, "ffmeta-chapters", data("timeBase", "1/01"), `The field formatData.ffmeta-chapters.timeBase must be a time base such as "1/1000".`},
 		{"timeBase bad no slash", cueLevel, "ffmeta-chapters", data("timeBase", "1000"), `The field formatData.ffmeta-chapters.timeBase must be a time base such as "1/1000".`},
 		{"timeBase bad 2 slashes", cueLevel, "ffmeta-chapters", data("timeBase", "1/2/3"), `The field formatData.ffmeta-chapters.timeBase must be a time base such as "1/1000".`},
-		{"timeBase bad trailing LF", cueLevel, "ffmeta-chapters", data("timeBase", "1/1000\n"), `The field formatData.ffmeta-chapters.timeBase must be a time base such as "1/1000".`},
+		{"timeBase good final LF", cueLevel, "ffmeta-chapters", data("timeBase", "1/1000\n"), ""},
+		{"timeBase bad 2 final LF", cueLevel, "ffmeta-chapters", data("timeBase", "1/1000\n\n"), `The field formatData.ffmeta-chapters.timeBase must be a time base such as "1/1000".`},
+		{"timeBase bad LF before the slash", cueLevel, "ffmeta-chapters", data("timeBase", "1\n/1000"), `The field formatData.ffmeta-chapters.timeBase must be a time base such as "1/1000".`},
 		{"timeBase bad int", cueLevel, "ffmeta-chapters", data("timeBase", int64(1)), `The field formatData.ffmeta-chapters.timeBase must be a time base such as "1/1000".`},
 
 		{"range good low", fileLevel, "dcp", data("timeCodeRate", int64(1)), ""},
@@ -441,6 +450,10 @@ func TestSchemaRejectsCycles(t *testing.T) {
 	list := []any{nil}
 	list[0] = list
 	assert.Equal(t, "The field formatData.srt.l[0] holds itself.", setFormatData(t, cueLevel, "srt", data("l", list)))
+
+	sub := []any{"x", nil}
+	sub[1] = sub[:1]
+	assert.Empty(t, setFormatData(t, cueLevel, "srt", data("l", sub)))
 
 	shared := data("x", "1")
 	assert.Empty(t, setFormatData(t, cueLevel, "srt", data("a", shared, "b", []any{shared, shared})))

@@ -12,5 +12,4 @@ Go matches the PHP library byte for byte, except for the behaviour below. Each r
 | a value in format data outside null, bool, integer, float, string, list and object | PHP arrays can hold any value | `SetFormatData` rejects any Go type outside `nil`, `bool`, `int64`, `float64`, `string`, `[]any` and `*Data` | #12 |
 | list of the file format data keys | only the cue has `getAllFormatData()` | `FormatDataKeys()` on `Subtitle` and on `Cue` | #12 |
 | order of the format data keys | insertion order | sorted | #12 |
-| TTI block or time base with a trailing LF, such as `"1/1000\n"` | passes the check, because `$` in PCRE also matches before a final LF | fails the check | #12 |
 | cue data `alignment` that is not an integer, such as `"7"` | counts as a changed alignment, also for a bottom center cue | counts as missing, so as 2 | #12 |

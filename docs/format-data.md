@@ -1,6 +1,6 @@
 # Format data
 
-An ASS file has a `[V4+ Styles]` section and a `Format:` line in `[Events]`. No field of the model holds them, but the ASS writer needs them to write the file back as it was. The ASS reader keeps them as **format data**: data of one format under the key `ass`, on the subtitle for the whole file and on each cue for its `Dialogue` line. The ASS writer reads them back. Other writers ignore them. Library JSON carries format data, so a trip through JSON keeps it.
+An ASS file has a `[V4+ Styles]` section and a `Format:` line in `[Events]`. No field of the model holds them, but the ASS writer needs them to write the file back as it was. The ASS reader keeps them as **format data**, the data of one format under the key `ass`. The file facts go on the subtitle, and the fields of each `Dialogue` line go on its cue. The ASS writer reads them back. Other writers ignore them. Library JSON carries format data, so a trip through JSON keeps it.
 
 ```go
 var s model.Subtitle
@@ -13,19 +13,23 @@ fmt.Println(err) // stbox: invalid argument: The field formatData.scc.dropFrame 
 
 ## The Data type
 
-- **Values**: `model.Data` is an ordered object. A value is `nil`, `bool`, `int64`, `float64`, `string`, `[]any` or `*Data`. `SetFormatData` rejects any other Go type, such as `int`, anywhere in the tree.
+- **Values**: `model.Data` is an ordered object. A value is `nil`, `bool`, `int64`, `float64`, `string`, `[]any` or `*Data`. `SetFormatData` rejects any other Go type, such as `int`, anywhere in the tree. It also rejects a list or object that holds itself, with `The field PATH holds itself.`, because `Clone` would never end.
+- **Nil**: a nil `*Data` reads as an empty object. `Set` needs a non-nil `*Data`.
+- **Equality**: compare 2 objects with `reflect.DeepEqual` or testify `assert.Equal`. An object whose last key was deleted equals `NewData()`.
 - **Order**: an object keeps its key order, because writers depend on it. The ASS writer writes the `[Script Info]` keys in stored order.
 - **Integers**: always `int64`, so a 32-bit build reads the same values.
 - **Copies**: `SetFormatData` stores a deep copy, and `FormatData` returns one. A change to a returned `*Data` changes nothing until you pass it back.
-- **Keys**: the `Format` value of the format that owns the data, such as `ass`, `vtt` or `microdvd`. CSV and TSV share `csv`. The cue key `image` (`ImageKey`) holds image cue data. `FormatDataKeys` returns the keys sorted.
+- **Keys**: the `Format` value of the format that owns the data, such as `ass`, `vtt` or `microdvd`. CSV and TSV share `csv`. The cue key `image` (`model.ImageKey`) holds image cue data. `FormatDataKeys` returns the keys sorted.
 - **Why one ordered type**: it keeps unknown fields and key order without a codec per format, and the PHP read goldens match it as they are. A typed struct per format would need a codec per format and lose unknown fields.
 
 ## Type checks
 
-Data enters only through `SetFormatData`, which checks the fields that writers read. It returns an error that matches `ErrInvalidArgument`, and keeps the old data. An empty `*Data` removes the key.
+Data enters only through `SetFormatData`, which checks the fields that writers read. A failed check returns an error that matches `ErrInvalidArgument`. The old data then stays. An empty `*Data` removes the key.
 
 - **Message**: `The field PATH must be TYPE.` The path starts with `formatData.KEY`. An object key adds `.key`, a list index adds `[i]`. An object key that is a canonical decimal integer, such as `12` or `-5` but not `012`, also gets the `[12]` form, as in PHP.
-- **First problem**: the check walks the schema fields in table order and the values in stored order. It returns the first problem.
+- **Go types first**: the Go type check of the whole tree runs before the schema check. Example: the `scc` data `{dropFrame: "yes", x: uint8(1)}` fails on `x`.
+- **First problem**: the schema check walks the schema fields in table order and the values in stored order. It returns the first problem.
+- **Cue paths**: every message starts with `The field formatData.KEY`. The library JSON reader puts `cues[N].` after `The field ` for cue data. A test pins this start.
 - **Free data**: empty data passes. A key without a row passes, such as `whisper` or `pac`. A field outside its row passes.
 - **All lines**: the tables hold the keys of formats that later lines add, such as `dcp` and `stl`. So data from PHP or from a later Go line passes the same checks in 1.x.
 
@@ -93,21 +97,9 @@ Data enters only through `SetFormatData`, which checks the fields that writers r
 
 ## An explicit alignment wins over a stored position
 
-A reader stores the alignment it read as a numpad int in the field `alignment` of its cue data. A writer writes the stored exact position only while `Cue.AlignmentUnchanged(key)` holds: `alignment`, 2 when missing, equals `Cue.Alignment.Numpad()`.
+A reader stores the alignment it read as a numpad int in the field `alignment` of its cue data. A writer writes the stored exact position only while the alignment is unchanged. Unchanged means that `alignment`, 2 when missing, equals `Cue.Alignment.Numpad()`. The writers share the rule as `AlignmentUnchanged` in [internal/position](../internal/position/position.go).
 
-```go
-c := model.Cue{Alignment: model.TopLeft}
-_ = c.SetFormatData("vtt", model.NewData(
-	model.Field{Key: "line", Value: "0"},
-	model.Field{Key: "position", Value: "30%"},
-	model.Field{Key: "align", Value: "left"},
-	model.Field{Key: "alignment", Value: int64(7)},
-))
-fmt.Println(c.AlignmentUnchanged("vtt")) // true
-
-c.Alignment = model.BottomRight
-fmt.Println(c.AlignmentUnchanged("vtt")) // false
-```
+Example: a WebVTT cue with the settings `line:0 position:30% align:left` reads as `TopLeft`, with `alignment` 7. Written back unchanged, the 3 settings return. After `SetCue` with `Alignment: BottomRight`, the writer drops them.
 
 | Format | Alignment unchanged | Alignment changed |
 |:--- |:--- |:--- |

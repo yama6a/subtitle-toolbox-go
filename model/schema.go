@@ -52,6 +52,7 @@ func ttiBlock() valueType {
 	const digits = 256
 	return valueType{desc: "a TTI block of 256 hexadecimal digits", accepts: func(v any) bool {
 		s, ok := v.(string)
+		s = trimFinalLF(s)
 		return ok && len(s) == digits && strings.Trim(s, "0123456789abcdefABCDEF") == ""
 	}}
 }
@@ -59,9 +60,14 @@ func ttiBlock() valueType {
 func timeBase() valueType {
 	return valueType{desc: `a time base such as "1/1000"`, accepts: func(v any) bool {
 		s, _ := v.(string)
-		num, den, found := strings.Cut(s, "/")
+		num, den, found := strings.Cut(trimFinalLF(s), "/")
 		return found && isPositiveDecimal(num) && isPositiveDecimal(den)
 	}}
+}
+
+// trimFinalLF removes one final LF, because PHP checks with a PCRE "$", which also matches before a final LF.
+func trimFinalLF(s string) string {
+	return strings.TrimSuffix(s, "\n")
 }
 
 func isPositiveDecimal(s string) bool {
@@ -182,6 +188,8 @@ func (t valueType) check(v any, path string) string {
 	}
 }
 
+// checkFormatData returns messages that all start with "The field formatData.KEY", because the library JSON
+// reader puts "cues[N]." after "The field " for cue data.
 func checkFormatData(schema map[string]valueType, key string, d *Data) error {
 	path := "formatData." + key
 	if msg := checkGoTypes(d, path, nil); msg != "" {
@@ -232,10 +240,15 @@ func checkGoTypes(v any, path string, open []any) string {
 	return ""
 }
 
+type listIdentity struct {
+	first *any
+	len   int
+}
+
 // identity returns a comparable value that is the same for a list or object and the copies of its header.
 func identity(v any) any {
 	if l, ok := v.([]any); ok {
-		return &l[0]
+		return listIdentity{&l[0], len(l)}
 	}
 	return v
 }

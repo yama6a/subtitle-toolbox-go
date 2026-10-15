@@ -213,35 +213,3 @@ func TestCloneKeepsFormatData(t *testing.T) {
 	assert.Equal(t, []string{"srt"}, clone.FormatDataKeys())
 	assert.Equal(t, s.Cues(), clone.Cues())
 }
-
-func TestCueAlignmentUnchanged(t *testing.T) {
-	t.Parallel()
-
-	topLeft := data("line", "0", "position", "30%", "align", "left", "alignment", int64(7))
-	tests := []struct {
-		name      string
-		data      *model.Data
-		alignment model.Alignment
-		want      bool
-	}{
-		{"WebVTT unchanged", topLeft, model.TopLeft, true},
-		{"WebVTT changed", topLeft, model.BottomRight, false},
-		{"WebVTT changed to the default", topLeft, model.BottomCenter, false},
-		{"no alignment stored, bottom center", data("region", "fred"), model.BottomCenter, true},
-		{"no alignment stored, other", data("region", "fred"), model.TopCenter, false},
-		{"no data, bottom center", nil, model.BottomCenter, true},
-		{"no data, other", nil, model.MiddleLeft, false},
-		{"alignment of the wrong type counts as missing", data("line", "0", "alignment", "7"), model.BottomCenter, true},
-		{"alignment of the wrong type, other", data("line", "0", "alignment", 7.0), model.TopLeft, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			c := model.Cue{Alignment: tt.alignment}
-			require.NoError(t, c.SetFormatData("vtt", tt.data))
-			require.NoError(t, c.SetFormatData("ass", data("alignment", int64(tt.alignment.Numpad()%9+1))))
-			assert.Equal(t, tt.want, c.AlignmentUnchanged("vtt"))
-		})
-	}
-}

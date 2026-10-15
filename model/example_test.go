@@ -176,20 +176,3 @@ func ExampleCue_SetFormatData() {
 	// stbox: invalid argument: The field formatData.srt.coordinates.x2 is missing.
 	// stbox: invalid argument: The field formatData.ass.text has the unsupported Go type int.
 }
-
-func ExampleCue_AlignmentUnchanged() {
-	c := model.Cue{Alignment: model.TopLeft}
-	_ = c.SetFormatData("vtt", model.NewData(
-		model.Field{Key: "line", Value: "0"},
-		model.Field{Key: "position", Value: "30%"},
-		model.Field{Key: "align", Value: "left"},
-		model.Field{Key: "alignment", Value: int64(7)},
-	))
-	fmt.Println(c.AlignmentUnchanged("vtt"))
-
-	c.Alignment = model.BottomRight
-	fmt.Println(c.AlignmentUnchanged("vtt"))
-	// Output:
-	// true
-	// false
-}

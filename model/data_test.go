@@ -136,3 +136,16 @@ func TestDataAccessors(t *testing.T) {
 		})
 	}
 }
+
+func TestDataEmptiedByDeleteEqualsNewData(t *testing.T) {
+	t.Parallel()
+
+	d := model.NewData(kv{Key: "a", Value: "1"}, kv{Key: "b", Value: "2"})
+	d.Delete("a")
+	d.Delete("b")
+	assert.Equal(t, model.NewData(), d)
+	assert.Equal(t, model.NewData(), d.Clone())
+
+	d.Set("c", "3")
+	assert.Equal(t, model.NewData(kv{Key: "c", Value: "3"}), d)
+}

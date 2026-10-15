@@ -14,8 +14,7 @@ func (s *Subtitle) FormatData(key string) (*Data, bool) {
 	return d.Clone(), ok
 }
 
-// SetFormatData stores a deep copy of d as the file format data of key. An empty d removes the key.
-// It returns an error that matches ErrInvalidArgument, and keeps the old data, when d fails the type check of key.
+// SetFormatData stores a deep copy of d as the file format data of key, or returns an error that matches ErrInvalidArgument.
 func (s *Subtitle) SetFormatData(key string, d *Data) error {
 	if err := checkFormatData(fileSchema, key, d); err != nil {
 		return err
@@ -47,8 +46,7 @@ func (c Cue) FormatData(key string) (*Data, bool) {
 	return d.Clone(), ok
 }
 
-// SetFormatData stores a deep copy of d as the cue format data of key. An empty d removes the key.
-// It returns an error that matches ErrInvalidArgument, and keeps the old data, when d fails the type check of key.
+// SetFormatData stores a deep copy of d as the cue format data of key, or returns an error that matches ErrInvalidArgument.
 func (c *Cue) SetFormatData(key string, d *Data) error {
 	if err := checkFormatData(cueSchema, key, d); err != nil {
 		return err
@@ -82,15 +80,4 @@ func (c *Cue) DeleteFormatData(key string) {
 // FormatDataKeys returns the keys of the cue format data, sorted.
 func (c Cue) FormatDataKeys() []string {
 	return slices.Sorted(maps.Keys(c.formatData))
-}
-
-// AlignmentUnchanged reports whether c.Alignment equals the numpad alignment that the cue format data of key
-// holds in its field "alignment", 2 when the field is missing or not an int64.
-// A writer of key writes a stored exact position only while AlignmentUnchanged holds.
-func (c Cue) AlignmentUnchanged(key string) bool {
-	n, ok := c.formatData[key].Int("alignment")
-	if !ok {
-		n = int64(BottomCenter.Numpad())
-	}
-	return n == int64(c.Alignment.Numpad())
 }
