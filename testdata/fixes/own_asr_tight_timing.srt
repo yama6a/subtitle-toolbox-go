@@ -1,0 +1,24 @@
+1
+00:00:01,000 --> 00:00:02,000
+Is the ferry running today?
+
+2
+00:00:05,000 --> 00:00:06,500
+Only the morning one.
+
+3
+00:00:06,600 --> 00:00:08,000
+Then we leave at seven.
+
+4
+00:00:08,000 --> 00:00:09,200
+Bring the tickets.
+
+5
+00:00:09,000 --> 00:00:12,000
+[engine starts]
+
+6
+00:00:15,000 --> 00:00:16,000
+We made it.
+
