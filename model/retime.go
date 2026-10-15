@@ -17,9 +17,9 @@ type SyncPoint struct {
 	New time.Duration
 }
 
-// maxRetimed is the largest time.Duration in whole milliseconds. A word timestamp that a retiming moves
-// beyond it stops there.
-const maxRetimed = time.Duration(math.MaxInt64 / int64(time.Millisecond) * int64(time.Millisecond))
+// maxRetimed is 2562046:59:59.999, the largest time that markup.WordTimestamp reads. A retimed word timestamp
+// stops there, so it stays a time for the next retiming.
+const maxRetimed = 2562047*time.Hour - time.Millisecond
 
 // Shift moves every cue and its word timestamps by d. See ShiftRange for the rules.
 func (s *Subtitle) Shift(d time.Duration) error {
@@ -53,7 +53,8 @@ func (s *Subtitle) Scale(factor float64) error {
 
 // ConvertFrameRate moves the cues of a video at the frame rate from to the same video at the frame rate to,
 // in frames per second. It calls Scale(from / to), so 25 to 23.976 makes every time longer by 25/23.976.
-// It returns an error that matches ErrInvalidArgument when a frame rate is not a finite number above 0.
+// It returns an error that matches ErrInvalidArgument and changes nothing when a frame rate is not a finite number
+// above 0, when from / to overflows to infinity or underflows to 0, or when a cue would end at 100,000 hours or later.
 func (s *Subtitle) ConvertFrameRate(from, to float64) error {
 	for _, rate := range []float64{from, to} {
 		if !positiveFinite(rate) {
@@ -80,14 +81,17 @@ func (s *Subtitle) SyncByPoints(points []SyncPoint) error {
 				timecode.Seconds(a.Old), timecode.Seconds(a.New), timecode.Seconds(b.Old), timecode.Seconds(b.New)))
 		}
 	}
-	if len(points) == 1 {
-		return s.retime(retiming{shift: points[0].New - points[0].Old}, nil)
+	if p := points[0]; len(points) == 1 {
+		if d, ok := sub(p.New, p.Old); ok {
+			return s.retime(retiming{shift: d}, nil)
+		}
+		return s.retime(retiming{segments: []segment{{factor: 1, offset: milliseconds(p.New) - milliseconds(p.Old)}}}, nil)
 	}
 
 	segments := make([]segment, len(points)-1)
 	for i := range segments {
 		a, b := points[i], points[i+1]
-		factor := float64(b.New-a.New) / float64(b.Old-a.Old)
+		factor := (milliseconds(b.New) - milliseconds(a.New)) / (milliseconds(b.Old) - milliseconds(a.Old))
 		segments[i] = segment{from: a.Old, factor: factor, offset: milliseconds(a.New) - milliseconds(a.Old)*factor}
 	}
 	return s.retime(retiming{segments: segments}, nil)
@@ -100,25 +104,24 @@ type retiming struct {
 	segments []segment
 }
 
-// segment maps a time t in milliseconds to t * factor + offset.
 type segment struct {
 	from   time.Duration
 	factor float64
 	offset float64
 }
 
-// seconds returns the new time of t in seconds, unclamped and unrounded, so a check sees values beyond time.Duration.
+// seconds returns the new time of t in seconds, rounded to whole milliseconds but not clamped, so the time limit
+// check sees the time that at stores and also values beyond time.Duration.
 func (r retiming) seconds(t time.Duration) float64 {
 	if r.segments == nil {
 		if sum, ok := add(t, r.shift); ok {
-			return sum.Seconds()
+			return sum.Round(time.Millisecond).Seconds()
 		}
 		return t.Seconds() + r.shift.Seconds()
 	}
-	return r.milliseconds(t) / 1000
+	return math.Round(r.milliseconds(t)) / 1000
 }
 
-// at returns the new time of t, clamped to 0 and rounded to whole milliseconds.
 func (r retiming) at(t time.Duration) time.Duration {
 	if r.segments == nil {
 		sum, ok := add(t, r.shift)
@@ -153,7 +156,7 @@ func (s *Subtitle) retime(r retiming, affected func(start time.Duration) bool) e
 		if affected != nil && !affected(c.Start) {
 			continue
 		}
-		if end := r.seconds(max(c.Start, c.End)); end >= limit {
+		if end := r.seconds(max(c.Start, c.End)); !(end < limit) { // also true for NaN
 			return invalidArgument(fmt.Sprintf("The retimed cue %d would end at %s s. Cue times must be below %d hours.",
 				i+1, timecode.Number(end), timecode.MaxHours))
 		}
@@ -174,10 +177,14 @@ func (s *Subtitle) retime(r retiming, affected func(start time.Duration) bool) e
 	return nil
 }
 
-// add returns t + d and false when the sum overflows.
 func add(t, d time.Duration) (time.Duration, bool) {
 	sum := t + d
 	return sum, (d > 0) == (sum > t) || d == 0
+}
+
+func sub(t, d time.Duration) (time.Duration, bool) {
+	diff := t - d
+	return diff, (d > 0) == (diff < t) || d == 0
 }
 
 // milliseconds is exact for a whole number of milliseconds, also above 2^53 nanoseconds.

@@ -2,7 +2,7 @@
 
 ## Retiming
 
-A SubRip file made for a 25 fps release plays 4.3 % too fast on a 23.976 fps copy. `s.ConvertFrameRate(25, 23.976)` moves a cue from 100 s to 102.5 s to 104.271 s to 106.878 s.
+A SubRip file made for a 25 fps release plays 4.3 % too fast on a 23.976 fps copy. With `s.ConvertFrameRate(25, 23.976)`, the cue from 100 s to 102.5 s becomes 104.271 s to 106.878 s.
 
 | Method | Moves |
 |:--- |:--- |
@@ -16,7 +16,7 @@ A SubRip file made for a 25 fps release plays 4.3 % too fast on a 23.976 fps cop
 - **Clamp**: a time that becomes negative becomes 0. The cue stays, also when it becomes 0 s long.
 - **Rounding**: each new time is rounded to whole milliseconds, half away from zero. Scale and sync compute in `float64` milliseconds.
 - **Order**: a cue that moves before earlier cues takes its place in start order. Its comments move with it.
-- **Time limit**: a cue end must stay below 100,000 hours. The method checks every cue first and changes nothing when one fails.
+- **Time limit**: a cue end must stay below 100,000 hours after rounding. The method checks every cue first and changes nothing when one fails.
 - **Errors**: every error matches `ErrInvalidArgument`. On an error the subtitle keeps all its times.
 
 ### Shift a range
@@ -31,7 +31,14 @@ s.AddCues(
 	model.Cue{Start: 20 * time.Second, End: 22 * time.Second, Lines: []string{"scene"}},
 )
 
-_ = s.ShiftRange(1500*time.Millisecond, new(15*time.Second), nil)
+if err := s.ShiftRange(1500*time.Millisecond, new(15*time.Second), nil); err != nil {
+	fmt.Println(err)
+	return
+}
+
+for _, c := range s.All() {
+	fmt.Println(c.Start, c.End, c.Text())
+}
 // Output:
 // 10s 12s intro
 // 21.5s 23.5s scene
@@ -52,11 +59,19 @@ s.AddCues(
 	model.Cue{Start: 1200 * time.Second, End: 1202 * time.Second, Lines: []string{"last"}},
 )
 
-_ = s.SyncByPoints([]model.SyncPoint{
+err := s.SyncByPoints([]model.SyncPoint{
 	{Old: 10 * time.Second, New: 12 * time.Second},
 	{Old: 600 * time.Second, New: 610 * time.Second},
 	{Old: 1200 * time.Second, New: 1205 * time.Second},
 })
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+for _, c := range s.All() {
+	fmt.Println(c.Start, c.End, c.Text())
+}
 // Output:
 // 12s 14.027s first
 // 5m5.932s 5m7.959s middle

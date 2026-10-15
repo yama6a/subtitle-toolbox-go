@@ -201,6 +201,18 @@ func TestRetimeTimes(t *testing.T) {
 			want:   [][2]float64{{1.001, 2.001}},
 		},
 		{
+			name:   "shift by half a millisecond forward adds exact nanoseconds",
+			in:     [][2]float64{{1.001, 2.001}},
+			retime: func(s *model.Subtitle) error { return s.Shift(500 * time.Microsecond) },
+			want:   [][2]float64{{1.002, 2.002}},
+		},
+		{
+			name:   "shift by half a millisecond back adds exact nanoseconds",
+			in:     [][2]float64{{1.001, 2.001}},
+			retime: func(s *model.Subtitle) error { return s.Shift(-500 * time.Microsecond) },
+			want:   [][2]float64{{1.001, 2.001}},
+		},
+		{
 			name:   "scale",
 			in:     [][2]float64{{1.5, 2.25}},
 			retime: func(s *model.Subtitle) error { return s.Scale(2) },
@@ -388,16 +400,32 @@ func TestRetimeWordTimestamps(t *testing.T) {
 	}
 }
 
-func TestRetimeSaturatesAWordTimestampBeyondTheDurationRange(t *testing.T) {
+func TestRetimeSaturatesAWordTimestampAtTheLargestReadableTime(t *testing.T) {
 	t.Parallel()
 
-	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: sec(1), End: sec(2), Lines: []string{"<2000000:00:00.000>far"}})
+	tests := []struct {
+		name   string
+		line   string
+		retime func(*model.Subtitle) error
+	}{
+		{"scale", "<2000000:00:00.000>far", func(s *model.Subtitle) error { return s.Scale(10) }},
+		{"shift", "<2562000:00:00.000>far", func(s *model.Subtitle) error { return s.Shift(99000 * time.Hour) }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	require.NoError(t, s.Scale(10))
+			s := &model.Subtitle{}
+			s.AddCue(model.Cue{Start: sec(1), End: sec(2), Lines: []string{tt.line}})
+			require.NoError(t, tt.retime(s))
+			c, _ := s.Cue(0)
+			require.Equal(t, []string{"<2562046:59:59.999>far"}, c.Lines)
 
-	c, _ := s.Cue(0)
-	assert.Equal(t, []string{"<2562047:47:16.854>far"}, c.Lines)
+			require.NoError(t, s.Scale(0.5))
+			c, _ = s.Cue(0)
+			assert.Equal(t, []string{"<1281023:30:00.000>far"}, c.Lines)
+		})
+	}
 }
 
 func TestRetimeErrors(t *testing.T) {
@@ -567,4 +595,47 @@ func TestRetimeAtTheTimeLimit(t *testing.T) {
 	assert.Equal(t, [][2]time.Duration{{100000*time.Hour - time.Second - time.Millisecond, 100000*time.Hour - time.Millisecond}}, times(s))
 
 	require.ErrorIs(t, s.Shift(time.Millisecond), model.ErrInvalidArgument)
+}
+
+func TestRetimeChecksTheTimeLimitAfterRounding(t *testing.T) {
+	t.Parallel()
+
+	s := fromTimes([2]float64{1, 2})
+	err := s.Shift(100000*time.Hour - 2*time.Second - 500*time.Microsecond)
+
+	var argErr *model.InvalidArgumentError
+	require.ErrorAs(t, err, &argErr)
+	assert.Equal(t, "The retimed cue 1 would end at 360000000 s. Cue times must be below 100000 hours.", argErr.Msg)
+	assert.Equal(t, secs([2]float64{1, 2}), times(s))
+}
+
+func TestSyncByPointsWithDifferencesBeyondTheDurationRange(t *testing.T) {
+	t.Parallel()
+
+	const far = 5_000_000_000_000_000_000 * time.Nanosecond
+
+	t.Run("1 point far forward", func(t *testing.T) {
+		t.Parallel()
+
+		s := fromTimes([2]float64{1, 2})
+		err := s.SyncByPoints([]model.SyncPoint{{Old: -far, New: far}})
+		var argErr *model.InvalidArgumentError
+		require.ErrorAs(t, err, &argErr)
+		assert.Equal(t, "The retimed cue 1 would end at 10000000002 s. Cue times must be below 100000 hours.", argErr.Msg)
+		assert.Equal(t, secs([2]float64{1, 2}), times(s))
+	})
+	t.Run("1 point far back", func(t *testing.T) {
+		t.Parallel()
+
+		s := fromTimes([2]float64{1, 2})
+		require.NoError(t, s.SyncByPoints([]model.SyncPoint{{Old: far, New: -far}}))
+		assert.Equal(t, secs([2]float64{0, 0}), times(s))
+	})
+	t.Run("2 points far apart", func(t *testing.T) {
+		t.Parallel()
+
+		s := fromTimes([2]float64{1, 2})
+		require.NoError(t, s.SyncByPoints([]model.SyncPoint{{Old: -far, New: 0}, {Old: far, New: time.Second}}))
+		assert.Equal(t, secs([2]float64{0.5, 0.5}), times(s))
+	})
 }
