@@ -32,11 +32,17 @@ func AddParsed(s *model.Subtitle, cues []model.Cue, comments []ParsedComment) {
 		position[fileIndex] = i
 	}
 	s.AddCues(sorted...)
-	for _, c := range comments {
-		before := len(cues)
+
+	placed := make([]model.Comment, len(comments))
+	for i, c := range comments {
+		placed[i] = model.Comment{Text: c.Text, BeforeCue: len(cues)}
 		if c.CuesBefore < len(cues) {
-			before = position[c.CuesBefore]
+			placed[i].BeforeCue = position[c.CuesBefore]
 		}
-		_ = s.AddComment(c.Text, before) // before is never negative, and AddComment fails only for that
+	}
+	// AddComment sorts all comments for each one that goes before the last, so add them in order.
+	slices.SortStableFunc(placed, func(a, b model.Comment) int { return cmp.Compare(a.BeforeCue, b.BeforeCue) })
+	for _, c := range placed {
+		_ = s.AddComment(c.Text, c.BeforeCue) // BeforeCue is never negative, and AddComment fails only for that
 	}
 }

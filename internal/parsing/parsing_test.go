@@ -408,6 +408,22 @@ func TestAddParsed(t *testing.T) {
 			wantComments: []model.Comment{{Text: "before b", BeforeCue: 1}},
 		},
 		{
+			name:      "falling starts",
+			cues:      []model.Cue{cue(3*s, "c"), cue(2*s, "b"), cue(1*s, "a")},
+			comments:  []parsing.ParsedComment{{Text: "before c", CuesBefore: 0}, {Text: "before b", CuesBefore: 1}, {Text: "before a", CuesBefore: 2}, {Text: "end", CuesBefore: 3}},
+			wantTexts: []string{"a", "b", "c"},
+			wantComments: []model.Comment{
+				{Text: "before a", BeforeCue: 0}, {Text: "before b", BeforeCue: 1}, {Text: "before c", BeforeCue: 2}, {Text: "end", BeforeCue: 3},
+			},
+		},
+		{
+			name:         "2 comments before one cue keep the file order",
+			cues:         []model.Cue{cue(2*s, "b"), cue(1*s, "a")},
+			comments:     []parsing.ParsedComment{{Text: "first", CuesBefore: 1}, {Text: "second", CuesBefore: 1}, {Text: "before b", CuesBefore: 0}},
+			wantTexts:    []string{"a", "b"},
+			wantComments: []model.Comment{{Text: "first", BeforeCue: 0}, {Text: "second", BeforeCue: 0}, {Text: "before b", BeforeCue: 1}},
+		},
+		{
 			name:         "comments only",
 			comments:     []parsing.ParsedComment{{Text: "note", CuesBefore: 0}},
 			wantComments: []model.Comment{{Text: "note", BeforeCue: 0}},
