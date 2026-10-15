@@ -52,28 +52,28 @@ func TestErrorMessages(t *testing.T) {
 		},
 		{
 			name: "parse error with an empty format",
-			err:  &model.ParseError{Msg: "The container has no subtitle track."},
-			want: "stbox: The container has no subtitle track.",
+			err:  &model.ParseError{Msg: "The file is not a Matroska or WebM file."},
+			want: "stbox: The file is not a Matroska or WebM file.",
 		},
 		{
 			name: "parse error with an empty format and a line",
-			err:  &model.ParseError{Line: 2, Msg: "The file is damaged."},
-			want: "stbox: line 2: The file is damaged.",
+			err:  &model.ParseError{Line: 2, Msg: "The file is not a Matroska or WebM file."},
+			want: "stbox: line 2: The file is not a Matroska or WebM file.",
 		},
 		{
 			name: "unwritable error",
-			err:  &model.UnwritableError{Format: model.SAMI, CueIndex: 3, Reason: "Text that is not UTF-8 cannot be written."},
-			want: "sami: Text that is not UTF-8 cannot be written.",
+			err:  &model.UnwritableError{Format: model.SAMI, CueIndex: 3, Reason: "The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding."},
+			want: "sami: The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding.",
 		},
 		{
 			name: "unwritable error with a message and a cause",
 			err: &model.UnwritableError{
 				Format:   model.TTML,
 				CueIndex: -1,
-				Reason:   "The stored head is not valid XML.",
+				Reason:   "The stored TTML head is not a well-formed <head> element.",
 				Err:      cause,
 			},
-			want: "ttml: The stored head is not valid XML.",
+			want: "ttml: The stored TTML head is not a well-formed <head> element.",
 		},
 		{
 			name: "unwritable error with a cause and no message",
@@ -82,18 +82,18 @@ func TestErrorMessages(t *testing.T) {
 		},
 		{
 			name: "unwritable error with an empty format",
-			err:  &model.UnwritableError{CueIndex: -1, Reason: "The format cannot hold the subtitle."},
-			want: "stbox: The format cannot hold the subtitle.",
+			err:  &model.UnwritableError{CueIndex: -1, Reason: "The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding."},
+			want: "stbox: The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding.",
 		},
 		{
 			name: "invalid argument error with an option",
-			err:  &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "MicroDVD output needs a frame rate."},
-			want: "stbox: invalid argument: WriteOptions.MicroDVD.FrameRate: MicroDVD output needs a frame rate.",
+			err:  &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "MicroDVD output needs the frame rate of the video."},
+			want: "stbox: invalid argument: WriteOptions.MicroDVD.FrameRate: MicroDVD output needs the frame rate of the video.",
 		},
 		{
 			name: "invalid argument error without an option",
-			err:  &model.InvalidArgumentError{Msg: "The factor must be a finite number above 0."},
-			want: "stbox: invalid argument: The factor must be a finite number above 0.",
+			err:  &model.InvalidArgumentError{Msg: "The sync points must not be empty."},
+			want: "stbox: invalid argument: The sync points must not be empty.",
 		},
 	}
 	for _, tt := range tests {
@@ -123,7 +123,7 @@ func TestErrorsMatchTheirSentinel(t *testing.T) {
 	}{
 		{"parse error", &model.ParseError{Format: model.SubRip, Line: 1}, []error{model.ErrParse}},
 		{"unwritable error", &model.UnwritableError{Format: model.SAMI, CueIndex: -1}, []error{model.ErrUnwritable}},
-		{"invalid argument error", &model.InvalidArgumentError{Msg: "x"}, []error{model.ErrInvalidArgument}},
+		{"invalid argument error", &model.InvalidArgumentError{Msg: "The sync points must not be empty."}, []error{model.ErrInvalidArgument}},
 		{"unknown format", model.ErrUnknownFormat, []error{model.ErrUnknownFormat, model.ErrUnsupportedFormat}},
 		{"unsupported format", model.ErrUnsupportedFormat, []error{model.ErrUnsupportedFormat}},
 		{
@@ -157,34 +157,38 @@ func TestErrorsUnwrapTheirCause(t *testing.T) {
 			error
 			Unwrap() error
 		}
+		want *json.SyntaxError
 	}{
-		{"parse error", &model.ParseError{Format: model.JSON, Err: syntaxErr}},
-		{"unwritable error", &model.UnwritableError{Format: model.TTML, CueIndex: -1, Err: syntaxErr}},
+		{"parse error", &model.ParseError{Format: model.JSON, Err: syntaxErr}, syntaxErr},
+		{"unwritable error", &model.UnwritableError{Format: model.TTML, CueIndex: -1, Err: syntaxErr}, syntaxErr},
+		{"parse error without a cause", &model.ParseError{Format: model.SubRip}, nil},
+		{"unwritable error without a cause", &model.UnwritableError{Format: model.SAMI, CueIndex: -1}, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Same(t, syntaxErr, tt.err.Unwrap())
+			if tt.want == nil {
+				require.NoError(t, tt.err.Unwrap())
+				return
+			}
+			assert.Same(t, tt.want, tt.err.Unwrap())
 
 			var got *json.SyntaxError
 			require.ErrorAs(t, fmt.Errorf("read movie.json: %w", tt.err), &got)
-			assert.Same(t, syntaxErr, got)
+			assert.Same(t, tt.want, got)
 		})
 	}
-}
-
-func TestErrorsWithoutCauseUnwrapToNil(t *testing.T) {
-	t.Parallel()
-
-	require.NoError(t, (&model.ParseError{Format: model.SubRip}).Unwrap())
-	require.NoError(t, (&model.UnwritableError{Format: model.SAMI}).Unwrap())
 }
 
 func TestParseErrorIsFoundThroughTwoWraps(t *testing.T) {
 	t.Parallel()
 
-	want := &model.ParseError{Format: model.SubRip, Line: 6, Msg: "Block #1 has no timing line on its second line."}
+	want := &model.ParseError{
+		Format: model.SubRip,
+		Line:   6,
+		Msg:    `Block #1 has no timing line on its second line. The line is "00:00:05,000 => 00:00:07,000".`,
+	}
 	err := fmt.Errorf("convert: %w", fmt.Errorf("read movie.srt: %w", want))
 
 	var got *model.ParseError

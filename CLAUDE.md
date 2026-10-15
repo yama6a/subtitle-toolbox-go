@@ -61,7 +61,7 @@ make smoke   # run the smoke test on this machine's archive in dist/
 
 - Comments default to zero. Write one only when the reason is not in the code.
 - Each exported identifier has a doc comment of one sentence that starts with its name.
-- Errors wrap with `%w`. Sentinels are `ErrX` in `errors.go`. Error types are `XError` with an `Unwrap` method.
+- Errors wrap with `%w`. Sentinels are `ErrX` in `errors.go`. Error types are `XError` with an `Unwrap` method when the type has an `Err` field.
 - Interfaces get compile-time checks: `var _ Reader = &reader{}`.
 - Every `//nolint` names the linter and gives a reason.
 - `exhaustive` switches list every case.

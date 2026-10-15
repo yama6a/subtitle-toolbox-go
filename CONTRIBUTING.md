@@ -162,7 +162,7 @@ Its exception table names the rule and the reason for each exception.
 | Options | One `ReadOptions` and one `WriteOptions` in the root package, with one typed field per format |
 | Logging | None. The library never writes to stdout, stderr or a logger. It returns warnings and reports. The CLI prints plain messages to stderr. This is a documented exception to the org rule "Go repos log with zap" |
 | Majors | A break lands only in the issue that opens a major line. The major release moves the module path to `/vN` |
-| Errors | Wrap with `%w`. Sentinels `ErrX` live in `errors.go`. Error types `XError` have an `Unwrap` method. Interfaces get compile-time checks |
+| Errors | Wrap with `%w`. Sentinels `ErrX` live in `errors.go`. Error types `XError` have an `Unwrap` method when the type has an `Err` field. Interfaces get compile-time checks |
 | Comments | A doc comment on each exported identifier, one sentence that starts with the name |
 | Go version | `go 1.27.2` in `go.mod`, no `toolchain` line. Renovate raises the `go` line |
 

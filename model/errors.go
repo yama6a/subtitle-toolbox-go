@@ -63,7 +63,7 @@ type UnwritableError struct {
 	Err error
 }
 
-// Error returns the format and the reason, for example "sami: Text that is not UTF-8 ...".
+// Error returns the format and the reason, for example "sami: The output cannot hold text that is not valid UTF-8. ...".
 func (e *UnwritableError) Error() string {
 	return prefix(e.Format) + message(e.Reason, e.Err)
 }

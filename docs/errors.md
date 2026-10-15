@@ -29,7 +29,7 @@ fmt.Println(err) // srt: line 6: Block #1 has no timing line on its second line.
 - **No catch-all**: no sentinel matches every library error. A caller matches the causes it handles, so errors of its own reader, such as a closed network stream, stay apart.
 - **No panics**: bad input and bad options return one of the errors above. A panic is a library bug.
 - **Which cause**: the sentinels and the types are API. A minor release may change which one a given cause returns, see [compatibility.md](compatibility.md) C10.
-- **Wraps**: `ErrUnsupportedFormat`, `ErrUnknownFormat` and `ErrCueNotFound` arrive wrapped with details, for example `stbox: cue not found: index 4, the subtitle has 2 cues`.
+- **Wraps**: `ErrUnsupportedFormat` and `ErrCueNotFound` arrive wrapped with details, for example `stbox: cue not found: index 4, the subtitle has 2 cues`.
 
 ## Error types
 
@@ -41,7 +41,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 | `*UnwritableError` | `Format`, `CueIndex`, `Reason`, `Err` | `sami: Reason` |
 | `*InvalidArgumentError` | `Option`, `Msg` | `stbox: invalid argument: WriteOptions.MicroDVD.FrameRate: Msg`. No option part when `Option` is "" |
 
-- **Cause**: `Unwrap` returns `Err`, for example a `*json.SyntaxError`. `Error()` shows `Err` only when the message field is empty, because the message quotes the cause where it matters.
+- **Cause**: `Unwrap` of `*ParseError` and `*UnwritableError` returns `Err`, for example a `*json.SyntaxError`. `Error()` shows `Err` only when the message field is empty, because the message quotes the cause where it matters.
 - **Message text**: `Msg` and `Reason` hold a full English sentence, as the PHP library writes it. `Error()` adds a lower-case prefix in Go style. People read these messages in the CLI, and the PHP sentences exist already.
 - **No identifiers in messages**: a message never names a Go identifier or a CLI flag. A missing or bad option goes in `Option` as its Go path, such as `ReadOptions.MicroDVD.FrameRate`. A sentinel in `Err` names an edit that the caller must make first.
 - **Cue index**: `UnwritableError.CueIndex` is the 0-based index of the first cue that the format cannot hold. It is -1 when no single cue causes the error.
