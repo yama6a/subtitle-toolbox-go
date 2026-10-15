@@ -1,7 +1,6 @@
 package stbox_test
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"errors"
@@ -268,6 +267,14 @@ func TestUnmatchedRows(t *testing.T) {
 			},
 		},
 		{
+			name: "a name inside a nested testdata folder",
+			files: fstest.MapFS{
+				"testdata/x/testdata/a.srt": file("x"),
+				"testdata/SOURCES.md":       file("| `x/testdata/a.srt` | somewhere | MIT |\n"),
+			},
+			want: []string{"testdata/SOURCES.md: x/testdata/a.srt"},
+		},
+		{
 			name: "rows are sorted by file, then by order",
 			files: fstest.MapFS{
 				"testdata/z/SOURCES.md": file("| `b` | s | MIT |\n| `a` | s | MIT |\n"),
@@ -381,7 +388,8 @@ func unmatchedRows(fsys fs.FS) ([]string, error) {
 		}
 		content, err := fs.ReadFile(fsys, p)
 		if err != nil {
-			return fmt.Errorf("read %s: %w", p, err)
+			return err //nolint:wrapcheck // the fs.PathError names the file and unmatchedRows wraps once
+
 		}
 		folder := path.Dir(p)
 		files, err := filesBelow(fsys, folder)
@@ -405,9 +413,8 @@ func unmatchedRows(fsys fs.FS) ([]string, error) {
 // sourcesNames returns the names in the first cell of each table row of one SOURCES.md.
 func sourcesNames(content []byte) []string {
 	var names []string
-	scanner := bufio.NewScanner(bytes.NewReader(content))
-	for scanner.Scan() {
-		line := strings.TrimRight(scanner.Text(), "\r")
+	for line := range strings.Lines(string(content)) {
+		line = strings.TrimRight(line, "\r\n")
 		if !strings.HasPrefix(line, "|") {
 			continue
 		}
@@ -429,20 +436,22 @@ func sourcesNames(content []byte) []string {
 func linkedModules(ctx context.Context) ([]string, error) {
 	out, err := exec.CommandContext(ctx, "go", "list", "-deps", "-f", "{{with .Module}}{{.Path}}{{end}}", "./cmd/stbox").Output()
 	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			return nil, fmt.Errorf("go list: %w: %s", err, bytes.TrimSpace(exitErr.Stderr))
+		}
 		return nil, fmt.Errorf("go list: %w", err)
 	}
 	var modules []string
 	for line := range strings.Lines(string(out)) {
-		module := strings.TrimSpace(line)
-		if module != "" && module != mainModule && !slices.Contains(modules, module) {
+		if module := strings.TrimSpace(line); module != "" && module != mainModule {
 			modules = append(modules, module)
 		}
 	}
 	slices.Sort(modules)
-	return modules, nil
+	return slices.Compact(modules), nil
 }
 
-// testdataFolder returns the nearest folder named testdata that holds the file p.
 func testdataFolder(p string) (string, bool) {
 	for folder := path.Dir(p); folder != "."; folder = path.Dir(folder) {
 		if path.Base(folder) == testdataDir {
@@ -452,7 +461,6 @@ func testdataFolder(p string) (string, bool) {
 	return "", false
 }
 
-// isFuzzCorpus reports whether p lies in the fuzz subtree directly below its testdata folder.
 func isFuzzCorpus(p, folder string) bool {
 	return strings.HasPrefix(p, folder+"/"+fuzzDir+"/")
 }
@@ -469,7 +477,8 @@ func isCredited(fsys fs.FS, p, folder string) (bool, error) {
 				}
 			}
 		case !errors.Is(err, fs.ErrNotExist):
-			return false, fmt.Errorf("read %s: %w", path.Join(dir, sourcesFile), err)
+			return false, err //nolint:wrapcheck // the fs.PathError names the file and uncredited wraps once
+
 		}
 		if dir == folder {
 			return false, nil
@@ -485,20 +494,19 @@ func nameMatches(name, relative string) bool {
 	return err == nil && ok
 }
 
-// filesBelow returns the regular files below folder, as slash paths relative to folder.
 func filesBelow(fsys fs.FS, folder string) ([]string, error) {
 	var files []string
 	err := fs.WalkDir(fsys, folder, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
+		if d.IsDir() && p != folder && d.Name() == testdataDir {
+			return fs.SkipDir
+		}
 		if d.Type().IsRegular() && d.Name() != sourcesFile {
 			files = append(files, strings.TrimPrefix(p, folder+"/"))
 		}
 		return nil
 	})
-	if err != nil {
-		return nil, fmt.Errorf("walk %s: %w", folder, err)
-	}
-	return files, nil
+	return files, err //nolint:wrapcheck // the fs.PathError names the file and unmatchedRows wraps once
 }
