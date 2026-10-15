@@ -1,0 +1,24 @@
+[
+    [
+        1.0,
+        3.5,
+        [
+            "Le café est fermé à midi."
+        ]
+    ],
+    [
+        4.0,
+        6.25,
+        [
+            "Ça coûte 5 € pour un cœur",
+            "de pâte à crêpes."
+        ]
+    ],
+    [
+        70.1,
+        72.9,
+        [
+            "<i>Où êtes-vous, Noël ?</i>"
+        ]
+    ]
+]

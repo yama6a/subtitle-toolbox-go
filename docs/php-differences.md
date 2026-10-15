@@ -18,3 +18,4 @@ Go matches the PHP library byte for byte, except for the behaviour below. Each r
 | a large number in the time limit message of a retiming, such as `Scale(1e300)` | `8.0E+300` | `8e+300` | #34 |
 | a word timestamp that a retiming moves beyond 2562046:59:59.999, such as `Scale(10)` of `<2000000:00:00.000>` | writes the moved time `<20000000:00:00.000>` | writes `<2562046:59:59.999>`, the largest time that `WordTimestamp` reads | #34 |
 | a shift or a sync point time that is NaN or infinite | `shift()` and `SyncPoint` throw an `InvalidArgumentException` | cannot occur, because a `time.Duration` is an integer | #34 |
+| content that is blank after the control characters go, such as `\x01\n`, read in lenient mode | returns a new empty subtitle and drops the control character warning | returns an empty subtitle and keeps the warning | #14 |

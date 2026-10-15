@@ -1,0 +1,6 @@
+linters:
+  settings:
+    wrapcheck:
+      # The internal helpers return the *model.ParseError of a read, which the format packages pass on unchanged.
+      ignore-package-globs:
+        - github.com/yama6a/subtitle-toolbox-go/internal/*

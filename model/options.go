@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"strconv"
+	"time"
+)
 
 // CommonReadOptions holds the read options that every format package reads.
 type CommonReadOptions struct {
@@ -29,6 +32,17 @@ const (
 	CRLF
 )
 
+// String returns "lf" or "crlf".
+func (l LineEnding) String() string {
+	switch l {
+	case LF:
+		return "lf"
+	case CRLF:
+		return "crlf"
+	}
+	return "LineEnding(" + strconv.Itoa(int(l)) + ")"
+}
+
 // BOM says whether a writer starts its output with a UTF-8 BOM.
 type BOM uint8
 
@@ -38,3 +52,16 @@ const (
 	BOMAdd
 	BOMRemove
 )
+
+// String returns "default", "add" or "remove".
+func (b BOM) String() string {
+	switch b {
+	case BOMDefault:
+		return "default"
+	case BOMAdd:
+		return "add"
+	case BOMRemove:
+		return "remove"
+	}
+	return "BOM(" + strconv.Itoa(int(b)) + ")"
+}

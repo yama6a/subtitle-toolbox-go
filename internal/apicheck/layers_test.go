@@ -47,6 +47,8 @@ var layers = map[string]layer{
 	"internal/subrip":      layerModelUser,
 	"internal/vtt":         layerModelUser,
 	"internal/position":    layerModelUser,
+	"internal/parsing":     layerModelUser,
+	"internal/writing":     layerModelUser,
 	"internal/caption":     layerModelUser,
 	"internal/ttmlwrite":   layerModelUser,
 	"internal/wordgroup":   layerModelUser,
