@@ -2,7 +2,8 @@
     "name": "WebVTT with empty lines between the timing line and the text",
     "format": "vtt",
     "strict": {
-        "error": "Block #2 is not a WebVTT cue, comment, style or region."
+        "error": "Block #2 is not a WebVTT cue, comment, style or region. The line is \"one\".",
+        "line": 6
     },
     "cues": [
         {

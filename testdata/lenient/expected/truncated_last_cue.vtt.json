@@ -2,7 +2,8 @@
     "name": "WebVTT with a truncated last cue",
     "format": "vtt",
     "strict": {
-        "error": "The time \"00:00:0\" is not valid."
+        "error": "The time \"00:00:0\" is not valid.",
+        "line": 9
     },
     "cues": [
         {

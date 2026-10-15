@@ -2,7 +2,8 @@
     "name": "WebVTT with a comma in a timestamp",
     "format": "vtt",
     "strict": {
-        "error": "The time \"00:00:06,000\" is not valid."
+        "error": "The time \"00:00:06,000\" is not valid.",
+        "line": 8
     },
     "cues": [
         {

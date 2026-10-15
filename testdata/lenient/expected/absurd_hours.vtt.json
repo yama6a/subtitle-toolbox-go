@@ -2,7 +2,8 @@
     "name": "WebVTT with 20 hour digits",
     "format": "vtt",
     "strict": {
-        "error": "The time \"99999999999999999999:00:04.000\" is not below 100000 hours."
+        "error": "The time \"99999999999999999999:00:04.000\" is not below 100000 hours.",
+        "line": 6
     },
     "cues": [
         {

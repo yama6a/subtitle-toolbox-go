@@ -2,7 +2,8 @@
     "name": "SubRip with text before the first cue",
     "format": "srt",
     "strict": {
-        "error": "Block #0 has no cue number on its first line."
+        "error": "Block #0 has no cue number on its first line. The line is \"Downloaded from www.example.org\".",
+        "line": 1
     },
     "cues": [
         {

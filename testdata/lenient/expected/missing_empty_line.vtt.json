@@ -2,7 +2,8 @@
     "name": "WebVTT without empty lines after the header and between cues",
     "format": "vtt",
     "strict": {
-        "error": "The WEBVTT header has no empty line before the first cue."
+        "error": "The WEBVTT header has no empty line before the first cue.",
+        "line": 4
     },
     "cues": [
         {

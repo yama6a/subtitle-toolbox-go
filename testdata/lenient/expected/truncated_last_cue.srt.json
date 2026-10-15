@@ -2,7 +2,8 @@
     "name": "SubRip with a truncated last cue",
     "format": "srt",
     "strict": {
-        "error": "The time \"00:00:0\" is not valid."
+        "error": "The time \"00:00:0\" is not valid.",
+        "line": 10
     },
     "cues": [
         {

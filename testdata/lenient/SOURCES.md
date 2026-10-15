@@ -2,7 +2,7 @@
 
 Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5313f1583fc7e67942d514600/tests/files/lenient, MIT. In the rows below, "this repository" means subtitle-toolbox-php.
 
-Every file is written for this repository in the shape of broken subtitle downloads.
+Every file except the 2 `mantas_` files is written for this repository in the shape of broken subtitle downloads.
 
 | File | Damage | License |
 |:--- |:--- |:--- |
@@ -33,4 +33,4 @@ Every file is written for this repository in the shape of broken subtitle downlo
 | `absurd_hours.vtt` | a cue with 20 hour digits between two good cues, LF | MIT |
 | `absurd_seconds.json` | the library JSON. A cue with a start of `1e20` seconds between two good cues, LF | MIT |
 | `absurd_word_timestamp.vtt` | a cue with a word timestamp of 20 hour digits between two good cues, LF | MIT |
-| `expected/*.json` | the expected lenient and strict results of `damagedFiles()` in `tests/Parsers/LenientParsingTest.php` of this repository, one JSON file per fixture | MIT |
+| `expected/*.json` | written for subtitle-toolbox-go. Each file holds the values of `damagedFiles()` in `tests/Parsers/LenientParsingTest.php` of this repository for the fixture of the same name, and the full message and line of the strict error that the PHP parser returns | MIT |

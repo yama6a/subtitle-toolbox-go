@@ -2,7 +2,8 @@
     "name": "SubRip with a bad timestamp and a broken arrow",
     "format": "srt",
     "strict": {
-        "error": "The time \"00:00:0G,000\" is not valid."
+        "error": "The time \"00:00:0G,000\" is not valid.",
+        "line": 6
     },
     "cues": [
         {

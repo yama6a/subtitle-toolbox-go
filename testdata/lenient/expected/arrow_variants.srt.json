@@ -2,7 +2,8 @@
     "name": "SubRip with arrows of other lengths and spacing",
     "format": "srt",
     "strict": {
-        "error": "Block #3 has no timing line on its second line."
+        "error": "Block #3 has no timing line on its second line. The line is \"00:00:07,000 -> 00:00:08,000\".",
+        "line": 14
     },
     "cues": [
         {

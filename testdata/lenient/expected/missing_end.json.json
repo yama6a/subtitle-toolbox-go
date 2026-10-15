@@ -2,7 +2,8 @@
     "name": "JSON with a cue without end and a line that is not a string",
     "format": "json",
     "strict": {
-        "error": "The field cues[1].end must be a number."
+        "error": "The field cues[1].end must be a number.",
+        "line": null
     },
     "cues": [
         {

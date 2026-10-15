@@ -2,7 +2,8 @@
     "name": "Library JSON with cues that end before they start",
     "format": "json",
     "strict": {
-        "error": "The cue ends at 3 s, before it starts at 5 s."
+        "error": "The cue ends at 3 s, before it starts at 5 s.",
+        "line": null
     },
     "cues": [
         {

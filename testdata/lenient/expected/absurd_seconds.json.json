@@ -2,7 +2,8 @@
     "name": "JSON with a start of 1e20 seconds",
     "format": "json",
     "strict": {
-        "error": "The field cues[1].start is not below 100000 hours."
+        "error": "The field cues[1].start is not below 100000 hours.",
+        "line": null
     },
     "cues": [
         {

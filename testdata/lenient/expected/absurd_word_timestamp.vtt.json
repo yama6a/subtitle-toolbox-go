@@ -2,7 +2,8 @@
     "name": "WebVTT with a word timestamp of 20 hour digits",
     "format": "vtt",
     "strict": {
-        "error": "The time \"99999999999999999999:00:05.000\" is not below 100000 hours."
+        "error": "The time \"99999999999999999999:00:05.000\" is not below 100000 hours.",
+        "line": 7
     },
     "cues": [
         {

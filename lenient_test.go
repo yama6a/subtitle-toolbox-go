@@ -22,6 +22,7 @@ type lenientRow struct {
 	Format stbox.Format `json:"format"`
 	Strict struct {
 		Error string `json:"error"`
+		Line  *int   `json:"line"`
 		Cues  *int   `json:"cues"`
 	} `json:"strict"`
 	Cues []struct {
@@ -89,6 +90,7 @@ func TestLenientFixtures(t *testing.T) {
 				var perr *stbox.ParseError
 				require.ErrorAs(t, err, &perr)
 				assert.Equal(t, row.Strict.Error, perr.Msg)
+				assert.Equal(t, row.strictLine(), perr.Line)
 				assert.Equal(t, row.Format, perr.Format)
 			})
 		})
@@ -107,6 +109,13 @@ func readLenientRow(t *testing.T, path string) lenientRow {
 	require.NotEmpty(t, row.Name)
 	require.NotEqual(t, row.Strict.Error == "", row.Strict.Cues == nil, "strict holds an error or a cue count")
 	return row
+}
+
+func (r lenientRow) strictLine() int {
+	if r.Strict.Line == nil {
+		return 0
+	}
+	return *r.Strict.Line
 }
 
 func (r lenientRow) wantCues() []cueRow {
