@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
@@ -61,7 +62,7 @@ func TestReadGoldens(t *testing.T) {
 
 			assert.Equal(t, canonical(t, want), canonical(t, map[string]any{
 				"warnings": warningsJSON(warnings),
-				"subtitle": subtitleJSON(s),
+				"subtitle": libraryJSON(t, s),
 			}))
 		})
 	}
@@ -115,72 +116,13 @@ func warningsJSON(warnings []model.ParseWarning) []any {
 	return out
 }
 
-// subtitleJSON builds the library JSON of version 1 that the read goldens hold.
-func subtitleJSON(s *model.Subtitle) map[string]any {
-	comments := make([]any, 0, len(s.Comments()))
-	for _, c := range s.Comments() {
-		comments = append(comments, map[string]any{"text": c.Text, "beforeCueIndex": c.BeforeCue})
-	}
-	cues := []any{}
-	for _, c := range s.All() {
-		lines := c.Lines
-		if lines == nil {
-			lines = []string{}
-		}
-		var id, alignment any
-		if c.ID != "" {
-			id = c.ID
-		}
-		if c.Alignment != model.BottomCenter {
-			alignment = c.Alignment.Numpad()
-		}
-		cues = append(cues, map[string]any{
-			"start":      float64(c.Start.Milliseconds()) / 1000,
-			"end":        float64(c.End.Milliseconds()) / 1000,
-			"lines":      lines,
-			"identifier": id,
-			"alignment":  alignment,
-			"formatData": formatDataJSON(c.FormatDataKeys(), c.FormatData),
-		})
-	}
-	metadata := map[string]any{}
-	for k, v := range s.AllMetadata() {
-		metadata[k] = v
-	}
-	return map[string]any{
-		"version":    1,
-		"metadata":   metadata,
-		"comments":   comments,
-		"formatData": formatDataJSON(s.FormatDataKeys(), s.FormatData),
-		"cues":       cues,
-	}
-}
+// libraryJSON returns the library JSON of s, decoded, as the read goldens hold it.
+func libraryJSON(t *testing.T, s *model.Subtitle) any {
+	t.Helper()
 
-func formatDataJSON(keys []string, get func(string) (*model.Data, bool)) map[string]any {
-	out := map[string]any{}
-	for _, k := range keys {
-		d, _ := get(k)
-		out[k] = valueJSON(d)
-	}
-	return out
-}
-
-func valueJSON(v any) any {
-	switch v := v.(type) {
-	case *model.Data:
-		out := map[string]any{}
-		for _, k := range v.Keys() {
-			item, _ := v.Get(k)
-			out[k] = valueJSON(item)
-		}
-		return out
-	case []any:
-		out := make([]any, len(v))
-		for i, item := range v {
-			out[i] = valueJSON(item)
-		}
-		return out
-	default:
-		return v
-	}
+	var out bytes.Buffer
+	require.NoError(t, stboxjson.Write(&out, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{}))
+	var v any
+	require.NoError(t, json.Unmarshal(out.Bytes(), &v))
+	return v
 }
