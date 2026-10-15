@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -48,8 +49,6 @@ func readFile(t *testing.T, rel string) *model.Subtitle {
 }
 
 // TestReadGoldens runs the srt row of the read golden table: each real file must read to its PHP golden.
-// The read golden runner of https://github.com/yama6a/subtitle-toolbox-go/issues/9 takes it over with the
-// library JSON writer. Until then, libraryJSON builds the same JSON from the fields that SubRip reads.
 func TestReadGoldens(t *testing.T) {
 	t.Parallel()
 
@@ -60,7 +59,11 @@ func TestReadGoldens(t *testing.T) {
 			content := testfiles.Read(t, realDir+"/"+name)
 			s, warnings, err := srt.Read(bytes.NewReader(content), model.CommonReadOptions{}, srt.ReadOptions{})
 			require.NoError(t, err)
-			got := map[string]any{"warnings": goldenWarnings(warnings), "subtitle": libraryJSON(s)}
+			var library bytes.Buffer
+			require.NoError(t, stboxjson.Write(&library, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{}))
+			var subtitle any
+			require.NoError(t, json.Unmarshal(library.Bytes(), &subtitle))
+			got := map[string]any{"warnings": goldenWarnings(warnings), "subtitle": subtitle}
 
 			var want any
 			require.NoError(t, json.Unmarshal(testfiles.Read(t, realDir+"/expected/"+name+".json"), &want))
@@ -124,50 +127,6 @@ func goldenWarnings(warnings []model.ParseWarning) []any {
 			block = w.Block
 		}
 		out = append(out, map[string]any{"message": w.Message, "lineNumber": line, "blockIndex": block, "block": append([]string{}, w.Lines...), "action": w.Action})
-	}
-	return out
-}
-
-// libraryJSON returns s in the shape of the library JSON version 1, for a subtitle without comments, metadata,
-// file format data, identifiers and forced cues, as SubRip reads it.
-func libraryJSON(s *model.Subtitle) map[string]any {
-	cues := []any{}
-	for _, c := range s.All() {
-		var alignment any
-		if c.Alignment != model.BottomCenter {
-			alignment = c.Alignment.Numpad()
-		}
-		formatData := map[string]any{}
-		for _, k := range c.FormatDataKeys() {
-			d, _ := c.FormatData(k)
-			formatData[k] = dataJSON(d)
-		}
-		cues = append(cues, map[string]any{
-			"start":      float64(c.Start.Milliseconds()) / 1000,
-			"end":        float64(c.End.Milliseconds()) / 1000,
-			"lines":      append([]string{}, c.Lines...),
-			"identifier": nil,
-			"alignment":  alignment,
-			"formatData": formatData,
-		})
-	}
-	return map[string]any{
-		"version":    1,
-		"metadata":   map[string]any{},
-		"comments":   []any{},
-		"formatData": map[string]any{},
-		"cues":       cues,
-	}
-}
-
-func dataJSON(d *model.Data) map[string]any {
-	out := map[string]any{}
-	for _, k := range d.Keys() {
-		v, _ := d.Get(k)
-		if o, ok := v.(*model.Data); ok {
-			v = dataJSON(o)
-		}
-		out[k] = v
 	}
 	return out
 }

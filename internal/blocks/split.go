@@ -10,8 +10,8 @@ const (
 	phpTrimSet = " \t\n\r\x00\v"
 )
 
-// SplitAtEmptyLines yields the runs of non-empty lines, keyed by the 0-based line number in lines.
-// Each line loses its leading BOMs, so joined files work. Then each run of tabs and each run of spaces
+// SplitAtEmptyLines yields the runs of non-empty lines. The keys of lines are 0-based line numbers, and each
+// block holds the 1-based number of its first line. Each line loses its leading BOMs, so joined files work. Then each run of tabs and each run of spaces
 // becomes 1 space, and the line is trimmed. A line that is then empty ends a block.
 func SplitAtEmptyLines(lines iter.Seq2[int, string]) iter.Seq[Block] {
 	return func(yield func(Block) bool) {

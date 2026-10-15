@@ -41,7 +41,6 @@ type reader struct {
 	rules blocks.Rules
 }
 
-// timing holds the parts of a timing line.
 type timing struct {
 	start, arrow, end string
 	// rest is the text after the end time.
@@ -242,9 +241,8 @@ func (rd *reader) warnTimingRepairs(t timing, loose []looseTime, index, line int
 	}
 }
 
-// readTimingLine splits a timing line at the first arrow whose text before it, without trailing white space,
-// does not end in "-". Strict mode reads only "-->". Lenient mode reads any run of "-" before ">" and the
-// full-width delimiters.
+// readTimingLine splits a timing line at the first arrow that does not directly follow a "-". Strict mode reads
+// only "-->". Lenient mode reads any run of "-" before ">" and the full-width delimiters.
 func (rd *reader) readTimingLine(line string) (timing, bool) {
 	text := line
 	if rd.st.Lenient() {
@@ -272,7 +270,6 @@ func (rd *reader) readTimingLine(line string) (timing, bool) {
 	return timing{}, false
 }
 
-// arrowLength returns the length of the arrow at the start of s, or 0.
 func (rd *reader) arrowLength(s string) int {
 	if !rd.st.Lenient() {
 		if strings.HasPrefix(s, arrow) {

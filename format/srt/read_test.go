@@ -101,6 +101,18 @@ func TestReadErrors(t *testing.T) {
 			wantLine: 1,
 		},
 		{
+			name:     "a block of full-width digits and a colon after a cue stays apart",
+			content:  "1\n00:00:01,000 --> 00:00:02,000\nOne\n\n\uff11\uff12\uff1a\uff13\uff14 text\n",
+			wantMsg:  "Block #1 has no cue number on its first line. The line is \"\uff11\uff12\uff1a\uff13\uff14 text\".",
+			wantLine: 5,
+		},
+		{
+			name:     "a block of digits, an ideographic space and a colon after a cue stays apart",
+			content:  "1\n00:00:01,000 --> 00:00:02,000\nOne\n\n12\u3000:34 x\n",
+			wantMsg:  "Block #1 has no cue number on its first line. The line is \"12\u3000:34 x\".",
+			wantLine: 5,
+		},
+		{
 			name:     "an empty end time",
 			content:  "1\n00:00:01,000 -->\nText\n",
 			wantMsg:  `The time "" is not valid.`,
@@ -580,6 +592,19 @@ func TestReadArrows(t *testing.T) {
 			assert.Equal(t, []warningRow{{msg, 2, 0, model.Repaired}}, warningRows(warnings))
 		})
 	}
+}
+
+// The arrow is the first "-->" that does not directly follow a "-", as the PHP pattern (.*?)(?<!-)\s*(-->) reads it.
+func TestReadArrowAfterADash(t *testing.T) {
+	t.Parallel()
+
+	content := "1\n00:00:01,000- --> 00:00:02,000\nText\n"
+	perr := readError(t, content)
+	assert.Equal(t, `The time "00:00:01,000-" is not valid.`, perr.Msg)
+	assert.Equal(t, 2, perr.Line)
+
+	_, warnings := mustRead(t, content, true)
+	assert.Equal(t, []warningRow{{`The time "00:00:01,000-" is not valid.`, 2, 0, model.Skipped}}, warningRows(warnings))
 }
 
 // Rows of the join and split rules of https://github.com/yama6a/subtitle-toolbox-go/issues/20.

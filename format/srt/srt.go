@@ -7,7 +7,6 @@ package srt
 
 import "regexp"
 
-// formatDataKey is the cue format data key of the SubRip coordinates.
 const formatDataKey = "srt"
 
 // ReadOptions holds the settings of the SubRip reader. It has no fields yet.

@@ -88,7 +88,6 @@ func convertOverrideTags(text string) (string, int) {
 	return text, numpad
 }
 
-// overrideTags splits the content of an override block before each backslash.
 func overrideTags(content string) []string {
 	var tags []string
 	for {
