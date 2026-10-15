@@ -1,7 +1,6 @@
 package stbox
 
 import (
-	"bytes"
 	"encoding/json"
 	"io"
 	"path/filepath"
@@ -76,7 +75,9 @@ type signature struct {
 
 //nolint:gochecknoglobals // ordered detection lists
 var (
-	jsonChecks []jsonCheck
+	jsonChecks = []jsonCheck{
+		{format: JSON, match: stboxjson.DetectJSON},
+	}
 	signatures = []signature{
 		{format: WebVTT, match: webvtt.Detect},
 		{format: SubRip, match: srt.Detect},
@@ -103,28 +104,6 @@ func FormatFromPath(path string) (Format, bool) {
 	for _, row := range registry {
 		if slices.Contains(row.format.Extensions(), ext) {
 			return row.format, true
-		}
-	}
-	return "", false
-}
-
-// Detect returns the format of content, or false when no auto-detected format matches.
-// Content that is a JSON object goes to the JSON checks only.
-func Detect(content []byte) (Format, bool) {
-	if bytes.HasPrefix(content, []byte("{")) {
-		var keys map[string]json.RawMessage
-		if json.Unmarshal(content, &keys) == nil {
-			for _, c := range jsonChecks {
-				if c.match(keys) {
-					return c.format, true
-				}
-			}
-			return "", false
-		}
-	}
-	for _, s := range signatures {
-		if s.match(content) {
-			return s.format, true
 		}
 	}
 	return "", false

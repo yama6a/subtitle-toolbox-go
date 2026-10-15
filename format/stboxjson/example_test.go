@@ -1,6 +1,7 @@
 package stboxjson_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -63,4 +64,18 @@ func ExampleWrite() {
 	//         }
 	//     ]
 	// }
+}
+
+func ExampleDetectJSON() {
+	for _, content := range []string{`{"version": 1, "cues": []}`, `{"version": "1", "cues": []}`} {
+		var keys map[string]json.RawMessage
+		if err := json.Unmarshal([]byte(content), &keys); err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(stboxjson.DetectJSON(keys))
+	}
+	// Output:
+	// true
+	// false
 }

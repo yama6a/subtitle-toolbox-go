@@ -67,3 +67,20 @@ func ExampleWrite() {
 	// 00:00:05,000 --> 00:00:06,000
 	// {\an8}<font color="#ffff00">Now</font> open
 }
+
+func ExampleDetect() {
+	for _, content := range []string{
+		"\ufeffWEBVTT\r\n\r\n00:01.000 --> 00:02.000\r\nRain\r\n",
+		"1\n00:00:01,000 --> 00:00:04,000\nHello\n",
+		`{"version": 1, "cues": []}`,
+		"Hello\n",
+	} {
+		f, ok := stbox.Detect([]byte(content))
+		fmt.Printf("%q %t\n", f, ok)
+	}
+	// Output:
+	// "vtt" true
+	// "srt" true
+	// "json" true
+	// "" false
+}

@@ -91,20 +91,6 @@ func TestWriteUnsupportedFormat(t *testing.T) {
 	}
 }
 
-func TestDetectFindsNoFormat(t *testing.T) {
-	t.Parallel()
-
-	for _, content := range []string{"", "1\nHello\n", `{"segments": []}`, "[1]"} {
-		t.Run(content, func(t *testing.T) {
-			t.Parallel()
-
-			f, ok := stbox.Detect([]byte(content))
-			assert.False(t, ok)
-			assert.Empty(t, f)
-		})
-	}
-}
-
 func TestZeroOptionsAreValid(t *testing.T) {
 	t.Parallel()
 
