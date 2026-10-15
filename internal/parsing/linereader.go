@@ -271,6 +271,9 @@ func (p *prepass) other(c byte) {
 type splitState struct {
 	// lonely is the count of CRs at the start of the next data, each a line end on its own.
 	lonely int
+	// scanned is the count of bytes at the start of the data that hold no line end, so a long line is not
+	// scanned again after each read.
+	scanned int
 }
 
 // split cuts at LF, at a run of CR before LF, and at each lone CR. A CR at the end of the buffer
@@ -280,13 +283,19 @@ func (s *splitState) split(data []byte, atEOF bool) (int, []byte, error) {
 		s.lonely--
 		return 1, data[:0], nil
 	}
-	i := bytes.IndexAny(data, "\r\n")
+	i := bytes.IndexAny(data[s.scanned:], "\r\n")
+	if i >= 0 {
+		i += s.scanned
+	}
 	switch {
 	case i < 0 && atEOF && len(data) > 0:
+		s.scanned = 0
 		return len(data), data, nil
 	case i < 0:
+		s.scanned = len(data)
 		return 0, nil, nil
 	case data[i] == '\n':
+		s.scanned = 0
 		return i + 1, data[:i], nil
 	}
 	return s.splitAtCR(data, i, atEOF)
@@ -300,10 +309,13 @@ func (s *splitState) splitAtCR(data []byte, i int, atEOF bool) (int, []byte, err
 	}
 	switch {
 	case j == len(data) && !atEOF:
+		s.scanned = i
 		return 0, nil, nil
 	case j < len(data) && data[j] == '\n':
+		s.scanned = 0
 		return j + 1, data[:i], nil
 	}
+	s.scanned = 0
 	s.lonely = j - i - 1
 	return i + 1, data[:i], nil
 }

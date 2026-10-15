@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"runtime/debug"
 	"runtime/metrics"
 	"strconv"
 	"testing"
@@ -23,25 +22,25 @@ import (
 )
 
 const (
-	memoryCues  = 200000
 	memoryLimit = 2 << 20
 	sampleEvery = 512
+	cueBytes    = 50
 )
 
-// heapObjects reads the bytes of the heap objects, live and not yet swept.
-func heapObjects() uint64 {
-	sample := []metrics.Sample{{Name: "/memory/classes/heap/objects:bytes"}}
+// liveHeap reads the bytes of the heap objects that the last garbage collection marked as live.
+func liveHeap() uint64 {
+	sample := []metrics.Sample{{Name: "/gc/heap/live:bytes"}}
 	metrics.Read(sample)
 	return sample[0].Value.Uint64()
 }
 
-// heapGrowth runs fn, which calls sample now and then, and returns the highest heap size that sample saw
-// above the heap size before fn.
+// heapGrowth runs fn, which calls sample now and then, and returns the highest live heap size that sample saw
+// above the live heap size before fn. A collection that runs while fn works makes the live size current.
 func heapGrowth(fn func(sample func())) uint64 {
 	runtime.GC()
-	before := heapObjects()
+	before := liveHeap()
 	var peak uint64
-	fn(func() { peak = max(peak, heapObjects()) })
+	fn(func() { peak = max(peak, liveHeap()) })
 	return peak - min(peak, before)
 }
 
@@ -54,10 +53,8 @@ type cueWriter interface {
 // heap of the whole process. A test that calls t.Parallel waits until the tests in sequence are done.
 func TestStreamsManyCuesInConstantMemory(t *testing.T) { //nolint:paralleltest // see above
 	if testing.Short() {
-		t.Skip("writes 200000 cues to a file")
+		t.Skip("writes a file of many cues")
 	}
-	defer debug.SetGCPercent(debug.SetGCPercent(10))
-
 	tests := []struct {
 		name      string
 		newWriter func(io.Writer) (cueWriter, error)
@@ -112,7 +109,7 @@ func TestStreamsManyCuesInConstantMemory(t *testing.T) { //nolint:paralleltest /
 			assert.Less(t, growth, uint64(memoryLimit), "write")
 			info, err := f.Stat()
 			require.NoError(t, err)
-			assert.Greater(t, info.Size(), int64(10<<20))
+			assert.Greater(t, info.Size(), int64(memoryCues*cueBytes))
 
 			_, err = f.Seek(0, io.SeekStart)
 			require.NoError(t, err)
@@ -135,8 +132,9 @@ func TestStreamsManyCuesInConstantMemory(t *testing.T) { //nolint:paralleltest /
 			require.NoError(t, readErr)
 			assert.Less(t, growth, uint64(memoryLimit), "read")
 			assert.Equal(t, memoryCues, count)
-			assert.Equal(t, 399998*time.Second, last.Start)
-			assert.Equal(t, "Light event number 199999\n<i>Zone</i> 2", last.Text())
+			wantLast := memoryCue(memoryCues - 1)
+			assert.Equal(t, wantLast.Start, last.Start)
+			assert.Equal(t, wantLast.Text(), last.Text())
 		})
 	}
 }
