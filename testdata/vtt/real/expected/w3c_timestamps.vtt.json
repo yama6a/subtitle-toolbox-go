@@ -1,0 +1,45 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 8.0,
+                "lines": [
+                    "<c>No match (no timestamps)</c>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 8.0,
+                "end": 16.0,
+                "lines": [
+                    "No match <00:00:12.000> (no elements)"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 16.0,
+                "end": 24.0,
+                "lines": [
+                    "<00:00:16.000> <c>This</c>",
+                    "<00:00:18.000> <c>can</c>",
+                    "<00:00:20.000> <c>match</c>",
+                    "<00:00:22.000> <c>:past/:future</c>",
+                    "<00:00:24.000>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

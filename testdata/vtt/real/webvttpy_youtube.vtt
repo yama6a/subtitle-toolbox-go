@@ -1,0 +1,24 @@
+WEBVTT
+Kind: captions
+Language: en
+Style:
+::cue(c.colorCCCCCC) { color: rgb(204,204,204);
+ }
+::cue(c.colorE5E5E5) { color: rgb(229,229,229);
+ }
+##
+
+
+00:04:46.070 --> 00:04:46.470 align:start position:0%
+okay
+
+
+00:04:46.470 --> 00:05:04.080 align:start position:0%
+okay
+<c.colorCCCCCC>then</c>
+00:05:04.080 --> 00:05:05.069 align:start position:0%
+the<00:05:04.199><c> train</c><c.colorE5E5E5><00:05:04.379><c> leaves</c></c><c.colorCCCCCC><00:05:04.620><c> at</c><00:05:04.860><c> ten</c><00:05:05.069><c> today</c></c>
+
+00:05:05.069 --> 00:05:05.400 align:start position:0%
+the train<c.colorE5E5E5> leaves</c><c.colorCCCCCC> at ten today
+ </c>

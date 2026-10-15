@@ -1,0 +1,41 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "&lt;a sentence in angle brackets&gt;"
+                ],
+                "identifier": "1",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.5,
+                "end": 6.0,
+                "lines": [
+                    "<i>Mind</i> the gap here"
+                ],
+                "identifier": "2",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 6.5,
+                "end": 9.0,
+                "lines": [
+                    "Exit &lt;to the left&gt;"
+                ],
+                "identifier": "3",
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

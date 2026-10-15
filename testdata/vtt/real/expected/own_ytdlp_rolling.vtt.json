@@ -1,0 +1,78 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "vtt": {
+                "headerLines": [
+                    "Kind: captions",
+                    "Language: en"
+                ]
+            }
+        },
+        "cues": [
+            {
+                "start": 0.16,
+                "end": 2.389,
+                "lines": [
+                    "welcome<00:00:00.400><c> back</c><00:00:00.800><c> to</c><00:00:01.120><c> the</c><00:00:01.440><c> garden</c>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "align": "start",
+                        "position": "0%"
+                    }
+                }
+            },
+            {
+                "start": 2.389,
+                "end": 4.87,
+                "lines": [
+                    "today<00:00:02.880><c> we</c><00:00:03.200><c> plant</c><00:00:03.600><c> tomatoes</c>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "align": "start",
+                        "position": "0%"
+                    }
+                }
+            },
+            {
+                "start": 4.87,
+                "end": 6.15,
+                "lines": [
+                    "first"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "align": "start",
+                        "position": "0%"
+                    }
+                }
+            },
+            {
+                "start": 6.15,
+                "end": 8.43,
+                "lines": [
+                    "dig<00:00:06.640><c> a</c><00:00:06.800><c> small</c><00:00:07.200><c> hole</c>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "align": "start",
+                        "position": "0%"
+                    }
+                }
+            }
+        ]
+    }
+}

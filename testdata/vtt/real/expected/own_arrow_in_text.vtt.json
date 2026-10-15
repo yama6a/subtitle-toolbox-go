@@ -1,0 +1,22 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 2.0,
+                "lines": [
+                    "a --&gt; b",
+                    "c"
+                ],
+                "identifier": "1",
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

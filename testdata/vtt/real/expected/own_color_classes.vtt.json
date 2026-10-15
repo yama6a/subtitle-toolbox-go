@@ -1,0 +1,111 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 2.0,
+                "lines": [
+                    "<c.white>The tide comes in at noon.</c>"
+                ],
+                "identifier": "1",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 2.0,
+                "end": 3.0,
+                "lines": [
+                    "<c.lime>Bring the rope.</c>"
+                ],
+                "identifier": "2",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.0,
+                "end": 4.0,
+                "lines": [
+                    "<c.cyan>The boat is ready.</c>"
+                ],
+                "identifier": "3",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.0,
+                "end": 5.0,
+                "lines": [
+                    "<c.red>Mind the step!</c>"
+                ],
+                "identifier": "4",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.0,
+                "end": 6.0,
+                "lines": [
+                    "<c.yellow>(engine starts)</c>"
+                ],
+                "identifier": "5",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 6.0,
+                "end": 7.0,
+                "lines": [
+                    "<c.magenta>Hold on tight.</c>"
+                ],
+                "identifier": "6",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 7.0,
+                "end": 8.0,
+                "lines": [
+                    "<c.blue>We are off.</c>"
+                ],
+                "identifier": "7",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 8.0,
+                "end": 9.0,
+                "lines": [
+                    "<c.black>Quiet now.</c>"
+                ],
+                "identifier": "8",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 9.0,
+                "end": 10.0,
+                "lines": [
+                    "<c.bg_black.yellow>[radio static]</c>"
+                ],
+                "identifier": "9",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 10.0,
+                "end": 11.0,
+                "lines": [
+                    "<c.loud>Land ahead!</c> <c.yellow.loud>Look!</c>"
+                ],
+                "identifier": "10",
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

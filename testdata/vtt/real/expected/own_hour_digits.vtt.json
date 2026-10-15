@@ -1,0 +1,81 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.8,
+                "end": 2.933,
+                "lines": [
+                    "The first train leaves at six."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 36010.94,
+                "end": 36020.75,
+                "lines": [
+                    "The second train leaves at seven."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 36030.94,
+                "end": 36040.75,
+                "lines": [
+                    "The bus waits outside the station."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 36040.94,
+                "end": 36050.75,
+                "lines": [
+                    "The ferry crosses the bay at noon."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 360010.75,
+                "end": 360020.81,
+                "lines": [
+                    "The last tram runs at midnight."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 360030.75,
+                "end": 360040.81,
+                "lines": [
+                    "The night bus stops at every corner."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3600022.86,
+                "end": 3600025.56,
+                "lines": [
+                    "The station closes for the night."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

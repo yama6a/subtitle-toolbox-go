@@ -1,0 +1,56 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [
+            {
+                "text": "This is from a talk Silvia gave about WebVTT.",
+                "beforeCueIndex": 0
+            }
+        ],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 10.7,
+                "lines": [
+                    "Title Slide"
+                ],
+                "identifier": "Slide 1",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 10.7,
+                "end": 47.6,
+                "lines": [
+                    "Introduction by Naomi Black"
+                ],
+                "identifier": "Slide 2",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 47.6,
+                "end": 110.1,
+                "lines": [
+                    "Impact of Captions on the Web"
+                ],
+                "identifier": "Slide 3",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 110.1,
+                "end": 213.0,
+                "lines": [
+                    "Requirements of a Video text format"
+                ],
+                "identifier": "Slide 4",
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

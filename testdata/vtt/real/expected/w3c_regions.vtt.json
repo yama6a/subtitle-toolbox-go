@@ -1,0 +1,128 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "vtt": {
+                "regions": [
+                    {
+                        "id": "fred",
+                        "width": "40%",
+                        "lines": "3",
+                        "regionanchor": "0%,100%",
+                        "viewportanchor": "10%,90%",
+                        "scroll": "up"
+                    },
+                    {
+                        "id": "bill",
+                        "width": "40%",
+                        "lines": "3",
+                        "regionanchor": "100%,100%",
+                        "viewportanchor": "90%,90%",
+                        "scroll": "up"
+                    }
+                ]
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 20.0,
+                "lines": [
+                    "<v Fred>Hi, my name is Fred"
+                ],
+                "identifier": null,
+                "alignment": 1,
+                "formatData": {
+                    "vtt": {
+                        "region": "fred",
+                        "align": "left",
+                        "alignment": 1
+                    }
+                }
+            },
+            {
+                "start": 2.5,
+                "end": 22.5,
+                "lines": [
+                    "<v Bill>Hi, I'm Bill"
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "vtt": {
+                        "region": "bill",
+                        "align": "right",
+                        "alignment": 3
+                    }
+                }
+            },
+            {
+                "start": 5.0,
+                "end": 25.0,
+                "lines": [
+                    "<v Fred>Would you like to get a coffee?"
+                ],
+                "identifier": null,
+                "alignment": 1,
+                "formatData": {
+                    "vtt": {
+                        "region": "fred",
+                        "align": "left",
+                        "alignment": 1
+                    }
+                }
+            },
+            {
+                "start": 7.5,
+                "end": 27.5,
+                "lines": [
+                    "<v Bill>Sure! I've only had one today."
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "vtt": {
+                        "region": "bill",
+                        "align": "right",
+                        "alignment": 3
+                    }
+                }
+            },
+            {
+                "start": 10.0,
+                "end": 30.0,
+                "lines": [
+                    "<v Fred>This is my fourth!"
+                ],
+                "identifier": null,
+                "alignment": 1,
+                "formatData": {
+                    "vtt": {
+                        "region": "fred",
+                        "align": "left",
+                        "alignment": 1
+                    }
+                }
+            },
+            {
+                "start": 12.5,
+                "end": 32.5,
+                "lines": [
+                    "<v Fred>OK, let's go."
+                ],
+                "identifier": null,
+                "alignment": 1,
+                "formatData": {
+                    "vtt": {
+                        "region": "fred",
+                        "align": "left",
+                        "alignment": 1
+                    }
+                }
+            }
+        ]
+    }
+}

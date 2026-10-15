@@ -1,0 +1,45 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [
+            {
+                "text": "This file was written by Jill. I hope\nyou enjoy reading it. Some things to\nbear in mind:\n- I was lip-reading, so the cues may\nnot be 100% accurate\n- I didn't pay too close attention to\nwhen the cues should start or end.",
+                "beforeCueIndex": 0
+            },
+            {
+                "text": "check next cue",
+                "beforeCueIndex": 1
+            },
+            {
+                "text": "end of file",
+                "beforeCueIndex": 2
+            }
+        ],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 4.0,
+                "lines": [
+                    "Never drink liquid nitrogen."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.0,
+                "end": 9.0,
+                "lines": [
+                    "— It will perforate your stomach.",
+                    "— You could die."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

@@ -1,0 +1,39 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [
+            {
+                "text": "comment blocks can be used between style blocks.",
+                "beforeCueIndex": 0
+            }
+        ],
+        "formatData": {
+            "vtt": {
+                "styles": [
+                    "::cue {\n  background-image: linear-gradient(to bottom, dimgray, lightgray);\n  color: papayawhip;\n}\n/* Style blocks cannot use blank lines nor \"dash dash greater than\" */",
+                    "::cue(b) {\n  color: peachpuff;\n}"
+                ]
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 10.0,
+                "lines": [
+                    "Hello world."
+                ],
+                "identifier": "hello",
+                "alignment": null,
+                "formatData": {
+                    "vtt": {
+                        "position": "50%",
+                        "line": "15%",
+                        "align": "middle"
+                    }
+                }
+            }
+        ]
+    }
+}
