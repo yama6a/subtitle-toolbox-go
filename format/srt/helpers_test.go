@@ -9,10 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
-const ms = time.Millisecond
+const (
+	ms      = time.Millisecond
+	realDir = "srt/real"
+)
 
 type cueRow struct {
 	Start, End time.Duration
@@ -47,6 +51,15 @@ func readError(t *testing.T, content string) *model.ParseError {
 	require.ErrorAs(t, err, &perr)
 	require.Equal(t, model.SubRip, perr.Format)
 	return perr
+}
+
+func readFile(t *testing.T, rel string) *model.Subtitle {
+	t.Helper()
+
+	s, warnings, err := srt.Read(bytes.NewReader(testfiles.Read(t, rel)), model.CommonReadOptions{}, srt.ReadOptions{})
+	require.NoError(t, err)
+	require.Empty(t, warnings)
+	return s
 }
 
 func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions) string {

@@ -24,4 +24,4 @@ Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5
 | `own_whisper_cpp_diarize.srt` | Written for this repository in the shape of whisper.cpp `-osrt -di` output: times in steps of 10 ms, a `(speaker N)` prefix before the text with its leading space. Shape from `output_srt` in https://github.com/ggml-org/whisper.cpp/blob/60c0be6ac8fa71b1a2ae2dd938a31a34a508e774/examples/cli/cli.cpp | MIT |
 | `own_ffmpeg.srt` | Output of FFmpeg 7.0.2 for `ffmpeg -i ass/real/own_ffmpeg.ass own_ffmpeg.srt`, unchanged: CR LF between the text lines of a cue, LF elsewhere, `{\an8}`, `<font color>` | MIT |
 | `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name, written by `tests/files/generate-read-goldens.php` | MIT |
-| `expected/*.out.srt` | Written by the Go write golden tests of `format/srt` with -update, reviewed by hand. Each file equals the PHP write golden of the same name at the pinned commit. | MIT |
+| `expected/*.out.*`, `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand. Each file equals the PHP write golden of the same name at the pinned commit. | MIT |

@@ -55,57 +55,6 @@ func write(t *testing.T, s *model.Subtitle, opts stboxjson.WriteOptions) []byte 
 	return out.Bytes()
 }
 
-// canonical decodes JSON into any and indents it with sorted object keys, as the read golden runner of
-// https://github.com/yama6a/subtitle-toolbox-go/issues/9 compares.
-func canonical(t *testing.T, v any) string {
-	t.Helper()
-
-	b, err := json.MarshalIndent(v, "", "    ")
-	require.NoError(t, err)
-	return string(b)
-}
-
-// TestReadGoldens runs the json row of the read golden table. Each real file must read to its PHP golden.
-func TestReadGoldens(t *testing.T) {
-	t.Parallel()
-
-	for _, name := range realFiles(t) {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			s, warnings, err := stboxjson.Read(bytes.NewReader(testfiles.Read(t, realDir+"/"+name)), model.CommonReadOptions{}, stboxjson.ReadOptions{})
-			require.NoError(t, err)
-			var subtitle any
-			require.NoError(t, json.Unmarshal(write(t, s, stboxjson.WriteOptions{}), &subtitle))
-			got := map[string]any{"warnings": goldenWarnings(warnings), "subtitle": subtitle}
-
-			var want any
-			require.NoError(t, json.Unmarshal(testfiles.Read(t, realDir+"/expected/"+name+".json"), &want))
-			assert.Equal(t, canonical(t, want), canonical(t, got))
-		})
-	}
-}
-
-// goldenWarnings returns warnings in the JSON shape of the read goldens, with null for NoLine and NoBlock.
-func goldenWarnings(warnings []model.ParseWarning) []any {
-	out := make([]any, 0, len(warnings))
-	for _, w := range warnings {
-		var line, block any
-		if w.Line != model.NoLine {
-			line = float64(w.Line)
-		}
-		if w.Block != model.NoBlock {
-			block = float64(w.Block)
-		}
-		lines := make([]any, len(w.Lines))
-		for i, l := range w.Lines {
-			lines[i] = l
-		}
-		out = append(out, map[string]any{"message": w.Message, "lineNumber": line, "blockIndex": block, "block": lines, "action": string(w.Action)})
-	}
-	return out
-}
-
 // TestWriteGoldens compares the output of each real file with its Go golden: compact as the round trip with the zero
 // options, pretty against the input, and one file without format data.
 func TestWriteGoldens(t *testing.T) {

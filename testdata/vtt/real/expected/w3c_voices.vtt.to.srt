@@ -1,0 +1,51 @@
+﻿1
+00:00:11,000 --> 00:00:13,000
+We are at the train station
+
+2
+00:00:13,000 --> 00:00:16,000
+We're standing on platform two, just next to the bakery
+
+3
+00:00:16,000 --> 00:00:18,000
+across the street from the town library
+
+4
+00:00:18,000 --> 00:00:20,000
+And with me is Tom Lind
+
+5
+00:00:20,000 --> 00:00:22,000
+Baker, owner of the corner bakery
+
+6
+00:00:22,000 --> 00:00:24,000
+since 2010.
+
+7
+00:00:24,000 --> 00:00:26,000
+Thank you for coming out in the rain.
+
+8
+00:00:27,000 --> 00:00:30,000
+And I want to ask about the bread you sell to the travellers.
+
+9
+00:00:30,000 --> 00:00:31,500
+{\an3}When the train is late—
+
+10
+00:00:30,500 --> 00:00:32,500
+{\an1}Didn't we talk about the late trains last week?
+
+11
+00:00:32,000 --> 00:00:35,500
+{\an3}Yes! Yes we did; but but the timetable but
+
+12
+00:00:32,500 --> 00:00:33,500
+{\an1}<i>Laughs</i>
+
+13
+00:00:35,500 --> 00:00:38,000
+You know the rain is so heavy my umbrella is leaking here.
