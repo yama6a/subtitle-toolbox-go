@@ -26,5 +26,5 @@
   {"name": "two Prepend characters plus thumbs up, rule GB9b (PHP counts 2)", "text": "\u0600\u0600\ud83d\udc4d", "want": 1},
   {"name": "Prepend character plus letter", "text": "\u0600a", "want": 1},
   {"name": "letter plus Prepend character", "text": "a\u0600", "want": 2},
-  {"name": "Prepend character plus LF, rule GB4", "text": "\u0600\n", "want": 2}
+  {"name": "Prepend character plus LF, rule GB5", "text": "\u0600\n", "want": 2}
 ]
