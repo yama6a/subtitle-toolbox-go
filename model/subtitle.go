@@ -30,10 +30,11 @@ const (
 // A Subtitle is not safe for concurrent use. The first lookup after a change builds an index, so
 // concurrent lookups need a lock too.
 type Subtitle struct {
-	cues     []Cue
-	comments []Comment
-	metadata map[string]string
-	index    *cueIndex
+	cues       []Cue
+	comments   []Comment
+	metadata   map[string]string
+	formatData map[string]*Data
+	index      *cueIndex
 }
 
 // Comment is text that a writer puts before the cue at BeforeCue, or after the last cue.
@@ -396,12 +397,13 @@ func (s *Subtitle) AddComment(text string, beforeCue int) error {
 	return nil
 }
 
-// Clone returns a deep copy of s that shares no cue, line, comment or metadata with s.
+// Clone returns a deep copy of s that shares no cue, line, comment, metadata or format data with s.
 func (s *Subtitle) Clone() *Subtitle {
 	return &Subtitle{
-		cues:     s.Cues(),
-		comments: s.Comments(),
-		metadata: maps.Clone(s.metadata),
+		cues:       s.Cues(),
+		comments:   s.Comments(),
+		metadata:   maps.Clone(s.metadata),
+		formatData: maps.Clone(s.formatData), // a stored Data never changes, so the copies share it
 	}
 }
 

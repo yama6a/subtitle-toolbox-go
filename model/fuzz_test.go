@@ -1,7 +1,10 @@
 package model_test
 
 import (
+	"math"
+	"reflect"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -58,4 +61,89 @@ func FuzzSubtitleOps(f *testing.F) {
 			}
 		}
 	})
+}
+
+var (
+	fuzzKeys = []string{
+		"ass", "csv", "lrc", "microdvd", "mpsub", "qttext", "sami", "subviewer", "ttml", "vtt", "dcp", "itt",
+		"mcc", "scc", "spruce-stl", "stl", "ffmeta-chapters", "srt", model.ImageKey, "whisper",
+	}
+	fuzzFields = []string{
+		"header", "roles", "width", "delimiter", "timeFormat", "frameRate", "quotedColumns", "identifier", "text",
+		"lines", "codes", "color", "tags", "otherCodes", "coordinates", "x1", "x2", "y1", "y2", "blocks", "comments",
+		"attributes", "html", "paragraphs", "namespaces", "styles", "regions", "fields", "loadFonts", "timeBase",
+		"columns", "dialect", "timeCodeRate", "firstSubtitleNumber", "styleFormat", "commentEvents", "png", "forced",
+		"12", "0", "-5", "012", "1.5",
+	}
+	fuzzStrings = []string{"", "a", ",", "\t", "1/1000", "0/1", "interop", "hh:mm:ss:ff", "2.0", strings.Repeat("0aF", 85) + "b"}
+)
+
+// FuzzDataCheck builds a tree of format data from the input and runs the type check of every schema key on it.
+func FuzzDataCheck(f *testing.F) {
+	f.Add([]byte{6, 3, 0, 2, 5, 1, 1, 6, 4, 13, 2, 1, 14, 2, 2, 15, 2, 3, 16, 2, 4})
+	f.Add([]byte{6, 2, 9, 5, 2, 6, 3, 10, 4, 0, 11, 0, 12, 5, 1, 4, 1, 3, 4, 8})
+	f.Add([]byte{6, 1, 19, 5, 1, 4, 9})
+
+	f.Fuzz(func(t *testing.T, in []byte) {
+		b := &treeBuilder{in: in}
+		d, _ := b.value(0).(*model.Data)
+		if d == nil {
+			d = model.NewData(model.Field{Key: "x", Value: b.value(0)})
+		}
+		for _, key := range fuzzKeys {
+			var c model.Cue
+			if c.SetFormatData(key, d) == nil {
+				got, ok := c.FormatData(key)
+				if ok != (d.Len() > 0) || (ok && !reflect.DeepEqual(d, got)) {
+					t.Fatalf("cue %s: stored %#v, read %#v", key, d, got)
+				}
+			}
+			_ = (&model.Subtitle{}).SetFormatData(key, d)
+		}
+	})
+}
+
+type treeBuilder struct {
+	in  []byte
+	pos int
+}
+
+func (b *treeBuilder) next() int {
+	if b.pos >= len(b.in) {
+		return 0
+	}
+	b.pos++
+	return int(b.in[b.pos-1])
+}
+
+func (b *treeBuilder) value(depth int) any {
+	const maxDepth = 8
+	op := b.next() % 7
+	if depth >= maxDepth && op >= 5 {
+		op = 0
+	}
+	switch op {
+	case 1:
+		return b.next()%2 == 1
+	case 2:
+		return int64(b.next() - 128)
+	case 3:
+		return []float64{0.5, math.Inf(1), 1e300, -2}[b.next()%4]
+	case 4:
+		return fuzzStrings[b.next()%len(fuzzStrings)]
+	case 5:
+		list := []any{}
+		for range b.next() % 4 {
+			list = append(list, b.value(depth+1))
+		}
+		return list
+	case 6:
+		d := model.NewData()
+		for range b.next() % 5 {
+			d.Set(fuzzFields[b.next()%len(fuzzFields)], b.value(depth+1))
+		}
+		return d
+	default:
+		return nil
+	}
 }

@@ -19,6 +19,10 @@ type (
 	Cue = model.Cue
 	// Comment is text that a writer puts before a cue, or after the last cue.
 	Comment = model.Comment
+	// Data is the format data of one format: an ordered object of JSON-like values.
+	Data = model.Data
+	// Field is one key and value, for model.NewData.
+	Field = model.Field
 	// Alignment is the place of a cue on the screen.
 	Alignment = model.Alignment
 	// Format is the name of a subtitle format.
@@ -81,6 +85,9 @@ const (
 	MetadataAlbum    = model.MetadataAlbum
 	MetadataLanguage = model.MetadataLanguage
 )
+
+// ImageKey is the cue format data key of image cue data until 3.0.
+const ImageKey = model.ImageKey
 
 // The line endings.
 const (

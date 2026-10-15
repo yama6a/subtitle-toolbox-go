@@ -95,5 +95,6 @@ fmt.Println(s.Comments())
 
 ## Copies and equality
 
-- **Clone**: a deep copy. The copy shares no cue, line, comment or metadata map with the original.
-- **Equality**: package `model` has no `Equal` method. Compare `Cues()`, `Comments()` and `AllMetadata()`.
+- **Clone**: a deep copy. A change to the copy, including its format data, never changes the original.
+- **Equality**: package `model` has no `Equal` method. Compare `Cues()`, `Comments()`, `AllMetadata()` and the `FormatData` of each key in `FormatDataKeys()`.
+- **Format data**: per-format data on the subtitle and on each cue, see [format-data.md](format-data.md).

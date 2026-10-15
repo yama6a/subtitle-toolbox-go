@@ -111,3 +111,85 @@ func ExampleAlignmentFromNumpad() {
 	fmt.Println(a, ok, a.Row(), a.Column())
 	// Output: TopCenter true 2 2
 }
+
+func ExampleNewData() {
+	d := model.NewData(
+		model.Field{Key: "Title", Value: "Weather"},
+		model.Field{Key: "PlayResX", Value: "1920"},
+	)
+	d.Set("ScaledBorderAndShadow", "yes")
+	d.Set("Title", "Weather at night")
+
+	for _, k := range d.Keys() {
+		v, _ := d.String(k)
+		fmt.Println(k, v)
+	}
+	// Output:
+	// Title Weather at night
+	// PlayResX 1920
+	// ScaledBorderAndShadow yes
+}
+
+func ExampleData_Strings() {
+	d := model.NewData(
+		model.Field{Key: "list", Value: []any{"a", "b"}},
+		model.Field{Key: "object", Value: model.NewData(model.Field{Key: "x", Value: "c"})},
+		model.Field{Key: "mixed", Value: []any{"a", int64(1)}},
+	)
+	fmt.Println(d.Strings("list"))
+	fmt.Println(d.Strings("object"))
+	fmt.Println(d.Strings("mixed"))
+	// Output:
+	// [a b] true
+	// [c] true
+	// [] false
+}
+
+func ExampleSubtitle_SetFormatData() {
+	var s model.Subtitle
+	err := s.SetFormatData("microdvd", model.NewData(model.Field{Key: "frameRate", Value: 23.976}))
+	fmt.Println(err)
+
+	d, _ := s.FormatData("microdvd")
+	fmt.Println(d.Number("frameRate"))
+
+	err = s.SetFormatData("scc", model.NewData(model.Field{Key: "dropFrame", Value: "yes"}))
+	fmt.Println(err)
+	fmt.Println(s.FormatDataKeys())
+	// Output:
+	// <nil>
+	// 23.976 true
+	// stbox: invalid argument: The field formatData.scc.dropFrame must be a boolean.
+	// [microdvd]
+}
+
+func ExampleCue_SetFormatData() {
+	var c model.Cue
+	err := c.SetFormatData("srt", model.NewData(model.Field{Key: "coordinates", Value: model.NewData(
+		model.Field{Key: "x1", Value: int64(10)},
+	)}))
+	fmt.Println(err)
+
+	err = c.SetFormatData("ass", model.NewData(model.Field{Key: "text", Value: 5}))
+	fmt.Println(err)
+	// Output:
+	// stbox: invalid argument: The field formatData.srt.coordinates.x2 is missing.
+	// stbox: invalid argument: The field formatData.ass.text has the unsupported Go type int.
+}
+
+func ExampleCue_AlignmentUnchanged() {
+	c := model.Cue{Alignment: model.TopLeft}
+	_ = c.SetFormatData("vtt", model.NewData(
+		model.Field{Key: "line", Value: "0"},
+		model.Field{Key: "position", Value: "30%"},
+		model.Field{Key: "align", Value: "left"},
+		model.Field{Key: "alignment", Value: int64(7)},
+	))
+	fmt.Println(c.AlignmentUnchanged("vtt"))
+
+	c.Alignment = model.BottomRight
+	fmt.Println(c.AlignmentUnchanged("vtt"))
+	// Output:
+	// true
+	// false
+}

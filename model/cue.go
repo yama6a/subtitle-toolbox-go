@@ -9,6 +9,7 @@ import (
 )
 
 // Cue is one timed text block. Its fields are plain data. A Subtitle rounds and cleans a cue when it takes it.
+// Its format data is reachable only through FormatData and SetFormatData, which copy and check it.
 type Cue struct { //nolint:recvcheck // the API reads a copy with value receivers and changes the cue with pointer receivers
 	// Start is the time the cue appears. It may be negative. Writers clamp it to 0.
 	Start time.Duration
@@ -22,6 +23,8 @@ type Cue struct { //nolint:recvcheck // the API reads a copy with value receiver
 	Alignment Alignment
 	// Forced marks a forced narrative, which a player shows also when the viewer turned subtitles off.
 	Forced bool
+
+	formatData map[string]*Data
 }
 
 // Text returns the lines joined with LF.
