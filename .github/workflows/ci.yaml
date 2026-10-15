@@ -1,0 +1,121 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+    # labeled/unlabeled so the label jobs run again on a label change, not only on a push.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  push:
+    branches: [main]  # go-ci saves its caches only from non-PR runs
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }} # a push run on main always finishes
+
+permissions:
+  contents: read
+
+jobs:
+  release-label:
+    name: release label
+    # A push to main carries no PR labels, so the label jobs run on the PR only.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - uses: yama6a/gha/.github/actions/release-label@v2
+
+  version-check:
+    name: version check
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the newest release tag sets the expected major
+      - run: .build/version-check_test.sh
+      - run: .build/version-check.sh
+        env:
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+
+  go:
+    uses: yama6a/gha/.github/workflows/go-ci.yaml@v2
+
+  cross-compile:
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false # one shared key would hand darwin, windows or fuzz builds to the other jobs
+      - run: make cross
+
+  fuzz:
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false # one shared key would hand darwin, windows or fuzz builds to the other jobs
+      - run: make fuzz FUZZTIME=10s
+      # go test -fuzz writes each failing input to <package>/testdata/fuzz/<FuzzName>/.
+      - name: Collect the new fuzz inputs
+        if: failure()
+        env:
+          DEST: ${{ runner.temp }}/fuzz-findings
+        run: |
+          set -euo pipefail
+          mkdir -p "$DEST"
+          git ls-files -z --others --exclude-standard \
+            | { grep -z -E '(^|/)testdata/fuzz/' || true; } \
+            | xargs -0 -r cp --parents -t "$DEST"
+          find "$DEST" -type f
+      - name: Upload the new fuzz inputs
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fuzz-findings
+          path: ${{ runner.temp }}/fuzz-findings
+
+  bench:
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false # one shared key would hand darwin, windows or fuzz builds to the other jobs
+      - run: make bench BENCHTIME=1x
+      # The growth tests time their own runs, so nothing else may run beside them.
+      - name: Growth tests
+        env:
+          STBOX_GROWTH: '1'
+        run: go test -run Growth -p 1 -parallel 1 -count=1 ./...
+
+  shell:
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: yama6a/gha/.github/actions/shell-checks@v2
+        with:
+          paths: .build/*.sh
+
+  yaml:
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: yama6a/gha/.github/actions/yaml-checks@v2
+
+  renovate-config:
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # A broken config makes Renovate fall back to its defaults without a warning.
+      - uses: yama6a/gha/.github/actions/validate-renovate-config@v2
+        with:
+          config-file: renovate.json5
