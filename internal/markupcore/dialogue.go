@@ -13,6 +13,8 @@ const (
 	emDash           = 0x2014
 	rightSingleQuote = 0x2019
 	noBreakSpace     = 0x00A0
+	// mongolianVowelSeparator lost the White_Space property in Unicode 6.3, but PCRE2 still matches it with \s.
+	mongolianVowelSeparator = 0x180E
 )
 
 // IsDialogueDash reports whether r is one of the 4 dialogue dash characters: the hyphen-minus, U+2010, U+2013 and U+2014.
@@ -33,7 +35,12 @@ func StartsDialogueTurn(text string) bool {
 	}
 	rest := strings.TrimLeftFunc(text[size:], func(r rune) bool { return r == ' ' || r == '\t' || r == noBreakSpace })
 	r, _ := utf8.DecodeRuneInString(rest)
-	return rest != "" && !unicode.IsSpace(r) && !unicode.IsNumber(r)
+	return rest != "" && !IsSpace(r) && !unicode.IsNumber(r)
+}
+
+// IsSpace reports whether r is white space as PHP reads \s in a pattern with the u flag: unicode.IsSpace and U+180E.
+func IsSpace(r rune) bool {
+	return unicode.IsSpace(r) || r == mongolianVowelSeparator
 }
 
 // SplitLeadingBidiControls returns the bidi controls at the start of text and the rest. Invalid UTF-8 has none.

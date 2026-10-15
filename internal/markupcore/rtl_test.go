@@ -53,6 +53,13 @@ func TestEmbedRightToLeft(t *testing.T) {
 	}
 }
 
+func TestEmbedRightToLeftMovesPunctuationBeforeTheMongolianVowelSeparator(t *testing.T) {
+	t.Parallel()
+
+	got := markupcore.EmbedRightToLeft(". \u05e9\u05dc\u05d5\u05dd\u180e")
+	assert.Equal(t, "\u202b\u05e9\u05dc\u05d5\u05dd.\u180e\u202c", got)
+}
+
 func TestEmbedRightToLeftKeepsInvalidUTF8(t *testing.T) {
 	t.Parallel()
 

@@ -168,3 +168,47 @@ The run joins into its first cue, which keeps its lines and ends at the latest e
 - **Group**: a cue joins the group when its start and its end both differ by at most `timeTolerance` from the first cue of the group, and it has the alignment and the forced flag of that cue. Format data and speakers do not count, so ASS events with different styles join.
 - **Lines**: the lines of each cue in order. A cue whose `Text()` came before in the group adds no lines.
 - **Result**: the start, the ID and the format data of the first cue, and the latest end of the group. No dialogue dash is added.
+
+## Line wrapping
+
+Subtitle guidelines limit a line to a number of visible characters, often 42, and a cue to 2 lines. `s.WrapLines(42, 2)` turns `This is a very long subtitle line that does not fit on the screen` into `This is a very long subtitle line` and `that does not fit on the screen`.
+
+<!-- example: ExampleSubtitle_WrapLines -->
+```go
+var s model.Subtitle
+s.AddCues(
+	model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<i>This is a very long subtitle line that does not fit on the screen</i>"}},
+	model.Cue{Start: 5 * time.Second, End: 7 * time.Second, Lines: []string{"- Are you coming with us to the coast tonight?", "- Yes."}},
+)
+
+if err := s.WrapLines(42, 2); err != nil {
+	fmt.Println(err)
+	return
+}
+
+for _, c := range s.All() {
+	fmt.Println(c.Text())
+}
+// Output:
+// <i>This is a very long subtitle line</i>
+// <i>that does not fit on the screen</i>
+// - Are you coming with
+// us to the coast tonight?
+// - Yes.
+```
+
+| Method | Does |
+|:--- |:--- |
+| `WrapLines(maxCharactersPerLine, maxLinesPerCue)` | breaks the lines of each cue that does not fit. A cue that fits stays as it is |
+| `UnwrapLines()` | joins the lines of every cue. Each dialogue turn that starts with a dash line keeps a line of its own |
+
+- **Visible characters**: tags count 0, an entity such as `&amp;` counts 1, other text counts grapheme clusters. Invalid UTF-8 counts bytes. A line is measured as its words joined by 1 space.
+- **Breaks**: the wrapper uses the fewest lines up to the limit that fit, then the fewest breaks inside a CJK phrase, then the most equal line lengths. A word longer than the line never breaks. When no line count fits, the cue gets `maxLinesPerCue` lines with the least overflow.
+- **Tags**: each break closes the open `b`, `i`, `u`, `s`, `font` and `v` tags and opens them again on the next line.
+- **Dialogue turn**: the part of a cue that one person speaks. A turn starts at the first line, at each line that starts with a dialogue dash, and inside a line at a dash after `.`, `?`, `!`, the ellipsis U+2026 or a CJK sentence end. Each turn wraps on its own lines, so a cue with 2 turns can end with more than `maxLinesPerCue` lines.
+- **Minus sign**: a dash before a digit, as in `-20 degrees`, starts no turn. A dash in mid sentence, as in `the coast - all the way`, starts none either.
+- **Chinese and Japanese**: a line also breaks between 2 CJK characters where JIS X 4051 allows it. No line starts with a closing bracket, a stop, a small kana or the long vowel mark U+30FC. No line ends with an opening bracket. A break after CJK punctuation or the ideographic space U+3000 wins over equal line lengths. There is no dictionary, so a break can fall inside a Japanese word.
+- **Latin words in CJK text**: `WhatsApp` inside Chinese text stays whole. Korean breaks only at spaces.
+- **Joining**: 2 lines join with a space, or without one when a CJK character ends the first and starts the second.
+- **Right-to-left lines**: a cue with the embedding of `FixRightToLeft` gets a new embedding on each new line, because a line break ends every embedding in the Unicode bidi algorithm.
+- **Errors**: a limit below 1 returns an error that matches `ErrInvalidArgument`, and the subtitle stays unchanged.
