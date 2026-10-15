@@ -34,6 +34,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 		return nil, nil, fmt.Errorf("read %s: %w", model.JSON, err)
 	}
 	st := parsing.NewState(model.JSON, common)
+	// The JSON decoder reads each bad byte as U+FFFD in both modes, so the UTF-8 check only warns. True would fail strict reads.
 	content, ok, err := st.Prepare(content, false)
 	if err != nil {
 		return nil, nil, err

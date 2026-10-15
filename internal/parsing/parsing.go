@@ -10,11 +10,10 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
-const (
-	defaultLastCueDuration = 5 * time.Second
-	// maxSwappedDuration is the longest cue that lenient mode makes by a swap. A longer one is no typo.
-	maxSwappedDuration = 30 * time.Second
-)
+const defaultLastCueDuration = 5 * time.Second
+
+// MaxSwappedDuration is the longest cue that lenient mode makes by a swap. A longer one is no typo.
+const MaxSwappedDuration = 30 * time.Second
 
 // State holds the options and the warnings of one read.
 type State struct {
@@ -95,7 +94,7 @@ func (s *State) OrderedTimes(start, end time.Duration, line, block int, lines []
 		return start, end, nil
 	}
 	msg := "The cue ends at " + timecode.Seconds(end) + " s, before it starts at " + timecode.Seconds(start) + " s."
-	if !s.Lenient() || !canSwap || start-end > maxSwappedDuration {
+	if !s.Lenient() || !canSwap || start-end > MaxSwappedDuration {
 		return 0, 0, &model.ParseError{Format: s.format, Line: line, Msg: msg}
 	}
 	s.Warn(msg+" The parser swapped the times.", line, block, lines, model.Repaired)

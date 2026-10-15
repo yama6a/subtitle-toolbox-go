@@ -35,7 +35,7 @@ Library JSON is also the conformance format of the port. Each PHP read golden ho
 - **Key order**: the writer uses the order of the table. The fields inside one format's data keep their stored order, because writers such as ASS depend on it.
 - **Lists for objects**: `metadata`, `formatData`, the data of one format and `cues[].formatData` may be JSON lists, as PHP writes an empty or numbered array. A list reads as an object with the keys `"0"`, `"1"` and so on. `cues`, `lines` and `comments` must be JSON lists.
 - **Numbers in format data**: a literal without `.`, `e` and `E` that fits an int64 reads as an integer. Every other literal reads as a float. The writer adds `.0` to a float without a fraction, so `4.0` stays a float and `4` an integer.
-- **Times**: a time of 100000 hours or more fails, as in every reader. A time of -100000 hours or less fails too, because `time.Duration` cannot hold it. Negative times above that bound read and write as they are.
+- **Times**: a time that rounds to 100000 hours or more fails, as in every reader. A time that rounds to -100000 hours or less fails too, because `time.Duration` cannot hold it. Negative times above that bound read and write as they are. A cue that ends before it starts fails, also with negative times, and lenient mode swaps it as in [lenient-parsing.md](lenient-parsing.md).
 - **Errors**: a read error names the path of the bad field, such as `The field cues[3].start must be a number.` Lenient mode skips a bad cue, metadata value, format data entry or comment. Invalid JSON and a bad `version`, `metadata`, `formatData`, `cues` or `comments` field fail in both modes.
 - **Depth**: 511 lists and objects inside each other read. One more fails, as in PHP `json_decode`.
 
@@ -54,9 +54,11 @@ A lenient read gives one warning per skipped or repaired entry.
 
 ## Binary values
 
-The writer writes each format data string that is not valid UTF-8 as `{"base64": "..."}`, with the standard alphabet and padding, at any depth. The PNG bytes of an image cue are the main case. The reader decodes each object whose only key is `base64` with a string value, as PHP `base64_decode` in strict mode does: it accepts missing padding and skips spaces, tabs, CR and LF.
+The writer writes each format data string that is not valid UTF-8 as `{"base64": "..."}`, at any depth. It uses the standard alphabet with padding. The PNG bytes of an image cue are the main case.
 
-Text outside format data must be valid UTF-8. The writer returns an `*UnwritableError` for a cue line, an identifier, a metadata key or value, a comment or a format data key that is not. `encoding/json` would replace the bad bytes without an error, so the writer checks first.
+The reader decodes each object whose only key is `base64` with a string value. It decodes as PHP `base64_decode` in strict mode does. So it accepts missing padding and skips spaces, tabs, CR and LF.
+
+Text outside format data must be valid UTF-8. That text is the cue lines and identifiers, the metadata keys and values, the comments and the format data keys. The writer returns an `*UnwritableError` for a string there that is not valid UTF-8. `encoding/json` would replace the bad bytes without an error, so the writer checks first.
 
 ## Version
 

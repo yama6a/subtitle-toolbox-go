@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -16,23 +17,27 @@ import (
 const infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
 
 func FuzzRead(f *testing.F) {
-	for _, dir := range []string{"../../testdata/json", realDir} {
-		entries, err := os.ReadDir(dir)
+	for _, dir := range []string{"json", realDir, "lenient"} {
+		entries, err := os.ReadDir(testfiles.Path(f, dir))
 		if err != nil {
 			f.Fatal(err)
 		}
 		for _, e := range entries {
 			if filepath.Ext(e.Name()) == ".json" {
-				content, err := os.ReadFile(filepath.Join(dir, e.Name()))
-				if err != nil {
-					f.Fatal(err)
-				}
-				f.Add(content)
+				f.Add(testfiles.Read(f, dir+"/"+e.Name()))
 			}
 		}
 	}
+	for _, c := range readErrorCases() {
+		f.Add([]byte(c.content))
+	}
+	for _, c := range numberCases() {
+		f.Add([]byte(c.content()))
+	}
+	for _, c := range warningCases() {
+		f.Add([]byte(c.content))
+	}
 	for _, seed := range []string{
-		`{"version": 1, "cues": [{"start": 5, "end": 3, "lines": ["a"]}, {"start": 1e20, "end": 2, "lines": [7]}]}`,
 		`{"version": 1, "metadata": ["a"], "formatData": {"x": [{"base64": "AAE="}], "y": {"a": 1e400}}, "cues": []}`,
 		`{"version": 1, "comments": [{"text": "a", "beforeCueIndex": 3}], "cues": [{"start": 2, "end": 3, "lines": []}, {"start": 1, "end": 2, "lines": ["<00:00:01.500>b"]}]}`,
 		`[]`,

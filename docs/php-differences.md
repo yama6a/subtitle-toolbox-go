@@ -32,4 +32,5 @@ Go matches the PHP library byte for byte, except for the behaviour below. Each r
 | library JSON that is not valid JSON | `The content is not valid JSON: Syntax error.` | the message of `encoding/json`, such as `The content is not valid JSON: unexpected end of JSON input.` | #19 |
 | a float in library JSON format data, such as 1e25 or 1e-7 | `1.0e+25`, `1.0e-7` | `1e+25`, `1e-7`. A value from 1e-6 up to 1e21 is written without exponent, as `encoding/json` writes it | #19 |
 | the block line of a library JSON warning | writes a float without fraction as `1`, a number such as `1e400` as `0`, and a metadata entry with the key `0` as a list | writes `1.0`, keeps the text `1e400`, and writes `{"0": value}` | #19 |
+| a library JSON cue with a negative time that ends before it starts, such as start 5 and end -1 | reads as it is, because the order check needs both times at 0 or more | `The cue ends at -1 s, before it starts at 5 s.` Lenient mode swaps it | #19 |
 | an empty cue identifier `""` in library JSON | written back as `""` | written as `null`, because an empty `Cue.ID` means no identifier | #19 |

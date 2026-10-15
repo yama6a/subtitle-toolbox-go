@@ -12,7 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
-// The shapes of the Read, Write and Detect functions of a format package.
+// The shapes of the Read and Write functions of a format package.
 type (
 	readFunc[O any]  func(io.Reader, model.CommonReadOptions, O) (*model.Subtitle, []model.ParseWarning, error)
 	writeFunc[O any] func(io.Writer, *model.Subtitle, model.CommonWriteOptions, O) error

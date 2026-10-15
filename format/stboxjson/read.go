@@ -18,24 +18,17 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
-const (
-	// maxSwap is the longest duration in seconds of a reversed cue whose times lenient mode swaps.
-	maxSwap    = 30
-	maxSeconds = timecode.MaxHours * 3600
-)
+const maxSeconds = timecode.MaxHours * 3600
 
-// reader runs the read steps on the state of one read.
 type reader struct {
 	st *parsing.State
 }
 
-// number is a JSON number literal and its float64 value.
 type number struct {
 	text json.Number
 	f    float64
 }
 
-// fail returns the error in strict mode. In lenient mode, it records a skipped warning with the JSON of entry.
 func (r *reader) fail(msg string, block int, entry any) error {
 	var lines []string
 	if r.st.Lenient() {
@@ -72,20 +65,16 @@ func (r *reader) read(content []byte) (*model.Subtitle, error) {
 }
 
 // normalize turns each list that PHP reads as an object into an object with the keys "0", "1" and so on:
-// the metadata, the format data and the data of one format, a cue and its format data, and a comment.
+// the metadata, the format data and the data of one format. A cue or comment that is a list stays one until its
+// check, so a warning shows it as a list, as PHP does.
 func normalize(root *model.Data) {
 	listToObject(root, "metadata")
 	normalizeFormatData(root)
 	cues, _ := root.List("cues")
-	for i := range cues {
-		cues[i] = asObject(cues[i])
-		if cue, ok := cues[i].(*model.Data); ok {
+	for _, c := range cues {
+		if cue, ok := c.(*model.Data); ok {
 			normalizeFormatData(cue)
 		}
-	}
-	comments, _ := root.List("comments")
-	for i := range comments {
-		comments[i] = asObject(comments[i])
 	}
 }
 
@@ -124,7 +113,6 @@ func isContainer(v any) bool {
 	}
 }
 
-// decodeFileBinary decodes the base64 objects in the data of each format. The entry of a format with a bad value drops out.
 func (r *reader) decodeFileBinary(root *model.Data) error {
 	fd, ok := root.Object("formatData")
 	if !ok {
@@ -149,7 +137,6 @@ func (r *reader) decodeFileBinary(root *model.Data) error {
 	return nil
 }
 
-// decodeCueBinary decodes the base64 objects in the format data of each cue. A cue with a bad value is skipped.
 func (r *reader) decodeCueBinary(cues []any, skipped map[int]bool) error {
 	for i, c := range cues {
 		cue, ok := c.(*model.Data)
@@ -243,7 +230,6 @@ func cuePath(i int) string {
 	return "cues[" + strconv.Itoa(i) + "]"
 }
 
-// checkCueTimes checks the time limits of each cue, and swaps or skips a cue that ends before it starts.
 func (r *reader) checkCueTimes(cues []any, skipped map[int]bool) error {
 	for i, c := range cues {
 		cue, ok := c.(*model.Data)
@@ -274,32 +260,38 @@ func (r *reader) checkTimes(cue *model.Data, i int) string {
 	if msg := message(parsing.CheckWordTimestamps(stringLines(cue), model.NoLine)); msg != "" {
 		return msg
 	}
-	if !startOK || !endOK || start.f < 0 || end.f < 0 || end.f >= start.f {
+	if !startOK || !endOK || end.f >= start.f {
 		return ""
 	}
 	return r.orderTimes(cue, i, start, end)
 }
 
-// checkBound returns the message for a time of 100000 hours or more, or of -100000 hours or less.
+// checkBound returns the message for a time that rounds to 100000 hours or more, or to -100000 hours or less.
+// The float check comes first, so milliseconds never sees a value beyond the int64 range.
 func checkBound(i int, key string, n number, ok bool) string {
-	switch {
-	case !ok:
+	if !ok {
 		return ""
-	case n.f >= maxSeconds:
+	}
+	var d time.Duration
+	if math.Abs(n.f) < maxSeconds {
+		d = milliseconds(n)
+	}
+	switch {
+	case n.f >= maxSeconds || d >= timecode.MaxTime:
 		_, err := parsing.BoundedField(timecode.MaxTime, cuePath(i)+"."+key)
 		return message(err)
-	case n.f <= -maxSeconds:
+	case n.f <= -maxSeconds || d <= -timecode.MaxTime:
 		return "The field " + cuePath(i) + "." + key + " is not above -" + strconv.Itoa(timecode.MaxHours) + " hours."
 	default:
 		return ""
 	}
 }
 
-// orderTimes swaps the times of a cue that ends before it starts in lenient mode, when the cue then lasts maxSwap
-// or less. Else it returns the message.
+// orderTimes compares the float values, as PHP does, where parsing.State.OrderedTimes compares durations.
+// Lenient mode swaps the times of a reversed cue that then lasts parsing.MaxSwappedDuration or less.
 func (r *reader) orderTimes(cue *model.Data, i int, start, end number) string {
 	msg := "The cue ends at " + timecode.Number(end.f) + " s, before it starts at " + timecode.Number(start.f) + " s."
-	if !r.st.Lenient() || start.f-end.f > maxSwap {
+	if !r.st.Lenient() || start.f-end.f > parsing.MaxSwappedDuration.Seconds() {
 		return msg
 	}
 	r.st.Warn(msg+" The parser swapped the times.", model.NoLine, i, []string{encodeEntry(cue)}, model.Repaired)
@@ -320,7 +312,6 @@ func stringLines(cue *model.Data) []string {
 	return out
 }
 
-// message returns the message of a *model.ParseError, or "" for nil.
 func message(err error) string {
 	var perr *model.ParseError
 	if !errors.As(err, &perr) {
@@ -364,7 +355,6 @@ func milliseconds(n number) time.Duration {
 	return time.Duration(q.Int64()) * time.Millisecond
 }
 
-// toModel converts a value of the decoded tree to the value types of model.Data.
 func toModel(v any) any {
 	switch v := v.(type) {
 	case json.Number:
@@ -460,7 +450,7 @@ func checkVersion(root *model.Data) error {
 	return nil
 }
 
-// object returns the object at key of d. A missing key or null gives an empty object.
+// object treats a missing key and null as an empty object, as the PHP ?? operator does.
 func object(d *model.Data, key string) (*model.Data, bool) {
 	v, _ := d.Get(key)
 	switch v := v.(type) {
@@ -512,7 +502,6 @@ func (r *reader) formatData(s *model.Subtitle, root *model.Data) error {
 	return nil
 }
 
-// formatDataMessage returns the message of a failed format data check, with prefix after "The field ".
 func formatDataMessage(err error, prefix string) string {
 	var iae *model.InvalidArgumentError
 	if !errors.As(err, &iae) {
@@ -524,10 +513,9 @@ func formatDataMessage(err error, prefix string) string {
 	return iae.Msg
 }
 
-// cue returns the cue of entry i, or the message of its first bad field.
 func cue(entry any, i int) (model.Cue, string) {
 	path := "The field " + cuePath(i)
-	d, ok := entry.(*model.Data)
+	d, ok := asObject(entry).(*model.Data)
 	if !ok {
 		return model.Cue{}, path + " must be an object."
 	}
@@ -571,7 +559,6 @@ func cueLines(c *model.Cue, d *model.Data, path string) string {
 	return ""
 }
 
-// cueSettings reads the identifier and the alignment. Null and a missing key give the zero value, as for forced.
 func cueSettings(c *model.Cue, d *model.Data, path string) string {
 	switch id, _ := d.Get("identifier"); id := id.(type) {
 	case nil:
@@ -639,6 +626,7 @@ func (r *reader) comments(s *model.Subtitle, root *model.Data, skipped map[int]b
 		return parseError("The field comments must be a list.")
 	}
 	skippedCues := slices.Sorted(maps.Keys(skipped))
+	var comments []model.Comment
 	for i, entry := range list {
 		text, before, msg := comment(entry, i)
 		if msg != "" {
@@ -649,15 +637,19 @@ func (r *reader) comments(s *model.Subtitle, root *model.Data, skipped map[int]b
 		}
 		at := int(min(before, math.MaxInt))
 		skippedBefore, _ := slices.BinarySearch(skippedCues, at)
-		_ = s.AddComment(text, at-skippedBefore) // the index is 0 or more
+		comments = append(comments, model.Comment{Text: text, BeforeCue: at - skippedBefore})
+	}
+	// AddComment sorts all comments when one comes before the last, so the comments go in sorted.
+	slices.SortStableFunc(comments, func(a, b model.Comment) int { return cmp.Compare(a.BeforeCue, b.BeforeCue) })
+	for _, c := range comments {
+		_ = s.AddComment(c.Text, c.BeforeCue) // the index is 0 or more
 	}
 	return nil
 }
 
-// comment returns the text and the cue index of comment entry i, or the message of its first bad field.
 func comment(entry any, i int) (string, int64, string) {
 	path := "The field comments[" + strconv.Itoa(i) + "]"
-	d, ok := entry.(*model.Data)
+	d, ok := asObject(entry).(*model.Data)
 	if !ok {
 		return "", 0, path + " must be an object."
 	}

@@ -16,11 +16,25 @@ import (
 func TestLenientWarnings(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name    string
-		content string
-		want    []model.ParseWarning
-	}{
+	for _, tt := range warningCases() {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			_, warnings, err := read(t, tt.content, true)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, warnings)
+		})
+	}
+}
+
+type warningCase struct {
+	name    string
+	content string
+	want    []model.ParseWarning
+}
+
+func warningCases() []warningCase {
+	return []warningCase{
 		{
 			name: "cue without end and a line that is not a string",
 			content: `{"version": 1, "metadata": {"title": "Station announcements"},
@@ -120,6 +134,24 @@ func TestLenientWarnings(t *testing.T) {
 			},
 		},
 		{
+			name:    "cue and comment as lists",
+			content: `{"version": 1, "comments": [["Note"]], "cues": [[1, 2]]}`,
+			want: []model.ParseWarning{
+				{Message: "The field cues[0].start must be a number.", Block: 0, Lines: []string{`[1,2]`}, Action: model.Skipped},
+				{Message: "The field comments[0].text must be a string.", Block: model.NoBlock, Lines: []string{`["Note"]`}, Action: model.Skipped},
+			},
+		},
+		{
+			name:    "invalid UTF-8",
+			content: `{"version": 1, "cues": [{"start": 1, "end": 2, "lines": ["B` + "\xff" + `d"]}]}`,
+			want: []model.ParseWarning{
+				{
+					Message: "The content is not valid UTF-8. The first bad byte is at offset 59. Set the source encoding of the file.",
+					Block:   model.NoBlock, Action: model.Repaired,
+				},
+			},
+		},
+		{
 			name: "numbers in block lines",
 			content: `{"version": 1, "cues": [{"start": 1.50, "end": 2E0, "lines": [], "identifier": 1e400,
 				"x": [-0, 12345678901234567890, 1e-7, 1e21, 0.1]}]}`,
@@ -130,14 +162,5 @@ func TestLenientWarnings(t *testing.T) {
 				},
 			},
 		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			_, warnings, err := read(t, tt.content, true)
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, warnings)
-		})
 	}
 }

@@ -3,11 +3,8 @@ package stboxjson_test
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"flag"
-	"io/fs"
 	"os"
-	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -16,18 +13,20 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/internal/golden"
+	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
 var update = flag.Bool("update", false, "rewrite the write golden files")
 
 // realDir is the json folder of the read golden table of https://github.com/yama6a/subtitle-toolbox-go/issues/9.
-const realDir = "../../testdata/json/real"
+const realDir = "json/real"
 
 func realFiles(t *testing.T) []string {
 	t.Helper()
 
-	entries, err := os.ReadDir(realDir)
+	entries, err := os.ReadDir(testfiles.Path(t, realDir))
 	require.NoError(t, err)
 	var names []string
 	for _, e := range entries {
@@ -37,14 +36,6 @@ func realFiles(t *testing.T) []string {
 	}
 	require.Len(t, names, 6)
 	return names
-}
-
-func readFile(t *testing.T, path string) []byte {
-	t.Helper()
-
-	content, err := os.ReadFile(path)
-	require.NoError(t, err)
-	return content
 }
 
 func readBytes(t *testing.T, content []byte) *model.Subtitle {
@@ -82,14 +73,14 @@ func TestReadGoldens(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			s, warnings, err := stboxjson.Read(bytes.NewReader(readFile(t, filepath.Join(realDir, name))), model.CommonReadOptions{}, stboxjson.ReadOptions{})
+			s, warnings, err := stboxjson.Read(bytes.NewReader(testfiles.Read(t, realDir+"/"+name)), model.CommonReadOptions{}, stboxjson.ReadOptions{})
 			require.NoError(t, err)
 			var subtitle any
 			require.NoError(t, json.Unmarshal(write(t, s, stboxjson.WriteOptions{}), &subtitle))
 			got := map[string]any{"warnings": goldenWarnings(warnings), "subtitle": subtitle}
 
 			var want any
-			require.NoError(t, json.Unmarshal(readFile(t, filepath.Join(realDir, "expected", name+".json")), &want))
+			require.NoError(t, json.Unmarshal(testfiles.Read(t, realDir+"/expected/"+name+".json"), &want))
 			assert.Equal(t, canonical(t, want), canonical(t, got))
 		})
 	}
@@ -120,73 +111,34 @@ func goldenWarnings(warnings []model.ParseWarning) []any {
 func TestWriteGoldens(t *testing.T) {
 	t.Parallel()
 
-	type golden struct {
+	type goldenCase struct {
 		file, suffix string
 		opts         stboxjson.WriteOptions
 		roundTrip    bool
 	}
 	names := realFiles(t)
-	cases := make([]golden, 0, 2*len(names)+1)
+	cases := make([]goldenCase, 0, 2*len(names)+1)
 	for _, name := range names {
 		cases = append(cases,
-			golden{name, ".out.json", stboxjson.WriteOptions{}, false},
-			golden{name, ".pretty.out.json", stboxjson.WriteOptions{PrettyPrint: true}, true})
+			goldenCase{name, ".out.json", stboxjson.WriteOptions{}, false},
+			goldenCase{name, ".pretty.out.json", stboxjson.WriteOptions{PrettyPrint: true}, true})
 	}
-	cases = append(cases, golden{"own_aegisub.json", ".omit-format-data.out.json", stboxjson.WriteOptions{PrettyPrint: true, OmitFormatData: true}, false})
+	cases = append(cases, goldenCase{"own_aegisub.json", ".omit-format-data.out.json", stboxjson.WriteOptions{PrettyPrint: true, OmitFormatData: true}, false})
 
 	for _, c := range cases {
 		t.Run(c.file+c.suffix, func(t *testing.T) {
 			t.Parallel()
 
-			input := filepath.Join(realDir, c.file)
-			got := write(t, readBytes(t, readFile(t, input)), c.opts)
-			path := filepath.Join(realDir, "expected", c.file+c.suffix)
+			input := testfiles.Path(t, realDir+"/"+c.file)
+			got := write(t, readBytes(t, testfiles.Read(t, realDir+"/"+c.file)), c.opts)
+			path := testfiles.Path(t, realDir+"/expected/"+c.file+c.suffix)
 			if c.roundTrip {
-				roundTripGolden(t, input, path, got)
+				golden.RoundTrip(t, input, path, got, *update)
 				return
 			}
-			equalGolden(t, path, got)
+			golden.Equal(t, path, got, *update)
 		})
 	}
-}
-
-// equalGolden compares got with the golden file at path. With -update, it writes got to the file first.
-func equalGolden(t *testing.T, path string, got []byte) {
-	t.Helper()
-
-	if *update {
-		require.NoError(t, os.WriteFile(path, got, 0o600))
-	}
-	assert.Equal(t, string(readFile(t, path)), string(got))
-}
-
-// roundTripGolden compares got with the golden file when it exists, and with the input otherwise.
-// With -update, it writes the golden file when got differs from the input, and deletes it when not.
-func roundTripGolden(t *testing.T, input, path string, got []byte) {
-	t.Helper()
-
-	in := normalize(readFile(t, input))
-	if *update {
-		if bytes.Equal(in, got) {
-			if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
-				require.NoError(t, err)
-			}
-		} else {
-			require.NoError(t, os.WriteFile(path, got, 0o600))
-		}
-	}
-	want, err := os.ReadFile(path)
-	if errors.Is(err, fs.ErrNotExist) {
-		want = in
-	} else {
-		require.NoError(t, err)
-	}
-	assert.Equal(t, string(want), string(got))
-}
-
-func normalize(b []byte) []byte {
-	b = bytes.TrimPrefix(b, []byte("\ufeff"))
-	return []byte(strings.ReplaceAll(strings.ReplaceAll(string(b), "\r\n", "\n"), "\r", "\n"))
 }
 
 // Ports testEveryRealFileSurvivesTheArrayAndJsonRoundTrip of tests/ArrayConversionTest.php and
@@ -199,7 +151,7 @@ func TestRealFilesSurviveTheRoundTrip(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
-				s := readBytes(t, readFile(t, filepath.Join(realDir, name)))
+				s := readBytes(t, testfiles.Read(t, realDir+"/"+name))
 				out := write(t, s, opts)
 				again := readBytes(t, out)
 				assert.Equal(t, s, again)
@@ -213,7 +165,7 @@ func TestRealFilesSurviveTheRoundTrip(t *testing.T) {
 func TestReadsReversedCuesInStartOrderWithTheirComments(t *testing.T) {
 	t.Parallel()
 
-	content := readFile(t, filepath.Join(realDir, "own_aegisub.json"))
+	content := testfiles.Read(t, realDir+"/own_aegisub.json")
 	var doc map[string]json.RawMessage
 	require.NoError(t, json.Unmarshal(content, &doc))
 	var cues []json.RawMessage
@@ -266,14 +218,14 @@ func TestRealFileParses(t *testing.T) {
 		t.Run(tt.file, func(t *testing.T) {
 			t.Parallel()
 
-			got := cueTexts(readBytes(t, readFile(t, filepath.Join(realDir, tt.file))))
+			got := cueTexts(readBytes(t, testfiles.Read(t, realDir+"/"+tt.file)))
 			require.Len(t, got, tt.cues)
 			assert.Equal(t, tt.first, got[0])
 			assert.Equal(t, tt.last, got[len(got)-1])
 		})
 	}
 
-	s := readBytes(t, readFile(t, filepath.Join(realDir, "own_image_cues.json")))
+	s := readBytes(t, testfiles.Read(t, realDir+"/own_image_cues.json"))
 	c, _ := s.Cue(0)
 	image, ok := c.FormatData(model.ImageKey)
 	require.True(t, ok)
@@ -291,7 +243,7 @@ func TestRealFileParses(t *testing.T) {
 func TestReadFailsForADropFrameString(t *testing.T) {
 	t.Parallel()
 
-	_, _, err := stboxjson.Read(bytes.NewReader(readFile(t, "../../testdata/json/own_scc_drop_frame_string.json")),
+	_, _, err := stboxjson.Read(bytes.NewReader(testfiles.Read(t, "json/own_scc_drop_frame_string.json")),
 		model.CommonReadOptions{}, stboxjson.ReadOptions{})
 	var perr *model.ParseError
 	require.ErrorAs(t, err, &perr)

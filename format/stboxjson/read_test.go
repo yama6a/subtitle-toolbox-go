@@ -51,15 +51,27 @@ func ms(n int64) time.Duration { return time.Duration(n) * time.Millisecond }
 func TestReadErrors(t *testing.T) {
 	t.Parallel()
 
+	for _, tt := range readErrorCases() {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			checkReadError(t, tt)
+		})
+	}
+}
+
+type readErrorCase struct {
+	name    string
+	content string
+	msg     string
+	// wholeFile errors return in lenient mode too. Other errors skip the entry, and the lenient read keeps lenientCues.
+	wholeFile   bool
+	lenientCues int
+}
+
+func readErrorCases() []readErrorCase {
 	deep := func(n int) string { return strings.Repeat("[", n) + strings.Repeat("]", n) }
-	tests := []struct {
-		name    string
-		content string
-		msg     string
-		// wholeFile errors return in lenient mode too. Other errors skip the entry, and the lenient read keeps lenientCues.
-		wholeFile   bool
-		lenientCues int
-	}{
+	return []readErrorCase{
 		{name: "not JSON", content: `{"version": 1,`, msg: "The content is not valid JSON: unexpected end of JSON input.", wholeFile: true},
 		{name: "text after the root", content: `{"version": 1, "cues": []} x`, msg: "The content is not valid JSON: invalid character 'x' after top-level value.", wholeFile: true},
 		{name: "512 levels", content: `{"version": 1, "cues": [], "x": ` + deep(511) + `}`, msg: "The content is not valid JSON: Maximum stack depth exceeded.", wholeFile: true},
@@ -112,6 +124,9 @@ func TestReadErrors(t *testing.T) {
 		{name: "start of -1e20", content: `{"version": 1, "cues": [{"start": -1e20, "end": 1, "lines": []}]}`, msg: "The field cues[0].start is not above -100000 hours."},
 		{name: "end at -100000 hours", content: `{"version": 1, "cues": [{"start": -1, "end": -360000000, "lines": []}]}`, msg: "The field cues[0].end is not above -100000 hours."},
 		{name: "word timestamp at 100000 hours", content: `{"version": 1, "cues": [{"start": 1, "end": 2, "lines": ["One <100000:00:00.000>two"]}]}`, msg: `The time "100000:00:00.000" is not below 100000 hours.`},
+		{name: "end rounds to 100000 hours", content: `{"version": 1, "cues": [{"start": 1, "end": 359999999.9996, "lines": []}]}`, msg: "The field cues[0].end is not below 100000 hours."},
+		{name: "start rounds to -100000 hours", content: `{"version": 1, "cues": [{"start": -359999999.9996, "end": 1, "lines": []}]}`, msg: "The field cues[0].start is not above -100000 hours."},
+		{name: "negative end before start", content: `{"version": 1, "cues": [{"start": 5, "end": -1, "lines": ["Negative end"]}]}`, msg: "The cue ends at -1 s, before it starts at 5 s.", lenientCues: 1},
 		{name: "end before start", content: `{"version": 1, "cues": [{"start": 70, "end": 2, "lines": []}]}`, msg: "The cue ends at 2 s, before it starts at 70 s."},
 		{name: "end before start with fractions", content: `{"version": 1, "cues": [{"start": 5.25, "end": 3.0, "lines": []}]}`, msg: "The cue ends at 3 s, before it starts at 5.25 s.", lenientCues: 1},
 		{name: "bad base64 in a cue", content: `{"version": 1, "cues": [{"start": 0, "end": 1, "lines": [], "formatData": {"image": {"png": {"base64": "?"}}}}]}`, msg: "The field cues[0].formatData.image.png.base64 must be valid base64."},
@@ -120,47 +135,51 @@ func TestReadErrors(t *testing.T) {
 		{name: "bad base64 under a number key", content: `{"version": 1, "formatData": {"x": {"7": {"base64": "A"}}}, "cues": []}`, msg: "The field formatData.x[7].base64 must be valid base64."},
 		{name: "base64 as the whole format data", content: `{"version": 1, "formatData": {"x": {"base64": "AAE="}}, "cues": []}`, msg: "The field formatData.x must be an object."},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			s, warnings, err := read(t, tt.content, false)
-			var perr *model.ParseError
-			require.ErrorAs(t, err, &perr)
-			require.ErrorIs(t, err, model.ErrParse)
-			assert.Equal(t, tt.msg, perr.Msg)
-			assert.Equal(t, model.JSON, perr.Format)
-			assert.Zero(t, perr.Line)
-			assert.Nil(t, s)
-			assert.Nil(t, warnings)
-
-			s, warnings, err = read(t, tt.content, true)
-			if tt.wholeFile {
-				require.ErrorAs(t, err, &perr)
-				assert.Equal(t, tt.msg, perr.Msg)
-				return
-			}
-			require.NoError(t, err)
-			assert.Equal(t, tt.lenientCues, s.Len())
-			require.Len(t, warnings, 1)
-			if warnings[0].Action == model.Repaired {
-				assert.Equal(t, tt.msg+" The parser swapped the times.", warnings[0].Message)
-				return
-			}
-			assert.Equal(t, model.Skipped, warnings[0].Action)
-			assert.Equal(t, tt.msg, warnings[0].Message)
-		})
-	}
 }
 
-func TestReadNumbers(t *testing.T) {
-	t.Parallel()
+// checkReadError checks the strict error of tt and the lenient result.
+func checkReadError(t *testing.T, tt readErrorCase) {
+	t.Helper()
 
-	tests := []struct {
-		name       string
-		start, end string
-		want       timedText
-	}{
+	s, warnings, err := read(t, tt.content, false)
+	var perr *model.ParseError
+	require.ErrorAs(t, err, &perr)
+	require.ErrorIs(t, err, model.ErrParse)
+	assert.Equal(t, tt.msg, perr.Msg)
+	assert.Equal(t, model.JSON, perr.Format)
+	assert.Zero(t, perr.Line)
+	assert.Nil(t, s)
+	assert.Nil(t, warnings)
+
+	s, warnings, err = read(t, tt.content, true)
+	if tt.wholeFile {
+		require.ErrorAs(t, err, &perr)
+		assert.Equal(t, tt.msg, perr.Msg)
+		return
+	}
+	require.NoError(t, err)
+	assert.Equal(t, tt.lenientCues, s.Len())
+	require.Len(t, warnings, 1)
+	if warnings[0].Action == model.Repaired {
+		assert.Equal(t, tt.msg+" The parser swapped the times.", warnings[0].Message)
+		return
+	}
+	assert.Equal(t, model.Skipped, warnings[0].Action)
+	assert.Equal(t, tt.msg, warnings[0].Message)
+}
+
+type numberCase struct {
+	name       string
+	start, end string
+	want       timedText
+}
+
+func (c numberCase) content() string {
+	return `{"version": 1, "cues": [{"start": ` + c.start + `, "end": ` + c.end + `, "lines": ["Hello"]}]}`
+}
+
+func numberCases() []numberCase {
+	return []numberCase{
 		{"integers", "1", "4", timedText{ms(1000), ms(4000), "Hello"}},
 		{"half a millisecond rounds away from zero", "1.0005", "1.0015", timedText{ms(1001), ms(1002), "Hello"}},
 		{"negative half a millisecond", "-1.0005", "-0.0004", timedText{ms(-1001), 0, "Hello"}},
@@ -169,12 +188,18 @@ func TestReadNumbers(t *testing.T) {
 		{"tiny", "1e-999999999", "0.0004999", timedText{0, 0, "Hello"}},
 		{"integer beyond int64", "1", "99999999999999999999e-12", timedText{ms(1000), ms(100_000_000_000), "Hello"}},
 		{"negative zero", "-0", "-0.0", timedText{0, 0, "Hello"}},
+		{"negative times in order", "-5", "-1", timedText{ms(-5000), ms(-1000), "Hello"}},
 	}
-	for _, tt := range tests {
+}
+
+func TestReadNumbers(t *testing.T) {
+	t.Parallel()
+
+	for _, tt := range numberCases() {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := mustRead(t, `{"version": 1, "cues": [{"start": `+tt.start+`, "end": `+tt.end+`, "lines": ["Hello"]}]}`, false)
+			s := mustRead(t, tt.content(), false)
 			assert.Equal(t, []timedText{tt.want}, cueTexts(s))
 		})
 	}
@@ -320,13 +345,6 @@ func TestReadSwapsShortReversedTimesInLenientMode(t *testing.T) {
 		{ms(3000), ms(5000), "Swapped"},
 		{ms(10_000), ms(40_000), "30 s"},
 	}, cueTexts(s))
-}
-
-func TestReadKeepsNegativeReversedTimes(t *testing.T) {
-	t.Parallel()
-
-	s := mustRead(t, `{"version": 1, "cues": [{"start": 5, "end": -1, "lines": ["Negative end"]}]}`, false)
-	assert.Equal(t, []timedText{{ms(5000), ms(-1000), "Negative end"}}, cueTexts(s))
 }
 
 func TestReadKeepsCommentsBeforeTheirCues(t *testing.T) {
