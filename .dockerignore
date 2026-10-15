@@ -1,0 +1,9 @@
+/.git
+/.github
+/.build
+/bin
+/dist
+**/testdata
+cover.out
+*.md
+!THIRD_PARTY_NOTICES.md
