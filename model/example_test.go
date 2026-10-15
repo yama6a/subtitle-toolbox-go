@@ -28,9 +28,9 @@ func ExampleSubtitle_SetCue() {
 		model.Cue{Start: 3 * time.Second, Lines: []string{"C"}},
 	)
 
-	c, _ := s.Cue(0)
+	c, _ := s.Cue(0) // a copy of A
 	c.Start = 4 * time.Second
-	_ = s.SetCue(0, c)
+	_ = s.SetCue(0, c) // A moves to index 2, B and C move down
 
 	for _, c := range s.All() {
 		fmt.Print(c.Text(), " ")
@@ -46,7 +46,7 @@ func ExampleSubtitle_AddComment() {
 	)
 	_ = s.AddComment("NOTE before the second cue", 1)
 
-	s.AddCue(model.Cue{Start: 0, Lines: []string{"new first"}})
+	s.AddCue(model.Cue{Start: 0, Lines: []string{"new first"}}) // the second cue moves to index 2
 
 	fmt.Println(s.Comments())
 	// Output: [{NOTE before the second cue 2}]

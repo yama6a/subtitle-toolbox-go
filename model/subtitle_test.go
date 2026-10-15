@@ -61,8 +61,8 @@ func TestEntryNormalization(t *testing.T) {
 		},
 		{
 			name:      "no-break space stays",
-			in:        model.Cue{Lines: []string{" a  b "}},
-			wantLines: []string{" a  b "},
+			in:        model.Cue{Lines: []string{"\u00a0a\u00a0\u00a0b\u00a0"}},
+			wantLines: []string{"\u00a0a\u00a0\u00a0b\u00a0"},
 		},
 		{
 			name:      "inner LF keeps one line",
