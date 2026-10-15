@@ -72,14 +72,14 @@ build:
 
 # The 6 release archives and their checksum file. dist/ must be empty.
 dist:
-	.build/build-release.sh $(VERSION) dist
+	.build/build-release.sh "$(VERSION)" dist
 
 # Runs the archive of this machine's OS and arch, out of dist/.
 smoke:
 	rm -rf bin/smoke
 	mkdir -p bin/smoke
 	tar -xzf dist/stbox_$(VERSION)_$$(go env GOOS)_$$(go env GOARCH).tar.gz -C bin/smoke stbox
-	.build/smoke-test.sh $(VERSION) testdata bin/smoke/stbox
+	.build/smoke-test.sh "$(VERSION)" testdata bin/smoke/stbox
 
 # go-ci builds linux/amd64 and linux/arm64 only. The release also ships darwin and windows binaries.
 cross:
