@@ -19,6 +19,8 @@ type (
 	Cue = model.Cue
 	// Comment is text that a writer puts before a cue, or after the last cue.
 	Comment = model.Comment
+	// SyncPoint is a time in the subtitle and the time where it belongs, for SyncByPoints.
+	SyncPoint = model.SyncPoint
 	// Alignment is the place of a cue on the screen.
 	Alignment = model.Alignment
 	// Format is the name of a subtitle format.
