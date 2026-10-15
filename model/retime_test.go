@@ -1,6 +1,7 @@
 package model_test
 
 import (
+	"bytes"
 	"math"
 	"os"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/markup"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -44,38 +46,30 @@ func secs(pairs ...[2]float64) [][2]time.Duration {
 	return out
 }
 
-// readFixture reads the cue blocks and NOTE comments of a SubRip or WebVTT file in testdata.
-// It reads only what the retiming fixtures hold, because package model cannot use the format readers.
+// readFixture reads a WebVTT file in testdata with the WebVTT reader, and the cue blocks of a SubRip file
+// with a test-only reader.
 func readFixture(tb testing.TB, name string) *model.Subtitle {
 	tb.Helper()
 
 	b, err := os.ReadFile(filepath.Join("testdata", name))
 	require.NoError(tb, err)
+	if strings.HasSuffix(name, ".vtt") {
+		s, warnings, err := webvtt.Read(bytes.NewReader(b), model.CommonReadOptions{}, webvtt.ReadOptions{})
+		require.NoError(tb, err)
+		require.Empty(tb, warnings)
+		return s
+	}
 	text := strings.ReplaceAll(strings.TrimPrefix(string(b), "\ufeff"), "\r\n", "\n")
 
 	var cues []model.Cue
-	var comments []model.Comment
 	for block := range strings.SplitSeq(strings.TrimSpace(text), "\n\n") {
-		lines := strings.Split(block, "\n")
-		switch {
-		case strings.HasPrefix(lines[0], "WEBVTT"):
-		case strings.HasPrefix(lines[0], "NOTE "):
-			comments = append(comments, model.Comment{Text: strings.TrimPrefix(block, "NOTE "), BeforeCue: len(cues)})
-		default:
-			if !strings.Contains(lines[0], "-->") {
-				lines = lines[1:]
-			}
-			fields := strings.Fields(lines[0])
-			require.GreaterOrEqual(tb, len(fields), 3, block)
-			cues = append(cues, model.Cue{Start: fixtureTime(tb, fields[0]), End: fixtureTime(tb, fields[2]), Lines: lines[1:]})
-		}
+		lines := strings.Split(block, "\n")[1:]
+		fields := strings.Fields(lines[0])
+		require.GreaterOrEqual(tb, len(fields), 3, block)
+		cues = append(cues, model.Cue{Start: fixtureTime(tb, fields[0]), End: fixtureTime(tb, fields[2]), Lines: lines[1:]})
 	}
-
 	s := &model.Subtitle{}
 	s.AddCues(cues...)
-	for _, c := range comments {
-		require.NoError(tb, s.AddComment(c.Text, c.BeforeCue))
-	}
 	return s
 }
 
