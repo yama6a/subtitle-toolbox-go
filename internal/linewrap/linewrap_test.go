@@ -126,6 +126,10 @@ func TestWrap(t *testing.T) {
 			want: []string{"Hi", "\u00a0<i>\u2014 there"},
 		},
 		{
+			name: "a dash after the Mongolian vowel separator starts a segment", lines: []string{"Hi", " \u180e- Yes"}, cpl: 30, max: 2, keep: true,
+			want: []string{"Hi", "\u180e- Yes"},
+		},
+		{
 			name: "segments join their words with 1 space", lines: []string{"- One  two", "three", "- Four"}, cpl: 5, max: 1, keep: true,
 			want: []string{"- One two three", "- Four"},
 		},
@@ -352,6 +356,10 @@ func TestWrapTurns(t *testing.T) {
 			want: []string{"- We walked along the coast - all the", "way to the old harbour lighthouse."},
 		},
 		{
+			name: "a dash word at the end of a line starts a turn", lines: []string{"Are you coming? -Yes"}, cpl: 10,
+			want: []string{"Are you", "coming?", "-Yes"},
+		},
+		{
 			name: "a dash at the end of a line starts no turn", lines: []string{"- Wait. -", "- What?"}, cpl: 42,
 			want: []string{"- Wait. -", "- What?"},
 		},
@@ -386,6 +394,7 @@ func TestUnwrapTurns(t *testing.T) {
 		},
 		{name: "a first line without a dash", lines: []string{"Who is there?", "- Only me."}, want: []string{"Who is there?", "- Only me."}},
 		{name: "a minus sign", lines: []string{"- It is very cold tonight.", "-20 degrees, they said."}, want: []string{"- It is very cold tonight. -20 degrees, they said."}},
+		{name: "a dash before the Mongolian vowel separator", lines: []string{"Hi", "- \u180ex"}, want: []string{"Hi - \u180ex"}},
 		{name: "a dash inside a line stays", lines: []string{"- Hi. - Yes?", "Come in."}, want: []string{"- Hi. - Yes? Come in."}},
 		{name: "no lines", lines: nil, want: nil},
 	}

@@ -3,7 +3,6 @@ package linewrap
 import (
 	"regexp"
 	"strings"
-	"unicode"
 	"unicode/utf8"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
@@ -82,7 +81,11 @@ func dialogueTurns(lines []string) []string {
 			if i == 0 {
 				startsTurn = len(turns) == 0 || markupcore.StartsDialogueTurn(markupcore.VisibleText(line))
 			} else {
-				startsTurn = i+1 < len(words) && startsInlineTurn(words[i-1], w, words[i+1])
+				var next Word
+				if i+1 < len(words) {
+					next = words[i+1]
+				}
+				startsTurn = startsInlineTurn(words[i-1], w, next)
 			}
 			last := len(turns) - 1
 			switch {
@@ -104,8 +107,6 @@ func startsInlineTurn(previous, w, next Word) bool {
 	return utf8.ValidString(text) && endsSentence(r) && markupcore.StartsDialogueTurn(markupcore.VisibleText(w.Text+" "+next.Text))
 }
 
-// endsSentence reports whether r is a full stop, a question mark, an exclamation mark or the horizontal ellipsis,
-// in ASCII or as a CJK form.
 func endsSentence(r rune) bool {
 	switch r {
 	case '.', '?', '!', 0x2026, 0x3002, 0xff01, 0xff1f, 0xff61:
@@ -149,8 +150,6 @@ func keepRightToLeftEmbedding(lines []string, fn func([]string) []string) []stri
 	return out
 }
 
-// segments joins the lines with words into 1 segment. With keepDialogueLines, each line that starts with a
-// dialogue dash starts a new segment.
 func segments(lines []string, keepDialogueLines bool) []string {
 	var segments []string
 	for _, line := range lines {
@@ -175,7 +174,7 @@ func startsWithDash(line string) bool {
 	for line != "" {
 		r, size := utf8.DecodeRuneInString(line)
 		switch {
-		case unicode.IsSpace(r):
+		case markupcore.IsSpace(r):
 			line = line[size:]
 		case r == '<':
 			loc := leadingTagRegexp.FindStringIndex(line)
@@ -287,8 +286,6 @@ func (b breakSearch) bestLastLine(previous []ending, firstStart, end int) ending
 	return best
 }
 
-// joinLines joins the parts of each line. Each line opens the core tags that the line before it left open, and
-// each line but the last closes its open core tags.
 func joinLines(parts []part, lineStarts []int) []string {
 	lines := make([]string, len(lineStarts))
 	var open []markupcore.OpenTag

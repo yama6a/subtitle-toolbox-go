@@ -31,6 +31,8 @@ func TestStartsDialogueTurn(t *testing.T) {
 		{name: "dash and spaces only", text: "-  "},
 		{name: "dash before a line break", text: "-\nHi"},
 		{name: "dash before an ideographic space", text: "-\u3000Hi"},
+		{name: "dash before the Mongolian vowel separator", text: "-\u180eHi"},
+		{name: "space and the Mongolian vowel separator", text: "- \u180eHi"},
 		{name: "no dash", text: "Hi - there"},
 		{name: "leading space", text: " - Hi"},
 		{name: "invalid UTF-8", text: "- Hi \xff"},
@@ -41,6 +43,31 @@ func TestStartsDialogueTurn(t *testing.T) {
 			t.Parallel()
 
 			assert.Equal(t, tt.want, markupcore.StartsDialogueTurn(tt.text))
+		})
+	}
+}
+
+func TestIsSpace(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		r    rune
+		want bool
+	}{
+		{name: "space", r: ' ', want: true},
+		{name: "next line", r: 0x85, want: true},
+		{name: "no-break space", r: 0xa0, want: true},
+		{name: "Mongolian vowel separator", r: 0x180e, want: true},
+		{name: "ideographic space", r: 0x3000, want: true},
+		{name: "zero-width space", r: 0x200b},
+		{name: "letter", r: 'a'},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, markupcore.IsSpace(tt.r))
 		})
 	}
 }

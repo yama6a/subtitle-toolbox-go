@@ -98,6 +98,10 @@ func TestWrapLines(t *testing.T) {
 			want: []string{"<i>- Are you coming?</i>", "<i>- Yes, in a minute, I promise you.</i>"},
 		},
 		{
+			name: "a dash word at the end of a line starts a turn", lines: []string{"Are you coming? -Yes"}, cpl: 10, max: 2,
+			want: []string{"Are you", "coming?", "-Yes"},
+		},
+		{
 			name: "a minus sign starts no turn", lines: []string{"- It is very cold outside tonight.", "-20 degrees, they said on the radio."}, cpl: 42, max: 2,
 			want: []string{"- It is very cold outside tonight.", "-20 degrees, they said on the radio."},
 		},
