@@ -1,0 +1,28 @@
+{
+    "name": "WebVTT with text before the first cue",
+    "format": "vtt",
+    "strict": {
+        "error": "Block #1 is not a WebVTT cue, comment, style or region. The line is \"Downloaded from www.example.org\".",
+        "line": 3
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "Clouds move in from the west."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "Sun again by Friday."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 3,
+            "block": 1,
+            "action": "skipped",
+            "message": "Block #1 is not a WebVTT cue, comment, style or region. The line is \"Downloaded from www.example.org\"."
+        }
+    ]
+}

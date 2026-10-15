@@ -1,0 +1,28 @@
+{
+    "name": "WebVTT with a truncated last cue",
+    "format": "vtt",
+    "strict": {
+        "error": "The time \"00:00:0\" is not valid.",
+        "line": 9
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The next stop is the station."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "Please mind the gap."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 9,
+            "block": 3,
+            "action": "skipped",
+            "message": "The time \"00:00:0\" is not valid."
+        }
+    ]
+}

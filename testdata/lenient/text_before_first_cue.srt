@@ -1,0 +1,10 @@
+Downloaded from www.example.org
+Synced by the weather team
+
+1
+00:00:01,000 --> 00:00:03,000
+Clouds move in from the west.
+
+2
+00:00:04,000 --> 00:00:06,000
+Sun again by Friday.

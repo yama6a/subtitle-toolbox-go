@@ -57,7 +57,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 
 Each format adds its row here when its reader ships.
 
-[Lenient mode](https://github.com/yama6a/subtitle-toolbox-go/issues/17) turns a `*ParseError` into a `skipped` warning. The warning takes `Msg` as its message and `Line` as its line. Some errors return in both modes, because they affect the whole file. An example is invalid JSON.
+[Lenient mode](lenient-parsing.md) turns a `*ParseError` into a `skipped` warning. The warning takes `Msg` as its message and `Line` as its line. Some errors return in both modes, because they affect the whole file. An example is invalid JSON.
 
 ## CLI exit codes
 

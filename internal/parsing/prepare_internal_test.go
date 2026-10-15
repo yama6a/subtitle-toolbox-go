@@ -10,11 +10,12 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
-func controlWarning(line int) warning {
-	return warning{
-		msg:    "The file has control characters, the first on line " + strconv.Itoa(line) + ". The parser removed them.",
-		line:   line,
-		action: model.Repaired,
+func controlWarning(line int) model.ParseWarning {
+	return model.ParseWarning{
+		Message: "The file has control characters, the first on line " + strconv.Itoa(line) + ". The parser removed them.",
+		Line:    line,
+		Block:   model.NoBlock,
+		Action:  model.Repaired,
 	}
 }
 
@@ -31,7 +32,7 @@ func TestPrepare(t *testing.T) {
 		replaceNUL bool
 		want       string
 		blank      bool
-		warnings   []warning
+		warnings   []model.ParseWarning
 	}{
 		{name: "plain text stays", content: cue + "Hello\n", want: cue + "Hello\n"},
 		{name: "one BOM", content: "\ufeff" + cue + "Hello\n", want: cue + "Hello\n"},
@@ -47,14 +48,14 @@ func TestPrepare(t *testing.T) {
 			content:  "\x1a" + " " + "\x1a\n",
 			lenient:  true,
 			blank:    true,
-			warnings: []warning{controlWarning(1)},
+			warnings: []model.ParseWarning{controlWarning(1)},
 		},
 		{
 			name:     "Ctrl-Z before text is a control character",
 			content:  cue + "Hel\x1alo\n",
 			lenient:  true,
 			want:     cue + "Hello\n",
-			warnings: []warning{controlWarning(3)},
+			warnings: []model.ParseWarning{controlWarning(3)},
 		},
 		{name: "form feed strict", content: cue + "The fer\fry leaves.\n", want: cue + "The ferry leaves.\n"},
 		{name: "vertical tab strict", content: cue + "The fer\vry leaves.\n", want: cue + "The ferry leaves.\n"},
@@ -66,35 +67,35 @@ func TestPrepare(t *testing.T) {
 			content:  cue + "The fer\fry \fleaves.\n\x7f\n",
 			lenient:  true,
 			want:     cue + "The ferry leaves.\n\n",
-			warnings: []warning{controlWarning(3)},
+			warnings: []model.ParseWarning{controlWarning(3)},
 		},
 		{
 			name:     "lenient removes a NUL",
 			content:  cue + "The fer\x00ry \x00leaves.\n",
 			lenient:  true,
 			want:     cue + "The ferry leaves.\n",
-			warnings: []warning{controlWarning(3)},
+			warnings: []model.ParseWarning{controlWarning(3)},
 		},
 		{
 			name:     "2 CRs and LF end one line",
 			content:  "a\r\r\nb\x01",
 			lenient:  true,
 			want:     "a\r\r\nb",
-			warnings: []warning{controlWarning(2)},
+			warnings: []model.ParseWarning{controlWarning(2)},
 		},
 		{
 			name:     "2 CRs end 2 lines",
 			content:  "a\r\rb\x01",
 			lenient:  true,
 			want:     "a\r\rb",
-			warnings: []warning{controlWarning(3)},
+			warnings: []model.ParseWarning{controlWarning(3)},
 		},
 		{
 			name:     "line count with CR LF and lone CR",
 			content:  "a\r\nb\rc\nd\x01",
 			lenient:  true,
 			want:     "a\r\nb\rc\nd",
-			warnings: []warning{controlWarning(4)},
+			warnings: []model.ParseWarning{controlWarning(4)},
 		},
 		{name: "WebVTT NUL strict", content: "H\x00i\n", replaceNUL: true, want: "H\ufffdi\n"},
 		{name: "WebVTT NUL lenient", content: "H\x00i\n", lenient: true, replaceNUL: true, want: "H\ufffdi\n"},
@@ -107,7 +108,7 @@ func TestPrepare(t *testing.T) {
 			content:  "\n\x01\n",
 			lenient:  true,
 			blank:    true,
-			warnings: []warning{controlWarning(2)},
+			warnings: []model.ParseWarning{controlWarning(2)},
 		},
 	}
 	for _, tt := range tests {
@@ -180,10 +181,10 @@ func TestNoCues(t *testing.T) {
 		skipped  bool
 		textLine func() (int, bool)
 		wantErr  bool
-		warnings []warning
+		warnings []model.ParseWarning
 	}{
 		{name: "strict text without cues", textLine: found, wantErr: true},
-		{name: "lenient text without cues", lenient: true, textLine: found, warnings: []warning{{msg: msg, line: 2, action: model.Skipped}}},
+		{name: "lenient text without cues", lenient: true, textLine: found, warnings: []model.ParseWarning{{Message: msg, Line: 2, Block: model.NoBlock, Action: model.Skipped}}},
 		{name: "no text line", textLine: func() (int, bool) { return 0, false }},
 		{name: "cues", cues: 1, textLine: func() (int, bool) { panic("the hook runs only without cues") }},
 		{
@@ -191,7 +192,7 @@ func TestNoCues(t *testing.T) {
 			lenient:  true,
 			skipped:  true,
 			textLine: found,
-			warnings: []warning{{msg: "Block #0 is broken.", line: 1, action: model.Skipped}},
+			warnings: []model.ParseWarning{{Message: "Block #0 is broken.", Line: 1, Block: 0, Action: model.Skipped}},
 		},
 	}
 	for _, tt := range tests {
@@ -200,7 +201,7 @@ func TestNoCues(t *testing.T) {
 
 			s := NewState(model.SubRip, model.CommonReadOptions{Lenient: tt.lenient})
 			if tt.skipped {
-				s.warn("Block #0 is broken.", 1, model.Skipped)
+				s.Warn("Block #0 is broken.", 1, 0, nil, model.Skipped)
 			}
 			err := s.NoCues(tt.cues, tt.textLine)
 			if tt.wantErr {

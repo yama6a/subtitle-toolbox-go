@@ -1,0 +1,49 @@
+{
+    "name": "SubRip with arrows of other lengths and spacing",
+    "format": "srt",
+    "strict": {
+        "error": "Block #3 has no timing line on its second line. The line is \"00:00:07,000 -> 00:00:08,000\".",
+        "line": 14
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 2,
+            "text": "No spaces around the arrow."
+        },
+        {
+            "start": 3,
+            "end": 4,
+            "text": "Two spaces around the arrow."
+        },
+        {
+            "start": 5,
+            "end": 6,
+            "text": "A tab around the arrow."
+        },
+        {
+            "start": 7,
+            "end": 8,
+            "text": "A short arrow."
+        },
+        {
+            "start": 9,
+            "end": 10,
+            "text": "A long arrow."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 14,
+            "block": 3,
+            "action": "repaired",
+            "message": "Block #3 has the arrow \"->\" in its timing line. The parser read it as \"-->\"."
+        },
+        {
+            "line": 18,
+            "block": 4,
+            "action": "repaired",
+            "message": "Block #4 has the arrow \"--->\" in its timing line. The parser read it as \"-->\"."
+        }
+    ]
+}

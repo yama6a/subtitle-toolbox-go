@@ -1,0 +1,20 @@
+{
+    "version": 1,
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "lines": ["The pool opens at seven."]
+        },
+        {
+            "start": 1e20,
+            "end": 1e20,
+            "lines": ["Towels are at the desk."]
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "lines": ["No running, please."]
+        }
+    ]
+}

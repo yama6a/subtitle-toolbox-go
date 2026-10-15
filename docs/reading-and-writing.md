@@ -16,7 +16,7 @@ err = stbox.Write(f, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF}
 |:--- |:--- |:--- |
 | `Format` | detect the format | none. A format without a reader returns an error that matches `ErrUnsupportedFormat` at read time |
 | `Encoding` | detect the encoding | |
-| `Lenient` | strict mode: the first broken block returns the error | |
+| `Lenient` | strict mode: the first broken block returns the error. See [lenient-parsing.md](lenient-parsing.md) | |
 | `LastCueDuration` | 5 s | 0 or more. 0 gives a cue that ends where it starts |
 
 - **Pointer**: `LastCueDuration` is a pointer, because 0 s is legal and differs from the default. `new(2 * time.Second)` sets it in one expression.

@@ -96,6 +96,29 @@ func TestReadErrorGivesNoSubtitleAndNoInfo(t *testing.T) {
 	assert.Zero(t, info)
 }
 
+// Ports testEachParseCallStartsWithoutWarnings and testAStrictParseAfterALenientParseThrows
+// of tests/Parsers/LenientParsingTest.php of subtitle-toolbox-php.
+func TestEachReadStartsWithoutWarnings(t *testing.T) {
+	t.Parallel()
+
+	broken := decode([]byte("Hello\nThe fer\x00ry\n"))
+	_, info, err := read(stubRow, broken, ReadOptions{Lenient: true})
+	require.NoError(t, err)
+	assert.Equal(t, []ParseWarning{{
+		Message: "The file has control characters, the first on line 2. The parser removed them.",
+		Line:    2,
+		Block:   NoBlock,
+		Action:  Repaired,
+	}}, info.Warnings)
+
+	_, info, err = read(stubRow, decode([]byte("Hello\n")), ReadOptions{Lenient: true})
+	require.NoError(t, err)
+	assert.Empty(t, info.Warnings)
+
+	_, _, err = read(stubRow, broken, ReadOptions{})
+	require.ErrorIs(t, err, ErrParse)
+}
+
 func TestReadPassesTheCommonOptions(t *testing.T) {
 	t.Parallel()
 

@@ -15,6 +15,7 @@ type ReadOptions struct {
 	// Encoding is the name of the source encoding. The zero value detects the encoding.
 	Encoding string
 	// Lenient skips or repairs broken blocks and reports each as a warning. False stops at the first broken block.
+	// A lenient read with warnings returns a nil error.
 	Lenient bool
 	// LastCueDuration is the length of a last cue without an end. Nil means 5 s.
 	LastCueDuration *time.Duration
@@ -36,7 +37,8 @@ type ReadInfo struct {
 	Format Format
 	// SourceEncoding is the encoding of the input, "" for a binary format.
 	SourceEncoding string
-	// Warnings holds every warning of the read, in read order.
+	// Warnings holds every warning of the read, in read order. A strict read can hold warnings too,
+	// for repairs that a reader makes in both modes.
 	Warnings []ParseWarning
 }
 

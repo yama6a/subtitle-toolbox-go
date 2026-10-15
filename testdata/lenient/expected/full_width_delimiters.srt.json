@@ -1,0 +1,39 @@
+{
+    "name": "SubRip with full-width delimiters in timing lines",
+    "format": "srt",
+    "strict": {
+        "error": "The time \"00：00：03，000\" is not valid.",
+        "line": 6
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 2,
+            "text": "火车三点出发。"
+        },
+        {
+            "start": 3,
+            "end": 4,
+            "text": "请在二号站台等候，谢谢。"
+        },
+        {
+            "start": 5,
+            "end": 6,
+            "text": "時刻：午後三時。"
+        }
+    ],
+    "warnings": [
+        {
+            "line": 6,
+            "block": 1,
+            "action": "repaired",
+            "message": "Block #1 has full-width delimiters in its timing line. The parser read them as ASCII."
+        },
+        {
+            "line": 10,
+            "block": 2,
+            "action": "repaired",
+            "message": "Block #2 has full-width delimiters in its timing line. The parser read them as ASCII."
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "name": "WebVTT without the WEBVTT line",
+    "format": "vtt",
+    "strict": {
+        "error": "The file does not start with WEBVTT.",
+        "line": 1
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The kettle is on."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "Tea in five minutes."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 1,
+            "block": 0,
+            "action": "repaired",
+            "message": "The file does not start with WEBVTT. The parser read the cues without it."
+        }
+    ]
+}

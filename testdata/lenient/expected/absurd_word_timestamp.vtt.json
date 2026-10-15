@@ -1,0 +1,28 @@
+{
+    "name": "WebVTT with a word timestamp of 20 hour digits",
+    "format": "vtt",
+    "strict": {
+        "error": "The time \"99999999999999999999:00:05.000\" is not below 100000 hours.",
+        "line": 7
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The pool opens <00:00:02.000>at seven."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "No running, please."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 7,
+            "block": 2,
+            "action": "skipped",
+            "message": "The time \"99999999999999999999:00:05.000\" is not below 100000 hours."
+        }
+    ]
+}

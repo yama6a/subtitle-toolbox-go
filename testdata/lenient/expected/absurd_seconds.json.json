@@ -1,0 +1,28 @@
+{
+    "name": "JSON with a start of 1e20 seconds",
+    "format": "json",
+    "strict": {
+        "error": "The field cues[1].start is not below 100000 hours.",
+        "line": null
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The pool opens at seven."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "No running, please."
+        }
+    ],
+    "warnings": [
+        {
+            "line": null,
+            "block": 1,
+            "action": "skipped",
+            "message": "The field cues[1].start is not below 100000 hours."
+        }
+    ]
+}

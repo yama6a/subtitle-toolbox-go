@@ -8,6 +8,7 @@ import (
 // CommonReadOptions holds the read options that every format package reads.
 type CommonReadOptions struct {
 	// Lenient skips or repairs broken blocks and reports each as a warning. False stops at the first broken block.
+	// A lenient read with warnings returns a nil error.
 	Lenient bool
 	// LastCueDuration is the length of a last cue without an end. Nil means 5 s.
 	LastCueDuration *time.Duration

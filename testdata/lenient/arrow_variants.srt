@@ -1,0 +1,19 @@
+1
+00:00:01,000-->00:00:02,000
+No spaces around the arrow.
+
+2
+00:00:03,000  -->  00:00:04,000
+Two spaces around the arrow.
+
+3
+00:00:05,000	-->	00:00:06,000
+A tab around the arrow.
+
+4
+00:00:07,000 -> 00:00:08,000
+A short arrow.
+
+5
+00:00:09,000 ---> 00:00:10,000
+A long arrow.

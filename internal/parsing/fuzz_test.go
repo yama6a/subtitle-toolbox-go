@@ -25,6 +25,11 @@ func FuzzPrepare(f *testing.F) {
 			}
 			return
 		}
+		for _, w := range s.Warnings() {
+			if w.Action != model.Skipped && w.Action != model.Repaired {
+				t.Fatalf("Prepare(%q) gave the warning %+v without an action", content, w)
+			}
+		}
 		if !ok {
 			return
 		}

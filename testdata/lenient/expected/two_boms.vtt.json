@@ -1,0 +1,20 @@
+{
+    "name": "WebVTT after two BOMs",
+    "format": "vtt",
+    "strict": {
+        "cues": 2
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The bus is late again."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "We can walk instead."
+        }
+    ],
+    "warnings": []
+}

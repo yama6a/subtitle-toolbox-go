@@ -1,0 +1,39 @@
+{
+    "name": "Library JSON with cues that end before they start",
+    "format": "json",
+    "strict": {
+        "error": "The cue ends at 3 s, before it starts at 5 s.",
+        "line": null
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 2,
+            "text": "Welcome on board."
+        },
+        {
+            "start": 3,
+            "end": 5,
+            "text": "The tour takes one hour."
+        },
+        {
+            "start": 10,
+            "end": 12,
+            "text": "Enjoy the view."
+        }
+    ],
+    "warnings": [
+        {
+            "line": null,
+            "block": 1,
+            "action": "repaired",
+            "message": "The cue ends at 3 s, before it starts at 5 s. The parser swapped the times."
+        },
+        {
+            "line": null,
+            "block": 2,
+            "action": "skipped",
+            "message": "The cue ends at 2 s, before it starts at 70 s."
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+WEBVTT
+
+00:00:01.000 --> 00:00:02.000
+One
+
+﻿WEBVTT
+Kind: captions
+
+STYLE
+::cue { color: red }
+
+00:00:03.000 --> 00:00:04.000
+Two

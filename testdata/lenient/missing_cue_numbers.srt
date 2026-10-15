@@ -1,0 +1,13 @@
+﻿1
+00:00:01,000 --> 00:00:03,500
+The train leaves at nine.
+
+00:00:04,000 --> 00:00:06,000
+Platform two, next to the bakery.
+
+00:00:06,500 --> 00:00:08,000
+Bring an umbrella.
+
+4
+00:00:09,000 --> 00:00:11,000
+It may rain in the afternoon.

@@ -1,0 +1,28 @@
+{
+    "name": "WebVTT with a damaged WEBVTT line",
+    "format": "vtt",
+    "strict": {
+        "error": "The file does not start with WEBVTT.",
+        "line": 1
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The library opens at ten."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "It closes at six."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 1,
+            "block": 0,
+            "action": "repaired",
+            "message": "The file does not start with WEBVTT. The parser skipped the lines before line 4."
+        }
+    ]
+}
