@@ -3,25 +3,25 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"io"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/yama6a/subtitle-toolbox-go/internal/cli"
 )
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
-	code := run(ctx, os.Args[1:], os.Stdout, os.Stderr)
-	stop()
-	os.Exit(code)
+	if err := run(); err != nil {
+		os.Exit(cli.ExitCode(err))
+	}
 }
 
-func run(_ context.Context, args []string, stdout, stderr io.Writer) int {
-	if len(args) == 1 && (args[0] == "--version" || args[0] == "-V") {
-		_, _ = fmt.Fprintln(stdout, buildVersion())
-		return 0
-	}
-	_, _ = fmt.Fprintln(stderr, "usage: stbox --version")
-	return 2
+func run() error {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	return cli.Run(ctx, os.Args[1:], cli.Env{
+		Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr,
+		Getenv: os.Getenv, Version: buildVersion(),
+	})
 }
