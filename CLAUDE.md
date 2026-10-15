@@ -16,7 +16,7 @@ The Go port follows the PHP project yama6a/subtitle-toolbox-php.
 The package map of #8. A package appears when its issue lands.
 
 ```
-stbox.go       Root package stbox: the facade (Load, Parse, Write, Detect), aliases, format registry
+*.go           Root package stbox: the facade (Load, Parse, Write, Detect), aliases, format registry
 model/         Subtitle, Cue, format facts table, common options, shared errors
 markup/        Inline tag model and its helpers
 format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microdvd, mpl2,
