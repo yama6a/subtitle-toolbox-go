@@ -1,0 +1,5 @@
+/.build/*.yaml
+/.build/govulncheck.sh
+/bin/
+/dist/
+cover.out
