@@ -1,0 +1,4 @@
+/go.mod linguist-generated=true
+/go.sum linguist-generated=true
+# Fixtures depend on exact bytes: CR LF, CR CR LF, BOMs, UTF-16 and binary files.
+**/testdata/** -text
