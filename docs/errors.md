@@ -37,7 +37,7 @@ fmt.Println(err)
 - **No codes**: the library has no numeric error codes. `errors.Is` and `errors.As` replace them.
 - **No catch-all**: no sentinel matches every library error. A caller matches the causes it handles, so errors of its own reader, such as a closed network stream, stay apart.
 - **No panics**: bad input and bad options return one of the errors above. A panic is a library bug.
-- **Which cause**: the sentinels and the types are API. A minor release may change which one a given cause returns, see [compatibility.md](compatibility.md) C10.
+- **Which cause**: the sentinels and the types are API. A minor release may change which one a given cause returns, see [compatibility.md](compatibility.md#changes-a-minor-release-can-make).
 - **Wraps**: `ErrUnsupportedFormat` and `ErrCueNotFound` arrive wrapped with details, for example `stbox: cue not found: index 4, the subtitle has 2 cues`.
 
 ## Error types

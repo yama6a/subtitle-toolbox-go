@@ -103,7 +103,7 @@ Data enters only through `SetFormatData`, which checks the fields that writers r
 | `ffmeta-chapters` | `timeBase` timeBase, `tags` strings |
 
 - **Unchecked fields that writers read**: `alignment` on the `ass`, `vtt` and `ttml` cue data. `lines` on the `ass` cue data, the cue lines at read time, so the writer can tell whether the text changed. Writers read them with the accessors, such as `Int`, and treat a wrong type as missing.
-- **Compatibility**: the keys and value types are API, see [compatibility.md](compatibility.md) C11. A minor release may add a checked field.
+- **Compatibility**: the keys and value types are API, see [compatibility.md](compatibility.md#covered). A minor release may add a checked field.
 
 ## An explicit alignment wins over a stored position
 
