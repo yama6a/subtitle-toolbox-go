@@ -54,13 +54,35 @@ Do every step on the last commit of `main`. For a major N of 2 or more, do step 
 
    Expected for 1.0.0: no output. Expected for N of 2 or more: no tag `vN.*`.
 
-3. Check that every required check is green on the last commit of `main`.
+3. Check that the 11 required checks are green on the last commit of `main`. The command prints only the required checks. It ignores the other runs, such as `renovate / renovate`.
 
    ```bash
-   gh api repos/yama6a/subtitle-toolbox-go/commits/main/check-runs --jq '.check_runs[] | "\(.name) \(.conclusion)"'
+   gh api 'repos/yama6a/subtitle-toolbox-go/commits/main/check-runs?per_page=100' --jq '
+     ["release label","version check","go / go","cross-compile","fuzz","bench","smoke","docker / docker","shell","yaml","renovate-config"] as $required
+     | .check_runs[] | select(.name as $n | $required | index($n)) | "\(.name) \(.conclusion)"' | sort
    ```
 
-   Expected: `skipped` for `release label` and `version check`, because they run on pull requests only. `success` for the other 9 required checks.
+   Expected: 11 lines. `release label` and `version check` end in `skipped`, because they run on pull requests only. The other 9 end in `success`.
+
+   ```text
+   bench success
+   cross-compile success
+   docker / docker success
+   fuzz success
+   go / go success
+   release label skipped
+   renovate-config success
+   shell success
+   smoke success
+   version check skipped
+   yaml success
+   ```
+
+   If the list differs from the branch protection of `main`, update it. Read the protection with:
+
+   ```bash
+   gh api repos/yama6a/subtitle-toolbox-go/branches/main/protection -q '.required_status_checks.checks[].context'
+   ```
 
 4. Run the read golden runner.
 
