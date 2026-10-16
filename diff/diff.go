@@ -61,7 +61,10 @@ func Compare(old, updated *model.Subtitle, opts Options) ([]Difference, error) {
 // Equal reports whether Compare finds no difference between a and b.
 func Equal(a, b *model.Subtitle, opts Options) (bool, error) {
 	differences, err := Compare(a, b, opts)
-	return len(differences) == 0, err
+	if err != nil {
+		return false, err
+	}
+	return len(differences) == 0, nil
 }
 
 // classify returns the kind of the pair, or false when the cues do not differ.
