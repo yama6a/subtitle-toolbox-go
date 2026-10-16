@@ -4,13 +4,21 @@ A caller reacts to a failed read or write by its cause. Each cause is a sentinel
 
 Example: block 1 of a SubRip file has `00:00:05,000 => 00:00:07,000` on line 6, where the timing line must be. `stbox.Parse` returns a `*ParseError` with `Format` `srt` and `Line` 6.
 
+<!-- example: ExampleParse_error -->
 ```go
-_, _, err := stbox.Parse(r, stbox.ReadOptions{Format: stbox.SubRip})
+content := "1\n00:00:01,000 --> 00:00:04,000\nHello\n\n2\n00:00:05,000 => 00:00:07,000\nWorld\n"
+
+_, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{Format: stbox.SubRip})
 var perr *stbox.ParseError
 if errors.As(err, &perr) {
-	fmt.Println(perr.Line) // 6
+	fmt.Println(perr.Format, perr.Line)
 }
-fmt.Println(err) // srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:05,000 => 00:00:07,000".
+fmt.Println(errors.Is(err, stbox.ErrParse))
+fmt.Println(err)
+// Output:
+// srt 6
+// true
+// srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:05,000 => 00:00:07,000".
 ```
 
 ## Causes

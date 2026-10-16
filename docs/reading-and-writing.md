@@ -2,12 +2,24 @@
 
 `stbox.Load` reads a file, `stbox.Parse` reads an `io.Reader`, and `stbox.Write` writes one format. One `ReadOptions` and one `WriteOptions` value serve every format. Each reader and writer ignores the fields of other formats, so one value serves a batch of mixed files.
 
+<!-- example: ExampleWrite_lineEnding -->
 ```go
-s, info, err := stbox.Load("show.srt", stbox.ReadOptions{})
-// info.Format is "srt", info.SourceEncoding is "UTF-8"
+srt := "1\n00:00:01,000 --> 00:00:02,000\nHello\n"
 
-err = stbox.Write(f, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF})
-// WebVTT with CR LF line endings and the UTF-8 BOM that WebVTT writes by default
+s, _, err := stbox.Parse(strings.NewReader(srt), stbox.ReadOptions{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+var out bytes.Buffer
+err = stbox.Write(&out, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+fmt.Printf("%q\n", out.String())
+// Output:
+// "\ufeffWEBVTT\r\n\r\n1\r\n00:00:01.000 --> 00:00:02.000\r\nHello\r\n"
 ```
 
 ## Read options
