@@ -90,6 +90,7 @@ func TestLoose(t *testing.T) {
 		{name: "no fraction", in: "00:00:04", separators: ",.:", want: 4 * time.Second, wantOK: true},
 		{name: "4 hour digits", in: "0000:00:01,000", separators: ",.:", want: time.Second, wantOK: true},
 		{name: "leading zeros before 5 hour digits", in: "0099999:59:59.999", separators: ".,", want: 99999*time.Hour + 59*time.Minute + 59999*ms, wantOK: true},
+		{name: "rounds up to MaxTime", in: "99999:59:59,9995", separators: ",.:", want: timecode.MaxTime, wantOK: true},
 		{name: "6 hour digits", in: "100000:00:00.000", separators: ".,"},
 		{name: "no hours", in: "07:03,920", separators: ",.:", hoursOptional: true, want: 423920 * ms, wantOK: true},
 		{name: "no hours when they are required", in: "07:03,920", separators: ",.:"},

@@ -246,6 +246,15 @@ func TestReadTimes(t *testing.T) {
 			name: "4th fraction digit lenient", start: "00:01.000", end: "00:01.0005", lenient: true, wantStart: sec, wantEnd: 1001 * ms,
 			warnings: []string{`Block #1 has the time "00:01.0005", which is not in the form hh:mm:ss.mmm. The parser read it as 1.001 s.`},
 		},
+		{
+			name: "loose time just below 100000 hours lenient", start: "00:01.000", end: "99999:59:59,9994", lenient: true,
+			wantStart: sec, wantEnd: 99999*time.Hour + 3599999*ms,
+			warnings: []string{`Block #1 has the time "99999:59:59,9994", which is not in the form hh:mm:ss.mmm. The parser read it as 359999999.999 s.`},
+		},
+		{
+			name: "loose time that rounds to 100000 hours lenient", start: "00:01.000", end: "99999:59:59,9997", lenient: true,
+			wantErr: `The time "99999:59:59,9997" is not below 100000 hours.`,
+		},
 		{name: "cut-off time lenient", start: "00:00:01.000", end: "00:00:0", lenient: true, wantErr: `The time "00:00:0" is not valid.`},
 		{name: "letter instead of the dot lenient", start: "00:00:01x000", end: "00:00:04.000", lenient: true, wantErr: `The time "00:00:01x000" is not valid.`},
 		{name: "seconds of 75 lenient", start: "00:01.000", end: "00:75.000", lenient: true, wantErr: `The time "00:75.000" is not valid.`},
