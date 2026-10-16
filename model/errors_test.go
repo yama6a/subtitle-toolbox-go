@@ -115,6 +115,7 @@ func TestErrorsMatchTheirSentinel(t *testing.T) {
 		model.ErrInvalidArgument,
 		model.ErrCueNotFound,
 		model.ErrUnwritable,
+		model.ErrInvalidUTF8,
 	}
 	tests := []struct {
 		name string
@@ -123,6 +124,11 @@ func TestErrorsMatchTheirSentinel(t *testing.T) {
 	}{
 		{"parse error", &model.ParseError{Format: model.SubRip, Line: 1}, []error{model.ErrParse}},
 		{"unwritable error", &model.UnwritableError{Format: model.SAMI, CueIndex: -1}, []error{model.ErrUnwritable}},
+		{
+			"unwritable error of invalid UTF-8",
+			&model.UnwritableError{Format: model.JSON, CueIndex: 0, Err: model.ErrInvalidUTF8},
+			[]error{model.ErrUnwritable, model.ErrInvalidUTF8},
+		},
 		{"invalid argument error", &model.InvalidArgumentError{Msg: "The sync points must not be empty."}, []error{model.ErrInvalidArgument}},
 		{"unknown format", model.ErrUnknownFormat, []error{model.ErrUnknownFormat, model.ErrUnsupportedFormat}},
 		{"unsupported format", model.ErrUnsupportedFormat, []error{model.ErrUnsupportedFormat}},

@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 )
 
 func TestMessage(t *testing.T) {
@@ -34,7 +33,7 @@ func TestMessage(t *testing.T) {
 		{"unwritable", &stbox.UnwritableError{Format: stbox.JSON, Reason: "The output cannot hold it."}, "The output cannot hold it."},
 		{
 			"unwritable text that is not valid UTF-8",
-			&stbox.UnwritableError{Format: stbox.JSON, Reason: "JSON cannot hold it.", Err: stboxjson.ErrInvalidUTF8},
+			&stbox.UnwritableError{Format: stbox.JSON, Reason: "JSON cannot hold it.", Err: stbox.ErrInvalidUTF8},
 			"JSON cannot hold it. Pass --encoding with the source encoding of the file.",
 		},
 		{"unwritable with a cause only", &stbox.UnwritableError{Err: errors.New("cause")}, "cause"},

@@ -14,6 +14,9 @@ var (
 	ErrInvalidArgument   = errors.New("stbox: invalid argument")
 	ErrCueNotFound       = errors.New("stbox: cue not found")
 	ErrUnwritable        = errors.New("stbox: the format cannot hold the content")
+	// ErrInvalidUTF8 is the Err of an *UnwritableError for text that is not valid UTF-8. Read the input again
+	// with its source encoding first.
+	ErrInvalidUTF8 = errors.New("stbox: text is not valid UTF-8")
 )
 
 var (

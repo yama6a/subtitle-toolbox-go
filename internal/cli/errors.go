@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 )
 
 // The exit codes of docs/errors.md.
@@ -135,7 +134,7 @@ func withAdvice(msg, option string, cause error) string {
 	switch {
 	case option == "ReadOptions.Encoding":
 		return msg + " Known encodings: " + strings.Join(stbox.Encodings(), ", ") + "."
-	case errors.Is(cause, stboxjson.ErrInvalidUTF8):
+	case errors.Is(cause, stbox.ErrInvalidUTF8):
 		return msg + " Pass --encoding with the source encoding of the file."
 	default:
 		return msg

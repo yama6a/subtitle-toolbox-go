@@ -24,15 +24,11 @@ const (
 
 var errInfOrNaN = errors.New("inf or NaN")
 
-// ErrInvalidUTF8 is the Err of the *model.UnwritableError for text that is not valid UTF-8. The caller reads the
-// input again with its source encoding first.
-var ErrInvalidUTF8 = errors.New("stboxjson: text is not valid UTF-8")
-
 // document returns the library JSON of s. A string outside format data that is not valid UTF-8 fails first,
 // because encoding/json would replace its bad bytes without an error.
 func document(s *model.Subtitle, opts WriteOptions) ([]byte, error) {
 	if i, ok := validText(s, !opts.OmitFormatData); !ok {
-		return nil, &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: malformedUTF8, Err: ErrInvalidUTF8}
+		return nil, &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: malformedUTF8, Err: model.ErrInvalidUTF8}
 	}
 
 	e := newEncoder()

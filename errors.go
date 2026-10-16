@@ -10,4 +10,5 @@ var (
 	ErrInvalidArgument   = model.ErrInvalidArgument
 	ErrCueNotFound       = model.ErrCueNotFound
 	ErrUnwritable        = model.ErrUnwritable
+	ErrInvalidUTF8       = model.ErrInvalidUTF8
 )
