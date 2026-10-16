@@ -7,8 +7,8 @@
     "github>yama6a/gha:go.json5",
   ],
 
-  // ci.yaml fails a PR without a release label. No PR cuts a release before v1.0.0.
-  labels: ["skip-release"],
+  // ci.yaml fails a PR without a release label. A dependency bump changes no API or behaviour.
+  labels: ["patch"],
 
   packageRules: [],
 }

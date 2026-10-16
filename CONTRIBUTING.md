@@ -3,7 +3,7 @@
 ## Workflow
 
 - Run `make ci` before you push.
-- Each pull request carries one release label: `major`, `minor`, `patch` or `skip-release`. Before v1.0.0 every pull request carries `skip-release`. Only the 1.0.0 pull request (#43) carries `major`.
+- Each pull request carries one release label: `major`, `minor`, `patch` or `skip-release`.
 - The pull request title becomes the squash commit subject. Write it as a release note line: imperative, for users, one line. Example: "Add the SBV format, read and write".
 - The pull request body ends with a line `Release note: ...` in the same style.
 
