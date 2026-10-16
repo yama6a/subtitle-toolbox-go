@@ -1,0 +1,154 @@
+package stream_test
+
+import (
+	"bufio"
+	"io"
+	"iter"
+	"os"
+	"path/filepath"
+	"runtime"
+	"runtime/metrics"
+	"strconv"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/yama6a/subtitle-toolbox-go/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/stream"
+)
+
+const (
+	memoryCues  = 200000
+	memoryLimit = 2 << 20
+	sampleEvery = memoryCues / 20
+	minFileSize = 10 << 20
+)
+
+// liveHeap reads the bytes of the heap objects that the last garbage collection marked as live.
+func liveHeap() uint64 {
+	sample := []metrics.Sample{{Name: "/gc/heap/live:bytes"}}
+	metrics.Read(sample)
+	return sample[0].Value.Uint64()
+}
+
+// heapGrowth runs fn, which calls sample now and then, and returns the highest live heap size that sample saw
+// above the live heap size before fn. Sample runs a full collection first, so the size holds what fn keeps
+// and no garbage. The garbage between two collections depends on the machine, and the test does not measure it.
+func heapGrowth(fn func(sample func())) uint64 {
+	runtime.GC()
+	before := liveHeap()
+	var peak uint64
+	fn(func() {
+		runtime.GC()
+		peak = max(peak, liveHeap())
+	})
+	return peak - min(peak, before)
+}
+
+type cueWriter interface {
+	Write(c model.Cue) error
+	Close() error
+}
+
+// Ported from tests/Streaming/StreamMemoryTest.php. It does not run in parallel, because it measures the
+// heap of the whole process. The race detector makes it 20 times slower, so the bench job of CI runs it
+// with STBOX_GROWTH=1 and without -race.
+func TestStreamsManyCuesGrowth(t *testing.T) { //nolint:paralleltest // see above
+	if os.Getenv("STBOX_GROWTH") != "1" {
+		t.Skip("growth test, set STBOX_GROWTH=1")
+	}
+	tests := []struct {
+		name      string
+		newWriter func(io.Writer) (cueWriter, error)
+		newReader func(io.Reader) iter.Seq2[model.Cue, error]
+	}{
+		{
+			name: "SubRip",
+			newWriter: func(w io.Writer) (cueWriter, error) {
+				return stream.NewSubRipWriter(w, model.CommonWriteOptions{}, srt.WriteOptions{})
+			},
+			newReader: func(r io.Reader) iter.Seq2[model.Cue, error] {
+				return stream.NewSubRipReader(r, stream.ReadOptions{}).Cues()
+			},
+		},
+		{
+			name: "WebVTT",
+			newWriter: func(w io.Writer) (cueWriter, error) {
+				return stream.NewWebVTTWriter(w, model.CommonWriteOptions{}, webvtt.WriteOptions{}, nil)
+			},
+			newReader: func(r io.Reader) iter.Seq2[model.Cue, error] {
+				return stream.NewWebVTTReader(r, stream.ReadOptions{}).Cues()
+			},
+		},
+	}
+	for _, tt := range tests { //nolint:paralleltest // see above
+		t.Run(tt.name, func(t *testing.T) {
+			f, err := os.Create(filepath.Join(t.TempDir(), "many."+tt.name))
+			require.NoError(t, err)
+			defer f.Close()
+
+			var writeErr error
+			growth := heapGrowth(func(sample func()) {
+				bw := bufio.NewWriter(f)
+				w, err := tt.newWriter(bw)
+				if err != nil {
+					writeErr = err
+					return
+				}
+				for i := range memoryCues {
+					if writeErr = w.Write(memoryCue(i)); writeErr != nil {
+						return
+					}
+					if i%sampleEvery == 0 {
+						sample()
+					}
+				}
+				if writeErr = w.Close(); writeErr == nil {
+					writeErr = bw.Flush()
+				}
+			})
+			require.NoError(t, writeErr)
+			assert.Less(t, growth, uint64(memoryLimit), "write")
+			info, err := f.Stat()
+			require.NoError(t, err)
+			assert.Greater(t, info.Size(), int64(minFileSize))
+
+			_, err = f.Seek(0, io.SeekStart)
+			require.NoError(t, err)
+			var count int
+			var last model.Cue
+			var readErr error
+			growth = heapGrowth(func(sample func()) {
+				for c, err := range tt.newReader(f) {
+					if err != nil {
+						readErr = err
+						return
+					}
+					if count%sampleEvery == 0 {
+						sample()
+					}
+					count++
+					last = c
+				}
+			})
+			require.NoError(t, readErr)
+			assert.Less(t, growth, uint64(memoryLimit), "read")
+			assert.Equal(t, memoryCues, count)
+			wantLast := memoryCue(memoryCues - 1)
+			assert.Equal(t, wantLast.Start, last.Start)
+			assert.Equal(t, wantLast.Text(), last.Text())
+		})
+	}
+}
+
+func memoryCue(i int) model.Cue {
+	return model.Cue{
+		Start: time.Duration(i*2) * time.Second,
+		End:   time.Duration(i*2)*time.Second + 1500*time.Millisecond,
+		Lines: []string{"Light event number " + strconv.Itoa(i), "<i>Zone</i> " + strconv.Itoa(i%7)},
+	}
+}

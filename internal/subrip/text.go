@@ -1,4 +1,4 @@
-package srt
+package subrip
 
 import (
 	"regexp"

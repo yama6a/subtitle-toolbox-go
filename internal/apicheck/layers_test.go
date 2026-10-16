@@ -135,7 +135,7 @@ func checkImports(rel string, imports []string) []string {
 		if !ok {
 			continue
 		}
-		if dep < own || (dep == own && (own == layerLeaf || own == layerCLI)) {
+		if dep < own || (dep == own && (own == layerLeaf || own == layerModelUser || own == layerCLI)) {
 			continue
 		}
 		problems = append(problems, rel+" imports "+depRel+", which is not in a lower layer")
@@ -202,6 +202,11 @@ func TestCheckImports(t *testing.T) {
 			name:    "leaf helper imports another leaf helper",
 			rel:     "internal/textenc",
 			imports: []string{modulePath + "/internal/codepage"},
+		},
+		{
+			name:    "helper on model types imports another helper",
+			rel:     "internal/subrip",
+			imports: []string{modulePath + "/internal/blocks", modulePath + "/internal/parsing", modulePath + "/model"},
 		},
 		{
 			name:    "CLI imports everything",

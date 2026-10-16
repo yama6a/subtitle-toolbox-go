@@ -4,7 +4,7 @@
 // cue settings, so the writer can write them back. A chapters file is a WebVTT file with one cue per chapter.
 package webvtt
 
-const signature = "WEBVTT"
+import "github.com/yama6a/subtitle-toolbox-go/internal/vtt"
 
 // ReadOptions holds the settings of the WebVTT reader. It has no fields yet.
 type ReadOptions struct{}
@@ -30,16 +30,5 @@ type DroppedColor struct {
 
 // Detect reports whether content has the WebVTT signature of stbox.Detect: WEBVTT, then a space, a tab, LF or the end.
 func Detect(content []byte) bool {
-	return hasSignature(content)
-}
-
-func hasSignature[T string | []byte](text T) bool {
-	if len(text) < len(signature) || string(text[:len(signature)]) != signature {
-		return false
-	}
-	if len(text) == len(signature) {
-		return true
-	}
-	next := text[len(signature)]
-	return next == ' ' || next == '\t' || next == '\n'
+	return vtt.HasSignature(content)
 }
