@@ -31,3 +31,24 @@ func Number(f float64) string {
 	}
 	return strconv.FormatFloat(f, 'g', 14, 64)
 }
+
+// AppendClock appends d as h:mm:ss, the separator sep and mmm, with at least hourWidth hour digits.
+// It rounds d to whole milliseconds, half away from zero. A negative time writes as 0.
+func AppendClock(dst []byte, d time.Duration, hourWidth int, sep byte) []byte {
+	ms := max(d.Round(time.Millisecond).Milliseconds(), 0)
+	dst = appendPadded(dst, ms/int64(time.Hour/time.Millisecond), hourWidth)
+	dst = append(dst, ':')
+	dst = appendPadded(dst, ms/int64(time.Minute/time.Millisecond)%60, 2)
+	dst = append(dst, ':')
+	dst = appendPadded(dst, ms/int64(time.Second/time.Millisecond)%60, 2)
+	dst = append(dst, sep)
+	return appendPadded(dst, ms%1000, 3)
+}
+
+func appendPadded(dst []byte, n int64, width int) []byte {
+	s := strconv.FormatInt(n, 10)
+	for range width - len(s) {
+		dst = append(dst, '0')
+	}
+	return append(dst, s...)
+}

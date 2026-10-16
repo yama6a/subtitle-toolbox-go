@@ -1,7 +1,6 @@
 package sbv
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"iter"
@@ -18,7 +17,6 @@ import (
 )
 
 const (
-	phpTrimSet = " \t\n\r\x00\v"
 	// space is the white space of PCRE \s. The block split leaves only spaces inside a line.
 	space = `[\t\n\v\f\r ]*`
 	// looseTime is a time of the loose timing line: any hour digits, 1 or 2 minute and second digits, and a
@@ -73,12 +71,12 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 
 // blocks yields the blocks of content after the join of cue text blocks, which warns in lenient mode.
 func (rd *reader) blocks(content string) iter.Seq[blocks.Block] {
-	onJoin := func(block, line int, lines []string) {
-		if rd.st.Lenient() {
-			rd.st.Warn(blocks.JoinWarning(block, line), line, block, lines, model.Repaired)
-		}
+	if !rd.st.Lenient() {
+		return rd.rules.Blocks(content, nil)
 	}
-	return blocks.JoinCueTextBlocks(blocks.SplitAtEmptyLines(blocks.Lines(content)), rd.rules, nil, onJoin)
+	return rd.rules.Blocks(content, func(msg string, line, block int, lines []string) {
+		rd.st.Warn(msg, line, block, lines, model.Repaired)
+	})
 }
 
 func (rd *reader) isTimingLine(line string) bool {
@@ -88,33 +86,18 @@ func (rd *reader) isTimingLine(line string) bool {
 // parseBlock returns the cues of block b, number index, split before each timing line. Lenient mode skips a
 // part that fails, and warns for each split and each skip.
 func (rd *reader) parseBlock(b blocks.Block, index int) ([]model.Cue, error) {
-	parts := rd.rules.SplitAtTimingLines(b.Lines)
-	if rd.st.Lenient() {
-		for _, p := range parts {
-			if p.Line > 0 {
-				line := b.Line + p.Line
-				msg := "Block #" + strconv.Itoa(index) + " has no empty line before line " + strconv.Itoa(line) + ". The parser split the block there."
-				rd.st.Warn(msg, line, index, b.Lines, model.Repaired)
-			}
-		}
-	}
-	cues := make([]model.Cue, 0, len(parts))
-	for _, p := range parts {
-		line := b.Line + p.Line
-		c, err := rd.parseCue(p.Lines, index, line)
-		if err == nil {
-			cues = append(cues, c)
-			continue
-		}
-		var perr *model.ParseError
-		if !errors.As(err, &perr) {
-			return nil, err
-		}
-		if err := rd.st.Fail(perr, line, index, p.Lines); err != nil {
-			return nil, err
-		}
-	}
-	return cues, nil
+	return rd.rules.ReadParts(b, index, blocks.PartReader{
+		Lenient: rd.st.Lenient(),
+		Split: func(msg string, line int) {
+			rd.st.Warn(msg, line, index, b.Lines, model.Repaired)
+		},
+		Parse: func(lines []string, line int) (model.Cue, error) {
+			return rd.parseCue(lines, index, line)
+		},
+		Fail: func(err *model.ParseError, line int, lines []string) error {
+			return rd.st.Fail(err, line, index, lines)
+		},
+	})
 }
 
 // parseCue parses the lines of one cue, whose timing line is on line.
@@ -162,7 +145,7 @@ func (rd *reader) timing(text string, index, line int) (start, end time.Duration
 }
 
 func strictDuration(text string, line int) (time.Duration, error) {
-	text = strings.Trim(text, phpTrimSet)
+	text = strings.Trim(text, markupcore.PHPTrimSet)
 	m := timeRegexp.FindStringSubmatch(text)
 	if m == nil {
 		return 0, &model.ParseError{Line: line, Msg: `The time "` + text + `" is not valid.`}
