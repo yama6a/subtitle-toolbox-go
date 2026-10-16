@@ -39,6 +39,7 @@ func Run(ctx context.Context, args []string, env Env) error {
 // diff, translate, dual, hls, formats. A command keeps the state of its run, so each call gets its own.
 func commands() []command {
 	return []command{
+		&convertCommand{},
 		&infoCommand{},
 		formatsCommand{},
 	}
@@ -144,7 +145,7 @@ func helpRequest(words []string) (topic string, ok bool) {
 }
 
 func printHelp(c *console, cmd command, topic string) error {
-	text, err := helpOf(cmd, topic)
+	text, err := helpOf(c, cmd, topic)
 	if err != nil {
 		return usageFailure(c, cmd.name(), message(err))
 	}

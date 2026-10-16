@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -464,8 +465,20 @@ func TestUnwritableContentFailsThatFile(t *testing.T) {
 		"Read a file in another encoding with its source encoding. Pass --encoding with the source encoding of the file.\n"), got.Stderr)
 }
 
-// reportingConvert is the convert stand-in with an encode step that prints a report before the write.
-type reportingConvert struct{ stubConvert }
+// reportingConvert is a write command without edits, with an encode step that prints a report before the write.
+type reportingConvert struct{ out writeOutput }
+
+var _ fileCommand = &reportingConvert{}
+
+func (*reportingConvert) name() string    { return "convert" }
+func (*reportingConvert) summary() string { return "Write subtitle files in the format of --to." }
+func (*reportingConvert) usage() []string {
+	return []string{"<input> [--to FORMAT] [-o FILE] [options]", "<input>... [--to FORMAT] --output-dir DIR [options]"}
+}
+func (*reportingConvert) details() string { return "" }
+func (*reportingConvert) options() []option {
+	return slices.Concat(outputOptions("Output format. Default: the input format."), inputOptions(true))
+}
 
 func (s *reportingConvert) run(ctx context.Context, a *args, c *console) error {
 	return runFiles(ctx, a, c, s)
@@ -476,8 +489,23 @@ func (s *reportingConvert) prepare(a *args, r *runner) error {
 		r.c.err(in.label() + ": " + strconv.Itoa(sub.Len()) + " cues as " + string(f) + "\n")
 		return stbox.Write(out, sub, f, s.out.opts)
 	}
-	return s.stubConvert.prepare(a, r)
+	if err := r.prepareRead(a); err != nil {
+		return err
+	}
+	return s.out.prepare(a, r)
 }
+
+func (s *reportingConvert) checkInputs(r *runner, inputs []string) error {
+	return s.out.checkInputs(r, inputs, inputs)
+}
+
+func (*reportingConvert) loadSideFiles(context.Context, *runner) error { return nil }
+
+func (s *reportingConvert) process(_ context.Context, r *runner, in *input) error {
+	return s.out.write(r, in, nil)
+}
+
+func (*reportingConvert) finish(*runner) error { return nil }
 
 func TestWriteRunsTheEncodeStepOfTheCommand(t *testing.T) {
 	t.Parallel()

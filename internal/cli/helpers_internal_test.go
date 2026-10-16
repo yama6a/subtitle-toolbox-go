@@ -10,7 +10,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -22,56 +21,6 @@ import (
 )
 
 const testVersion = "1.2.3"
-
-// The stand-in of convert runs the shared parts of a write command, without edits. testCommands drops it when
-// commands holds the real command.
-type stubConvert struct{ out writeOutput }
-
-var _ fileCommand = &stubConvert{}
-
-func (*stubConvert) name() string    { return "convert" }
-func (*stubConvert) summary() string { return "Write subtitle files in the format of --to." }
-func (*stubConvert) usage() []string {
-	return []string{"<input> [--to FORMAT] [-o FILE] [options]", "<input>... [--to FORMAT] --output-dir DIR [options]"}
-}
-func (*stubConvert) details() string { return "" }
-func (*stubConvert) options() []option {
-	return slices.Concat(outputOptions("Output format. Default: the input format."), inputOptions(true))
-}
-
-func (s *stubConvert) run(ctx context.Context, a *args, c *console) error {
-	return runFiles(ctx, a, c, s)
-}
-
-func (s *stubConvert) prepare(a *args, r *runner) error {
-	if err := r.prepareRead(a); err != nil {
-		return err
-	}
-	return s.out.prepare(a, r)
-}
-
-func (s *stubConvert) checkInputs(r *runner, inputs []string) error {
-	return s.out.checkInputs(r, inputs, inputs)
-}
-
-func (*stubConvert) loadSideFiles(context.Context, *runner) error { return nil }
-
-func (s *stubConvert) process(_ context.Context, r *runner, in *input) error {
-	return s.out.write(r, in, nil)
-}
-
-func (*stubConvert) finish(*runner) error { return nil }
-
-// testCommands returns the commands of the binary, and the stand-in of convert while the binary lacks it.
-func testCommands() []command {
-	cmds := commands()
-	for _, stub := range []command{&stubConvert{}} {
-		if !slices.ContainsFunc(cmds, func(c command) bool { return c.name() == stub.name() }) {
-			cmds = append(cmds, stub)
-		}
-	}
-	return cmds
-}
 
 // result is what one call prints and its exit code.
 type result struct {
@@ -106,16 +55,16 @@ func (cl call) run(t *testing.T, words ...string) result {
 	if ctx == nil {
 		ctx = t.Context()
 	}
-	commands := cl.commands
-	if commands == nil {
-		commands = testCommands()
+	cmds := cl.commands
+	if cmds == nil {
+		cmds = commands()
 	}
 	var stdout, stderr bytes.Buffer
 	env := Env{
 		Stdin: strings.NewReader(cl.stdin), Stdout: &stdout, Stderr: &stderr, Dir: cl.dir,
 		Getenv: func(string) string { return "" }, Version: testVersion,
 	}
-	err := (&app{commands: commands, beforeCreate: cl.beforeCreate}).run(ctx, words, env)
+	err := (&app{commands: cmds, beforeCreate: cl.beforeCreate}).run(ctx, words, env)
 	return result{Code: ExitCode(err), Stdout: stdout.String(), Stderr: stderr.String()}
 }
 
@@ -246,7 +195,7 @@ func unusedOptions() []string {
 	usedOptions.Lock()
 	defer usedOptions.Unlock()
 	var missing []string
-	for _, cmd := range testCommands() {
+	for _, cmd := range commands() {
 		for _, o := range cmd.options() {
 			if !usedOptions.byCommand[cmd.name()][o.name] {
 				missing = append(missing, cmd.name()+" --"+o.name)

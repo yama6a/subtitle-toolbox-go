@@ -70,6 +70,63 @@ A `.txt` file in a directory is an input only when content detection finds a for
 - **Extension rule**: the extension of `-o` never picks the format. `--to srt -o film.vtt` fails. Without `--to`, an `-o` extension of another writable format fails too, so SubRip never lands in a `.vtt` file by mistake. An extension of no format, such as `.bak`, always works.
 - **Interrupt**: Ctrl-C or SIGTERM stops the run before the next input. The finished outputs stay, because each is a complete file. A second Ctrl-C ends the process at once. An output that is being written then can stay incomplete, and the run removes nothing.
 
+## convert
+
+`stbox convert <input>... [--to FORMAT] [-o FILE | --output-dir DIR] [options]` reads subtitle files, runs edits on them, and writes them in the format of `--to`, else in the input format. Example: `stbox convert film.srt --to vtt --shift -0.5 --timing-fix-overlaps -o film.vtt` shifts every cue 0.5 s earlier, ends each cue before the next one starts, and writes WebVTT.
+
+- **Help**: `stbox convert --help` lists the common options and the groups. `--help GROUP` prints the options of one group, `--help all` prints all of them. A topic with `.`, `/` or `\`, or the name of an existing file, is no topic: `convert in.srt -h out.srt` prints the default help.
+- **Checks**: every option check runs before the first read, so a bad value exits 2 and reads nothing. The input options come first, then the output options, `--language` and the groups in pipeline order. The first failing check decides the message.
+- **`--language`** sets the language of `--case`, for example `tr` for the Turkish dotted i. Without `--case` it fails.
+- **WebVTT colors**: WebVTT has classes for 8 colors. For each other color, convert prints `LABEL: Cue #3 at 4 s: dropped the color "#123456", because WebVTT has classes for 8 colors only.` on stderr and still exits 0.
+
+### Pipeline
+
+The edits run in this order, whatever the order of the flags. A group runs only when one of its options is set.
+
+| # | Group | Options | Why at this place |
+|---:|:--- |:--- |:--- |
+| 1 | `forced` | `--forced-only` | later steps see only the cues that stay |
+| 2 | `replace` | `--replace FROM=TO`, `--replace-regex`, `--replace-ignore-case` | |
+| 3 | `text` | `--case`, `--strip-tags`, `--rtl` | text edits change the line lengths, so they run before `structure` |
+| 4 | `structure` | `--structure-*` | joins and splits change the cues, so the timing edits run after it |
+| 5 | `retime` | `--sync`, `--shift`, `--scale`, `--from-fps` with `--to-fps`, in this order | |
+| 6 | `timing` | `--timing-*` | |
+
+Each group calls the library methods of [editing.md](editing.md) and [text.md](text.md). Inside `structure` the run order is not the help order:
+
+| Step | Option | Library call |
+|---:|:--- |:--- |
+| 1 | `--structure-unwrap` | `UnwrapLines()` |
+| 2 | `--structure-merge-same-time` | `MergeSameTimeCues(0)` |
+| 3 | `--structure-merge-short` | `MergeShortCues` with `--structure-max-cpl` and `--structure-max-lines` |
+| 4 | `--structure-wrap` | `WrapLines(cpl, lines)`, 42 and 2 by default |
+| 5 | `--structure-merge-duplicates` | `RemoveDuplicateCues(0)` |
+
+`--structure-merge-same-time` comes last in the help but runs second. So its joined cues take part in the merge of short cues and in the wrap.
+
+### Sync points
+
+`--sync OLD=NEW` moves the time OLD to NEW. OLD is a time, `first`, `last` or `#N`, the start of cue N in start order. `--sync first=00:00:12.5 --sync last=01:41:05` stretches the whole file. One point shifts every cue.
+
+- The points with a time as OLD must increase in both times. The check runs before the first read.
+- `first`, `last` and `#N` resolve per file. A file without cues, or with fewer cues than N, fails, exit 3.
+
+### Regular expressions
+
+`--replace-regex` reads each FROM as a PHP PCRE pattern with delimiters, such as `/\.{4,}/` or `#colou?r#i`. Convert turns it into a pattern of [regexp2](https://github.com/dlclark/regexp2), the engine of [text.md](text.md#replace).
+
+| Part | Rule | Example |
+|:--- |:--- |:--- |
+| leading white space | skipped | ` /a/` reads as `/a/` |
+| delimiter | the first character, not a letter, a digit, `\` or white space. `(`, `[`, `{` and `<` close with their partner and nest. Other delimiters close with the same character | `/a/`, `#a/b#`, `{a{2}}` |
+| escapes | a `\` before the delimiter or other punctuation stays, because PHP passes it to PCRE and regexp2 reads it the same way. `\_` becomes `_`, because regexp2 rejects `\_` | `/a\/b/` gives `a\/b`, `/a\_b/` gives `a_b` |
+| flags | `i` matches in any case. `m`, `s` and `x` become `(?msx)` before the pattern. `u` changes nothing, because Go strings are UTF-8. A space, LF and CR are skipped, as in PHP. Other flags fail | `/col(ou)r/i` |
+| TO | `\N`, `$N` and `${N}`, each with 1 or 2 digits, insert group N, or nothing when the pattern has no group N. `\\` and `\$` write `\` and `$`. Every other `$` is text, as in PHP | `\1` gives group 1, `$_` stays `$_` |
+
+- **Not supported**: `\K`, `\h`, `\o{...}`, `(?|...)`, `(*VERB)` controls and the Python-style named groups `(?P<name>...)`, `(?P=name)` and `(?P>name)`. Write `(?<name>...)` and `\k<name>`. A pattern with one of them fails as an invalid regular expression.
+- **POSIX classes**: `[[:alpha:]]` and `[[:digit:]]` give no error, but they match the characters of the brackets, not a letter or a digit. Write `\p{L}` and `\d`.
+- **Without `--replace-regex`**, FROM and TO are plain text.
+
 ## info
 
 `stbox info <input>... [--json] [options]` prints what the reader found in each subtitle file. It takes `--json` and the input options. Example: `stbox info latin1.srt` prints `Format:   srt`, `Encoding: Windows-1252` and `Cues:     1`.

@@ -72,27 +72,33 @@ func (a *args) Time(name string) (time.Duration, bool, error) {
 	if !ok {
 		return 0, false, nil
 	}
+	d, err := parseTime(name, v)
+	return d, err == nil, err
+}
+
+// parseTime reads v as the time of Time. Messages name the option name.
+func parseTime(name, v string) (time.Duration, error) {
 	if f, isNumber := parseNumber(v); isNumber {
 		if math.IsInf(f, 0) {
-			return 0, false, notFinite(name, v)
+			return 0, notFinite(name, v)
 		}
 		// The limit applies after the rounding, so 359999999.9996 s fails as 100000 h.
 		if math.Abs(f) >= timecode.MaxTime.Seconds() || millis(f).Abs() >= timecode.MaxTime {
-			return 0, false, usage("The option --" + name + " needs a time below " + strconv.Itoa(timecode.MaxHours) +
+			return 0, usage("The option --" + name + " needs a time below " + strconv.Itoa(timecode.MaxHours) +
 				" hours, got " + quote(v) + ".")
 		}
-		return millis(f), true, nil
+		return millis(f), nil
 	}
 	clock, negate := strings.CutPrefix(v, "-")
 	d, isClock := timecode.Clock(clock)
 	if !isClock {
-		return 0, false, usage("The option --" + name + " needs seconds or a timecode such as 00:01:02.500, got " +
+		return 0, usage("The option --" + name + " needs seconds or a timecode such as 00:01:02.500, got " +
 			quote(v) + ".")
 	}
 	if negate {
 		d = -d
 	}
-	return d, true, nil
+	return d, nil
 }
 
 // PositiveTime returns the time of the option name and fails for 0 and below.

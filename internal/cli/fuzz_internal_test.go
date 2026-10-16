@@ -17,7 +17,7 @@ func FuzzParseArgs(f *testing.F) {
 	} {
 		f.Add(seed)
 	}
-	opts := (&stubConvert{}).options()
+	opts := (&convertCommand{}).options()
 	f.Fuzz(func(t *testing.T, in string) {
 		a, err := parseArgs(strings.Split(in, "\x00"), opts)
 		if err != nil {
@@ -35,5 +35,25 @@ func FuzzParseArgs(f *testing.F) {
 				t.Fatalf("--%s has %d values", o.name, len(a.Values(o.name)))
 			}
 		}
+	})
+}
+
+// FuzzConvertPCRE checks that the conversion of a --replace-regex FROM never panics and keeps the pattern of a
+// slash delimiter without escapes as it is.
+func FuzzConvertPCRE(f *testing.F) {
+	for _, seed := range []string{`/\.{4,}/`, "#a/b#i", "{a{2}}", `/a\/b/u`, "(a\\(b)", "/a/U", " /x/msx", "/abc"} {
+		f.Add(seed)
+	}
+	f.Fuzz(func(t *testing.T, from string) {
+		if _, badFlag, ok := convertPCRE(from); ok && badFlag != "" {
+			t.Fatalf("ok with the bad flag %q", badFlag)
+		}
+		if from != "" && !strings.ContainsAny(from, "/\\ \t\n\r\v\f") {
+			wrapped := "/" + from + "/"
+			if p, _, ok := convertPCRE(wrapped); !ok || p.pattern != from {
+				t.Fatalf("%q gives %q, %v", wrapped, p.pattern, ok)
+			}
+		}
+		_ = convertReplacement(from, func(n int) bool { return n%2 == 0 })
 	})
 }

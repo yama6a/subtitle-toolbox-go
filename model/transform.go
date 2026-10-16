@@ -138,7 +138,7 @@ func newRegexReplacer(search, replace string, ignoreCase bool) (func(string) (st
 	if ignoreCase {
 		options = regexp2.IgnoreCase
 	}
-	re, err := regexp2.Compile(search, options)
+	re, err := regexp2.Compile(search, options, regexp2.OptionMaintainCaptureOrder())
 	if err != nil {
 		return nil, invalidArgument(fmt.Sprintf("The regular expression %s is not valid: %v.", quote(search), err))
 	}

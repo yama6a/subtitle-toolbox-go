@@ -20,18 +20,19 @@ type command interface {
 	run(ctx context.Context, a *args, c *console) error
 }
 
-// topicHelper is a command whose help reads the topic after --help, such as the option groups of convert.
+// topicHelper is a command whose help reads the topic after --help, such as the option groups of convert. c
+// resolves a topic that names a file.
 type topicHelper interface {
-	help(topic string) (string, error)
+	help(c *console, topic string) (string, error)
 }
 
 func helpOption() option {
 	return option{name: "help", short: "h", help: "Show this help."}
 }
 
-func helpOf(cmd command, topic string) (string, error) {
+func helpOf(c *console, cmd command, topic string) (string, error) {
 	if h, ok := cmd.(topicHelper); ok {
-		return h.help(topic)
+		return h.help(c, topic)
 	}
 	return commandHelp(cmd), nil
 }
