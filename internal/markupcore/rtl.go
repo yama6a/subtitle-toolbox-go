@@ -43,8 +43,11 @@ func isRightToLeftLetter(r rune) bool {
 // Sentence-end punctuation at the start of the text moves to its end first. A final LF stays after the closing mark.
 // A line without a right-to-left letter, a line with an ASS drawing command and a line of invalid UTF-8 stay as they are.
 func EmbedRightToLeft(line string) string {
+	if !utf8.ValidString(line) {
+		return line
+	}
 	text := markRemover.Replace(line)
-	if assDrawingRegexp.MatchString(text) || !HasRightToLeftLetter(text) || !utf8.ValidString(text) {
+	if assDrawingRegexp.MatchString(text) || !HasRightToLeftLetter(text) {
 		return line
 	}
 
@@ -56,10 +59,10 @@ func EmbedRightToLeft(line string) string {
 	return leading + rightToLeftEmbedding + middle + popFormatting + trailing + lf
 }
 
-// HoldsRightToLeftEmbedding reports whether a line already holds the embedding of EmbedRightToLeft.
+// HoldsRightToLeftEmbedding reports whether a line of valid UTF-8 already holds the embedding of EmbedRightToLeft.
 func HoldsRightToLeftEmbedding(lines []string) bool {
 	for _, line := range lines {
-		if strings.Contains(line, rightToLeftEmbedding) && EmbedRightToLeft(line) == line {
+		if utf8.ValidString(line) && strings.Contains(line, rightToLeftEmbedding) && EmbedRightToLeft(line) == line {
 			return true
 		}
 	}
