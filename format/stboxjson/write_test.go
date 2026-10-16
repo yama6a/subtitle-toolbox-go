@@ -278,6 +278,7 @@ func TestWriteErrors(t *testing.T) {
 			assert.Equal(t, model.JSON, uerr.Format)
 			assert.Equal(t, tt.reason, uerr.Reason)
 			assert.Equal(t, tt.cueIndex, uerr.CueIndex)
+			assert.Equal(t, tt.reason == malformed, errors.Is(err, model.ErrInvalidUTF8))
 			assert.Zero(t, out.Len())
 		})
 	}

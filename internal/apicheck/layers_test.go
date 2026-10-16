@@ -45,6 +45,7 @@ var layers = map[string]layer{
 	"internal/linewrap":    layerLeaf,
 	"internal/testfiles":   layerLeaf,
 	"internal/golden":      layerLeaf,
+	"internal/extfallback": layerLeaf,
 	"markup":               layerMarkup,
 	"model":                layerModel,
 	"internal/blocks":      layerModelUser,

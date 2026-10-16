@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"slices"
 	"strconv"
-	"strings"
 
+	"github.com/yama6a/subtitle-toolbox-go/internal/extfallback"
 	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 )
 
@@ -116,11 +115,9 @@ func transportStream(content []byte, size int) bool {
 		content[2*size+sync] == 0x47
 }
 
-// formatOfExtension returns the readable format of the extension of path. The extensions json, txt and ffmeta
-// also belong to formats that detection never finds, such as cloud speech JSON and chapters, so they give none.
+// formatOfExtension returns the readable format of the extension of path, when the extension may set it.
 func formatOfExtension(path string) (Format, bool) {
-	switch strings.ToLower(filepath.Ext(path)) {
-	case ".json", ".txt", ".ffmeta":
+	if !extfallback.Allowed(path) {
 		return "", false
 	}
 	f, ok := FormatFromPath(path)

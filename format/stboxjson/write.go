@@ -28,7 +28,7 @@ var errInfOrNaN = errors.New("inf or NaN")
 // because encoding/json would replace its bad bytes without an error.
 func document(s *model.Subtitle, opts WriteOptions) ([]byte, error) {
 	if i, ok := validText(s, !opts.OmitFormatData); !ok {
-		return nil, &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: malformedUTF8}
+		return nil, &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: malformedUTF8, Err: model.ErrInvalidUTF8}
 	}
 
 	e := newEncoder()

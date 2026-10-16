@@ -22,7 +22,8 @@ fmt.Println(err) // srt: line 6: Block #1 has no timing line on its second line.
 | `ErrUnknownFormat` | detection found no format, see [detection.md](detection.md). Also matches `ErrUnsupportedFormat` | `UnknownFormatException` 106, a subclass of 102 |
 | `ErrInvalidArgument`, `*InvalidArgumentError` | an invalid option or argument, for example frame rate 0 or NaN. An unknown `ReadOptions.Encoding`. A retime or `Append` that moves a cue time to 100000 h or more, for example `Scale(1e300)`. MicroDVD output without a frame rate. CSV output with frame times and no frame rate. Format data that fails its type check in a setter | `InvalidArgumentException` 104 |
 | `ErrCueNotFound` | `RemoveCue`, `SplitCue` and `JoinCues` with an index that has no cue | `CueNotFoundException` 105 |
-| `ErrUnwritable`, `*UnwritableError` | the output format cannot hold the subtitle. Text that is not valid UTF-8 in a JSON format, TTML or SAMI output. A stored TTML head that is not valid XML. An `ass.WriteOptions.Style` that the `Format:` line of the stored styles lacks | `UnwritableContentException` 108 |
+| `ErrUnwritable`, `*UnwritableError` | the output format cannot hold the subtitle. Text that is not valid UTF-8 in a JSON format, TTML or SAMI output, which also matches `ErrInvalidUTF8`. A stored TTML head that is not valid XML. An `ass.WriteOptions.Style` that the `Format:` line of the stored styles lacks | `UnwritableContentException` 108 |
+| `ErrInvalidUTF8` | text that an output format cannot hold because it is not valid UTF-8. It is the `Err` of the `*UnwritableError`. Read the input again with its source encoding | none, part of `UnwritableContentException` 108 |
 | the `*fs.PathError` of package `os`, wrapped | a file that does not exist or cannot be read or written. Test it with `errors.Is(err, fs.ErrNotExist)` | `InvalidArgumentException` 104 |
 
 - **No codes**: the library has no numeric error codes. `errors.Is` and `errors.As` replace them.

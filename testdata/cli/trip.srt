@@ -1,0 +1,12 @@
+1
+00:00:01,000 --> 00:00:03,000
+<i>The train leaves at noon.</i>
+
+2
+00:00:02,500 --> 00:00:05,000
+[BELL RINGS]
+ANNA: We need two tickets for the long ride to the coast.
+
+3
+00:00:06,000 --> 00:00:06,400
+(sighs) Too late.
