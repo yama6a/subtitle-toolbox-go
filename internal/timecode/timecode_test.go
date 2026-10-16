@@ -66,6 +66,26 @@ func TestNumber(t *testing.T) {
 }
 
 // Ports the loose time cases of tests/Parsers/LooseTimestampsTest.php of subtitle-toolbox-php.
+func TestTimeLimitMessage(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		n    int
+		end  float64
+		want string
+	}{
+		{1, 360000001.5, "The retimed cue 1 would end at 360000001.5 s. Cue times must be below 100000 hours."},
+		{12, 8e300, "The retimed cue 12 would end at 8e+300 s. Cue times must be below 100000 hours."},
+	}
+	for _, tt := range tests {
+		t.Run(tt.want, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, timecode.TimeLimitMessage(tt.n, tt.end))
+		})
+	}
+}
+
 func TestLoose(t *testing.T) {
 	t.Parallel()
 
