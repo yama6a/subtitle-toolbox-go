@@ -5,6 +5,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -22,7 +23,10 @@ const libraryJSONWithMetadata = `{"version":1,"metadata":{"zulu":"last","title":
 
 const infoHelp = `Usage: stbox info <input>... [--json] [options]
 
-Print the format, the encoding and the cue count of subtitle files.
+Print the format, the cue count and statistics of subtitle files.
+
+Times are in seconds. Character counts leave out tags. The gap is the start of a
+cue minus the latest end of the earlier cues. An overlap gives a negative gap.
 
 Options:
   --json           Print JSON: a list with one object for each input file.
@@ -37,6 +41,36 @@ Options:
   -h, --help       Show this help.
 `
 
+const (
+	shopRows = `  Format:                vtt
+  Encoding:              UTF-8
+  Cues:                  2
+  Words:                 7
+  Characters:            36
+  Display time:          4.5 s
+  Span:                  5.5 s
+  Characters per second: min 6.5, average 7.85, max 9.2
+  Words per minute:      min 60, average 90, max 120
+  Characters per line:   min 13, average 18, max 23
+  Gaps:                  min 1, average 1, max 1 s
+  Most used words:       good (1), morning (1), the (1), shop (1), opens (1), at
+                         (1), nine (1)
+`
+	latin1Rows = `  Format:                srt
+  Encoding:              Windows-1252
+  Cues:                  1
+  Words:                 3
+  Characters:            13
+  Display time:          1 s
+  Span:                  1 s
+  Characters per second: min 13, average 13, max 13
+  Words per minute:      min 180, average 180, max 180
+  Characters per line:   min 13, average 13, max 13
+  Gaps:                  -
+  Most used words:       café (1), au (1), lait (1)
+`
+)
+
 func TestInfoHelp(t *testing.T) {
 	t.Parallel()
 
@@ -46,10 +80,10 @@ func TestInfoHelp(t *testing.T) {
 	assert.Equal(t, want, call{}.run(t, "help", "info"))
 }
 
-func TestInfoText(t *testing.T) {
+func TestInfoTextEqualsThePHPOutput(t *testing.T) {
 	t.Parallel()
 
-	assert.Equal(t, result{Stdout: "trip.srt\n  Format:   srt\n  Encoding: UTF-8\n  Cues:     3\n"}, runCLI(t, "info", "trip.srt"))
+	assert.Equal(t, result{Stdout: string(testfiles.Read(t, "cli/trip_info.txt"))}, runCLI(t, "info", "trip.srt"))
 }
 
 func TestInfoGolden(t *testing.T) {
@@ -73,20 +107,16 @@ func TestInfoGolden(t *testing.T) {
 	}
 }
 
-func TestInfoJSON(t *testing.T) {
+func TestInfoJSONKeyOrder(t *testing.T) {
 	t.Parallel()
 
-	want := `[
-    {
-        "file": "trip.srt",
-        "format": "srt",
-        "encoding": "UTF-8",
-        "metadata": {},
-        "warnings": []
-    }
-]
-`
-	assert.Equal(t, result{Stdout: want}, runCLI(t, "info", "trip.srt", "--json"))
+	got := runCLI(t, "info", "trip.srt", "--json")
+	matches := regexp.MustCompile(`(?m)^        "(\w+)":`).FindAllStringSubmatch(got.Stdout, -1)
+	keys := make([]string, len(matches))
+	for i, m := range matches {
+		keys[i] = m[1]
+	}
+	assert.Equal(t, []string{"file", "format", "encoding", "metadata", "statistics", "warnings"}, keys)
 }
 
 func TestInfoReportsTheSourceEncoding(t *testing.T) {
@@ -112,7 +142,7 @@ func TestInfoDecodeWarning(t *testing.T) {
 	dir := newDir(t)
 	assert.Equal(t,
 		result{
-			Stdout: "latin1.srt\n  Format:   srt\n  Encoding: Windows-1252\n  Cues:     1\n  Warnings: 1\n",
+			Stdout: "latin1.srt\n" + strings.Replace(latin1Rows, "  Words:", "  Warnings:              1\n  Words:", 1),
 			Stderr: "latin1.srt: The content is not UTF-8. Detection picked Windows-1252. Set the source encoding if that is wrong. (repaired)\n" +
 				encodingHint + "\n",
 		},
@@ -123,7 +153,7 @@ func TestInfoDecodeWarning(t *testing.T) {
 	assert.NotContains(t, got.Stderr, encodingHint)
 
 	got = call{dir: dir}.run(t, "info", "latin1.srt")
-	assert.Equal(t, result{Stdout: "latin1.srt\n  Format:   srt\n  Encoding: Windows-1252\n  Cues:     1\n"}, got)
+	assert.Equal(t, result{Stdout: "latin1.srt\n" + latin1Rows}, got)
 }
 
 func TestInfoInvalidUTF8Warning(t *testing.T) {
@@ -159,6 +189,47 @@ func TestInfoParseWarnings(t *testing.T) {
         "format": "srt",
         "encoding": "UTF-8",
         "metadata": {},
+        "statistics": {
+            "cueCount": 2,
+            "wordCount": 4,
+            "characterCount": 19,
+            "totalDisplayTime": 2,
+            "span": 5,
+            "charactersPerSecond": {
+                "min": 9,
+                "average": 9.5,
+                "max": 10
+            },
+            "wordsPerMinute": {
+                "min": 120,
+                "average": 120,
+                "max": 120
+            },
+            "charactersPerLine": {
+                "min": 9,
+                "average": 9.5,
+                "max": 10
+            },
+            "gaps": {
+                "min": 3,
+                "average": 3,
+                "max": 3
+            },
+            "mostUsedWords": [
+                {
+                    "word": "cue",
+                    "count": 2
+                },
+                {
+                    "word": "first",
+                    "count": 1
+                },
+                {
+                    "word": "last",
+                    "count": 1
+                }
+            ]
+        },
         "warnings": [
             {
                 "lineNumber": 6,
@@ -205,11 +276,12 @@ func TestInfoTextBatch(t *testing.T) {
 	t.Parallel()
 
 	dir := newDir(t)
+	tripText := string(testfiles.Read(t, "cli/trip_info.txt"))
 	assert.Equal(t,
 		result{
 			Code: exitFile,
-			Stdout: "trip.srt\n  Format:   srt\n  Encoding: UTF-8\n  Cues:     3\n" +
-				"\nstdin\n  Format:   vtt\n  Encoding: UTF-8\n  Cues:     2\n" +
+			Stdout: tripText +
+				"\nstdin\n" + shopRows +
 				"3 files: 2 succeeded, 1 failed.\n",
 			Stderr: "notes.txt: " + unknownFormatMessage + "\n",
 		},
@@ -217,7 +289,7 @@ func TestInfoTextBatch(t *testing.T) {
 	assert.Equal(t,
 		result{
 			Code:   exitFile,
-			Stdout: "trip.srt\n  Format:   srt\n  Encoding: UTF-8\n  Cues:     3\n3 files: 1 succeeded, 1 failed, 1 skipped.\n",
+			Stdout: tripText + "3 files: 1 succeeded, 1 failed, 1 skipped.\n",
 			Stderr: "notes.txt: " + unknownFormatMessage + "\nStopped at the first failure. Pass --keep-going to process the other files.\n",
 		},
 		call{dir: dir}.run(t, "info", "trip.srt", "notes.txt", "shop.vtt"))
@@ -226,9 +298,10 @@ func TestInfoTextBatch(t *testing.T) {
 func TestInfoBlankLineIgnoresFailedFiles(t *testing.T) {
 	t.Parallel()
 
+	tripText := string(testfiles.Read(t, "cli/trip_info.txt"))
 	got := runCLI(t, "info", "notes.txt", "trip.srt", "--keep-going")
 	assert.Equal(t, exitFile, got.Code)
-	assert.Equal(t, "trip.srt\n  Format:   srt\n  Encoding: UTF-8\n  Cues:     3\n2 files: 1 succeeded, 1 failed.\n", got.Stdout)
+	assert.Equal(t, tripText+"2 files: 1 succeeded, 1 failed.\n", got.Stdout)
 	assert.Equal(t, "notes.txt: "+unknownFormatMessage+"\n", got.Stderr)
 }
 
@@ -237,7 +310,7 @@ func TestInfoReadsStandardInput(t *testing.T) {
 
 	dir := newDir(t)
 	got := call{dir: dir, stdin: readFile(t, dir, "shop.vtt")}.run(t, "info", "-")
-	assert.True(t, strings.HasPrefix(got.Stdout, "stdin\n  Format:   vtt\n"), got.Stdout)
+	assert.True(t, strings.HasPrefix(got.Stdout, "stdin\n  Format:                vtt\n"), got.Stdout)
 	got = call{dir: dir, stdin: readFile(t, dir, "shop.vtt")}.run(t, "info", "-", "--json")
 	assert.True(t, strings.HasPrefix(got.Stdout, "[\n    {\n        \"file\": \"-\",\n        \"format\": \"vtt\","), got.Stdout)
 }
@@ -248,7 +321,7 @@ func TestInfoReadsWithFrom(t *testing.T) {
 	dir := newDir(t)
 	got := call{dir: dir, stdin: readFile(t, dir, "shop.vtt")}.run(t, "info", "-", "--from", ".VTT")
 	assert.Equal(t, 0, got.Code)
-	assert.True(t, strings.HasPrefix(got.Stdout, "stdin\n  Format:   vtt\n"), got.Stdout)
+	assert.True(t, strings.HasPrefix(got.Stdout, "stdin\n  Format:                vtt\n"), got.Stdout)
 }
 
 func TestInfoMetadataRowsAndKeys(t *testing.T) {
@@ -258,7 +331,7 @@ func TestInfoMetadataRowsAndKeys(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "meta.json"), []byte(libraryJSONWithMetadata), 0o600))
 	text := call{dir: dir}.run(t, "info", "meta.json")
 	assert.Equal(t, 0, text.Code, text.Stderr)
-	assert.Contains(t, text.Stdout, "  Metadata author: Anna\n  Metadata title:  A <b> & \"c\"\n  Metadata zulu:   last\n")
+	assert.Contains(t, text.Stdout, "  Metadata author:       Anna\n  Metadata title:        A <b> & \"c\"\n  Metadata zulu:         last\n")
 
 	got := call{dir: dir}.run(t, "info", "meta.json", "--json")
 	assert.Equal(t, 0, got.Code, got.Stderr)
@@ -267,6 +340,39 @@ func TestInfoMetadataRowsAndKeys(t *testing.T) {
             "title": "A <b> & \"c\"",
             "zulu": "last"
         },`)
+}
+
+func TestInfoSubtitleWithoutCues(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "empty.json"), []byte(`{"version":1,"cues":[]}`), 0o600))
+
+	text := call{dir: dir}.run(t, "info", "empty.json")
+	assert.Equal(t, 0, text.Code, text.Stderr)
+	assert.Equal(t, `empty.json
+  Format:                json
+  Encoding:              UTF-8
+  Cues:                  0
+  Words:                 0
+  Characters:            0
+  Display time:          0 s
+  Span:                  -
+  Characters per second: -
+  Words per minute:      -
+  Characters per line:   -
+  Gaps:                  -
+  Most used words:
+`, text.Stdout)
+
+	got := call{dir: dir}.run(t, "info", "empty.json", "--json")
+	assert.Contains(t, got.Stdout, `"span": null,
+            "charactersPerSecond": null,
+            "wordsPerMinute": null,
+            "charactersPerLine": null,
+            "gaps": null,
+            "mostUsedWords": []
+`)
 }
 
 func TestOrderedMetadata(t *testing.T) {
@@ -293,23 +399,14 @@ func TestOrderedMetadata(t *testing.T) {
 	}
 }
 
-func TestInfoJSONEqualsTheStatisticsFreePHPOutput(t *testing.T) {
+func TestInfoJSONEqualsThePHPOutput(t *testing.T) {
 	t.Parallel()
 
 	var php, got []map[string]any
 	require.NoError(t, json.Unmarshal(testfiles.Read(t, "cli/trip_info.json"), &php))
 	require.NoError(t, json.Unmarshal([]byte(runCLI(t, "info", "trip.srt", "--json").Stdout), &got))
 	for _, entry := range php {
-		delete(entry, "statistics")
 		delete(entry, "imageCues")
 	}
-	assert.Equal(t, php, got)
-}
-
-func TestInfoTextStartsLikeThePHPOutput(t *testing.T) {
-	t.Parallel()
-
-	php := strings.Fields(strings.Join(strings.Split(string(testfiles.Read(t, "cli/trip_info.txt")), "\n")[:4], " "))
-	got := strings.Fields(runCLI(t, "info", "trip.srt").Stdout)
 	assert.Equal(t, php, got)
 }

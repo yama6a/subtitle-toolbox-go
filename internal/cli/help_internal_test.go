@@ -47,7 +47,7 @@ func TestGlobalHelp(t *testing.T) {
 		t.Parallel()
 
 		want := head + `Commands:
-  info     Print the format, the encoding and the cue count of subtitle files.
+  info     Print the format, the cue count and statistics of subtitle files.
   formats  List the format names and file extensions for --from and --to.
   help     Show the help of a command.
 ` + globalHelpTail
@@ -58,13 +58,13 @@ func TestGlobalHelp(t *testing.T) {
 
 		commands := []command{
 			summaryCommand{"convert", "Convert subtitle files to another format, and run text, structure and timing edits on the way."},
-			summaryCommand{"info", "Print the format, the encoding and the cue count of subtitle files."},
+			summaryCommand{"info", "Print the format, the cue count and statistics of subtitle files."},
 			summaryCommand{"formats", "List the format names and file extensions for --from and --to."},
 		}
 		want := head + `Commands:
   convert  Convert subtitle files to another format, and run text, structure and
            timing edits on the way.
-  info     Print the format, the encoding and the cue count of subtitle files.
+  info     Print the format, the cue count and statistics of subtitle files.
   formats  List the format names and file extensions for --from and --to.
   help     Show the help of a command.
 ` + globalHelpTail
