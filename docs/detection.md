@@ -27,9 +27,11 @@
 |---:|:--- |:--- |
 | 1 | WebVTT | `WEBVTT`, then a space, a tab, LF or the end |
 | 2 | SubRip | a cue number and a timing line. Or a timing line with 2 or more hour digits and a comma, alone or after up to 5 lines of text and a cue number |
+| 3 | SBV | the first line is `H:MM:SS.mmm,H:MM:SS.mmm` plus optional spaces or tabs |
 
 - **Order**: WebVTT comes before SubRip, because a WebVTT file without its header looks like SubRip. A new format inserts its signature at its place in the PHP order. `TestDetectionListsFollowTheOrder` in [registry_test.go](../registry_test.go) holds that order.
 - **SubRip hours and comma**: a timing line without a cue number on the line before it needs 2 hour digits and a comma. So a headerless WebVTT file that starts with `00:00:01.000 -->` and SBV with `0:00:01,500` do not match. A headerless WebVTT file that starts with a cue number, such as `1` LF `00:00:01.000 -->`, detects as SubRip.
+- **SBV fraction**: SBV has 3 fraction digits and SubViewer has 2, so `0:00:01.5,0:00:04.000` is no SBV signature. `sbv.Detect` holds rule 3.
 
 ## Load and Parse without a format
 

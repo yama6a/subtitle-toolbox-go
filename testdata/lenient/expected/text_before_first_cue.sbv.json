@@ -1,0 +1,28 @@
+{
+    "name": "SBV with text before the first cue",
+    "format": "sbv",
+    "strict": {
+        "error": "The time \"Auto-generated\" is not valid.",
+        "line": 1
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "Clouds move in from the west."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "Sun again by Friday."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 1,
+            "block": 0,
+            "action": "skipped",
+            "message": "The time \"Auto-generated\" is not valid."
+        }
+    ]
+}

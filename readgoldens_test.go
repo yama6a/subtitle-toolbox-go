@@ -28,6 +28,7 @@ type goldenFolder struct {
 func goldenFolders() []goldenFolder {
 	return []goldenFolder{
 		{name: "json", format: stbox.JSON, files: 6},
+		{name: "sbv", format: stbox.SBV, files: 5},
 		{name: "srt", format: stbox.SubRip, files: 19},
 		{name: "vtt", format: stbox.WebVTT, files: 30},
 	}

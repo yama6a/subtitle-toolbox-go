@@ -21,7 +21,8 @@ const (
 
 const (
 	asciiSpace = " \t\n\r\f\v"
-	phpTrimSet = " \t\n\r\x00\v"
+	// PHPTrimSet holds the bytes that PHP trim removes without a character list.
+	PHPTrimSet = " \t\n\r\x00\v"
 )
 
 var (
@@ -57,7 +58,7 @@ func SplitTags(line string) []string {
 
 // TagName returns the first word of a tag body such as `FONT color="yellow"`, in lower case.
 func TagName(body string) string {
-	body = strings.Trim(body, phpTrimSet)
+	body = strings.Trim(body, PHPTrimSet)
 	if i := strings.IndexAny(body, asciiSpace); i >= 0 {
 		body = body[:i]
 	}
@@ -94,7 +95,7 @@ func KeepTags(text string, names ...string) string {
 // HasVisibleText reports whether a line holds more than white space outside its tags. An entity counts as text.
 func HasVisibleText(lines []string) bool {
 	for _, line := range lines {
-		if strings.Trim(StripAllTags(line), phpTrimSet) != "" {
+		if strings.Trim(StripAllTags(line), PHPTrimSet) != "" {
 			return true
 		}
 	}

@@ -31,6 +31,10 @@ func detectTests() []detectTest {
 		{name: "SubRip with dot", content: "1\n00:00:01.000 --> 00:00:04.000\nHello\n", want: stbox.SubRip},
 		{name: "SubRip without cue number", content: "00:00:01,000 --> 00:00:04,000\nHello\n", want: stbox.SubRip},
 		{name: "SubRip after five lines", content: "a\nb\nc\nd\n\n 1\n00:00:01,000 --> 00:00:04,000\nHello\n", want: stbox.SubRip},
+		{name: "SBV", content: "0:00:01.500,0:00:04.000\nHello\n", want: stbox.SBV},
+		{name: "SBV with three digits", content: "0:00:01.500,0:00:04.000\nHello[br]world\n", want: stbox.SBV},
+		{name: "SBV with two hour digits", content: "00:00:01.500,00:00:04.000\nHello\n", want: stbox.SBV},
+		{name: "SBV next to TMPlayer", content: "0:00:01.000,0:00:02.000\nHello\n", want: stbox.SBV},
 		{name: "JSON with cues first", content: `{"cues": [], "metadata": {"title": "version"}, "version": 1}`, want: stbox.JSON},
 		{name: "JSON with spaces", content: "{\n  \"version\" : 1 ,\n  \"cues\" : [ ]\n}\n", want: stbox.JSON},
 		{name: "JSON with a segments key", content: `{"version": 1, "formatData": {"x": {"segments": [1]}}, "cues": []}`, want: stbox.JSON},
@@ -51,10 +55,6 @@ func detectTests() []detectTest {
 		{name: "MicroDVD with fps line", content: "{1}{1}25\n{24}{72}Hello\n", later: "MicroDVD"},
 		{name: "MicroDVD without end frame", content: "{24}{}Hello\n", later: "MicroDVD"},
 		{name: "MicroDVD next to MPL2", content: "{10}{25}Hello|world\n", later: "MicroDVD"},
-		{name: "SBV", content: "0:00:01.500,0:00:04.000\nHello\n", later: "SBV"},
-		{name: "SBV with three digits", content: "0:00:01.500,0:00:04.000\nHello[br]world\n", later: "SBV"},
-		{name: "SBV with two hour digits", content: "00:00:01.500,00:00:04.000\nHello\n", later: "SBV"},
-		{name: "SBV next to TMPlayer", content: "0:00:01.000,0:00:02.000\nHello\n", later: "SBV"},
 		{name: "SubViewer 2 information", content: "[INFORMATION]\r\n[TITLE]Bakery\r\n[END INFORMATION]\r\n", later: "SubViewer"},
 		{name: "SubViewer 2 timing line", content: "00:00:01.50,00:00:04.00\nHello[br]world\n", later: "SubViewer"},
 		{name: "SubViewer 2 after [SUBTITLE]", content: "[SUBTITLE]\n[COLF]&HFFFFFF,[SIZE]18\n00:00:01.50,00:00:04.00\nHello\n", later: "SubViewer"},
@@ -214,7 +214,7 @@ type fixture struct {
 func fixtures(t *testing.T) []fixture {
 	t.Helper()
 
-	folders := map[string]stbox.Format{"json": stbox.JSON, "srt": stbox.SubRip, "vtt": stbox.WebVTT}
+	folders := map[string]stbox.Format{"json": stbox.JSON, "sbv": stbox.SBV, "srt": stbox.SubRip, "vtt": stbox.WebVTT}
 	var list []fixture
 	for dir, f := range folders {
 		for _, sub := range []string{dir, dir + "/real"} {
@@ -233,7 +233,11 @@ func fixtures(t *testing.T) []fixture {
 
 // brokenFixtures break their own format on purpose, so detection finds another format or none.
 func brokenFixtures() map[string]stbox.Format {
-	return map[string]stbox.Format{"vtt/missing_webvtt_header.vtt": stbox.SubRip}
+	return map[string]stbox.Format{
+		"vtt/missing_webvtt_header.vtt": stbox.SubRip,
+		"sbv/missing_milli_digits.sbv":  "",
+		"sbv/srt_timestamps.sbv":        "",
+	}
 }
 
 // Ports testDetectsTheFormatOfEveryFixture and testDetectsBrokenFixturesByTheirShape of
@@ -336,7 +340,7 @@ func FuzzDetect(f *testing.F) {
 		f.Add([]byte(tt.content))
 	}
 	root := testfiles.Root(f)
-	for _, dir := range []string{"json", "srt", "vtt", "lenient"} {
+	for _, dir := range []string{"json", "sbv", "srt", "vtt", "lenient"} {
 		entries, err := os.ReadDir(filepath.Join(root, dir))
 		if err != nil {
 			f.Fatal(err)

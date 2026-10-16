@@ -36,6 +36,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 	want := strings.Join([]string{
 		"Name  Extensions  Read  Write",
 		"json  .json       yes   yes",
+		"sbv   .sbv        yes   yes",
 		"srt   .srt        yes   yes",
 		"vtt   .vtt        yes   yes",
 	}, "\n") + "\n"

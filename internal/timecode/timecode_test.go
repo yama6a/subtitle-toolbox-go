@@ -113,3 +113,30 @@ func TestLoose(t *testing.T) {
 		})
 	}
 }
+
+func TestAppendClock(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		in        time.Duration
+		hourWidth int
+		sep       byte
+		want      string
+	}{
+		{"zero, 2 hour digits", 0, 2, ',', "00:00:00,000"},
+		{"zero, 1 hour digit", 0, 1, '.', "0:00:00.000"},
+		{"all fields", 3*time.Hour + 4*time.Minute + 5*time.Second + 6*time.Millisecond, 2, ',', "03:04:05,006"},
+		{"more hour digits than the width", 100*time.Hour + 1500*time.Millisecond, 2, ',', "100:00:01,500"},
+		{"negative", -time.Second, 1, '.', "0:00:00.000"},
+		{"rounds half away from zero", 1500500 * time.Nanosecond, 1, '.', "0:00:00.002"},
+		{"rounds down", 1499999 * time.Nanosecond, 1, '.', "0:00:00.001"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, "x"+tt.want, string(timecode.AppendClock([]byte("x"), tt.in, tt.hourWidth, tt.sep)))
+		})
+	}
+}

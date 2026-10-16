@@ -21,7 +21,6 @@ import (
 
 const (
 	arrow       = "-->"
-	phpTrimSet  = " \t\n\r\x00\v"
 	utf8BOM     = "\ufeff"
 	noSignature = "The file does not start with WEBVTT."
 	// timestampPattern is a WebVTT timestamp: hours of any length or none, then exactly mm:ss.mmm.
@@ -123,9 +122,9 @@ func (r *reader) read(content string) (*model.Subtitle, error) {
 // The lines start at the signature. Lenient mode repairs a missing signature.
 func (r *reader) lines(content string) ([]line, error) {
 	content = normalizeLineEnds(content)
-	trimmed := strings.TrimLeft(content, phpTrimSet)
+	trimmed := strings.TrimLeft(content, markupcore.PHPTrimSet)
 	leading := strings.Count(content[:len(content)-len(trimmed)], "\n")
-	trimmed = strings.TrimRight(trimmed, phpTrimSet)
+	trimmed = strings.TrimRight(trimmed, markupcore.PHPTrimSet)
 
 	lines := make([]line, leading, leading+strings.Count(trimmed, "\n")+1)
 	for i := range leading {
@@ -632,7 +631,7 @@ func hasArrow(l string) bool {
 }
 
 func phpTrim(s string) string {
-	return strings.Trim(s, phpTrimSet)
+	return strings.Trim(s, markupcore.PHPTrimSet)
 }
 
 func trimBOMs(s string) string {

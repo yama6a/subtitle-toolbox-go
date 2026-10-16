@@ -1,0 +1,25 @@
+{
+    "name": "SBV with mixed line endings",
+    "format": "sbv",
+    "strict": {
+        "cues": 3
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The oven is hot."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "The loaves rise."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "The shop is open."
+        }
+    ],
+    "warnings": []
+}

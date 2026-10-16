@@ -1,12 +1,15 @@
 package blocks_test
 
 import (
+	"errors"
 	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/blocks"
+	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
 func TestSplitAtEmptyLines(t *testing.T) {
@@ -146,4 +149,171 @@ func TestSplitAtTimingLines(t *testing.T) {
 			assert.Equal(t, tt.want, tt.rules.SplitAtTimingLines(tt.lines))
 		})
 	}
+}
+
+func TestLines(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		in   string
+		want []string
+	}{
+		{"empty", "", []string{""}},
+		{"LF", "a\nb", []string{"a", "b"}},
+		{"CR LF", "a\r\nb\r\n", []string{"a", "b", ""}},
+		{"2 CRs before LF are one line end", "a\r\r\nb", []string{"a", "b"}},
+		{"lone CR", "a\rb", []string{"a", "b"}},
+		{"2 lone CRs", "a\r\rb", []string{"a", "", "b"}},
+		{"mixed", "a\r\nb\nc\r\r\nd\re", []string{"a", "b", "c", "d", "e"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var got []string
+			for n, line := range blocks.Lines(tt.in) {
+				assert.Equal(t, len(got), n)
+				got = append(got, line)
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestLinesStopsEarly(t *testing.T) {
+	t.Parallel()
+
+	for range blocks.Lines("a\nb\nc") {
+		break
+	}
+}
+
+func TestSplitWarning(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, "Block #2 has no empty line before line 9. The parser split the block there.", blocks.SplitWarning(2, 9))
+}
+
+func TestReadParts(t *testing.T) {
+	t.Parallel()
+
+	rules := blocks.Rules{IsTimingLine: hasArrow}
+	block := blocks.Block{Line: 5, Lines: []string{"a --> b", "One", "c --> d", "bad", "e --> f"}}
+	errBoom := errors.New("boom")
+	tests := []struct {
+		name      string
+		lenient   bool
+		parse     func(lines []string, line int) (model.Cue, error)
+		fail      func(err *model.ParseError, line int, lines []string) error
+		want      []string
+		wantErr   error
+		wantSplit []int
+		wantFails []int
+	}{
+		{
+			name:      "lenient mode warns for each split and skips a part that fails",
+			lenient:   true,
+			parse:     parseExcept("bad", 0),
+			fail:      func(*model.ParseError, int, []string) error { return nil },
+			want:      []string{"a --> b", "e --> f"},
+			wantSplit: []int{7, 9},
+			wantFails: []int{7},
+		},
+		{
+			name:      "strict mode returns the error of Fail",
+			parse:     parseExcept("bad", 0),
+			fail:      func(err *model.ParseError, _ int, _ []string) error { return err },
+			want:      nil,
+			wantErr:   &model.ParseError{Line: 0, Msg: "bad"},
+			wantFails: []int{7},
+		},
+		{
+			name:      "the line of the error wins",
+			lenient:   true,
+			parse:     parseExcept("bad", 42),
+			fail:      func(*model.ParseError, int, []string) error { return nil },
+			want:      []string{"a --> b", "e --> f"},
+			wantSplit: []int{7, 9},
+			wantFails: []int{42},
+		},
+		{
+			name:    "another error ends the read",
+			lenient: true,
+			parse: func([]string, int) (model.Cue, error) {
+				return model.Cue{}, errBoom
+			},
+			fail:      func(*model.ParseError, int, []string) error { return nil },
+			wantErr:   errBoom,
+			wantSplit: []int{7, 9},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var split, fails []int
+			got, err := rules.ReadParts(block, 3, blocks.PartReader{
+				Lenient: tt.lenient,
+				Split: func(msg string, line int) {
+					assert.Equal(t, blocks.SplitWarning(3, line), msg)
+					split = append(split, line)
+				},
+				Parse: tt.parse,
+				Fail: func(err *model.ParseError, line int, lines []string) error {
+					fails = append(fails, line)
+					return tt.fail(err, line, lines)
+				},
+			})
+			if tt.wantErr != nil {
+				var perr *model.ParseError
+				if errors.As(tt.wantErr, &perr) {
+					require.ErrorAs(t, err, &perr)
+					assert.Equal(t, "bad", perr.Msg)
+				} else {
+					require.ErrorIs(t, err, tt.wantErr)
+				}
+			} else {
+				require.NoError(t, err)
+			}
+			var texts []string
+			for _, c := range got {
+				texts = append(texts, c.Lines[0])
+			}
+			assert.Equal(t, tt.want, texts)
+			assert.Equal(t, tt.wantSplit, split)
+			assert.Equal(t, tt.wantFails, fails)
+		})
+	}
+}
+
+// parseExcept returns a part parser that fails with msg on a part whose second line is msg.
+func parseExcept(msg string, errLine int) func(lines []string, line int) (model.Cue, error) {
+	return func(lines []string, _ int) (model.Cue, error) {
+		if len(lines) > 1 && lines[1] == msg {
+			return model.Cue{}, &model.ParseError{Line: errLine, Msg: msg}
+		}
+		return model.Cue{Lines: []string{lines[0]}}, nil
+	}
+}
+
+func TestBlocks(t *testing.T) {
+	t.Parallel()
+
+	rules := blocks.Rules{IsTimingLine: hasArrow}
+	content := "a --> b\nOne\n\nTwo\n\nc --> d\n"
+	type join struct {
+		msg         string
+		line, block int
+	}
+	var joins []join
+	got := slices.Collect(rules.Blocks(content, func(msg string, line, block int, _ []string) {
+		joins = append(joins, join{msg, line, block})
+	}))
+	assert.Equal(t, []blocks.Block{
+		{Line: 1, Lines: []string{"a --> b", "One", "Two"}},
+		{Line: 6, Lines: []string{"c --> d"}},
+	}, got)
+	assert.Equal(t, []join{{blocks.JoinWarning(0, 4), 4, 0}}, joins)
+	assert.Equal(t, got, slices.Collect(rules.Blocks(content, nil)))
 }

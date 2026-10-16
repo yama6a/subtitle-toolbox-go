@@ -1,0 +1,32 @@
+{
+    "name": "SBV without an empty line between cues",
+    "format": "sbv",
+    "strict": {
+        "cues": 3
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 2.5,
+            "text": "The wind is cold today."
+        },
+        {
+            "start": 3,
+            "end": 5,
+            "text": "Snow falls in the hills."
+        },
+        {
+            "start": 5.5,
+            "end": 7,
+            "text": "The roads are closed."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 3,
+            "block": 0,
+            "action": "repaired",
+            "message": "Block #0 has no empty line before line 3. The parser split the block there."
+        }
+    ]
+}

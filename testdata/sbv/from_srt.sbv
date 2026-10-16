@@ -1,0 +1,19 @@
+0:00:00.000,0:00:00.456
+Only milliseconds
+
+0:00:05.222,0:00:46.444
+Seconds and milliseconds
+
+0:15:20.555,0:58:01.888
+Minutes and seconds and milliseconds
+
+1:01:01.000,2:00:00.800
+Full timestamp
+
+2:00:01.000,2:30:00.000
+some bold and italic and underlined text
+and some green text
+and no unsupported and potentially dangerous stuff
+
+3:00:00.000,999:59:59.999
+To maximum

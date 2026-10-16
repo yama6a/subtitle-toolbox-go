@@ -1,0 +1,28 @@
+{
+    "name": "SBV with a truncated last cue",
+    "format": "sbv",
+    "strict": {
+        "error": "The time \"0:00:0\" is not valid.",
+        "line": 7
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The next stop is the station."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "Please mind the gap."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 7,
+            "block": 2,
+            "action": "skipped",
+            "message": "The time \"0:00:0\" is not valid."
+        }
+    ]
+}
