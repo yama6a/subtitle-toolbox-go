@@ -44,19 +44,20 @@ A range holds the minimum, the arithmetic mean and the maximum. A range is nil w
 - **Visible length**: tags count 0, an entity such as `&amp;` counts 1, outer spaces and bidi marks count 0, and a grapheme cluster counts 1. [markup.md](markup.md#helpers) has the rules. Invalid UTF-8 counts bytes.
 - **Cues without text**: a cue with no visible character counts in `CueCount`, `TotalDisplayTime`, `Span` and `Gaps` only.
 - **Word**: the text of the lines joined with LF, without tags and with entities decoded, split at white space. A dialogue dash counts as a word.
-- **Counted word**: a word with the punctuation (Unicode category P) and symbols (category S) removed at both ends, in lower case. A word that is empty after that is in `WordCount` but not in `MostUsedWords`. A word of digits such as `2024` stays a string.
+- **Counted word**: a word with the punctuation (Unicode category P) and symbols (category S) removed at both ends, in lower case with the full Unicode mapping, as PHP `mb_strtolower` does. A word that is empty after that is in `WordCount` but not in `MostUsedWords`. A word of digits such as `2024` stays a string.
 - **Invalid UTF-8**: the words split at ASCII white space. A word that is not valid UTF-8 loses ASCII punctuation only and lower-cases ASCII letters only. A valid word in the same cue gets the full rules.
-- **Durations**: every cue time is a whole number of milliseconds, so sums and differences are exact. `DurationRange.Average` can hold a fraction of a millisecond.
+- **Durations**: every cue time is a whole number of milliseconds, so sums and differences are exact. `DurationRange.Average` holds whole nanoseconds. `TotalDisplayTime` stops at the largest or smallest `time.Duration` instead of wrapping.
+- **White space**: U+180E, the Mongolian vowel separator, splits words, as it does in PHP.
 
 ## JSON
 
 `Statistics` marshals to the shape of PHP `SubtitleStatistics::toArray()`, which `stbox info --json` prints under `statistics`.
 
 - **Keys**: `cueCount`, `wordCount`, `characterCount`, `totalDisplayTime`, `span`, `charactersPerSecond`, `wordsPerMinute`, `charactersPerLine`, `gaps`, `mostUsedWords`, in this order.
-- **Durations**: seconds in a number. 4.9 s writes `4.9`, 1 s writes `1`.
+- **Durations**: seconds in a number. 4.9 s writes `4.9`, 1 s writes `1`. The average of the gaps has at most 9 decimals, because it is whole nanoseconds: 2/3 s writes `0.666666667`, where PHP writes `0.6666666666666666`.
 - **Ranges**: `{"min": 12.5, "average": 27.53333333333333, "max": 42.5}`. A nil value writes `null`.
 - **Most used words**: the first 10 entries as `[{"word": "the", "count": 3}, ...]`, `[]` for none.
 
 ## Differences from PHP
 
-[php-differences.md](php-differences.md) lists the rows for #44. They concern lower case and the Unicode tables.
+[php-differences.md](php-differences.md) lists the rows for #44. They concern the gap average and the Unicode tables.

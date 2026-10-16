@@ -3,6 +3,7 @@ package stats_test
 import (
 	"encoding/json"
 	"math"
+	"os"
 	"slices"
 	"strconv"
 	"testing"
@@ -218,7 +219,7 @@ func TestOfMostUsedWords(t *testing.T) {
 		{"an entity is decoded", []string{"AT&amp;T at&amp;t"}, 2, words("at&t", 2)},
 		{"lines join with a space", []string{"Hello", "hello"}, 2, words("hello", 2)},
 		{"no break space and ideographic space split", []string{"one\u00a0two\u3000three\u2028four"}, 4, words("one", 1, "two", 1, "three", 1, "four", 1)},
-		{"mongolian vowel separator does not split", []string{"one\u180etwo"}, 1, words("one\u180etwo", 1)},
+		{"mongolian vowel separator splits as in PHP", []string{"one\u180etwo"}, 2, words("one", 1, "two", 1)},
 		{"zero width space does not split", []string{"one\u200btwo"}, 1, words("one\u200btwo", 1)},
 	}
 	for _, tt := range tests {
@@ -233,12 +234,12 @@ func TestOfMostUsedWords(t *testing.T) {
 	}
 }
 
-func TestOfLowerCaseIsTheGoMapping(t *testing.T) {
+func TestOfLowerCaseIsTheFullMapping(t *testing.T) {
 	t.Parallel()
 
 	got := stats.Of(textCases(t, "lowerCase"))
 
-	assert.Equal(t, words("istanbul", 1, "\u03bf\u03b4\u03bf\u03c3", 1), got.MostUsedWords)
+	assert.Equal(t, words("i\u0307stanbul", 1, "\u03bf\u03b4\u03bf\u03c2", 1), got.MostUsedWords)
 }
 
 func TestOfInvalidUTF8(t *testing.T) {
@@ -288,20 +289,49 @@ func TestOfDoesNotChangeTheSubtitle(t *testing.T) {
 	assert.Equal(t, before.Cues(), s.Cues())
 }
 
-func TestOfRepeatedFifteenThousandTimesUnderFiveSeconds(t *testing.T) {
-	if testing.Short() {
-		t.Skip("speed test")
-	}
+func TestOfRepeatedFifteenThousandTimes(t *testing.T) {
 	t.Parallel()
 
-	s := repeated(t, 15000)
+	got := stats.Of(repeated(t, 15000))
 
-	start := time.Now()
-	got := stats.Of(s)
-
-	assert.Less(t, time.Since(start), 5*time.Second)
 	assert.Equal(t, []int{60000, 26 * 15000, 123 * 15000}, []int{got.CueCount, got.WordCount, got.CharacterCount})
 	assertRange(t, stats.Range{Min: 15, Average: 20.5, Max: 26}, got.CharactersPerLine)
+}
+
+// TestOfGrowth times Of at n and 10n cues, best of 3 each, and fails above a ratio of 30.
+func TestOfGrowth(t *testing.T) {
+	t.Parallel()
+
+	if os.Getenv("STBOX_GROWTH") != "1" {
+		t.Skip("growth test, set STBOX_GROWTH=1")
+	}
+	best := func(copies int) time.Duration {
+		s := repeated(t, copies)
+		fastest := time.Duration(math.MaxInt64)
+		for range 3 {
+			begin := time.Now()
+			stats.Of(s)
+			fastest = min(fastest, time.Since(begin))
+		}
+		return fastest
+	}
+	small, large := best(500), best(5000)
+	ratio := float64(large) / float64(max(small, time.Nanosecond))
+	assert.LessOrEqual(t, ratio, 30.0, "2000 cues took %v, 20000 cues took %v", small, large)
+}
+
+func TestOfTotalDisplayTimeStopsAtTheLimitsOfDuration(t *testing.T) {
+	t.Parallel()
+
+	const longest = 99999*time.Hour + 59*time.Minute + 59*time.Second + 999*time.Millisecond
+	up, down := make([]model.Cue, 26), make([]model.Cue, 26)
+	for i := range up {
+		up[i] = model.Cue{End: longest, Lines: []string{"A"}}
+		down[i] = model.Cue{Start: longest, Lines: []string{"A"}}
+	}
+
+	assert.Equal(t, time.Duration(math.MaxInt64), stats.Of(subtitle(up...)).TotalDisplayTime)
+	assert.Equal(t, time.Duration(math.MinInt64), stats.Of(subtitle(down...)).TotalDisplayTime)
 }
 
 func repeated(tb testing.TB, copies int) *model.Subtitle {

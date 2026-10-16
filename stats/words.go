@@ -6,6 +6,8 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"golang.org/x/text/cases"
 )
 
 // wordCounter counts normalized words and remembers the order of their first use.
@@ -34,22 +36,11 @@ func (c *wordCounter) sorted() []WordCount {
 	return c.words
 }
 
-// splitWords splits at white space. Invalid UTF-8 splits at ASCII white space only, as PHP does when its
-// Unicode pattern fails.
-func splitWords(text string) []string {
-	if utf8.ValidString(text) {
-		return strings.FieldsFunc(text, unicode.IsSpace)
-	}
-	return strings.FieldsFunc(text, isASCIISpace)
-}
-
-func isASCIISpace(r rune) bool { return r == ' ' || '\t' <= r && r <= '\r' }
-
-// normalize strips the punctuation and symbols around a word and makes it lower case. A word that is not valid
-// UTF-8 gets ASCII punctuation and ASCII letters only.
-func normalize(word string) string {
+// normalize strips the punctuation and symbols around a word and makes it lower case with the full Unicode
+// mapping, as PHP mb_strtolower does. A word that is not valid UTF-8 gets ASCII punctuation and ASCII letters only.
+func normalize(word string, lower cases.Caser) string {
 	if utf8.ValidString(word) {
-		return strings.ToLower(strings.TrimFunc(word, isPunctuationOrSymbol))
+		return lower.String(strings.TrimFunc(word, isPunctuationOrSymbol))
 	}
 	return asciiLower(strings.TrimFunc(word, isASCIIPunctuation))
 }
