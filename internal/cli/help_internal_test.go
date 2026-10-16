@@ -12,6 +12,7 @@ import (
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
 	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/refsync"
 )
 
 // summaryCommand is a command with a name and a summary only, for the layout of the global help.
@@ -49,6 +50,8 @@ func TestGlobalHelp(t *testing.T) {
   convert  Convert subtitle files to another format, and run text, structure and
            timing edits on the way.
   info     Print the format, the encoding and the cue count of subtitle files.
+  sync     Find the offset and frame-rate scale against a reference subtitle,
+           and retime the input.
   formats  List the format names and file extensions for --from and --to.
   help     Show the help of a command.
 ` + globalHelpTail
@@ -295,7 +298,12 @@ func TestOptionNamesFollowTheNamingRules(t *testing.T) {
 func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 	t.Parallel()
 
-	codeDefaults := map[string]string{}
+	codeDefaults := map[string]string{
+		"min-offset":    formatNumber(refsync.DefaultMinOffset.Seconds()),
+		"max-offset":    formatNumber(refsync.DefaultMaxOffset.Seconds()),
+		"max-splits":    strconv.Itoa((refsync.Options{}).MaxSplits),
+		"split-penalty": formatNumber(refsync.DefaultSplitPenalty),
+	}
 	for _, le := range lineEndings {
 		if le.value == (stbox.WriteOptions{}).LineEnding {
 			codeDefaults["line-ending"] = le.name
