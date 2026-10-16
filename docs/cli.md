@@ -123,7 +123,7 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 | flags | `i` matches in any case. `m`, `s` and `x` become `(?msx)` before the pattern. `u` changes nothing, because Go strings are UTF-8. A space, LF and CR are skipped, as in PHP. Other flags fail | `/col(ou)r/i` |
 | TO | `\N`, `$N` and `${N}`, each with 1 or 2 digits, insert group N, or nothing when the pattern has no group N. `\\` and `\$` write `\` and `$`. Every other `$` is text, as in PHP | `\1` gives group 1, `$_` stays `$_` |
 
-- **Not supported**: `\K`, `\h`, `\o{...}`, `(?|...)` and `(*VERB)` controls. A pattern with one of them fails as an invalid regular expression.
+- **Not supported**: `\K`, `\h`, `\o{...}`, `(?|...)`, `(*VERB)` controls and the Python-style named groups `(?P<name>...)`, `(?P=name)` and `(?P>name)`. Write `(?<name>...)` and `\k<name>`. A pattern with one of them fails as an invalid regular expression.
 - **POSIX classes**: `[[:alpha:]]` and `[[:digit:]]` give no error, but they match the characters of the brackets, not a letter or a digit. Write `\p{L}` and `\d`.
 - **Without `--replace-regex`**, FROM and TO are plain text.
 
