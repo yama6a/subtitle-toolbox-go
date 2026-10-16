@@ -10,4 +10,5 @@ Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5
 | `own_empty_cue.sbv` | Written for this repository. Cue 2 has a timing line and no text. | MIT |
 | `own_angle_bracket_text_from_srt.sbv` | Generated for this repository. Expected `SbvFormatter` output for `srt/real/own_angle_bracket_text.srt`. | MIT |
 | `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name, written by `tests/files/generate-read-goldens.php` | MIT |
-| `expected/*.out.*`, `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand. Each file equals the PHP write golden of the same name at the pinned commit | MIT |
+| `expected/*.out.sbv` | Written by the Go write golden tests with -update, reviewed by hand. PHP has no golden for these files | MIT |
+| `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand. Each file equals the PHP write golden of the same name at the pinned commit | MIT |

@@ -1,6 +1,7 @@
 package sbv_test
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/sbv"
+	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -35,6 +37,16 @@ func TestWriteRoundTripsFixtures(t *testing.T) {
 
 	s := readFile(t, "sbv/two_digit_hours.sbv")
 	assert.Equal(t, "0:00:01.500,0:00:04.000\nHello world\n\n1:00:05.000,1:00:07.250\nSecond cue\non two lines\n", write(t, s, model.CommonWriteOptions{}))
+}
+
+// Ports testSubRipConvertsToSbvWithoutMarkup of tests/Formatters/SbvFormatterTest.php of subtitle-toolbox-php.
+func TestWriteConvertsSubRipWithoutMarkup(t *testing.T) {
+	t.Parallel()
+
+	s, warnings, err := srt.Read(bytes.NewReader(testfiles.Read(t, "srt/valid.srt")), model.CommonReadOptions{}, srt.ReadOptions{})
+	require.NoError(t, err)
+	require.Empty(t, warnings)
+	assert.Equal(t, string(testfiles.Read(t, "sbv/from_srt.sbv")), write(t, s, model.CommonWriteOptions{}))
 }
 
 // Ports the loose timing line write of testLenientModeReadsOtherSeparatorsAndFractionsAndWarns
