@@ -308,6 +308,7 @@ func TestReadLooseTimes(t *testing.T) {
 		{"without hours", "07:03,920", "07:04,500", cueRow{423920 * ms, 424500 * ms, nil}, false},
 		{"without fraction", "00:00:04", "00:00:05", cueRow{4 * time.Second, 5 * time.Second, nil}, true},
 		{"4 hour digits", "0000:00:01,000", "0000:00:02,000", cueRow{time.Second, 2 * time.Second, nil}, false},
+		{"4 fraction digits just below 100000 hours", "0:0:0,0", "99999:59:59,9994", cueRow{0, 99999*time.Hour + 3599999*ms, nil}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -343,11 +344,12 @@ func TestReadLenientSkipsBadTimes(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name, timing string
+		name, timing, msg string
 	}{
-		{"minutes", "00:00:01,000 --> 00:75:02,000"},
-		{"seconds", "00:00:01,000 --> 00:00:75,000"},
-		{"without hours", "00:01,000 --> 00:60,000"},
+		{"minutes", "00:00:01,000 --> 00:75:02,000", `The time "00:75:02,000" is not valid.`},
+		{"seconds", "00:00:01,000 --> 00:00:75,000", `The time "00:00:75,000" is not valid.`},
+		{"without hours", "00:01,000 --> 00:60,000", `The time "00:60,000" is not valid.`},
+		{"rounds to 100000 hours", "0:0:0,0 --> 99999:59:59,9995", `The time "99999:59:59,9995" is not below 100000 hours.`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -357,7 +359,7 @@ func TestReadLenientSkipsBadTimes(t *testing.T) {
 			s, warnings := mustRead(t, content, true)
 			assert.Equal(t, []cueRow{{2 * time.Hour, 2*time.Hour + 2*time.Second, []string{"It is late."}}}, cueRows(s))
 			require.Len(t, warnings, 1)
-			assert.Equal(t, model.Skipped, warnings[0].Action)
+			assert.Equal(t, warningRow{tt.msg, 2, 0, model.Skipped}, warningRows(warnings)[0])
 			_ = readError(t, content)
 		})
 	}
