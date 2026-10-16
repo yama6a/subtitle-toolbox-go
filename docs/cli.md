@@ -116,6 +116,7 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 ```
 Name  Extensions  Read  Write
 json  .json       yes   yes
+sbv   .sbv        yes   yes
 srt   .srt        yes   yes
 vtt   .vtt        yes   yes
 ```

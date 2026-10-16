@@ -1,0 +1,28 @@
+{
+    "name": "SBV with 20 hour digits",
+    "format": "sbv",
+    "strict": {
+        "error": "The time \"99999999999999999999:00:04.000\" is not below 100000 hours.",
+        "line": 4
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The pool opens at seven."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "No running, please."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 4,
+            "block": 1,
+            "action": "skipped",
+            "message": "The time \"99999999999999999999:00:04.000\" is not below 100000 hours."
+        }
+    ]
+}

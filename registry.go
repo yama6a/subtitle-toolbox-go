@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/yama6a/subtitle-toolbox-go/format/sbv"
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
@@ -29,6 +30,9 @@ var (
 	_ readFunc[srt.ReadOptions]         = srt.Read
 	_ writeFunc[srt.WriteOptions]       = srt.Write
 	_ detectFunc                        = srt.Detect
+	_ readFunc[sbv.ReadOptions]         = sbv.Read
+	_ writeFunc[sbv.WriteOptions]       = sbv.Write
+	_ detectFunc                        = sbv.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -51,7 +55,7 @@ var registry = []formatFuncs{
 	{format: MicroDVD},
 	{format: MPSub},
 	{format: SAMI},
-	{format: SBV},
+	{format: SBV, read: readSBV, write: writeSBV},
 	{format: SubRip, read: readSubRip, write: writeSubRip},
 	{format: SubViewer},
 	{format: TTML},
@@ -81,6 +85,7 @@ var (
 	signatures = []signature{
 		{format: WebVTT, match: webvtt.Detect},
 		{format: SubRip, match: srt.Detect},
+		{format: SBV, match: sbv.Detect},
 	}
 )
 
@@ -131,6 +136,14 @@ func readSubRip(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Su
 
 func writeSubRip(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
 	return srt.Write(w, s, common, srt.WriteOptions{})
+}
+
+func readSBV(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return sbv.Read(r, common, sbv.ReadOptions{})
+}
+
+func writeSBV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+	return sbv.Write(w, s, common, sbv.WriteOptions{})
 }
 
 func lookup(f Format) (formatFuncs, bool) {

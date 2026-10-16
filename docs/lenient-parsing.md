@@ -91,6 +91,21 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Line numbers**: the cue warnings report the timing line.
 - **Order** inside a block: the join warnings, the split warnings, then for each cue the swap, the unknown text, the loose times, the full-width delimiters, the arrow and the missing cue number.
 
+## SBV
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| an empty line inside a cue | joins the text to the cue | joins it. `Block #B has an empty line before line N inside the cue. The parser kept the text after it in the cue.` `Repaired` |
+| no empty line before a cue | splits the block before the timing line | splits it. `Block #B has no empty line before line N. The parser split the block there.` `Repaired`, once per new part |
+| a timing line with a dot between the times, commas before the fractions, or 1 to 4 fraction digits | `Block #B has no timing line on its first line. The line is "Q".` or `The time "T" is not valid.` | reads it, the fraction rounded half up to whole milliseconds. `Block #B has a timing line with other separators or fraction digits than SBV uses. The parser read it.` `Repaired` |
+| a first line without a comma, or with more than one, that is no loose timing line | `Block #B has no timing line on its first line. The line is "Q".` | skips the block |
+| a half of a timing line that is not `H:MM:SS.mmm`, such as `0:00:61.5` or a note word | `The time "T" is not valid.` | skips the block |
+
+- **Loose timing line**: `H:M:S` with 1 or 2 digit minutes and seconds up to 59, then `.`, `,` or `:` and 1 to 4 fraction digits. A `.` or `,` with optional spaces separates the two times. Example: `0:00:07.9995 , 0:00:11,3` reads as 8 s and 11.3 s.
+- **Bound message**: a loose time of 100000 hours or more quotes its digits as written with a dot, such as `99999999999999999999:00:04.0`.
+- **Block numbers**: B counts the blocks after the join, from 0.
+- **Line numbers**: the cue warnings report the timing line.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

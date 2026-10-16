@@ -33,6 +33,14 @@ Every file except the 2 `mantas_` files is written for this repository in the sh
 | `absurd_hours.vtt` | a cue with 20 hour digits between two good cues, LF | MIT |
 | `absurd_seconds.json` | the library JSON. A cue with a start of `1e20` seconds between two good cues, LF | MIT |
 | `absurd_word_timestamp.vtt` | a cue with a word timestamp of 20 hour digits between two good cues, LF | MIT |
+| `bad_timestamp.sbv` | a letter in an end time, LF | MIT |
+| `loose_timing.sbv` | a dot between the start and end time, commas before the fractions, fractions with 1 and 2 digits, LF | MIT |
+| `missing_empty_line.sbv` | no empty line between cue 1 and cue 2, LF | MIT |
+| `text_before_first_cue.sbv` | a note line before cue 1, LF | MIT |
+| `truncated_last_cue.sbv` | the file ends inside the time line of cue 3, LF | MIT |
+| `empty_line_in_cue.sbv` | an empty line inside the text of cue 1, an empty line between the timing line and the text of cue 2, LF | MIT |
+| `mixed_line_endings.sbv` | CR LF, LF and CR CR LF in one file | MIT |
+| `absurd_hours.sbv` | a cue with 20 hour digits between two good cues, LF | MIT |
 | `expected/*.json` | written for subtitle-toolbox-go. Each file holds the values of `damagedFiles()` in `tests/Parsers/LenientParsingTest.php` of this repository for the fixture of the same name, and the full message and line of the strict error that the PHP parser returns | MIT |
 | `expected/joined_files.vtt.json` | written for subtitle-toolbox-go. `damagedFiles()` has no row for this fixture, so the file holds the values of the 3 `joined_files` tests in `tests/Parsers/LenientWebVttTest.php` of this repository, and the strict error that the PHP parser returns | MIT |
 | `expected/no_cue_numbers.srt.json`, `expected/mantas_utf16.srt.json` | written for subtitle-toolbox-go. `damagedFiles()` has no row for these fixtures, so the files hold the cue count of `FormatDetectorTest::subRipWithoutLeadingCueNumber` and the cue of `LooseTimestampsTest::testLenientModeReadsATimeWithOneSecondDigitInUtf16` of this repository, and the rest of the result and the strict error that the PHP parser returns | MIT |

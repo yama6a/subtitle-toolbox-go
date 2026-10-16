@@ -159,7 +159,7 @@ func TestLines(t *testing.T) {
 		{"empty", "", []string{""}},
 		{"LF", "a\nb", []string{"a", "b"}},
 		{"CR LF", "a\r\nb\r\n", []string{"a", "b", ""}},
-		{"CR CR LF is one line end", "a\r\r\nb", []string{"a", "b"}},
+		{"2 CRs before LF are one line end", "a\r\r\nb", []string{"a", "b"}},
 		{"lone CR", "a\rb", []string{"a", "b"}},
 		{"2 lone CRs", "a\r\rb", []string{"a", "", "b"}},
 		{"mixed", "a\r\nb\nc\r\r\nd\re", []string{"a", "b", "c", "d", "e"}},

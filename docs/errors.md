@@ -54,6 +54,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 | Reader | Line |
 |:--- |:--- |
 | SubRip, WebVTT | the line of the error. A message about a missing cue number or timing line quotes the line, cut to 60 characters with `...` |
+| SBV | the line of the error, which is the timing line. A message about a missing timing line quotes the line, cut to 60 characters with `...` |
 | library JSON | 0 |
 
 Each format adds its row here when its reader ships.
