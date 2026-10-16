@@ -17,16 +17,21 @@ import (
 
 const stdinArg = "-"
 
-// inputOptions returns the options of a command that reads subtitle files.
-func inputOptions() []option {
-	return []option{
+// inputOptions returns the options of a command that reads subtitle files. A command that reads one input only
+// has no --keep-going.
+func inputOptions(manyInputs bool) []option {
+	opts := []option{
 		valueOption("from", "FORMAT", "Input format. Default: the format detected from the content. "+
 			"When detection finds no format, the file extension sets it."),
 		valueOption("encoding", "NAME", "Encoding of input that is not UTF-8, for example Windows-1252. "+
 			"It replaces code page detection. A BOM, valid UTF-8 and UTF-16 input win over it."),
 		flagOption("lenient", "Skip or repair broken cues and print a warning for each."),
-		flagOption("keep-going", "Go on with the next file after a file fails. Default: stop at the first failure."),
 	}
+	if manyInputs {
+		opts = append(opts, flagOption("keep-going",
+			"Go on with the next file after a file fails. Default: stop at the first failure."))
+	}
+	return opts
 }
 
 // findFormat returns the format of a --from or --to value: a format name or a file extension, in any ASCII case

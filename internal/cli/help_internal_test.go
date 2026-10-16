@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/diff"
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 	"github.com/yama6a/subtitle-toolbox-go/refsync"
@@ -34,6 +35,7 @@ overwrites a file.
 
 Exit codes:
   0    Success.
+  1    diff found a difference.
   2    Invalid arguments.
   3    A file could not be read or written.
   130  Stopped by Ctrl-C or SIGTERM. Finished outputs stay.
@@ -53,6 +55,7 @@ func TestGlobalHelp(t *testing.T) {
   info     Print the format, the encoding and the cue count of subtitle files.
   sync     Find the offset and frame-rate scale against a reference subtitle,
            and retime the input.
+  diff     List the added, removed and changed cues between two subtitle files.
   formats  List the format names and file extensions for --from and --to.
   help     Show the help of a command.
 ` + globalHelpTail
@@ -314,9 +317,10 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 	codeDefaults["structure-max-lines"] = strconv.Itoa(model.DefaultMaxLinesPerCue)
 	codeDefaults["timing-min-gap"] = formatNumber(defaultMinGap.Seconds())
 	codeDefaults["ass-karaoke-tag"] = ass.WriteOptions{}.KaraokeTag.String()
+	codeDefaults["time-tolerance"] = formatNumber(diff.DefaultTimeTolerance.Seconds())
 	described := []string{
 		"the format detected from the content", "stop at the first failure", "the input format",
-		"the BOM rule of the output format",
+		"the BOM rule of the output format", "as for --from",
 	}
 	unwrap := regexp.MustCompile(`\n {3,}(\S)`)
 	defaultText := regexp.MustCompile(`(?m)^  (?:-\w, )?--([\w-]+).*? Default: (.+?)\.(?: |$)`)

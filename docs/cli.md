@@ -210,6 +210,16 @@ vtt   .vtt        yes   yes
 - **Shared extensions**: the first format in the list owns an extension. `--from` reads a file as another format.
 - **Hidden formats**: a format that can be neither read nor written has no row.
 
+## diff
+
+`stbox diff OLD NEW` compares two files and prints the differences of [compare.md](compare.md). It exits 1 when the files differ.
+
+- **Expansion**: only OLD goes through the input expansion. A directory or glob that gives 2 or more files fails with exit 2. NEW is used as given, and it cannot be `-`.
+- **Input options**: `--from`, `--encoding` and `--lenient` apply to both files. `--new-from` replaces `--from` for NEW.
+- **Failure**: a failed file prints `PATH: MESSAGE` with its own path and exits 3. A message about the format of NEW names `--new-from`.
+- **No `--keep-going`**: the command has one pair of files.
+- **JSON**: one object with the keys `oldFile`, `newFile`, `equal`, `differences`, `oldWarnings` and `newWarnings`. Cue times are seconds, such as `6.2`.
+
 ## JSON output
 
 `--json` prints one JSON array on stdout at the end of the run, with one object for each input that did not fail. When every input failed, it prints `[]`.
@@ -223,6 +233,7 @@ vtt   .vtt        yes   yes
 | Code | Meaning | Example |
 |---:|:--- |:--- |
 | 0 | success | every input was written |
+| 1 | result | `diff` found a difference. Not an error |
 | 2 | invalid arguments | an unknown option, no input, an output that exists, `--encoding CP1125` |
 | 3 | a file could not be read or written | a missing input, a broken cue in strict mode, an output directory that cannot be created |
 | 130 | stopped by Ctrl-C or SIGTERM | the finished outputs stay |
