@@ -7,7 +7,7 @@ The module follows semantic versioning. A 1.x minor or patch release does not br
 | Part | What stays stable in 1.x |
 |:--- |:--- |
 | Go API | every exported identifier outside `internal/`: packages, types, functions, methods, constants, variables and struct fields. The compiler keeps callers out of `internal/`, so the module has no exported names for internal use |
-| Behaviour | the behaviour that these pages and the godoc describe, the default of each option, and the output of a conversion. Only a major release changes them, except for the changes that the next 2 sections list |
+| Behaviour | the behaviour that these pages and the godoc describe, the default of each option, and the output of a conversion. Only a major release changes them, except for the changes that the sections below list |
 | Errors | the sentinel errors that `errors.Is` matches and the error types that `errors.As` matches. [errors.md](errors.md) lists them. The library has no numeric error codes |
 | CLI | the commands, the flags, the meaning of each exit code and the `--json` shapes of `stbox`. The CLI never overwrites a file. See [cli.md](cli.md) |
 | Library JSON | version 1 of the library JSON, its keys and its value types. See [json.md](json.md) |
