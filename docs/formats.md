@@ -1,6 +1,6 @@
 # Formats
 
-`Format` is a string type. Its value is the format name that the CLI takes for `--from` and `--to`, and it is also the key of the format data of that format. Example: `stbox.SubRip` is `"srt"`. `stbox.Formats()` lists the registry, and each `Format` has the methods `Extensions`, `CanRead`, `CanWrite` and `IsAutoDetected`.
+`Format` is a string type. Its value is the format name that the CLI takes for `--from` and `--to`. It is also the key of the format data of that format. Example: `stbox.SubRip` is `"srt"`. `stbox.Formats()` lists the registry. Each `Format` has the methods `Extensions`, `CanRead`, `CanWrite` and `IsAutoDetected`.
 
 | Format | Go constant | Name | Extensions | Section |
 |:--- |:--- |:--- |:--- |:--- |
@@ -8,14 +8,14 @@
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
 
-- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. Pass `ReadOptions.Format` to read a file as another format.
-- **Time limit**: every time in every format is below 100000 hours. A reader rejects a time at or above it, and a retime that moves a cue past it returns an error that matches `ErrInvalidArgument`. Writers clamp a negative time to 0, except the JSON writer.
-- **Options**: each section lists the fields of the format in `ReadOptions` and `WriteOptions`. The fields that every format shares are in [reading-and-writing.md](reading-and-writing.md). A reader ignores the fields of other formats.
+- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. To read a file as another format, pass `ReadOptions.Format`.
+- **Time limit**: every time in every format is below 100000 hours. A reader rejects a time at or above it. A retime that moves a cue past it returns an error that matches `ErrInvalidArgument`. Writers clamp a negative time to 0, except the JSON writer.
+- **Options**: each section lists the fields of the format in `ReadOptions` and `WriteOptions`. The fields that every format shares are in [reading-writing.md](reading-writing.md). A reader ignores the fields of other formats.
 - **Sections**: each section has what the reader accepts, what the writer writes, the options and the limits. The godoc of the format package holds the reference of each function.
 
 ## JSON
 
-Library JSON holds every field of the model, so a trip through it loses nothing. Package `format/stboxjson` reads and writes it. The format name is `json`, the extension `.json`. [library-json.md](library-json.md) holds the shape, the warnings and the version.
+Library JSON holds every field of the model, so a trip through it loses nothing. Package `format/stboxjson` reads and writes it. The format name is `json`, the extension `.json`. [json.md](json.md) holds the shape, the warnings and the version.
 
 ### Options
 
@@ -26,7 +26,7 @@ Library JSON holds every field of the model, so a trip through it loses nothing.
 | `PrettyPrint` | `bool` | false: one compact line | indent with 4 spaces and end the output with LF |
 | `OmitFormatData` | `bool` | false: write it | leave out `formatData` on the subtitle and on every cue |
 
-- **Shared fields**: `StripTags` has no effect, because library JSON keeps the markup. `BOMDefault` writes no BOM. See [Output rules](reading-and-writing.md#output-rules).
+- **Shared fields**: `StripTags` has no effect, because library JSON keeps the markup. `BOMDefault` writes no BOM. See [Output rules](reading-writing.md#output-rules).
 
 ## WebVTT
 

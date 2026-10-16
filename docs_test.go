@@ -31,7 +31,6 @@ var (
 	markerPattern  = regexp.MustCompile(`^<!-- example: (\S+) -->$`)
 )
 
-// markdownFiles returns README.md and every Markdown file under docs/, as slash paths.
 func markdownFiles(t *testing.T) []string {
 	t.Helper()
 	files := []string{"README.md"}
@@ -56,9 +55,10 @@ func readFile(t *testing.T, name string) string {
 	return string(b)
 }
 
-// anchors returns the GitHub heading anchors of a Markdown text.
+// anchors returns the heading anchors that GitHub makes. A repeated heading gets the suffix -1, -2 and so on.
 func anchors(text string) map[string]bool {
 	out := map[string]bool{}
+	seen := map[string]int{}
 	for _, m := range headingPattern.FindAllStringSubmatch(fencePattern.ReplaceAllString(text, ""), -1) {
 		var b strings.Builder
 		for _, r := range strings.ToLower(strings.ReplaceAll(m[1], "`", "")) {
@@ -69,9 +69,21 @@ func anchors(text string) map[string]bool {
 				b.WriteRune(r)
 			}
 		}
-		out[b.String()] = true
+		slug := b.String()
+		if n := seen[slug]; n > 0 {
+			out[slug+"-"+strconv.Itoa(n)] = true
+		} else {
+			out[slug] = true
+		}
+		seen[slug]++
 	}
 	return out
+}
+
+func TestDocsAnchors(t *testing.T) {
+	t.Parallel()
+	got := anchors("# Formats\n## Options\n## Read `x`\n## Options\n## Options\n")
+	assert.Equal(t, map[string]bool{"formats": true, "options": true, "options-1": true, "options-2": true, "read-x": true}, got)
 }
 
 func TestDocsLinks(t *testing.T) {
@@ -196,13 +208,11 @@ func yesNo(b bool) string {
 	return "no"
 }
 
-// exampleFunc is an Example function of a test file.
 type exampleFunc struct {
 	dir  string
 	body string
 }
 
-// examples returns the body of every Example function in the module, by name.
 func examples(t *testing.T) map[string][]exampleFunc {
 	t.Helper()
 	out := map[string][]exampleFunc{}
@@ -248,7 +258,6 @@ func examples(t *testing.T) map[string][]exampleFunc {
 	return out
 }
 
-// unbrace removes the braces of a printed function body and one level of indentation.
 func unbrace(body string) string {
 	lines := strings.Split(strings.TrimSpace(body), "\n")
 	lines = lines[1 : len(lines)-1]

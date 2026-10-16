@@ -62,7 +62,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 
 | Format | Go constant | Name | Extensions | Read | Write | Notes |
 |:--- |:--- |:--- |:--- |:--- |:--- |:--- |
-| [JSON of this library](docs/library-json.md) | `stbox.JSON` | `json` | `.json` | yes | yes | |
+| [JSON of this library](docs/json.md) | `stbox.JSON` | `json` | `.json` | yes | yes | |
 | [SubRip](https://en.wikipedia.org/wiki/SubRip) | `stbox.SubRip` | `srt` | `.srt` | yes | yes | |
 | [WebVTT](https://www.w3.org/TR/webvtt1/) | `stbox.WebVTT` | `vtt` | `.vtt` | yes | yes | also chapters |
 
@@ -108,14 +108,14 @@ Each format has its own field in `ReadOptions` and `WriteOptions`. See [docs/for
 
 ## Design
 
-- **Time**: every time is a `time.Duration`, rounded to whole milliseconds. Integer arithmetic gives the same result on every machine.
-- **Options**: the zero value of every option is its default, so `stbox.ReadOptions{}` reads with the defaults.
-- **Logging**: the library never logs. A read returns its warnings in `ReadInfo`, and the caller decides what to do with them.
-- **Errors**: each cause is a sentinel error such as `ErrParse`, matched with `errors.Is`. There are no numeric error codes.
-- **Packages**: `stbox` reads and writes every format. A program that needs one format imports only its package, such as `format/srt`.
-- **Tests**: the PHP project's test files and read results are copied. A read must give the same cues as PHP, except where [docs/php-differences.md](docs/php-differences.md) lists a fix.
+- **Time**: every time is a `time.Duration`, rounded to whole milliseconds. PHP shifts in binary seconds, so 1.001 + 0.0005 is 1.0014999999999998 there.
+- **Options**: the zero value of every option is its default, so `stbox.ReadOptions{}` reads with the defaults. A struct literal then needs no constructor.
+- **Logging**: the library never logs. A read returns its warnings in `ReadInfo`. A logger in the API would put zap into the module graph of every importer.
+- **Errors**: each cause is a sentinel error such as `ErrParse`, matched with `errors.Is`. No sentinel matches every error, so errors of the caller's own reader stay apart.
+- **Packages**: no format package registers itself in `init()`. A missing format is then a compile error, and not an "unknown format" at run time.
+- **Tests**: the PHP read goldens are the conformance oracle, and a Go bug never rewrites them. [docs/php-differences.md](docs/php-differences.md) lists each deliberate difference.
 
-[docs/design.md](docs/design.md) gives the reasons and the costs.
+[docs/design.md](docs/design.md) links each decision to its issue.
 
 ## Compatibility
 
@@ -125,7 +125,7 @@ Every 1.x release keeps the API, the option defaults and the conversion output. 
 
 [docs/README.md](docs/README.md) lists every page. These pages come first:
 
-- [docs/reading-and-writing.md](docs/reading-and-writing.md): `Load`, `Parse`, `Write` and the options
+- [docs/reading-writing.md](docs/reading-writing.md): `Load`, `Parse`, `Write` and the options
 - [docs/formats.md](docs/formats.md): the formats and their options
 - [docs/subtitle.md](docs/subtitle.md): `Subtitle` and `Cue`
 - [docs/editing.md](docs/editing.md): retiming, timing fixes, cue structure and line wrapping
