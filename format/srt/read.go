@@ -97,36 +97,7 @@ func (rd *reader) blocks(content string) iter.Seq[blocks.Block] {
 			rd.st.Warn(blocks.JoinWarning(block, line), line, block, lines, model.Repaired)
 		}
 	}
-	return blocks.JoinCueTextBlocks(blocks.SplitAtEmptyLines(lines(content)), rd.rules, nil, onJoin)
-}
-
-// lines yields the lines of content and their 0-based numbers. LF, a run of CR before LF, and a lone CR end a line.
-func lines(content string) iter.Seq2[int, string] {
-	return func(yield func(int, string) bool) {
-		n := 0
-		for {
-			i := strings.IndexAny(content, "\r\n")
-			if i < 0 {
-				yield(n, content)
-				return
-			}
-			if !yield(n, content[:i]) {
-				return
-			}
-			next := i + 1
-			if content[i] == '\r' {
-				j := i
-				for j < len(content) && content[j] == '\r' {
-					j++
-				}
-				if j < len(content) && content[j] == '\n' {
-					next = j + 1
-				}
-			}
-			content = content[next:]
-			n++
-		}
-	}
+	return blocks.JoinCueTextBlocks(blocks.SplitAtEmptyLines(blocks.Lines(content)), rd.rules, nil, onJoin)
 }
 
 func (rd *reader) isTimingLine(line string) bool {

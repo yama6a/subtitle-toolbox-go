@@ -147,3 +147,41 @@ func TestSplitAtTimingLines(t *testing.T) {
 		})
 	}
 }
+
+func TestLines(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		in   string
+		want []string
+	}{
+		{"empty", "", []string{""}},
+		{"LF", "a\nb", []string{"a", "b"}},
+		{"CR LF", "a\r\nb\r\n", []string{"a", "b", ""}},
+		{"CR CR LF is one line end", "a\r\r\nb", []string{"a", "b"}},
+		{"lone CR", "a\rb", []string{"a", "b"}},
+		{"2 lone CRs", "a\r\rb", []string{"a", "", "b"}},
+		{"mixed", "a\r\nb\nc\r\r\nd\re", []string{"a", "b", "c", "d", "e"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var got []string
+			for n, line := range blocks.Lines(tt.in) {
+				assert.Equal(t, len(got), n)
+				got = append(got, line)
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestLinesStopsEarly(t *testing.T) {
+	t.Parallel()
+
+	for range blocks.Lines("a\nb\nc") {
+		break
+	}
+}
