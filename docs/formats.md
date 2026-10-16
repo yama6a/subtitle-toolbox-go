@@ -1,5 +1,33 @@
 # Formats
 
+`Format` is a string type. Its value is the format name that the CLI takes for `--from` and `--to`. It is also the key of the format data of that format. Example: `stbox.SubRip` is `"srt"`. `stbox.Formats()` lists the registry. Each `Format` has the methods `Extensions`, `CanRead`, `CanWrite` and `IsAutoDetected`.
+
+| Format | Go constant | Name | Extensions | Section |
+|:--- |:--- |:--- |:--- |:--- |
+| library JSON | `stbox.JSON` | `json` | `.json` | [JSON](#json) |
+| SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
+| WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
+
+- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. To read a file as another format, pass `ReadOptions.Format`.
+- **Time limit**: every time in every format is below 100000 hours. A reader rejects a time at or above it. A retime that moves a cue past it returns an error that matches `ErrInvalidArgument`. Writers clamp a negative time to 0, except the JSON writer.
+- **Options**: each section lists the fields of the format in `ReadOptions` and `WriteOptions`. The fields that every format shares are in [reading-writing.md](reading-writing.md). A reader ignores the fields of other formats.
+- **Sections**: each section has what the reader accepts, what the writer writes, the options and the limits. The godoc of the format package holds the reference of each function.
+
+## JSON
+
+Library JSON holds every field of the model, so a trip through it loses nothing. Package `format/stboxjson` reads and writes it. The format name is `json`, the extension `.json`. [json.md](json.md) holds the shape, the warnings and the version.
+
+### Options
+
+`stboxjson.ReadOptions` has no fields. The reader reads `Lenient`. The root `WriteOptions.JSON` holds a `stboxjson.WriteOptions`.
+
+| Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |
+| `PrettyPrint` | `bool` | false: one compact line | indent with 4 spaces and end the output with LF |
+| `OmitFormatData` | `bool` | false: write it | leave out `formatData` on the subtitle and on every cue |
+
+- **Shared fields**: `StripTags` has no effect, because library JSON keeps the markup. `BOMDefault` writes no BOM. See [Output rules](reading-writing.md#output-rules).
+
 ## WebVTT
 
 WebVTT is the caption format of HTML video and of HLS streams. Package `format/webvtt` reads and writes it. The format name is `vtt`, the extension `.vtt`.
@@ -59,12 +87,26 @@ This file reads as one cue from 1 s to 4 s with the identifier `intro`, the alig
 
 The writer turns `<font color>` into a [color class](markup.md#colors) when the color is one of the 8 WebVTT colors, so `#FFFF00`, `#ff0` and `yellow` all become `<c.yellow>`. WebVTT has no class for other colors, so the writer drops them. `webvtt.WriteWithReport` returns the output and one `DroppedColor` per dropped color. `stbox.Write` returns no report.
 
+<!-- example: format/webvtt/ExampleWriteWithReport -->
 ```go
 s := &model.Subtitle{}
 s.AddCue(model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{`<font color="#123456">Rain</font> <font color="#ffff00">and sun</font>`}})
 var out strings.Builder
-report, _ := webvtt.WriteWithReport(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
-fmt.Println(report.DroppedColors[0].Message)
+report, err := webvtt.WriteWithReport(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+fmt.Print(out.String())
+for _, d := range report.DroppedColors {
+	fmt.Println(d.Message)
+}
+// Output:
+// WEBVTT
+//
+// 1
+// 00:00:04.000 --> 00:00:06.000
+// Rain <c.yellow>and sun</c>
 // Cue #0 at 4 s: dropped the color "#123456", because WebVTT has classes for 8 colors only.
 ```
 

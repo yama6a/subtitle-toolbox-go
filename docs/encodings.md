@@ -2,12 +2,26 @@
 
 The reader turns every text input into UTF-8 before a parser sees it. `ReadInfo.SourceEncoding` names the encoding it read.
 
+<!-- example: ExampleParse_encoding -->
 ```go
-s, info, err := stbox.Load("film.srt", stbox.ReadOptions{})
-// a French file from an old Windows tool: info.SourceEncoding is "Windows-1252"
+latin1 := []byte("1\n00:00:01,000 --> 00:00:02,000\nCaf\xe9 au lait\n")
 
-s, info, err = stbox.Load("film.srt", stbox.ReadOptions{Encoding: "cp1250"})
-// info.SourceEncoding is "cp1250", as the caller wrote it
+s, info, err := stbox.Parse(bytes.NewReader(latin1), stbox.ReadOptions{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+fmt.Println(info.SourceEncoding, s.Len()) // Windows-1252 1
+
+_, info, err = stbox.Parse(bytes.NewReader(latin1), stbox.ReadOptions{Encoding: "cp1250"})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+fmt.Println(info.SourceEncoding) // cp1250, as the caller wrote it
+// Output:
+// Windows-1252 1
+// cp1250
 ```
 
 ## Supported names

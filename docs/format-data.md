@@ -1,14 +1,24 @@
 # Format data
 
-An ASS file has a `[V4+ Styles]` section and a `Format:` line in `[Events]`. No field of the model holds them, but the ASS writer needs them to write the file back as it was. The ASS reader keeps them as **format data**, the data of one format under the key `ass`. The file facts go on the subtitle, and the fields of each `Dialogue` line go on its cue. The ASS writer reads them back. Other writers ignore them. [Library JSON](library-json.md) carries format data, so a trip through JSON keeps it.
+An ASS file has a `[V4+ Styles]` section and a `Format:` line in `[Events]`. No field of the model holds them, but the ASS writer needs them to write the file back as it was. The ASS reader keeps them as **format data**, the data of one format under the key `ass`. The file facts go on the subtitle, and the fields of each `Dialogue` line go on its cue. The ASS writer reads them back. Other writers ignore them. [Library JSON](json.md) carries format data, so a trip through JSON keeps it.
 
+<!-- example: ExampleSubtitle_SetFormatData -->
 ```go
 var s model.Subtitle
 err := s.SetFormatData("microdvd", model.NewData(model.Field{Key: "frameRate", Value: 23.976}))
-fmt.Println(err) // <nil>
+fmt.Println(err)
+
+d, _ := s.FormatData("microdvd")
+fmt.Println(d.Number("frameRate"))
 
 err = s.SetFormatData("scc", model.NewData(model.Field{Key: "dropFrame", Value: "yes"}))
-fmt.Println(err) // stbox: invalid argument: The field formatData.scc.dropFrame must be a boolean.
+fmt.Println(err)
+fmt.Println(s.FormatDataKeys())
+// Output:
+// <nil>
+// 23.976 true
+// stbox: invalid argument: The field formatData.scc.dropFrame must be a boolean.
+// [microdvd]
 ```
 
 ## The Data type

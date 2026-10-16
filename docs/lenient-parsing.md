@@ -34,7 +34,7 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 
 ## Shared warnings
 
-`ReadInfo.Warnings` holds the warnings in this order: the decode warning, the warnings of the text pre-pass, then the warnings of the reader in input order. The library JSON reader orders its warnings by cue, see [library-json.md](library-json.md#warnings).
+`ReadInfo.Warnings` holds the warnings in this order: the decode warning, the warnings of the text pre-pass, then the warnings of the reader in input order. The library JSON reader orders its warnings by cue, see [json.md](json.md#warnings).
 
 | Message | Action | Line | Block |
 |:--- |:--- |:--- |:--- |
@@ -42,7 +42,7 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 | `The cue ends at E s, before it starts at S s. The parser swapped the times.` | Repaired | the timing line | the block |
 | `The file has text but no cues.` | Skipped | the first text line | none |
 
-- **Control characters**: the pre-pass of [reading-and-writing.md](reading-and-writing.md#text-pre-pass) removes them in both modes and warns once per file in lenient mode.
+- **Control characters**: the pre-pass of [reading-writing.md](reading-writing.md#text-pre-pass) removes them in both modes and warns once per file in lenient mode.
 - **Text but no cues**: only readers that skip unknown text without an error check for it. The read gave no cue and skipped no block.
 
 ## Time order and limits
