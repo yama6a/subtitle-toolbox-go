@@ -75,3 +75,7 @@ Go matches the PHP library byte for byte, except for the behaviour below. Each r
 | a `--replace-regex` flag other than `i`, `m`, `s`, `x`, `u` and the space, LF and CR that PHP skips, such as `/a/U` or `/a/D` | PCRE applies it | fails with `The flag U is not supported.` | #40 |
 | an empty `--replace-regex` pattern, such as `//`, `//m`, `//s` or `//x` | matches the empty text between all characters | fails as an invalid regular expression, because `ReplaceText` rejects an empty search | #40 |
 | the order of the `structure` options | the docs list the run order, the help another order, and neither says which | [cli.md](cli.md#pipeline) shows the run order and says that the help order differs | #40 |
+| a reference sync with 2 or more segments that moves a cue end to 100,000 hours or later | maps the times without the time limit check | checks the mapped times first, returns an error that matches `ErrInvalidArgument` and changes nothing | #50 |
+| a time of a reference sync with 2 or more segments on a half millisecond in decimal | computes `t * scale + offset` in seconds and rounds with `round($x, 3)` | computes in `float64` milliseconds and rounds with `math.Round`, as `Scale` does | #50 |
+| the end of the last segment of a reference sync | `SyncSegment::$to` is `INF` | `Segment.To` is nil | #50 |
+| a reference sync speed check | the tests fail when 2,000 cues take more than 5 s, or 15 s with 2 splits | `BenchmarkApply` measures the same cases and no test checks a time | #50 |
