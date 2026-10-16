@@ -40,6 +40,7 @@ func Run(ctx context.Context, args []string, env Env) error {
 func commands() []command {
 	return []command{
 		&infoCommand{},
+		&diffCommand{},
 		formatsCommand{},
 	}
 }
@@ -188,6 +189,7 @@ func (a *app) help(version string) string {
 		"Several inputs need --output-dir DIR. The tool never overwrites a file.")
 	exitCodes := table([][]string{
 		{"0", "Success."},
+		{"1", "diff found a difference."},
 		{"2", "Invalid arguments."},
 		{"3", "A file could not be read or written."},
 		{"130", "Stopped by Ctrl-C or SIGTERM. Finished outputs stay."},

@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/diff"
 )
 
 // summaryCommand is a command with a name and a summary only, for the layout of the global help.
@@ -30,6 +31,7 @@ overwrites a file.
 
 Exit codes:
   0    Success.
+  1    diff found a difference.
   2    Invalid arguments.
   3    A file could not be read or written.
   130  Stopped by Ctrl-C or SIGTERM. Finished outputs stay.
@@ -48,6 +50,7 @@ func TestGlobalHelp(t *testing.T) {
 
 		want := head + `Commands:
   info     Print the format, the encoding and the cue count of subtitle files.
+  diff     List the added, removed and changed cues between two subtitle files.
   formats  List the format names and file extensions for --from and --to.
   help     Show the help of a command.
 ` + globalHelpTail
@@ -318,9 +321,10 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 			codeDefaults["line-ending"] = le.name
 		}
 	}
+	codeDefaults["time-tolerance"] = formatNumber(diff.DefaultTimeTolerance.Seconds())
 	described := []string{
 		"the format detected from the content", "stop at the first failure", "the input format",
-		"the BOM rule of the output format",
+		"the BOM rule of the output format", "as for --from",
 	}
 	unwrap := regexp.MustCompile(`\n {3,}(\S)`)
 	defaultText := regexp.MustCompile(`(?m)^  (?:-\w, )?--([\w-]+).*? Default: (.+?)\.(?: |$)`)
