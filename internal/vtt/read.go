@@ -285,11 +285,7 @@ func isOtherBlock(lines []string) bool {
 func (r *Reader) splitHeader(lines iter.Seq[line]) iter.Seq[blocks.Block] {
 	return func(yield func(blocks.Block) bool) {
 		isHeader := true
-		raw := collectBlocks(lines, false)
-		if r.cut != nil {
-			raw = blocks.DropCut(raw, r.cut)
-		}
-		for b := range raw {
+		for b := range r.collect(lines) {
 			offset := -1
 			if isHeader && r.st.Lenient() {
 				offset = firstTimingLine(b.Lines)
@@ -319,6 +315,15 @@ func (r *Reader) splitHeader(lines iter.Seq[line]) iter.Seq[blocks.Block] {
 			}
 		}
 	}
+}
+
+// collect splits lines into blocks and drops the last one when an error cut it.
+func (r *Reader) collect(lines iter.Seq[line]) iter.Seq[blocks.Block] {
+	raw := collectBlocks(lines, false)
+	if r.cut == nil {
+		return raw
+	}
+	return blocks.DropCut(raw, r.cut)
 }
 
 // endsBlock reports whether text ends the block of current. The spec ends a cue only at an empty line.
