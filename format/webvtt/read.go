@@ -522,15 +522,20 @@ func (r *reader) time(text string, timingLine int, loose *[]looseTime) (time.Dur
 	}
 	// A last field of 1 digit without a fraction is a time that the end of the file cut off.
 	cutOff := len(text) >= 2 && text[len(text)-2] == ':' && isDigit(text[len(text)-1])
-	if r.st.Lenient() && !cutOff {
-		if d, ok := timecode.Loose(text, ".,", true); ok {
-			if !slices.ContainsFunc(*loose, func(lt looseTime) bool { return lt.text == text }) {
-				*loose = append(*loose, looseTime{text: text, d: d})
-			}
-			return d, nil
-		}
+	if !r.st.Lenient() || cutOff {
+		return 0, invalidTime(text, timingLine)
 	}
-	return 0, invalidTime(text, timingLine)
+	d, ok := timecode.Loose(text, ".,", true)
+	if !ok {
+		return 0, invalidTime(text, timingLine)
+	}
+	if d >= timecode.MaxTime {
+		return parsing.BoundedTime(d, text, timingLine)
+	}
+	if !slices.ContainsFunc(*loose, func(lt looseTime) bool { return lt.text == text }) {
+		*loose = append(*loose, looseTime{text: text, d: d})
+	}
+	return d, nil
 }
 
 func invalidTime(text string, line int) *model.ParseError {

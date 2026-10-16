@@ -13,8 +13,8 @@ const (
 // Loose reads the time variants that lenient readers repair, such as "0:0:1", "00:00:01,5000" or "00:00:01:50".
 // It reads 1 or 2 digit minutes and seconds below 60 and hours of up to 5 digits after leading zeros.
 // The fraction has 1 to 4 digits after one of the bytes of separators and rounds to whole milliseconds,
-// half away from zero. With hoursOptional, a time without hours such as "07:03,920" reads too.
-// When both forms match, the form with hours wins.
+// half away from zero. The rounding can reach MaxTime, so the caller checks the limit.
+// With hoursOptional, a time without hours such as "07:03,920" reads too. When both forms match, the form with hours wins.
 func Loose(s, separators string, hoursOptional bool) (time.Duration, bool) {
 	if d, ok := loose(s, separators, true); ok || !hoursOptional {
 		return d, ok
