@@ -138,7 +138,7 @@ func (r *runner) printWarnings(in *input) {
 		if w.Line != stbox.NoLine {
 			line = "line " + strconv.Itoa(w.Line) + ": "
 		}
-		r.c.err(in.label() + ": " + line + w.Message + " (" + w.Action.String() + ")\n")
+		r.c.err(in.label() + ": " + line + warningMessage(w) + " (" + w.Action.String() + ")\n")
 		if r.readOptions.Encoding == "" &&
 			(strings.HasPrefix(w.Message, textenc.UTF16WarningPrefix) || strings.HasPrefix(w.Message, textenc.DetectedWarningPrefix)) {
 			r.c.err(encodingHint + "\n")

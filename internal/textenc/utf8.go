@@ -7,6 +7,10 @@ import (
 
 const utf8BOM = "\ufeff"
 
+// InvalidUTF8WarningPrefix starts the warning of a reader about content that is not valid UTF-8, so the CLI can
+// add its advice after it without a copy of the text.
+const InvalidUTF8WarningPrefix = "The content is not valid UTF-8."
+
 // InvalidUTF8Offset returns the offset of the first byte of b that is not part of a valid UTF-8 sequence, -1 for none.
 func InvalidUTF8Offset(b []byte) int {
 	for i := 0; i < len(b); {

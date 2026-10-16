@@ -61,7 +61,7 @@ type warningJSON struct {
 func warningsJSON(warnings []stbox.ParseWarning) []warningJSON {
 	out := make([]warningJSON, len(warnings))
 	for i, w := range warnings {
-		out[i] = warningJSON{Message: w.Message, Action: w.Action.String()}
+		out[i] = warningJSON{Message: warningMessage(w), Action: w.Action.String()}
 		if w.Line != stbox.NoLine {
 			out[i].LineNumber = &w.Line
 		}

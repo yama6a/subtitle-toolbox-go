@@ -15,7 +15,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 )
 
-var update = flag.Bool("update", false, "rewrite the golden files")
+var update = flag.Bool("update", false, "rewrite the write golden files")
 
 const libraryJSONWithMetadata = `{"version":1,"metadata":{"zulu":"last","title":"A <b> & \"c\"","author":"Anna"},` +
 	`"cues":[{"start":1,"end":2,"lines":["Hi"]}]}`
@@ -130,7 +130,8 @@ func TestInfoInvalidUTF8Warning(t *testing.T) {
 	t.Parallel()
 
 	dir := newDir(t)
-	message := "The content is not valid UTF-8. The first bad byte is at offset 35. Set the source encoding of the file."
+	message := "The content is not valid UTF-8. The first bad byte is at offset 35. Set the source encoding of the file. " +
+		"Pass --encoding with the source encoding of the file."
 
 	got := call{dir: dir}.run(t, "info", "latin1.srt", "--encoding", "UTF-8", "--lenient")
 	assert.Equal(t, 0, got.Code)
@@ -220,6 +221,15 @@ func TestInfoTextBatch(t *testing.T) {
 			Stderr: "notes.txt: " + unknownFormatMessage + "\nStopped at the first failure. Pass --keep-going to process the other files.\n",
 		},
 		call{dir: dir}.run(t, "info", "trip.srt", "notes.txt", "shop.vtt"))
+}
+
+func TestInfoBlankLineIgnoresFailedFiles(t *testing.T) {
+	t.Parallel()
+
+	got := runCLI(t, "info", "notes.txt", "trip.srt", "--keep-going")
+	assert.Equal(t, exitFile, got.Code)
+	assert.Equal(t, "trip.srt\n  Format:   srt\n  Encoding: UTF-8\n  Cues:     3\n2 files: 1 succeeded, 1 failed.\n", got.Stdout)
+	assert.Equal(t, "notes.txt: "+unknownFormatMessage+"\n", got.Stderr)
 }
 
 func TestInfoReadsStandardInput(t *testing.T) {

@@ -9,5 +9,5 @@ Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5
 | broken.srt | self-written, cue 2 has a `=>` arrow | MIT |
 | latin1.srt | self-written in Windows-1252 | MIT |
 | notes.txt | self-written text that is not a subtitle | MIT |
-| `trip_info.txt`, `trip_info.json` | Generated for this repository. Output of `subtitle-toolbox info trip.srt` without and with `--json`, checked by hand | MIT |
-| `expected/info_trip.txt`, `expected/info_trip.json` | Go's own output of `stbox info trip.srt` without and with `--json`, written with `-update` | MIT |
+| trip_info.txt, trip_info.json | Generated for this repository. Output of `subtitle-toolbox info trip.srt` without and with `--json`, checked by hand | MIT |
+| expected/info_trip.txt, expected/info_trip.json | Written by the Go write golden tests with -update, reviewed by hand | MIT |
