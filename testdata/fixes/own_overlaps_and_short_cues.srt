@@ -1,0 +1,36 @@
+﻿1
+00:00:01,000 --> 00:00:03,200
+Good morning, everyone.
+
+2
+00:00:03,100 --> 00:00:05,000
+<i>Please take a seat,</i>
+the meeting starts in a minute.
+
+3
+00:00:05,000 --> 00:00:05,300
+Thanks.
+
+4
+00:00:07,500 --> 00:00:07,900
+Who brought the coffee?
+
+5
+00:00:08,200 --> 00:00:11,000
+The new intern did, and she also fixed the printer on the second floor this morning.
+
+6
+00:00:10,950 --> 00:00:12,000
+<b>Really?</b>
+
+7
+00:00:12,000 --> 00:00:12,250
+Wow.
+
+8
+00:00:12,250 --> 00:00:14,000
+Größere Äpfel überqueren übermütig die Straße, während Bäume grünen.
+
+9
+00:00:20,000 --> 00:00:20,400
+Tom & Jerry <3 coffee.

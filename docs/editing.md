@@ -82,6 +82,66 @@ for _, c := range s.All() {
 - **Cue across a point**: start, end and each word timestamp map on their own, so such a cue gets times from 2 segments.
 - **Points**: the list must not be empty, and the old and the new times must both increase strictly.
 
+## Timing fixes
+
+Speech-to-text tools and old editors write cues that overlap, flash for 0.3 s, or start and end exactly on the speech. A SubRip cue ends at 5.2 s and the next starts at 5.1 s. `s.FixOverlaps(time.Second * 2 / 24)` ends the first cue at 5.017 s, 2 frames at 24 fps before the next cue.
+
+| Method | Moves | Does |
+|:--- |:--- |:--- |
+| `FixOverlaps(minGap)` | ends | ends each cue at least `minGap` before the next later start |
+| `ExtendShortCues(minDuration, minGap)` | ends | makes each cue last at least `minDuration` where the next cue allows it |
+| `AddLeadInOut(leadIn, leadOut, minGap)` | starts and ends | shows each cue earlier and longer where the neighbours allow it |
+| `LimitLongCues(maxDuration)` | ends | ends each cue at most `maxDuration` after its start |
+| `MergeShortCues(opts)` | cues | joins each short cue with the next or the previous cue when the result fits the limits |
+
+- **Word timestamps**: no fix moves them, so the speech keeps its times.
+- **Rounding**: the 4 fixes other than `MergeShortCues` take the options as given and round only the new time to whole milliseconds. 5.1 s minus 2/24 s is 5.016666667 s, which rounds to 5.017 s.
+- **Limits of each fix**: no end moves before its start. `ExtendShortCues` never shortens a cue and never adds an overlap. `LimitLongCues` never lengthens a cue.
+- **Same start**: cues with the same start, such as a sign and a dialogue line, all end before the next later start. They can still overlap each other.
+- **Time limit**: `ExtendShortCues` and `AddLeadInOut` add a duration to a cue time, so they check the time limit of retiming. A cue end must stay below 100,000 hours.
+- **Errors**: a negative gap or lead returns an error that matches `ErrInvalidArgument`. So does a duration of 0 or less for `ExtendShortCues` and `LimitLongCues`. On an error the subtitle stays unchanged.
+
+### Lead-in and lead-out
+
+<!-- example: ExampleSubtitle_AddLeadInOut -->
+```go
+var s model.Subtitle
+s.AddCues(
+	model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Is the ferry running today?"}},
+	model.Cue{Start: 2100 * time.Millisecond, End: 3 * time.Second, Lines: []string{"Only the morning one."}},
+)
+
+if err := s.AddLeadInOut(200*time.Millisecond, 300*time.Millisecond, 40*time.Millisecond); err != nil {
+	fmt.Println(err)
+	return
+}
+
+for _, c := range s.All() {
+	fmt.Println(c.Start, c.End, c.Text())
+}
+// Output:
+// 800ms 2.06s Is the ferry running today?
+// 2.1s 3.3s Only the morning one.
+```
+
+- **Order**: the lead-out comes first, so it takes the space in a short gap. The first cue ends at 2.06 s, 40 ms before the next cue, so the next cue keeps its start.
+- **Inside another cue**: a start or an end inside another cue does not move.
+- **Result**: no start goes below 0, no start moves later, no end moves earlier, and 2 cues that did not overlap before do not overlap after.
+
+### Short cues
+
+Speech-to-text output often splits a sentence into cues of less than 1 s. Take `Wait.` from 62.1 s to 62.6 s, `Where are you` from 62.64 s and `going?` up to 64.1 s. `MergeShortCues(model.MergeShortCuesOptions{})` joins them into `Wait. Where are you going?` from 62.1 s to 64.1 s.
+
+- **Short cue**: a cue that lasts less than `Limits.MinDuration`, or has fewer visible characters than `MinCharacters`.
+- **Partner**: the next cue first, then the previous cue. A joined cue that is still short joins again.
+- **Join check**: both cues have the same alignment, forced flag and `<v>` speakers. The gap between them is at most `MaxGap`, and the joined cue lasts at most `Limits.MaxDuration`. The lines must wrap into `Limits.MaxCharactersPerLine` and `Limits.MaxLinesPerCue`, with each dialogue turn on lines of its own. A `Limits.MaxCharactersPerSecond` above 0 limits the reading speed too.
+- **Defaults**: the limits default to the Netflix limits for English: 42 characters per line, 2 lines and 7 s. `MinDuration` defaults to 1 s and `MaxGap` to 250 ms.
+- **Why pointers**: 0 is a legal `MinDuration` and `MaxGap` and differs from the default. `new(500 * time.Millisecond)` sets one in one expression.
+- **One speaker**: when both cues start with a `<v>` tag of one speaker, the result gets one tag. `<v.loud Anna>Hi.</v>` and `<v Anna>Hello.</v>` become `<v.loud Anna>Hi. Hello.</v>`.
+- **Options**: `KeepSentenceEnds` stops a join after a cue that ends with `.`, `?` or `!`. `MergeSameSpeakerAnyDuration` makes every cue a candidate, joins only cues of one `<v>` speaker, and has no duration limit.
+- **Result**: the joined cue keeps the start, the ID, the alignment, the forced flag and the format data of the first cue. A comment before a joined cue moves before the result.
+- **Rounding**: the checks round `MinDuration`, `MaxDuration` and `MaxGap` to whole milliseconds, as PHP does.
+
 ## Cue structure
 
 A film comes as `film_part1.srt` and `film_part2.srt`. `part1.Append(part2, 3130*time.Second)` adds the cues of part 2 at 52:10. HLS WebVTT repeats a cue across a segment boundary, and `RemoveDuplicateCues(0)` joins the copies into one cue.

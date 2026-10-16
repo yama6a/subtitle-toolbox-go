@@ -1,0 +1,16 @@
+1
+00:00:01,000 --> 00:00:26,000
+Hi.
+
+2
+00:00:30,000 --> 00:00:32,000
+Is anyone there?
+
+3
+00:00:40,250 --> 00:00:52,700
+We waited at the harbour
+until the last boat came in.
+
+4
+00:00:53,000 --> 00:01:00,000
+Then we walked home.

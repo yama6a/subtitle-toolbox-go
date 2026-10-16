@@ -47,6 +47,10 @@ type (
 	CaseMode = model.CaseMode
 	// DialogueDashStyle is the dash, and the space after it, that starts a dialogue line.
 	DialogueDashStyle = model.DialogueDashStyle
+	// CueLimits holds the size and time limits of one cue.
+	CueLimits = model.CueLimits
+	// MergeShortCuesOptions holds the settings of Subtitle.MergeShortCues.
+	MergeShortCuesOptions = model.MergeShortCuesOptions
 )
 
 // The formats of the registry, in registry order.
@@ -134,4 +138,13 @@ const (
 	DialogueDashEnDashSpace        = model.DialogueDashEnDashSpace
 	DialogueDashEmDash             = model.DialogueDashEmDash
 	DialogueDashEmDashSpace        = model.DialogueDashEmDashSpace
+)
+
+// The defaults of CueLimits and MergeShortCuesOptions.
+const (
+	DefaultMaxCharactersPerLine = model.DefaultMaxCharactersPerLine
+	DefaultMaxLinesPerCue       = model.DefaultMaxLinesPerCue
+	DefaultMinDuration          = model.DefaultMinDuration
+	DefaultMaxDuration          = model.DefaultMaxDuration
+	DefaultMergeMaxGap          = model.DefaultMergeMaxGap
 )

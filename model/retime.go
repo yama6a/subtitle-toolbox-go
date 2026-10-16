@@ -179,11 +179,16 @@ func checkTimeLimit(cues []Cue, r retiming, affected func(start time.Duration) b
 			continue
 		}
 		if end := r.seconds(max(c.Start, c.End)); !(end < limit) { // also true for NaN
-			return invalidArgument(fmt.Sprintf("The retimed cue %d would end at %s s. Cue times must be below %d hours.",
-				i+1, timecode.Number(end), timecode.MaxHours))
+			return timeLimitError(i, end)
 		}
 	}
 	return nil
+}
+
+// timeLimitError returns the error for cue index i whose new end in seconds reaches the time limit.
+func timeLimitError(i int, end float64) error {
+	return invalidArgument(fmt.Sprintf("The retimed cue %d would end at %s s. Cue times must be below %d hours.",
+		i+1, timecode.Number(end), timecode.MaxHours))
 }
 
 func add(t, d time.Duration) (time.Duration, bool) {
