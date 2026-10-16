@@ -180,7 +180,7 @@ func regexReplacement(from string) (p pcrePattern, hasGroup func(n int) bool, er
 	if p.ignoreCase {
 		options = regexp2.IgnoreCase
 	}
-	re, err := regexp2.Compile(p.pattern, options)
+	re, err := regexp2.Compile(p.pattern, options, regexp2.OptionMaintainCaptureOrder())
 	if err != nil {
 		return p, nil, usage(invalid)
 	}

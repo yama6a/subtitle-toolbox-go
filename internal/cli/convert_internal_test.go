@@ -517,6 +517,11 @@ func TestConvertTextEdits(t *testing.T) {
 	got := call{dir: dir}.run(t, "convert", "trip.srt", "--replace-regex", "--replace", `/(late)/=[$_|\\1|\$1|$$|\11|$1|${1}|$&|\x]`)
 	assert.Equal(t, 0, got.Code, got.Stderr)
 	assert.Contains(t, got.Stdout, "\n"+php+"\n")
+
+	// PHP numbers named and unnamed groups in pattern order and writes "[sigh|s]" here.
+	got = call{dir: dir}.run(t, "convert", "trip.srt", "--replace-regex", "--replace", `/(?<n>sigh)(s)/=[\1|\2]`, "--replace", `/T\_?oo/=Too`)
+	assert.Equal(t, 0, got.Code, got.Stderr)
+	assert.Contains(t, got.Stdout, "\n([sigh|s]) Too late.\n")
 }
 
 func TestConvertForcedOnly(t *testing.T) {

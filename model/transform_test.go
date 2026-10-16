@@ -233,6 +233,12 @@ func TestReplaceText(t *testing.T) {
 			want:  []string{"ba$ dc$"},
 		},
 		{
+			name:  "regex groups numbered in pattern order",
+			texts: []string{"ab"},
+			calls: []replaceCall{{Search: `(?<n>a)(b)`, Replace: "[$1|$2|${n}]", Regex: true}},
+			want:  []string{"[a|b|a]"},
+		},
+		{
 			name:  "regex lookbehind",
 			texts: []string{"a1 b1"},
 			calls: []replaceCall{{Search: `(?<=b)1`, Replace: "2", Regex: true}},

@@ -119,7 +119,7 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 |:--- |:--- |:--- |
 | leading white space | skipped | ` /a/` reads as `/a/` |
 | delimiter | the first character, not a letter, a digit, `\` or white space. `(`, `[`, `{` and `<` close with their partner and nest. Other delimiters close with the same character | `/a/`, `#a/b#`, `{a{2}}` |
-| escaped delimiter | the `\` stays, because PHP passes it to PCRE and regexp2 reads it the same way. With the delimiter `_` it drops, because regexp2 rejects `\_` | `/a\/b/` gives `a\/b`, `_a\_b_` gives `a_b` |
+| escapes | a `\` before the delimiter or other punctuation stays, because PHP passes it to PCRE and regexp2 reads it the same way. `\_` becomes `_`, because regexp2 rejects `\_` | `/a\/b/` gives `a\/b`, `/a\_b/` gives `a_b` |
 | flags | `i` matches in any case. `m`, `s` and `x` become `(?msx)` before the pattern. `u` changes nothing, because Go strings are UTF-8. A space, LF and CR are skipped, as in PHP. Other flags fail | `/col(ou)r/i` |
 | TO | `\N`, `$N` and `${N}`, each with 1 or 2 digits, insert group N, or nothing when the pattern has no group N. `\\` and `\$` write `\` and `$`. Every other `$` is text, as in PHP | `\1` gives group 1, `$_` stays `$_` |
 

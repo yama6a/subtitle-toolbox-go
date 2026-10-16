@@ -33,6 +33,7 @@ func TestConvertPCRE(t *testing.T) {
 		{"escaped comma", `,a{1\,2}b,`, `a{1\,2}b`, false, "", true},
 		{"escaped exclamation mark", `!a(?\!b)!`, `a(?\!b)`, false, "", true},
 		{"escaped underscore delimiter", `_a\_b_`, "a_b", false, "", true},
+		{"escaped underscore", `/a\_b/`, "a_b", false, "", true},
 		{"other escapes stay", `/\d\//`, `\d\/`, false, "", true},
 		{"tilde", "~colou?r~", "colou?r", false, "", true},
 		{"flag i", "/col(ou)r/i", "col(ou)r", true, "", true},
@@ -129,7 +130,7 @@ func TestRegexReplacementRejectsWhatRegexp2Lacks(t *testing.T) {
 		_, _, err := regexReplacement(`/\` + string(c) + `/`)
 		require.NoError(t, err, string(c))
 	}
-	_, hasGroup, err := regexReplacement(`/(a)(?<b>c)/`)
+	_, hasGroup, err := regexReplacement(`/(?<b>a)(c)/`)
 	require.NoError(t, err)
 	assert.Equal(t, []bool{true, true, true, false}, []bool{hasGroup(0), hasGroup(1), hasGroup(2), hasGroup(3)})
 }

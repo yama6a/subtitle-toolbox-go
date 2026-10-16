@@ -66,7 +66,7 @@ func splitDelimited(s string) (body, flags string, ok bool) {
 		switch {
 		case c == '\\' && i+1 < len(s):
 			i++
-			b.WriteString(unescapeDelimiter(s[i], open))
+			b.WriteString(unescapeEscape(s[i]))
 			continue
 		case c == closing:
 			if depth--; depth == 0 {
@@ -80,10 +80,10 @@ func splitDelimited(s string) (body, flags string, ok bool) {
 	return "", "", false
 }
 
-// unescapeDelimiter returns the escape of c inside the pattern. PHP passes the "\" on to PCRE, and regexp2
-// reads a "\" before ASCII punctuation as PCRE does. Only \_ fails in regexp2, so _ as a delimiter loses it.
-func unescapeDelimiter(c, open byte) string {
-	if c == '_' && open == '_' {
+// unescapeEscape returns the escape \c inside the pattern. PHP passes the "\" on to PCRE, and regexp2 reads a
+// "\" before ASCII punctuation as PCRE does. Only \_ fails in regexp2, so it becomes _, which PCRE reads the same.
+func unescapeEscape(c byte) string {
+	if c == '_' {
 		return "_"
 	}
 	return "\\" + string(c)
