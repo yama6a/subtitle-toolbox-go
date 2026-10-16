@@ -79,7 +79,10 @@ func TestMarshalJSONWritesTenWords(t *testing.T) {
 
 	require.NoError(t, err)
 	var decoded struct {
-		MostUsedWords []stats.WordCount `json:"mostUsedWords"`
+		MostUsedWords []struct {
+			Word  string `json:"word"`
+			Count int    `json:"count"`
+		} `json:"mostUsedWords"`
 	}
 	require.NoError(t, json.Unmarshal(got, &decoded))
 	assert.Len(t, decoded.MostUsedWords, stats.MostUsedWordsInJSON)

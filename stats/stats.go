@@ -6,6 +6,10 @@ import (
 	"math"
 	"time"
 
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/markup"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -19,6 +23,7 @@ type Statistics struct {
 	// CharacterCount is the sum of the visible lengths of all lines.
 	CharacterCount int
 	// TotalDisplayTime is the sum of End - Start of every cue. A cue that ends before it starts adds a negative value.
+	// The sum stops at the largest and the smallest time.Duration.
 	TotalDisplayTime time.Duration
 	// Span is the latest end minus the start of the first cue. Nil without cues.
 	Span *time.Duration
@@ -38,9 +43,7 @@ type Statistics struct {
 
 // Range is the minimum, the arithmetic mean and the maximum of a set of numbers.
 type Range struct {
-	Min     float64 `json:"min"`
-	Average float64 `json:"average"`
-	Max     float64 `json:"max"`
+	Min, Average, Max float64
 }
 
 // DurationRange is the minimum, the arithmetic mean and the maximum of a set of durations.
@@ -48,8 +51,8 @@ type DurationRange struct{ Min, Average, Max time.Duration }
 
 // WordCount is one word in lower case and the number of times it occurs.
 type WordCount struct {
-	Word  string `json:"word"`
-	Count int    `json:"count"`
+	Word  string
+	Count int
 }
 
 // Of computes the statistics of all cues of s. It does not change s.
@@ -60,11 +63,12 @@ func Of(s *model.Subtitle) Statistics {
 		gaps                          durationAccumulator
 		perSecond, perMinute, perLine accumulator
 		counter                       wordCounter
+		lower                         = cases.Lower(language.Und)
 	)
 	for i, c := range s.All() {
 		st.CueCount++
 		duration := c.End - c.Start
-		st.TotalDisplayTime += duration
+		st.TotalDisplayTime = addSaturating(st.TotalDisplayTime, duration)
 		if i == 0 {
 			first, latestEnd = c.Start, c.End
 		} else {
@@ -82,11 +86,11 @@ func Of(s *model.Subtitle) Statistics {
 		if characters == 0 {
 			continue
 		}
-		words := splitWords(markup.PlainText(c.Text()))
+		words := markupcore.Words(markup.PlainText(c.Text()))
 		st.CharacterCount += characters
 		st.WordCount += len(words)
 		for _, w := range words {
-			counter.add(normalize(w))
+			counter.add(normalize(w, lower))
 		}
 		if duration > 0 {
 			perSecond.add(float64(characters) / duration.Seconds())
@@ -149,4 +153,16 @@ func (a *durationAccumulator) result() *DurationRange {
 		return nil
 	}
 	return &DurationRange{Min: a.min, Average: time.Duration(math.Round(a.sum / float64(a.n))), Max: a.max}
+}
+
+// addSaturating adds b to a and stops at the limits of time.Duration, because 26 cues of 100000 hours pass them.
+func addSaturating(a, b time.Duration) time.Duration {
+	switch sum := a + b; {
+	case b > 0 && sum < a:
+		return math.MaxInt64
+	case b < 0 && sum > a:
+		return math.MinInt64
+	default:
+		return sum
+	}
 }

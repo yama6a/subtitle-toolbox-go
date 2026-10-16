@@ -168,6 +168,7 @@ func TestWords(t *testing.T) {
 		{"invalid UTF-8 keeps the bytes of a no-break space", "a\xc2\xa0b\xe9 c", []string{"a\xc2\xa0b\xe9", "c"}},
 		{"only white space", "  ", []string{}},
 		{"Unicode white space", "a\u00a0b\u2003c\vd\u3000e", []string{"a", "b", "c", "d", "e"}},
+		{"Mongolian vowel separator is white space as in PHP", "a\u180eb", []string{"a", "b"}},
 		{"zero-width space is no white space", "a\u200bb", []string{"a\u200bb"}},
 	}
 	for _, tt := range tests {

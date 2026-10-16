@@ -23,7 +23,7 @@ const libraryJSONWithMetadata = `{"version":1,"metadata":{"zulu":"last","title":
 
 const infoHelp = `Usage: stbox info <input>... [--json] [options]
 
-Print the format, the encoding and the cue count of subtitle files.
+Print the format, the cue count and statistics of subtitle files.
 
 Times are in seconds. Character counts leave out tags. The gap is the start of a
 cue minus the latest end of the earlier cues. An overlap gives a negative gap.

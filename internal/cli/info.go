@@ -50,7 +50,7 @@ func (m orderedMetadata) MarshalJSON() ([]byte, error) {
 func (*infoCommand) name() string { return "info" }
 
 func (*infoCommand) summary() string {
-	return "Print the format, the encoding and the cue count of subtitle files."
+	return "Print the format, the cue count and statistics of subtitle files."
 }
 
 func (*infoCommand) usage() []string { return []string{"<input>... [--json] [options]"} }
