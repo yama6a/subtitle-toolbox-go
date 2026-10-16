@@ -55,7 +55,7 @@ func (s *State) checkUTF8(content []byte, replaces bool) ([]byte, error) {
 	if i < 0 {
 		return content, nil
 	}
-	msg := "The content is not valid UTF-8. The first bad byte is at offset " + strconv.Itoa(i) + ". Set the source encoding of the file."
+	msg := textenc.InvalidUTF8WarningPrefix + " The first bad byte is at offset " + strconv.Itoa(i) + ". Set the source encoding of the file."
 	switch {
 	case !replaces:
 		if s.Lenient() {

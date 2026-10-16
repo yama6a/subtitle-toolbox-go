@@ -1,0 +1,4 @@
+trip.srt
+  Format:   srt
+  Encoding: UTF-8
+  Cues:     3

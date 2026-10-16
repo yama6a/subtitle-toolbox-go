@@ -23,8 +23,8 @@ import (
 
 const testVersion = "1.2.3"
 
-// The stand-ins of convert and info run the shared parts of a write command and of a report command, without
-// edits and without statistics. testCommands drops a stand-in when commands holds the real command.
+// The stand-in of convert runs the shared parts of a write command, without edits. testCommands drops it when
+// commands holds the real command.
 type stubConvert struct{ out writeOutput }
 
 var _ fileCommand = &stubConvert{}
@@ -62,49 +62,10 @@ func (s *stubConvert) process(_ context.Context, r *runner, in *input) error {
 
 func (*stubConvert) finish(*runner) error { return nil }
 
-type stubInfo struct{ report reportOutput }
-
-var _ fileCommand = &stubInfo{}
-
-type stubInfoEntry struct {
-	File     string        `json:"file"`
-	Format   stbox.Format  `json:"format"`
-	Warnings []warningJSON `json:"warnings"`
-}
-
-func (*stubInfo) name() string    { return "info" }
-func (*stubInfo) summary() string { return "Print the format of subtitle files." }
-func (*stubInfo) usage() []string { return []string{"<input>... [--json] [options]"} }
-func (*stubInfo) details() string { return "" }
-func (*stubInfo) options() []option {
-	return slices.Concat([]option{flagOption("json", jsonHelp)}, inputOptions(true))
-}
-
-func (s *stubInfo) run(ctx context.Context, a *args, c *console) error { return runFiles(ctx, a, c, s) }
-
-func (s *stubInfo) prepare(a *args, r *runner) error {
-	if err := r.prepareRead(a); err != nil {
-		return err
-	}
-	s.report.prepare(a, r)
-	return nil
-}
-
-func (*stubInfo) checkInputs(*runner, []string) error          { return nil }
-func (*stubInfo) loadSideFiles(context.Context, *runner) error { return nil }
-
-func (s *stubInfo) process(_ context.Context, r *runner, in *input) error {
-	text := in.label() + "\n" + table([][]string{{"Format:", string(in.info.Format)}}, 2, 1)
-	s.report.emit(r, text, stubInfoEntry{File: in.arg, Format: in.info.Format, Warnings: warningsJSON(in.info.Warnings)})
-	return nil
-}
-
-func (s *stubInfo) finish(r *runner) error { return s.report.finish(r) }
-
-// testCommands returns the commands of the binary, and the stand-ins of the commands that the binary lacks.
+// testCommands returns the commands of the binary, and the stand-in of convert while the binary lacks it.
 func testCommands() []command {
 	cmds := commands()
-	for _, stub := range []command{&stubConvert{}, &stubInfo{}} {
+	for _, stub := range []command{&stubConvert{}} {
 		if !slices.ContainsFunc(cmds, func(c command) bool { return c.name() == stub.name() }) {
 			cmds = append(cmds, stub)
 		}
@@ -166,7 +127,7 @@ func newDir(t *testing.T) string {
 	entries, err := os.ReadDir(testfiles.Path(t, "cli"))
 	require.NoError(t, err)
 	for _, e := range entries {
-		if e.Name() == "SOURCES.md" {
+		if e.IsDir() || e.Name() == "SOURCES.md" || strings.HasPrefix(e.Name(), "trip_info.") {
 			continue
 		}
 		copyFile(t, testfiles.Path(t, "cli/"+e.Name()), filepath.Join(dir, e.Name()))

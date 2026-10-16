@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 )
 
 // The exit codes of docs/errors.md.
@@ -69,6 +70,7 @@ const (
 	missingFileMessage   = "The file does not exist."
 	lenientHint          = "Pass --lenient to skip or repair broken cues."
 	encodingHint         = "Pass --encoding to set the source encoding."
+	encodingAdvice       = "Pass --encoding with the source encoding of the file."
 )
 
 // message returns the CLI text of err, without a label. It names no Go type and no Go option path.
@@ -135,8 +137,17 @@ func withAdvice(msg, option string, cause error) string {
 	case option == "ReadOptions.Encoding":
 		return msg + " Known encodings: " + strings.Join(stbox.Encodings(), ", ") + "."
 	case errors.Is(cause, stbox.ErrInvalidUTF8):
-		return msg + " Pass --encoding with the source encoding of the file."
+		return msg + " " + encodingAdvice
 	default:
 		return msg
 	}
+}
+
+// warningMessage returns the CLI text of a parse warning. The warning about invalid UTF-8 gets the same advice as
+// the writer error, in the output on stderr and in the JSON.
+func warningMessage(w stbox.ParseWarning) string {
+	if strings.HasPrefix(w.Message, textenc.InvalidUTF8WarningPrefix) {
+		return w.Message + " " + encodingAdvice
+	}
+	return w.Message
 }

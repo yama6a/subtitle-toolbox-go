@@ -37,6 +37,7 @@ func TestBinaryPrintsWhatRunPrints(t *testing.T) {
 		{"short version", []string{"-V"}},
 		{"help", []string{"help"}},
 		{"unknown command", []string{"merge"}},
+		{"formats", []string{"formats"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
