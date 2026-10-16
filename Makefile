@@ -78,8 +78,9 @@ dist:
 smoke:
 	rm -rf bin/smoke
 	mkdir -p bin/smoke
-	tar -xzf dist/stbox_$(VERSION)_$$(go env GOOS)_$$(go env GOARCH).tar.gz -C bin/smoke stbox
+	tar -xzf dist/stbox_$(VERSION)_$$(go env GOOS)_$$(go env GOARCH).tar.gz -C bin/smoke stbox README.md
 	.build/smoke-test.sh "$(VERSION)" testdata bin/smoke/stbox
+	@if grep -n '](docs/' bin/smoke/README.md; then echo "README.md in the archive links docs/ pages that it does not hold" >&2; exit 1; fi
 
 # go-ci builds linux/amd64 and linux/arm64 only. The release also ships darwin and windows binaries.
 cross:

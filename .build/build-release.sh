@@ -35,6 +35,8 @@ stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 
 docs=(LICENSE README.md THIRD_PARTY_NOTICES.md)
+# An archive holds no docs/ folder, so its README links the docs pages at the tag.
+sed "s#](docs/#](https://github.com/yama6a/subtitle-toolbox-go/blob/v$version/docs/#g" README.md > "$stage/README.md"
 for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
   goos=${target%/*}
   goarch=${target#*/}
@@ -46,7 +48,7 @@ for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 wi
   mkdir -p "$dir"
   CGO_ENABLED=0 GOOS=$goos GOARCH=$goarch go build -trimpath \
     -ldflags "-s -w -X main.version=$version" -o "$dir/$binary" ./cmd/stbox
-  cp "${docs[@]}" "$dir/"
+  cp LICENSE THIRD_PARTY_NOTICES.md "$stage/README.md" "$dir/"
   # Fixed modes and times, so neither the umask nor the checkout time changes the archive bytes.
   chmod 0644 "$dir"/*
   chmod 0755 "$dir/$binary"
