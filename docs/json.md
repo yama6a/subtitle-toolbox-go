@@ -62,4 +62,4 @@ Text outside format data must be valid UTF-8. That text is the cue lines and ide
 
 ## Version
 
-This package reads and writes version 1, the constant `stboxjson.Version`. Version 1 is API for the whole 1.x line, see [compatibility.md](compatibility.md) C11: a minor release may add fields, and readers ignore unknown fields. Version 2 arrives with typed words and speakers in 4.0 ([#92](https://github.com/yama6a/subtitle-toolbox-go/issues/92)). The 4.x reader still reads version 1.
+This package reads and writes version 1, the constant `stboxjson.Version`. Version 1 is API for the whole 1.x line, see [compatibility.md](compatibility.md#changes-a-minor-release-can-make): a minor release may add fields, and readers ignore unknown fields. Version 2 arrives with typed words and speakers in 4.0 ([#92](https://github.com/yama6a/subtitle-toolbox-go/issues/92)). The 4.x reader still reads version 1.

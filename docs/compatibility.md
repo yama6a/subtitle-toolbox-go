@@ -1,34 +1,63 @@
 # Backward compatibility
 
-The module follows semantic versioning. The rules below hold for every 1.x release, from v1.0.0 on. A break waits for 2.0, which has the module path `github.com/yama6a/subtitle-toolbox-go/v2`. The 2.x, 3.x and 4.x lines follow the same rules under their own module path.
+The module follows semantic versioning. A 1.x minor or patch release does not break code that uses the parts below as this page describes. A break waits for 2.0, which has the module path `github.com/yama6a/subtitle-toolbox-go/v2`.
 
-## Rules
+## Covered
 
-| # | Part | Rule |
-|---:|:--- |:--- |
-| C1 | API surface | Every exported identifier outside `internal/` is API. The compiler enforces `internal/`, so the module has no "public but internal" names |
-| C2 | Behaviour | Documented behaviour is API. A change waits for the next major release, except under C3 and C4 |
-| C3 | Bytes, cues, detection | A patch release may change written bytes, parsed cues, parse warnings and the detection result of a file. It does so only for a bug fix or a new format. The release notes list each change. Golden files make each change visible in review |
-| C4 | Strict mode | A patch release may reject bad input that strict mode read before. That counts as a bug fix |
-| C5 | Defaults and output | Option defaults and conversion output stay the same for the whole major line. A minor release never changes a default. It never starts to use a model field for output that it already writes. New behaviour arrives behind a new option. Bug fixes still go out in patch releases under C3 and C4 |
-| C6 | Enumerations | A minor release may add a constant to `Format`, `WarningAction` and every other enum. Give each `switch` over a library enum a `default` case |
-| C7 | Struct fields | A minor release may add fields to options, reports, results, `ReadInfo` and format data types. This is safe for keyed composite literals only. Unkeyed literals of library structs are not covered. The `composites` check of `go vet` flags them |
-| C8 | `==` on structs | `==` is covered only for named scalar types, such as `Format`, `Alignment` and the other enums. It is also covered for structs whose doc comment says "Values are comparable with ==". A new slice, map or func field may break `==` on any other struct |
-| C9 | Interfaces | Only the interfaces that users implement are API: the OCR engine, the translation engine and the HTTP client. A major line never changes them. 1.x exports none of them. Each applies from the line that adds it |
-| C10 | Errors | The sentinel errors and error types that `errors.Is` and `errors.As` match are API. A minor release may change which one a given cause returns. Message text is not API. The library has no numeric error codes |
-| C11 | Library JSON and format data | Version 1 of the library JSON, its keys and its value types are API. The keys and value types of format data are API too. A minor release may add fields and new string values. Readers ignore unknown fields. A minor release may add a type check on a format data field |
-| C12 | Go version | A patch or minor release may raise the `go` line of `go.mod`. Renovate does it in a `patch` PR. The release notes show it as the title of that PR |
-| C13 | Rule sets | A validation preset never gets a new rule inside a major line. A new text-fix rule is off by default. A patch release may change a text-fix rule so that it stops changing text that it should keep |
-| C14 | CLI | The commands, the flags, the meaning of each exit code and the `--json` shapes are API. A minor release may add keys to the `--json` objects, as C11 says for the library JSON. Readers ignore unknown keys. The CLI never overwrites a file. Text output and messages may change in a minor release |
+| Part | What stays stable in 1.x |
+|:--- |:--- |
+| Go API | every exported identifier outside `internal/`: packages, types, functions, methods, constants, variables and struct fields. The compiler keeps callers out of `internal/`, so the module has no exported names for internal use |
+| Behaviour | the behaviour that these pages and the godoc describe, the default of each option, and the output of a conversion. Only a major release changes them, except for the changes that the next 2 sections list |
+| Errors | the sentinel errors that `errors.Is` matches and the error types that `errors.As` matches. [errors.md](errors.md) lists them. The library has no numeric error codes |
+| CLI | the commands, the flags, the meaning of each exit code and the `--json` shapes of `stbox`. The CLI never overwrites a file. See [cli.md](cli.md) |
+| Library JSON | version 1 of the library JSON, its keys and its value types. See [json.md](json.md) |
+| Format data | the keys and the value types of the format data that `Subtitle.FormatData` and `Cue.FormatData` return. See [format-data.md](format-data.md) |
+| Module path | `github.com/yama6a/subtitle-toolbox-go`, without a major suffix |
 
-## Not covered
+## Changes a minor or patch release can make
 
-- **Internal code**: everything under `internal/` and every unexported name.
-- **Unkeyed literals**: struct literals without field names.
-- **Results built by callers**: callers read reports, results and `ParseWarning` values. A caller can build them by hand. The library then makes no promise about the meaning of fields that it adds later.
-- **Messages**: the text of errors, warnings and CLI output.
-- **Test hooks**: environment variables that exist only for tests, for example `STBOX_GROWTH`.
+- **Bug fixes and new formats**: a bug fix or a new format can change the written bytes, the parsed cues, the parse warnings and the detection result of a file. The release notes list each change.
+- **Strict mode**: strict mode is the default, without `Lenient: true` in `ReadOptions`. It can start to reject bad input that it read before. That is a bug fix, not a break. See [lenient-parsing.md](lenient-parsing.md).
+- **Go version**: a release can raise the `go` line of `go.mod`. Renovate does it in a pull request labelled `patch`. The release notes show the title of that pull request.
+
+## Changes a minor release can make
+
+- **Enum constants**: an enum such as `Format`, `WarningAction` or `Alignment` can get a new constant. Give a `switch` on a library enum a `default` case.
+- **String values in JSON**: a string field of the library JSON or of the `--json` output can get a new value. Examples are `format` and the `action` of a warning.
+- **New fields**: options, reports, results, `ReadInfo` and format data types can get new fields. The library JSON and the `--json` objects can get new keys. Ignore fields and keys that you do not know.
+- **New API**: new packages, functions, methods, types and constants.
+- **Errors**: the sentinel or the error type that a given cause returns can change. Test errors with `errors.Is` and `errors.As`.
+- **Messages**: the text of an error, of a parse warning and of the CLI text output can change. Parse `--json` output, not the text output.
+- **Format data checks**: `SetFormatData` can check the type of a new field. Format data that passed before can then return an error that matches `ErrInvalidArgument`.
+- **Option defaults**: a minor release never changes the default of an option. New behaviour arrives behind a new option, and the zero value of that option keeps the old behaviour. A minor release also never starts to use a model field for output that it already writes.
+
+## Text fixes and presets
+
+The hearing-impaired remover, the common error fixer and the profanity filter arrive in 1.x minor releases. From the release that adds each of them, these rules apply:
+
+- **Existing rules**: a patch release can change a rule so that it stops changing text that it should keep.
+- **New rules**: a new rule is off by default. Turn it on with its option.
+
+Validation presets arrive in 2.x. From then on, a preset never gets a new rule inside its major line.
+
+## Interfaces
+
+1.x exports no interface that callers implement. Later lines add 3: the OCR engine in 3.x, and the translation engine and the HTTP client in 4.x. From the line that adds an interface, it stays the same for the whole line.
+
+## `==` on structs
+
+- **Covered**: `==` on named scalar types, such as `Format`, `Alignment` and the other enums. Also `==` on a struct whose doc comment says "Values are comparable with ==".
+- **Not covered**: `==` on any other struct. A release can add a slice, map or func field to it, and `==` then fails to compile.
 
 ## Major releases
 
-A major release may change anything above. It moves the module path to `/vN`. Its upgrade guide `docs/upgrade-N.0.md` shows the old call and the new call for each break.
+A major release can change anything above. It moves the module path to `/vN`, for example `github.com/yama6a/subtitle-toolbox-go/v2`. Its upgrade guide `docs/upgrade-N.0.md` lists each change with the old call and the new call.
+
+## Not covered
+
+- **Internal code**: every package under `internal/` and every unexported name.
+- **Unkeyed literals**: struct literals without field names. A new field breaks them. The `composites` check of `go vet` reports them.
+- **Results built by callers**: the library builds reports, results and `ParseWarning` values. Read their fields. A caller can build them by hand, but the library makes no promise about the meaning of fields that it adds later.
+- **Messages**: the text of errors, warnings and CLI output.
+- **Test hooks**: environment variables that exist only for the tests, such as `STBOX_GROWTH`.
+- **The Go code of `cmd/stbox`**: the command line tool is API only as a binary. Run `stbox` instead of its Go code.
