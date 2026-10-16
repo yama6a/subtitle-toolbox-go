@@ -58,6 +58,10 @@ type Reader struct {
 	comments     []parsing.ParsedComment
 	cues         int
 	cut          func() (int, bool)
+	// tailOpen is true when only lines of white space follow the last block. They do not end a cue, so an error
+	// after them cut that block. tailEnd is the last line of the block.
+	tailOpen bool
+	tailEnd  int
 }
 
 type looseTime struct {
@@ -94,7 +98,7 @@ func (r *Reader) Comments() []parsing.ParsedComment {
 func (r *Reader) Blocks(lines iter.Seq2[int, string]) iter.Seq2[blocks.Block, error] {
 	return func(yield func(blocks.Block, error) bool) {
 		var err error
-		for b := range r.numberedBlocks(r.signedLines(trimLines(lines), &err)) {
+		for b := range r.numberedBlocks(r.signedLines(r.trimLines(lines), &err)) {
 			if !yield(b, nil) {
 				return
 			}
@@ -107,7 +111,7 @@ func (r *Reader) Blocks(lines iter.Seq2[int, string]) iter.Seq2[blocks.Block, er
 
 // trimLines drops the white space around the file and joins runs of empty lines into one. A line of white
 // space inside the file stays, because the block rules decide whether it ends a block.
-func trimLines(lines iter.Seq2[int, string]) iter.Seq2[int, string] {
+func (r *Reader) trimLines(lines iter.Seq2[int, string]) iter.Seq2[int, string] {
 	return func(yield func(int, string) bool) {
 		var t trimmer
 		for n, text := range lines {
@@ -116,6 +120,8 @@ func trimLines(lines iter.Seq2[int, string]) iter.Seq2[int, string] {
 			}
 		}
 		if t.started {
+			r.tailEnd = t.held.n + 1
+			r.tailOpen = len(t.pending) > 0 && !slices.ContainsFunc(t.pending, func(l line) bool { return l.text == "" })
 			yield(t.held.n, strings.TrimRight(t.held.text, phpTrimSet))
 		}
 	}
@@ -323,7 +329,13 @@ func (r *Reader) collect(lines iter.Seq[line]) iter.Seq[blocks.Block] {
 	if r.cut == nil {
 		return raw
 	}
-	return blocks.DropCut(raw, r.cut)
+	return blocks.DropCut(raw, func() (int, bool) {
+		line, ok := r.cut()
+		if ok && r.tailOpen {
+			return r.tailEnd, true
+		}
+		return line, ok
+	})
 }
 
 // endsBlock reports whether text ends the block of current. The spec ends a cue only at an empty line.

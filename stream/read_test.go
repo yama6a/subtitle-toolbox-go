@@ -530,6 +530,22 @@ func TestAReadErrorDropsTheBlockThatItCut(t *testing.T) {
 			want: []string{"One"},
 		},
 		{
+			name:  "WebVTT before a line of spaces",
+			input: "WEBVTT\n\n00:01.000 --> 00:02.000\nOne\n\n00:03.000 --> 00:04.000\nTwo\n \n",
+			read: func(r io.Reader) ([]model.Cue, error) {
+				return collect(stream.NewWebVTTReader(r, stream.ReadOptions{}).Cues())
+			},
+			want: []string{"One"},
+		},
+		{
+			name:  "WebVTT before spaces and an empty line",
+			input: "WEBVTT\n\n00:01.000 --> 00:02.000\nOne\n\n00:03.000 --> 00:04.000\nTwo\n \n\n",
+			read: func(r io.Reader) ([]model.Cue, error) {
+				return collect(stream.NewWebVTTReader(r, stream.ReadOptions{}).Cues())
+			},
+			want: []string{"One", "Two"},
+		},
+		{
 			name:  "WebVTT after an empty line",
 			input: "WEBVTT\n\n00:01.000 --> 00:02.000\nOne\n\n",
 			read: func(r io.Reader) ([]model.Cue, error) {
