@@ -1,0 +1,104 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 2.24,
+                "lines": [
+                    "[Music]"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 2.24,
+                "end": 5.91,
+                "lines": [
+                    "Welcome back to the weather report",
+                    "for the north coast."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.91,
+                "end": 9.3,
+                "lines": [
+                    "Tomorrow starts cold and clear,"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 9.3,
+                "end": 13.075,
+                "lines": [
+                    "with light wind from the west",
+                    "and about four degrees at sunrise."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 13.075,
+                "end": 16.5,
+                "lines": [
+                    "[Music]"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 16.5,
+                "end": 20.02,
+                "lines": [
+                    "In the afternoon, clouds come in from the sea"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 20.02,
+                "end": 24.8,
+                "lines": [
+                    "and rain starts after six o'clock."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 24.8,
+                "end": 27.0,
+                "lines": [
+                    "Take an umbrella if you go out tonight."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3600.0,
+                "end": 3603.5,
+                "lines": [
+                    "That was the weather. Thank you for watching.",
+                    "[Applause]"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

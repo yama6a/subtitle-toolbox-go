@@ -49,6 +49,14 @@ Every file except `mantas_utf16.srt` and `mantas_multiple_new_lines.vtt` is writ
 | `bad_sync_start.smi` | a `SYNC` tag with an empty `Start` attribute, CR LF | MIT |
 | `release_name.sub` | a release name before the `{1}{1}25` frame rate line, a cue with a letter as start frame, CR LF | MIT |
 | `absurd_frames_microdvd.sub` | MicroDVD at 25 fps. A cue with frame numbers of 13 digits between two good cues, LF | MIT |
+| `bad_timestamp.sbv` | a letter in an end time, LF | MIT |
+| `loose_timing.sbv` | a dot between the start and end time, commas before the fractions, fractions with 1 and 2 digits, LF | MIT |
+| `missing_empty_line.sbv` | no empty line between cue 1 and cue 2, LF | MIT |
+| `text_before_first_cue.sbv` | a note line before cue 1, LF | MIT |
+| `truncated_last_cue.sbv` | the file ends inside the time line of cue 3, LF | MIT |
+| `empty_line_in_cue.sbv` | an empty line inside the text of cue 1, an empty line between the timing line and the text of cue 2, LF | MIT |
+| `mixed_line_endings.sbv` | CR LF, LF and CR CR LF in one file | MIT |
+| `absurd_hours.sbv` | a cue with 20 hour digits between two good cues, LF | MIT |
 | `expected/*.json` | written for subtitle-toolbox-go. Each file holds the values of `damagedFiles()` in `tests/Parsers/LenientParsingTest.php` of this repository for the fixture of the same name, and the full message and line of the strict error that the PHP parser returns | MIT |
 | `expected/release_name.sub.json` | written for subtitle-toolbox-go, as `expected/*.json`. Changed: the strict error is the Go message, which names no PHP option such as `MicroDvdReadOptions::$frameRate`, see [php-differences.md](../../docs/php-differences.md) | MIT |
 | `expected/joined_files.vtt.json` | written for subtitle-toolbox-go. `damagedFiles()` has no row for this fixture, so the file holds the values of the 3 `joined_files` tests in `tests/Parsers/LenientWebVttTest.php` of this repository, and the strict error that the PHP parser returns | MIT |

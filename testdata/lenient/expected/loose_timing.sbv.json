@@ -1,0 +1,50 @@
+{
+    "name": "SBV with other separators and short fractions",
+    "format": "sbv",
+    "strict": {
+        "error": "Block #1 has no timing line on its first line. The line is \"0:00:04.000.0:00:06.000\".",
+        "line": 4
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3.5,
+            "text": "The ferry leaves at eight."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "A dot between the times."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "Commas before the fractions."
+        },
+        {
+            "start": 10.5,
+            "end": 12.25,
+            "text": "Short fractions."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 4,
+            "block": 1,
+            "action": "repaired",
+            "message": "Block #1 has a timing line with other separators or fraction digits than SBV uses. The parser read it."
+        },
+        {
+            "line": 7,
+            "block": 2,
+            "action": "repaired",
+            "message": "Block #2 has a timing line with other separators or fraction digits than SBV uses. The parser read it."
+        },
+        {
+            "line": 10,
+            "block": 3,
+            "action": "repaired",
+            "message": "Block #3 has a timing line with other separators or fraction digits than SBV uses. The parser read it."
+        }
+    ]
+}

@@ -25,7 +25,7 @@ func TestFormatFacts(t *testing.T) {
 		{model.MicroDVD, []string{"sub"}, true, true, true},
 		{model.MPSub, []string{"mpsub"}, false, false, false},
 		{model.SAMI, []string{"smi", "sami"}, true, true, true},
-		{model.SBV, []string{"sbv"}, false, false, false},
+		{model.SBV, []string{"sbv"}, true, true, true},
 		{model.SubRip, []string{"srt"}, true, true, true},
 		{model.SubViewer, []string{"sub"}, false, false, false},
 		{model.TTML, []string{"ttml", "dfxp", "xml"}, true, true, true},

@@ -44,7 +44,7 @@ var formatFacts = []formatFact{
 	{format: MicroDVD, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MPSub, extensions: []string{"mpsub"}},
 	{format: SAMI, extensions: []string{"smi", "sami"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: SBV, extensions: []string{"sbv"}},
+	{format: SBV, extensions: []string{"sbv"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubRip, extensions: []string{"srt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubViewer, extensions: []string{"sub"}},
 	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, canWrite: true, autoDetected: true},

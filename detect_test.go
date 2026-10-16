@@ -39,6 +39,10 @@ func detectTests() []detectTest {
 		{name: "MicroDVD with fps line", content: "{1}{1}25\n{24}{72}Hello\n", want: stbox.MicroDVD},
 		{name: "MicroDVD without end frame", content: "{24}{}Hello\n", want: stbox.MicroDVD},
 		{name: "MicroDVD next to MPL2", content: "{10}{25}Hello|world\n", want: stbox.MicroDVD},
+		{name: "SBV", content: "0:00:01.500,0:00:04.000\nHello\n", want: stbox.SBV},
+		{name: "SBV with three digits", content: "0:00:01.500,0:00:04.000\nHello[br]world\n", want: stbox.SBV},
+		{name: "SBV with two hour digits", content: "00:00:01.500,00:00:04.000\nHello\n", want: stbox.SBV},
+		{name: "SBV next to TMPlayer", content: "0:00:01.000,0:00:02.000\nHello\n", want: stbox.SBV},
 		{name: "JSON with cues first", content: `{"cues": [], "metadata": {"title": "version"}, "version": 1}`, want: stbox.JSON},
 		{name: "JSON with spaces", content: "{\n  \"version\" : 1 ,\n  \"cues\" : [ ]\n}\n", want: stbox.JSON},
 		{name: "TTML with XML declaration", content: "<?xml version=\"1.0\"?>\n<!-- made by hand -->\n<tt xmlns=\"http://www.w3.org/ns/ttml\"/>", want: stbox.TTML},
@@ -64,10 +68,6 @@ func detectTests() []detectTest {
 		{name: "SAMI after the XML prolog", content: "<?xml version=\"1.0\"?>\n<!-- made by hand -->\n<!DOCTYPE sami>\n<Sami>", want: stbox.SAMI},
 		{name: "MPSub with FORMAT first", content: "FORMAT=25\n\n0 50\nHello\n", later: "MPSub"},
 		{name: "MPSub with header comment", content: "TITLE=Bakery\nFORMAT=TIME   # seconds\n\n1 2\nHello\n", later: "MPSub"},
-		{name: "SBV", content: "0:00:01.500,0:00:04.000\nHello\n", later: "SBV"},
-		{name: "SBV with three digits", content: "0:00:01.500,0:00:04.000\nHello[br]world\n", later: "SBV"},
-		{name: "SBV with two hour digits", content: "00:00:01.500,00:00:04.000\nHello\n", later: "SBV"},
-		{name: "SBV next to TMPlayer", content: "0:00:01.000,0:00:02.000\nHello\n", later: "SBV"},
 		{name: "SubViewer 2 information", content: "[INFORMATION]\r\n[TITLE]Bakery\r\n[END INFORMATION]\r\n", later: "SubViewer"},
 		{name: "SubViewer 2 timing line", content: "00:00:01.50,00:00:04.00\nHello[br]world\n", later: "SubViewer"},
 		{name: "SubViewer 2 after [SUBTITLE]", content: "[SUBTITLE]\n[COLF]&HFFFFFF,[SIZE]18\n00:00:01.50,00:00:04.00\nHello\n", later: "SubViewer"},
@@ -233,7 +233,7 @@ type fixture struct {
 func fixtures(t *testing.T) []fixture {
 	t.Helper()
 
-	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "microdvd": stbox.MicroDVD, "sami": stbox.SAMI, "srt": stbox.SubRip, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
+	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "microdvd": stbox.MicroDVD, "sami": stbox.SAMI, "sbv": stbox.SBV, "srt": stbox.SubRip, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
 	var list []fixture
 	for dir, f := range folders {
 		for _, sub := range []string{dir, dir + "/real"} {
@@ -257,7 +257,11 @@ func fixtureEncodings() map[string]string {
 
 // brokenFixtures break their own format on purpose, so detection finds another format or none.
 func brokenFixtures() map[string]stbox.Format {
-	return map[string]stbox.Format{"vtt/missing_webvtt_header.vtt": stbox.SubRip}
+	return map[string]stbox.Format{
+		"vtt/missing_webvtt_header.vtt": stbox.SubRip,
+		"sbv/missing_milli_digits.sbv":  "",
+		"sbv/srt_timestamps.sbv":        "",
+	}
 }
 
 // Ports testDetectsTheFormatOfEveryFixture and testDetectsBrokenFixturesByTheirShape of
@@ -361,7 +365,7 @@ func FuzzDetect(f *testing.F) {
 		f.Add([]byte(tt.content))
 	}
 	root := testfiles.Root(f)
-	for _, dir := range []string{"ass", "json", "microdvd", "microdvd/real", "sami/real", "srt", "ttml/real", "forced", "vtt", "lenient"} {
+	for _, dir := range []string{"ass", "json", "microdvd", "microdvd/real", "sami/real", "sbv", "srt", "ttml/real", "forced", "vtt", "lenient"} {
 		entries, err := os.ReadDir(filepath.Join(root, dir))
 		if err != nil {
 			f.Fatal(err)

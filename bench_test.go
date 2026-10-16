@@ -38,7 +38,7 @@ func BenchmarkParse(b *testing.B) {
 	}
 	s.AddCues(cues...)
 
-	for _, f := range []stbox.Format{stbox.SubRip, stbox.TTML, stbox.WebVTT, stbox.ASS, stbox.SAMI, stbox.MicroDVD} {
+	for _, f := range []stbox.Format{stbox.SubRip, stbox.TTML, stbox.WebVTT, stbox.ASS, stbox.SAMI, stbox.MicroDVD, stbox.SBV} {
 		var content bytes.Buffer
 		write := stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 25, WriteFrameRateLine: true}}
 		if err := stbox.Write(&content, s, f, write); err != nil {

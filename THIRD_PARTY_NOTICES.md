@@ -620,6 +620,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   - `testdata/microdvd/real/subsrt_sample.sub`, from `test/fixtures/sample.sub`
 - Files written for this repository in the shape of its fixtures:
   - `testdata/sami/real/subsrt_sample.smi`, in the shape of `test/fixtures/sample.smi`
+  - `testdata/sbv/real/subsrt_shape.sbv`, in the shape of `test/fixtures/sample.sbv` at `46deebd95703be9b6a76eb3c1aaf915713f30394`
 
 ```text
 MIT License

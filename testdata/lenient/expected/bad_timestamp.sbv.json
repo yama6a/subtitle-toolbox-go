@@ -1,0 +1,28 @@
+{
+    "name": "SBV with a bad timestamp",
+    "format": "sbv",
+    "strict": {
+        "error": "The time \"0:00:0G.000\" is not valid.",
+        "line": 4
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "Good morning."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "See you tomorrow."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 4,
+            "block": 1,
+            "action": "skipped",
+            "message": "The time \"0:00:0G.000\" is not valid."
+        }
+    ]
+}

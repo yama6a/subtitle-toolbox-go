@@ -1,0 +1,39 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 20.105,
+                "end": 23.292,
+                "lines": [
+                    "The ferry to the island leaves at noon."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 23.292,
+                "end": 28.898,
+                "lines": [],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 28.898,
+                "end": 31.4,
+                "lines": [
+                    "Buy the tickets at the harbour office."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

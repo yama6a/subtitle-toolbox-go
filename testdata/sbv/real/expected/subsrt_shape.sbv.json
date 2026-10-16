@@ -1,0 +1,62 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.48,
+                "end": 3.95,
+                "lines": [
+                    "&gt;&gt; MARA: Good morning, this is Mara Lind[br]and this is Tom Berg"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.95,
+                "end": 6.62,
+                "lines": [
+                    "&gt;&gt; TOM: and we run the small bakery on Station Road."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 6.62,
+                "end": 10.84,
+                "lines": [
+                    "&gt;&gt; MARA: Today we show you how we bake",
+                    "our rye bread before the first train!"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 10.84,
+                "end": 16.3,
+                "lines": [
+                    "[intro music]"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 16.3,
+                "end": 21.15,
+                "lines": [
+                    "First, we put the flour and the water on the table"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}
