@@ -1,0 +1,254 @@
+﻿1
+00:01:17,715 --> 00:01:19,186
+Die Bäckerei öffnet jeden Morgen um sechs.
+
+2
+00:01:22,920 --> 00:01:26,497
+Mara heizt den Ofen an,
+bevor die Sonne aufgeht.
+
+3
+00:01:27,794 --> 00:01:30,404
+Der erste Zug fährt um halb sieben ab.
+
+4
+00:01:30,806 --> 00:01:32,525
+Zwei Brötchen und einen Kaffee, bitte.
+
+5
+00:01:35,254 --> 00:01:38,965
+Gern. Mit Milch?
+
+6
+00:01:39,977 --> 00:01:43,475
+Nur ein wenig, danke.
+
+7
+00:01:45,174 --> 00:01:48,147
+Laut Wetterbericht regnet
+es nach dem Mittag.
+
+8
+00:03:03,358 --> 00:03:05,413
+Dann nehme ich heute den Schirm mit.
+
+9
+00:03:06,349 --> 00:03:08,959
+Der Zug an die Küste hat
+zehn Minuten Verspätung.
+
+10
+00:03:12,866 --> 00:03:15,350
+Das passiert jeden Dienstag.
+
+11
+00:03:18,766 --> 00:03:20,561
+Das Mehl wird um acht geliefert.
+
+12
+00:03:29,357 --> 00:03:31,240
+Wie viele Brote brauchen
+wir für den Markt?
+
+13
+00:03:31,913 --> 00:03:33,571
+Vierzig und zwanzig kleine.
+
+14
+00:04:00,488 --> 00:04:03,686
+Der Wind wird stärker.
+
+15
+00:04:07,201 --> 00:04:09,273
+Mach das Fenster zu, die
+Zettel fliegen herum.
+
+16
+00:04:12,976 --> 00:04:14,785
+Ist das Gleis der Nordlinie noch gesperrt?
+
+17
+00:04:16,873 --> 00:04:20,606
+Ja, bis Freitag reparieren
+sie die Schienen.
+
+18
+00:04:24,239 --> 00:04:28,427
+Dann nehme ich den Bus
+bis zum nächsten Bahnhof.
+
+19
+00:04:32,253 --> 00:04:33,693
+Der Bus fährt um neun am Platz ab.
+
+20
+00:04:37,227 --> 00:04:38,419
+Haben Sie noch Roggenbrot?
+
+21
+00:04:38,842 --> 00:04:40,718
+Wir haben heute auch Zwiebelbrot.
+
+22
+00:05:20,238 --> 00:05:22,598
+Nur noch eins, aber es ist frisch.
+
+23
+00:05:24,559 --> 00:05:26,028
+Das nehme ich.
+
+24
+00:05:27,855 --> 00:05:31,290
+Drei Euro fünfzig, bitte.
+
+25
+00:05:34,006 --> 00:05:35,247
+Die Wolken werden dunkler.
+
+26
+00:05:38,520 --> 00:05:40,737
+Hol die Stühle rein,
+bevor der Regen kommt.
+
+27
+00:05:43,016 --> 00:05:45,263
+Der Schaffner prüft
+die Fahrkarten zweimal.
+
+28
+00:05:48,063 --> 00:05:50,890
+Ich habe meine Fahrkarte
+am Bahnsteig verloren.
+
+29
+00:07:09,715 --> 00:07:11,108
+Sie können im Zug eine neue kaufen.
+
+30
+00:07:17,733 --> 00:07:19,274
+Ich rufe morgen die Werkstatt an.
+
+31
+00:07:22,212 --> 00:07:26,654
+In den Bergen schneit es schon.
+
+32
+00:07:27,253 --> 00:07:29,096
+Die Passstraße ist für Lastwagen gesperrt.
+
+33
+00:07:31,957 --> 00:07:34,883
+Der Nachtzug fährt noch pünktlich.
+
+34
+00:07:38,560 --> 00:07:40,175
+Wenn es regnet, verkaufen wir mehr Kuchen.
+
+35
+00:07:52,786 --> 00:07:54,677
+Die Leute wollen etwas Warmes zum Tee.
+
+36
+00:07:56,585 --> 00:07:58,548
+Die Bahnhofsuhr geht fünf Minuten vor.
+
+37
+00:08:00,630 --> 00:08:02,158
+Seit dem Frühling hat
+sie niemand repariert.
+
+38
+00:08:04,542 --> 00:08:06,800
+Kannst du am Samstag
+die Frühschicht machen?
+
+39
+00:08:07,929 --> 00:08:09,578
+Ja, aber ich muss um zwölf gehen.
+
+40
+00:08:11,057 --> 00:08:13,286
+Am Nachmittag kommt die Sonne zurück.
+
+41
+00:08:17,185 --> 00:08:20,518
+Der Marktplatz ist wieder voll.
+
+42
+00:08:20,949 --> 00:08:22,826
+Die Sonne scheint auf den Brunnen.
+
+43
+00:09:38,468 --> 00:09:41,210
+Zwei Kaffee und einen Apfelkuchen, bitte.
+
+44
+00:09:41,855 --> 00:09:45,140
+Setzen Sie sich ans Fenster,
+die Aussicht ist schön.
+
+45
+00:09:48,190 --> 00:09:52,593
+Der letzte Zug fährt um elf.
+
+46
+00:09:52,905 --> 00:09:54,248
+Verpass ihn nicht, der
+nächste fährt um fünf.
+
+47
+00:09:57,491 --> 00:09:59,469
+Die Bäckerei schließt
+um sieben Uhr abends.
+
+48
+00:09:59,795 --> 00:10:01,229
+Mara putzt die Theke und zählt das Geld.
+
+49
+00:11:30,495 --> 00:11:34,205
+Dann braucht der Teig länger zum Gehen.
+
+50
+00:11:36,312 --> 00:11:38,619
+Der Bahnhofsvorsteher
+hebt die grüne Kelle.
+
+51
+00:11:40,246 --> 00:11:42,015
+Der Zug fährt langsam los.
+
+52
+00:11:45,705 --> 00:11:48,206
+Gute Nacht, bis morgen um sechs.
+
+53
+00:11:50,331 --> 00:11:52,872
+Gute Nacht, und vergiss
+die Schlüssel nicht.
+
+54
+00:11:55,171 --> 00:11:59,176
+Die Straßenlaternen gehen
+eine nach der anderen an.
+
+55
+00:12:01,860 --> 00:12:04,695
+Eine Katze schläft auf der
+warmen Stufe der Bäckerei.
+
+56
+00:13:05,924 --> 00:13:09,641
+Der erste Frost liegt auf den Schienen.
+
+57
+00:13:12,201 --> 00:13:15,192
+Der Morgenzug ist voller Schüler.
+
+58
+00:13:16,179 --> 00:13:17,872
+Mara öffnet die Tür und die Glocke läutet.
+
+59
+00:13:20,644 --> 00:13:24,184
+Guten Morgen, wie immer bitte.

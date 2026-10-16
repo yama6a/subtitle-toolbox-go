@@ -17,10 +17,6 @@ type SyncPoint struct {
 	New time.Duration
 }
 
-// maxRetimed is 2562046:59:59.999, the largest time that markup.WordTimestamp reads. A retimed word timestamp
-// stops there, so it stays a time for the next retiming.
-const maxRetimed = 2562047*time.Hour - time.Millisecond
-
 // Shift moves every cue and its word timestamps by d. See ShiftRange for the rules.
 func (s *Subtitle) Shift(d time.Duration) error {
 	return s.ShiftRange(d, nil, nil)
@@ -127,18 +123,18 @@ func (r retiming) at(t time.Duration) time.Duration {
 		sum, ok := add(t, r.shift)
 		switch {
 		case !ok && r.shift > 0:
-			return maxRetimed
+			return timecode.MaxRetimed
 		case !ok:
 			return 0
 		}
-		return min(max(0, sum.Round(time.Millisecond)), maxRetimed)
+		return min(max(0, sum.Round(time.Millisecond)), timecode.MaxRetimed)
 	}
 	ms := math.Round(r.milliseconds(t))
 	switch {
 	case ms <= 0:
 		return 0
-	case ms >= float64(maxRetimed/time.Millisecond):
-		return maxRetimed
+	case ms >= float64(timecode.MaxRetimed/time.Millisecond):
+		return timecode.MaxRetimed
 	}
 	return time.Duration(ms) * time.Millisecond
 }
@@ -187,8 +183,7 @@ func checkTimeLimit(cues []Cue, r retiming, affected func(start time.Duration) b
 
 // timeLimitError returns the error for cue index i whose new end in seconds reaches the time limit.
 func timeLimitError(i int, end float64) error {
-	return invalidArgument(fmt.Sprintf("The retimed cue %d would end at %s s. Cue times must be below %d hours.",
-		i+1, timecode.Number(end), timecode.MaxHours))
+	return invalidArgument(timecode.TimeLimitMessage(i+1, end))
 }
 
 func add(t, d time.Duration) (time.Duration, bool) {

@@ -832,7 +832,7 @@ func TestCueEditingErrors(t *testing.T) {
 			name: "slice with the start after the end",
 			edit: func(s *model.Subtitle) error {
 				_, err := s.Slice(5*time.Second, 4*time.Second, false)
-				return err //nolint:wrapcheck // the test compares the error that Slice returns
+				return err
 			},
 			sentinel: model.ErrInvalidArgument,
 			want:     "stbox: invalid argument: The slice start 5 must not be after the slice end 4.",
