@@ -17,7 +17,7 @@ func FuzzParseArgs(f *testing.F) {
 	} {
 		f.Add(seed)
 	}
-	opts := (&stubConvert{}).options()
+	opts := (&convertCommand{}).options()
 	f.Fuzz(func(t *testing.T, in string) {
 		a, err := parseArgs(strings.Split(in, "\x00"), opts)
 		if err != nil {

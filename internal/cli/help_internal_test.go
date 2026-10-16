@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
 // summaryCommand is a command with a name and a summary only, for the layout of the global help.
@@ -43,33 +45,14 @@ func TestGlobalHelp(t *testing.T) {
 	t.Parallel()
 
 	head := "stbox 1.2.3\nConverts, retimes, checks and fixes subtitle files.\n\nUsage: stbox <command> [<file>...] [options]\n\n"
-	t.Run("binary", func(t *testing.T) {
-		t.Parallel()
-
-		want := head + `Commands:
-  info     Print the format, the encoding and the cue count of subtitle files.
-  formats  List the format names and file extensions for --from and --to.
-  help     Show the help of a command.
-` + globalHelpTail
-		assert.Equal(t, result{Stdout: want}, call{commands: commands()}.run(t))
-	})
-	t.Run("1.0 commands", func(t *testing.T) {
-		t.Parallel()
-
-		commands := []command{
-			summaryCommand{"convert", "Convert subtitle files to another format, and run text, structure and timing edits on the way."},
-			summaryCommand{"info", "Print the format, the encoding and the cue count of subtitle files."},
-			summaryCommand{"formats", "List the format names and file extensions for --from and --to."},
-		}
-		want := head + `Commands:
+	want := head + `Commands:
   convert  Convert subtitle files to another format, and run text, structure and
            timing edits on the way.
   info     Print the format, the encoding and the cue count of subtitle files.
   formats  List the format names and file extensions for --from and --to.
   help     Show the help of a command.
 ` + globalHelpTail
-		assert.Equal(t, result{Stdout: want}, call{commands: commands}.run(t))
-	})
+	assert.Equal(t, result{Stdout: want}, call{}.run(t))
 }
 
 func TestDispatch(t *testing.T) {
@@ -219,7 +202,7 @@ Options:
                          stop at the first failure.
   -h, --help             Show this help.
 `
-	assert.Equal(t, result{Stdout: want}, call{}.run(t, "convert", "--help"))
+	assert.Equal(t, want, commandHelp(&reportingConvert{}))
 
 	info := call{}.run(t, "help", "info").Stdout
 	assert.Contains(t, info, "\nOptions:\n  --json           Print JSON: a list with one object for each input file.\n  --from FORMAT  ")
@@ -253,7 +236,7 @@ func (detailsCommand) details() string {
 func TestEveryCommandHasHelp(t *testing.T) {
 	t.Parallel()
 
-	for _, c := range testCommands() {
+	for _, c := range commands() {
 		cmd := c.name()
 		t.Run(cmd, func(t *testing.T) {
 			t.Parallel()
@@ -276,7 +259,7 @@ func TestEveryHelpPageFitsIn80ColumnsWithoutTrailingSpaces(t *testing.T) {
 		"help":        call{}.run(t, "help").Stdout,
 		"binary help": call{commands: commands()}.run(t, "help").Stdout,
 	}
-	for _, cmd := range testCommands() {
+	for _, cmd := range commands() {
 		pages["help "+cmd.name()] = call{}.run(t, "help", cmd.name()).Stdout
 	}
 	for page, text := range pages {
@@ -291,7 +274,7 @@ func TestEveryHelpPageFitsIn80ColumnsWithoutTrailingSpaces(t *testing.T) {
 func TestOptionNamesFollowTheNamingRules(t *testing.T) {
 	t.Parallel()
 
-	for _, cmd := range testCommands() {
+	for _, cmd := range commands() {
 		for _, o := range cmd.options() {
 			where := cmd.name() + " --" + o.name
 			if regexp.MustCompile(`(^|-)no-`).MatchString(o.name) {
@@ -318,6 +301,9 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 			codeDefaults["line-ending"] = le.name
 		}
 	}
+	codeDefaults["structure-max-cpl"] = strconv.Itoa(model.DefaultMaxCharactersPerLine)
+	codeDefaults["structure-max-lines"] = strconv.Itoa(model.DefaultMaxLinesPerCue)
+	codeDefaults["timing-min-gap"] = formatNumber(defaultMinGap.Seconds())
 	described := []string{
 		"the format detected from the content", "stop at the first failure", "the input format",
 		"the BOM rule of the output format",
@@ -325,9 +311,13 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 	unwrap := regexp.MustCompile(`\n {3,}(\S)`)
 	defaultText := regexp.MustCompile(`(?m)^  (?:-\w, )?--([\w-]+).*? Default: (.+?)\.(?: |$)`)
 	found := map[string]bool{}
-	for _, c := range testCommands() {
+	for _, c := range commands() {
 		cmd := c.name()
-		help := unwrap.ReplaceAllString(call{}.run(t, cmd, "--help").Stdout, " $1")
+		page := call{}.run(t, cmd, "--help").Stdout
+		if _, ok := c.(topicHelper); ok {
+			page = call{}.run(t, cmd, "--help", "all").Stdout
+		}
+		help := unwrap.ReplaceAllString(page, " $1")
 		for _, m := range defaultText.FindAllStringSubmatch(help, -1) {
 			opt, value := m[1], m[2]
 			found[opt] = true
@@ -341,6 +331,11 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 	for opt := range codeDefaults {
 		assert.True(t, found[opt], "--%s", opt)
 	}
+
+	mergeShort := unwrap.ReplaceAllString(call{}.run(t, "convert", "--help", "structure").Stdout, " $1")
+	assert.Contains(t, mergeShort, "Join cues shorter than "+formatNumber(model.DefaultMinDuration.Seconds())+
+		" s with a neighbor at most "+formatNumber(model.DefaultMergeMaxGap.Seconds())+" s away. The joined cue must fit "+
+		formatNumber(model.DefaultMaxDuration.Seconds())+" s,")
 }
 
 func TestRemovedOptionsAreUnknown(t *testing.T) {
