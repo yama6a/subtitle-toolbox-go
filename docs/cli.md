@@ -2,6 +2,21 @@
 
 `stbox` reads, converts and checks subtitle files from the shell. Example: `stbox convert season1 --to vtt --output-dir out` reads every subtitle file of `season1/` and writes `out/<name>.vtt` for each. It never overwrites a file, prints one report line per file and a summary, and exits 3 when one file failed.
 
+## Install
+
+| Form | Needs | Example |
+|:--- |:--- |:--- |
+| archive on the GitHub release | nothing | `curl -fsSLO https://github.com/yama6a/subtitle-toolbox-go/releases/download/v1.0.0/stbox_1.0.0_linux_amd64.tar.gz` |
+| `go install` | Go of the `go` line in `go.mod` | `go install github.com/yama6a/subtitle-toolbox-go/cmd/stbox@latest` |
+| image `ghcr.io/yama6a/subtitle-toolbox-go` | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:1.0.0 convert in.srt --to vtt -o out.vtt` |
+
+- **Version**: the archive names, the image tag and `stbox --version` show `1.0.0`. The git tag is `v1.0.0`. The image also has the tags `1.0`, `1` and `latest`.
+- **Archives**: `stbox_1.0.0_OS_ARCH.tar.gz` for linux and darwin, `stbox_1.0.0_windows_ARCH.zip` for windows. Each holds `stbox`, `LICENSE`, `README.md` and `THIRD_PARTY_NOTICES.md`.
+- **Checksums**: `sha256sum --ignore-missing -c stbox_1.0.0_checksums.txt`.
+- **macOS**: the binaries are not notarized. macOS blocks a downloaded binary until the user runs `xattr -d com.apple.quarantine stbox`.
+- **Image**: the tool runs in `/work`, so mount the files there. `--user` makes the tool write files that the user owns. Without it, the tool runs as user 65532 and cannot write to most mounted folders.
+- **Platforms**: archives for linux, darwin and windows on amd64 and arm64. The image is for linux/amd64 and linux/arm64.
+
 ## Calls
 
 | Call | Result |
