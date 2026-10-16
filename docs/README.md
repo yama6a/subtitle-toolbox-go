@@ -19,4 +19,5 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [text.md](text.md) | case, replace, strip tags, right-to-left fixes and dialogue dashes |
 | [cli.md](cli.md) | the `stbox` command: install, arguments, input and output files, `info`, `formats` and exit codes |
 | [compatibility.md](compatibility.md) | what a release may change, and what stays the same for the whole 1.x line |
+| [runbooks/release.md](runbooks/release.md) | the release steps, the checks before a major release, and the checks after each release |
 | [php-differences.md](php-differences.md) | each behaviour that differs from PHP 5.x on purpose |
