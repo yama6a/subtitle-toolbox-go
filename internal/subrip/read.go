@@ -41,6 +41,7 @@ var fullWidth = strings.NewReplacer("\uff1a", ":", "\uff0c", ",", "\uff0e", ".",
 type Reader struct {
 	st    *parsing.State
 	rules blocks.Rules
+	cut   func() (int, bool)
 }
 
 type timing struct {
@@ -63,6 +64,12 @@ func NewReader(st *parsing.State) *Reader {
 	return rd
 }
 
+// CutAt sets a function that returns the last line read and true when an error ended the input.
+// Blocks then drops the block that this error cut.
+func (rd *Reader) CutAt(cut func() (int, bool)) {
+	rd.cut = cut
+}
+
 // Blocks yields the blocks of lines after the join of cue text blocks, which warns in lenient mode.
 // The keys of lines are 0-based line numbers.
 func (rd *Reader) Blocks(lines iter.Seq2[int, string]) iter.Seq[blocks.Block] {
@@ -71,7 +78,11 @@ func (rd *Reader) Blocks(lines iter.Seq2[int, string]) iter.Seq[blocks.Block] {
 			rd.st.Warn(blocks.JoinWarning(block, line), line, block, lines, model.Repaired)
 		}
 	}
-	return blocks.JoinCueTextBlocks(blocks.SplitAtEmptyLines(lines), rd.rules, nil, onJoin)
+	split := blocks.SplitAtEmptyLines(lines)
+	if rd.cut != nil {
+		split = blocks.DropCut(split, rd.cut)
+	}
+	return blocks.JoinCueTextBlocks(split, rd.rules, nil, onJoin)
 }
 
 func (rd *Reader) isTimingLine(line string) bool {

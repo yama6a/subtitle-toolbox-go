@@ -23,6 +23,7 @@ type LineReader struct {
 	st   *State
 	err  error
 	used bool
+	last int
 }
 
 // NewLineReader returns a reader of the lines of r. It reads nothing until the first call of Lines.
@@ -41,6 +42,12 @@ func (l *LineReader) Err() error {
 	return l.err
 }
 
+// CutLine returns the 1-based number of the last line that Lines yielded, and true when an error ended the lines.
+// The block that holds this line is cut, because the input went on after it.
+func (l *LineReader) CutLine() (int, bool) {
+	return l.last, l.err != nil
+}
+
 // Lines yields the 0-based number and the text of each line. Only the first call reads the stream.
 // A line still holds the BOMs after the start of the stream, so a reader sees joined files.
 // Lines ends at the first error, after the lines before it.
@@ -51,6 +58,7 @@ func (l *LineReader) Lines() iter.Seq2[int, string] {
 		}
 		l.used = true
 		for n := 0; l.sc.Scan(); n++ {
+			l.last = n + 1
 			if !yield(n, string(l.sc.Bytes())) {
 				return
 			}
@@ -219,7 +227,6 @@ func (p *prepass) release() {
 	}
 }
 
-// finish handles the end of the stream.
 func (p *prepass) finish() {
 	if p.atStart {
 		p.atStart = false
@@ -267,7 +274,6 @@ func (p *prepass) other(c byte) {
 	}
 }
 
-// splitState is the state of the split function that cuts lines.
 type splitState struct {
 	// lonely is the count of CRs at the start of the next data, each a line end on its own.
 	lonely int
@@ -301,7 +307,6 @@ func (s *splitState) split(data []byte, atEOF bool) (int, []byte, error) {
 	return s.splitAtCR(data, i, atEOF)
 }
 
-// splitAtCR cuts at the run of CRs that starts at data[i].
 func (s *splitState) splitAtCR(data []byte, i int, atEOF bool) (int, []byte, error) {
 	j := i
 	for j < len(data) && data[j] == '\r' {
