@@ -101,11 +101,14 @@ func TestASecondSignalEndsTheProcess(t *testing.T) {
 	waited := make(chan error, 1)
 	go func() { waited <- cmd.Wait() }()
 	var err2 error
+	deadline := time.After(5 * time.Second)
 	for done := false; !done; {
 		_ = cmd.Process.Signal(os.Interrupt)
 		select {
 		case err2 = <-waited:
 			done = true
+		case <-deadline:
+			require.FailNow(t, "the process still runs 5 s after the second signal")
 		case <-time.After(50 * time.Millisecond):
 		}
 	}
