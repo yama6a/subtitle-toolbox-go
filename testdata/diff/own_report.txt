@@ -1,0 +1,51 @@
+timing changed: old cue 2, new cue 2
+- 00:00:04.000 --> 00:00:06.200
+  This train calls at all stations
+  to the harbour.
++ 00:00:04.250 --> 00:00:06.450
+  This train calls at all stations
+  to the harbour.
+
+text changed: old cue 4, new cue 4
+- 00:00:10.500 --> 00:00:13.000
+  The next stop is Milbrook.
++ 00:00:10.500 --> 00:00:13.000
+  The next stop is Millbrook.
+
+text and timing changed: old cue 6, new cue 6
+- 00:00:17.000 --> 00:00:21.000
+  Tickets are on sale in coach three. Cards and coins are fine.
++ 00:00:17.000 --> 00:00:19.000
+  Tickets are on sale in coach three.
+
+added: new cue 7
++ 00:00:19.000 --> 00:00:21.000
+  Cards and coins are fine.
+
+removed: old cue 8
+- 00:00:25.000 --> 00:00:26.500
+  Thank you.
+
+text and timing changed: old cue 9, new cue 9
+- 00:00:28.000 --> 00:00:30.500
+  Rain is likley later today.
++ 00:00:28.000 --> 00:00:31.000
+  Rain is likely later today.
+
+text changed: old cue 10, new cue 10
+- 00:00:31.000 --> 00:00:33.000
+  <i>Mind the gap.</i>
++ 00:00:31.001 --> 00:00:33.000
+  Mind the gap.
+
+text changed: old cue 11, new cue 11
+- 00:00:34.000 --> 00:00:36.500
+  Bicycles go in the last coach,
+  next to the luggage rack.
++ 00:00:34.000 --> 00:00:36.500
+  Bicycles go in the last coach, next
+  to the luggage rack.
+
+added: new cue 13
++ 00:00:39.000 --> 00:00:40.000
+  The doors open on the left.
