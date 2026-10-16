@@ -144,7 +144,7 @@ func helpRequest(words []string) (topic string, ok bool) {
 }
 
 func printHelp(c *console, cmd command, topic string) error {
-	text, err := helpOf(cmd, topic)
+	text, err := helpOf(c, cmd, topic)
 	if err != nil {
 		return usageFailure(c, cmd.name(), message(err))
 	}

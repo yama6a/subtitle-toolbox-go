@@ -172,7 +172,7 @@ func TestHelpTopic(t *testing.T) {
 
 type topicCommand struct{ summaryCommand }
 
-func (topicCommand) help(topic string) (string, error) {
+func (topicCommand) help(_ *console, topic string) (string, error) {
 	if topic != "" {
 		return "", usage(`Unknown option group "` + topic + `".`)
 	}
