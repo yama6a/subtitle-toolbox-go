@@ -75,7 +75,7 @@ A `.txt` file in a directory is an input only when content detection finds a for
 `stbox convert <input>... [--to FORMAT] [-o FILE | --output-dir DIR] [options]` reads subtitle files, runs edits on them, and writes them in the format of `--to`, else in the input format. Example: `stbox convert film.srt --to vtt --shift -0.5 --timing-fix-overlaps -o film.vtt` shifts every cue 0.5 s earlier, ends each cue before the next one starts, and writes WebVTT.
 
 - **Help**: `stbox convert --help` lists the common options and the groups. `--help GROUP` prints the options of one group, `--help all` prints all of them. A topic with `.`, `/` or `\`, or the name of an existing file, is no topic: `convert in.srt -h out.srt` prints the default help.
-- **Checks**: every option check runs before the first read, so a bad value exits 2 and reads nothing. The checks run in pipeline order, and the first failing check decides the message.
+- **Checks**: every option check runs before the first read, so a bad value exits 2 and reads nothing. The input options come first, then the output options, `--language` and the groups in pipeline order. The first failing check decides the message.
 - **`--language`** sets the language of `--case`, for example `tr` for the Turkish dotted i. Without `--case` it fails.
 - **WebVTT colors**: WebVTT has classes for 8 colors. For each other color, convert prints `LABEL: Cue #3 at 4 s: dropped the color "#123456", because WebVTT has classes for 8 colors only.` on stderr and still exits 0.
 
