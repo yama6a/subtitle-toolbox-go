@@ -1,8 +1,10 @@
 package cli
 
 import (
+	"cmp"
 	"context"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -10,6 +12,7 @@ import (
 	"github.com/dlclark/regexp2/v2"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
@@ -47,14 +50,12 @@ func (st steps) apply(_ context.Context, s *stbox.Subtitle, _ *console, _ string
 	return s, nil
 }
 
-// inPlace turns a call that changes s into a step.
 func inPlace(call func(s *stbox.Subtitle) error) step {
 	return func(s *stbox.Subtitle) (*stbox.Subtitle, error) {
 		return s, call(s)
 	}
 }
 
-// addSteps adds st as an edit when it holds a step.
 func addSteps(add func(edit), st steps) {
 	if len(st) > 0 {
 		add(st)
@@ -82,7 +83,6 @@ func convertGroups() []group {
 	return []group{forcedGroup(), replaceGroup(), textGroup(), structureGroup(), retimeGroup(), timingGroup()}
 }
 
-// needs fails when a holds one of opts without the option needed.
 func needs(a *args, needed string, opts ...string) error {
 	for _, o := range opts {
 		if a.Has(o) && !a.Has(needed) {
@@ -92,7 +92,6 @@ func needs(a *args, needed string, opts ...string) error {
 	return nil
 }
 
-// needsOneOf fails when a holds opt without any of the options needed.
 func needsOneOf(a *args, needed []string, opt string) error {
 	if !a.Has(opt) {
 		return nil
@@ -107,11 +106,6 @@ func needsOneOf(a *args, needed []string, opt string) error {
 		list = "--" + strings.Join(needed[:len(needed)-1], ", --") + " or " + list
 	}
 	return usage("Pass " + list + " with --" + opt + ".")
-}
-
-// seconds prints a default duration of the help in seconds, such as 0.25.
-func seconds(d time.Duration) string {
-	return formatNumber(d.Seconds())
 }
 
 func forcedGroup() group {
@@ -158,11 +152,11 @@ func buildReplace(a *args, add func(edit)) error {
 		}
 		opts := model.ReplaceOptions{Regex: regex, IgnoreCase: a.Has("replace-ignore-case")}
 		if regex {
-			p, err := regexReplacement(from)
+			p, hasGroup, err := regexReplacement(from)
 			if err != nil {
 				return err
 			}
-			from, to = p.pattern, convertReplacement(to)
+			from, to = p.pattern, convertReplacement(to, hasGroup)
 			opts.IgnoreCase = opts.IgnoreCase || p.ignoreCase
 		}
 		st = append(st, inPlace(func(s *stbox.Subtitle) error { return s.ReplaceText(from, to, opts) }))
@@ -172,24 +166,26 @@ func buildReplace(a *args, add func(edit)) error {
 }
 
 // regexReplacement converts from and compiles it once to find a bad pattern before the first read. ReplaceText
-// compiles it again for each input.
-func regexReplacement(from string) (pcrePattern, error) {
+// compiles it again for each input. hasGroup reports whether the pattern has the group number n.
+func regexReplacement(from string) (p pcrePattern, hasGroup func(n int) bool, err error) {
 	invalid := "The option --replace has the invalid regular expression " + quote(from) + "."
 	p, badFlag, ok := convertPCRE(from)
 	switch {
 	case badFlag != "":
-		return p, usage(invalid + " The flag " + badFlag + " is not supported.")
-	case !ok || p.pattern == "":
-		return p, usage(invalid)
+		return p, nil, usage(invalid + " The flag " + badFlag + " is not supported.")
+	case !ok:
+		return p, nil, usage(invalid)
 	}
 	options := regexp2.None
 	if p.ignoreCase {
 		options = regexp2.IgnoreCase
 	}
-	if _, err := regexp2.Compile(p.pattern, options); err != nil {
-		return p, usage(invalid)
+	re, err := regexp2.Compile(p.pattern, options)
+	if err != nil {
+		return p, nil, usage(invalid)
 	}
-	return p, nil
+	groups := re.GetGroupNumbers()
+	return p, func(n int) bool { return slices.Contains(groups, n) }, nil
 }
 
 func textGroup() group {
@@ -240,9 +236,9 @@ func structureGroup() group {
 		options: []option{
 			flagOption("structure-unwrap",
 				"Join the lines of each cue with a space. Each dialogue dash line starts a line of its own."),
-			flagOption("structure-merge-short", "Join cues shorter than "+seconds(model.DefaultMinDuration)+
-				" s with a neighbor at most "+seconds(model.DefaultMergeMaxGap)+" s away. The joined cue must fit "+
-				seconds(model.DefaultMaxDuration)+" s, --structure-max-cpl and --structure-max-lines."),
+			flagOption("structure-merge-short", "Join cues shorter than "+timecode.Seconds(model.DefaultMinDuration)+
+				" s with a neighbor at most "+timecode.Seconds(model.DefaultMergeMaxGap)+" s away. The joined cue must fit "+
+				timecode.Seconds(model.DefaultMaxDuration)+" s, --structure-max-cpl and --structure-max-lines."),
 			flagOption("structure-wrap", "Break lines longer than --structure-max-cpl characters."),
 			valueOption("structure-max-cpl", "CHARS", "Maximum characters per line for --structure-wrap and "+
 				"--structure-merge-short. Default: "+strconv.Itoa(model.DefaultMaxCharactersPerLine)+"."),
@@ -263,23 +259,18 @@ func buildStructure(a *args, add func(edit)) error {
 			return err
 		}
 	}
-	cpl, hasCPL, err := a.PositiveInt("structure-max-cpl")
+	cpl, _, err := a.PositiveInt("structure-max-cpl")
 	if err != nil {
 		return err
 	}
-	lines, hasLines, err := a.PositiveInt("structure-max-lines")
+	lines, _, err := a.PositiveInt("structure-max-lines")
 	if err != nil {
 		return err
 	}
 	// 0 for an option that the call does not set makes the library default apply.
 	limits := model.CueLimits{MaxCharactersPerLine: int(cpl), MaxLinesPerCue: int(lines)}
-	wrapCPL, wrapLines := model.DefaultMaxCharactersPerLine, model.DefaultMaxLinesPerCue
-	if hasCPL {
-		wrapCPL = int(cpl)
-	}
-	if hasLines {
-		wrapLines = int(lines)
-	}
+	wrapCPL := cmp.Or(int(cpl), model.DefaultMaxCharactersPerLine)
+	wrapLines := cmp.Or(int(lines), model.DefaultMaxLinesPerCue)
 	// The run order of docs/cli.md, which is not the order of the help.
 	addSteps(add, flagSteps(a, []flagStep{
 		{"structure-unwrap", func(s *stbox.Subtitle) error { s.UnwrapLines(); return nil }},
@@ -518,7 +509,7 @@ func timingGroup() group {
 			valueOption("timing-max-duration", "SECONDS",
 				"End each cue at most this time after its start. Runs after the other timing fixes."),
 			valueOption("timing-min-gap", "SECONDS", "Gap between cues for --timing-fix-overlaps, "+
-				"--timing-min-duration and the lead options. Default: "+seconds(defaultMinGap)+"."),
+				"--timing-min-duration and the lead options. Default: "+timecode.Seconds(defaultMinGap)+"."),
 		},
 		build: buildTiming,
 	}

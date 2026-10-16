@@ -1,6 +1,10 @@
 package cli
 
-import "strings"
+import (
+	"regexp"
+	"strconv"
+	"strings"
+)
 
 // pcrePattern is a FROM of --replace-regex after the conversion of convertPCRE.
 type pcrePattern struct {
@@ -10,14 +14,15 @@ type pcrePattern struct {
 }
 
 // convertPCRE turns a PHP PCRE pattern with delimiters and flags, such as /\.{4,}/i, into a regexp2 pattern.
-// ok is false for a pattern that PHP rejects too. badFlag holds the first flag that regexp2 lacks, or "".
+// ok is false for a pattern that PHP rejects, and for an empty pattern such as //m, which ReplaceText rejects.
+// badFlag holds the first flag that regexp2 lacks, or "".
 func convertPCRE(from string) (p pcrePattern, badFlag string, ok bool) {
 	s := strings.TrimLeft(from, phpSpace)
 	if s == "" || isAlnum(s[0]) || s[0] == '\\' {
 		return pcrePattern{}, "", false
 	}
 	body, flags, ok := splitDelimited(s)
-	if !ok {
+	if !ok || body == "" {
 		return pcrePattern{}, "", false
 	}
 	inline, ignoreCase, badFlag := readFlags(flags)
@@ -30,7 +35,8 @@ func convertPCRE(from string) (p pcrePattern, badFlag string, ok bool) {
 	return pcrePattern{pattern: body, ignoreCase: ignoreCase}, "", true
 }
 
-// readFlags returns the flags m, s and x for an inline group, whether i is set, and the first other flag but u.
+// readFlags returns the flags m, s and x for an inline group, whether i is set, and the first other flag. PHP
+// skips u, a space, LF and CR.
 func readFlags(flags string) (inline string, ignoreCase bool, badFlag string) {
 	for _, f := range flags {
 		switch f {
@@ -40,7 +46,7 @@ func readFlags(flags string) (inline string, ignoreCase bool, badFlag string) {
 			if !strings.ContainsRune(inline, f) {
 				inline += string(f)
 			}
-		case 'u':
+		case 'u', ' ', '\n', '\r':
 		default:
 			return "", false, string(f)
 		}
@@ -60,7 +66,7 @@ func splitDelimited(s string) (body, flags string, ok bool) {
 		switch {
 		case c == '\\' && i+1 < len(s):
 			i++
-			b.WriteString(unescapeDelimiter(s[i], open, closing))
+			b.WriteString(unescapeDelimiter(s[i], open))
 			continue
 		case c == closing:
 			if depth--; depth == 0 {
@@ -74,11 +80,11 @@ func splitDelimited(s string) (body, flags string, ok bool) {
 	return "", "", false
 }
 
-// unescapeDelimiter returns the escape of c inside the pattern. The "\" before a delimiter only escapes it for
-// PHP, so it drops, unless c means something else in a pattern without it: +a\+b+ still matches a plus sign.
-func unescapeDelimiter(c, open, closing byte) string {
-	if (c == open || c == closing) && strings.IndexByte(`.+*?|^$()[]{}#-`, c) < 0 {
-		return string(c)
+// unescapeDelimiter returns the escape of c inside the pattern. PHP passes the "\" on to PCRE, and regexp2
+// reads a "\" before ASCII punctuation as PCRE does. Only \_ fails in regexp2, so _ as a delimiter loses it.
+func unescapeDelimiter(c, open byte) string {
+	if c == '_' && open == '_' {
+		return "_"
 	}
 	return "\\" + string(c)
 }
@@ -104,24 +110,41 @@ func isAlnum(c byte) bool {
 	return c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
 }
 
-// convertReplacement turns the PHP back references \N and \NN of a TO into the regexp2 form ${N}.
-func convertReplacement(to string) string {
+// convertReplacement turns a PHP TO into a regexp2 replacement. The references \N, \NN, $N, $NN, ${N} and ${NN}
+// become ${N}, or nothing for a group that the pattern lacks, as in PHP. \\ and \$ give \ and $. Every other $
+// becomes $$, so the regexp2 substitutions such as $_ and $& stay text.
+func convertReplacement(to string, hasGroup func(n int) bool) string {
 	var b strings.Builder
 	for i := 0; i < len(to); i++ {
-		if to[i] == '\\' && i+1 < len(to) && isDigit(to[i+1]) {
-			end := i + 2
-			if end < len(to) && isDigit(to[end]) {
-				end++
+		c := to[i]
+		if c == '\\' && i+1 < len(to) && (to[i+1] == '\\' || to[i+1] == '$') {
+			i++
+			c = to[i]
+		} else if n, size, ok := backReference(to[i:]); ok {
+			if hasGroup(n) {
+				b.WriteString("${" + strconv.Itoa(n) + "}")
 			}
-			b.WriteString("${" + to[i+1:end] + "}")
-			i = end - 1
+			i += size - 1
 			continue
 		}
-		b.WriteByte(to[i])
+		if c == '$' {
+			b.WriteString("$$")
+			continue
+		}
+		b.WriteByte(c)
 	}
 	return b.String()
 }
 
-func isDigit(c byte) bool {
-	return c >= '0' && c <= '9'
+// phpBackReference is a back reference of a PHP TO, as preg_get_backref of php_pcre.c reads it.
+var phpBackReference = regexp.MustCompile(`^(?:[\\$]([0-9]{1,2})|\$\{([0-9]{1,2})\})`)
+
+// backReference returns the group number of the back reference at the start of s and its length in bytes.
+func backReference(s string) (n, size int, ok bool) {
+	m := phpBackReference.FindStringSubmatch(s)
+	if m == nil {
+		return 0, 0, false
+	}
+	n, _ = strconv.Atoi(m[1] + m[2])
+	return n, len(m[0]), true
 }

@@ -120,7 +120,7 @@ func TestConvertRunsTextAndTimingEditsInOneCall(t *testing.T) {
 	t.Parallel()
 
 	want := libraryOutput(t, "cli/trip.srt", stbox.WebVTT, stbox.WriteOptions{},
-		all(func(s *stbox.Subtitle) error { return s.FixOverlaps(0) }, shift(-500*time.Millisecond)))
+		all(shift(-500*time.Millisecond), func(s *stbox.Subtitle) error { return s.FixOverlaps(0) }))
 	assert.Equal(t, result{Stdout: want},
 		runCLI(t, "convert", "trip.srt", "--timing-fix-overlaps", "--shift", "-0.5", "--to", "vtt", "-o", "-"))
 }
@@ -511,6 +511,12 @@ func TestConvertTextEdits(t *testing.T) {
 		})
 	}
 	assert.NotEqual(t, readFile(t, dir, "multi.srt"), call{dir: dir}.run(t, "convert", "multi.srt", "--replace-regex", "--replace", `#(u)hr#i=\1HR`).Stdout)
+
+	// preg_replace of PHP 8.5 writes this line for the same FROM and TO.
+	php := `(sighs) Too [$_|\1|$1|$$||late|late|$&|\x].`
+	got := call{dir: dir}.run(t, "convert", "trip.srt", "--replace-regex", "--replace", `/(late)/=[$_|\\1|\$1|$$|\11|$1|${1}|$&|\x]`)
+	assert.Equal(t, 0, got.Code, got.Stderr)
+	assert.Contains(t, got.Stdout, "\n"+php+"\n")
 }
 
 func TestConvertForcedOnly(t *testing.T) {

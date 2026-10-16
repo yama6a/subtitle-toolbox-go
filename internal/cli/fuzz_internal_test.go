@@ -48,12 +48,12 @@ func FuzzConvertPCRE(f *testing.F) {
 		if _, badFlag, ok := convertPCRE(from); ok && badFlag != "" {
 			t.Fatalf("ok with the bad flag %q", badFlag)
 		}
-		if !strings.ContainsAny(from, "/\\ \t\n\r\v\f") {
+		if from != "" && !strings.ContainsAny(from, "/\\ \t\n\r\v\f") {
 			wrapped := "/" + from + "/"
 			if p, _, ok := convertPCRE(wrapped); !ok || p.pattern != from {
 				t.Fatalf("%q gives %q, %v", wrapped, p.pattern, ok)
 			}
 		}
-		_ = convertReplacement(from)
+		_ = convertReplacement(from, func(n int) bool { return n%2 == 0 })
 	})
 }
