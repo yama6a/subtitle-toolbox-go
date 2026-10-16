@@ -1,0 +1,60 @@
+1
+00:00:01,000 --> 00:00:03,500
+Good morning, and welcome
+to the coastal train.
+
+2
+00:00:04,250 --> 00:00:06,450
+This train calls at all stations
+to the harbour.
+
+3
+00:00:07,000 --> 00:00:09,000
+The bakery car is open
+at the front of the train.
+
+4
+00:00:10,500 --> 00:00:13,000
+The next stop is Millbrook.
+
+5
+00:00:13,500 --> 00:00:16,000
+Please take all your bags
+when you leave the train.
+
+6
+00:00:17,000 --> 00:00:19,000
+Tickets are on sale in coach three.
+
+7
+00:00:19,000 --> 00:00:21,000
+Cards and coins are fine.
+
+8
+00:00:22,000 --> 00:00:24,000
+We expect a short delay at the bridge.
+
+9
+00:00:28,000 --> 00:00:31,000
+Rain is likely later today.
+
+10
+00:00:31,001 --> 00:00:33,000
+Mind the gap.
+
+11
+00:00:34,000 --> 00:00:36,500
+Bicycles go in the last coach, next
+to the luggage rack.
+
+12
+00:00:37,000 --> 00:00:39,000
+The harbour is the last stop.
+
+13
+00:00:39,000 --> 00:00:40,000
+The doors open on the left.
+
+14
+00:00:40,000 --> 00:00:42,000
+Have a pleasant trip.

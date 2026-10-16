@@ -1,0 +1,160 @@
+[
+    {
+        "oldFile": "v1.srt",
+        "newFile": "v2.srt",
+        "equal": false,
+        "differences": [
+            {
+                "kind": "text changed",
+                "oldIndex": 3,
+                "newIndex": 3,
+                "old": {
+                    "start": 10.5,
+                    "end": 13,
+                    "lines": [
+                        "The next stop is Milbrook."
+                    ],
+                    "forced": false
+                },
+                "new": {
+                    "start": 10.5,
+                    "end": 13,
+                    "lines": [
+                        "The next stop is Millbrook."
+                    ],
+                    "forced": false
+                }
+            },
+            {
+                "kind": "text and timing changed",
+                "oldIndex": 5,
+                "newIndex": 5,
+                "old": {
+                    "start": 17,
+                    "end": 21,
+                    "lines": [
+                        "Tickets are on sale in coach three. Cards and coins are fine."
+                    ],
+                    "forced": false
+                },
+                "new": {
+                    "start": 17,
+                    "end": 19,
+                    "lines": [
+                        "Tickets are on sale in coach three."
+                    ],
+                    "forced": false
+                }
+            },
+            {
+                "kind": "added",
+                "oldIndex": null,
+                "newIndex": 6,
+                "old": null,
+                "new": {
+                    "start": 19,
+                    "end": 21,
+                    "lines": [
+                        "Cards and coins are fine."
+                    ],
+                    "forced": false
+                }
+            },
+            {
+                "kind": "removed",
+                "oldIndex": 7,
+                "newIndex": null,
+                "old": {
+                    "start": 25,
+                    "end": 26.5,
+                    "lines": [
+                        "Thank you."
+                    ],
+                    "forced": false
+                },
+                "new": null
+            },
+            {
+                "kind": "text changed",
+                "oldIndex": 8,
+                "newIndex": 8,
+                "old": {
+                    "start": 28,
+                    "end": 30.5,
+                    "lines": [
+                        "Rain is likley later today."
+                    ],
+                    "forced": false
+                },
+                "new": {
+                    "start": 28,
+                    "end": 31,
+                    "lines": [
+                        "Rain is likely later today."
+                    ],
+                    "forced": false
+                }
+            },
+            {
+                "kind": "text changed",
+                "oldIndex": 9,
+                "newIndex": 9,
+                "old": {
+                    "start": 31,
+                    "end": 33,
+                    "lines": [
+                        "<i>Mind the gap.</i>"
+                    ],
+                    "forced": false
+                },
+                "new": {
+                    "start": 31.001,
+                    "end": 33,
+                    "lines": [
+                        "Mind the gap."
+                    ],
+                    "forced": false
+                }
+            },
+            {
+                "kind": "text changed",
+                "oldIndex": 10,
+                "newIndex": 10,
+                "old": {
+                    "start": 34,
+                    "end": 36.5,
+                    "lines": [
+                        "Bicycles go in the last coach,",
+                        "next to the luggage rack."
+                    ],
+                    "forced": false
+                },
+                "new": {
+                    "start": 34,
+                    "end": 36.5,
+                    "lines": [
+                        "Bicycles go in the last coach, next",
+                        "to the luggage rack."
+                    ],
+                    "forced": false
+                }
+            },
+            {
+                "kind": "added",
+                "oldIndex": null,
+                "newIndex": 12,
+                "old": null,
+                "new": {
+                    "start": 39,
+                    "end": 40,
+                    "lines": [
+                        "The doors open on the left."
+                    ],
+                    "forced": false
+                }
+            }
+        ],
+        "oldWarnings": [],
+        "newWarnings": []
+    }
+]
