@@ -40,6 +40,7 @@ func Run(ctx context.Context, args []string, env Env) error {
 func commands() []command {
 	return []command{
 		&infoCommand{},
+		&syncCommand{},
 		formatsCommand{},
 	}
 }
