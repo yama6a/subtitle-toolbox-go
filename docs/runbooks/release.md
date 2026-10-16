@@ -36,7 +36,7 @@ A major release N opens a new line and moves the module path to `/vN`. Only the 
 
 ### Checks before the major label
 
-Do every step on the last commit of `main`. Set `major` only when every step gives the expected result.
+Do every step on the last commit of `main`. For a major N of 2 or more, do step 8 on the branch of the major pull request, after the [steps for a major N of 2 or more](#steps-for-a-major-n-of-2-or-more). Set `major` only when every step gives the expected result.
 
 1. Check that every issue of the scope table of the major issue is closed.
 
@@ -60,14 +60,15 @@ Do every step on the last commit of `main`. Set `major` only when every step giv
    gh api repos/yama6a/subtitle-toolbox-go/commits/main/check-runs --jq '.check_runs[] | "\(.name) \(.conclusion)"'
    ```
 
-   Expected: `success` for every required check.
+   Expected: `skipped` for `release label` and `version check`, because they run on pull requests only. `success` for the other 9 required checks.
 
 4. Run the read golden runner.
 
    ```bash
-   go test -count=1 -run '^TestReadGoldens$' -v . > goldens.txt
-   grep -o -- '--- PASS: TestReadGoldens/[a-z]*' goldens.txt | sort | uniq -c
-   grep -c -- '--- SKIP' goldens.txt
+   out=$(mktemp)
+   go test -count=1 -run '^TestReadGoldens$' -v . > "$out"
+   grep -o -- '--- PASS: TestReadGoldens/[a-z]*' "$out" | sort | uniq -c
+   grep -c -- '--- SKIP' "$out"
    ```
 
    Expected for 1.0.0: 6 cases in `json`, 19 in `srt` and 30 in `vtt`, 55 in total. The skip count is 0.
@@ -80,7 +81,7 @@ Do every step on the last commit of `main`. Set `major` only when every step giv
 
    Expected: no output from `git status`.
 
-6. Run every fuzz target for 5 minutes. With 13 targets this takes about 65 minutes.
+6. Run every fuzz target for 5 minutes. At 1.0.0 the module has 16 targets, so this takes about 80 minutes.
 
    ```bash
    make fuzz FUZZTIME=5m
@@ -91,7 +92,7 @@ Do every step on the last commit of `main`. Set `major` only when every step giv
 7. Build the archives and run the smoke test.
 
    ```bash
-   make dist VERSION=N.0.0 && make smoke VERSION=N.0.0
+   rm -rf dist && make dist VERSION=N.0.0 && make smoke VERSION=N.0.0
    ```
 
    Expected: the last line is `smoke test passed: N.0.0`.
@@ -102,7 +103,7 @@ Do every step on the last commit of `main`. Set `major` only when every step giv
    go mod edit -json | jq -r '.Module.Path, (.Require[] | "\(.Path) \(.Indirect // false)")'
    ```
 
-   Expected: the module path `github.com/yama6a/subtitle-toolbox-go`, with `/vN` for N of 2 or more. Each line that ends in `false` names an allowed module of `CLAUDE.md` or testify.
+   Expected for 1.0.0: the module path `github.com/yama6a/subtitle-toolbox-go`. Expected for N of 2 or more: `github.com/yama6a/subtitle-toolbox-go/vN`. Each line that ends in `false` names an allowed module of `CLAUDE.md` or testify.
 
 9. Check that `golang.org/x/text` needs no newer Go than the module.
 
@@ -139,6 +140,22 @@ Do every step on the last commit of `main`. Set `major` only when every step giv
 
 13. Check that the owner has answered every compatibility decision of the major issue, and that `compatibility.md` states each answer. For 1.0.0 these are D2 and D3 of [#7](https://github.com/yama6a/subtitle-toolbox-go/issues/7).
 
+    ```bash
+    gh issue view 7 -R yama6a/subtitle-toolbox-go --json body --jq .body | grep -o '^\*\*Decision (D[23])\*\*'
+    grep -n -e '^- \*\*Option defaults\*\*' -e '^## `==` on structs' docs/compatibility.md
+    ```
+
+    Expected: the 2 lines `**Decision (D2)**` and `**Decision (D3)**`, then the 2 lines of `compatibility.md` that state them.
+
+14. Set `major` on the pull request and merge it. For a major N of 2 or more, do the [steps for a major N of 2 or more](#steps-for-a-major-n-of-2-or-more) first.
+
+    ```bash
+    gh pr edit <number> -R yama6a/subtitle-toolbox-go --add-label major
+    gh pr merge <number> -R yama6a/subtitle-toolbox-go --squash
+    ```
+
+    Expected: the `release` workflow starts on the merge commit. Then do the steps of [After any release](#after-any-release).
+
 ### Steps for a major N of 2 or more
 
 `version check` fails until `go.mod` and every import agree with the `major` label.
@@ -161,8 +178,11 @@ Do every step on the last commit of `main`. Set `major` only when every step giv
 
 3. Add `docs/upgrade-N.0.md`, with the old call and the new call for each break. Add its row to `docs/README.md`.
 4. Change the `go get` and `go install` lines in `README.md` and `docs/cli.md` to `/vN`.
-5. Run the checks before the major label.
-6. Set `major` on the pull request and merge it.
+5. Do step 8 of the [checks before the major label](#checks-before-the-major-label) on the branch of the pull request.
+
+   Expected: the module path `github.com/yama6a/subtitle-toolbox-go/vN`.
+
+6. Do step 14 of the checks before the major label.
 
 ## After any release
 
@@ -231,6 +251,8 @@ Replace `1.0.0` with the version of the release.
 
 9. For a major release, edit the release notes. Put a hand-written block above the generated notes. It names the formats and the commands of the line, the 3 install forms, and links `docs/compatibility.md` at the tag.
 
+   Write the block to `block.md`. Then run:
+
    ```bash
    gh release view v1.0.0 -R yama6a/subtitle-toolbox-go --json body --jq .body > generated.md
    cat block.md generated.md > notes.md
@@ -241,3 +263,12 @@ Replace `1.0.0` with the version of the release.
 
 - **Tags are permanent**: the Go module proxy keeps a version forever, also after a tag delete. Never delete or move a `v*` tag. A broken v1.0.0 gets a fix in v1.0.1. If nobody may use v1.0.0, v1.0.1 adds `retract v1.0.0` to `go.mod`.
 - **Only one pull request carries `major` before 1.0.0**: `version check` cannot tell the 1.0.0 pull request from another `major` pull request before the first tag.
+- **API check in CI**: right after the `v1.0.0` tag, a follow-up pull request adds the `gorelease` job of [#158](https://github.com/yama6a/subtitle-toolbox-go/issues/158). It needs a tag to compare against.
+- **Open pull requests after the first tag**: before `v1.0.0`, `version check` fails every pull request labelled `patch` or `minor`. The check reruns only on a push or a label change. After the tag, rerun the failed job of each such pull request:
+
+  ```bash
+  gh run list -R yama6a/subtitle-toolbox-go --workflow ci --branch <branch> --limit 1
+  gh run rerun <run-id> -R yama6a/subtitle-toolbox-go --failed
+  ```
+
+  Expected: `version check` passes.
