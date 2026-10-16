@@ -438,6 +438,24 @@ func TestRightToLeftEmbedding(t *testing.T) {
 			in:   []string{"\u05d0\u05d1\u05d2 \u05d3\u05d4\u05d5?"},
 			want: []string{"\u05d0\u05d1\u05d2", "\u05d3\u05d4\u05d5?"},
 		},
+		{
+			name: "wrap keeps a line of invalid UTF-8",
+			fn:   func(lines []string) []string { return linewrap.Wrap(lines, 4, 3, false) },
+			in:   []string{"\xe2" + rle + "\x80\xab\u05d5"},
+			want: []string{"\xe2" + rle + "\x80\xab\u05d5"},
+		},
+		{
+			name: "wrap keeps the marks of a line of invalid UTF-8",
+			fn:   func(lines []string) []string { return linewrap.Wrap(lines, 4, 3, false) },
+			in:   []string{"\xff" + rle + "\u05d0" + pdf},
+			want: []string{"\xff" + rle + "\u05d0" + pdf},
+		},
+		{
+			name: "unwrap keeps a line of invalid UTF-8",
+			fn:   linewrap.UnwrapTurns,
+			in:   []string{"\xe2" + rle + "\x80\xab\u05d5"},
+			want: []string{"\xe2" + rle + "\x80\xab\u05d5"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

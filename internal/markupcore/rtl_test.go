@@ -87,6 +87,14 @@ func TestHoldsRightToLeftEmbedding(t *testing.T) {
 	}
 }
 
+func TestHoldsRightToLeftEmbeddingInvalidUTF8(t *testing.T) {
+	t.Parallel()
+
+	for _, line := range []string{"\xe2\u202b\x80\xab\u05d5", "\xff\u202b\u05d0\u202c"} {
+		assert.False(t, markupcore.HoldsRightToLeftEmbedding([]string{line}), "%q", line)
+	}
+}
+
 func TestHasRightToLeftLetter(t *testing.T) {
 	t.Parallel()
 

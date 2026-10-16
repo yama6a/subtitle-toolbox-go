@@ -59,10 +59,10 @@ func EmbedRightToLeft(line string) string {
 	return leading + rightToLeftEmbedding + middle + popFormatting + trailing + lf
 }
 
-// HoldsRightToLeftEmbedding reports whether a line already holds the embedding of EmbedRightToLeft.
+// HoldsRightToLeftEmbedding reports whether a line of valid UTF-8 already holds the embedding of EmbedRightToLeft.
 func HoldsRightToLeftEmbedding(lines []string) bool {
 	for _, line := range lines {
-		if strings.Contains(line, rightToLeftEmbedding) && EmbedRightToLeft(line) == line {
+		if utf8.ValidString(line) && strings.Contains(line, rightToLeftEmbedding) && EmbedRightToLeft(line) == line {
 			return true
 		}
 	}
