@@ -1,0 +1,17 @@
+﻿1
+00:00:01,000 --> 00:00:03,000
+<i>The bakery opens at six.</i>
+
+2
+00:00:03,500 --> 00:00:06,000
+- Fresh bread, warm bread!
+- The bread is gone.
+
+3
+00:00:08,000 --> 00:00:09,000
+Brot & Brötchen
+
+4
+00:00:08,500 --> 00:00:12,000
+<b>The</b> train to the bakery
+leaves at <font color="#ffff00">7:15</font>.
