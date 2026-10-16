@@ -5,7 +5,11 @@
 // full writer. The package reads UTF-8. Wrap the input with golang.org/x/text/transform for other encodings.
 package stream
 
-import "github.com/yama6a/subtitle-toolbox-go/model"
+import (
+	"strconv"
+
+	"github.com/yama6a/subtitle-toolbox-go/model"
+)
 
 // ReadOptions holds the settings of a stream reader.
 type ReadOptions struct {
@@ -19,10 +23,10 @@ func (o ReadOptions) common() model.CommonReadOptions {
 
 func validateCommon(common model.CommonWriteOptions) error {
 	if common.LineEnding > model.CRLF {
-		return &model.InvalidArgumentError{Option: "CommonWriteOptions.LineEnding", Msg: "The line ending " + common.LineEnding.String() + " is unknown."}
+		return &model.InvalidArgumentError{Option: "CommonWriteOptions.LineEnding", Msg: "The line ending " + strconv.Itoa(int(common.LineEnding)) + " is unknown."}
 	}
 	if common.BOM > model.BOMRemove {
-		return &model.InvalidArgumentError{Option: "CommonWriteOptions.BOM", Msg: "The BOM rule " + common.BOM.String() + " is unknown."}
+		return &model.InvalidArgumentError{Option: "CommonWriteOptions.BOM", Msg: "The BOM rule " + strconv.Itoa(int(common.BOM)) + " is unknown."}
 	}
 	return nil
 }

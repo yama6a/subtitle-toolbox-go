@@ -23,7 +23,10 @@ type SubRipReader struct {
 // NewSubRipReader returns a reader of the SubRip text in r. It reads nothing until Cues runs.
 func NewSubRipReader(r io.Reader, opts ReadOptions) *SubRipReader {
 	st := parsing.NewState(model.SubRip, opts.common())
-	return &SubRipReader{st: st, lines: st.NewLineReader(r), rd: subrip.NewReader(st)}
+	lines := st.NewLineReader(r)
+	rd := subrip.NewReader(st)
+	rd.CutAt(lines.CutLine)
+	return &SubRipReader{st: st, lines: lines, rd: rd}
 }
 
 // Cues reads the input once and yields its cues in file order, without a sort by start.
@@ -72,7 +75,10 @@ type WebVTTReader struct {
 func NewWebVTTReader(r io.Reader, opts ReadOptions) *WebVTTReader {
 	st := parsing.NewState(model.WebVTT, opts.common())
 	st.ReplaceNUL = true
-	return &WebVTTReader{st: st, lines: st.NewLineReader(r), rd: vtt.NewReader(st, false)}
+	lines := st.NewLineReader(r)
+	rd := vtt.NewReader(st, false)
+	rd.CutAt(lines.CutLine)
+	return &WebVTTReader{st: st, lines: lines, rd: rd}
 }
 
 // Cues reads the input once and yields its cues in file order, without a sort by start.

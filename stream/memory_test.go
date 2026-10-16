@@ -22,9 +22,10 @@ import (
 )
 
 const (
+	memoryCues  = 200000
 	memoryLimit = 2 << 20
 	sampleEvery = memoryCues / 20
-	cueBytes    = 50
+	minFileSize = 10 << 20
 )
 
 // liveHeap reads the bytes of the heap objects that the last garbage collection marked as live.
@@ -54,10 +55,11 @@ type cueWriter interface {
 }
 
 // Ported from tests/Streaming/StreamMemoryTest.php. It does not run in parallel, because it measures the
-// heap of the whole process. A test that calls t.Parallel waits until the tests in sequence are done.
-func TestStreamsManyCuesInConstantMemory(t *testing.T) { //nolint:paralleltest // see above
-	if testing.Short() {
-		t.Skip("writes a file of many cues")
+// heap of the whole process. The race detector makes it 20 times slower, so the bench job of CI runs it
+// with STBOX_GROWTH=1 and without -race.
+func TestStreamsManyCuesGrowth(t *testing.T) { //nolint:paralleltest // see above
+	if os.Getenv("STBOX_GROWTH") != "1" {
+		t.Skip("growth test, set STBOX_GROWTH=1")
 	}
 	tests := []struct {
 		name      string
@@ -113,7 +115,7 @@ func TestStreamsManyCuesInConstantMemory(t *testing.T) { //nolint:paralleltest /
 			assert.Less(t, growth, uint64(memoryLimit), "write")
 			info, err := f.Stat()
 			require.NoError(t, err)
-			assert.Greater(t, info.Size(), int64(memoryCues*cueBytes))
+			assert.Greater(t, info.Size(), int64(minFileSize))
 
 			_, err = f.Seek(0, io.SeekStart)
 			require.NoError(t, err)

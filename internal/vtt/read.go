@@ -57,6 +57,7 @@ type Reader struct {
 	keepComments bool
 	comments     []parsing.ParsedComment
 	cues         int
+	cut          func() (int, bool)
 }
 
 type looseTime struct {
@@ -68,6 +69,12 @@ type looseTime struct {
 // With keepComments, Comments returns the NOTE blocks. Otherwise the reader skips them.
 func NewReader(st *parsing.State, keepComments bool) *Reader {
 	return &Reader{st: st, file: model.NewData(), keepComments: keepComments}
+}
+
+// CutAt sets a function that returns the last line read and true when an error ended the input.
+// Blocks then drops the block that this error cut.
+func (r *Reader) CutAt(cut func() (int, bool)) {
+	r.cut = cut
 }
 
 // File returns the WebVTT file data: header, headerLines, regions and styles.
@@ -278,7 +285,11 @@ func isOtherBlock(lines []string) bool {
 func (r *Reader) splitHeader(lines iter.Seq[line]) iter.Seq[blocks.Block] {
 	return func(yield func(blocks.Block) bool) {
 		isHeader := true
-		for b := range collectBlocks(lines, false) {
+		raw := collectBlocks(lines, false)
+		if r.cut != nil {
+			raw = blocks.DropCut(raw, r.cut)
+		}
+		for b := range raw {
 			offset := -1
 			if isHeader && r.st.Lenient() {
 				offset = firstTimingLine(b.Lines)

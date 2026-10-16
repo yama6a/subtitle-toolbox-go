@@ -58,6 +58,7 @@ With the same options, a reader gives the cues and warnings of `srt.Read` or `we
 | WebVTT warnings | sorted by line, a warning without a line first | in read order |
 | `Warnings()` | the warnings of the blocks read so far, also during the loop | all warnings, after the read |
 | strict mode error | yields the cues before the broken block, then the error | returns the error and no cues |
+| read error or NUL byte in the middle of a block | drops that block, yields the complete blocks before it, then the error | returns the error and no cues |
 | NUL byte in strict mode | the error comes when the reader reaches the line | the error comes before any block |
 | options | `Lenient` only | also `LastCueDuration` and the others |
 
@@ -67,4 +68,4 @@ With the same options, a reader gives the cues and warnings of `srt.Read` or `we
 
 ## Memory
 
-A reader holds one block. The WebVTT reader holds up to 2 cues for the [rolling cue collapse](formats.md#webvtt). A WebVTT file without the `WEBVTT` line in lenient mode holds the lines before its first cue, until the reader knows how to repair it. A Ctrl-Z at the end of a SubRip file holds the blank lines after it.
+A reader holds one block. The WebVTT reader holds up to 2 cues for the [rolling cue collapse](formats.md#webvtt). A WebVTT file without the `WEBVTT` line in lenient mode holds the lines before its first cue, until the reader knows how to repair it. A Ctrl-Z at the end of a SubRip or WebVTT file holds the blank lines after it. The WebVTT reader also holds each line of only spaces or tabs until a line with text follows.

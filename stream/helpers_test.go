@@ -3,9 +3,11 @@ package stream_test
 import (
 	"bytes"
 	"cmp"
+	"errors"
 	"io"
 	"iter"
 	"slices"
+	"strings"
 	"testing"
 	"testing/iotest"
 
@@ -69,7 +71,7 @@ func compareSubRip(tb testing.TB, content []byte, wrap func(io.Reader) io.Reader
 	rd := stream.NewSubRipReader(wrap(bytes.NewReader(content)), stream.ReadOptions{Lenient: lenient})
 	cues, err := collect(rd.Cues())
 	if fullErr != nil {
-		compareErrors(tb, content, fullErr, err)
+		compareErrors(tb, fullErr, err)
 		return
 	}
 	require.NoError(tb, err)
@@ -85,7 +87,7 @@ func compareWebVTT(tb testing.TB, content []byte, wrap func(io.Reader) io.Reader
 	rd := stream.NewWebVTTReader(wrap(bytes.NewReader(content)), stream.ReadOptions{Lenient: lenient})
 	cues, err := collect(rd.Cues())
 	if fullErr != nil {
-		compareErrors(tb, content, fullErr, err)
+		compareErrors(tb, fullErr, err)
 		return
 	}
 	require.NoError(tb, err)
@@ -98,13 +100,18 @@ func compareWebVTT(tb testing.TB, content []byte, wrap func(io.Reader) io.Reader
 	assert.Equal(tb, header, rd.Header())
 }
 
-// compareErrors checks the error of the stream reader. The full reader checks a NUL byte before it reads any block,
-// so a block error that comes before the NUL byte in the file may come first from the stream reader.
-func compareErrors(tb testing.TB, content []byte, want, got error) {
+// compareErrors checks the error of the stream reader. Strict SubRip reads a NUL byte as an error before it reads
+// any block, so a block error on a line before the NUL line may come first from the stream reader. Every other
+// comparison needs the same error.
+func compareErrors(tb testing.TB, want, got error) {
 	tb.Helper()
 
 	require.Error(tb, got)
-	if !bytes.Contains(content, []byte{0}) {
-		assert.Equal(tb, want.Error(), got.Error())
+	var wantErr, gotErr *model.ParseError
+	if errors.As(want, &wantErr) && strings.Contains(wantErr.Msg, "has a NUL character") &&
+		errors.As(got, &gotErr) && gotErr.Msg != wantErr.Msg {
+		assert.Less(tb, gotErr.Line, wantErr.Line)
+		return
 	}
+	assert.Equal(tb, want.Error(), got.Error())
 }

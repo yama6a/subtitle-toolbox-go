@@ -494,3 +494,80 @@ func (c *countingReader) Read(b []byte) (int, error) {
 type errReader struct{ err error }
 
 func (e errReader) Read([]byte) (int, error) { return 0, e.err }
+
+func TestAReadErrorDropsTheBlockThatItCut(t *testing.T) {
+	t.Parallel()
+
+	boom := errors.New("disk gone")
+	tests := []struct {
+		name  string
+		input string
+		read  func(io.Reader) ([]model.Cue, error)
+		want  []string
+	}{
+		{
+			name:  "SubRip cut time",
+			input: "1\n00:00:01,000 --> 00:00:02,000\nOne\n\n2\n00:00:03,000 --> 00:00:04,0",
+			read: func(r io.Reader) ([]model.Cue, error) {
+				return collect(stream.NewSubRipReader(r, stream.ReadOptions{}).Cues())
+			},
+			want: []string{"One"},
+		},
+		{
+			name:  "SubRip cut text",
+			input: "1\n00:00:01,000 --> 00:00:02,000\nOne\n\n2\n00:00:03,000 --> 00:00:04,000\nTwo li",
+			read: func(r io.Reader) ([]model.Cue, error) {
+				return collect(stream.NewSubRipReader(r, stream.ReadOptions{}).Cues())
+			},
+			want: []string{"One"},
+		},
+		{
+			name:  "WebVTT cut text",
+			input: "WEBVTT\n\n00:01.000 --> 00:02.000\nOne\n\n00:03.000 --> 00:04.000\nTwo li",
+			read: func(r io.Reader) ([]model.Cue, error) {
+				return collect(stream.NewWebVTTReader(r, stream.ReadOptions{}).Cues())
+			},
+			want: []string{"One"},
+		},
+		{
+			name:  "WebVTT after an empty line",
+			input: "WEBVTT\n\n00:01.000 --> 00:02.000\nOne\n\n",
+			read: func(r io.Reader) ([]model.Cue, error) {
+				return collect(stream.NewWebVTTReader(r, stream.ReadOptions{}).Cues())
+			},
+			want: []string{"One"},
+		},
+	}
+	for _, tt := range tests {
+		for _, w := range wraps {
+			t.Run(tt.name+"/"+w.name, func(t *testing.T) {
+				t.Parallel()
+
+				cues, err := tt.read(w.wrap(io.MultiReader(strings.NewReader(tt.input), errReader{boom})))
+				require.ErrorIs(t, err, boom)
+				texts := make([]string, 0, len(cues))
+				for _, c := range cues {
+					texts = append(texts, c.Text())
+				}
+				assert.Equal(t, tt.want, texts)
+			})
+		}
+	}
+}
+
+func TestAStrictNULDropsTheBlockThatItCut(t *testing.T) {
+	t.Parallel()
+
+	content := "1\n00:00:01,000 --> 00:00:02,000\nHello\nWor\x00ld\n"
+	cues, err := collect(stream.NewSubRipReader(strings.NewReader(content), stream.ReadOptions{}).Cues())
+	var perr *model.ParseError
+	require.ErrorAs(t, err, &perr)
+	assert.Equal(t, 4, perr.Line)
+	assert.Empty(t, cues)
+
+	content = "1\n00:00:01,000 --> 00:00:02,000\nOne\n\n2\n00:00:03,000 --> 00:00:04,000\nHello\nWor\x00ld\n"
+	cues, err = collect(stream.NewSubRipReader(strings.NewReader(content), stream.ReadOptions{}).Cues())
+	require.ErrorAs(t, err, &perr)
+	require.Len(t, cues, 1)
+	assert.Equal(t, "One", cues[0].Text())
+}
