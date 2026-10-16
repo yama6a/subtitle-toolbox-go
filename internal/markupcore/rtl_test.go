@@ -64,7 +64,13 @@ func TestEmbedRightToLeftKeepsInvalidUTF8(t *testing.T) {
 	t.Parallel()
 
 	rows := readRows[embedRow](t, "embed.json")
-	for _, in := range []string{"\xff" + rows[0].In, rows[0].In + "\xe9", "<\xff>" + rows[0].In} {
+	for _, in := range []string{
+		"\xff" + rows[0].In,
+		rows[0].In + "\xe9",
+		"<\xff>" + rows[0].In,
+		"\xe2\x80\u202c\xab\u05dc",
+		"\xe2\u202b\x80\xab\u05d5",
+	} {
 		assert.Equal(t, in, markupcore.EmbedRightToLeft(in))
 	}
 }
