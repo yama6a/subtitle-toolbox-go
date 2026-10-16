@@ -3,7 +3,6 @@ package cli
 import (
 	"context"
 	"errors"
-	"os"
 	"slices"
 	"strconv"
 	"time"
@@ -128,19 +127,13 @@ func (d *diffCommand) finish(r *runner) error { return d.report.finish(r) }
 
 // readNew reads the new file and prints its warnings. A failure carries the path of the new file as its label.
 func (d *diffCommand) readNew(r *runner) (*input, error) {
-	in := &input{arg: d.newFile}
-	path := r.c.path(d.newFile)
-	if st, err := os.Stat(path); err != nil || !st.Mode().IsRegular() {
-		return nil, &labeledError{label: d.newFile, err: usage(missingFileMessage)}
+	in, err := r.readWith(d.newFile, d.newOptions)
+	if errors.Is(err, stbox.ErrUnknownFormat) {
+		err = usage(newFormatUnknown)
 	}
-	var err error
-	if in.sub, in.info, err = stbox.Load(path, d.newOptions); err != nil {
-		if errors.Is(err, stbox.ErrUnknownFormat) {
-			err = usage(newFormatUnknown)
-		}
+	if err != nil {
 		return nil, &labeledError{label: d.newFile, err: err}
 	}
-	r.printWarnings(in)
 	return in, nil
 }
 

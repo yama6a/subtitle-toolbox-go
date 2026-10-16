@@ -1,5 +1,7 @@
 package diff
 
+import "slices"
+
 // pair is an old and a new cue index. -1 marks the side without a partner.
 type pair struct{ old, new int }
 
@@ -42,8 +44,6 @@ func (c *comparer) heaviestChain(candidates []candidate) []pair {
 	for n := best.cand; n >= 0; n = previous[n] {
 		chain = append(chain, pair{candidates[n].old, candidates[n].new})
 	}
-	for l, r := 0, len(chain)-1; l < r; l, r = l+1, r-1 {
-		chain[l], chain[r] = chain[r], chain[l]
-	}
+	slices.Reverse(chain)
 	return chain
 }

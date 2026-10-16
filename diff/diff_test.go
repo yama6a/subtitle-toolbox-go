@@ -2,6 +2,7 @@ package diff_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -331,7 +332,7 @@ func TestCompareDoesNotPairNearlyEqualCuesWithoutTimeOverlap(t *testing.T) {
 
 			var kinds []diff.Kind
 			for _, d := range differences {
-				if c := firstCue(d); len(c.Text()) >= 9 && c.Text()[:9] == "The ferry" {
+				if c := firstCue(d); strings.HasPrefix(c.Text(), "The ferry") {
 					kinds = append(kinds, d.Kind)
 				}
 			}
@@ -522,8 +523,9 @@ func TestOptionsValidate(t *testing.T) {
 
 			_, err = diff.Compare(&model.Subtitle{}, &model.Subtitle{}, tt.opts)
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
-			_, err = diff.Equal(&model.Subtitle{}, &model.Subtitle{}, tt.opts)
+			equal, err := diff.Equal(&model.Subtitle{}, &model.Subtitle{}, tt.opts)
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
+			assert.False(t, equal)
 		})
 	}
 }

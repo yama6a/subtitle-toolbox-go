@@ -54,8 +54,7 @@ type fileError struct{ msg string }
 
 func (e *fileError) Error() string { return e.msg }
 
-// labeledError names another file than the input in the message of a failed input, for example the new file
-// of diff.
+// labeledError labels a failed input with the path of a file other than the input, such as the new file of diff.
 type labeledError struct {
 	label string
 	err   error
