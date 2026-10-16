@@ -10,20 +10,23 @@ import (
 	"strconv"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/stats"
 )
 
-// infoCommand prints the format, the source encoding, the cue count, the warnings and the metadata of each input.
+// infoCommand prints the format, the source encoding, the cue count, the warnings, the statistics and the metadata
+// of each input.
 type infoCommand struct{ report reportOutput }
 
 var _ fileCommand = &infoCommand{}
 
 // infoEntry is one object of the info --json list. Field order is the JSON key order.
 type infoEntry struct {
-	File     string          `json:"file"`
-	Format   stbox.Format    `json:"format"`
-	Encoding *string         `json:"encoding"` // nil prints null for a format without a source encoding
-	Metadata orderedMetadata `json:"metadata"`
-	Warnings []warningJSON   `json:"warnings"`
+	File     string           `json:"file"`
+	Format   stbox.Format     `json:"format"`
+	Encoding *string          `json:"encoding"` // nil prints null for a format without a source encoding
+	Metadata orderedMetadata  `json:"metadata"`
+	Stats    stats.Statistics `json:"statistics"`
+	Warnings []warningJSON    `json:"warnings"`
 }
 
 // orderedMetadata writes its keys in byte order and prints {} when empty.
@@ -52,7 +55,10 @@ func (*infoCommand) summary() string {
 
 func (*infoCommand) usage() []string { return []string{"<input>... [--json] [options]"} }
 
-func (*infoCommand) details() string { return "" }
+func (*infoCommand) details() string {
+	return "Times are in seconds. Character counts leave out tags. " +
+		"The gap is the start of a cue minus the latest end of the earlier cues. An overlap gives a negative gap."
+}
 
 func (*infoCommand) options() []option {
 	return slices.Concat([]option{flagOption("json", jsonHelp)}, inputOptions(true))
@@ -75,10 +81,12 @@ func (*infoCommand) loadSideFiles(context.Context, *runner) error { return nil }
 
 func (c *infoCommand) process(_ context.Context, r *runner, in *input) error {
 	metadata := in.sub.AllMetadata()
+	st := stats.Of(in.sub)
 	entry := infoEntry{
 		File:     in.arg,
 		Format:   in.info.Format,
 		Metadata: metadata,
+		Stats:    st,
 		Warnings: warningsJSON(in.info.Warnings),
 	}
 	rows := [][]string{{"Format:", string(in.info.Format)}}
@@ -90,6 +98,7 @@ func (c *infoCommand) process(_ context.Context, r *runner, in *input) error {
 	if n := len(in.info.Warnings); n > 0 {
 		rows = append(rows, []string{"Warnings:", strconv.Itoa(n)})
 	}
+	rows = append(rows, statisticsRows(st)...)
 	for _, key := range slices.Sorted(maps.Keys(metadata)) {
 		rows = append(rows, []string{"Metadata " + key + ":", metadata[key]})
 	}
