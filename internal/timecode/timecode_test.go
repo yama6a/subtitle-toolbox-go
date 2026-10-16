@@ -65,7 +65,6 @@ func TestNumber(t *testing.T) {
 	}
 }
 
-// Ports the loose time cases of tests/Parsers/LooseTimestampsTest.php of subtitle-toolbox-php.
 func TestTimeLimitMessage(t *testing.T) {
 	t.Parallel()
 
@@ -86,6 +85,7 @@ func TestTimeLimitMessage(t *testing.T) {
 	}
 }
 
+// Ports the loose time cases of tests/Parsers/LooseTimestampsTest.php of subtitle-toolbox-php.
 func TestLoose(t *testing.T) {
 	t.Parallel()
 
