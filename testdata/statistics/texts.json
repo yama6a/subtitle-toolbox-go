@@ -1,0 +1,38 @@
+{
+    "visibleCharacters": [
+        {
+            "start": 0,
+            "end": 2,
+            "lines": [
+                "<v Anna> Grüße &amp; <00:00:01.000>Tee </v>",
+                "你好"
+            ]
+        }
+    ],
+    "mostUsedWords": [
+        {
+            "start": 0,
+            "end": 2,
+            "lines": [
+                "- Äpfel? \"Apples!\"",
+                "äpfel, don't... apples"
+            ]
+        },
+        {
+            "start": 3,
+            "end": 4,
+            "lines": [
+                "Don't stop -- 12:30."
+            ]
+        }
+    ],
+    "lowerCase": [
+        {
+            "start": 0,
+            "end": 2,
+            "lines": [
+                "İSTANBUL ΟΔΟΣ"
+            ]
+        }
+    ]
+}
