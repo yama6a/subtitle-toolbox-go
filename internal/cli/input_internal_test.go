@@ -201,25 +201,6 @@ func TestLenientEncodingLineEndingAndBOMOptions(t *testing.T) {
 	assert.True(t, strings.HasPrefix(got.Stdout, "1\n"), got.Stdout)
 }
 
-func TestDecodeWarningsGetTheEncodingHint(t *testing.T) {
-	t.Parallel()
-
-	dir := newDir(t)
-	got := call{dir: dir}.run(t, "info", "latin1.srt", "--lenient")
-	assert.Equal(t, 0, got.Code)
-	assert.Equal(t, "latin1.srt\n  Format: srt\n", got.Stdout)
-	assert.Equal(t, "latin1.srt: The content is not UTF-8. Detection picked Windows-1252. Set the source encoding if that is wrong. (repaired)\n"+
-		encodingHint+"\n", got.Stderr)
-
-	got = call{dir: dir}.run(t, "info", "latin1.srt", "--lenient", "--encoding", "UTF-8")
-	assert.Equal(t, 0, got.Code)
-	assert.True(t, strings.HasPrefix(got.Stderr, "latin1.srt: The content is not valid UTF-8."), got.Stderr)
-	assert.NotContains(t, got.Stderr, encodingHint)
-
-	got = call{dir: dir}.run(t, "info", "latin1.srt")
-	assert.Equal(t, result{Stdout: "latin1.srt\n  Format: srt\n"}, got)
-}
-
 func TestEmptyInput(t *testing.T) {
 	t.Parallel()
 

@@ -46,7 +46,11 @@ func TestGlobalHelp(t *testing.T) {
 	t.Run("binary", func(t *testing.T) {
 		t.Parallel()
 
-		want := head + "Commands:\n  help  Show the help of a command.\n" + globalHelpTail
+		want := head + `Commands:
+  info     Print the format, the encoding and the cue count of subtitle files.
+  formats  List the format names and file extensions for --from and --to.
+  help     Show the help of a command.
+` + globalHelpTail
 		assert.Equal(t, result{Stdout: want}, call{commands: commands()}.run(t))
 	})
 	t.Run("1.0 commands", func(t *testing.T) {
@@ -256,7 +260,7 @@ func TestEveryCommandHasHelp(t *testing.T) {
 
 			got := call{}.run(t, cmd, "--help")
 			assert.Equal(t, 0, got.Code)
-			assert.True(t, strings.HasPrefix(got.Stdout, "Usage: stbox "+cmd+" "), got.Stdout)
+			assert.Regexp(t, "^Usage: stbox "+cmd+"[ \n]", got.Stdout)
 			assert.Contains(t, got.Stdout, "\n  -h, --help ")
 			assert.Empty(t, got.Stderr)
 			assert.Equal(t, got, call{}.run(t, "help", cmd))

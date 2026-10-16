@@ -70,6 +70,59 @@ A `.txt` file in a directory is an input only when content detection finds a for
 - **Extension rule**: the extension of `-o` never picks the format. `--to srt -o film.vtt` fails. Without `--to`, an `-o` extension of another writable format fails too, so SubRip never lands in a `.vtt` file by mistake. An extension of no format, such as `.bak`, always works.
 - **Interrupt**: Ctrl-C or SIGTERM stops the run before the next input. The finished outputs stay, because each is a complete file. A second Ctrl-C ends the process at once. An output that is being written then can stay incomplete, and the run removes nothing.
 
+## info
+
+`stbox info <input>... [--json] [options]` prints what the reader found in each subtitle file. It takes `--json` and the input options. Example: `stbox info latin1.srt` prints `Format:   srt`, `Encoding: Windows-1252` and `Cues:     1`.
+
+| Row | Shown when | Value |
+|:--- |:--- |:--- |
+| `Format:` | always | the format name, for example `srt` |
+| `Encoding:` | the read has a source encoding | for example `UTF-8` or `Windows-1252` |
+| `Cues:` | always | the cue count |
+| `Warnings:` | the read returned warnings | their count |
+| `Metadata KEY:` | one row per metadata entry | the value, rows in byte order of the keys |
+
+- **Text**: each input prints a block that starts with the input as given, or `stdin`. A block after the first successful one starts with an empty line. A failed file does not count.
+- **Exit code**: 3 when a file failed, else 0.
+
+`--json` prints a list with one object for each input that did not fail. The keys come in this order:
+
+| Key | Value |
+|:--- |:--- |
+| `file` | the input as given, `-` for standard input |
+| `format` | the format name |
+| `encoding` | the source encoding, or `null` when the read has none |
+| `metadata` | an object with the metadata keys in byte order, `{}` when empty |
+| `warnings` | the warnings of the read as in [JSON output](#json-output), `[]` when none |
+
+```json
+[
+    {
+        "file": "trip.srt",
+        "format": "srt",
+        "encoding": "UTF-8",
+        "metadata": {},
+        "warnings": []
+    }
+]
+```
+
+A minor release may add keys to these objects. [compatibility.md](compatibility.md) states the rule.
+
+## formats
+
+`stbox formats` lists the formats that can be read or written, in registry order. The names are the values of `--from` and `--to`. It takes no argument and no option except `-h`.
+
+```
+Name  Extensions  Read  Write
+json  .json       yes   yes
+srt   .srt        yes   yes
+vtt   .vtt        yes   yes
+```
+
+- **Shared extensions**: the first format in the list owns an extension. `--from` reads a file as another format.
+- **Hidden formats**: a format that can be neither read nor written has no row.
+
 ## JSON output
 
 `--json` prints one JSON array on stdout at the end of the run, with one object for each input that did not fail. When every input failed, it prints `[]`.

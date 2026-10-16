@@ -1,0 +1,82 @@
+[
+    {
+        "file": "trip.srt",
+        "format": "srt",
+        "encoding": "UTF-8",
+        "metadata": {},
+        "statistics": {
+            "cueCount": 3,
+            "wordCount": 22,
+            "characterCount": 111,
+            "totalDisplayTime": 4.9,
+            "span": 5.4,
+            "charactersPerSecond": {
+                "min": 12.5,
+                "average": 27.53333333333333,
+                "max": 42.5
+            },
+            "wordsPerMinute": {
+                "min": 150,
+                "average": 312,
+                "max": 450
+            },
+            "charactersPerLine": {
+                "min": 12,
+                "average": 27.75,
+                "max": 57
+            },
+            "gaps": {
+                "min": -0.5,
+                "average": 0.25,
+                "max": 1
+            },
+            "mostUsedWords": [
+                {
+                    "word": "the",
+                    "count": 3
+                },
+                {
+                    "word": "train",
+                    "count": 1
+                },
+                {
+                    "word": "leaves",
+                    "count": 1
+                },
+                {
+                    "word": "at",
+                    "count": 1
+                },
+                {
+                    "word": "noon",
+                    "count": 1
+                },
+                {
+                    "word": "bell",
+                    "count": 1
+                },
+                {
+                    "word": "rings",
+                    "count": 1
+                },
+                {
+                    "word": "anna",
+                    "count": 1
+                },
+                {
+                    "word": "we",
+                    "count": 1
+                },
+                {
+                    "word": "need",
+                    "count": 1
+                }
+            ]
+        },
+        "imageCues": {
+            "count": 0,
+            "withText": 0
+        },
+        "warnings": []
+    }
+]

@@ -38,7 +38,10 @@ func Run(ctx context.Context, args []string, env Env) error {
 // commands returns new instances of the commands of the binary, in help order: convert, info, validate, sync,
 // diff, translate, dual, hls, formats. A command keeps the state of its run, so each call gets its own.
 func commands() []command {
-	return []command{}
+	return []command{
+		&infoCommand{},
+		formatsCommand{},
+	}
 }
 
 // app holds the commands of the binary, in the order of the help.

@@ -19,7 +19,7 @@ The module follows semantic versioning. The rules below hold for every 1.x relea
 | C11 | Library JSON and format data | Version 1 of the library JSON, its keys and its value types are API. The keys and value types of format data are API too. A minor release may add fields and new string values. Readers ignore unknown fields. A minor release may add a type check on a format data field |
 | C12 | Go version | A patch or minor release may raise the `go` line of `go.mod`. Renovate does it in a `patch` PR. The release notes show it as the title of that PR |
 | C13 | Rule sets | A validation preset never gets a new rule inside a major line. A new text-fix rule is off by default. A patch release may change a text-fix rule so that it stops changing text that it should keep |
-| C14 | CLI | The commands, the flags, the meaning of each exit code and the `--json` shapes are API. The CLI never overwrites a file. Text output and messages may change in a minor release |
+| C14 | CLI | The commands, the flags, the meaning of each exit code and the `--json` shapes are API. A minor release may add keys to the `--json` objects, as C11 says for the library JSON. Readers ignore unknown keys. The CLI never overwrites a file. Text output and messages may change in a minor release |
 
 ## Not covered
 
