@@ -108,7 +108,7 @@ Each format has its own field in `ReadOptions` and `WriteOptions`. See [docs/for
 
 ## Design
 
-- **Time**: every time is a `time.Duration`, rounded to whole milliseconds. PHP shifts in binary seconds, so 1.001 + 0.0005 is 1.0014999999999998 there.
+- **Time**: every time is a `time.Duration`, rounded to whole milliseconds. PHP shifts in binary seconds, so it rounds some shifts differently, see [docs/php-differences.md](docs/php-differences.md).
 - **Options**: the zero value of every option is its default, so `stbox.ReadOptions{}` reads with the defaults. A struct literal then needs no constructor.
 - **Logging**: the library never logs. A read returns its warnings in `ReadInfo`. A logger in the API would put zap into the module graph of every importer.
 - **Errors**: each cause is a sentinel error such as `ErrParse`, matched with `errors.Is`. No sentinel matches every error, so errors of the caller's own reader stay apart.

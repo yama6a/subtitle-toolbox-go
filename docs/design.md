@@ -50,15 +50,15 @@ Each cause is a sentinel error such as `ErrParse`. Some causes also have a type 
 
 Every time is a `time.Duration`. Each parser and setter rounds it to whole milliseconds, half away from zero. Example: 1.0005 s becomes 1.001 s.
 
-- **Why**: PHP shifts in binary seconds, so 1.001 + 0.0005 is 1.0014999999999998 there. [php-differences.md](php-differences.md) lists the cases.
-- **Source**: [#1](https://github.com/yama6a/subtitle-toolbox-go/issues/1), [#34](https://github.com/yama6a/subtitle-toolbox-go/issues/34).
+- **PHP difference**: PHP shifts in binary seconds, so 1.001 + 0.0005 is 1.0014999999999998 there. [php-differences.md](php-differences.md) lists the cases.
+- **Source**: [#1](https://github.com/yama6a/subtitle-toolbox-go/issues/1), [#7](https://github.com/yama6a/subtitle-toolbox-go/issues/7), [#10](https://github.com/yama6a/subtitle-toolbox-go/issues/10), [#34](https://github.com/yama6a/subtitle-toolbox-go/issues/34).
 
 ## No logging in the library
 
 The library never writes to stdout, stderr or a logger. It returns warnings and reports. Only the `stbox` command prints, to stderr.
 
 - **Exception**: the owner's Go repos log with zap. A logger in the API would put zap into the module graph of every importer.
-- **Source**: [#1](https://github.com/yama6a/subtitle-toolbox-go/issues/1).
+- **Source**: [#1](https://github.com/yama6a/subtitle-toolbox-go/issues/1), [#7](https://github.com/yama6a/subtitle-toolbox-go/issues/7).
 
 ## Third-party modules
 
@@ -66,11 +66,12 @@ The library imports 3 modules, and the tests also use testify. The `go` line and
 
 | Module | Used for |
 |:--- |:--- |
-| `golang.org/x/text` | the code pages of [encodings.md](encodings.md) |
+| `golang.org/x/text` | the code pages of [encodings.md](encodings.md), and case mapping |
 | `github.com/rivo/uniseg` | grapheme clusters for character counts |
 | `github.com/dlclark/regexp2/v2` | patterns with lookaround or back references, and patterns that users supply |
 
-Source: [#1](https://github.com/yama6a/subtitle-toolbox-go/issues/1), [#2](https://github.com/yama6a/subtitle-toolbox-go/issues/2).
+- **Why x/text and uniseg**: `golang.org/x/text` holds the code page tables of 37 encodings. `github.com/rivo/uniseg` holds the Unicode grapheme break tables. Both follow new Unicode versions. Writing and updating these tables in this repository would cost more than the import.
+- **Source**: [#1](https://github.com/yama6a/subtitle-toolbox-go/issues/1), [#2](https://github.com/yama6a/subtitle-toolbox-go/issues/2), [#38](https://github.com/yama6a/subtitle-toolbox-go/issues/38), owner decision.
 
 ## regexp by default
 
@@ -80,9 +81,21 @@ Code uses `regexp`. It uses `regexp2` only where a pattern needs lookaround or b
 
 ## PHP read goldens as the conformance suite
 
-The repository copies the PHP input files and the PHP read goldens. Each golden is the [library JSON](json.md) of a parse result. Go must produce the same JSON for the same file.
+The repository copies the PHP input files and the PHP read goldens. Each golden holds the parse warnings and the [library JSON](json.md) of a parse result. Go must produce the same JSON for the same file.
 
 - **Why**: the PHP goldens are the conformance oracle. A Go bug must never rewrite them.
 - **Differences**: a deliberate difference is a row in [php-differences.md](php-differences.md).
 - **Write output**: the write goldens are Go's own, and they do not have to match the PHP bytes.
 - **Source**: [#9](https://github.com/yama6a/subtitle-toolbox-go/issues/9), [#1](https://github.com/yama6a/subtitle-toolbox-go/issues/1).
+
+## Word times and speakers are tags
+
+In 1.x a word time such as `<00:00:01.500>` and a speaker such as `<v Anna>` stay as tags in the cue text. See [markup.md](markup.md).
+
+- **Source**: [#10](https://github.com/yama6a/subtitle-toolbox-go/issues/10).
+
+## API naming rules
+
+Every exported name follows the naming rules N1 to N21 of [CONTRIBUTING.md](../CONTRIBUTING.md#api-rules). A test checks part of them.
+
+- **Source**: [#7](https://github.com/yama6a/subtitle-toolbox-go/issues/7).
