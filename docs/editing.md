@@ -95,10 +95,11 @@ Speech-to-text tools and old editors write cues that overlap, flash for 0.3 s, o
 | `MergeShortCues(opts)` | cues | joins each short cue with the next or the previous cue when the result fits the limits |
 
 - **Word timestamps**: no fix moves them, so the speech keeps its times.
-- **Rounding**: each method takes the options as given and rounds only the new time to whole milliseconds. 5.1 s minus 2/24 s is 5.016666667 s, which rounds to 5.017 s.
+- **Rounding**: the 4 fixes other than `MergeShortCues` take the options as given and round only the new time to whole milliseconds. 5.1 s minus 2/24 s is 5.016666667 s, which rounds to 5.017 s.
 - **Limits of each fix**: no end moves before its start. `ExtendShortCues` never shortens a cue and never adds an overlap. `LimitLongCues` never lengthens a cue.
 - **Same start**: cues with the same start, such as a sign and a dialogue line, all end before the next later start. They can still overlap each other.
-- **Errors**: a negative gap or lead, or a minimum or maximum duration of 0 or less, returns an error that matches `ErrInvalidArgument`. On an error the subtitle stays unchanged.
+- **Time limit**: `ExtendShortCues` and `AddLeadInOut` add a duration to a cue time, so they check the time limit of retiming. A cue end must stay below 100,000 hours.
+- **Errors**: a negative gap or lead returns an error that matches `ErrInvalidArgument`. So does a duration of 0 or less for `ExtendShortCues` and `LimitLongCues`. On an error the subtitle stays unchanged.
 
 ### Lead-in and lead-out
 
@@ -129,7 +130,7 @@ for _, c := range s.All() {
 
 ### Short cues
 
-`MergeShortCues(model.MergeShortCuesOptions{})` joins `Wait.` from 62.1 s to 62.6 s, `Where are you` from 62.64 s and `going?` up to 64.1 s into `Wait. Where are you going?` from 62.1 s to 64.1 s.
+Speech-to-text output often splits a sentence into cues of less than 1 s. Take `Wait.` from 62.1 s to 62.6 s, `Where are you` from 62.64 s and `going?` up to 64.1 s. `MergeShortCues(model.MergeShortCuesOptions{})` joins them into `Wait. Where are you going?` from 62.1 s to 64.1 s.
 
 - **Short cue**: a cue that lasts less than `Limits.MinDuration`, or has fewer visible characters than `MinCharacters`.
 - **Partner**: the next cue first, then the previous cue. A joined cue that is still short joins again.

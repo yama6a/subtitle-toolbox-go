@@ -30,11 +30,7 @@ const (
 	DefaultMergeMaxGap = 250 * time.Millisecond
 )
 
-var (
-	voiceTagStartRegexp = regexp.MustCompile(`(?i)^` + markupcore.VoiceTagPattern)
-	voiceTagsRegexp     = regexp.MustCompile(`(?i)` + markupcore.VoiceTagPattern + `|</v>`)
-	voiceTagEndRegexp   = regexp.MustCompile(`(?i)</v>$`)
-)
+var closingVoiceTagRegexp = regexp.MustCompile(`(?i)</v>`)
 
 // CueLimits holds the size and time limits of one cue.
 type CueLimits struct {
@@ -130,6 +126,7 @@ type cueLimits struct {
 // MergeShortCuesOptions holds the settings of MergeShortCues.
 type MergeShortCuesOptions struct {
 	// Limits holds the limits of a joined cue. A cue shorter than Limits.MinDuration is short.
+	// The zero value uses the defaults.
 	Limits CueLimits
 	// MaxGap is the longest time from the end of one cue to the start of the next that a join bridges.
 	// Nil means DefaultMergeMaxGap.
@@ -183,9 +180,9 @@ type shortCueMerge struct {
 // MergeShortCues joins each short cue with the next cue, or else with the previous cue, when the joined cue fits
 // the limits of opts. A cue is short when it lasts less than opts.Limits.MinDuration or has fewer visible
 // characters than opts.MinCharacters. A joined cue that is still short joins again. The joined cue keeps the
-// start, the ID, the alignment, the forced flag and the format data of the first cue, ends at the later end, and
-// gets the lines wrapped to the limits. Each comment before a joined cue moves before the result. The checks use
-// the durations of opts rounded to whole milliseconds. MergeShortCues returns an error that matches
+// start, the ID, the alignment, the forced flag and the format data of the first cue. It ends at the later end
+// and gets the lines wrapped to the limits. Each comment before a joined cue moves before the result. The checks
+// use the durations of opts rounded to whole milliseconds. MergeShortCues returns an error that matches
 // ErrInvalidArgument when opts.Validate fails.
 func (s *Subtitle) MergeShortCues(opts MergeShortCuesOptions) error {
 	m, err := opts.resolved()
@@ -290,19 +287,48 @@ func oneVoiceTag(first, second Cue, names []string) ([]string, bool) {
 	if len(names) != 1 {
 		return nil, false
 	}
-	tag := voiceTagStartRegexp.FindString(first.Text())
-	if tag == "" || !voiceTagStartRegexp.MatchString(second.Text()) {
+	tag, ok := leadingVoiceTag(first.Text())
+	if !ok {
+		return nil, false
+	}
+	if _, ok := leadingVoiceTag(second.Text()); !ok {
 		return nil, false
 	}
 	lines := slices.Concat(first.Lines, second.Lines)
 	for i, l := range lines {
-		lines[i] = voiceTagsRegexp.ReplaceAllString(l, "")
+		lines[i] = removeVoiceTags(l)
 	}
 	lines[0] = tag + lines[0]
-	if voiceTagEndRegexp.MatchString(second.Text()) {
+	if text := second.Text(); len(text) >= 4 && strings.EqualFold(text[len(text)-4:], "</v>") {
 		lines[len(lines)-1] += "</v>"
 	}
 	return lines, true
+}
+
+func leadingVoiceTag(text string) (string, bool) {
+	loc := voiceTagRegexp.FindStringIndex(text)
+	if loc == nil || loc[0] != 0 {
+		return "", false
+	}
+	return text[:loc[1]], true
+}
+
+// removeVoiceTags removes the <v> and </v> tags in one pass from left to right, as PHP does with one pattern for
+// both. 2 passes would differ for a line such as "</<v Anna>v>", where the first pass forms a new </v>.
+func removeVoiceTags(line string) string {
+	var b strings.Builder
+	for {
+		m := voiceTagRegexp.FindStringIndex(line)
+		if closing := closingVoiceTagRegexp.FindStringIndex(line); m == nil || (closing != nil && closing[0] < m[0]) {
+			m = closing
+		}
+		if m == nil {
+			b.WriteString(line)
+			return b.String()
+		}
+		b.WriteString(line[:m[0]])
+		line = line[m[1]:]
+	}
 }
 
 func endsWithStop(c Cue) bool {

@@ -250,6 +250,18 @@ func TestTimingFixArgumentErrors(t *testing.T) {
 			"The minimum gap must not be negative, got -1.",
 		},
 		{
+			"extend to the time limit", func(s *model.Subtitle) error { return s.ExtendShortCues(200000*time.Hour, 0) },
+			"The retimed cue 2 would end at 720000005.1 s. Cue times must be below 100000 hours.",
+		},
+		{
+			"extend beyond time.Duration", func(s *model.Subtitle) error { return s.ExtendShortCues(math.MaxInt64, 0) },
+			"The retimed cue 2 would end at 9223372041.9548 s. Cue times must be below 100000 hours.",
+		},
+		{
+			"lead-out to the time limit", func(s *model.Subtitle) error { return s.AddLeadInOut(time.Second, 200000*time.Hour, 0) },
+			"The retimed cue 2 would end at 720000005.3 s. Cue times must be below 100000 hours.",
+		},
+		{
 			"zero maximum duration", func(s *model.Subtitle) error { return s.LimitLongCues(0) },
 			"The maximum duration must be greater than 0, got 0.",
 		},

@@ -207,6 +207,11 @@ func TestMergeShortCues(t *testing.T) {
 			want: []cueSpec{{0, 1, "<v.loud Anna>Hi. Hello.</v>"}},
 		},
 		{
+			name: "one speaker removes the voice tags in one pass",
+			in:   []cueSpec{{0, 0.5, "<v Anna>Hi </<v Anna>v>"}, {0.5, 1, "<v Anna>there.</V>"}},
+			want: []cueSpec{{0, 1, "<v Anna>Hi </v> there.</v>"}},
+		},
+		{
 			name: "same speaker at any duration",
 			in:   []cueSpec{{0, 5, "<v Anna>I grew up near the coast"}, {5.1, 9, "<v Anna>and my parents"}},
 			opts: sameSpeaker,
@@ -328,7 +333,7 @@ func TestMergeShortCuesKeepsOneRightToLeftEmbedding(t *testing.T) {
 		} `json:"cues"`
 		Want []string `json:"want"`
 	}
-	require.NoError(t, json.Unmarshal(testfiles.Read(t, "short-cues/merge_rtl.json"), &row))
+	require.NoError(t, json.Unmarshal(testfiles.Read(t, "short-cue-rows/rtl.json"), &row))
 	s := &model.Subtitle{}
 	for _, c := range row.Cues {
 		s.AddCue(model.Cue{Start: sec(c.Start), End: sec(c.End), Lines: []string{c.Text}})

@@ -39,8 +39,8 @@ func (s *Subtitle) FixOverlaps(minGap time.Duration) error {
 
 // ExtendShortCues makes each cue last at least minDuration, but ends it at least minGap before the start of
 // the next cue. It never shortens a cue, the last cue extends freely, and a cue with the same start as the cue
-// before it keeps its end. ExtendShortCues returns an error that matches ErrInvalidArgument when minDuration is
-// not above 0 or minGap is below 0.
+// before it keeps its end. ExtendShortCues returns an error that matches ErrInvalidArgument and changes nothing
+// when minDuration is not above 0, when minGap is below 0, or when a cue would end at 100,000 hours or later.
 func (s *Subtitle) ExtendShortCues(minDuration, minGap time.Duration) error {
 	if minDuration <= 0 {
 		return invalidArgument(fmt.Sprintf("The minimum duration must be greater than 0, got %s.", timecode.Seconds(minDuration)))
@@ -48,27 +48,55 @@ func (s *Subtitle) ExtendShortCues(minDuration, minGap time.Duration) error {
 	if err := checkMinGap(minGap); err != nil {
 		return err
 	}
-	for i := range s.cues {
-		c := &s.cues[i]
+	ends := make([]time.Duration, len(s.cues))
+	for i, c := range s.cues {
+		ends[i] = c.End
 		if i > 0 && s.cues[i-1].Start == c.Start {
 			continue
 		}
-		end := addClamped(c.Start, minDuration)
-		if i+1 < len(s.cues) {
-			end = min(end, addClamped(s.cues[i+1].Start, -minGap))
+		next, hasNext := time.Duration(0), i+1 < len(s.cues)
+		if hasNext {
+			next = addClamped(s.cues[i+1].Start, -minGap)
 		}
-		if end = end.Round(time.Millisecond); end > c.End {
-			c.End = end
+		end, err := extendedEnd(i, c.End, c.Start, minDuration, next, hasNext)
+		if err != nil {
+			return err
 		}
+		ends[i] = end
+	}
+	s.setEnds(ends)
+	return nil
+}
+
+// extendedEnd returns from + d, capped at maxEnd when capped is true and rounded to whole milliseconds, or oldEnd
+// when that is later. It returns the time limit error of retiming when the new end of cue i would be
+// 100,000 hours or later.
+func extendedEnd(i int, oldEnd, from, d, maxEnd time.Duration, capped bool) (time.Duration, error) {
+	end, seconds := addClamped(from, d), retiming{shift: d}.seconds(from)
+	if capped && maxEnd < end {
+		end, seconds = maxEnd, maxEnd.Round(time.Millisecond).Seconds()
+	}
+	if end = end.Round(time.Millisecond); end <= oldEnd {
+		return oldEnd, nil
+	}
+	if seconds >= timecode.MaxTime.Seconds() {
+		return 0, timeLimitError(i, seconds)
+	}
+	return end, nil
+}
+
+func (s *Subtitle) setEnds(ends []time.Duration) {
+	for i, end := range ends {
+		s.cues[i].End = end
 	}
 	s.index = nil
-	return nil
 }
 
 // AddLeadInOut shows each cue leadIn earlier and leadOut longer, but at least minGap away from its neighbours.
 // The lead-out comes first, so it takes the space between 2 cues before the lead-in of the next cue.
 // A start or end inside another cue does not move, and no start goes below 0. AddLeadInOut returns an error that
-// matches ErrInvalidArgument when leadIn, leadOut or minGap is below 0.
+// matches ErrInvalidArgument and changes nothing when leadIn, leadOut or minGap is below 0, or when a cue would end
+// at 100,000 hours or later.
 func (s *Subtitle) AddLeadInOut(leadIn, leadOut, minGap time.Duration) error {
 	if leadIn < 0 {
 		return invalidArgument(fmt.Sprintf("The lead-in must not be negative, got %s.", timecode.Seconds(leadIn)))
@@ -86,7 +114,11 @@ func (s *Subtitle) AddLeadInOut(leadIn, leadOut, minGap time.Duration) error {
 	}
 	startInside, endInside := insideOtherCues(starts, ends)
 	if leadOut > 0 {
-		s.addLeadOut(starts, ends, endInside, leadOut, minGap)
+		newEnds, err := s.leadOutEnds(starts, ends, endInside, leadOut, minGap)
+		if err != nil {
+			return err
+		}
+		s.setEnds(newEnds)
 	}
 	if leadIn > 0 {
 		s.addLeadIn(starts, startInside, leadIn, minGap)
@@ -98,25 +130,30 @@ func (s *Subtitle) AddLeadInOut(leadIn, leadOut, minGap time.Duration) error {
 	return nil
 }
 
-// addLeadOut caps each new end at minGap before the first cue that starts at or after the old end of the cue.
-func (s *Subtitle) addLeadOut(starts, ends []time.Duration, endInside []bool, leadOut, minGap time.Duration) {
+// leadOutEnds returns the ends after the lead-out. It caps each new end at minGap before the first cue that
+// starts at or after the old end of the cue.
+func (s *Subtitle) leadOutEnds(starts, ends []time.Duration, endInside []bool, leadOut, minGap time.Duration) ([]time.Duration, error) {
 	n := len(s.cues)
-	for i := range s.cues {
+	newEnds := slices.Clone(ends)
+	for i, c := range s.cues {
 		if endInside[i] {
 			continue
 		}
-		end := addClamped(ends[i], leadOut)
 		next := sort.Search(n, func(j int) bool { return starts[j] >= ends[i] })
 		if next == i {
 			next++
 		}
+		maxEnd := time.Duration(0)
 		if next < n {
-			end = min(end, addClamped(starts[next], -minGap))
+			maxEnd = addClamped(starts[next], -minGap)
 		}
-		if end = end.Round(time.Millisecond); end > ends[i] {
-			s.cues[i].End = end
+		end, err := extendedEnd(i, c.End, ends[i], leadOut, maxEnd, next < n)
+		if err != nil {
+			return nil, err
 		}
+		newEnds[i] = end
 	}
+	return newEnds, nil
 }
 
 // addLeadIn floors each new start at minGap after the latest end at or before the old start of the cue.
