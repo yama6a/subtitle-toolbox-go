@@ -106,8 +106,13 @@ func (r *runner) prepareRead(a *args) error {
 	return r.readOptions.Validate()
 }
 
-// read reads one input and prints its warnings.
+// read reads one input with the read options of the call and prints its warnings.
 func (r *runner) read(arg string) (*input, error) {
+	return r.readWith(arg, r.readOptions)
+}
+
+// readWith reads one input with opts and prints its warnings.
+func (r *runner) readWith(arg string, opts stbox.ReadOptions) (*input, error) {
 	in := &input{arg: arg}
 	var err error
 	if arg == stdinArg {
@@ -115,13 +120,13 @@ func (r *runner) read(arg string) (*input, error) {
 		if content, err = io.ReadAll(r.c.stdin); err != nil {
 			return nil, fmt.Errorf("read standard input: %w", err)
 		}
-		in.sub, in.info, err = stbox.Parse(bytes.NewReader(content), r.readOptions)
+		in.sub, in.info, err = stbox.Parse(bytes.NewReader(content), opts)
 	} else {
 		path := r.c.path(arg)
 		if st, statErr := os.Stat(path); statErr != nil || !st.Mode().IsRegular() {
 			return nil, usage(missingFileMessage)
 		}
-		in.sub, in.info, err = stbox.Load(path, r.readOptions)
+		in.sub, in.info, err = stbox.Load(path, opts)
 	}
 	if err != nil {
 		return nil, err
