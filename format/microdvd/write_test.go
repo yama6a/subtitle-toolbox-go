@@ -252,3 +252,11 @@ func TestWriteLineEndingAndBOM(t *testing.T) {
 	s := subtitle([]string{"Hello"})
 	assert.Equal(t, "\xEF\xBB\xBF{25}{50}Hello\r\n", write(t, s, model.CommonWriteOptions{LineEnding: model.CRLF, BOM: model.BOMAdd}, microdvd.WriteOptions{FrameRate: 25}))
 }
+
+func TestWriteFrameBeyondTheIntRange(t *testing.T) {
+	t.Parallel()
+
+	s := &model.Subtitle{}
+	s.AddCue(model.Cue{Start: 359999999 * 1000 * ms, End: 359999999 * 1000 * ms, Lines: []string{"x"}})
+	assert.Equal(t, "{359999999000000004096}{359999999000000004096}x\n", writeAt(t, s, 1e12))
+}

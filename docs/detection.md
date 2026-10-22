@@ -29,9 +29,11 @@
 | 2 | TTML | the XML prolog, then `<tt` or `<prefix:tt`, then white space, `>` or `/`. The prolog is any run of white space, `<?...?>`, `<!--...-->` and `<!DOCTYPE...>` without `>` inside |
 | 3 | SAMI | the XML prolog of rule 2, then `<SAMI` and white space or `>`. Both are in any case, also `<!DOCTYPE` |
 | 4 | ASS | the first line is `[Script Info]` in any case, plus optional spaces or tabs |
-| 5 | SubRip | a cue number and a timing line. Or a timing line with 2 or more hour digits and a comma, alone or after up to 5 lines of text and a cue number |
+| 5 | MicroDVD | `{digits}{digits or nothing}` at the start, such as `{24}{72}` or `{24}{}` |
+| 6 | SubRip | a cue number and a timing line. Or a timing line with 2 or more hour digits and a comma, alone or after up to 5 lines of text and a cue number |
 
 - **ASS header**: `ass.Detect` holds rule 4. A file that starts with a comment line before `[Script Info]` is not detected, but the ASS reader reads it.
+- **MicroDVD**: `microdvd.Detect` holds rule 5. It accepts an empty end frame, but the reader needs digits, so `{24}{}Hello` detects as MicroDVD and then fails.
 - **Order**: WebVTT comes before SubRip, because a WebVTT file without its header looks like SubRip. A new format inserts its signature at its place in the PHP order. `TestDetectionListsFollowTheOrder` in [registry_test.go](../registry_test.go) holds that order.
 - **SubRip hours and comma**: a timing line without a cue number on the line before it needs 2 hour digits and a comma. So a headerless WebVTT file that starts with `00:00:01.000 -->` and SBV with `0:00:01,500` do not match. A headerless WebVTT file that starts with a cue number, such as `1` LF `00:00:01.000 -->`, detects as SubRip.
 

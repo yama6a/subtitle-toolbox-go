@@ -6,6 +6,7 @@
 |:--- |:--- |:--- |:--- |:--- |
 | ASS and SSA | `stbox.ASS` | `ass` | `.ass`, `.ssa` | [ASS and SSA](#ass-and-ssa) |
 | library JSON | `stbox.JSON` | `json` | `.json` | [JSON](#json) |
+| MicroDVD | `stbox.MicroDVD` | `microdvd` | `.sub` | [MicroDVD](#microdvd) |
 | SAMI | `stbox.SAMI` | `sami` | `.smi`, `.sami` | [SAMI](#sami) |
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
 | TTML, IMSC, DFXP | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | [TTML](#ttml) |
@@ -412,3 +413,68 @@ The reader parses the content of each `SYNC` block with a tag scanner of its own
 ### Options
 
 `sami.ReadOptions` has the field `LanguageClass`, in the root `ReadOptions.SAMI`. Empty picks the class by the table above. A value of only white space fails `Validate`. The reader reads `Lenient`, `LastCueDuration` and `Encoding`. `sami.WriteOptions` has no fields. The writer reads `StripTags`, `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#sami).
+
+## MicroDVD
+
+MicroDVD counts time in video frames. Many old DivX downloads use it with the `.sub` extension. Package `format/microdvd` reads and writes it. The format name is `microdvd`, the extension `.sub`. No BOM by default.
+
+```text
+{1}{1}23.976
+{24}{72}Where are you?|{y:i}Home.
+```
+
+This file reads as one cue from 1.001 s to 3.003 s with the lines `Where are you?` and `<i>Home.</i>`. `|` separates the lines of a cue.
+
+### Frame rate
+
+A read needs the frame rate of the video. The reader takes the first source that has one:
+
+| # | Source | File data |
+|---:|:--- |:--- |
+| 1 | `ReadOptions.MicroDVD.FrameRate` | `frameRate` |
+| 2 | a first line `{1}{1}<fps>`, such as `{1}{1}25`. The reader removes the line | `frameRate`, and `frameRateLine: true` |
+| 3 | lenient mode only: 23.976, with the warning `The file has no {1}{1}<fps> line. The parser used 23.976 fps.` | `frameRate` |
+
+- **No frame rate**: strict mode fails with a `*ParseError` whose `Option` is `ReadOptions.MicroDVD.FrameRate`. The CLI turns it into the advice to pass `--fps`.
+- **First line**: strict mode looks at the first non-empty line. Lenient mode looks at the first line of the shape `{N}{N}text`, so the frame rate line may follow junk such as a release name.
+- **Line value 0**: `{1}{1}0` fails in both modes with `The frame rate must be greater than 0, got 0.`. With the option set, the reader does not check the line value.
+- **Not a frame rate line**: `{1}{1}Hello` is a cue from frame 1 to frame 1.
+- **23.976**: the plain float, not 24000/1001, as mantas-done/subtitles, pysubs2 and subtitle_it use it.
+- **Write**: `WriteOptions.MicroDVD.FrameRate`, else the stored `frameRate`, else an `*InvalidArgumentError` with `Option` `WriteOptions.MicroDVD.FrameRate`. So a file read at 25 fps writes back at 25 fps without options.
+
+### Read
+
+- **Lines**: one cue per non-empty line `{start}{end}text`. Each line is trimmed. A line of another shape fails: `The line "L" is not a MicroDVD cue.`. So `{24}{}Hello` detects as MicroDVD and then fails.
+- **Times**: frames divided by the frame rate, rounded to whole milliseconds. A time of 100000 hours or more fails with `The time "{N}" is not below 100000 hours.`. A frame number beyond the int64 range reads as the int64 maximum.
+- **Text**: `&`, `<` and `>` are text, so the line holds `&amp;`, `&lt;` and `&gt;`. A line that is empty after its codes is dropped. Invalid UTF-8 stays as bytes.
+
+| Control code | Core markup |
+|:--- |:--- |
+| `{y:i}`, `{y:b,u}` with only the letters `b i u s`, commas and spaces | `<i>`, `<b>`, `<u>`, `<s>` |
+| `{c:$BBGGRR}` with 6 hex digits | `<font color="#rrggbb">`, with the bytes swapped to RGB |
+| other codes, such as `{f:Arial}`, `{s:20}`, `{P:0}`, `{y:x}` and `{c:red}` | none. The codes go to cue data `microdvd.lines[i].otherCodes` |
+
+- **Scope**: a lower-case letter styles its own line. An upper-case letter, such as `{Y:i}`, styles every line of the cue, also the lines before it. A line color wins over a cue color.
+- **Place**: only the codes at the start of a line count. `Hello, {y:i}world` keeps the code as text.
+- **Cue data**: `microdvd.lines` holds one object per kept line: `codes`, the raw code prefix, `otherCodes`, `color` and `tags`.
+
+### Write
+
+- **Cue line**: `{` + start frame + `}{` + end frame + `}` + text + LF. A frame is the time in seconds times the frame rate, rounded half away from zero. A negative time writes as frame 0. A cue without text writes as `{24}{72}`.
+- **Frame rate line**: `{1}{1}` + the frame rate + LF, when `WriteFrameRateLine` is set or the file data holds `frameRateLine: true`. The rate has at most 14 significant digits: `25`, `23.976`, `29.97002997003`.
+- **Codes**: a style that wraps a whole line becomes a code: `{c:$BBGGRR}`, then `{y:b}`, `{y:i}`, `{y:u}`, `{y:s}`, then the stored `otherCodes` of the line. A tag open across lines wraps each line, so `<i>One` and `Two</i>` write `{y:i}One|{y:i}Two`. A `<v>` tag does not hide the styles inside it.
+- **Stored codes**: when every line has its stored color and tags, each line writes its stored `codes` unchanged, so a round trip keeps the case and the order of the codes.
+- **StripTags** writes no codes, also no stored `otherCodes`.
+- **Lost on write**: tags that do not wrap a whole line, speakers, word timestamps, alignment. Times move to whole frames.
+
+### Options
+
+The root `ReadOptions.MicroDVD` holds a `microdvd.ReadOptions`, `WriteOptions.MicroDVD` a `microdvd.WriteOptions`. Zero means "not set", because 0 fps is no frame rate. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#microdvd).
+
+| Option | Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |:--- |
+| `ReadOptions.MicroDVD` | `FrameRate` | `float64` | 0: the `{1}{1}<fps>` line | the frame rate of the video. It wins over the line |
+| `WriteOptions.MicroDVD` | `FrameRate` | `float64` | 0: the stored frame rate | the output frame rate |
+| `WriteOptions.MicroDVD` | `WriteFrameRateLine` | `bool` | false: only when the input had the line | write `{1}{1}<fps>` first |
+
+- **Check**: `Validate` rejects a frame rate that is negative, NaN or infinite, for example `The frame rate must be greater than 0, got -1.`, with an error that matches `ErrInvalidArgument`.
