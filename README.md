@@ -76,7 +76,7 @@ The name is the value of `--from` and `--to`. [docs/formats.md](docs/formats.md)
 stbox convert film.srt --to vtt -o film.vtt        # one file
 stbox convert season1 --to vtt --output-dir out    # every subtitle file of a folder
 stbox convert film.srt --to vtt --shift -2.5       # WebVTT with all cues 2.5 s earlier, on stdout
-stbox info film.srt --json                         # format, encoding, cue count and warnings
+stbox info film.srt --json                         # format, encoding, statistics and warnings
 stbox formats                                      # names and extensions for --from and --to
 ```
 

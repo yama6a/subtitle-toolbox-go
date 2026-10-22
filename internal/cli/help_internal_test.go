@@ -52,7 +52,7 @@ func TestGlobalHelp(t *testing.T) {
 	want := head + `Commands:
   convert  Convert subtitle files to another format, and run text, structure and
            timing edits on the way.
-  info     Print the format, the encoding and the cue count of subtitle files.
+  info     Print the format, the cue count and statistics of subtitle files.
   sync     Find the offset and frame-rate scale against a reference subtitle,
            and retime the input.
   diff     List the added, removed and changed cues between two subtitle files.

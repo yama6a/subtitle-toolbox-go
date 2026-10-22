@@ -4,7 +4,6 @@ import (
 	"regexp"
 	"slices"
 	"strings"
-	"unicode"
 	"unicode/utf8"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/grapheme"
@@ -89,10 +88,10 @@ func ToSingleLine(text string) string {
 	return lineBreakRegexp.ReplaceAllLiteralString(strings.Trim(text, PHPTrimSet), " ")
 }
 
-// Words splits text without tags at Unicode white space. Invalid UTF-8 splits at ASCII white space.
+// Words splits text without tags at white space as IsSpace defines it. Invalid UTF-8 splits at ASCII white space.
 func Words(text string) []string {
 	if utf8.ValidString(text) {
-		return strings.FieldsFunc(text, unicode.IsSpace)
+		return strings.FieldsFunc(text, IsSpace)
 	}
 	return strings.FieldsFunc(text, func(r rune) bool { return r < utf8.RuneSelf && strings.ContainsRune(asciiSpace, r) })
 }

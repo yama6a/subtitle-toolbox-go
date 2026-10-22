@@ -1,4 +1,14 @@
 trip.srt
-  Format:   srt
-  Encoding: UTF-8
-  Cues:     3
+  Format:                srt
+  Encoding:              UTF-8
+  Cues:                  3
+  Words:                 22
+  Characters:            111
+  Display time:          4.9 s
+  Span:                  5.4 s
+  Characters per second: min 12.5, average 27.533, max 42.5
+  Words per minute:      min 150, average 312, max 450
+  Characters per line:   min 12, average 27.75, max 57
+  Gaps:                  min -0.5, average 0.25, max 1 s
+  Most used words:       the (3), train (1), leaves (1), at (1), noon (1), bell
+                         (1), rings (1), anna (1), we (1), need (1)

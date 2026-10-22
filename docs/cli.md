@@ -154,7 +154,23 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 
 ## info
 
-`stbox info <input>... [--json] [options]` prints what the reader found in each subtitle file. It takes `--json` and the input options. Example: `stbox info latin1.srt` prints `Format:   srt`, `Encoding: Windows-1252` and `Cues:     1`.
+`stbox info <input>... [--json] [options]` prints what the reader found in each subtitle file and the [statistics](statistics.md) of its cues. It takes `--json` and the input options. Example: `stbox info morning.srt` for a one-cue file prints the block below.
+
+```
+morning.srt
+  Format:                srt
+  Encoding:              UTF-8
+  Cues:                  1
+  Words:                 2
+  Characters:            13
+  Display time:          2 s
+  Span:                  2 s
+  Characters per second: min 6.5, average 6.5, max 6.5
+  Words per minute:      min 60, average 60, max 60
+  Characters per line:   min 13, average 13, max 13
+  Gaps:                  -
+  Most used words:       good (1), morning (1)
+```
 
 | Row | Shown when | Value |
 |:--- |:--- |:--- |
@@ -162,8 +178,15 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 | `Encoding:` | the read has a source encoding | for example `UTF-8` or `Windows-1252` |
 | `Cues:` | always | the cue count |
 | `Warnings:` | the read returned warnings | their count |
+| `Words:`, `Characters:` | always | the counts |
+| `Display time:` | always | the total display time, `X s` |
+| `Span:` | always | `X s`, or `-` without cues |
+| `Characters per second:`, `Words per minute:`, `Characters per line:` | always | `min A, average B, max C`, or `-` |
+| `Gaps:` | always | `min A, average B, max C s`, or `-` |
+| `Most used words:` | always | `word (n), word (n), ...`, at most 10, wrapped at 80 columns |
 | `Metadata KEY:` | one row per metadata entry | the value, rows in byte order of the keys |
 
+- **Numbers**: an integer prints as it is. Any other number prints with at most 3 decimals, without trailing zeros, so `27.53333` prints `27.533` and `4.90` prints `4.9`. Times are in seconds.
 - **Text**: each input prints a block that starts with the input as given, or `stdin`. A block after the first successful one starts with an empty line. A failed file does not count.
 - **Exit code**: 3 when a file failed, else 0.
 
@@ -175,15 +198,49 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 | `format` | the format name |
 | `encoding` | the source encoding, or `null` when the read has none |
 | `metadata` | an object with the metadata keys in byte order, `{}` when empty |
+| `statistics` | the numbers of [statistics.md](statistics.md#json) |
 | `warnings` | the warnings of the read as in [JSON output](#json-output), `[]` when none |
 
 ```json
 [
     {
-        "file": "trip.srt",
+        "file": "morning.srt",
         "format": "srt",
         "encoding": "UTF-8",
         "metadata": {},
+        "statistics": {
+            "cueCount": 1,
+            "wordCount": 2,
+            "characterCount": 13,
+            "totalDisplayTime": 2,
+            "span": 2,
+            "charactersPerSecond": {
+                "min": 6.5,
+                "average": 6.5,
+                "max": 6.5
+            },
+            "wordsPerMinute": {
+                "min": 60,
+                "average": 60,
+                "max": 60
+            },
+            "charactersPerLine": {
+                "min": 13,
+                "average": 13,
+                "max": 13
+            },
+            "gaps": null,
+            "mostUsedWords": [
+                {
+                    "word": "good",
+                    "count": 1
+                },
+                {
+                    "word": "morning",
+                    "count": 1
+                }
+            ]
+        },
         "warnings": []
     }
 ]
