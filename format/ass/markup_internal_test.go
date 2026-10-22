@@ -21,6 +21,7 @@ func TestOverrideTags(t *testing.T) {
 		{"nested parentheses", `\t(0,500,\clip(1,2,3,4)\b1)\i1`, []string{`\t(0,500,\clip(1,2,3,4)\b1)`, `\i1`}},
 		{"text after the parentheses", `\t(\b1)x \i1`, []string{`\t(\b1)x`, `\i1`}},
 		{"unbalanced parentheses split at the backslash", `\t(\b1`, []string{`\t(`, `\b1`}},
+		{"a second group after a balanced one splits at the backslash", `\t(\b1)(\i1)`, []string{`\t(\b1)(`, `\i1)`}},
 		{"text before the first backslash", `note\b1`, []string{`\b1`}},
 		{"spaces are trimmed", ` \b1 \i1 `, []string{`\b1`, `\i1`}},
 		{"a note without backslash", "note", nil},

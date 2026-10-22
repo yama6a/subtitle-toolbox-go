@@ -31,10 +31,9 @@ func Alignment(tag string) (numpad int, ok bool) {
 
 // LegacyCode returns the SSA code of \a for a numpad alignment from 1 to 9, for example "6" for 8.
 func LegacyCode(numpad int) string {
-	for _, code := range [...]string{"1", "2", "3", "5", "6", "7", "9", "10", "11"} {
-		if legacyAlignments[code] == numpad {
-			return code
-		}
+	codes := [10]string{1: "1", 2: "2", 3: "3", 4: "9", 5: "10", 6: "11", 7: "5", 8: "6", 9: "7"}
+	if numpad < 1 || numpad > 9 {
+		return ""
 	}
-	return ""
+	return codes[numpad]
 }

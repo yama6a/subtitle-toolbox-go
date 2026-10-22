@@ -54,3 +54,16 @@ func TestAlignment(t *testing.T) {
 		})
 	}
 }
+
+func TestLegacyCode(t *testing.T) {
+	t.Parallel()
+
+	for n := 1; n <= 9; n++ {
+		got, ok := ssatag.Alignment(`\a` + ssatag.LegacyCode(n))
+		assert.True(t, ok, n)
+		assert.Equal(t, n, got)
+	}
+	assert.Equal(t, "6", ssatag.LegacyCode(8))
+	assert.Empty(t, ssatag.LegacyCode(0))
+	assert.Empty(t, ssatag.LegacyCode(10))
+}

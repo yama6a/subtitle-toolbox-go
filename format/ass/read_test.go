@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -171,6 +172,15 @@ func TestStyleFlagsAndAlignmentApplyToTheCues(t *testing.T) {
 		{[]string{"The bus turns left at the bridge."}, model.BottomCenter},
 		{[]string{"<i><b>Left</b></i><i> again</i><b><u><s> already</s></u></b>"}, model.TopCenter},
 	}, got)
+}
+
+// Ports testStyleItalicsAndAlignmentReachSubRip of tests/Parsers/AssParserTest.php of subtitle-toolbox-php.
+func TestStyleItalicsAndAlignmentReachSubRip(t *testing.T) {
+	t.Parallel()
+
+	var out bytes.Buffer
+	require.NoError(t, srt.Write(&out, readFile(t, realDir+"/own_style_flags.ass"), model.CommonWriteOptions{}, srt.WriteOptions{}))
+	assert.Contains(t, out.String(), "00:00:03,200 --> 00:00:05,400\n{\\an8}<i>I should have taken the earlier bus.</i>\n")
 }
 
 func TestStylesApply(t *testing.T) {
