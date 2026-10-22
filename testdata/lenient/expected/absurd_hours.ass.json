@@ -1,0 +1,28 @@
+{
+    "name": "ASS with 20 hour digits",
+    "format": "ass",
+    "strict": {
+        "error": "The time \"99999999999999999999:00:04.00\" is not below 100000 hours.",
+        "line": 11
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The pool opens at seven."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "No running, please."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 11,
+            "block": 1,
+            "action": "skipped",
+            "message": "The time \"99999999999999999999:00:04.00\" is not below 100000 hours."
+        }
+    ]
+}

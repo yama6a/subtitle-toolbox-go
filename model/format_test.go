@@ -18,7 +18,7 @@ func TestFormatFacts(t *testing.T) {
 		canWrite     bool
 		autoDetected bool
 	}{
-		{model.ASS, []string{"ass", "ssa"}, false, false, false},
+		{model.ASS, []string{"ass", "ssa"}, true, true, true},
 		{model.CSV, []string{"csv"}, false, false, false},
 		{model.JSON, []string{"json"}, true, true, true},
 		{model.LRC, []string{"lrc"}, false, false, false},

@@ -31,6 +31,11 @@ func detectTests() []detectTest {
 		{name: "SubRip with dot", content: "1\n00:00:01.000 --> 00:00:04.000\nHello\n", want: stbox.SubRip},
 		{name: "SubRip without cue number", content: "00:00:01,000 --> 00:00:04,000\nHello\n", want: stbox.SubRip},
 		{name: "SubRip after five lines", content: "a\nb\nc\nd\n\n 1\n00:00:01,000 --> 00:00:04,000\nHello\n", want: stbox.SubRip},
+		{name: "SSA header", content: "[Script Info]\r\nScriptType: v4.00\r\n", want: stbox.ASS},
+		{name: "ASS header in lower case", content: "[script info]\n", want: stbox.ASS},
+		{name: "ASS header with spaces after it", content: "[Script Info] \t\nTitle: Bakery\n", want: stbox.ASS},
+		{name: "ASS header only", content: "[Script Info]", want: stbox.ASS},
+		{name: "ASS before an LRC tag", content: "[Script Info]\n[ti:Morning Train]\n", want: stbox.ASS},
 		{name: "JSON with cues first", content: `{"cues": [], "metadata": {"title": "version"}, "version": 1}`, want: stbox.JSON},
 		{name: "JSON with spaces", content: "{\n  \"version\" : 1 ,\n  \"cues\" : [ ]\n}\n", want: stbox.JSON},
 		{name: "JSON with a segments key", content: `{"version": 1, "formatData": {"x": {"segments": [1]}}, "cues": []}`, want: stbox.JSON},
@@ -45,7 +50,6 @@ func detectTests() []detectTest {
 		{name: "TTML with XML declaration", content: "<?xml version=\"1.0\"?>\n<!-- made by hand -->\n<tt xmlns=\"http://www.w3.org/ns/ttml\"/>", later: "TTML"},
 		{name: "TTML with prefixed root", content: `<tt:tt xmlns:tt="http://www.w3.org/ns/ttml"></tt:tt>`, later: "TTML"},
 		{name: "SAMI in lower case", content: "<sami><body></body></sami>", later: "SAMI"},
-		{name: "SSA header", content: "[Script Info]\r\nScriptType: v4.00\r\n", later: "ASS"},
 		{name: "MPSub with FORMAT first", content: "FORMAT=25\n\n0 50\nHello\n", later: "MPSub"},
 		{name: "MPSub with header comment", content: "TITLE=Bakery\nFORMAT=TIME   # seconds\n\n1 2\nHello\n", later: "MPSub"},
 		{name: "MicroDVD with fps line", content: "{1}{1}25\n{24}{72}Hello\n", later: "MicroDVD"},
@@ -187,6 +191,8 @@ func TestDetectFindsNoFormat(t *testing.T) {
 
 		{"JSON object of no format", `{"segments": []}`},
 		{"MPL2 lookalike", "[1]"},
+		{"ASS header on line 2", "; Script\n[Script Info]\n"},
+		{"ASS header with text after it", "[Script Info] v4\n"},
 		{"form feed first", "\fWEBVTT\n"},
 		{"BOM after a space", " \xEF\xBB\xBFWEBVTT\n"},
 		{"library JSON after text", "x{\"version\": 1, \"cues\": []}"},
@@ -214,7 +220,7 @@ type fixture struct {
 func fixtures(t *testing.T) []fixture {
 	t.Helper()
 
-	folders := map[string]stbox.Format{"json": stbox.JSON, "srt": stbox.SubRip, "vtt": stbox.WebVTT}
+	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "srt": stbox.SubRip, "vtt": stbox.WebVTT}
 	var list []fixture
 	for dir, f := range folders {
 		for _, sub := range []string{dir, dir + "/real"} {
@@ -336,7 +342,7 @@ func FuzzDetect(f *testing.F) {
 		f.Add([]byte(tt.content))
 	}
 	root := testfiles.Root(f)
-	for _, dir := range []string{"json", "srt", "vtt", "lenient"} {
+	for _, dir := range []string{"ass", "json", "srt", "vtt", "lenient"} {
 		entries, err := os.ReadDir(filepath.Join(root, dir))
 		if err != nil {
 			f.Fatal(err)

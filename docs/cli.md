@@ -191,6 +191,7 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 
 ```
 Name  Extensions  Read  Write
+ass   .ass .ssa   yes   yes
 json  .json       yes   yes
 srt   .srt        yes   yes
 vtt   .vtt        yes   yes

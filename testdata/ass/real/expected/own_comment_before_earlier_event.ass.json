@@ -1,0 +1,223 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [
+            {
+                "text": "The door opens before the shop",
+                "beforeCueIndex": 0
+            },
+            {
+                "text": "The shop opens at nine",
+                "beforeCueIndex": 1
+            },
+            {
+                "text": "End of the shop scene",
+                "beforeCueIndex": 3
+            }
+        ],
+        "formatData": {
+            "ass": {
+                "sectionOrder": [
+                    "Script Info",
+                    "V4+ Styles",
+                    "Events"
+                ],
+                "scriptInfoComments": [],
+                "scriptInfo": {
+                    "ScriptType": "v4.00+",
+                    "PlayResX": "384",
+                    "PlayResY": "288"
+                },
+                "stylesSection": "V4+ Styles",
+                "styleFormat": [
+                    "Name",
+                    "Fontname",
+                    "Fontsize",
+                    "PrimaryColour",
+                    "SecondaryColour",
+                    "OutlineColour",
+                    "BackColour",
+                    "Bold",
+                    "Italic",
+                    "Underline",
+                    "StrikeOut",
+                    "ScaleX",
+                    "ScaleY",
+                    "Spacing",
+                    "Angle",
+                    "BorderStyle",
+                    "Outline",
+                    "Shadow",
+                    "Alignment",
+                    "MarginL",
+                    "MarginR",
+                    "MarginV",
+                    "Encoding"
+                ],
+                "styles": [
+                    {
+                        "Name": "Default",
+                        "Fontname": "Arial",
+                        "Fontsize": "16",
+                        "PrimaryColour": "&H00FFFFFF",
+                        "SecondaryColour": "&H00FFFFFF",
+                        "OutlineColour": "&H00000000",
+                        "BackColour": "&H00000000",
+                        "Bold": "0",
+                        "Italic": "0",
+                        "Underline": "0",
+                        "StrikeOut": "0",
+                        "ScaleX": "100",
+                        "ScaleY": "100",
+                        "Spacing": "0",
+                        "Angle": "0",
+                        "BorderStyle": "1",
+                        "Outline": "1",
+                        "Shadow": "0",
+                        "Alignment": "2",
+                        "MarginL": "10",
+                        "MarginR": "10",
+                        "MarginV": "10",
+                        "Encoding": "1"
+                    }
+                ],
+                "eventFormat": [
+                    "Layer",
+                    "Start",
+                    "End",
+                    "Style",
+                    "Name",
+                    "MarginL",
+                    "MarginR",
+                    "MarginV",
+                    "Effect",
+                    "Text"
+                ],
+                "commentEvents": [
+                    {
+                        "Layer": "0",
+                        "Start": "0:00:05.00",
+                        "End": "0:00:07.00",
+                        "Style": "Default",
+                        "Name": "",
+                        "MarginL": "0",
+                        "MarginR": "0",
+                        "MarginV": "0",
+                        "Effect": "",
+                        "Text": "The shop opens at nine"
+                    },
+                    {
+                        "Layer": "0",
+                        "Start": "0:00:01.00",
+                        "End": "0:00:03.00",
+                        "Style": "Default",
+                        "Name": "",
+                        "MarginL": "0",
+                        "MarginR": "0",
+                        "MarginV": "0",
+                        "Effect": "",
+                        "Text": "The door opens before the shop"
+                    },
+                    {
+                        "Layer": "0",
+                        "Start": "0:00:11.00",
+                        "End": "0:00:11.00",
+                        "Style": "Default",
+                        "Name": "",
+                        "MarginL": "0",
+                        "MarginR": "0",
+                        "MarginV": "0",
+                        "Effect": "",
+                        "Text": "End of the shop scene"
+                    }
+                ],
+                "sections": []
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "The door opens."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ass": {
+                        "fields": {
+                            "Layer": "0",
+                            "Style": "Default",
+                            "Name": "",
+                            "MarginL": "0",
+                            "MarginR": "0",
+                            "MarginV": "0",
+                            "Effect": ""
+                        },
+                        "text": "The door opens.",
+                        "lines": [
+                            "The door opens."
+                        ],
+                        "alignment": null
+                    }
+                }
+            },
+            {
+                "start": 5.0,
+                "end": 7.0,
+                "lines": [
+                    "The shop is open."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ass": {
+                        "fields": {
+                            "Layer": "0",
+                            "Style": "Default",
+                            "Name": "",
+                            "MarginL": "0",
+                            "MarginR": "0",
+                            "MarginV": "0",
+                            "Effect": ""
+                        },
+                        "text": "The shop is open.",
+                        "lines": [
+                            "The shop is open."
+                        ],
+                        "alignment": null
+                    }
+                }
+            },
+            {
+                "start": 9.0,
+                "end": 11.0,
+                "lines": [
+                    "The shop closes."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ass": {
+                        "fields": {
+                            "Layer": "0",
+                            "Style": "Default",
+                            "Name": "",
+                            "MarginL": "0",
+                            "MarginR": "0",
+                            "MarginV": "0",
+                            "Effect": ""
+                        },
+                        "text": "The shop closes.",
+                        "lines": [
+                            "The shop closes."
+                        ],
+                        "alignment": null
+                    }
+                }
+            }
+        ]
+    }
+}

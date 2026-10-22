@@ -35,6 +35,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 	//nolint:dupword // the output repeats yes
 	want := strings.Join([]string{
 		"Name  Extensions  Read  Write",
+		"ass   .ass .ssa   yes   yes",
 		"json  .json       yes   yes",
 		"srt   .srt        yes   yes",
 		"vtt   .vtt        yes   yes",

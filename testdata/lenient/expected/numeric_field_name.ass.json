@@ -1,0 +1,28 @@
+{
+    "name": "ASS with a number as a field name in the Format line of [Events]",
+    "format": "ass",
+    "strict": {
+        "error": "The field name \"1\" in the Format line of the [Events] section is a number.",
+        "line": 13
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3.5,
+            "text": "<v Captain>The ferry leaves at nine."
+        },
+        {
+            "start": 3.6,
+            "end": 6.2,
+            "text": "Tickets are sold\non the upper deck."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 13,
+            "block": null,
+            "action": "repaired",
+            "message": "The field name \"1\" in the Format line of the [Events] section is a number. The parser dropped the values of this field."
+        }
+    ]
+}

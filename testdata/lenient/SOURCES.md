@@ -33,6 +33,11 @@ Every file except the 2 `mantas_` files is written for this repository in the sh
 | `absurd_hours.vtt` | a cue with 20 hour digits between two good cues, LF | MIT |
 | `absurd_seconds.json` | the library JSON. A cue with a start of `1e20` seconds between two good cues, LF | MIT |
 | `absurd_word_timestamp.vtt` | a cue with a word timestamp of 20 hour digits between two good cues, LF | MIT |
+| `broken_events.ass` | no `Format:` line in `[Events]`, an event with 4 fields, a letter in an end time, UTF-8 BOM, CR LF | MIT |
+| `absurd_hours.ass` | a `Dialogue` line with 20 hour digits between two good lines, LF | MIT |
+| `loose_times.ass` | Start and End times with 4 fraction digits, without a fraction, with `,` before the fraction and with `:` before the fraction, LF | MIT |
+| `numeric_field_name.ass` | the number `1` as a field name in the `Format:` line of `[Events]`, in the shape of an Aegisub file, UTF-8 BOM, CR LF | MIT |
+| `sixty_minutes.ass` | an End time with 75 minutes and a Start time with 75 seconds, both with a 2-digit fraction, in the shape of an Aegisub file, LF | MIT |
 | `expected/*.json` | written for subtitle-toolbox-go. Each file holds the values of `damagedFiles()` in `tests/Parsers/LenientParsingTest.php` of this repository for the fixture of the same name, and the full message and line of the strict error that the PHP parser returns | MIT |
 | `expected/joined_files.vtt.json` | written for subtitle-toolbox-go. `damagedFiles()` has no row for this fixture, so the file holds the values of the 3 `joined_files` tests in `tests/Parsers/LenientWebVttTest.php` of this repository, and the strict error that the PHP parser returns | MIT |
 | `expected/no_cue_numbers.srt.json`, `expected/mantas_utf16.srt.json` | written for subtitle-toolbox-go. `damagedFiles()` has no row for these fixtures, so the files hold the cue count of `FormatDetectorTest::subRipWithoutLeadingCueNumber` and the cue of `LooseTimestampsTest::testLenientModeReadsATimeWithOneSecondDigitInUtf16` of this repository, and the rest of the result and the strict error that the PHP parser returns | MIT |
