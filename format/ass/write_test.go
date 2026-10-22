@@ -539,17 +539,17 @@ func TestNamesWithQuotes(t *testing.T) {
 func TestFontColorsSurviveARoundTrip(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		line, want string
-	}{
+	type row struct{ line, want string }
+	tests := make([]row, 0, 11)
+	tests = append(tests, []row{
 		{"<font color='#FF0000'>Red</font>", `<font color="#ff0000">Red</font>`},
 		{"<font color=#ff0000>Red</font>", `<font color="#ff0000">Red</font>`},
 		{`<FONT COLOR="#FF0000">Red</FONT>`, `<font color="#ff0000">Red</font>`},
 		{`<font color = "#ff0000" >Red</font>`, `<font color="#ff0000">Red</font>`},
 		{`<font face="Arial" color="#ff0000">Red</font>`, `<font color="#ff0000">Red</font>`},
-	}
+	}...)
 	for _, color := range []string{"#ffff00", "#FF0", "yellow", "Yellow", "rgb(255, 255, 0)", "&#35;ff0"} {
-		tests = append(tests, struct{ line, want string }{`<font color="` + color + `">Hi</font>`, `<font color="#ffff00">Hi</font>`})
+		tests = append(tests, row{`<font color="` + color + `">Hi</font>`, `<font color="#ffff00">Hi</font>`})
 	}
 	for _, tt := range tests {
 		t.Run(tt.line, func(t *testing.T) {
