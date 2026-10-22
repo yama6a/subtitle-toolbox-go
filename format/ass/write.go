@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/internal/position"
 	"github.com/yama6a/subtitle-toolbox-go/internal/ssatag"
 	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -72,6 +73,22 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		}
 	}
 
+	var body []byte
+	for i, section := range f.order() {
+		if i > 0 {
+			body = append(body, '\n')
+		}
+		body = append(body, "["+section+"]\n"...)
+		for _, l := range wr.sectionLines(s, &f, section) {
+			body = append(body, l+"\n"...)
+		}
+	}
+	return writing.Write(w, model.ASS, body, common, true)
+}
+
+// order returns the sections to write: the stored order with [Script Info] first and [Events] last when the
+// order lacks them, and each name once.
+func (f *fileData) order() []string {
 	order := slices.Clone(f.sectionOrder)
 	if !containsFold(order, scriptInfoSection) {
 		order = append([]string{scriptInfoSection}, order...)
@@ -79,33 +96,27 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	if !containsFold(order, eventsSection) {
 		order = append(order, eventsSection)
 	}
-	var body []byte
-	var written []string
+	var unique []string
 	for _, section := range order {
-		if slices.Contains(written, section) {
-			continue
-		}
-		written = append(written, section)
-		var lines []string
-		switch {
-		case equalFold(section, scriptInfoSection):
-			lines = f.scriptInfoLines(s)
-		case f.hasStylesSection && equalFold(section, f.stylesSection):
-			lines = f.styleLines()
-		case equalFold(section, eventsSection):
-			lines = wr.eventLines(s, f)
-		default:
-			lines, _ = f.sections.Strings(section)
-		}
-		if len(body) > 0 {
-			body = append(body, '\n')
-		}
-		body = append(body, "["+section+"]\n"...)
-		for _, l := range lines {
-			body = append(body, l+"\n"...)
+		if !slices.Contains(unique, section) {
+			unique = append(unique, section)
 		}
 	}
-	return writing.Write(w, model.ASS, body, common, true)
+	return unique
+}
+
+func (wr *writer) sectionLines(s *model.Subtitle, f *fileData, section string) []string {
+	switch {
+	case equalFold(section, scriptInfoSection):
+		return f.scriptInfoLines(s)
+	case f.hasStylesSection && equalFold(section, f.stylesSection):
+		return f.styleLines()
+	case equalFold(section, eventsSection):
+		return wr.eventLines(s, f)
+	default:
+		lines, _ := f.sections.Strings(section)
+		return lines
+	}
 }
 
 // readFileData reads the stored file data. An absent key takes its default. A present key keeps its value, also
@@ -169,7 +180,7 @@ func containsFold(names []string, name string) bool {
 	return slices.ContainsFunc(names, func(n string) bool { return equalFold(n, name) })
 }
 
-func (f fileData) scriptInfoLines(s *model.Subtitle) []string {
+func (f *fileData) scriptInfoLines(s *model.Subtitle) []string {
 	lines := slices.Clone(f.scriptInfoComments)
 	if title, ok := s.Metadata(model.MetadataTitle); ok {
 		lines = append(lines, "Title: "+markupcore.ToSingleLine(title))
@@ -180,12 +191,13 @@ func (f fileData) scriptInfoLines(s *model.Subtitle) []string {
 	return lines
 }
 
-func (f fileData) styleLines() []string {
+func (f *fileData) styleLines() []string {
 	format := f.styleFormat
 	if format == nil {
 		format = assStyleFields
 	}
-	lines := []string{"Format: " + strings.Join(format, ", ")}
+	lines := make([]string, 0, 1+len(f.styles))
+	lines = append(lines, "Format: "+strings.Join(format, ", "))
 	for _, style := range f.styles {
 		lines = append(lines, "Style: "+joinFields(style, format))
 	}
@@ -201,7 +213,7 @@ func joinFields(r record, format []string) string {
 	return strings.Join(values, ",")
 }
 
-func (wr *writer) eventLines(s *model.Subtitle, f fileData) []string {
+func (wr *writer) eventLines(s *model.Subtitle, f *fileData) []string {
 	format := f.eventFormat
 	if format == nil {
 		format = assEventFields
@@ -268,7 +280,7 @@ func (wr *writer) dialogueLine(c model.Cue, format []string) string {
 		if !ok {
 			styleName = "Default"
 		}
-		style, _ := eventStyle(wr.styles, styleName)
+		style := eventStyle(wr.styles, styleName)
 		text, name = wr.convertLines(c, style)
 	}
 	values := make([]string, len(format))
@@ -306,13 +318,7 @@ func (wr *writer) unchanged(c model.Cue, data *model.Data) bool {
 	if !ok || !slices.Equal(lines, c.Lines) {
 		return false
 	}
-	numpad := int64(model.BottomCenter.Numpad())
-	if v, ok := data.Get("alignment"); ok && v != nil {
-		if numpad, ok = v.(int64); !ok {
-			return false
-		}
-	}
-	return numpad == int64(c.Alignment.Numpad())
+	return position.AlignmentUnchanged(data, c.Alignment)
 }
 
 // convertLines returns the Text field and the speaker name of the core markup of c. It leaves out the tags
@@ -451,64 +457,83 @@ func (wr *writer) convertTokens(tokens []string, c model.Cue) []part {
 	if leading >= 0 {
 		parts = append(parts, part{true, `\` + wr.karaokeTag + strconv.FormatInt(leading, 10)})
 	}
-	var colors []string
-	var hasColor []bool
-	timestamp := 0
+	tc := tokenConverter{karaokeTag: wr.karaokeTag, durations: durations}
 	for i, token := range tokens {
-		if i%2 == 0 {
-			if token != "" {
-				parts = append(parts, part{false, escapeText(markupcore.DecodeEntities(token))})
+		switch {
+		case i%2 == 0 && token != "":
+			parts = append(parts, part{false, escapeText(markupcore.DecodeEntities(token))})
+		case i%2 == 1:
+			if tag, ok := tc.tag(token); ok {
+				parts = append(parts, part{true, tag})
 			}
-			continue
-		}
-		if m := styleTagRegexp.FindStringSubmatch(token); m != nil {
-			state := "1"
-			if m[1] != "" {
-				state = "0"
-			}
-			parts = append(parts, part{true, `\` + m[2] + state})
-		} else if fontRegexp.MatchString(token) {
-			color, ok := fontColor(token)
-			colors, hasColor = append(colors, color), append(hasColor, ok)
-			if ok {
-				parts = append(parts, part{true, colorTag(color)})
-			}
-		} else if equalFold(token, "</font>") {
-			if n := len(colors); n > 0 {
-				popped := hasColor[n-1]
-				colors, hasColor = colors[:n-1], hasColor[:n-1]
-				if popped {
-					parts = append(parts, part{true, outerColorTag(colors, hasColor)})
-				}
-			}
-		} else if _, ok := markupcore.WordTimestamp(token); ok {
-			parts = append(parts, part{true, `\` + wr.karaokeTag + strconv.FormatInt(durations[timestamp], 10)})
-			timestamp++
 		}
 	}
 	return parts
 }
 
-// fontColor returns the color of a <font> tag as 6 upper-case hex digits in RGB order.
-func fontColor(tag string) (string, bool) {
+// tokenConverter turns the core markup tags of one cue into override tags.
+type tokenConverter struct {
+	karaokeTag string
+	durations  []int64
+	next       int
+	// colors holds the colors of the open <font> tags, "" for a <font> without a color.
+	colors []string
+}
+
+// tag returns the override tag of a core markup tag, or false for a tag that writes nothing.
+func (tc *tokenConverter) tag(token string) (string, bool) {
+	if m := styleTagRegexp.FindStringSubmatch(token); m != nil {
+		if m[1] == "" {
+			return `\` + m[2] + "1", true
+		}
+		return `\` + m[2] + "0", true
+	}
+	if fontRegexp.MatchString(token) {
+		color := fontColor(token)
+		tc.colors = append(tc.colors, color)
+		return colorTag(color), color != ""
+	}
+	if equalFold(token, "</font>") {
+		return tc.closeFont()
+	}
+	if _, ok := markupcore.WordTimestamp(token); ok {
+		d := tc.durations[tc.next]
+		tc.next++
+		return `\` + tc.karaokeTag + strconv.FormatInt(d, 10), true
+	}
+	return "", false
+}
+
+// closeFont returns \c, or the color of the outer <font> again, when the closed <font> had a color.
+func (tc *tokenConverter) closeFont() (string, bool) {
+	n := len(tc.colors)
+	if n == 0 {
+		return "", false
+	}
+	closed := tc.colors[n-1]
+	tc.colors = tc.colors[:n-1]
+	if closed == "" {
+		return "", false
+	}
+	for i := len(tc.colors) - 1; i >= 0; i-- {
+		if tc.colors[i] != "" {
+			return colorTag(tc.colors[i]), true
+		}
+	}
+	return `\c`, true
+}
+
+// fontColor returns the color of a <font> tag as 6 upper-case hex digits in RGB order, or "".
+func fontColor(tag string) string {
 	attr, ok := markupcore.FontColor(tag)
 	if !ok {
-		return "", false
+		return ""
 	}
 	hex, ok := markupcore.ColorHex(attr)
 	if !ok {
-		return "", false
+		return ""
 	}
-	return strings.ToUpper(hex[1:]), true
-}
-
-func outerColorTag(colors []string, hasColor []bool) string {
-	for i := len(colors) - 1; i >= 0; i-- {
-		if hasColor[i] {
-			return colorTag(colors[i])
-		}
-	}
-	return `\c`
+	return strings.ToUpper(hex[1:])
 }
 
 func colorTag(rgb string) string {

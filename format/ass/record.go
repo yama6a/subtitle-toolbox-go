@@ -24,7 +24,7 @@ func (r *record) set(name, value string) {
 }
 
 // key returns the first name that equals name without ASCII case.
-func (r record) key(name string) (string, bool) {
+func (r *record) key(name string) (string, bool) {
 	for _, n := range r.names {
 		if equalFold(n, name) {
 			return n, true
@@ -34,7 +34,7 @@ func (r record) key(name string) (string, bool) {
 }
 
 // field returns the value of the first name that equals name without ASCII case.
-func (r record) field(name string) (string, bool) {
+func (r *record) field(name string) (string, bool) {
 	for i, n := range r.names {
 		if equalFold(n, name) {
 			return r.values[i], true
@@ -45,7 +45,7 @@ func (r record) field(name string) (string, bool) {
 
 // lastField returns the value of the last name that equals name without ASCII case, as PHP
 // array_change_key_case keeps it.
-func (r record) lastField(name string) string {
+func (r *record) lastField(name string) string {
 	for i := len(r.names) - 1; i >= 0; i-- {
 		if equalFold(r.names[i], name) {
 			return r.values[i]
@@ -54,7 +54,7 @@ func (r record) lastField(name string) string {
 	return ""
 }
 
-func (r record) get(name string) (string, bool) {
+func (r *record) get(name string) (string, bool) {
 	for i, n := range r.names {
 		if n == name {
 			return r.values[i], true
@@ -64,7 +64,7 @@ func (r record) get(name string) (string, bool) {
 }
 
 // data returns the record as format data. An empty record is an empty list, as PHP encodes an empty array.
-func (r record) data() any {
+func (r *record) data() any {
 	if len(r.names) == 0 {
 		return []any{}
 	}

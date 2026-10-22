@@ -37,7 +37,7 @@ func BenchmarkParse(b *testing.B) {
 	}
 	s.AddCues(cues...)
 
-	for _, f := range []stbox.Format{stbox.SubRip, stbox.WebVTT} {
+	for _, f := range []stbox.Format{stbox.SubRip, stbox.WebVTT, stbox.ASS} {
 		var content bytes.Buffer
 		if err := stbox.Write(&content, s, f, stbox.WriteOptions{}); err != nil {
 			b.Fatal(err)

@@ -28,12 +28,14 @@ func findStyle(styles []record, name string) (record, bool) {
 	return record{}, false
 }
 
-// eventStyle returns the style of an event. An unknown name falls back to the Default style.
-func eventStyle(styles []record, name string) (record, bool) {
+// eventStyle returns the style of an event. An unknown name falls back to the Default style, and without one
+// the event has no style.
+func eventStyle(styles []record, name string) record {
 	if s, ok := findStyle(styles, name); ok {
-		return s, true
+		return s
 	}
-	return findStyle(styles, "Default")
+	s, _ := findStyle(styles, "Default")
+	return s
 }
 
 // styleTags returns the core tag names that a style turns on.

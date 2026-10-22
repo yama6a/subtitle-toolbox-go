@@ -16,7 +16,7 @@ var update = flag.Bool("update", false, "rewrite the write golden files")
 
 // roundTripFolders holds the folders whose every real file is a round trip case.
 func roundTripFolders() []string {
-	return []string{"srt", "vtt"}
+	return []string{"ass", "srt", "vtt"}
 }
 
 // conversion is a write golden case that reads a real file and writes it in another format.
@@ -27,9 +27,17 @@ type conversion struct {
 
 func conversions() []conversion {
 	return []conversion{
+		{"ass", "own_aegisub.ass", stbox.SubRip},
+		{"ass", "own_aegisub.ass", stbox.WebVTT},
+		{"ass", "own_signs_crlf.ass", stbox.SubRip},
+		{"ass", "own_signs_crlf.ass", stbox.WebVTT},
+		{"srt", "own_styled.srt", stbox.ASS},
 		{"srt", "own_styled.srt", stbox.WebVTT},
+		{"vtt", "w3c_voices.vtt", stbox.ASS},
 		{"vtt", "w3c_voices.vtt", stbox.SubRip},
+		{"vtt", "own_ytdlp_rolling.vtt", stbox.ASS},
 		{"vtt", "own_ytdlp_rolling.vtt", stbox.SubRip},
+		{"vtt", "own_openai_whisper_highlight_words.vtt", stbox.ASS},
 		{"vtt", "own_openai_whisper_highlight_words.vtt", stbox.SubRip},
 	}
 }

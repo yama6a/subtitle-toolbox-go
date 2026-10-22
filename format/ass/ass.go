@@ -132,6 +132,13 @@ func isStylesSection(name string) bool {
 
 // isIntKey reports whether PHP turns the array key into an integer: a canonical decimal int64.
 func isIntKey(key string) bool {
-	n, err := strconv.ParseInt(key, 10, 64)
-	return err == nil && strconv.FormatInt(n, 10) == key
+	digits := strings.TrimPrefix(key, "-")
+	if digits == "" || len(digits) > 1 && digits[0] == '0' || key == "-0" {
+		return false
+	}
+	if strings.Trim(digits, "0123456789") != "" {
+		return false
+	}
+	_, err := strconv.ParseInt(key, 10, 64)
+	return err == nil
 }

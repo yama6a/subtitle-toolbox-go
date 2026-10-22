@@ -54,6 +54,7 @@ Option groups, in the order that convert runs their edits:
   retime     Shift and scale the times, or change the frame rate.
   timing     Fix overlaps, short cues and long cues, and add lead-in and
              lead-out.
+  ass        Set how ASS output writes word timestamps and the Default style.
 
 Run "stbox convert --help GROUP" for the options of a group,
 or "stbox convert --help all" for all options.
@@ -127,6 +128,12 @@ var convertGroupHelp = []string{
                                  --timing-min-duration and the lead options.
                                  Default: 0.
 `,
+	`ass: Set how ASS output writes word timestamps and the Default style.
+  --ass-karaoke-tag TAG  ASS karaoke tag for word timestamps: k, kf or ko.
+                         Default: k.
+  --ass-style STYLE      Change the Default style, for example
+                         'Fontname=Roboto,Fontsize=48,Outline=2'.
+`,
 }
 
 func TestConvertHelp(t *testing.T) {
@@ -138,7 +145,7 @@ func TestConvertHelp(t *testing.T) {
 	all := result{Stdout: convertCommonHelp + "\n" + strings.Join(convertGroupHelp, "\n")}
 	unknown := func(topic string) result {
 		return usageResult("convert", "Unknown option group "+quote(topic)+
-			". The groups are forced, replace, text, structure, retime, timing, and all for every option.")
+			". The groups are forced, replace, text, structure, retime, timing, ass, and all for every option.")
 	}
 	tests := []struct {
 		name  string

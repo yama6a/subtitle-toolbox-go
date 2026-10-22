@@ -4,6 +4,7 @@
 
 | Format | Go constant | Name | Extensions | Section |
 |:--- |:--- |:--- |:--- |:--- |
+| ASS and SSA | `stbox.ASS` | `ass` | `.ass`, `.ssa` | [ASS and SSA](#ass-and-ssa) |
 | library JSON | `stbox.JSON` | `json` | `.json` | [JSON](#json) |
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
@@ -158,3 +159,88 @@ This block reads as one cue from 1.5 s to 4 s with the alignment `TopCenter`, th
 ### Options
 
 `srt.ReadOptions` and `srt.WriteOptions` have no fields. The reader reads `Lenient`. The writer reads `StripTags`, `LineEnding` and `BOM`.
+
+## ASS and SSA
+
+ASS (Advanced SubStation Alpha) is the styled subtitle format of Aegisub, libass and most anime releases. SSA (SubStation Alpha v4.00) is its older form. Package `format/ass` reads and writes both. The format name is `ass`, the extensions `.ass` and `.ssa`.
+
+```text
+[V4+ Styles]
+Format: Name, Italic, Alignment
+Style: Thoughts,-1,2
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:01.50,0:00:04.00,Thoughts,Anna,0,0,0,,{\an8}Not {\b1}again{\b0}
+```
+
+This file reads as one cue from 1.5 s to 4 s with the alignment `TopCenter` and the line `<v Anna><i>Not <b>again</b></i>`. Written back without a change, the event keeps its `Text` field as stored, so tags such as `\pos`, `\fad` and drawings survive a retiming.
+
+- **Dialects**: a file is SSA when its `ScriptType` is `v4.00` or its styles section is `[V4 Styles]`. A subtitle read from SSA writes SSA, also to a `.ass` file. Cues of other formats write ASS, also to a `.ssa` file.
+
+### Read
+
+| Input | Goes to |
+|:--- |:--- |
+| `Title:` in `[Script Info]` | the metadata `title` |
+| the other `Key: Value` lines and the `;` lines of `[Script Info]` | file data `ass.scriptInfo` and `ass.scriptInfoComments`. A repeated key keeps the last value at the place of the first |
+| the styles section, its `Format:` line and its `Style:` lines | file data `ass.stylesSection`, `ass.styleFormat` and `ass.styles` |
+| the `Format:` line of `[Events]` | file data `ass.eventFormat`. Without it, the default ASS fields, or `Marked` in place of `Layer` for SSA |
+| a `Dialogue:` event | a cue. Its fields except `Start`, `End` and `Text` go to cue data `ass.fields`, the `Text` field to `ass.text` |
+| a `Comment:` event | a comment before the next `Dialogue:` event, with the raw `Text`, and file data `ass.commentEvents` |
+| every other section, such as `[Fonts]` or `[Aegisub Project Garbage]` | file data `ass.sections`, its trimmed lines by section name |
+| the section order | file data `ass.sectionOrder` |
+| the `Name` field | the speaker: a `<v Name>` tag before the first line |
+
+| Override tag | Core markup |
+|:--- |:--- |
+| `\an1` to `\an9`, SSA `\a1` to `\a11` | the cue alignment. The first tag of the event wins, else the style alignment, else `BottomCenter` |
+| `\b1`, `\i1`, `\u1`, `\s1`, and `0` or no value | `<b>`, `<i>`, `<u>`, `<s>` and their end tags. `\b700` is dropped |
+| `\c&HBBGGRR&` or `\1c&HBBGGRR&` with 1 to 8 hex digits, and `\c` alone | `<font color="#rrggbb">` and `</font>` |
+| `\k`, `\K`, `\kf`, `\ko` in centiseconds | a word timestamp at the karaoke time. The first syllable starts at the event start |
+| `\r` and `\rName` | all tags close, then the flags of the event style or of style `Name` open |
+| `\p1` to `\p0` | a drawing: its text is dropped |
+| other tags such as `\pos`, `\fad`, `\t`, `\fs`, and `{note}` blocks | dropped |
+
+- **Times**: `h:mm:ss.cc` with 1 to 3 fraction digits, so `0:00:01.5` is 1.5 s. Minutes and seconds of 60 or more fail.
+- **Styles**: a style name ignores a leading `*`, the last style of a name wins, and `Default` matches in any case. An event with an unknown style takes the `Default` style. The style flags `Bold`, `Italic`, `Underline` and `StrikeOut` of `-1` or `1` open their tags at the start of each cue.
+- **Text**: `\N` is a line break, `\n` a space or a line break with `WrapStyle: 2`, `\h` the hard space U+00A0. `&`, `<` and `>` are text, so the line holds `&amp;`, `&lt;` and `&gt;`.
+- **Nesting**: a tag that changes an open tag closes the tags opened after it and opens them again, so the tags always nest.
+- **Missing sections**: a file without `[Events]` and without `[Script Info]` fails in both modes. `[Script Info]` alone gives an empty subtitle.
+- **Field names that are numbers**: a `Format:` line of `[Events]` with a field name such as `1` fails, because cue data `ass.fields` cannot hold such a key.
+- **Invalid UTF-8** stays as bytes, also in the `Name` field.
+
+### Write
+
+- **File data**: the writer writes the stored `ass` file data. An absent key takes the default below. A present key keeps its value, also when it is null or empty.
+
+| Key | Default |
+|:--- |:--- |
+| `sectionOrder` | `Script Info`, `V4+ Styles`, `Events` |
+| `scriptInfo` | `ScriptType: v4.00+`, `PlayResX: 384`, `PlayResY: 288`, `ScaledBorderAndShadow: yes` |
+| `stylesSection` | `V4+ Styles` |
+| `styleFormat` and `styles` | the 23 ASS style fields and one `Default` style: `Default,Arial,16,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,10,10,10,1` |
+| `eventFormat` | the ASS event fields |
+
+- **Header**: cues of another format get a header in the shape of the FFmpeg header, with the defaults above. The `Title:` line comes from the title metadata, after the `;` comments.
+- **Sections**: in stored order. `[Script Info]` goes first and `[Events]` last when the order lacks them. One empty line between sections.
+- **Events**: in time order, so an unsorted input changes order. Each comment writes its stored `Comment:` event, or a new one at the start of the next cue.
+- **Times**: `h:mm:ss.cc`, centiseconds rounded half away from zero. A negative time writes as 0.
+- **Unchanged cue**: a cue whose lines and alignment equal the stored `ass.lines` and `ass.alignment` writes its stored `Text` and `Name` fields. `StripTags` converts every cue.
+- **Changed cue**: the writer converts the core markup to override tags: `\an` (or the SSA `\a` code) for an alignment other than that of the event style, `\b1` and `\b0` and the other toggles, `\c&HBBGGRR&` for a `<font>` color or a WebVTT color class, and karaoke tags for word timestamps. A pair such as `<i>` around all text whose flag the style sets is left out. The speaker of the first `<v>` tag goes to the `Name` field.
+- **BOM**: the output starts with a UTF-8 BOM by default.
+- **Lost on write**: in changed cues every override tag outside `\b \i \u \s \c \an \a \k`, `<v>` beyond the first speaker, `<c>` classes other than the 8 colors, `<lang>`, ruby structure. The event order. The place of `[Script Info]` comments. Empty lines and leading white space in other sections. Text with `{`, `}` or `\` is written raw, because ASS has no escape for them, so it reads back as override tags or line breaks.
+
+### Options
+
+`ass.ReadOptions` has no fields. The reader reads `Lenient`. The root `WriteOptions.ASS` holds an `ass.WriteOptions`. The writer also reads `StripTags`, `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#ass-and-ssa).
+
+| Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |
+| `KaraokeTag` | `ass.KaraokeTag` | `""`: `\k` | the tag of a karaoke syllable in a converted cue: `KaraokeInstant` (`k`), `KaraokeFill` (`kf`) or `KaraokeOutline` (`ko`) |
+| `Style` | `string` | `""`: keep the styles | comma-separated `Field=Value` pairs, as FFmpeg `force_style`, that change every style named `Default` |
+
+- **Style check**: `Validate` rejects a pair without `=` and a field outside the 22 ASS style fields without `Name`, with an error that matches `ErrInvalidArgument`. A later pair for the same field wins.
+- **Style at write time**: a field that the `Format:` line of the styles lacks, such as `Underline` in SSA, fails with an `*UnwritableError`. A file without a `Default` style gets one first. A file without a styles section gets one before `[Events]`.
+- **Cue tags**: the writer computes the cue tags against the styles before the option. So `Italic=-1` makes every cue without `<i>` italic, with no `{\i0}`.
+

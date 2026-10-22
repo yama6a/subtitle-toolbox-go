@@ -79,3 +79,5 @@ Go matches the PHP library byte for byte, except for the behaviour below. Each r
 | a time of a reference sync with 2 or more segments on a half millisecond in decimal | computes `t * scale + offset` in seconds and rounds with `round($x, 3)` | computes in `float64` milliseconds and rounds with `math.Round`, as `Scale` does | #50 |
 | the end of the last segment of a reference sync | `SyncSegment::$to` is `INF` | `Segment.To` is nil | #50 |
 | a reference sync speed check | the tests fail when 2,000 cues take more than 5 s, or 15 s with 2 splits | `BenchmarkApply` measures the same cases and no test checks a time | #50 |
+| an ASS time on half a centisecond, such as 1.005 s | rounds `1.005 * 100` in binary, which is 100.49999999999999: `0:00:01.00` | rounds the exact milliseconds half away from zero: `0:00:01.01` | #22 |
+| `AssWriteOptions` style `""` | throws, because `""` holds no `Field=Value` pair. Null keeps the styles | `WriteOptions.ASS.Style` `""` is the zero value and keeps the styles. The CLI still rejects `--ass-style ""` with the PHP message | #22 |

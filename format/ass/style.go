@@ -49,29 +49,55 @@ func findName(names []string, name string) (string, bool) {
 // file has none. A file without a styles section gets one before [Events].
 func (f *fileData) applyStyle(style string) error {
 	if !f.hasStylesSection {
-		f.stylesSection, f.styleFormat = assStylesSection, assStyleFields
-		if isSSA(f.scriptInfo, "") {
-			f.stylesSection, f.styleFormat = ssaStylesSection, ssaStyleFields
-		}
-		f.hasStylesSection = true
-		at := slices.IndexFunc(f.sectionOrder, func(n string) bool { return equalFold(n, eventsSection) })
-		if at < 0 {
-			at = len(f.sectionOrder)
-		}
-		f.sectionOrder = slices.Insert(slices.Clone(f.sectionOrder), at, f.stylesSection)
+		f.addStylesSection()
 	}
 	if f.styleFormat == nil {
 		f.styleFormat = assStyleFields
 	}
-	parsed, err := parseStyle(style)
+	values, err := f.styleValues(style)
 	if err != nil {
 		return err
+	}
+	styles := make([]record, 0, len(f.styles)+1)
+	found := false
+	for _, s := range f.styles {
+		if isDefaultStyle(&s) {
+			s = replaced(s, values)
+			found = true
+		}
+		styles = append(styles, s)
+	}
+	if !found {
+		styles = append([]record{replaced(f.newDefaultStyle(), values)}, styles...)
+	}
+	f.styles = styles
+	return nil
+}
+
+func (f *fileData) addStylesSection() {
+	f.stylesSection, f.styleFormat = assStylesSection, assStyleFields
+	if isSSA(f.scriptInfo, "") {
+		f.stylesSection, f.styleFormat = ssaStylesSection, ssaStyleFields
+	}
+	f.hasStylesSection = true
+	at := slices.IndexFunc(f.sectionOrder, func(n string) bool { return equalFold(n, eventsSection) })
+	if at < 0 {
+		at = len(f.sectionOrder)
+	}
+	f.sectionOrder = slices.Insert(slices.Clone(f.sectionOrder), at, f.stylesSection)
+}
+
+// styleValues returns the values of the Style option by the field names of the Format line of the styles.
+func (f *fileData) styleValues(style string) (record, error) {
+	parsed, err := parseStyle(style)
+	if err != nil {
+		return record{}, err
 	}
 	var values record
 	for i, field := range parsed.names {
 		name, ok := findName(f.styleFormat, field)
 		if !ok {
-			return &model.UnwritableError{
+			return record{}, &model.UnwritableError{
 				Format:   model.ASS,
 				CueIndex: -1,
 				Reason:   "The Format line of the styles has no field " + field + ". It holds: " + strings.Join(f.styleFormat, ", ") + ".",
@@ -79,32 +105,31 @@ func (f *fileData) applyStyle(style string) error {
 		}
 		values.set(name, parsed.values[i])
 	}
+	return values, nil
+}
 
-	styles := make([]record, 0, len(f.styles)+1)
-	found := false
-	for _, s := range f.styles {
-		if nameField, ok := findName(s.names, "Name"); ok {
-			name, _ := s.get(nameField)
-			if equalFold(strings.TrimLeft(phpTrim(name), "*"), "Default") {
-				s = replaced(s, values)
-				found = true
-			}
-		}
-		styles = append(styles, s)
+// isDefaultStyle reports whether the Name of s is Default in any case, with leading stars ignored.
+func isDefaultStyle(s *record) bool {
+	nameField, ok := findName(s.names, "Name")
+	if !ok {
+		return false
 	}
-	if !found {
-		var added record
-		for _, field := range f.styleFormat {
-			v := "0"
-			if i := slices.IndexFunc(assStyleFields, func(n string) bool { return equalFold(n, field) }); i >= 0 {
-				v = defaultStyle[i]
-			}
-			added.set(field, v)
+	name, _ := s.get(nameField)
+	return equalFold(strings.TrimLeft(phpTrim(name), "*"), "Default")
+}
+
+// newDefaultStyle returns a Default style with the fields of the Format line. Each field takes the value of the
+// default ASS style of that name, or 0.
+func (f *fileData) newDefaultStyle() record {
+	var added record
+	for _, field := range f.styleFormat {
+		v := "0"
+		if i := slices.IndexFunc(assStyleFields, func(n string) bool { return equalFold(n, field) }); i >= 0 {
+			v = defaultStyle[i]
 		}
-		styles = append([]record{replaced(added, values)}, styles...)
+		added.set(field, v)
 	}
-	f.styles = styles
-	return nil
+	return added
 }
 
 // replaced returns a copy of r with the values set, as PHP array_replace does.

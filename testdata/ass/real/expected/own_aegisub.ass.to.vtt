@@ -1,0 +1,36 @@
+﻿WEBVTT
+
+NOTE {\r\t($start,$end,\fscx120\fscy120)\t($end,$end,\fscx100\fscy100)}
+
+1
+00:00:01.000 --> 00:00:03.500
+<v Conductor>Good morning, everyone.
+
+2
+00:00:03.600 --> 00:00:06.200
+<v Conductor>The train to the coast
+leaves from platform four.
+
+NOTE Check the platform number against the station sign
+
+3
+00:00:06.300 --> 00:00:08.000
+<v Passenger><i>Is it on time</i> today?
+
+4
+00:00:08.100 --> 00:00:10.900 line:0
+Platform 4: Coast Express
+
+5
+00:00:11.000 --> 00:00:13.400
+<v Conductor>Yes. <b>Seven minutes</b> to departure.
+
+6
+00:00:13.500 --> 00:00:16.000 line:0
+<b><00:00:13.500>The <00:00:13.900>train <00:00:14.250>leaves <00:00:14.750>at <00:00:15.350>noon</b>
+
+7
+00:00:16.100 --> 00:00:18.000
+<v Passenger><u>Thank you</u>, and good night good day.
+
+NOTE End of the station scene

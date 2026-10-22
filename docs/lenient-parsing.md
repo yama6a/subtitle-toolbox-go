@@ -91,6 +91,22 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Line numbers**: the cue warnings report the timing line.
 - **Order** inside a block: the join warnings, the split warnings, then for each cue the swap, the unknown text, the loose times, the full-width delimiters, the arrow and the missing cue number.
 
+## ASS and SSA
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| an event with fewer fields than the `Format:` line | `The line "L" has fewer fields than the Format line of the [Events] section.` | skips the event |
+| a `Format:` line without `Start`, `End` or `Text` | `The Format line of the [Events] section needs the fields Start, End and Text.` | skips each event |
+| a field name that is a number, such as `1`, in the `Format:` line of `[Events]` | `The field name "1" in the Format line of the [Events] section is a number.` on the `Format:` line | drops the values of that field. The same message and ` The parser dropped the values of this field.` `Repaired`, no block |
+| a time without fraction, with 4 fraction digits, or with `,` or `:` before the fraction, such as `0:00:01`, `0:00:01.5000`, `0:00:01,50` or `0:00:01:50` | `The time "T" is not valid.` | reads it, rounded to whole milliseconds. `The time "T" is not in the form h:mm:ss.cc. The parser read it as S s.` `Repaired` |
+| minutes or seconds of 60 or more, such as `0:75:02.00` | `The time "T" is not valid.` | skips the event |
+| a time or a karaoke time of 100000 hours or more | `The time "T" is not below 100000 hours.`, with the karaoke tag as T | skips the event |
+
+- **Comma fractions**: before the split of an event, lenient mode joins a `Start` or `End` value such as `0:00:01` with a next value of 1 to 4 digits, when another value follows. So `0:00:07,50,0:00:08,00` reads as 7.5 s and 8 s.
+- **Block numbers**: B counts the `Dialogue:` and `Comment:` events from 0. The warnings report the event line and hold it as their lines.
+- **Order** inside an event: the swap warning, then the loose times.
+- **Text but no cues**: the first line in `[Events]` without `:` that does not start with `;`.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

@@ -437,6 +437,8 @@ func TestTargetNames(t *testing.T) {
 	}{
 		{"a.srt", "out", stbox.WebVTT, "out/a.vtt"},
 		{"movie.en.srt", "out", stbox.WebVTT, "out/movie.en.vtt"},
+		{"movie.ssa", "out", stbox.ASS, "out/movie.ssa"},
+		{"movie.srt", "out", stbox.ASS, "out/movie.ass"},
 		{"noext", "out", stbox.SubRip, "out/noext.srt"},
 		{"in/shop.VTT", "out/", stbox.WebVTT, "out/shop.VTT"},
 		{"a.srt", `out\`, stbox.JSON, "out/a.json"},

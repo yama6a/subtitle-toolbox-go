@@ -94,6 +94,35 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 }
 
 func (rd *reader) read(content string) (*model.Subtitle, error) {
+	if err := rd.readSections(content); err != nil {
+		return nil, err
+	}
+	// An editor can save an empty project without [Events], so [Script Info] alone gives an empty subtitle.
+	if !rd.hasSection(eventsSection) && !rd.hasSection(scriptInfoSection) {
+		return nil, &model.ParseError{Format: model.ASS, Msg: "The subtitle has no [Events] section."}
+	}
+	if rd.f.eventFormat == nil {
+		rd.f.eventFormat = rd.defaultEventFormat()
+	}
+	// The events come last, because a styles section after [Events] still sets their styles.
+	for i, ev := range rd.events {
+		if err := rd.readEvent(ev, i); err != nil {
+			return nil, err
+		}
+	}
+
+	s := &model.Subtitle{}
+	if rd.hasTitle {
+		s.SetMetadata(model.MetadataTitle, rd.title)
+	}
+	if err := s.SetFormatData(formatDataKey, rd.f.data()); err != nil {
+		return nil, fmt.Errorf("%s file data: %w", model.ASS, err)
+	}
+	parsing.AddParsed(s, rd.cues, rd.comments)
+	return s, nil
+}
+
+func (rd *reader) readSections(content string) error {
 	section, inSection := "", false
 	for n, line := range lines(content) {
 		line = phpTrim(line)
@@ -108,58 +137,46 @@ func (rd *reader) read(content string) (*model.Subtitle, error) {
 		if !inSection {
 			continue
 		}
-		switch {
-		case equalFold(section, scriptInfoSection):
-			rd.scriptInfoLine(line)
-		case isStylesSection(section):
-			rd.styleLine(section, line)
-		case equalFold(section, eventsSection):
-			if err := rd.eventLine(line, n+1); err != nil {
-				return nil, err
-			}
-		default:
-			if _, ok := rd.f.sections[section]; !ok {
-				rd.f.sectionNames = append(rd.f.sectionNames, section)
-			}
-			rd.f.sections[section] = append(rd.f.sections[section], line)
+		if err := rd.sectionLine(section, line, n+1); err != nil {
+			return err
 		}
 	}
+	return nil
+}
 
-	// An editor can save an empty project without [Events], so [Script Info] alone gives an empty subtitle.
-	if !rd.hasSection(eventsSection) && !rd.hasSection(scriptInfoSection) {
-		return nil, &model.ParseError{Format: model.ASS, Msg: "The subtitle has no [Events] section."}
-	}
-	if rd.f.eventFormat == nil {
-		rd.f.eventFormat = rd.defaultEventFormat()
-	}
-	// The events come last, because a styles section after [Events] still sets their styles.
-	for i, ev := range rd.events {
-		loose, err := rd.readEvent(ev, i)
-		if err != nil {
-			var perr *model.ParseError
-			if !errors.As(err, &perr) {
-				return nil, err
-			}
-			if err := rd.st.Fail(perr, ev.number, i, []string{ev.line}); err != nil {
-				return nil, err
-			}
-			continue
+// sectionLine reads the trimmed line of section, on the 1-based line number.
+func (rd *reader) sectionLine(section, line string, number int) error {
+	switch {
+	case equalFold(section, scriptInfoSection):
+		rd.scriptInfoLine(line)
+	case isStylesSection(section):
+		rd.styleLine(section, line)
+	case equalFold(section, eventsSection):
+		return rd.eventLine(line, number)
+	default:
+		if _, ok := rd.f.sections[section]; !ok {
+			rd.f.sectionNames = append(rd.f.sectionNames, section)
 		}
-		for _, lt := range loose {
-			msg := `The time "` + lt.text + `" is not in the form h:mm:ss.cc. The parser read it as ` + timecode.Seconds(lt.d) + " s."
-			rd.st.Warn(msg, ev.number, i, []string{ev.line}, model.Repaired)
-		}
+		rd.f.sections[section] = append(rd.f.sections[section], line)
 	}
+	return nil
+}
 
-	s := &model.Subtitle{}
-	if rd.hasTitle {
-		s.SetMetadata(model.MetadataTitle, rd.title)
+// readEvent reads the event ev, number index. Lenient mode skips an event that fails and warns.
+func (rd *reader) readEvent(ev event, index int) error {
+	loose, err := rd.parseEvent(ev, index)
+	if err != nil {
+		var perr *model.ParseError
+		if !errors.As(err, &perr) {
+			return err
+		}
+		return rd.st.Fail(perr, ev.number, index, []string{ev.line})
 	}
-	if err := s.SetFormatData(formatDataKey, rd.f.data()); err != nil {
-		return nil, fmt.Errorf("%s file data: %w", model.ASS, err)
+	for _, lt := range loose {
+		msg := `The time "` + lt.text + `" is not in the form h:mm:ss.cc. The parser read it as ` + timecode.Seconds(lt.d) + " s."
+		rd.st.Warn(msg, ev.number, index, []string{ev.line}, model.Repaired)
 	}
-	parsing.AddParsed(s, rd.cues, rd.comments)
-	return s, nil
+	return nil
 }
 
 // lines yields the lines of content and their 0-based numbers. LF, a run of CR before LF, and a lone CR end a line.
@@ -288,59 +305,46 @@ func (rd *reader) checkFieldNames(line string, number int) error {
 	return nil
 }
 
-// readEvent reads the event ev, number index, and returns the loose times that lenient mode read.
-func (rd *reader) readEvent(ev event, index int) ([]looseTime, error) {
-	value := ev.value
-	if rd.st.Lenient() {
-		value = joinCommaFractions(ev.format, value)
-	}
-	all, ok := combine(ev.format, value, false)
-	if !ok {
-		return nil, &model.ParseError{Line: ev.number, Msg: `The line "` + ev.line + `" has fewer fields than the Format line of the [Events] section.`}
-	}
-	var fields record
-	for i, name := range all.names {
-		if !isIntKey(name) {
-			fields.set(name, all.values[i])
-		}
-	}
-	startKey, okStart := fields.key("Start")
-	endKey, okEnd := fields.key("End")
-	textKey, okText := fields.key("Text")
-	if !okStart || !okEnd || !okText {
-		return nil, &model.ParseError{Line: ev.number, Msg: "The Format line of the [Events] section needs the fields Start, End and Text."}
-	}
-	startText, _ := fields.get(startKey)
-	endText, _ := fields.get(endKey)
-	startText, endText = strings.ReplaceAll(startText, "\x00", ","), strings.ReplaceAll(endText, "\x00", ",")
-	fields.set(startKey, startText)
-	fields.set(endKey, endText)
-	text, _ := fields.get(textKey)
+// eventFields are the fields of one event without the fields whose names are numbers, and the names of its
+// Start, End and Text fields.
+type eventFields struct {
+	record
+	start, end, text string
+}
 
+// parseEvent reads the event ev, number index, and returns the loose times that lenient mode read. A Comment
+// event becomes a comment.
+func (rd *reader) parseEvent(ev event, index int) ([]looseTime, error) {
+	f, err := rd.fields(ev)
+	if err != nil {
+		return nil, err
+	}
+	text, _ := f.get(f.text)
 	if ev.comment {
-		rd.f.commentEvents = append(rd.f.commentEvents, fields)
+		rd.f.commentEvents = append(rd.f.commentEvents, f.record)
 		rd.comments = append(rd.comments, parsing.ParsedComment{Text: text, CuesBefore: len(rd.cues)})
 		return nil, nil
 	}
 
 	var loose []looseTime
+	startText, _ := f.get(f.start)
 	start, err := rd.time(startText, ev.number, &loose)
 	if err != nil {
 		return nil, err
 	}
-	styleName, _ := fields.field("Style")
-	style, _ := eventStyle(rd.f.styles, styleName)
-	m := textMarkup{styles: rd.f.styles}
-	lines, numpad, err := m.convert(text, start, rd.f.scriptInfo.lastField("WrapStyle") == "2", ev.number, style)
+	styleName, _ := f.field("Style")
+	m := textMarkup{styles: rd.f.styles, style: eventStyle(rd.f.styles, styleName), line: ev.number}
+	lines, numpad, err := m.convert(text, start, rd.f.scriptInfo.lastField("WrapStyle") == "2")
 	if err != nil {
 		return nil, err
 	}
 	if numpad == 0 {
-		numpad = styleAlignment(style, rd.legacyStyles())
+		numpad = styleAlignment(m.style, rd.legacyStyles())
 	}
-	name, _ := fields.field("Name")
+	name, _ := f.field("Name")
 	lines = markupcore.AddSpeaker(lines, name)
 
+	endText, _ := f.get(f.end)
 	end, err := rd.time(endText, ev.number, &loose)
 	if err != nil {
 		return nil, err
@@ -348,6 +352,47 @@ func (rd *reader) readEvent(ev event, index int) ([]looseTime, error) {
 	if start, end, err = rd.st.OrderedTimes(start, end, ev.number, index, []string{ev.line}, true); err != nil {
 		return nil, err
 	}
+	c, err := newCue(start, end, lines, numpad, f, text)
+	if err != nil {
+		return nil, err
+	}
+	rd.cues = append(rd.cues, c)
+	return loose, nil
+}
+
+// fields splits the value of ev into its fields. Lenient mode first joins the comma fractions of the times.
+func (rd *reader) fields(ev event) (eventFields, error) {
+	value := ev.value
+	if rd.st.Lenient() {
+		value = joinCommaFractions(ev.format, value)
+	}
+	all, ok := combine(ev.format, value, false)
+	if !ok {
+		return eventFields{}, &model.ParseError{Line: ev.number, Msg: `The line "` + ev.line + `" has fewer fields than the Format line of the [Events] section.`}
+	}
+	f := eventFields{record: record{names: make([]string, 0, len(all.names)), values: make([]string, 0, len(all.names))}}
+	for i, name := range all.names {
+		if !isIntKey(name) {
+			f.set(name, all.values[i])
+		}
+	}
+	var okStart, okEnd, okText bool
+	f.start, okStart = f.key("Start")
+	f.end, okEnd = f.key("End")
+	f.text, okText = f.key("Text")
+	if !okStart || !okEnd || !okText {
+		return eventFields{}, &model.ParseError{Line: ev.number, Msg: "The Format line of the [Events] section needs the fields Start, End and Text."}
+	}
+	for _, k := range []string{f.start, f.end} {
+		v, _ := f.get(k)
+		f.set(k, strings.ReplaceAll(v, "\x00", ","))
+	}
+	return f, nil
+}
+
+// newCue returns the cue of an event with its cue data: the fields other than Start, End and Text, the Text
+// field, the cue lines and the alignment, or null for none.
+func newCue(start, end time.Duration, lines []string, numpad int, f eventFields, text string) (model.Cue, error) {
 	c := model.Cue{Start: start, End: end}
 	c.SetText(strings.Join(lines, "\n"))
 	var alignment any
@@ -355,10 +400,10 @@ func (rd *reader) readEvent(ev event, index int) ([]looseTime, error) {
 		c.Alignment, _ = model.AlignmentFromNumpad(numpad)
 		alignment = int64(numpad)
 	}
-	var kept record
-	for i, n := range fields.names {
-		if n != startKey && n != endKey && n != textKey {
-			kept.set(n, fields.values[i])
+	kept := record{names: make([]string, 0, len(f.names)), values: make([]string, 0, len(f.names))}
+	for i, n := range f.names {
+		if n != f.start && n != f.end && n != f.text {
+			kept.set(n, f.values[i])
 		}
 	}
 	data := model.NewData(
@@ -368,10 +413,9 @@ func (rd *reader) readEvent(ev event, index int) ([]looseTime, error) {
 		model.Field{Key: "alignment", Value: alignment},
 	)
 	if err := c.SetFormatData(formatDataKey, data); err != nil {
-		return nil, fmt.Errorf("%s cue data: %w", model.ASS, err)
+		return model.Cue{}, fmt.Errorf("%s cue data: %w", model.ASS, err)
 	}
-	rd.cues = append(rd.cues, c)
-	return loose, nil
+	return c, nil
 }
 
 func (rd *reader) legacyStyles() bool {
@@ -437,7 +481,7 @@ func combine(format []string, value string, pad bool) (record, bool) {
 		}
 		values = append(values, make([]string, len(format)-len(values))...)
 	}
-	var r record
+	r := record{names: make([]string, 0, len(format)), values: make([]string, 0, len(format))}
 	for i, name := range format {
 		v := values[i]
 		if i < len(format)-1 {

@@ -43,83 +43,103 @@ type openTag struct {
 // textMarkup converts the Text field of one event to core markup.
 type textMarkup struct {
 	styles []record
-	open   []openTag
-	b      strings.Builder
+	// style is the style of the event, line its 1-based line number.
+	style   record
+	line    int
+	open    []openTag
+	b       strings.Builder
+	drawing bool
+	karaoke time.Duration
 }
 
 // convert returns the core markup lines of text and the numpad value of its first \an or \a tag, or 0.
-// The style flags open their tags at the start and after \r. A karaoke time of 100000 hours or more fails on line.
-func (m *textMarkup) convert(text string, start time.Duration, hardBreak bool, line int, style record) ([]string, int, error) {
-	m.open = nil
-	m.b.Reset()
+// The style flags open their tags at the start and after \r. A karaoke time of 100000 hours or more fails.
+// The karaoke time starts at start.
+func (m *textMarkup) convert(text string, start time.Duration, hardBreak bool) ([]string, int, error) {
 	breaks := softBreaks
 	if hardBreak {
 		breaks = hardBreaks
 	}
+	m.karaoke = start
+	m.openStyle(m.style)
 	numpad := 0
-	drawing := false
-	karaoke := start
-	m.openStyle(style)
 	at := 0
 	for _, loc := range append(overrideBlockRegexp.FindAllStringIndex(text, -1), []int{len(text), len(text)}) {
-		if !drawing && loc[0] > at {
+		if !m.drawing && loc[0] > at {
 			m.b.WriteString(breaks.Replace(markupcore.EscapeText(text[at:loc[0]])))
 		}
 		at = loc[1]
 		if loc[0] == loc[1] {
 			continue
 		}
-		for _, tag := range overrideTags(text[loc[0]+1 : loc[1]-1]) {
-			if n, ok := ssatag.Alignment(tag); ok {
-				if numpad == 0 {
-					numpad = n
-				}
-				continue
-			}
-			var err error
-			if drawing, karaoke, err = m.tag(tag, drawing, karaoke, line, style); err != nil {
-				return nil, 0, err
-			}
+		var err error
+		if numpad, err = m.block(text[loc[0]+1:loc[1]-1], numpad); err != nil {
+			return nil, 0, err
 		}
 	}
 	m.closeAll()
 	return strings.Split(markupcore.RemoveEmptyTagPairs(m.b.String(), false, false), "\n"), numpad, nil
 }
 
-// tag applies one override tag other than an alignment tag and returns the new drawing state and karaoke time.
-func (m *textMarkup) tag(tag string, drawing bool, karaoke time.Duration, line int, style record) (bool, time.Duration, error) {
+// block applies the tags of the override block content and returns numpad, or the alignment of its first
+// alignment tag when numpad is 0.
+func (m *textMarkup) block(content string, numpad int) (int, error) {
+	for _, tag := range overrideTags(content) {
+		n, ok := ssatag.Alignment(tag)
+		switch {
+		case ok && numpad == 0:
+			numpad = n
+		case ok:
+		default:
+			if err := m.tag(tag); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return numpad, nil
+}
+
+// tag applies one override tag other than an alignment tag.
+func (m *textMarkup) tag(tag string) error {
 	if g := toggleRegexp.FindStringSubmatch(tag); g != nil {
 		start := ""
 		if g[2] == "1" {
 			start = "<" + g[1] + ">"
 		}
 		m.set(g[1], start)
-	} else if g := colorRegexp.FindStringSubmatch(tag); g != nil {
-		start := ""
-		if g[1] != "" {
-			start = fontTag(g[1])
-		}
-		m.set("font", start)
-	} else if g := karaokeRegexp.FindStringSubmatch(tag); g != nil {
-		m.b.WriteString("<" + markupcore.CoreTimestamp(karaoke) + ">")
-		d, err := parsing.BoundedTime(karaoke+karaokeDuration(g[1], g[2]), tag, line)
-		if err != nil {
-			return drawing, karaoke, err
-		}
-		karaoke = d
-	} else if g := resetRegexp.FindStringSubmatch(tag); g != nil {
-		m.closeAll()
-		next := style
-		if phpTrim(g[1]) != "" {
-			if s, ok := findStyle(m.styles, g[1]); ok {
-				next = s
-			}
-		}
-		m.openStyle(next)
-	} else if g := drawingRegexp.FindStringSubmatch(tag); g != nil {
-		drawing = strings.Trim(g[1], "0") != ""
+		return nil
 	}
-	return drawing, karaoke, nil
+	if g := colorRegexp.FindStringSubmatch(tag); g != nil {
+		m.set("font", fontTag(g[1]))
+		return nil
+	}
+	if g := karaokeRegexp.FindStringSubmatch(tag); g != nil {
+		m.b.WriteString("<" + markupcore.CoreTimestamp(m.karaoke) + ">")
+		d, err := parsing.BoundedTime(m.karaoke+karaokeDuration(g[1], g[2]), tag, m.line)
+		m.karaoke = d
+		return err
+	}
+	if g := resetRegexp.FindStringSubmatch(tag); g != nil {
+		m.reset(g[1])
+		return nil
+	}
+	if g := drawingRegexp.FindStringSubmatch(tag); g != nil {
+		m.drawing = strings.Trim(g[1], "0") != ""
+	}
+	return nil
+}
+
+// reset closes all tags, then opens the flags of the style name, or of the event style when name is empty or
+// unknown.
+func (m *textMarkup) reset(name string) {
+	m.closeAll()
+	next := m.style
+	if phpTrim(name) != "" {
+		if s, ok := findStyle(m.styles, name); ok {
+			next = s
+		}
+	}
+	m.openStyle(next)
 }
 
 // karaokeDuration returns the time of a karaoke value in centiseconds from its whole and fraction digits.
@@ -129,11 +149,11 @@ func karaokeDuration(whole, fraction string) time.Duration {
 	if len(whole) >= maxKaraokeDigits {
 		return timecode.MaxTime
 	}
-	var d time.Duration
+	var centiseconds int64
 	for i := range len(whole) {
-		d = 10*d + time.Duration(whole[i]-'0')
+		centiseconds = 10*centiseconds + int64(whole[i]-'0')
 	}
-	d *= centisecond
+	d := time.Duration(centiseconds * int64(centisecond))
 	unit := centisecond
 	for i := 0; i < len(fraction) && unit > 1; i++ {
 		unit /= 10
@@ -145,28 +165,32 @@ func karaokeDuration(whole, fraction string) time.Duration {
 // overrideTags splits the content of an override block into trimmed tags. A tag starts at a backslash and ends
 // before the next one, except inside balanced parentheses, so \t(\1c&HFF&) stays one tag. Text before the first
 // backslash is no tag.
-//
-// The scanner follows the PHP pattern /\\[^\\(]*(\((?:[^()]++|(?1))*\))?[^\\]*/, whose recursion RE2 lacks.
 func overrideTags(content string) []string {
 	var tags []string
-	i := strings.IndexByte(content, '\\')
-	for i >= 0 && i < len(content) {
-		start := i
-		i++
-		for i < len(content) && content[i] != '\\' && content[i] != '(' {
-			i++
-		}
-		if i < len(content) && content[i] == '(' {
-			if end, ok := balancedEnd(content, i); ok {
-				i = end
-			}
-		}
-		for i < len(content) && content[i] != '\\' {
-			i++
-		}
-		tags = append(tags, phpTrim(content[start:i]))
+	for i := strings.IndexByte(content, '\\'); i >= 0 && i < len(content); {
+		end := tagEnd(content, i)
+		tags = append(tags, phpTrim(content[i:end]))
+		i = end
 	}
 	return tags
+}
+
+// tagEnd returns the end of the tag at start. It follows the PHP pattern /\\[^\\(]*(\((?:[^()]++|(?1))*\))?[^\\]*/,
+// whose recursion RE2 lacks.
+func tagEnd(content string, start int) int {
+	i := start + 1
+	for i < len(content) && content[i] != '\\' && content[i] != '(' {
+		i++
+	}
+	if i < len(content) && content[i] == '(' {
+		if end, ok := balancedEnd(content, i); ok {
+			i = end
+		}
+	}
+	for i < len(content) && content[i] != '\\' {
+		i++
+	}
+	return i
 }
 
 // balancedEnd returns the index after the parenthesis that closes the one at open.
@@ -229,9 +253,12 @@ func (m *textMarkup) closeAll() {
 	m.open = nil
 }
 
-// fontTag returns the <font> tag of an ASS color of 1 to 8 hex digits in BGR order. Short values pad on the
-// left with zeros, and the last 6 digits count, so 8 digits drop the alpha byte.
+// fontTag returns the <font> tag of an ASS color of 1 to 8 hex digits in BGR order, or "" for no digits.
+// Short values pad on the left with zeros, and the last 6 digits count, so 8 digits drop the alpha byte.
 func fontTag(hex string) string {
+	if hex == "" {
+		return ""
+	}
 	hex = strings.Repeat("0", max(0, 6-len(hex))) + hex
 	return `<font color="#` + strings.ToLower(markupcore.BGRToRGB(hex[len(hex)-6:])) + `">`
 }

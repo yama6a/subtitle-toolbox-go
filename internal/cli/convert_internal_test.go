@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -145,6 +146,7 @@ func TestConvertWritesTheFormatOfTo(t *testing.T) {
 	}{
 		{"srt/real/own_styled.srt", stbox.WebVTT},
 		{"vtt/real/own_ytdlp_rolling.vtt", stbox.SubRip},
+		{"ass/real/own_aegisub.ass", stbox.SubRip},
 	}
 	for _, tt := range tests {
 		t.Run(tt.path, func(t *testing.T) {
@@ -685,4 +687,60 @@ func TestNeedsOneOf(t *testing.T) {
 	}
 	assert.NoError(t, needsOneOf(a, []string{"a", "x"}, "x"))
 	assert.Equal(t, usage("Pass --a with --x."), needs(a, "a", "b", "x"))
+}
+
+// Ports the ASS options of tests/Cli/BinaryEditTest.php and tests/Cli/BinaryGeneralTest.php of subtitle-toolbox-php.
+func TestConvertASSOptions(t *testing.T) {
+	t.Parallel()
+
+	dir := fixtureDir(t, map[string]string{"words.vtt": "vtt/real/w3c_timestamps.vtt", "aegisub.ass": "ass/real/own_aegisub.ass"})
+	fill := libraryOutput(t, "vtt/real/w3c_timestamps.vtt", stbox.ASS, stbox.WriteOptions{ASS: ass.WriteOptions{KaraokeTag: ass.KaraokeFill}}, nil)
+	assert.Contains(t, fill, `\kf`)
+	assert.Equal(t, result{Stdout: fill}, call{dir: dir}.run(t, "convert", "words.vtt", "--to", "ass", "-o", "-", "--ass-karaoke-tag", "kf"))
+	assert.Equal(t, result{Stdout: fill}, call{dir: dir}.run(t, "convert", "words.vtt", "--to", "ssa", "-o", "-", "--ass-karaoke-tag", "KF"))
+
+	styled := call{dir: dir}.run(t, "convert", "trip.srt", "--to", "ass", "-o", "-", "--ass-style", "Fontname=Roboto,Fontsize=48")
+	assert.Equal(t, 0, styled.Code)
+	assert.Contains(t, styled.Stdout, "Style: Default,Roboto,48,")
+
+	bogus := `The option --ass-style is not valid. The ASS style field "Bogus" does not exist. Use one of: Fontname, Fontsize, ` +
+		"PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, " +
+		"Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding."
+	tests := []struct {
+		name  string
+		words []string
+		msg   string
+	}{
+		{"unknown karaoke tag", []string{"trip.srt", "--to", "ass", "-o", "-", "--ass-karaoke-tag", "kx"}, `The option --ass-karaoke-tag must be k, kf or ko, got "kx".`},
+		{"unknown style field", []string{"trip.srt", "--to", "ass", "-o", "-", "--ass-style", "Bogus=1"}, bogus},
+		{"empty style", []string{"trip.srt", "--to", "ass", "-o", "-", "--ass-style", ""}, `The option --ass-style is not valid. The ASS style "" must hold Field=Value pairs such as Fontsize=48, got "".`},
+		{"the choice comes before the style", []string{"trip.srt", "--to", "srt", "--ass-karaoke-tag", "x", "--ass-style", "Bogus=1"}, `The option --ass-karaoke-tag must be k, kf or ko, got "x".`},
+		{"the style comes before --to", []string{"trip.srt", "--to", "srt", "--ass-style", "Bogus=1"}, bogus},
+		{"style with --to srt", []string{"trip.srt", "--to", "srt", "-o", "-", "--ass-style", "Fontsize=48"}, "Pass --to ass with --ass-style."},
+		{"karaoke tag with --output-dir", []string{"trip.srt", "--to", "srt", "--ass-karaoke-tag", "kf", "--output-dir", "out"}, "Pass --to ass with --ass-karaoke-tag."},
+		{"karaoke tag without --to", []string{"trip.srt", "-o", "trip2.srt", "--ass-karaoke-tag", "kf"}, "Pass --to ass with --ass-karaoke-tag."},
+		{"an ASS input without --to", []string{"aegisub.ass", "-o", "-", "--ass-style", "Fontsize=48"}, "Pass --to ass with --ass-style."},
+		{"both options", []string{"trip.srt", "--to", "srt", "-o", "-", "--ass-karaoke-tag", "kf", "--ass-style", "Fontsize=48"}, "Pass --to ass with --ass-karaoke-tag and --ass-style."},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			before := snapshot(t, dir)
+			assert.Equal(t, usageResult("convert", tt.msg), call{dir: dir}.run(t, append([]string{"convert"}, tt.words...)...))
+			assert.Equal(t, before, snapshot(t, dir))
+		})
+	}
+}
+
+// Ports the "same time" row of tests/Cli/ApplicationConvertTest.php of subtitle-toolbox-php.
+func TestConvertMergeSameTimeASSEvents(t *testing.T) {
+	t.Parallel()
+
+	dir := fixtureDir(t, map[string]string{"speakers.ass": "editing/own_same_time_speakers.ass"})
+	want := libraryOutput(t, "editing/own_same_time_speakers.ass", stbox.SubRip, stbox.WriteOptions{BOM: stbox.BOMRemove},
+		func(s *stbox.Subtitle) error { return s.MergeSameTimeCues(0) })
+	got := call{dir: dir}.run(t, "convert", "speakers.ass", "--to", "srt", "-o", "-", "--structure-merge-same-time", "--no-bom")
+	assert.Equal(t, result{Stdout: want}, got)
+	assertCuesOf(t, "editing/own_same_time_speakers_merged.srt", got.Stdout, stbox.SubRip)
 }
