@@ -32,6 +32,7 @@ const (
 // layers holds the layer of each package. A key that ends in "/*" covers each package one folder below it.
 var layers = map[string]layer{
 	"internal/timecode":    layerLeaf,
+	"internal/phpkey":      layerLeaf,
 	"internal/grapheme":    layerLeaf,
 	"internal/ssatag":      layerLeaf,
 	"internal/textenc":     layerLeaf,

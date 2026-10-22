@@ -23,7 +23,7 @@ format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microd
                tmplayer, mpsub, subviewer, qttext, lrc, csv, stboxjson, plaintext
 stats/ stream/ hearingimpaired/ fixing/ profanity/ refsync/ diff/ dual/
                The 1.x services. A service never imports the root package
-internal/      Helpers: markupcore, linewrap, timecode, textenc, extfallback, grapheme, ssatag, xmlraw, blocks, subrip,
+internal/      Helpers: markupcore, linewrap, timecode, textenc, extfallback, grapheme, ssatag, phpkey, xmlraw, blocks, subrip,
                vtt, position, parsing, writing, cli, and the test helpers testfiles and golden
 cmd/stbox/     The CLI main. Wiring, no business logic
 testdata/      All fixtures and goldens, one folder per topic, PHP folder names for PHP data. Packages read
