@@ -477,7 +477,7 @@ func (*reportingConvert) usage() []string {
 }
 func (*reportingConvert) details() string { return "" }
 func (*reportingConvert) options() []option {
-	return slices.Concat(outputOptions("Output format. Default: the input format."), inputOptions(true))
+	return slices.Concat(outputOptions("Output format. Default: the input format."), inputOptions())
 }
 
 func (s *reportingConvert) run(ctx context.Context, a *args, c *console) error {

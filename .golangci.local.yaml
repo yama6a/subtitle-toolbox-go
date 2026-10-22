@@ -5,8 +5,11 @@ linters:
       # The root package passes the errors of the format packages on unchanged too.
       # The CLI passes the errors of the root package and of the Subtitle methods on unchanged, because its messages
       # read their types.
+      # A service passes the retiming errors of the model on unchanged.
+      # The CLI passes the errors of refsync on unchanged, because its messages read their types.
       ignore-package-globs:
         - github.com/yama6a/subtitle-toolbox-go/internal/*
         - github.com/yama6a/subtitle-toolbox-go/format/*
         - github.com/yama6a/subtitle-toolbox-go
         - github.com/yama6a/subtitle-toolbox-go/model
+        - github.com/yama6a/subtitle-toolbox-go/refsync

@@ -1,0 +1,249 @@
+﻿1
+00:01:17,689 --> 00:01:19,205
+The bakery opens at six every morning.
+
+2
+00:01:22,926 --> 00:01:26,536
+Mara lights the oven
+before the sun comes up.
+
+3
+00:01:27,788 --> 00:01:30,399
+The first train leaves the
+station at half past six.
+
+4
+00:01:30,825 --> 00:01:32,511
+Can I have two rolls and a coffee, please?
+
+5
+00:01:35,222 --> 00:01:38,970
+Of course. Do you want milk with it?
+
+6
+00:01:39,968 --> 00:01:43,467
+Just a little, thank you.
+
+7
+00:01:45,169 --> 00:01:48,170
+The weather report says rain after lunch.
+
+8
+00:03:03,396 --> 00:03:05,374
+Then I will take the umbrella today.
+
+9
+00:03:06,320 --> 00:03:08,920
+The train to the coast
+is ten minutes late.
+
+10
+00:03:12,838 --> 00:03:15,380
+That happens every Tuesday.
+
+11
+00:03:18,793 --> 00:03:20,569
+The flour delivery comes at eight.
+
+12
+00:03:23,659 --> 00:03:27,694
+Please put the sacks
+next to the back door.
+
+13
+00:03:29,345 --> 00:03:31,224
+How many loaves do we need for the market?
+
+14
+00:03:31,899 --> 00:03:33,574
+Forty, and twenty small ones.
+
+15
+00:04:00,510 --> 00:04:03,677
+The wind is getting stronger.
+
+16
+00:04:07,211 --> 00:04:09,260
+Close the window, the
+papers are flying around.
+
+17
+00:04:13,003 --> 00:04:14,756
+Is the platform for the
+north line still closed?
+
+18
+00:04:16,907 --> 00:04:20,566
+Yes, they repair the tracks until Friday.
+
+19
+00:04:24,202 --> 00:04:28,413
+Then I take the bus to the next station.
+
+20
+00:04:32,243 --> 00:04:33,716
+The bus leaves from the square at nine.
+
+21
+00:04:37,219 --> 00:04:38,424
+Do you have any rye bread left?
+
+22
+00:05:20,230 --> 00:05:22,634
+Only one loaf, but it is fresh.
+
+23
+00:05:24,533 --> 00:05:26,017
+I will take it.
+
+24
+00:05:27,830 --> 00:05:31,267
+That is three euros fifty.
+
+25
+00:05:34,046 --> 00:05:35,267
+The clouds look darker now.
+
+26
+00:05:38,512 --> 00:05:40,748
+Bring the chairs inside
+before the rain starts.
+
+27
+00:05:43,044 --> 00:05:45,244
+The conductor checks the tickets twice.
+
+28
+00:05:48,029 --> 00:05:50,893
+I lost my ticket
+somewhere on the platform.
+
+29
+00:09:39,717 --> 00:09:41,104
+You can buy a new one on the train.
+
+30
+00:09:42,874 --> 00:09:47,328
+The oven needs a new door seal.
+
+31
+00:09:47,711 --> 00:09:49,267
+I will call the repair shop tomorrow.
+
+32
+00:09:52,232 --> 00:09:56,667
+It is snowing in the mountains already.
+
+33
+00:09:57,279 --> 00:09:59,107
+The pass road is closed for trucks.
+
+34
+00:10:01,970 --> 00:10:04,854
+The night train still runs on time.
+
+35
+00:10:08,583 --> 00:10:10,198
+We sell more cake when it rains.
+
+36
+00:10:22,799 --> 00:10:24,675
+People want something warm with their tea.
+
+37
+00:10:26,557 --> 00:10:28,551
+The station clock is five minutes fast.
+
+38
+00:10:30,638 --> 00:10:32,133
+Nobody has fixed it since spring.
+
+39
+00:10:34,576 --> 00:10:36,806
+Can you take the early shift on Saturday?
+
+40
+00:10:37,922 --> 00:10:39,608
+Yes, but I need to leave at noon.
+
+41
+00:10:41,075 --> 00:10:43,257
+The sun is back in the afternoon.
+
+42
+00:10:47,168 --> 00:10:50,532
+The market square is full again.
+
+43
+00:12:08,432 --> 00:12:11,210
+Two coffees and an apple cake, please.
+
+44
+00:12:11,850 --> 00:12:15,125
+Sit by the window, the view is nice.
+
+45
+00:12:18,159 --> 00:12:22,609
+The last train goes at eleven.
+
+46
+00:12:22,934 --> 00:12:24,255
+Do not miss it, the next one is at five.
+
+47
+00:12:27,467 --> 00:12:29,439
+The bakery closes at seven in the evening.
+
+48
+00:12:29,790 --> 00:12:31,230
+Mara cleans the counters
+and counts the money.
+
+49
+00:12:34,516 --> 00:12:37,500
+Tomorrow the forecast says frost.
+
+50
+00:14:00,459 --> 00:14:04,219
+Then the dough needs more time to rise.
+
+51
+00:14:06,301 --> 00:14:08,648
+The station master waves the green flag.
+
+52
+00:14:10,225 --> 00:14:11,978
+The train pulls out slowly.
+
+53
+00:14:15,699 --> 00:14:18,244
+Good night, see you at six.
+
+54
+00:14:20,295 --> 00:14:22,841
+Good night, and do not forget the keys.
+
+55
+00:14:25,160 --> 00:14:29,178
+The street lights come on one by one.
+
+56
+00:14:31,877 --> 00:14:34,699
+A cat sleeps on the
+warm step of the bakery.
+
+57
+00:15:35,936 --> 00:15:39,675
+The first frost covers the tracks.
+
+58
+00:15:42,230 --> 00:15:45,184
+The morning train is full of students.
+
+59
+00:15:46,192 --> 00:15:47,890
+Mara opens the door and the bell rings.
+
+60
+00:15:50,651 --> 00:15:54,214
+Good morning, the usual please.

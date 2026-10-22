@@ -181,6 +181,10 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 
 A minor release may add keys to these objects. [compatibility.md](compatibility.md) states the rule.
 
+## sync
+
+`stbox sync <input>... --reference FILE [options]` retimes each input to the cue times of a reference subtitle. It finds the offset and the frame-rate scale. [sync.md](sync.md#command-line) lists its options and output.
+
 ## formats
 
 `stbox formats` lists the formats that can be read or written, in registry order. The names are the values of `--from` and `--to`. It takes no argument and no option except `-h`.

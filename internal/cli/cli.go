@@ -41,6 +41,7 @@ func commands() []command {
 	return []command{
 		&convertCommand{},
 		&infoCommand{},
+		&syncCommand{},
 		formatsCommand{},
 	}
 }
