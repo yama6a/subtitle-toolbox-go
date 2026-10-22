@@ -36,6 +36,9 @@ func detectTests() []detectTest {
 		{name: "ASS header with spaces after it", content: "[Script Info] \t\nTitle: Bakery\n", want: stbox.ASS},
 		{name: "ASS header only", content: "[Script Info]", want: stbox.ASS},
 		{name: "ASS before an LRC tag", content: "[Script Info]\n[ti:Morning Train]\n", want: stbox.ASS},
+		{name: "MicroDVD with fps line", content: "{1}{1}25\n{24}{72}Hello\n", want: stbox.MicroDVD},
+		{name: "MicroDVD without end frame", content: "{24}{}Hello\n", want: stbox.MicroDVD},
+		{name: "MicroDVD next to MPL2", content: "{10}{25}Hello|world\n", want: stbox.MicroDVD},
 		{name: "JSON with cues first", content: `{"cues": [], "metadata": {"title": "version"}, "version": 1}`, want: stbox.JSON},
 		{name: "JSON with spaces", content: "{\n  \"version\" : 1 ,\n  \"cues\" : [ ]\n}\n", want: stbox.JSON},
 		{name: "TTML with XML declaration", content: "<?xml version=\"1.0\"?>\n<!-- made by hand -->\n<tt xmlns=\"http://www.w3.org/ns/ttml\"/>", want: stbox.TTML},
@@ -61,9 +64,6 @@ func detectTests() []detectTest {
 		{name: "SAMI after the XML prolog", content: "<?xml version=\"1.0\"?>\n<!-- made by hand -->\n<!DOCTYPE sami>\n<Sami>", want: stbox.SAMI},
 		{name: "MPSub with FORMAT first", content: "FORMAT=25\n\n0 50\nHello\n", later: "MPSub"},
 		{name: "MPSub with header comment", content: "TITLE=Bakery\nFORMAT=TIME   # seconds\n\n1 2\nHello\n", later: "MPSub"},
-		{name: "MicroDVD with fps line", content: "{1}{1}25\n{24}{72}Hello\n", later: "MicroDVD"},
-		{name: "MicroDVD without end frame", content: "{24}{}Hello\n", later: "MicroDVD"},
-		{name: "MicroDVD next to MPL2", content: "{10}{25}Hello|world\n", later: "MicroDVD"},
 		{name: "SBV", content: "0:00:01.500,0:00:04.000\nHello\n", later: "SBV"},
 		{name: "SBV with three digits", content: "0:00:01.500,0:00:04.000\nHello[br]world\n", later: "SBV"},
 		{name: "SBV with two hour digits", content: "00:00:01.500,00:00:04.000\nHello\n", later: "SBV"},
@@ -118,7 +118,7 @@ func detectTests() []detectTest {
 		{name: "bad UTF-8 in a JSON string", content: "{\"version\": 1, \"cues\": [], \"metadata\": {\"title\": \"caf\xe9\"}}", want: stbox.JSON},
 		{name: "lone surrogate escape in JSON", content: `{"t": "\ud800", "version": 1, "cues": []}`, want: stbox.JSON},
 		{name: "JSON key that starts with NUL", content: `{"\u0000a": 1, "version": 1, "cues": []}`, want: stbox.JSON},
-		{name: "invalid JSON goes on to the signatures", content: "{24}{72}Hello\n", later: "MicroDVD"},
+		{name: "invalid JSON goes on to the signatures", content: "{24}{72}Hello\n", want: stbox.MicroDVD},
 	}
 }
 
@@ -233,7 +233,7 @@ type fixture struct {
 func fixtures(t *testing.T) []fixture {
 	t.Helper()
 
-	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "sami": stbox.SAMI, "srt": stbox.SubRip, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
+	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "microdvd": stbox.MicroDVD, "sami": stbox.SAMI, "srt": stbox.SubRip, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
 	var list []fixture
 	for dir, f := range folders {
 		for _, sub := range []string{dir, dir + "/real"} {
@@ -361,7 +361,7 @@ func FuzzDetect(f *testing.F) {
 		f.Add([]byte(tt.content))
 	}
 	root := testfiles.Root(f)
-	for _, dir := range []string{"ass", "json", "sami/real", "srt", "ttml/real", "forced", "vtt", "lenient"} {
+	for _, dir := range []string{"ass", "json", "microdvd", "microdvd/real", "sami/real", "srt", "ttml/real", "forced", "vtt", "lenient"} {
 		entries, err := os.ReadDir(filepath.Join(root, dir))
 		if err != nil {
 			f.Fatal(err)

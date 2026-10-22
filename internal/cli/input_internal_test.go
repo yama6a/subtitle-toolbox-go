@@ -251,7 +251,7 @@ func TestExpand(t *testing.T) {
 		{"directory with a trailing slash", []string{"a/"}, []string{"a/b.srt", "a/trip.srt"}},
 		{"missing path stays", []string{"missing.srt", "missing.srt"}, []string{"missing.srt"}},
 		{"glob without match stays", []string{"x/*.srt"}, []string{"x/*.srt"}},
-		{"glob skips directories", []string{"*"}, []string{"broken.srt", "latin1.srt", "link.srt", "notes.txt", "shop.vtt"}},
+		{"glob skips directories", []string{"*"}, []string{"broken.srt", "frames.sub", "frames_23976.vtt", "latin1.srt", "link.srt", "notes.txt", "shop.vtt"}},
 		{"absolute path stays absolute", []string{filepath.Join(dir, "a", "b.srt")}, []string{filepath.Join(dir, "a", "b.srt")}},
 	}
 	for _, tt := range tests {

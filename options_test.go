@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -13,6 +14,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 )
 
 // Ports testANegativeLastCueDurationThrows of tests/ReadOptionsTest.php of subtitle-toolbox-php.
@@ -29,6 +32,15 @@ func TestReadOptionsValidate(t *testing.T) {
 		{name: "last cue duration 7 s", opts: stbox.ReadOptions{LastCueDuration: new(7 * time.Second)}},
 		{name: "known encoding", opts: stbox.ReadOptions{Encoding: "Windows-1252"}},
 		{name: "alias in lower case", opts: stbox.ReadOptions{Encoding: "sjis"}},
+		{name: "MicroDVD frame rate", opts: stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: 23.976}}},
+		{
+			name: "negative MicroDVD frame rate",
+			opts: stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: -1}},
+			wantErr: &stbox.InvalidArgumentError{
+				Option: "ReadOptions.MicroDVD.FrameRate",
+				Msg:    "The frame rate must be greater than 0, got -1.",
+			},
+		},
 		{
 			name:    "unknown encoding",
 			opts:    stbox.ReadOptions{Encoding: "CP1125"},
@@ -80,6 +92,12 @@ func TestWriteOptionsValidate(t *testing.T) {
 			opts:    stbox.WriteOptions{BOM: stbox.BOM(3)},
 			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.BOM", Msg: "The BOM rule 3 is unknown."},
 		},
+		{name: "MicroDVD frame rate", opts: stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 25, WriteFrameRateLine: true}}},
+		{
+			name:    "MicroDVD frame rate NaN",
+			opts:    stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: math.NaN()}},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "The MicroDVD frame rate must be greater than 0, got NAN."},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -114,6 +132,27 @@ func TestEntryPointsValidateBeforeTheyRead(t *testing.T) {
 		require.ErrorIs(t, err, stbox.ErrInvalidArgument)
 		require.NotErrorIs(t, err, stbox.ErrUnsupportedFormat)
 	}
+}
+
+// Ports the case of the MicroDVD options of testEachParserIgnoresTheOptionsOfOtherFormats of tests/ReadOptionsTest.php
+// of subtitle-toolbox-php.
+func TestOtherFormatsIgnoreTheMicroDVDOptions(t *testing.T) {
+	t.Parallel()
+
+	content := testfiles.Read(t, "srt/real/own_styled.srt")
+	plain, _, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: stbox.SubRip})
+	require.NoError(t, err)
+	with, _, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: stbox.SubRip, MicroDVD: microdvd.ReadOptions{FrameRate: 25}})
+	require.NoError(t, err)
+	assert.Equal(t, plain, with)
+
+	_, _, err = stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: stbox.SubRip, MicroDVD: microdvd.ReadOptions{FrameRate: math.Inf(1)}})
+	require.ErrorIs(t, err, stbox.ErrInvalidArgument, "Validate checks the options of every format")
+
+	var a, b bytes.Buffer
+	require.NoError(t, stbox.Write(&a, plain, stbox.SubRip, stbox.WriteOptions{}))
+	require.NoError(t, stbox.Write(&b, plain, stbox.SubRip, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 25, WriteFrameRateLine: true}}))
+	assert.Equal(t, a.String(), b.String())
 }
 
 func ExampleReadOptions_Validate() {

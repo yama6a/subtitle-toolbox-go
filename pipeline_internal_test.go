@@ -209,6 +209,9 @@ func textWriters() []formatFuncs {
 func writeString(t *testing.T, row formatFuncs, s *Subtitle, opts WriteOptions) string {
 	t.Helper()
 
+	if opts.MicroDVD.FrameRate == 0 {
+		opts.MicroDVD.FrameRate = 25 // a subtitle without MicroDVD format data has no frame rate to write with
+	}
 	require.NoError(t, opts.Validate())
 	var out bytes.Buffer
 	require.NoError(t, row.write(&out, s, opts.common(), opts))

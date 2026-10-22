@@ -9,3 +9,4 @@ Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5
 | `subsrt_sample.sub` | https://github.com/papnkukn/subsrt/blob/478e54390b74859b3643b80ff988113557ff80d8/test/fixtures/sample.sub | MIT |
 | `own_max_frames.sub` | Written for this repository. At 25 fps, the last cue ends at frame 8999999999, just below 100,000 hours | MIT |
 | `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name, written by `tests/files/generate-read-goldens.php` | MIT |
+| `expected/*.out.*`, `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand. Each `.to.*` file reads its input at 23.976 fps and equals the PHP write golden of the same name at the pinned commit. The `.out.*` files have no PHP golden: they read the input at 25 fps and add the line break after the last cue that the input lacks | MIT |

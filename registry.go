@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
@@ -37,6 +38,9 @@ var (
 	_ detectFunc                        = ass.Detect
 	_ readFunc[ttml.ReadOptions]        = ttml.Read
 	_ writeFunc[ttml.WriteOptions]      = ttml.Write
+	_ readFunc[microdvd.ReadOptions]    = microdvd.Read
+	_ writeFunc[microdvd.WriteOptions]  = microdvd.Write
+	_ detectFunc                        = microdvd.Detect
 	_ detectFunc                        = ttml.Detect
 	_ readFunc[sami.ReadOptions]        = sami.Read
 	_ writeFunc[sami.WriteOptions]      = sami.Write
@@ -60,7 +64,7 @@ var registry = []formatFuncs{
 	{format: CSV},
 	{format: JSON, read: readJSON, write: writeJSON},
 	{format: LRC},
-	{format: MicroDVD},
+	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
 	{format: MPSub},
 	{format: SAMI, read: readSAMI, write: writeSAMI},
 	{format: SBV},
@@ -95,6 +99,7 @@ var (
 		{format: TTML, match: ttml.Detect},
 		{format: SAMI, match: sami.Detect},
 		{format: ASS, match: ass.Detect},
+		{format: MicroDVD, match: microdvd.Detect},
 		{format: SubRip, match: srt.Detect},
 	}
 )
@@ -170,6 +175,14 @@ func readSAMI(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*S
 
 func writeSAMI(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
 	return sami.Write(w, s, common, sami.WriteOptions{})
+}
+
+func readMicroDVD(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return microdvd.Read(r, common, opts.MicroDVD)
+}
+
+func writeMicroDVD(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+	return microdvd.Write(w, s, common, opts.MicroDVD)
 }
 
 func lookup(f Format) (formatFuncs, bool) {

@@ -17,7 +17,7 @@ var update = flag.Bool("update", false, "rewrite the write golden files")
 
 // roundTripFolders holds the folders whose every real file is a round trip case.
 func roundTripFolders() []string {
-	return []string{"ass", "sami", "srt", "vtt"}
+	return []string{"ass", "microdvd", "sami", "srt", "vtt"}
 }
 
 // roundTripFile is a round trip case in a folder that roundTripFolders does not hold. Its golden is
@@ -64,6 +64,9 @@ func conversions() []conversion {
 		{"vtt", "own_ytdlp_rolling.vtt", stbox.SubRip, ""},
 		{"vtt", "own_openai_whisper_highlight_words.vtt", stbox.ASS, ""},
 		{"vtt", "own_openai_whisper_highlight_words.vtt", stbox.SubRip, ""},
+		{"microdvd", "sub_microdvd_with_styles.sub", stbox.SubRip, ""},
+		{"microdvd", "sub_microdvd_with_styles.sub", stbox.WebVTT, ""},
+		{"microdvd", "sub_microdvd_with_styles.sub", stbox.ASS, ""},
 	}
 }
 
@@ -118,12 +121,15 @@ func TestWriteGoldens(t *testing.T) {
 			t.Parallel()
 
 			g := folder(t, c.folder)
+			opts := g.options[c.file]
 			if c.class != "" {
-				opts := g.options[c.file]
 				opts.SAMI.LanguageClass = c.class
-				g.options = map[string]stbox.ReadOptions{c.file: opts}
 			}
-			s, _ := g.read(t, c.file)
+			if c.folder == "microdvd" {
+				// The PHP write goldens read MicroDVD at 23.976 fps, the read goldens at 25 fps.
+				opts.MicroDVD.FrameRate = 23.976
+			}
+			s, _ := g.readWith(t, c.file, opts)
 			golden.Equal(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(c.to))), writeAs(t, s, c.to), *update)
 		})
 	}

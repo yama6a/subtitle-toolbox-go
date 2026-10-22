@@ -6,6 +6,7 @@ import (
 	"time"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 )
 
 const benchCues = 20000
@@ -37,9 +38,10 @@ func BenchmarkParse(b *testing.B) {
 	}
 	s.AddCues(cues...)
 
-	for _, f := range []stbox.Format{stbox.SubRip, stbox.TTML, stbox.WebVTT, stbox.ASS, stbox.SAMI} {
+	for _, f := range []stbox.Format{stbox.SubRip, stbox.TTML, stbox.WebVTT, stbox.ASS, stbox.SAMI, stbox.MicroDVD} {
 		var content bytes.Buffer
-		if err := stbox.Write(&content, s, f, stbox.WriteOptions{}); err != nil {
+		write := stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 25, WriteFrameRateLine: true}}
+		if err := stbox.Write(&content, s, f, write); err != nil {
 			b.Fatal(err)
 		}
 		b.Run(string(f), func(b *testing.B) {
