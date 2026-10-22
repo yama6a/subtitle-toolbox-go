@@ -689,10 +689,6 @@ func (r *reader) readNamespaces() *model.Data {
 	return out
 }
 
-func isNameStart(b byte) bool {
-	return b == '_' || b >= 'a' && b <= 'z' || b >= 'A' && b <= 'Z' || b >= 0x80
-}
-
 func (r *reader) firstChild(n *xmlraw.Node, local string) *xmlraw.Node {
 	for _, c := range n.Children {
 		if isElement(c, r.ns, local) {
@@ -1010,16 +1006,16 @@ func (r *reader) pixelLength(length float64) (float64, bool) {
 	return length / phpFloat(m[1]), true
 }
 
-// declaredPrefix returns the prefix that the xmlns declaration a declares, "" for the default namespace. A prefix
-// that is no NCName, such as "0", and the prefix xml give false.
+// declaredPrefix returns the prefix that the xmlns declaration a declares, "" for the default namespace. The
+// prefix xml and an attribute that is no declaration give false.
 func declaredPrefix(a xml.Attr) (string, bool) {
 	switch {
-	case a.Name.Space == "" && a.Name.Local == "xmlns":
-		return "", true
-	case a.Name.Space == "xmlns" && a.Name.Local != "xml" && isNameStart(a.Name.Local[0]):
-		return a.Name.Local, true
-	default:
+	case !xmlraw.IsNamespaceDecl(a):
 		return "", false
+	case a.Name.Space == "":
+		return "", true
+	default:
+		return a.Name.Local, a.Name.Local != "xml"
 	}
 }
 

@@ -578,6 +578,16 @@ func TestFormatData(t *testing.T) {
 	assert.Equal(t, attrs("x:d", "2", "x:e", "3"), objectOf(t, cd, "div"))
 }
 
+func TestXMLNSWithAPrefixThatIsNoNCNameIsAnAttribute(t *testing.T) {
+	t.Parallel()
+
+	s, _ := mustRead(t, `<tt xmlns:0="urn:x" a="1"><body><div><p end="1s">x</p></div></body></tt>`, false)
+	d := fileData(t, s)
+	assert.Equal(t, attrs("xmlns:0", "urn:x", "a", "1"), objectOf(t, d, "attributes"))
+	v, _ := d.Get("namespaces")
+	assert.Equal(t, []any{}, v)
+}
+
 func TestFormatDataWithoutNamespaceOrHead(t *testing.T) {
 	t.Parallel()
 

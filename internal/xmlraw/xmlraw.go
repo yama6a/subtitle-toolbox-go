@@ -41,7 +41,8 @@ type Node struct {
 	Data     string
 	Children []*Node
 	Parent   *Node
-	// Line is the line that libxml reports for an element: the line of the > that ends its start tag.
+	// Line is the line that libxml reports for an element: the line of the > that ends its start tag. libxml without
+	// XML_PARSE_BIG_LINES stops at 65535. Line keeps counting.
 	Line int
 }
 
@@ -64,9 +65,17 @@ func QName(name xml.Name) string {
 	return name.Space + ":" + name.Local
 }
 
-// IsNamespaceDecl reports whether a is an xmlns declaration.
+// IsNamespaceDecl reports whether a is an xmlns declaration. libxml reads xmlns:p with a prefix p that is no
+// NCName, such as xmlns:0, as a plain attribute without namespace.
 func IsNamespaceDecl(a xml.Attr) bool {
-	return a.Name.Space == "xmlns" || a.Name.Space == "" && a.Name.Local == "xmlns"
+	if a.Name.Space == "" {
+		return a.Name.Local == "xmlns"
+	}
+	return a.Name.Space == "xmlns" && isNCNameStart(a.Name.Local[0])
+}
+
+func isNCNameStart(b byte) bool {
+	return b == '_' || b >= 'a' && b <= 'z' || b >= 'A' && b <= 'Z' || b >= 0x80
 }
 
 // Root returns the root element of a document node.
@@ -87,7 +96,7 @@ func (n *Node) LookupPrefix(prefix string) (uri string, ok bool) {
 	}
 	for e := n; e != nil; e = e.Parent {
 		for _, a := range e.Attrs {
-			if prefix == "" && a.Name.Space == "" && a.Name.Local == "xmlns" || prefix != "" && a.Name.Space == "xmlns" && a.Name.Local == prefix {
+			if IsNamespaceDecl(a) && (prefix == "" && a.Name.Space == "" || prefix != "" && a.Name.Space == "xmlns" && a.Name.Local == prefix) {
 				return a.Value, true
 			}
 		}

@@ -59,6 +59,7 @@ func TestSerialize(t *testing.T) {
 			`<region xmlns:q="urn:q" tts:x="1" a="2"/>`,
 		},
 		{"empty element", `<tt><x></x></tt>`, `<x/>`},
+		{"xmlns with a prefix that is no NCName stays in its place", `<tt><x a="1" xmlns:0="u"/></tt>`, `<x a="1" xmlns:0="u"/>`},
 		{"text escapes", `<tt><x>a &amp; &lt;b&gt; "c" 'd'</x></tt>`, `<x>a &amp; &lt;b&gt; "c" 'd'</x>`},
 		{"apostrophe in text", `<tt><x>it&apos;s</x></tt>`, `<x>it's</x>`},
 		{"apostrophe in an attribute", `<tt><x a="it&apos;s"/></tt>`, `<x a="it's"/>`},
@@ -210,7 +211,12 @@ func TestNamespaces(t *testing.T) {
 		assert.Equal(t, tt.uri, uri, tt.prefix)
 		assert.Equal(t, tt.ok, ok, tt.prefix)
 	}
-	_, ok := r.LookupPrefix("x")
+	bad := root(t, parse(t, `<tt xmlns:0="urn:x" a="1"><p/></tt>`, false))
+	assert.False(t, xmlraw.IsNamespaceDecl(bad.Attrs[0]), "libxml reads xmlns:0 as a plain attribute")
+	_, ok := bad.Children[0].LookupPrefix("0")
+	assert.False(t, ok, "xmlns:0 binds no prefix")
+
+	_, ok = r.LookupPrefix("x")
 	assert.False(t, ok, "a declaration on a child does not reach its parent")
 	assert.True(t, xmlraw.IsNamespaceDecl(p.Attrs[0]))
 	assert.False(t, xmlraw.IsNamespaceDecl(p.Attrs[1]))
