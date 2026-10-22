@@ -10,6 +10,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -33,6 +34,8 @@ var (
 	_ readFunc[ass.ReadOptions]         = ass.Read
 	_ writeFunc[ass.WriteOptions]       = ass.Write
 	_ detectFunc                        = ass.Detect
+	_ readFunc[ttml.ReadOptions]        = ttml.Read
+	_ detectFunc                        = ttml.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -58,7 +61,7 @@ var registry = []formatFuncs{
 	{format: SBV},
 	{format: SubRip, read: readSubRip, write: writeSubRip},
 	{format: SubViewer},
-	{format: TTML},
+	{format: TTML, read: readTTML},
 	{format: TSV},
 	{format: PlainText},
 	{format: MPL2},
@@ -84,6 +87,7 @@ var (
 	}
 	signatures = []signature{
 		{format: WebVTT, match: webvtt.Detect},
+		{format: TTML, match: ttml.Detect},
 		{format: ASS, match: ass.Detect},
 		{format: SubRip, match: srt.Detect},
 	}
@@ -144,6 +148,10 @@ func readASS(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subti
 
 func writeASS(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
 	return ass.Write(w, s, common, opts.ASS)
+}
+
+func readTTML(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return ttml.Read(r, common, ttml.ReadOptions{})
 }
 
 func lookup(f Format) (formatFuncs, bool) {

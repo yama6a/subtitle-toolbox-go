@@ -1,0 +1,33 @@
+﻿[Script Info]
+Title: Harbour weather
+ScriptType: v4.00+
+PlayResX: 384
+PlayResY: 288
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,16,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,10,10,10,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:10.00,0:00:13.00,Default,Anna,0,0,0,,Good morning from the harbour.
+Dialogue: 0,0:00:13.48,0:00:16.88,Default,Anna,0,0,0,,The sea is calm\Nand the sky is clear.
+Dialogue: 0,0:00:17.36,0:00:19.96,Default,Ben,0,0,0,,The first ferry left\Nat seven o'clock.
+Dialogue: 0,0:00:20.44,0:00:23.44,Default,,0,0,0,,{\an8\i1}(gulls calling){\i0}
+Dialogue: 0,0:00:23.92,0:00:27.32,Default,Anna,0,0,0,,Wind from the north-west,\Nabout ten knots.
+Dialogue: 0,0:00:27.80,0:00:30.40,Default,Ben,0,0,0,,{\c&H00FFFF&}Fog may form{\c}\N{\c&H00FFFF&}near the lighthouse.{\c}
+Dialogue: 0,0:00:30.88,0:00:33.88,Default,Anna,0,0,0,,Fishing boats return\Nbefore noon.
+Dialogue: 0,0:00:34.36,0:00:37.76,Default,,0,0,0,,{\an8\i1}(engine starts){\i0}
+Dialogue: 0,0:00:38.24,0:00:40.84,Default,Ben,0,0,0,,The fish market opens\Nat half past eight.
+Dialogue: 0,0:00:41.32,0:00:44.32,Default,Anna,0,0,0,,Water temperature\Nis twelve degrees.
+Dialogue: 0,0:00:44.80,0:00:48.20,Default,Ben,0,0,0,,Tide tables are {\b1}on the {\u1}board{\u0\b0}
+Dialogue: 0,0:00:48.68,0:00:51.28,Default,Anna,0,0,0,,High tide at 14:20.
+Dialogue: 0,0:00:51.76,0:00:54.76,Default,Ben,0,0,0,,Low tide at 20:35.
+Dialogue: 0,0:00:55.24,0:00:58.64,Default,Anna,0,0,0,,Rain is likely\Nafter six this evening.
+Dialogue: 0,0:00:59.12,0:01:01.72,Default,,0,0,0,,{\an8\i1}(bell rings){\i0}
+Dialogue: 0,0:01:02.20,0:01:05.20,Default,Ben,0,0,0,,The harbour office\Ncloses at five.
+Dialogue: 0,0:01:05.68,0:01:09.08,Default,Anna,0,0,0,,{\c&H00FFFF&}Small boats should{\c}\N{\c&H00FFFF&}stay inside the wall.{\c}
+Dialogue: 0,0:01:09.56,0:01:12.16,Default,Ben,0,0,0,,Tomorrow starts\Ncold and bright.
+Dialogue: 0,0:01:12.64,0:01:15.64,Default,Anna,0,0,0,,That is all\Nfrom the harbour.
+Dialogue: 0,0:01:16.12,0:01:19.52,Default,,0,0,0,,{\an8\i1}(music){\i0}

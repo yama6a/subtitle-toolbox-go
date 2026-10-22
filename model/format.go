@@ -47,7 +47,7 @@ var formatFacts = []formatFact{
 	{format: SBV, extensions: []string{"sbv"}},
 	{format: SubRip, extensions: []string{"srt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubViewer, extensions: []string{"sub"}},
-	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}},
+	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, autoDetected: true},
 	{format: TSV, extensions: []string{"tsv"}},
 	{format: PlainText, extensions: []string{"txt"}, autoDetected: true},
 	{format: MPL2, extensions: []string{"txt"}},

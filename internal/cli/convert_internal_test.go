@@ -147,6 +147,7 @@ func TestConvertWritesTheFormatOfTo(t *testing.T) {
 		{"srt/real/own_styled.srt", stbox.WebVTT},
 		{"vtt/real/own_ytdlp_rolling.vtt", stbox.SubRip},
 		{"ass/real/own_aegisub.ass", stbox.SubRip},
+		{"ttml/real/bbc_ebu_tt_d.ttml", stbox.SubRip},
 	}
 	for _, tt := range tests {
 		t.Run(tt.path, func(t *testing.T) {
@@ -524,6 +525,22 @@ func TestConvertTextEdits(t *testing.T) {
 	got = call{dir: dir}.run(t, "convert", "trip.srt", "--replace-regex", "--replace", `/(?<n>sigh)(s)/=[\1|\2]`, "--replace", `/T\_?oo/=Too`)
 	assert.Equal(t, 0, got.Code, got.Stderr)
 	assert.Contains(t, got.Stdout, "\n([sigh|s]) Too late.\n")
+}
+
+// Ported from testForcedOnly of tests/Cli/BinaryEditTest.php of subtitle-toolbox-php, with the TTML fixture.
+func TestConvertForcedOnlyOfTTML(t *testing.T) {
+	t.Parallel()
+
+	dir := fixtureDir(t, map[string]string{"harbour.ttml": "forced/forced_inheritance.ttml"})
+	forced := libraryOutput(t, "forced/forced_inheritance.ttml", stbox.SubRip, stbox.WriteOptions{}, func(s *stbox.Subtitle) error {
+		*s = *s.ForcedCuesOnly()
+		return nil
+	})
+	assert.Equal(t, result{Stdout: forced}, call{dir: dir}.run(t, "convert", "harbour.ttml", "--to", "srt", "-o", "-", "--forced-only"))
+	assert.Equal(t, 3, strings.Count(forced, " --> "))
+	all := call{dir: dir}.run(t, "convert", "harbour.ttml", "--to", "srt", "-o", "-")
+	assert.Equal(t, libraryOutput(t, "forced/forced_inheritance.ttml", stbox.SubRip, stbox.WriteOptions{}, nil), all.Stdout)
+	assert.Equal(t, 5, strings.Count(all.Stdout, " --> "))
 }
 
 func TestConvertForcedOnly(t *testing.T) {

@@ -34,3 +34,4 @@ Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5
 | `ttconv_lwsp_default.ttml` | https://github.com/sandflow/ttconv/blob/1fed6abf555ca1d5ae2c839ad3c1625f15c9a96c/src/test/resources/ttml/lwsp_default.ttml, with `begin` and `end` added to each `<p>`. White space in the default `xml:space` mode | sandflow/ttconv, BSD-2-Clause |
 | `ttconv_lwsp_preserve.ttml` | https://github.com/sandflow/ttconv/blob/1fed6abf555ca1d5ae2c839ad3c1625f15c9a96c/src/test/resources/ttml/lwsp_preserve.ttml, with `begin` and `end` added to the `<p>`. White space in `xml:space="preserve"` | sandflow/ttconv, BSD-2-Clause |
 | `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name, written by `tests/files/generate-read-goldens.php` | MIT |
+| `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand. Each file equals the PHP write golden of the same name at the pinned commit. | MIT |

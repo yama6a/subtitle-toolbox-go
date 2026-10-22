@@ -130,3 +130,29 @@ func TestEscapeTextLike(t *testing.T) {
 		})
 	}
 }
+
+func TestNamedEntity(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		want   string
+		wantOK bool
+	}{
+		{"eacute", "é", true},
+		{"NonBreakingSpace", " ", true},
+		{"amp", "&", true},
+		{"nGt", "≫⃒", true},
+		{"eacute;", "", false},
+		{"cur", "", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, ok := markupcore.NamedEntity(tt.name)
+			assert.Equal(t, tt.wantOK, ok)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

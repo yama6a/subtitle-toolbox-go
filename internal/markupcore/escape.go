@@ -152,3 +152,9 @@ func allowedCodePoint(r rune) bool {
 	}
 	return r&0xfffe != 0xfffe
 }
+
+// NamedEntity returns the text of the HTML5 named entity name, given without "&" and ";", such as "eacute".
+func NamedEntity(name string) (string, bool) {
+	v, ok := entities()[name]
+	return v, ok
+}

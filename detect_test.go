@@ -38,6 +38,15 @@ func detectTests() []detectTest {
 		{name: "ASS before an LRC tag", content: "[Script Info]\n[ti:Morning Train]\n", want: stbox.ASS},
 		{name: "JSON with cues first", content: `{"cues": [], "metadata": {"title": "version"}, "version": 1}`, want: stbox.JSON},
 		{name: "JSON with spaces", content: "{\n  \"version\" : 1 ,\n  \"cues\" : [ ]\n}\n", want: stbox.JSON},
+		{name: "TTML with XML declaration", content: "<?xml version=\"1.0\"?>\n<!-- made by hand -->\n<tt xmlns=\"http://www.w3.org/ns/ttml\"/>", want: stbox.TTML},
+		{name: "TTML with prefixed root", content: `<tt:tt xmlns:tt="http://www.w3.org/ns/ttml"></tt:tt>`, want: stbox.TTML},
+		{name: "TTML with DOCTYPE", content: "<!DOCTYPE tt>\n<tt>\n<body/></tt>", want: stbox.TTML},
+		{name: "DFXP 2006/04", content: "<tt xmlns=\"http://www.w3.org/2006/04/ttaf1\" xml:lang=\"en\">\n<body/></tt>", want: stbox.TTML},
+		{
+			name:    "iTT detects as TTML",
+			content: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<tt xmlns=\"http://www.w3.org/ns/ttml\" xmlns:ttp=\"http://www.w3.org/ns/ttml#parameter\" ttp:timeBase=\"smpte\" ttp:frameRate=\"24\">",
+			want:    stbox.TTML,
+		},
 		{name: "JSON with a segments key", content: `{"version": 1, "formatData": {"x": {"segments": [1]}}, "cues": []}`, want: stbox.JSON},
 		{name: "JSON with an events list", content: `{"version": 1, "formatData": {"x": {"events": [{"tStartMs": 0}]}}, "cues": []}`, want: stbox.JSON},
 		{name: "JSON with a chapters list", content: `{"version": 1, "formatData": {"chapters": {"chapters": []}}, "cues": []}`, want: stbox.JSON},
@@ -47,8 +56,6 @@ func detectTests() []detectTest {
 			want:    stbox.JSON,
 		},
 
-		{name: "TTML with XML declaration", content: "<?xml version=\"1.0\"?>\n<!-- made by hand -->\n<tt xmlns=\"http://www.w3.org/ns/ttml\"/>", later: "TTML"},
-		{name: "TTML with prefixed root", content: `<tt:tt xmlns:tt="http://www.w3.org/ns/ttml"></tt:tt>`, later: "TTML"},
 		{name: "SAMI in lower case", content: "<sami><body></body></sami>", later: "SAMI"},
 		{name: "MPSub with FORMAT first", content: "FORMAT=25\n\n0 50\nHello\n", later: "MPSub"},
 		{name: "MPSub with header comment", content: "TITLE=Bakery\nFORMAT=TIME   # seconds\n\n1 2\nHello\n", later: "MPSub"},
@@ -157,6 +164,8 @@ func TestDetectFindsNoFormat(t *testing.T) {
 		{"events without tStartMs", `{"events": [{"start": 1}]}`},
 		{"events as text", `{"text": "\"events\": [{\"tStartMs\": 1}]"}`},
 		{"timedtext inside a word", "<timedtextx/>"},
+		{"tt inside a word", "<?xml version=\"1.0\"?>\n<ttx/>"},
+		{"tt after text", "Subtitles by the film club\n<tt xmlns=\"http://www.w3.org/ns/ttml\"/>"},
 		{"MPL2 with a letter", "[1a][25]Hello\n"},
 		{"clock time in text", "10:30 is the time.\n"},
 		{"bracketed time in text", "Meet at [10:30] by the pier.\n[ferry] leaves at noon\n"},
@@ -220,7 +229,7 @@ type fixture struct {
 func fixtures(t *testing.T) []fixture {
 	t.Helper()
 
-	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "srt": stbox.SubRip, "vtt": stbox.WebVTT}
+	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "srt": stbox.SubRip, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
 	var list []fixture
 	for dir, f := range folders {
 		for _, sub := range []string{dir, dir + "/real"} {
@@ -342,7 +351,7 @@ func FuzzDetect(f *testing.F) {
 		f.Add([]byte(tt.content))
 	}
 	root := testfiles.Root(f)
-	for _, dir := range []string{"ass", "json", "srt", "vtt", "lenient"} {
+	for _, dir := range []string{"ass", "json", "srt", "ttml/real", "forced", "vtt", "lenient"} {
 		entries, err := os.ReadDir(filepath.Join(root, dir))
 		if err != nil {
 			f.Fatal(err)

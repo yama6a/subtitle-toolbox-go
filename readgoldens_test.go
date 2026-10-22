@@ -30,6 +30,7 @@ func goldenFolders() []goldenFolder {
 		{name: "ass", format: stbox.ASS, files: 7},
 		{name: "json", format: stbox.JSON, files: 6},
 		{name: "srt", format: stbox.SubRip, files: 19},
+		{name: "ttml", format: stbox.TTML, files: 29},
 		{name: "vtt", format: stbox.WebVTT, files: 30},
 	}
 }

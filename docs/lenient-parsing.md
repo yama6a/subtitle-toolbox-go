@@ -107,6 +107,27 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Order** inside an event: the swap warning, then the loose times.
 - **Text but no cues**: the first line in `[Events]` without `:` that does not start with `;`.
 
+## TTML
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| text before the XML, such as a credit line | `The file has text before the XML: "L".` on the line of the text | skips it. The message plus ` The parser skipped it.` `Repaired`, the skipped lines |
+| an HTML entity that XML does not define, such as `&eacute;` | `The file is not well-formed XML.` | reads it as the character. `The file has HTML entities that XML does not define, such as "&eacute;". The parser read them as characters.` `Repaired`, once per file, on the line of the first one |
+| markup that is not well-formed: a bare `&`, `<br>` without `/`, a missing end tag | `The file is not well-formed XML.` | escapes the `&`, closes the `<br>` and repairs the elements as libxml recover mode does. `The file is not well-formed XML. M. The parser repaired it.` `Repaired`, on the line of the parser error M |
+| a file without a root element after the repair | `The file is not well-formed XML.` | the same error |
+| a frame label of 30 or more, such as `00:00:01:45`, without `ttp:frameRate` | `The frame label L in "E" is not below the default frame rate of 30, and the file has no ttp:frameRate.` | reads the frames at 50 fps below label 50, at 60 fps below 60, and the last field as hundredths of a second from 60. The message plus what the reader did. `Repaired` |
+| a time such as `0:01:02.500`, `02:15.500`, `00:00:02:250`, `4200` or `19.764` | `The time expression "E" is not valid.` | reads it. `The time expression "E" is not valid. The parser read it as Ns.` `Repaired`, the paragraph index inside a `<p>` |
+| a bad time on `<body>` or a `<div>` | the error of the time | uses the times of the parent. The message plus ` The parser ignored the timing of the div.` `Repaired` |
+| a bad time on a `<p>` | the error of the time | skips the paragraph |
+| a bad time on a `<span>` | drops the word timestamp | drops the word timestamp |
+| a `<p>` that begins at or after the end of its parent | `The paragraph begins at Bs, but its parent ends at Es.` | reads the times of the `<p>` without the offset of the parent. The message plus ` The parser read its times as absolute: As to Zs.` `Repaired`. When that gives no end after the begin, skips the paragraph |
+| a `<p>` without an end and without timed spans | `The paragraph that begins at Bs has no end time.` | ends it at the next paragraph that begins later. The message plus ` The parser ended it at the next paragraph at Ns.` `Repaired`. A last open paragraph is skipped with the strict message |
+
+- **Paragraph index**: the block of a warning is the index of the `<p>` in document order from 0, also of the paragraphs that fail.
+- **Line numbers**: a warning reports the line of the element, which is the line of the `>` that ends its start tag. [errors.md](errors.md#line-numbers) lists the strict errors with line 0.
+- **Time limit**: the limit applies to the expression and to its sum with the times of the parents, after the rounding to whole milliseconds. So `99999999999999999999:00:04.000` fails in both modes.
+- **Order**: the text warning, the entity warning and the repair warning come first, then the frame rate warning, then the warnings of the containers and paragraphs in document order.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

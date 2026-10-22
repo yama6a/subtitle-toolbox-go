@@ -62,6 +62,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 | Reader | Line |
 |:--- |:--- |
 | SubRip, WebVTT | the line of the error. A message about a missing cue number or timing line quotes the line, cut to 60 characters with `...` |
+| TTML | the line of the element, the line of the `>` that ends its start tag. 0 for a time expression that is not valid or that alone reaches 100000 hours, for a file that is not well-formed XML and for a root that is not `<tt>` |
 | library JSON | 0 |
 | ASS and SSA | the line of the error: the event line, or the `Format:` line for a field name that is a number. A file without `[Events]` and `[Script Info]` gives 0 |
 
