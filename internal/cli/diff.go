@@ -47,7 +47,7 @@ func (*diffCommand) options() []option {
 		flagOption("ignore-whitespace", "Compare the text without spaces, tabs and line breaks."),
 		flagOption("text-only", "Report no timing changes."),
 		flagOption("json", "Print the differences as JSON: a list with one object for the pair of files."),
-	}, inputOptions(false), []option{
+	}, inputOptions(false, reportFPSHelp), []option{
 		valueOption("new-from", "FORMAT", "Format of the new file. Default: as for --from."),
 	})
 }

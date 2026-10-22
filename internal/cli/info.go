@@ -61,7 +61,7 @@ func (*infoCommand) details() string {
 }
 
 func (*infoCommand) options() []option {
-	return slices.Concat([]option{flagOption("json", jsonHelp)}, inputOptions(true))
+	return slices.Concat([]option{flagOption("json", jsonHelp)}, inputOptions(true, reportFPSHelp))
 }
 
 func (c *infoCommand) run(ctx context.Context, a *args, console *console) error {

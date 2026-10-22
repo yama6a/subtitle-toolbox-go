@@ -57,10 +57,24 @@ The words after the command name follow the PHP 5.x CLI. The standard `flag` pac
 | a glob such as `"season1/*.srt"` | the matching files, for shells that do not expand globs. No match keeps the argument, which then fails as a missing file |
 
 - **Duplicates**: an input whose real path came before is left out. `"dir/*.srt" dir/b.srt` reads `dir/b.srt` once.
-- **Format**: without `--from`, the content decides, then the extension, as [detection.md](detection.md) says. `--from` and `--to` take a format name or an extension: `srt`, `.SRT`, `vtt` and `ssa`, the extension of `ass`, work.
+- **Format**: without `--from`, the content decides, then the extension, as [detection.md](detection.md) says. `--from` and `--to` take a format name or an extension: `srt`, `.SRT`, `vtt`, `ssa`, the extension of `ass`, and `sub`, the extension of `microdvd`, work.
 - **Encoding**: `--encoding NAME` sets the source encoding of input that is not UTF-8. An unknown name fails before the first read, and the message lists every name. [encodings.md](encodings.md#supported-names) holds the list.
 - **Lenient mode**: `--lenient` skips or repairs broken cues and prints each warning on stderr as `LABEL: line N: MESSAGE (skipped)`. A strict read that fails on a broken cue prints `Pass --lenient to skip or repair broken cues.`.
 - **Batches**: the run stops at the first input that fails. `--keep-going` goes on with the next one.
+
+### Frame rates
+
+MicroDVD counts time in video frames, so a MicroDVD read and a MicroDVD write need the frame rate of the video. Example: `stbox convert film.sub --fps 25 --to srt -o film.srt` reads a MicroDVD file without a `{1}{1}<fps>` first line at 25 fps.
+
+| Option | Commands | Sets | Without it |
+|:--- |:--- |:--- |:--- |
+| `--input-fps RATE` | every command that reads subtitle files | `ReadOptions.MicroDVD.FrameRate` | `--fps`, else the `{1}{1}<fps>` line of the file |
+| `--output-fps RATE` | `convert`, `sync` | `WriteOptions.MicroDVD.FrameRate`, for MicroDVD output only | `--fps`, else the frame rate of a MicroDVD input |
+| `--fps RATE` | every command that reads subtitle files | both rates | |
+
+- **Check**: each rate is a number above 0. `--fps` is checked first, also when the specific option is given, so a bad `--fps` always fails. `--input-fps` comes before `--from` in the check order, and `--output-fps` right after `--to`.
+- **Advice**: `frames.sub: The frame rate is unknown. Pass --fps or --input-fps, start the file with {1}{1}<fps>, or pass --lenient for 23.976 fps.` and `trip.srt: MicroDVD output needs the frame rate of the video. Pass --fps or --output-fps.`, both exit 3.
+- **Frame rate change**: `--from-fps` and `--to-fps` of the `retime` group retime the cues. They do not take `--fps`.
 
 ### Text files in a directory
 
@@ -257,7 +271,7 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 `stbox diff OLD NEW` compares two files and prints the differences of [compare.md](compare.md). It exits 1 when the files differ.
 
 - **Expansion**: only OLD goes through the input expansion. A directory or glob that gives 2 or more files fails with exit 2. NEW is used as given, and it cannot be `-`.
-- **Input options**: `--from`, `--encoding` and `--lenient` apply to both files. `--new-from` replaces `--from` for NEW.
+- **Input options**: `--from`, `--encoding`, `--lenient`, `--input-fps` and `--fps` apply to both files. `--new-from` replaces `--from` for NEW.
 - **Failure**: a failed file prints `PATH: MESSAGE` with its own path and exits 3. A message about the format of NEW names `--new-from`.
 - **No `--keep-going`**: the command has one pair of files.
 - **JSON**: one object with the keys `oldFile`, `newFile`, `equal`, `differences`, `oldWarnings` and `newWarnings`. Cue times are seconds, such as `6.2`.
@@ -267,16 +281,17 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 `stbox formats` lists the formats that can be read or written, in registry order. The names are the values of `--from` and `--to`. It takes no argument and no option except `-h`.
 
 ```
-Name  Extensions        Read  Write
-ass   .ass .ssa         yes   yes
-json  .json             yes   yes
-sami  .smi .sami        yes   yes
-srt   .srt              yes   yes
-ttml  .ttml .dfxp .xml  yes   yes
-vtt   .vtt              yes   yes
+Name      Extensions        Read  Write
+ass       .ass .ssa         yes   yes
+json      .json             yes   yes
+microdvd  .sub              yes   yes
+sami      .smi .sami        yes   yes
+srt       .srt              yes   yes
+ttml      .ttml .dfxp .xml  yes   yes
+vtt       .vtt              yes   yes
 ```
 
-- **Shared extensions**: the first format in the list owns an extension. `--from` reads a file as another format.
+- **Shared extensions**: the first format in the list owns an extension, so `.sub` is MicroDVD. `--from` reads a file as another format.
 - **Hidden formats**: a format that can be neither read nor written has no row.
 
 ## JSON output

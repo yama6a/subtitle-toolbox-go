@@ -27,6 +27,8 @@ Options:
                          standard output. The file must not exist.
   --output-dir DIR       Write each output into this directory, with the base
                          name of its input. Several inputs need it.
+  --output-fps RATE      Frame rate of MicroDVD output. Default: the frame rate
+                         of a MicroDVD input.
   --line-ending lf|crlf  Line ending of the output. Default: lf.
   --bom                  Start the output with a UTF-8 BOM.
   --no-bom               Write no UTF-8 BOM. Default: the BOM rule of the output
@@ -39,6 +41,10 @@ Options:
                          valid UTF-8 and UTF-16 input win over it.
   --lenient              Skip or repair broken cues and print a warning for
                          each.
+  --input-fps RATE       Frame rate of a MicroDVD input without a {1}{1}<fps>
+                         first line.
+  --fps RATE             Sets --input-fps and --output-fps. A specific option
+                         wins over --fps.
   --keep-going           Go on with the next file after a file fails. Default:
                          stop at the first failure.
   --language CODE        Language for --case, for example en, de-AT or tr.

@@ -22,7 +22,7 @@ func (formatsCommand) usage() []string { return []string{""} }
 
 func (formatsCommand) details() string {
 	return "When two formats share an extension, the first one in the list owns it. " +
-		"So .json is the JSON of this library. Pass --from to read another one."
+		"So .sub is MicroDVD, and .json is the JSON of this library. Pass --from to read another one."
 }
 
 func (formatsCommand) options() []option { return nil }

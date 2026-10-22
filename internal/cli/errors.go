@@ -146,6 +146,12 @@ func withAdvice(msg, option string, cause error) string {
 	switch {
 	case option == "ReadOptions.Encoding":
 		return msg + " Known encodings: " + strings.Join(stbox.Encodings(), ", ") + "."
+	case option == "ReadOptions.MicroDVD.FrameRate":
+		// The advice replaces the sentences after the first, which name the library settings.
+		first, _, _ := strings.Cut(msg, ". ")
+		return strings.TrimSuffix(first, ".") + ". Pass --fps or --input-fps, start the file with {1}{1}<fps>, or pass --lenient for 23.976 fps."
+	case option == "WriteOptions.MicroDVD.FrameRate":
+		return msg + " Pass --fps or --output-fps."
 	case errors.Is(cause, stbox.ErrInvalidUTF8):
 		return msg + " " + encodingAdvice
 	default:

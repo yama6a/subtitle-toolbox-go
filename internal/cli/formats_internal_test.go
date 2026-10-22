@@ -13,8 +13,9 @@ const formatsHelp = `Usage: stbox formats
 
 List the format names and file extensions for --from and --to.
 
-When two formats share an extension, the first one in the list owns it. So .json
-is the JSON of this library. Pass --from to read another one.
+When two formats share an extension, the first one in the list owns it. So .sub
+is MicroDVD, and .json is the JSON of this library. Pass --from to read another
+one.
 
 Options:
   -h, --help  Show this help.
