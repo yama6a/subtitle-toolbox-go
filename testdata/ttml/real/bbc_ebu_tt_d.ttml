@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttp="http://www.w3.org/ns/ttml#parameter" xmlns:tts="http://www.w3.org/ns/ttml#styling" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:ebuttm="urn:ebu:tt:metadata" xmlns:ebutts="urn:ebu:tt:style" xml:lang="en-GB" xml:space="default" ttp:timeBase="media" ttp:cellResolution="50 30" ttp:contentProfiles="http://www.w3.org/ns/ttml/profile/imsc1/text">
+  <head>
+    <metadata>
+      <ttm:title>Harbour weather</ttm:title>
+      <ttm:agent xml:id="anna" type="person"><ttm:name type="full">Anna</ttm:name></ttm:agent>
+      <ttm:agent xml:id="ben" type="person"><ttm:name type="full">Ben</ttm:name></ttm:agent>
+      <ebuttm:documentMetadata>
+        <ebuttm:documentEbuttVersion>v1.0</ebuttm:documentEbuttVersion>
+      </ebuttm:documentMetadata>
+    </metadata>
+    <styling>
+      <style xml:id="spanStyle" tts:fontFamily="ReithSans, Arial, Roboto, proportionalSansSerif, default" tts:color="#FFFFFF" tts:backgroundColor="#000000" tts:fontSize="100%"/>
+      <style xml:id="yellow" style="spanStyle" tts:color="#FFFF00"/>
+      <style xml:id="italic" tts:fontStyle="italic"/>
+      <style xml:id="paragraphStyle" tts:textAlign="center" ebutts:linePadding="0.5c" tts:lineHeight="normal"/>
+    </styling>
+    <layout>
+      <region xml:id="bottom" tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="after" tts:writingMode="lrtb"/>
+      <region xml:id="top" tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="before" tts:writingMode="lrtb"/>
+    </layout>
+  </head>
+  <body style="paragraphStyle">
+    <div>
+      <p xml:id="sub1" begin="00:00:10.000" end="00:00:13.000" region="bottom" ttm:agent="anna"><span style="spanStyle">Good morning from the harbour.</span></p>
+      <p xml:id="sub2" begin="00:00:13.480" end="00:00:16.880" region="bottom" ttm:agent="anna"><span style="spanStyle">The sea is calm</span><br/><span style="spanStyle">and the sky is clear.</span></p>
+      <p xml:id="sub3" begin="00:00:17.360" end="00:00:19.960" region="bottom" ttm:agent="ben"><span style="spanStyle">The first ferry left</span><br/><span style="spanStyle">at seven o'clock.</span></p>
+      <p xml:id="sub4" begin="00:00:20.440" end="00:00:23.440" region="top"><span style="spanStyle italic">(gulls calling)</span></p>
+      <p xml:id="sub5" begin="00:00:23.920" end="00:00:27.320" region="bottom" ttm:agent="anna"><span style="spanStyle">Wind from the north-west,</span><br/><span style="spanStyle">about ten knots.</span></p>
+      <p xml:id="sub6" begin="00:00:27.800" end="00:00:30.400" region="bottom" ttm:agent="ben"><span style="yellow">Fog may form</span><br/><span style="yellow">near the lighthouse.</span></p>
+      <p xml:id="sub7" begin="00:00:30.880" end="00:00:33.880" region="bottom" ttm:agent="anna"><span style="spanStyle">Fishing boats return</span><br/><span style="spanStyle">before noon.</span></p>
+      <p xml:id="sub8" begin="00:00:34.360" end="00:00:37.760" region="top"><span style="spanStyle italic">(engine starts)</span></p>
+      <p xml:id="sub9" begin="00:00:38.240" end="00:00:40.840" region="bottom" ttm:agent="ben"><span style="spanStyle">The fish market opens</span><br/><span style="spanStyle">at half past eight.</span></p>
+      <p xml:id="sub10" begin="00:00:41.320" end="00:00:44.320" region="bottom" ttm:agent="anna"><span style="spanStyle">Water temperature</span><br/><span style="spanStyle">is twelve degrees.</span></p>
+      <p xml:id="sub11" begin="00:00:44.800" end="00:00:48.200" region="bottom" ttm:agent="ben"><span style="spanStyle">Tide tables are <span tts:fontWeight="bold">on the <span tts:textDecoration="underline">board</span></span></span></p>
+      <p xml:id="sub12" begin="00:00:48.680" end="00:00:51.280" region="bottom" ttm:agent="anna"><span style="spanStyle">High tide at 14:20.</span></p>
+      <p xml:id="sub13" begin="00:00:51.760" end="00:00:54.760" region="bottom" ttm:agent="ben"><span style="spanStyle">Low tide at 20:35.</span></p>
+      <p xml:id="sub14" begin="00:00:55.240" end="00:00:58.640" region="bottom" ttm:agent="anna"><span style="spanStyle">Rain is likely</span><br/><span style="spanStyle">after six this evening.</span></p>
+      <p xml:id="sub15" begin="00:00:59.120" end="00:01:01.720" region="top"><span style="spanStyle italic">(bell rings)</span></p>
+      <p xml:id="sub16" begin="00:01:02.200" end="00:01:05.200" region="bottom" ttm:agent="ben"><span style="spanStyle">The harbour office</span><br/><span style="spanStyle">closes at five.</span></p>
+      <p xml:id="sub17" begin="00:01:05.680" end="00:01:09.080" region="bottom" ttm:agent="anna"><span style="yellow">Small boats should</span><br/><span style="yellow">stay inside the wall.</span></p>
+      <p xml:id="sub18" begin="00:01:09.560" end="00:01:12.160" region="bottom" ttm:agent="ben"><span style="spanStyle">Tomorrow starts</span><br/><span style="spanStyle">cold and bright.</span></p>
+      <p xml:id="sub19" begin="00:01:12.640" end="00:01:15.640" region="bottom" ttm:agent="anna"><span style="spanStyle">That is all</span><br/><span style="spanStyle">from the harbour.</span></p>
+      <p xml:id="sub20" begin="00:01:16.120" end="00:01:19.520" region="top"><span style="spanStyle italic">(music)</span></p>
+    </div>
+  </body>
+</tt>

@@ -1,0 +1,81 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "ittp": "http://www.w3.org/ns/ttml/profile/imsc1#parameter",
+                    "ttm": "http://www.w3.org/ns/ttml#metadata",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": {
+                    "ittp:activeArea": "50% 50% 80% 80%",
+                    "tts:extent": "640px 480px",
+                    "ttp:contentProfiles": "http://www.w3.org/ns/ttml/profile/imsc1.1/text"
+                },
+                "head": "<head>\n        <layout>\n            <region xml:id=\"area1\" tts:origin=\"10% 10%\" tts:extent=\"80% 10%\" tts:backgroundColor=\"blue\" tts:displayAlign=\"center\" tts:textAlign=\"center\" tts:color=\"white\" tts:fontSize=\"24px\"/>\n            <region xml:id=\"area2\" tts:origin=\"10% 80%\" tts:extent=\"80% 10%\" tts:backgroundColor=\"blue\" tts:displayAlign=\"center\" tts:textAlign=\"center\" tts:color=\"white\" tts:fontSize=\"24px\"/>\n            <region xml:id=\"area3\" tts:origin=\"10% 92%\" tts:extent=\"80% 6%\" tts:backgroundColor=\"red\" tts:displayAlign=\"center\" tts:textAlign=\"center\" tts:color=\"yellow\" tts:fontSize=\"24px\"/>\n        </layout>\n    </head>"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 6.0,
+                "lines": [
+                    "This region is within the editorial area."
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "area1"
+                        },
+                        "alignment": 8
+                    }
+                }
+            },
+            {
+                "start": 0.0,
+                "end": 6.0,
+                "lines": [
+                    "This region is within the editorial area."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "area2"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 0.0,
+                "end": 6.0,
+                "lines": [
+                    "<font color=\"#ffff00\">This region is not.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "area3"
+                        },
+                        "alignment": 2
+                    }
+                }
+            }
+        ]
+    }
+}

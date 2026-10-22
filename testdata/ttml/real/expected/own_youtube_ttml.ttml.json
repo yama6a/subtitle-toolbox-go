@@ -1,0 +1,121 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "ttm": "http://www.w3.org/ns/ttml#metadata",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": {
+                    "ttp:profile": "http://www.w3.org/TR/profile/sdp-us"
+                },
+                "head": "<head><styling><style xml:id=\"s1\" tts:textAlign=\"center\" tts:extent=\"90% 90%\" tts:origin=\"5% 5%\" tts:displayAlign=\"after\"/><style xml:id=\"s2\" tts:fontSize=\".72c\" tts:backgroundColor=\"black\" tts:color=\"white\"/></styling><layout><region xml:id=\"r1\" style=\"s1\"/></layout></head>",
+                "body": {
+                    "region": "r1"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 0.24,
+                "end": 3.12,
+                "lines": [
+                    "welcome back to the station channel"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "style": "s2",
+                            "region": "r1"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 3.12,
+                "end": 6.48,
+                "lines": [
+                    "today we look at the new",
+                    "winter timetable"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "style": "s2",
+                            "region": "r1"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 6.48,
+                "end": 9.6,
+                "lines": [
+                    "the first train now leaves at 5:40"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "style": "s2",
+                            "region": "r1"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 9.6,
+                "end": 12.0,
+                "lines": [
+                    "[Music]"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "style": "s2",
+                            "region": "r1"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 12.0,
+                "end": 15.36,
+                "lines": [
+                    "and the bus waits ten minutes &amp; then leaves"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "style": "s2",
+                            "region": "r1"
+                        },
+                        "alignment": 2
+                    }
+                }
+            }
+        ]
+    }
+}

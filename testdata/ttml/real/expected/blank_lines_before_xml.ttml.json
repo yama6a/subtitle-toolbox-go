@@ -1,0 +1,42 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": []
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "The market opens at eight."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.5,
+                "end": 6.0,
+                "lines": [
+                    "<i>Fresh bread</i> is sold first."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

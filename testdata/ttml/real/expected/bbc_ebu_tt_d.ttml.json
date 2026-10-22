@@ -1,0 +1,388 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en-GB",
+            "title": "Harbour weather"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "ebuttm": "urn:ebu:tt:metadata",
+                    "ebutts": "urn:ebu:tt:style",
+                    "ttm": "http://www.w3.org/ns/ttml#metadata",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": {
+                    "xml:space": "default",
+                    "ttp:timeBase": "media",
+                    "ttp:cellResolution": "50 30",
+                    "ttp:contentProfiles": "http://www.w3.org/ns/ttml/profile/imsc1/text"
+                },
+                "head": "<head>\n    <metadata>\n      <ttm:agent xml:id=\"anna\" type=\"person\"><ttm:name type=\"full\">Anna</ttm:name></ttm:agent>\n      <ttm:agent xml:id=\"ben\" type=\"person\"><ttm:name type=\"full\">Ben</ttm:name></ttm:agent>\n      <ebuttm:documentMetadata>\n        <ebuttm:documentEbuttVersion>v1.0</ebuttm:documentEbuttVersion>\n      </ebuttm:documentMetadata>\n    </metadata>\n    <styling>\n      <style xml:id=\"spanStyle\" tts:fontFamily=\"ReithSans, Arial, Roboto, proportionalSansSerif, default\" tts:color=\"#FFFFFF\" tts:backgroundColor=\"#000000\" tts:fontSize=\"100%\"/>\n      <style xml:id=\"yellow\" style=\"spanStyle\" tts:color=\"#FFFF00\"/>\n      <style xml:id=\"italic\" tts:fontStyle=\"italic\"/>\n      <style xml:id=\"paragraphStyle\" tts:textAlign=\"center\" ebutts:linePadding=\"0.5c\" tts:lineHeight=\"normal\"/>\n    </styling>\n    <layout>\n      <region xml:id=\"bottom\" tts:origin=\"10% 10%\" tts:extent=\"80% 80%\" tts:displayAlign=\"after\" tts:writingMode=\"lrtb\"/>\n      <region xml:id=\"top\" tts:origin=\"10% 10%\" tts:extent=\"80% 80%\" tts:displayAlign=\"before\" tts:writingMode=\"lrtb\"/>\n    </layout>\n  </head>",
+                "body": {
+                    "style": "paragraphStyle"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 10.0,
+                "end": 13.0,
+                "lines": [
+                    "<v Anna>Good morning from the harbour."
+                ],
+                "identifier": "sub1",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 13.48,
+                "end": 16.88,
+                "lines": [
+                    "<v Anna>The sea is calm",
+                    "and the sky is clear."
+                ],
+                "identifier": "sub2",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 17.36,
+                "end": 19.96,
+                "lines": [
+                    "<v Ben>The first ferry left",
+                    "at seven o'clock."
+                ],
+                "identifier": "sub3",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 20.44,
+                "end": 23.44,
+                "lines": [
+                    "<i>(gulls calling)</i>"
+                ],
+                "identifier": "sub4",
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "top"
+                        },
+                        "alignment": 8
+                    }
+                }
+            },
+            {
+                "start": 23.92,
+                "end": 27.32,
+                "lines": [
+                    "<v Anna>Wind from the north-west,",
+                    "about ten knots."
+                ],
+                "identifier": "sub5",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 27.8,
+                "end": 30.4,
+                "lines": [
+                    "<v Ben><font color=\"#ffff00\">Fog may form</font>",
+                    "<font color=\"#ffff00\">near the lighthouse.</font>"
+                ],
+                "identifier": "sub6",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 30.88,
+                "end": 33.88,
+                "lines": [
+                    "<v Anna>Fishing boats return",
+                    "before noon."
+                ],
+                "identifier": "sub7",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 34.36,
+                "end": 37.76,
+                "lines": [
+                    "<i>(engine starts)</i>"
+                ],
+                "identifier": "sub8",
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "top"
+                        },
+                        "alignment": 8
+                    }
+                }
+            },
+            {
+                "start": 38.24,
+                "end": 40.84,
+                "lines": [
+                    "<v Ben>The fish market opens",
+                    "at half past eight."
+                ],
+                "identifier": "sub9",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 41.32,
+                "end": 44.32,
+                "lines": [
+                    "<v Anna>Water temperature",
+                    "is twelve degrees."
+                ],
+                "identifier": "sub10",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 44.8,
+                "end": 48.2,
+                "lines": [
+                    "<v Ben>Tide tables are <b>on the <u>board</u></b>"
+                ],
+                "identifier": "sub11",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 48.68,
+                "end": 51.28,
+                "lines": [
+                    "<v Anna>High tide at 14:20."
+                ],
+                "identifier": "sub12",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 51.76,
+                "end": 54.76,
+                "lines": [
+                    "<v Ben>Low tide at 20:35."
+                ],
+                "identifier": "sub13",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 55.24,
+                "end": 58.64,
+                "lines": [
+                    "<v Anna>Rain is likely",
+                    "after six this evening."
+                ],
+                "identifier": "sub14",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 59.12,
+                "end": 61.72,
+                "lines": [
+                    "<i>(bell rings)</i>"
+                ],
+                "identifier": "sub15",
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "top"
+                        },
+                        "alignment": 8
+                    }
+                }
+            },
+            {
+                "start": 62.2,
+                "end": 65.2,
+                "lines": [
+                    "<v Ben>The harbour office",
+                    "closes at five."
+                ],
+                "identifier": "sub16",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 65.68,
+                "end": 69.08,
+                "lines": [
+                    "<v Anna><font color=\"#ffff00\">Small boats should</font>",
+                    "<font color=\"#ffff00\">stay inside the wall.</font>"
+                ],
+                "identifier": "sub17",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 69.56,
+                "end": 72.16,
+                "lines": [
+                    "<v Ben>Tomorrow starts",
+                    "cold and bright."
+                ],
+                "identifier": "sub18",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 72.64,
+                "end": 75.64,
+                "lines": [
+                    "<v Anna>That is all",
+                    "from the harbour."
+                ],
+                "identifier": "sub19",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 76.12,
+                "end": 79.52,
+                "lines": [
+                    "<i>(music)</i>"
+                ],
+                "identifier": "sub20",
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "top"
+                        },
+                        "alignment": 8
+                    }
+                }
+            }
+        ]
+    }
+}

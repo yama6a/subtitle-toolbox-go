@@ -67,6 +67,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   - `testdata/lenient/mantas_multiple_new_lines.vtt`, from `tests/files/vtt_with_multiple_new_lines.vtt`
   - `testdata/lenient/mantas_utf16.srt`, from `tests/files/utf16.srt`
   - `testdata/vtt/real/mantas_styles.vtt`, from `tests/files/vtt_with_styles.vtt`
+  - `testdata/ttml/real/mantas_dfxp_br.dfxp`, from `tests/files/dfxp_with_different_br.dfxp`
+  - `testdata/ttml/real/mantas_duplicated_ids.ttml`, from `tests/files/ttml_with_duplicated_element_ids.ttml`
+  - `testdata/ttml/real/mantas_fps_multiplier.ttml`, from `tests/files/ttml_with_fps_and_multiplier_given.ttml`
+  - `testdata/ttml/real/mantas_ttml2.ttml`, from `tests/files/ttml2.ttml`
+- Files written for this repository in the shape of its fixtures:
+  - `testdata/ttml/real/mantas_netflix_ticks.dfxp`
+  - `testdata/lenient/mantas_multiple_divs.ttml`
 
 ```text
 MIT License
@@ -400,8 +407,12 @@ END OF TERMS AND CONDITIONS
 
 - Project: <https://github.com/asticode/go-astisub>
 - Licence: MIT
-- Checked at: `f285923a0c8d5b2ecce67d8eaf9ed26cce16e5b0`, and `58297a613f70cac3d29e5ce52a7215a3b4038b40` and `b6b18718ddb6ee0da08772d8ab310c9c3d2d0459` for the SubRip files, with the same licence text
+- Checked at: `f285923a0c8d5b2ecce67d8eaf9ed26cce16e5b0`, and `58297a613f70cac3d29e5ce52a7215a3b4038b40` and `b6b18718ddb6ee0da08772d8ab310c9c3d2d0459` for the SubRip files, and `7671e72e9d47287d6f8ded80a004560b63a2ead5` for the TTML files, with the same licence text
+- Files copied from it:
+  - `testdata/ttml/real/astisub_breaklines.ttml`, from `testdata/example-in-breaklines.ttml`
+  - `testdata/ttml/real/astisub_merging_style.ttml`, from `testdata/example-in-merging-style.ttml`
 - Files written for this repository in the shape of its fixtures:
+  - `testdata/ttml/real/astisub_smpte.ttml`
   - `testdata/vtt/real/astisub_carriage_return.vtt`
   - `testdata/vtt/real/astisub_html_entities.vtt`
   - `testdata/srt/real/own_styled.srt`
@@ -438,6 +449,7 @@ SOFTWARE.
 - Checked at: `ae3c520a8aa13130f36d84df02ce15a843bc9bdb`
 - Files written for this repository in the shape of its fixtures:
   - `testdata/json/real/pysubs2_regions_3x.json`
+  - `testdata/ttml/real/pysubs2_regions.ttml`
 
 ```text
 Copyright (c) 2014-2026 Tomas Karabela
@@ -463,7 +475,7 @@ THE SOFTWARE.
 
 ## W3C specification examples
 
-- Project: <https://www.w3.org/TR/webvtt1/>
+- Project: <https://www.w3.org/TR/webvtt1/>, <https://www.w3.org/TR/ttml1/>, <https://www.w3.org/TR/ttml-imsc1.1/> and <https://www.w3.org/TR/2006/CR-ttaf1-dfxp-20061116/>
 - Licence: W3C Software and Document License, 2023 version, <https://www.w3.org/copyright/software-license-2023/>
 - Files copied from it:
   - `testdata/json/real/w3c_cue_settings_3x.json`
@@ -474,6 +486,15 @@ THE SOFTWARE.
   - `testdata/vtt/real/w3c_regions.vtt`
   - `testdata/vtt/real/w3c_styles.vtt`
   - `testdata/vtt/real/w3c_timestamps.vtt`
+  - `testdata/forced/w3c_imsc11_forced.ttml`
+  - `testdata/ttml/real/w3c_dfxp_timing.dfxp`
+  - `testdata/ttml/real/w3c_imsc11_frames.ttml`
+  - `testdata/ttml/real/w3c_imsc11_line_gaps.ttml`
+  - `testdata/ttml/real/w3c_imsc11_paragraphs.ttml`
+  - `testdata/ttml/real/w3c_imsc11_regions.ttml`
+  - `testdata/ttml/real/w3c_ttml1_cells.ttml`
+  - `testdata/ttml/real/w3c_ttml1_timed_spans.ttml`
+  - `testdata/ttml/real/w3c_ttml1_timing.ttml`
 
 This repository includes material copied from or derived from the specifications above. Copyright (c) World Wide Web Consortium. https://www.w3.org/copyright/software-license-2023/
 
@@ -548,4 +569,38 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
+
+## sandflow/ttconv
+
+- Project: <https://github.com/sandflow/ttconv>
+- Licence: BSD-2-Clause
+- Checked at: `1fed6abf555ca1d5ae2c839ad3c1625f15c9a96c`
+- Files copied from it, with `begin` and `end` added to each `<p>`:
+  - `testdata/ttml/real/ttconv_referential_styling.ttml`, from `src/test/resources/ttml/referential_styling.ttml`
+  - `testdata/ttml/real/ttconv_lwsp_default.ttml`, from `src/test/resources/ttml/lwsp_default.ttml`
+  - `testdata/ttml/real/ttconv_lwsp_preserve.ttml`, from `src/test/resources/ttml/lwsp_preserve.ttml`
+
+```text
+Copyright (c) 2020, Sandflow Consulting LLC
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```

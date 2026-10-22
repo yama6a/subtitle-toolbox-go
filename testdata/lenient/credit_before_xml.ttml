@@ -1,0 +1,11 @@
+Subtitles by the harbour film club
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xml:lang="en">
+  <body>
+    <div>
+      <p begin="00:00:01.000" end="00:00:03.000">The boat leaves at noon.</p>
+      <p begin="00:00:0x.000" end="00:00:06.000">Life vests are under the seats.</p>
+      <p begin="00:00:07.000" end="00:00:09.000">Enjoy the trip.</p>
+    </div>
+  </body>
+</tt>

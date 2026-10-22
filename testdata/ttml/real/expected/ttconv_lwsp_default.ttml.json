@@ -1,0 +1,62 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": {
+                    "ttp:contentProfiles": "http://www.w3.org/ns/ttml/profile/imsc1.1/text"
+                },
+                "head": "<head>\n        <layout>\n            <region xml:id=\"r1\"/>\n        </layout>\n    </head>",
+                "body": {
+                    "region": "r1"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 2.0,
+                "lines": [
+                    "hello my name is Mathilda"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 2.0,
+                "end": 4.0,
+                "lines": [
+                    "bonjour mon nom",
+                    "est"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

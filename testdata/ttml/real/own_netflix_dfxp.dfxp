@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:ttp="http://www.w3.org/ns/ttml#parameter" xmlns:tts="http://www.w3.org/ns/ttml#styling" ttp:tickRate="10000000" ttp:timeBase="media" xml:lang="en">
+  <head>
+    <ttp:profile use="http://netflix.com/ttml/profile/dfxp-ls-sdh"/>
+    <styling>
+      <style tts:color="white" tts:fontFamily="monospaceSansSerif" tts:fontSize="100%" xml:id="bodyStyle"/>
+      <style tts:color="white" tts:fontFamily="monospaceSansSerif" tts:fontSize="100%" tts:fontStyle="italic" xml:id="style_0"/>
+    </styling>
+    <layout>
+      <region tts:displayAlign="after" tts:extent="80.00% 80.00%" tts:origin="10.00% 10.00%" tts:textAlign="center" xml:id="region_bottom"/>
+      <region tts:displayAlign="before" tts:extent="80.00% 80.00%" tts:origin="10.00% 10.00%" tts:textAlign="center" xml:id="region_top"/>
+    </layout>
+  </head>
+  <body style="bodyStyle">
+    <div xml:space="preserve">
+      <p begin="20020000t" end="45045000t" region="region_bottom" xml:id="subtitle0">The winter timetable<br/>starts on Monday.</p>
+      <p begin="46296250t" end="71321250t" region="region_bottom" xml:id="subtitle1"><span style="style_0">[announcer]</span><br/>The coast train leaves at 6:50.</p>
+      <p begin="72572500t" end="97597500t" region="region_top" xml:id="subtitle2">PLATFORM 4</p>
+      <p begin="98848750t" end="123873750t" region="region_bottom" xml:id="subtitle3"><span style="style_0">Ten minutes earlier</span><br/><span style="style_0">than before.</span></p>
+      <p begin="36000000000t" end="36025025000t" region="region_bottom" xml:id="subtitle4">- Is the last train still at 11?<br/>- Yes, at 11:15.</p>
+    </div>
+  </body>
+</tt>

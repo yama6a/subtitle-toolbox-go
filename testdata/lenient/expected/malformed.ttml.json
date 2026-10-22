@@ -1,0 +1,39 @@
+{
+    "name": "TTML with malformed XML",
+    "format": "ttml",
+    "strict": {
+        "error": "The file is not well-formed XML.",
+        "line": null
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "Salt &amp; pepper are on the table."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "Turn left\nat the bakery."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "Tickets cost 5 &amp;cur; at the door."
+        },
+        {
+            "start": 10,
+            "end": 12,
+            "text": "The last bus leaves at ten."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 5,
+            "block": null,
+            "action": "repaired",
+            "message": "The file is not well-formed XML. ",
+            "messageEnd": ". The parser repaired it."
+        }
+    ]
+}

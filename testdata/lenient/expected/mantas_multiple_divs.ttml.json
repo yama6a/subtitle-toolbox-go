@@ -1,0 +1,33 @@
+{
+    "name": "TTML with a paragraph that begins after its timed div ends",
+    "format": "ttml",
+    "strict": {
+        "error": "The paragraph begins at 3.887s, but its parent ends at 2.423s.",
+        "line": 12
+    },
+    "cues": [
+        {
+            "start": 1.464,
+            "end": 2.423,
+            "text": "The train to the coast\nleaves from platform four."
+        },
+        {
+            "start": 2.423,
+            "end": 5.432,
+            "text": "Please mind the gap."
+        },
+        {
+            "start": 10.886,
+            "end": 10.928,
+            "text": "BAKERY OPEN"
+        }
+    ],
+    "warnings": [
+        {
+            "line": 12,
+            "block": 1,
+            "action": "repaired",
+            "message": "The paragraph begins at 3.887s, but its parent ends at 2.423s. The parser read its times as absolute: 2.423s to 5.432s."
+        }
+    ]
+}

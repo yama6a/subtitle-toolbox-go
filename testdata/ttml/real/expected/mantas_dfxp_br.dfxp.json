@@ -1,0 +1,47 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Netflix Subtitle"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "ttm": "http://www.w3.org/ns/ttml#metadata",
+                    "tts": "http://www.w3.org/ns/ttml#styling",
+                    "xsi": "http://www.w3.org/2001/XMLSchema-instance"
+                },
+                "attributes": [],
+                "head": "<head>\n    <metadata>\n    </metadata>\n    <styling>\n      <style tts:fontStyle=\"normal\" tts:fontWeight=\"normal\" xml:id=\"s1\" tts:color=\"white\" tts:fontFamily=\"Arial\" tts:fontSize=\"100%\"/>\n    </styling>\n    <layout>\n      <region tts:extent=\"80% 40%\" tts:origin=\"10% 10%\" tts:displayAlign=\"before\" tts:textAlign=\"center\" xml:id=\"topCenter\"/>\n      <region tts:extent=\"80% 40%\" tts:origin=\"10% 50%\" tts:displayAlign=\"after\" tts:textAlign=\"center\" xml:id=\"bottomCenter\"/>\n    </layout>\n  </head>"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 1.0,
+                "lines": [
+                    "one",
+                    "two",
+                    "three"
+                ],
+                "identifier": "p1",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottomCenter"
+                        },
+                        "alignment": 2,
+                        "div": {
+                            "style": "s1"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,50 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "itts": "http://www.w3.org/ns/ttml/profile/imsc1#styling",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": {
+                    "ttp:timeBase": "media",
+                    "ttp:cellResolution": "50 30",
+                    "ttp:contentProfiles": "http://www.w3.org/ns/ttml/profile/imsc1.1/text"
+                },
+                "head": "<head>\n    <styling>\n      <style xml:id=\"spanStyle\" tts:color=\"#ffffff\" tts:backgroundColor=\"#000000\"/>\n      <style xml:id=\"spanStyleSmall\" tts:color=\"#000000\" tts:backgroundColor=\"#dfbb02\" tts:fontSize=\"50%\"/>\n      <style xml:id=\"spanStyleBig\" tts:color=\"#ffffff\" tts:backgroundColor=\"#b75800\" tts:fontSize=\"150%\"/>\n      <style xml:id=\"paragraphStyle\" tts:fontFamily=\"monospaceSerif\" tts:textAlign=\"center\" tts:fontSize=\"200%\" tts:lineHeight=\"165%\" itts:fillLineGap=\"true\"/>\n    </styling>\n    <layout>\n      <region xml:id=\"bottom\" tts:origin=\"10% 10%\" tts:extent=\"80% 80%\" tts:displayAlign=\"after\"/>\n    </layout>\n  </head>"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 30.0,
+                "lines": [
+                    "##Line gaps##",
+                    "The quick brown fox",
+                    "jumps over the <font color=\"#000000\">lazy </font>dog",
+                    "##Line gaps##"
+                ],
+                "identifier": "subtitle1",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom",
+                            "style": "paragraphStyle"
+                        },
+                        "alignment": 2
+                    }
+                }
+            }
+        ]
+    }
+}

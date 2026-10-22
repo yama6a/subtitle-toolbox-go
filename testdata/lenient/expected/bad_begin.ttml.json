@@ -1,0 +1,39 @@
+{
+    "name": "TTML with a bad begin time and a paragraph without end",
+    "format": "ttml",
+    "strict": {
+        "error": "The time expression \"00:00:0x.000\" is not valid.",
+        "line": null
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The library opens at nine."
+        },
+        {
+            "start": 7,
+            "end": 10,
+            "text": "Quiet, please."
+        },
+        {
+            "start": 10,
+            "end": 12,
+            "text": "<i>The reading room</i> is upstairs."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 6,
+            "block": 1,
+            "action": "skipped",
+            "message": "The time expression \"00:00:0x.000\" is not valid."
+        },
+        {
+            "line": 7,
+            "block": 2,
+            "action": "repaired",
+            "message": "The paragraph that begins at 7s has no end time. The parser ended it at the next paragraph at 10s."
+        }
+    ]
+}

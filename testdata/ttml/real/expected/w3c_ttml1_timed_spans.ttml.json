@@ -1,0 +1,106 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": {
+                    "ttp:cellResolution": "60 20"
+                },
+                "head": "<head>\n    <layout>\n      <region xml:id=\"r1\" tts:color=\"white\" tts:origin=\"10c 4c\" tts:extent=\"40c 5c\" tts:displayAlign=\"after\"/>\n    </layout>\n  </head>"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 25.0,
+                "lines": [
+                    "Lorem <00:00:01.000>ipsum <00:00:02.000>dolor <00:00:03.000>sit"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 0.0,
+                "end": 25.0,
+                "lines": [
+                    "<00:00:04.000>Amet <00:00:05.000>consectetur <00:00:06.000>adipiscing <00:00:07.000>elit"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 0.0,
+                "end": 25.0,
+                "lines": [
+                    "<00:00:08.000>Sed <00:00:09.000>do <00:00:10.000>eiusmod <00:00:11.000>tempor <00:00:12.000>incididunt <00:00:13.000>labore"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 0.0,
+                "end": 25.0,
+                "lines": [
+                    "<00:00:14.000>et <00:00:15.000>dolore <00:00:16.000>magna <00:00:17.000>aliqua"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 0.0,
+                "end": 25.0,
+                "lines": [
+                    "<00:00:18.000>Ut <00:00:19.000>enim <00:00:20.000>ad <00:00:21.000>minim <00:00:22.000>veniam <00:00:23.000>quis, <00:00:24.000>nostrud"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

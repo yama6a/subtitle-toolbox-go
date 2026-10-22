@@ -1,0 +1,56 @@
+{
+    "name": "TTML with paragraphs without an end",
+    "format": "ttml",
+    "strict": {
+        "error": "The paragraph that begins at 1s has no end time.",
+        "line": 5
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The ferry is late today."
+        },
+        {
+            "start": 3,
+            "end": 5,
+            "text": "It should arrive at noon."
+        },
+        {
+            "start": 5,
+            "end": 7,
+            "text": "Please wait inside."
+        },
+        {
+            "start": 7,
+            "end": 8,
+            "text": "Thank you."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 5,
+            "block": 0,
+            "action": "repaired",
+            "message": "The paragraph that begins at 1s has no end time. The parser ended it at the next paragraph at 3s."
+        },
+        {
+            "line": 6,
+            "block": 1,
+            "action": "repaired",
+            "message": "The paragraph that begins at 3s has no end time. The parser ended it at the next paragraph at 5s."
+        },
+        {
+            "line": 7,
+            "block": 2,
+            "action": "repaired",
+            "message": "The paragraph that begins at 5s has no end time. The parser ended it at the next paragraph at 7s."
+        },
+        {
+            "line": 9,
+            "block": 4,
+            "action": "skipped",
+            "message": "The paragraph that begins at 9s has no end time."
+        }
+    ]
+}

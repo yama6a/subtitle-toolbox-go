@@ -1,0 +1,62 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "",
+                "namespaces": [],
+                "attributes": [],
+                "head": "<head>\n  </head>"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 1.0,
+                "lines": [
+                    "First line",
+                    "Second line"
+                ],
+                "identifier": "1",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1.0,
+                "end": 2.0,
+                "lines": [
+                    "Third line",
+                    "Fourth line"
+                ],
+                "identifier": "2",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 2.0,
+                "end": 3.0,
+                "lines": [
+                    "Fifth line",
+                    "Sixth middle line"
+                ],
+                "identifier": "3",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.0,
+                "end": 4.0,
+                "lines": [
+                    "Seventh line",
+                    "Eighth middle line"
+                ],
+                "identifier": "4",
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

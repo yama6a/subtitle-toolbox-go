@@ -35,6 +35,8 @@ type lenientRow struct {
 		Block   *int                `json:"block"`
 		Action  stbox.WarningAction `json:"action"`
 		Message string              `json:"message"`
+		// MessageEnd is set for a message whose middle comes from another library. Message then holds the start.
+		MessageEnd string `json:"messageEnd"`
 	} `json:"warnings"`
 }
 
@@ -75,7 +77,7 @@ func TestLenientFixtures(t *testing.T) {
 				s, info, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: row.Format, Lenient: true})
 				require.NoError(t, err)
 				assert.Equal(t, row.wantCues(), cueRows(s))
-				assert.Equal(t, row.wantWarnings(), warningRows(info.Warnings))
+				assert.Equal(t, row.wantWarnings(), row.matchEnds(warningRows(info.Warnings)))
 			})
 			t.Run("strict", func(t *testing.T) {
 				t.Parallel()
@@ -139,6 +141,16 @@ func (r lenientRow) wantWarnings() []warningRow {
 		out = append(out, row)
 	}
 	return out
+}
+
+// matchEnds replaces each message that starts and ends as a row with MessageEnd says by the start of the row.
+func (r lenientRow) matchEnds(got []warningRow) []warningRow {
+	for i, w := range r.Warnings {
+		if w.MessageEnd != "" && i < len(got) && strings.HasPrefix(got[i].Message, w.Message) && strings.HasSuffix(got[i].Message, w.MessageEnd) {
+			got[i].Message = w.Message
+		}
+	}
+	return got
 }
 
 func seconds(s float64) time.Duration {

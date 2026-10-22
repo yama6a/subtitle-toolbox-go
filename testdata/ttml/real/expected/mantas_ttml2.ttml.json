@@ -1,0 +1,88 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en",
+            "title": "TTML Example"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": [],
+                "head": "<head>\n    <metadata xmlns:ttm=\"http://www.w3.org/ns/ttml#metadata\">\n     <ttm:copyright>Thierry Michel 2015</ttm:copyright>\n    </metadata>\n\n    <styling xmlns:tts=\"http://www.w3.org/ns/ttml#styling\">\n     <style xml:id=\"s1\" tts:color=\"red\" tts:textAlign=\"center\"/>\n    </styling>\n</head>"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 2.0,
+                "lines": [
+                    "Hello I am your first line."
+                ],
+                "identifier": "c1",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 2.0,
+                "end": 4.0,
+                "lines": [
+                    "I am your second captions",
+                    "but with two lines."
+                ],
+                "identifier": "c2",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.0,
+                "end": 6.0,
+                "lines": [
+                    "Je suis le troisième sous-titre."
+                ],
+                "identifier": "c3",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "xml:lang": "fr"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 6.0,
+                "end": 8.0,
+                "lines": [
+                    "I am another caption with <b>Bold</b> and <i>Italic</i> styles."
+                ],
+                "identifier": "c4",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 8.0,
+                "end": 10.0,
+                "lines": [
+                    "<font color=\"#ff0000\">I am the last caption displayed in red and centered.</font>"
+                ],
+                "identifier": "c5",
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "style": "s1"
+                        },
+                        "alignment": 8
+                    }
+                }
+            }
+        ]
+    }
+}
