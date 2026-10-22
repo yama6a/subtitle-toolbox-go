@@ -13,10 +13,7 @@ import (
 // Finish converts the LF output of a writer to the line ending and then applies the BOM rule.
 // formatBOM is the BOM default of the format. Finish never changes body.
 func Finish(body []byte, common model.CommonWriteOptions, formatBOM bool) []byte {
-	out := body
-	if common.LineEnding == model.CRLF {
-		out = toCRLF(body)
-	}
+	out := LineEnding(body, common)
 	switch common.BOM {
 	case model.BOMAdd:
 		return textenc.AddUTF8BOM(out)
@@ -28,6 +25,15 @@ func Finish(body []byte, common model.CommonWriteOptions, formatBOM bool) []byte
 		}
 	}
 	return out
+}
+
+// LineEnding converts the LF output of a writer to the line ending. It never changes body.
+// A writer that writes in parts converts each part with it and calls Finish for the first part only.
+func LineEnding(body []byte, common model.CommonWriteOptions) []byte {
+	if common.LineEnding == model.CRLF {
+		return toCRLF(body)
+	}
+	return body
 }
 
 // Write finishes body and writes it to w in one call. The output on w is incomplete after an error.

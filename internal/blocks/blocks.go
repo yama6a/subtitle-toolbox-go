@@ -86,3 +86,27 @@ func JoinWarning(block, line int) string {
 func IsNumeric(s string) bool {
 	return numericRegexp.MatchString(s)
 }
+
+// DropCut yields the blocks of blocks without the last one when an error cut the input inside it.
+// cut is called once blocks has ended. It returns the 1-based number of the last line that was read, and
+// true when an error ended the input. The last block is cut when it ends on that line, because no empty
+// line came after it.
+func DropCut(blocks iter.Seq[Block], cut func() (int, bool)) iter.Seq[Block] {
+	return func(yield func(Block) bool) {
+		var held Block
+		has := false
+		for b := range blocks {
+			if has && !yield(held) {
+				return
+			}
+			held, has = b, true
+		}
+		if !has {
+			return
+		}
+		if line, ok := cut(); ok && held.Line+len(held.Lines)-1 == line {
+			return
+		}
+		yield(held)
+	}
+}
