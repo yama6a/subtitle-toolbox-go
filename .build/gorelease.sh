@@ -3,7 +3,7 @@
 # Reads the PR labels as a JSON list from LABELS. Runs in the repo root and needs the tags.
 set -euo pipefail
 
-# Renovate does not update a version in a go run command, so update this pin by hand.
+# Renovate updates this pin through the custom manager in renovate.json5.
 gorelease=golang.org/x/exp/cmd/gorelease@v0.0.0-20261014143641-f0251eb4aa3e
 
 # A missing or double release label is the job of the release label check, so it counts as none here.

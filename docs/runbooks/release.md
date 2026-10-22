@@ -286,7 +286,7 @@ Replace `1.0.0` with the version of the release.
 
 - **Tags are permanent**: the Go module proxy keeps a version forever, also after a tag delete. Never delete or move a `v*` tag. A broken v1.0.0 gets a fix in v1.0.1. If nobody may use v1.0.0, v1.0.1 adds `retract v1.0.0` to `go.mod`.
 - **Only one pull request carries `major` before 1.0.0**: `version check` cannot tell the 1.0.0 pull request from another `major` pull request before the first tag.
-- **API check in CI**: the `gorelease` job of [#158](https://github.com/yama6a/subtitle-toolbox-go/issues/158) compares the API of a pull request with the newest `v*` tag. It fails when the release label is weaker than the change. The pin of `golang.org/x/exp` is in [`.build/gorelease.sh`](../../.build/gorelease.sh).
+- **API check in CI**: the `gorelease` job of [#158](https://github.com/yama6a/subtitle-toolbox-go/issues/158) compares the API of a pull request with the newest `v*` tag. It fails when the release label is weaker than the change. Renovate updates the pin of `golang.org/x/exp` in [`.build/gorelease.sh`](../../.build/gorelease.sh) through a custom manager in `renovate.json5`.
 - **Open pull requests after the first tag**: before `v1.0.0`, `version check` fails every pull request labelled `patch` or `minor`. The check reruns only on a push or a label change. After the tag, rerun the failed job of each such pull request:
 
   ```bash
