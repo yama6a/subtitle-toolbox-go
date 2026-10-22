@@ -77,6 +77,16 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	}
 	_ = s.SetFormatData(formatDataKey, data) // the data has the shape of the schema
 
+	cues, err := readCues(st, lines, fps)
+	if err != nil {
+		return nil, nil, err
+	}
+	s.AddCues(cues...)
+	return s, st.Warnings(), nil
+}
+
+// readCues reads each line as a cue. Lenient mode skips a line that fails.
+func readCues(st *parsing.State, lines []rawLine, fps float64) ([]model.Cue, error) {
 	cues := make([]model.Cue, 0, len(lines))
 	for _, l := range lines {
 		c, err := readCue(st, l, fps)
@@ -86,14 +96,13 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 		}
 		var perr *model.ParseError
 		if !errors.As(err, &perr) {
-			return nil, nil, err
+			return nil, err
 		}
 		if err := st.Fail(perr, l.number, l.block, []string{l.text}); err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
-	s.AddCues(cues...)
-	return s, st.Warnings(), nil
+	return cues, nil
 }
 
 func nonEmptyLines(content string) []rawLine {
@@ -107,27 +116,11 @@ func nonEmptyLines(content string) []rawLine {
 }
 
 // frameRate returns the frame rate of the read and lines without the {1}{1}<fps> line. hasLine reports that line.
-// Strict mode looks at the first line only. Lenient mode looks at the first line with the cue shape, so the frame
-// rate line may follow junk such as a release name.
 func frameRate(st *parsing.State, lines []rawLine, option float64) (fps float64, rest []rawLine, hasLine bool, err error) {
-	first := -1
-	for i, l := range lines {
-		if _, ok := parseCueShape(l.text); !st.Lenient() || ok {
-			first = i
-			break
-		}
-	}
-	if first >= 0 {
+	if first := firstLine(st, lines); first >= 0 {
 		if m := frameRateLineRegexp.FindStringSubmatch(lines[first].text); m != nil {
-			rest = append(lines[:first:first], lines[first+1:]...)
-			if option != 0 {
-				return option, rest, true, nil
-			}
-			fps, _ = strconv.ParseFloat(m[1], 64) // a value beyond the float range is +Inf, which the check rejects
-			if checkFrameRate(fps, "", "") != nil {
-				return 0, nil, false, &model.ParseError{Format: model.MicroDVD, Msg: frameRateMessage("The frame rate", fps)}
-			}
-			return fps, rest, true, nil
+			fps, err := lineFrameRate(m[1], option)
+			return fps, slices.Delete(slices.Clone(lines), first, first+1), err == nil, err
 		}
 	}
 	switch {
@@ -145,6 +138,30 @@ func frameRate(st *parsing.State, lines []rawLine, option float64) (fps float64,
 			Option: frameRateOption,
 		}
 	}
+}
+
+// firstLine returns the index of the line that may hold the frame rate, or -1. Strict mode takes the first line.
+// Lenient mode takes the first line with the cue shape, so the frame rate line may follow junk such as a release name.
+func firstLine(st *parsing.State, lines []rawLine) int {
+	for i, l := range lines {
+		if _, ok := parseCueShape(l.text); !st.Lenient() || ok {
+			return i
+		}
+	}
+	return -1
+}
+
+// lineFrameRate returns option when it is set, else the number of a {1}{1}<fps> line. The option wins without a
+// check of the line.
+func lineFrameRate(number string, option float64) (float64, error) {
+	if option != 0 {
+		return option, nil
+	}
+	fps, _ := strconv.ParseFloat(number, 64) // a value beyond the float range is +Inf, which the check rejects
+	if checkFrameRate(fps, "", "") != nil {
+		return 0, &model.ParseError{Format: model.MicroDVD, Msg: frameRateMessage("The frame rate", fps)}
+	}
+	return fps, nil
 }
 
 // parseCueShape splits a line of the shape ^\{(\d+)\}\{(\d+)\}(.*)$.
@@ -211,71 +228,76 @@ func frameTime(digits string, fps float64, line int) (time.Duration, error) {
 	return parsing.BoundedTime(d, "{"+digits+"}", line)
 }
 
+// textLine is a kept | line of a cue: its text, its raw code prefix, the codes outside core markup and its style.
+type textLine struct {
+	text, codes, other string
+	style              style
+}
+
 // cueText returns the lines of the text after the frames in core markup, and the lines entry of the format data.
 // Only the codes at the start of each | line count. An upper-case code letter styles every line of the cue, a
 // lower-case letter its own line.
 func cueText(text string) ([]string, []any) {
 	var cueStyle style
-	type textLine struct {
-		text, codes, other string
-		style              style
-	}
 	var kept []textLine
 	for part := range strings.SplitSeq(text, "|") {
-		prefix := codePrefix(part)
-		var lineStyle style
-		var other strings.Builder
-		for code := range codes(prefix) {
-			letter, value := code[1], code[3:len(code)-1]
-			target := &lineStyle
-			if letter >= 'A' && letter <= 'Z' {
-				target = &cueStyle
-			}
-			if !applyCode(target, letter|0x20, value) {
-				other.WriteString(code)
-			}
-		}
-		if lineText := strings.Trim(part[len(prefix):], markupcore.PHPTrimSet); lineText != "" {
-			kept = append(kept, textLine{text: lineText, codes: prefix, other: other.String(), style: lineStyle})
+		if l, ok := parseLine(part, &cueStyle); ok {
+			kept = append(kept, l)
 		}
 	}
-
 	lines := make([]string, len(kept))
 	data := make([]any, len(kept))
 	for i, l := range kept {
-		color := l.style.color
-		if color == "" {
-			color = cueStyle.color
-		}
-		tags := orderedTags(cueStyle.tags, l.style.tags)
-		run := markupcore.Run{Text: l.text, Color: color}
-		tagList := make([]any, len(tags))
-		for j, tag := range tags {
-			tagList[j] = tag
-			switch tag {
-			case "b":
-				run.Bold = true
-			case "i":
-				run.Italic = true
-			case "u":
-				run.Underline = true
-			case "s":
-				run.Strike = true
-			}
-		}
-		lines[i] = markupcore.StyleRuns([]markupcore.Run{run}, false)
-		var storedColor any
-		if color != "" {
-			storedColor = color
-		}
-		data[i] = model.NewData(
-			model.Field{Key: "codes", Value: l.codes},
-			model.Field{Key: "otherCodes", Value: l.other},
-			model.Field{Key: "color", Value: storedColor},
-			model.Field{Key: "tags", Value: tagList},
-		)
+		lines[i], data[i] = l.markup(cueStyle)
 	}
 	return lines, data
+}
+
+// parseLine reads the codes of one | line into its own style and into cue. False means that the line has no text.
+func parseLine(part string, cue *style) (textLine, bool) {
+	l := textLine{codes: codePrefix(part)}
+	var other strings.Builder
+	for code := range codes(l.codes) {
+		letter, value := code[1], code[3:len(code)-1]
+		target := &l.style
+		if letter >= 'A' && letter <= 'Z' {
+			target = cue
+		}
+		if !applyCode(target, letter|0x20, value) {
+			other.WriteString(code)
+		}
+	}
+	l.other = other.String()
+	l.text = strings.Trim(part[len(l.codes):], markupcore.PHPTrimSet)
+	return l, l.text != ""
+}
+
+// markup returns the line in core markup with the styles of the line and of cue, and its format data entry.
+func (l textLine) markup(cue style) (string, *model.Data) {
+	color := l.style.color
+	if color == "" {
+		color = cue.color
+	}
+	tags := orderedTags(cue.tags, l.style.tags)
+	run := markupcore.Run{
+		Text: l.text, Color: color,
+		Bold: slices.Contains(tags, "b"), Italic: slices.Contains(tags, "i"),
+		Underline: slices.Contains(tags, "u"), Strike: slices.Contains(tags, "s"),
+	}
+	tagList := make([]any, len(tags))
+	for i, tag := range tags {
+		tagList[i] = tag
+	}
+	var storedColor any
+	if color != "" {
+		storedColor = color
+	}
+	return markupcore.StyleRuns([]markupcore.Run{run}, false), model.NewData(
+		model.Field{Key: "codes", Value: l.codes},
+		model.Field{Key: "otherCodes", Value: l.other},
+		model.Field{Key: "color", Value: storedColor},
+		model.Field{Key: "tags", Value: tagList},
+	)
 }
 
 // codePrefix returns the run of codes at the start of line, as ^(?:\{[A-Za-z]:[^}]*\})* matches it.
@@ -309,20 +331,35 @@ func codes(prefix string) iter.Seq[string] {
 
 // applyCode applies a {y:...} or {c:$BBGGRR} code to s. It returns false for any other code.
 func applyCode(s *style, letter byte, value string) bool {
-	switch {
-	case letter == 'y' && value != "" && strings.Trim(value, "biusBIUS, ") == "":
-		for i := range len(value) {
-			if c := value[i]; c != ',' && c != ' ' {
-				s.tags = append(s.tags, string(c|0x20))
-			}
+	switch letter {
+	case 'y':
+		tags, ok := styleCode(value)
+		s.tags = append(s.tags, tags...)
+		return ok
+	case 'c':
+		if len(value) != 7 || value[0] != '$' || strings.Trim(value[1:], "0123456789abcdefABCDEF") != "" {
+			return false
 		}
-		return true
-	case letter == 'c' && len(value) == 7 && value[0] == '$' && isHex(value[1:]):
 		s.color = "#" + markupcore.ASCIILower(markupcore.BGRToRGB(value[1:]))
 		return true
 	default:
 		return false
 	}
+}
+
+// styleCode returns the style tags of the value of a {y:...} code: only the letters b, i, u and s in any case,
+// commas and spaces.
+func styleCode(value string) ([]string, bool) {
+	if value == "" || strings.Trim(value, "biusBIUS, ") != "" {
+		return nil, false
+	}
+	var tags []string
+	for i := range len(value) {
+		if c := value[i]; c != ',' && c != ' ' {
+			tags = append(tags, string(c|0x20))
+		}
+	}
+	return tags, true
 }
 
 // orderedTags returns the style tags of cue and line without repeats, in the order b, i, u, s.
@@ -341,8 +378,4 @@ func orderedTags(cue, line []string) []string {
 
 func isASCIILetter(c byte) bool {
 	return 'a' <= c|0x20 && c|0x20 <= 'z'
-}
-
-func isHex(s string) bool {
-	return strings.Trim(s, "0123456789abcdefABCDEF") == ""
 }

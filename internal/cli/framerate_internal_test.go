@@ -71,25 +71,49 @@ func TestMicroDVDFrameRates(t *testing.T) {
 		words []string
 		want  result
 	}{
-		{"input without a rate", []string{"convert", "frames.sub", "--to", "srt", "-o", "-"},
-			result{Code: exitFile, Stderr: unknownRate + lenientHint + "\n"}},
-		{"fps sets the input rate", []string{"convert", "frames.sub", "--to", "srt", "-o", "-", "--fps", "25"},
-			result{Stdout: "\xEF\xBB\xBF" + framesAt25Header + "\n2\n00:00:04,000 --> 00:00:06,000\n<i>Second line.</i>\n"}},
+		{
+			"input without a rate",
+			[]string{"convert", "frames.sub", "--to", "srt", "-o", "-"},
+			result{Code: exitFile, Stderr: unknownRate + lenientHint + "\n"},
+		},
+		{
+			"fps sets the input rate",
+			[]string{"convert", "frames.sub", "--to", "srt", "-o", "-", "--fps", "25"},
+			result{Stdout: "\xEF\xBB\xBF" + framesAt25Header + "\n2\n00:00:04,000 --> 00:00:06,000\n<i>Second line.</i>\n"},
+		},
 		{"fps sets the output rate", []string{"convert", "frames.sub", "--shift", "0", "--fps", "25"}, result{Stdout: framesOutput}},
 		{"fps with to microdvd", []string{"convert", "frames.sub", "--fps", "25", "--to", "microdvd", "-o", "-"}, result{Stdout: framesOutput}},
-		{"input and output rates", []string{"convert", "frames.sub", "--input-fps", "25", "--output-fps", "23.976", "--to", "microdvd", "-o", "-"},
-			result{Stdout: framesAt23976}},
-		{"output rate wins over fps", []string{"convert", "frames.sub", "--fps", "25", "--output-fps", "23.976", "--to", "microdvd", "-o", "-"},
-			result{Stdout: framesAt23976}},
-		{"output rate after =", []string{"convert", "frames.sub", "--input-fps=25", "--output-fps=23.976", "--to", "sub", "-o", "-"},
-			result{Stdout: framesAt23976}},
-		{"output rate without an input rate", []string{"convert", "frames.sub", "--output-fps", "25", "--to", "microdvd", "-o", "-"},
-			result{Code: exitFile, Stderr: unknownRate + lenientHint + "\n"}},
-		{"lenient reads at 23.976", []string{"convert", "frames.sub", "--lenient", "--to", "microdvd", "-o", "-"},
-			result{Stdout: framesOutput, Stderr: "frames.sub: The file has no {1}{1}<fps> line. The parser used 23.976 fps. (repaired)\n"}},
+		{
+			"input and output rates",
+			[]string{"convert", "frames.sub", "--input-fps", "25", "--output-fps", "23.976", "--to", "microdvd", "-o", "-"},
+			result{Stdout: framesAt23976},
+		},
+		{
+			"output rate wins over fps",
+			[]string{"convert", "frames.sub", "--fps", "25", "--output-fps", "23.976", "--to", "microdvd", "-o", "-"},
+			result{Stdout: framesAt23976},
+		},
+		{
+			"output rate after =",
+			[]string{"convert", "frames.sub", "--input-fps=25", "--output-fps=23.976", "--to", "sub", "-o", "-"},
+			result{Stdout: framesAt23976},
+		},
+		{
+			"output rate without an input rate",
+			[]string{"convert", "frames.sub", "--output-fps", "25", "--to", "microdvd", "-o", "-"},
+			result{Code: exitFile, Stderr: unknownRate + lenientHint + "\n"},
+		},
+		{
+			"lenient reads at 23.976",
+			[]string{"convert", "frames.sub", "--lenient", "--to", "microdvd", "-o", "-"},
+			result{Stdout: framesOutput, Stderr: "frames.sub: The file has no {1}{1}<fps> line. The parser used 23.976 fps. (repaired)\n"},
+		},
 		{"output without a rate", []string{"convert", "trip.srt", "--to", "microdvd", "-o", "-"}, result{Code: exitFile, Stderr: noOutputRate}},
-		{"output rate on SubRip output", []string{"convert", "trip.srt", "--to", "srt", "-o", "-", "--output-fps", "25"},
-			result{Stdout: convertAs(t, "trip.srt", stbox.SubRip)}},
+		{
+			"output rate on SubRip output",
+			[]string{"convert", "trip.srt", "--to", "srt", "-o", "-", "--output-fps", "25"},
+			result{Stdout: convertAs(t, "trip.srt", stbox.SubRip)},
+		},
 		{"info without a rate", []string{"info", "frames.sub"}, result{Code: exitFile, Stderr: unknownRate + lenientHint + "\n"}},
 	}
 	for _, tt := range tests {

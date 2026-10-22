@@ -141,20 +141,35 @@ func TestControlCodesOfTheWrite(t *testing.T) {
 		want  string
 	}{
 		// Ports testCoreMarkupBecomesControlCodes of tests/Formatters/MicroDvdFormatterTest.php of subtitle-toolbox-php.
-		{"core markup", [][]string{{`<font color="#ff0000"><b><i>Red</i></b></font>`, "<u><s>Under &amp; strike</s></u>", "Partly <i>italic</i> &lt;3"}},
-			"{25}{50}{c:$0000FF}{y:b}{y:i}Red|{y:u}{y:s}Under & strike|Partly italic <3\n"},
+		{
+			"core markup",
+			[][]string{{`<font color="#ff0000"><b><i>Red</i></b></font>`, "<u><s>Under &amp; strike</s></u>", "Partly <i>italic</i> &lt;3"}},
+			"{25}{50}{c:$0000FF}{y:b}{y:i}Red|{y:u}{y:s}Under & strike|Partly italic <3\n",
+		},
 		// Ports testSingleQuotedAndUnquotedColoursBecomeColourCodes of tests/Formatters/MicroDvdFormatterTest.php of subtitle-toolbox-php.
-		{"single-quoted and unquoted colors", [][]string{{"<font color='#ff0000'>Red</font>"}, {"<font color=#00ff00>Green</font>"}},
-			"{25}{50}{c:$0000FF}Red\n{75}{100}{c:$00FF00}Green\n"},
+		{
+			"single-quoted and unquoted colors",
+			[][]string{{"<font color='#ff0000'>Red</font>"}, {"<font color=#00ff00>Green</font>"}},
+			"{25}{50}{c:$0000FF}Red\n{75}{100}{c:$00FF00}Green\n",
+		},
 		// Ports testColourWithOtherCaseSpacingOrAttributesBecomesColourCode of tests/Formatters/MicroDvdFormatterTest.php of subtitle-toolbox-php.
-		{"colors with other case, spacing or attributes", [][]string{{`<FONT COLOR="#FF0000">Red</FONT>`}, {"<font color = '#00ff00' >Green</font>"}, {`<font face="Arial" color="#0000ff">Blue</font>`}},
-			"{25}{50}{c:$0000FF}Red\n{75}{100}{c:$00FF00}Green\n{125}{150}{c:$FF0000}Blue\n"},
+		{
+			"colors with other case, spacing or attributes",
+			[][]string{{`<FONT COLOR="#FF0000">Red</FONT>`}, {"<font color = '#00ff00' >Green</font>"}, {`<font face="Arial" color="#0000ff">Blue</font>`}},
+			"{25}{50}{c:$0000FF}Red\n{75}{100}{c:$00FF00}Green\n{125}{150}{c:$FF0000}Blue\n",
+		},
 		// Ports testAColorAndAStyleThatSpanLinesStyleEachLine of tests/Formatters/MicroDvdFormatterTest.php of subtitle-toolbox-php.
-		{"color and style over lines", [][]string{{`<font color="#ff0000"><u>Red`, "still red</u></font>", "plain"}},
-			"{25}{50}{c:$0000FF}{y:u}Red|{c:$0000FF}{y:u}still red|plain\n"},
+		{
+			"color and style over lines",
+			[][]string{{`<font color="#ff0000"><u>Red`, "still red</u></font>", "plain"}},
+			"{25}{50}{c:$0000FF}{y:u}Red|{c:$0000FF}{y:u}still red|plain\n",
+		},
 		// Ports testASpeakerTagDoesNotHideTheStyleOfItsLines of tests/Formatters/MicroDvdFormatterTest.php of subtitle-toolbox-php.
-		{"speaker tag", [][]string{{"<v Ben><i>The harbour is closed</i>", "<i>until Monday.</i>"}},
-			"{25}{50}{y:i}The harbour is closed|{y:i}until Monday.\n"},
+		{
+			"speaker tag",
+			[][]string{{"<v Ben><i>The harbour is closed</i>", "<i>until Monday.</i>"}},
+			"{25}{50}{y:i}The harbour is closed|{y:i}until Monday.\n",
+		},
 		{"lines over 2 lines", [][]string{{"<i>One", "Two</i>"}}, "{25}{50}{y:i}One|{y:i}Two\n"},
 		{"cue without text", [][]string{nil}, "{25}{50}\n"},
 		{"tag inside the line", [][]string{{"<b>One</b> and <b>two</b>"}}, "{25}{50}One and two\n"},

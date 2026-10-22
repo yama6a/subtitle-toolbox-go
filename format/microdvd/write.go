@@ -73,19 +73,11 @@ func appendFrame(dst []byte, d time.Duration, fps float64) []byte {
 // stored codes when every line has its stored color and tags.
 func writeText(c model.Cue, stripTags bool) string {
 	stored := storedLines(c)
-	carried := make([]string, len(c.Lines))
-	for i, line := range c.Lines {
-		carried[i] = markupcore.RubyAsText(line)
-	}
-	carried = markupcore.CarryOpenTags(carried)
-	lines := make([]writtenLine, len(carried))
+	lines := writtenLines(c.Lines)
 	keepStored := !stripTags && len(stored) == len(lines)
-	for i, line := range carried {
-		closed := line + markupcore.CloseCoreTags(markupcore.OpenCoreTags(line, nil))
-		lines[i] = readLine(markupcore.KeepTags(closed, "b", "i", "u", "s", "font"))
-		keepStored = keepStored && lines[i].style.color == stored[i].style.color && slices.Equal(lines[i].style.tags, stored[i].style.tags)
+	for i, line := range lines {
+		keepStored = keepStored && line.style.color == stored[i].style.color && slices.Equal(line.style.tags, stored[i].style.tags)
 	}
-
 	texts := make([]string, len(lines))
 	for i, line := range lines {
 		switch {
@@ -94,20 +86,42 @@ func writeText(c model.Cue, stripTags bool) string {
 		case stripTags:
 			texts[i] = line.text
 		default:
-			var codes strings.Builder
-			if line.style.color != "" {
-				codes.WriteString("{c:$" + strings.ToUpper(markupcore.RGBToBGR(line.style.color[1:])) + "}")
-			}
-			for _, tag := range line.style.tags {
-				codes.WriteString("{y:" + tag + "}")
-			}
+			var other string
 			if i < len(stored) {
-				codes.WriteString(stored[i].otherCodes)
+				other = stored[i].otherCodes
 			}
-			texts[i] = codes.String() + line.text
+			texts[i] = line.style.codes() + other + line.text
 		}
 	}
 	return strings.Join(texts, "|")
+}
+
+// writtenLines returns the lines with ruby as text. A tag open across lines wraps each line, and a <v> tag does
+// not hide the styles inside it.
+func writtenLines(lines []string) []writtenLine {
+	carried := make([]string, len(lines))
+	for i, line := range lines {
+		carried[i] = markupcore.RubyAsText(line)
+	}
+	carried = markupcore.CarryOpenTags(carried)
+	out := make([]writtenLine, len(carried))
+	for i, line := range carried {
+		closed := line + markupcore.CloseCoreTags(markupcore.OpenCoreTags(line, nil))
+		out[i] = readLine(markupcore.KeepTags(closed, "b", "i", "u", "s", "font"))
+	}
+	return out
+}
+
+// codes returns the control codes of s: {c:$BBGGRR}, then {y:x} in the order b, i, u, s.
+func (s style) codes() string {
+	var b strings.Builder
+	if s.color != "" {
+		b.WriteString("{c:$" + strings.ToUpper(markupcore.RGBToBGR(s.color[1:])) + "}")
+	}
+	for _, tag := range s.tags {
+		b.WriteString("{y:" + tag + "}")
+	}
+	return b.String()
 }
 
 // writtenLine is a cue line split into the styles that wrap it whole and its plain text.

@@ -27,7 +27,7 @@ type goldenFolder struct {
 }
 
 // microDVDAt25 is the read option of the MicroDVD read goldens, as tests/files/generate-read-goldens.php sets it.
-var microDVDAt25 = stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: 25}} //nolint:gochecknoglobals // a test constant
+var microDVDAt25 = stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: 25}}
 
 func goldenFolders() []goldenFolder {
 	return []goldenFolder{
