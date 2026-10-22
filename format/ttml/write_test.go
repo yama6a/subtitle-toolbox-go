@@ -90,23 +90,13 @@ func setCue(t *testing.T, s *model.Subtitle, i int, change func(*model.Cue)) {
 	require.NoError(t, s.SetCue(i, c))
 }
 
-// paragraphs returns the <p> lines of a TTML output, trimmed.
-func paragraphs(out string) []string {
-	var ps []string
-	for line := range strings.SplitSeq(out, "\n") {
-		if line = strings.TrimSpace(line); strings.HasPrefix(line, "<p") {
-			ps = append(ps, line)
-		}
-	}
-	return ps
-}
-
 var xmlIDRegexp = regexp.MustCompile(`xml:id="([^"]*)"`)
 
 // ids returns the xml:id values of a TTML output in document order.
 func ids(out string) []string {
-	var found []string
-	for _, m := range xmlIDRegexp.FindAllStringSubmatch(out, -1) {
+	matches := xmlIDRegexp.FindAllStringSubmatch(out, -1)
+	found := make([]string, 0, len(matches))
+	for _, m := range matches {
 		found = append(found, m[1])
 	}
 	return found
@@ -181,7 +171,7 @@ func TestChangedAlignmentReplacesTheStoredRegion(t *testing.T) {
 	assert.Equal(t, tail(unchanged), tail(out))
 
 	back, _ := mustRead(t, out, false)
-	var alignments []model.Alignment
+	alignments := make([]model.Alignment, 0, 4)
 	for _, c := range back.Cues()[:4] {
 		alignments = append(alignments, c.Alignment)
 	}

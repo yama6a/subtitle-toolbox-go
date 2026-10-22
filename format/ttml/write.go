@@ -112,6 +112,20 @@ func writeDocument(s *model.Subtitle, common model.CommonWriteOptions, p profile
 	}
 	w.styles = newStyles(w.ns, w.head)
 
+	// The cues add agents and regions to the head, so the head and the IDs of <tt>, <body> and <div> come after.
+	divs := w.divs(s, data)
+	out := w.assemble(s, data, divs)
+	if w.err == nil && !utf8.ValidString(out) {
+		w.fail()
+	}
+	if w.err != nil {
+		return nil, w.err
+	}
+	return []byte(out), nil
+}
+
+// divs returns the paragraphs of the cues, with consecutive cues of the same div attributes in one div.
+func (w *writer) divs(s *model.Subtitle, data *model.Data) []div {
 	body := w.styleProperties(w.writable(storedAttrs(data, "body")))
 	var divs []div
 	for i, c := range s.All() {
@@ -128,7 +142,10 @@ func writeDocument(s *model.Subtitle, common model.CommonWriteOptions, p profile
 		}
 	}
 	w.cue = -1
+	return divs
+}
 
+func (w *writer) assemble(s *model.Subtitle, data *model.Data, divs []div) string {
 	var b strings.Builder
 	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n<tt")
 	b.WriteString(w.rootAttributes(s, storedAttrs(data, "attributes")))
@@ -152,15 +169,7 @@ func writeDocument(s *model.Subtitle, common model.CommonWriteOptions, p profile
 	}
 	w.cue = -1
 	b.WriteString("  </body>\n</tt>\n")
-
-	out := b.String()
-	if w.err == nil && !utf8.ValidString(out) {
-		w.fail()
-	}
-	if w.err != nil {
-		return nil, w.err
-	}
-	return []byte(out), nil
+	return b.String()
 }
 
 // storedAttrs returns the string fields of the object at key in order. An empty list, as PHP stores an empty
@@ -185,7 +194,7 @@ func (w *writer) rootAttributes(s *model.Subtitle, stored []attr) string {
 	for _, a := range stored {
 		prefix, local := splitName(a.name)
 		parameter := prefix != "" && slices.Contains(parameterNamespaces, w.uris[prefix])
-		if w.isWritable(a.name) && !(parameter && slices.Contains(skippedRootParameters, local)) {
+		if w.isWritable(a.name) && (!parameter || !slices.Contains(skippedRootParameters, local)) {
 			out += w.formatAttribute(a)
 		}
 	}

@@ -16,6 +16,29 @@ const badHead = "The stored TTML head is not a well-formed <head> element."
 // load binds the prefixes of the output, parses the stored head inside a <tt> with the output declarations, and
 // reads the IDs, agents and forced regions of the head.
 func (w *writer) load(stored []attr, headXML string) error {
+	w.bindPrefixes(stored)
+	declarations := w.declarations()
+	if w.err != nil {
+		return w.err
+	}
+	doc, err := xmlraw.Parse(strings.NewReader("<tt"+declarations+">"+headXML+"</tt>"), xmlraw.ParseOptions{})
+	if err != nil {
+		return &model.UnwritableError{Format: w.profile.format, CueIndex: -1, Reason: badHead, Err: err}
+	}
+	root, _ := doc.Root()
+	if len(root.Children) == 0 || root.Children[0].Kind != xmlraw.ElementNode || localName(root.Children[0]) != "head" {
+		return &model.UnwritableError{Format: w.profile.format, CueIndex: -1, Reason: badHead}
+	}
+	w.head = root.Children[0]
+	for n := range w.head.Descendants() {
+		w.readHeadElement(n)
+	}
+	return nil
+}
+
+// bindPrefixes binds the root namespace, the stored prefixes, and tts and ttm in the namespaces of the dialect when
+// no prefix is bound to them.
+func (w *writer) bindPrefixes(stored []attr) {
 	w.bind("", w.ns)
 	for _, a := range stored {
 		if a.name != "" {
@@ -32,41 +55,29 @@ func (w *writer) load(stored []attr, headXML string) error {
 	w.tts = w.bindPrefix("tts", stylingNamespaces, styling)
 	w.ttm = w.bindPrefix("ttm", metadataNamespaces, metadata)
 	slices.Sort(w.prefixes)
+}
 
-	declarations := w.declarations()
-	if w.err != nil {
-		return w.err
+// readHeadElement takes the xml:id of an element of the head, and reads a forced region and the names of an agent.
+// The first region of an ID and the first agent of a name win.
+func (w *writer) readHeadElement(n *xmlraw.Node) {
+	id := xmlAttr(n, "id")
+	if id != "" {
+		w.usedIDs[id] = true
 	}
-	doc, err := xmlraw.Parse(strings.NewReader("<tt"+declarations+">"+headXML+"</tt>"), xmlraw.ParseOptions{})
-	if err != nil {
-		return &model.UnwritableError{Format: w.profile.format, CueIndex: -1, Reason: badHead, Err: err}
-	}
-	root, _ := doc.Root()
-	if len(root.Children) == 0 || root.Children[0].Kind != xmlraw.ElementNode || localName(root.Children[0]) != "head" {
-		return &model.UnwritableError{Format: w.profile.format, CueIndex: -1, Reason: badHead}
-	}
-	w.head = root.Children[0]
-
-	for n := range w.head.Descendants() {
-		id := xmlAttr(n, "id")
-		if id != "" {
-			w.usedIDs[id] = true
-		}
-		if forced, ok := imscForcedDisplay(n); ok && isElement(n, w.ns, "region") {
-			if _, seen := w.forcedRegions[id]; !seen {
-				w.forcedRegions[id] = strings.Trim(forced, markupcore.PHPTrimSet) == "true"
-			}
-		}
-		if localName(n) == "agent" && slices.Contains(metadataNamespaces, n.NamespaceURI()) {
-			for name := range n.Descendants() {
-				text := strings.Trim(name.Text(), markupcore.PHPTrimSet)
-				if _, seen := w.agentIDs[text]; !seen && isElement(name, n.NamespaceURI(), "name") {
-					w.agentIDs[text] = id
-				}
-			}
+	if forced, ok := imscForcedDisplay(n); ok && isElement(n, w.ns, "region") {
+		if _, seen := w.forcedRegions[id]; !seen {
+			w.forcedRegions[id] = strings.Trim(forced, markupcore.PHPTrimSet) == "true"
 		}
 	}
-	return nil
+	if localName(n) != "agent" || !slices.Contains(metadataNamespaces, n.NamespaceURI()) {
+		return
+	}
+	for name := range n.Descendants() {
+		text := strings.Trim(name.Text(), markupcore.PHPTrimSet)
+		if _, seen := w.agentIDs[text]; !seen && isElement(name, n.NamespaceURI(), "name") {
+			w.agentIDs[text] = id
+		}
+	}
 }
 
 // imscForcedDisplay returns the itts:forcedDisplay attribute of n in the IMSC styling namespace.
