@@ -1,0 +1,28 @@
+﻿1
+00:00:01,000 --> 00:00:04,000
+Good evening. Here is the weather.
+
+2
+00:00:04,500 --> 00:00:07,500
+Clouds move in from the west during the night.
+
+3
+00:00:05,000 --> 00:00:09,000
+{\an5}SUNNY
+25 °C
+
+4
+00:00:05,000 --> 00:00:09,000
+{\an7}
+
+5
+00:00:08,000 --> 00:00:11,000
+Expect light rain, mostly after 10 pm.
+
+6
+00:00:11,200 --> 00:00:14,000
+<b><i>Tomorrow:</i></b> dry and windy
+
+7
+00:00:14,100 --> 00:00:17,300
+That's all <font color="#0080ff">for<b> tonight</b></font><b><font color="#00ff00"> from</font></b><font color="#00ff00"> us.</font>

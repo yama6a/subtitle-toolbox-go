@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 	"github.com/yama6a/subtitle-toolbox-go/refsync"
 )
@@ -312,6 +313,7 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 	codeDefaults["structure-max-cpl"] = strconv.Itoa(model.DefaultMaxCharactersPerLine)
 	codeDefaults["structure-max-lines"] = strconv.Itoa(model.DefaultMaxLinesPerCue)
 	codeDefaults["timing-min-gap"] = formatNumber(defaultMinGap.Seconds())
+	codeDefaults["ass-karaoke-tag"] = ass.WriteOptions{}.KaraokeTag.String()
 	described := []string{
 		"the format detected from the content", "stop at the first failure", "the input format",
 		"the BOM rule of the output format",

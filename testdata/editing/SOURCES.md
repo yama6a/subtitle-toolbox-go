@@ -21,3 +21,7 @@ Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5
 | `own_ferry_drift_shifted.vtt` | Written for this repository. Expected `WebVttFormatter` output for `own_ferry_drift.vtt` after `shift()` by 2 s from 6 s to 600 s. | MIT |
 | `own_ferry_drift_shifted_all.vtt` | Written for this repository. Expected `WebVttFormatter` output for `own_ferry_drift.vtt` after `shift(-1.5)`. | MIT |
 | `own_ferry_drift_scaled.vtt` | Written for this repository. Expected `WebVttFormatter` output for `own_ferry_drift.vtt` after `scale(1.001)`. The word timestamps move too. | MIT |
+| `own_glow_duplicates.ass` | Written for this repository. ASS with a `Glow` event on layer 0 under a `Default` event on layer 1 with the same text and times, and 2 touching `Default` events with the same text. | MIT |
+| `own_glow_duplicates_deduplicated.ass` | Written for this repository. Expected `AssFormatter` output for `own_glow_duplicates.ass` after `removeDuplicateCues()`. | MIT |
+| `own_same_time_speakers.ass` | Written for this repository. ASS with 2 dialogue events of 2 speakers at the same times, each with its own style, and a later event. | MIT |
+| `own_same_time_speakers_merged.srt` | Written for this repository. Expected `SubRipFormatter` output for `own_same_time_speakers.ass` after `mergeSameTimeCues()`. | MIT |

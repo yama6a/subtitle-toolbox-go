@@ -1,0 +1,85 @@
+{
+    "name": "ASS with 4 fraction digits, no fraction, and a comma or colon before the fraction",
+    "format": "ass",
+    "strict": {
+        "error": "The time \"0:00:03.5004\" is not valid.",
+        "line": 12
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 2,
+            "text": "The ovens warm up at four."
+        },
+        {
+            "start": 3.5,
+            "end": 4,
+            "text": "The first loaves come out at six."
+        },
+        {
+            "start": 5,
+            "end": 6,
+            "text": "Rye bread sells out first."
+        },
+        {
+            "start": 7.5,
+            "end": 8,
+            "text": "The shop opens at seven, not eight."
+        },
+        {
+            "start": 9.25,
+            "end": 10,
+            "text": "Close the door behind you."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 12,
+            "block": 1,
+            "action": "repaired",
+            "message": "The time \"0:00:03.5004\" is not in the form h:mm:ss.cc. The parser read it as 3.5 s."
+        },
+        {
+            "line": 12,
+            "block": 1,
+            "action": "repaired",
+            "message": "The time \"0:00:04.0000\" is not in the form h:mm:ss.cc. The parser read it as 4 s."
+        },
+        {
+            "line": 13,
+            "block": 2,
+            "action": "repaired",
+            "message": "The time \"0:00:05\" is not in the form h:mm:ss.cc. The parser read it as 5 s."
+        },
+        {
+            "line": 13,
+            "block": 2,
+            "action": "repaired",
+            "message": "The time \"0:00:06\" is not in the form h:mm:ss.cc. The parser read it as 6 s."
+        },
+        {
+            "line": 14,
+            "block": 3,
+            "action": "repaired",
+            "message": "The time \"0:00:07,50\" is not in the form h:mm:ss.cc. The parser read it as 7.5 s."
+        },
+        {
+            "line": 14,
+            "block": 3,
+            "action": "repaired",
+            "message": "The time \"0:00:08,00\" is not in the form h:mm:ss.cc. The parser read it as 8 s."
+        },
+        {
+            "line": 15,
+            "block": 4,
+            "action": "repaired",
+            "message": "The time \"0:00:09:25\" is not in the form h:mm:ss.cc. The parser read it as 9.25 s."
+        },
+        {
+            "line": 15,
+            "block": 4,
+            "action": "repaired",
+            "message": "The time \"0:00:10:00\" is not in the form h:mm:ss.cc. The parser read it as 10 s."
+        }
+    ]
+}

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -15,6 +16,8 @@ import (
 type convertCommand struct {
 	out   writeOutput
 	edits []edit
+	// ass holds the write options of the ass group, nil without them.
+	ass *ass.WriteOptions
 }
 
 var (
@@ -106,7 +109,7 @@ func (cc *convertCommand) run(ctx context.Context, a *args, c *console) error {
 }
 
 // prepare runs the checks in the order of docs/cli.md: the input options, the output options, the --language
-// rule, then each group in pipeline order.
+// rule, each group in pipeline order, then the --to ass rule.
 func (cc *convertCommand) prepare(a *args, r *runner) error {
 	if err := r.prepareRead(a); err != nil {
 		return err
@@ -117,15 +120,16 @@ func (cc *convertCommand) prepare(a *args, r *runner) error {
 	if err := needsOneOf(a, []string{"case"}, "language"); err != nil {
 		return err
 	}
-	add := func(e edit) { cc.edits = append(cc.edits, e) }
-	for _, g := range convertGroups() {
-		if err := g.build(a, add); err != nil {
-			return err
-		}
+	if err := cc.prepareGroups(a); err != nil {
+		return err
 	}
 	cc.out.encode = func(in *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error {
 		if f != stbox.WebVTT {
-			return stbox.Write(out, s, f, cc.out.opts)
+			opts := cc.out.opts
+			if cc.ass != nil {
+				opts.ASS = *cc.ass
+			}
+			return stbox.Write(out, s, f, opts)
 		}
 		common := model.CommonWriteOptions{LineEnding: cc.out.opts.LineEnding, BOM: cc.out.opts.BOM, StripTags: cc.out.opts.StripTags}
 		report, err := webvtt.WriteWithReport(out, s, common, webvtt.WriteOptions{})
@@ -138,6 +142,27 @@ func (cc *convertCommand) prepare(a *args, r *runner) error {
 		return nil
 	}
 	return nil
+}
+
+// prepareGroups checks the groups in pipeline order and builds their edits, then checks the --to ass rule.
+func (cc *convertCommand) prepareGroups(a *args) error {
+	add := func(e edit) { cc.edits = append(cc.edits, e) }
+	for _, g := range convertGroups() {
+		if g.writeOptions == nil {
+			if err := g.build(a, add); err != nil {
+				return err
+			}
+			continue
+		}
+		opts, ok, err := g.writeOptions(a)
+		if err != nil {
+			return err
+		}
+		if ok {
+			cc.ass = &opts
+		}
+	}
+	return needsASSOutput(a, cc.out.to)
 }
 
 func (cc *convertCommand) checkInputs(r *runner, inputs []string) error {

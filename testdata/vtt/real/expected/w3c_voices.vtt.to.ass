@@ -1,0 +1,25 @@
+﻿[Script Info]
+ScriptType: v4.00+
+PlayResX: 384
+PlayResY: 288
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,16,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,10,10,10,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:11.00,0:00:13.00,Default,Anna Berg,0,0,0,,We are at the train station
+Dialogue: 0,0:00:13.00,0:00:16.00,Default,Anna Berg,0,0,0,,We're standing on platform two, just next to the bakery
+Dialogue: 0,0:00:16.00,0:00:18.00,Default,Anna Berg,0,0,0,,across the street from the town library
+Dialogue: 0,0:00:18.00,0:00:20.00,Default,Anna Berg,0,0,0,,And with me is Tom Lind
+Dialogue: 0,0:00:20.00,0:00:22.00,Default,Anna Berg,0,0,0,,Baker, owner of the corner bakery
+Dialogue: 0,0:00:22.00,0:00:24.00,Default,Anna Berg,0,0,0,,since 2010.
+Dialogue: 0,0:00:24.00,0:00:26.00,Default,Anna Berg,0,0,0,,Thank you for coming out in the rain.
+Dialogue: 0,0:00:27.00,0:00:30.00,Default,Anna Berg,0,0,0,,And I want to ask about the bread you sell to the travellers.
+Dialogue: 0,0:00:30.00,0:00:31.50,Default,Anna Berg,0,0,0,,{\an3}When the train is late—
+Dialogue: 0,0:00:30.50,0:00:32.50,Default,Tom Lind,0,0,0,,{\an1}Didn't we talk about the late trains last week?
+Dialogue: 0,0:00:32.00,0:00:35.50,Default,Anna Berg,0,0,0,,{\an3}Yes! Yes we did; but but the timetable but
+Dialogue: 0,0:00:32.50,0:00:33.50,Default,Tom Lind,0,0,0,,{\an1\i1}Laughs{\i0}
+Dialogue: 0,0:00:35.50,0:00:38.00,Default,Anna Berg,0,0,0,,You know the rain is so heavy my umbrella is leaking here.

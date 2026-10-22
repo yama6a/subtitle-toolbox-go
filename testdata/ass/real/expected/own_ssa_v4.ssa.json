@@ -1,0 +1,264 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Harbour ferry timetable"
+        },
+        "comments": [
+            {
+                "text": "Timetable section",
+                "beforeCueIndex": 1
+            }
+        ],
+        "formatData": {
+            "ass": {
+                "sectionOrder": [
+                    "Script Info",
+                    "V4 Styles",
+                    "Events"
+                ],
+                "scriptInfoComments": [
+                    "; This is a Sub Station Alpha v4 script."
+                ],
+                "scriptInfo": {
+                    "Original Script": "Station office",
+                    "ScriptType": "v4.00",
+                    "Collisions": "Normal",
+                    "PlayResY": "480",
+                    "PlayDepth": "0",
+                    "Timer": "100.0000"
+                },
+                "stylesSection": "V4 Styles",
+                "styleFormat": [
+                    "Name",
+                    "Fontname",
+                    "Fontsize",
+                    "PrimaryColour",
+                    "SecondaryColour",
+                    "TertiaryColour",
+                    "BackColour",
+                    "Bold",
+                    "Italic",
+                    "BorderStyle",
+                    "Outline",
+                    "Shadow",
+                    "Alignment",
+                    "MarginL",
+                    "MarginR",
+                    "MarginV",
+                    "AlphaLevel",
+                    "Encoding"
+                ],
+                "styles": [
+                    {
+                        "Name": "Default",
+                        "Fontname": "Tahoma",
+                        "Fontsize": "24",
+                        "PrimaryColour": "16777215",
+                        "SecondaryColour": "65535",
+                        "TertiaryColour": "65535",
+                        "BackColour": "-2147483640",
+                        "Bold": "-1",
+                        "Italic": "0",
+                        "BorderStyle": "1",
+                        "Outline": "1",
+                        "Shadow": "2",
+                        "Alignment": "2",
+                        "MarginL": "30",
+                        "MarginR": "30",
+                        "MarginV": "30",
+                        "AlphaLevel": "0",
+                        "Encoding": "0"
+                    },
+                    {
+                        "Name": "Notice",
+                        "Fontname": "Tahoma",
+                        "Fontsize": "20",
+                        "PrimaryColour": "65535",
+                        "SecondaryColour": "65535",
+                        "TertiaryColour": "65535",
+                        "BackColour": "-2147483640",
+                        "Bold": "0",
+                        "Italic": "-1",
+                        "BorderStyle": "1",
+                        "Outline": "1",
+                        "Shadow": "2",
+                        "Alignment": "6",
+                        "MarginL": "30",
+                        "MarginR": "30",
+                        "MarginV": "30",
+                        "AlphaLevel": "0",
+                        "Encoding": "0"
+                    }
+                ],
+                "eventFormat": [
+                    "Marked",
+                    "Start",
+                    "End",
+                    "Style",
+                    "Name",
+                    "MarginL",
+                    "MarginR",
+                    "MarginV",
+                    "Effect",
+                    "Text"
+                ],
+                "commentEvents": [
+                    {
+                        "Marked": "Marked=0",
+                        "Start": "0:00:05.00",
+                        "End": "0:00:05.00",
+                        "Style": "Default",
+                        "Name": "",
+                        "MarginL": "0000",
+                        "MarginR": "0000",
+                        "MarginV": "0000",
+                        "Effect": "",
+                        "Text": "Timetable section"
+                    }
+                ],
+                "sections": []
+            }
+        },
+        "cues": [
+            {
+                "start": 2.0,
+                "end": 5.0,
+                "lines": [
+                    "<v Captain><b>The ferry leaves the harbour at nine.</b>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ass": {
+                        "fields": {
+                            "Marked": "Marked=0",
+                            "Style": "Default",
+                            "Name": "Captain",
+                            "MarginL": "0000",
+                            "MarginR": "0000",
+                            "MarginV": "0000",
+                            "Effect": ""
+                        },
+                        "text": "The ferry leaves the harbour at nine.",
+                        "lines": [
+                            "<v Captain><b>The ferry leaves the harbour at nine.</b>"
+                        ],
+                        "alignment": null
+                    }
+                }
+            },
+            {
+                "start": 5.5,
+                "end": 8.0,
+                "lines": [
+                    "<i>Next ferry: 9:00</i>"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {
+                    "ass": {
+                        "fields": {
+                            "Marked": "Marked=0",
+                            "Style": "Notice",
+                            "Name": "",
+                            "MarginL": "0000",
+                            "MarginR": "0000",
+                            "MarginV": "0000",
+                            "Effect": ""
+                        },
+                        "text": "{\\a6}Next ferry: 9:00",
+                        "lines": [
+                            "<i>Next ferry: 9:00</i>"
+                        ],
+                        "alignment": 8
+                    }
+                }
+            },
+            {
+                "start": 8.5,
+                "end": 11.25,
+                "lines": [
+                    "<v Captain><b><i>Tickets</i> are sold",
+                    "on the pier.</b>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ass": {
+                        "fields": {
+                            "Marked": "Marked=1",
+                            "Style": "Default",
+                            "Name": "Captain",
+                            "MarginL": "0000",
+                            "MarginR": "0000",
+                            "MarginV": "0000",
+                            "Effect": ""
+                        },
+                        "text": "{\\i1}Tickets{\\i0} are sold\\Non the pier.",
+                        "lines": [
+                            "<v Captain><b><i>Tickets</i> are sold",
+                            "on the pier.</b>"
+                        ],
+                        "alignment": null
+                    }
+                }
+            },
+            {
+                "start": 11.5,
+                "end": 14.0,
+                "lines": [
+                    "<b>Calm sea</b>, light wind"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ass": {
+                        "fields": {
+                            "Marked": "Marked=0",
+                            "Style": "Default",
+                            "Name": "",
+                            "MarginL": "0000",
+                            "MarginR": "0000",
+                            "MarginV": "0000",
+                            "Effect": "!Effect"
+                        },
+                        "text": "{\\b1}Calm sea{\\b0}, light wind",
+                        "lines": [
+                            "<b>Calm sea</b>, light wind"
+                        ],
+                        "alignment": null
+                    }
+                }
+            },
+            {
+                "start": 14.5,
+                "end": 17.0,
+                "lines": [
+                    "<v Captain><b><font color=\"#ff0000\">Mind the gap</font> when you board.</b>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ass": {
+                        "fields": {
+                            "Marked": "Marked=0",
+                            "Style": "Default",
+                            "Name": "Captain",
+                            "MarginL": "0010",
+                            "MarginR": "0010",
+                            "MarginV": "0020",
+                            "Effect": ""
+                        },
+                        "text": "{\\c&H0000FF&}Mind the gap{\\c} when you board.",
+                        "lines": [
+                            "<v Captain><b><font color=\"#ff0000\">Mind the gap</font> when you board.</b>"
+                        ],
+                        "alignment": null
+                    }
+                }
+            }
+        ]
+    }
+}

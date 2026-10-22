@@ -63,6 +63,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 |:--- |:--- |
 | SubRip, WebVTT | the line of the error. A message about a missing cue number or timing line quotes the line, cut to 60 characters with `...` |
 | library JSON | 0 |
+| ASS and SSA | the line of the error: the event line, or the `Format:` line for a field name that is a number. A file without `[Events]` and `[Script Info]` gives 0 |
 
 Each format adds its row here when its reader ships.
 

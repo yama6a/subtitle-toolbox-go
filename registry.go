@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
@@ -29,6 +30,9 @@ var (
 	_ readFunc[srt.ReadOptions]         = srt.Read
 	_ writeFunc[srt.WriteOptions]       = srt.Write
 	_ detectFunc                        = srt.Detect
+	_ readFunc[ass.ReadOptions]         = ass.Read
+	_ writeFunc[ass.WriteOptions]       = ass.Write
+	_ detectFunc                        = ass.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -44,7 +48,7 @@ type formatFuncs struct {
 //
 //nolint:gochecknoglobals // lookup table of the format functions
 var registry = []formatFuncs{
-	{format: ASS},
+	{format: ASS, read: readASS, write: writeASS},
 	{format: CSV},
 	{format: JSON, read: readJSON, write: writeJSON},
 	{format: LRC},
@@ -80,6 +84,7 @@ var (
 	}
 	signatures = []signature{
 		{format: WebVTT, match: webvtt.Detect},
+		{format: ASS, match: ass.Detect},
 		{format: SubRip, match: srt.Detect},
 	}
 )
@@ -131,6 +136,14 @@ func readSubRip(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Su
 
 func writeSubRip(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
 	return srt.Write(w, s, common, srt.WriteOptions{})
+}
+
+func readASS(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return ass.Read(r, common, ass.ReadOptions{})
+}
+
+func writeASS(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+	return ass.Write(w, s, common, opts.ASS)
 }
 
 func lookup(f Format) (formatFuncs, bool) {

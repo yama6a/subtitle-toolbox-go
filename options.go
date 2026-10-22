@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -34,6 +35,8 @@ type WriteOptions struct {
 	StripTags bool
 	// JSON holds the settings of the library JSON writer. The zero value writes compact JSON with format data.
 	JSON stboxjson.WriteOptions
+	// ASS holds the settings of the ASS and SSA writer. The zero value writes \k karaoke tags and keeps the styles.
+	ASS ass.WriteOptions
 }
 
 // ReadInfo holds the facts of a read that are not subtitle content.
@@ -81,7 +84,7 @@ func (o WriteOptions) Validate() error {
 			Msg:    "The BOM rule " + strconv.Itoa(int(o.BOM)) + " is unknown.",
 		}
 	}
-	return nil
+	return o.ASS.Validate()
 }
 
 func (o ReadOptions) common() model.CommonReadOptions {

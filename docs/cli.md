@@ -57,7 +57,7 @@ The words after the command name follow the PHP 5.x CLI. The standard `flag` pac
 | a glob such as `"season1/*.srt"` | the matching files, for shells that do not expand globs. No match keeps the argument, which then fails as a missing file |
 
 - **Duplicates**: an input whose real path came before is left out. `"dir/*.srt" dir/b.srt` reads `dir/b.srt` once.
-- **Format**: without `--from`, the content decides, then the extension, as [detection.md](detection.md) says. `--from` and `--to` take a format name or an extension: `srt`, `.SRT` and `vtt` work.
+- **Format**: without `--from`, the content decides, then the extension, as [detection.md](detection.md) says. `--from` and `--to` take a format name or an extension: `srt`, `.SRT`, `vtt` and `ssa`, the extension of `ass`, work.
 - **Encoding**: `--encoding NAME` sets the source encoding of input that is not UTF-8. An unknown name fails before the first read, and the message lists every name. [encodings.md](encodings.md#supported-names) holds the list.
 - **Lenient mode**: `--lenient` skips or repairs broken cues and prints each warning on stderr as `LABEL: line N: MESSAGE (skipped)`. A strict read that fails on a broken cue prints `Pass --lenient to skip or repair broken cues.`.
 - **Batches**: the run stops at the first input that fails. `--keep-going` goes on with the next one.
@@ -90,7 +90,7 @@ A `.txt` file in a directory is an input only when content detection finds a for
 `stbox convert <input>... [--to FORMAT] [-o FILE | --output-dir DIR] [options]` reads subtitle files, runs edits on them, and writes them in the format of `--to`, else in the input format. Example: `stbox convert film.srt --to vtt --shift -0.5 --timing-fix-overlaps -o film.vtt` shifts every cue 0.5 s earlier, ends each cue before the next one starts, and writes WebVTT.
 
 - **Help**: `stbox convert --help` lists the common options and the groups. `--help GROUP` prints the options of one group, `--help all` prints all of them. A topic with `.`, `/` or `\`, or the name of an existing file, is no topic: `convert in.srt -h out.srt` prints the default help.
-- **Checks**: every option check runs before the first read, so a bad value exits 2 and reads nothing. The input options come first, then the output options, `--language` and the groups in pipeline order. The first failing check decides the message.
+- **Checks**: every option check runs before the first read, so a bad value exits 2 and reads nothing. The input options come first, then the output options, `--language`, the groups in pipeline order, the `ass` group and the `--to ass` rule. The first failing check decides the message.
 - **`--language`** sets the language of `--case`, for example `tr` for the Turkish dotted i. Without `--case` it fails.
 - **WebVTT colors**: WebVTT has classes for 8 colors. For each other color, convert prints `LABEL: Cue #3 at 4 s: dropped the color "#123456", because WebVTT has classes for 8 colors only.` on stderr and still exits 0.
 
@@ -106,6 +106,16 @@ The edits run in this order, whatever the order of the flags. A group runs only 
 | 4 | `structure` | `--structure-*` | joins and splits change the cues, so the timing edits run after it |
 | 5 | `retime` | `--sync`, `--shift`, `--scale`, `--from-fps` with `--to-fps`, in this order | |
 | 6 | `timing` | `--timing-*` | |
+
+The `ass` group comes last in the help. It runs no edit: it sets how the ASS writer writes the output.
+
+| Option | Value | Default | Effect |
+|:--- |:--- |:--- |:--- |
+| `--ass-karaoke-tag TAG` | `k`, `kf` or `ko` | `k` | the karaoke tag of the word timestamps of a converted cue, `WriteOptions.ASS.KaraokeTag` |
+| `--ass-style STYLE` | `Field=Value,...` | none | changes the `Default` style, as FFmpeg `force_style`, `WriteOptions.ASS.Style` |
+
+- **Check order**: the `--ass-karaoke-tag` choice, then the style check, whose error reads `The option --ass-style is not valid. MESSAGE`, then the `--to ass` rule.
+- **`--to ass` rule**: both options need `--to ass` or `--to ssa`. The rule reads `--to` only, so an ASS input without `--to` fails too: `Pass --to ass with --ass-style.`
 
 Each group calls the library methods of [editing.md](editing.md) and [text.md](text.md). Inside `structure` the run order is not the help order:
 
@@ -191,6 +201,7 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 
 ```
 Name  Extensions  Read  Write
+ass   .ass .ssa   yes   yes
 json  .json       yes   yes
 srt   .srt        yes   yes
 vtt   .vtt        yes   yes
