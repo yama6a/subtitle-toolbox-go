@@ -450,6 +450,8 @@ func TestLenientReadersRepairTimes(t *testing.T) {
 		{"SubRip over 30 s", "1\n00:01:00,000 --> 00:00:05,000\nThe ferry leaves.\n\n2\n00:00:10,000 --> 00:00:12,000\nIt is late.\n", false},
 		{"WebVTT with a comma", "WEBVTT\n\n00:01,105 --> 00:02,200\nThe ferry leaves.\n\n02:00:00.000 --> 02:00:02.000\nIt is late.\n", true},
 		{"WebVTT swapped", "WEBVTT\n\n00:00:08.000 --> 00:00:05.000\nThe ferry leaves.\n\n00:00:10.000 --> 00:00:12.000\nIt is late.\n", true},
+		{"SubRip that rounds to 100000 hours", "1\n0:0:0,0 --> 99999:59:59,9995\nThe ferry leaves.\n\n2\n02:00:00,000 --> 02:00:02,000\nIt is late.\n", false},
+		{"WebVTT that rounds to 100000 hours", "WEBVTT\n\n00:01.000 --> 99999:59:59,9997\nThe ferry leaves.\n\n02:00:00.000 --> 02:00:02.000\nIt is late.\n", true},
 	}
 	for _, tt := range tests {
 		for _, w := range wraps {
