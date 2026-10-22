@@ -17,8 +17,8 @@ fi
 
 tag="$(git tag -l 'v*' --sort=-v:refname | grep -m 1 -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true)"
 if [ -z "$tag" ]; then
-  echo "gorelease: no release tag yet, nothing to compare against"
-  exit 0
+  echo "gorelease: no v* release tag found. Check out with fetch-depth: 0 so the tags are there." >&2
+  exit 1
 fi
 
 IFS=. read -r major minor patch <<< "${tag#v}"
@@ -48,7 +48,15 @@ case "$label" in
 esac
 
 echo "gorelease: label $label, base $base, proposed $proposed"
-if ! go run "$gorelease" -base="$base" -version="$proposed"; then
-  echo "The API change needs a stronger release label than $label." >&2
+rc=0
+report="$(go run "$gorelease" -base="$base" -version="$proposed" 2>&1)" || rc=$?
+echo "$report"
+if [ "$rc" -ne 0 ]; then
+  # gorelease also exits 1 for errors that no label fixes, such as a go.mod without the /vN suffix.
+  if grep -qE 'There are incompatible changes\.|There are compatible changes, but the minor version is not incremented' <<< "$report"; then
+    echo "The API change needs a stronger release label than $label." >&2
+  else
+    echo "gorelease failed. Read its report above." >&2
+  fi
   exit 1
 fi

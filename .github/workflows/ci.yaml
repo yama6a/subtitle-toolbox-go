@@ -50,7 +50,7 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
-          cache: false # the job runs one go run command and shares no build with the other jobs
+          cache: false # the job builds only gorelease and shares no build with the other jobs
       - run: .build/gorelease_test.sh
       - run: .build/gorelease.sh
         env:

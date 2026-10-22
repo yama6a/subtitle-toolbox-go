@@ -10,6 +10,8 @@ trap 'rm -rf "$work"' EXIT
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
 # The base version of each case comes from a file proxy. gorelease itself still comes from the real proxy.
 proxy_default="$(go env GOPROXY)"
+# A temporary module cache keeps a base zip of an earlier run from replacing the one of this run.
+export GOMODCACHE="$work/modcache" GOFLAGS="${GOFLAGS:-} -modcacherw"
 export GOPROXY="file://$work/proxy,$proxy_default" GONOSUMDB=example.com
 
 api='package pkg
@@ -36,6 +38,10 @@ api_hidden="$api
 
 func hidden() {}"
 
+api_broken="$api
+
+func Broken() { undefined() }"
+
 internal='package util
 
 func Helper() {}'
@@ -58,13 +64,12 @@ publish() {
   printf '%s\n' "$tag" > "$dir/list"
 }
 
-# commit <repo> <message>
 commit() {
   git -C "$1" add -A
   git -C "$1" -c user.name=test -c user.email=test@example.invalid commit -q -m "$2"
 }
 
-# check <name> <LABELS> <tag> <module suffix at the tag> <module suffix in the PR> <pkg.go in the PR> <internal/util/util.go in the PR> <want exit> <want line>
+# check <name> <LABELS> <tag, empty for none> <module suffix at the tag> <module suffix in the PR> <pkg.go in the PR> <internal/util/util.go in the PR> <want exit> <want line>
 # The module at the tag has the API in $api. %M in the want line stands for the module path without suffix.
 check() {
   local name=$1 labels=$2 tag=$3 old_suffix=$4 new_suffix=$5 src=$6 internal_src=$7 want_rc=$8 want=$9
@@ -80,8 +85,10 @@ check() {
   printf '%s\n' "$internal" > "$repo/internal/util/util.go"
   git -C "$repo" init -q -b main
   commit "$repo" old
-  git -C "$repo" tag "$tag"
-  publish "$repo" "$module$old_suffix" "$tag"
+  if [ -n "$tag" ]; then
+    git -C "$repo" tag "$tag"
+    publish "$repo" "$module$old_suffix" "$tag"
+  fi
 
   printf 'module %s\n\ngo 1.21\n' "$module$new_suffix" > "$repo/go.mod"
   printf '%s\n' "$src" > "$repo/pkg.go"
@@ -89,7 +96,8 @@ check() {
   commit "$repo" change
 
   out="$(cd "$repo" && LABELS="$labels" "$script" 2>&1)" || rc=$?
-  if [ "$rc" -eq "$want_rc" ] && grep -qxF -- "$want" <<< "$out"; then
+  if [ "$rc" -eq "$want_rc" ] && grep -qxF -- "$want" <<< "$out" \
+    && { [[ "$want" == *"stronger release label"* ]] || ! grep -qF "stronger release label" <<< "$out"; }; then
     echo "ok   $name"
     return
   fi
@@ -110,6 +118,7 @@ ran() {
   echo "gorelease: label $1, base $2, proposed $3"
 }
 
+failed="gorelease failed. Read its report above."
 skipped="gorelease: no single release label, nothing to check"
 
 check "patch with a new exported identifier fails" '["patch"]' v1.0.0 "" "" \
@@ -126,6 +135,12 @@ check "major with the new module path passes" '["major"]' v1.0.0 "" "/v2" \
   "$api_removed" "$internal" 0 "$(ran major %M@v1.0.0 v2.0.0)"
 check "major on top of a v2 tag compares against the v2 module" '["major"]' v2.3.4 "/v2" "/v3" \
   "$api_removed" "$internal" 0 "$(ran major %M/v2@v2.3.4 v3.0.0)"
+check "major without the new module path is a failure no label fixes" '["major"]' v1.0.0 "" "" \
+  "$api_removed" "$internal" 1 "$failed"
+check "patch that does not compile is a failure no label fixes" '["patch"]' v1.0.0 "" "" \
+  "$api_broken" "$internal" 1 "$failed"
+check "a missing release tag fails" '["patch"]' "" "" "" \
+  "$api_added" "$internal" 1 "gorelease: no v* release tag found. Check out with fetch-depth: 0 so the tags are there."
 check "patch with only unexported code changed passes" '["patch"]' v1.0.0 "" "" \
   "$api_hidden" "$internal" 0 "$(ran patch v1.0.0 v1.0.1)"
 check "patch with only internal code changed passes" '["patch"]' v1.0.0 "" "" \
