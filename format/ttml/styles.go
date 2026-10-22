@@ -142,7 +142,7 @@ func (s style) apply(props properties) style {
 // normalizeColor returns a color as "#rrggbb" without its alpha channel, because core markup has none, or "".
 // See https://www.w3.org/TR/ttml2/#style-value-color.
 func normalizeColor(color string) string {
-	color = asciiLower(strings.Trim(color, markupcore.PHPTrimSet))
+	color = markupcore.ASCIILower(strings.Trim(color, markupcore.PHPTrimSet))
 	if m := hexColorRegexp.FindStringSubmatch(color); m != nil {
 		return "#" + m[1]
 	}
@@ -165,15 +165,6 @@ func (s style) run(text string) markupcore.Run {
 // splitSpace splits s at runs of white space and drops the empty parts.
 func splitSpace(s string) []string {
 	return strings.FieldsFunc(s, func(r rune) bool { return strings.ContainsRune("\t\n\v\f\r ", r) })
-}
-
-func asciiLower(s string) string {
-	return strings.Map(func(r rune) rune {
-		if r >= 'A' && r <= 'Z' {
-			return r + 'a' - 'A'
-		}
-		return r
-	}, s)
 }
 
 // decorate applies the tokens of tts:textDecoration. none turns underline and line-through off first.

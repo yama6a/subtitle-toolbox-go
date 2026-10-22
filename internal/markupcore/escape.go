@@ -54,13 +54,13 @@ func EscapeTextLike(text, raw string) string {
 // rawEntity returns the form in which raw holds entity as an entity, such as &nbsp; for &NBSP;. It returns false
 // when raw holds it as escaped text such as &amp;nbsp;. Decoded text holds &lt;, &gt; and &amp; only as text.
 func rawEntity(entity, raw string) (string, bool) {
-	lower := asciiLower(entity)
-	if lower == "&lt;" || lower == "&gt;" || lower == "&amp;" || strings.Contains(asciiLower(raw), "&amp;"+lower[1:]) {
+	lower := ASCIILower(entity)
+	if lower == "&lt;" || lower == "&gt;" || lower == "&amp;" || strings.Contains(ASCIILower(raw), "&amp;"+lower[1:]) {
 		return "", false
 	}
 	var forms []string
 	for _, form := range entityRegexp.FindAllString(raw, -1) {
-		if asciiLower(form) == lower && !slices.Contains(forms, form) {
+		if ASCIILower(form) == lower && !slices.Contains(forms, form) {
 			forms = append(forms, form)
 		}
 	}

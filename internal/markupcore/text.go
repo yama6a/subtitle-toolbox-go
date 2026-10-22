@@ -48,7 +48,7 @@ func PlainLines(lines []string) []string {
 // RubyAsText writes ruby as "base (annotation)" for formats without ruby. It drops <rp> elements, because the
 // written parentheses take their place. A ruby without its end tag runs to the end of the text.
 func RubyAsText(text string) string {
-	if !strings.Contains(asciiLower(text), "<ruby") {
+	if !strings.Contains(ASCIILower(text), "<ruby") {
 		return text
 	}
 	// PHP ends an open ruby with $, which matches before a final LF.
