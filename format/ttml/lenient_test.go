@@ -41,7 +41,7 @@ func TestHTMLEntitiesAndMalformedXMLGiveTwoWarnings(t *testing.T) {
 
 	s, warnings := mustRead(t, bare+"\n"+`<body><div><p begin="1s" end="2s">Caf&eacute;&nbsp;ok</p>`+"\n"+
 		`<p begin="3s" end="4s">A & B</p></div></body></tt>`, true)
-	assert.Equal(t, []cueRow{{sec(1), sec(2), "Café ok"}, {sec(3), sec(4), "A &amp; B"}}, cueRows(s))
+	assert.Equal(t, []cueRow{{sec(1), sec(2), "Caf\u00e9\u00a0ok"}, {sec(3), sec(4), "A &amp; B"}}, cueRows(s))
 	assert.Equal(t, []warningRow{
 		{2, model.NoBlock, model.Repaired, `The file has HTML entities that XML does not define, such as "&eacute;". The parser read them as characters.`},
 		{3, model.NoBlock, model.Repaired, "The file is not well-formed XML. Invalid character entity & (no semicolon). The parser repaired it."},
@@ -52,10 +52,10 @@ func TestHTMLEntities(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct{ name, text, want string }{
-		{"2 code points", "&nGt;", "≫⃒"},
-		{"a name that PHP leaves out of its table", "&NonBreakingSpace;", " "},
-		{"XML entities stay", "&amp;&lt;&gt;&quot;&apos;&eacute;", "&amp;&lt;&gt;\"'é"},
-		{"no semicolon", "&eacute &nbsp;", "&amp;eacute  "},
+		{"2 code points", "&nGt;", "\u226b\u20d2"},
+		{"a name that PHP leaves out of its table", "&NonBreakingSpace;", "\u00a0"},
+		{"XML entities stay", "&amp;&lt;&gt;&quot;&apos;&eacute;", "&amp;&lt;&gt;\"'\u00e9"},
+		{"no semicolon", "&eacute &nbsp;", "&amp;eacute \u00a0"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -76,7 +76,7 @@ func TestRecoverRepairs(t *testing.T) {
 		{"open BR closes but is no br", `<p end="1s">a<BR>b</p>`, "ab"},
 		{"prefixed br", `<p end="1s">a<tt:br >b</p>`, "ab"},
 		{"closed br stays", `<p end="1s">a<br />b<br/>c &</p>`, "a\nb\nc &amp;"},
-		{"character references stay", `<p end="1s">&#233;&#xE9;&#XE9; &</p>`, "éé&amp;#XE9; &amp;"},
+		{"character references stay", `<p end="1s">&#233;&#xE9;&#XE9; &</p>`, "\u00e9\u00e9&amp;#XE9; &amp;"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

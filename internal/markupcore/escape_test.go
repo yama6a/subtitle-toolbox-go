@@ -139,10 +139,10 @@ func TestNamedEntity(t *testing.T) {
 		want   string
 		wantOK bool
 	}{
-		{"eacute", "é", true},
-		{"NonBreakingSpace", " ", true},
+		{"eacute", "\u00e9", true},
+		{"NonBreakingSpace", "\u00a0", true},
 		{"amp", "&", true},
-		{"nGt", "≫⃒", true},
+		{"nGt", "\u226b\u20d2", true},
 		{"eacute;", "", false},
 		{"cur", "", false},
 	}

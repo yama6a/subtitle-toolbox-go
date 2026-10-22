@@ -551,6 +551,15 @@ func TestTitleRemoval(t *testing.T) {
 	}
 }
 
+func TestHeadKeepsNonASCIIAttributeValuesAsUTF8(t *testing.T) {
+	t.Parallel()
+
+	s, _ := mustRead(t, document(`<div><p end="1s">x</p></div>`, "",
+		`<styling><style xml:id="s" tts:fontFamily="Caf&#233;" tts:color="`+"caf\u00e9"+`"/></styling>`), false)
+	assert.Equal(t, `<head><styling><style xml:id="s" tts:fontFamily="`+"Caf\u00e9"+`" tts:color="`+"caf\u00e9"+`"/></styling></head>`,
+		stringOf(t, fileData(t, s), "head"))
+}
+
 func TestFormatData(t *testing.T) {
 	t.Parallel()
 
@@ -634,8 +643,8 @@ func TestDeclaredEncodingIsIgnored(t *testing.T) {
 	t.Parallel()
 
 	s, _ := mustRead(t, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"+
-		"<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div><p begin=\"0s\" end=\"1s\">café</p></div></body></tt>", false)
-	assert.Equal(t, []cueRow{{0, sec(1), "café"}}, cueRows(s))
+		"<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div><p begin=\"0s\" end=\"1s\">caf\u00e9</p></div></body></tt>", false)
+	assert.Equal(t, []cueRow{{0, sec(1), "caf\u00e9"}}, cueRows(s))
 }
 
 func TestInvalidFile(t *testing.T) {
@@ -666,7 +675,7 @@ func TestInvalidUTF8(t *testing.T) {
 	assert.Contains(t, perr.Msg, "The content is not valid UTF-8.")
 
 	s, warnings := mustRead(t, content, true)
-	assert.Equal(t, []cueRow{{0, sec(1), "caf�"}}, cueRows(s))
+	assert.Equal(t, []cueRow{{0, sec(1), "caf\ufffd"}}, cueRows(s))
 	require.Len(t, warnings, 1)
 	assert.Contains(t, warnings[0].Message, "The parser read the bad bytes as U+FFFD.")
 }

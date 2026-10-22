@@ -68,8 +68,8 @@ func TestSerialize(t *testing.T) {
 		{"referenced CR in an attribute", `<tt><x a="a&#13;b"/></tt>`, `<x a="a&#13;b"/>`},
 		{"literal LF and TAB in an attribute become spaces", "<tt><x a=\"a\nb\tc\"/></tt>", `<x a="a b c"/>`},
 		{"literal CR LF in an attribute becomes one space", "<tt><x a=\"a\r\nb\"/></tt>", `<x a="a b"/>`},
-		{"character reference in text", `<tt><x>caf&#233;</x></tt>`, "<x>café</x>"},
-		{"non-ASCII attribute value as UTF-8", "<tt><x tts:fontFamily=\"Café\"/></tt>", "<x tts:fontFamily=\"Café\"/>"},
+		{"character reference in text", `<tt><x>caf&#233;</x></tt>`, "<x>caf\u00e9</x>"},
+		{"non-ASCII attribute value as UTF-8", "<tt><x tts:fontFamily=\"Caf\u00e9\"/></tt>", "<x tts:fontFamily=\"Caf\u00e9\"/>"},
 		{"comment and processing instruction", `<tt><x><!-- c --><?pi data?><?bare?></x></tt>`, `<x><!-- c --><?pi data?><?bare?></x>`},
 		{"CDATA as escaped text", `<tt><x><![CDATA[a<b]]></x></tt>`, `<x>a&lt;b</x>`},
 		{
@@ -267,8 +267,8 @@ func TestExternalEntitiesAreNotLoaded(t *testing.T) {
 func TestDeclaredEncodingIsIgnored(t *testing.T) {
 	t.Parallel()
 
-	r := root(t, parse(t, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><tt>café</tt>", false))
-	assert.Equal(t, "café", r.Text())
+	r := root(t, parse(t, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><tt>caf\u00e9</tt>", false))
+	assert.Equal(t, "caf\u00e9", r.Text())
 }
 
 func TestSyntaxErrorMessage(t *testing.T) {

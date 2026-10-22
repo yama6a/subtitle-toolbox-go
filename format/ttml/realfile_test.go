@@ -174,8 +174,8 @@ func TestRealFileForcedCues(t *testing.T) {
 		first, last string
 		flags       []bool
 	}{
-		{"w3c_imsc11_forced.ttml", "1s 6s Lycée", "4s 6s Nous étions inscrits au même lycée.", []bool{true, false}},
-		{"forced_inheritance.ttml", "1s 3s Wir gehen zum Hafen.", "10s 12s Der Zug fährt um acht.", []bool{false, true, true, true, false}},
+		{"w3c_imsc11_forced.ttml", "1s 6s Lyc\u00e9e", "4s 6s Nous \u00e9tions inscrits au m\u00eame lyc\u00e9e.", []bool{true, false}},
+		{"forced_inheritance.ttml", "1s 3s Wir gehen zum Hafen.", "10s 12s Der Zug f\u00e4hrt um acht.", []bool{false, true, true, true, false}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.file, func(t *testing.T) {
