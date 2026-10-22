@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"iter"
 	"regexp"
 	"strconv"
 	"strings"
@@ -125,7 +124,7 @@ func (rd *reader) read(content string) (*model.Subtitle, error) {
 
 func (rd *reader) readSections(content string) error {
 	section, inSection := "", false
-	for n, line := range lines(content) {
+	for n, line := range parsing.Lines(content) {
 		line = phpTrim(line)
 		if line == "" {
 			continue
@@ -178,35 +177,6 @@ func (rd *reader) readEvent(ev event, index int) error {
 		rd.st.Warn(msg, ev.number, index, []string{ev.line}, model.Repaired)
 	}
 	return nil
-}
-
-// lines yields the lines of content and their 0-based numbers. LF, a run of CR before LF, and a lone CR end a line.
-func lines(content string) iter.Seq2[int, string] {
-	return func(yield func(int, string) bool) {
-		n := 0
-		for {
-			i := strings.IndexAny(content, "\r\n")
-			if i < 0 {
-				yield(n, content)
-				return
-			}
-			if !yield(n, content[:i]) {
-				return
-			}
-			next := i + 1
-			if content[i] == '\r' {
-				j := i
-				for j < len(content) && content[j] == '\r' {
-					j++
-				}
-				if j < len(content) && content[j] == '\n' {
-					next = j + 1
-				}
-			}
-			content = content[next:]
-			n++
-		}
-	}
 }
 
 func (rd *reader) hasSection(name string) bool {

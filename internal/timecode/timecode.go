@@ -20,6 +20,12 @@ const MaxValidTime = MaxTime - time.Millisecond
 // stays a time for the next retiming.
 const MaxRetimed = 2562047*time.Hour - time.Millisecond
 
+// FromSeconds rounds seconds to whole nanoseconds, then to whole milliseconds, half away from zero. This gives the
+// value of PHP round($seconds, 3) for the times of the read goldens. secs must be below MaxTime in size.
+func FromSeconds(secs float64) time.Duration {
+	return time.Duration(math.Round(secs * 1e9)).Round(time.Millisecond)
+}
+
 // TimeLimitMessage returns the message of a retiming that moves the end of cue number n, counted from 1, to end
 // seconds, at or beyond MaxTime.
 func TimeLimitMessage(n int, end float64) string {

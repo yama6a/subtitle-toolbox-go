@@ -603,7 +603,7 @@ func (r *reader) boundedExpression(expression string) (float64, *model.ParseErro
 
 // bounded returns secs when the time rounds to whole milliseconds below 100000 hours in size.
 func (r *reader) bounded(secs float64, text string, line int) (float64, *model.ParseError) {
-	if !(math.Abs(secs) < timecode.MaxTime.Seconds()) || toDuration(math.Abs(secs)) >= timecode.MaxTime {
+	if !(math.Abs(secs) < timecode.MaxTime.Seconds()) || timecode.FromSeconds(math.Abs(secs)) >= timecode.MaxTime {
 		return 0, r.parseError(line, "The time \""+text+"\" is not below "+strconv.Itoa(timecode.MaxHours)+" hours.")
 	}
 	return secs, nil
@@ -729,7 +729,7 @@ func timedSpansInterval(runs []run) (interval, bool) {
 
 // orderedTimes returns the cue times of a paragraph. An end before the begin fails, or lenient mode swaps them.
 func (r *reader) orderedTimes(p *xmlraw.Node, iv interval) (time.Duration, time.Duration, *model.ParseError) {
-	start, end := toDuration(iv.begin), toDuration(iv.end)
+	start, end := timecode.FromSeconds(iv.begin), timecode.FromSeconds(iv.end)
 	if end >= start {
 		return start, end, nil
 	}
@@ -779,7 +779,7 @@ func runsToMarkup(runs []run, openAgent *string) string {
 	var styled []markupcore.Run
 	for _, rn := range runs {
 		if rn.timed {
-			b.WriteString(markupcore.StyleRuns(styled, false) + "<" + markupcore.CoreTimestamp(toDuration(rn.span.begin)) + ">")
+			b.WriteString(markupcore.StyleRuns(styled, false) + "<" + markupcore.CoreTimestamp(timecode.FromSeconds(rn.span.begin)) + ">")
 			styled = nil
 			continue
 		}
@@ -1045,11 +1045,6 @@ func xmlLines(n *xmlraw.Node) []string {
 		}
 	}
 	return lines
-}
-
-// toDuration rounds seconds to whole nanoseconds, then to whole milliseconds, half away from zero.
-func toDuration(secs float64) time.Duration {
-	return time.Duration(math.Round(secs * 1e9)).Round(time.Millisecond)
 }
 
 func round3(f float64) float64 {

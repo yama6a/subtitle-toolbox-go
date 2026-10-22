@@ -33,6 +33,28 @@ func TestSeconds(t *testing.T) {
 	}
 }
 
+func TestFromSeconds(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		in   float64
+		want time.Duration
+	}{
+		{0, 0},
+		{1.0005, 1001 * time.Millisecond},
+		{-1.0005, -1001 * time.Millisecond},
+		{72 / 23.976, 3003 * time.Millisecond},
+		{8999999999.0 / 25, 359999999960 * time.Millisecond},
+	}
+	for _, tt := range tests {
+		t.Run(timecode.Number(tt.in), func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, timecode.FromSeconds(tt.in))
+		})
+	}
+}
+
 func TestNumber(t *testing.T) {
 	t.Parallel()
 
