@@ -1,0 +1,69 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "microdvd": {
+                "frameRate": 25.0
+            }
+        },
+        "cues": [
+            {
+                "start": 131.76,
+                "end": 134.64,
+                "lines": [
+                    "Passengers, the train is now",
+                    "<i>arriving at the central station.</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "microdvd": {
+                        "lines": [
+                            {
+                                "codes": "",
+                                "otherCodes": "",
+                                "color": null,
+                                "tags": []
+                            },
+                            {
+                                "codes": "{y:i}",
+                                "otherCodes": "",
+                                "color": null,
+                                "tags": [
+                                    "i"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3587.28,
+                "end": 3589.2,
+                "lines": [
+                    "<font color=\"#ff0000\"><b><u>Thank you, conductor.</u></b></font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "microdvd": {
+                        "lines": [
+                            {
+                                "codes": "{c:$0000ff}{y:b,u}{f:DeJaVuSans}{s:12}",
+                                "otherCodes": "{f:DeJaVuSans}{s:12}",
+                                "color": "#ff0000",
+                                "tags": [
+                                    "b",
+                                    "u"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

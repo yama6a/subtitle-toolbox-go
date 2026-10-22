@@ -1,0 +1,33 @@
+{
+    "name": "MicroDVD with a release name before the frame rate line and a letter as start frame",
+    "format": "microdvd",
+    "strict": {
+        "error": "The frame rate is unknown. Start the file with {1}{1}<fps>, set the frame rate, or read the file in lenient mode for 23.976 fps."
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The ferry leaves at noon."
+        },
+        {
+            "start": 5,
+            "end": 7,
+            "text": "<i>Tickets are sold on board.</i>"
+        }
+    ],
+    "warnings": [
+        {
+            "line": 1,
+            "block": 0,
+            "action": "skipped",
+            "message": "The line \"Movie.Name.2003.DVDRip\" is not a MicroDVD cue."
+        },
+        {
+            "line": 4,
+            "block": 3,
+            "action": "skipped",
+            "message": "The line \"{x}{120}The deck is wet.\" is not a MicroDVD cue."
+        }
+    ]
+}

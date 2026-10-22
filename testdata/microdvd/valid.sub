@@ -1,0 +1,5 @@
+{1}{1}23.976
+{24}{72}Hello|{y:i}world
+{100}{150}{c:$0000FF}Red text
+{200}{260}{Y:b}{f:Arial}{s:20}Bold|on two lines
+{300}{360}{P:0}{y:u}{y:s}Underline < strike & more

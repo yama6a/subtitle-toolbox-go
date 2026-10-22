@@ -1,0 +1,64 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "microdvd": {
+                "frameRate": 25.0
+            }
+        },
+        "cues": [
+            {
+                "start": 131.76,
+                "end": 134.64,
+                "lines": [
+                    "Passengers, the train is now",
+                    "arriving at the central station."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "microdvd": {
+                        "lines": [
+                            {
+                                "codes": "",
+                                "otherCodes": "",
+                                "color": null,
+                                "tags": []
+                            },
+                            {
+                                "codes": "",
+                                "otherCodes": "",
+                                "color": null,
+                                "tags": []
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3587.28,
+                "end": 3589.2,
+                "lines": [
+                    "Thank you, conductor."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "microdvd": {
+                        "lines": [
+                            {
+                                "codes": "",
+                                "otherCodes": "",
+                                "color": null,
+                                "tags": []
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

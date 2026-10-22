@@ -47,6 +47,8 @@ Every file except `mantas_utf16.srt` and `mantas_multiple_new_lines.vtt` is writ
 | `numeric_field_name.ass` | the number `1` as a field name in the `Format:` line of `[Events]`, in the shape of an Aegisub file, UTF-8 BOM, CR LF | MIT |
 | `sixty_minutes.ass` | an End time with 75 minutes and a Start time with 75 seconds, both with a 2-digit fraction, in the shape of an Aegisub file, LF | MIT |
 | `bad_sync_start.smi` | a `SYNC` tag with an empty `Start` attribute, CR LF | MIT |
+| `release_name.sub` | a release name before the `{1}{1}25` frame rate line, a cue with a letter as start frame, CR LF | MIT |
+| `absurd_frames_microdvd.sub` | MicroDVD at 25 fps. A cue with frame numbers of 13 digits between two good cues, LF | MIT |
 | `expected/*.json` | written for subtitle-toolbox-go. Each file holds the values of `damagedFiles()` in `tests/Parsers/LenientParsingTest.php` of this repository for the fixture of the same name, and the full message and line of the strict error that the PHP parser returns | MIT |
 | `expected/joined_files.vtt.json` | written for subtitle-toolbox-go. `damagedFiles()` has no row for this fixture, so the file holds the values of the 3 `joined_files` tests in `tests/Parsers/LenientWebVttTest.php` of this repository, and the strict error that the PHP parser returns | MIT |
 | `expected/no_cue_numbers.srt.json`, `expected/mantas_utf16.srt.json` | written for subtitle-toolbox-go. `damagedFiles()` has no row for these fixtures, so the files hold the cue count of `FormatDetectorTest::subRipWithoutLeadingCueNumber` and the cue of `LooseTimestampsTest::testLenientModeReadsATimeWithOneSecondDigitInUtf16` of this repository, and the rest of the result and the strict error that the PHP parser returns | MIT |
