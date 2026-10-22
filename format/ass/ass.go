@@ -129,10 +129,3 @@ func lower(b byte) byte {
 func isStylesSection(name string) bool {
 	return equalFold(name, assStylesSection) || equalFold(name, ssaStylesSection)
 }
-
-// isIntKey reports whether PHP turns the array key into an integer: a canonical decimal int64. It is the rule
-// of isIntKey in model/schema.go.
-func isIntKey(key string) bool {
-	n, err := strconv.ParseInt(key, 10, 64)
-	return err == nil && strconv.FormatInt(n, 10) == key
-}

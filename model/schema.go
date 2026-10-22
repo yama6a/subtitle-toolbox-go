@@ -6,6 +6,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/yama6a/subtitle-toolbox-go/internal/phpkey"
 )
 
 // valueType is one type of the type language of the format data schema.
@@ -114,7 +116,7 @@ func listOf(elem valueType) valueType {
 }
 
 func namesOf(elem valueType) valueType {
-	return namedValues(elem, func(key string) bool { return !isIntKey(key) },
+	return namedValues(elem, func(key string) bool { return !phpkey.IsIntKey(key) },
 		func(path string) string {
 			return "The field " + path + " must be an object whose keys are names, not numbers."
 		})
@@ -264,16 +266,10 @@ func childPath(v any, path string, i int) string {
 
 // keyPath returns the path of the object key at path. A key that PHP turns into an integer gets the list form.
 func keyPath(path, key string) string {
-	if isIntKey(key) {
+	if phpkey.IsIntKey(key) {
 		return path + "[" + key + "]"
 	}
 	return path + "." + key
-}
-
-// isIntKey reports whether PHP turns the array key into an integer: a canonical decimal int64.
-func isIntKey(key string) bool {
-	n, err := strconv.ParseInt(key, 10, 64)
-	return err == nil && strconv.FormatInt(n, 10) == key
 }
 
 const csvMaxColumns = 1000

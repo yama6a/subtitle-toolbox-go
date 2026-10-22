@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/internal/phpkey"
 	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -220,7 +221,7 @@ func decodeBase64(s string) ([]byte, bool) {
 
 // keyPath returns the path of key in the object at path. A key that PHP reads as an integer gets the list form.
 func keyPath(path, key string) string {
-	if n, err := strconv.ParseInt(key, 10, 64); err == nil && strconv.FormatInt(n, 10) == key {
+	if phpkey.IsIntKey(key) {
 		return path + "[" + key + "]"
 	}
 	return path + "." + key
