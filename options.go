@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -23,6 +24,9 @@ type ReadOptions struct {
 	Lenient bool
 	// LastCueDuration is the length of a last cue without an end. Nil means 5 s.
 	LastCueDuration *time.Duration
+	// SAMI holds the settings of the SAMI reader. The zero value reads the first class of the STYLE block that a
+	// <P> uses.
+	SAMI sami.ReadOptions
 }
 
 // WriteOptions holds the settings of a write. The zero value writes with the defaults.
@@ -67,7 +71,7 @@ func (o ReadOptions) Validate() error {
 			Msg:    fmt.Sprintf("The last cue duration must be 0 or more, got %s.", *o.LastCueDuration),
 		}
 	}
-	return nil
+	return o.SAMI.Validate()
 }
 
 // Validate checks every field of o, also the fields of formats that a write does not use.

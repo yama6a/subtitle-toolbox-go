@@ -16,32 +16,38 @@ var update = flag.Bool("update", false, "rewrite the write golden files")
 
 // roundTripFolders holds the folders whose every real file is a round trip case.
 func roundTripFolders() []string {
-	return []string{"ass", "srt", "vtt"}
+	return []string{"ass", "sami", "srt", "vtt"}
 }
 
-// conversion is a write golden case that reads a real file and writes it in another format.
+// conversion is a write golden case that reads a real file and writes it in another format. A zero class reads
+// with the read options of the read golden table.
 type conversion struct {
 	folder, file string
 	to           stbox.Format
+	class        string
 }
 
 func conversions() []conversion {
 	return []conversion{
-		{"ass", "own_aegisub.ass", stbox.SubRip},
-		{"ass", "own_aegisub.ass", stbox.WebVTT},
-		{"ass", "own_signs_crlf.ass", stbox.SubRip},
-		{"ass", "own_signs_crlf.ass", stbox.WebVTT},
-		{"srt", "own_styled.srt", stbox.ASS},
-		{"srt", "own_styled.srt", stbox.WebVTT},
-		{"vtt", "w3c_voices.vtt", stbox.ASS},
-		{"ttml", "bbc_ebu_tt_d.ttml", stbox.SubRip},
-		{"ttml", "bbc_ebu_tt_d.ttml", stbox.WebVTT},
-		{"ttml", "bbc_ebu_tt_d.ttml", stbox.ASS},
-		{"vtt", "w3c_voices.vtt", stbox.SubRip},
-		{"vtt", "own_ytdlp_rolling.vtt", stbox.ASS},
-		{"vtt", "own_ytdlp_rolling.vtt", stbox.SubRip},
-		{"vtt", "own_openai_whisper_highlight_words.vtt", stbox.ASS},
-		{"vtt", "own_openai_whisper_highlight_words.vtt", stbox.SubRip},
+		{"ass", "own_aegisub.ass", stbox.SubRip, ""},
+		{"ass", "own_aegisub.ass", stbox.WebVTT, ""},
+		{"ass", "own_signs_crlf.ass", stbox.SubRip, ""},
+		{"ass", "own_signs_crlf.ass", stbox.WebVTT, ""},
+		{"sami", "multi_language.smi", stbox.SubRip, "ENCC"},
+		{"sami", "multi_language.smi", stbox.WebVTT, "ENCC"},
+		{"sami", "multi_language.smi", stbox.ASS, "ENCC"},
+		{"srt", "own_styled.srt", stbox.SAMI, ""},
+		{"srt", "own_styled.srt", stbox.ASS, ""},
+		{"srt", "own_styled.srt", stbox.WebVTT, ""},
+		{"vtt", "w3c_voices.vtt", stbox.ASS, ""},
+		{"ttml", "bbc_ebu_tt_d.ttml", stbox.SubRip, ""},
+		{"ttml", "bbc_ebu_tt_d.ttml", stbox.WebVTT, ""},
+		{"ttml", "bbc_ebu_tt_d.ttml", stbox.ASS, ""},
+		{"vtt", "w3c_voices.vtt", stbox.SubRip, ""},
+		{"vtt", "own_ytdlp_rolling.vtt", stbox.ASS, ""},
+		{"vtt", "own_ytdlp_rolling.vtt", stbox.SubRip, ""},
+		{"vtt", "own_openai_whisper_highlight_words.vtt", stbox.ASS, ""},
+		{"vtt", "own_openai_whisper_highlight_words.vtt", stbox.SubRip, ""},
 	}
 }
 
@@ -87,6 +93,11 @@ func TestWriteGoldens(t *testing.T) {
 			t.Parallel()
 
 			g := folder(t, c.folder)
+			if c.class != "" {
+				opts := g.options[c.file]
+				opts.SAMI.LanguageClass = c.class
+				g.options = map[string]stbox.ReadOptions{c.file: opts}
+			}
 			s, _ := g.read(t, c.file)
 			golden.Equal(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(c.to))), writeAs(t, s, c.to), *update)
 		})

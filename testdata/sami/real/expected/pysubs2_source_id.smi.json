@@ -1,0 +1,228 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Weather Report for Tuesday",
+            "language": "en-US-CC"
+        },
+        "comments": [],
+        "formatData": {
+            "sami": {
+                "samiParam": "\n      Copyright {(C)Copyright 2026, Example Weather Desk}\n      Media {weather.wav}\n      Metrics {time:ms; duration: 73000;}\n      Spec {MSFT:1.0;}\n   ",
+                "style": "<!--\n      P {margin-left: 29pt; margin-right: 29pt; font-size: 12pt; \n      text-align: left; font-family: tahoma, arial, sans-serif; \n      font-weight: normal; color: white; background-color: black;}\n\n      TABLE {Width: \"248pt\" ;}\n\n      .ENUSCC {Name: \"English Captions\"; lang: en-US-CC;}\n\n#Source {margin-bottom: -15pt; background-color: silver; \n         color: black; vertical-align: normal; font-size: 12pt; \n         font-family: tahoma, arial, sans-serif; \n         font-weight: normal;}\n\n#Youth {color: greenyellow; font-size: 18pt;}\n\n#BigPrint-1 {color: yellow; font-size: 24pt;}-->\n   ",
+                "class": "ENUSCC"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 0.01,
+                "lines": [
+                    "Weather Desk"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": {
+                                    "id": "Source"
+                                },
+                                "html": "Weather Desk"
+                            }
+                        ],
+                        "lines": [
+                            "Weather Desk"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 0.01,
+                "end": 8.8,
+                "lines": [
+                    "Good morning, here is the weather for the coast and the hills over the next two days."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "Good morning, here is the weather \n         for the coast and the hills \n         over the next two days."
+                            }
+                        ],
+                        "lines": [
+                            "Good morning, here is the weather for the coast and the hills over the next two days."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 8.8,
+                "end": 19.5,
+                "lines": [
+                    "The morning starts cool and grey, with light rain near the harbour,"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "The morning starts cool and grey, \n         with light rain near the harbour,"
+                            }
+                        ],
+                        "lines": [
+                            "The morning starts cool and grey, with light rain near the harbour,"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 19.5,
+                "end": 28.0,
+                "lines": [
+                    "and the rain moves inland before noon, so take an umbrella to the station."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "and the rain moves inland before noon, \n         so take an umbrella to the station."
+                            }
+                        ],
+                        "lines": [
+                            "and the rain moves inland before noon, so take an umbrella to the station."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 28.0,
+                "end": 38.0,
+                "lines": [
+                    "In the afternoon the clouds break up and the wind turns to the west."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "In the afternoon the clouds break up\n          and the wind turns to the west."
+                            }
+                        ],
+                        "lines": [
+                            "In the afternoon the clouds break up and the wind turns to the west."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 38.0,
+                "end": 46.0,
+                "lines": [
+                    "Tomorrow brings sun for most of the day, with fifteen degrees on the coast."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "Tomorrow brings sun for most of the day, \n         with fifteen degrees on the coast."
+                            }
+                        ],
+                        "lines": [
+                            "Tomorrow brings sun for most of the day, with fifteen degrees on the coast."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 46.0,
+                "end": 61.0,
+                "lines": [
+                    "The hills stay a little colder, about ten degrees at noon, and the night is clear and calm."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "The hills stay a little colder, \n         about ten degrees at noon, \n         and the night is clear and calm."
+                            }
+                        ],
+                        "lines": [
+                            "The hills stay a little colder, about ten degrees at noon, and the night is clear and calm."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 61.0,
+                "end": 73.0,
+                "lines": [
+                    "The trains and the ferries run on time, and the market by the river opens at eight as usual."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "The trains and the ferries run on time, \n         and the market by the river \n         opens at eight as usual."
+                            }
+                        ],
+                        "lines": [
+                            "The trains and the ferries run on time, and the market by the river opens at eight as usual."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 73.0,
+                "end": 78.0,
+                "lines": [
+                    "End of:",
+                    "Weather Report for Tuesday"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": {
+                                    "id": "Source"
+                                },
+                                "html": "End of:"
+                            },
+                            {
+                                "attributes": [],
+                                "html": "Weather Report for Tuesday"
+                            }
+                        ],
+                        "lines": [
+                            "End of:",
+                            "Weather Report for Tuesday"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

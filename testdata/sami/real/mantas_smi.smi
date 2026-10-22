@@ -1,0 +1,23 @@
+<SAMI>
+<HEAD>
+<TITLE>file</TITLE>
+<SAMIParam>
+  Metrics {time:ms;}
+  Spec {MSFT:1.0;}
+</SAMIParam>
+<STYLE TYPE="text/css">
+<!--
+  P { font-family: Arial; font-weight: normal; color: white; background-color: black; text-align: center; }
+  .ENUSCC { name: English; lang: en-US ; SAMIType: CC ; }
+-->
+</STYLE>
+</HEAD>
+<BODY>
+<-- Captions: open the Play menu and turn captions on -->
+<-- Local files: allow local captions in the player settings -->
+<SYNC Start=137400><P Class=ENUSCC>Passengers, we&#039;re now<br>arriving at the central station.</P></SYNC>
+<SYNC Start=140400><P Class=ENUSCC>&nbsp;</P></SYNC>
+<SYNC Start=3740500><P Class=ENUSCC>Thank you, conductor.</P></SYNC>
+<SYNC Start=3742500><P Class=ENUSCC>&nbsp;</P></SYNC>
+</BODY>
+</SAMI>

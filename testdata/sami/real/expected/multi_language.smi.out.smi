@@ -1,0 +1,19 @@
+<SAMI>
+<HEAD>
+<TITLE>Bakery Tour</TITLE>
+<STYLE TYPE="text/css">
+<!--
+P { margin-left:8pt; margin-right:8pt; font-size:20pt; text-align:center;
+    font-family:굴림, Arial; color:white; background-color:black; }
+.KRCC { Name:한국어; lang:ko-KR; SAMIType:CC; }
+-->
+</STYLE>
+</HEAD>
+<BODY>
+<SYNC Start=1000><P Class=KRCC>빵집은 아침 여섯 시에 문을 엽니다.
+<SYNC Start=4200><P Class=KRCC>&nbsp;
+<SYNC Start=5000><P Class=KRCC>오늘은 <font color="#ffff00">비</font>가 옵니다.<br>우산을 챙기세요.
+<SYNC Start=8000><P Class=KRCC><b>기차</b>가 곧 출발합니다.
+<SYNC Start=10500><P Class=KRCC>&nbsp;
+</BODY>
+</SAMI>

@@ -270,6 +270,7 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 Name  Extensions        Read  Write
 ass   .ass .ssa         yes   yes
 json  .json             yes   yes
+sami  .smi .sami        yes   yes
 srt   .srt              yes   yes
 ttml  .ttml .dfxp .xml  yes   no
 vtt   .vtt              yes   yes

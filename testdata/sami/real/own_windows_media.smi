@@ -1,0 +1,39 @@
+<SAMI>
+<HEAD>
+<TITLE>Station news</TITLE>
+<SAMIParam>
+  Media {station_news.wmv}
+  Metrics {time:ms;}
+  Spec {MSFT:1.0;}
+  Length {20000}
+</SAMIParam>
+<STYLE TYPE="text/css"><!--
+  P {margin-left:8pt; margin-right:8pt; margin-bottom:2pt; margin-top:2pt;
+     text-align:center; font-size:12pt; font-family:Arial, sans-serif;
+     font-weight:normal; color:white; background-color:black;}
+  .ENUSCC {Name:'English Captions'; lang:en-US; SAMIType:CC;}
+  #Source {color:yellow; font-size:10pt;}
+--></STYLE>
+</HEAD>
+<BODY>
+<SYNC Start=0>
+  <P Class=ENUSCC ID=Source>Announcer</P>
+  <P Class=ENUSCC>Good evening. Here is the station news.</P>
+</SYNC>
+<SYNC Start=3500>
+  <P Class=ENUSCC>&nbsp;</P>
+</SYNC>
+<SYNC Start=4000>
+  <P Class=ENUSCC>The bridge on the coast line<BR>is open again.</P>
+</SYNC>
+<SYNC Start=7500>
+  <P Class=ENUSCC>&nbsp;</P>
+</SYNC>
+<SYNC Start=8000>
+  <P Class=ENUSCC><B>Bus 7</B> runs every ten minutes.</P>
+</SYNC>
+<SYNC Start=11000>
+  <P Class=ENUSCC>&nbsp;</P>
+</SYNC>
+</BODY>
+</SAMI>

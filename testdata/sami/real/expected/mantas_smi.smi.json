@@ -1,0 +1,66 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "file",
+            "language": "en-US"
+        },
+        "comments": [],
+        "formatData": {
+            "sami": {
+                "samiParam": "\n  Metrics {time:ms;}\n  Spec {MSFT:1.0;}\n",
+                "style": "\n<!--\n  P { font-family: Arial; font-weight: normal; color: white; background-color: black; text-align: center; }\n  .ENUSCC { name: English; lang: en-US ; SAMIType: CC ; }\n-->\n",
+                "class": "ENUSCC"
+            }
+        },
+        "cues": [
+            {
+                "start": 137.4,
+                "end": 140.4,
+                "lines": [
+                    "Passengers, we're now",
+                    "arriving at the central station."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "Passengers, we're now<br>arriving at the central station."
+                            }
+                        ],
+                        "lines": [
+                            "Passengers, we're now",
+                            "arriving at the central station."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3740.5,
+                "end": 3742.5,
+                "lines": [
+                    "Thank you, conductor."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "Thank you, conductor."
+                            }
+                        ],
+                        "lines": [
+                            "Thank you, conductor."
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,16 @@
+﻿1
+00:00:01,000 --> 00:00:04,200
+The bakery opens at six in the morning.
+
+2
+00:00:05,000 --> 00:00:08,000
+It is <font color="#ffff00">raining</font> today.
+Take an umbrella.
+
+3
+00:00:08,000 --> 00:00:10,500
+<i>The train</i> leaves soon.
+
+4
+00:00:11,000 --> 00:00:13,000
+Bread & coffee cost less than 5 euros.

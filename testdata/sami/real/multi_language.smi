@@ -1,0 +1,30 @@
+﻿<SAMI>
+<HEAD>
+<TITLE>Bakery Tour</TITLE>
+<STYLE TYPE="text/css">
+<!--
+P { margin-left:8pt; margin-right:8pt; font-size:20pt; text-align:center;
+    font-family:굴림, Arial; color:white; background-color:black; }
+.KRCC { Name:한국어; lang:ko-KR; SAMIType:CC; }
+.ENCC { Name:English; lang:en-US; SAMIType:CC; }
+.FRCC { Name:Français; lang:fr-FR; SAMIType:CC; }
+-->
+</STYLE>
+</HEAD>
+<BODY>
+<SYNC Start=1000><P Class=KRCC>빵집은 아침 여섯 시에 문을 엽니다.
+<SYNC Start=1000><P Class=ENCC>The bakery opens at six in the morning.
+<SYNC Start=1000><P Class=FRCC>La boulangerie ouvre à six heures du matin.
+<SYNC Start=4200><P Class=KRCC>&nbsp;
+<SYNC Start=4200><P Class=ENCC>&nbsp;
+<SYNC Start=4200><P Class=FRCC>&nbsp;
+<!-- Part 2 -->
+<SYNC Start=5000><P Class=KRCC>오늘은 <font color="#ffff00">비</font>가 옵니다.<br>우산을 챙기세요.
+<SYNC Start=5000><P Class=ENCC>It is <font color="#ffff00">raining</font> today.<br>Take an umbrella.
+<SYNC Start=5000><P Class=FRCC>Il <font color=yellow>pleut</font> aujourd'hui.<br>Prenez un parapluie.
+<SYNC Start=8000><P Class=KRCC><B>기차</B>가 곧 출발합니다.<P Class=ENCC><I>The train</I> leaves soon.<P Class=FRCC><U>Le train</U> part bientôt.
+<SYNC Start=10500>&nbsp;
+<SYNC Start=11000><P Class=ENCC>Bread &amp; coffee cost less than 5 euros.
+<SYNC Start=13000><P Class=ENCC>&nbsp;
+</BODY>
+</SAMI>

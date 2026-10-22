@@ -1,0 +1,28 @@
+{
+    "name": "SAMI with a SYNC tag without a Start time",
+    "format": "sami",
+    "strict": {
+        "error": "SYNC tag 3 has no valid Start attribute.",
+        "line": 14
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "Water the roses."
+        },
+        {
+            "start": 6,
+            "end": 8,
+            "text": "Pick the <i>beans</i>."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 14,
+            "block": 2,
+            "action": "skipped",
+            "message": "SYNC tag 3 has no valid Start attribute."
+        }
+    ]
+}

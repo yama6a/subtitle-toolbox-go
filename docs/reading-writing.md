@@ -63,7 +63,11 @@ Every text reader runs these steps in this order, before its own parsing. [inter
 
 A cue without an end ends at the first later start of another cue. The last such cue ends at its start plus `LastCueDuration`, rounded to whole milliseconds. "Later" means strictly later, so 2 cues with the same start do not end each other.
 
-No reader of this release has cues without an end. Each reader that uses the default adds its row here.
+| Reader | Cue without an end |
+|:--- |:--- |
+| SAMI | the last cue of the class. A SAMI cue ends at the next `SYNC` block of its class, also one with the same start |
+
+Each reader that uses the default adds its row here.
 
 ## Write options
 

@@ -1,0 +1,87 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "기차 시간표",
+            "language": "ko-KR"
+        },
+        "comments": [],
+        "formatData": {
+            "sami": {
+                "style": "\n<!--\nP { margin-left:8pt; margin-right:8pt; font-size:20pt; text-align:center; font-family:굴림, Arial; font-weight:bold; color:white; background-color:black; }\n.KRCC { Name:한국어; lang:ko-KR; SAMIType:CC; }\n-->\n",
+                "class": "KRCC"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.5,
+                "end": 4.5,
+                "lines": [
+                    "겨울 시간표는 월요일부터 시작합니다."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "겨울 시간표는 월요일부터 시작합니다."
+                            }
+                        ],
+                        "lines": [
+                            "겨울 시간표는 월요일부터 시작합니다."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 5.0,
+                "end": 8.2,
+                "lines": [
+                    "해안선 기차는",
+                    "6시 50분에 출발합니다."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "해안선 기차는<br>6시 50분에 출발합니다."
+                            }
+                        ],
+                        "lines": [
+                            "해안선 기차는",
+                            "6시 50분에 출발합니다."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 8.2,
+                "end": 11.0,
+                "lines": [
+                    "<font color=\"#ffff00\">10분</font> 더 일찍 출발합니다."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "<font color=\"#ffff00\">10분</font> 더 일찍 출발합니다."
+                            }
+                        ],
+                        "lines": [
+                            "<font color=\"#ffff00\">10분</font> 더 일찍 출발합니다."
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

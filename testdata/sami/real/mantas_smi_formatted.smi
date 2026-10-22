@@ -1,0 +1,29 @@
+<SAMI><HEAD><TITLE>TRAIN0412</TITLE><STYLE TYPE="text/css">
+<!--
+P {	margin-left:  1pt;
+    margin-right: 1pt;
+    margin-bottom: 2pt;
+    margin-top: 2pt;
+    text-align: center;
+    font-size: 10pt;
+    font-family: Arial;
+    font-weight: normal;
+    font-style: normal;
+    color: #ffffff; }
+
+.ENCC {Name: English; lang: en-US; SAMI_Type: CC;}
+
+--></STYLE></HEAD><BODY>
+<SYNC start="9209"><P class="ENCC">
+       ( bell ringing )
+</P></SYNC>
+<SYNC start="12312"><P class="ENCC">&nbsp;</P></SYNC>
+<SYNC start="14848"><P class="ENCC">
+              GUIDE:<br/>
+         When the train leaves<br/>
+    the platform at nine,
+</P></SYNC>
+<SYNC start="17350"><P class="ENCC">
+we watch the fields go by
+</P></SYNC>
+</BODY></SAMI>

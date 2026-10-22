@@ -1,0 +1,96 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Station news",
+            "language": "en-US"
+        },
+        "comments": [],
+        "formatData": {
+            "sami": {
+                "samiParam": "\n  Media {station_news.wmv}\n  Metrics {time:ms;}\n  Spec {MSFT:1.0;}\n  Length {20000}\n",
+                "style": "<!--\n  P {margin-left:8pt; margin-right:8pt; margin-bottom:2pt; margin-top:2pt;\n     text-align:center; font-size:12pt; font-family:Arial, sans-serif;\n     font-weight:normal; color:white; background-color:black;}\n  .ENUSCC {Name:'English Captions'; lang:en-US; SAMIType:CC;}\n  #Source {color:yellow; font-size:10pt;}\n-->",
+                "class": "ENUSCC"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 3.5,
+                "lines": [
+                    "Announcer",
+                    "Good evening. Here is the station news."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": {
+                                    "id": "Source"
+                                },
+                                "html": "Announcer"
+                            },
+                            {
+                                "attributes": [],
+                                "html": "Good evening. Here is the station news."
+                            }
+                        ],
+                        "lines": [
+                            "Announcer",
+                            "Good evening. Here is the station news."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 4.0,
+                "end": 7.5,
+                "lines": [
+                    "The bridge on the coast line",
+                    "is open again."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "The bridge on the coast line<br>is open again."
+                            }
+                        ],
+                        "lines": [
+                            "The bridge on the coast line",
+                            "is open again."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 8.0,
+                "end": 11.0,
+                "lines": [
+                    "<b>Bus 7</b> runs every ten minutes."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "<b>Bus 7</b> runs every ten minutes."
+                            }
+                        ],
+                        "lines": [
+                            "<b>Bus 7</b> runs every ten minutes."
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

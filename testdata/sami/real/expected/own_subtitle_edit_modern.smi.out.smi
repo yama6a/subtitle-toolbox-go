@@ -1,0 +1,24 @@
+<SAMI>
+<HEAD>
+<TITLE>Timetable notes</TITLE>
+<SAMIParam>
+  Metrics {time:ms;}
+  Spec {MSFT:1.0;}
+</SAMIParam>
+<STYLE TYPE="text/css">
+<!--
+  P { font-family: Arial; font-weight: normal; color: white; background-color: black; text-align: center; }
+  .ENUSCC { name: English; lang: en-US ; SAMIType: CC ; }
+-->
+</STYLE>
+</HEAD>
+<BODY>
+<SYNC Start=1200><P Class=ENUSCC>The winter timetable starts on Monday.
+<SYNC Start=3800><P Class=ENUSCC>&nbsp;
+<SYNC Start=4100><P Class=ENUSCC><i>[announcer]</i><br>The coast train leaves at 6:50.
+<SYNC Start=7300><P Class=ENUSCC>Ten minutes earlier &amp; from platform 4.
+<SYNC Start=10000><P Class=ENUSCC>&nbsp;
+<SYNC Start=10400><P Class=ENUSCC><font color="#ffff00">The last train</font> still leaves at 11:15.
+<SYNC Start=13900><P Class=ENUSCC>&nbsp;
+</BODY>
+</SAMI>

@@ -1,0 +1,18 @@
+<SAMI>
+<HEAD>
+<TITLE>기차 시간표</TITLE>
+<STYLE TYPE="text/css">
+<!--
+P { margin-left:8pt; margin-right:8pt; font-size:20pt; text-align:center; font-family:굴림, Arial; font-weight:bold; color:white; background-color:black; }
+.KRCC { Name:한국어; lang:ko-KR; SAMIType:CC; }
+-->
+</STYLE>
+</HEAD>
+<BODY>
+<SYNC Start=1500><P Class=KRCC>겨울 시간표는 월요일부터 시작합니다.
+<SYNC Start=4500><P Class=KRCC>&nbsp;
+<SYNC Start=5000><P Class=KRCC>해안선 기차는<br>6시 50분에 출발합니다.
+<SYNC Start=8200><P Class=KRCC><font color="#ffff00">10분</font> 더 일찍 출발합니다.
+<SYNC Start=11000><P Class=KRCC>&nbsp;
+</BODY>
+</SAMI>

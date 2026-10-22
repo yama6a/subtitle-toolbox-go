@@ -1,0 +1,87 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Bakery Tour",
+            "language": "ko-KR"
+        },
+        "comments": [],
+        "formatData": {
+            "sami": {
+                "style": "\n<!--\nP { margin-left:8pt; margin-right:8pt; font-size:20pt; text-align:center;\n    font-family:굴림, Arial; color:white; background-color:black; }\n.KRCC { Name:한국어; lang:ko-KR; SAMIType:CC; }\n.ENCC { Name:English; lang:en-US; SAMIType:CC; }\n.FRCC { Name:Français; lang:fr-FR; SAMIType:CC; }\n-->\n",
+                "class": "KRCC"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 4.2,
+                "lines": [
+                    "빵집은 아침 여섯 시에 문을 엽니다."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "빵집은 아침 여섯 시에 문을 엽니다."
+                            }
+                        ],
+                        "lines": [
+                            "빵집은 아침 여섯 시에 문을 엽니다."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 5.0,
+                "end": 8.0,
+                "lines": [
+                    "오늘은 <font color=\"#ffff00\">비</font>가 옵니다.",
+                    "우산을 챙기세요."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "오늘은 <font color=\"#ffff00\">비</font>가 옵니다.<br>우산을 챙기세요."
+                            }
+                        ],
+                        "lines": [
+                            "오늘은 <font color=\"#ffff00\">비</font>가 옵니다.",
+                            "우산을 챙기세요."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 8.0,
+                "end": 10.5,
+                "lines": [
+                    "<b>기차</b>가 곧 출발합니다."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "<b>기차</b>가 곧 출발합니다."
+                            }
+                        ],
+                        "lines": [
+                            "<b>기차</b>가 곧 출발합니다."
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

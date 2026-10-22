@@ -1,0 +1,15 @@
+<SAMI>
+<HEAD>
+<STYLE TYPE="text/css">
+<!--
+.ENUSCC { Name: English; lang: en-US; }
+-->
+</STYLE>
+</HEAD>
+<BODY>
+<SYNC Start=-200><P Class=ENUSCC>The tide is out.
+<SYNC Start=1000><P Class=ENUSCC>&nbsp
+<SYNC Start=2000><P Class=ENUSCC>Boats wait on the sand.
+<SYNC Start=4500><P Class=ENUSCC>&nbsp
+</BODY>
+</SAMI>

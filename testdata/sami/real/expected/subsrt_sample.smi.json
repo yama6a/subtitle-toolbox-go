@@ -1,0 +1,150 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "kr-KR"
+        },
+        "comments": [],
+        "formatData": {
+            "sami": {
+                "style": "\n<!--\nP { margin-left:8pt; margin-right:8pt; margin-bottom:2pt;\n    margin-top:2pt; font-size:14pt; text-align:center;\n    font-family:굴림, Arial; font-weight:normal; color:white;\n    background-color:black; }\n.KR { Name:KR; lang:kr-KR; SAMIType:CC; }\n-->\n",
+                "class": "KR"
+            }
+        },
+        "cues": [
+            {
+                "start": 185.113,
+                "end": 187.035,
+                "lines": [
+                    "500번 열차가 도착합니다,"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "500번 열차가 도착합니다,"
+                            }
+                        ],
+                        "lines": [
+                            "500번 열차가 도착합니다,"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 194.272,
+                "end": 196.304,
+                "lines": [
+                    "오늘 아침 빵집은 일찍 문을 열었다"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "오늘 아침 빵집은 일찍 문을 열었다"
+                            }
+                        ],
+                        "lines": [
+                            "오늘 아침 빵집은 일찍 문을 열었다"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 197.135,
+                "end": 201.159,
+                "lines": [
+                    "비가 와서, 우리는 역 안에서 오래 기다렸다"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "비가 와서, 우리는 역 안에서 오래 기다렸다"
+                            }
+                        ],
+                        "lines": [
+                            "비가 와서, 우리는 역 안에서 오래 기다렸다"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 201.159,
+                "end": 204.663,
+                "lines": [
+                    "오후에는 날씨가 맑아질 것이다"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "오후에는 날씨가 맑아질 것이다"
+                            }
+                        ],
+                        "lines": [
+                            "오후에는 날씨가 맑아질 것이다"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 233.201,
+                "end": 236.535,
+                "lines": [
+                    "매일 같은 시간에 같은 기차를 탔다"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "매일 같은 시간에 같은 기차를 탔다"
+                            }
+                        ],
+                        "lines": [
+                            "매일 같은 시간에 같은 기차를 탔다"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 335.453,
+                "end": 342.46,
+                "lines": [
+                    "<font color=\"#ffff00\"><b>출발! 출발!</b></font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "<font color=\"#FFFF00\"><b>출발! 출발!</b></font>"
+                            }
+                        ],
+                        "lines": [
+                            "<font color=\"#ffff00\"><b>출발! 출발!</b></font>"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

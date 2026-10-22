@@ -128,6 +128,18 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Time limit**: the limit applies to the expression and to its sum with the times of the parents, after the rounding to whole milliseconds. So `99999999999999999999:00:04.000` fails in both modes.
 - **Order**: the text warning, the entity warning and the repair warning come first, then the frame rate warning, then the warnings of the containers and paragraphs in document order.
 
+## SAMI
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| a `SYNC` tag without `>` or without a number in `Start`, such as `<SYNC Start=>` | `SYNC tag N has no valid Start attribute.` | skips the block. `Skipped` |
+| a `Start` of 100000 hours or more | `The time "D" is not below 100000 hours.` | skips the block. `Skipped` |
+| a negative `Start` | reads it as 0 | reads it as 0. `SYNC tag N has a negative Start. The parser read it as 0.` `Repaired` |
+| no `<P>` class in the classes of `<STYLE>` | reads the first `<P>` class | reads it. `No <P> class matches a class of the STYLE block. The parser read the class X.` `Repaired`, no block, the first line of the body that holds `Class=X` |
+
+- **Block numbers**: N counts the `SYNC` tags from 1. The warning block is N minus 1.
+- **Line numbers**: the line of the `<SYNC`. The reader counts lines after it removes every `</SYNC>`, as PHP does. A `</SYNC>` with a line end inside it moves the later lines up by one.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

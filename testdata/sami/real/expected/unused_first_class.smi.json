@@ -1,0 +1,63 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Unused first class",
+            "language": "en-US"
+        },
+        "comments": [],
+        "formatData": {
+            "sami": {
+                "style": "\n<!--\nP { font-family: Arial; color: white; }\n.FRFRCC { Name: French; lang: fr-FR; }\n.ENUSCC { Name: English; lang: en-US; }\n-->\n",
+                "class": "ENUSCC"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.5,
+                "lines": [
+                    "The museum opens at nine."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "The museum opens at nine."
+                            }
+                        ],
+                        "lines": [
+                            "The museum opens at nine."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 4.0,
+                "end": 6.0,
+                "lines": [
+                    "Tickets are sold at the door."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "Tickets are sold at the door."
+                            }
+                        ],
+                        "lines": [
+                            "Tickets are sold at the door."
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}
