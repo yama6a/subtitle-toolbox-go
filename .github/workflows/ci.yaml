@@ -39,6 +39,23 @@ jobs:
         env:
           LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
 
+  gorelease:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the newest release tag is the base of the API comparison
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false # the job builds only gorelease and shares no build with the other jobs
+      - run: .build/gorelease_test.sh
+      - run: .build/gorelease.sh
+        env:
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+
   go:
     uses: yama6a/gha/.github/workflows/go-ci.yaml@v2
 

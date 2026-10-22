@@ -10,5 +10,18 @@
   // ci.yaml fails a PR without a release label. A dependency bump changes no API or behaviour.
   labels: ["patch"],
 
+  // No built-in manager reads a go run version, so a regex manager reads the gorelease pin.
+  // The package name is the module root, which is what the Go datasource looks up.
+  customManagers: [
+    {
+      customType: "regex",
+      managerFilePatterns: ["/^\\.build/gorelease\\.sh$/"],
+      matchStrings: ["golang\\.org/x/exp/cmd/gorelease@(?<currentValue>v\\S+)"],
+      depNameTemplate: "golang.org/x/exp",
+      datasourceTemplate: "go",
+      versioningTemplate: "gomod",
+    },
+  ],
+
   packageRules: [],
 }

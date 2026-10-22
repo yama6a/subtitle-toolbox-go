@@ -54,15 +54,15 @@ Do every step on the last commit of `main`. For a major N of 2 or more, do step 
 
    Expected for 1.0.0: no output. Expected for N of 2 or more: no tag `vN.*`.
 
-3. Check that the 11 required checks are green on the last commit of `main`. The command prints only the required checks. It ignores the other runs, such as `renovate / renovate`.
+3. Check that the 12 required checks are green on the last commit of `main`. The command prints only the required checks. It ignores the other runs, such as `renovate / renovate`.
 
    ```bash
    gh api 'repos/yama6a/subtitle-toolbox-go/commits/main/check-runs?per_page=100' --jq '
-     ["release label","version check","go / go","cross-compile","fuzz","bench","smoke","docker / docker","shell","yaml","renovate-config"] as $required
+     ["release label","version check","gorelease","go / go","cross-compile","fuzz","bench","smoke","docker / docker","shell","yaml","renovate-config"] as $required
      | .check_runs[] | select(.name as $n | $required | index($n)) | "\(.name) \(.conclusion)"' | sort
    ```
 
-   Expected: 11 lines. `release label` and `version check` end in `skipped`, because they run on pull requests only. The other 9 end in `success`.
+   Expected: 12 lines. `release label`, `version check` and `gorelease` end in `skipped`, because they run on pull requests only. The other 9 end in `success`.
 
    ```text
    bench success
@@ -70,6 +70,7 @@ Do every step on the last commit of `main`. For a major N of 2 or more, do step 
    docker / docker success
    fuzz success
    go / go success
+   gorelease skipped
    release label skipped
    renovate-config success
    shell success
@@ -285,7 +286,7 @@ Replace `1.0.0` with the version of the release.
 
 - **Tags are permanent**: the Go module proxy keeps a version forever, also after a tag delete. Never delete or move a `v*` tag. A broken v1.0.0 gets a fix in v1.0.1. If nobody may use v1.0.0, v1.0.1 adds `retract v1.0.0` to `go.mod`.
 - **Only one pull request carries `major` before 1.0.0**: `version check` cannot tell the 1.0.0 pull request from another `major` pull request before the first tag.
-- **API check in CI**: right after the `v1.0.0` tag, a follow-up pull request adds the `gorelease` job of [#158](https://github.com/yama6a/subtitle-toolbox-go/issues/158). It needs a tag to compare against.
+- **API check in CI**: the `gorelease` job of [#158](https://github.com/yama6a/subtitle-toolbox-go/issues/158) compares the API of a pull request with the newest `v*` tag. It fails when the release label is weaker than the change. Renovate updates the pin of `golang.org/x/exp` in [`.build/gorelease.sh`](../../.build/gorelease.sh) through a custom manager in `renovate.json5`.
 - **Open pull requests after the first tag**: before `v1.0.0`, `version check` fails every pull request labelled `patch` or `minor`. The check reruns only on a push or a label change. After the tag, rerun the failed job of each such pull request:
 
   ```bash
