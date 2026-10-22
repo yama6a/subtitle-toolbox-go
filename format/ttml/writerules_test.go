@@ -322,6 +322,7 @@ func TestStoredHeadThatIsNoHead(t *testing.T) {
 		{"another element", "<body/>", false},
 		{"text first", " <head/>", false},
 		{"undeclared prefix", "<x:head/>", false},
+		{"not UTF-8", "<head>\xe9</head>", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -364,4 +365,43 @@ func TestWriteReturnsTheWriterError(t *testing.T) {
 
 	err := ttml.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, ttml.WriteOptions{})
 	require.ErrorIs(t, err, errWrite)
+}
+
+// The new elements take the prefixes and declarations that libxml gives them when PHP inserts them into the head.
+func TestNewElementsInAHeadWithItsOwnDeclarations(t *testing.T) {
+	t.Parallel()
+
+	const (
+		styling  = "http://www.w3.org/ns/ttml#styling"
+		metadata = "http://www.w3.org/ns/ttml#metadata"
+		title    = "\n    <ttm:title>T</ttm:title>"
+		agent    = `<ttm:agent xml:id="agent1" type="person"><ttm:name type="full">Ann</ttm:name></ttm:agent>`
+		region   = `xml:id="topLeft" tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="before" tts:textAlign="left"/>`
+	)
+	change := func(t *testing.T, s *model.Subtitle) {
+		t.Helper()
+		s.SetMetadata(model.MetadataTitle, "T")
+		setCue(t, s, 0, func(c *model.Cue) { c.Alignment, c.Lines = model.TopLeft, []string{"<v Ann>x"} })
+	}
+	body := "<div>" + oneParagraph + "</div>"
+	runWriteRules(t, []writeRule{
+		{"prefixed root", `<tt:tt xmlns:tt="http://www.w3.org/ns/ttml"><tt:head/><tt:body><tt:div><tt:p begin="1s" end="2s">x</tt:p></tt:div></tt:body></tt:tt>`, change,
+			[]string{"  <tt:head>" + title + "\n    " + agent + "\n    <tt:layout>\n      <tt:region " + region + "\n    </tt:layout>\n  </tt:head>\n"}},
+		{"layout with its own prefix", styledDocument(`<head><tt:layout xmlns:tt="http://www.w3.org/ns/ttml"/></head>`, body, ""), change,
+			[]string{"  <head>" + title + "\n    " + agent + `<tt:layout xmlns:tt="http://www.w3.org/ns/ttml">` + "\n      <tt:region " + region + "\n    </tt:layout></head>\n"}},
+		{"head with other prefixes for the namespaces", styledDocument(`<head xmlns:m="`+metadata+`" xmlns:s="`+styling+`" xmlns:b="http://www.w3.org/ns/ttml"><styling/></head>`, body, ""), change,
+			[]string{
+				"\n    <ttm:title xmlns:ttm=\"" + metadata + "\">T</ttm:title>",
+				`<ttm:agent xmlns:ttm="` + metadata + `" xml:id="agent1" type="person">`,
+				"\n    <b:layout>\n      <b:region xmlns:tts=\"" + styling + "\" " + region + "\n    </b:layout>\n",
+			}},
+		{"head that binds ttm to another namespace", styledDocument(`<head xmlns:ttm="urn:m"><styling/></head>`, body, ""), change,
+			[]string{"\n    <ttm:title xmlns:ttm=\"" + metadata + "\">T</ttm:title>", `<ttm:agent xmlns:ttm="` + metadata + `" xml:id="agent1" type="person">`}},
+		{"head that binds tts to another namespace", styledDocument(`<head xmlns:tts="urn:t"><layout/></head>`, body, ""), change,
+			[]string{"<layout>\n      <region xmlns:tts=\"" + styling + "\" " + region + "\n    </layout></head>\n"}},
+		{"layout with another prefix for styling", styledDocument(`<head><layout xmlns:s="`+styling+`"/></head>`, body, ""), change,
+			[]string{`<layout xmlns:s="` + styling + `">` + "\n      <region xmlns:tts=\"" + styling + "\" " + region}},
+		{"other declarations deeper in the head", styledDocument(`<head><metadata xmlns:ttm="urn:z"><ttm:x/></metadata><styling xmlns="urn:q"/></head>`, body, ""), change,
+			[]string{"  <head>" + title + `<metadata xmlns:ttm="urn:z"><ttm:x/></metadata>` + "\n    " + agent + `<styling xmlns="urn:q"/>` + "\n    <layout>\n      <region " + region}},
+	})
 }

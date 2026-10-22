@@ -134,6 +134,7 @@ func (w *writer) addTitle(title string) {
 		first = w.head.Children[0]
 	}
 	insertChild(w.head, el, first, 2)
+	reconcile(el, w.uris[w.ttm])
 }
 
 // agentID returns the ID of the agent of name, and adds a new agent before the first styling or layout child of
@@ -156,6 +157,7 @@ func (w *writer) agentID(name string) string {
 		}
 	}
 	insertChild(w.head, agent, before, 2)
+	reconcile(agent, w.uris[w.ttm])
 	w.agentIDs[name] = id
 	return id
 }
@@ -175,6 +177,7 @@ func (w *writer) regionID(a model.Alignment) string {
 	if layout == nil {
 		layout = newElement("", "layout")
 		insertChild(w.head, layout, nil, 2)
+		reconcile(layout, w.ns)
 	}
 
 	name := a.String()
@@ -185,6 +188,8 @@ func (w *writer) regionID(a model.Alignment) string {
 	region := newElement("", "region", xmlIDAttr(id), style("origin", "10% 10%"), style("extent", "80% 80%"),
 		style("displayAlign", [...]string{"after", "center", "before"}[a.Row()]), style("textAlign", columnName(a)))
 	insertChild(layout, region, nil, 3)
+	reconcile(region, w.ns)
+	reconcileAttributes(region, w.tts, w.uris[w.tts])
 	w.regionIDs[a] = id
 	return id
 }
@@ -240,6 +245,56 @@ func insertChild(parent, el, before *xmlraw.Node, depth int) {
 	in := indent(depth)
 	in.Parent, el.Parent = parent, parent
 	parent.Children = slices.Insert(parent.Children, i, in, el)
+}
+
+// reconcile gives a new element in the namespace uri the prefix and the xmlns declaration that libxml gives it when
+// PHP inserts it. Without its prefix, the element takes the prefix of the nearest declaration of uri. With its
+// prefix, the element keeps it, and declares it when the nearest declaration of uri has another prefix.
+func reconcile(el *xmlraw.Node, uri string) {
+	prefix, found := searchNamespace(el.Parent, uri, el.Parent)
+	if found && (el.Name.Space == "" || prefix == el.Name.Space) {
+		el.Name.Space, _ = searchNamespace(el, uri, el)
+		return
+	}
+	addDeclaration(el, el.Name.Space, uri)
+}
+
+// reconcileAttributes declares prefix on el for its attributes in the namespace uri, unless the nearest declaration
+// of uri has the same prefix.
+func reconcileAttributes(el *xmlraw.Node, prefix, uri string) {
+	if found, ok := searchNamespace(el.Parent, uri, el.Parent); !ok || found != prefix {
+		addDeclaration(el, prefix, uri)
+	}
+}
+
+func addDeclaration(el *xmlraw.Node, prefix, uri string) {
+	name := xml.Name{Local: "xmlns"}
+	if prefix != "" {
+		name = xml.Name{Space: "xmlns", Local: prefix}
+	}
+	el.Attrs = append(el.Attrs, xml.Attr{Name: name, Value: uri})
+}
+
+// searchNamespace returns the prefix of the nearest declaration of uri that is in scope at orig, as libxml
+// xmlSearchNsByHref finds it: on each element from start up, its declarations in order, then its own namespace,
+// except on orig.
+func searchNamespace(start *xmlraw.Node, uri string, orig *xmlraw.Node) (string, bool) {
+	for e := start; e != nil && e.Kind == xmlraw.ElementNode; e = e.Parent {
+		for _, a := range e.Attrs {
+			if prefix, ok := declaredPrefix(a); ok && a.Value == uri && inScope(orig, prefix, uri) {
+				return prefix, true
+			}
+		}
+		if e != orig && e.NamespaceURI() == uri && inScope(orig, e.Name.Space, uri) {
+			return e.Name.Space, true
+		}
+	}
+	return "", false
+}
+
+func inScope(n *xmlraw.Node, prefix, uri string) bool {
+	bound, ok := n.LookupPrefix(prefix)
+	return ok && bound == uri
 }
 
 func isBlankText(n *xmlraw.Node) bool {
