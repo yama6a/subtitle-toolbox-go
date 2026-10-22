@@ -107,6 +107,29 @@ func TestInfoGolden(t *testing.T) {
 	}
 }
 
+// TestInfoASS checks that the statistics leave out the override tags and the Comment events of an ASS file.
+func TestInfoASS(t *testing.T) {
+	t.Parallel()
+
+	dir := fixtureDir(t, map[string]string{"aegisub.ass": "ass/real/own_aegisub.ass"})
+	assert.Equal(t, result{Stdout: `aegisub.ass
+  Format:                ass
+  Encoding:              UTF-8
+  Cues:                  7
+  Words:                 38
+  Characters:            207
+  Display time:          16.4 s
+  Span:                  17 s
+  Characters per second: min 8.929, average 12.816, max 18.462
+  Words per minute:      min 72, average 143.99, max 221.053
+  Characters per line:   min 20, average 25.875, max 35
+  Gaps:                  min 0.1, average 0.1, max 0.1 s
+  Most used words:       good (3), the (3), train (2), to (2), coast (2), leaves
+                         (2), platform (2), morning (1), everyone (1), from (1)
+  Metadata title:        Morning train to the coast
+`}, call{dir: dir}.run(t, "info", "aegisub.ass"))
+}
+
 func TestInfoJSONKeyOrder(t *testing.T) {
 	t.Parallel()
 
