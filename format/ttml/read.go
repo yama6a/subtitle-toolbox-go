@@ -173,8 +173,28 @@ func (r *reader) readClock() (clock, error) {
 	return c, nil
 }
 
+// frameRateMultiplier returns a divided by b of ttp:frameRateMultiplier="a b", else 1.
+func (r *reader) frameRateMultiplier() float64 {
+	v, ok := r.parameter("frameRateMultiplier")
+	if !ok {
+		return 1
+	}
+	parts := multiplierRegexp.Split(strings.Trim(v, markupcore.PHPTrimSet), -1)
+	if len(parts) != 2 || phpFloat(parts[0]) <= 0 || phpFloat(parts[1]) <= 0 {
+		return 1
+	}
+	return phpFloat(parts[0]) / phpFloat(parts[1])
+}
+
 func (r *reader) parameter(local string) (string, bool) {
 	return familyAttr(r.root, parameterNamespaces, "ttp", local)
+}
+
+func (r *reader) trimmedParameter(local, fallback string) string {
+	if v, ok := r.parameter(local); ok {
+		return strings.Trim(v, markupcore.PHPTrimSet)
+	}
+	return fallback
 }
 
 // guessFrameRate returns the default of 30 fps, or 50 or 60 fps in lenient mode when a frame label in the file is
@@ -200,6 +220,169 @@ func (r *reader) guessFrameRate() (float64, bool, error) {
 	}
 	r.st.Warn(msg+" The parser read the frames at "+strconv.Itoa(guess)+" fps.", line, model.NoBlock, nil, model.Repaired)
 	return float64(guess), false, nil
+}
+
+// highestFrameLabel returns the highest frame label of 30 or more in the begin, end and dur attributes of the
+// document, with its expression and line. The first one wins a tie. It returns 0 without one.
+func (r *reader) highestFrameLabel() (label int64, expression string, line int) {
+	for n := range r.root.Parent.Descendants() {
+		for _, a := range attributes(n) {
+			if a.Name.Space != "" || !slices.Contains(timingAttributes, a.Name.Local) {
+				continue
+			}
+			v := strings.Trim(a.Value, markupcore.PHPTrimSet)
+			if m := frameLabelRegexp.FindStringSubmatch(v); m != nil && phpInt(m[1]) >= 30 && phpInt(m[1]) > label {
+				label, expression, line = phpInt(m[1]), v, n.Line
+			}
+		}
+	}
+	return label, expression, line
+}
+
+func (r *reader) firstChild(n *xmlraw.Node, local string) *xmlraw.Node {
+	for _, c := range n.Children {
+		if isElement(c, r.ns, local) {
+			return c
+		}
+	}
+	return nil
+}
+
+// readAgents maps the xml:id of each agent in head to the trimmed text of its first name with text. A later agent
+// of the same ID wins. See https://www.w3.org/TR/ttml2/#metadata-vocabulary-agent.
+func (r *reader) readAgents(head *xmlraw.Node) map[string]string {
+	agents := map[string]string{}
+	if head == nil {
+		return agents
+	}
+	for n := range head.Descendants() {
+		if !isMetadataElement(n, "agent") {
+			continue
+		}
+		for _, c := range n.Children {
+			if isMetadataElement(c, "name") {
+				if name := strings.Trim(c.Text(), markupcore.PHPTrimSet); name != "" {
+					agents[xmlAttr(n, "id")] = name
+					break
+				}
+			}
+		}
+	}
+	return agents
+}
+
+// readFileData sets the metadata and the file data. It removes the title from head.
+func (r *reader) readFileData(s *model.Subtitle, head *xmlraw.Node) error {
+	if lang := xmlAttr(r.root, "lang"); lang != "" {
+		s.SetMetadata(model.MetadataLanguage, lang)
+	}
+	data := model.NewData(
+		model.Field{Key: "namespace", Value: r.ns},
+		model.Field{Key: "namespaces", Value: phpArray(r.readNamespaces())},
+		model.Field{Key: "attributes", Value: phpArray(readAttributes(r.root, "xml:lang"))},
+	)
+	if head != nil {
+		if title, ok := removeTitle(head); ok {
+			s.SetMetadata(model.MetadataTitle, title)
+		}
+		data.Set("head", serialize(head))
+	}
+	if r.body != nil {
+		if attrs := readAttributes(r.body, timingAttributes...); attrs.Len() > 0 {
+			data.Set("body", attrs)
+		}
+	}
+	if err := s.SetFormatData(formatDataKey, data); err != nil {
+		return fmt.Errorf("%s file data: %w", model.TTML, err)
+	}
+	return nil
+}
+
+// readNamespaces returns the xmlns declarations of the root, sorted by prefix, without xml.
+func (r *reader) readNamespaces() *model.Data {
+	var prefixes []string
+	uris := map[string]string{}
+	for _, a := range r.root.Attrs {
+		prefix, ok := declaredPrefix(a)
+		if _, seen := uris[prefix]; ok && !seen {
+			prefixes = append(prefixes, prefix)
+			uris[prefix] = a.Value
+		}
+	}
+	sort.Strings(prefixes)
+	out := model.NewData()
+	for _, p := range prefixes {
+		out.Set(p, uris[p])
+	}
+	return out
+}
+
+// declaredPrefix returns the prefix that the xmlns declaration a declares, "" for the default namespace. The
+// prefix xml and an attribute that is no declaration give false.
+func declaredPrefix(a xml.Attr) (string, bool) {
+	switch {
+	case !xmlraw.IsNamespaceDecl(a):
+		return "", false
+	case a.Name.Space == "":
+		return "", true
+	default:
+		return a.Name.Local, a.Name.Local != "xml"
+	}
+}
+
+// readAttributes returns the attributes of n by name, without the names in skip and without ttm:agent in a
+// metadata namespace. An attribute in the XML namespace is named xml: plus its local name, whatever its prefix.
+func readAttributes(n *xmlraw.Node, skip ...string) *model.Data {
+	out := model.NewData()
+	for _, a := range attributes(n) {
+		uri := n.AttrNamespaceURI(a)
+		if slices.Contains(metadataNamespaces, uri) && a.Name.Local == "agent" {
+			continue
+		}
+		name := xmlraw.QName(a.Name)
+		if uri == xmlraw.XMLNamespace {
+			name = "xml:" + a.Name.Local
+		}
+		if !slices.Contains(skip, name) {
+			out.Set(name, a.Value)
+		}
+	}
+	return out
+}
+
+// removeTitle removes the first ttm:title of head and the white space text right before it. It returns the
+// trimmed title, false when it is empty or missing. The writer writes the title metadata in its place.
+func removeTitle(head *xmlraw.Node) (string, bool) {
+	for n := range head.Descendants() {
+		if !isMetadataElement(n, "title") {
+			continue
+		}
+		title := strings.Trim(n.Text(), markupcore.PHPTrimSet)
+		parent := n.Parent
+		if i := slices.Index(parent.Children, n); i > 0 {
+			if prev := parent.Children[i-1]; prev.Kind == xmlraw.TextNode && strings.Trim(prev.Data, markupcore.PHPTrimSet) == "" {
+				parent.RemoveChild(prev)
+			}
+		}
+		parent.RemoveChild(n)
+		return title, title != ""
+	}
+	return "", false
+}
+
+// phpArray returns an empty list for an empty object, as PHP stores both as an empty array, so the format data
+// writes as the PHP library writes it.
+func phpArray(d *model.Data) any {
+	if d.Len() == 0 {
+		return []any{}
+	}
+	return d
+}
+
+func serialize(n *xmlraw.Node) string {
+	var b strings.Builder
+	_ = xmlraw.Serialize(&b, n) // a strings.Builder never fails
+	return b.String()
 }
 
 // readContainer reads <body> or a <div> and the paragraphs and divs in it.
@@ -230,6 +413,40 @@ func (r *reader) readContainer(container *xmlraw.Node, parent scope, divAttribut
 		}
 	}
 	return nil
+}
+
+// containerScope returns the scope that container gives its children.
+func (r *reader) containerScope(container *xmlraw.Node, parent scope, iv interval) scope {
+	sc := parent
+	sc.interval = iv
+	sc.preserveSpace = preservesSpace(container, parent.preserveSpace)
+	if region, ok := plainAttr(container, "region"); ok {
+		sc.region, sc.hasRegion = region, true
+	}
+	props := r.styles.ownProperties(container)
+	if align, ok := props["textAlign"]; ok {
+		sc.textAlign, sc.hasTextAlign = align, true
+	}
+	if forced, ok := r.forcedDisplay(container); ok {
+		sc.forced = &forced
+	}
+	if len(props) > 0 {
+		sc.properties = append(slices.Clip(parent.properties), props)
+	}
+	return sc
+}
+
+// mergeData returns a copy of outer with the fields of inner. An inner value replaces an outer value in its place.
+func mergeData(outer, inner *model.Data) *model.Data {
+	out := outer.Clone()
+	if out == nil {
+		out = model.NewData()
+	}
+	for _, k := range inner.Keys() {
+		v, _ := inner.Get(k)
+		out.Set(k, v)
+	}
+	return out
 }
 
 func (r *reader) readParagraphOf(p *xmlraw.Node, sc scope, divAttributes *model.Data) error {
@@ -290,18 +507,14 @@ func (r *reader) readParagraph(p *xmlraw.Node, sc scope) (model.Cue, bool, *mode
 	return c, open, nil
 }
 
-// endOpenParagraphs ends each paragraph without an end that begins before begin.
-func (r *reader) endOpenParagraphs(begin time.Duration) {
-	r.open = slices.DeleteFunc(r.open, func(open openParagraph) bool {
-		c := &r.cues[open.cue]
-		if c.Start >= begin {
-			return false
-		}
-		c.End = begin
-		r.st.Warn("The paragraph that begins at "+timecode.Seconds(c.Start)+"s has no end time. The parser ended it at the next paragraph at "+
-			timecode.Seconds(begin)+"s.", open.line, open.paragraph, open.lines, model.Repaired)
-		return true
-	})
+// paragraphInterval returns the interval of a paragraph. A paragraph that begins at or after the end of its parent
+// reads again without the offset of the parent in lenient mode.
+func (r *reader) paragraphInterval(p *xmlraw.Node, sc scope) (interval, *model.ParseError) {
+	iv, err := r.interval(p, sc.interval)
+	if err != nil || !sc.hasEnd || iv.begin < sc.end {
+		return iv, err
+	}
+	return r.absoluteInterval(p, iv.begin, sc.end)
 }
 
 // absoluteInterval reads the times of a paragraph without the offset of its parent. Some files give the times of a
@@ -405,6 +618,39 @@ func (r *reader) isInParagraph(n *xmlraw.Node) bool {
 	return false
 }
 
+// paragraphRuns returns the runs of a paragraph with the styles of its region, its containers and its own.
+func (r *reader) paragraphRuns(p *xmlraw.Node, sc scope, region string, hasRegion bool, iv interval) []run {
+	st := style{}.apply(r.styles.regionProperties(region, hasRegion))
+	for _, props := range sc.properties {
+		st = st.apply(props)
+	}
+	st = st.apply(r.styles.ownProperties(p))
+	var runs []run
+	r.collectRuns(p, st, r.agentName(p), preservesSpace(p, sc.preserveSpace), iv, &runs)
+	return runs
+}
+
+// agentName returns the name of the first agent of the ttm:agent attribute of n, or the ID without a named agent.
+func (r *reader) agentName(n *xmlraw.Node) string {
+	v, _ := familyAttr(n, metadataNamespaces, "ttm", "agent")
+	ids := splitSpace(v)
+	if len(ids) == 0 {
+		return ""
+	}
+	if name, ok := r.agents[ids[0]]; ok {
+		return name
+	}
+	return ids[0]
+}
+
+func preservesSpace(n *xmlraw.Node, inherited bool) bool {
+	space := xmlAttr(n, "space")
+	if space == "" {
+		return inherited
+	}
+	return space == "preserve"
+}
+
 // collectRuns appends the runs of the content of n. A <span> with a time adds a timed span before its content.
 func (r *reader) collectRuns(n *xmlraw.Node, st style, agent string, preserveSpace bool, iv interval, runs *[]run) {
 	for _, child := range n.Children {
@@ -431,6 +677,37 @@ func (r *reader) collectRuns(n *xmlraw.Node, st style, agent string, preserveSpa
 	}
 }
 
+// addTextRuns appends the runs of a text node. With xml:space="preserve", each LF becomes a line break.
+// See https://www.w3.org/TR/ttml2/#content-attribute-space.
+func addTextRuns(runs *[]run, text string, st style, agent string, preserveSpace bool) {
+	text = strings.ReplaceAll(strings.ReplaceAll(text, "\r\n", "\n"), "\r", "\n")
+	parts := []string{text}
+	if preserveSpace {
+		parts = strings.Split(text, "\n")
+	}
+	for i, part := range parts {
+		if i > 0 {
+			*runs = append(*runs, run{lineBreak: true})
+		}
+		*runs = append(*runs, run{text: collapseRegexp.ReplaceAllLiteralString(part, " "), style: st, agent: agent})
+	}
+}
+
+// paragraphEnd returns the interval of a paragraph without an end: the union of its timed spans, or in lenient
+// mode its begin, with true for a paragraph that stays open.
+func (r *reader) paragraphEnd(p *xmlraw.Node, iv interval, runs []run) (interval, bool, *model.ParseError) {
+	if iv.hasEnd {
+		return iv, false, nil
+	}
+	if spans, ok := timedSpansInterval(runs); ok {
+		return spans, false, nil
+	}
+	if !r.st.Lenient() {
+		return interval{}, false, r.parseError(p.Line, "The paragraph that begins at "+timecode.Number(iv.begin)+"s has no end time.")
+	}
+	return interval{begin: iv.begin, end: iv.begin, hasEnd: true}, true, nil
+}
+
 // timedSpansInterval returns the union of the timed spans, for a paragraph without an end of its own.
 func timedSpansInterval(runs []run) (interval, bool) {
 	var iv interval
@@ -450,20 +727,18 @@ func timedSpansInterval(runs []run) (interval, bool) {
 	return iv, iv.hasEnd
 }
 
-// addTextRuns appends the runs of a text node. With xml:space="preserve", each LF becomes a line break.
-// See https://www.w3.org/TR/ttml2/#content-attribute-space.
-func addTextRuns(runs *[]run, text string, st style, agent string, preserveSpace bool) {
-	text = strings.ReplaceAll(strings.ReplaceAll(text, "\r\n", "\n"), "\r", "\n")
-	parts := []string{text}
-	if preserveSpace {
-		parts = strings.Split(text, "\n")
+// orderedTimes returns the cue times of a paragraph. An end before the begin fails, or lenient mode swaps them.
+func (r *reader) orderedTimes(p *xmlraw.Node, iv interval) (time.Duration, time.Duration, *model.ParseError) {
+	start, end := toDuration(iv.begin), toDuration(iv.end)
+	if end >= start {
+		return start, end, nil
 	}
-	for i, part := range parts {
-		if i > 0 {
-			*runs = append(*runs, run{lineBreak: true})
-		}
-		*runs = append(*runs, run{text: collapseRegexp.ReplaceAllLiteralString(part, " "), style: st, agent: agent})
+	start, end, err := r.st.OrderedTimes(start, end, p.Line, r.paragraph, xmlLines(p), true)
+	var perr *model.ParseError
+	if errors.As(err, &perr) {
+		return 0, 0, perr
 	}
+	return start, end, nil
 }
 
 // runsToLines turns the runs into lines of core markup. A run that starts with a space loses it after text that
@@ -524,6 +799,33 @@ func runsToMarkup(runs []run, openAgent *string) string {
 	return b.String() + markupcore.StyleRuns(styled, false)
 }
 
+// setCueData sets the cue data and the alignment of the cue of paragraph p.
+func (r *reader) setCueData(c *model.Cue, p *xmlraw.Node, sc scope, region string, hasRegion bool) *model.ParseError {
+	attrs := readAttributes(p, "begin", "end", "dur", "xml:id")
+	if _, ok := plainAttr(p, "region"); !ok && sc.hasRegion {
+		attrs.Set("region", sc.region)
+	}
+	textAlign, hasTextAlign := sc.textAlign, sc.hasTextAlign
+	if v, ok := r.styles.ownProperties(p)["textAlign"]; ok {
+		textAlign, hasTextAlign = v, true
+	}
+	data := model.NewData()
+	if attrs.Len() > 0 {
+		data.Set("attributes", attrs)
+	}
+	if a, ok := r.alignment(region, hasRegion, textAlign, hasTextAlign); ok {
+		c.Alignment = a
+		data.Set("alignment", int64(a.Numpad()))
+	}
+	if data.Len() == 0 {
+		return nil
+	}
+	if err := c.SetFormatData(formatDataKey, data); err != nil {
+		return r.parseError(p.Line, err.Error())
+	}
+	return nil
+}
+
 // alignment returns the alignment of a region and a text alignment. Start and end depend on the text direction,
 // so they give no alignment. See https://www.w3.org/TR/ttml2/#style-attribute-displayAlign.
 func (r *reader) alignment(region string, hasRegion bool, textAlign string, hasTextAlign bool) (model.Alignment, bool) {
@@ -542,11 +844,32 @@ func (r *reader) alignment(region string, hasRegion bool, textAlign string, hasT
 	return model.AlignmentAt(row, column)
 }
 
-func propOr(props properties, name, fallback string) string {
-	if v, ok := props[name]; ok {
-		return v
+// row returns the grid row of the anchor of a region: below 1/3 of the height the top row, above 2/3 the bottom row.
+func (r *reader) row(props properties) (int, bool) {
+	origin, originOK := r.verticalLength(propOr(props, "origin", "auto"), 0)
+	extent, extentOK := r.verticalLength(propOr(props, "extent", "auto"), 1)
+	if !originOK || !extentOK {
+		return 0, false
 	}
-	return fallback
+	var anchor float64
+	switch strings.Trim(propOr(props, "displayAlign", "before"), markupcore.PHPTrimSet) {
+	case "before":
+		anchor = origin
+	case "center":
+		anchor = origin + extent/2
+	case "after":
+		anchor = origin + extent
+	default:
+		return 0, false
+	}
+	switch {
+	case anchor < 1.0/3:
+		return 2, true
+	case anchor > 2.0/3:
+		return 0, true
+	default:
+		return 1, true
+	}
 }
 
 // verticalLength returns the second length of an origin or extent value as a fraction of the root container height.
@@ -573,40 +896,50 @@ func (r *reader) verticalLength(value string, auto float64) (float64, bool) {
 	}
 }
 
-// agentName returns the name of the first agent of the ttm:agent attribute of n, or the ID without a named agent.
-func (r *reader) agentName(n *xmlraw.Node) string {
-	v, _ := familyAttr(n, metadataNamespaces, "ttm", "agent")
-	ids := splitSpace(v)
-	if len(ids) == 0 {
-		return ""
+// cellLength returns a length in cells as a fraction of the height, by the rows of ttp:cellResolution.
+func (r *reader) cellLength(length float64) (float64, bool) {
+	v, ok := r.parameter("cellResolution")
+	if !ok {
+		v = "32 15"
 	}
-	if name, ok := r.agents[ids[0]]; ok {
-		return name
+	resolution := spaceRegexp.Split(strings.Trim(v, markupcore.PHPTrimSet), -1)
+	if len(resolution) != 2 || phpInt(resolution[1]) <= 0 {
+		return 0, false
 	}
-	return ids[0]
+	return length / float64(phpInt(resolution[1])), true
 }
 
-// readAgents maps the xml:id of each agent in head to the trimmed text of its first name with text. A later agent
-// of the same ID wins. See https://www.w3.org/TR/ttml2/#metadata-vocabulary-agent.
-func (r *reader) readAgents(head *xmlraw.Node) map[string]string {
-	agents := map[string]string{}
-	if head == nil {
-		return agents
+// pixelLength returns a length in pixels as a fraction of the height of tts:extent on <tt>, else on <body>.
+func (r *reader) pixelLength(length float64) (float64, bool) {
+	extent, ok := stylingAttributes(r.root)["extent"]
+	if !ok && r.body != nil {
+		extent, ok = stylingAttributes(r.body)["extent"]
 	}
-	for n := range head.Descendants() {
-		if !isMetadataElement(n, "agent") {
-			continue
-		}
-		for _, c := range n.Children {
-			if isMetadataElement(c, "name") {
-				if name := strings.Trim(c.Text(), markupcore.PHPTrimSet); name != "" {
-					agents[xmlAttr(n, "id")] = name
-					break
-				}
-			}
-		}
+	m := rootExtentRegexp.FindStringSubmatch(extent)
+	if !ok || m == nil || phpFloat(m[1]) <= 0 {
+		return 0, false
 	}
-	return agents
+	return length / phpFloat(m[1]), true
+}
+
+func propOr(props properties, name, fallback string) string {
+	if v, ok := props[name]; ok {
+		return v
+	}
+	return fallback
+}
+
+// paragraphForced reports whether the cue of a paragraph is forced: by the paragraph, else its nearest container,
+// else its region, or by one of its spans.
+func (r *reader) paragraphForced(p *xmlraw.Node, sc scope, region string, hasRegion bool) bool {
+	forced, ok := r.forcedDisplay(p)
+	if !ok && sc.forced != nil {
+		forced, ok = *sc.forced, true
+	}
+	if !ok {
+		forced, _ = r.regionForcedDisplay(region, hasRegion)
+	}
+	return forced || r.hasForcedSpan(p, forced)
 }
 
 // forcedDisplay reads itts:forcedDisplay of n, else of the styles that n references. The last reference that sets
@@ -670,142 +1003,18 @@ func (r *reader) hasForcedSpan(n *xmlraw.Node, inherited bool) bool {
 	return false
 }
 
-// readNamespaces returns the xmlns declarations of the root, sorted by prefix, without xml.
-func (r *reader) readNamespaces() *model.Data {
-	var prefixes []string
-	uris := map[string]string{}
-	for _, a := range r.root.Attrs {
-		prefix, ok := declaredPrefix(a)
-		if _, seen := uris[prefix]; ok && !seen {
-			prefixes = append(prefixes, prefix)
-			uris[prefix] = a.Value
+// endOpenParagraphs ends each paragraph without an end that begins before begin.
+func (r *reader) endOpenParagraphs(begin time.Duration) {
+	r.open = slices.DeleteFunc(r.open, func(open openParagraph) bool {
+		c := &r.cues[open.cue]
+		if c.Start >= begin {
+			return false
 		}
-	}
-	sort.Strings(prefixes)
-	out := model.NewData()
-	for _, p := range prefixes {
-		out.Set(p, uris[p])
-	}
-	return out
-}
-
-func (r *reader) firstChild(n *xmlraw.Node, local string) *xmlraw.Node {
-	for _, c := range n.Children {
-		if isElement(c, r.ns, local) {
-			return c
-		}
-	}
-	return nil
-}
-
-// readAttributes returns the attributes of n by name, without the names in skip and without ttm:agent in a
-// metadata namespace. An attribute in the XML namespace is named xml: plus its local name, whatever its prefix.
-func readAttributes(n *xmlraw.Node, skip ...string) *model.Data {
-	out := model.NewData()
-	for _, a := range attributes(n) {
-		uri := n.AttrNamespaceURI(a)
-		if slices.Contains(metadataNamespaces, uri) && a.Name.Local == "agent" {
-			continue
-		}
-		name := xmlraw.QName(a.Name)
-		if uri == xmlraw.XMLNamespace {
-			name = "xml:" + a.Name.Local
-		}
-		if !slices.Contains(skip, name) {
-			out.Set(name, a.Value)
-		}
-	}
-	return out
-}
-
-// removeTitle removes the first ttm:title of head and the white space text right before it. It returns the
-// trimmed title, false when it is empty or missing. The writer writes the title metadata in its place.
-func removeTitle(head *xmlraw.Node) (string, bool) {
-	for n := range head.Descendants() {
-		if !isMetadataElement(n, "title") {
-			continue
-		}
-		title := strings.Trim(n.Text(), markupcore.PHPTrimSet)
-		parent := n.Parent
-		if i := slices.Index(parent.Children, n); i > 0 {
-			if prev := parent.Children[i-1]; prev.Kind == xmlraw.TextNode && strings.Trim(prev.Data, markupcore.PHPTrimSet) == "" {
-				parent.RemoveChild(prev)
-			}
-		}
-		parent.RemoveChild(n)
-		return title, title != ""
-	}
-	return "", false
-}
-
-func preservesSpace(n *xmlraw.Node, inherited bool) bool {
-	space := xmlAttr(n, "space")
-	if space == "" {
-		return inherited
-	}
-	return space == "preserve"
-}
-
-func serialize(n *xmlraw.Node) string {
-	var b strings.Builder
-	_ = xmlraw.Serialize(&b, n) // a strings.Builder never fails
-	return b.String()
-}
-
-// xmlLines returns the lines of the serialised element, trimmed, without the empty ones, for warnings.
-func xmlLines(n *xmlraw.Node) []string {
-	var lines []string
-	for line := range strings.SplitSeq(serialize(n), "\n") {
-		if line = strings.Trim(line, markupcore.PHPTrimSet); line != "" {
-			lines = append(lines, line)
-		}
-	}
-	return lines
-}
-
-// phpArray returns an empty list for an empty object, as PHP stores both as an empty array, so the format data
-// writes as the PHP library writes it.
-func phpArray(d *model.Data) any {
-	if d.Len() == 0 {
-		return []any{}
-	}
-	return d
-}
-
-// toDuration rounds seconds to whole nanoseconds, then to whole milliseconds, half away from zero.
-func toDuration(secs float64) time.Duration {
-	return time.Duration(math.Round(secs * 1e9)).Round(time.Millisecond)
-}
-
-func round3(f float64) float64 {
-	return math.Round(f*1000) / 1000
-}
-
-// readFileData sets the metadata and the file data. It removes the title from head.
-func (r *reader) readFileData(s *model.Subtitle, head *xmlraw.Node) error {
-	if lang := xmlAttr(r.root, "lang"); lang != "" {
-		s.SetMetadata(model.MetadataLanguage, lang)
-	}
-	data := model.NewData(
-		model.Field{Key: "namespace", Value: r.ns},
-		model.Field{Key: "namespaces", Value: phpArray(r.readNamespaces())},
-		model.Field{Key: "attributes", Value: phpArray(readAttributes(r.root, "xml:lang"))},
-	)
-	if head != nil {
-		if title, ok := removeTitle(head); ok {
-			s.SetMetadata(model.MetadataTitle, title)
-		}
-		data.Set("head", serialize(head))
-	}
-	if r.body != nil {
-		if attrs := readAttributes(r.body, timingAttributes...); attrs.Len() > 0 {
-			data.Set("body", attrs)
-		}
-	}
-	if err := s.SetFormatData(formatDataKey, data); err != nil {
-		return fmt.Errorf("%s file data: %w", model.TTML, err)
-	}
-	return nil
+		c.End = begin
+		r.st.Warn("The paragraph that begins at "+timecode.Seconds(c.Start)+"s has no end time. The parser ended it at the next paragraph at "+
+			timecode.Seconds(begin)+"s.", open.line, open.paragraph, open.lines, model.Repaired)
+		return true
+	})
 }
 
 // addCues fails the paragraphs that are still open and adds the other cues to s.
@@ -827,231 +1036,22 @@ func (r *reader) addCues(s *model.Subtitle) error {
 	return nil
 }
 
-// frameRateMultiplier returns a divided by b of ttp:frameRateMultiplier="a b", else 1.
-func (r *reader) frameRateMultiplier() float64 {
-	v, ok := r.parameter("frameRateMultiplier")
-	if !ok {
-		return 1
-	}
-	parts := multiplierRegexp.Split(strings.Trim(v, markupcore.PHPTrimSet), -1)
-	if len(parts) != 2 || phpFloat(parts[0]) <= 0 || phpFloat(parts[1]) <= 0 {
-		return 1
-	}
-	return phpFloat(parts[0]) / phpFloat(parts[1])
-}
-
-func (r *reader) trimmedParameter(local, fallback string) string {
-	if v, ok := r.parameter(local); ok {
-		return strings.Trim(v, markupcore.PHPTrimSet)
-	}
-	return fallback
-}
-
-// highestFrameLabel returns the highest frame label of 30 or more in the begin, end and dur attributes of the
-// document, with its expression and line. The first one wins a tie. It returns 0 without one.
-func (r *reader) highestFrameLabel() (label int64, expression string, line int) {
-	for n := range r.root.Parent.Descendants() {
-		for _, a := range attributes(n) {
-			if a.Name.Space != "" || !slices.Contains(timingAttributes, a.Name.Local) {
-				continue
-			}
-			v := strings.Trim(a.Value, markupcore.PHPTrimSet)
-			if m := frameLabelRegexp.FindStringSubmatch(v); m != nil && phpInt(m[1]) >= 30 && phpInt(m[1]) > label {
-				label, expression, line = phpInt(m[1]), v, n.Line
-			}
+// xmlLines returns the lines of the serialised element, trimmed, without the empty ones, for warnings.
+func xmlLines(n *xmlraw.Node) []string {
+	var lines []string
+	for line := range strings.SplitSeq(serialize(n), "\n") {
+		if line = strings.Trim(line, markupcore.PHPTrimSet); line != "" {
+			lines = append(lines, line)
 		}
 	}
-	return label, expression, line
+	return lines
 }
 
-// containerScope returns the scope that container gives its children.
-func (r *reader) containerScope(container *xmlraw.Node, parent scope, iv interval) scope {
-	sc := parent
-	sc.interval = iv
-	sc.preserveSpace = preservesSpace(container, parent.preserveSpace)
-	if region, ok := plainAttr(container, "region"); ok {
-		sc.region, sc.hasRegion = region, true
-	}
-	props := r.styles.ownProperties(container)
-	if align, ok := props["textAlign"]; ok {
-		sc.textAlign, sc.hasTextAlign = align, true
-	}
-	if forced, ok := r.forcedDisplay(container); ok {
-		sc.forced = &forced
-	}
-	if len(props) > 0 {
-		sc.properties = append(slices.Clip(parent.properties), props)
-	}
-	return sc
+// toDuration rounds seconds to whole nanoseconds, then to whole milliseconds, half away from zero.
+func toDuration(secs float64) time.Duration {
+	return time.Duration(math.Round(secs * 1e9)).Round(time.Millisecond)
 }
 
-// mergeData returns a copy of outer with the fields of inner. An inner value replaces an outer value in its place.
-func mergeData(outer, inner *model.Data) *model.Data {
-	out := outer.Clone()
-	if out == nil {
-		out = model.NewData()
-	}
-	for _, k := range inner.Keys() {
-		v, _ := inner.Get(k)
-		out.Set(k, v)
-	}
-	return out
-}
-
-// paragraphRuns returns the runs of a paragraph with the styles of its region, its containers and its own.
-func (r *reader) paragraphRuns(p *xmlraw.Node, sc scope, region string, hasRegion bool, iv interval) []run {
-	st := style{}.apply(r.styles.regionProperties(region, hasRegion))
-	for _, props := range sc.properties {
-		st = st.apply(props)
-	}
-	st = st.apply(r.styles.ownProperties(p))
-	var runs []run
-	r.collectRuns(p, st, r.agentName(p), preservesSpace(p, sc.preserveSpace), iv, &runs)
-	return runs
-}
-
-// paragraphEnd returns the interval of a paragraph without an end: the union of its timed spans, or in lenient
-// mode its begin, with true for a paragraph that stays open.
-func (r *reader) paragraphEnd(p *xmlraw.Node, iv interval, runs []run) (interval, bool, *model.ParseError) {
-	if iv.hasEnd {
-		return iv, false, nil
-	}
-	if spans, ok := timedSpansInterval(runs); ok {
-		return spans, false, nil
-	}
-	if !r.st.Lenient() {
-		return interval{}, false, r.parseError(p.Line, "The paragraph that begins at "+timecode.Number(iv.begin)+"s has no end time.")
-	}
-	return interval{begin: iv.begin, end: iv.begin, hasEnd: true}, true, nil
-}
-
-// setCueData sets the cue data and the alignment of the cue of paragraph p.
-func (r *reader) setCueData(c *model.Cue, p *xmlraw.Node, sc scope, region string, hasRegion bool) *model.ParseError {
-	attrs := readAttributes(p, "begin", "end", "dur", "xml:id")
-	if _, ok := plainAttr(p, "region"); !ok && sc.hasRegion {
-		attrs.Set("region", sc.region)
-	}
-	textAlign, hasTextAlign := sc.textAlign, sc.hasTextAlign
-	if v, ok := r.styles.ownProperties(p)["textAlign"]; ok {
-		textAlign, hasTextAlign = v, true
-	}
-	data := model.NewData()
-	if attrs.Len() > 0 {
-		data.Set("attributes", attrs)
-	}
-	if a, ok := r.alignment(region, hasRegion, textAlign, hasTextAlign); ok {
-		c.Alignment = a
-		data.Set("alignment", int64(a.Numpad()))
-	}
-	if data.Len() == 0 {
-		return nil
-	}
-	if err := c.SetFormatData(formatDataKey, data); err != nil {
-		return r.parseError(p.Line, err.Error())
-	}
-	return nil
-}
-
-// row returns the grid row of the anchor of a region: below 1/3 of the height the top row, above 2/3 the bottom row.
-func (r *reader) row(props properties) (int, bool) {
-	origin, originOK := r.verticalLength(propOr(props, "origin", "auto"), 0)
-	extent, extentOK := r.verticalLength(propOr(props, "extent", "auto"), 1)
-	if !originOK || !extentOK {
-		return 0, false
-	}
-	var anchor float64
-	switch strings.Trim(propOr(props, "displayAlign", "before"), markupcore.PHPTrimSet) {
-	case "before":
-		anchor = origin
-	case "center":
-		anchor = origin + extent/2
-	case "after":
-		anchor = origin + extent
-	default:
-		return 0, false
-	}
-	switch {
-	case anchor < 1.0/3:
-		return 2, true
-	case anchor > 2.0/3:
-		return 0, true
-	default:
-		return 1, true
-	}
-}
-
-// cellLength returns a length in cells as a fraction of the height, by the rows of ttp:cellResolution.
-func (r *reader) cellLength(length float64) (float64, bool) {
-	v, ok := r.parameter("cellResolution")
-	if !ok {
-		v = "32 15"
-	}
-	resolution := spaceRegexp.Split(strings.Trim(v, markupcore.PHPTrimSet), -1)
-	if len(resolution) != 2 || phpInt(resolution[1]) <= 0 {
-		return 0, false
-	}
-	return length / float64(phpInt(resolution[1])), true
-}
-
-// pixelLength returns a length in pixels as a fraction of the height of tts:extent on <tt>, else on <body>.
-func (r *reader) pixelLength(length float64) (float64, bool) {
-	extent, ok := stylingAttributes(r.root)["extent"]
-	if !ok && r.body != nil {
-		extent, ok = stylingAttributes(r.body)["extent"]
-	}
-	m := rootExtentRegexp.FindStringSubmatch(extent)
-	if !ok || m == nil || phpFloat(m[1]) <= 0 {
-		return 0, false
-	}
-	return length / phpFloat(m[1]), true
-}
-
-// declaredPrefix returns the prefix that the xmlns declaration a declares, "" for the default namespace. The
-// prefix xml and an attribute that is no declaration give false.
-func declaredPrefix(a xml.Attr) (string, bool) {
-	switch {
-	case !xmlraw.IsNamespaceDecl(a):
-		return "", false
-	case a.Name.Space == "":
-		return "", true
-	default:
-		return a.Name.Local, a.Name.Local != "xml"
-	}
-}
-
-// paragraphInterval returns the interval of a paragraph. A paragraph that begins at or after the end of its parent
-// reads again without the offset of the parent in lenient mode.
-func (r *reader) paragraphInterval(p *xmlraw.Node, sc scope) (interval, *model.ParseError) {
-	iv, err := r.interval(p, sc.interval)
-	if err != nil || !sc.hasEnd || iv.begin < sc.end {
-		return iv, err
-	}
-	return r.absoluteInterval(p, iv.begin, sc.end)
-}
-
-// orderedTimes returns the cue times of a paragraph. An end before the begin fails, or lenient mode swaps them.
-func (r *reader) orderedTimes(p *xmlraw.Node, iv interval) (time.Duration, time.Duration, *model.ParseError) {
-	start, end := toDuration(iv.begin), toDuration(iv.end)
-	if end >= start {
-		return start, end, nil
-	}
-	start, end, err := r.st.OrderedTimes(start, end, p.Line, r.paragraph, xmlLines(p), true)
-	var perr *model.ParseError
-	if errors.As(err, &perr) {
-		return 0, 0, perr
-	}
-	return start, end, nil
-}
-
-// paragraphForced reports whether the cue of a paragraph is forced: by the paragraph, else its nearest container,
-// else its region, or by one of its spans.
-func (r *reader) paragraphForced(p *xmlraw.Node, sc scope, region string, hasRegion bool) bool {
-	forced, ok := r.forcedDisplay(p)
-	if !ok && sc.forced != nil {
-		forced, ok = *sc.forced, true
-	}
-	if !ok {
-		forced, _ = r.regionForcedDisplay(region, hasRegion)
-	}
-	return forced || r.hasForcedSpan(p, forced)
+func round3(f float64) float64 {
+	return math.Round(f*1000) / 1000
 }
