@@ -12,10 +12,10 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/internal/xmlraw"
 )
 
-func parse(t *testing.T, s string, recover bool) *xmlraw.Node {
+func parse(t *testing.T, s string, recovering bool) *xmlraw.Node {
 	t.Helper()
 
-	doc, err := xmlraw.Parse(strings.NewReader(s), xmlraw.ParseOptions{Recover: recover})
+	doc, err := xmlraw.Parse(strings.NewReader(s), xmlraw.ParseOptions{Recover: recovering})
 	require.NoError(t, err)
 	return doc
 }
@@ -123,6 +123,8 @@ func TestParseErrors(t *testing.T) {
 		{"empty", "", 1, "the document has no root element"},
 		{"bare ampersand", "<tt>\nA & B</tt>", 2, "invalid character entity & (no semicolon)"},
 		{"unknown entity", "<tt>&eacute;</tt>", 1, "invalid character entity &eacute;"},
+		{"element name with a digit first", "<tt><0a/></tt>", 1, "invalid XML name: 0a"},
+		{"attribute name with a digit first", "<tt\n-a=\"1\"/>", 2, "invalid XML name: -a"},
 		{"unsupported version", `<?xml version="1.1"?><tt/>`, 1, `unsupported version "1.1"; only version 1.0 is supported`},
 	}
 	for _, tt := range tests {

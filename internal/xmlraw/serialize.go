@@ -2,6 +2,7 @@ package xmlraw
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 	"slices"
 )
@@ -10,8 +11,10 @@ import (
 // declarations first and no declaration of an ancestor. An element without children writes as <name/>. Text and
 // attribute values are UTF-8 with the characters of the tables below escaped. A document writes its children.
 func Serialize(w io.Writer, n *Node) error {
-	_, err := w.Write(appendNode(nil, n))
-	return err
+	if _, err := w.Write(appendNode(nil, n)); err != nil {
+		return fmt.Errorf("xmlraw: %w", err)
+	}
+	return nil
 }
 
 func appendNode(dst []byte, n *Node) []byte {

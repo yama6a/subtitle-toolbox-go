@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"io"
 	"strings"
 )
@@ -23,7 +24,7 @@ type ParseOptions struct {
 func Parse(r io.Reader, opts ParseOptions) (*Node, error) {
 	src, err := io.ReadAll(r)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("xmlraw: %w", err)
 	}
 	p := &parser{opts: opts, doc: &Node{Kind: DocumentNode}}
 	p.dec = xml.NewDecoder(bytes.NewReader(lfLineEnds(src)))
@@ -76,41 +77,19 @@ func (p *parser) parse() error {
 }
 
 func (p *parser) add(tok xml.Token) error {
-	line, _ := p.dec.InputPos()
 	switch t := tok.(type) {
 	case xml.StartElement:
-		if p.cur == p.doc && p.root != nil {
-			return p.outside("a second root element <" + QName(t.Name) + ">")
-		}
-		n := &Node{Kind: ElementNode, Name: t.Name, Attrs: normalizeAttrs(t.Attr), Line: line}
-		p.append(n)
-		if p.cur == p.doc {
-			p.root = n
-		}
-		p.cur = n
+		return p.start(t)
 	case xml.EndElement:
-		if p.cur == p.doc {
-			return p.outside("the end tag </" + QName(t.Name) + "> outside the root element")
-		}
-		if t.Name != p.cur.Name && !p.opts.Recover {
-			return p.fail("element <" + QName(p.cur.Name) + "> closed by </" + QName(t.Name) + ">")
-		}
-		p.cur = p.cur.Parent
+		return p.end(t)
 	case xml.CharData:
-		if p.cur == p.doc {
-			if len(bytes.Trim(t, " \t\n\r")) == 0 {
-				return nil
-			}
-			return p.outside("text outside the root element")
-		}
-		p.append(&Node{Kind: TextNode, Data: string(t)})
+		return p.text(t)
 	case xml.Comment:
 		p.append(&Node{Kind: CommentNode, Data: string(t)})
 	case xml.ProcInst:
-		if t.Target == "xml" && p.cur == p.doc {
-			return nil
+		if t.Target != "xml" || p.cur != p.doc {
+			p.append(&Node{Kind: ProcInstNode, Name: xml.Name{Local: t.Target}, Data: string(t.Inst)})
 		}
-		p.append(&Node{Kind: ProcInstNode, Name: xml.Name{Local: t.Target}, Data: string(t.Inst)})
 	case xml.Directive:
 		p.append(&Node{Kind: DirectiveNode, Data: string(t)})
 	}
@@ -165,4 +144,40 @@ func lfLineEnds(src []byte) []byte {
 	}
 	src = bytes.ReplaceAll(src, []byte("\r\n"), []byte("\n"))
 	return bytes.ReplaceAll(src, []byte("\r"), []byte("\n"))
+}
+
+func (p *parser) start(t xml.StartElement) error {
+	if p.cur == p.doc && p.root != nil {
+		return p.outside("a second root element <" + QName(t.Name) + ">")
+	}
+	line, _ := p.dec.InputPos()
+	n := &Node{Kind: ElementNode, Name: t.Name, Attrs: normalizeAttrs(t.Attr), Line: line}
+	p.append(n)
+	if p.cur == p.doc {
+		p.root = n
+	}
+	p.cur = n
+	return nil
+}
+
+func (p *parser) end(t xml.EndElement) error {
+	if p.cur == p.doc {
+		return p.outside("the end tag </" + QName(t.Name) + "> outside the root element")
+	}
+	if t.Name != p.cur.Name && !p.opts.Recover {
+		return p.fail("element <" + QName(p.cur.Name) + "> closed by </" + QName(t.Name) + ">")
+	}
+	p.cur = p.cur.Parent
+	return nil
+}
+
+func (p *parser) text(t xml.CharData) error {
+	if p.cur != p.doc {
+		p.append(&Node{Kind: TextNode, Data: string(t)})
+		return nil
+	}
+	if len(bytes.Trim(t, " \t\n\r")) > 0 {
+		return p.outside("text outside the root element")
+	}
+	return nil
 }
