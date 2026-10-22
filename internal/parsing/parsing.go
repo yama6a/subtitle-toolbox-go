@@ -2,6 +2,7 @@
 package parsing
 
 import (
+	"math"
 	"slices"
 	"strconv"
 	"time"
@@ -118,14 +119,25 @@ func (s *State) OrderedTimes(start, end time.Duration, line, block int, lines []
 }
 
 // EndAtNextStart returns the first start after starts[i] that is later than starts[i].
-// Without one, it returns starts[i] plus the last cue duration, rounded to whole milliseconds.
+// Without one, it returns LastCueEnd of starts[i].
 func (s *State) EndAtNextStart(starts []time.Duration, i int) time.Duration {
 	for _, next := range starts[i+1:] {
 		if next > starts[i] {
 			return next
 		}
 	}
-	return (starts[i] + s.LastCueDuration()).Round(time.Millisecond)
+	return s.LastCueEnd(starts[i])
+}
+
+// LastCueEnd returns the end of a last cue without an end: start plus the last cue duration, rounded to whole
+// milliseconds. An end at or beyond the time limit becomes timecode.MaxValidTime, so every writer output reads back.
+func (s *State) LastCueEnd(start time.Duration) time.Duration {
+	d := s.LastCueDuration()
+	end := start + d
+	if d > 0 && end < start {
+		end = math.MaxInt64
+	}
+	return min(end.Round(time.Millisecond), timecode.MaxValidTime)
 }
 
 // NoCues returns the error "The file has text but no cues." at the line that textLine finds,

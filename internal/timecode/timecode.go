@@ -13,6 +13,9 @@ const MaxHours = 100_000
 // MaxTime is MaxHours as a duration.
 const MaxTime = MaxHours * time.Hour
 
+// MaxValidTime is 99999:59:59.999, the largest cue time below MaxTime.
+const MaxValidTime = MaxTime - time.Millisecond
+
 // MaxRetimed is 2562046:59:59.999, the largest time that a word timestamp holds. A retimed time stops there, so it
 // stays a time for the next retiming.
 const MaxRetimed = 2562047*time.Hour - time.Millisecond

@@ -52,9 +52,8 @@ func FuzzRead(f *testing.F) {
 					t.Fatalf("cue %d starts before cue %d", i, i-1)
 				}
 				previous = c.Start
-				// The last cue ends LastCueDuration after its start, which can be just below the limit, as in PHP.
 				for _, d := range []time.Duration{c.Start, c.End} {
-					if d%time.Millisecond != 0 || d < 0 || d >= timecode.MaxTime+5*time.Second {
+					if d%time.Millisecond != 0 || d < 0 || d >= timecode.MaxTime {
 						t.Fatalf("cue %d has the time %v", i, d)
 					}
 				}

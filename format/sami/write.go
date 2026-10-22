@@ -116,10 +116,10 @@ func (wr writer) keepOnlyClass(style string) string {
 	if !wr.hasClass {
 		return style
 	}
-	lower := asciiLower(wr.class)
+	lower := markupcore.ASCIILower(wr.class)
 	return otherClassRuleRegexp.ReplaceAllStringFunc(style, func(rule string) string {
 		m := otherClassRuleRegexp.FindStringSubmatch(rule)
-		if asciiLower(m[1]) == lower {
+		if markupcore.ASCIILower(m[1]) == lower {
 			return rule
 		}
 		return ""

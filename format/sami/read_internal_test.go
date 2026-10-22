@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +15,7 @@ import (
 func phpTextLine(content string) (int, bool) {
 	re := regexp.MustCompile(`(?s)<` + fold("head") + `\b.*?</` + fold("head") + `\s*>|<!--.*?-->|<[^>]*>|` + fold("&nbsp;"))
 	stripped := re.ReplaceAllStringFunc(content, func(m string) string { return strings.Repeat("\n", strings.Count(m, "\n")) })
-	text := strings.TrimLeft(stripped, phpTrimSet)
+	text := strings.TrimLeft(stripped, markupcore.PHPTrimSet)
 	if text == "" {
 		return 0, false
 	}

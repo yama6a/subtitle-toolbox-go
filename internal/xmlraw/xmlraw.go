@@ -16,6 +16,9 @@ const XMLNamespace = "http://www.w3.org/XML/1998/namespace"
 // Prolog matches the white space, declarations, comments and DOCTYPE before the root element.
 const Prolog = `(?s)\A(?:[\t\n\v\f\r ]|<\?.*?\?>|<!--.*?-->|<!DOCTYPE[^>]*>)*`
 
+// PrologAnyCase is Prolog with <!DOCTYPE in any case, as the PHP signatures of SAMI and HTML transcripts read it.
+const PrologAnyCase = `(?s)\A(?:[\t\n\v\f\r ]|<\?.*?\?>|<!--.*?-->|<![Dd][Oo][Cc][Tt][Yy][Pp][Ee][^>]*>)*`
+
 // Kind is the kind of a Node.
 type Kind uint8
 

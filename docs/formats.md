@@ -330,7 +330,7 @@ This file reads as one cue from 1 s to 4 s with the lines `The bridge is <b>open
 | the paragraphs of the class in each `SYNC` block | cue data `sami.paragraphs`, each with its other attributes and its HTML, and `sami.lines` |
 
 - **Cues**: a `SYNC` block with a paragraph of the class, or with a paragraph without class, ends the cue before it. It starts a cue when those paragraphs hold text. So a `&nbsp;` block ends a cue. A block without `<P>` ends the cue of every class. The blocks sort by start.
-- **Last cue**: it lasts `LastCueDuration`, 5 s by default.
+- **Last cue**: it lasts `LastCueDuration`, 5 s by default. Its end stops at 99999:59:59.999, as [reading-writing.md](reading-writing.md#last-cue-default) says.
 - **`&nbsp` without `;`** reads as a no-break space, as browsers read it.
 - **Invalid UTF-8** fails in strict mode. Lenient mode reads each bad byte as U+FFFD. Korean CP949 and EUC-KR files need `ReadOptions.Encoding` when the detection of [encodings.md](encodings.md) misses them.
 
@@ -352,7 +352,7 @@ The reader parses the content of each `SYNC` block with a tag scanner of its own
 
 - A `<P>` closes an open `<P>` and the inline tags `b`, `i`, `u`, `s`, `strike`, `tt`, `big`, `small` and `h1` to `h6` before it, so 2 paragraphs of one block are siblings. It does not close `<font>` or `<span>`.
 - An end tag closes the innermost open element of its name and every element after it. An end tag without such an element is ignored.
-- The named entities of HTML 4.01 and `&apos;` decode. An unknown name or a reference without `;` stays text.
+- The named entities of HTML 4.01 and `&apos;` decode. An unknown name, or a name without `;`, stays text. A numeric reference such as `&#39` decodes also without `;`.
 
 **Limit**: lists, tables, forms and scripts follow more libxml2 rules than the scanner knows. Such content keeps its text, but the cue data can differ from PHP. SAMI files do not use them.
 

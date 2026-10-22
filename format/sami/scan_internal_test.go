@@ -1,9 +1,12 @@
 package sami
 
 import (
+	"math"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -74,7 +77,8 @@ func TestScan(t *testing.T) {
 			strconv.Quote("& ' ' \u00E9 ' \u2329"), "&amp; ' ' \u00E9 ' \u2329",
 		},
 		{"3 a reference to a code point that XML does not allow", `a&#0;b&#xD800;c&#1114112;d`, `"abcd"`, `abcd`},
-		{"4 unknown names and missing semicolons", `&foo; &nbsp x &#39 &AMP; &#; &`, `"&foo; &nbsp x &#39 &AMP; &#; &"`, `&amp;foo; &amp;nbsp x &amp;#39 &amp;AMP; &amp;#; &amp;`},
+		{"4 unknown names and missing semicolons", `&foo; &nbsp x &AMP; &#; &#x; &`, `"&foo; &nbsp x &AMP; &#; &#x; &"`, `&amp;foo; &amp;nbsp x &amp;AMP; &amp;#; &amp;#x; &amp;`},
+		{"3 numeric references without semicolons", `a&#39s &#x27g &#233 &#0x`, "\"a's 'g \u00e9 x\"", "a's 'g \u00e9 x"},
 		{"4 an HTML5 name", `&check;`, `"&check;"`, `&amp;check;`},
 		{"5 a < without a letter", `a < b <3 </3 <`, `"a < b <3 </3 <"`, `a &lt; b &lt;3 &lt;/3 &lt;`},
 		{"6 comments, DOCTYPE and processing instructions", `a<!-- note -->b<!DOCTYPE html><?php x ?>c`, `"a" <!-- note --> "bc"`, `a<!-- note -->bc`},
@@ -157,4 +161,39 @@ func FuzzScan(f *testing.F) {
 			t.Fatalf("scan(%q) gives %s, but its serialisation %q gives %s", in, dump(nodes), html, dump(again))
 		}
 	})
+}
+
+// TestScanGrowth scans end tags that close nothing at n and 10n tags, best of 3 each, and fails above a ratio of 30.
+func TestScanGrowth(t *testing.T) {
+	t.Parallel()
+
+	if os.Getenv("STBOX_GROWTH") != "1" {
+		t.Skip("growth test, set STBOX_GROWTH=1")
+	}
+	inputs := map[string]func(n int) string{
+		"unmatched end tags": func(n int) string { return strings.Repeat("<b>", n) + strings.Repeat("</i>", n) },
+		"end tags that a div blocks": func(n int) string {
+			return "<b>" + strings.Repeat("<div>", n) + strings.Repeat("</b>", n)
+		},
+		"end tags that a table blocks": func(n int) string {
+			return "<td><table>" + strings.Repeat("<div>", n) + strings.Repeat("</td>", n)
+		},
+	}
+	for name, input := range inputs {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			best := func(s string) time.Duration {
+				fastest := time.Duration(math.MaxInt64)
+				for range 3 {
+					start := time.Now()
+					scan(s)
+					fastest = min(fastest, time.Since(start))
+				}
+				return fastest
+			}
+			small, large := best(input(3000)), best(input(30000))
+			assert.Less(t, float64(large)/float64(max(small, time.Microsecond)), 30.0, "3000: %v, 30000: %v", small, large)
+		})
+	}
 }

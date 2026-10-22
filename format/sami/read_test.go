@@ -1,6 +1,7 @@
 package sami_test
 
 import (
+	"math"
 	"strings"
 	"testing"
 	"time"
@@ -191,6 +192,7 @@ func TestReadParagraphMarkup(t *testing.T) {
 		},
 		{"&nbsp without ;", "a&nbspb &nbsp;", []string{"a\u00A0b \u00A0"}},
 		{"a comment", "a<!-- b -->c", []string{"ac"}},
+		{"a numeric reference without ;", "a&#39s", []string{"a's"}},
 		{"unknown tags", "<ruby>a<rt>b</rt></ruby>", []string{"ab"}},
 	}
 	for _, tt := range tests {
@@ -425,7 +427,33 @@ func TestReadStartPastTheLimit(t *testing.T) {
 
 	s, _ := mustRead(t, "<SAMI><BODY><SYNC Start=359999999999><P>last</BODY></SAMI>", false)
 	c, _ := s.Cue(0)
-	assert.Equal(t, 359999999999*ms, c.Start)
+	assert.Equal(t, [2]time.Duration{359999999999 * ms, 359999999999 * ms}, [2]time.Duration{c.Start, c.End})
+}
+
+func TestReadCapsTheLastCueEnd(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		start string
+		last  *time.Duration
+		want  cueRow
+	}{
+		{"start 3 s below the limit", "359999997000", nil, cueRow{359999997 * time.Second, 359999999999 * ms, []string{"last"}}},
+		{"a last cue duration beyond the int64 range", "1000", new(time.Duration(math.MaxInt64)), cueRow{time.Second, 359999999999 * ms, []string{"last"}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			content := "<SAMI><BODY><SYNC Start=" + tt.start + "><P>last</BODY></SAMI>"
+			s, _, err := read(t, content, model.CommonReadOptions{LastCueDuration: tt.last}, sami.ReadOptions{})
+			require.NoError(t, err)
+			assert.Equal(t, []cueRow{tt.want}, cueRows(s))
+			back, _ := mustRead(t, write(t, s, model.CommonWriteOptions{}), false)
+			assert.Equal(t, cueRows(s), cueRows(back))
+		})
+	}
 }
 
 // Ports testInputThatIsNotUtf8Throws of tests/Parsers/SamiParserTest.php of subtitle-toolbox-php.

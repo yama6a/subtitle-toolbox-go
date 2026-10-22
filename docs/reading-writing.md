@@ -63,6 +63,8 @@ Every text reader runs these steps in this order, before its own parsing. [inter
 
 A cue without an end ends at the first later start of another cue. The last such cue ends at its start plus `LastCueDuration`, rounded to whole milliseconds. "Later" means strictly later, so 2 cues with the same start do not end each other.
 
+- **Time limit**: the end stops at 99999:59:59.999, the largest time below 100000 hours. So a last cue that starts less than `LastCueDuration` before the limit is shorter, and every writer output reads back. `LastCueEnd` in [internal/parsing/parsing.go](../internal/parsing/parsing.go) holds the rule.
+
 | Reader | Cue without an end |
 |:--- |:--- |
 | SAMI | the last cue of the class. A SAMI cue ends at the next `SYNC` block of its class, also one with the same start |

@@ -3,6 +3,7 @@ package parsing_test
 import (
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"testing"
 	"time"
@@ -66,6 +67,32 @@ func TestEndAtNextStart(t *testing.T) {
 
 			st := parsing.NewState(model.SubRip, model.CommonReadOptions{LastCueDuration: tt.last})
 			assert.Equal(t, tt.want, st.EndAtNextStart(tt.starts, tt.i))
+		})
+	}
+}
+
+func TestLastCueEnd(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		last  *time.Duration
+		start time.Duration
+		want  time.Duration
+	}{
+		{name: "5 s by default", start: time.Second, want: 6 * time.Second},
+		{name: "rounds to whole milliseconds", last: new(1500 * time.Microsecond), start: time.Second, want: 1002 * time.Millisecond},
+		{name: "just below the limit", start: timecode.MaxTime - 6*time.Second, want: timecode.MaxTime - time.Second},
+		{name: "capped below the limit", start: timecode.MaxTime - 3*time.Second, want: timecode.MaxValidTime},
+		{name: "a start at the largest time", start: timecode.MaxValidTime, want: timecode.MaxValidTime},
+		{name: "a sum beyond the int64 range saturates", last: new(time.Duration(math.MaxInt64)), start: time.Second, want: timecode.MaxValidTime},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			st := parsing.NewState(model.SAMI, model.CommonReadOptions{LastCueDuration: tt.last})
+			assert.Equal(t, tt.want, st.LastCueEnd(tt.start))
 		})
 	}
 }

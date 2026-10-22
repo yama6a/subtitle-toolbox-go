@@ -3,6 +3,8 @@ package sami
 import (
 	"strings"
 	"unicode/utf8"
+
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 )
 
 type nodeKind uint8
@@ -76,6 +78,10 @@ type scanner struct {
 	s     string
 	i     int
 	stack []*node
+	// open holds the stack positions of the open elements by name, and high those by end priority above 100, so an
+	// end tag finds its element and the elements that block it without a walk of the stack.
+	open map[string][]int
+	high map[int][]int
 	// pending holds the text since the last node, so a long run of references does not copy the text each time.
 	pending strings.Builder
 }
@@ -86,7 +92,7 @@ type scanner struct {
 // Behaviour reference only: libxml2, HTMLparser.c (https://gitlab.gnome.org/GNOME/libxml2/-/blob/master/HTMLparser.c).
 func scan(s string) []*node {
 	root := &node{kind: elementNode, name: "body"}
-	sc := &scanner{s: s, stack: []*node{root}}
+	sc := &scanner{s: s, stack: []*node{root}, open: map[string][]int{}, high: map[int][]int{}}
 	for sc.i < len(s) {
 		switch s[sc.i] {
 		case '<':
@@ -174,7 +180,7 @@ func (sc *scanner) skipPast(c byte) {
 }
 
 func (sc *scanner) startTag() {
-	name := asciiLower(sc.name())
+	name := markupcore.ASCIILower(sc.name())
 	el := &node{kind: elementNode, name: name}
 	selfClosed := sc.attributes(el)
 	if isDocumentElement(name) {
@@ -184,16 +190,16 @@ func (sc *scanner) startTag() {
 	switch name {
 	case "p":
 		for len(sc.stack) > 1 && closedByP[sc.current().name] {
-			sc.stack = sc.stack[:len(sc.stack)-1]
+			sc.pop()
 		}
 	case "div":
 		for len(sc.stack) > 1 && sc.current().name == "p" {
-			sc.stack = sc.stack[:len(sc.stack)-1]
+			sc.pop()
 		}
 	}
 	sc.append(el)
 	if !selfClosed && !voidElements[name] {
-		sc.stack = append(sc.stack, el)
+		sc.push(el)
 	}
 }
 
@@ -216,7 +222,7 @@ func (sc *scanner) attributes(el *node) bool {
 			sc.skipJunk()
 			continue
 		}
-		a := attr{name: asciiLower(sc.name())}
+		a := attr{name: markupcore.ASCIILower(sc.name())}
 		sc.skipBlanks()
 		if sc.i < len(sc.s) && sc.s[sc.i] == '=' {
 			sc.i++
@@ -270,21 +276,43 @@ func (sc *scanner) attributeValue() string {
 }
 
 func (sc *scanner) endTag() {
-	name := asciiLower(sc.name())
+	name := markupcore.ASCIILower(sc.name())
 	sc.skipPast('>')
 	if isDocumentElement(name) {
 		return
 	}
+	positions := sc.open[name]
+	if len(positions) == 0 {
+		return
+	}
+	target := positions[len(positions)-1]
 	priority := endPriority(name)
-	for j := len(sc.stack) - 1; j >= 1; j-- {
-		if sc.stack[j].name == name {
-			sc.flush()
-			sc.stack = sc.stack[:j]
+	for p, blockers := range sc.high {
+		if p > priority && len(blockers) > 0 && blockers[len(blockers)-1] > target {
 			return
 		}
-		if endPriority(sc.stack[j].name) > priority {
-			return
-		}
+	}
+	sc.flush()
+	for len(sc.stack) > target {
+		sc.pop()
+	}
+}
+
+func (sc *scanner) push(el *node) {
+	position := len(sc.stack)
+	sc.stack = append(sc.stack, el)
+	sc.open[el.name] = append(sc.open[el.name], position)
+	if p := endPriority(el.name); p > 100 {
+		sc.high[p] = append(sc.high[p], position)
+	}
+}
+
+func (sc *scanner) pop() {
+	el := sc.current()
+	sc.stack = sc.stack[:len(sc.stack)-1]
+	sc.open[el.name] = sc.open[el.name][:len(sc.open[el.name])-1]
+	if p := endPriority(el.name); p > 100 {
+		sc.high[p] = sc.high[p][:len(sc.high[p])-1]
 	}
 }
 
@@ -331,8 +359,8 @@ func decodeReferences(s string) string {
 }
 
 // reference returns the text of the reference at the start of s and its length. A named reference needs a name of
-// HTML 4.01 and its ;. A numeric reference needs its ; too. A numeric reference to a code point that XML does not
-// allow decodes to nothing, as in libxml2. Any other & is text.
+// HTML 4.01 and its ;. A numeric reference decodes also without ;, as in libxml2. A numeric reference to a code point
+// that XML does not allow decodes to nothing, as in libxml2. Any other & is text.
 func reference(s string) (string, int) {
 	if strings.HasPrefix(s, "&#") {
 		return numericReference(s)
@@ -358,13 +386,16 @@ func numericReference(s string) (string, int) {
 	}
 	start := n
 	value, n := digits(s, n, base)
-	if n == start || n >= len(s) || s[n] != ';' {
+	if n == start {
 		return "&", 1
 	}
-	if !isXMLChar(value) {
-		return "", n + 1
+	if n < len(s) && s[n] == ';' {
+		n++
 	}
-	return string(rune(value)), n + 1
+	if !isXMLChar(value) {
+		return "", n
+	}
+	return string(rune(value)), n
 }
 
 // digits reads the digits of s from start on. The value stops growing above utf8.MaxRune.

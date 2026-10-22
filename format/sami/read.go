@@ -43,7 +43,7 @@ type names struct {
 }
 
 func (n *names) add(name string) bool {
-	key := asciiLower(name)
+	key := markupcore.ASCIILower(name)
 	if _, ok := n.written[key]; ok {
 		return false
 	}
@@ -90,7 +90,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if !ok {
 		return s, st.Warnings(), nil
 	}
-	rd := &reader{st: st, opts: opts, content: normalizeLineEnds(string(content))}
+	rd := &reader{st: st, opts: opts, content: markupcore.NormalizeLineEnds(string(content))}
 	if err := rd.read(s); err != nil {
 		return nil, nil, err
 	}
@@ -110,7 +110,7 @@ func (rd *reader) read(s *model.Subtitle) error {
 	}
 	if hasClass {
 		data.Set("class", class)
-		if lang := classes.lang[asciiLower(class)]; lang != "" {
+		if lang := classes.lang[markupcore.ASCIILower(class)]; lang != "" {
 			s.SetMetadata(model.MetadataLanguage, lang)
 		}
 	}
@@ -129,7 +129,7 @@ func (rd *reader) read(s *model.Subtitle) error {
 // readHead reads the title into s, and the SAMIParam and STYLE blocks into data. It returns the classes of STYLE.
 func (rd *reader) readHead(s *model.Subtitle, data *model.Data) styleClasses {
 	if m := titleRegexp.FindStringSubmatch(rd.content); m != nil {
-		if title := strings.Trim(m[1], phpTrimSet); title != "" {
+		if title := strings.Trim(m[1], markupcore.PHPTrimSet); title != "" {
 			s.SetMetadata(model.MetadataTitle, markupcore.DecodeEntities(title))
 		}
 	}
@@ -151,12 +151,12 @@ func readClasses(style string) styleClasses {
 		lang := ""
 		for declaration := range strings.SplitSeq(m[2], ";") {
 			name, value, ok := strings.Cut(declaration, ":")
-			if ok && asciiLower(strings.Trim(name, phpTrimSet)) == "lang" {
+			if ok && markupcore.ASCIILower(strings.Trim(name, markupcore.PHPTrimSet)) == "lang" {
 				lang = strings.Trim(value, " \t\n\"'")
 			}
 		}
 		if classes.add(m[1]) {
-			classes.lang[asciiLower(m[1])] = lang
+			classes.lang[markupcore.ASCIILower(m[1])] = lang
 		}
 	}
 	return classes
@@ -233,7 +233,7 @@ func (rd *reader) syncBlock(chunk string, index, line int) (syncBlock, bool, err
 	lines := func() []string {
 		var out []string
 		for l := range strings.SplitSeq("<SYNC"+chunk, "\n") {
-			if l = strings.Trim(l, phpTrimSet); l != "" {
+			if l = strings.Trim(l, markupcore.PHPTrimSet); l != "" {
 				out = append(out, l)
 			}
 		}
@@ -303,7 +303,7 @@ func (rd *reader) chooseClass(classes styleClasses, blocks []syncBlock) (string,
 }
 
 func optionClass(want string, classes styleClasses, used names) (string, bool, error) {
-	key := asciiLower(want)
+	key := markupcore.ASCIILower(want)
 	if name, ok := classes.written[key]; ok {
 		return name, true, nil
 	}
@@ -347,7 +347,7 @@ func (rd *reader) classLine(class string) (int, []string) {
 		return model.NoLine, nil
 	}
 	match := rd.content[start+loc[0] : start+loc[1]]
-	return 1 + strings.Count(rd.content[:start+loc[0]], "\n"), []string{strings.Trim(match, phpTrimSet)}
+	return 1 + strings.Count(rd.content[:start+loc[0]], "\n"), []string{strings.Trim(match, markupcore.PHPTrimSet)}
 }
 
 // cues returns a cue for each block whose paragraphs of the class hold lines. A cue ends at the next block that
@@ -379,7 +379,7 @@ func (rd *reader) cues(blocks []syncBlock, class string, hasClass bool) ([]model
 		open = len(cues) - 1
 	}
 	if open >= 0 {
-		cues[open].End = cues[open].Start + rd.st.LastCueDuration()
+		cues[open].End = rd.st.LastCueEnd(cues[open].Start)
 	}
 	return cues, nil
 }
@@ -389,7 +389,7 @@ func (rd *reader) cues(blocks []syncBlock, class string, hasClass bool) ([]model
 func touchingParagraphs(b syncBlock, class string, hasClass bool) []paragraph {
 	var touching []paragraph
 	for _, p := range b.paragraphs {
-		if !p.hasClass || !hasClass || asciiLower(p.class) == asciiLower(class) {
+		if !p.hasClass || !hasClass || markupcore.ASCIILower(p.class) == markupcore.ASCIILower(class) {
 			touching = append(touching, p)
 		}
 	}
@@ -435,7 +435,7 @@ func (rd *reader) textLine() (int, bool) {
 			i = end
 			continue
 		}
-		if strings.IndexByte(phpTrimSet, c[i]) < 0 {
+		if strings.IndexByte(markupcore.PHPTrimSet, c[i]) < 0 {
 			return 1 + strings.Count(c[:i], "\n"), true
 		}
 		i++
@@ -451,7 +451,7 @@ type markupFinder struct {
 // end returns the end of the match at i, or i when none starts there.
 func (m *markupFinder) end(c string, i int) int {
 	switch {
-	case len(c)-i >= len(nbspEntity) && asciiLower(c[i:i+len(nbspEntity)]) == nbspEntity:
+	case len(c)-i >= len(nbspEntity) && markupcore.ASCIILower(c[i:i+len(nbspEntity)]) == nbspEntity:
 		return i + len(nbspEntity)
 	case c[i] != '<':
 		return i
@@ -489,28 +489,4 @@ func index(s, sub string) []int {
 		return []int{i, i + len(sub)}
 	}
 	return nil
-}
-
-// normalizeLineEnds turns each run of CR before LF into one LF, and each other CR into LF.
-func normalizeLineEnds(s string) string {
-	if !strings.Contains(s, "\r") {
-		return s
-	}
-	var b strings.Builder
-	b.Grow(len(s))
-	for i := 0; i < len(s); i++ {
-		if s[i] != '\r' {
-			b.WriteByte(s[i])
-			continue
-		}
-		j := i
-		for j < len(s) && s[j] == '\r' {
-			j++
-		}
-		if j < len(s) && s[j] == '\n' {
-			i = j
-		}
-		b.WriteByte('\n')
-	}
-	return b.String()
 }

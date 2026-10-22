@@ -8,12 +8,13 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/internal/xmlraw"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
 const (
 	formatDataKey = string(model.SAMI)
-	phpTrimSet    = " \t\n\r\x00\v"
 	nbsp          = "\u00A0"
 )
 
@@ -26,7 +27,7 @@ type ReadOptions struct {
 
 // Validate reports a LanguageClass of only white space.
 func (o ReadOptions) Validate() error {
-	if o.LanguageClass != "" && strings.Trim(o.LanguageClass, phpTrimSet) == "" {
+	if o.LanguageClass != "" && strings.Trim(o.LanguageClass, markupcore.PHPTrimSet) == "" {
 		return &model.InvalidArgumentError{
 			Option: "ReadOptions.SAMI.LanguageClass",
 			Msg:    "The language class must not be empty.",
@@ -38,10 +39,8 @@ func (o ReadOptions) Validate() error {
 // WriteOptions holds the settings of the SAMI writer. It has no fields yet.
 type WriteOptions struct{}
 
-// signatureRegexp matches the XML prolog, then <SAMI and white space or >, in any case. It does not use
-// xmlraw.Prolog, because the PHP signature of SAMI also reads <!doctype in lower case and that of TTML does not.
-var signatureRegexp = regexp.MustCompile(`\A(?s:[\t\n\v\f\r ]|<\?.*?\?>|<!--.*?-->|<!` + fold("doctype") + `[^>]*>)*<` +
-	fold("sami") + `[\t\n\v\f\r >]`)
+// signatureRegexp matches the XML prolog, then <SAMI and white space or >, in any case.
+var signatureRegexp = regexp.MustCompile(xmlraw.PrologAnyCase + `<` + fold("sami") + `[\t\n\v\f\r >]`)
 
 // Detect reports whether content has the SAMI signature of stbox.Detect: the XML prolog, then <SAMI and white space
 // or >, in any case. The content must have no leading BOM or white space and LF line endings, as stbox.Detect passes it.
@@ -65,15 +64,6 @@ func fold(pattern string) string {
 		}
 	}
 	return b.String()
-}
-
-func asciiLower(s string) string {
-	return strings.Map(func(r rune) rune {
-		if 'A' <= r && r <= 'Z' {
-			return r + 'a' - 'A'
-		}
-		return r
-	}, s)
 }
 
 func asciiUpper(s string) string {
