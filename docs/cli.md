@@ -210,11 +210,12 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 `stbox formats` lists the formats that can be read or written, in registry order. The names are the values of `--from` and `--to`. It takes no argument and no option except `-h`.
 
 ```
-Name  Extensions  Read  Write
-ass   .ass .ssa   yes   yes
-json  .json       yes   yes
-srt   .srt        yes   yes
-vtt   .vtt        yes   yes
+Name  Extensions        Read  Write
+ass   .ass .ssa         yes   yes
+json  .json             yes   yes
+srt   .srt              yes   yes
+ttml  .ttml .dfxp .xml  yes   no
+vtt   .vtt              yes   yes
 ```
 
 - **Shared extensions**: the first format in the list owns an extension. `--from` reads a file as another format.

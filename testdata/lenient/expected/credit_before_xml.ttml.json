@@ -1,0 +1,34 @@
+{
+    "name": "TTML with a credit line before the XML declaration",
+    "format": "ttml",
+    "strict": {
+        "error": "The file has text before the XML: \"Subtitles by the harbour film club\".",
+        "line": 1
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The boat leaves at noon."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "Enjoy the trip."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 1,
+            "block": null,
+            "action": "repaired",
+            "message": "The file has text before the XML: \"Subtitles by the harbour film club\". The parser skipped it."
+        },
+        {
+            "line": 7,
+            "block": 1,
+            "action": "skipped",
+            "message": "The time expression \"00:00:0x.000\" is not valid."
+        }
+    ]
+}

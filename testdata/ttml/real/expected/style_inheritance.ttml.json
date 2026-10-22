@@ -1,0 +1,108 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": [],
+                "head": "<head>\n    <styling>\n      <style xml:id=\"it\" tts:fontStyle=\"italic\"/>\n    </styling>\n    <layout>\n      <region xml:id=\"r1\" tts:fontWeight=\"bold\">\n        <style tts:textDecoration=\"underline\"/>\n      </region>\n    </layout>\n  </head>",
+                "body": {
+                    "style": "it"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 2.0,
+                "lines": [
+                    "<i>The ferry leaves at noon.</i>"
+                ],
+                "identifier": "c1",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.0,
+                "end": 4.0,
+                "lines": [
+                    "Tickets are sold on board."
+                ],
+                "identifier": "c2",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "tts:fontStyle": "normal"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 5.0,
+                "end": 6.0,
+                "lines": [
+                    "<b><u>Mind the gap.</u></b>"
+                ],
+                "identifier": "c3",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        },
+                        "div": {
+                            "style": "it",
+                            "tts:fontStyle": "normal"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 7.0,
+                "end": 8.0,
+                "lines": [
+                    "<font color=\"#ffff00\">Platform </font>two"
+                ],
+                "identifier": "c4",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "tts:color": "yellow"
+                        },
+                        "div": {
+                            "style": "it",
+                            "tts:fontStyle": "normal"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 9.0,
+                "end": 10.0,
+                "lines": [
+                    "<font color=\"#00ffff\"><i>Next stop </i></font>harbour"
+                ],
+                "identifier": "c5",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "div": {
+                            "tts:color": "cyan"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

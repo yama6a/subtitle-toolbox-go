@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xmlns:itts="http://www.w3.org/ns/ttml/profile/imsc1#styling" xml:lang="de">
+  <head>
+    <styling>
+      <style xml:id="forcedStyle" itts:forcedDisplay="true"/>
+    </styling>
+    <layout>
+      <region xml:id="bottom" tts:origin="10% 80%" tts:extent="80% 10%" tts:textAlign="center" tts:displayAlign="after"/>
+    </layout>
+  </head>
+  <body region="bottom">
+    <div>
+      <p begin="00:00:01.000" end="00:00:03.000">Wir gehen zum Hafen.</p>
+      <p begin="00:00:03.500" end="00:00:05.000" style="forcedStyle">HAFEN</p>
+      <p begin="00:00:05.500" end="00:00:07.000">Dort steht: <span itts:forcedDisplay="true">AUSGANG</span></p>
+    </div>
+    <div itts:forcedDisplay="true">
+      <p begin="00:00:08.000" end="00:00:09.500">BAHNHOF</p>
+      <p begin="00:00:10.000" end="00:00:12.000" itts:forcedDisplay="false">Der Zug fährt um acht.</p>
+    </div>
+  </body>
+</tt>

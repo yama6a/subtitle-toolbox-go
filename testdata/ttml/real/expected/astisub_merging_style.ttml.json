@@ -1,0 +1,113 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "fr-FR",
+            "title": "Title test"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/2006/10/ttaf1",
+                "namespaces": {
+                    "": "http://www.w3.org/2006/10/ttaf1",
+                    "tt": "http://www.w3.org/2006/10/ttaf1",
+                    "ttm": "http://www.w3.org/2006/10/ttaf1#metadata",
+                    "ttp": "http://www.w3.org/2006/10/ttaf1#parameter",
+                    "tts": "http://www.w3.org/2006/10/ttaf1#styling",
+                    "xs": "http://www.w3.org/2001/XMLSchema"
+                },
+                "attributes": {
+                    "ttp:timeBase": "smpte",
+                    "ttp:frameRate": "25",
+                    "ttp:frameRateMultiplier": "1:1",
+                    "ttp:markerMode": "discontinuous"
+                },
+                "head": "<head>\n        <metadata>\n          <ttm:copyright>Copyright test</ttm:copyright>\n        </metadata>\n        <styling>\n            <style xml:id=\"style_0\" tts:style=\"style_2\" tts:fontFamily=\"sansSerif\" tts:color=\"white\" tts:fontStyle=\"normal\" tts:textAlign=\"center\" tts:origin=\"0% 90%\" tts:extent=\"100% 10%\"/>\n            <style xml:id=\"style_1\" tts:fontFamily=\"sansSerif\" tts:color=\"white\" tts:fontStyle=\"normal\" tts:textAlign=\"center\" tts:origin=\"0% 87%\" tts:extent=\"100% 13%\"/>\n            <style xml:id=\"style_2\" tts:fontFamily=\"sansSerif\" tts:color=\"white\" tts:fontStyle=\"normal\" tts:textAlign=\"center\" tts:origin=\"0% 80%\" tts:extent=\"100% 20%\"/>\n        </styling>\n        <layout>\n            <region xml:id=\"region_0\" tt:style=\"style_0\" tt:color=\"blue\"/>\n            <region xml:id=\"region_1\" tt:style=\"style_1\"/>\n            <region xml:id=\"region_2\" tt:style=\"style_2\"/>\n        </layout>\n    </head>",
+                "body": {
+                    "region": "region_0",
+                    "style": "style_0"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 60.0,
+                "lines": [
+                    "<font color=\"#ffff00\">text1.0 </font>text1.1"
+                ],
+                "identifier": "sub_1",
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "color": "red",
+                            "region": "region_0"
+                        },
+                        "alignment": 8,
+                        "div": {
+                            "style": "style_1",
+                            "tts:color": "yellow"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 60.0,
+                "end": 120.0,
+                "lines": [
+                    "text2"
+                ],
+                "identifier": "sub_2",
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_1"
+                        },
+                        "alignment": 8
+                    }
+                }
+            },
+            {
+                "start": 60.0,
+                "end": 120.0,
+                "lines": [
+                    "text2.1"
+                ],
+                "identifier": "sub_3",
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_2"
+                        },
+                        "alignment": 8
+                    }
+                }
+            },
+            {
+                "start": 120.0,
+                "end": 180.0,
+                "lines": [
+                    "text3"
+                ],
+                "identifier": "sub_2",
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_0"
+                        },
+                        "alignment": 8,
+                        "div": {
+                            "tts:color": "blue"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

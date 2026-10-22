@@ -7,6 +7,7 @@
 | ASS and SSA | `stbox.ASS` | `ass` | `.ass`, `.ssa` | [ASS and SSA](#ass-and-ssa) |
 | library JSON | `stbox.JSON` | `json` | `.json` | [JSON](#json) |
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
+| TTML, IMSC, DFXP | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | [TTML](#ttml) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
 
 - **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. To read a file as another format, pass `ReadOptions.Format`.
@@ -244,3 +245,50 @@ This file reads as one cue from 1.5 s to 4 s with the alignment `TopCenter` and 
 - **Style at write time**: a field that the `Format:` line of the styles lacks, such as `Underline` in SSA, fails with an `*UnwritableError`. A file without a `Default` style gets one first. A file without a styles section gets one before `[Events]`.
 - **Cue tags**: the writer computes the cue tags against the styles before the option. So `Italic=-1` makes every cue without `<i>` italic, with no `{\i0}`.
 
+## TTML
+
+TTML is the W3C XML format for timed text. IMSC is its profile for streaming and broadcast, and DFXP is its draft form that Netflix deliveries and Flash players use. Package `format/ttml` reads all 3. The format name is `ttml`, the extensions `.ttml`, `.dfxp` and `.xml`. iTT files read as TTML.
+
+```xml
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xml:lang="en">
+  <head><layout><region xml:id="top" tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="before" tts:textAlign="center"/></layout></head>
+  <body><div><p begin="00:00:01.000" end="00:00:03.000" region="top">Hello<br/><span tts:fontStyle="italic">world</span></p></div></body>
+</tt>
+```
+
+This file reads as one cue from 1 s to 3 s with the alignment `TopCenter` and the lines `Hello` and `<i>world</i>`. The metadata `language` is `en`, and the file data `ttml.head` holds the `<head>` as XML text.
+
+### Read
+
+| Input | Goes to |
+|:--- |:--- |
+| the root namespace: TTML, DFXP `2006/10`, DFXP `2006/04`, or none | file data `ttml.namespace`, `""` for none. Another root gives `The root element is not a TTML <tt> element.` |
+| the `xmlns` declarations on `<tt>` | file data `ttml.namespaces`, a `*model.Data` of prefix to URI, sorted by prefix, `""` for the default namespace. An empty list `[]any{}` when the root declares none, as PHP writes it |
+| the other attributes of `<tt>` except `xml:lang` | file data `ttml.attributes`, a `*model.Data` in file order. An empty list `[]any{}` when the root has none, as PHP writes it |
+| `xml:lang` of `<tt>` | the metadata `language` |
+| the first `ttm:title` in `<head>` | the metadata `title`, trimmed. The reader removes the element from the stored head |
+| `<head>` | file data `ttml.head`, the XML text as libxml writes it, so it equals the head that the PHP library stores |
+| the attributes of `<body>` except `begin`, `end` and `dur` | file data `ttml.body` |
+| each `<p>` | a cue. `xml:id` gives `Cue.ID` |
+| the attributes of the `<p>` except the times, `xml:id` and `ttm:agent` | cue data `ttml.attributes`. An inherited `region` is added |
+| the attributes of the `<div>` elements around the `<p>` | cue data `ttml.div`, without the times, `xml:id` and `region`. An inner value replaces an outer one |
+| `<br/>`, and LF with `xml:space="preserve"` | a line break. Other runs of white space become 1 space |
+| `tts:fontWeight`, `tts:fontStyle`, `tts:textDecoration`, `tts:color` of the region, `<body>`, `<div>`, `<p>` and `<span>`, and of the styles they reference | `<b>`, `<i>`, `<u>`, `<s>` and `<font color>`. White and the alpha channel give no markup |
+| `ttm:agent` | `<v Name>`, with the name of the agent element in `<head>`, else the agent ID |
+| a `<span>` with `begin`, `end` or `dur` | a word timestamp before its text, when it lies inside the cue |
+| `itts:forcedDisplay="true"` on the `<p>`, its container or its region, or on one `<span>` | `Cue.Forced` |
+| other elements, such as `<set>` and `<metadata>` | skipped with their text |
+
+- **Times**: clock times such as `00:00:01.500`, `00:00:01,500` and `00:00:01:12` with frames, and offsets such as `1.5s`, `1500ms`, `36f` and `15000000t`. The reader reads `ttp:frameRate`, `ttp:frameRateMultiplier`, `ttp:subFrameRate`, `ttp:tickRate`, and `ttp:timeBase="smpte"` with `ttp:dropMode`. Without `ttp:frameRate`, frames count at 30 fps.
+- **Timing model**: a time adds to the begin of its parent. A paragraph ends at the earliest of its parent end, its `end` and its begin plus `dur`. A paragraph without an end takes the times of its timed spans. A paragraph without an end and without timed spans fails. `seq` containers read as `par`.
+- **Arithmetic**: the reader computes in float64 seconds as PHP does, then rounds each cue time to whole milliseconds. So `smpte_drop_ntsc.ttml` gives starts such as 57.391 s and 3599.996 s.
+- **End before begin**: `<p begin="5s" end="2s">` fails with `The cue ends at 2 s, before it starts at 5 s.` Lenient mode swaps the times, as in SubRip.
+- **Alignment**: `tts:textAlign` `left`, `center` or `right` gives the column. The `tts:origin`, `tts:extent` and `tts:displayAlign` of the region give the row, in `%`, `px` or cells. A file without regions has one region over the whole screen from the top, so `tts:textAlign="center"` alone gives `TopCenter`. `start`, `end` and an unknown region give `BottomCenter` and no `ttml.alignment`.
+- **Namespaces**: `tts:`, `ttp:` and `ttm:` attributes count in the namespaces of TTML and of both DFXP drafts, and with an undeclared prefix.
+- **Encoding**: the reader reads the content as UTF-8 and ignores the `encoding` of the XML declaration, because the root decodes other encodings first.
+- **Invalid UTF-8** fails in strict mode. Lenient mode reads each bad byte as U+FFFD.
+- **No DTD**: the reader loads no DTD, no external entity and nothing from the network. An entity that a DOCTYPE declares is unknown, so `&xxe;` makes the file not well-formed.
+
+### Options
+
+`ttml.ReadOptions` has no fields. The reader reads `Lenient`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#ttml).

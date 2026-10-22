@@ -1,0 +1,36 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "TTML Example With Frame Rate Given"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter"
+                },
+                "attributes": {
+                    "ttp:frameRate": "24",
+                    "ttp:frameRateMultiplier": "1000 1001"
+                },
+                "head": "<head>\n    <metadata>\n    </metadata>\n  </head>"
+            }
+        },
+        "cues": [
+            {
+                "start": 15.015,
+                "end": 17.684,
+                "lines": [
+                    "First line."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

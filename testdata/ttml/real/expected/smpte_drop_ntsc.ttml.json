@@ -1,0 +1,119 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en-US"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": {
+                    "ttp:timeBase": "smpte",
+                    "ttp:frameRate": "30",
+                    "ttp:frameRateMultiplier": "1000 1001",
+                    "ttp:dropMode": "dropNTSC"
+                },
+                "head": "<head>\n    <styling>\n      <style xml:id=\"s1\" tts:fontFamily=\"proportionalSansSerif\" tts:fontSize=\"100%\" tts:textAlign=\"center\"/>\n    </styling>\n    <layout>\n      <region xml:id=\"r1\" tts:origin=\"10% 80%\" tts:extent=\"80% 15%\" tts:displayAlign=\"after\"/>\n    </layout>\n  </head>",
+                "body": {
+                    "style": "s1",
+                    "region": "r1"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 57.391,
+                "end": 60.027,
+                "lines": [
+                    "The morning train leaves platform two."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 60.06,
+                "end": 63.497,
+                "lines": [
+                    "It stops at every station",
+                    "on the coast line."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 597.997,
+                "end": 599.999,
+                "lines": [
+                    "The last stop is the harbour."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 599.999,
+                "end": 602.669,
+                "lines": [
+                    "Tickets are on sale in the hall."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 3599.996,
+                "end": 3602.999,
+                "lines": [
+                    "The evening train runs on time."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        },
+                        "alignment": 2
+                    }
+                }
+            }
+        ]
+    }
+}

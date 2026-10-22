@@ -1,0 +1,52 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": []
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 4.5,
+                "lines": [
+                    "The <00:00:02.000>tide <00:00:03.000>turns"
+                ],
+                "identifier": "w1",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.5,
+                "end": 8.0,
+                "lines": [
+                    "at <00:00:06.500><i>dusk</i>"
+                ],
+                "identifier": "w2",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 10.0,
+                "end": 13.0,
+                "lines": [
+                    "Boats <00:00:11.000>return <00:00:12.000>home"
+                ],
+                "identifier": "w3",
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

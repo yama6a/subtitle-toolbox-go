@@ -1,0 +1,66 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "tt": "http://www.w3.org/ns/ttml",
+                    "ttm": "http://www.w3.org/ns/ttml#metadata",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": {
+                    "ttp:tickRate": "10000000",
+                    "ttp:timeBase": "media"
+                },
+                "head": "<head>\n<ttp:profile use=\"http://netflix.com/ttml/profile/dfxp-ls-sdh\"/>\n<styling>\n<style tts:backgroundColor=\"transparent\" tts:textAlign=\"center\" xml:id=\"style0\"/>\n<style tts:color=\"white\" tts:fontSize=\"100%\" tts:fontWeight=\"normal\" xml:id=\"style1\"/>\n<style tts:color=\"white\" tts:fontSize=\"100%\" tts:fontStyle=\"italic\" tts:fontWeight=\"normal\" xml:id=\"style2\"/>\n</styling>\n<layout>\n<region tts:displayAlign=\"after\" xml:id=\"region0\"/>\n</layout>\n</head>"
+            }
+        },
+        "cues": [
+            {
+                "start": 137.4,
+                "end": 140.4,
+                "lines": [
+                    "The bakery's first bread",
+                    "is ready at six o'clock."
+                ],
+                "identifier": "p1",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottomCenter"
+                        },
+                        "div": {
+                            "xml:space": "preserve"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 3740.5,
+                "end": 3742.5,
+                "lines": [
+                    "The last train leaves at midnight."
+                ],
+                "identifier": "p2",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottomCenter"
+                        },
+                        "div": {
+                            "xml:space": "preserve"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

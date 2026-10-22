@@ -66,7 +66,7 @@ var (
 // NamedColor returns the "#rrggbb" value of a color name in any case. With htmlOnly, it reads only the 16 names of
 // HTML 4.01, as the SAMI reader does. Otherwise it reads the 18 names of TTML.
 func NamedColor(name string, htmlOnly bool) (string, bool) {
-	name = asciiLower(name)
+	name = ASCIILower(name)
 	for _, c := range namedColors {
 		if c.name == name && (c.html || !htmlOnly) {
 			return c.hex, true
@@ -90,7 +90,7 @@ func FontColor(attrs string) (string, bool) {
 // the 18 TTML color names, in any case and with entities decoded. The alpha of rgba() is a fraction such as 0.5,
 // a percentage, or an integer from 0 to 255 as in TTML, so rgba(255, 0, 0, 1) is almost transparent.
 func ColorHexWithAlpha(color string) (string, bool) {
-	c := asciiLower(strings.Trim(DecodeEntities(color), phpTrimSet))
+	c := ASCIILower(strings.Trim(DecodeEntities(color), PHPTrimSet))
 	if hex, ok := hexColor(c); ok {
 		return hex, true
 	}
@@ -158,7 +158,7 @@ func TTMLColor(color string) (string, bool) {
 	if ttmlColorRegexp.MatchString(color) {
 		return color, true
 	}
-	name := asciiLower(color)
+	name := ASCIILower(color)
 	if _, ok := NamedColor(name, false); ok || name == "transparent" {
 		return name, true
 	}
@@ -206,7 +206,7 @@ func WebVTTColorsToFont(text string) string {
 // It drops a <font> tag whose color has no WebVTT class or that has no color, with its end tag. It returns each
 // dropped color that is not blank, as written.
 func FontToWebVTTColors(text string) (string, []string) {
-	if !strings.Contains(asciiLower(text), "<font") {
+	if !strings.Contains(ASCIILower(text), "<font") {
 		return text, nil
 	}
 	parts := SplitTags(text)
@@ -240,7 +240,7 @@ func fontClass(tag string) (class, color string, drop bool) {
 		return "", "", false
 	}
 	class = webVTTColorClass(color)
-	return class, color, class == "" && strings.Trim(color, phpTrimSet) != ""
+	return class, color, class == "" && strings.Trim(color, PHPTrimSet) != ""
 }
 
 func webVTTColorClass(color string) string {

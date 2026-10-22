@@ -1,0 +1,135 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "fr-FR",
+            "title": "Weather report"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/2006/10/ttaf1",
+                "namespaces": {
+                    "": "http://www.w3.org/2006/10/ttaf1",
+                    "tt": "http://www.w3.org/2006/10/ttaf1",
+                    "ttm": "http://www.w3.org/2006/10/ttaf1#metadata",
+                    "ttp": "http://www.w3.org/2006/10/ttaf1#parameter",
+                    "tts": "http://www.w3.org/2006/10/ttaf1#styling",
+                    "xs": "http://www.w3.org/2001/XMLSchema"
+                },
+                "attributes": {
+                    "ttp:timeBase": "smpte",
+                    "ttp:frameRate": "25",
+                    "ttp:frameRateMultiplier": "1:1",
+                    "ttp:markerMode": "discontinuous"
+                },
+                "head": "<head>\n        <metadata>\n          <ttm:copyright>Sample copyright</ttm:copyright>\n        </metadata>\n        <styling>\n            <style xml:id=\"style_0\" tts:style=\"style_2\" tts:fontFamily=\"sansSerif\" tts:color=\"white\" tts:fontStyle=\"normal\" tts:textAlign=\"center\" tts:origin=\"0% 90%\" tts:extent=\"100% 10%\"/>\n            <style xml:id=\"style_1\" tts:fontFamily=\"sansSerif\" tts:color=\"white\" tts:fontStyle=\"normal\" tts:textAlign=\"center\" tts:origin=\"0% 87%\" tts:extent=\"100% 13%\"/>\n            <style xml:id=\"style_2\" tts:fontFamily=\"sansSerif\" tts:color=\"yellow\" tts:fontStyle=\"italic\" tts:textAlign=\"center\" tts:origin=\"0% 80%\" tts:extent=\"100% 20%\"/>\n        </styling>\n        <layout>\n            <region xml:id=\"region_0\" tt:style=\"style_0\" tt:color=\"blue\"/>\n            <region xml:id=\"region_1\" tt:style=\"style_1\"/>\n            <region xml:id=\"region_2\" tt:style=\"style_2\"/>\n        </layout>\n    </head>"
+            }
+        },
+        "cues": [
+            {
+                "start": 99.0,
+                "end": 101.04,
+                "lines": [
+                    "(light rain)"
+                ],
+                "identifier": "sub_1",
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_1",
+                            "style": "style_1",
+                            "color": "red"
+                        },
+                        "alignment": 8
+                    }
+                }
+            },
+            {
+                "start": 124.08,
+                "end": 127.12,
+                "lines": [
+                    "PRESENTER:",
+                    "Clouds will clear by noon."
+                ],
+                "identifier": "sub_2",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_2"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 132.16,
+                "end": 135.2,
+                "lines": [
+                    "The wind turns to the west."
+                ],
+                "identifier": "sub_3",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_1"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 140.24,
+                "end": 142.28,
+                "lines": [
+                    "Bring an umbrella."
+                ],
+                "identifier": "sub_4",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_1"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 148.32,
+                "end": 151.36,
+                "lines": [
+                    "<font color=\"#ffff00\"><i>The evening stays</i></font>",
+                    "dry and mild."
+                ],
+                "identifier": "sub_5",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_2"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 151.4,
+                "end": 153.44,
+                "lines": [
+                    "<font color=\"#ffff00\"><i>(music for the</i></font>",
+                    "traffic news)"
+                ],
+                "identifier": "sub_6",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_2"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

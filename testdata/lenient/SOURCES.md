@@ -2,7 +2,7 @@
 
 Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5313f1583fc7e67942d514600/tests/files/lenient, MIT. In the rows below, "this repository" means subtitle-toolbox-php.
 
-Every file except the 2 `mantas_` files is written for this repository in the shape of broken subtitle downloads.
+Every file except `mantas_utf16.srt` and `mantas_multiple_new_lines.vtt` is written for this repository in the shape of broken subtitle downloads.
 
 | File | Damage | License |
 |:--- |:--- |:--- |
@@ -28,9 +28,17 @@ Every file except the 2 `mantas_` files is written for this repository in the sh
 | `joined_files.vtt` | two files joined: the second part starts with a UTF-8 BOM, a `WEBVTT` line, a header line and a `STYLE` block, LF | MIT |
 | `mantas_multiple_new_lines.vtt` | empty lines between the timing line and the text, and inside the text. Copied from https://github.com/mantas-done/subtitles/blob/959d1705b1ed12cbb9ddba517f8bcb814e1919a8/tests/files/vtt_with_multiple_new_lines.vtt, LF | mantas-done/subtitles, MIT |
 | `mixed_line_endings.vtt` | CR LF, LF and CR CR LF in one file | MIT |
+| `bad_begin.ttml` | a letter in a `begin` time, a `p` without `end` or `dur`, LF | MIT |
+| `mantas_multiple_divs.ttml` | a `p` with absolute times in a timed `div`, so it begins after the `div` ends. In the shape of https://github.com/mantas-done/subtitles/blob/959d1705b1ed12cbb9ddba517f8bcb814e1919a8/tests/files/ttml_with_multiple_divs.ttml, LF | MIT |
+| `bare_seconds.ttml` | times as bare seconds with a fraction, such as `19.764`, and as `m:ss.fff`, in the shape of an Apple Music lyrics file with own text, LF | MIT |
+| `credit_before_xml.ttml` | a credit line before the XML declaration, a letter in a `begin` time, CR LF | MIT |
+| `html_entities.ttml` | the HTML entities `&eacute;`, `&nbsp;`, `&agrave;`, `&ndash;`, `&euro;`, `&laquo;` and `&raquo;`, which XML does not define, LF | MIT |
+| `malformed.ttml` | a bare `&`, a `<br>` without `/`, the unknown entity `&cur;`, a `span` without its end tag, LF | MIT |
+| `open_paragraphs.ttml` | three `p` elements without `end`, one of them with an empty `dur`, and a last `p` without `end`, LF | MIT |
 | `missing_end.json` | a cue without `end`, a cue with a number as line, a comment after the first broken cue, LF | MIT |
 | `start_after_end.json` | in the shape of `JsonFormatter` output, a cue that ends 2 s before it starts and a cue that ends 68 s before it starts, LF | MIT |
 | `absurd_hours.vtt` | a cue with 20 hour digits between two good cues, LF | MIT |
+| `absurd_hours.ttml` | a `p` with 20 hour digits and a `p` with an `end` of 20 digits in hours, LF | MIT |
 | `absurd_seconds.json` | the library JSON. A cue with a start of `1e20` seconds between two good cues, LF | MIT |
 | `absurd_word_timestamp.vtt` | a cue with a word timestamp of 20 hour digits between two good cues, LF | MIT |
 | `broken_events.ass` | no `Format:` line in `[Events]`, an event with 4 fields, a letter in an end time, UTF-8 BOM, CR LF | MIT |
@@ -41,3 +49,4 @@ Every file except the 2 `mantas_` files is written for this repository in the sh
 | `expected/*.json` | written for subtitle-toolbox-go. Each file holds the values of `damagedFiles()` in `tests/Parsers/LenientParsingTest.php` of this repository for the fixture of the same name, and the full message and line of the strict error that the PHP parser returns | MIT |
 | `expected/joined_files.vtt.json` | written for subtitle-toolbox-go. `damagedFiles()` has no row for this fixture, so the file holds the values of the 3 `joined_files` tests in `tests/Parsers/LenientWebVttTest.php` of this repository, and the strict error that the PHP parser returns | MIT |
 | `expected/no_cue_numbers.srt.json`, `expected/mantas_utf16.srt.json` | written for subtitle-toolbox-go. `damagedFiles()` has no row for these fixtures, so the files hold the cue count of `FormatDetectorTest::subRipWithoutLeadingCueNumber` and the cue of `LooseTimestampsTest::testLenientModeReadsATimeWithOneSecondDigitInUtf16` of this repository, and the rest of the result and the strict error that the PHP parser returns | MIT |
+| `expected/malformed.ttml.json`, `expected/bare_seconds.ttml.json` | written for subtitle-toolbox-go. `damagedFiles()` has no row for these fixtures, so the files hold the values of `testTtmlWithMalformedXmlIsRepaired` and `testLenientModeReadsBareSecondsWithAFractionOfAnAppleMusicFile` in `tests/Parsers/LenientTtmlTest.php` of this repository, and the rest of the result and the strict error that the PHP parser returns. The warning of `malformed.ttml` holds the start and the end of its message, because the middle is the message of the XML parser | MIT |

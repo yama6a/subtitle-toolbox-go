@@ -1,0 +1,54 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en",
+            "title": "TTML Example With Duplicated Element Ids"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": [],
+                "head": "<head>\n    <metadata xmlns:ttm=\"http://www.w3.org/ns/ttml#metadata\">\n     <ttm:copyright>Thierry Michel 2015</ttm:copyright>\n    </metadata>\n\n    <styling xmlns:tts=\"http://www.w3.org/ns/ttml#styling\">\n     <style xml:id=\"s1\" tts:color=\"red\" tts:textAlign=\"center\"/>\n    </styling>\n</head>"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 1.0,
+                "lines": [
+                    "First line."
+                ],
+                "identifier": "c1",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1.0,
+                "end": 2.0,
+                "lines": [
+                    "Second line."
+                ],
+                "identifier": "c1",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 2.0,
+                "end": 3.0,
+                "lines": [
+                    "Third line."
+                ],
+                "identifier": "c3",
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

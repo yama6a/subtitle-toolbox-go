@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xml:lang="en">
+  <body>
+    <div>
+      <p begin="00:00:01.000" end="00:00:03.000">The pool opens at seven.</p>
+      <p begin="99999999999999999999:00:04.000" end="99999999999999999999:00:06.000">Towels are at the desk.</p>
+      <p begin="7s" end="99999999999999999999h">No running, please.</p>
+      <p begin="00:00:10.000" end="00:00:12.000">The sauna is upstairs.</p>
+    </div>
+  </body>
+</tt>

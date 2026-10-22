@@ -1,0 +1,79 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "ttm": "http://www.w3.org/ns/ttml#metadata",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": {
+                    "ttp:profile": "http://www.smpte-ra.org/schemas/2052-1/2010/profiles/smpte-tt-full",
+                    "ttp:frameRate": "24"
+                },
+                "head": "<head>\n        <layout>\n            <region xml:id=\"area1\" tts:origin=\"10% 70%\" tts:extent=\"80% 20%\" tts:showBackground=\"whenActive\" tts:backgroundColor=\"red\" tts:displayAlign=\"center\" tts:color=\"white\"/>\n        </layout>\n    </head>",
+                "body": {
+                    "tts:lineHeight": "100%"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 1.01,
+                "end": 3.0,
+                "lines": [
+                    "This should appear on frame 25."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "area1"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 4.0,
+                "end": 6.0,
+                "lines": [
+                    "This should appear on frame 96."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "area1"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 7.33,
+                "end": 9.0,
+                "lines": [
+                    "This should appear on frame 176."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "area1"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

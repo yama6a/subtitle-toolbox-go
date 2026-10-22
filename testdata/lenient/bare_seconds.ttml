@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:itunes="http://music.apple.com/lyric-ttml-internal" itunes:timing="Word" xml:lang="en">
+<body dur="1:30.640">
+<div begin="19.764" end="59.300">
+<p begin="19.764" end="21.900"><span begin="19.764" end="20.105">Walking</span> <span begin="20.105" end="21.900">home</span></p>
+</div>
+<div begin="1:00.998" end="1:19.943">
+<p begin="1:00.998" end="1:02.794"><span begin="1:00.998" end="1:02.794">Again</span></p>
+</div>
+</body>
+</tt>

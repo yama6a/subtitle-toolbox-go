@@ -1,0 +1,59 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": {
+                    "ttp:contentProfiles": "http://www.w3.org/ns/ttml/profile/imsc1.1/text"
+                },
+                "head": "<head>\n        <styling>\n            <style xml:id=\"s1\" tts:color=\"red\" tts:backgroundColor=\"blue\"/>\n            <style xml:id=\"s2\" tts:color=\"yellow\" style=\"s1\"/>\n            <style xml:id=\"s3\" style=\"s2 s1\"/>\n            <style xml:id=\"s4\" tts:color=\"green\" style=\"s3\"/>\n        </styling>\n        <layout>\n            <region xml:id=\"r1\" style=\"s3 s1\" tts:color=\"blue\" tts:backgroundColor=\"yellow\"/>\n            <region xml:id=\"r2\" style=\"s1\" tts:color=\"red\">\n                <style tts:color=\"blue\" tts:backgroundColor=\"yellow\"/>\n            </region>\n        </layout>\n    </head>"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 2.0,
+                "lines": [
+                    "<font color=\"#008000\">one</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "div": {
+                            "style": "s4"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 2.0,
+                "end": 4.0,
+                "lines": [
+                    "<font color=\"#000000\">two</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "div": {
+                            "style": "s3 s1",
+                            "tts:color": "black"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,96 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": {
+                    "tts:extent": "640px 480px"
+                },
+                "head": "<head>\n    <layout>\n      <region xml:id=\"r1\">\n        <style tts:origin=\"10px 100px\"/>\n        <style tts:extent=\"620px 96px\"/>\n        <style tts:fontSize=\"40px\"/>\n        <style tts:fontWeight=\"bold\"/>\n        <style tts:backgroundColor=\"black\"/>\n        <style tts:color=\"red\"/>\n        <style tts:textAlign=\"center\"/>\n        <style tts:displayAlign=\"center\"/>\n      </region>\n      <region xml:id=\"r2\">\n        <style tts:origin=\"10px 300px\"/>\n        <style tts:extent=\"620px 96px\"/>\n        <style tts:fontSize=\"40px\"/>\n        <style tts:fontWeight=\"bold\"/>\n        <style tts:backgroundColor=\"black\"/>\n        <style tts:color=\"yellow\"/>\n        <style tts:textAlign=\"center\"/>\n        <style tts:displayAlign=\"center\"/>\n      </region>\n    </layout>\n  </head>",
+                "body": {
+                    "xml:id": "b1"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 2.0,
+                "lines": [
+                    "<font color=\"#ff0000\"><b>Text 1</b></font>"
+                ],
+                "identifier": "p1",
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        },
+                        "alignment": 8
+                    }
+                }
+            },
+            {
+                "start": 0.0,
+                "end": 2.0,
+                "lines": [
+                    "<font color=\"#ffff00\"><b>Text 2</b></font>"
+                ],
+                "identifier": "p2",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r2"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "<font color=\"#ffff00\"><b>Text 3</b></font>"
+                ],
+                "identifier": "p3",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r2"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "<font color=\"#ff0000\"><b>Text 4</b></font>"
+                ],
+                "identifier": "p4",
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "r1"
+                        },
+                        "alignment": 8
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -21,7 +21,8 @@ const (
 
 const (
 	asciiSpace = " \t\n\r\f\v"
-	phpTrimSet = " \t\n\r\x00\v"
+	// PHPTrimSet holds the bytes that PHP trim removes without a character list.
+	PHPTrimSet = " \t\n\r\x00\v"
 )
 
 var (
@@ -57,11 +58,11 @@ func SplitTags(line string) []string {
 
 // TagName returns the first word of a tag body such as `FONT color="yellow"`, in lower case.
 func TagName(body string) string {
-	body = strings.Trim(body, phpTrimSet)
+	body = strings.Trim(body, PHPTrimSet)
 	if i := strings.IndexAny(body, asciiSpace); i >= 0 {
 		body = body[:i]
 	}
-	return asciiLower(body)
+	return ASCIILower(body)
 }
 
 // StripAllTags removes every tag, word timestamps too. Entities stay.
@@ -79,12 +80,12 @@ func KeepTags(text string, names ...string) string {
 	}
 	keep := make([]string, len(names))
 	for i, n := range names {
-		keep[i] = asciiLower(n)
+		keep[i] = ASCIILower(n)
 	}
 	return tagRegexp.ReplaceAllStringFunc(text, func(tag string) string {
 		body := strings.TrimPrefix(tag[1:], "/")
 		name := body[:strings.IndexAny(body, asciiSpace+"/>")]
-		if name != "" && slices.Contains(keep, asciiLower(name)) {
+		if name != "" && slices.Contains(keep, ASCIILower(name)) {
 			return tag
 		}
 		return ""
@@ -94,7 +95,7 @@ func KeepTags(text string, names ...string) string {
 // HasVisibleText reports whether a line holds more than white space outside its tags. An entity counts as text.
 func HasVisibleText(lines []string) bool {
 	for _, line := range lines {
-		if strings.Trim(StripAllTags(line), phpTrimSet) != "" {
+		if strings.Trim(StripAllTags(line), PHPTrimSet) != "" {
 			return true
 		}
 	}
@@ -104,12 +105,12 @@ func HasVisibleText(lines []string) bool {
 // UnknownTagsAsText escapes a start tag such as <today> as text when it has no attributes, its name is no core,
 // WebVTT or <br> tag, and no line of the cue holds its end tag. FFmpeg writes such text from ASS.
 func UnknownTagsAsText(lines []string) []string {
-	text := asciiLower(strings.Join(lines, "\n"))
+	text := ASCIILower(strings.Join(lines, "\n"))
 	out := make([]string, len(lines))
 	for i, line := range lines {
 		out[i] = unknownTagRegexp.ReplaceAllStringFunc(line, func(tag string) string {
 			name := tag[1 : len(tag)-1]
-			lower := asciiLower(name)
+			lower := ASCIILower(name)
 			if isKnownTag(lower) || hasEndTag(text, lower) {
 				return tag
 			}
@@ -213,7 +214,7 @@ func styleTagAt(s string, ignoreCase bool) (name, after string, ok bool) {
 
 func sameName(a, b string, ignoreCase bool) bool {
 	if ignoreCase {
-		return asciiLower(a) == asciiLower(b)
+		return ASCIILower(a) == ASCIILower(b)
 	}
 	return a == b
 }
@@ -249,7 +250,7 @@ func UnbalancedTags(lines, names []string) (stray []TagSpan, open []string) {
 
 func namedTag(body string, names []string) (string, bool) {
 	for _, n := range names {
-		if len(body) >= len(n) && asciiLower(body[:len(n)]) == n &&
+		if len(body) >= len(n) && ASCIILower(body[:len(n)]) == n &&
 			(len(body) == len(n) || strings.IndexByte(asciiSpace+".", body[len(n)]) >= 0) {
 			return n, true
 		}
@@ -280,7 +281,7 @@ func OpenCoreTags(text string, open []OpenTag) []OpenTag {
 		for n < len(body) && isASCIILetter(body[n]) {
 			n++
 		}
-		name := asciiLower(body[:n])
+		name := ASCIILower(body[:n])
 		if !IsCoreTag(name) {
 			continue
 		}
@@ -327,8 +328,8 @@ func isASCIILetter(c byte) bool {
 	return 'a' <= c|0x20 && c|0x20 <= 'z'
 }
 
-// asciiLower lowers A to Z only, as PHP strtolower does. It keeps every other byte, also of invalid UTF-8.
-func asciiLower(s string) string {
+// ASCIILower lowers A to Z only, as PHP strtolower does. It keeps every other byte, also of invalid UTF-8.
+func ASCIILower(s string) string {
 	i := strings.IndexFunc(s, func(r rune) bool { return 'A' <= r && r <= 'Z' })
 	if i < 0 {
 		return s

@@ -1,0 +1,91 @@
+﻿1
+00:00:10,000 --> 00:00:13,000
+Good morning from the harbour.
+
+2
+00:00:13,480 --> 00:00:16,880
+The sea is calm
+and the sky is clear.
+
+3
+00:00:17,360 --> 00:00:19,960
+The first ferry left
+at seven o'clock.
+
+4
+00:00:20,440 --> 00:00:23,440
+{\an8}<i>(gulls calling)</i>
+
+5
+00:00:23,920 --> 00:00:27,320
+Wind from the north-west,
+about ten knots.
+
+6
+00:00:27,800 --> 00:00:30,400
+<font color="#ffff00">Fog may form</font>
+<font color="#ffff00">near the lighthouse.</font>
+
+7
+00:00:30,880 --> 00:00:33,880
+Fishing boats return
+before noon.
+
+8
+00:00:34,360 --> 00:00:37,760
+{\an8}<i>(engine starts)</i>
+
+9
+00:00:38,240 --> 00:00:40,840
+The fish market opens
+at half past eight.
+
+10
+00:00:41,320 --> 00:00:44,320
+Water temperature
+is twelve degrees.
+
+11
+00:00:44,800 --> 00:00:48,200
+Tide tables are <b>on the <u>board</u></b>
+
+12
+00:00:48,680 --> 00:00:51,280
+High tide at 14:20.
+
+13
+00:00:51,760 --> 00:00:54,760
+Low tide at 20:35.
+
+14
+00:00:55,240 --> 00:00:58,640
+Rain is likely
+after six this evening.
+
+15
+00:00:59,120 --> 00:01:01,720
+{\an8}<i>(bell rings)</i>
+
+16
+00:01:02,200 --> 00:01:05,200
+The harbour office
+closes at five.
+
+17
+00:01:05,680 --> 00:01:09,080
+<font color="#ffff00">Small boats should</font>
+<font color="#ffff00">stay inside the wall.</font>
+
+18
+00:01:09,560 --> 00:01:12,160
+Tomorrow starts
+cold and bright.
+
+19
+00:01:12,640 --> 00:01:15,640
+That is all
+from the harbour.
+
+20
+00:01:16,120 --> 00:01:19,520
+{\an8}<i>(music)</i>

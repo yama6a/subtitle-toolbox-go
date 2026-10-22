@@ -1,0 +1,135 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "ttm": "http://www.w3.org/ns/ttml#metadata",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": {
+                    "ttp:tickRate": "10000000",
+                    "ttp:timeBase": "media"
+                },
+                "head": "<head>\n    <ttp:profile use=\"http://netflix.com/ttml/profile/dfxp-ls-sdh\"/>\n    <styling>\n      <style tts:color=\"white\" tts:fontFamily=\"monospaceSansSerif\" tts:fontSize=\"100%\" xml:id=\"bodyStyle\"/>\n      <style tts:color=\"white\" tts:fontFamily=\"monospaceSansSerif\" tts:fontSize=\"100%\" tts:fontStyle=\"italic\" xml:id=\"style_0\"/>\n    </styling>\n    <layout>\n      <region tts:displayAlign=\"after\" tts:extent=\"80.00% 80.00%\" tts:origin=\"10.00% 10.00%\" tts:textAlign=\"center\" xml:id=\"region_bottom\"/>\n      <region tts:displayAlign=\"before\" tts:extent=\"80.00% 80.00%\" tts:origin=\"10.00% 10.00%\" tts:textAlign=\"center\" xml:id=\"region_top\"/>\n    </layout>\n  </head>",
+                "body": {
+                    "style": "bodyStyle"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 2.002,
+                "end": 4.505,
+                "lines": [
+                    "The winter timetable",
+                    "starts on Monday."
+                ],
+                "identifier": "subtitle0",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_bottom"
+                        },
+                        "alignment": 2,
+                        "div": {
+                            "xml:space": "preserve"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 4.63,
+                "end": 7.132,
+                "lines": [
+                    "<i>[announcer]</i>",
+                    "The coast train leaves at 6:50."
+                ],
+                "identifier": "subtitle1",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_bottom"
+                        },
+                        "alignment": 2,
+                        "div": {
+                            "xml:space": "preserve"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 7.257,
+                "end": 9.76,
+                "lines": [
+                    "PLATFORM 4"
+                ],
+                "identifier": "subtitle2",
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_top"
+                        },
+                        "alignment": 8,
+                        "div": {
+                            "xml:space": "preserve"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 9.885,
+                "end": 12.387,
+                "lines": [
+                    "<i>Ten minutes earlier</i>",
+                    "<i>than before.</i>"
+                ],
+                "identifier": "subtitle3",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_bottom"
+                        },
+                        "alignment": 2,
+                        "div": {
+                            "xml:space": "preserve"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 3600.0,
+                "end": 3602.503,
+                "lines": [
+                    "- Is the last train still at 11?",
+                    "- Yes, at 11:15."
+                ],
+                "identifier": "subtitle4",
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "region_bottom"
+                        },
+                        "alignment": 2,
+                        "div": {
+                            "xml:space": "preserve"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

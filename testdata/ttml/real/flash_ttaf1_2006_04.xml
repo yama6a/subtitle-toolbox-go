@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xml:lang="en" xmlns="http://www.w3.org/2006/04/ttaf1" xmlns:tts="http://www.w3.org/2006/04/ttaf1#styling">
+  <head>
+    <styling>
+      <style id="1" tts:textAlign="right"/>
+      <style id="2" tts:color="transparent"/>
+      <style id="3" style="2" tts:backgroundColor="white"/>
+      <style id="4" style="2 3" tts:fontSize="20"/>
+    </styling>
+  </head>
+  <body>
+    <div xml:lang="en">
+      <p begin="00:00:00.50" dur="2.5s">Welcome to the second lesson.</p>
+      <p begin="00:00:03.00" end="00:00:05.20"><span tts:fontStyle="italic">Open</span> the tool panel on the left.</p>
+      <p begin="00:00:05.50" end="00:00:08.00" tts:color="#ffff00">Pick the brush<br/>and draw a line.</p>
+      <p begin="00:00:08.40" end="00:00:11.00"><span tts:fontWeight="bold">Save</span> your work before you go on.</p>
+    </div>
+  </body>
+</tt>

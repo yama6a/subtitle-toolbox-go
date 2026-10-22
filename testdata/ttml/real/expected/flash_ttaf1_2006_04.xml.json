@@ -1,0 +1,91 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/2006/04/ttaf1",
+                "namespaces": {
+                    "": "http://www.w3.org/2006/04/ttaf1",
+                    "tts": "http://www.w3.org/2006/04/ttaf1#styling"
+                },
+                "attributes": [],
+                "head": "<head>\n    <styling>\n      <style id=\"1\" tts:textAlign=\"right\"/>\n      <style id=\"2\" tts:color=\"transparent\"/>\n      <style id=\"3\" style=\"2\" tts:backgroundColor=\"white\"/>\n      <style id=\"4\" style=\"2 3\" tts:fontSize=\"20\"/>\n    </styling>\n  </head>"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.5,
+                "end": 3.0,
+                "lines": [
+                    "Welcome to the second lesson."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "div": {
+                            "xml:lang": "en"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 3.0,
+                "end": 5.2,
+                "lines": [
+                    "<i>Open</i> the tool panel on the left."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "div": {
+                            "xml:lang": "en"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 5.5,
+                "end": 8.0,
+                "lines": [
+                    "<font color=\"#ffff00\">Pick the brush</font>",
+                    "<font color=\"#ffff00\">and draw a line.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "tts:color": "#ffff00"
+                        },
+                        "div": {
+                            "xml:lang": "en"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 8.4,
+                "end": 11.0,
+                "lines": [
+                    "<b>Save</b> your work before you go on."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "div": {
+                            "xml:lang": "en"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

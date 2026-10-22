@@ -1,0 +1,34 @@
+{
+    "name": "TTML with 20 hour digits and a huge offset time",
+    "format": "ttml",
+    "strict": {
+        "error": "The time \"99999999999999999999:00:04.000\" is not below 100000 hours.",
+        "line": null
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The pool opens at seven."
+        },
+        {
+            "start": 10,
+            "end": 12,
+            "text": "The sauna is upstairs."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 6,
+            "block": 1,
+            "action": "skipped",
+            "message": "The time \"99999999999999999999:00:04.000\" is not below 100000 hours."
+        },
+        {
+            "line": 7,
+            "block": 2,
+            "action": "skipped",
+            "message": "The time \"99999999999999999999h\" is not below 100000 hours."
+        }
+    ]
+}

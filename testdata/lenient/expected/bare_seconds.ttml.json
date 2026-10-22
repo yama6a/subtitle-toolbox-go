@@ -1,0 +1,130 @@
+{
+    "name": "TTML with bare seconds of an Apple Music lyrics file",
+    "format": "ttml",
+    "strict": {
+        "error": "The time expression \"1:30.640\" is not valid.",
+        "line": null
+    },
+    "cues": [
+        {
+            "start": 39.528,
+            "end": 41.664,
+            "text": "Walking home"
+        },
+        {
+            "start": 60.998,
+            "end": 62.794,
+            "text": "Again"
+        }
+    ],
+    "warnings": [
+        {
+            "line": 3,
+            "block": null,
+            "action": "repaired",
+            "message": "The time expression \"1:30.640\" is not valid. The parser read it as 90.64s."
+        },
+        {
+            "line": 4,
+            "block": null,
+            "action": "repaired",
+            "message": "The time expression \"19.764\" is not valid. The parser read it as 19.764s."
+        },
+        {
+            "line": 4,
+            "block": null,
+            "action": "repaired",
+            "message": "The time expression \"59.300\" is not valid. The parser read it as 59.3s."
+        },
+        {
+            "line": 5,
+            "block": 0,
+            "action": "repaired",
+            "message": "The time expression \"19.764\" is not valid. The parser read it as 19.764s."
+        },
+        {
+            "line": 5,
+            "block": 0,
+            "action": "repaired",
+            "message": "The time expression \"21.900\" is not valid. The parser read it as 21.9s."
+        },
+        {
+            "line": 5,
+            "block": 0,
+            "action": "repaired",
+            "message": "The time expression \"19.764\" is not valid. The parser read it as 19.764s."
+        },
+        {
+            "line": 5,
+            "block": 0,
+            "action": "repaired",
+            "message": "The time expression \"20.105\" is not valid. The parser read it as 20.105s."
+        },
+        {
+            "line": 5,
+            "block": 0,
+            "action": "repaired",
+            "message": "The time expression \"20.105\" is not valid. The parser read it as 20.105s."
+        },
+        {
+            "line": 5,
+            "block": 0,
+            "action": "repaired",
+            "message": "The time expression \"21.900\" is not valid. The parser read it as 21.9s."
+        },
+        {
+            "line": 7,
+            "block": null,
+            "action": "repaired",
+            "message": "The time expression \"1:00.998\" is not valid. The parser read it as 60.998s."
+        },
+        {
+            "line": 7,
+            "block": null,
+            "action": "repaired",
+            "message": "The time expression \"1:19.943\" is not valid. The parser read it as 79.943s."
+        },
+        {
+            "line": 8,
+            "block": 1,
+            "action": "repaired",
+            "message": "The time expression \"1:00.998\" is not valid. The parser read it as 60.998s."
+        },
+        {
+            "line": 8,
+            "block": 1,
+            "action": "repaired",
+            "message": "The time expression \"1:02.794\" is not valid. The parser read it as 62.794s."
+        },
+        {
+            "line": 8,
+            "block": 1,
+            "action": "repaired",
+            "message": "The time expression \"1:00.998\" is not valid. The parser read it as 60.998s."
+        },
+        {
+            "line": 8,
+            "block": 1,
+            "action": "repaired",
+            "message": "The time expression \"1:02.794\" is not valid. The parser read it as 62.794s."
+        },
+        {
+            "line": 8,
+            "block": 1,
+            "action": "repaired",
+            "message": "The paragraph begins at 121.996s, but its parent ends at 79.943s. The parser read its times as absolute: 60.998s to 62.794s."
+        },
+        {
+            "line": 8,
+            "block": 1,
+            "action": "repaired",
+            "message": "The time expression \"1:00.998\" is not valid. The parser read it as 60.998s."
+        },
+        {
+            "line": 8,
+            "block": 1,
+            "action": "repaired",
+            "message": "The time expression \"1:02.794\" is not valid. The parser read it as 62.794s."
+        }
+    ]
+}
