@@ -263,8 +263,8 @@ This file reads as one cue from 1 s to 3 s with the alignment `TopCenter` and th
 | Input | Goes to |
 |:--- |:--- |
 | the root namespace: TTML, DFXP `2006/10`, DFXP `2006/04`, or none | file data `ttml.namespace`, `""` for none. Another root gives `The root element is not a TTML <tt> element.` |
-| the `xmlns` declarations on `<tt>` | file data `ttml.namespaces`, prefix to URI, sorted by prefix, `""` for the default namespace |
-| the other attributes of `<tt>` except `xml:lang` | file data `ttml.attributes`, in file order |
+| the `xmlns` declarations on `<tt>` | file data `ttml.namespaces`, a `*model.Data` of prefix to URI, sorted by prefix, `""` for the default namespace. An empty list `[]any{}` when the root declares none, as PHP writes it |
+| the other attributes of `<tt>` except `xml:lang` | file data `ttml.attributes`, a `*model.Data` in file order. An empty list `[]any{}` when the root has none, as PHP writes it |
 | `xml:lang` of `<tt>` | the metadata `language` |
 | the first `ttm:title` in `<head>` | the metadata `title`, trimmed. The reader removes the element from the stored head |
 | `<head>` | file data `ttml.head`, the XML text as libxml writes it, so it equals the head that the PHP library stores |
