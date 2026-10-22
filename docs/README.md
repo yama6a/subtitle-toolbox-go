@@ -11,6 +11,7 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [format-data.md](format-data.md) | the data that a format keeps for its own writer, and its type checks |
 | [markup.md](markup.md) | the inline tags, escaping, colors and the markup helpers |
 | [reading-writing.md](reading-writing.md) | `Load`, `Parse` and `Write`, the options, line endings and the BOM |
+| [streaming.md](streaming.md) | package `stream`: SubRip and WebVTT read and written one cue at a time, and how it differs from the full reader |
 | [detection.md](detection.md) | how `Detect` picks a format, and the formats it never detects |
 | [encodings.md](encodings.md) | BOMs, UTF-16, code page detection and invalid UTF-8 |
 | [lenient-parsing.md](lenient-parsing.md) | strict and lenient mode, and the warnings of a read |

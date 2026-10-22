@@ -6,6 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/transform"
+
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -64,6 +67,26 @@ func ExampleWebVTTReader() {
 	// Output:
 	// The ferry leaves.
 	// Harbor walk [::cue { color: yellow }]
+}
+
+func ExampleWebVTTReader_utf16() {
+	utf16 := unicode.UTF16(unicode.LittleEndian, unicode.UseBOM)
+	input, err := utf16.NewEncoder().String("WEBVTT\n\n00:01.000 --> 00:02.000\nThe ferry leaves.\n")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	r := transform.NewReader(strings.NewReader(input), utf16.NewDecoder())
+	for c, err := range stream.NewWebVTTReader(r, stream.ReadOptions{}).Cues() {
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(c.Start, c.Text())
+	}
+	// Output:
+	// 1s The ferry leaves.
 }
 
 func ExampleSubRipWriter() {

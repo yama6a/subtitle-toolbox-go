@@ -13,26 +13,42 @@ Only SubRip and WebVTT stream, because their cue blocks do not depend on each ot
 
 ## Shift a SubRip file into WebVTT
 
-Read `show.srt` cue by cue, add 2 s to each cue, and write `show.vtt`. The program never holds more than one cue.
+Read a SubRip input cue by cue, add 2 s to each cue, and write WebVTT. The program never holds more than one cue. For files, pass the `*os.File` of `show.srt` in place of the string reader. Pass the `*os.File` of `show.vtt` in place of `os.Stdout`.
 
+<!-- example: ExampleSubRipReader -->
 ```go
-func shift(in io.Reader, out io.Writer) error {
-	w, err := stream.NewWebVTTWriter(out, model.CommonWriteOptions{}, webvtt.WriteOptions{}, nil)
-	if err != nil {
-		return err
-	}
-	for c, err := range stream.NewSubRipReader(in, stream.ReadOptions{}).Cues() {
-		if err != nil {
-			return err
-		}
-		c.Start += 2 * time.Second
-		c.End += 2 * time.Second
-		if err := w.Write(c); err != nil {
-			return err
-		}
-	}
-	return w.Close()
+input := "1\n00:00:01,000 --> 00:00:02,500\nThe ferry leaves.\n\n2\n00:00:04,000 --> 00:00:05,000\nIt is <i>late</i>.\n"
+
+w, err := stream.NewWebVTTWriter(os.Stdout, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{}, nil)
+if err != nil {
+	fmt.Println(err)
+	return
 }
+for c, err := range stream.NewSubRipReader(strings.NewReader(input), stream.ReadOptions{}).Cues() {
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	c.Start += 2 * time.Second
+	c.End += 2 * time.Second
+	if err := w.Write(c); err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+if err := w.Close(); err != nil {
+	fmt.Println(err)
+}
+// Output:
+// WEBVTT
+//
+// 1
+// 00:00:03.000 --> 00:00:04.500
+// The ferry leaves.
+//
+// 2
+// 00:00:06.000 --> 00:00:07.000
+// It is <i>late</i>.
 ```
 
 - **Header copy**: to keep the header text, `STYLE` and `REGION` blocks of a WebVTT input, pass `rd.Header()` to `NewWebVTTWriter`. The header is complete once the reader yielded its first cue.
@@ -42,9 +58,25 @@ func shift(in io.Reader, out io.Writer) error {
 
 The readers take UTF-8, with or without a BOM. They keep the bytes of other 8-bit encodings as they are. For UTF-16, wrap the input with `golang.org/x/text`:
 
+<!-- example: ExampleWebVTTReader_utf16 -->
 ```go
-r := transform.NewReader(f, unicode.UTF16(unicode.LittleEndian, unicode.UseBOM).NewDecoder())
-rd := stream.NewWebVTTReader(r, stream.ReadOptions{})
+utf16 := unicode.UTF16(unicode.LittleEndian, unicode.UseBOM)
+input, err := utf16.NewEncoder().String("WEBVTT\n\n00:01.000 --> 00:02.000\nThe ferry leaves.\n")
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+r := transform.NewReader(strings.NewReader(input), utf16.NewDecoder())
+for c, err := range stream.NewWebVTTReader(r, stream.ReadOptions{}).Cues() {
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(c.Start, c.Text())
+}
+// Output:
+// 1s The ferry leaves.
 ```
 
 ## Differences from the full reader
