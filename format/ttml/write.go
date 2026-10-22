@@ -53,6 +53,7 @@ type writer struct {
 	head          *xmlraw.Node
 	styles        styles
 	usedIDs       map[string]bool
+	nextSuffix    map[string]int
 	agentIDs      map[string]string
 	regionIDs     map[model.Alignment]string
 	forcedRegions map[string]bool
@@ -90,6 +91,7 @@ func writeDocument(s *model.Subtitle, common model.CommonWriteOptions, p profile
 		stripTags:     common.StripTags,
 		uris:          map[string]string{},
 		usedIDs:       map[string]bool{},
+		nextSuffix:    map[string]int{},
 		agentIDs:      map[string]string{},
 		regionIDs:     map[model.Alignment]string{},
 		forcedRegions: map[string]bool{},

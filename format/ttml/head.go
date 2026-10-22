@@ -198,12 +198,19 @@ func columnName(a model.Alignment) string {
 	return [...]string{"left", "center", "right"}[a.Column()-1]
 }
 
-// unusedID returns id, or id with the first free suffix _2, _3 and so on, and marks the result as taken.
+// unusedID returns id, or id with the first free suffix _2, _3 and so on, and marks the result as taken. The
+// suffixes below the last one tried for id stay taken, so the search starts there.
 func (w *writer) unusedID(id string) string {
-	candidate := id
-	for i := 2; w.usedIDs[candidate]; i++ {
-		candidate = id + "_" + strconv.Itoa(i)
+	if !w.usedIDs[id] {
+		w.usedIDs[id] = true
+		return id
 	}
+	i := max(2, w.nextSuffix[id])
+	for w.usedIDs[id+"_"+strconv.Itoa(i)] {
+		i++
+	}
+	w.nextSuffix[id] = i
+	candidate := id + "_" + strconv.Itoa(i)
 	w.usedIDs[candidate] = true
 	return candidate
 }
