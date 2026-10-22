@@ -1,14 +1,45 @@
 # Comparing two subtitles
 
-A translator delivers `episode1_v2.srt`. `diff.Compare(v1, v2, diff.Options{})` lists what changed against `episode1_v1.srt`. It pairs cues by time and text, not by cue number. So one added cue does not shift the later pairs.
+A translator delivers version 2 of a subtitle. It adds `Welcome.` at the start, changes `Milbrook` to `Millbrook` and drops `Thank you.`. `diff.Compare(&v1, &v2, diff.Options{})` lists these 3 differences. It pairs cues by time and text, not by cue number. So the added cue does not shift the later pairs.
 
+<!-- example: ExampleText -->
 ```go
-differences, err := diff.Compare(v1, v2, diff.Options{})
-// differences[0].Kind is diff.TextChanged, with the value "text changed"
-// differences[0].OldIndex and NewIndex are the 0-based cue indexes, -1 for the side without a cue
+var v1, v2 model.Subtitle
+v1.AddCues(
+	model.Cue{Start: 1 * time.Second, End: 3 * time.Second, Lines: []string{"The train is late."}},
+	model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{"The next stop is Milbrook."}},
+	model.Cue{Start: 8 * time.Second, End: 9 * time.Second, Lines: []string{"Thank you."}},
+)
+v2.AddCues(
+	model.Cue{Start: 0, End: 500 * time.Millisecond, Lines: []string{"Welcome."}},
+	model.Cue{Start: 1 * time.Second, End: 3 * time.Second, Lines: []string{"The train is late."}},
+	model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{"The next stop is Millbrook."}},
+)
+
+differences, err := diff.Compare(&v1, &v2, diff.Options{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
 fmt.Print(diff.Text(differences))
-same, err := diff.Equal(v1, v2, diff.Options{}) // true when Compare finds no difference
+// Output:
+// added: new cue 1
+// + 00:00:00.000 --> 00:00:00.500
+//   Welcome.
+//
+// text changed: old cue 2, new cue 3
+// - 00:00:04.000 --> 00:00:06.000
+//   The next stop is Milbrook.
+// + 00:00:04.000 --> 00:00:06.000
+//   The next stop is Millbrook.
+//
+// removed: old cue 3
+// - 00:00:08.000 --> 00:00:09.000
+//   Thank you.
 ```
+
+- **Fields**: each `Difference` holds its `Kind`, and `OldIndex` and `NewIndex` as 0-based cue indexes. The side without a cue has -1.
+- **Equal**: `diff.Equal(&v1, &v2, diff.Options{})` is true when `Compare` finds no difference.
 
 `stbox diff v1.srt v2.srt` prints the same report and exits 1 when the files differ. [cli.md](cli.md) holds the options.
 

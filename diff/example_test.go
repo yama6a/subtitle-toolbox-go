@@ -57,9 +57,19 @@ func ExampleEqual() {
 }
 
 func ExampleText() {
-	oldSub, newSub := editedPair()
+	var v1, v2 model.Subtitle
+	v1.AddCues(
+		model.Cue{Start: 1 * time.Second, End: 3 * time.Second, Lines: []string{"The train is late."}},
+		model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{"The next stop is Milbrook."}},
+		model.Cue{Start: 8 * time.Second, End: 9 * time.Second, Lines: []string{"Thank you."}},
+	)
+	v2.AddCues(
+		model.Cue{Start: 0, End: 500 * time.Millisecond, Lines: []string{"Welcome."}},
+		model.Cue{Start: 1 * time.Second, End: 3 * time.Second, Lines: []string{"The train is late."}},
+		model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{"The next stop is Millbrook."}},
+	)
 
-	differences, err := diff.Compare(oldSub, newSub, diff.Options{})
+	differences, err := diff.Compare(&v1, &v2, diff.Options{})
 	if err != nil {
 		fmt.Println(err)
 		return

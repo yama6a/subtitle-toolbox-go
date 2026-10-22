@@ -195,6 +195,16 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 
 `stbox sync <input>... --reference FILE [options]` retimes each input to the cue times of a reference subtitle. It finds the offset and the frame-rate scale. [sync.md](sync.md#command-line) lists its options and output.
 
+## diff
+
+`stbox diff OLD NEW` compares two files and prints the differences of [compare.md](compare.md). It exits 1 when the files differ.
+
+- **Expansion**: only OLD goes through the input expansion. A directory or glob that gives 2 or more files fails with exit 2. NEW is used as given, and it cannot be `-`.
+- **Input options**: `--from`, `--encoding` and `--lenient` apply to both files. `--new-from` replaces `--from` for NEW.
+- **Failure**: a failed file prints `PATH: MESSAGE` with its own path and exits 3. A message about the format of NEW names `--new-from`.
+- **No `--keep-going`**: the command has one pair of files.
+- **JSON**: one object with the keys `oldFile`, `newFile`, `equal`, `differences`, `oldWarnings` and `newWarnings`. Cue times are seconds, such as `6.2`.
+
 ## formats
 
 `stbox formats` lists the formats that can be read or written, in registry order. The names are the values of `--from` and `--to`. It takes no argument and no option except `-h`.
@@ -209,16 +219,6 @@ vtt   .vtt        yes   yes
 
 - **Shared extensions**: the first format in the list owns an extension. `--from` reads a file as another format.
 - **Hidden formats**: a format that can be neither read nor written has no row.
-
-## diff
-
-`stbox diff OLD NEW` compares two files and prints the differences of [compare.md](compare.md). It exits 1 when the files differ.
-
-- **Expansion**: only OLD goes through the input expansion. A directory or glob that gives 2 or more files fails with exit 2. NEW is used as given, and it cannot be `-`.
-- **Input options**: `--from`, `--encoding` and `--lenient` apply to both files. `--new-from` replaces `--from` for NEW.
-- **Failure**: a failed file prints `PATH: MESSAGE` with its own path and exits 3. A message about the format of NEW names `--new-from`.
-- **No `--keep-going`**: the command has one pair of files.
-- **JSON**: one object with the keys `oldFile`, `newFile`, `equal`, `differences`, `oldWarnings` and `newWarnings`. Cue times are seconds, such as `6.2`.
 
 ## JSON output
 
