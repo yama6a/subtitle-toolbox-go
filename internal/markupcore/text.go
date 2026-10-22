@@ -26,7 +26,7 @@ func PlainText(text string) string {
 
 // VisibleText returns PlainText trimmed, for example "Hi & bye" for "<i>Hi</i> &amp; bye ".
 func VisibleText(text string) string {
-	return strings.Trim(PlainText(text), phpTrimSet)
+	return strings.Trim(PlainText(text), PHPTrimSet)
 }
 
 // VisibleLength returns the number of characters of VisibleText, counted as grapheme.Count does.
@@ -75,10 +75,10 @@ func rubyText(ruby string) string {
 		if loc := rtEndRegexp.FindStringIndex(part); loc != nil {
 			annotation, base = part[:loc[0]], part[loc[1]:]
 		}
-		if annotation = strings.Trim(annotation, phpTrimSet); annotation == "" {
+		if annotation = strings.Trim(annotation, PHPTrimSet); annotation == "" {
 			text += base
 		} else {
-			text = strings.TrimRight(text, phpTrimSet) + " (" + annotation + ")" + base
+			text = strings.TrimRight(text, PHPTrimSet) + " (" + annotation + ")" + base
 		}
 	}
 	return text
@@ -86,7 +86,7 @@ func rubyText(ruby string) string {
 
 // ToSingleLine trims text and joins its lines with a space, for formats that hold one line per cue.
 func ToSingleLine(text string) string {
-	return lineBreakRegexp.ReplaceAllLiteralString(strings.Trim(text, phpTrimSet), " ")
+	return lineBreakRegexp.ReplaceAllLiteralString(strings.Trim(text, PHPTrimSet), " ")
 }
 
 // Words splits text without tags at Unicode white space. Invalid UTF-8 splits at ASCII white space.
@@ -118,7 +118,7 @@ func Speaker(text string) (string, bool) {
 	if m == nil {
 		return "", false
 	}
-	return strings.Trim(DecodeEntities(m[2]), phpTrimSet), true
+	return strings.Trim(DecodeEntities(m[2]), PHPTrimSet), true
 }
 
 // AddSpeaker puts the <v> tag of name before the first line that holds more than white space, and trims the left
@@ -129,8 +129,8 @@ func AddSpeaker(lines []string, name string) []string {
 		return lines
 	}
 	for i, line := range lines {
-		if strings.Trim(line, phpTrimSet) != "" {
-			lines[i] = VoiceTag(name, "") + strings.TrimLeft(line, phpTrimSet)
+		if strings.Trim(line, PHPTrimSet) != "" {
+			lines[i] = VoiceTag(name, "") + strings.TrimLeft(line, PHPTrimSet)
 			break
 		}
 	}

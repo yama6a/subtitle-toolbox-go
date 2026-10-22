@@ -90,7 +90,7 @@ func FontColor(attrs string) (string, bool) {
 // the 18 TTML color names, in any case and with entities decoded. The alpha of rgba() is a fraction such as 0.5,
 // a percentage, or an integer from 0 to 255 as in TTML, so rgba(255, 0, 0, 1) is almost transparent.
 func ColorHexWithAlpha(color string) (string, bool) {
-	c := asciiLower(strings.Trim(DecodeEntities(color), phpTrimSet))
+	c := asciiLower(strings.Trim(DecodeEntities(color), PHPTrimSet))
 	if hex, ok := hexColor(c); ok {
 		return hex, true
 	}
@@ -240,7 +240,7 @@ func fontClass(tag string) (class, color string, drop bool) {
 		return "", "", false
 	}
 	class = webVTTColorClass(color)
-	return class, color, class == "" && strings.Trim(color, phpTrimSet) != ""
+	return class, color, class == "" && strings.Trim(color, PHPTrimSet) != ""
 }
 
 func webVTTColorClass(color string) string {
