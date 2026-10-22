@@ -2,7 +2,9 @@ package ttml_test
 
 import (
 	"fmt"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -38,4 +40,26 @@ func ExampleDetect() {
 	// Output:
 	// true
 	// false
+}
+
+func ExampleWrite() {
+	s := &model.Subtitle{}
+	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>Hello</i>"}, Alignment: model.TopCenter})
+	if err := ttml.Write(os.Stdout, s, model.CommonWriteOptions{}, ttml.WriteOptions{}); err != nil {
+		fmt.Println(err)
+	}
+	// Output:
+	// <?xml version="1.0" encoding="UTF-8"?>
+	// <tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:tts="http://www.w3.org/ns/ttml#styling" xml:lang="">
+	//   <head>
+	//     <layout>
+	//       <region xml:id="topCenter" tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="before" tts:textAlign="center"/>
+	//     </layout>
+	//   </head>
+	//   <body>
+	//     <div>
+	//       <p begin="00:00:01.000" end="00:00:03.000" region="topCenter"><span tts:fontStyle="italic">Hello</span></p>
+	//     </div>
+	//   </body>
+	// </tt>
 }

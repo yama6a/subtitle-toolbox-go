@@ -62,6 +62,10 @@ func FuzzRead(f *testing.F) {
 					t.Fatalf("the warning %q has no action", w.Message)
 				}
 			}
+			var out bytes.Buffer
+			if err := ttml.Write(&out, s, model.CommonWriteOptions{}, ttml.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
+				t.Fatalf("Write returned %v", err)
+			}
 		}
 	})
 }

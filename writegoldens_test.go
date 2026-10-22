@@ -3,6 +3,7 @@ package stbox_test
 import (
 	"bytes"
 	"flag"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -17,6 +18,20 @@ var update = flag.Bool("update", false, "rewrite the write golden files")
 // roundTripFolders holds the folders whose every real file is a round trip case.
 func roundTripFolders() []string {
 	return []string{"ass", "sami", "srt", "vtt"}
+}
+
+// roundTripFile is a round trip case in a folder that roundTripFolders does not hold. Its golden is
+// expected/<file>.out.<extension of the file>, as in PHP.
+type roundTripFile struct {
+	folder, file string
+}
+
+func roundTripFiles() []roundTripFile {
+	return []roundTripFile{
+		{"ttml", "bbc_ebu_tt_d.ttml"},
+		{"ttml", "mantas_netflix_ticks.dfxp"},
+		{"ttml", "w3c_imsc11_regions.ttml"},
+	}
 }
 
 // conversion is a write golden case that reads a real file and writes it in another format. A zero class reads
@@ -38,6 +53,7 @@ func conversions() []conversion {
 		{"sami", "multi_language.smi", stbox.ASS, "ENCC"},
 		{"srt", "own_styled.srt", stbox.SAMI, ""},
 		{"srt", "own_styled.srt", stbox.ASS, ""},
+		{"srt", "own_styled.srt", stbox.TTML, ""},
 		{"srt", "own_styled.srt", stbox.WebVTT, ""},
 		{"vtt", "w3c_voices.vtt", stbox.ASS, ""},
 		{"ttml", "bbc_ebu_tt_d.ttml", stbox.SubRip, ""},
@@ -87,6 +103,15 @@ func TestWriteGoldens(t *testing.T) {
 					testfiles.Path(t, goldenPath(g, file, ".out."+g.format.Extensions()[0])), writeAs(t, s, g.format), *update)
 			})
 		}
+	}
+	for _, r := range roundTripFiles() {
+		t.Run(r.folder+"/"+r.file+".out", func(t *testing.T) {
+			t.Parallel()
+
+			g := folder(t, r.folder)
+			s, _ := g.read(t, r.file)
+			golden.Equal(t, testfiles.Path(t, goldenPath(g, r.file, ".out"+path.Ext(r.file))), writeAs(t, s, g.format), *update)
+		})
 	}
 	for _, c := range conversions() {
 		t.Run(c.folder+"/"+c.file+".to."+string(c.to), func(t *testing.T) {
