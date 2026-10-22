@@ -54,6 +54,16 @@ type fileError struct{ msg string }
 
 func (e *fileError) Error() string { return e.msg }
 
+// labeledError labels a failed input with the path of a file other than the input, such as the new file of diff.
+type labeledError struct {
+	label string
+	err   error
+}
+
+func (e *labeledError) Error() string { return e.label + ": " + e.err.Error() }
+
+func (e *labeledError) Unwrap() error { return e.err }
+
 // asUsage turns any error of the steps before the input loop into a usage error.
 func asUsage(err error) error {
 	if err == nil {

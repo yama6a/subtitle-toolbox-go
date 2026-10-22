@@ -55,7 +55,7 @@ func (*convertCommand) options() []option {
 }
 
 func commonConvertOptions() []option {
-	return slices.Concat(outputOptions("Output format. Default: the input format."), inputOptions())
+	return slices.Concat(outputOptions("Output format. Default: the input format."), inputOptions(true))
 }
 
 func (cc *convertCommand) help(c *console, topic string) (string, error) {

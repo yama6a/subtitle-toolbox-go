@@ -55,7 +55,7 @@ func (*infoCommand) usage() []string { return []string{"<input>... [--json] [opt
 func (*infoCommand) details() string { return "" }
 
 func (*infoCommand) options() []option {
-	return slices.Concat([]option{flagOption("json", jsonHelp)}, inputOptions())
+	return slices.Concat([]option{flagOption("json", jsonHelp)}, inputOptions(true))
 }
 
 func (c *infoCommand) run(ctx context.Context, a *args, console *console) error {

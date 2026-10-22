@@ -49,7 +49,7 @@ func (*syncCommand) options() []option {
 		valueOption("max-splits", "SPLITS", "Find up to this many points where the offset jumps, for example at ad breaks. "+
 			"Default: "+strconv.Itoa((refsync.Options{}).MaxSplits)+"."),
 		valueOption("split-penalty", "SCORE", "Score that a split must add to stay. Default: "+formatNumber(refsync.DefaultSplitPenalty)+"."),
-	}, outputOptions("Output format. Default: the input format."), inputOptions())
+	}, outputOptions("Output format. Default: the input format."), inputOptions(true))
 }
 
 func (s *syncCommand) run(ctx context.Context, a *args, c *console) error {
