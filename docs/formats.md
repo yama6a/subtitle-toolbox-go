@@ -248,7 +248,7 @@ This file reads as one cue from 1.5 s to 4 s with the alignment `TopCenter` and 
 
 ## TTML
 
-TTML is the W3C XML format for timed text. IMSC is its profile for streaming and broadcast, and DFXP is its draft form that Netflix deliveries and Flash players use. Package `format/ttml` reads all 3. The format name is `ttml`, the extensions `.ttml`, `.dfxp` and `.xml`. iTT files read as TTML.
+TTML is the W3C XML format for timed text. IMSC is its profile for streaming and broadcast, and DFXP is its draft form that Netflix deliveries and Flash players use. Package `format/ttml` reads and writes all 3. The format name is `ttml`, the extensions `.ttml`, `.dfxp` and `.xml`. iTT files read as TTML.
 
 ```xml
 <tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xml:lang="en">
@@ -290,9 +290,50 @@ This file reads as one cue from 1 s to 3 s with the alignment `TopCenter` and th
 - **Invalid UTF-8** fails in strict mode. Lenient mode reads each bad byte as U+FFFD.
 - **No DTD**: the reader loads no DTD, no external entity and nothing from the network. An entity that a DOCTYPE declares is unknown, so `&xxe;` makes the file not well-formed.
 
+### Write
+
+The writer keeps what the reader stored, so a DFXP file stays DFXP after a retiming. A SubRip cue from 1 s to 3 s with the line `{\an8}<i>Hello</i>` writes as:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:tts="http://www.w3.org/ns/ttml#styling" xml:lang="">
+  <head>
+    <layout>
+      <region xml:id="topCenter" tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="before" tts:textAlign="center"/>
+    </layout>
+  </head>
+  <body>
+    <div>
+      <p begin="00:00:01.000" end="00:00:03.000" region="topCenter"><span tts:fontStyle="italic">Hello</span></p>
+    </div>
+  </body>
+</tt>
+```
+
+| Output | Comes from |
+|:--- |:--- |
+| the root namespace | `ttml.namespace`, else TTML. A file without a namespace comes out in the TTML namespace |
+| the `xmlns` declarations, sorted by prefix | `ttml.namespaces`, an object or an empty list. The writer adds `tts` and `ttm` in the namespaces of the dialect when no prefix is bound to them, and `itts` for a new forced flag. A taken prefix gets a number: `tts2` |
+| `xml:lang` | the metadata `language`, else `""` |
+| the attributes of `<tt>`, `<body>` and `<div>` | `ttml.attributes`, `ttml.body` and the cue data `ttml.div`. Consecutive cues with the same `div` attributes share one `<div>` |
+| `<head>` | `ttml.head`, else `<head/>`, with the title metadata as a new first `ttm:title` |
+| each `<p>` | a cue: `xml:id` from `Cue.ID`, media clock times such as `00:00:01.500`, then the stored attributes of the cue data `ttml.attributes` |
+| `<span>` with inline `tts:` styles | the core markup: `<b>`, `<i>`, `<u>`, `<s>`, `<font color>`, the 8 WebVTT color classes. A `<v Name>` before all text gives `ttm:agent` on the `<p>`, other `<v>` tags give a `<span ttm:agent>` |
+| `ttm:agent` elements in the head | each new speaker name, with the ID `agent1`, `agent2` and so on. An agent of the head with the same name keeps its ID |
+
+- **Attributes that are lost**: an attribute whose prefix the output does not declare, such as a prefix that the input declared on the `<p>` itself. On `<tt>`, `ttp:timeBase`, `ttp:clockMode`, `ttp:dropMode` and `ttp:markerMode` whatever their value, because the output holds media times. `ttp:frameRate` and `ttp:tickRate` stay.
+- **Regions from alignments**: a cue gets a new region for its alignment when it has no stored region and its alignment is not `BottomCenter`, when it was realigned, or when the subtitle has no `ttml` data at all. The region goes into the last `<layout>` of the head, in the shape of the IMSC 1.1 examples with a safe area of 10%: `tts:origin="10% 10%"`, `tts:extent="80% 80%"`, and `tts:displayAlign` and `tts:textAlign` of the row and column. Its ID is the alignment name in lower camel case, such as `bottomCenter`.
+- **Realigned cue**: when the cue alignment differs from the stored `ttml.alignment` (see [format-data.md](format-data.md#an-explicit-alignment-wins-over-a-stored-position)), the stored `region` goes. A `tts:textAlign` of the styles of `<body>`, `<div>` or `<p>` that differs from the new column changes to it.
+- **Forced flag**: the writer writes `Cue.Forced` only where the file does not give that flag already through the `<p>`, the `<div>` or the region. A stored attribute on the `<p>` changes in place, else a new `itts:forcedDisplay` comes last.
+- **Resets**: core markup has no tag that turns an inherited style off. When the region, `<body>`, `<div>` or `<p>` style makes text bold, italic, underlined, struck or colored, and no span repeats it, the content goes inside one `<span>` with `tts:fontWeight="normal"`, `tts:fontStyle="normal"`, `tts:textDecoration="noUnderline noLineThrough"` or `tts:color="white"`, only those needed.
+- **Unique IDs**: each `xml:id` of the output is unique. An ID that is taken gets `_2`, `_3` and so on. The head IDs keep their value. New agents and regions come next, then the IDs of `<tt>`, `<body>`, each `<div>` and each `<p>` in output order. So 2 cues with the ID `c1` come out as `c1` and `c1_2`. A cue ID that is no XML name, such as `1`, gives no `xml:id`.
+- **Forbidden characters**: the writer removes the characters that XML 1.0 forbids from text and attribute values: the C0 controls except tab, LF and CR, U+FFFE and U+FFFF. Text that is not valid UTF-8 returns an `*UnwritableError` whose `Err` is `ErrInvalidUTF8`.
+- **Stored head that is no head**: a `ttml.head` that is not well-formed XML, or whose first node is no `<head>` element, returns an `*UnwritableError` with `The stored TTML head is not a well-formed <head> element.`.
+- **Lost on write**: word timestamps and timed spans. Span style references, because spans are written inline. Styles that core markup does not hold: a background color of the input, fonts, sizes, positions. `<set>`, comments and `<metadata>` in the body. The `<div>` tree, div IDs and div regions. The time format: the output holds media clock times in whole milliseconds.
+
 ### Options
 
-`ttml.ReadOptions` has no fields. The reader reads `Lenient`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#ttml).
+`ttml.ReadOptions` and `ttml.WriteOptions` have no fields, so the root `WriteOptions` has no TTML field. The reader reads `Lenient`. The writer reads `StripTags`, `LineEnding` and `BOM`. By default the output has no BOM. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#ttml).
 
 ## SAMI
 

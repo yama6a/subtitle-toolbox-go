@@ -39,7 +39,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 		"json  .json             yes   yes",
 		"sami  .smi .sami        yes   yes",
 		"srt   .srt              yes   yes",
-		"ttml  .ttml .dfxp .xml  yes   no",
+		"ttml  .ttml .dfxp .xml  yes   yes",
 		"vtt   .vtt              yes   yes",
 	}, "\n") + "\n"
 	assert.Equal(t, result{Stdout: want}, call{}.run(t, "formats"))
