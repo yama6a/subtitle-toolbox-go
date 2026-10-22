@@ -4,6 +4,9 @@ A QC script wants numbers about a subtitle file. `stats.Of(s)` returns them in o
 
 <!-- example: ExampleOf -->
 ```go
+const content = "1\n00:00:01,000 --> 00:00:03,000\n<i>The train leaves at noon.</i>\n\n" +
+	"2\n00:00:02,500 --> 00:00:05,000\n[BELL RINGS]\nANNA: We need two tickets for the long ride to the coast.\n\n" +
+	"3\n00:00:06,000 --> 00:00:06,400\n(sighs) Too late.\n"
 s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)

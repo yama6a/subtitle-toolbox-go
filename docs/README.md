@@ -18,6 +18,7 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [editing.md](editing.md) | retiming, timing fixes, cue structure and line wrapping |
 | [compare.md](compare.md) | `diff` and `stbox diff`: the added, removed and changed cues between two subtitles, and how cues pair |
 | [sync.md](sync.md) | `refsync` and `stbox sync`: the offset and frame-rate scale against a reference subtitle, and splits at ad breaks |
+| [statistics.md](statistics.md) | `stats` and the statistics of `stbox info`: counts, display time, reading speed, gaps and the most used words |
 | [text.md](text.md) | case, replace, strip tags, right-to-left fixes and dialogue dashes |
 | [cli.md](cli.md) | the `stbox` command: install, arguments, input and output files, `info`, `sync`, `diff`, `formats` and exit codes |
 | [compatibility.md](compatibility.md) | what a release may change, and what stays the same for the whole 1.x line |
