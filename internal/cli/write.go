@@ -92,10 +92,10 @@ func (w *writeOutput) prepareText(a *args) error {
 	return err
 }
 
-// checkInputs plans the outputs of inputs. readPaths holds every file that the command reads. Without --to,
-// the -o extension rule runs here when peek knows the input format.
-func (w *writeOutput) checkInputs(r *runner, inputs, readPaths []string) error {
-	if err := w.plan.check(inputs, readPaths, r.peek); err != nil {
+// checkInputs plans the outputs of inputs and the side outputs. readPaths holds every file that the command reads.
+// Without --to, the -o extension rule runs here when peek knows the input format.
+func (w *writeOutput) checkInputs(r *runner, inputs, readPaths []string, side []sideOutput) error {
+	if err := w.plan.check(inputs, readPaths, side, r.peek); err != nil {
 		return err
 	}
 	r.reportToStderr = w.plan.dataOnStdout

@@ -1,0 +1,1 @@
+volume=enable='between(t,1.500,2.100)+between(t,6.200,6.800)+between(t,7.900,9.100)':volume=0

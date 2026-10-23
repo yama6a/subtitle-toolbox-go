@@ -15,6 +15,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/dual"
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/profanity"
 	"github.com/yama6a/subtitle-toolbox-go/refsync"
 )
 
@@ -325,6 +326,8 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 	codeDefaults["structure-max-lines"] = strconv.Itoa(model.DefaultMaxLinesPerCue)
 	codeDefaults["timing-min-gap"] = formatNumber(defaultMinGap.Seconds())
 	codeDefaults["ass-karaoke-tag"] = ass.WriteOptions{}.KaraokeTag.String()
+	codeDefaults["mask"] = string(profanity.MaskStars)
+	codeDefaults["mute-padding"] = formatNumber(profanity.Options{}.Padding.Seconds())
 	codeDefaults["time-tolerance"] = formatNumber(diff.DefaultTimeTolerance.Seconds())
 	codeDefaults["mode"] = string(dual.ModeStack)
 	codeDefaults["secondary-alignment"] = strconv.Itoa(dual.DefaultSecondaryAlignment.Numpad())

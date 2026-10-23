@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"slices"
+	"strconv"
 	"strings"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
@@ -18,6 +19,8 @@ type convertCommand struct {
 	edits []edit
 	// ass holds the write options of the ass group, nil without them.
 	ass *ass.WriteOptions
+	// masking is the edit of the masking group, nil without --mask-words.
+	masking *maskingEdit
 }
 
 var (
@@ -147,7 +150,12 @@ func (cc *convertCommand) prepare(a *args, r *runner) error {
 
 // prepareGroups checks the groups in pipeline order and builds their edits, then checks the --to ass rule.
 func (cc *convertCommand) prepareGroups(a *args) error {
-	add := func(e edit) { cc.edits = append(cc.edits, e) }
+	add := func(e edit) {
+		if m, ok := e.(*maskingEdit); ok {
+			cc.masking = m
+		}
+		cc.edits = append(cc.edits, e)
+	}
 	for _, g := range convertGroups() {
 		if g.writeOptions == nil {
 			if err := g.build(a, add); err != nil {
@@ -167,12 +175,36 @@ func (cc *convertCommand) prepareGroups(a *args) error {
 }
 
 func (cc *convertCommand) checkInputs(r *runner, inputs []string) error {
-	return cc.out.checkInputs(r, inputs, inputs)
+	m := cc.masking
+	if m == nil {
+		return cc.out.checkInputs(r, inputs, inputs, nil)
+	}
+	if len(m.muteFiles) > 0 && len(inputs) > 1 {
+		return usage("--mute-edl and --mute-filter take one input file, got " + strconv.Itoa(len(inputs)) + ".")
+	}
+	side := make([]sideOutput, len(m.muteFiles))
+	for i, f := range m.muteFiles {
+		side[i] = f.sideOutput
+	}
+	return cc.out.checkInputs(r, inputs, append(slices.Clone(inputs), m.wordsPath), side)
 }
 
-func (*convertCommand) loadSideFiles(context.Context, *runner) error { return nil }
+func (cc *convertCommand) loadSideFiles(_ context.Context, r *runner) error {
+	if cc.masking == nil {
+		return nil
+	}
+	return cc.masking.loadWords(r.c)
+}
 
+// process writes the mute files after the subtitle output, so they hold the ranges of this input.
 func (cc *convertCommand) process(ctx context.Context, r *runner, in *input) error {
+	if err := cc.write(ctx, r, in); err != nil || cc.masking == nil {
+		return err
+	}
+	return cc.masking.writeMuteFiles(r, in.label())
+}
+
+func (cc *convertCommand) write(ctx context.Context, r *runner, in *input) error {
 	return cc.out.write(r, in, func(s *stbox.Subtitle) (*stbox.Subtitle, error) {
 		for _, e := range cc.edits {
 			var err error

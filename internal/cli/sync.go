@@ -101,7 +101,7 @@ func (s *syncCommand) prepareSearch(a *args) error {
 }
 
 func (s *syncCommand) checkInputs(r *runner, inputs []string) error {
-	return s.out.checkInputs(r, inputs, append(slices.Clone(inputs), s.reference))
+	return s.out.checkInputs(r, inputs, append(slices.Clone(inputs), s.reference), nil)
 }
 
 func (s *syncCommand) loadSideFiles(_ context.Context, r *runner) error {

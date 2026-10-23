@@ -322,3 +322,67 @@ Off by default. A `#` or `*` at the start or the end of a line becomes U+266A. T
 ### sentenceStartCase
 
 Off by default. It writes the first letter of a line in upper case when the line starts a sentence. The first line of a cue starts a sentence when the cue is the first one, or when the cue before it ends with `.`, `?` or `!`. Closing quotes and brackets may follow, as in `"Stop!"`. A later line starts a sentence when the line before it ends one. A cue after `...`, U+2026 or `,` continues the sentence and stays. Dashes, quotes, U+266A and tags before the letter stay. A word with an upper case letter after its first letter stays, such as `iPhone` and `eBay`.
+
+## Profanity filter
+
+Family and broadcast versions mask swear words in the subtitles and mute them in the audio. `profanity.Apply(s, opts)` masks the words of `opts.Words` in the cue text and returns the **mute ranges**: the time spans of the audio that hold a match. `EDL` and `FFmpegVolumeFilter` write the ranges for a player or for FFmpeg.
+
+<!-- example: profanity/ExampleApply -->
+```go
+const content = "WEBVTT\n\n00:01:02.000 --> 00:01:04.000\n" +
+	"<00:01:02.000>What <00:01:02.300>the <00:01:02.480>hell <00:01:02.800>is this?\n"
+s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+report, err := profanity.Apply(s, profanity.Options{
+	Words:   []string{"hell", "damn*"},
+	Mask:    profanity.MaskFirstLetter,
+	Padding: 100 * time.Millisecond,
+})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+for _, c := range s.All() {
+	fmt.Println(c.Text())
+}
+fmt.Print(profanity.EDL(report.MuteRanges))
+fmt.Println(profanity.FFmpegVolumeFilter(report.MuteRanges))
+// Output:
+// <00:01:02.000>What <00:01:02.300>the <00:01:02.480>h*** <00:01:02.800>is this?
+// 62.380 62.900 1
+// volume=enable='between(t,62.380,62.900)':volume=0
+```
+
+| `Mask` | CLI `--mask` | `What the hell?` becomes |
+|:--- |:--- |:--- |
+| `MaskStars`, also `""` | `stars`, the default | `What the ****?` |
+| `MaskFirstLetter` | `first-letter` | `What the h***?`. `HELL no` gives `H*** no` |
+| `MaskRemove` | `remove` | `What the ?` |
+| `MaskNone` | `none` | unchanged. Only the report has the ranges |
+| `MaskFunc` set | none | the text that the function returns for the matched word, escaped as text: `<hell>` gives `&lt;hell&gt;` |
+
+- **Word list**: the caller passes the words. The module ships no list, because the words depend on the language and the audience.
+- **Word**: one word or a phrase with spaces, such as `son of a`. A `*` at the end matches any ending: `damn*` matches `damned` and `damnit`, not `condemn`. `Validate` rejects an empty list, an empty word, white space at the start or end, a `*` before the end and invalid UTF-8.
+- **Match**: a whole word in any case, by the simple case folding of Unicode, so U+01C5 matches U+01C4, and U+24B6 matches U+24D0. Letters, marks, digits and `_` continue a word. So `hell` matches `Hell` and `hell's`, but neither `hello` nor `shell`. The longest word wins: `son of a` before `son`.
+- **Stars**: one star per character as a reader sees it, a grapheme cluster: `cafe` + U+0301 gives `****`.
+- **Text runs**: the filter reads the text between tags, with `&lt;`, `&gt;` and `&amp;` decoded. It does not find a word that a tag splits, such as `h<i>ell</i>`, or a word across 2 lines. A run of invalid UTF-8 is skipped.
+- **Time of a match**: a text run starts at the last word timestamp before it in the cue and ends at the first one after it. Without word timestamps, the cue times count. Each run with a match gives one range, with the 2 times in order. So a word timestamp at 13.5 s after the cue end at 13.2 s gives 13.2 to 13.5 s.
+- **Joining**: `Padding` widens each range on both sides, down to 0 s. Ranges that touch or overlap after the padding become one. `MuteRanges` is sorted by time.
+- **Removed cues**: `MaskRemove` can leave a cue without visible text. The cue goes, as the [cue removal rule](#cue-removal-rule) says.
+- **Timeout**: the words are user input, so each match may take at most 1 s. A timeout returns an error that matches `ErrInvalidArgument`, and the subtitle stays unchanged.
+
+| Output | Form | Player |
+|:--- |:--- |:--- |
+| `EDL` | `62.380 62.900 1` and LF per range: the start and the end in seconds, and the action 1, mute | the [edit decision list](https://kodi.wiki/view/Edit_decision_list) of Kodi and MPlayer, next to the video as `movie.edl` |
+| `FFmpegVolumeFilter` | `volume=enable='between(t,1.500,2.100)+between(t,6.200,6.800)':volume=0` | the [volume filter](https://ffmpeg.org/ffmpeg-filters.html#volume) of FFmpeg, with [timeline editing](https://ffmpeg.org/ffmpeg-filters.html#Timeline-editing) |
+
+No ranges give `""` for both. The seconds come from the whole milliseconds, so no float rounding takes part.
+
+```bash
+stbox convert movie.srt -o clean.srt --mask-words words.txt --mute-filter mute.txt --mute-padding 0.1
+ffmpeg -i movie.mp4 -af "$(cat mute.txt)" -c:v copy clean.mp4
+```

@@ -565,7 +565,7 @@ func (s *reportingConvert) prepare(a *args, r *runner) error {
 }
 
 func (s *reportingConvert) checkInputs(r *runner, inputs []string) error {
-	return s.out.checkInputs(r, inputs, inputs)
+	return s.out.checkInputs(r, inputs, inputs, nil)
 }
 
 func (*reportingConvert) loadSideFiles(context.Context, *runner) error { return nil }
