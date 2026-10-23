@@ -77,7 +77,7 @@ func cleanLines(lines []string) []string {
 }
 
 func cleanLine(s string) string {
-	return strings.Trim(collapseRuns(markupcore.NormalizeLineEnds(s)), phpTrimSet)
+	return strings.Trim(collapseRuns(markupcore.NormalizeLineEnds(s)), markupcore.PHPTrimSet)
 }
 
 func collapseRuns(s string) string {
@@ -97,6 +97,3 @@ func collapseRuns(s string) string {
 	}
 	return string(out)
 }
-
-// phpTrimSet holds the characters of PHP trim. strings.TrimSpace would also remove U+00A0.
-const phpTrimSet = " \t\n\r\x00\x0b"

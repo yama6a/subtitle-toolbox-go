@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 )
-
-// phpTrimSet holds the bytes that PHP trim and ltrim remove without a character list.
-const phpTrimSet = " \t\n\r\x00\v"
 
 // Detect returns the format of content, or false when no auto-detected format matches.
 // Pass UTF-8 text, or the bytes of a binary format.
@@ -17,7 +15,7 @@ const phpTrimSet = " \t\n\r\x00\v"
 // JSON checks only. Other content gets LF line endings, and the signatures of the formats decide in a fixed
 // order. docs/detection.md lists the order.
 func Detect(content []byte) (Format, bool) {
-	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), phpTrimSet)
+	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.PHPTrimSet)
 	if len(content) > 0 && content[0] == '{' {
 		var keys map[string]json.RawMessage
 		if json.Unmarshal(content, &keys) == nil {
@@ -66,5 +64,5 @@ func lfLineEnds(content []byte) []byte {
 
 // isBlank reports whether content holds nothing but UTF-8 BOMs and the bytes of PHP trim.
 func isBlank(content []byte) bool {
-	return len(bytes.Trim(textenc.TrimUTF8BOMs(content), phpTrimSet)) == 0
+	return len(bytes.Trim(textenc.TrimUTF8BOMs(content), markupcore.PHPTrimSet)) == 0
 }
