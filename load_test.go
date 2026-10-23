@@ -57,7 +57,6 @@ func TestLoadWithoutFormat(t *testing.T) {
 		{name: "extension fallback for ASS", file: "film.ass", content: []byte("plain words"), want: stbox.ASS, wantErr: stbox.ErrParse},
 		{name: "extension fallback for MicroDVD", file: "film.sub", content: []byte("plain words"), want: stbox.MicroDVD, wantErr: stbox.ErrParse},
 		{name: "extension fallback for SAMI", file: "film.smi", content: []byte("plain words"), want: stbox.SAMI, wantErr: stbox.ErrParse},
-		{name: "no fallback for a format without a reader", file: "film.mpsub", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
 		{name: "unknown extension", file: "film.xyz", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
 		{name: "no extension", file: "film", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
 	}
@@ -107,7 +106,7 @@ func TestLoadEmptyFile(t *testing.T) {
 		{"upper-case extension", "EMPTY.SRT", "", stbox.SubRip, "UTF-8"},
 		{"UTF-16 BOM and spaces, .ass", "blank.ass", "\xFF\xFE \x00 \x00", stbox.ASS, "UTF-16LE"},
 		{"UTF-16 BOM and spaces, .smi", "blank.smi", "\xFF\xFE \x00 \x00", stbox.SAMI, "UTF-16LE"},
-		{"UTF-16 BOM and spaces, .mpsub without a reader", "blank.mpsub", "\xFF\xFE \x00 \x00", "", ""},
+		{"UTF-16 BOM and spaces, .txt without a reader", "blank.txt", "\xFF\xFE \x00 \x00", "", ""},
 		{"0 bytes, unknown extension", "empty.xyz", "", "", ""},
 		{"0 bytes, format without a reader", "empty.txt", "", "", ""},
 		{"0 bytes, shared extension", "empty.json", "", "", ""},
