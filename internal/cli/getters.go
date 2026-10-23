@@ -56,6 +56,19 @@ func (a *args) PositiveFloat(name string) (float64, bool, error) {
 	return f, ok, err
 }
 
+// Rate returns the frame rate of the option name, else of --fps, which sets every frame rate. It checks --fps
+// first, also when the call gives name, so a bad --fps always fails.
+func (a *args) Rate(name string) (float64, bool, error) {
+	fps, fpsGiven, err := a.PositiveFloat("fps")
+	if err != nil {
+		return 0, false, err
+	}
+	if f, ok, err := a.PositiveFloat(name); err != nil || ok {
+		return f, ok, err
+	}
+	return fps, fpsGiven, nil
+}
+
 // NonNegativeFloat returns the number of the option name and fails below 0.
 func (a *args) NonNegativeFloat(name string) (float64, bool, error) {
 	f, ok, err := a.Float(name)

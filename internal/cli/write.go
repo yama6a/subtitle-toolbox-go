@@ -28,6 +28,7 @@ func outputOptions(toHelp string) []option {
 		},
 		valueOption("output-dir", "DIR",
 			"Write each output into this directory, with the base name of its input. Several inputs need it."),
+		valueOption("output-fps", "RATE", "Frame rate of MicroDVD output. Default: the frame rate of a MicroDVD input."),
 		valueOption("line-ending", "lf|crlf", "Line ending of the output. Default: "+lineEndings[0].name+"."),
 		flagOption("bom", "Start the output with a UTF-8 BOM."),
 		flagOption("no-bom", "Write no UTF-8 BOM. Default: the BOM rule of the output format."),
@@ -39,12 +40,14 @@ type writeOutput struct {
 	to   stbox.Format
 	plan *outputPlan
 	opts stbox.WriteOptions
+	// outputFPS is the rate of --output-fps or --fps, 0 when the call gives neither.
+	outputFPS float64
 	// encode writes s in format f to out. nil means stbox.Write with opts. A command sets it for a writer with a
 	// report, such as the dropped colours of WebVTT, and prints the report with the label of in.
 	encode func(in *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error
 }
 
-// prepare reads --to, -o, --output-dir, --bom, --no-bom and --line-ending.
+// prepare reads --to, --output-fps, -o, --output-dir, --bom, --no-bom and --line-ending.
 func (w *writeOutput) prepare(a *args, r *runner) error {
 	if v, ok := a.Value("to"); ok {
 		f, err := writableFormat(v)
@@ -53,6 +56,11 @@ func (w *writeOutput) prepare(a *args, r *runner) error {
 		}
 		w.to = f
 	}
+	fps, _, err := a.Rate("output-fps")
+	if err != nil {
+		return err
+	}
+	w.outputFPS = fps
 	plan, err := newOutputPlan(r.c, a, w.to)
 	if err != nil {
 		return err
@@ -115,7 +123,7 @@ func (w *writeOutput) write(r *runner, in *input, edit func(*stbox.Subtitle) (*s
 	encode := w.encode
 	if encode == nil {
 		encode = func(_ *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error {
-			return stbox.Write(out, s, f, w.opts)
+			return stbox.Write(out, s, f, w.optionsFor(f))
 		}
 	}
 	if err := encode(in, &buf, s, f); err != nil {
@@ -130,6 +138,16 @@ func (w *writeOutput) write(r *runner, in *input, edit func(*stbox.Subtitle) (*s
 	}
 	r.report(in.label() + " -> " + target + "\n")
 	return nil
+}
+
+// optionsFor returns the write options for output in format f. The field of a format is set only for that format,
+// as docs/cli.md says.
+func (w *writeOutput) optionsFor(f stbox.Format) stbox.WriteOptions {
+	opts := w.opts
+	if f == stbox.MicroDVD {
+		opts.MicroDVD.FrameRate = w.outputFPS
+	}
+	return opts
 }
 
 // output returns the output format and the checked target of in.

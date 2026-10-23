@@ -55,7 +55,7 @@ func (*convertCommand) options() []option {
 }
 
 func commonConvertOptions() []option {
-	return slices.Concat(outputOptions("Output format. Default: the input format."), inputOptions(true))
+	return slices.Concat(outputOptions("Output format. Default: the input format."), inputOptions(true, writeFPSHelp))
 }
 
 func (cc *convertCommand) help(c *console, topic string) (string, error) {
@@ -125,7 +125,7 @@ func (cc *convertCommand) prepare(a *args, r *runner) error {
 	}
 	cc.out.encode = func(in *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error {
 		if f != stbox.WebVTT {
-			opts := cc.out.opts
+			opts := cc.out.optionsFor(f)
 			if cc.ass != nil {
 				opts.ASS = *cc.ass
 			}

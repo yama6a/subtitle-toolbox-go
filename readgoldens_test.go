@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 )
 
@@ -25,10 +26,19 @@ type goldenFolder struct {
 	options map[string]stbox.ReadOptions
 }
 
+// microDVDAt25 is the read option of the MicroDVD read goldens, as tests/files/generate-read-goldens.php sets it.
+var microDVDAt25 = stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: 25}}
+
 func goldenFolders() []goldenFolder {
 	return []goldenFolder{
 		{name: "ass", format: stbox.ASS, files: 7},
 		{name: "json", format: stbox.JSON, files: 6},
+		{name: "microdvd", format: stbox.MicroDVD, files: 4, options: map[string]stbox.ReadOptions{
+			"own_max_frames.sub":           microDVDAt25,
+			"sub_microdvd.sub":             microDVDAt25,
+			"sub_microdvd_with_styles.sub": microDVDAt25,
+			"subsrt_sample.sub":            microDVDAt25,
+		}},
 		{
 			name: "sami", format: stbox.SAMI, files: 11,
 			options: map[string]stbox.ReadOptions{"own_korean_cp949.smi": {Encoding: "CP949"}},
@@ -58,7 +68,12 @@ func (g goldenFolder) realFiles(t *testing.T) []string {
 func (g goldenFolder) read(t *testing.T, file string) (*stbox.Subtitle, stbox.ReadInfo) {
 	t.Helper()
 
-	opts := g.options[file]
+	return g.readWith(t, file, g.options[file])
+}
+
+func (g goldenFolder) readWith(t *testing.T, file string, opts stbox.ReadOptions) (*stbox.Subtitle, stbox.ReadInfo) {
+	t.Helper()
+
 	opts.Format = g.format
 	s, info, err := stbox.Parse(bytes.NewReader(testfiles.Read(t, g.name+"/real/"+file)), opts)
 	require.NoError(t, err)

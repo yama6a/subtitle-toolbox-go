@@ -7,11 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 )
 
@@ -53,6 +55,7 @@ func TestLoadWithoutFormat(t *testing.T) {
 		{name: "no fallback for .txt", file: "film.txt", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
 		{name: "no fallback for .ffmeta", file: "film.ffmeta", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
 		{name: "extension fallback for ASS", file: "film.ass", content: []byte("plain words"), want: stbox.ASS, wantErr: stbox.ErrParse},
+		{name: "extension fallback for MicroDVD", file: "film.sub", content: []byte("plain words"), want: stbox.MicroDVD, wantErr: stbox.ErrParse},
 		{name: "extension fallback for SAMI", file: "film.smi", content: []byte("plain words"), want: stbox.SAMI, wantErr: stbox.ErrParse},
 		{name: "no fallback for a format without a reader", file: "film.lrc", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
 		{name: "unknown extension", file: "film.xyz", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
@@ -209,6 +212,53 @@ func TestReadNoContainer(t *testing.T) {
 			_, info, err := stbox.Load(writeTemp(t, "movie.mkv", []byte(tt.content)), stbox.ReadOptions{Lenient: true})
 			require.NoError(t, err)
 			assert.Equal(t, stbox.SubRip, info.Format)
+		})
+	}
+}
+
+// Ports testMicroDvdWithTheFrameRateOfTheOptions and testSaveMicroDvdTakesTheFrameRateFromTheOptionsThenFromTheFormatData
+// of tests/LoadSaveTest.php of subtitle-toolbox-php.
+func TestLoadAndWriteMicroDVD(t *testing.T) {
+	t.Parallel()
+
+	s, info, err := stbox.Load(testfiles.Path(t, "cli/frames.sub"), stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: 25}})
+	require.NoError(t, err)
+	assert.Equal(t, stbox.MicroDVD, info.Format)
+	first, _ := s.Cue(0)
+	assert.Equal(t, []time.Duration{time.Second, 3 * time.Second}, []time.Duration{first.Start, first.End})
+
+	var stored, explicit, other bytes.Buffer
+	require.NoError(t, stbox.Write(&stored, s, stbox.MicroDVD, stbox.WriteOptions{}))
+	require.NoError(t, stbox.Write(&explicit, s, stbox.MicroDVD, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 25}}))
+	assert.Equal(t, explicit.String(), stored.String())
+	require.NoError(t, stbox.Write(&other, s, stbox.MicroDVD, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 50}}))
+	assert.True(t, strings.HasPrefix(other.String(), "{50}{150}"), other.String())
+
+	trip, _, err := stbox.Load(testfiles.Path(t, "cli/trip.srt"), stbox.ReadOptions{})
+	require.NoError(t, err)
+	err = stbox.Write(&bytes.Buffer{}, trip, stbox.MicroDVD, stbox.WriteOptions{})
+	var argErr *stbox.InvalidArgumentError
+	require.ErrorAs(t, err, &argErr)
+	assert.Equal(t, "WriteOptions.MicroDVD.FrameRate", argErr.Option)
+}
+
+// Ports the MicroDVD case of testAutoDetectionGivesTheSameCuesAsTheDetectedFormat of tests/FormatDetectorTest.php of
+// subtitle-toolbox-php: a file without a {1}{1}<fps> line needs the frame rate with and without a format.
+func TestMicroDVDWithoutFrameRateLine(t *testing.T) {
+	t.Parallel()
+
+	for _, file := range []string{"cli/frames.sub", "microdvd/real/sub_microdvd.sub", "microdvd/real/subsrt_sample.sub"} {
+		t.Run(file, func(t *testing.T) {
+			t.Parallel()
+
+			for _, f := range []stbox.Format{"", stbox.MicroDVD} {
+				_, _, err := stbox.Load(testfiles.Path(t, file), stbox.ReadOptions{Format: f})
+				var perr *stbox.ParseError
+				require.ErrorAs(t, err, &perr)
+				assert.Equal(t, stbox.MicroDVD, perr.Format)
+				assert.Equal(t, "ReadOptions.MicroDVD.FrameRate", perr.Option)
+				assert.True(t, strings.HasPrefix(perr.Msg, "The frame rate is unknown."), perr.Msg)
+			}
 		})
 	}
 }

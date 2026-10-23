@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/format/sami"
 )
 
@@ -35,6 +36,11 @@ func TestReadOptionGoldens(t *testing.T) {
 			opts: stbox.ReadOptions{
 				Format: stbox.SAMI, LastCueDuration: new(10 * time.Second), SAMI: sami.ReadOptions{LanguageClass: "FRCC"},
 			},
+		},
+		{
+			golden: "microdvd_subsrt_sample",
+			file:   "microdvd/real/subsrt_sample.sub",
+			opts:   stbox.ReadOptions{Format: stbox.MicroDVD, MicroDVD: microdvd.ReadOptions{FrameRate: 23.976}},
 		},
 	}
 	for _, tt := range tests {

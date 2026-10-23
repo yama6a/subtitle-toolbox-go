@@ -29,16 +29,19 @@ Times are in seconds. Character counts leave out tags. The gap is the start of a
 cue minus the latest end of the earlier cues. An overlap gives a negative gap.
 
 Options:
-  --json           Print JSON: a list with one object for each input file.
-  --from FORMAT    Input format. Default: the format detected from the content.
-                   When detection finds no format, the file extension sets it.
-  --encoding NAME  Encoding of input that is not UTF-8, for example
-                   Windows-1252. It replaces code page detection. A BOM, valid
-                   UTF-8 and UTF-16 input win over it.
-  --lenient        Skip or repair broken cues and print a warning for each.
-  --keep-going     Go on with the next file after a file fails. Default: stop at
-                   the first failure.
-  -h, --help       Show this help.
+  --json            Print JSON: a list with one object for each input file.
+  --from FORMAT     Input format. Default: the format detected from the content.
+                    When detection finds no format, the file extension sets it.
+  --encoding NAME   Encoding of input that is not UTF-8, for example
+                    Windows-1252. It replaces code page detection. A BOM, valid
+                    UTF-8 and UTF-16 input win over it.
+  --lenient         Skip or repair broken cues and print a warning for each.
+  --input-fps RATE  Frame rate of a MicroDVD input without a {1}{1}<fps> first
+                    line.
+  --fps RATE        Same as --input-fps.
+  --keep-going      Go on with the next file after a file fails. Default: stop
+                    at the first failure.
+  -h, --help        Show this help.
 `
 
 const (

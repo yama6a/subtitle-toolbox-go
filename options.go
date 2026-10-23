@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
@@ -27,6 +28,8 @@ type ReadOptions struct {
 	// SAMI holds the settings of the SAMI reader. The zero value reads the first class of the STYLE block that a
 	// <P> uses.
 	SAMI sami.ReadOptions
+	// MicroDVD holds the settings of the MicroDVD reader. The zero value takes the frame rate of a {1}{1}<fps> line.
+	MicroDVD microdvd.ReadOptions
 }
 
 // WriteOptions holds the settings of a write. The zero value writes with the defaults.
@@ -41,6 +44,8 @@ type WriteOptions struct {
 	JSON stboxjson.WriteOptions
 	// ASS holds the settings of the ASS and SSA writer. The zero value writes \k karaoke tags and keeps the styles.
 	ASS ass.WriteOptions
+	// MicroDVD holds the settings of the MicroDVD writer. The zero value takes the frame rate that the reader stored.
+	MicroDVD microdvd.WriteOptions
 }
 
 // ReadInfo holds the facts of a read that are not subtitle content.
@@ -71,7 +76,10 @@ func (o ReadOptions) Validate() error {
 			Msg:    fmt.Sprintf("The last cue duration must be 0 or more, got %s.", *o.LastCueDuration),
 		}
 	}
-	return o.SAMI.Validate()
+	if err := o.SAMI.Validate(); err != nil {
+		return err
+	}
+	return o.MicroDVD.Validate()
 }
 
 // Validate checks every field of o, also the fields of formats that a write does not use.
@@ -88,7 +96,10 @@ func (o WriteOptions) Validate() error {
 			Msg:    "The BOM rule " + strconv.Itoa(int(o.BOM)) + " is unknown.",
 		}
 	}
-	return o.ASS.Validate()
+	if err := o.ASS.Validate(); err != nil {
+		return err
+	}
+	return o.MicroDVD.Validate()
 }
 
 func (o ReadOptions) common() model.CommonReadOptions {

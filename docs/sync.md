@@ -150,4 +150,4 @@ Then the report line `de.srt -> synced.srt` goes to stdout, as for `convert`.
 - **Result line**: the scale has at most 5 decimals, the offset at most 3 and the score at most 2. With 2 or more segments, 1 line per segment follows.
 - **Low score**: below 0.5, the line `de.srt: the score is below 0.5, so the files likely do not match.` follows. The exit code stays 0.
 - **Checks**: bad offsets exit 2 before any file is read.
-- **Reference read**: content detection picks the format, so `--from` does not apply. `--encoding` and `--lenient` apply. Its warnings print with its path. A missing or broken reference prints `Error: PATH: MESSAGE` and exits 3 before the first input.
+- **Reference read**: content detection picks the format, so `--from` does not apply. `--encoding`, `--lenient`, `--input-fps` and `--fps` apply. Its warnings print with its path. A missing or broken reference prints `Error: PATH: MESSAGE` and exits 3 before the first input.

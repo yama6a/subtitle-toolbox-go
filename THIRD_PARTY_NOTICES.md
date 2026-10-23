@@ -76,6 +76,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   - `testdata/lenient/mantas_multiple_divs.ttml`
   - `testdata/sami/real/mantas_smi.smi`, in the shape of `tests/files/smi.smi`
   - `testdata/sami/real/mantas_smi_formatted.smi`, in the shape of `tests/files/smi_formatted.smi`
+  - `testdata/microdvd/real/sub_microdvd.sub`, in the shape of `tests/files/sub_microdvd.sub`
+  - `testdata/microdvd/real/sub_microdvd_with_styles.sub`, in the shape of `tests/files/sub_microdvd_with_styles.sub`
 
 ```text
 MIT License
@@ -614,6 +616,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 - Project: <https://github.com/papnkukn/subsrt>
 - Licence: MIT
 - Checked at: `478e54390b74859b3643b80ff988113557ff80d8`
+- Files copied from it:
+  - `testdata/microdvd/real/subsrt_sample.sub`, from `test/fixtures/sample.sub`
 - Files written for this repository in the shape of its fixtures:
   - `testdata/sami/real/subsrt_sample.smi`, in the shape of `test/fixtures/sample.smi`
 

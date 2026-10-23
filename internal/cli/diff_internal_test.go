@@ -336,6 +336,9 @@ Options:
                             BOM, valid UTF-8 and UTF-16 input win over it.
   --lenient                 Skip or repair broken cues and print a warning for
                             each.
+  --input-fps RATE          Frame rate of a MicroDVD input without a {1}{1}<fps>
+                            first line.
+  --fps RATE                Same as --input-fps.
   --new-from FORMAT         Format of the new file. Default: as for --from.
   -h, --help                Show this help.
 `

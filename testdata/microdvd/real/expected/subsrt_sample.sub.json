@@ -1,0 +1,127 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "microdvd": {
+                "frameRate": 25.0
+            }
+        },
+        "cues": [
+            {
+                "start": 599.0,
+                "end": 4160.0,
+                "lines": [
+                    "Hi, my name is Alice Miller and this is John Brown"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "microdvd": {
+                        "lines": [
+                            {
+                                "codes": "",
+                                "otherCodes": "",
+                                "color": null,
+                                "tags": []
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 4160.0,
+                "end": 6770.0,
+                "lines": [
+                    "and we're the owners of Miller Bakery."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "microdvd": {
+                        "lines": [
+                            {
+                                "codes": "",
+                                "otherCodes": "",
+                                "color": null,
+                                "tags": []
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 6770.0,
+                "end": 10880.0,
+                "lines": [
+                    "Today we'll be teaching you how to make",
+                    "our famous chocolate chip cookies!"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "microdvd": {
+                        "lines": [
+                            {
+                                "codes": "",
+                                "otherCodes": "",
+                                "color": null,
+                                "tags": []
+                            },
+                            {
+                                "codes": "",
+                                "otherCodes": "",
+                                "color": null,
+                                "tags": []
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 10880.0,
+                "end": 16700.0,
+                "lines": [
+                    "[intro music]"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "microdvd": {
+                        "lines": [
+                            {
+                                "codes": "",
+                                "otherCodes": "",
+                                "color": null,
+                                "tags": []
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 16700.0,
+                "end": 21480.0,
+                "lines": [
+                    "Okay, so we have all the ingredients laid out here"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "microdvd": {
+                        "lines": [
+                            {
+                                "codes": "",
+                                "otherCodes": "",
+                                "color": null,
+                                "tags": []
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

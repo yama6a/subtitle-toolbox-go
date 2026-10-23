@@ -140,6 +140,19 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Block numbers**: N counts the `SYNC` tags from 1. The warning block is N minus 1.
 - **Line numbers**: the line of the `<SYNC`. The reader counts lines after it removes every `</SYNC>`, as PHP does. A `</SYNC>` with a line end inside it moves the later lines up by one.
 
+## MicroDVD
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| no frame rate in the options and no `{1}{1}<fps>` first line | `The frame rate is unknown. Start the file with {1}{1}<fps>, set the frame rate, or read the file in lenient mode for 23.976 fps.` | reads at 23.976 fps. `The file has no {1}{1}<fps> line. The parser used 23.976 fps.` `Repaired`, no line and no block |
+| junk before the `{1}{1}<fps>` line, such as a release name | the frame rate error above | takes the frame rate of the first line of the shape `{N}{N}text` and skips the junk line |
+| a line of another shape, such as `{x}{120}Text` | `The line "L" is not a MicroDVD cue.` | skips the line |
+| a time of 100000 hours or more, such as `{9000000000000}` at 25 fps | `The time "{N}" is not below 100000 hours.` | skips the line |
+| `{1}{1}0` | `The frame rate must be greater than 0, got 0.` | the same error |
+
+- **Block numbers**: B counts the non-empty lines from 0, the frame rate line too. The warnings report the line and hold it trimmed.
+- **Quotes**: the message quotes the whole line, as PHP does, without the cut at 60 characters.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.
