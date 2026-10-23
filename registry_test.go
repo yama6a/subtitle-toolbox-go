@@ -64,6 +64,14 @@ func detected(f Format) bool {
 		slices.ContainsFunc(signatures, func(s signature) bool { return s.format == f })
 }
 
+func TestPlainTextIsWriteOnly(t *testing.T) {
+	t.Parallel()
+
+	assert.True(t, PlainText.CanWrite())
+	assert.False(t, PlainText.CanRead())
+	assert.False(t, slices.ContainsFunc(signatures, func(s signature) bool { return s.format == PlainText }))
+}
+
 func TestDetectionListsFollowTheOrder(t *testing.T) {
 	t.Parallel()
 

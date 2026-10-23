@@ -12,6 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/format/mpl2"
 	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/format/sbv"
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
@@ -65,6 +66,7 @@ var (
 	_ readFunc[lrc.ReadOptions]         = lrc.Read
 	_ writeFunc[lrc.WriteOptions]       = lrc.Write
 	_ detectFunc                        = lrc.Detect
+	_ writeFunc[plaintext.WriteOptions] = plaintext.Write
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -92,7 +94,7 @@ var registry = []formatFuncs{
 	{format: SubViewer},
 	{format: TTML, read: readTTML, write: writeTTML},
 	{format: TSV},
-	{format: PlainText},
+	{format: PlainText, write: writePlainText},
 	{format: MPL2, read: readMPL2, write: writeMPL2},
 	{format: TMPlayer, read: readTMPlayer, write: writeTMPlayer},
 	{format: QuickTimeText},
@@ -248,6 +250,10 @@ func readLRC(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subti
 
 func writeLRC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
 	return lrc.Write(w, s, common, lrc.WriteOptions{})
+}
+
+func writePlainText(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+	return plaintext.Write(w, s, common, opts.PlainText)
 }
 
 func lookup(f Format) (formatFuncs, bool) {

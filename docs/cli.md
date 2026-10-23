@@ -310,12 +310,13 @@ sami      .smi .sami        yes   yes
 sbv       .sbv              yes   yes
 srt       .srt              yes   yes
 ttml      .ttml .dfxp .xml  yes   yes
+txt       .txt              no    yes
 mpl2      .txt              yes   yes
 tmplayer  .txt              yes   yes
 vtt       .vtt              yes   yes
 ```
 
-- **Shared extensions**: the first format in the list owns an extension, so `.sub` is MicroDVD and `.txt` is plain text. `--from` reads a file as another format. A `.sub` file with MPSub content is found by its content. Plain text is not supported yet, so `--from txt` is an unknown format. Pass `--from mpl2` or `--from tmplayer`.
+- **Shared extensions**: the first format in the list owns an extension, so `.sub` is MicroDVD and `.txt` is plain text. `--from` reads a file as another format. A `.sub` file with MPSub content is found by its content. Plain text has no reader, so `--from txt` fails with `The format txt can be written but not read.` Pass `--from mpl2` or `--from tmplayer`. `--to txt` writes plain text with the default options.
 - **Hidden formats**: a format that can be neither read nor written has no row.
 
 ## JSON output

@@ -43,7 +43,7 @@ func inputOptions(manyInputs bool, fpsHelp string) []option {
 
 // findFormat returns the format of a --from or --to value: a format name or a file extension, in any ASCII case
 // and with leading dots. A format that can be neither read nor written is unknown. An extension names the format
-// that stbox.FormatFromPath gives, so txt names plain text and is unknown, not MPL2.
+// that stbox.FormatFromPath gives, so txt names plain text, not MPL2.
 func findFormat(v string) (stbox.Format, error) {
 	key := strings.TrimLeft(asciiLower(v), ".")
 	usable := func(f stbox.Format) bool { return f.CanRead() || f.CanWrite() }

@@ -52,6 +52,30 @@ func TestConvertWritesMPL2IntoATxtFile(t *testing.T) {
 		call{dir: dir}.run(t, "convert", "trip.srt", "--to", "mpl2", "-o", "trip.vtt"))
 }
 
+func TestConvertWritesPlainTextIntoATxtFile(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	assert.Equal(t, result{Stdout: "trip.srt -> trip.txt\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "txt", "-o", "trip.txt"))
+	assert.Equal(t, convertAs(t, "trip.srt", stbox.PlainText), readFile(t, dir, "trip.txt"))
+	assert.Equal(t, result{Stdout: "trip.srt -> out/trip.txt\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "txt", "--output-dir", "out"))
+	assert.Equal(t, convertAs(t, "trip.srt", stbox.PlainText), readFile(t, dir, "out/trip.txt"))
+	assert.Equal(t, usageResult("convert", "The extension of --output trip.vtt names the format vtt, not the --to format txt."),
+		call{dir: dir}.run(t, "convert", "trip.srt", "--to", "txt", "-o", "trip.vtt"))
+	assert.Equal(t, usageResult("convert", "The output film.txt has the extension of the format txt, not of the input format srt. Pass --to txt to write that format, or use the extension of the input format."),
+		call{dir: dir}.run(t, "convert", "trip.srt", "-o", "film.txt"))
+}
+
+func TestConvertWritesPlainTextToStandardOutput(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	got := call{dir: dir}.run(t, "convert", "trip.srt", "--to", "txt")
+	require.Equal(t, 0, got.Code)
+	assert.Equal(t, convertAs(t, "trip.srt", stbox.PlainText), got.Stdout)
+	assert.NotContains(t, got.Stdout, "-->")
+}
+
 func TestConvertWritesMPSubIntoAnMPSubFile(t *testing.T) {
 	t.Parallel()
 

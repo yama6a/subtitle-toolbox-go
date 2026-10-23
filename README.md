@@ -71,6 +71,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [SBV](https://support.google.com/youtube/answer/2734698) | `stbox.SBV` | `sbv` | `.sbv` | yes | yes | YouTube Studio captions |
 | [SubRip](https://en.wikipedia.org/wiki/SubRip) | `stbox.SubRip` | `srt` | `.srt` | yes | yes | |
 | [TTML, IMSC, DFXP](https://www.w3.org/TR/ttml2/) | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | yes | yes | also iTT |
+| [Plain text](docs/formats.md#plain-text) | `stbox.PlainText` | `txt` | `.txt` | no | yes | a transcript of the words, owns `.txt` |
 | [MPL2](https://pysubs2.readthedocs.io/en/latest/supported-formats.html) | `stbox.MPL2` | `mpl2` | `.txt` | yes | yes | found by content |
 | [TMPlayer](https://pysubs2.readthedocs.io/en/latest/supported-formats.html) | `stbox.TMPlayer` | `tmplayer` | `.txt` | yes | yes | also TMPlayer+, found by content |
 | [WebVTT](https://www.w3.org/TR/webvtt1/) | `stbox.WebVTT` | `vtt` | `.vtt` | yes | yes | also chapters |

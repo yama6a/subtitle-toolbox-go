@@ -13,6 +13,7 @@
 | SBV | `stbox.SBV` | `sbv` | `.sbv` | [SBV](#sbv) |
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
 | TTML, IMSC, DFXP | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | [TTML](#ttml) |
+| plain text | `stbox.PlainText` | `txt` | `.txt` | [Plain text](#plain-text) |
 | MPL2 | `stbox.MPL2` | `mpl2` | `.txt` | [MPL2](#mpl2) |
 | TMPlayer, TMPlayer+ | `stbox.TMPlayer` | `tmplayer` | `.txt` | [TMPlayer](#tmplayer) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
@@ -737,3 +738,65 @@ This file has the title `Morning Train` and 3 cues:
 ### Options
 
 `lrc.ReadOptions` and `lrc.WriteOptions` have no fields. The reader reads `Lenient`, `LastCueDuration` and `Encoding`. The writer reads `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#lrc). The detection rule is in the doc comment of `lrc.Detect` and in [detection.md](detection.md).
+
+## Plain text
+
+Plain text is a transcript of the words, without times or markup. Package `format/plaintext` writes it. The format name is `txt`, the extension `.txt`. The format has no reader and no detection, so `Parse` with `ReadOptions.Format` set to `stbox.PlainText` returns `ErrUnsupportedFormat` with `The format txt can be written but not read.` Plain text owns `.txt` in `FormatFromPath`. `Load` still finds MPL2 and TMPlayer files named `.txt` by their content.
+
+<!-- example: format/plaintext/ExampleWrite -->
+```go
+s := &model.Subtitle{}
+s.AddCues(
+	model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Hello world."}},
+	model.Cue{Start: 2500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"Where are you going?"}},
+	model.Cue{Start: 6 * time.Second, End: 7 * time.Second, Lines: []string{"<i>Home</i> &amp; bed."}},
+)
+if err := plaintext.Write(os.Stdout, s, model.CommonWriteOptions{}, plaintext.WriteOptions{}); err != nil {
+	fmt.Println(err)
+}
+// Output:
+// Hello world. Where are you going?
+//
+// Home & bed.
+```
+
+The first two cues are 0.5 s apart, so they share a paragraph. The third starts 2 s after the second ends, so it starts a new one.
+
+### Write
+
+- **Text of a line**: ruby becomes `base (annotation)`. All tags go, also `<v>` and word timestamps, and entities are decoded. Each run of spaces and tabs becomes 1 space, and the line is trimmed. Empty lines drop out.
+- **Skipped cues**: a cue without a line after that. It takes no part in the paragraphs.
+- **Cue text**: the lines of a cue join with a space, or with LF under `KeepLineBreaks`.
+- **Paragraphs**: the first cue starts a paragraph. A cue whose start minus the latest end so far is `ParagraphGap` or more starts a new one. The latest end is the largest end of all earlier cues. So `Long` from 0 to 10 s, `Short` from 1 to 2 s and `Overlapped` from 11 to 12 s make one paragraph `Long Short Overlapped`. The gap is exact: cue times are whole milliseconds, so cues at 1.3 s and 3.3 s are 2 s apart. PHP computes it in floats and gets 1.9999999999999998 ([php-differences.md](php-differences.md)).
+- **Paragraph text**: the cues of the paragraph, joined with a space or, under `OneCuePerLine`, with LF. With `WithTimes` the paragraph starts with `[HH:MM:SS] `, the start floored to whole seconds. A negative start writes as 0 and an hour count of 100 or more keeps all digits.
+- **Output**: each paragraph ends with LF, and one empty line separates the paragraphs. No cues give empty output.
+- **Line feed inside a line**: a decoded `&#10;` stays in the text, as in PHP. The line then spans 2 lines of the output, also without `KeepLineBreaks`. The format has no reader, so nothing reads it back.
+- **BOM**: none by default. `StripTags` changes nothing, because the writer always removes the markup.
+- **Lost on write**: everything but the text. That is the times except the optional paragraph start, markup, speakers, word timestamps, alignment, and the line layout under the default options.
+
+| Options | Output, with `\n` for LF |
+|:--- |:--- |
+| zero | `Hello world. Where are you going?\n\nHome & bed.\n\nFish <3\n` |
+| `KeepLineBreaks` | `Hello\nworld. Where are you going?\n\nHome & bed.\n\nFish <3\n` |
+| `OneCuePerLine` | `Hello world.\nWhere are you going?\n\nHome & bed.\n\nFish <3\n` |
+| `ParagraphGap` 2.5 s | `Hello world. Where are you going? Home & bed.\n\nFish <3\n` |
+| `ParagraphGap` 0.5 s | `Hello world.\n\nWhere are you going?\n\nHome & bed.\n\nFish <3\n` |
+| `ParagraphGap` `NoParagraphBreaks` | `Hello world. Where are you going? Home & bed. Fish <3\n` |
+| `WithTimes` | `[00:00:01] Hello world. Where are you going?\n\n[00:00:06] Home & bed.\n\n[01:02:05] Fish <3\n` |
+
+All rows use these 4 cues. They are `<v Mara><b>Hello</b>` and `world.` from 1 to 2 s, `Where are you  going?` from 2.5 to 4 s, `<font color="#ff0000">Home</font> &amp; <00:00:06.500>bed.` and `  ` from 6 to 7 s, and `Fish &lt;3` from 3725 to 3727 s.
+
+### Options
+
+`plaintext.WriteOptions` is the root field `WriteOptions.PlainText`. The writer reads `LineEnding` and `BOM` too. PHP has no CLI flags for these options, and `stbox convert --to txt` writes with the defaults.
+
+| Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |
+| `KeepLineBreaks` | `bool` | false: join the lines of a cue with a space | keep each cue line on its own line |
+| `OneCuePerLine` | `bool` | false: join the cues of a paragraph with a space | write each cue on its own line |
+| `ParagraphGap` | `*time.Duration` | nil: 2 s | a gap of this length or more after the latest end so far starts a new paragraph. 0 is legal |
+| `WithTimes` | `bool` | false | start each paragraph with `[HH:MM:SS] ` |
+
+- **Names**: PHP has 2 bools that default to true, `joinLines` and `joinCues`. Go names them so that false is the default. `ParagraphGap` is a pointer because 0 is legal and differs from the default.
+- **One paragraph**: `ParagraphGap: new(plaintext.NoParagraphBreaks)`. PHP passes `INF`, and a `time.Duration` has no infinity. `NoParagraphBreaks` is the largest `time.Duration`, about 292 years, which no gap between cues reaches.
+- **Check**: `Validate` rejects a negative gap, for example `The paragraph gap must be 0 or more seconds, got -1.`, with an error that matches `ErrInvalidArgument`.
