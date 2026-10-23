@@ -82,6 +82,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   - `testdata/lrc/hours_with_text_on_next_line.lrc`, in the shape of the `testNotLrc` input in `tests/formats/LrcTest.php`
   - `testdata/csv/real/mantas_done_shape.csv`, in the shape of the `Start,End,Text` tables in `tests/formats/CsvTest.php`
   - `testdata/csv/real/headerless_frame_times.csv`, in the shape of `tests/files/csv_ansi.csv`
+  - `testdata/subviewer/real/mantas_headers_shape.sub`, in the shape of `tests/files/sub_viewer_with_headers.sub`
+  - `testdata/subviewer/real/mantas_plain_shape.sub`, in the shape of `tests/files/sub_viewer.sub`
 
 ```text
 MIT License

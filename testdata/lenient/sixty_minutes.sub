@@ -1,0 +1,23 @@
+[INFORMATION]
+[TITLE]Night bus
+[AUTHOR]
+[SOURCE]
+[PRG]
+[FILEPATH]
+[DELAY]0
+[CD TRACK]0
+[COMMENT]
+[END INFORMATION]
+[SUBTITLE]
+[COLF]&HFFFFFF,[STYLE]bd,[SIZE]18,[FONT]Arial
+00:00:01.00,00:00:03.00
+The night bus runs every hour.
+
+00:00:04.00,00:75:06.00
+The last bus leaves at one.
+
+00:00:75.00,00:00:99.00
+Tickets are sold on board.
+
+00:00:10.00,00:00:12.00
+Please have coins ready.

@@ -207,6 +207,24 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 
 - **Block numbers**: the block of a warning is the index of the line among the non-empty lines, from 0.
 - **Line numbers**: the warning of a broken time tag has the 1-based line of the file, empty lines included.
+## SubViewer
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| SubViewer 1: a header line that is no `[TAG]value` | `The line "L" is not a SubViewer 1 header tag.` | skips the line. `Skipped`, block 0 |
+| SubViewer 2: a line before the first cue that is no tag and no timing line | `The line "L" is neither a header tag nor a timing line.` | skips the line. `Skipped`, block 0 |
+| SubViewer 2: a timing line with a time in a loose form: no fraction, 4 fraction digits, or 1-digit hours, minutes or seconds | `The timing line "L" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.` | reads both times, rounded to whole milliseconds. `The timing line "L" is not in the form hh:mm:ss.ff,hh:mm:ss.ff. The parser read it as S s to E s.` `Repaired` |
+| SubViewer 2: a timing line with a time that is not valid, such as `00:75:06.00`, a 20-digit hour field or a time that rounds to 100000 hours | the message of the row above | skips the cue. `The timing line "L" has a time that is not valid.` `Skipped` |
+| SubViewer 2: a cue that ends before it starts | `The cue ends at E s, before it starts at S s.` | swaps the times when the cue then lasts 30 s or less. `Repaired`. Else skips the cue with the same message. `Skipped` |
+| SubViewer 1: a time line with minutes or seconds above 59 | `The time "L" is not valid.` | skips the time line. `Skipped` |
+| SubViewer 1: a time plus the delay at or beyond 100000 hours in size | `The time "L with DELAY N" is not below 100000 hours.` L is the time line and N the `[DELAY]` value as read. A delay of 0 quotes the time line alone | skips the time line. `Skipped` |
+| SubViewer 1: a cue that a time line ends before it starts | `The cue ends at E s, before it starts at S s.` | as for SubViewer 2 |
+
+- **Skipped cue**: a SubViewer 2 warning for a skipped cue holds the timing line and every text line that followed it. The reader records it when the next timing line or the end of the file comes.
+- **Block numbers**: for SubViewer 2, B counts the timing lines from 0, the bad ones too. For SubViewer 1, a time line error has the count of cues read so far, and an order error the index of the cue. A header line has block 0.
+- **Line numbers**: the 1-based line of the file. A SubViewer 1 cue reports the line of its start time line.
+- **L**: the whole line, as PHP does, without the cut at 60 characters.
+- **Bad time line**: after a SubViewer 1 time line that fails, the text line below it is not read as a cue.
 
 ## CSV and TSV
 

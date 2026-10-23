@@ -1,0 +1,66 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Harbour walk"
+        },
+        "comments": [],
+        "formatData": {
+            "subviewer": {
+                "version": 1,
+                "header": {
+                    "SOURCE": "",
+                    "PRG": "",
+                    "FILEPATH": "",
+                    "DELAY": "0",
+                    "CD TRACK": "0",
+                    "BEGIN": ""
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 2.0,
+                "end": 5.0,
+                "lines": [
+                    "The ferry leaves at nine."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 6.0,
+                "end": 9.0,
+                "lines": [
+                    "Tickets are sold",
+                    "at the kiosk."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 10.0,
+                "end": 13.0,
+                "lines": [
+                    "Fish &amp; chips &lt;large&gt; cost 8 euros."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 90.0,
+                "end": 94.0,
+                "lines": [
+                    "The last boat returns at six."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

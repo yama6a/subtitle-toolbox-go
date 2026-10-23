@@ -1,0 +1,29 @@
+[INFORMATION]
+[TITLE]Morning at the bakery
+[AUTHOR]Jane Doe
+[SOURCE]
+[PRG]
+[FILEPATH]
+[DELAY]0
+[CD TRACK]0
+[COMMENT]Times in centiseconds
+[END INFORMATION]
+[SUBTITLE]
+[COLF]&HFFFFFF,[STYLE]bd,[SIZE]18,[FONT]Arial
+00:00:01.50,00:00:04.00
+The bakery opens at six.
+
+00:00:04.25,00:00:07.80
+First the dough rests[br]for one hour.
+
+00:00:08.00,00:00:11.35
+Flour & water <and> a pinch of salt.
+
+00:00:12.10,00:00:15.00
+The crème brûlée is ready at noon.
+
+00:01:02.05,00:01:05.95
+Bread rolls[br]cost 40 cents[br]each.
+
+01:00:00.00,01:00:03.50
+See you tomorrow morning.

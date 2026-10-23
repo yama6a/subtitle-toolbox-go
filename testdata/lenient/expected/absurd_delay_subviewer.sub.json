@@ -1,0 +1,28 @@
+{
+    "name": "SubViewer 1 with a DELAY that moves a cue past the limit",
+    "format": "subviewer",
+    "strict": {
+        "error": "The time \"[00:00:12] with DELAY 359999990\" is not below 100000 hours.",
+        "line": 14
+    },
+    "cues": [
+        {
+            "start": 359999991,
+            "end": 359999994,
+            "text": "The pool opens at seven."
+        },
+        {
+            "start": 359999996,
+            "end": 359999999,
+            "text": "Towels are at the desk."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 14,
+            "block": 2,
+            "action": "skipped",
+            "message": "The time \"[00:00:12] with DELAY 359999990\" is not below 100000 hours."
+        }
+    ]
+}

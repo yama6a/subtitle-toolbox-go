@@ -1,0 +1,62 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Weather report",
+            "author": "Tom Berg"
+        },
+        "comments": [],
+        "formatData": {
+            "subviewer": {
+                "version": 1,
+                "header": {
+                    "DELAY": "0"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 3.0,
+                "end": 6.0,
+                "lines": [
+                    "Sunny in the north",
+                    "and cloudy in the south."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 8.0,
+                "end": 11.0,
+                "lines": [
+                    "Light wind from the east."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 11.0,
+                "end": 14.0,
+                "lines": [
+                    "Snow on the hills tonight."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 17.0,
+                "end": 22.0,
+                "lines": [
+                    "Back at eight with the news."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

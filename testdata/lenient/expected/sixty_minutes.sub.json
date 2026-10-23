@@ -1,0 +1,34 @@
+{
+    "name": "SubViewer 2 with minutes and seconds of 60 or more",
+    "format": "subviewer",
+    "strict": {
+        "error": "The timing line \"00:00:04.00,00:75:06.00\" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.",
+        "line": 16
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The night bus runs every hour."
+        },
+        {
+            "start": 10,
+            "end": 12,
+            "text": "Please have coins ready."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 16,
+            "block": 1,
+            "action": "skipped",
+            "message": "The timing line \"00:00:04.00,00:75:06.00\" has a time that is not valid."
+        },
+        {
+            "line": 19,
+            "block": 2,
+            "action": "skipped",
+            "message": "The timing line \"00:00:75.00,00:00:99.00\" has a time that is not valid."
+        }
+    ]
+}

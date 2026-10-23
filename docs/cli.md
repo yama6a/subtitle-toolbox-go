@@ -301,25 +301,26 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 `stbox formats` lists the formats that can be read or written, in registry order. The names are the values of `--from` and `--to`. It takes no argument and no option except `-h`.
 
 ```
-Name      Extensions        Read  Write
-ass       .ass .ssa         yes   yes
-csv       .csv              yes   yes
-json      .json             yes   yes
-lrc       .lrc              yes   yes
-microdvd  .sub              yes   yes
-mpsub     .mpsub            yes   yes
-sami      .smi .sami        yes   yes
-sbv       .sbv              yes   yes
-srt       .srt              yes   yes
-ttml      .ttml .dfxp .xml  yes   yes
-tsv       .tsv              yes   yes
-txt       .txt              no    yes
-mpl2      .txt              yes   yes
-tmplayer  .txt              yes   yes
-vtt       .vtt              yes   yes
+Name       Extensions        Read  Write
+ass        .ass .ssa         yes   yes
+csv        .csv              yes   yes
+json       .json             yes   yes
+lrc        .lrc              yes   yes
+microdvd   .sub              yes   yes
+mpsub      .mpsub            yes   yes
+sami       .smi .sami        yes   yes
+sbv        .sbv              yes   yes
+srt        .srt              yes   yes
+subviewer  .sub              yes   yes
+ttml       .ttml .dfxp .xml  yes   yes
+tsv        .tsv              yes   yes
+txt        .txt              no    yes
+mpl2       .txt              yes   yes
+tmplayer   .txt              yes   yes
+vtt        .vtt              yes   yes
 ```
 
-- **Shared extensions**: the first format in the list owns an extension, so `.sub` is MicroDVD and `.txt` is plain text. `--from` reads a file as another format. A `.sub` file with MPSub content is found by its content. Plain text has no reader, so `--from txt` fails with `The format txt can be written but not read.` Pass `--from mpl2` or `--from tmplayer`. `--to txt` writes plain text with the default options.
+- **Shared extensions**: the first format in the list owns an extension, so `.sub` is MicroDVD and `.txt` is plain text. `--from` reads a file as another format. A `.sub` file with MPSub or SubViewer content is found by its content. Plain text has no reader, so `--from txt` fails with `The format txt can be written but not read.` Pass `--from mpl2` or `--from tmplayer`. `--to txt` writes plain text with the default options.
 - **Hidden formats**: a format that can be neither read nor written has no row.
 
 ## JSON output

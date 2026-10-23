@@ -69,10 +69,16 @@ func detectTests() []detectTest {
 		{name: "SAMI after the XML prolog", content: "<?xml version=\"1.0\"?>\n<!-- made by hand -->\n<!DOCTYPE sami>\n<Sami>", want: stbox.SAMI},
 		{name: "MPSub with FORMAT first", content: "FORMAT=25\n\n0 50\nHello\n", want: stbox.MPSub},
 		{name: "MPSub with header comment", content: "TITLE=Bakery\nFORMAT=TIME   # seconds\n\n1 2\nHello\n", want: stbox.MPSub},
-		{name: "SubViewer 2 information", content: "[INFORMATION]\r\n[TITLE]Bakery\r\n[END INFORMATION]\r\n", later: "SubViewer"},
-		{name: "SubViewer 2 timing line", content: "00:00:01.50,00:00:04.00\nHello[br]world\n", later: "SubViewer"},
-		{name: "SubViewer 2 after [SUBTITLE]", content: "[SUBTITLE]\n[COLF]&HFFFFFF,[SIZE]18\n00:00:01.50,00:00:04.00\nHello\n", later: "SubViewer"},
-		{name: "SubViewer 1", content: "[TITLE]\nBakery\n[DELAY]\n0\n******** START SCRIPT ********\n[00:00:01]\nHello\n", later: "SubViewer"},
+		{name: "SubViewer 2 information", content: "[INFORMATION]\r\n[TITLE]Bakery\r\n[END INFORMATION]\r\n", want: stbox.SubViewer},
+		{name: "SubViewer 2 timing line", content: "00:00:01.50,00:00:04.00\nHello[br]world\n", want: stbox.SubViewer},
+		{name: "SubViewer 2 after [SUBTITLE]", content: "[SUBTITLE]\n[COLF]&HFFFFFF,[SIZE]18\n00:00:01.50,00:00:04.00\nHello\n", want: stbox.SubViewer},
+		{name: "SubViewer 1", content: "[TITLE]\nBakery\n[DELAY]\n0\n******** START SCRIPT ********\n[00:00:01]\nHello\n", want: stbox.SubViewer},
+		{name: "SubViewer 1 script line after the header", content: "[TITLE]Bakery\r\n******** START SCRIPT ********  \n[00:00:01]\nHello\n", want: stbox.SubViewer},
+		{name: "SubViewer 1 script line far down", content: "Hello\n\n\n******** START SCRIPT ********\n", want: stbox.SubViewer},
+		{name: "SubViewer 2 information with spaces", content: "[INFORMATION] \t\n[TITLE]Bakery\n", want: stbox.SubViewer},
+		{name: "SubViewer 2 timing line after bracket lines", content: "[TITLE]x\n[SUBTITLE]\n00:00:01.50,00:00:04.00\nHello\n", want: stbox.SubViewer},
+		{name: "SubViewer 2 timing line with spaces after it", content: "00:00:01.50,00:00:04.00 \t\nHello\n", want: stbox.SubViewer},
+		{name: "SubViewer script line next to LRC", content: "[00:01]Hello\n******** START SCRIPT ********\n", want: stbox.SubViewer},
 		{name: "LRC with ID tag", content: "[ti:Morning Train]\n[00:12.00]Hello\n", want: stbox.LRC},
 		{name: "LRC without fraction", content: "[00:12]Hello\n", want: stbox.LRC},
 		{name: "LRC next to MPL2", content: "[00:01.00]Hello\n[00:02.50]world\n", want: stbox.LRC},
@@ -234,7 +240,7 @@ type fixture struct {
 func fixtures(t *testing.T) []fixture {
 	t.Helper()
 
-	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "lrc": stbox.LRC, "microdvd": stbox.MicroDVD, "mpl2": stbox.MPL2, "mpsub": stbox.MPSub, "sami": stbox.SAMI, "sbv": stbox.SBV, "srt": stbox.SubRip, "tmplayer": stbox.TMPlayer, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
+	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "lrc": stbox.LRC, "microdvd": stbox.MicroDVD, "mpl2": stbox.MPL2, "mpsub": stbox.MPSub, "sami": stbox.SAMI, "sbv": stbox.SBV, "srt": stbox.SubRip, "subviewer": stbox.SubViewer, "tmplayer": stbox.TMPlayer, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
 	var list []fixture
 	for dir, f := range folders {
 		for _, sub := range []string{dir, dir + "/real"} {
@@ -434,12 +440,44 @@ func TestParseDetectsLRC(t *testing.T) {
 	}
 }
 
+// Ports the SubViewer detection of tests/FormatDetectorTest.php of subtitle-toolbox-php. The file has CR LF line ends
+// and the extension .sub, which FormatFromPath maps to MicroDVD, so the content decides.
+func TestParseDetectsSubViewer(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name, content string
+		want          []time.Duration
+	}{
+		{"SubViewer 2", "[INFORMATION]\r\n[TITLE]Harbour walk\r\n[END INFORMATION]\r\n[SUBTITLE]\r\n00:00:01.00,00:00:03.50\r\nThe boat leaves.\r\n", []time.Duration{time.Second, 3500 * time.Millisecond}},
+		{"SubViewer 1", "[TITLE]\r\nHarbour walk\r\n******** START SCRIPT ********\r\n[00:00:01]\r\nThe boat leaves.\r\n[00:00:03]\r\n", []time.Duration{time.Second, 3 * time.Second}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s, info, err := stbox.Parse(strings.NewReader(tt.content), stbox.ReadOptions{})
+			require.NoError(t, err)
+			assert.Equal(t, stbox.SubViewer, info.Format)
+			cue, _ := s.Cue(0)
+			assert.Equal(t, tt.want, []time.Duration{cue.Start, cue.End})
+
+			path := filepath.Join(t.TempDir(), "film.sub")
+			require.NoError(t, os.WriteFile(path, []byte(tt.content), 0o600))
+			loaded, loadInfo, err := stbox.Load(path, stbox.ReadOptions{})
+			require.NoError(t, err)
+			assert.Equal(t, stbox.SubViewer, loadInfo.Format)
+			assert.Equal(t, s.Cues(), loaded.Cues())
+		})
+	}
+}
+
 func FuzzDetect(f *testing.F) {
 	for _, tt := range detectTests() {
 		f.Add([]byte(tt.content))
 	}
 	root := testfiles.Root(f)
-	for _, dir := range []string{"ass", "json", "lrc", "lrc/real", "microdvd", "microdvd/real", "mpl2/real", "mpsub", "mpsub/real", "sami/real", "sbv", "srt", "tmplayer/real", "ttml/real", "forced", "vtt", "lenient"} {
+	for _, dir := range []string{"ass", "json", "lrc", "lrc/real", "microdvd", "microdvd/real", "mpl2/real", "mpsub", "mpsub/real", "sami/real", "sbv", "srt", "subviewer", "subviewer/real", "tmplayer/real", "ttml/real", "forced", "vtt", "lenient"} {
 		entries, err := os.ReadDir(filepath.Join(root, dir))
 		if err != nil {
 			f.Fatal(err)

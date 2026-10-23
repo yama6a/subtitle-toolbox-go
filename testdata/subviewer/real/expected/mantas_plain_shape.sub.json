@@ -1,0 +1,37 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "subviewer": {
+                "version": 2,
+                "header": []
+            }
+        },
+        "cues": [
+            {
+                "start": 137.4,
+                "end": 140.4,
+                "lines": [
+                    "The train to the harbour",
+                    "leaves from platform 2."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3740.5,
+                "end": 3742.5,
+                "lines": [
+                    "Mind the gap."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

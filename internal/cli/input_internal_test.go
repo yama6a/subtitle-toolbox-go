@@ -83,6 +83,8 @@ func TestFormatArgument(t *testing.T) {
 		{".lrc", stbox.LRC},
 		{"txt", stbox.PlainText},
 		{".TXT", stbox.PlainText},
+		{"subviewer", stbox.SubViewer},
+		{"SubViewer", stbox.SubViewer},
 	}
 	for _, tt := range tests {
 		t.Run(tt.in, func(t *testing.T) {
@@ -181,6 +183,23 @@ func TestADirectoryConvertsAnMPSubSubFileByItsContent(t *testing.T) {
 	film, info, err := stbox.Load(testfiles.Path(t, "mpsub/real/mplayer_doc_time.sub"), stbox.ReadOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, stbox.MPSub, info.Format)
+	var want bytes.Buffer
+	require.NoError(t, stbox.Write(&want, film, stbox.SubRip, stbox.WriteOptions{}))
+	assert.Equal(t, want.String(), readFile(t, dir, "out/film.srt"))
+}
+
+func TestADirectoryConvertsASubViewerSubFileByItsContent(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	copyFile(t, filepath.Join(dir, "trip.srt"), filepath.Join(dir, "in", "trip.srt"))
+	copyFile(t, testfiles.Path(t, "subviewer/real/subviewer1_delay.sub"), filepath.Join(dir, "in", "film.sub"))
+	assert.Equal(t,
+		result{Stdout: "in/film.sub -> out/film.srt\nin/trip.srt -> out/trip.srt\n2 files: 2 succeeded, 0 failed.\n"},
+		call{dir: dir}.run(t, "convert", "in", "--to", "srt", "--output-dir", "out"))
+	film, info, err := stbox.Load(testfiles.Path(t, "subviewer/real/subviewer1_delay.sub"), stbox.ReadOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, stbox.SubViewer, info.Format)
 	var want bytes.Buffer
 	require.NoError(t, stbox.Write(&want, film, stbox.SubRip, stbox.WriteOptions{}))
 	assert.Equal(t, want.String(), readFile(t, dir, "out/film.srt"))

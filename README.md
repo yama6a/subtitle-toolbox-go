@@ -71,6 +71,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [SAMI](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/dnacc/understanding-sami-1.0) | `stbox.SAMI` | `sami` | `.smi`, `.sami` | yes | yes | one language class per read |
 | [SBV](https://support.google.com/youtube/answer/2734698) | `stbox.SBV` | `sbv` | `.sbv` | yes | yes | YouTube Studio captions |
 | [SubRip](https://en.wikipedia.org/wiki/SubRip) | `stbox.SubRip` | `srt` | `.srt` | yes | yes | |
+| [SubViewer 1 and 2](https://man.archlinux.org/man/mplayer.1.en) | `stbox.SubViewer` | `subviewer` | `.sub` | yes | yes | old DivX releases, found by content |
 | [TTML, IMSC, DFXP](https://www.w3.org/TR/ttml2/) | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | yes | yes | also iTT |
 | [TSV](https://www.iana.org/assignments/media-types/text/tab-separated-values) | `stbox.TSV` | `tsv` | `.tsv` | yes | yes | not detected from the content |
 | [Plain text](docs/formats.md#plain-text) | `stbox.PlainText` | `txt` | `.txt` | no | yes | a transcript of the words, owns `.txt` |

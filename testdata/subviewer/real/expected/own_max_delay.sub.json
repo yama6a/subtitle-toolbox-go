@@ -1,0 +1,40 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Pool notes"
+        },
+        "comments": [],
+        "formatData": {
+            "subviewer": {
+                "version": 1,
+                "header": {
+                    "DELAY": "0"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 359999991.0,
+                "end": 359999994.0,
+                "lines": [
+                    "The pool opens at seven."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 359999996.0,
+                "end": 359999999.0,
+                "lines": [
+                    "The pool closes."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

@@ -1,0 +1,90 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Morning at the bakery",
+            "author": "Jane Doe"
+        },
+        "comments": [],
+        "formatData": {
+            "subviewer": {
+                "version": 2,
+                "header": {
+                    "SOURCE": "",
+                    "PRG": "",
+                    "FILEPATH": "",
+                    "DELAY": "0",
+                    "CD TRACK": "0",
+                    "COMMENT": "Times in centiseconds"
+                },
+                "style": "[COLF]&HFFFFFF,[STYLE]bd,[SIZE]18,[FONT]Arial"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.5,
+                "end": 4.0,
+                "lines": [
+                    "The bakery opens at six."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.25,
+                "end": 7.8,
+                "lines": [
+                    "First the dough rests",
+                    "for one hour."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 8.0,
+                "end": 11.35,
+                "lines": [
+                    "Flour &amp; water &lt;and&gt; a pinch of salt."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 12.1,
+                "end": 15.0,
+                "lines": [
+                    "The crème brûlée is ready at noon."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 62.05,
+                "end": 65.95,
+                "lines": [
+                    "Bread rolls",
+                    "cost 40 cents",
+                    "each."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3600.0,
+                "end": 3603.5,
+                "lines": [
+                    "See you tomorrow morning."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

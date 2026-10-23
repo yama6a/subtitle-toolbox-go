@@ -1,0 +1,47 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "phpWeather01"
+        },
+        "comments": [],
+        "formatData": {
+            "subviewer": {
+                "version": 2,
+                "header": {
+                    "SOURCE": "",
+                    "PRG": "",
+                    "FILEPATH": "",
+                    "DELAY": "0",
+                    "CD TRACK": "0",
+                    "COMMENT": ""
+                },
+                "style": "[COLF]&H000000,[STYLE]bd,[SIZE]25,[FONT]Arial"
+            }
+        },
+        "cues": [
+            {
+                "start": 137.44,
+                "end": 140.38,
+                "lines": [
+                    "Rain moves in from the west",
+                    "in the late afternoon."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3740.48,
+                "end": 3742.5,
+                "lines": [
+                    "Tomorrow stays dry."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

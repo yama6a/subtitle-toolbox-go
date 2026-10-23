@@ -17,6 +17,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/format/subviewer"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 )
 
@@ -111,6 +112,12 @@ func TestWriteOptionsValidate(t *testing.T) {
 			name:    "plain text paragraph gap -1 s",
 			opts:    stbox.WriteOptions{PlainText: plaintext.WriteOptions{ParagraphGap: new(-time.Second)}},
 			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "The paragraph gap must be 0 or more seconds, got -1."},
+		},
+		{name: "SubViewer 1", opts: stbox.WriteOptions{SubViewer: subviewer.WriteOptions{Version: subviewer.V1}}},
+		{
+			name:    "SubViewer version 3",
+			opts:    stbox.WriteOptions{SubViewer: subviewer.WriteOptions{Version: subviewer.Version(3)}},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.SubViewer.Version", Msg: "The SubViewer version must be 1 or 2, got 3."},
 		},
 	}
 	for _, tt := range tests {

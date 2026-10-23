@@ -19,6 +19,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/format/sbv"
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/format/subviewer"
 	"github.com/yama6a/subtitle-toolbox-go/format/tmplayer"
 	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
@@ -71,6 +72,9 @@ var (
 	_ writeFunc[plaintext.WriteOptions] = plaintext.Write
 	_ readFunc[csv.ReadOptions]         = csv.Read
 	_ writeFunc[csv.WriteOptions]       = csv.Write
+	_ readFunc[subviewer.ReadOptions]   = subviewer.Read
+	_ writeFunc[subviewer.WriteOptions] = subviewer.Write
+	_ detectFunc                        = subviewer.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -95,7 +99,7 @@ var registry = []formatFuncs{
 	{format: SAMI, read: readSAMI, write: writeSAMI},
 	{format: SBV, read: readSBV, write: writeSBV},
 	{format: SubRip, read: readSubRip, write: writeSubRip},
-	{format: SubViewer},
+	{format: SubViewer, read: readSubViewer, write: writeSubViewer},
 	{format: TTML, read: readTTML, write: writeTTML},
 	{format: TSV, read: readTSV, write: writeTSV},
 	{format: PlainText, write: writePlainText},
@@ -129,6 +133,7 @@ var (
 		{format: MicroDVD, match: microdvd.Detect},
 		{format: SubRip, match: srt.Detect},
 		{format: SBV, match: sbv.Detect},
+		{format: SubViewer, match: subviewer.Detect},
 		{format: LRC, match: lrc.Detect},
 		{format: MPL2, match: mpl2.Detect},
 		{format: TMPlayer, match: tmplayer.Detect},
@@ -295,6 +300,14 @@ func writeTSV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts Wr
 		opts.CSV.Delimiter = csv.Tab
 	}
 	return csv.Write(w, s, common, opts.CSV)
+}
+
+func readSubViewer(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return subviewer.Read(r, common, subviewer.ReadOptions{})
+}
+
+func writeSubViewer(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+	return subviewer.Write(w, s, common, opts.SubViewer)
 }
 
 func lookup(f Format) (formatFuncs, bool) {
