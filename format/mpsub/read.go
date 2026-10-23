@@ -1,7 +1,6 @@
 package mpsub
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -150,19 +149,15 @@ func (rd *reader) startCue(line string, number int) error {
 	}
 	c, err := rd.timingLine(line, number)
 	if err != nil {
-		var perr *model.ParseError
-		if !errors.As(err, &perr) {
-			return err
-		}
 		rd.skipping = true
-		return rd.st.Fail(perr, number, block, []string{line})
+		return rd.st.Fail(err, number, block, []string{line})
 	}
 	rd.open, rd.openLine, rd.openBlock, rd.openText = &c, number, block, line
 	return nil
 }
 
 // timingLine returns the cue of a timing line without text and moves the position to its end.
-func (rd *reader) timingLine(line string, number int) (model.Cue, error) {
+func (rd *reader) timingLine(line string, number int) (model.Cue, *model.ParseError) {
 	m := timingRegexp.FindStringSubmatch(line)
 	if m == nil {
 		return model.Cue{}, &model.ParseError{Line: number, Msg: `The line "` + line + `" is not a header, a comment or a timing line.`}
@@ -196,11 +191,12 @@ func (rd *reader) seconds(number string) float64 {
 
 // cueTime returns secs as a time rounded to whole milliseconds. It returns an error unless the result is below
 // 100000 hours in size. The caller passes the sum of the relative times, because that is the time of the cue.
-func cueTime(secs float64, line string, number int) (time.Duration, error) {
+func cueTime(secs float64, line string, number int) (time.Duration, *model.ParseError) {
 	if d, ok := timeOf(secs); ok {
 		return d, nil
 	}
-	return parsing.BoundedTime(timecode.MaxTime, line, number)
+	_, err := parsing.BoundedTime(timecode.MaxTime, line, number)
+	return 0, err.(*model.ParseError) //nolint:errorlint,forcetypeassert // BoundedTime fails with a *ParseError
 }
 
 // timeOf rounds secs to whole milliseconds. False means that the result is 100000 hours or more in size. The check

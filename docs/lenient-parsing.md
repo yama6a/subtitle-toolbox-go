@@ -186,7 +186,7 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 |:--- |:--- |:--- |
 | no `FORMAT` line before the first timing line | reads the times as seconds, without a warning | the same. `The file has no FORMAT line before line N. The parser read the times as seconds.` `Repaired`, once, with the line and the block of the first timing line |
 | a `FORMAT` value that is not `TIME` and has no leading digit | `The FORMAT value "V" is not known.` | keeps the unit before it. `Skipped` |
-| `FORMAT=0`, or a value that starts with 0 | `The frame rate "V" is not valid.` | keeps the unit before it. `Skipped` |
+| a value whose leading digits are all 0, such as `FORMAT=0`, `00` or `0.5` | `The frame rate "V" is not valid.` | keeps the unit before it. `Skipped` |
 | a line outside a cue that is no header, comment or timing line | `The line "L" is not a header, a comment or a timing line.` | skips the line and every line up to the next empty line. `Skipped` |
 | a negative duration | `The timing line "L" has a negative duration.` | skips up to the next empty line. `Skipped` |
 | a timing line without text lines | `The cue has no text lines.` | drops the cue. The position still moves to its end. `Skipped` |

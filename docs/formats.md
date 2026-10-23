@@ -652,7 +652,7 @@ Each line is trimmed first.
 - **Headers**: `TITLE` and `AUTHOR` set the metadata `title` and `author`, and an empty value deletes the key. Every other key with a non-empty value goes to the file format data `mpsub`, in file order. `FORMAT`, `TITLE` and `AUTHOR` are never stored.
 - **Negative wait**: allowed. The cue then overlaps the cue before it, and a start before 0 stays. A negative duration is an error.
 - **Rounding**: the reader keeps the running position in `float64` seconds and rounds only the cue times to whole milliseconds. So fractional frames do not drift.
-- **Time limit**: both times of a cue must be below 100000 hours after the rounding. The sum counts, not each number alone. The message quotes the whole timing line. A time of -100000 hours or less fails with the same message, because `time.Duration` cannot hold it.
+- **Time limit**: both times of a cue must be below 100000 hours after the rounding. The sum counts, not each number alone. The message quotes the whole timing line. A time of -100000 hours or less fails with the same message. The bound is the same in both directions, as in TTML and library JSON.
 - **Order**: the cues sort by start.
 - **Encoding**: invalid UTF-8 stays in the text. Lenient mode adds the decode warning of [encodings.md](encodings.md).
 
@@ -669,8 +669,9 @@ The header has one `KEY=value` line each, in this order:
 
 Then each cue with visible text writes an empty line, its timing line and its text lines.
 
+- **Header lines**: a CR or LF in the title, the author or a stored value becomes a space. A stored key that is not 1 or more ASCII capitals is not written. So the output always reads back.
 - **Seconds**: the wait is the start minus the end of the last written cue. The duration is the end minus the start. Both are whole milliseconds as PHP prints a float: `1`, `1.5`, `-1.5`, `0.456`. A negative time is 0 first.
-- **Frames**: `WriteOptions.MPSub.FrameRate` writes frame counts. A frame is the time in seconds times the frame rate, rounded half away from zero, and the wait and duration are differences of frames. So the rounding errors do not add up. 4 cues of 0.06 s at 25 fps write `0 2`, `0 1`, `0 2` and `0 1`.
+- **Frames**: `WriteOptions.MPSub.FrameRate` writes frame counts. A frame is the time in seconds times the frame rate, rounded to the nearest frame. The wait and duration are differences of frames, so the rounding errors do not add up. The writer computes in binary `float64`, as PHP 8.5 does, so a time on an exact half frame can round down: 64.82 s at 25 fps writes frame 1620, not 1621. 4 cues of 0.06 s at 25 fps write `0 2`, `0 1`, `0 2` and `0 1`.
 - **Time limit**: a frame stops at the largest frame whose time is below 100000 hours. At 25 fps that is `8999999999`, so every output reads back.
 - **Overlap**: cues `First` from 1 to 4 s and `Second` from 2.5 to 5 s write `1 3` and `-1.5 2.5`. The second reads back as 2.5 s to 5 s.
 - **Skipped cues**: a cue without visible text is not written and does not move the end of the last written cue.
@@ -678,7 +679,7 @@ Then each cue with visible text writes an empty line, its timing line and its te
 - **Frame input**: the reader does not store the `FORMAT` line. A file with `FORMAT=25` writes `FORMAT=TIME` and seconds, unless `FrameRate` is set.
 - **NOTE**: the default names this library. PHP writes a `NOTE` that names the PHP library.
 - **BOM**: yes by default.
-- **Lost on write**: all markup, `#` comments, empty header values and the frame unit of the input. Frame counts keep only one frame, 40 ms at 25 fps.
+- **Lost on write**: all markup, `#` comments, empty header values and the frame unit of the input. Frame counts round each time to the nearest frame, 40 ms at 25 fps. A header value with ` #` reads back without the comment, so `Part #2` reads as `Part`.
 
 ### Options
 

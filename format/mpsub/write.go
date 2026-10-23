@@ -19,7 +19,8 @@ const (
 )
 
 // Write writes s as MPSub. The header holds the title and the author, then the stored keys, then FORMAT and NOTE.
-// A cue without visible text is not written. The FORMAT line is TIME, or the frame rate of opts.
+// A stored key that is not ASCII capitals is not written, and a CR or LF in a header value becomes a space, so the
+// output always reads back. A cue without visible text is not written. The FORMAT line is TIME, or the frame rate of opts.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
 	if err := opts.Validate(); err != nil {
 		return err
@@ -59,8 +60,10 @@ func appendHeader(body []byte, s *model.Subtitle, fps float64) []byte {
 		switch key {
 		case "TITLE", "AUTHOR", "TYPE", "FORMAT", "NOTE":
 		default:
-			value, _ := data.String(key)
-			body = appendKey(body, key, value)
+			if isHeaderKey(key) {
+				value, _ := data.String(key)
+				body = appendKey(body, key, value)
+			}
 		}
 	}
 	format := "TIME"
@@ -75,11 +78,19 @@ func appendHeader(body []byte, s *model.Subtitle, fps float64) []byte {
 	return appendKey(body, "NOTE", note)
 }
 
+// appendKey writes a header line. A CR or LF in the value becomes a space, so that the line stays one line.
 func appendKey(body []byte, key, value string) []byte {
 	body = append(body, key...)
 	body = append(body, '=')
-	body = append(body, value...)
+	body = append(body, lineBreaks.Replace(value)...)
 	return append(body, '\n')
+}
+
+var lineBreaks = strings.NewReplacer("\r", " ", "\n", " ") //nolint:gochecknoglobals // a fixed replacer
+
+// isHeaderKey reports whether key is 1 or more ASCII capitals, the only keys that the reader reads as headers.
+func isHeaderKey(key string) bool {
+	return key != "" && strings.Trim(key, "ABCDEFGHIJKLMNOPQRSTUVWXYZ") == ""
 }
 
 // appendNumber appends the time from "from" to "to" as seconds, or as frames at fps frames per second. The frames

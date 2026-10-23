@@ -107,6 +107,11 @@ func TestWrite(t *testing.T) {
 			[]model.Cue{cue(time.Second, 4*time.Second, "A"), cue(2500*ms, 5*time.Second, "B")},
 			header2 + "\n25 75\nA\n\n-37 62\nB\n",
 		},
+		{
+			"an exact half frame can round down, as on PHP 8.5", 25,
+			[]model.Cue{cue(0, 64820*ms, "A")},
+			header2 + "\n0 1620\nA\n",
+		},
 		{"30 fps", 30, []model.Cue{cue(time.Second, 2*time.Second, "A")}, "TITLE=\nAUTHOR=\nTYPE=VIDEO\nFORMAT=30\n" + goNote + "\n30 30\nA\n"},
 	}
 	for _, tt := range tests {
@@ -154,6 +159,43 @@ func TestWriteHeader(t *testing.T) {
 		require.NoError(t, s.SetFormatData("mpsub", model.NewData(model.Field{Key: "TYPE", Value: ""}, model.Field{Key: "NOTE", Value: ""})))
 		assert.Equal(t, "TITLE=\nAUTHOR=\nTYPE=\nFORMAT=TIME\nNOTE=\n", writeBare(t, s))
 	})
+}
+
+func TestWriteHeaderAlwaysReadsBack(t *testing.T) {
+	t.Parallel()
+
+	s := subtitle(cue(0, time.Second, "x"))
+	s.SetMetadata(model.MetadataTitle, "A\nB")
+	s.SetMetadata(model.MetadataAuthor, "C\r\nD\rE")
+	require.NoError(t, s.SetFormatData("mpsub", model.NewData(
+		model.Field{Key: "NOTE", Value: "n1\nn2"},
+		model.Field{Key: "TYPE", Value: "\nVIDEO"},
+		model.Field{Key: "FILE", Value: "f\r1"},
+		model.Field{Key: "lower", Value: "x"},
+		model.Field{Key: "", Value: "x"},
+		model.Field{Key: "A1", Value: "x"},
+		model.Field{Key: "A=B", Value: "x"},
+		model.Field{Key: "A\nB", Value: "x"},
+		model.Field{Key: "\u00c4B", Value: "x"},
+		model.Field{Key: "OK", Value: "kept"},
+	)))
+	got := writeBare(t, s)
+	assert.Equal(t, "TITLE=A B\nAUTHOR=C  D E\nTYPE= VIDEO\nFILE=f 1\nOK=kept\nFORMAT=TIME\nNOTE=n1 n2\n\n0 1\nx\n", got)
+
+	back, warnings := mustRead(t, got, false)
+	assert.Empty(t, warnings)
+	assert.Equal(t, map[string]string{"title": "A B", "author": "C  D E"}, back.AllMetadata())
+	assert.Equal(t, map[string]any{"TYPE": "VIDEO", "FILE": "f 1", "OK": "kept", "NOTE": "n1 n2"}, fileData(back))
+}
+
+// A header value that holds a space and a # reads back without the comment, because the reader drops it.
+func TestWriteHeaderValueWithACommentIsLossy(t *testing.T) {
+	t.Parallel()
+
+	s := subtitle(cue(0, time.Second, "x"))
+	s.SetMetadata(model.MetadataTitle, "Part #2")
+	back, _ := mustRead(t, writeBare(t, s), false)
+	assert.Equal(t, map[string]string{"title": "Part"}, back.AllMetadata())
 }
 
 func TestWriteOutputOptions(t *testing.T) {
