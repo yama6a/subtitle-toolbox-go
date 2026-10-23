@@ -20,7 +20,6 @@ import (
 
 const (
 	arrow       = "-->"
-	phpTrimSet  = " \t\n\r\x00\v"
 	utf8BOM     = "\ufeff"
 	signature   = "WEBVTT"
 	noSignature = "The file does not start with WEBVTT."
@@ -122,7 +121,7 @@ func (r *Reader) trimLines(lines iter.Seq2[int, string]) iter.Seq2[int, string] 
 		if t.started {
 			r.tailEnd = t.held.n + 1
 			r.tailOpen = len(t.pending) > 0 && !slices.ContainsFunc(t.pending, func(l line) bool { return l.text == "" })
-			yield(t.held.n, strings.TrimRight(t.held.text, phpTrimSet))
+			yield(t.held.n, strings.TrimRight(t.held.text, markupcore.PHPTrimSet))
 		}
 	}
 }
@@ -142,7 +141,7 @@ func (t *trimmer) add(l line, yield func(int, string) bool) bool {
 		return true
 	}
 	if !t.started {
-		l.text = strings.TrimLeft(l.text, phpTrimSet)
+		l.text = strings.TrimLeft(l.text, markupcore.PHPTrimSet)
 	} else if !t.flush(yield) {
 		return false
 	}
@@ -744,7 +743,7 @@ func hasArrow(l string) bool {
 }
 
 func phpTrim(s string) string {
-	return strings.Trim(s, phpTrimSet)
+	return strings.Trim(s, markupcore.PHPTrimSet)
 }
 
 func trimBOMs(s string) string {

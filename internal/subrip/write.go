@@ -3,9 +3,9 @@ package subrip
 import (
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
@@ -13,35 +13,15 @@ import (
 func AppendCue(dst []byte, n int, c model.Cue, stripTags bool) []byte {
 	dst = strconv.AppendInt(dst, int64(n), 10)
 	dst = append(dst, '\n')
-	dst = appendTime(dst, c.Start)
+	dst = timecode.AppendClock(dst, c.Start, 2, ',')
 	dst = append(dst, " --> "...)
-	dst = appendTime(dst, c.End)
+	dst = timecode.AppendClock(dst, c.End, 2, ',')
 	dst = appendCoordinates(dst, c)
 	if text := cueLines(c, stripTags); text != "" {
 		dst = append(dst, '\n')
 		dst = append(dst, text...)
 	}
 	return append(dst, '\n')
-}
-
-// appendTime appends d as hh:mm:ss,mmm, with more hour digits from 100 hours. A negative time writes as 0.
-func appendTime(dst []byte, d time.Duration) []byte {
-	ms := max(d.Round(time.Millisecond).Milliseconds(), 0)
-	dst = appendPadded(dst, ms/int64(time.Hour/time.Millisecond), 2)
-	dst = append(dst, ':')
-	dst = appendPadded(dst, ms/int64(time.Minute/time.Millisecond)%60, 2)
-	dst = append(dst, ':')
-	dst = appendPadded(dst, ms/int64(time.Second/time.Millisecond)%60, 2)
-	dst = append(dst, ',')
-	return appendPadded(dst, ms%1000, 3)
-}
-
-func appendPadded(dst []byte, n int64, width int) []byte {
-	s := strconv.FormatInt(n, 10)
-	for range width - len(s) {
-		dst = append(dst, '0')
-	}
-	return append(dst, s...)
 }
 
 // appendCoordinates appends the coordinates of the srt format data, such as " X1:10 X2:20 Y1:30 Y2:40".
@@ -81,7 +61,7 @@ func cueLines(c model.Cue, stripTags bool) string {
 	// A line that holds only a tag becomes empty, and an empty line ends a SubRip cue.
 	var kept []string
 	for line := range strings.SplitSeq(text, "\n") {
-		if strings.Trim(line, phpTrimSet) != "" {
+		if strings.Trim(line, markupcore.PHPTrimSet) != "" {
 			kept = append(kept, line)
 		}
 	}
