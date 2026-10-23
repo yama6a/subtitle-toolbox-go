@@ -15,8 +15,8 @@ import (
 
 var spacesRegexp = regexp.MustCompile(`[ \t]+`)
 
-// Write writes the text of s as plain text paragraphs. A cue without text is skipped. Markup and entities are
-// resolved as in markupcore.PlainText, so the output always holds the words only. StripTags changes nothing.
+// Write writes the text of s as plain text paragraphs. A cue without text is skipped. Tags are removed and entities
+// are decoded as markup.PlainText does, so the output holds the words only. StripTags changes nothing.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
 	if err := opts.Validate(); err != nil {
 		return err

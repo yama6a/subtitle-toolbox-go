@@ -1,4 +1,5 @@
-// Package paragraphs groups timed items into paragraphs. The plain text writer and the transcript writer share it.
+// Package paragraphs groups timed items into paragraphs. The plain text writer uses it, and the HTML transcript
+// writer of issue #101 will use it too.
 package paragraphs
 
 import "time"
