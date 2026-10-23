@@ -108,7 +108,7 @@ func TestByGapStartsNew(t *testing.T) {
 	}, calls, "the hook runs for each item after the first, with the item before it")
 }
 
-func TestByGapStartsNewAddsToTheGap(t *testing.T) {
+func TestByGapHookAndGapBothStartParagraphs(t *testing.T) {
 	t.Parallel()
 
 	const s = time.Second
