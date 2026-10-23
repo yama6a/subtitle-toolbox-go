@@ -29,6 +29,7 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 		{"SAMI start 3 s before the limit", stbox.SAMI, "<SAMI><BODY><SYNC Start=359999997000><P>last</BODY></SAMI>"},
 		{"TMPlayer start at 99999:59:59", stbox.TMPlayer, "99999:59:59:last\n"},
 		{"TMPlayer start 3 s before the limit", stbox.TMPlayer, "99999:59:57:last\n"},
+		// MPL2 has no cue without an end, so this row ends just below the limit.
 		{"MPL2 end at the limit", stbox.MPL2, "[3599999990][3599999999]last\n"},
 	}
 	for _, in := range inputs {

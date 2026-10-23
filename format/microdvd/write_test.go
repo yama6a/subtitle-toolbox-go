@@ -295,6 +295,8 @@ func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
 		{"1 fps, 99999:59:59.400 stays", 1, limit - 600*ms, "{0}{359999999}x\n"},
 		{"1 fps, 99999:59:58.400 stays", 1, limit - 1600*ms, "{0}{359999998}x\n"},
 		{"0.5 fps, 99999:59:59.999 clamps", 0.5, limit - 1*ms, "{0}{179999999}x\n"},
+		{"25 fps, 100000:00:01 clamps", 25, limit + time.Second, "{0}{8999999999}x\n"},
+		{"1000000 fps, 100000 h clamps", 1e6, limit, "{0}{359999999999000}x\n"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

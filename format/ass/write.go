@@ -580,9 +580,10 @@ func karaokeDurations(tokens []string, c model.Cue) (leading int64, durations []
 	return times[0] - start, durations
 }
 
-// centiseconds rounds d to centiseconds, half away from zero.
+// centiseconds rounds d to centiseconds, half away from zero, up to the largest count below the time limit. The
+// reader adds each \k value to the start and checks the sum against the limit.
 func centiseconds(d time.Duration) int64 {
-	return int64(d.Round(centisecond) / centisecond)
+	return min(int64(d.Round(centisecond)/centisecond), timecode.Units(timecode.MaxTime, centisecond))
 }
 
 // clockText writes d as h:mm:ss.cc. A negative time writes as 0.

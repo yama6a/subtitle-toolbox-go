@@ -218,17 +218,7 @@ func readCue(st *parsing.State, l rawLine, fps float64) (model.Cue, error) {
 // reads them. The duration is checked against the limit after the rounding.
 func frameTime(digits string, fps float64, line int) (time.Duration, error) {
 	n, _ := strconv.ParseInt(digits, 10, 64)
-	return parsing.BoundedTime(timeOfFrame(float64(n), fps), "{"+digits+"}", line)
-}
-
-// timeOfFrame returns the time of frame n, rounded to whole milliseconds. It returns timecode.MaxTime for a time
-// at or beyond the limit. The seconds are checked before the conversion to a duration, which would overflow.
-func timeOfFrame(n, fps float64) time.Duration {
-	secs := n / fps
-	if secs < timecode.MaxTime.Seconds() {
-		return timecode.FromSeconds(secs)
-	}
-	return timecode.MaxTime
+	return parsing.BoundedTime(timecode.FromFrames(float64(n), fps), "{"+digits+"}", line)
 }
 
 // textLine is a kept | line of a cue: its text, its raw code prefix, the codes outside core markup and its style.

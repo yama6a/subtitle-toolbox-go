@@ -226,3 +226,65 @@ func TestUnits(t *testing.T) {
 		})
 	}
 }
+
+func TestFrames(t *testing.T) {
+	t.Parallel()
+
+	const limit = timecode.MaxTime
+	tests := []struct {
+		name string
+		in   time.Duration
+		fps  float64
+		want float64
+	}{
+		{"1 s at 25 fps", time.Second, 25, 25},
+		{"1.020 s at 25 fps rounds up", 1020 * time.Millisecond, 25, 26},
+		{"1.019 s at 25 fps rounds down", 1019 * time.Millisecond, 25, 25},
+		{"below 0", -time.Second, 25, 0},
+		{"99999:59:59.900 at 25 fps", limit - 100*time.Millisecond, 25, 8999999998},
+		{"99999:59:59.999 at 25 fps clamps", timecode.MaxValidTime, 25, 8999999999},
+		{"99999:59:59.995 at 25 fps clamps", limit - 5*time.Millisecond, 25, 8999999999},
+		{"99999:59:59.999 at 23.976 fps clamps", timecode.MaxValidTime, 23.976, 8631359999},
+		{"99999:59:59.999 at 1 fps clamps", timecode.MaxValidTime, 1, 359999999},
+		{"99999:59:59.999 at 0.5 fps clamps", timecode.MaxValidTime, 0.5, 179999999},
+		{"99999:59:59.999 at 0.001 fps clamps", timecode.MaxValidTime, 0.001, 359999},
+		{"the limit at 25 fps clamps", limit, 25, 8999999999},
+		{"100000:00:01 at 25 fps clamps", limit + time.Second, 25, 8999999999},
+		{"the limit at 1000 fps clamps", limit, 1000, 359999999999},
+		{"the limit at 1e6 fps clamps", limit, 1e6, 359999999999000},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := timecode.Frames(tt.in, tt.fps)
+			assert.InDelta(t, tt.want, got, 0)
+			assert.Less(t, timecode.FromFrames(got, tt.fps), timecode.MaxTime)
+		})
+	}
+}
+
+func TestFromFrames(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		n    float64
+		fps  float64
+		want time.Duration
+	}{
+		{"25 frames at 25 fps", 25, 25, time.Second},
+		{"1 frame at 24 fps rounds to the millisecond", 1, 24, 42 * time.Millisecond},
+		{"8999999999 frames at 25 fps", 8999999999, 25, 359999999960 * time.Millisecond},
+		{"9000000000 frames at 25 fps is the limit", 9000000000, 25, timecode.MaxTime},
+		{"beyond the limit", 1e300, 25, timecode.MaxTime},
+		{"rounds up to the limit", 359999999.9996, 1, timecode.MaxTime},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, timecode.FromFrames(tt.n, tt.fps))
+		})
+	}
+}

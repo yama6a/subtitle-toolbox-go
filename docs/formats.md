@@ -156,7 +156,7 @@ This block reads as one cue from 1.5 s to 4 s with the alignment `TopCenter`, th
 ### Write
 
 - **Layout**: the cue number from 1, the timing line, the text lines. One empty line between cues. The output ends with one LF.
-- **Times**: `hh:mm:ss,mmm`, more hour digits from 100 hours. A negative time writes as 0.
+- **Times**: `hh:mm:ss,mmm`, with 3 hour digits from 100 hours. A negative time writes as 0. A time of 1000 hours or more writes as `999:59:59,999`, because the reader takes at most 3 hour digits.
 - **Tags**: the writer keeps `<b>`, `<i>`, `<u>`, `<s>` and `<font>`. The 8 WebVTT color classes become `<font color>`, ruby becomes `base (text)`, and other tags and word timestamps go. `StripTags` drops every tag. Entities are decoded, so `&amp;` writes `&`.
 - **Alignment**: an alignment other than `BottomCenter` writes `{\anN}` before the first line.
 - **Empty lines**: a line that is blank after the tags go drops out, because an empty line ends a SubRip cue. A cue without text writes its number and timing line only.

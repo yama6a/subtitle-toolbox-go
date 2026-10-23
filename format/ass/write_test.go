@@ -596,3 +596,30 @@ func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
 		})
 	}
 }
+
+func TestKaraokeStaysBelowTheTimeLimit(t *testing.T) {
+	t.Parallel()
+
+	const limit = 100000 * time.Hour
+	tests := []struct {
+		name string
+		line string
+		text string
+	}{
+		{"timestamp .990", "a <99999:59:59.990>b", `{\k99}a {\k0}b`},
+		{"timestamp .995", "a <99999:59:59.995>b", `{\k99}a {\k0}b`},
+		{"timestamp .900", "a <99999:59:59.900>b", `{\k90}a {\k9}b`},
+		{"timestamp beyond the limit", "a <100000:00:05.000>b", `{\k99}a {\k0}b`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s := subtitle(t, cue(limit-time.Second, limit-1*ms, tt.line))
+			got := writeDefault(t, s)
+			assert.Contains(t, got, ",Default,,0,0,0,,"+tt.text+"\n")
+			_, _, err := read(t, got, false)
+			require.NoError(t, err)
+		})
+	}
+}
