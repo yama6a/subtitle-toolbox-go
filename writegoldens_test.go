@@ -50,6 +50,7 @@ func conversions() []conversion {
 		{"ass", "own_signs_crlf.ass", stbox.WebVTT, ""},
 		{"sbv", "youtube_studio_lf.sbv", stbox.SubRip, ""},
 		{"sbv", "youtube_studio_lf.sbv", stbox.WebVTT, ""},
+		{"sbv", "youtube_studio_lf.sbv", stbox.ASS, ""},
 		{"sami", "multi_language.smi", stbox.SubRip, "ENCC"},
 		{"sami", "multi_language.smi", stbox.WebVTT, "ENCC"},
 		{"sami", "multi_language.smi", stbox.ASS, "ENCC"},
