@@ -136,7 +136,7 @@ func (d *dualCommand) checkInputs(r *runner, inputs []string) error {
 	if len(inputs) != 1 {
 		return usage("--primary takes one file, got " + strconv.Itoa(len(inputs)) + ".")
 	}
-	return d.out.checkInputs(r, inputs, []string{inputs[0], d.secondary})
+	return d.out.checkInputs(r, inputs, []string{inputs[0], d.secondary}, nil)
 }
 
 func (*dualCommand) loadSideFiles(context.Context, *runner) error { return nil }

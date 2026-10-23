@@ -64,8 +64,15 @@ func (p *outputPlan) checkOutput() error {
 	return nil
 }
 
-// check plans every output before the first read. peek gives the input format for --output-dir without --to.
-func (p *outputPlan) check(inputs, readPaths []string, peek func(string) stbox.Format) error {
+// sideOutput is a file that a command writes besides the subtitles, such as the file of --mute-edl.
+type sideOutput struct {
+	option string
+	path   string
+}
+
+// check plans every output before the first read, the side outputs last. peek gives the input format for
+// --output-dir without --to.
+func (p *outputPlan) check(inputs, readPaths []string, side []sideOutput, peek func(string) stbox.Format) error {
 	if err := p.checkCount(inputs); err != nil {
 		return err
 	}
@@ -82,11 +89,28 @@ func (p *outputPlan) check(inputs, readPaths []string, peek func(string) stbox.F
 		if first, ok := writers[realPath]; ok {
 			return usage(first + " and " + in + " would both write " + target + ". Pass them in two runs.")
 		}
-		if err := p.checkNewFile(realPath, target); err != nil {
+		if err := p.checkNewFile(realPath, "The output "+target); err != nil {
 			return err
 		}
 		writers[realPath] = in
 		p.planned[in] = realPath
+	}
+	return p.checkSideOutputs(side, writers)
+}
+
+// checkSideOutputs checks the side outputs after the subtitle outputs. writers maps the real path of each planned
+// output to the input that writes it.
+func (p *outputPlan) checkSideOutputs(side []sideOutput, writers map[string]string) error {
+	for _, o := range side {
+		realPath := p.c.realTarget(o.path)
+		subject := "The --" + o.option + " file " + o.path
+		if first, ok := writers[realPath]; ok {
+			return usage(subject + " is also the output of " + first + ".")
+		}
+		if err := p.checkNewFile(realPath, subject); err != nil {
+			return err
+		}
+		writers[realPath] = "--" + o.option
 	}
 	return nil
 }
@@ -166,15 +190,16 @@ func (p *outputPlan) checkTarget(input, target string) error {
 			return usage("The output " + target + " is also the output of another input.")
 		}
 	}
-	return p.checkNewFile(realPath, target)
+	return p.checkNewFile(realPath, "The output "+target)
 }
 
-func (p *outputPlan) checkNewFile(realPath, target string) error {
+// checkNewFile checks a new output file. subject names it at the start of the message, such as "The output x.srt".
+func (p *outputPlan) checkNewFile(realPath, subject string) error {
 	if slices.Contains(p.readPaths, realPath) {
-		return usage("The output " + target + " is a file that the command reads. Pass another output file or directory.")
+		return usage(subject + " is a file that the command reads. Pass another output file or directory.")
 	}
 	if exists(realPath) {
-		return usage("The output " + target + " exists. The tool never overwrites a file. " +
+		return usage(subject + " exists. The tool never overwrites a file. " +
 			"Remove it, or pass another output file or directory.")
 	}
 	return nil

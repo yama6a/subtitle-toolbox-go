@@ -95,7 +95,7 @@ A `.txt` file in a directory is an input only when content detection finds a for
 | `--output-dir DIR` | `DIR/NAME` | stdout |
 
 - **Several inputs** need `--output-dir DIR`. Each output keeps the base name of its input. An extension that the output format does not own becomes the first extension of that format: `movie.en.srt` with `--to vtt` gives `out/movie.en.vtt`.
-- **Never overwrite**: every output is checked before the first read. An output that exists, also as a directory or a symbolic link, fails with exit 2, and so does an output that is a file the command reads, or the output of 2 inputs. The create is exclusive, so a file that appears during the run fails too.
+- **Never overwrite**: every output is checked before the first read, also the files of `--mute-edl` and `--mute-filter`. An output that exists, also as a directory or a symbolic link, fails with exit 2, and so does an output that is a file the command reads, or the output of 2 inputs. The create is exclusive, so a file that appears during the run fails too.
 - **Rollback**: when an output cannot be created or written, the run removes every file and directory that it created, also the outputs of earlier inputs, and exits 3.
 - **Extension rule**: the extension of `-o` never picks the format. `--to srt -o film.vtt` fails. Without `--to`, an `-o` extension of another writable format fails too, so SubRip never lands in a `.vtt` file by mistake. An extension of no format, such as `.bak`, always works.
 - **Interrupt**: Ctrl-C or SIGTERM stops the run before the next input. The finished outputs stay, because each is a complete file. A second Ctrl-C ends the process at once. An output that is being written then can stay incomplete, and the run removes nothing.
@@ -123,6 +123,7 @@ The edits run in this order, whatever the order of the flags. A group runs only 
 | 6 | `structure` | `--structure-*` | joins and splits change the cues, so the timing edits run after it |
 | 7 | `retime` | `--sync`, `--shift`, `--scale`, `--from-fps` with `--to-fps`, in this order | |
 | 8 | `timing` | `--timing-*` | |
+| 9 | `masking` | `--mask-words FILE`, `--mask`, `--mute-*` | the mute ranges of `--mute-edl` and `--mute-filter` need the final times |
 
 The `ass` group comes last in the help. It runs no edit: it sets how the ASS writer writes the output.
 
@@ -177,6 +178,24 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 
 - **Checks**: every option except `--sdh` needs `--sdh`: `Pass --sdh with --sdh-lyrics.` The options are checked in the order of the table. Then each PAIR in flag order: `The option --sdh-brackets needs two characters, an opening and a closing one, got "{".`
 - **Character**: one Unicode code point. A PAIR of invalid UTF-8 fails.
+
+### Masking
+
+`--mask-words FILE` runs `profanity.Apply` with the rules of [text.md](text.md#profanity-filter). `stbox convert movie.srt -o clean.srt --mask-words words.txt --mute-edl clean.edl` writes `What the ****?` and the time of each match for Kodi and MPlayer.
+
+| Option | Value | Default | Library |
+|:--- |:--- |:--- |:--- |
+| `--mask-words FILE` | a word file, turns the group on | | `Options.Words` |
+| `--mask STYLE` | `stars`, `first-letter`, `remove` or `none`, in any case | `stars` | `Options.Mask` |
+| `--mute-edl FILE` | a new file | none | `profanity.EDL` |
+| `--mute-filter FILE` | a new file | none | `profanity.FFmpegVolumeFilter` |
+| `--mute-padding SECONDS` | a time of 0 or more | 0 | `Options.Padding` |
+
+- **Checks**: every option except `--mask-words` needs it: `Pass --mask-words with --mute-edl.` Then `--mask`, then `-` as a mute file: `The option --mute-edl needs a file path.`, then `--mute-padding`.
+- **Word file**: one word per line. A leading UTF-8 BOM goes. CR LF, LF and CR end a line. Each line is trimmed, and empty lines go. The tool reads the file once, after the checks of the arguments. A missing file stops the run with exit 3: `Error: words.txt: The file does not exist.` An empty list or a bad word fails the option checks, so the run exits 2 with the help hint: `A profanity word must be a non-empty UTF-8 string with a * only at the end, got 'a*b'.`
+- **One input**: the mute files hold the ranges of one input. With 2 or more inputs, `--mute-edl` and `--mute-filter` fail: `--mute-edl and --mute-filter take one input file, got 2.`
+- **Mute files**: they join the output checks. Each must not exist, must not be a file that the command reads, such as the word file, and must differ from the subtitle output and from each other: `The --mute-filter file radio.mute is also the output of --mute-edl.`
+- **Write**: the mute files come after the subtitle output, each with its report line such as `radio.vtt -> radio.edl`. A file that is not empty ends with LF. Without a match both files are empty, 0 bytes.
 
 ### Sync points
 

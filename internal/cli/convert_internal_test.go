@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"errors"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/hearingimpaired"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/profanity"
 )
 
 // fixtureDir returns a new directory with the CLI fixtures and copies of the testdata files in files, which maps a
@@ -112,17 +114,20 @@ func TestConvertRunsTheGroupsInAFixedOrder(t *testing.T) {
 		func(s *stbox.Subtitle) error { return s.Scale(1.001) },
 		func(s *stbox.Subtitle) error { return s.FixOverlaps(100 * time.Millisecond) },
 		func(s *stbox.Subtitle) error { return s.ExtendShortCues(time.Second, 100*time.Millisecond) },
+		applyProfanity(profanity.Options{Words: []string{"tickets"}, Mask: profanity.MaskFirstLetter}, nil),
 	))
 	words := []string{
-		"--timing-min-duration", "1", "--timing-fix-overlaps", "--timing-min-gap", "0.1", "--scale", "1.001",
+		"--mask-words", "words.lst", "--mask", "first-letter", "--timing-min-duration", "1", "--timing-fix-overlaps", "--timing-min-gap", "0.1", "--scale", "1.001",
 		"--shift", "-0.5", "--structure-merge-duplicates", "--structure-wrap", "--structure-max-cpl", "20",
 		"--case", "upper", "--strip-tags", "--replace", "Too late=[late] too late", "--sdh", "--sdh-keep-parentheses",
 		"--language", "en", "--errors-fix",
 	}
 	dir := newDir(t)
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "words.lst"), []byte("tickets\n"), 0o600))
 	got := call{dir: dir}.run(t, append([]string{"convert", "trip.srt", "--to", "srt", "-o", "-"}, words...)...)
 	assert.Equal(t, result{Stdout: want}, got)
 	assert.Contains(t, got.Stdout, "\n(SIGHS) [LATE]\nTOO LATE.\n")
+	assert.Contains(t, got.Stdout, "\nWE NEED TWO T****** FOR\n")
 
 	reversed := []string{"convert", "trip.srt"}
 	for i := len(words) - 1; i >= 0; i-- {

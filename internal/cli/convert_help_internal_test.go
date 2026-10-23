@@ -64,6 +64,7 @@ Option groups, in the order that convert runs their edits:
   retime     Shift and scale the times, or change the frame rate.
   timing     Fix overlaps, short cues and long cues, and add lead-in and
              lead-out.
+  masking    Mask words and write the mute times for players.
   ass        Set how ASS output writes word timestamps and the Default style.
 
 Run "stbox convert --help GROUP" for the options of a group,
@@ -163,6 +164,19 @@ var convertGroupHelp = []string{
                                  --timing-min-duration and the lead options.
                                  Default: 0.
 `,
+	`masking: Mask words and write the mute times for players.
+  --mask-words FILE       Mask the words of this file, one per line. A * at the
+                          end matches any ending.
+  --mask STYLE            How --mask-words masks a word: stars, first-letter,
+                          remove, or none to keep the text. Default: stars.
+  --mute-edl FILE         Write the times of the --mask-words matches to this
+                          EDL (edit decision list) file. Kodi and MPlayer read
+                          it to mute the audio.
+  --mute-filter FILE      Write an FFmpeg volume filter that mutes the
+                          --mask-words matches to this file.
+  --mute-padding SECONDS  Widen each mute range by this time on both sides.
+                          Default: 0.
+`,
 	`ass: Set how ASS output writes word timestamps and the Default style.
   --ass-karaoke-tag TAG  ASS karaoke tag for word timestamps: k, kf or ko.
                          Default: k.
@@ -180,7 +194,7 @@ func TestConvertHelp(t *testing.T) {
 	all := result{Stdout: convertCommonHelp + "\n" + strings.Join(convertGroupHelp, "\n")}
 	unknown := func(topic string) result {
 		return usageResult("convert", "Unknown option group "+quote(topic)+
-			". The groups are forced, errors, sdh, replace, text, structure, retime, timing, ass, and all for every option.")
+			". The groups are forced, errors, sdh, replace, text, structure, retime, timing, masking, ass, and all for every option.")
 	}
 	tests := []struct {
 		name  string
