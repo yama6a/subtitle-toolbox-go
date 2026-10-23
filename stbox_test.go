@@ -7,11 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
@@ -89,6 +91,38 @@ func TestWriteUnsupportedFormat(t *testing.T) {
 			assert.Zero(t, out.Len())
 		})
 	}
+}
+
+func TestWritePlainText(t *testing.T) {
+	t.Parallel()
+
+	s := &stbox.Subtitle{}
+	s.AddCues(
+		stbox.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"<i>Hello</i>", "world."}},
+		stbox.Cue{Start: 2500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"Where are you going?"}},
+		stbox.Cue{Start: 6 * time.Second, End: 7 * time.Second, Lines: []string{"Home &amp; bed."}},
+	)
+	var out bytes.Buffer
+	require.NoError(t, stbox.Write(&out, s, stbox.PlainText, stbox.WriteOptions{}))
+	assert.Equal(t, "Hello world. Where are you going?\n\nHome & bed.\n", out.String())
+
+	out.Reset()
+	opts := stbox.WriteOptions{LineEnding: stbox.CRLF, PlainText: plaintext.WriteOptions{WithTimes: true, ParagraphGap: new(plaintext.NoParagraphBreaks)}}
+	require.NoError(t, stbox.Write(&out, s, stbox.PlainText, opts))
+	assert.Equal(t, "[00:00:01] Hello world. Where are you going? Home & bed.\r\n", out.String())
+
+	out.Reset()
+	err := stbox.Write(&out, s, stbox.PlainText, stbox.WriteOptions{PlainText: plaintext.WriteOptions{ParagraphGap: new(-time.Second)}})
+	require.ErrorIs(t, err, stbox.ErrInvalidArgument)
+	assert.Zero(t, out.Len())
+}
+
+func TestParsePlainTextIsUnsupported(t *testing.T) {
+	t.Parallel()
+
+	_, _, err := stbox.Parse(strings.NewReader("Hello\n"), stbox.ReadOptions{Format: stbox.PlainText})
+	require.ErrorIs(t, err, stbox.ErrUnsupportedFormat)
+	require.EqualError(t, err, "stbox: unsupported format: The format txt can be written but not read.")
 }
 
 func TestZeroOptionsAreValid(t *testing.T) {

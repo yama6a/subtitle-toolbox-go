@@ -16,7 +16,7 @@ import (
 )
 
 // TestCappedLastCueEndReadsBack reads a file whose last cue end the reader caps at 99999:59:59.999, writes it in
-// every format that has a writer, and reads that output.
+// every format that has a writer and a reader, and reads that output.
 func TestCappedLastCueEndReadsBack(t *testing.T) {
 	t.Parallel()
 
@@ -49,6 +49,9 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 
 			written := 0
 			for _, f := range stbox.Formats() {
+				if !f.CanRead() {
+					continue
+				}
 				var out bytes.Buffer
 				err := stbox.Write(&out, s, f, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 25}})
 				if errors.Is(err, stbox.ErrUnsupportedFormat) {

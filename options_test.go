@@ -16,6 +16,7 @@ import (
 	stbox "github.com/yama6a/subtitle-toolbox-go"
 	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 )
 
@@ -104,6 +105,12 @@ func TestWriteOptionsValidate(t *testing.T) {
 			name:    "MPSub frame rate 29.97",
 			opts:    stbox.WriteOptions{MPSub: mpsub.WriteOptions{FrameRate: 29.97}},
 			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.MPSub.FrameRate", Msg: "The MPSub frame rate must be a positive integer, got 29.97."},
+		},
+		{name: "plain text paragraph gap 0", opts: stbox.WriteOptions{PlainText: plaintext.WriteOptions{ParagraphGap: new(time.Duration(0))}}},
+		{
+			name:    "plain text paragraph gap -1 s",
+			opts:    stbox.WriteOptions{PlainText: plaintext.WriteOptions{ParagraphGap: new(-time.Second)}},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "The paragraph gap must be 0 or more seconds, got -1."},
 		},
 	}
 	for _, tt := range tests {

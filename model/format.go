@@ -49,7 +49,7 @@ var formatFacts = []formatFact{
 	{format: SubViewer, extensions: []string{"sub"}},
 	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TSV, extensions: []string{"tsv"}},
-	{format: PlainText, extensions: []string{"txt"}, autoDetected: true},
+	{format: PlainText, extensions: []string{"txt"}, canWrite: true, autoDetected: true},
 	{format: MPL2, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TMPlayer, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: QuickTimeText, extensions: []string{"txt"}},

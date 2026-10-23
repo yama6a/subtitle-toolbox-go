@@ -45,6 +45,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 		"sbv       .sbv              yes   yes",
 		"srt       .srt              yes   yes",
 		"ttml      .ttml .dfxp .xml  yes   yes",
+		"txt       .txt              no    yes",
 		"mpl2      .txt              yes   yes",
 		"tmplayer  .txt              yes   yes",
 		"vtt       .vtt              yes   yes",
@@ -76,7 +77,7 @@ func TestFormatsListsTheRegistry(t *testing.T) {
 	assert.Equal(t, result{Stdout: table(rows, 0, 2)}, got)
 	assert.Regexp(t, `\AName +Extensions +Read  Write\n`, got.Stdout)
 	assert.Regexp(t, `(?m)^srt +\.srt +yes   yes$`, got.Stdout)
-	assert.NotContains(t, got.Stdout, "\ntxt ")
+	assert.Regexp(t, `(?m)^txt +\.txt +no    yes$`, got.Stdout)
 }
 
 func TestFormatsUsageErrors(t *testing.T) {

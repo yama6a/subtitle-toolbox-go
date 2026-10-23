@@ -8,6 +8,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
@@ -49,6 +50,9 @@ type WriteOptions struct {
 	MicroDVD microdvd.WriteOptions
 	// MPSub holds the settings of the MPSub writer. The zero value writes seconds and FORMAT=TIME.
 	MPSub mpsub.WriteOptions
+	// PlainText holds the settings of the plain text writer. The zero value joins the lines of a cue and the cues
+	// of a paragraph with a space, starts a paragraph at a gap of 2 s and writes no times.
+	PlainText plaintext.WriteOptions
 }
 
 // ReadInfo holds the facts of a read that are not subtitle content.
@@ -105,7 +109,10 @@ func (o WriteOptions) Validate() error {
 	if err := o.MicroDVD.Validate(); err != nil {
 		return err
 	}
-	return o.MPSub.Validate()
+	if err := o.MPSub.Validate(); err != nil {
+		return err
+	}
+	return o.PlainText.Validate()
 }
 
 func (o ReadOptions) common() model.CommonReadOptions {
