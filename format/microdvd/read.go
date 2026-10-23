@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/blocks"
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
@@ -107,7 +106,7 @@ func readCues(st *parsing.State, lines []rawLine, fps float64) ([]model.Cue, err
 
 func nonEmptyLines(content string) []rawLine {
 	var out []rawLine
-	for n, line := range blocks.Lines(content) {
+	for n, line := range parsing.Lines(content) {
 		if line = strings.Trim(line, markupcore.PHPTrimSet); line != "" {
 			out = append(out, rawLine{number: n + 1, block: len(out), text: line})
 		}
