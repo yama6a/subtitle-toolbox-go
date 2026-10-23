@@ -116,9 +116,9 @@ func TestWriteCues(t *testing.T) {
 			want: bom + "1\n00:00:01,000 --> 00:00:04,000 X1:10 X2:20 Y1:30 Y2:40\nText\n",
 		},
 		{
-			name: "more than 99 hours",
-			cues: []model.Cue{cue(100*time.Hour, 1000*time.Hour+time.Millisecond, "Late")},
-			want: bom + "1\n100:00:00,000 --> 1000:00:00,001\nLate\n",
+			name: "more than 99 hours and fewer than 1000",
+			cues: []model.Cue{cue(100*time.Hour, 999*time.Hour+time.Millisecond, "Late")},
+			want: bom + "1\n100:00:00,000 --> 999:00:00,001\nLate\n",
 		},
 		{
 			name: "ruby as text, color classes as font tags, voices and timestamps go",
@@ -260,4 +260,31 @@ func TestWriteThenReadKeepsTheCues(t *testing.T) {
 	back, _ := mustRead(t, out.String(), false)
 	assert.Equal(t, cueRows(s), cueRows(back))
 	assert.Equal(t, model.TopLeft, firstCue(t, back).Alignment)
+}
+
+func TestWriteStaysAtTheLargestTimeThatTheReaderReads(t *testing.T) {
+	t.Parallel()
+
+	const hour = time.Hour
+	tests := []struct {
+		name       string
+		start, end time.Duration
+		want       string
+	}{
+		{"999:59:59.999 stays", 0, 1000*hour - time.Millisecond, "00:00:00,000 --> 999:59:59,999\n"},
+		{"1000:00:00.000 clamps", 0, 1000 * hour, "00:00:00,000 --> 999:59:59,999\n"},
+		{"99999:59:59.999 clamps", 0, 100000*hour - time.Millisecond, "00:00:00,000 --> 999:59:59,999\n"},
+		{"a start and an end that clamp", 5000 * hour, 5001 * hour, "999:59:59,999 --> 999:59:59,999\n"},
+		{"998:00:00.500 stays", 0, 998*hour + 500*time.Millisecond, "00:00:00,000 --> 998:00:00,500\n"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := write(t, subtitle(t, model.Cue{Start: tt.start, End: tt.end, Lines: []string{"x"}}), model.CommonWriteOptions{})
+			assert.Contains(t, got, tt.want)
+			_, _, err := read(t, got, false)
+			require.NoError(t, err)
+		})
+	}
 }

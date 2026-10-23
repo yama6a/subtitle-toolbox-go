@@ -53,9 +53,6 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 				}
 				require.NoError(t, err, f)
 				written++
-				if f == stbox.SubRip {
-					continue // the SubRip reader takes at most 3 hour digits
-				}
 
 				text := out.String()
 				back, _, err := stbox.Parse(&out, stbox.ReadOptions{Format: f, MicroDVD: microdvd.ReadOptions{FrameRate: 25}})
@@ -63,7 +60,9 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 				require.Equal(t, 1, back.Len(), f)
 				c, _ := back.Cue(0)
 				assert.Less(t, c.End, timecode.MaxTime, f)
-				assert.GreaterOrEqual(t, c.End, timecode.MaxValidTime-time.Second, f)
+				if f != stbox.SubRip {
+					assert.GreaterOrEqual(t, c.End, timecode.MaxValidTime-time.Second, f)
+				}
 			}
 			assert.Positive(t, written)
 		})
