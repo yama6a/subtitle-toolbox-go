@@ -29,7 +29,7 @@ func Parse(r io.Reader, opts ParseOptions) (*Node, error) {
 	}
 	p := &parser{opts: opts, doc: &Node{Kind: DocumentNode}}
 	src = lfLineEnds(src)
-	p.breaks = spaceAttributeValues(src)
+	p.breaks, p.directives = spaceAttributeValues(src)
 	p.src = src
 	p.dec = xml.NewDecoder(bytes.NewReader(src))
 	p.dec.Strict = true
@@ -49,9 +49,11 @@ type parser struct {
 	dec        *xml.Decoder
 	// breaks holds the offsets of the LFs in attribute values that spaceAttributeValues turned into spaces.
 	breaks []int
-	doc    *Node
-	cur    *Node
-	root   *Node
+	// directives holds the declarations whose processing instructions spaceAttributeValues changed, in file order.
+	directives []directive
+	doc        *Node
+	cur        *Node
+	root       *Node
 }
 
 // errStop ends a recover parse early, at a point where libxml stops reading.
@@ -102,9 +104,19 @@ func (p *parser) add(tok xml.Token) error {
 			p.append(&Node{Kind: ProcInstNode, Name: xml.Name{Local: t.Target}, Data: string(t.Inst)})
 		}
 	case xml.Directive:
-		p.append(&Node{Kind: DirectiveNode, Data: string(t)})
+		p.append(&Node{Kind: DirectiveNode, Data: p.directiveText(t)})
 	}
 	return nil
+}
+
+// directiveText returns the text of a directive with the bytes that spaceProcessingInstructions changed.
+func (p *parser) directiveText(t xml.Directive) string {
+	if len(p.directives) == 0 || p.directives[0].changed != string(t) {
+		return string(t)
+	}
+	text := p.directives[0].original
+	p.directives = p.directives[1:]
+	return text
 }
 
 func (p *parser) append(n *Node) {
@@ -141,9 +153,11 @@ func (p *parser) line() int {
 // spaceAttributeValues turns each literal TAB and LF in the attribute values of the tags into a space, as XML 1.0
 // section 3.3.3 says, and returns the offsets of the LFs. It runs before encoding/xml decodes the references, so a
 // TAB or LF of a reference such as &#10; stays, as in libxml2. Comments, CDATA sections, processing instructions
-// and the DOCTYPE keep their content. It changes src in place.
-func spaceAttributeValues(src []byte) []int {
+// and the DOCTYPE keep their content, except the processing instructions of a DOCTYPE subset, see
+// spaceProcessingInstructions. It changes src in place.
+func spaceAttributeValues(src []byte) ([]int, []directive) {
 	var breaks []int
+	var directives []directive
 	for i := 0; i < len(src); i++ {
 		if src[i] != '<' {
 			continue
@@ -157,46 +171,24 @@ func spaceAttributeValues(src []byte) []int {
 		case bytes.HasPrefix(rest, []byte("<?")):
 			i += skipPast(rest, "<?", "?>")
 		case bytes.HasPrefix(rest, []byte("<!")):
-			i += skipDeclaration(rest)
+			n, d, changed := spaceProcessingInstructions(rest)
+			if changed {
+				directives = append(directives, d)
+			}
+			i += n
 		default:
 			i += spaceTag(rest, i, &breaks)
 		}
 	}
-	return breaks
+	return breaks, directives
 }
 
+// skipPast returns the offset of the last byte of the first end after start, or of the last byte of s.
 func skipPast(s []byte, start, end string) int {
 	if j := bytes.Index(s[len(start):], []byte(end)); j >= 0 {
 		return len(start) + j + len(end) - 1
 	}
-	return len(s)
-}
-
-// skipDeclaration returns the length of a declaration such as <!DOCTYPE ...>, whose internal subset in [ and ] and
-// whose quoted strings can hold >. A comment of the subset can hold quotes and brackets, as encoding/xml reads it.
-func skipDeclaration(s []byte) int {
-	depth := 0
-	var quote byte
-	for j := 0; j < len(s); j++ {
-		c := s[j]
-		switch {
-		case quote != 0:
-			if c == quote {
-				quote = 0
-			}
-		case bytes.HasPrefix(s[j:], []byte("<!--")):
-			j += skipPast(s[j:], "<!--", "-->")
-		case c == '"', c == '\'':
-			quote = c
-		case c == '[':
-			depth++
-		case c == ']':
-			depth--
-		case c == '>' && depth <= 0:
-			return j
-		}
-	}
-	return len(s)
+	return len(s) - 1
 }
 
 func spaceTag(s []byte, at int, breaks *[]int) int {
