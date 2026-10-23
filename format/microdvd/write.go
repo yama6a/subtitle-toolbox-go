@@ -23,7 +23,7 @@ type storedLine struct {
 	style             style
 }
 
-// Write writes s as MicroDVD.
+// Write writes s as MicroDVD. A line break inside a line becomes |, and a | in the text becomes U+00A6 BROKEN BAR.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
 	if err := opts.Validate(); err != nil {
 		return err
@@ -90,7 +90,7 @@ func writeText(c model.Cue, stripTags bool) string {
 			texts[i] = line.style.codes() + other + line.text
 		}
 	}
-	return strings.Join(texts, "|")
+	return writing.PipeText(texts)
 }
 
 // writtenLines returns the lines with ruby as text. A tag open across lines wraps each line, and a <v> tag does
@@ -101,10 +101,20 @@ func writtenLines(lines []string) []writtenLine {
 		carried[i] = markupcore.RubyAsText(line)
 	}
 	carried = markupcore.CarryOpenTags(carried)
-	out := make([]writtenLine, len(carried))
-	for i, line := range carried {
+	out := make([]writtenLine, 0, len(carried))
+	for _, line := range carried {
 		closed := line + markupcore.CloseCoreTags(markupcore.OpenCoreTags(line, nil))
-		out[i] = readLine(markupcore.KeepTags(closed, "b", "i", "u", "s", "font"))
+		written := readLine(markupcore.KeepTags(closed, "b", "i", "u", "s", "font"))
+		if !strings.Contains(written.text, "\n") {
+			out = append(out, written)
+			continue
+		}
+		// An entity such as &#10; decodes to a line break inside the line.
+		for text := range strings.SplitSeq(written.text, "\n") {
+			if text = strings.Trim(text, markupcore.PHPTrimSet); text != "" {
+				out = append(out, writtenLine{style: written.style, text: text})
+			}
+		}
 	}
 	return out
 }

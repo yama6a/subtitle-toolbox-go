@@ -1,10 +1,11 @@
-// Package writing applies the line ending and the BOM rule that every text writer shares.
+// Package writing holds the rules that text writers share: the line ending, the BOM rule and the cue text rules.
 package writing
 
 import (
 	"bytes"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -42,6 +43,20 @@ func Write(w io.Writer, f model.Format, body []byte, common model.CommonWriteOpt
 		return fmt.Errorf("write %s: %w", f, err)
 	}
 	return nil
+}
+
+// WordJoiner is U+2060 WORD JOINER. A writer puts it into cue text that its reader would read as structure, such as a
+// text line in the shape of a timing line. It has no width, so the text looks the same.
+const WordJoiner = "\u2060"
+
+// PipeText joins lines with |, the line break of MicroDVD, MPL2, TMPlayer and SubViewer 1. These formats have no
+// escape for |, so a | in a line becomes U+00A6 BROKEN BAR.
+func PipeText(lines []string) string {
+	parts := make([]string, len(lines))
+	for i, line := range lines {
+		parts[i] = strings.ReplaceAll(line, "|", "\u00a6")
+	}
+	return strings.Join(parts, "|")
 }
 
 func toCRLF(body []byte) []byte {

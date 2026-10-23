@@ -83,6 +83,11 @@ func (rd *reader) isTimingLine(line string) bool {
 	return timingLineRegexp.MatchString(line) || rd.st.Lenient() && looseTimingLineRegexp.MatchString(line)
 }
 
+// isTimingLineInEitherMode reports whether strict or lenient mode reads line as a timing line.
+func isTimingLineInEitherMode(line string) bool {
+	return timingLineRegexp.MatchString(line) || looseTimingLineRegexp.MatchString(line)
+}
+
 // parseBlock returns the cues of block b, number index, split before each timing line. Lenient mode skips a
 // part that fails, and warns for each split and each skip.
 func (rd *reader) parseBlock(b blocks.Block, index int) ([]model.Cue, error) {

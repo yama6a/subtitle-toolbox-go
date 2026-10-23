@@ -2,7 +2,6 @@ package sbv
 
 import (
 	"io"
-	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
@@ -10,7 +9,8 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
-// Write writes s as SBV. It skips a cue without text, because an empty line would end the SBV cue.
+// Write writes s as SBV. It skips a cue without text, because an empty line would end the SBV cue. A text line that
+// the reader would read as a timing line starts with U+2060 WORD JOINER.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
 	var body []byte
 	first := true
@@ -27,8 +27,13 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 		body = append(body, ',')
 		body = timecode.AppendClock(body, c.End, 1, '.')
 		body = append(body, '\n')
-		body = append(body, strings.Join(lines, "\n")...)
-		body = append(body, '\n')
+		for _, line := range lines {
+			if isTimingLineInEitherMode(line) {
+				body = append(body, writing.WordJoiner...)
+			}
+			body = append(body, line...)
+			body = append(body, '\n')
+		}
 	}
 	return writing.Write(w, model.SBV, body, common, false)
 }

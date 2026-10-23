@@ -33,12 +33,15 @@ func VisibleLength(text string) int {
 	return grapheme.Count(VisibleText(text))
 }
 
-// PlainLines writes ruby as text, then returns the visible text of each line without the empty ones.
+// PlainLines writes ruby as text, then returns the visible text of each line, split at its line breaks, without the
+// empty ones.
 func PlainLines(lines []string) []string {
 	var out []string
 	for _, line := range lines {
-		if v := VisibleText(RubyAsText(line)); v != "" {
-			out = append(out, v)
+		for part := range strings.SplitSeq(NormalizeLineEnds(PlainText(RubyAsText(line))), "\n") {
+			if v := strings.Trim(part, PHPTrimSet); v != "" {
+				out = append(out, v)
+			}
 		}
 	}
 	return out

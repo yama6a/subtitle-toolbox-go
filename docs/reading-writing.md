@@ -100,6 +100,27 @@ A writer builds the whole output with LF line endings in memory. [internal/writi
 - **Negative times**: every writer except library JSON writes a negative time as 0. Library JSON writes it as it is.
 - **No save function**: a caller opens the file and calls `Write`. The format comes from the caller, never from the file extension.
 
+### Cue text that reads as structure
+
+A writer changes cue text that its reader would read as structure, such as a line break, a new cue or a header line. A read of the output gives the same cues and the closest text that the format holds. Text without such a marker stays byte for byte.
+
+| Text in a cue line | Writers | Written as |
+|:--- |:--- |:--- |
+| a line break | MicroDVD, MPL2, MPSub, SBV, SubRip, SubViewer, TMPlayer, WebVTT, CSV and TSV | a line break of the format, such as `\|` or `[br]` |
+| a line break | SAMI | `<br>` |
+| a line break | LRC | a space, because an LRC cue is one line |
+| `\|`, such as `Rock \| Pop` | MicroDVD, MPL2, TMPlayer, SubViewer 1 | U+00A6 BROKEN BAR |
+| `[br]` | SubViewer 2 | `[br]` with U+2060 WORD JOINER after the `[` |
+| a line that the reader reads as a timing line, such as `00:00:03,500 --> 00:00:03,800` or `10:30 -> 11:00` | SubRip | U+2060 WORD JOINER, then the line |
+| a line that the reader reads as a timing line, such as `0:00:03.500,0:00:03.800` or `0:00:03.5,x` | SBV | U+2060 WORD JOINER, then the line |
+| a line that the reader reads as a time line, such as `[00:00:03]` | SubViewer 1 | U+2060 WORD JOINER, then the line |
+| a line that the reader reads as a timing line, such as `x,00:00:03.80`, a style line such as `[COLF]&HFFFFFF`, or the script line `******** START SCRIPT ********` | SubViewer 2 | U+2060 WORD JOINER before each field in the shape of a time, else before the line |
+
+- **Entities**: a writer without markup decodes the entities, so `&#10;` is a line break there too. SAMI and the other writers with markup write the entity as it is.
+- **Why the word joiner**: these formats have no escape. U+2060 has no width, so the line shows the same, and no reader takes a line that starts with it as structure. A visible change such as `-->` to `->` would not help, because lenient SubRip reads `->` as an arrow too.
+- **Why the broken bar**: `|` is a single character, so no zero-width character can split it. U+00A6 is the character that looks closest.
+- **Markup look-alikes**: this rule does not change text that reads back as markup, such as `<i>` in SubRip, `{y:i}` in MicroDVD, `/` at the start of an MPL2 line and `{\i1}` in ASS.
+
 ## Format packages called directly
 
 A format package such as `format/srt` runs the text pre-pass in its `Read` and the output rules in its `Write`. So on UTF-8 input, `srt.Read` and `srt.Write` give the same result as `stbox.Parse` and `stbox.Write`. Only the root package decodes other encodings and detects the format.

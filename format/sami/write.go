@@ -34,7 +34,7 @@ type writer struct {
 	stripTags bool
 }
 
-// Write writes s as SAMI with one language class.
+// Write writes s as SAMI with one language class. A line break inside a line becomes <br>.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
 	file, _ := s.FormatData(formatDataKey)
 	language, hasLanguage := s.Metadata(model.MetadataLanguage)
@@ -146,7 +146,7 @@ func (wr writer) paragraphs(c model.Cue) string {
 		} else {
 			line = markupcore.KeepTags(markupcore.WebVTTColorsToFont(line), "b", "i", "u", "s", "font")
 		}
-		lines[i] = writeNbsp(line)
+		lines[i] = writeNbsp(strings.ReplaceAll(line, "\n", "<br>"))
 	}
 	if len(lines) == 0 {
 		return wr.openParagraph(nil) + "&nbsp;"

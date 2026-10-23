@@ -14,7 +14,8 @@ import (
 
 var italicTagRegexp = regexp.MustCompile(`<(/?)[iI]>`)
 
-// Write writes s as MPL2. It writes every cue, also one without text.
+// Write writes s as MPL2. It writes every cue, also one without text. A line break inside a line becomes |, and a |
+// in the text becomes U+00A6 BROKEN BAR.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
 	var body []byte
 	for _, c := range s.All() {
@@ -23,7 +24,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 		body = append(body, "]["...)
 		body = strconv.AppendInt(body, timecode.Units(c.End, tenth), 10)
 		body = append(body, ']')
-		body = append(body, strings.Join(italicLines(c.Lines), "|")...)
+		body = append(body, writing.PipeText(italicLines(c.Lines))...)
 		body = append(body, '\n')
 	}
 	return writing.Write(w, model.MPL2, body, common, false)
@@ -45,14 +46,12 @@ func italicLines(lines []string) []string {
 		}
 		allItalic = allItalic && (italic || !hasVisibleText(line[pos:]))
 
-		text := markupcore.VisibleText(line)
-		if text == "" {
-			continue
+		for _, text := range markupcore.PlainLines([]string{line}) {
+			if allItalic {
+				text = "/" + text
+			}
+			out = append(out, text)
 		}
-		if allItalic {
-			text = "/" + text
-		}
-		out = append(out, text)
 	}
 	return out
 }

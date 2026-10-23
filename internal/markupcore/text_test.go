@@ -110,6 +110,8 @@ func TestPlainLines(t *testing.T) {
 		{"no lines", nil, nil},
 		{"quote in a voice tag", []string{"<v O'Neil>We're out.", "<i></i>"}, []string{"We're out."}},
 		{"ruby", []string{"<ruby>K<rt>kan</rt></ruby> end"}, []string{"K (kan) end"}},
+		{"line breaks", []string{"<i>a\n b</i>", "c\r\nd", "e&#10;f&NewLine;"}, []string{"a", "b", "c", "d", "e", "f"}},
+		{"entity of an entity", []string{"&amp;amp;"}, []string{"&amp;"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

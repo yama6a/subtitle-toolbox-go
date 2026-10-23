@@ -25,7 +25,8 @@ const centisecond = 10 * time.Millisecond
 const maxTime = 1000*time.Minute - centisecond
 
 // Write writes s as LRC. It writes the ID tags, then one line per cue in start order with centisecond times,
-// and a time tag without text at the end of a cue with the cue data endLine. The BOM is on by default.
+// and a time tag without text at the end of a cue with the cue data endLine. The BOM is on by default. A line break
+// inside a line becomes a space.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
 	file, _ := s.FormatData(formatDataKey)
 	spaced, _ := file.Bool("spacedWordTimes")
@@ -113,13 +114,20 @@ func splitAtWordTimestamps(text string) (parts []string, times []time.Duration) 
 	copied := 0
 	for _, loc := range wordTimestampRegexp.FindAllStringIndex(text, -1) {
 		if d, ok := markupcore.WordTimestamp(text[loc[0]:loc[1]]); ok {
-			parts = append(parts, markupcore.PlainText(text[copied:loc[0]]))
+			parts = append(parts, plainText(text[copied:loc[0]]))
 			times = append(times, d)
 			copied = loc[1]
 		}
 	}
-	return append(parts, markupcore.PlainText(text[copied:])), times
+	return append(parts, plainText(text[copied:])), times
 }
+
+// plainText returns the plain text of part with each line break as a space, because an LRC cue is one line.
+func plainText(part string) string {
+	return lineBreaks.Replace(markupcore.PlainText(part))
+}
+
+var lineBreaks = strings.NewReplacer("\r\n", " ", "\r", " ", "\n", " ") //nolint:gochecknoglobals // a replacer holds no state
 
 func isTrimByte(b byte) bool {
 	return strings.IndexByte(markupcore.PHPTrimSet, b) >= 0
