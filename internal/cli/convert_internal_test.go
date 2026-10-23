@@ -82,14 +82,14 @@ func all(edits ...func(s *stbox.Subtitle) error) func(s *stbox.Subtitle) error {
 func sdh(opts hearingimpaired.Options) func(s *stbox.Subtitle) error {
 	return func(s *stbox.Subtitle) error {
 		_, err := hearingimpaired.Apply(s, opts)
-		return err //nolint:wrapcheck // the test compares the result, not the error
+		return err
 	}
 }
 
 func fix(opts fixing.Options) func(s *stbox.Subtitle) error {
 	return func(s *stbox.Subtitle) error {
 		_, err := fixing.Apply(s, opts)
-		return err //nolint:wrapcheck // the test compares the result, not the error
+		return err
 	}
 }
 
