@@ -440,7 +440,7 @@ A read needs the frame rate of the video. The reader takes the first source that
 - **Line value 0**: `{1}{1}0` fails in both modes with `The frame rate must be greater than 0, got 0.`. With the option set, the reader does not check the line value.
 - **Not a frame rate line**: `{1}{1}Hello` is a cue from frame 1 to frame 1.
 - **23.976**: the plain float, not 24000/1001, as mantas-done/subtitles, pysubs2 and subtitle_it use it.
-- **Write**: `WriteOptions.MicroDVD.FrameRate`, else the stored `frameRate`, else an `*InvalidArgumentError` with `Option` `WriteOptions.MicroDVD.FrameRate`. So a file read at 25 fps writes back at 25 fps without options. A stored `frameRate` that is not above 0 fails with `The MicroDVD frame rate must be greater than 0, got 0.` and the same `Option`.
+- **Write**: `WriteOptions.MicroDVD.FrameRate`, else the stored `frameRate`, else an `*InvalidArgumentError` with `Option` `WriteOptions.MicroDVD.FrameRate`. So a file read at 25 fps writes back at 25 fps without options. A stored `frameRate` that is not above 0 fails with the same `Option` and `The MicroDVD frame rate must be greater than 0, got X.`, for example `got -2.` for -2.
 
 ### Read
 
