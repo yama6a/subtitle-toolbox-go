@@ -479,3 +479,47 @@ func TestJSONFrom3xKeepsTheStoredPositions(t *testing.T) {
 	source, _ := readFile(t, realDir+"/pysubs2_regions.ttml", false)
 	assert.Equal(t, writeDefault(t, source), writeDefault(t, fromJSON))
 }
+
+// Covers https://github.com/yama6a/subtitle-toolbox-go/issues/188 with the results of PHP 8.5: the stored head keeps
+// its CDATA sections, a CDATA section of a paragraph gives text, and a CDATA section is no white space text for the
+// title removal and the insert rule.
+func TestCDATASections(t *testing.T) {
+	t.Parallel()
+
+	const region = `<region xml:id="topCenter" tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="before" tts:textAlign="center"/>`
+	agent := `<ttm:agent xml:id="agent1" type="person"><ttm:name type="full">Ann</ttm:name></ttm:agent>`
+	layout := "\n    <layout>\n      " + region + "\n    </layout>\n  </head>\n"
+	tests := []struct {
+		name, head, p, storedHead, text, written string
+	}{
+		{
+			"empty", "<head><![CDATA[]]><styling/></head>", "a<![CDATA[]]>b", "<head><![CDATA[]]><styling/></head>", "ab",
+			"  <head><![CDATA[]]>\n    " + agent + "<styling/>" + layout,
+		},
+		{
+			"markup", "<head><metadata><![CDATA[<c> & ]]></metadata><![CDATA[\n  ]]></head>", "a<![CDATA[<b>x</b> &amp;]]>c",
+			"<head><metadata><![CDATA[<c> & ]]></metadata><![CDATA[\n  ]]></head>", "a&lt;b&gt;x&lt;/b&gt; &amp;amp;c",
+			"  <head><metadata><![CDATA[<c> & ]]></metadata><![CDATA[\n  ]]>\n    " + agent + layout,
+		},
+		{
+			"around the title", "<head>\n  <![CDATA[ ]]><ttm:title>T</ttm:title><![CDATA[\n]]></head>", "<![CDATA[\n]]>x",
+			"<head>\n  <![CDATA[ ]]><![CDATA[\n]]></head>", "x",
+			"  <head>\n    <ttm:title>T</ttm:title>\n  <![CDATA[ ]]><![CDATA[\n]]>\n    " + agent + layout,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s, _ := mustRead(t, `<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata">`+tt.head+
+				`<body><div><p begin="1s" end="2s">`+tt.p+`</p></div></body></tt>`, false)
+			head, _ := fileData(t, s).String("head")
+			assert.Equal(t, tt.storedHead, head)
+			c, _ := s.Cue(0)
+			assert.Equal(t, tt.text, c.Text())
+
+			setCue(t, s, 0, func(c *model.Cue) { c.Lines, c.Alignment = []string{"<v Ann>" + c.Text()}, model.TopCenter })
+			assert.Contains(t, writeDefault(t, s), "\n"+tt.written)
+		})
+	}
+}

@@ -32,6 +32,10 @@ func FuzzParse(f *testing.F) {
 		"<!DOCTYPE tt [<!-- it's -->]><tt a=\"1\n2\"/>",
 		"<!DOCTYPE tt [<!-- [ -->]><tt a=\"1\n2\"/>",
 		"<tt><!--> <x a=\"1\n2\"/> --><!---><y a='3\t4&#10;'/>--></tt>",
+		"<tt><![CDATA[]]></tt>",
+		"<tt>a<![CDATA[]]></tt>",
+		"<tt>a<![CDATA[b]]>c</tt>",
+		"<tt><x/><![CDATA[]]><y/></tt>",
 	} {
 		f.Add([]byte(seed))
 	}

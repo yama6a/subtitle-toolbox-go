@@ -74,11 +74,11 @@ func TestSerialize(t *testing.T) {
 		{"literal CR LF in an attribute becomes one space", "<tt><x a=\"a\r\nb\"/></tt>", `<x a="a b"/>`},
 		{"referenced LF, TAB and CR in an attribute stay", `<tt><x a="a&#10;b&#9;c&#13;d&#xA;e"/></tt>`, `<x a="a&#10;b&#9;c&#13;d&#10;e"/>`},
 		{"literal and referenced LF in an attribute", "<tt><x a='e&#10;\nf'/></tt>", `<x a="e&#10; f"/>`},
-		{"literal LF in text, a comment and CDATA stays", "<tt><x a=\">\">a\nb<!--\n--><![CDATA[\n\t]]></x></tt>", "<x a=\"&gt;\">a\nb<!--\n-->\n\t</x>"},
+		{"literal LF in text, a comment and CDATA stays", "<tt><x a=\">\">a\nb<!--\n--><![CDATA[\n\t]]></x></tt>", "<x a=\"&gt;\">a\nb<!--\n--><![CDATA[\n\t]]></x>"},
 		{"character reference in text", `<tt><x>caf&#233;</x></tt>`, "<x>caf\u00e9</x>"},
 		{"non-ASCII attribute value as UTF-8", "<tt><x tts:fontFamily=\"Caf\u00e9\"/></tt>", "<x tts:fontFamily=\"Caf\u00e9\"/>"},
 		{"comment and processing instruction", `<tt><x><!-- c --><?pi data?><?bare?></x></tt>`, `<x><!-- c --><?pi data?><?bare?></x>`},
-		{"CDATA as escaped text", `<tt><x><![CDATA[a<b]]></x></tt>`, `<x>a&lt;b</x>`},
+		{"CDATA as written", `<tt><x><![CDATA[a<b & c]]]></x></tt>`, `<x><![CDATA[a<b & c]]]></x>`},
 		{
 			"golden: metadata keeps its declaration",
 			`<tt xmlns="http://www.w3.org/ns/ttml"><metadata xmlns:ttm="http://www.w3.org/ns/ttml#metadata"><ttm:title>T</ttm:title></metadata></tt>`,
@@ -326,6 +326,46 @@ func TestNamespaces(t *testing.T) {
 	assert.False(t, ok, "a declaration on a child does not reach its parent")
 	assert.True(t, xmlraw.IsNamespaceDecl(p.Attrs[0]))
 	assert.False(t, xmlraw.IsNamespaceDecl(p.Attrs[1]))
+}
+
+// Covers https://github.com/yama6a/subtitle-toolbox-go/issues/188: libxml2 keeps each CDATA section as a node, also
+// an empty one, and writes it back.
+func TestCDATASections(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name, in string
+		kinds    []xmlraw.Kind
+	}{
+		{"empty", `<tt><![CDATA[]]></tt>`, []xmlraw.Kind{xmlraw.CDATANode}},
+		{"empty after text", `<tt>a<![CDATA[]]></tt>`, []xmlraw.Kind{xmlraw.TextNode, xmlraw.CDATANode}},
+		{"between text", `<tt>a<![CDATA[b]]>c</tt>`, []xmlraw.Kind{xmlraw.TextNode, xmlraw.CDATANode, xmlraw.TextNode}},
+		{"empty between elements", `<tt><x/><![CDATA[]]><y/></tt>`, []xmlraw.Kind{xmlraw.ElementNode, xmlraw.CDATANode, xmlraw.ElementNode}},
+		{
+			"markup and a line break", "<tt><![CDATA[<b> & ]]>\n<![CDATA[]]]]><![CDATA[>]]></tt>",
+			[]xmlraw.Kind{xmlraw.CDATANode, xmlraw.TextNode, xmlraw.CDATANode, xmlraw.CDATANode},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			doc := parse(t, tt.in, false)
+			r := root(t, doc)
+			var kinds []xmlraw.Kind
+			for _, c := range r.Children {
+				kinds = append(kinds, c.Kind)
+			}
+			assert.Equal(t, tt.kinds, kinds)
+			assert.Equal(t, tt.in, serialize(t, doc))
+		})
+	}
+
+	r := root(t, parse(t, `<tt><![CDATA[a&amp;]]>b</tt>`, false))
+	assert.Equal(t, "a&amp;", r.Children[0].Data)
+	assert.Equal(t, "a&amp;b", r.Text())
+	r = root(t, parse(t, "<tt>\n<p>\n<![CDATA[x]]></p></tt>", true))
+	assert.Equal(t, 2, r.Children[1].Line)
 }
 
 func TestText(t *testing.T) {

@@ -30,6 +30,7 @@ func Parse(r io.Reader, opts ParseOptions) (*Node, error) {
 	p := &parser{opts: opts, doc: &Node{Kind: DocumentNode}}
 	src = lfLineEnds(src)
 	p.breaks = spaceAttributeValues(src)
+	p.src = src
 	p.dec = xml.NewDecoder(bytes.NewReader(src))
 	p.dec.Strict = true
 	p.dec.CharsetReader = func(_ string, input io.Reader) (io.Reader, error) { return input, nil }
@@ -41,7 +42,11 @@ func Parse(r io.Reader, opts ParseOptions) (*Node, error) {
 
 type parser struct {
 	opts ParseOptions
-	dec  *xml.Decoder
+	// src is the input that the decoder reads, so the parser can tell a CDATA section from text.
+	src []byte
+	// tokenStart is the offset of the token that the decoder read last.
+	tokenStart int64
+	dec        *xml.Decoder
 	// breaks holds the offsets of the LFs in attribute values that spaceAttributeValues turned into spaces.
 	breaks []int
 	doc    *Node
@@ -55,6 +60,7 @@ var errStop = errors.New("stop")
 func (p *parser) parse() error {
 	p.cur = p.doc
 	for {
+		p.tokenStart = p.dec.InputOffset()
 		tok, err := p.dec.RawToken()
 		if errors.Is(err, io.EOF) {
 			break
@@ -250,9 +256,14 @@ func (p *parser) end(t xml.EndElement) error {
 	return nil
 }
 
+// text adds text or a CDATA section, which encoding/xml both returns as xml.CharData.
 func (p *parser) text(t xml.CharData) error {
 	if p.cur != p.doc {
-		p.append(&Node{Kind: TextNode, Data: string(t)})
+		kind := TextNode
+		if bytes.HasPrefix(p.src[p.tokenStart:], []byte("<![CDATA[")) {
+			kind = CDATANode
+		}
+		p.append(&Node{Kind: kind, Data: string(t)})
 		return nil
 	}
 	if len(bytes.Trim(t, " \t\n\r")) > 0 {

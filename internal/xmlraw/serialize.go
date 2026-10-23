@@ -35,6 +35,8 @@ func appendNode(dst []byte, n *Node) []byte {
 			dst = append(append(dst, ' '), n.Data...)
 		}
 		dst = append(dst, "?>"...)
+	case CDATANode:
+		dst = append(append(append(dst, "<![CDATA["...), n.Data...), "]]>"...)
 	case DirectiveNode:
 		dst = append(append(append(dst, "<!"...), n.Data...), '>')
 	}
