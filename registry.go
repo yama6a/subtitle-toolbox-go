@@ -36,6 +36,7 @@ var (
 	_ writeFunc[ass.WriteOptions]       = ass.Write
 	_ detectFunc                        = ass.Detect
 	_ readFunc[ttml.ReadOptions]        = ttml.Read
+	_ writeFunc[ttml.WriteOptions]      = ttml.Write
 	_ detectFunc                        = ttml.Detect
 	_ readFunc[sami.ReadOptions]        = sami.Read
 	_ writeFunc[sami.WriteOptions]      = sami.Write
@@ -65,7 +66,7 @@ var registry = []formatFuncs{
 	{format: SBV},
 	{format: SubRip, read: readSubRip, write: writeSubRip},
 	{format: SubViewer},
-	{format: TTML, read: readTTML},
+	{format: TTML, read: readTTML, write: writeTTML},
 	{format: TSV},
 	{format: PlainText},
 	{format: MPL2},
@@ -157,6 +158,10 @@ func writeASS(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts Wr
 
 func readTTML(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return ttml.Read(r, common, ttml.ReadOptions{})
+}
+
+func writeTTML(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+	return ttml.Write(w, s, common, ttml.WriteOptions{})
 }
 
 func readSAMI(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {

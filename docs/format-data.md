@@ -114,6 +114,7 @@ Example: a WebVTT cue with the settings `line:0 position:30% align:left` reads a
 | Format | Alignment unchanged | Alignment changed |
 |:--- |:--- |:--- |
 | WebVTT | writes the stored `line`, `position` and `align` settings | drops them and writes the settings of the new alignment |
+| TTML | writes the stored `region` of the `<p>` | drops it, writes a region of the new alignment, and sets a `tts:textAlign` of the styles that differs from the new column |
 
 ## Defaults
 

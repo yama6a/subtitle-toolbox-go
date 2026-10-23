@@ -1,8 +1,8 @@
-// Package ttml reads TTML, the W3C XML format for timed text, with its IMSC profiles and the DFXP drafts.
+// Package ttml reads and writes TTML, the W3C XML format for timed text, with its IMSC profiles and the DFXP drafts.
 //
 // The reader turns the timing model of <body>, <div>, <p> and <span> into cues, the styles into core markup, the
 // region into an alignment and the agents into speakers. It stores the namespaces, the <head> and the attributes
-// as format data, so a writer can keep them.
+// as format data, and the writer keeps them, so a DFXP file stays DFXP after a retiming.
 package ttml
 
 import (

@@ -272,7 +272,7 @@ ass   .ass .ssa         yes   yes
 json  .json             yes   yes
 sami  .smi .sami        yes   yes
 srt   .srt              yes   yes
-ttml  .ttml .dfxp .xml  yes   no
+ttml  .ttml .dfxp .xml  yes   yes
 vtt   .vtt              yes   yes
 ```
 

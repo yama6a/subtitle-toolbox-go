@@ -179,3 +179,19 @@ func TestEncodingFixturesLoad(t *testing.T) {
 		})
 	}
 }
+
+// Ports testTextReadWithItsEncodingIsWritten of tests/Formatters/XmlOutputTest.php of subtitle-toolbox-php, with the
+// TTML row. The iTT row comes with the iTT writer.
+func TestTextReadWithItsEncodingIsWrittenAsTTML(t *testing.T) {
+	t.Parallel()
+
+	s, _, err := stbox.Load("testdata/ass/own_windows_1252.ass", stbox.ReadOptions{Format: stbox.ASS, Encoding: "Windows-1252"})
+	require.NoError(t, err)
+	var out bytes.Buffer
+	require.NoError(t, stbox.Write(&out, s, stbox.TTML, stbox.WriteOptions{}))
+	assert.Contains(t, out.String(), "Le café ouvre à sept heures.")
+
+	back, _, err := stbox.Parse(bytes.NewReader(out.Bytes()), stbox.ReadOptions{Format: stbox.TTML})
+	require.NoError(t, err)
+	assert.Equal(t, 3, back.Len())
+}

@@ -587,6 +587,16 @@ func TestConvertReadAndWriteOptions(t *testing.T) {
 	assert.Empty(t, unwritable.Stdout)
 	assert.True(t, strings.HasSuffix(unwritable.Stderr, "latin1.srt: "+message(writeErr)+"\n"), unwritable.Stderr)
 
+	ttmlErr := stbox.Write(&bytes.Buffer{}, s, stbox.TTML, stbox.WriteOptions{})
+	uerr, ok := errors.AsType[*stbox.UnwritableError](ttmlErr)
+	require.True(t, ok, ttmlErr)
+	require.ErrorIs(t, uerr, stbox.ErrInvalidUTF8)
+	assert.Equal(t, stbox.TTML, uerr.Format)
+	ttml := call{dir: dir}.run(t, "convert", "latin1.srt", "--encoding", "UTF-8", "--to", "ttml", "-o", "-")
+	assert.Equal(t, exitFile, ttml.Code)
+	assert.Empty(t, ttml.Stdout)
+	assert.True(t, strings.HasSuffix(ttml.Stderr, "latin1.srt: "+message(ttmlErr)+"\n"), ttml.Stderr)
+
 	bom := call{dir: dir}.run(t, "convert", "shop.vtt", "--to", "json", "-o", "-", "--bom")
 	assert.Equal(t, result{Stdout: libraryOutput(t, "cli/shop.vtt", stbox.JSON, stbox.WriteOptions{BOM: stbox.BOMAdd}, nil)}, bom)
 	assert.True(t, strings.HasPrefix(bom.Stdout, "\ufeff{"))

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:tt="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:ttp="http://www.w3.org/ns/ttml#parameter" xmlns:tts="http://www.w3.org/ns/ttml#styling" xml:lang="" ttp:tickRate="10000000">
+  <head>
+<ttp:profile use="http://netflix.com/ttml/profile/dfxp-ls-sdh"/>
+<styling>
+<style tts:backgroundColor="transparent" tts:textAlign="center" xml:id="style0"/>
+<style tts:color="white" tts:fontSize="100%" tts:fontWeight="normal" xml:id="style1"/>
+<style tts:color="white" tts:fontSize="100%" tts:fontStyle="italic" tts:fontWeight="normal" xml:id="style2"/>
+</styling>
+<layout>
+<region tts:displayAlign="after" xml:id="region0"/>
+</layout>
+</head>
+  <body>
+    <div xml:space="preserve">
+      <p xml:id="p1" begin="00:02:17.400" end="00:02:20.400" region="bottomCenter">The bakery's first bread<br/>is ready at six o'clock.</p>
+      <p xml:id="p2" begin="01:02:20.500" end="01:02:22.500" region="bottomCenter">The last train leaves at midnight.</p>
+    </div>
+  </body>
+</tt>

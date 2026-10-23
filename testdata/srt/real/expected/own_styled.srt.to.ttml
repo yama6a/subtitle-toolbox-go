@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:tts="http://www.w3.org/ns/ttml#styling" xml:lang="">
+  <head>
+    <layout>
+      <region xml:id="bottomCenter" tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="after" tts:textAlign="center"/>
+    </layout>
+  </head>
+  <body>
+    <div>
+      <p begin="00:00:17.985" end="00:00:20.521" region="bottomCenter"><span tts:color="#00ff00"><span tts:fontWeight="bold">[train horn]</span></span></p>
+      <p begin="00:00:47.115" end="00:00:48.282" region="bottomCenter"><span tts:color="#ff00ff">[rain]</span></p>
+      <p begin="00:00:58.192" end="00:00:59.727" region="bottomCenter"><span tts:color="#00ff00">[train horn]</span></p>
+      <p begin="00:01:01.662" end="00:01:03.063" region="bottomCenter"><span tts:fontWeight="bold"><span tts:textDecoration="underline">[oven door opens]</span></span></p>
+      <p begin="00:01:26.787" end="00:01:29.523" region="bottomCenter">[whistle]</p>
+      <p begin="00:01:29.590" end="00:01:31.992" region="bottomCenter">[station speaker]<br/><span tts:fontStyle="italic">Thebakeryopensat7:35.</span></p>
+      <p begin="00:08:00.000" end="00:09:00.000" region="bottomCenter"><span tts:fontStyle="italic">Italics over two lines<br/>that close on the second line</span></p>
+      <p begin="00:09:00.000" end="00:10:00.000" region="bottomCenter"><span tts:fontStyle="italic">Italics that never close</span></p>
+      <p begin="00:10:00.000" end="00:11:00.000" region="bottomCenter">The next cue is not italic</p>
+      <p begin="00:12:00.000" end="00:13:00.000" region="bottomCenter"><span tts:fontStyle="italic">x</span>^3 * <span tts:fontStyle="italic">x</span> = 100</p>
+    </div>
+  </body>
+</tt>

@@ -21,6 +21,7 @@ func TestAlignmentUnchanged(t *testing.T) {
 	region := model.NewData(model.Field{Key: "region", Value: "fred"})
 	assTop := model.NewData(model.Field{Key: "text", Value: `{\an8\pos(10,10)}Hi`}, model.Field{Key: "alignment", Value: int64(8)})
 	assNull := model.NewData(model.Field{Key: "text", Value: `{\fad(200,200)}Hi`}, model.Field{Key: "alignment", Value: nil})
+	ttmlTop := model.NewData(model.Field{Key: "attributes", Value: model.NewData(model.Field{Key: "region", Value: "top"})}, model.Field{Key: "alignment", Value: int64(8)})
 	tests := []struct {
 		name      string
 		data      *model.Data
@@ -34,6 +35,8 @@ func TestAlignmentUnchanged(t *testing.T) {
 		{"ASS changed", assTop, model.TopLeft, false},
 		{"ASS null alignment, bottom center", assNull, model.BottomCenter, true},
 		{"ASS null alignment, changed", assNull, model.TopCenter, false},
+		{"TTML unchanged", ttmlTop, model.TopCenter, true},
+		{"TTML changed", ttmlTop, model.BottomCenter, false},
 		{"no alignment stored, bottom center", region, model.BottomCenter, true},
 		{"no alignment stored, other", region, model.TopCenter, false},
 		{"no data, bottom center", nil, model.BottomCenter, true},
