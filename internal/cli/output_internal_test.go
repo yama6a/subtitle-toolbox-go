@@ -52,6 +52,16 @@ func TestConvertWritesMPL2IntoATxtFile(t *testing.T) {
 		call{dir: dir}.run(t, "convert", "trip.srt", "--to", "mpl2", "-o", "trip.vtt"))
 }
 
+func TestConvertWritesQuickTimeTextIntoATxtFile(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	assert.Equal(t, result{Stdout: "trip.srt -> trip.txt\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "qttext", "-o", "trip.txt"))
+	assert.Equal(t, convertAs(t, "trip.srt", stbox.QuickTimeText), readFile(t, dir, "trip.txt"))
+	assert.Equal(t, usageResult("convert", "The extension of --output trip.vtt names the format vtt, not the --to format qttext."),
+		call{dir: dir}.run(t, "convert", "trip.srt", "--to", "qttext", "-o", "trip.vtt"))
+}
+
 func TestConvertWritesPlainTextIntoATxtFile(t *testing.T) {
 	t.Parallel()
 

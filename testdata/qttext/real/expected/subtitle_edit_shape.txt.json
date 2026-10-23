@@ -1,0 +1,53 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "qttext": {
+                "header": [
+                    "{QTtext} {font:Tahoma}",
+                    "{plain} {size:20}",
+                    "{timeScale:30}",
+                    "{width:160} {height:32}",
+                    "{timestamps:absolute} {language:0}"
+                ],
+                "pairedTimestamps": true
+            }
+        },
+        "cues": [
+            {
+                "start": 2.5,
+                "end": 5.0,
+                "lines": [
+                    "The museum opens at ten,",
+                    "the café at nine."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.4,
+                "end": 8.967,
+                "lines": [
+                    "Tickets are sold at the door."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3600.0,
+                "end": 3603.333,
+                "lines": [
+                    "Closing time."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

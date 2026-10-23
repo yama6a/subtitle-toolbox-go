@@ -4,7 +4,6 @@ package subrip
 import (
 	"fmt"
 	"iter"
-	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -13,6 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/internal/blocks"
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/internal/phpkey"
 	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -314,10 +314,10 @@ func readCoordinates(text string) (*model.Data, bool) {
 		return nil, false
 	}
 	return model.NewData(
-		model.Field{Key: "x1", Value: saturatedInt(m[1])},
-		model.Field{Key: "x2", Value: saturatedInt(m[2])},
-		model.Field{Key: "y1", Value: saturatedInt(m[3])},
-		model.Field{Key: "y2", Value: saturatedInt(m[4])},
+		model.Field{Key: "x1", Value: phpkey.DigitsToInt(m[1])},
+		model.Field{Key: "x2", Value: phpkey.DigitsToInt(m[2])},
+		model.Field{Key: "y1", Value: phpkey.DigitsToInt(m[3])},
+		model.Field{Key: "y2", Value: phpkey.DigitsToInt(m[4])},
 	), true
 }
 
@@ -334,15 +334,6 @@ func cueSettings(text string) (*model.Data, string) {
 		}
 	}
 	return settings, strings.Join(unknown, " ")
-}
-
-// saturatedInt reads digits as PHP (int) does: a value above the int64 range becomes the maximum.
-func saturatedInt(digits string) int64 {
-	n, err := strconv.ParseInt(digits, 10, 64)
-	if err != nil {
-		return math.MaxInt64
-	}
-	return n
 }
 
 func atoi(digits string) int {

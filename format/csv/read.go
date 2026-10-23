@@ -12,6 +12,8 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/internal/phpkey"
+	"github.com/yama6a/subtitle-toolbox-go/internal/stringlist"
 	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -317,9 +319,9 @@ func (rd *reader) millisecondTimes(recs []record, roles layout) bool {
 		}
 		switch {
 		case start != "" && end != "":
-			durations = append(durations, phpInt(end)-phpInt(start))
+			durations = append(durations, phpkey.DigitsToInt(end)-phpkey.DigitsToInt(start))
 		case duration != "":
-			durations = append(durations, phpInt(duration))
+			durations = append(durations, phpkey.DigitsToInt(duration))
 		}
 	}
 	if len(durations) == 0 {
@@ -332,15 +334,6 @@ func (rd *reader) millisecondTimes(recs []record, roles layout) bool {
 	rd.st.Warn("The times are whole numbers, and the median cue lasts "+text+" seconds. The parser reads the times as milliseconds.",
 		recs[0].line, model.NoBlock, []string{rd.join(recs[0].cells)}, model.Repaired)
 	return true
-}
-
-// phpInt reads digits as PHP (int) does: beyond the int64 range it gives the int64 maximum.
-func phpInt(digits string) int64 {
-	n, err := strconv.ParseInt(digits, 10, 64)
-	if err != nil {
-		return 1<<63 - 1
-	}
-	return n
 }
 
 // medianOf returns the median of values and its text as PHP prints the number. The median of an even count is
@@ -464,7 +457,7 @@ func (rd *reader) fileData(header *record, recs []record, roles layout, timeForm
 	var headerCells any
 	width := 0
 	if header != nil {
-		headerCells = anyStrings(header.cells)
+		headerCells = stringlist.Any(header.cells)
 		width = len(header.cells)
 	}
 	for _, r := range recs {
@@ -508,14 +501,6 @@ func quotedColumns(recs []record) []any {
 
 func (rd *reader) join(cells []string) string {
 	return strings.Join(cells, rd.delimiter)
-}
-
-func anyStrings(s []string) []any {
-	out := make([]any, len(s))
-	for i, v := range s {
-		out[i] = v
-	}
-	return out
 }
 
 func trim(s string) string {

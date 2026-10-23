@@ -1,0 +1,75 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "qttext": {
+                "header": [
+                    "{QTtext} {font:Geneva} {plain} {size:12} {textColor: 65535, 65535, 65535} {backColor: 0, 0, 0} {justify:center} {timeScale:600} {width:320} {height:60} {timeStamps:absolute} {language:0} {textEncoding:0}"
+                ]
+            }
+        },
+        "cues": [
+            {
+                "start": 1.5,
+                "end": 4.0,
+                "lines": [
+                    "The museum opens at ten."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.0,
+                "end": 6.25,
+                "lines": [
+                    "<i>Footsteps on the stairs.</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "qttext": {
+                        "source": [
+                            "{italic}Footsteps on the stairs."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 6.25,
+                "end": 8.0,
+                "lines": [
+                    "A door closes."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "qttext": {
+                        "source": [
+                            "{plain}A door closes."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 9.75,
+                "end": 12.0,
+                "lines": [
+                    "Who is there? <b>Hello?</b>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "qttext": {
+                        "source": [
+                            "Who is there? {bold}Hello?{plain}"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

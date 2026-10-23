@@ -13,6 +13,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/internal/stringlist"
 	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -409,11 +410,7 @@ func cueData(paragraphs []paragraph, lines []string) *model.Data {
 		}
 		list[i] = model.NewData(model.Field{Key: "attributes", Value: attributes}, model.Field{Key: "html", Value: p.html})
 	}
-	stored := make([]any, len(lines))
-	for i, l := range lines {
-		stored[i] = l
-	}
-	return model.NewData(model.Field{Key: "paragraphs", Value: list}, model.Field{Key: "lines", Value: stored})
+	return model.NewData(model.Field{Key: "paragraphs", Value: list}, model.Field{Key: "lines", Value: stringlist.Any(lines)})
 }
 
 const nbspEntity = "&nbsp;"

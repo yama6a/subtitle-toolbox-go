@@ -35,7 +35,6 @@ func TestUsageErrors(t *testing.T) {
 		{"subrip is no name", []string{"convert", "trip.srt", "--to", "subrip"}, `Unknown format "subrip". Run "stbox formats" for the list.`},
 		{"txt can be written but not read", []string{"convert", "trip.srt", "--from", "txt", "--to", "vtt"}, "The format txt can be written but not read."},
 		{"txt extension can be written but not read", []string{"convert", "trip.srt", "--from", ".TXT", "--to", "vtt"}, "The format txt can be written but not read."},
-		{"qttext can be neither read nor written", []string{"convert", "trip.srt", "--to", "qttext"}, `Unknown format "qttext". Run "stbox formats" for the list.`},
 		{"no input", []string{"convert", "--to", "vtt"}, "Pass at least one input file, or - for standard input."},
 		{"line ending cr", []string{"convert", "trip.srt", "--to", "vtt", "--line-ending", "cr"}, `The option --line-ending must be lf or crlf, got "cr".`},
 		{"bom and no bom", []string{"convert", "trip.srt", "--to", "vtt", "--bom", "--no-bom"}, "Pass only one of --bom and --no-bom."},
@@ -81,6 +80,8 @@ func TestFormatArgument(t *testing.T) {
 		{".MPSub", stbox.MPSub},
 		{"LRC", stbox.LRC},
 		{".lrc", stbox.LRC},
+		{"qttext", stbox.QuickTimeText},
+		{".QTText", stbox.QuickTimeText},
 		{"txt", stbox.PlainText},
 		{".TXT", stbox.PlainText},
 		{"subviewer", stbox.SubViewer},
@@ -95,7 +96,7 @@ func TestFormatArgument(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
-	for _, in := range []string{"subrip", "25", "", ".", "qttext", "Kass", "sʀt"} {
+	for _, in := range []string{"subrip", "25", "", ".", "Kass", "sʀt"} {
 		_, err := findFormat(in)
 		assert.EqualError(t, err, `Unknown format "`+in+`". Run "stbox formats" for the list.`)
 	}
@@ -169,6 +170,24 @@ func TestADirectoryConvertsAnMPL2TxtFileAndSkipsNotes(t *testing.T) {
 	var want bytes.Buffer
 	require.NoError(t, stbox.Write(&want, film, stbox.SubRip, stbox.WriteOptions{}))
 	assert.Equal(t, want.String(), readFile(t, dir, "out/film.srt"))
+}
+
+func TestADirectoryConvertsAQuickTimeTextTxtFileAndSkipsNotes(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	copyFile(t, filepath.Join(dir, "trip.srt"), filepath.Join(dir, "in", "trip.srt"))
+	copyFile(t, testfiles.Path(t, "qttext/real/subtitle_edit_shape.txt"), filepath.Join(dir, "in", "film.txt"))
+	copyFile(t, filepath.Join(dir, "notes.txt"), filepath.Join(dir, "in", "notes.txt"))
+	assert.Equal(t,
+		result{Stdout: "in/film.txt -> out/film.srt\nin/trip.srt -> out/trip.srt\n2 files: 2 succeeded, 0 failed.\n"},
+		call{dir: dir}.run(t, "convert", "in", "--to", "srt", "--output-dir", "out"))
+	film, _, err := stbox.Load(testfiles.Path(t, "qttext/real/subtitle_edit_shape.txt"), stbox.ReadOptions{})
+	require.NoError(t, err)
+	var want bytes.Buffer
+	require.NoError(t, stbox.Write(&want, film, stbox.SubRip, stbox.WriteOptions{}))
+	assert.Equal(t, want.String(), readFile(t, dir, "out/film.srt"))
+	assert.NoFileExists(t, filepath.Join(dir, "out", "notes.srt"))
 }
 
 func TestADirectoryConvertsAnMPSubSubFileByItsContent(t *testing.T) {

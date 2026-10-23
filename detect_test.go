@@ -83,6 +83,10 @@ func detectTests() []detectTest {
 		{name: "LRC without fraction", content: "[00:12]Hello\n", want: stbox.LRC},
 		{name: "LRC next to MPL2", content: "[00:01.00]Hello\n[00:02.50]world\n", want: stbox.LRC},
 		{name: "LRC with minutes only", content: "[00:01]Hello\n", want: stbox.LRC},
+		{name: "QuickTime text", content: "{QTtext} {font:Tahoma}\n[00:00:01.00]\nHello\n[00:00:02.00]\n", want: stbox.QuickTimeText},
+		{name: "QuickTime text in lower case", content: "{qttext}{timeScale:30}\n[00:00:01.00]\nHello\n", want: stbox.QuickTimeText},
+		{name: "QuickTime text header only", content: "{QTtext}", want: stbox.QuickTimeText},
+		{name: "QuickTime text without its header", content: "[00:00:01.00]\nHello\n[00:00:02.00]\n", want: stbox.LRC},
 		{name: "MPL2", content: "[10][25]Hello|/world\n", want: stbox.MPL2},
 		{name: "TMPlayer", content: "00:00:01:Hello|world\n", want: stbox.TMPlayer},
 		{name: "TMPlayer+ with equals sign", content: "0:00:01=Hello\n", want: stbox.TMPlayer},
@@ -218,6 +222,8 @@ func TestDetectFindsNoFormat(t *testing.T) {
 		{"library JSON after text", "x{\"version\": 1, \"cues\": []}"},
 		{"library JSON with trailing text", `{"version": 1, "cues": []} x`},
 		{"WebVTT inside a JSON object", `{"WEBVTT": 1}`},
+		{"QTtext with a value", "{QTtext:1}\n[00:00:01.00]\nHello\n"},
+		{"QTtext after a space", " x{QTtext}\n"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -240,7 +246,7 @@ type fixture struct {
 func fixtures(t *testing.T) []fixture {
 	t.Helper()
 
-	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "lrc": stbox.LRC, "microdvd": stbox.MicroDVD, "mpl2": stbox.MPL2, "mpsub": stbox.MPSub, "sami": stbox.SAMI, "sbv": stbox.SBV, "srt": stbox.SubRip, "subviewer": stbox.SubViewer, "tmplayer": stbox.TMPlayer, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
+	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "lrc": stbox.LRC, "microdvd": stbox.MicroDVD, "mpl2": stbox.MPL2, "mpsub": stbox.MPSub, "qttext": stbox.QuickTimeText, "sami": stbox.SAMI, "sbv": stbox.SBV, "srt": stbox.SubRip, "subviewer": stbox.SubViewer, "tmplayer": stbox.TMPlayer, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
 	var list []fixture
 	for dir, f := range folders {
 		for _, sub := range []string{dir, dir + "/real"} {
@@ -472,12 +478,86 @@ func TestParseDetectsSubViewer(t *testing.T) {
 	}
 }
 
+// Ports the tests of tests/Parsers/QuickTimeTextParserTest.php of subtitle-toolbox-php that read without a format.
+func TestParseDetectsQuickTimeText(t *testing.T) {
+	t.Parallel()
+
+	header := "{QTtext} {font:Tahoma}\n{plain} {size:20}\n{timeScale:30}\n{width:160} {height:32}\n{timestamps:absolute} {language:0}\n"
+	tests := []struct {
+		name    string
+		content string
+		want    []cueRow
+	}{
+		{
+			"the fraction counts units of the time scale",
+			header + "[00:02:17.11]\nThe ferry leaves at nine,\nfrom the north pier.\n[00:02:20.09]\n\n[01:02:20.11]\nTickets at the kiosk.\n[01:02:22.12]\n\n",
+			[]cueRow{
+				{137367 * time.Millisecond, 140300 * time.Millisecond, "The ferry leaves at nine,\nfrom the north pier."},
+				{3740367 * time.Millisecond, 3742400 * time.Millisecond, "Tickets at the kiosk."},
+			},
+		},
+		{
+			"a time scale of 10",
+			"{QTtext}{timeScale:10}\n[00:00:07.5]\nRain\n[00:00:09.0]\n",
+			[]cueRow{{7500 * time.Millisecond, 9 * time.Second, "Rain"}},
+		},
+		{
+			"a decimal fraction without a time scale",
+			"{QTtext}{font:Geneva}\n[00:00:07.25]\nRain\n[00:00:09.5]\n",
+			[]cueRow{{7250 * time.Millisecond, 9500 * time.Millisecond, "Rain"}},
+		},
+		{
+			"relative timestamps",
+			"{QTtext}{timeScale:600}{timeStamps:relative}\n[00:00:01.300]\nOne\n[00:00:02.000]\n[00:00:01.000]\nTwo\n[00:00:02.000]\n",
+			[]cueRow{{1500 * time.Millisecond, 3500 * time.Millisecond, "One"}, {4500 * time.Millisecond, 6500 * time.Millisecond, "Two"}},
+		},
+		{
+			"styles last until plain",
+			"{QTtext}{timeScale:30}{plain}\n[00:00:01.00]\n{italic}Sung\n[00:00:02.00]\nstill sung {underline}loud\n[00:00:03.00]\n{plain}Spoken\n[00:00:04.00]\n",
+			[]cueRow{
+				{time.Second, 2 * time.Second, "<i>Sung</i>"},
+				{2 * time.Second, 3 * time.Second, "<i>still sung <u>loud</u></i>"},
+				{3 * time.Second, 4 * time.Second, "Spoken"},
+			},
+		},
+		{
+			"a BOM and CR LF",
+			"\xEF\xBB\xBF{QTtext}\r\n[00:00:01.00]\r\nOne\r\n[00:00:02.00]\r\n",
+			[]cueRow{{time.Second, 2 * time.Second, "One"}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			for _, lenient := range []bool{false, true} {
+				s, info, err := stbox.Parse(strings.NewReader(tt.content), stbox.ReadOptions{Lenient: lenient})
+				require.NoError(t, err)
+				assert.Equal(t, stbox.QuickTimeText, info.Format)
+				assert.Empty(t, info.Warnings)
+				assert.Equal(t, tt.want, cueRows(s))
+			}
+		})
+	}
+}
+
+func TestLoadDetectsQuickTimeTextInATxtFile(t *testing.T) {
+	t.Parallel()
+
+	path := filepath.Join(t.TempDir(), "film.txt")
+	require.NoError(t, os.WriteFile(path, testfiles.Read(t, "qttext/real/subtitle_edit_shape.txt"), 0o600))
+	s, info, err := stbox.Load(path, stbox.ReadOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, stbox.QuickTimeText, info.Format)
+	assert.Equal(t, 3, s.Len())
+}
+
 func FuzzDetect(f *testing.F) {
 	for _, tt := range detectTests() {
 		f.Add([]byte(tt.content))
 	}
 	root := testfiles.Root(f)
-	for _, dir := range []string{"ass", "json", "lrc", "lrc/real", "microdvd", "microdvd/real", "mpl2/real", "mpsub", "mpsub/real", "sami/real", "sbv", "srt", "subviewer", "subviewer/real", "tmplayer/real", "ttml/real", "forced", "vtt", "lenient"} {
+	for _, dir := range []string{"ass", "json", "lrc", "lrc/real", "microdvd", "microdvd/real", "mpl2/real", "mpsub", "mpsub/real", "qttext", "qttext/real", "sami/real", "sbv", "srt", "subviewer", "subviewer/real", "tmplayer/real", "ttml/real", "forced", "vtt", "lenient"} {
 		entries, err := os.ReadDir(filepath.Join(root, dir))
 		if err != nil {
 			f.Fatal(err)

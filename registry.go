@@ -15,6 +15,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/format/mpl2"
 	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/format/qttext"
 	"github.com/yama6a/subtitle-toolbox-go/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/format/sbv"
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
@@ -69,6 +70,9 @@ var (
 	_ readFunc[lrc.ReadOptions]         = lrc.Read
 	_ writeFunc[lrc.WriteOptions]       = lrc.Write
 	_ detectFunc                        = lrc.Detect
+	_ readFunc[qttext.ReadOptions]      = qttext.Read
+	_ writeFunc[qttext.WriteOptions]    = qttext.Write
+	_ detectFunc                        = qttext.Detect
 	_ writeFunc[plaintext.WriteOptions] = plaintext.Write
 	_ readFunc[csv.ReadOptions]         = csv.Read
 	_ writeFunc[csv.WriteOptions]       = csv.Write
@@ -105,7 +109,7 @@ var registry = []formatFuncs{
 	{format: PlainText, write: writePlainText},
 	{format: MPL2, read: readMPL2, write: writeMPL2},
 	{format: TMPlayer, read: readTMPlayer, write: writeTMPlayer},
-	{format: QuickTimeText},
+	{format: QuickTimeText, read: readQuickTimeText, write: writeQuickTimeText},
 	{format: WebVTT, read: readWebVTT, write: writeWebVTT},
 }
 
@@ -131,6 +135,7 @@ var (
 		{format: ASS, match: ass.Detect},
 		{format: MPSub, match: mpsub.Detect},
 		{format: MicroDVD, match: microdvd.Detect},
+		{format: QuickTimeText, match: qttext.Detect},
 		{format: SubRip, match: srt.Detect},
 		{format: SBV, match: sbv.Detect},
 		{format: SubViewer, match: subviewer.Detect},
@@ -308,6 +313,14 @@ func readSubViewer(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (
 
 func writeSubViewer(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
 	return subviewer.Write(w, s, common, opts.SubViewer)
+}
+
+func readQuickTimeText(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return qttext.Read(r, common, qttext.ReadOptions{})
+}
+
+func writeQuickTimeText(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+	return qttext.Write(w, s, common, qttext.WriteOptions{})
 }
 
 func lookup(f Format) (formatFuncs, bool) {
