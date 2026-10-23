@@ -1,0 +1,17 @@
+﻿TITLE=Harbour walk, frame based (sample)
+AUTHOR=
+TYPE=VIDEO
+FORMAT=TIME
+NOTE=Created with subtitle-toolbox-go (https://github.com/yama6a/subtitle-toolbox-go)
+
+2 1.5
+Two seconds in,
+shown for one and a half seconds
+
+0.04 4
+One frame later,
+shown for four seconds
+
+0.5 3
+Half a second later,
+shown for three seconds

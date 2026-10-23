@@ -180,6 +180,23 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Line numbers**: the 1-based line of the file, empty lines included.
 - **TMPlayer order**: TMPlayer has no time order error. The reader sorts the entries.
 
+## MPSub
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| no `FORMAT` line before the first timing line | reads the times as seconds, without a warning | the same. `The file has no FORMAT line before line N. The parser read the times as seconds.` `Repaired`, once, with the line and the block of the first timing line |
+| a `FORMAT` value that is not `TIME` and has no leading digit | `The FORMAT value "V" is not known.` | keeps the unit before it. `Skipped` |
+| a value whose leading digits are all 0, such as `FORMAT=0`, `00` or `0.5` | `The frame rate "V" is not valid.` | keeps the unit before it. `Skipped` |
+| a line outside a cue that is no header, comment or timing line | `The line "L" is not a header, a comment or a timing line.` | skips the line and every line up to the next empty line. `Skipped` |
+| a negative duration | `The timing line "L" has a negative duration.` | skips up to the next empty line. `Skipped` |
+| a timing line without text lines | `The cue has no text lines.` | drops the cue. The position still moves to its end. `Skipped` |
+| a time of 100000 hours or more | `The time "L" is not below 100000 hours.` | skips up to the next empty line. `Skipped` |
+
+- **Block numbers**: B counts the timing lines from 0, the bad ones too. A `FORMAT` warning has the count of timing lines before it.
+- **Line numbers**: the 1-based line of the file. A cue without text reports its timing line.
+- **Quotes**: L is the whole timing line, as PHP does, without the cut at 60 characters.
+- **Position**: a timing line that fails does not move the position, so the next cue counts from the end of the last good cue.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

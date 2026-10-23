@@ -39,6 +39,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 		"ass       .ass .ssa         yes   yes",
 		"json      .json             yes   yes",
 		"microdvd  .sub              yes   yes",
+		"mpsub     .mpsub            yes   yes",
 		"sami      .smi .sami        yes   yes",
 		"sbv       .sbv              yes   yes",
 		"srt       .srt              yes   yes",

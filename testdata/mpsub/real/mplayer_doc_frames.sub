@@ -1,0 +1,13 @@
+TITLE=Harbour walk, frame based (sample)
+FORMAT=25 #fps
+50 37.5
+Two seconds in,
+shown for one and a half seconds
+
+1 100
+One frame later,
+shown for four seconds
+
+12.5 75
+Half a second later,
+shown for three seconds

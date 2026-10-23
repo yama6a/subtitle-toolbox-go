@@ -1,0 +1,34 @@
+﻿TITLE=Harbour walk (sample)
+AUTHOR=Subtitle Toolbox
+TYPE=VIDEO
+FILE=1048576,0123456789abcdef0123456789abcdef
+FORMAT=TIME
+NOTE=Sample file written after the MPlayer format notes
+
+2 3
+The ferry leaves at nine.
+
+0 2.5
+Do we have tickets?
+
+0.5 2
+I bought them
+this morning.
+
+1 4
+Then we still have time
+for a coffee at the harbour.
+
+0 3
+The small place
+next to the fish market?
+
+2.25 1.75
+Yes, that one.
+
+0 3.5
+They open early
+on Saturdays.
+
+1.5 2
+Let's go.

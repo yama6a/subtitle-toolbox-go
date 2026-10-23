@@ -1,0 +1,40 @@
+{
+    "name": "MPSub without a FORMAT line, with a bad timing line and a truncated last cue",
+    "format": "mpsub",
+    "strict": {
+        "error": "The line \"1 x\" is not a header, a comment or a timing line.",
+        "line": 7
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The bus leaves at ten."
+        },
+        {
+            "start": 5,
+            "end": 7,
+            "text": "Seats are free."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 4,
+            "block": 0,
+            "action": "repaired",
+            "message": "The file has no FORMAT line before line 4. The parser read the times as seconds."
+        },
+        {
+            "line": 7,
+            "block": 1,
+            "action": "skipped",
+            "message": "The line \"1 x\" is not a header, a comment or a timing line."
+        },
+        {
+            "line": 13,
+            "block": 3,
+            "action": "skipped",
+            "message": "The cue has no text lines."
+        }
+    ]
+}

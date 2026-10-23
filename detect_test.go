@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -66,8 +67,8 @@ func detectTests() []detectTest {
 		{name: "SAMI in lower case", content: "<sami><body></body></sami>", want: stbox.SAMI},
 		{name: "SAMI after a line end", content: "<SAMI>\n<HEAD>\n", want: stbox.SAMI},
 		{name: "SAMI after the XML prolog", content: "<?xml version=\"1.0\"?>\n<!-- made by hand -->\n<!DOCTYPE sami>\n<Sami>", want: stbox.SAMI},
-		{name: "MPSub with FORMAT first", content: "FORMAT=25\n\n0 50\nHello\n", later: "MPSub"},
-		{name: "MPSub with header comment", content: "TITLE=Bakery\nFORMAT=TIME   # seconds\n\n1 2\nHello\n", later: "MPSub"},
+		{name: "MPSub with FORMAT first", content: "FORMAT=25\n\n0 50\nHello\n", want: stbox.MPSub},
+		{name: "MPSub with header comment", content: "TITLE=Bakery\nFORMAT=TIME   # seconds\n\n1 2\nHello\n", want: stbox.MPSub},
 		{name: "SubViewer 2 information", content: "[INFORMATION]\r\n[TITLE]Bakery\r\n[END INFORMATION]\r\n", later: "SubViewer"},
 		{name: "SubViewer 2 timing line", content: "00:00:01.50,00:00:04.00\nHello[br]world\n", later: "SubViewer"},
 		{name: "SubViewer 2 after [SUBTITLE]", content: "[SUBTITLE]\n[COLF]&HFFFFFF,[SIZE]18\n00:00:01.50,00:00:04.00\nHello\n", later: "SubViewer"},
@@ -233,7 +234,7 @@ type fixture struct {
 func fixtures(t *testing.T) []fixture {
 	t.Helper()
 
-	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "microdvd": stbox.MicroDVD, "mpl2": stbox.MPL2, "sami": stbox.SAMI, "sbv": stbox.SBV, "srt": stbox.SubRip, "tmplayer": stbox.TMPlayer, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
+	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "microdvd": stbox.MicroDVD, "mpl2": stbox.MPL2, "mpsub": stbox.MPSub, "sami": stbox.SAMI, "sbv": stbox.SBV, "srt": stbox.SubRip, "tmplayer": stbox.TMPlayer, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
 	var list []fixture
 	for dir, f := range folders {
 		for _, sub := range []string{dir, dir + "/real"} {
@@ -380,12 +381,32 @@ func TestParseDetectsTMPlayer(t *testing.T) {
 	assert.Equal(t, 2, s.Len())
 }
 
+// Ports the MPSub detection of tests/FormatDetectorTest.php of subtitle-toolbox-php. The file has CR LF line ends and
+// the extension .sub, which FormatFromPath maps to MicroDVD, so the content decides.
+func TestParseDetectsMPSub(t *testing.T) {
+	t.Parallel()
+
+	content := "TITLE=Harbour walk\r\nFORMAT=TIME\r\n\r\n1 2.5\r\nThe boat leaves.\r\n"
+	s, info, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, stbox.MPSub, info.Format)
+	cue, _ := s.Cue(0)
+	assert.Equal(t, []time.Duration{time.Second, 3500 * time.Millisecond}, []time.Duration{cue.Start, cue.End})
+
+	path := filepath.Join(t.TempDir(), "film.sub")
+	require.NoError(t, os.WriteFile(path, []byte(content), 0o600))
+	loaded, loadInfo, err := stbox.Load(path, stbox.ReadOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, stbox.MPSub, loadInfo.Format)
+	assert.Equal(t, s.Cues(), loaded.Cues())
+}
+
 func FuzzDetect(f *testing.F) {
 	for _, tt := range detectTests() {
 		f.Add([]byte(tt.content))
 	}
 	root := testfiles.Root(f)
-	for _, dir := range []string{"ass", "json", "microdvd", "microdvd/real", "mpl2/real", "sami/real", "sbv", "srt", "tmplayer/real", "ttml/real", "forced", "vtt", "lenient"} {
+	for _, dir := range []string{"ass", "json", "microdvd", "microdvd/real", "mpl2/real", "mpsub", "mpsub/real", "sami/real", "sbv", "srt", "tmplayer/real", "ttml/real", "forced", "vtt", "lenient"} {
 		entries, err := os.ReadDir(filepath.Join(root, dir))
 		if err != nil {
 			f.Fatal(err)

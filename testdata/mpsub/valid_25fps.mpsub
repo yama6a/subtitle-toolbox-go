@@ -1,0 +1,25 @@
+﻿TITLE=
+AUTHOR=
+TYPE=VIDEO
+FORMAT=25
+NOTE=Created with the PHP Subtitle Toolbox (https://github.com/yama6a/subtitle-toolbox-php)
+
+0 11
+Only milliseconds
+
+120 1030
+Seconds and milliseconds
+
+21853 64033
+Minutes and seconds and milliseconds
+
+4478 88495
+Full timestamp
+
+5 44975
+some bold and italic and underlined text
+and some green text
+and no unsupported and potentially dangerous stuff
+
+45000 89730000
+To maximum

@@ -1,0 +1,42 @@
+TITLE=Harbour walk (sample)
+                                        # header lines may carry a comment
+FILE=1048576,0123456789abcdef0123456789abcdef  # size,md5
+AUTHOR=Subtitle Toolbox
+TYPE=VIDEO                              # VIDEO or AUDIO
+FORMAT=TIME                             # times are in seconds
+
+# if FORMAT is a number, the file uses frames, for example:
+# FORMAT=25
+
+NOTE=Sample file written after the MPlayer format notes
+
+# first number  : wait this long after the previous subtitle disappears
+# second number : show the current subtitle for this long
+
+2 3
+The ferry leaves at nine.
+
+0 2.5
+Do we have tickets?
+
+0.5 2
+I bought them
+this morning.
+
+1 4
+Then we still have time
+for a coffee at the harbour.
+
+0 3
+The small place
+next to the fish market?
+
+2.25 1.75
+Yes, that one.
+
+0 3.5
+They open early
+on Saturdays.
+
+1.5 2
+Let's go.

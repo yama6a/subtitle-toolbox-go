@@ -1,0 +1,104 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Harbour walk (sample)",
+            "author": "Subtitle Toolbox"
+        },
+        "comments": [],
+        "formatData": {
+            "mpsub": {
+                "FILE": "1048576,0123456789abcdef0123456789abcdef",
+                "TYPE": "VIDEO",
+                "NOTE": "Sample file written after the MPlayer format notes"
+            }
+        },
+        "cues": [
+            {
+                "start": 2.0,
+                "end": 5.0,
+                "lines": [
+                    "The ferry leaves at nine."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.0,
+                "end": 7.5,
+                "lines": [
+                    "Do we have tickets?"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 8.0,
+                "end": 10.0,
+                "lines": [
+                    "I bought them",
+                    "this morning."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 11.0,
+                "end": 15.0,
+                "lines": [
+                    "Then we still have time",
+                    "for a coffee at the harbour."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 15.0,
+                "end": 18.0,
+                "lines": [
+                    "The small place",
+                    "next to the fish market?"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 20.25,
+                "end": 22.0,
+                "lines": [
+                    "Yes, that one."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 22.0,
+                "end": 25.5,
+                "lines": [
+                    "They open early",
+                    "on Saturdays."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 27.0,
+                "end": 29.0,
+                "lines": [
+                    "Let's go."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}
