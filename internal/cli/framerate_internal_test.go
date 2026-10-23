@@ -2,6 +2,8 @@ package cli
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -123,6 +125,17 @@ func TestMicroDVDFrameRates(t *testing.T) {
 			assert.Equal(t, tt.want, runCLI(t, tt.words...))
 		})
 	}
+}
+
+func TestStoredFrameRateOfZero(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	content := `{"version":1,"formatData":{"microdvd":{"frameRate":0}},"cues":[{"start":1,"end":2,"lines":["Hello"]}]}`
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "f0.json"), []byte(content), 0o600))
+	assert.Equal(t, result{Code: exitFile, Stderr: "f0.json: The MicroDVD frame rate must be greater than 0, got 0. Pass --fps or --output-fps.\n"},
+		call{dir: dir}.run(t, "convert", "f0.json", "--to", "microdvd", "-o", "-"))
+	assert.Equal(t, result{Stdout: "{25}{50}Hello\n"}, call{dir: dir}.run(t, "convert", "f0.json", "--to", "microdvd", "-o", "-", "--output-fps", "25"))
 }
 
 func TestMicroDVDOutputToAFile(t *testing.T) {

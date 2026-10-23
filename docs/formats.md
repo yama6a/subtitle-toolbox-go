@@ -431,7 +431,7 @@ A read needs the frame rate of the video. The reader takes the first source that
 
 | # | Source | File data |
 |---:|:--- |:--- |
-| 1 | `ReadOptions.MicroDVD.FrameRate` | `frameRate` |
+| 1 | `ReadOptions.MicroDVD.FrameRate` | `frameRate`, and `frameRateLine: true` when the file has a `{1}{1}<fps>` line |
 | 2 | a first line `{1}{1}<fps>`, such as `{1}{1}25`. The reader removes the line | `frameRate`, and `frameRateLine: true` |
 | 3 | lenient mode only: 23.976, with the warning `The file has no {1}{1}<fps> line. The parser used 23.976 fps.` | `frameRate` |
 
@@ -440,7 +440,7 @@ A read needs the frame rate of the video. The reader takes the first source that
 - **Line value 0**: `{1}{1}0` fails in both modes with `The frame rate must be greater than 0, got 0.`. With the option set, the reader does not check the line value.
 - **Not a frame rate line**: `{1}{1}Hello` is a cue from frame 1 to frame 1.
 - **23.976**: the plain float, not 24000/1001, as mantas-done/subtitles, pysubs2 and subtitle_it use it.
-- **Write**: `WriteOptions.MicroDVD.FrameRate`, else the stored `frameRate`, else an `*InvalidArgumentError` with `Option` `WriteOptions.MicroDVD.FrameRate`. So a file read at 25 fps writes back at 25 fps without options.
+- **Write**: `WriteOptions.MicroDVD.FrameRate`, else the stored `frameRate`, else an `*InvalidArgumentError` with `Option` `WriteOptions.MicroDVD.FrameRate`. So a file read at 25 fps writes back at 25 fps without options. A stored `frameRate` that is not above 0 fails with `The MicroDVD frame rate must be greater than 0, got 0.` and the same `Option`.
 
 ### Read
 

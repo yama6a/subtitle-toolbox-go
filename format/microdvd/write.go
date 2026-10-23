@@ -38,7 +38,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 				Msg:    "MicroDVD output needs the frame rate of the video.",
 			}
 		}
-		if err := checkFrameRate(stored, "", "The frame rate"); err != nil {
+		if err := checkFrameRate(stored, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate"); err != nil {
 			return err
 		}
 		fps = stored
