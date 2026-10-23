@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -17,8 +18,11 @@ var (
 	idTagKeyRegexp      = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9_]*$`)
 )
 
-// maxCentiseconds is 999:59.99, the largest time that the reader takes in the mm:ss.cc form.
-const maxCentiseconds = 999*6000 + 59*100 + 99
+const centisecond = 10 * time.Millisecond
+
+// maxTime is 999:59.99. The reader takes at most 3 minute digits in the mm:ss.cc form, so a later time would not
+// read back.
+const maxTime = 1000*time.Minute - centisecond
 
 // Write writes s as LRC. It writes the ID tags, then one line per cue in start order with centisecond times,
 // and a time tag without text at the end of a cue with the cue data endLine. The BOM is on by default.
@@ -122,6 +126,6 @@ func isTrimByte(b byte) bool {
 }
 
 func appendStamp(body []byte, d time.Duration) []byte {
-	cs := min((max(d, 0).Round(time.Millisecond).Milliseconds()+5)/10, maxCentiseconds)
+	cs := timecode.Units(min(d, maxTime), centisecond)
 	return fmt.Appendf(body, "%02d:%02d.%02d", cs/6000, cs/100%60, cs%100)
 }
