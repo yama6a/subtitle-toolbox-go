@@ -588,7 +588,7 @@ func centiseconds(d time.Duration) int64 {
 
 // clockText writes d as h:mm:ss.cc. A negative time writes as 0.
 func clockText(d time.Duration) string {
-	cs := timecode.Units(d, centisecond)
+	cs := max(0, centiseconds(d))
 	return strconv.FormatInt(cs/360000, 10) + ":" + pad2(cs/6000%60) + ":" + pad2(cs/100%60) + "." + pad2(cs%100)
 }
 

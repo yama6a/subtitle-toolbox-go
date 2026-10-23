@@ -52,9 +52,10 @@ func Number(f float64) string {
 	return strconv.FormatFloat(f, 'g', 14, 64)
 }
 
-// Units returns d in whole units, rounded half away from zero, from 0 up to the largest count below MaxTime.
+// Units returns d in whole units, rounded half away from zero on whole milliseconds, from 0 up to the largest count
+// below MaxTime.
 func Units(d, unit time.Duration) int64 {
-	return min(int64(max(d, 0).Round(unit)/unit), int64((MaxTime-1)/unit))
+	return min(int64(max(d, 0).Round(time.Millisecond).Round(unit)/unit), int64((MaxTime-1)/unit))
 }
 
 // FromFrames returns the time of frame n at fps frames per second, rounded to whole milliseconds. It returns MaxTime
