@@ -54,6 +54,7 @@ Options:
 const convertGroupList = `
 Option groups, in the order that convert runs their edits:
   forced     Keep only the forced cues.
+  sdh        Remove hearing-impaired annotations.
   replace    Replace words or patterns in the text.
   text       Change the case, remove tags, fix right-to-left text.
   structure  Join, wrap and unwrap cues.
@@ -70,6 +71,21 @@ var convertGroupHelp = []string{
 	`forced: Keep only the forced cues.
   --forced-only  Keep only the forced cues, for example the translations of
                  signs.
+`,
+	`sdh: Remove hearing-impaired annotations.
+  --sdh                       Remove hearing-impaired annotations such as [DOOR
+                              SLAMS], (laughs) and JOHN:. Remove a cue with no
+                              text left.
+  --sdh-keep-square-brackets  Keep text in square brackets, such as [DOOR
+                              SLAMS].
+  --sdh-keep-parentheses      Keep text in parentheses, such as (laughs).
+  --sdh-keep-speaker-labels   Keep speaker labels, such as JOHN:.
+  --sdh-keep-music-lines      Keep lines that hold only music symbols.
+  --sdh-any-case-labels       Also remove speaker labels that are not upper
+                              case, such as Baker:.
+  --sdh-lyrics                Remove text between two music symbols.
+  --sdh-brackets PAIR         Also remove text between this pair of characters,
+                              for example "{}" or "**". Repeatable.
 `,
 	`replace: Replace words or patterns in the text.
   --replace FROM=TO      Replace FROM with TO in the text between tags, for
@@ -151,7 +167,7 @@ func TestConvertHelp(t *testing.T) {
 	all := result{Stdout: convertCommonHelp + "\n" + strings.Join(convertGroupHelp, "\n")}
 	unknown := func(topic string) result {
 		return usageResult("convert", "Unknown option group "+quote(topic)+
-			". The groups are forced, replace, text, structure, retime, timing, ass, and all for every option.")
+			". The groups are forced, sdh, replace, text, structure, retime, timing, ass, and all for every option.")
 	}
 	tests := []struct {
 		name  string
