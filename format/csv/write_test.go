@@ -13,6 +13,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
@@ -139,6 +140,12 @@ func TestWriteTimeCells(t *testing.T) {
 		{"a frame that rounds to the next second", 59990 * ms, csv.TimeFrames, 25, "00:01:00:00"},
 		{"23.976 fps", 1980 * ms, csv.TimeFrames, 23.976, "00:00:01:23"},
 		{"hours of 3 digits", 360000 * time.Second, csv.TimeComma, 0, `"100:00:00,000"`},
+		{"99999:59:59.999 clamps", timecode.MaxValidTime, csv.TimeFrames, 25, "99999:59:59:24"},
+		{"99999:59:59.995 clamps", timecode.MaxTime - 5*ms, csv.TimeFrames, 25, "99999:59:59:24"},
+		{"99999:59:59.900 stays", timecode.MaxTime - 100*ms, csv.TimeFrames, 25, "99999:59:59:23"},
+		{"99999:59:59.999 at 23.976 fps clamps", timecode.MaxValidTime, csv.TimeFrames, 23.976, "99999:59:59:23"},
+		{"99999:59:59.999 at 1000000 fps", timecode.MaxValidTime, csv.TimeFrames, 1e6, "99999:59:59:999000"},
+		{"a time beyond the limit clamps", timecode.MaxTime + time.Hour, csv.TimeFrames, 25, "99999:59:59:24"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

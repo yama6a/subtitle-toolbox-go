@@ -23,7 +23,7 @@ func parseTime(t string, fps float64, millis bool, line int) (time.Duration, err
 		if millis {
 			secs /= 1000
 		}
-		return parsing.BoundedTime(fromSeconds(secs), t, line)
+		return parsing.BoundedTime(timecode.FromFrames(secs, 1), t, line)
 	}
 	if fields, ok := frameFields(t); ok {
 		if fps == 0 {
@@ -39,14 +39,6 @@ func parseTime(t string, fps float64, millis bool, line int) (time.Duration, err
 	return 0, &model.ParseError{
 		Line: line, Msg: `The time "` + t + `" is not seconds, h:mm:ss.mmm, m:ss.mmm, hh:mm:ss,mmm or hh:mm:ss:ff.`,
 	}
-}
-
-// fromSeconds returns secs as a time, or timecode.MaxTime from the limit on, so the conversion cannot overflow.
-func fromSeconds(secs float64) time.Duration {
-	if !(secs < timecode.MaxTime.Seconds()) {
-		return timecode.MaxTime
-	}
-	return timecode.FromSeconds(secs)
 }
 
 // isDecimal reports whether t matches ^\d+(?:\.\d+)?$.
@@ -76,7 +68,7 @@ func frameTime(fields [4]string, fps float64) time.Duration {
 	m, _ := strconv.ParseInt(fields[1], 10, 64)
 	s, _ := strconv.ParseInt(fields[2], 10, 64)
 	frames, _ := strconv.ParseInt(fields[3], 10, 64)
-	return fromSeconds(float64(h*3600+m*60+s) + float64(frames)/fps)
+	return timecode.FromFrames(float64(h*3600+m*60+s)+float64(frames)/fps, 1)
 }
 
 // padSeconds puts a 0 before each single digit that follows a colon and ends t or comes before "." or ",", as
@@ -128,15 +120,22 @@ func timeCell(d time.Duration, f TimeFormat, fps float64) string {
 }
 
 // frameCell writes whole clock seconds and the frames after them. A frame at or above the rounded frame rate
-// moves to the next second as frame 0.
+// moves to the next second as frame 0. A time that rounds to the limit writes the last frame below it.
 func frameCell(ms int64, fps float64) string {
+	ms = min(ms, timecode.MaxValidTime.Milliseconds())
 	whole := ms / 1000
-	frame := int64(math.Round(float64(ms%1000) / 1000 * fps))
-	if frame >= int64(math.Round(fps)) {
+	labels := math.Round(fps)
+	frame := math.Round(float64(ms%1000) / 1000 * fps)
+	if frame >= labels {
 		whole++
 		frame = 0
 	}
-	return pad2(whole/3600) + ":" + pad2(whole/60%60) + ":" + pad2(whole%60) + ":" + pad2(frame)
+	// The last frame of a second is at least 1 ms before its end up to 1000 fps, so it stays below the limit.
+	if time.Duration(whole)*time.Second+timecode.FromFrames(frame, fps) >= timecode.MaxTime {
+		whole--
+		frame = labels - 1
+	}
+	return pad2(whole/3600) + ":" + pad2(whole/60%60) + ":" + pad2(whole%60) + ":" + pad2(int64(frame))
 }
 
 func pad2(n int64) string {

@@ -897,7 +897,7 @@ This table reads as 2 cues: `<v Anna>Where are you going?` and `<v Ben>Home.` pl
 | `seconds` | `62.5`. 4 s writes `4` |
 | `hh:mm:ss.mmm` | `00:01:02.500` |
 | `hh:mm:ss,mmm` | `00:01:02,500` |
-| `hh:mm:ss:ff` | `00:01:02:13` at 25 fps. A frame at or above the rounded frame rate moves to the next second as frame 0 |
+| `hh:mm:ss:ff` | `00:01:02:13` at 25 fps. A frame at or above the rounded frame rate moves to the next second as frame 0. A time that would write 100000 hours writes the last frame below it, such as `99999:59:59:24` at 25 fps |
 | `milliseconds` | `62500` |
 
 ### Options
