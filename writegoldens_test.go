@@ -6,6 +6,7 @@ import (
 	"path"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
@@ -17,7 +18,7 @@ var update = flag.Bool("update", false, "rewrite the write golden files")
 
 // roundTripFolders holds the folders whose every real file is a round trip case.
 func roundTripFolders() []string {
-	return []string{"ass", "microdvd", "mpl2", "mpsub", "sami", "sbv", "srt", "tmplayer", "vtt"}
+	return []string{"ass", "lrc", "microdvd", "mpl2", "mpsub", "sami", "sbv", "srt", "tmplayer", "vtt"}
 }
 
 // roundTripFile is a round trip case in a folder that roundTripFolders does not hold. Its golden is
@@ -48,6 +49,9 @@ func conversions() []conversion {
 		{"ass", "own_aegisub.ass", stbox.WebVTT, ""},
 		{"ass", "own_signs_crlf.ass", stbox.SubRip, ""},
 		{"ass", "own_signs_crlf.ass", stbox.WebVTT, ""},
+		{"lrc", "handwritten-enhanced.lrc", stbox.SubRip, ""},
+		{"lrc", "handwritten-enhanced.lrc", stbox.WebVTT, ""},
+		{"lrc", "handwritten-enhanced.lrc", stbox.ASS, ""},
 		{"mpl2", "subtitle_edit_shape.txt", stbox.SubRip, ""},
 		{"mpl2", "subtitle_edit_shape.txt", stbox.WebVTT, ""},
 		{"mpl2", "subtitle_edit_shape.txt", stbox.ASS, ""},
@@ -155,4 +159,15 @@ func conversionSuffix(f stbox.Format) string {
 		suffix += "." + ext
 	}
 	return suffix
+}
+
+// Ports testSpacesAroundWordTimestampsSeparateTheWords of tests/Parsers/LyricsParserTest.php of subtitle-toolbox-php.
+func TestLRCWordTimesWriteAsWordsInSubRip(t *testing.T) {
+	t.Parallel()
+
+	s, _ := folder(t, "lrc").read(t, "handwritten-enhanced.lrc")
+	first, ok := s.Cue(0)
+	require.True(t, ok)
+	assert.Equal(t, "<00:00:03.000>Slow <00:00:03.550>river <00:00:04.400>runs", first.Text())
+	assert.Contains(t, string(writeAs(t, s, stbox.SubRip)), "\nSlow river runs\n")
 }

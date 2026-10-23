@@ -103,7 +103,7 @@ func TestWithoutToTheExtensionOfAnotherWritableFormatFailsBeforeAnyFileIsRead(t 
 		call{dir: dir, stdin: readFile(t, dir, "trip.srt")}.run(t, "convert", "-", "-o", "out.vtt"))
 	assert.Equal(t, before, snapshot(t, dir))
 
-	for _, name := range []string{"kept.srt", "kept.bak", "kept.lrc"} {
+	for _, name := range []string{"kept.srt", "kept.bak", "kept.mpsub"} {
 		assert.Equal(t, 0, call{dir: dir}.run(t, "convert", "trip.srt", "-o", name).Code, name)
 		assert.FileExists(t, filepath.Join(dir, name))
 	}

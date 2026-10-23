@@ -162,6 +162,7 @@ func TestConvertWritesTheFormatOfTo(t *testing.T) {
 		{"ass/real/own_aegisub.ass", stbox.SubRip},
 		{"ttml/real/bbc_ebu_tt_d.ttml", stbox.SubRip},
 		{"sami/real/multi_language.smi", stbox.SAMI},
+		{"lrc/real/handwritten-enhanced.lrc", stbox.SubRip},
 		{"mpl2/real/subtitle_edit_shape.txt", stbox.SubRip},
 		{"tmplayer/real/tmplayer_multiline_bom.txt", stbox.WebVTT},
 		{"srt/real/own_styled.srt", stbox.MPL2},
@@ -806,11 +807,16 @@ func TestNeedsOneOf(t *testing.T) {
 func TestConvertASSOptions(t *testing.T) {
 	t.Parallel()
 
-	dir := fixtureDir(t, map[string]string{"words.vtt": "vtt/real/w3c_timestamps.vtt", "aegisub.ass": "ass/real/own_aegisub.ass"})
+	dir := fixtureDir(t, map[string]string{
+		"words.vtt": "vtt/real/w3c_timestamps.vtt", "aegisub.ass": "ass/real/own_aegisub.ass", "song.lrc": "lrc/real/handwritten-enhanced.lrc",
+	})
 	fill := libraryOutput(t, "vtt/real/w3c_timestamps.vtt", stbox.ASS, stbox.WriteOptions{ASS: ass.WriteOptions{KaraokeTag: ass.KaraokeFill}}, nil)
 	assert.Contains(t, fill, `\kf`)
 	assert.Equal(t, result{Stdout: fill}, call{dir: dir}.run(t, "convert", "words.vtt", "--to", "ass", "-o", "-", "--ass-karaoke-tag", "kf"))
 	assert.Equal(t, result{Stdout: fill}, call{dir: dir}.run(t, "convert", "words.vtt", "--to", "ssa", "-o", "-", "--ass-karaoke-tag", "KF"))
+	lyrics := libraryOutput(t, "lrc/real/handwritten-enhanced.lrc", stbox.ASS, stbox.WriteOptions{ASS: ass.WriteOptions{KaraokeTag: ass.KaraokeFill}}, nil)
+	assert.Contains(t, lyrics, `{\kf55}Slow `)
+	assert.Equal(t, result{Stdout: lyrics}, call{dir: dir}.run(t, "convert", "song.lrc", "--to", "ass", "-o", "-", "--ass-karaoke-tag", "kf"))
 
 	styled := call{dir: dir}.run(t, "convert", "trip.srt", "--to", "ass", "-o", "-", "--ass-style", "Fontname=Roboto,Fontsize=48")
 	assert.Equal(t, 0, styled.Code)

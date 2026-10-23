@@ -197,6 +197,17 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Quotes**: L is the whole timing line, as PHP does, without the cut at 60 characters.
 - **Position**: a timing line that fails does not move the position, so the next cue counts from the end of the last good cue.
 
+## LRC
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| a line that starts with `[` and a digit but holds no valid time tag, such as `[00:1x.00]Text` or `[1:75:00.00]Text` | ignores the line | `The line "L" has a time tag that is not valid.`, with the line and its block. `Skipped` |
+| a time of 100000 hours or more, which only a negative offset gives | `The time "[00:12.00]" is not below 100000 hours.`, with the time tag or word time as written and no line | skips the line. `Skipped`, with no line |
+| plain text but no cue | `The file has text but no cues.` at the first line of plain text | one warning and an empty subtitle. `Skipped` |
+
+- **Block numbers**: the block of a warning is the index of the line among the non-empty lines, from 0.
+- **Line numbers**: the warning of a broken time tag has the 1-based line of the file, empty lines included.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

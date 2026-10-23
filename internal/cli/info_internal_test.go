@@ -401,6 +401,19 @@ func TestInfoSubtitleWithoutCues(t *testing.T) {
 `)
 }
 
+// Ports testTextWithoutCuesFailsTheFileAndWarnsInLenientMode of tests/Cli/BinaryInfoValidateTest.php of
+// subtitle-toolbox-php.
+func TestInfoTextWithoutCues(t *testing.T) {
+	t.Parallel()
+
+	lyrics := "[ti:Harbour walk]\nThe ferry leaves at nine.\n"
+	assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 2: The file has text but no cues.\n" + lenientHint + "\n"},
+		call{stdin: lyrics}.run(t, "info", "-", "--from", "lrc"))
+	got := call{stdin: lyrics}.run(t, "info", "-", "--from", "lrc", "--lenient")
+	assert.Equal(t, 0, got.Code)
+	assert.Equal(t, "stdin: line 2: The file has text but no cues. (skipped)\n", got.Stderr)
+}
+
 func TestOrderedMetadata(t *testing.T) {
 	t.Parallel()
 

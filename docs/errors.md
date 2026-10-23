@@ -70,6 +70,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 | SAMI | the line of the `<SYNC` tag. `The SAMI file has no class X.` has no line |
 | MPL2, TMPlayer | the line of the error |
 | MPSub | the line of the error. A cue without text reports its timing line |
+| LRC | 0. `The file has text but no cues.` gives the first line of plain text |
 
 Each format adds its row here when its reader ships.
 

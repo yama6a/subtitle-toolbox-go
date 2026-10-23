@@ -38,6 +38,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 		"Name      Extensions        Read  Write",
 		"ass       .ass .ssa         yes   yes",
 		"json      .json             yes   yes",
+		"lrc       .lrc              yes   yes",
 		"microdvd  .sub              yes   yes",
 		"mpsub     .mpsub            yes   yes",
 		"sami      .smi .sami        yes   yes",
