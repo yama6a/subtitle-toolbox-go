@@ -69,8 +69,7 @@ func appendFrame(dst []byte, d time.Duration, fps float64) []byte {
 // writeText returns the text of c with control codes for the styles that wrap a whole line. A line keeps its
 // stored codes when every line has its stored color and tags.
 func writeText(c model.Cue, stripTags bool) string {
-	stored := storedLines(c)
-	lines := writtenLines(c.Lines)
+	lines, stored := writtenLines(c)
 	keepStored := !stripTags && len(stored) == len(lines)
 	for i, line := range lines {
 		keepStored = keepStored && line.style.color == stored[i].style.color && slices.Equal(line.style.tags, stored[i].style.tags)
@@ -93,30 +92,24 @@ func writeText(c model.Cue, stripTags bool) string {
 	return writing.PipeText(texts)
 }
 
-// writtenLines returns the lines with ruby as text. A tag open across lines wraps each line, and a <v> tag does
-// not hide the styles inside it.
-func writtenLines(lines []string) []writtenLine {
-	carried := make([]string, len(lines))
-	for i, line := range lines {
-		carried[i] = markupcore.RubyAsText(line)
+// writtenLines returns the lines of c with ruby as text, split at their line breaks, and the stored lines of c. A line
+// break inside a line gives no stored lines, because they no longer match the written lines. A tag open across lines
+// wraps each line, and a <v> tag does not hide the styles inside it.
+func writtenLines(c model.Cue) ([]writtenLine, []storedLine) {
+	split := make([]string, 0, len(c.Lines))
+	for _, line := range c.Lines {
+		split = append(split, markupcore.SplitLineBreaks(markupcore.RubyAsText(line))...)
 	}
-	carried = markupcore.CarryOpenTags(carried)
-	out := make([]writtenLine, 0, len(carried))
-	for _, line := range carried {
+	carried := markupcore.CarryOpenTags(split)
+	out := make([]writtenLine, len(carried))
+	for i, line := range carried {
 		closed := line + markupcore.CloseCoreTags(markupcore.OpenCoreTags(line, nil))
-		written := readLine(markupcore.KeepTags(closed, "b", "i", "u", "s", "font"))
-		if !strings.Contains(written.text, "\n") {
-			out = append(out, written)
-			continue
-		}
-		// An entity such as &#10; decodes to a line break inside the line.
-		for text := range strings.SplitSeq(written.text, "\n") {
-			if text = strings.Trim(text, markupcore.PHPTrimSet); text != "" {
-				out = append(out, writtenLine{style: written.style, text: text})
-			}
-		}
+		out[i] = readLine(markupcore.KeepTags(closed, "b", "i", "u", "s", "font"))
 	}
-	return out
+	if len(split) != len(c.Lines) {
+		return out, nil
+	}
+	return out, storedLines(c)
 }
 
 // codes returns the control codes of s: {c:$BBGGRR}, then {y:x} in the order b, i, u, s.

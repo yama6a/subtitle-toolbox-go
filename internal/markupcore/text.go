@@ -38,13 +38,34 @@ func VisibleLength(text string) int {
 func PlainLines(lines []string) []string {
 	var out []string
 	for _, line := range lines {
-		for part := range strings.SplitSeq(NormalizeLineEnds(PlainText(RubyAsText(line))), "\n") {
-			if v := strings.Trim(part, PHPTrimSet); v != "" {
+		for _, part := range SplitLineBreaks(RubyAsText(line)) {
+			if v := VisibleText(part); v != "" {
 				out = append(out, v)
 			}
 		}
 	}
 	return out
+}
+
+// SplitLineBreaks splits a line of core markup at each CR, LF and entity that decodes to LF, such as &#10;.
+func SplitLineBreaks(line string) []string {
+	line = NormalizeLineEnds(line)
+	var parts []string
+	start := 0
+	for i := 0; i < len(line); i++ {
+		switch line[i] {
+		case '\n':
+			parts = append(parts, line[start:i])
+			start = i + 1
+		case '&':
+			if v, n, ok := decodeEntity(line[i:]); ok && v == "\n" {
+				parts = append(parts, line[start:i])
+				start = i + n
+				i += n - 1
+			}
+		}
+	}
+	return append(parts, line[start:])
 }
 
 // RubyAsText writes ruby as "base (annotation)" for formats without ruby. It drops <rp> elements, because the

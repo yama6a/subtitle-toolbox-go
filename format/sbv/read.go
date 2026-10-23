@@ -80,12 +80,12 @@ func (rd *reader) blocks(content string) iter.Seq[blocks.Block] {
 }
 
 func (rd *reader) isTimingLine(line string) bool {
-	return timingLineRegexp.MatchString(line) || rd.st.Lenient() && looseTimingLineRegexp.MatchString(line)
+	return isTimingLine(line, rd.st.Lenient())
 }
 
-// isTimingLineInEitherMode reports whether strict or lenient mode reads line as a timing line.
-func isTimingLineInEitherMode(line string) bool {
-	return timingLineRegexp.MatchString(line) || looseTimingLineRegexp.MatchString(line)
+// isTimingLine reports whether the reader reads line as a timing line. Lenient mode also reads a loose timing line.
+func isTimingLine(line string, lenient bool) bool {
+	return timingLineRegexp.MatchString(line) || lenient && looseTimingLineRegexp.MatchString(line)
 }
 
 // parseBlock returns the cues of block b, number index, split before each timing line. Lenient mode skips a

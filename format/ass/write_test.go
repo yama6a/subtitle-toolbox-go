@@ -264,7 +264,7 @@ func TestCoreMarkupBecomesOverrideTags(t *testing.T) {
 		{"text like a tag after", []string{"<i>a</i>< b > c"}, `{\i1}a{\i0}< b > c`, ""},
 		{"speaker", []string{"<v.loud Fred, Jr.>Hi", "there"}, `Hi\Nthere`, "Fred Jr."},
 		{"ruby as text", []string{"<ruby>K<rt>kan</rt></ruby>"}, "K (kan)", ""},
-		{"braces and backslashes stay raw", []string{`{a} \N`}, `{a} \N`, ""},
+		{"braces stay raw and a line break code gets a word joiner", []string{`{a} \N`}, "{a} \\\u2060N", ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

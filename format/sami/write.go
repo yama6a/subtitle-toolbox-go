@@ -146,7 +146,7 @@ func (wr writer) paragraphs(c model.Cue) string {
 		} else {
 			line = markupcore.KeepTags(markupcore.WebVTTColorsToFont(line), "b", "i", "u", "s", "font")
 		}
-		lines[i] = writeNbsp(strings.ReplaceAll(line, "\n", "<br>"))
+		lines[i] = writeNbsp(breakLines(line))
 	}
 	if len(lines) == 0 {
 		return wr.openParagraph(nil) + "&nbsp;"
@@ -215,6 +215,33 @@ func (wr writer) openParagraph(attrs []attr) string {
 		tag += " " + asciiUpper(a.name) + "=" + value
 	}
 	return tag + ">"
+}
+
+// breakLines writes each line break of line as <br>. That is an LF, an entity that core markup decodes to LF such
+// as &NewLine;, and a reference that the reader decodes to CR or LF such as &#13;.
+func breakLines(line string) string {
+	var b strings.Builder
+	for i, part := range markupcore.SplitLineBreaks(line) {
+		if i > 0 {
+			b.WriteString("<br>")
+		}
+		for part != "" {
+			j := strings.IndexByte(part, '&')
+			if j < 0 {
+				b.WriteString(part)
+				break
+			}
+			b.WriteString(part[:j])
+			text, n := reference(part[j:])
+			if text == "\n" || text == "\r" {
+				b.WriteString("<br>")
+			} else {
+				b.WriteString(part[j : j+n])
+			}
+			part = part[j+n:]
+		}
+	}
+	return b.String()
 }
 
 func writeNbsp(html string) string {

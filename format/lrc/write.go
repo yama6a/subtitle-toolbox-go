@@ -122,12 +122,11 @@ func splitAtWordTimestamps(text string) (parts []string, times []time.Duration) 
 	return append(parts, plainText(text[copied:])), times
 }
 
-// plainText returns the plain text of part with each line break as a space, because an LRC cue is one line.
+// plainText returns the plain text of part with each line break as a space, because an LRC cue is one line. The
+// model holds no CR, and no entity decodes to one.
 func plainText(part string) string {
-	return lineBreaks.Replace(markupcore.PlainText(part))
+	return strings.ReplaceAll(markupcore.PlainText(part), "\n", " ")
 }
-
-var lineBreaks = strings.NewReplacer("\r\n", " ", "\r", " ", "\n", " ") //nolint:gochecknoglobals // a replacer holds no state
 
 func isTrimByte(b byte) bool {
 	return strings.IndexByte(markupcore.PHPTrimSet, b) >= 0

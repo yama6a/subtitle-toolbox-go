@@ -54,7 +54,8 @@ type part struct {
 	value string
 }
 
-// Write writes s as ASS, or as SSA when s was read from SSA.
+// Write writes s as ASS, or as SSA when s was read from SSA. The text \N, \n or \h gets U+2060 WORD JOINER after the
+// backslash, so it reads back as text.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
 	if err := opts.Validate(); err != nil {
 		return err
@@ -541,8 +542,12 @@ func colorTag(rgb string) string {
 	return `\c&H` + markupcore.RGBToBGR(rgb) + "&"
 }
 
+// textEscapes writes LF and U+00A0 as their ASS codes. Text that already holds such a code gets a word joiner after the
+// backslash, so it reads back as text.
+//
 //nolint:gochecknoglobals // a replacer holds no state
-var textEscapes = strings.NewReplacer("\n", `\N`, nbsp, `\h`)
+var textEscapes = strings.NewReplacer("\n", `\N`, nbsp, `\h`,
+	`\N`, `\`+writing.WordJoiner+`N`, `\n`, `\`+writing.WordJoiner+`n`, `\h`, `\`+writing.WordJoiner+`h`)
 
 func escapeText(text string) string {
 	return textEscapes.Replace(text)

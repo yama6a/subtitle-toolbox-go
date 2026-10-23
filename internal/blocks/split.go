@@ -20,7 +20,7 @@ func SplitAtEmptyLines(lines iter.Seq2[int, string]) iter.Seq[Block] {
 	return func(yield func(Block) bool) {
 		var b Block
 		for n, line := range lines {
-			line = strings.Trim(CollapseSpaces(trimBOMs(line)), markupcore.PHPTrimSet)
+			line = CleanLine(line)
 			if line != "" {
 				if b.Lines == nil {
 					b.Line = n + 1
@@ -124,6 +124,12 @@ func (r Rules) ReadParts(b Block, index int, p PartReader) ([]model.Cue, error) 
 		}
 	}
 	return cues, nil
+}
+
+// CleanLine returns line as SplitAtEmptyLines reads it: without leading BOMs, with each run of tabs and each run of
+// spaces as 1 space, and trimmed. A writer tests its text lines in this form.
+func CleanLine(line string) string {
+	return strings.Trim(CollapseSpaces(trimBOMs(line)), markupcore.PHPTrimSet)
 }
 
 func trimBOMs(s string) string {

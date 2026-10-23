@@ -35,6 +35,19 @@ func TestWriteCueTextThatReadsAsStructure(t *testing.T) {
 		cases  []structureTextCase
 	}{
 		{"SubRip", stbox.SubRip, stbox.WriteOptions{}, []structureTextCase{
+			{
+				"timing line after a line break and a space",
+				[]string{"x\n 00:00:03,500 --> 00:00:03,800"},
+				"\nx\n\u2060 00:00:03,500",
+				[]string{"x", "\u2060 00:00:03,500 --&gt; 00:00:03,800"},
+			},
+			{
+				"timing line after a BOM",
+				[]string{"\ufeff00:00:03,500 --> 00:00:03,800"},
+				"\n\u2060\ufeff00:00:03,500",
+				[]string{"\u2060\ufeff00:00:03,500 --&gt; 00:00:03,800"},
+			},
+			{"line of only a BOM", []string{"x", "\ufeff", "y"}, "\nx\ny\n", []string{"x", "y"}},
 			{"line break inside a line", []string{"a\nb"}, "\na\nb\n", []string{"a", "b"}},
 			{
 				"timing line",
@@ -58,6 +71,12 @@ func TestWriteCueTextThatReadsAsStructure(t *testing.T) {
 			{"arrow inside a line", []string{"a --> b"}, "\na --> b\n", []string{"a --&gt; b"}},
 		}},
 		{"WebVTT", stbox.WebVTT, stbox.WriteOptions{}, []structureTextCase{
+			{"line of only a dropped tag", []string{"x", "<p></p>", "y"}, "\nx\ny\n", []string{"x", "y"}},
+			{"line of only a font face", []string{"x", "<font face=\"Arial\"></font>", "y"}, "\nx\ny\n", []string{"x", "y"}},
+			{"line of only a BOM", []string{"x", "\ufeff", "y"}, "\nx\ny\n", []string{"x", "y"}},
+		}},
+		{"WebVTT without tags", stbox.WebVTT, stbox.WriteOptions{StripTags: true}, []structureTextCase{
+			{"line of only a tag", []string{"x", "<i></i>", "y"}, "\nx\ny\n", []string{"x", "y"}},
 			{"line break inside a line", []string{"a\nb"}, "\na\nb\n", []string{"a", "b"}},
 			{
 				"timing line",
@@ -67,6 +86,8 @@ func TestWriteCueTextThatReadsAsStructure(t *testing.T) {
 			},
 		}},
 		{"SBV", stbox.SBV, stbox.WriteOptions{}, []structureTextCase{
+			{"timing line after a BOM", []string{"\ufeff0:00:03.500,0:00:03.800"}, "\n\u2060\ufeff0:00:03.500", []string{"\u2060\ufeff0:00:03.500,0:00:03.800"}},
+			{"line of only a BOM", []string{"x", "\ufeff", "y"}, "\nx\ny\n", []string{"x", "y"}},
 			{"line break inside a line", []string{"a\nb"}, "\na\nb\n", []string{"a", "b"}},
 			{
 				"timing line",
@@ -112,11 +133,13 @@ func TestWriteCueTextThatReadsAsStructure(t *testing.T) {
 		{"MicroDVD", stbox.MicroDVD, fps, []structureTextCase{
 			{"line break inside a line", []string{"a\nb"}, "}a|b\n", []string{"a", "b"}},
 			{"line break entity", []string{"<i>a&#10;b</i>"}, "}{y:i}a|{y:i}b\n", []string{"<i>a</i>", "<i>b</i>"}},
+			{"line break entity after italics", []string{"<i>a</i>&#10;b"}, "}{y:i}a|b\n", []string{"<i>a</i>", "b"}},
 			{"pipe", []string{"a|b"}, "}a\u00a6b\n", []string{"a\u00a6b"}},
 		}},
 		{"MPL2", stbox.MPL2, stbox.WriteOptions{}, []structureTextCase{
 			{"line break inside a line", []string{"a\nb"}, "]a|b\n", []string{"a", "b"}},
 			{"line break inside italics", []string{"<i>a\nb</i>"}, "]/a|/b\n", []string{"<i>a</i>", "<i>b</i>"}},
+			{"line break after italics", []string{"<i>a</i>\nb"}, "]/a|b\n", []string{"<i>a</i>", "b"}},
 			{"pipe", []string{"a|b"}, "]a\u00a6b\n", []string{"a\u00a6b"}},
 		}},
 		{"TMPlayer", stbox.TMPlayer, stbox.WriteOptions{}, []structureTextCase{
@@ -138,7 +161,22 @@ func TestWriteCueTextThatReadsAsStructure(t *testing.T) {
 		{"TSV", stbox.TSV, stbox.WriteOptions{}, []structureTextCase{
 			{"line break inside a line", []string{"a\nb"}, "\t\"a\nb\"\n", []string{"a", "b"}},
 		}},
+		{"ASS", stbox.ASS, stbox.WriteOptions{}, []structureTextCase{
+			{"line break inside a line", []string{"a\nb"}, ",a\\Nb\n", []string{"a", "b"}},
+			{"line break code", []string{`a\Nb`}, ",a\\\u2060Nb\n", []string{"a\\\u2060Nb"}},
+			{"soft line break code", []string{`a\nb`}, ",a\\\u2060nb\n", []string{"a\\\u2060nb"}},
+			{"hard space code", []string{`a\hb`}, ",a\\\u2060hb\n", []string{"a\\\u2060hb"}},
+		}},
+		{"QuickTime text", stbox.QuickTimeText, stbox.WriteOptions{}, []structureTextCase{
+			{"line break inside a line", []string{"a\nb"}, "\na\nb\n", []string{"a", "b"}},
+			{"timestamp line", []string{"x", "[00:00:03]y"}, "\nx\n\u2060[00:00:03]y\n", []string{"x", "\u2060[00:00:03]y"}},
+			{"timestamp beyond the time scale", []string{"[00:00:03.50]"}, "\n\u2060[00:00:03.50]\n", []string{"\u2060[00:00:03.50]"}},
+		}},
 		{"SAMI", stbox.SAMI, stbox.WriteOptions{}, []structureTextCase{
+			{"line feed entity", []string{"a&#10;b"}, ">a<br>b\n", []string{"a", "b"}},
+			{"line feed entity in hex", []string{"a&#x0A;b"}, ">a<br>b\n", []string{"a", "b"}},
+			{"carriage return entity", []string{"a&#13;b"}, ">a<br>b\n", []string{"a", "b"}},
+			{"named line feed entity", []string{"a&NewLine;b"}, ">a<br>b\n", []string{"a", "b"}},
 			{"line break inside a line", []string{"a\nb"}, ">a<br>b\n", []string{"a", "b"}},
 		}},
 	}

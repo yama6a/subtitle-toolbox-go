@@ -194,8 +194,8 @@ func textLine1(lines []string) string {
 }
 
 // textLine2 joins lines with [br] into a text line that the SubViewer 2 reader reads back as the same lines. A [br]
-// in a line gets a word joiner after its [. So does a line that reads as a timing line, a style line or the script
-// line, before each field of the shape of a time, or at its start.
+// in a line gets a word joiner after its [. A line that reads as a timing line gets one before each field in the
+// shape of a time. A line that reads as a style line or the script line gets one at its start.
 func textLine2(lines []string) string {
 	parts := make([]string, len(lines))
 	for i, line := range lines {

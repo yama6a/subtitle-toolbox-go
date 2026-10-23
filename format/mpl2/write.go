@@ -30,13 +30,16 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 	return writing.Write(w, model.MPL2, body, common, false)
 }
 
-// italicLines returns the visible text of each line. A line gets a / prefix when all its visible text is italic.
-// The italic state runs on from one line to the next, also over a line without text.
+// italicLines returns the visible text of each line, split at its line breaks. A line gets a / prefix when all its
+// visible text is italic. The italic state runs on from one line to the next, also over a line without text.
 func italicLines(lines []string) []string {
+	split := make([]string, 0, len(lines))
+	for _, line := range lines {
+		split = append(split, markupcore.SplitLineBreaks(markupcore.RubyAsText(line))...)
+	}
 	var out []string
 	italic := false
-	for _, line := range lines {
-		line = markupcore.RubyAsText(line)
+	for _, line := range split {
 		allItalic := true
 		pos := 0
 		for _, m := range italicTagRegexp.FindAllStringSubmatchIndex(line, -1) {
@@ -46,12 +49,14 @@ func italicLines(lines []string) []string {
 		}
 		allItalic = allItalic && (italic || !hasVisibleText(line[pos:]))
 
-		for _, text := range markupcore.PlainLines([]string{line}) {
-			if allItalic {
-				text = "/" + text
-			}
-			out = append(out, text)
+		text := markupcore.VisibleText(line)
+		if text == "" {
+			continue
 		}
+		if allItalic {
+			text = "/" + text
+		}
+		out = append(out, text)
 	}
 	return out
 }
