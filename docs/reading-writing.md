@@ -91,6 +91,8 @@ Each reader that uses the default adds its row here.
 A writer builds the whole output with LF line endings in memory. [internal/writing/writing.go](../internal/writing/writing.go) then applies the line ending and the BOM rule and writes the result in one `Write` call. An error of the `io.Writer` returns wrapped and leaves incomplete output.
 
 - **Line ending**: `CRLF` replaces each LF that has no CR before it with CR LF. A CR LF that a writer writes on purpose stays.
+- **CSV and TSV line endings**: the CSV writer ends each row with the line ending itself and keeps a line break inside a cell as LF, as Excel writes it. Only the BOM rule runs after it.
+- **CSV and TSV delimiter**: `stbox.Write` sets the delimiter when `WriteOptions.CSV.Delimiter` is empty. TSV output gets a tab. CSV output gets `,` when the stored delimiter is a tab. `csv.Write` called directly keeps the stored delimiter.
 - **BOM**: the line ending comes first, then the BOM. `BOMAdd` adds one UTF-8 BOM unless the output starts with one. `BOMRemove` removes every leading BOM. `BOMDefault` adds the BOM for ASS, CSV, TSV, LRC, MPSub, SubRip and WebVTT, and leaves the output of the other formats as the writer wrote it.
 - **StripTags**: the ASS, MicroDVD, SAMI, SubRip, TTML and WebVTT writers read it. The other writers hold no markup or always write plain text. Library JSON keeps the markup.
 - **Negative times**: every writer except library JSON writes a negative time as 0. Library JSON writes it as it is.

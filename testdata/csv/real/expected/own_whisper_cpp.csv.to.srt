@@ -1,0 +1,19 @@
+﻿1
+00:00:00,000 --> 00:00:01,980
+The museum opens at ten.
+
+2
+00:00:01,980 --> 00:00:04,620
+Tickets cost twelve euros, or eight for students.
+
+3
+00:00:04,620 --> 00:00:08,150
+The guide calls this room "the heart of the house".
+
+4
+00:00:08,150 --> 00:00:11,400
+Photos are fine, but please turn off the flash.
+
+5
+00:00:11,400 --> 00:00:13,890
+The café is on the second floor.

@@ -87,8 +87,8 @@ type Columns struct {
 	NoHeader bool
 }
 
-// IsZero reports whether c is the zero value, which reads the columns by their header names, with synonyms.
-func (c Columns) IsZero() bool {
+// isZero reports whether c is the zero value, which reads the columns by their header names, with synonyms.
+func (c Columns) isZero() bool {
 	return c == Columns{}
 }
 
@@ -99,8 +99,12 @@ type role struct {
 
 // roles holds the column roles in the order in which the reader resolves them.
 var roles = [...]role{ //nolint:gochecknoglobals // a fixed list
-	{"identifier", "ID"}, {"start", "Start"}, {"end", "End"}, {"duration", "Duration"},
-	{"speaker", "Speaker"}, {"text", "Text"},
+	{"identifier", "ID"},
+	{"start", "Start"},
+	{"end", "End"},
+	{"duration", "Duration"},
+	{"speaker", "Speaker"},
+	{"text", "Text"},
 }
 
 // column returns the column of the role with the name r.
@@ -121,6 +125,20 @@ func (c Columns) column(r string) Column {
 	}
 }
 
+func (c Columns) validate() error {
+	for _, r := range roles {
+		col := c.column(r.name)
+		option := "ReadOptions.CSV.Columns." + r.field
+		if col.isIndex && col.index < 0 {
+			return invalid(option, "The column index of "+r.name+" must be 0 or more, got "+strconv.Itoa(col.index)+".")
+		}
+		if c.NoHeader && !col.isIndex && (col.isName || r.name == "start" || r.name == "text") {
+			return invalid(option, "A table without a header row needs a column index for "+r.name+".")
+		}
+	}
+	return nil
+}
+
 // ReadOptions holds the settings of the CSV and TSV reader.
 type ReadOptions struct {
 	// Columns is the column layout. The zero value reads the columns by their header names, with synonyms.
@@ -134,15 +152,8 @@ type ReadOptions struct {
 // Validate returns an error that matches model.ErrInvalidArgument for a negative column index, a column name
 // without a header row, an unknown delimiter, or a frame rate that is negative, NaN or infinite.
 func (o ReadOptions) Validate() error {
-	for _, r := range roles {
-		c := o.Columns.column(r.name)
-		option := "ReadOptions.CSV.Columns." + r.field
-		if c.isIndex && c.index < 0 {
-			return invalid(option, "The column index of "+r.name+" must be 0 or more, got "+strconv.Itoa(c.index)+".")
-		}
-		if o.Columns.NoHeader && !c.isIndex && (c.isName || r.name == "start" || r.name == "text") {
-			return invalid(option, "A table without a header row needs a column index for "+r.name+".")
-		}
+	if err := o.Columns.validate(); err != nil {
+		return err
 	}
 	if err := checkDelimiter(o.Delimiter, "ReadOptions.CSV.Delimiter"); err != nil {
 		return err

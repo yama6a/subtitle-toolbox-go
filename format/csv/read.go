@@ -114,28 +114,37 @@ func (rd *reader) read(content string) (*model.Subtitle, error) {
 		return nil, err
 	}
 	rd.warnSynonyms(header, roles)
-	millis := rd.millisecondTimes(recs, roles)
+	cues, timeFormat, err := rd.cues(recs, roles, header)
+	if err != nil {
+		return nil, err
+	}
+	s := &model.Subtitle{}
+	s.AddCues(cues...)
+	_ = s.SetFormatData(formatDataKey, rd.fileData(header, recs, roles, timeFormat)) // the data has the shape of the schema
+	return s, nil
+}
 
+// cues reads each data row as a cue and returns the time format of the first cue. Lenient mode skips a row that
+// fails.
+func (rd *reader) cues(recs []record, roles layout, header *record) ([]model.Cue, TimeFormat, error) {
+	millis := rd.millisecondTimes(recs, roles)
 	var cues []model.Cue
 	var open []int
-	timeFormat := TimeFormatDefault
+	timeFormat := TimeDot
 	for i, rec := range recs {
 		c, hasEnd, err := rd.cue(rec, i, roles, header, millis)
 		if err != nil {
 			var perr *model.ParseError
 			if !errors.As(err, &perr) {
-				return nil, err
+				return nil, "", err
 			}
 			if err := rd.st.Fail(perr, rec.line, i, []string{rd.join(rec.cells)}); err != nil {
-				return nil, err
+				return nil, "", err
 			}
 			continue
 		}
-		if timeFormat == TimeFormatDefault {
-			timeFormat = TimeMilliseconds
-			if !millis {
-				timeFormat = timeFormatOf(roles.cell(rec.cells, "start"))
-			}
+		if len(cues) == 0 {
+			timeFormat = timeFormatOf(roles.cell(rec.cells, "start"), millis)
 		}
 		if !hasEnd {
 			open = append(open, len(cues))
@@ -143,14 +152,7 @@ func (rd *reader) read(content string) (*model.Subtitle, error) {
 		cues = append(cues, c)
 	}
 	rd.closeOpenEnds(cues, open)
-
-	s := &model.Subtitle{}
-	s.AddCues(cues...)
-	if timeFormat == TimeFormatDefault {
-		timeFormat = TimeDot
-	}
-	_ = s.SetFormatData(formatDataKey, rd.fileData(header, recs, roles, timeFormat)) // the data has the shape of the schema
-	return s, nil
+	return cues, timeFormat, nil
 }
 
 // records splits the content, warns for each unclosed quote, drops the blank rows and checks the row width.
@@ -203,49 +205,67 @@ func (rd *reader) skipRowsBeforeHeader(recs []record) []record {
 // resolveRoles returns the column index of each role that the table has. A missing start or text column, or a
 // mapped column that the table lacks, fails.
 func (rd *reader) resolveRoles(header *record) (layout, error) {
-	var names []string
-	line := 1
-	if header != nil {
-		line = header.line
-		names = make([]string, len(header.cells))
-		for i, h := range header.cells {
-			names[i] = markupcore.ASCIILower(trim(h))
-		}
-	}
-	useSynonyms := rd.columns.IsZero() && (!slices.Contains(names, "start") || !slices.Contains(names, "text"))
+	names, line, width := headerNames(header)
+	useSynonyms := rd.columns.isZero() && (!slices.Contains(names, "start") || !slices.Contains(names, "text"))
 	var out layout
 	for _, r := range roles {
 		c := rd.columns.column(r.name)
-		var index int
-		switch {
-		case c.isIndex:
-			index = c.index
-		case c.isName:
-			index = slices.Index(names, markupcore.ASCIILower(trim(c.name)))
-		default:
-			index = slices.Index(names, r.name)
-		}
-		if index < 0 && useSynonyms {
-			index = synonymIndex(r.name, names)
-		}
-		width := maxColumns
-		if header != nil {
-			width = len(header.cells)
-		}
+		index := columnIndex(c, r.name, names, useSynonyms)
 		switch {
 		case index >= 0 && index < width:
 			out = append(out, roleIndex{r.name, index})
-		case !c.IsZero() || r.name == "start" || r.name == "text":
-			name := r.name
-			if c.isName {
-				name = c.name
-			} else if c.isIndex {
-				name = strconv.Itoa(c.index)
+		case needed(c, r.name):
+			return nil, &model.ParseError{
+				Format: model.CSV, Line: line, Msg: `The table has no column "` + columnName(c, r.name) + `" for ` + r.name + ".",
 			}
-			return nil, &model.ParseError{Format: model.CSV, Line: line, Msg: `The table has no column "` + name + `" for ` + r.name + "."}
 		}
 	}
 	return out, nil
+}
+
+// headerNames returns the header names in lower case after a trim, the line of the header and the width that a
+// column index must be below. Without a header, the width is the column limit and the line is 1.
+func headerNames(header *record) (names []string, line, width int) {
+	if header == nil {
+		return nil, 1, maxColumns
+	}
+	names = make([]string, len(header.cells))
+	for i, h := range header.cells {
+		names[i] = markupcore.ASCIILower(trim(h))
+	}
+	return names, header.line, len(header.cells)
+}
+
+// columnIndex returns the index of column c of role r in the lower-case header names, or -1. A role without a
+// header of its name takes a synonym when useSynonyms is set.
+func columnIndex(c Column, r string, names []string, useSynonyms bool) int {
+	switch {
+	case c.isIndex:
+		return c.index
+	case c.isName:
+		return slices.Index(names, markupcore.ASCIILower(trim(c.name)))
+	}
+	if i := slices.Index(names, r); i >= 0 || !useSynonyms {
+		return i
+	}
+	return synonymIndex(r, names)
+}
+
+// needed reports whether a missing column fails the read: a mapped column, or the start or the text.
+func needed(c Column, r string) bool {
+	return !c.IsZero() || r == "start" || r == "text"
+}
+
+// columnName returns the name of column c of role r in a message.
+func columnName(c Column, r string) string {
+	switch {
+	case c.isName:
+		return c.name
+	case c.isIndex:
+		return strconv.Itoa(c.index)
+	default:
+		return r
+	}
 }
 
 // synonymIndex returns the index of the first header name that is a synonym of role r, or -1.
@@ -271,7 +291,7 @@ func synonymIndex(r string, lowerNames []string) int {
 // warnSynonyms warns, also in strict mode, about the roles whose header name is not the role name, when the
 // roles come from the header without a column layout.
 func (rd *reader) warnSynonyms(header *record, roles layout) {
-	if header == nil || !rd.columns.IsZero() {
+	if header == nil || !rd.columns.isZero() {
 		return
 	}
 	var found []string
@@ -355,18 +375,7 @@ func (rd *reader) cue(rec record, index int, roles layout, header *record, milli
 	if err != nil {
 		return model.Cue{}, false, err
 	}
-	end, hasEnd := start, true
-	switch endCell, durationCell := roles.cell(rec.cells, "end"), roles.cell(rec.cells, "duration"); {
-	case endCell != "":
-		end, err = parseTime(endCell, rd.fps, millis, rec.line)
-	case durationCell != "":
-		var d time.Duration
-		d, err = parseTime(durationCell, rd.fps, millis, rec.line)
-		// The sum stays a valid time, as a computed last cue end does.
-		end = min(start+d, timecode.MaxValidTime)
-	default:
-		hasEnd = false
-	}
+	end, hasEnd, err := rd.end(rec, roles, start, millis)
 	if err != nil {
 		return model.Cue{}, false, err
 	}
@@ -387,6 +396,21 @@ func (rd *reader) cue(rec record, index int, roles layout, header *record, milli
 		_ = c.SetFormatData(formatDataKey, model.NewData(model.Field{Key: "columns", Value: other})) // the data has the shape of the schema
 	}
 	return c, hasEnd, nil
+}
+
+// end returns the end cell of a row, else its start plus the duration cell. hasEnd is false without both.
+func (rd *reader) end(rec record, roles layout, start time.Duration, millis bool) (end time.Duration, hasEnd bool, err error) {
+	if cell := roles.cell(rec.cells, "end"); cell != "" {
+		end, err = parseTime(cell, rd.fps, millis, rec.line)
+		return end, true, err
+	}
+	cell := roles.cell(rec.cells, "duration")
+	if cell == "" {
+		return start, false, nil
+	}
+	d, err := parseTime(cell, rd.fps, millis, rec.line)
+	// The sum stays a valid time, as a computed last cue end does.
+	return min(start+d, timecode.MaxValidTime), true, err
 }
 
 // otherCells returns the cells of the columns without a role, keyed by header name, else by column index. A short

@@ -1,0 +1,23 @@
+﻿1
+00:00:00,000 --> 00:00:02,340
+Good morning and welcome to the harbour tour.
+
+2
+00:00:02,340 --> 00:00:05,100
+Our boat leaves the pier in five minutes.
+
+3
+00:00:05,100 --> 00:00:09,480
+Please keep your tickets ready for the crew.
+
+4
+00:00:09,480 --> 00:00:12,760
+On the left you can see the old lighthouse.
+
+5
+00:00:12,760 --> 00:00:17,020
+It was built in 1871 and still works today.
+
+6
+00:00:17,020 --> 00:00:19,300
+Thank you, and enjoy the trip!

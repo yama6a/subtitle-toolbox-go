@@ -53,28 +53,15 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	columns, header, quoted := layoutOf(file, hasFile, cues, speakers)
 	var seconds []string
 	if opts.SecondText != nil {
-		name := opts.SecondTextHeader
-		if name == "" {
-			name = defaultSecondTextHeader
-		}
-		at := slices.Index(columns, column{role: "text"}) + 1
-		if at == 0 {
-			at = 1
-		}
-		at = min(at, len(columns))
-		columns = slices.Insert(columns, at, column{role: "second"})
-		header = slices.Insert(header, at, name)
+		columns, header = withSecondText(columns, header, opts.SecondTextHeader)
 		seconds = secondTexts(cues, opts.SecondText.Cues())
 	}
-	var quotedAt []bool
-	for _, c := range columns {
-		quotedAt = append(quotedAt, slices.Contains(quoted, c))
+	quotedAt := make([]bool, len(columns))
+	for i, c := range columns {
+		quotedAt[i] = slices.Contains(quoted, c)
 	}
 
-	eol := "\n"
-	if common.LineEnding == model.CRLF {
-		eol = "\r\n"
-	}
+	eol := rowEnd(common.LineEnding)
 	var b strings.Builder
 	if !hasFile || !isNull(file, "header") {
 		set.writeRow(&b, header, nil)
@@ -90,6 +77,26 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	}
 	common.LineEnding = model.LF
 	return writing.Write(w, model.CSV, []byte(b.String()), common, true)
+}
+
+// withSecondText inserts the SecondText column after the text column, as PHP inserts it: at index 1 without one.
+func withSecondText(columns []column, header []string, name string) ([]column, []string) {
+	if name == "" {
+		name = defaultSecondTextHeader
+	}
+	at := slices.Index(columns, column{role: "text"}) + 1
+	if at == 0 {
+		at = 1
+	}
+	at = min(at, len(columns))
+	return slices.Insert(columns, at, column{role: "second"}), slices.Insert(header, at, name)
+}
+
+func rowEnd(l model.LineEnding) string {
+	if l == model.CRLF {
+		return "\r\n"
+	}
+	return "\n"
 }
 
 func isNull(d *model.Data, key string) bool {

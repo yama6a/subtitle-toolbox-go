@@ -92,9 +92,11 @@ func padSeconds(t string) string {
 	return b.String()
 }
 
-// timeFormatOf returns the stored time format of the first parsed start cell.
-func timeFormatOf(t string) TimeFormat {
+// timeFormatOf returns the stored time format of the first parsed start cell, or of a millisecond table.
+func timeFormatOf(t string, millis bool) TimeFormat {
 	switch {
+	case millis:
+		return TimeMilliseconds
 	case strings.Contains(t, ","):
 		return TimeComma
 	case strings.Count(t, ":") == 3:
@@ -120,9 +122,9 @@ func timeCell(d time.Duration, f TimeFormat, fps float64) string {
 		return frameCell(ms, fps)
 	case TimeMilliseconds:
 		return strconv.FormatInt(ms, 10)
-	default:
-		return markupcore.CoreTimestamp(d)
+	case TimeDot, TimeFormatDefault:
 	}
+	return markupcore.CoreTimestamp(d)
 }
 
 // frameCell writes whole clock seconds and the frames after them. A frame at or above the rounded frame rate
