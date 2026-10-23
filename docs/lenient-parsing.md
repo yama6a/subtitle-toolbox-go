@@ -242,6 +242,19 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Line numbers**: the line where the row starts. A quoted line break counts as a line.
 - **Both modes**: the synonym warning and the millisecond warning of [formats.md](formats.md#csv-and-tsv) come also in strict mode.
 
+## QuickTime text
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| the first header line does not start with `{QTtext}` | `The file does not start with {QTtext}.` on line 1 | reads the file as QuickTime text. `The file does not start with {QTtext}. The parser read it as QuickTime text.` `Repaired`, line 1, no block |
+| a fraction at or above the time scale, such as `[00:00:01.45]` at `{timeScale:30}` | `The timestamp "[00:00:01.45]" counts 45 units, but the time scale is 30 per second.` | adds the fraction to the seconds: 2.5 s. The same text plus ` The parser added them to the seconds.` `Repaired`, with the timestamp as its line |
+| a sample that ends before it starts, which relative or out-of-order timestamps give | `The cue ends at E s, before it starts at S s.` | swaps the times when the cue then lasts 30 s or less. `Repaired`. Else skips the sample. `Skipped` |
+| a time of 100000 hours or more, also as a sum of relative timestamps | `The time "T" is not below 100000 hours.`, with the timestamp as written and no brackets | skips the timestamp line and its text lines. `Skipped` |
+
+- **Block numbers**: none. A warning of QuickTime text has `NoBlock`.
+- **Line numbers**: the 1-based line of the file. A swapped or skipped sample reports its timestamp line.
+- **Skipped timestamp**: the text lines after a skipped timestamp line are skipped too, up to the next timestamp line.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

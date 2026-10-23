@@ -92,11 +92,3 @@ func recordOf(v any) record {
 	}
 	return r
 }
-
-func anyList(values []string) []any {
-	out := make([]any, len(values))
-	for i, v := range values {
-		out[i] = v
-	}
-	return out
-}

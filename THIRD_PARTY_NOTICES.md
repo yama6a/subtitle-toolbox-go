@@ -84,6 +84,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   - `testdata/csv/real/headerless_frame_times.csv`, in the shape of `tests/files/csv_ansi.csv`
   - `testdata/subviewer/real/mantas_headers_shape.sub`, in the shape of `tests/files/sub_viewer_with_headers.sub`
   - `testdata/subviewer/real/mantas_plain_shape.sub`, in the shape of `tests/files/sub_viewer.sub`
+  - `testdata/qttext/real/subtitle_edit_shape.txt`, in the shape of the `$qttxt` string in `tests/formats/TxtQuickTimeTest.php`
 
 ```text
 MIT License

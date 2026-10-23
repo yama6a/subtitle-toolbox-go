@@ -88,6 +88,7 @@ func TestLastCueDuration(t *testing.T) {
 		start time.Duration
 	}{
 		{"LRC", "lrc/real/handwritten-core.lrc", stbox.ReadOptions{Format: stbox.LRC}, 32800 * time.Millisecond},
+		{"QuickTime text", "qttext/last_sample_with_text.txt", stbox.ReadOptions{Format: stbox.QuickTimeText}, 12500 * time.Millisecond},
 		{"TMPlayer", "tmplayer/real/tmplayer_crlf.txt", stbox.ReadOptions{Format: stbox.TMPlayer}, 3600 * time.Second},
 		{"SAMI", "sami/real/mantas_smi_formatted.smi", stbox.ReadOptions{Format: stbox.SAMI}, 17350 * time.Millisecond},
 		{"CSV", "csv/real/dubbing_script.csv", stbox.ReadOptions{Format: stbox.CSV, CSV: dubbingScript}, 36008200 * time.Millisecond},

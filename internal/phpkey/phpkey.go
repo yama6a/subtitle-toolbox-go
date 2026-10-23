@@ -1,4 +1,4 @@
-// Package phpkey holds the rules by which PHP converts array keys.
+// Package phpkey holds the rules by which PHP converts strings to array keys and integers.
 package phpkey
 
 import (

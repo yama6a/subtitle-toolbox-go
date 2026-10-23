@@ -33,7 +33,7 @@ func TestFormatFacts(t *testing.T) {
 		{model.PlainText, []string{"txt"}, false, true, true},
 		{model.MPL2, []string{"txt"}, true, true, true},
 		{model.TMPlayer, []string{"txt"}, true, true, true},
-		{model.QuickTimeText, []string{"txt"}, false, false, false},
+		{model.QuickTimeText, []string{"txt"}, true, true, true},
 		{model.WebVTT, []string{"vtt"}, true, true, true},
 		{"foo", nil, false, false, false},
 		{"", nil, false, false, false},

@@ -52,7 +52,7 @@ var formatFacts = []formatFact{
 	{format: PlainText, extensions: []string{"txt"}, canWrite: true, autoDetected: true},
 	{format: MPL2, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TMPlayer, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: QuickTimeText, extensions: []string{"txt"}},
+	{format: QuickTimeText, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: WebVTT, extensions: []string{"vtt"}, canRead: true, canWrite: true, autoDetected: true},
 }
 

@@ -414,6 +414,17 @@ func TestInfoTextWithoutCues(t *testing.T) {
 	assert.Equal(t, "stdin: line 2: The file has text but no cues. (skipped)\n", got.Stderr)
 }
 
+func TestInfoQuickTimeTextWithoutItsHeader(t *testing.T) {
+	t.Parallel()
+
+	content := "[00:00:01.00]\nHello\n[00:00:02.00]\n"
+	assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 1: The file does not start with {QTtext}.\n" + lenientHint + "\n"},
+		call{stdin: content}.run(t, "info", "-", "--from", "qttext"))
+	got := call{stdin: content}.run(t, "info", "-", "--from", "qttext", "--lenient")
+	assert.Equal(t, 0, got.Code)
+	assert.Equal(t, "stdin: line 1: The file does not start with {QTtext}. The parser read it as QuickTime text. (repaired)\n", got.Stderr)
+}
+
 func TestOrderedMetadata(t *testing.T) {
 	t.Parallel()
 

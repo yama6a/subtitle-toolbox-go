@@ -77,6 +77,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [Plain text](docs/formats.md#plain-text) | `stbox.PlainText` | `txt` | `.txt` | no | yes | a transcript of the words, owns `.txt` |
 | [MPL2](https://pysubs2.readthedocs.io/en/latest/supported-formats.html) | `stbox.MPL2` | `mpl2` | `.txt` | yes | yes | found by content |
 | [TMPlayer](https://pysubs2.readthedocs.io/en/latest/supported-formats.html) | `stbox.TMPlayer` | `tmplayer` | `.txt` | yes | yes | also TMPlayer+, found by content |
+| [QuickTime text](https://developer.apple.com/library/archive/documentation/QuickTime/Conceptual/QTScripting_HTML/QTScripting_HTML_Document/ScriptingHTML.html) | `stbox.QuickTimeText` | `qttext` | `.txt` | yes | yes | `{QTtext}` text tracks, found by content |
 | [WebVTT](https://www.w3.org/TR/webvtt1/) | `stbox.WebVTT` | `vtt` | `.vtt` | yes | yes | also chapters |
 
 The name is the value of `--from` and `--to`. [docs/formats.md](docs/formats.md) has one section for each format.

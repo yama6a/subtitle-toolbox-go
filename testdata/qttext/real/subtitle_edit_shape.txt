@@ -1,0 +1,18 @@
+{QTtext} {font:Tahoma}
+{plain} {size:20}
+{timeScale:30}
+{width:160} {height:32}
+{timestamps:absolute} {language:0}
+[00:00:02.15]
+The museum opens at ten,
+the café at nine.
+[00:00:05.00]
+
+[00:00:05.12]
+Tickets are sold at the door.
+[00:00:08.29]
+
+[01:00:00.00]
+Closing time.
+[01:00:03.10]
+

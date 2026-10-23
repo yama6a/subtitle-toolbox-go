@@ -18,6 +18,7 @@
 | plain text | `stbox.PlainText` | `txt` | `.txt` | [Plain text](#plain-text) |
 | MPL2 | `stbox.MPL2` | `mpl2` | `.txt` | [MPL2](#mpl2) |
 | TMPlayer, TMPlayer+ | `stbox.TMPlayer` | `tmplayer` | `.txt` | [TMPlayer](#tmplayer) |
+| QuickTime text | `stbox.QuickTimeText` | `qttext` | `.txt` | [QuickTime text](#quicktime-text) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
 
 - **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub and SubViewer files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`.
@@ -741,9 +742,95 @@ This file has the title `Morning Train` and 3 cues:
 
 `lrc.ReadOptions` and `lrc.WriteOptions` have no fields. The reader reads `Lenient`, `LastCueDuration` and `Encoding`. The writer reads `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#lrc). The detection rule is in the doc comment of `lrc.Detect` and in [detection.md](detection.md).
 
+## QuickTime text
+
+QuickTime text is the text track format of QuickTime Player 7 and older Apple tools, defined by [Apple's text descriptors](https://developer.apple.com/library/archive/documentation/QuickTime/Conceptual/QTScripting_HTML/QTScripting_HTML_Document/ScriptingHTML.html). Subtitle Edit writes it too. Package `format/qttext` reads and writes it. The format name is `qttext`, the extension `.txt`. `FormatFromPath` maps `.txt` to plain text, so `Load` finds QuickTime text by its `{QTtext}` line. No BOM by default.
+
+```text
+{QTtext} {timeScale:30}
+[00:00:01.15]
+The museum opens at ten.
+[00:00:04.00]
+```
+
+A header of descriptors comes first, then samples that each start at a timestamp. The fraction counts units of the time scale, so `[00:00:01.15]` is 1.5 s. The sample ends at the next timestamp, so the cue runs from 1.5 s to 4 s.
+
+### Read
+
+- **Header**: all lines before the first line that is a timestamp line. The reader keeps them raw in the file data `header`. The first header line must start with `{QTtext}`, in any case, after optional white space. Strict mode fails otherwise with `The file does not start with {QTtext}.` on line 1. Lenient mode warns `The file does not start with {QTtext}. The parser read it as QuickTime text.`, `Repaired`, on line 1.
+- **Timestamp line**: `[h:mm:ss]` or `[h:mm:ss.f]` after optional white space, with 1 or more hour digits and minutes and seconds up to 59. Text may follow the `]` on the same line. Later lines that are no timestamp line belong to the sample before them. A sample without text is a gap and gives no cue.
+- **Time scale**: `{timeScale:N}` in the header, with N all digits and above 0. A fraction then counts units of 1/N s. Without a time scale, the fraction is a decimal fraction, so `[00:00:07.25]` is 7.25 s. A descriptor name matches in any case, and spaces around the colon are allowed.
+- **Rounding**: the time is hours, minutes, seconds and fraction, rounded half up to whole milliseconds. The reader computes in integers. So `[00:00:01.13]` at scale 30 is 1433 ms, and a decimal fraction of `[00:00:02.7665]` is 2767 ms.
+- **Fraction at or above the time scale**: `[00:00:01.45]` at scale 30 fails in strict mode with `The timestamp "[00:00:01.45]" counts 45 units, but the time scale is 30 per second.` Lenient mode warns the same text plus ` The parser added them to the seconds.`, `Repaired`, and reads 1 s and 45/30 s, which is 2.5 s.
+- **Relative timestamps**: `{timeStamps:relative}`, in any case, adds each timestamp to the one before it. The sum must stay below 100000 hours too.
+- **End times**: a cue ends at the next sample, also one without text. The last cue ends at its start plus `LastCueDuration`, as [reading-writing.md](reading-writing.md#last-cue-default) says. A sample that ends before it starts fails with `The cue ends at E s, before it starts at S s.` on the line of the sample. Lenient mode swaps the times when the cue then lasts 30 s or less.
+- **Styles**: `{bold}`, `{italic}` and `{underline}` turn a style on for the rest of the sample and for all later samples. `{plain}` turns all off. The names match in any case. The styles of the header set the starting style. Other descriptors, such as `{font:Geneva}`, give no markup. A sample that is skipped because of its times does not move the style.
+- **Text**: the white space around a styled run stays outside its tags. Each line is trimmed. A line without text drops out. `&`, `<` and `>` become entities.
+- **Paired layout**: Subtitle Edit writes a start timestamp, the text, an end timestamp and an empty line. The reader sets the file data `pairedTimestamps` when an empty line follows a sample without text, after at least 2 samples, and another timestamp follows.
+- **Time limit**: a timestamp or a relative sum of 100000 hours or more fails with `The time "99999:59:59.9995" is not below 100000 hours.`, after the rounding to milliseconds. The message quotes the timestamp without brackets. Lenient mode skips the line and the text lines after it, up to the next timestamp line.
+- **Encoding**: invalid UTF-8 stays in the text. Lenient mode adds the decode warning of [encodings.md](encodings.md).
+
+| Input | Result |
+|:--- |:--- |
+| `{timeScale:600}` and `[00:00:07.300]` | 7.5 s |
+| `{timeScale:10}` and `[00:00:07.5]` | 7.5 s |
+| `[00:00:01.00]`, `One`, `[00:00:04.00]`, `[00:00:05.00]`, `Two` | `One` from 1 to 4 s, `Two` from 5 s for `LastCueDuration` |
+| `{timeScale:600}{timeStamps:relative}`, `[00:00:01.300]`, `One`, `[00:00:02.000]`, `[00:00:01.000]`, `Two`, `[00:00:02.000]` | `One` from 1.5 to 3.5 s, `Two` from 4.5 to 6.5 s |
+| `{italic}Sung`, then `still sung {underline}loud`, then `{plain}Spoken` in 3 samples | `<i>Sung</i>`, `<i>still sung <u>loud</u></i>`, `Spoken` |
+
+The file data `qttext` holds:
+
+| Level | Field | Type | Meaning |
+|:--- |:--- |:--- |:--- |
+| file | `header` | list of strings | the raw lines before the first timestamp line |
+| file | `pairedTimestamps` | bool | true for the layout of Subtitle Edit |
+| cue | `source` | list of strings | the raw lines of a sample that holds a descriptor, for the round trip |
+
+### Write
+
+- **Header**: the stored `header` lines. A CR or LF in a stored line becomes a space, a line that reads as a timestamp is not written, and a first line without `{QTtext}` gets that line before it. So the output always reads back. A new file gets the header of Subtitle Edit, which reads only 2 fraction digits:
+
+  ```text
+  {QTtext} {font:Tahoma}
+  {plain} {size:20}
+  {timeScale:30}
+  {width:160} {height:32}
+  {timestamps:absolute} {language:0}
+  ```
+
+- **Layout**: the paired layout for a new file and when the file data has `pairedTimestamps`. It writes the start timestamp, the text lines, the end timestamp and an empty line for each cue. Else the QuickTime layout: an empty sample `[00:00:00.00]` first when the first cue starts after 0, then for each cue its start timestamp only when the start differs, in units, from the end of the cue before, the text lines and the end timestamp.
+- **Timestamp**: `[HH:MM:SS.F]`. F counts units of the time scale, zero-padded to the digit count of the scale minus 1, at least 1 digit: scale 30 gives 2 digits, 600 gives 3 and 10 gives 1. Without a time scale, F is milliseconds with 3 digits. Up to 1000 units per second, the count is the seconds as a float times the scale, rounded half away from zero, as PHP 8.5 and the MicroDVD and MPSub writers do. So a time on an exact half unit can round down: 64.82 s at scale 25 writes 1620 units. Above 1000 units per second, floats lose milliseconds, so the writer rounds the exact milliseconds half away from zero. Every time scale keeps the time to the millisecond. A negative start writes as 0, and an end before the start writes as the start.
+- **Relative timestamps**: the header `{timeStamps:relative}` makes each timestamp the difference to the time that a reader has after the timestamps written so far. So an overlap moves no later cue, and a rounding error stays within half a unit. A cue that starts before that time cannot go back, so its start timestamp is 0.
+- **Time limit**: a timestamp stops at the largest count of units whose time is below 100000 hours, `99999:59:59.29` at scale 30. A relative timestamp shrinks until the sum that the reader adds stays below the limit.
+- **Text**: when a cue has `source` and the reader would read `source` as the cue lines, the writer writes `source` unchanged. Else it writes ruby as text, carries open tags into the next line, decodes entities, strips all tags except `<b>`, `<i>` and `<u>`, and trims each line. Before a text run with visible text it writes the descriptors that change the running style to the open tags. Turning a style off writes `{plain}` and then the styles that stay on. Turning styles on writes `{bold}`, `{italic}` and `{underline}` in that order.
+- **Running style**: the style carries across cues, as QuickTime reads it. With the header of Subtitle Edit, the cues `<i>Sung</i> and <b>loud</b>` and `<font color="red">red</font> &amp; plain`, then `<i>Sung</i>`, then `<i>Sung <u>loud</u></i>` write as:
+
+  ```text
+  [00:00:01.00]
+  {italic}Sung{plain} and {bold}loud
+  {plain}red & plain
+  [00:00:02.00]
+
+  [00:00:03.00]
+  {italic}Sung
+  [00:00:04.00]
+
+  [00:00:05.00]
+  Sung {underline}loud
+  [00:00:06.00]
+  ```
+
+- **BOM**: none by default.
+- **Lost on write**: colors, fonts, speakers, word timestamps and alignment. Descriptors other than bold, italic and underline survive only in unchanged cues and in the header.
+- **Round trip**: an unchanged file comes out byte for byte, except for the empty lines between samples in the QuickTime layout.
+
+### Options
+
+`qttext.ReadOptions` and `qttext.WriteOptions` have no fields. The reader reads `Lenient`, `LastCueDuration` and `Encoding`. The writer reads `LineEnding` and `BOM`. `StripTags` changes nothing, because the writer always writes the descriptors of `<b>`, `<i>` and `<u>`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#quicktime-text). The detection rule is in the doc comment of `qttext.Detect` and in [detection.md](detection.md).
+
 ## Plain text
 
-Plain text is a transcript of the words, without times or markup. Package `format/plaintext` writes it. The format name is `txt`, the extension `.txt`. The format has no reader and no detection, so `Parse` with `ReadOptions.Format` set to `stbox.PlainText` returns `ErrUnsupportedFormat` with `The format txt can be written but not read.` Plain text owns `.txt` in `FormatFromPath`. `Load` still finds MPL2 and TMPlayer files named `.txt` by their content.
+Plain text is a transcript of the words, without times or markup. Package `format/plaintext` writes it. The format name is `txt`, the extension `.txt`. The format has no reader and no detection, so `Parse` with `ReadOptions.Format` set to `stbox.PlainText` returns `ErrUnsupportedFormat` with `The format txt can be written but not read.` Plain text owns `.txt` in `FormatFromPath`. `Load` still finds MPL2, TMPlayer and QuickTime text files named `.txt` by their content.
 
 <!-- example: format/plaintext/ExampleWrite -->
 ```go

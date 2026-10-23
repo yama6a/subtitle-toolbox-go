@@ -1,0 +1,4 @@
+{QTtext} {timeScale:30}
+[00:00:00.00]
+[00:00:12.15]
+The last sample has text.

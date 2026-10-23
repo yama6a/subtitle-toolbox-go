@@ -1,0 +1,12 @@
+{timeScale:30}
+[00:00:01.00]
+The museum opens at ten.
+[00:00:03.45]
+Footsteps on the stairs.
+[00:00:03.00]
+A door closes.
+[00:00:06.00]
+Closing time.
+[100000:00:00.00]
+Stray text.
+[00:00:08.00]
