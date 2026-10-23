@@ -63,10 +63,15 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 }
 
 // appendFrame appends the frame of d, rounded half away from zero. The seconds come from whole milliseconds, as
-// PHP holds them, because d.Seconds() can differ in the last bit.
+// PHP holds them, because d.Seconds() can differ in the last bit. A frame is at least 1 ms long up to 1000 fps, so
+// one step back takes a frame that the reader rejects below the limit.
 func appendFrame(dst []byte, d time.Duration, fps float64) []byte {
 	secs := float64(max(d, 0).Milliseconds()) / 1000
-	return strconv.AppendFloat(dst, math.Round(secs*fps), 'f', 0, 64)
+	frame := math.Round(secs * fps)
+	if timeOfFrame(frame, fps) >= timecode.MaxTime {
+		frame--
+	}
+	return strconv.AppendFloat(dst, frame, 'f', 0, 64)
 }
 
 // writeText returns the text of c with control codes for the styles that wrap a whole line. A line keeps its

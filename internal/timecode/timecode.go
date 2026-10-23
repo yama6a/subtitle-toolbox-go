@@ -52,6 +52,12 @@ func Number(f float64) string {
 	return strconv.FormatFloat(f, 'g', 14, 64)
 }
 
+// Units returns d in whole units, rounded half away from zero. A time below 0 gives 0. The result stops at the
+// largest count whose time is below MaxTime, so a writer never writes the limit that the readers reject.
+func Units(d, unit time.Duration) int64 {
+	return min(int64(max(d, 0).Round(unit)/unit), int64((MaxTime-1)/unit))
+}
+
 // AppendClock appends d as h:mm:ss, the separator sep and mmm, with at least hourWidth hour digits.
 // It rounds d to whole milliseconds, half away from zero. A negative time writes as 0.
 func AppendClock(dst []byte, d time.Duration, hourWidth int, sep byte) []byte {

@@ -123,3 +123,38 @@ func TestWriteReturnsTheWriterError(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "disk full")
 }
+
+func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
+	t.Parallel()
+
+	const limit = 100000 * time.Hour
+	tests := []struct {
+		name string
+		cues []model.Cue
+		want string
+	}{
+		{"99999:59:59.999 clamps", []model.Cue{{Start: limit - 1*ms, End: limit - 1*ms, Lines: []string{"x"}}}, "99999:59:59:x\n"},
+		{"99999:59:59.995 clamps", []model.Cue{{Start: limit - 5*ms, End: limit - 5*ms, Lines: []string{"x"}}}, "99999:59:59:x\n"},
+		{"99999:59:59.500 clamps", []model.Cue{{Start: limit - 500*ms, End: limit - 500*ms, Lines: []string{"x"}}}, "99999:59:59:x\n"},
+		{"99999:59:59.499 stays", []model.Cue{{Start: limit - 501*ms, End: limit - 501*ms, Lines: []string{"x"}}}, "99999:59:59:x\n"},
+		{"99999:59:58.499 stays", []model.Cue{{Start: limit - 1501*ms, End: limit - 1501*ms, Lines: []string{"x"}}}, "99999:59:58:x\n"},
+		{
+			"no gap entry at the limit",
+			[]model.Cue{
+				{Start: limit - 3*time.Second, End: limit - 1*ms, Lines: []string{"a"}},
+				{Start: limit - 1*ms, End: limit - 1*ms, Lines: []string{"b"}},
+			},
+			"99999:59:57:a\n99999:59:59:b\n",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := write(t, subtitle(tt.cues...), model.CommonWriteOptions{})
+			assert.Equal(t, tt.want, got)
+			_, _, err := read(got, model.CommonReadOptions{})
+			require.NoError(t, err)
+		})
+	}
+}

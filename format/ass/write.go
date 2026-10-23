@@ -11,6 +11,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/internal/position"
 	"github.com/yama6a/subtitle-toolbox-go/internal/ssatag"
+	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -586,7 +587,7 @@ func centiseconds(d time.Duration) int64 {
 
 // clockText writes d as h:mm:ss.cc. A negative time writes as 0.
 func clockText(d time.Duration) string {
-	cs := max(0, centiseconds(d))
+	cs := timecode.Units(d, centisecond)
 	return strconv.FormatInt(cs/360000, 10) + ":" + pad2(cs/6000%60) + ":" + pad2(cs/100%60) + "." + pad2(cs%100)
 }
 

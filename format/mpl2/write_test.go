@@ -37,7 +37,7 @@ func TestWrite(t *testing.T) {
 		{
 			"the largest time",
 			[]model.Cue{{Start: 0, End: timecodeMaxValid, Lines: []string{"x"}}},
-			"[0][3600000000]x\n",
+			"[0][3599999999]x\n",
 		},
 		{"a cue without text", []model.Cue{{Start: time.Second, End: 2 * time.Second}}, "[10][20]\n"},
 		{"a cue with lines that hold no text", []model.Cue{{Start: 0, End: time.Second, Lines: []string{"<b></b>", "<v Anna>"}}}, "[0][10]\n"},
@@ -112,4 +112,32 @@ func TestWriteReturnsTheWriterError(t *testing.T) {
 	err := mpl2.Write(failingWriter{}, subtitle(model.Cue{Lines: []string{"x"}}), model.CommonWriteOptions{}, mpl2.WriteOptions{})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "disk full")
+}
+
+func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
+	t.Parallel()
+
+	const limit = 100000 * time.Hour
+	tests := []struct {
+		name string
+		end  time.Duration
+		want string
+	}{
+		{"99999:59:59.999 clamps", limit - 1*ms, "[0][3599999999]x\n"},
+		{"99999:59:59.995 clamps", limit - 5*ms, "[0][3599999999]x\n"},
+		{"99999:59:59.950 clamps", limit - 50*ms, "[0][3599999999]x\n"},
+		{"99999:59:59.900 stays", limit - 100*ms, "[0][3599999999]x\n"},
+		{"99999:59:59.840 stays", limit - 160*ms, "[0][3599999998]x\n"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s := subtitle(model.Cue{Start: 0, End: tt.end, Lines: []string{"x"}})
+			got := write(t, s, model.CommonWriteOptions{})
+			assert.Equal(t, tt.want, got)
+			_, _, err := read(got, false)
+			require.NoError(t, err)
+		})
+	}
 }

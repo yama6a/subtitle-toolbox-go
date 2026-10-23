@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -25,24 +26,19 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 
 	var body []byte
 	for i, c := range cues {
-		start := writtenSeconds(c.Start)
+		start := timecode.Units(c.Start, time.Second)
 		body = appendTime(body, start)
 		body = append(body, strings.Join(texts[i], "|")...)
 		body = append(body, '\n')
 		if i+1 == len(cues) {
 			continue
 		}
-		if end := max(writtenSeconds(c.End), start+1); end < writtenSeconds(cues[i+1].Start) {
+		if end := max(timecode.Units(c.End, time.Second), start+1); end < timecode.Units(cues[i+1].Start, time.Second) {
 			body = appendTime(body, end)
 			body = append(body, '\n')
 		}
 	}
 	return writing.Write(w, model.TMPlayer, body, common, false)
-}
-
-// writtenSeconds rounds d to whole seconds, half away from zero on whole milliseconds. A time below 0 is 0.
-func writtenSeconds(d time.Duration) int64 {
-	return (max(d, 0).Round(time.Millisecond).Milliseconds() + 500) / 1000
 }
 
 func appendTime(body []byte, seconds int64) []byte {

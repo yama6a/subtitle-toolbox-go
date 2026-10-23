@@ -183,3 +183,46 @@ func TestAppendClock(t *testing.T) {
 		})
 	}
 }
+
+func TestUnits(t *testing.T) {
+	t.Parallel()
+
+	const centisecond = 10 * time.Millisecond
+	const tenth = 100 * time.Millisecond
+
+	tests := []struct {
+		name string
+		in   time.Duration
+		unit time.Duration
+		want int64
+	}{
+		{"1.240 s in tenths", 1240 * time.Millisecond, tenth, 12},
+		{"1.250 s in tenths rounds up", 1250 * time.Millisecond, tenth, 13},
+		{"1.249 s in tenths rounds down", 1249 * time.Millisecond, tenth, 12},
+		{"1.005 s in centiseconds rounds up", 1005 * time.Millisecond, centisecond, 101},
+		{"1.500 s in seconds rounds up", 1500 * time.Millisecond, time.Second, 2},
+		{"1.499 s in seconds rounds down", 1499 * time.Millisecond, time.Second, 1},
+		{"1 ms unit keeps the milliseconds", 1234 * time.Millisecond, time.Millisecond, 1234},
+		{"0", 0, tenth, 0},
+		{"below 0", -3 * time.Second, tenth, 0},
+		{"99999:59:59.900 in tenths", timecode.MaxTime - 100*time.Millisecond, tenth, 3599999999},
+		{"99999:59:59.949 in tenths", timecode.MaxTime - 51*time.Millisecond, tenth, 3599999999},
+		{"99999:59:59.950 in tenths clamps", timecode.MaxTime - 50*time.Millisecond, tenth, 3599999999},
+		{"99999:59:59.999 in tenths clamps", timecode.MaxValidTime, tenth, 3599999999},
+		{"99999:59:59.990 in centiseconds", timecode.MaxTime - 10*time.Millisecond, centisecond, 35999999999},
+		{"99999:59:59.995 in centiseconds clamps", timecode.MaxTime - 5*time.Millisecond, centisecond, 35999999999},
+		{"99999:59:59.499 in seconds", timecode.MaxTime - 501*time.Millisecond, time.Second, 359999999},
+		{"99999:59:59.500 in seconds clamps", timecode.MaxTime - 500*time.Millisecond, time.Second, 359999999},
+		{"99999:59:59.999 in seconds clamps", timecode.MaxValidTime, time.Second, 359999999},
+		{"99999:59:59.999 in milliseconds", timecode.MaxValidTime, time.Millisecond, 359999999999},
+		{"the limit clamps", timecode.MaxTime, tenth, 3599999999},
+		{"the largest duration clamps", time.Duration(math.MaxInt64), time.Second, 359999999},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, timecode.Units(tt.in, tt.unit))
+		})
+	}
+}
