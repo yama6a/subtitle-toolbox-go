@@ -22,8 +22,7 @@ const invalidUTF8 = "The output cannot hold text that is not valid UTF-8. Read a
 //nolint:gochecknoglobals // the root parameters that change the time model, which the media times of the output replace
 var skippedRootParameters = []string{"timeBase", "clockMode", "dropMode", "markerMode"}
 
-// paragraphIDRegexp ends with \n? because PHP ends the pattern with $, which also matches before a final LF.
-var paragraphIDRegexp = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_.-]*\n?$`)
+var paragraphIDRegexp = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_.-]*$`)
 
 // WriteOptions holds the settings of the TTML writer. It has no fields yet.
 type WriteOptions struct{}
@@ -360,9 +359,12 @@ func (w *writer) attribute(name, value string) string {
 	return " " + name + `="` + attributeEscaper.Replace(w.xmlText(value)) + `"`
 }
 
-//nolint:gochecknoglobals // the escapes of htmlspecialchars with ENT_XML1, which PHP applies
+// The attribute escapes add TAB, LF and CR to those of PHP htmlspecialchars, because a reader turns them into
+// spaces (https://github.com/yama6a/subtitle-toolbox-php/issues/1071).
+//
+//nolint:gochecknoglobals // lookup tables of the escapes
 var (
-	attributeEscaper = strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;", `"`, "&quot;")
+	attributeEscaper = strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;", `"`, "&quot;", "\t", "&#9;", "\n", "&#10;", "\r", "&#13;")
 	textEscaper      = strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;", "\n", "<br/>")
 )
 

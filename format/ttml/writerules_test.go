@@ -161,6 +161,11 @@ func TestUniqueIDs(t *testing.T) {
 			s, _ := mustRead(t, styledDocument(`<head><styling><style xml:id="a"/></styling></head>`, `<div><p xml:id="a" begin="1s" end="2s">x</p></div>`, ` xml:id="a"`), false)
 			return s
 		}, []string{"a_2", "a", "a_3"}},
+		{"a cue c1 plus LF", func(*testing.T) *model.Subtitle {
+			c := cue(time.Second, 2*time.Second, "x")
+			c.ID = "c1\n"
+			return subtitleOf(c)
+		}, []string{"bottomCenter"}},
 		{"cue IDs that are no NCName", func(t *testing.T) *model.Subtitle {
 			t.Helper()
 			return readVTT(t, "WEBVTT\n\n1 a\n00:00:01.000 --> 00:00:02.000\nOne\n\nb.c-d_1\n00:00:03.000 --> 00:00:04.000\nTwo\n")
@@ -351,6 +356,26 @@ func TestStoredAttributes(t *testing.T) {
 			},
 		},
 	})
+}
+
+// Covers https://github.com/yama6a/subtitle-toolbox-php/issues/1071, which Go does not copy.
+func TestAttributeValuesKeepTabLFAndCR(t *testing.T) {
+	t.Parallel()
+
+	s, _ := mustRead(t, strings.Replace(styledDocument("<head/>", `<div><p begin="1s" end="2s" foo="a&#13;b">x</p></div>`, ""), "<body>", `<body baz="b&#13;c">`, 1), false)
+	out := writeDefault(t, s)
+	assert.Contains(t, out, `<body baz="b&#13;c">`)
+	assert.Contains(t, out, `<p begin="00:00:01.000" end="00:00:02.000" foo="a&#13;b">x</p>`)
+	back, _ := mustRead(t, out, false)
+	assert.Equal(t, out, writeDefault(t, back))
+
+	require.NoError(t, s.SetFormatData("ttml", model.NewData(
+		model.Field{Key: "attributes", Value: attrs("baz", "1\t2")},
+		model.Field{Key: "body", Value: attrs("qux", "d\ne")},
+	)))
+	out = writeDefault(t, s)
+	assert.Contains(t, out, ` xml:lang="" baz="1&#9;2">`)
+	assert.Contains(t, out, `<body qux="d&#10;e">`)
 }
 
 func TestOutputOptions(t *testing.T) {
