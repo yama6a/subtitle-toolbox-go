@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
@@ -99,11 +100,8 @@ const (
 	ssaScriptType     = "v4.00"
 )
 
-// phpTrimSet holds the bytes that PHP trim removes without a character list.
-const phpTrimSet = " \t\n\r\x00\v"
-
 func phpTrim(s string) string {
-	return strings.Trim(s, phpTrimSet)
+	return strings.Trim(s, markupcore.PHPTrimSet)
 }
 
 // equalFold compares a and b without ASCII case, as PHP strcasecmp does.

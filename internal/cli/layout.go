@@ -3,6 +3,8 @@ package cli
 import (
 	"regexp"
 	"strings"
+
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 )
 
 // helpWidth is the line width of the help in bytes, as PHP strlen counts. All help text is ASCII.
@@ -79,5 +81,5 @@ func wrapWords(words []string, prefix, nextPrefix string) string {
 }
 
 func rtrim(s string) string {
-	return strings.TrimRight(s, " \t\n\r\x00\v")
+	return strings.TrimRight(s, markupcore.PHPTrimSet)
 }

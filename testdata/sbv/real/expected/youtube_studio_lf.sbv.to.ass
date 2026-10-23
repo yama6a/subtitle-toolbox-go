@@ -1,0 +1,21 @@
+﻿[Script Info]
+ScriptType: v4.00+
+PlayResX: 384
+PlayResY: 288
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,16,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,10,10,10,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:02.24,Default,,0,0,0,,[Music]
+Dialogue: 0,0:00:02.24,0:00:05.91,Default,,0,0,0,,Welcome back to the weather report\Nfor the north coast.
+Dialogue: 0,0:00:05.91,0:00:09.30,Default,,0,0,0,,Tomorrow starts cold and clear,
+Dialogue: 0,0:00:09.30,0:00:13.08,Default,,0,0,0,,with light wind from the west\Nand about four degrees at sunrise.
+Dialogue: 0,0:00:13.08,0:00:16.50,Default,,0,0,0,,[Music]
+Dialogue: 0,0:00:16.50,0:00:20.02,Default,,0,0,0,,In the afternoon, clouds come in from the sea
+Dialogue: 0,0:00:20.02,0:00:24.80,Default,,0,0,0,,and rain starts after six o'clock.
+Dialogue: 0,0:00:24.80,0:00:27.00,Default,,0,0,0,,Take an umbrella if you go out tonight.
+Dialogue: 0,1:00:00.00,1:00:03.50,Default,,0,0,0,,That was the weather. Thank you for watching.\N[Applause]

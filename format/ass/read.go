@@ -431,7 +431,7 @@ func fraction(digits string) time.Duration {
 // splitDescriptor returns the trimmed descriptor before the first colon of line and the value after it.
 func splitDescriptor(line string) (string, string) {
 	typ, value, _ := strings.Cut(line, ":")
-	return phpTrim(typ), strings.TrimLeft(value, phpTrimSet)
+	return phpTrim(typ), strings.TrimLeft(value, markupcore.PHPTrimSet)
 }
 
 func splitNames(value string) []string {

@@ -2,7 +2,6 @@
 package subrip
 
 import (
-	"errors"
 	"fmt"
 	"iter"
 	"math"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/blocks"
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -21,7 +21,6 @@ const (
 	arrow = "-->"
 	// space is the white space of PCRE \s. The pre-pass and the block split leave only spaces inside a line.
 	space         = "\t\n\v\f\r "
-	phpTrimSet    = " \t\n\r\x00\v"
 	vttKey        = string(model.WebVTT)
 	formatDataKey = "srt"
 )
@@ -95,36 +94,18 @@ func (rd *Reader) isTimingLine(line string) bool {
 // ParseBlock returns the cues of block b, number index, split before each timing line. Lenient mode skips a
 // part that fails, and warns for each split and each skip.
 func (rd *Reader) ParseBlock(b blocks.Block, index int) ([]model.Cue, error) {
-	parts := rd.rules.SplitAtTimingLines(b.Lines)
-	if rd.st.Lenient() {
-		for _, p := range parts {
-			if p.Line > 0 {
-				line := b.Line + p.Line
-				msg := "Block #" + strconv.Itoa(index) + " has no empty line before line " + strconv.Itoa(line) + ". The parser split the block there."
-				rd.st.Warn(msg, line, index, b.Lines, model.Repaired)
-			}
-		}
-	}
-	cues := make([]model.Cue, 0, len(parts))
-	for _, p := range parts {
-		line := b.Line + p.Line
-		c, err := rd.parsePart(p.Lines, index, line)
-		if err == nil {
-			cues = append(cues, c)
-			continue
-		}
-		var perr *model.ParseError
-		if !errors.As(err, &perr) {
-			return nil, err
-		}
-		if perr.Line > 0 {
-			line = perr.Line
-		}
-		if err := rd.st.Fail(perr, line, index, p.Lines); err != nil {
-			return nil, err
-		}
-	}
-	return cues, nil
+	return rd.rules.ReadParts(b, index, blocks.PartReader{
+		Lenient: rd.st.Lenient(),
+		Split: func(msg string, line int) {
+			rd.st.Warn(msg, line, index, b.Lines, model.Repaired)
+		},
+		Parse: func(lines []string, line int) (model.Cue, error) {
+			return rd.parsePart(lines, index, line)
+		},
+		Fail: func(err *model.ParseError, line int, lines []string) error {
+			return rd.st.Fail(err, line, index, lines)
+		},
+	})
 }
 
 // parsePart parses one part of a block, which starts at line. Lenient mode reads a part that starts with its
@@ -246,7 +227,7 @@ func (rd *Reader) arrowLength(s string) int {
 // time reads a time of the timing line at line. Lenient mode also reads the forms of timecode.Loose and
 // adds them to loose, once per text.
 func (rd *Reader) time(text string, line int, loose *[]looseTime) (time.Duration, error) {
-	text = strings.Trim(text, phpTrimSet)
+	text = strings.Trim(text, markupcore.PHPTrimSet)
 	if m := timeRegexp.FindStringSubmatch(text); m != nil {
 		return time.Duration(atoi(m[1]))*time.Hour + time.Duration(atoi(m[2]))*time.Minute +
 			time.Duration(atoi(m[3]))*time.Second + fraction(m[4]+m[5]), nil

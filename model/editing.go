@@ -299,7 +299,7 @@ func speakers(c Cue) []string {
 	matches := voiceTagRegexp.FindAllStringSubmatch(c.Text(), -1)
 	names := make([]string, 0, len(matches))
 	for _, m := range matches {
-		names = append(names, strings.Trim(m[2], phpTrimSet))
+		names = append(names, strings.Trim(m[2], markupcore.PHPTrimSet))
 	}
 	slices.Sort(names)
 	return slices.Compact(names)

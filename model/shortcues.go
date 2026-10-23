@@ -332,6 +332,6 @@ func removeVoiceTags(line string) string {
 }
 
 func endsWithStop(c Cue) bool {
-	text := strings.TrimRight(markupcore.PlainText(c.Text()), phpTrimSet)
+	text := strings.TrimRight(markupcore.PlainText(c.Text()), markupcore.PHPTrimSet)
 	return strings.HasSuffix(text, ".") || strings.HasSuffix(text, "?") || strings.HasSuffix(text, "!")
 }

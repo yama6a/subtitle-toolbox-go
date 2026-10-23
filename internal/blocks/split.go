@@ -1,14 +1,16 @@
 package blocks
 
 import (
+	"errors"
 	"iter"
+	"strconv"
 	"strings"
+
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
-const (
-	utf8BOM    = "\ufeff"
-	phpTrimSet = " \t\n\r\x00\v"
-)
+const utf8BOM = "\ufeff"
 
 // SplitAtEmptyLines yields the runs of non-empty lines. The keys of lines are 0-based line numbers, and each
 // block holds the 1-based number of its first line. Each line loses its leading BOMs, so joined files work.
@@ -18,7 +20,7 @@ func SplitAtEmptyLines(lines iter.Seq2[int, string]) iter.Seq[Block] {
 	return func(yield func(Block) bool) {
 		var b Block
 		for n, line := range lines {
-			line = strings.Trim(collapseSpaces(trimBOMs(line)), phpTrimSet)
+			line = strings.Trim(collapseSpaces(trimBOMs(line)), markupcore.PHPTrimSet)
 			if line != "" {
 				if b.Lines == nil {
 					b.Line = n + 1
@@ -73,6 +75,55 @@ func (r Rules) partStarts(lines []string) []int {
 		lastTiming = i
 	}
 	return starts
+}
+
+// SplitWarning returns the lenient warning of a split by SplitAtTimingLines.
+func SplitWarning(block, line int) string {
+	return "Block #" + strconv.Itoa(block) + " has no empty line before line " + strconv.Itoa(line) +
+		". The parser split the block there."
+}
+
+// PartReader reads the parts of a block that SplitAtTimingLines found.
+type PartReader struct {
+	Lenient bool
+	// Split is called in lenient mode for each part after the first, with the warning message and the 1-based line.
+	Split func(msg string, line int)
+	// Parse reads the lines of one part, which starts on the 1-based line.
+	Parse func(lines []string, line int) (model.Cue, error)
+	// Fail handles a *model.ParseError of a part, on the line of the error or of the part.
+	Fail func(err *model.ParseError, line int, lines []string) error
+}
+
+// ReadParts returns the cues of the parts of block b, number index. A part that fails with a *model.ParseError
+// goes to p.Fail, which returns nil in lenient mode so that the read goes on. Any other error ends the read.
+func (r Rules) ReadParts(b Block, index int, p PartReader) ([]model.Cue, error) {
+	parts := r.SplitAtTimingLines(b.Lines)
+	if p.Lenient {
+		for _, part := range parts[1:] {
+			line := b.Line + part.Line
+			p.Split(SplitWarning(index, line), line)
+		}
+	}
+	cues := make([]model.Cue, 0, len(parts))
+	for _, part := range parts {
+		line := b.Line + part.Line
+		c, err := p.Parse(part.Lines, line)
+		if err == nil {
+			cues = append(cues, c)
+			continue
+		}
+		var perr *model.ParseError
+		if !errors.As(err, &perr) {
+			return nil, err
+		}
+		if perr.Line > 0 {
+			line = perr.Line
+		}
+		if err := p.Fail(perr, line, part.Lines); err != nil {
+			return nil, err
+		}
+	}
+	return cues, nil
 }
 
 func trimBOMs(s string) string {

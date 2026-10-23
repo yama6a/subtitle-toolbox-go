@@ -10,6 +10,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/format/sbv"
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
@@ -45,6 +46,9 @@ var (
 	_ readFunc[sami.ReadOptions]        = sami.Read
 	_ writeFunc[sami.WriteOptions]      = sami.Write
 	_ detectFunc                        = sami.Detect
+	_ readFunc[sbv.ReadOptions]         = sbv.Read
+	_ writeFunc[sbv.WriteOptions]       = sbv.Write
+	_ detectFunc                        = sbv.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -67,7 +71,7 @@ var registry = []formatFuncs{
 	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
 	{format: MPSub},
 	{format: SAMI, read: readSAMI, write: writeSAMI},
-	{format: SBV},
+	{format: SBV, read: readSBV, write: writeSBV},
 	{format: SubRip, read: readSubRip, write: writeSubRip},
 	{format: SubViewer},
 	{format: TTML, read: readTTML, write: writeTTML},
@@ -101,6 +105,7 @@ var (
 		{format: ASS, match: ass.Detect},
 		{format: MicroDVD, match: microdvd.Detect},
 		{format: SubRip, match: srt.Detect},
+		{format: SBV, match: sbv.Detect},
 	}
 )
 
@@ -183,6 +188,14 @@ func readMicroDVD(r io.Reader, common model.CommonReadOptions, opts ReadOptions)
 
 func writeMicroDVD(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
 	return microdvd.Write(w, s, common, opts.MicroDVD)
+}
+
+func readSBV(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return sbv.Read(r, common, sbv.ReadOptions{})
+}
+
+func writeSBV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+	return sbv.Write(w, s, common, sbv.WriteOptions{})
 }
 
 func lookup(f Format) (formatFuncs, bool) {

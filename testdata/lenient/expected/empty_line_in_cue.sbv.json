@@ -1,0 +1,38 @@
+{
+    "name": "SBV with empty lines inside cues",
+    "format": "sbv",
+    "strict": {
+        "cues": 3
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3.5,
+            "text": "The museum opens at ten.\nTickets are sold at the door."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "Guided tours start at noon."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "Bags stay in the lockers."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 4,
+            "block": 0,
+            "action": "repaired",
+            "message": "Block #0 has an empty line before line 4 inside the cue. The parser kept the text after it in the cue."
+        },
+        {
+            "line": 8,
+            "block": 1,
+            "action": "repaired",
+            "message": "Block #1 has an empty line before line 8 inside the cue. The parser kept the text after it in the cue."
+        }
+    ]
+}

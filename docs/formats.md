@@ -478,3 +478,49 @@ The root `ReadOptions.MicroDVD` holds a `microdvd.ReadOptions`, `WriteOptions.Mi
 | `WriteOptions.MicroDVD` | `WriteFrameRateLine` | `bool` | false: only when the input had the line | write `{1}{1}<fps>` first |
 
 - **Check**: `Validate` rejects a frame rate that is negative, NaN or infinite, for example `The frame rate must be greater than 0, got -1.`, with an error that matches `ErrInvalidArgument`.
+
+## SBV
+
+SBV is the caption format of YouTube Studio. Package `format/sbv` reads and writes it. The format name is `sbv`, the extension `.sbv`.
+
+```text
+0:00:01.500,0:00:04.000
+Where are you going?
+
+0:00:04.500,0:00:06.000
+Home.
+```
+
+The first block reads as one cue from 1.5 s to 4 s. SBV has no markup, so `<i>` in an SBV file is text and reads as `&lt;i&gt;`.
+
+### Read
+
+- **Blocks**: an empty line ends a block. Several empty lines count as one.
+- **Timing line**: line 1 of a block, `H:MM:SS.mmm,H:MM:SS.mmm`. The hour field has any number of digits. The reader splits the line at its only comma and trims both halves. A time of 100000 hours or more fails.
+- **Text**: every other line of the block, with `&`, `<` and `>` escaped. A timing line without text gives a cue with no lines.
+- **Timing line inside a block**: starts a new cue.
+- **Text block after an empty line**: joins the cue before it, when that cue has a timing line. A block whose first line looks like a broken time, such as `1:00` or `-->`, does not join, so the reader reports it.
+- **Invalid UTF-8** stays as bytes. Lenient mode adds one `Repaired` warning.
+- **Format data**: none.
+
+| Timing line | Strict | Lenient |
+|:--- |:--- |:--- |
+| `0:00:07.980,0:00:11.300` | reads | reads |
+| `0:00:07.980 , 0:00:11.300` | reads | reads |
+| `0:00:07.980.0:00:11.300` | `Block #B has no timing line on its first line. The line is "Q".` | reads, warns |
+| `0:00:07,980,0:00:11,300` | `Block #B has no timing line on its first line. The line is "Q".` | reads, warns |
+| `0:00:07.98,0:00:11.3` | `The time "0:00:07.98" is not valid.` | reads, warns |
+
+### Write
+
+- **Layout**: the timing line, then the text lines. One empty line between cues. The output ends with one LF.
+- **Times**: `H:MM:SS.mmm`, with 1 hour digit below 10 hours. A negative time writes as 0.
+- **Text**: ruby becomes `base (annotation)`. All tags go, also `<v>` and word timestamps, and entities are decoded. Each line is trimmed and empty lines drop out.
+- **Skipped cues**: a cue without text after that, because an empty line would end the SBV cue.
+- **BOM**: none by default. `StripTags` changes nothing.
+- **Lost on write**: markup, speakers, word timestamps, alignment, identifiers, comments and cues without text.
+- **Round trip**: `&lt;i&gt;` writes as `<i>` and reads back as `&lt;i&gt;`. A file with `<`, `>` and `&` in the text comes back byte for byte.
+
+### Options
+
+`sbv.ReadOptions` and `sbv.WriteOptions` have no fields. The reader reads `Lenient`. The writer reads `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#sbv).
