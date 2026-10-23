@@ -2,10 +2,12 @@ package xmlraw_test
 
 import (
 	"encoding/xml"
+	"os"
 	"regexp"
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -70,6 +72,9 @@ func TestSerialize(t *testing.T) {
 		{"referenced CR in an attribute", `<tt><x a="a&#13;b"/></tt>`, `<x a="a&#13;b"/>`},
 		{"literal LF and TAB in an attribute become spaces", "<tt><x a=\"a\nb\tc\"/></tt>", `<x a="a b c"/>`},
 		{"literal CR LF in an attribute becomes one space", "<tt><x a=\"a\r\nb\"/></tt>", `<x a="a b"/>`},
+		{"referenced LF, TAB and CR in an attribute stay", `<tt><x a="a&#10;b&#9;c&#13;d&#xA;e"/></tt>`, `<x a="a&#10;b&#9;c&#13;d&#10;e"/>`},
+		{"literal and referenced LF in an attribute", "<tt><x a='e&#10;\nf'/></tt>", `<x a="e&#10; f"/>`},
+		{"literal LF in text, a comment and CDATA stays", "<tt><x a=\">\">a\nb<!--\n--><![CDATA[\n\t]]></x></tt>", "<x a=\"&gt;\">a\nb<!--\n-->\n\t</x>"},
 		{"character reference in text", `<tt><x>caf&#233;</x></tt>`, "<x>caf\u00e9</x>"},
 		{"non-ASCII attribute value as UTF-8", "<tt><x tts:fontFamily=\"Caf\u00e9\"/></tt>", "<x tts:fontFamily=\"Caf\u00e9\"/>"},
 		{"comment and processing instruction", `<tt><x><!-- c --><?pi data?><?bare?></x></tt>`, `<x><!-- c --><?pi data?><?bare?></x>`},
@@ -174,6 +179,106 @@ func TestParseRecoverWithoutRootFails(t *testing.T) {
 		require.ErrorAs(t, err, &serr, in)
 		assert.Equal(t, "the document has no root element", serr.Msg, in)
 	}
+}
+
+// XML 1.0 section 3.3.3 turns only literal white space of an attribute value into a space. libxml2 keeps a character
+// that a reference gives.
+func TestAttributeValueNormalization(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name, in, want string
+	}{
+		{"referenced LF", `a&#10;b`, "a\nb"},
+		{"referenced TAB", `a&#9;b`, "a\tb"},
+		{"referenced CR", `a&#13;b`, "a\rb"},
+		{"literal LF", "c\nd", "c d"},
+		{"literal TAB", "c\td", "c d"},
+		{"literal CR LF", "c\r\nd", "c d"},
+		{"literal CR", "c\rd", "c d"},
+		{"referenced space and hex TAB", `&#32;g&#x9;`, " g\t"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			for _, quote := range []string{`"`, "'"} {
+				r := root(t, parse(t, "<tt a="+quote+tt.in+quote+"><x b="+quote+tt.in+quote+"/></tt>", false))
+				assert.Equal(t, tt.want, r.Attrs[0].Value)
+				assert.Equal(t, tt.want, r.Children[0].Attrs[0].Value)
+			}
+		})
+	}
+}
+
+// The cases compare with PHP 8.5, which reads the files with libxml2.
+func TestAttributeValuesAfterDeclarationsAndComments(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name, in string
+		want     []string
+	}{
+		{"quote in a comment of the DOCTYPE subset", "<!DOCTYPE tt [<!-- it's -->]><tt a=\"1\n2\"/>", []string{"1 2"}},
+		{"bracket in a comment of the DOCTYPE subset", "<!DOCTYPE tt [<!-- [ -->]><tt a=\"1\n2\"/>", []string{"1 2"}},
+		{"comment that starts with >", "<tt><!--> <x a=\"1\n2\"/> --><y a=\"3\n4\"/></tt>", []string{"3 4"}},
+		{"comment that starts with ->", "<tt><!---> <x a=\"1\n2\"/> --><y a=\"3\n4\"/></tt>", []string{"3 4"}},
+		{"empty processing instruction and CDATA", "<tt><?pi?><![CDATA[]]><y a=\"3\n4\"/></tt>", []string{"3 4"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var got []string
+			for n := range parse(t, tt.in, false).Descendants() {
+				for _, a := range n.Attrs {
+					got = append(got, a.Value)
+				}
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+	r := root(t, parse(t, "<tt><!--> <x a=\"1\n2\"/> --></tt>", false))
+	assert.Equal(t, ` <x a="1`+"\n"+`2"/> `, r.Children[0].Data[1:])
+}
+
+// TestAttributeLineBreaksGrowth parses n and 10n elements with a LF in an attribute value.
+func TestAttributeLineBreaksGrowth(t *testing.T) {
+	t.Parallel()
+
+	if os.Getenv("STBOX_GROWTH") != "1" {
+		t.Skip("growth test, set STBOX_GROWTH=1")
+	}
+	best := func(n int) time.Duration {
+		in := "<tt>" + strings.Repeat("<p a=\"1\n2\"/>", n) + "</tt>"
+		fastest := time.Duration(1<<63 - 1)
+		for range 3 {
+			begin := time.Now()
+			_, err := xmlraw.Parse(strings.NewReader(in), xmlraw.ParseOptions{})
+			require.NoError(t, err)
+			fastest = min(fastest, time.Since(begin))
+		}
+		return fastest
+	}
+	small, large := best(4000), best(40000)
+	ratio := float64(large) / float64(max(small, time.Nanosecond))
+	assert.LessOrEqual(t, ratio, 30.0, "n=4000 took %v, 10n took %v", small, large)
+}
+
+func TestParseLinesWithLineBreaksInAttributeValues(t *testing.T) {
+	t.Parallel()
+
+	doc := parse(t, "<tt a=\"1\n2\">\n<p b='3\r\n4\r5'\n>x</p>\n<q c=\"&#10;\"/></tt>", false)
+	var lines []int
+	for n := range doc.Descendants() {
+		lines = append(lines, n.Line)
+	}
+	assert.Equal(t, []int{2, 6, 7}, lines)
+
+	_, err := xmlraw.Parse(strings.NewReader("<tt a=\"1\n2\">\n<p b=\"3\n4\">\n</q></tt>"), xmlraw.ParseOptions{})
+	var serr *xmlraw.SyntaxError
+	require.ErrorAs(t, err, &serr)
+	assert.Equal(t, 5, serr.Line)
 }
 
 func TestParseLines(t *testing.T) {

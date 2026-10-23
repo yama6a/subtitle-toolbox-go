@@ -1,11 +1,13 @@
 package ttml_test
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
@@ -723,4 +725,41 @@ func intOf(t *testing.T, d *model.Data, key string) int64 {
 	v, ok := d.Int(key)
 	require.True(t, ok, key)
 	return v
+}
+
+// Covers https://github.com/yama6a/subtitle-toolbox-go/issues/175: a character reference in an attribute value stays,
+// and only literal white space becomes a space.
+func TestAttributeReferences(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name, in, want, head string
+	}{
+		{"referenced LF", `a&#10;b`, "a\nb", `a&#10;b`},
+		{"referenced TAB", `a&#9;b`, "a\tb", `a&#9;b`},
+		{"referenced CR", `a&#13;b`, "a\rb", `a&#13;b`},
+		{"literal LF", "c\nd", "c d", "c d"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			in := `<tt xmlns="http://www.w3.org/ns/ttml"><head><styling><style xml:id="s" foo="` + tt.in + `"/></styling></head>` +
+				`<body><div><p begin="1s" end="2s" foo="` + tt.in + `">x</p></div></body></tt>`
+			s, _ := mustRead(t, in, false)
+			c, _ := s.Cue(0)
+			stored, _ := cueData(t, c).Object("attributes")
+			assert.Equal(t, attrs("foo", tt.want), stored)
+			head, _ := fileData(t, s).String("head")
+			assert.Equal(t, `<head><styling><style xml:id="s" foo="`+tt.head+`"/></styling></head>`, head)
+
+			var out bytes.Buffer
+			require.NoError(t, ttml.Write(&out, s, model.CommonWriteOptions{}, ttml.WriteOptions{}))
+			back, _ := mustRead(t, out.String(), false)
+			backCue, _ := back.Cue(0)
+			assert.Equal(t, cueData(t, c), cueData(t, backCue))
+			backHead, _ := fileData(t, back).String("head")
+			assert.Equal(t, head, backHead)
+		})
+	}
 }

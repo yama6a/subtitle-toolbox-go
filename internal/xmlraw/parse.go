@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 )
 
@@ -27,7 +28,9 @@ func Parse(r io.Reader, opts ParseOptions) (*Node, error) {
 		return nil, fmt.Errorf("xmlraw: %w", err)
 	}
 	p := &parser{opts: opts, doc: &Node{Kind: DocumentNode}}
-	p.dec = xml.NewDecoder(bytes.NewReader(lfLineEnds(src)))
+	src = lfLineEnds(src)
+	p.breaks = spaceAttributeValues(src)
+	p.dec = xml.NewDecoder(bytes.NewReader(src))
 	p.dec.Strict = true
 	p.dec.CharsetReader = func(_ string, input io.Reader) (io.Reader, error) { return input, nil }
 	if err := p.parse(); err != nil {
@@ -39,9 +42,11 @@ func Parse(r io.Reader, opts ParseOptions) (*Node, error) {
 type parser struct {
 	opts ParseOptions
 	dec  *xml.Decoder
-	doc  *Node
-	cur  *Node
-	root *Node
+	// breaks holds the offsets of the LFs in attribute values that spaceAttributeValues turned into spaces.
+	breaks []int
+	doc    *Node
+	cur    *Node
+	root   *Node
 }
 
 // errStop ends a recover parse early, at a point where libxml stops reading.
@@ -110,32 +115,107 @@ func (p *parser) outside(what string) error {
 }
 
 func (p *parser) fail(msg string) error {
-	line, _ := p.dec.InputPos()
-	return &SyntaxError{Line: line, Msg: msg}
+	return &SyntaxError{Line: p.line(), Msg: msg}
 }
 
 func (p *parser) syntaxError(err error) error {
 	var serr *xml.SyntaxError
 	if errors.As(err, &serr) {
-		return &SyntaxError{Line: serr.Line, Msg: serr.Msg}
+		return &SyntaxError{Line: p.line(), Msg: serr.Msg}
 	}
 	return p.fail(strings.TrimPrefix(err.Error(), "xml: "))
 }
 
-// normalizeAttrs turns TAB and LF in attribute values into spaces, as XML 1.0 section 3.3.3 says.
-// encoding/xml decodes references first, so a referenced LF or TAB turns into a space too.
-func normalizeAttrs(attrs []xml.Attr) []xml.Attr {
-	out := make([]xml.Attr, len(attrs))
-	for i, a := range attrs {
-		a.Value = strings.Map(func(r rune) rune {
-			if r == '\t' || r == '\n' {
-				return ' '
-			}
-			return r
-		}, a.Value)
-		out[i] = a
+// line returns the line of the decoder in the input, with the LFs that spaceAttributeValues replaced.
+func (p *parser) line() int {
+	line, _ := p.dec.InputPos()
+	return line + sort.SearchInts(p.breaks, int(p.dec.InputOffset()))
+}
+
+// spaceAttributeValues turns each literal TAB and LF in the attribute values of the tags into a space, as XML 1.0
+// section 3.3.3 says, and returns the offsets of the LFs. It runs before encoding/xml decodes the references, so a
+// TAB or LF of a reference such as &#10; stays, as in libxml2. Comments, CDATA sections, processing instructions
+// and the DOCTYPE keep their content. It changes src in place.
+func spaceAttributeValues(src []byte) []int {
+	var breaks []int
+	for i := 0; i < len(src); i++ {
+		if src[i] != '<' {
+			continue
+		}
+		rest := src[i:]
+		switch {
+		case bytes.HasPrefix(rest, []byte("<!--")):
+			i += skipPast(rest, "<!--", "-->")
+		case bytes.HasPrefix(rest, []byte("<![CDATA[")):
+			i += skipPast(rest, "<![CDATA[", "]]>")
+		case bytes.HasPrefix(rest, []byte("<?")):
+			i += skipPast(rest, "<?", "?>")
+		case bytes.HasPrefix(rest, []byte("<!")):
+			i += skipDeclaration(rest)
+		default:
+			i += spaceTag(rest, i, &breaks)
+		}
 	}
-	return out
+	return breaks
+}
+
+func skipPast(s []byte, start, end string) int {
+	if j := bytes.Index(s[len(start):], []byte(end)); j >= 0 {
+		return len(start) + j + len(end) - 1
+	}
+	return len(s)
+}
+
+// skipDeclaration returns the length of a declaration such as <!DOCTYPE ...>, whose internal subset in [ and ] and
+// whose quoted strings can hold >. A comment of the subset can hold quotes and brackets, as encoding/xml reads it.
+func skipDeclaration(s []byte) int {
+	depth := 0
+	var quote byte
+	for j := 0; j < len(s); j++ {
+		c := s[j]
+		switch {
+		case quote != 0:
+			if c == quote {
+				quote = 0
+			}
+		case bytes.HasPrefix(s[j:], []byte("<!--")):
+			j += skipPast(s[j:], "<!--", "-->")
+		case c == '"', c == '\'':
+			quote = c
+		case c == '[':
+			depth++
+		case c == ']':
+			depth--
+		case c == '>' && depth <= 0:
+			return j
+		}
+	}
+	return len(s)
+}
+
+func spaceTag(s []byte, at int, breaks *[]int) int {
+	var quote byte
+	for j, c := range s {
+		if quote == 0 {
+			switch c {
+			case '"', '\'':
+				quote = c
+			case '>':
+				return j
+			}
+			continue
+		}
+		switch c {
+		case quote:
+			quote = 0
+		case '\n':
+			*breaks = append(*breaks, at+j)
+			s[j] = ' '
+		case '\t':
+			s[j] = ' '
+		}
+	}
+	return len(s)
 }
 
 func lfLineEnds(src []byte) []byte {
@@ -150,8 +230,7 @@ func (p *parser) start(t xml.StartElement) error {
 	if p.cur == p.doc && p.root != nil {
 		return p.outside("a second root element <" + QName(t.Name) + ">")
 	}
-	line, _ := p.dec.InputPos()
-	n := &Node{Kind: ElementNode, Name: t.Name, Attrs: normalizeAttrs(t.Attr), Line: line}
+	n := &Node{Kind: ElementNode, Name: t.Name, Attrs: t.Attr, Line: p.line()}
 	p.append(n)
 	if p.cur == p.doc {
 		p.root = n
