@@ -56,7 +56,9 @@ func detectTests() []detectTest {
 			want:    stbox.JSON,
 		},
 
-		{name: "SAMI in lower case", content: "<sami><body></body></sami>", later: "SAMI"},
+		{name: "SAMI in lower case", content: "<sami><body></body></sami>", want: stbox.SAMI},
+		{name: "SAMI after a line end", content: "<SAMI>\n<HEAD>\n", want: stbox.SAMI},
+		{name: "SAMI after the XML prolog", content: "<?xml version=\"1.0\"?>\n<!-- made by hand -->\n<!DOCTYPE sami>\n<Sami>", want: stbox.SAMI},
 		{name: "MPSub with FORMAT first", content: "FORMAT=25\n\n0 50\nHello\n", later: "MPSub"},
 		{name: "MPSub with header comment", content: "TITLE=Bakery\nFORMAT=TIME   # seconds\n\n1 2\nHello\n", later: "MPSub"},
 		{name: "MicroDVD with fps line", content: "{1}{1}25\n{24}{72}Hello\n", later: "MicroDVD"},
@@ -160,6 +162,8 @@ func TestDetectFindsNoFormat(t *testing.T) {
 		{"WebVTT after text without header", "Converted online\n\n1\n00:00:01.000 --> 00:00:04.000\nHello\n"},
 		{"SubRip timing after text without number", "Converted online\n\n00:00:01,000 --> 00:00:04,000\nHello\n"},
 		{"WEBVTT inside a word", "WEBVTTX\n"},
+		{"SAMI inside a word", "<SAMIPARAM>\n"},
+		{"SAMI after text", "Converted online\n<SAMI>\n"},
 		{"EBU STL at 24 fps", "850STL24.011" + strings.Repeat(" ", 1012)},
 		{"events without tStartMs", `{"events": [{"start": 1}]}`},
 		{"events as text", `{"text": "\"events\": [{\"tStartMs\": 1}]"}`},
@@ -229,7 +233,7 @@ type fixture struct {
 func fixtures(t *testing.T) []fixture {
 	t.Helper()
 
-	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "srt": stbox.SubRip, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
+	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "sami": stbox.SAMI, "srt": stbox.SubRip, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
 	var list []fixture
 	for dir, f := range folders {
 		for _, sub := range []string{dir, dir + "/real"} {
@@ -244,6 +248,11 @@ func fixtures(t *testing.T) []fixture {
 	}
 	slices.SortFunc(list, func(a, b fixture) int { return strings.Compare(a.rel, b.rel) })
 	return list
+}
+
+// fixtureEncodings holds the source encoding of the fixtures that need one.
+func fixtureEncodings() map[string]string {
+	return map[string]string{"sami/real/own_korean_cp949.smi": "CP949"}
 }
 
 // brokenFixtures break their own format on purpose, so detection finds another format or none.
@@ -284,8 +293,9 @@ func TestDetectionGivesTheCuesOfTheFormat(t *testing.T) {
 			t.Parallel()
 
 			content := testfiles.Read(t, fx.rel)
-			explicit, _, wantErr := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: fx.format})
-			detected, info, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{})
+			encoding := fixtureEncodings()[fx.rel]
+			explicit, _, wantErr := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: fx.format, Encoding: encoding})
+			detected, info, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Encoding: encoding})
 			if wantErr != nil {
 				require.EqualError(t, err, wantErr.Error())
 				return
@@ -351,7 +361,7 @@ func FuzzDetect(f *testing.F) {
 		f.Add([]byte(tt.content))
 	}
 	root := testfiles.Root(f)
-	for _, dir := range []string{"ass", "json", "srt", "ttml/real", "forced", "vtt", "lenient"} {
+	for _, dir := range []string{"ass", "json", "sami/real", "srt", "ttml/real", "forced", "vtt", "lenient"} {
 		entries, err := os.ReadDir(filepath.Join(root, dir))
 		if err != nil {
 			f.Fatal(err)

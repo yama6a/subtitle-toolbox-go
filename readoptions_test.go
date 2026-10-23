@@ -5,11 +5,13 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/format/sami"
 )
 
 // Ports testRealFilesGiveTheCuesOf1x of tests/ReadOptionsTest.php of subtitle-toolbox-php.
@@ -26,6 +28,13 @@ func TestReadOptionGoldens(t *testing.T) {
 			golden: "french_windows_1252",
 			file:   "encoding/french-windows-1252.srt",
 			opts:   stbox.ReadOptions{Format: stbox.SubRip, Encoding: "Windows-1252"},
+		},
+		{
+			golden: "sami_multi_language_frcc",
+			file:   "sami/real/multi_language.smi",
+			opts: stbox.ReadOptions{
+				Format: stbox.SAMI, LastCueDuration: new(10 * time.Second), SAMI: sami.ReadOptions{LanguageClass: "FRCC"},
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -49,6 +58,37 @@ func TestReadOptionGoldens(t *testing.T) {
 				rows = append(rows, []any{c.Start.Seconds(), c.End.Seconds(), lines})
 			}
 			assert.Equal(t, want, any(rows))
+		})
+	}
+}
+
+// Ports testALastCueWithoutEndLastsFiveSecondsByDefault and testALastCueDurationOf0KeepsTheLastCue of
+// tests/ReadOptionsTest.php of subtitle-toolbox-php. Each reader that uses the default adds its row.
+func TestLastCueDuration(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		file   string
+		format stbox.Format
+		start  time.Duration
+	}{
+		{"SAMI", "sami/real/mantas_smi_formatted.smi", stbox.SAMI, 17350 * time.Millisecond},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			path := filepath.Join("testdata", filepath.FromSlash(tt.file))
+			for _, c := range []struct {
+				last *time.Duration
+				want time.Duration
+			}{{nil, 5 * time.Second}, {new(7 * time.Second), 7 * time.Second}, {new(time.Duration(0)), 0}} {
+				s, _, err := stbox.Load(path, stbox.ReadOptions{Format: tt.format, LastCueDuration: c.last})
+				require.NoError(t, err)
+				last, _ := s.Cue(s.Len() - 1)
+				assert.Equal(t, [2]time.Duration{tt.start, tt.start + c.want}, [2]time.Duration{last.Start, last.End})
+			}
 		})
 	}
 }

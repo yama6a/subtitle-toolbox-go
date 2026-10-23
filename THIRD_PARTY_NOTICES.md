@@ -74,6 +74,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 - Files written for this repository in the shape of its fixtures:
   - `testdata/ttml/real/mantas_netflix_ticks.dfxp`
   - `testdata/lenient/mantas_multiple_divs.ttml`
+  - `testdata/sami/real/mantas_smi.smi`, in the shape of `tests/files/smi.smi`
+  - `testdata/sami/real/mantas_smi_formatted.smi`, in the shape of `tests/files/smi_formatted.smi`
 
 ```text
 MIT License
@@ -402,6 +404,7 @@ You may add Your own copyright statement to Your modifications and may provide a
 9. Accepting Warranty or Additional Liability. While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
 
 END OF TERMS AND CONDITIONS
+```
 
 ## asticode/go-astisub
 
@@ -450,6 +453,7 @@ SOFTWARE.
 - Files written for this repository in the shape of its fixtures:
   - `testdata/json/real/pysubs2_regions_3x.json`
   - `testdata/ttml/real/pysubs2_regions.ttml`
+  - `testdata/sami/real/pysubs2_source_id.smi`, in the shape of `SAMI_INPUT1` in `tests/formats/test_sami.py`
 
 ```text
 Copyright (c) 2014-2026 Tomas Karabela
@@ -603,4 +607,36 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+## papnkukn/subsrt
+
+- Project: <https://github.com/papnkukn/subsrt>
+- Licence: MIT
+- Checked at: `478e54390b74859b3643b80ff988113557ff80d8`
+- Files written for this repository in the shape of its fixtures:
+  - `testdata/sami/real/subsrt_sample.smi`, in the shape of `test/fixtures/sample.smi`
+
+```text
+MIT License
+
+Copyright (c) 2017
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```

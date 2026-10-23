@@ -41,7 +41,7 @@ func BenchmarkParse(b *testing.B) {
 	}
 	s.AddCues(cues...)
 
-	for _, f := range []stbox.Format{stbox.SubRip, stbox.TTML, stbox.WebVTT, stbox.ASS} {
+	for _, f := range []stbox.Format{stbox.SubRip, stbox.TTML, stbox.WebVTT, stbox.ASS, stbox.SAMI} {
 		var content bytes.Buffer
 		if f == stbox.TTML {
 			content.WriteString(ttmlDocument(s))

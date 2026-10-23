@@ -1,0 +1,62 @@
+<SAMI>
+<Head>
+   <Title>Weather Report for Tuesday</Title>
+   <SAMIParam>
+      Copyright {(C)Copyright 2026, Example Weather Desk}
+      Media {weather.wav}
+      Metrics {time:ms; duration: 73000;}
+      Spec {MSFT:1.0;}
+   </SAMIParam>
+
+   <STYLE TYPE="text/css"><!--
+      P {margin-left: 29pt; margin-right: 29pt; font-size: 12pt; 
+      text-align: left; font-family: tahoma, arial, sans-serif; 
+      font-weight: normal; color: white; background-color: black;}
+
+      TABLE {Width: "248pt" ;}
+
+      .ENUSCC {Name: "English Captions"; lang: en-US-CC;}
+
+#Source {margin-bottom: -15pt; background-color: silver; 
+         color: black; vertical-align: normal; font-size: 12pt; 
+         font-family: tahoma, arial, sans-serif; 
+         font-weight: normal;}
+
+#Youth {color: greenyellow; font-size: 18pt;}
+
+#BigPrint-1 {color: yellow; font-size: 24pt;}-->
+   </Style>
+</Head>
+
+<Body>
+   <SYNC Start=0>
+      <P Class=ENUSCC ID=Source>Weather Desk   
+   <SYNC Start=10>
+      <P Class=ENUSCC>Good morning, here is the weather 
+         for the coast and the hills 
+         over the next two days.
+   <SYNC Start=8800>
+      <P Class=ENUSCC>The morning starts cool and grey, 
+         with light rain near the harbour,
+   <SYNC Start=19500>
+      <P Class=ENUSCC>and the rain moves inland before noon, 
+         so take an umbrella to the station.
+   <SYNC Start=28000>
+      <P Class=ENUSCC>In the afternoon the clouds break up
+          and the wind turns to the west.
+   <SYNC Start=38000>
+      <P Class=ENUSCC>Tomorrow brings sun for most of the day, 
+         with fifteen degrees on the coast.
+   <SYNC Start=46000>
+      <P Class=ENUSCC>The hills stay a little colder, 
+         about ten degrees at noon, 
+         and the night is clear and calm.
+   <SYNC Start=61000>
+      <P Class=ENUSCC>The trains and the ferries run on time, 
+         and the market by the river 
+         opens at eight as usual.
+   <SYNC Start=73000>
+      <P Class=ENUSCC ID=Source>End of:
+      <P Class=ENUSCC>Weather Report for Tuesday
+</Body>
+</SAMI>

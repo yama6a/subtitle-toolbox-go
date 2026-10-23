@@ -1,0 +1,16 @@
+<SAMI>
+<HEAD>
+<TITLE>Undefined class</TITLE>
+<STYLE TYPE="text/css">
+<!--
+P { font-family: Arial; color: white; }
+-->
+</STYLE>
+</HEAD>
+<BODY>
+<SYNC Start=1000><P Class=ENCC>Hello
+<SYNC Start=3500><P Class=ENCC>&nbsp;
+<SYNC Start=4000><P Class=ENCC>The ferry leaves at noon.
+<SYNC Start=6000><P Class=ENCC>&nbsp;
+</BODY>
+</SAMI>

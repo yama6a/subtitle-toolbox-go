@@ -43,7 +43,7 @@ var formatFacts = []formatFact{
 	{format: LRC, extensions: []string{"lrc"}},
 	{format: MicroDVD, extensions: []string{"sub"}},
 	{format: MPSub, extensions: []string{"mpsub"}},
-	{format: SAMI, extensions: []string{"smi", "sami"}},
+	{format: SAMI, extensions: []string{"smi", "sami"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SBV, extensions: []string{"sbv"}},
 	{format: SubRip, extensions: []string{"srt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubViewer, extensions: []string{"sub"}},

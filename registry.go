@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
@@ -36,6 +37,9 @@ var (
 	_ detectFunc                        = ass.Detect
 	_ readFunc[ttml.ReadOptions]        = ttml.Read
 	_ detectFunc                        = ttml.Detect
+	_ readFunc[sami.ReadOptions]        = sami.Read
+	_ writeFunc[sami.WriteOptions]      = sami.Write
+	_ detectFunc                        = sami.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -57,7 +61,7 @@ var registry = []formatFuncs{
 	{format: LRC},
 	{format: MicroDVD},
 	{format: MPSub},
-	{format: SAMI},
+	{format: SAMI, read: readSAMI, write: writeSAMI},
 	{format: SBV},
 	{format: SubRip, read: readSubRip, write: writeSubRip},
 	{format: SubViewer},
@@ -88,6 +92,7 @@ var (
 	signatures = []signature{
 		{format: WebVTT, match: webvtt.Detect},
 		{format: TTML, match: ttml.Detect},
+		{format: SAMI, match: sami.Detect},
 		{format: ASS, match: ass.Detect},
 		{format: SubRip, match: srt.Detect},
 	}
@@ -152,6 +157,14 @@ func writeASS(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts Wr
 
 func readTTML(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return ttml.Read(r, common, ttml.ReadOptions{})
+}
+
+func readSAMI(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return sami.Read(r, common, opts.SAMI)
+}
+
+func writeSAMI(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+	return sami.Write(w, s, common, sami.WriteOptions{})
 }
 
 func lookup(f Format) (formatFuncs, bool) {

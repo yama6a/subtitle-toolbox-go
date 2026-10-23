@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/markup"
 )
 
@@ -76,31 +77,7 @@ func cleanLines(lines []string) []string {
 }
 
 func cleanLine(s string) string {
-	return strings.Trim(collapseRuns(normalizeLineEnds(s)), phpTrimSet)
-}
-
-// normalizeLineEnds turns each run of CR characters followed by LF into one LF. A CRLF file gets 2 CR
-// characters before each LF from a second text-mode conversion. A lone CR becomes LF too.
-func normalizeLineEnds(s string) string {
-	if !strings.Contains(s, "\r") {
-		return s
-	}
-	out := make([]byte, 0, len(s))
-	for i := 0; i < len(s); i++ {
-		if s[i] != '\r' {
-			out = append(out, s[i])
-			continue
-		}
-		j := i + 1
-		for j < len(s) && s[j] == '\r' {
-			j++
-		}
-		if j < len(s) && s[j] == '\n' {
-			i = j
-		}
-		out = append(out, '\n')
-	}
-	return string(out)
+	return strings.Trim(collapseRuns(markupcore.NormalizeLineEnds(s)), phpTrimSet)
 }
 
 func collapseRuns(s string) string {

@@ -264,3 +264,26 @@ func TestMapTextRunsKeepsUnchangedRuns(t *testing.T) {
 		})
 	}
 }
+
+func TestNormalizeLineEnds(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		in, want string
+	}{
+		{"", ""},
+		{"a\nb", "a\nb"},
+		{"a\r\nb\r\n", "a\nb\n"},
+		{"a\r\r\nb", "a\nb"},
+		{"a\rb", "a\nb"},
+		{"a\r\rb", "a\n\nb"},
+		{"a\r", "a\n"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.in, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, markupcore.NormalizeLineEnds(tt.in))
+		})
+	}
+}

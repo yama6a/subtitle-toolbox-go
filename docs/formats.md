@@ -6,6 +6,7 @@
 |:--- |:--- |:--- |:--- |:--- |
 | ASS and SSA | `stbox.ASS` | `ass` | `.ass`, `.ssa` | [ASS and SSA](#ass-and-ssa) |
 | library JSON | `stbox.JSON` | `json` | `.json` | [JSON](#json) |
+| SAMI | `stbox.SAMI` | `sami` | `.smi`, `.sami` | [SAMI](#sami) |
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
 | TTML, IMSC, DFXP | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | [TTML](#ttml) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
@@ -292,3 +293,80 @@ This file reads as one cue from 1 s to 3 s with the alignment `TopCenter` and th
 ### Options
 
 `ttml.ReadOptions` has no fields. The reader reads `Lenient`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#ttml).
+
+## SAMI
+
+SAMI is the HTML-like caption format of Windows Media Player, still common for Korean subtitles. Package `format/sami` reads and writes it. The format name is `sami`, the extensions `.smi` and `.sami`.
+
+```text
+<SAMI>
+<HEAD>
+<TITLE>Station news</TITLE>
+<STYLE TYPE="text/css"><!--
+.ENUSCC { Name: English; lang: en-US; }
+--></STYLE>
+</HEAD>
+<BODY>
+<SYNC Start=1000><P Class=ENUSCC>The bridge is <b>open</b><br>again.
+<SYNC Start=4000><P Class=ENUSCC>&nbsp;
+</BODY>
+</SAMI>
+```
+
+This file reads as one cue from 1 s to 4 s with the lines `The bridge is <b>open</b>` and `again.`, the title `Station news` and the language `en-US`. A file can hold several languages, one CSS class each. A read gives the cues of one class.
+
+### Read
+
+| Input | Goes to |
+|:--- |:--- |
+| `<TITLE>`, trimmed and with entities decoded | metadata `title` |
+| the `lang` of the chosen class in `<STYLE>` | metadata `language` |
+| the raw text of `<SAMIParam>` and of `<STYLE>`, the chosen class as written | file data `sami.samiParam`, `sami.style`, `sami.class` |
+| `Start` of each `SYNC` tag, in milliseconds | the cue start. A negative `Start` reads as 0 |
+| `<b>`, `<i>`, `<u>`, `<s>`, `<strike>` | markup. `<strike>` becomes `<s>` |
+| `<font color>` with `#rrggbb`, `rrggbb` or one of the 16 HTML 4.01 color names | `<font color="#rrggbb">`. Another color, such as `#ABC`, keeps only the text |
+| `<br>` | a new line. Other line ends and runs of white space become 1 space |
+| other tags and comments | dropped, their text stays |
+| the paragraphs of the class in each `SYNC` block | cue data `sami.paragraphs`, each with its other attributes and its HTML, and `sami.lines` |
+
+- **Cues**: a `SYNC` block with a paragraph of the class, or with a paragraph without class, ends the cue before it. It starts a cue when those paragraphs hold text. So a `&nbsp;` block ends a cue. A block without `<P>` ends the cue of every class. The blocks sort by start.
+- **Last cue**: it lasts `LastCueDuration`, 5 s by default. Its end stops at 99999:59:59.999, as [reading-writing.md](reading-writing.md#last-cue-default) says.
+- **`&nbsp` without `;`** reads as a no-break space, as browsers read it.
+- **Invalid UTF-8** fails in strict mode. Lenient mode reads each bad byte as U+FFFD. Korean CP949 and EUC-KR files need `ReadOptions.Encoding` when the detection of [encodings.md](encodings.md) misses them.
+
+### Class choice
+
+| # | Case | Class |
+|---:|:--- |:--- |
+| 1 | `sami.ReadOptions.LanguageClass` is set | that class of `<STYLE>` or of a `<P>`, in any case. Missing: `The SAMI file has no class X.`, also in lenient mode |
+| 2 | `<STYLE>` has no class | the first class that a `<P>` uses, or none |
+| 3 | no `<P>` uses a class | the first class of `<STYLE>` |
+| 4 | a `<P>` uses a class of `<STYLE>` | the first such class in `<STYLE>` order |
+| 5 | no `<P>` class is in `<STYLE>` | the first class that a `<P>` uses. Lenient mode warns |
+
+Without a class, every paragraph counts.
+
+### Tag scanner
+
+The reader parses the content of each `SYNC` block with a tag scanner of its own, in place of the libxml2 HTML parser of PHP. The cue data `sami.paragraphs` holds the HTML that the scanner writes back. So the scanner gives the libxml2 tree for the markup of real SAMI files:
+
+- A `<P>` closes an open `<P>` and the inline tags `b`, `i`, `u`, `s`, `strike`, `tt`, `big`, `small` and `h1` to `h6` before it, so 2 paragraphs of one block are siblings. It does not close `<font>` or `<span>`.
+- An end tag closes the innermost open element of its name and every element after it. An end tag without such an element is ignored.
+- The named entities of HTML 4.01 and `&apos;` decode. An unknown name, or a name without `;`, stays text. A numeric reference such as `&#39` decodes also without `;`.
+
+**Limit**: lists, tables, forms and scripts follow more libxml2 rules than the scanner knows. Such content keeps its text, but the cue data can differ from PHP. SAMI files do not use them.
+
+### Write
+
+- **Class**: the stored `sami.class`, or none when only `sami.style` is stored. Else the letters and digits of the language in upper case plus `CC`, so `ko-KR` writes `KOKRCC`. Without a language: `SUBTTL`.
+- **Head**: `<TITLE>` with the title, `<SAMIParam>` when stored, and `<STYLE>`. A stored style loses the rules of every other class, because a player shows the first class by default. Without a stored style, the writer writes a style with one class.
+- **Cues**: one `SYNC` line per cue, and a `&nbsp;` line at the end of a cue when the next cue starts later. An overlapping cue ends where the next one starts. A negative time writes as 0.
+- **Unchanged cue**: a cue whose lines equal the cue data `sami.lines` writes its stored paragraphs. `StripTags` turns this off.
+- **Changed cue**: ruby becomes `base (annotation)`. The writer keeps `<b>`, `<i>`, `<u>`, `<s>` and `<font>`, and turns the WebVTT color classes into `<font color>`. `StripTags` drops every tag. The lines join with `<br>`. The tags that a cue leaves open close at its end, because an HTML parser keeps them open into the next `<P>`. U+00A0 writes as `&nbsp;`.
+- **Invalid UTF-8**: an `*UnwritableError` whose `Err` is `ErrInvalidUTF8`.
+- **BOM**: none by default.
+- **Lost on write**: the rules and paragraphs of the other classes, comments, `<font face>`, speakers, word timestamps, the end times of overlapping cues and the line breaks of the source.
+
+### Options
+
+`sami.ReadOptions` has the field `LanguageClass`, in the root `ReadOptions.SAMI`. Empty picks the class by the table above. A value of only white space fails `Validate`. The reader reads `Lenient`, `LastCueDuration` and `Encoding`. `sami.WriteOptions` has no fields. The writer reads `StripTags`, `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#sami).

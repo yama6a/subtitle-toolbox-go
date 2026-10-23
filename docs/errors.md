@@ -65,6 +65,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 | TTML | the line of the element, the line of the `>` that ends its start tag. The first line of the skipped text for text before the XML. 0 for a time expression that is not valid or that alone reaches 100000 hours, for a file that is not well-formed XML and for a root that is not `<tt>` |
 | library JSON | 0 |
 | ASS and SSA | the line of the error: the event line, or the `Format:` line for a field name that is a number. A file without `[Events]` and `[Script Info]` gives 0 |
+| SAMI | the line of the `<SYNC` tag. `The SAMI file has no class X.` has no line |
 
 Each format adds its row here when its reader ships.
 

@@ -164,3 +164,28 @@ func MapTextRuns(lines []string, fn func(text string, first, last bool) string) 
 	}
 	return out
 }
+
+// NormalizeLineEnds turns each run of CR before LF into one LF, and each other CR into LF. A CRLF file gets 2 CR
+// before each LF from a second text-mode conversion.
+func NormalizeLineEnds(s string) string {
+	if !strings.Contains(s, "\r") {
+		return s
+	}
+	var b strings.Builder
+	b.Grow(len(s))
+	for i := 0; i < len(s); i++ {
+		if s[i] != '\r' {
+			b.WriteByte(s[i])
+			continue
+		}
+		j := i + 1
+		for j < len(s) && s[j] == '\r' {
+			j++
+		}
+		if j < len(s) && s[j] == '\n' {
+			i = j
+		}
+		b.WriteByte('\n')
+	}
+	return b.String()
+}

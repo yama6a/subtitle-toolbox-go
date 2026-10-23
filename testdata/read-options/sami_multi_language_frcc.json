@@ -1,0 +1,24 @@
+[
+    [
+        1.0,
+        4.2,
+        [
+            "La boulangerie ouvre à six heures du matin."
+        ]
+    ],
+    [
+        5.0,
+        8.0,
+        [
+            "Il <font color=\"#ffff00\">pleut</font> aujourd'hui.",
+            "Prenez un parapluie."
+        ]
+    ],
+    [
+        8.0,
+        10.5,
+        [
+            "<u>Le train</u> part bientôt."
+        ]
+    ]
+]

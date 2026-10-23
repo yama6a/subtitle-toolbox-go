@@ -1,0 +1,18 @@
+<SAMI>
+<HEAD>
+<TITLE>Garden notes</TITLE>
+<STYLE TYPE="text/css">
+<!--
+P { font-family: Arial; }
+.ENCC { Name: English; lang: en-US; }
+-->
+</STYLE>
+</HEAD>
+<BODY>
+<SYNC Start=1000><P Class=ENCC>Water the roses.
+<SYNC Start=3000><P Class=ENCC>&nbsp;
+<SYNC Start=><P Class=ENCC>Cut the grass.
+<SYNC Start=6000><P Class=ENCC>Pick the <i>beans</i>.
+<SYNC Start=8000><P Class=ENCC>&nbsp;
+</BODY>
+</SAMI>

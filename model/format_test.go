@@ -24,7 +24,7 @@ func TestFormatFacts(t *testing.T) {
 		{model.LRC, []string{"lrc"}, false, false, false},
 		{model.MicroDVD, []string{"sub"}, false, false, false},
 		{model.MPSub, []string{"mpsub"}, false, false, false},
-		{model.SAMI, []string{"smi", "sami"}, false, false, false},
+		{model.SAMI, []string{"smi", "sami"}, true, true, true},
 		{model.SBV, []string{"sbv"}, false, false, false},
 		{model.SubRip, []string{"srt"}, true, true, true},
 		{model.SubViewer, []string{"sub"}, false, false, false},

@@ -70,6 +70,8 @@ func TestFormatArgument(t *testing.T) {
 		{"x.srt", stbox.SubRip},
 		{"ass", stbox.ASS},
 		{"ssa", stbox.ASS},
+		{"sami", stbox.SAMI},
+		{"SMI", stbox.SAMI},
 	}
 	for _, tt := range tests {
 		t.Run(tt.in, func(t *testing.T) {
@@ -80,7 +82,7 @@ func TestFormatArgument(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
-	for _, in := range []string{"subrip", "25", "", ".", "txt", "smi", "Kass", "sʀt"} {
+	for _, in := range []string{"subrip", "25", "", ".", "txt", "lrc", "Kass", "sʀt"} {
 		_, err := findFormat(in)
 		assert.EqualError(t, err, `Unknown format "`+in+`". Run "stbox formats" for the list.`)
 	}

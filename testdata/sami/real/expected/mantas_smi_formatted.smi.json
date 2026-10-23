@@ -1,0 +1,89 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "TRAIN0412",
+            "language": "en-US"
+        },
+        "comments": [],
+        "formatData": {
+            "sami": {
+                "style": "\n<!--\nP {\tmargin-left:  1pt;\n    margin-right: 1pt;\n    margin-bottom: 2pt;\n    margin-top: 2pt;\n    text-align: center;\n    font-size: 10pt;\n    font-family: Arial;\n    font-weight: normal;\n    font-style: normal;\n    color: #ffffff; }\n\n.ENCC {Name: English; lang: en-US; SAMI_Type: CC;}\n\n-->",
+                "class": "ENCC"
+            }
+        },
+        "cues": [
+            {
+                "start": 9.209,
+                "end": 12.312,
+                "lines": [
+                    "( bell ringing )"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "( bell ringing )"
+                            }
+                        ],
+                        "lines": [
+                            "( bell ringing )"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 14.848,
+                "end": 17.35,
+                "lines": [
+                    "GUIDE:",
+                    "When the train leaves",
+                    "the platform at nine,"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "GUIDE:<br>\n         When the train leaves<br>\n    the platform at nine,"
+                            }
+                        ],
+                        "lines": [
+                            "GUIDE:",
+                            "When the train leaves",
+                            "the platform at nine,"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 17.35,
+                "end": 22.35,
+                "lines": [
+                    "we watch the fields go by"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "we watch the fields go by"
+                            }
+                        ],
+                        "lines": [
+                            "we watch the fields go by"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -148,6 +148,7 @@ func TestConvertWritesTheFormatOfTo(t *testing.T) {
 		{"vtt/real/own_ytdlp_rolling.vtt", stbox.SubRip},
 		{"ass/real/own_aegisub.ass", stbox.SubRip},
 		{"ttml/real/bbc_ebu_tt_d.ttml", stbox.SubRip},
+		{"sami/real/multi_language.smi", stbox.SAMI},
 	}
 	for _, tt := range tests {
 		t.Run(tt.path, func(t *testing.T) {

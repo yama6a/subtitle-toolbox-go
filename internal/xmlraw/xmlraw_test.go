@@ -2,6 +2,7 @@ package xmlraw_test
 
 import (
 	"encoding/xml"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
@@ -281,4 +282,26 @@ func TestSyntaxErrorMessage(t *testing.T) {
 	t.Parallel()
 
 	assert.Equal(t, "xml: line 3: boom", (&xmlraw.SyntaxError{Line: 3, Msg: "boom"}).Error())
+}
+
+func TestPrologs(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		in             string
+		exact, anyCase bool
+	}{
+		{"<?xml version=\"1.0\"?>\n<!-- a\nb -->\t<!DOCTYPE tt>\n<x>", true, true},
+		{"<!doctype html><x>", false, true},
+		{"<!DocType html><x>", false, true},
+		{"text<x>", false, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.in, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.exact, regexp.MustCompile(xmlraw.Prolog+`<x>`).MatchString(tt.in))
+			assert.Equal(t, tt.anyCase, regexp.MustCompile(xmlraw.PrologAnyCase+`<x>`).MatchString(tt.in))
+		})
+	}
 }

@@ -1,0 +1,62 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en-US"
+        },
+        "comments": [],
+        "formatData": {
+            "sami": {
+                "style": "\n<!--\n.ENUSCC { Name: English; lang: en-US; }\n-->\n",
+                "class": "ENUSCC"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 1.0,
+                "lines": [
+                    "The tide is out."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "The tide is out."
+                            }
+                        ],
+                        "lines": [
+                            "The tide is out."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 2.0,
+                "end": 4.5,
+                "lines": [
+                    "Boats wait on the sand."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "Boats wait on the sand."
+                            }
+                        ],
+                        "lines": [
+                            "Boats wait on the sand."
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

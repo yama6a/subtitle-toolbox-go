@@ -1,0 +1,110 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Timetable notes",
+            "language": "en-US"
+        },
+        "comments": [],
+        "formatData": {
+            "sami": {
+                "samiParam": "\n  Metrics {time:ms;}\n  Spec {MSFT:1.0;}\n",
+                "style": "\n<!--\n  P { font-family: Arial; font-weight: normal; color: white; background-color: black; text-align: center; }\n  .ENUSCC { name: English; lang: en-US ; SAMIType: CC ; }\n-->\n",
+                "class": "ENUSCC"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.2,
+                "end": 3.8,
+                "lines": [
+                    "The winter timetable starts on Monday."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "The winter timetable starts on Monday."
+                            }
+                        ],
+                        "lines": [
+                            "The winter timetable starts on Monday."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 4.1,
+                "end": 7.3,
+                "lines": [
+                    "<i>[announcer]</i>",
+                    "The coast train leaves at 6:50."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "<i>[announcer]</i><br>The coast train leaves at 6:50."
+                            }
+                        ],
+                        "lines": [
+                            "<i>[announcer]</i>",
+                            "The coast train leaves at 6:50."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 7.3,
+                "end": 10.0,
+                "lines": [
+                    "Ten minutes earlier &amp; from platform 4."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "Ten minutes earlier &amp; from platform 4."
+                            }
+                        ],
+                        "lines": [
+                            "Ten minutes earlier &amp; from platform 4."
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 10.4,
+                "end": 13.9,
+                "lines": [
+                    "<font color=\"#ffff00\">The last train</font> still leaves at 11:15."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "sami": {
+                        "paragraphs": [
+                            {
+                                "attributes": [],
+                                "html": "<font color=\"#ffff00\">The last train</font> still leaves at 11:15."
+                            }
+                        ],
+                        "lines": [
+                            "<font color=\"#ffff00\">The last train</font> still leaves at 11:15."
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}
