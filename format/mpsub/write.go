@@ -2,7 +2,6 @@ package mpsub
 
 import (
 	"io"
-	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -99,24 +98,5 @@ func appendNumber(body []byte, to, from time.Duration, fps float64) []byte {
 	if fps == 0 {
 		return append(body, timecode.Seconds(to-from)...)
 	}
-	return strconv.AppendFloat(body, frames(to, fps)-frames(from, fps), 'f', 0, 64)
-}
-
-// frames returns the frame of t, rounded half away from zero. The seconds come from whole milliseconds, as PHP
-// holds them. The result stops at the last frame that the reader reads as a time below 100000 hours, because the
-// frame of 99999:59:59.999 can round up to 100000 hours.
-func frames(t time.Duration, fps float64) float64 {
-	return min(math.Round(float64(t.Milliseconds())/1000*fps), lastFrame(fps))
-}
-
-// lastFrame returns the largest frame whose time the reader reads as below 100000 hours. The first guess can be
-// one frame too high through float rounding.
-func lastFrame(fps float64) float64 {
-	last := math.Ceil((timecode.MaxTime.Seconds()-0.0005)*fps) - 1
-	for range 2 {
-		if _, ok := timeOf(last / fps); !ok {
-			last--
-		}
-	}
-	return last
+	return strconv.AppendFloat(body, timecode.Frames(to, fps)-timecode.Frames(from, fps), 'f', 0, 64)
 }

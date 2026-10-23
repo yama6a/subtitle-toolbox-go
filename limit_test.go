@@ -29,8 +29,9 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 		{"SAMI start 3 s before the limit", stbox.SAMI, "<SAMI><BODY><SYNC Start=359999997000><P>last</BODY></SAMI>"},
 		{"TMPlayer start at 99999:59:59", stbox.TMPlayer, "99999:59:59:last\n"},
 		{"TMPlayer start 3 s before the limit", stbox.TMPlayer, "99999:59:57:last\n"},
-		// MPL2 has no cue without an end, so this row ends just below the limit.
+		// MPL2 and MPSub have no cue without an end, so their rows end just below the limit.
 		{"MPL2 end at the limit", stbox.MPL2, "[3599999990][3599999999]last\n"},
+		{"MPSub end at the limit", stbox.MPSub, "FORMAT=TIME\n\n359999999 0.999\nlast\n"},
 	}
 	for _, in := range inputs {
 		t.Run(in.name, func(t *testing.T) {
@@ -40,7 +41,7 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 			s, _, err := stbox.Parse(strings.NewReader(in.content), opts)
 			require.NoError(t, err)
 			require.Equal(t, 1, s.Len())
-			if in.format != stbox.MPL2 {
+			if in.format != stbox.MPL2 && in.format != stbox.MPSub {
 				c, _ := s.Cue(0)
 				require.Equal(t, timecode.MaxValidTime, c.End)
 			}
