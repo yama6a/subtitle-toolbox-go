@@ -207,3 +207,118 @@ for _, c := range s.All() {
 - **Cues**: a cue left without visible text goes, as the [cue removal rule](#cue-removal-rule) says. `Report` counts the removed lines and cues.
 - **Invalid UTF-8**: a cue whose visible text is not valid UTF-8 stays as it is.
 - **One line**: `hearingimpaired.IsAnnotation(line, opts)` reports whether `Apply` would change or remove `line`. `JOHN: Hi.` is an annotation, `Note: this stays.` is not.
+
+## Common errors
+
+OCR of PGS and VobSub cues reads `It's` as `lt's`. Files from the web have spaces before `?`, tags that never close and `-Hi.` without a space. `fixing.Apply(s, opts)` fixes such errors in one call and returns each change for review. `fixing.Preview(s, opts)` returns the same report and changes nothing.
+
+<!-- example: fixing/ExampleApply -->
+```go
+const content = "1\n00:00:01,000 --> 00:00:03,000\nlt's late. l'm here, l'll go.\n\n" +
+	"2\n00:00:03,500 --> 00:00:06,000\n-Really ?\n-Yes.\n"
+s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+report, err := fixing.Apply(s, fixing.Options{Language: "en"})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+for _, f := range report.Fixes {
+	fmt.Printf("cue %d %s: %q -> %q\n", f.CueIndex, f.Rule, f.Before, f.After)
+}
+for _, c := range s.All() {
+	fmt.Println(c.Text())
+}
+// Output:
+// cue 0 ocrLowercaseL: "lt's late. l'm here, l'll go." -> "It's late. I'm here, I'll go."
+// cue 1 spaceBeforePunctuation: "-Really ?\n-Yes." -> "-Really?\n-Yes."
+// cue 1 dialogueDashes: "-Really?\n-Yes." -> "- Really?\n- Yes."
+// It's late. I'm here, I'll go.
+// - Really?
+// - Yes.
+```
+
+- **Rule**: one fix, of type `fixing.Rule`. Its value is the name that `--errors-enable` takes, such as `adCues`.
+- **Defaults**: the zero `Options` runs the 10 rules that are on by default. `Enable` adds rules that are off by default, and `Disable` skips rules that are on by default. `Validate` rejects an unknown name, a rule in both lists, and a `DialogueDashStyle` or `Ellipsis` value outside its constants. `fixing.Rules()` lists every rule and `fixing.OptionalRules()` the rules that are off by default.
+- **Run order**: the rules run in the order of the sections below, each on the lines that the rule before it left. `Report.Fixes` holds one `Fix` for each rule that changed a cue, with the lines before and after, joined with LF. `CueIndex` is the index before any cue removal.
+- **Language**: `Options.Language` takes a code such as `en`, `de-AT` or `fra`. The empty string takes the `language` metadata. English, German, French and Spanish have their own rules for I and l. Turkish and Azerbaijani write `i` in upper case as U+0130.
+- **Text runs**: most rules see one [text run](#text-transforms) at a time, so a fix never crosses a tag. Only `unbalancedTags`, `emptyTags` and `dialogueOnOneLine` change tags. So `Really <i>?</i>` stays, because `spaceBeforePunctuation` sees `Really ` without the `?`.
+- **Cues**: a cue left without visible text goes, as the [cue removal rule](#cue-removal-rule) says. A cue without lines stays.
+- **Invalid UTF-8**: a rule leaves a run or line that is not valid UTF-8 as it is. `unbalancedTags` and `emptyTags` read bytes and still work. `ocrPipe` checks the text on each side of the pipe, so `a| caf` + 0xE9 gives `al caf` + 0xE9.
+- **Source**: the rule set follows the "Fix common errors" tool of [Subtitle Edit](https://github.com/SubtitleEdit/subtitleedit).
+
+### adCues
+
+Off by default. It removes a cue whose visible text names OpenSubtitles, osdb, Addic7ed, YIFY, YTS, Subscene or podnapisi.net as a whole word, in any case. `www.OpenSubtitles.org` and `YTS.MX` count. `podnapisi` alone, Slovenian for "subtitles", and the English phrase `open subtitles` do not. A cue with an ad line and a dialogue line goes as a whole. The rule runs first, so the other rules report no fix on a removed cue. A web address of another site, an e-mail address and a credit such as `Subtitles by Ana` stay.
+
+### unbalancedTags
+
+It removes each closing `b`, `i`, `u`, `s` or `font` tag without an opening tag. It closes each such tag that is still open at the end of the last line. `<b><font color="#ff0000">Hi` + LF + `you` gives `you</font></b>` as the last line. `<v Anna>Hello` and `<b.loud>Hello</b> there` stay.
+
+### emptyTags
+
+It removes style tag pairs that hold only white space, nested pairs too, and keeps the white space. `Hi <b><i> </i></b>there` gives `Hi there` after the cleanup of the cue lines.
+
+### doubleApostrophes
+
+Off by default. `''` and 2 x U+2019 become `"`: `''Hi,'' she said.` gives `"Hi," she said.`. `<font face=''>` and `rock 'n' roll 'til dawn` stay.
+
+### ocrPipe
+
+A pipe `|` becomes `l` after a lower case letter, and `I` after another letter or before a letter. Before an apostrophe and a letter it becomes `I` in English and `l` in French. In English a pipe alone between spaces or punctuation becomes `I`. `|t was` gives `It was`. `Wi|| he|fen` gives `Will helfen`. `Yes, | know. |'m here.` gives `Yes, I know. I'm here.`.
+
+### ocrZeroInWords
+
+A `0` in a word of 2 or more letters and no other digit becomes `o` when the word has a lower case letter, else `O`. A word that starts a sentence with `0` gets `O`. `0nly the n0rth. 0nce` gives `Only the north. Once`. `007`, `2.0`, `10am`, `0s` and `3D0` stay.
+
+### ocrLowercaseL
+
+OCR reads a capital I as l when the font draws both the same.
+
+- **All languages**: the rule looks at words whose only lower case letters are `l`. Such a word gets `I` for each `l` when it has 2 upper case letters or an `l` before an upper case letter. `lT lS` gives `IT IS`.
+- **English, German, French and Spanish**: an `l` at the start of a word before a consonant becomes `I`: `lch` gives `Ich`. French also counts `l` as a consonant, so `ll dit` gives `Il dit`, and Spanish keeps `llama`.
+- **English**: `l` alone and `l'm`, `l'll`, `l've` and `l'd` become `I`. `lt's late. l'm here, l'll go.` gives `It's late. I'm here, I'll go.`. `5 lbs`, `2 l` and `ltd` stay.
+
+### loneLowercaseI
+
+Off by default, and English only. The pronoun `i` and `i'm`, `i'll`, `i've` and `i'd` get an upper case I. The rule reads the whole line across tags, so `w<b>i</b>th` stays. `i.e.`, `www.i.com` and `iPhone` stay.
+
+### ellipsis
+
+`. . .` and `....` become `...`. With `Options.Ellipsis` set to `EllipsisUnicode` they become U+2026, and `...` too. `Disable` turns the rule off.
+
+### unneededPeriods
+
+Off by default. It removes a `.` after `?` or `!`: `Really?.` gives `Really?`. `What?...`, `Wait!..` and `Really?` + U+2026 stay.
+
+### doubleSpaces
+
+2 or more spaces, tabs or U+00A0 become 1 space. A space at the start of a run after a run that ends with a space goes too: `Hi <i> there</i>` gives `Hi <i>there</i>`.
+
+### spaceBeforePunctuation
+
+It removes the spaces before `,`, `.`, `!`, `?`, `;` and `:` after a word. `Really ?` gives `Really?`. French keeps the space before `?`, `!`, `;` and `:`. `Wait ... now` and `Great :)` stay.
+
+### missingSpaceAfterPunctuation
+
+It adds a space after `,`, `;`, `!`, `?`, `...` and U+2026 between letters, and after a `.` before a word with an upper case first letter. `Stop.Now` gives `Stop. Now`. `1.5`, `www.example.com`, `e.g.`, `U.S.Army` and `ASP.NET` stay.
+
+### dialogueOnOneLine
+
+Off by default. It splits a cue of 1 line, or of 2 lines, at the one dialogue dash after a sentence end and a space. A sentence end is `.`, `?`, `!`, U+2026, U+3002, U+FF01, U+FF1F or U+FF61. `- Hi. - Hello.` gives `- Hi.` + LF + `- Hello.`. Open tags close at the end of the first line and open again on the second. A new line without a dash gets the dash of `Options.DialogueDashStyle`. A cue with 2 or more such dashes stays, and so do `A well-known - and loved - song.` and `It's cold. -5 degrees.`.
+
+### dialogueDashes
+
+It writes the [dialogue dash](#dialogue-dashes) at the start of each line, and the spaces after it, in the style of `Options.DialogueDashStyle`. Bidi controls before the dash stay in front. `-Hi.` gives `- Hi.`. `-5 degrees.` and `--and then` stay.
+
+### musicNotes
+
+Off by default. A `#` or `*` at the start or the end of a line becomes U+266A. Tags, white space and a dialogue dash may stand between the sign and the line edge. White space or the line edge must follow a sign at the start and come before a sign at the end. `# Happy birthday #` gets U+266A at both ends. `Room #5`, `*sigh*`, `C# code` and `#1 fan` stay.
+
+### sentenceStartCase
+
+Off by default. It writes the first letter of a line in upper case when the line starts a sentence. The first line of a cue starts a sentence when the cue is the first one, or when the cue before it ends with `.`, `?` or `!`. Closing quotes and brackets may follow, as in `"Stop!"`. A later line starts a sentence when the line before it ends one. A cue after `...`, U+2026 or `,` continues the sentence and stays. Dashes, quotes, U+266A and tags before the letter stay. A word with an upper case letter after its first letter stays, such as `iPhone` and `eBay`.

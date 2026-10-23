@@ -1,0 +1,12 @@
+﻿1
+00:00:01,000 --> 00:00:03,500
+lCh bin um 8 Uhr im Boro.
+
+2
+00:00:04,000 --> 00:00:06,500
+Ist das Ihr schirm?
+In der Ecke.
+
+3
+00:00:07,000 --> 00:00:09,500
+IcH KoMME MO*GEN.

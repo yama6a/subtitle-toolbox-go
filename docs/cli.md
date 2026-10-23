@@ -106,7 +106,7 @@ A `.txt` file in a directory is an input only when content detection finds a for
 
 - **Help**: `stbox convert --help` lists the common options and the groups. `--help GROUP` prints the options of one group, `--help all` prints all of them. A topic with `.`, `/` or `\`, or the name of an existing file, is no topic: `convert in.srt -h out.srt` prints the default help.
 - **Checks**: every option check runs before the first read, so a bad value exits 2 and reads nothing. The input options come first, then the output options, `--language`, the groups in pipeline order, the `ass` group and the `--to ass` rule. The first failing check decides the message.
-- **`--language`** sets the language of `--case`, for example `tr` for the Turkish dotted i. Without `--case` it fails.
+- **`--language`** sets the language of `--case` and `--errors-fix`, for example `tr` for the Turkish dotted i. Without `--case` or `--errors-fix` it fails. Without it, `--errors-fix` takes the language metadata of the input.
 - **WebVTT colors**: WebVTT has classes for 8 colors. For each other color, convert prints `LABEL: Cue #3 at 4 s: dropped the color "#123456", because WebVTT has classes for 8 colors only.` on stderr and still exits 0.
 
 ### Pipeline
@@ -116,12 +116,13 @@ The edits run in this order, whatever the order of the flags. A group runs only 
 | # | Group | Options | Why at this place |
 |---:|:--- |:--- |:--- |
 | 1 | `forced` | `--forced-only` | later steps see only the cues that stay |
-| 2 | `sdh` | `--sdh`, `--sdh-*` | the replacements and the text edits see the text without annotations |
-| 3 | `replace` | `--replace FROM=TO`, `--replace-regex`, `--replace-ignore-case` | |
-| 4 | `text` | `--case`, `--strip-tags`, `--rtl` | text edits change the line lengths, so they run before `structure` |
-| 5 | `structure` | `--structure-*` | joins and splits change the cues, so the timing edits run after it |
-| 6 | `retime` | `--sync`, `--shift`, `--scale`, `--from-fps` with `--to-fps`, in this order | |
-| 7 | `timing` | `--timing-*` | |
+| 2 | `errors` | `--errors-fix`, `--errors-*` | the annotation removal and the replacements see fixed words such as `It's` for `lt's` |
+| 3 | `sdh` | `--sdh`, `--sdh-*` | the replacements and the text edits see the text without annotations |
+| 4 | `replace` | `--replace FROM=TO`, `--replace-regex`, `--replace-ignore-case` | |
+| 5 | `text` | `--case`, `--strip-tags`, `--rtl` | text edits change the line lengths, so they run before `structure` |
+| 6 | `structure` | `--structure-*` | joins and splits change the cues, so the timing edits run after it |
+| 7 | `retime` | `--sync`, `--shift`, `--scale`, `--from-fps` with `--to-fps`, in this order | |
+| 8 | `timing` | `--timing-*` | |
 
 The `ass` group comes last in the help. It runs no edit: it sets how the ASS writer writes the output.
 
@@ -144,6 +145,20 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 | 5 | `--structure-merge-duplicates` | `RemoveDuplicateCues(0)` |
 
 `--structure-merge-same-time` comes last in the help but runs second. So its joined cues take part in the merge of short cues and in the wrap.
+
+### Common errors
+
+`--errors-fix` runs `fixing.Apply` with the rules of [text.md](text.md#common-errors). `stbox convert film.srt --errors-fix --language en -o film.fixed.srt` turns `lt's late.` into `It's late.` and `Really ?` into `Really?`.
+
+| Option | Value | Library field |
+|:--- |:--- |:--- |
+| `--errors-fix` | flag, turns the group on and runs the rules that are on by default | |
+| `--errors-enable NAME[,NAME]` | a comma list of the rules that are off by default: `adCues`, `doubleApostrophes`, `loneLowercaseI`, `unneededPeriods`, `dialogueOnOneLine`, `musicNotes`, `sentenceStartCase` | `Enable` |
+| `--errors-list-fixes` | flag, prints each fix to stderr | |
+| `--language CODE` | a common option | `Language` |
+
+- **Checks**: `--errors-enable` and `--errors-list-fixes` need `--errors-fix`: `Pass --errors-fix with --errors-list-fixes.` The names of `--errors-enable` are trimmed and match in any case. An empty name is skipped. Another name fails: `Unknown rule "X" in --errors-enable. The valid names are adCues, doubleApostrophes, loneLowercaseI, unneededPeriods, dialogueOnOneLine, musicNotes, sentenceStartCase.`
+- **Fix line**: `LABEL: cue N: RULE: "BEFORE" -> "AFTER"`, with N from 1. BEFORE and AFTER are JSON strings, so a line feed reads `\n` and invalid UTF-8 reads U+FFFD: `film.srt: cue 3: ocrLowercaseL: "lt's late." -> "It's late."`.
 
 ### Hearing-impaired annotations
 

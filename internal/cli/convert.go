@@ -42,7 +42,8 @@ func (*convertCommand) details() string {
 }
 
 func languageOption() option {
-	return valueOption("language", "CODE", "Language for --case, for example en, de-AT or tr.")
+	return valueOption("language", "CODE", "Language for --case and --errors-fix, for example en, de-AT or tr. "+
+		"Without it, --errors-fix takes the language metadata of the input.")
 }
 
 // options lists the options in the order of the parser: --language, the groups, then the output and input options.
@@ -117,7 +118,7 @@ func (cc *convertCommand) prepare(a *args, r *runner) error {
 	if err := cc.out.prepare(a, r); err != nil {
 		return err
 	}
-	if err := needsOneOf(a, []string{"case"}, "language"); err != nil {
+	if err := needsOneOf(a, []string{"case", "errors-fix"}, "language"); err != nil {
 		return err
 	}
 	if err := cc.prepareGroups(a); err != nil {

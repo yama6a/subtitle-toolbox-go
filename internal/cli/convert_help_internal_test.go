@@ -47,13 +47,16 @@ Options:
                          wins over --fps.
   --keep-going           Go on with the next file after a file fails. Default:
                          stop at the first failure.
-  --language CODE        Language for --case, for example en, de-AT or tr.
+  --language CODE        Language for --case and --errors-fix, for example en,
+                         de-AT or tr. Without it, --errors-fix takes the
+                         language metadata of the input.
   -h, --help             Show this help.
 `
 
 const convertGroupList = `
 Option groups, in the order that convert runs their edits:
   forced     Keep only the forced cues.
+  errors     Fix spacing, punctuation and OCR errors.
   sdh        Remove hearing-impaired annotations.
   replace    Replace words or patterns in the text.
   text       Change the case, remove tags, fix right-to-left text.
@@ -71,6 +74,16 @@ var convertGroupHelp = []string{
 	`forced: Keep only the forced cues.
   --forced-only  Keep only the forced cues, for example the translations of
                  signs.
+`,
+	`errors: Fix spacing, punctuation and OCR errors.
+  --errors-fix                 Fix spacing, punctuation, dash, tag and OCR
+                               errors such as lt's for It's.
+  --errors-enable NAME[,NAME]  Also apply these rules that are off by default
+                               with --errors-fix: adCues, doubleApostrophes,
+                               loneLowercaseI, unneededPeriods,
+                               dialogueOnOneLine, musicNotes, sentenceStartCase.
+  --errors-list-fixes          Print each change of --errors-fix to standard
+                               error.
 `,
 	`sdh: Remove hearing-impaired annotations.
   --sdh                       Remove hearing-impaired annotations such as [DOOR
@@ -167,7 +180,7 @@ func TestConvertHelp(t *testing.T) {
 	all := result{Stdout: convertCommonHelp + "\n" + strings.Join(convertGroupHelp, "\n")}
 	unknown := func(topic string) result {
 		return usageResult("convert", "Unknown option group "+quote(topic)+
-			". The groups are forced, sdh, replace, text, structure, retime, timing, ass, and all for every option.")
+			". The groups are forced, errors, sdh, replace, text, structure, retime, timing, ass, and all for every option.")
 	}
 	tests := []struct {
 		name  string
