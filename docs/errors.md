@@ -69,6 +69,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 | MicroDVD | the line of the error. A missing or bad frame rate gives 0 |
 | SAMI | the line of the `<SYNC` tag. `The SAMI file has no class X.` has no line |
 | MPL2, TMPlayer | the line of the error |
+| MPSub | the line of the error. A cue without text reports its timing line |
 
 Each format adds its row here when its reader ships.
 

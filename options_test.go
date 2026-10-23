@@ -15,6 +15,7 @@ import (
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
 	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 )
 
@@ -97,6 +98,12 @@ func TestWriteOptionsValidate(t *testing.T) {
 			name:    "MicroDVD frame rate NaN",
 			opts:    stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: math.NaN()}},
 			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "The MicroDVD frame rate must be greater than 0, got NAN."},
+		},
+		{name: "MPSub frame rate", opts: stbox.WriteOptions{MPSub: mpsub.WriteOptions{FrameRate: 25}}},
+		{
+			name:    "MPSub frame rate 29.97",
+			opts:    stbox.WriteOptions{MPSub: mpsub.WriteOptions{FrameRate: 29.97}},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.MPSub.FrameRate", Msg: "The MPSub frame rate must be a positive integer, got 29.97."},
 		},
 	}
 	for _, tt := range tests {

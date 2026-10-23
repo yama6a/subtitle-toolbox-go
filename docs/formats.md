@@ -7,6 +7,7 @@
 | ASS and SSA | `stbox.ASS` | `ass` | `.ass`, `.ssa` | [ASS and SSA](#ass-and-ssa) |
 | library JSON | `stbox.JSON` | `json` | `.json` | [JSON](#json) |
 | MicroDVD | `stbox.MicroDVD` | `microdvd` | `.sub` | [MicroDVD](#microdvd) |
+| MPSub | `stbox.MPSub` | `mpsub` | `.mpsub` | [MPSub](#mpsub) |
 | SAMI | `stbox.SAMI` | `sami` | `.smi`, `.sami` | [SAMI](#sami) |
 | SBV | `stbox.SBV` | `sbv` | `.sbv` | [SBV](#sbv) |
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
@@ -15,7 +16,7 @@
 | TMPlayer, TMPlayer+ | `stbox.TMPlayer` | `tmplayer` | `.txt` | [TMPlayer](#tmplayer) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
 
-- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`.
+- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`.
 - **Time limit**: every time in every format is below 100000 hours. A reader rejects a time at or above it. A retime that moves a cue past it returns an error that matches `ErrInvalidArgument`. Writers clamp a negative time to 0, except the JSON writer.
 - **Options**: each section lists the fields of the format in `ReadOptions` and `WriteOptions`. The fields that every format shares are in [reading-writing.md](reading-writing.md). A reader ignores the fields of other formats.
 - **Sections**: each section has what the reader accepts, what the writer writes, the options and the limits. The godoc of the format package holds the reference of each function.
@@ -613,3 +614,78 @@ The cue `Short` from 1.1 to 1.3 s, then the cue `Next` at 5 s, write `00:00:01:S
 ### Options
 
 `tmplayer.ReadOptions` and `tmplayer.WriteOptions` have no fields. The reader reads `Lenient`, `LastCueDuration` and `Encoding`. The writer reads `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#mpl2-and-tmplayer). The detection rule is in the doc comment of `tmplayer.Detect` and in [detection.md](detection.md).
+
+## MPSub
+
+MPSub is the subtitle format of MPlayer. Package `format/mpsub` reads and writes it. The format name is `mpsub`, the extension `.mpsub`. Many MPSub files use `.sub`, which `FormatFromPath` maps to MicroDVD. Content detection runs first, so `Load` reads them as MPSub. A UTF-8 BOM by default.
+
+```text
+TITLE=Harbour walk
+FORMAT=TIME
+
+1 2.5
+The boat leaves.
+
+0.5 2
+Mind the gap.
+```
+
+A timing line has 2 numbers. The first is the wait after the end of the cue before. The second is the duration. So the first cue runs from 1 s to 3.5 s, and the second from 4 s to 6 s. `FORMAT=25` makes the numbers count frames at 25 fps.
+
+### Read
+
+Each line is trimmed first.
+
+| Position | Line | Meaning |
+|:--- |:--- |:--- |
+| inside a cue | not empty | a text line. `&`, `<` and `>` become entities |
+| inside a cue | empty | ends the cue. The end of the file ends it too |
+| outside a cue | empty, or starts with `#` | skipped. The reader keeps no comments |
+| outside a cue | `KEY=value`, where KEY is 1 or more ASCII capitals | a header. A trailing ` # comment` is dropped, and the value is trimmed |
+| outside a cue | `wait duration`, 2 numbers with an optional `-` and an optional fraction | a timing line. It starts a cue |
+| outside a cue | anything else | an error |
+
+- **Times**: the cue starts at the end of the cue before plus the wait, and ends at its start plus the duration. The first cue counts from 0.
+- **Seconds and frames**: `FORMAT=TIME` counts seconds. `FORMAT=<n>` counts frames at n frames per second, and a frame count may have a fraction. At 25 fps, `12.5` is 0.5 s. A `FORMAT` line between cues changes the unit for the later cues.
+- **Leading integer**: only the leading integer of n counts, as MPlayer and FFmpeg read it. So `FORMAT=29.97` means 29 fps, and `29 58` is 1 s to 3 s.
+- **No FORMAT line**: the times are seconds. Strict mode reads without a warning. Lenient mode warns once.
+- **Headers**: `TITLE` and `AUTHOR` set the metadata `title` and `author`, and an empty value deletes the key. Every other key with a non-empty value goes to the file format data `mpsub`, in file order. `FORMAT`, `TITLE` and `AUTHOR` are never stored.
+- **Negative wait**: allowed. The cue then overlaps the cue before it, and a start before 0 stays. A negative duration is an error.
+- **Rounding**: the reader keeps the running position in `float64` seconds and rounds only the cue times to whole milliseconds. So fractional frames do not drift.
+- **Time limit**: both times of a cue must be below 100000 hours after the rounding. The sum counts, not each number alone. The message quotes the whole timing line. A time of -100000 hours or less fails with the same message, because `time.Duration` cannot hold it.
+- **Order**: the cues sort by start.
+- **Encoding**: invalid UTF-8 stays in the text. Lenient mode adds the decode warning of [encodings.md](encodings.md).
+
+### Write
+
+The header has one `KEY=value` line each, in this order:
+
+1. `TITLE=` and the metadata title, or nothing.
+2. `AUTHOR=` and the metadata author, or nothing.
+3. `TYPE=` and the stored `TYPE`, else `VIDEO`.
+4. Every other stored key, in stored order. `TITLE`, `AUTHOR`, `TYPE`, `FORMAT` and `NOTE` are not repeated.
+5. `FORMAT=TIME`, or `FORMAT=` and the whole frame rate.
+6. `NOTE=` and the stored `NOTE`, else `Created with subtitle-toolbox-go (https://github.com/yama6a/subtitle-toolbox-go)`.
+
+Then each cue with visible text writes an empty line, its timing line and its text lines.
+
+- **Seconds**: the wait is the start minus the end of the last written cue. The duration is the end minus the start. Both are whole milliseconds as PHP prints a float: `1`, `1.5`, `-1.5`, `0.456`. A negative time is 0 first.
+- **Frames**: `WriteOptions.MPSub.FrameRate` writes frame counts. A frame is the time in seconds times the frame rate, rounded half away from zero, and the wait and duration are differences of frames. So the rounding errors do not add up. 4 cues of 0.06 s at 25 fps write `0 2`, `0 1`, `0 2` and `0 1`.
+- **Time limit**: a frame stops at the largest frame whose time is below 100000 hours. At 25 fps that is `8999999999`, so every output reads back.
+- **Overlap**: cues `First` from 1 to 4 s and `Second` from 2.5 to 5 s write `1 3` and `-1.5 2.5`. The second reads back as 2.5 s to 5 s.
+- **Skipped cues**: a cue without visible text is not written and does not move the end of the last written cue.
+- **Text**: the visible text of each line, with entities decoded. So `<i>I &lt;3 bread &amp; jam</i>` writes `I <3 bread & jam`.
+- **Frame input**: the reader does not store the `FORMAT` line. A file with `FORMAT=25` writes `FORMAT=TIME` and seconds, unless `FrameRate` is set.
+- **NOTE**: the default names this library. PHP writes a `NOTE` that names the PHP library.
+- **BOM**: yes by default.
+- **Lost on write**: all markup, `#` comments, empty header values and the frame unit of the input. Frame counts keep only one frame, 40 ms at 25 fps.
+
+### Options
+
+`mpsub.ReadOptions` has no fields. The reader reads `Lenient` and `Encoding`. The root `WriteOptions.MPSub` holds a `mpsub.WriteOptions`. The writer reads `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#mpsub). The detection rule is in the doc comment of `mpsub.Detect` and in [detection.md](detection.md).
+
+| Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |
+| `FrameRate` | `float64` | 0: seconds and `FORMAT=TIME` | write frames at this rate and `FORMAT=<rate>` |
+
+- **Check**: `Validate` rejects a frame rate that is negative, not whole, NaN or infinite, for example `The MPSub frame rate must be a positive integer, got 29.97.`, with an error that matches `ErrInvalidArgument`. MPlayer and FFmpeg read `FORMAT=29.97` as 29 fps, so a fractional rate would not read back.

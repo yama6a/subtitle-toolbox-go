@@ -10,6 +10,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/format/mpl2"
+	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/format/sbv"
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
@@ -57,6 +58,9 @@ var (
 	_ readFunc[tmplayer.ReadOptions]    = tmplayer.Read
 	_ writeFunc[tmplayer.WriteOptions]  = tmplayer.Write
 	_ detectFunc                        = tmplayer.Detect
+	_ readFunc[mpsub.ReadOptions]       = mpsub.Read
+	_ writeFunc[mpsub.WriteOptions]     = mpsub.Write
+	_ detectFunc                        = mpsub.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -77,7 +81,7 @@ var registry = []formatFuncs{
 	{format: JSON, read: readJSON, write: writeJSON},
 	{format: LRC},
 	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
-	{format: MPSub},
+	{format: MPSub, read: readMPSub, write: writeMPSub},
 	{format: SAMI, read: readSAMI, write: writeSAMI},
 	{format: SBV, read: readSBV, write: writeSBV},
 	{format: SubRip, read: readSubRip, write: writeSubRip},
@@ -111,6 +115,7 @@ var (
 		{format: TTML, match: ttml.Detect},
 		{format: SAMI, match: sami.Detect},
 		{format: ASS, match: ass.Detect},
+		{format: MPSub, match: mpsub.Detect},
 		{format: MicroDVD, match: microdvd.Detect},
 		{format: SubRip, match: srt.Detect},
 		{format: SBV, match: sbv.Detect},
@@ -222,6 +227,14 @@ func readTMPlayer(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*
 
 func writeTMPlayer(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
 	return tmplayer.Write(w, s, common, tmplayer.WriteOptions{})
+}
+
+func readMPSub(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return mpsub.Read(r, common, mpsub.ReadOptions{})
+}
+
+func writeMPSub(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+	return mpsub.Write(w, s, common, opts.MPSub)
 }
 
 func lookup(f Format) (formatFuncs, bool) {
