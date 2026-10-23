@@ -59,6 +59,8 @@ Every file except `mantas_utf16.srt` and `mantas_multiple_new_lines.vtt` is writ
 | `absurd_hours.sbv` | a cue with 20 hour digits between two good cues, LF | MIT |
 | `absurd_hours_tmplayer.txt` | TMPlayer. A line with 20 hour digits between good lines, LF | MIT |
 | `bad_timing_line.mpsub` | MPSub. No `FORMAT=` line, a letter as duration, a last cue without text, LF | MIT |
+| `broken_time_tag.lrc` | a letter in the seconds of a time tag, CR LF | MIT |
+| `sixty_minutes.lrc` | a time tag with hours and 75 minutes, `[1:75:00.00]`, LF | MIT |
 | `expected/*.json` | written for subtitle-toolbox-go. Each file holds the values of `damagedFiles()` in `tests/Parsers/LenientParsingTest.php` of this repository for the fixture of the same name, and the full message and line of the strict error that the PHP parser returns | MIT |
 | `expected/release_name.sub.json` | written for subtitle-toolbox-go, as `expected/*.json`. Changed: the strict error is the Go message, which names no PHP option such as `MicroDvdReadOptions::$frameRate`, see [php-differences.md](../../docs/php-differences.md) | MIT |
 | `expected/joined_files.vtt.json` | written for subtitle-toolbox-go. `damagedFiles()` has no row for this fixture, so the file holds the values of the 3 `joined_files` tests in `tests/Parsers/LenientWebVttTest.php` of this repository, and the strict error that the PHP parser returns | MIT |

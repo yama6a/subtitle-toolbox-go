@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/format/lrc"
 	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/format/mpl2"
 	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
@@ -61,6 +62,9 @@ var (
 	_ readFunc[mpsub.ReadOptions]       = mpsub.Read
 	_ writeFunc[mpsub.WriteOptions]     = mpsub.Write
 	_ detectFunc                        = mpsub.Detect
+	_ readFunc[lrc.ReadOptions]         = lrc.Read
+	_ writeFunc[lrc.WriteOptions]       = lrc.Write
+	_ detectFunc                        = lrc.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -79,7 +83,7 @@ var registry = []formatFuncs{
 	{format: ASS, read: readASS, write: writeASS},
 	{format: CSV},
 	{format: JSON, read: readJSON, write: writeJSON},
-	{format: LRC},
+	{format: LRC, read: readLRC, write: writeLRC},
 	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
 	{format: MPSub, read: readMPSub, write: writeMPSub},
 	{format: SAMI, read: readSAMI, write: writeSAMI},
@@ -119,6 +123,7 @@ var (
 		{format: MicroDVD, match: microdvd.Detect},
 		{format: SubRip, match: srt.Detect},
 		{format: SBV, match: sbv.Detect},
+		{format: LRC, match: lrc.Detect},
 		{format: MPL2, match: mpl2.Detect},
 		{format: TMPlayer, match: tmplayer.Detect},
 	}
@@ -235,6 +240,14 @@ func readMPSub(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Sub
 
 func writeMPSub(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
 	return mpsub.Write(w, s, common, opts.MPSub)
+}
+
+func readLRC(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return lrc.Read(r, common, lrc.ReadOptions{})
+}
+
+func writeLRC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+	return lrc.Write(w, s, common, lrc.WriteOptions{})
 }
 
 func lookup(f Format) (formatFuncs, bool) {

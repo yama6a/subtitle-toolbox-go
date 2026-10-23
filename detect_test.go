@@ -73,10 +73,10 @@ func detectTests() []detectTest {
 		{name: "SubViewer 2 timing line", content: "00:00:01.50,00:00:04.00\nHello[br]world\n", later: "SubViewer"},
 		{name: "SubViewer 2 after [SUBTITLE]", content: "[SUBTITLE]\n[COLF]&HFFFFFF,[SIZE]18\n00:00:01.50,00:00:04.00\nHello\n", later: "SubViewer"},
 		{name: "SubViewer 1", content: "[TITLE]\nBakery\n[DELAY]\n0\n******** START SCRIPT ********\n[00:00:01]\nHello\n", later: "SubViewer"},
-		{name: "LRC with ID tag", content: "[ti:Morning Train]\n[00:12.00]Hello\n", later: "LRC"},
-		{name: "LRC without fraction", content: "[00:12]Hello\n", later: "LRC"},
-		{name: "LRC next to MPL2", content: "[00:01.00]Hello\n[00:02.50]world\n", later: "LRC"},
-		{name: "LRC with minutes only", content: "[00:01]Hello\n", later: "LRC"},
+		{name: "LRC with ID tag", content: "[ti:Morning Train]\n[00:12.00]Hello\n", want: stbox.LRC},
+		{name: "LRC without fraction", content: "[00:12]Hello\n", want: stbox.LRC},
+		{name: "LRC next to MPL2", content: "[00:01.00]Hello\n[00:02.50]world\n", want: stbox.LRC},
+		{name: "LRC with minutes only", content: "[00:01]Hello\n", want: stbox.LRC},
 		{name: "MPL2", content: "[10][25]Hello|/world\n", want: stbox.MPL2},
 		{name: "TMPlayer", content: "00:00:01:Hello|world\n", want: stbox.TMPlayer},
 		{name: "TMPlayer+ with equals sign", content: "0:00:01=Hello\n", want: stbox.TMPlayer},
@@ -234,7 +234,7 @@ type fixture struct {
 func fixtures(t *testing.T) []fixture {
 	t.Helper()
 
-	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "microdvd": stbox.MicroDVD, "mpl2": stbox.MPL2, "mpsub": stbox.MPSub, "sami": stbox.SAMI, "sbv": stbox.SBV, "srt": stbox.SubRip, "tmplayer": stbox.TMPlayer, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
+	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "lrc": stbox.LRC, "microdvd": stbox.MicroDVD, "mpl2": stbox.MPL2, "mpsub": stbox.MPSub, "sami": stbox.SAMI, "sbv": stbox.SBV, "srt": stbox.SubRip, "tmplayer": stbox.TMPlayer, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
 	var list []fixture
 	for dir, f := range folders {
 		for _, sub := range []string{dir, dir + "/real"} {
@@ -401,12 +401,45 @@ func TestParseDetectsMPSub(t *testing.T) {
 	assert.Equal(t, s.Cues(), loaded.Cues())
 }
 
+// Ports the detection of testReadsTimeTagShapesInStrictAndLenientMode of tests/Parsers/LyricsParserTest.php of
+// subtitle-toolbox-php.
+func TestParseDetectsLRC(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		file   string
+		starts []time.Duration
+	}{
+		{"spaces_in_time_tags.lrc", []time.Duration{12 * time.Second, 15500 * time.Millisecond}},
+		{"hours_with_text_on_next_line.lrc", []time.Duration{155 * time.Second, 171 * time.Second}},
+		{"one_digit_fraction.lrc", []time.Duration{12500 * time.Millisecond, 15250 * time.Millisecond}},
+		{"one_digit_minutes.lrc", []time.Duration{time.Second, 65 * time.Second}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.file, func(t *testing.T) {
+			t.Parallel()
+
+			for _, lenient := range []bool{false, true} {
+				s, info, err := stbox.Parse(bytes.NewReader(testfiles.Read(t, "lrc/"+tt.file)), stbox.ReadOptions{Lenient: lenient})
+				require.NoError(t, err)
+				assert.Equal(t, stbox.LRC, info.Format)
+				assert.Empty(t, info.Warnings)
+				var starts []time.Duration
+				for _, c := range s.All() {
+					starts = append(starts, c.Start)
+				}
+				assert.Equal(t, tt.starts, starts)
+			}
+		})
+	}
+}
+
 func FuzzDetect(f *testing.F) {
 	for _, tt := range detectTests() {
 		f.Add([]byte(tt.content))
 	}
 	root := testfiles.Root(f)
-	for _, dir := range []string{"ass", "json", "microdvd", "microdvd/real", "mpl2/real", "mpsub", "mpsub/real", "sami/real", "sbv", "srt", "tmplayer/real", "ttml/real", "forced", "vtt", "lenient"} {
+	for _, dir := range []string{"ass", "json", "lrc", "lrc/real", "microdvd", "microdvd/real", "mpl2/real", "mpsub", "mpsub/real", "sami/real", "sbv", "srt", "tmplayer/real", "ttml/real", "forced", "vtt", "lenient"} {
 		entries, err := os.ReadDir(filepath.Join(root, dir))
 		if err != nil {
 			f.Fatal(err)

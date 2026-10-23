@@ -6,6 +6,7 @@
 |:--- |:--- |:--- |:--- |:--- |
 | ASS and SSA | `stbox.ASS` | `ass` | `.ass`, `.ssa` | [ASS and SSA](#ass-and-ssa) |
 | library JSON | `stbox.JSON` | `json` | `.json` | [JSON](#json) |
+| LRC | `stbox.LRC` | `lrc` | `.lrc` | [LRC](#lrc) |
 | MicroDVD | `stbox.MicroDVD` | `microdvd` | `.sub` | [MicroDVD](#microdvd) |
 | MPSub | `stbox.MPSub` | `mpsub` | `.mpsub` | [MPSub](#mpsub) |
 | SAMI | `stbox.SAMI` | `sami` | `.smi`, `.sami` | [SAMI](#sami) |
@@ -690,3 +691,49 @@ Then each cue with visible text writes an empty line, its timing line and its te
 | `FrameRate` | `float64` | 0: seconds and `FORMAT=TIME` | write frames at this rate and `FORMAT=<rate>` |
 
 - **Check**: `Validate` rejects a frame rate that is negative, not whole, NaN or infinite, for example `The MPSub frame rate must be a positive integer, got 29.97.`, with an error that matches `ErrInvalidArgument`. MPlayer and FFmpeg read `FORMAT=29.97` as 29 fps, so a fractional rate would not read back.
+
+## LRC
+
+LRC holds song lyrics with a time per line. Music players and karaoke tools read it. Package `format/lrc` reads and writes it, with the word times of enhanced LRC. The format name is `lrc`, the extension `.lrc`. A BOM by default.
+
+```text
+[ti:Morning Train]
+[offset:+500]
+[00:12.00][01:15.30]The train leaves the station at seven
+[00:17.20]
+[00:21.10]<00:21.10>Bread <00:21.60>is <00:21.90>warm
+```
+
+This file has the title `Morning Train` and 3 cues:
+
+| Start | End | Text |
+|---:|---:|:--- |
+| 11.5 s | 16.7 s | `The train leaves the station at seven` |
+| 20.6 s | 74.8 s | `<00:00:20.600>Bread <00:00:21.100>is <00:00:21.400>warm` |
+| 74.8 s | 79.8 s | `The train leaves the station at seven` |
+
+### Read
+
+- **Time tag**: `[mm:ss.xx]`, with 1 to 3 minute digits and 0 to 3 fraction digits, such as `[00:12]`, `[0:01.5]` or `[123:45.678]`. `[01:02:03]` holds hours. Spaces or tabs may stand inside the brackets. `[00:12,00]`, `[00:61.00]`, `[1:75:00.00]` and `[00:12.0000]` are no time tags.
+- **Several time tags**: each time tag at the start of a line makes its own cue with the same text.
+- **Text on the next line**: a time tag line without text takes the next line as its text when that line is plain text. Plain text is a line that is no time tag line, no ID tag and does not start with `[` and a digit. So `[00:02:35]` then `Hello` gives one cue at 155 s.
+- **ID tags**: a line `[key:value]`, with the key in any case and the value trimmed. `ti`, `ar`, `al` and `au` set the metadata `title`, `artist`, `album` and `author`. `#` gives a comment before the next cue in the file. Other keys, such as `by` or `length`, go to the file format data `idTags`.
+- **Offset**: the first `[offset:N]` with an integer N moves every time N milliseconds earlier. A time never goes below 0. So `[offset:+500]` turns `[00:12.00]` into 11.5 s, and `[offset:-250]` turns it into 12.25 s. An offset that is no integer, such as `[offset:soon]`, goes to `idTags`.
+- **Word times**: `<mm:ss.xx>` in the text becomes the word timestamp `<hh:mm:ss.mmm>`, with the offset applied. The reader drops the spaces after a word time, and before a word time at the line end. Then the file data `spacedWordTimes` is true.
+- **Escaping**: `&`, `<` and `>` of the other text become entities. So `I <3 bread` reads as `I &lt;3 bread`.
+- **End times**: a cue ends at the next time tag in time, also one without text. When that time tag has no text, the cue data `endLine` is true. The last cue ends at its start plus `LastCueDuration`, as [reading-writing.md](reading-writing.md#last-cue-default) says.
+- **Other lines**: every other line is ignored. A file with plain text and no cue fails with `The file has text but no cues.`.
+- **Encoding**: invalid UTF-8 stays in the text.
+
+### Write
+
+- **ID tags**: `[ti:]`, `[ar:]`, `[al:]` and `[au:]` for each metadata key that is set, then the `idTags` of the file format data. Each value goes on one line. A stored key that is not a letter, then letters, digits or `_`, is not written, because it would not read back as the same tag. Only the first key of each key in lower case is written, because the reader lower-cases the keys. An `offset` with an integer value is not written either, because the times already hold the offset.
+- **Line**: `[mm:ss.cc]`, a space and the text. The time rounds to whole centiseconds, half away from zero, and the hours go into the minutes. So 59.996 s writes `01:00.00` and 3661.905 s writes `61:01.91`. A negative time writes as 0. A time from 999:59.99 on writes as `999:59.99`, the largest time that the reader takes. This holds for line times, end lines and word times.
+- **Text**: the lines join with a space. Ruby becomes `base (annotation)`, tags drop and entities decode. A word timestamp writes as `<mm:ss.cc>`. With `spacedWordTimes`, a space separates each word time from the words.
+- **End lines**: a cue with `endLine` gets a line `[mm:ss.cc]` without text at its end.
+- **Comments**: `[#:text]` before their cue, or at the end.
+- **Lost on write**: styles, speakers, the line layout of a cue, times below a centisecond and the `[offset:]` tag. A line with several time tags writes as one line per cue, in time order.
+
+### Options
+
+`lrc.ReadOptions` and `lrc.WriteOptions` have no fields. The reader reads `Lenient`, `LastCueDuration` and `Encoding`. The writer reads `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#lrc). The detection rule is in the doc comment of `lrc.Detect` and in [detection.md](detection.md).

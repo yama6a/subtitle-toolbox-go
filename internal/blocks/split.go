@@ -20,7 +20,7 @@ func SplitAtEmptyLines(lines iter.Seq2[int, string]) iter.Seq[Block] {
 	return func(yield func(Block) bool) {
 		var b Block
 		for n, line := range lines {
-			line = strings.Trim(collapseSpaces(trimBOMs(line)), markupcore.PHPTrimSet)
+			line = strings.Trim(CollapseSpaces(trimBOMs(line)), markupcore.PHPTrimSet)
 			if line != "" {
 				if b.Lines == nil {
 					b.Line = n + 1
@@ -133,7 +133,8 @@ func trimBOMs(s string) string {
 	return s
 }
 
-func collapseSpaces(s string) string {
+// CollapseSpaces turns each run of spaces and tabs into 1 space, as the PHP pre-pass of the text readers does.
+func CollapseSpaces(s string) string {
 	if !strings.Contains(s, "\t") && !strings.Contains(s, "  ") {
 		return s
 	}

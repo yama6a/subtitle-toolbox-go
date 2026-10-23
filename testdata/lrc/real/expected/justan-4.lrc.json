@@ -1,0 +1,387 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "面包店的早晨",
+            "artist": "示例",
+            "album": "《面包店的早晨》"
+        },
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 4.0,
+                "lines": [
+                    "火车七点出发"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 6.0,
+                "end": 10.0,
+                "lines": [
+                    "面包店开门很早：天气今天晴朗 站台有点拥挤：天气今天晴朗"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 12.0,
+                "end": 17.0,
+                "lines": [
+                    "早班车准时到站　小雨下了一整天"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 17.0,
+                "end": 23.0,
+                "lines": [
+                    "烤箱还很温暖　咖啡闻起来很香"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 23.0,
+                "end": 28.0,
+                "lines": [
+                    "公园人不太多　邮局已经关门"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 28.0,
+                "end": 32.0,
+                "lines": [
+                    "窗外慢慢变亮　钟表走得很准"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 34.0,
+                "end": 39.0,
+                "lines": [
+                    "火车开门很早　面包店今天晴朗"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 39.0,
+                "end": 45.0,
+                "lines": [
+                    "天气有点拥挤　站台准时到站"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 45.0,
+                "end": 50.0,
+                "lines": [
+                    "早班车下了一整天　小雨还很温暖"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 50.0,
+                "end": 54.0,
+                "lines": [
+                    "烤箱闻起来很香　咖啡人不太多"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 55.0,
+                "end": 61.0,
+                "lines": [
+                    "公园已经关门　邮局慢慢变亮"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 61.0,
+                "end": 66.0,
+                "lines": [
+                    "窗外走得很准　钟表七点出发"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 66.0,
+                "end": 72.0,
+                "lines": [
+                    "火车今天晴朗　面包店有点拥挤"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 72.0,
+                "end": 77.0,
+                "lines": [
+                    "天气准时到站　站台下了一整天"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 77.0,
+                "end": 83.0,
+                "lines": [
+                    "公园已经关门　邮局慢慢变亮"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 83.0,
+                "end": 88.0,
+                "lines": [
+                    "窗外走得很准　钟表七点出发"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 88.0,
+                "end": 93.0,
+                "lines": [
+                    "火车今天晴朗　面包店有点拥挤"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 93.0,
+                "end": 99.0,
+                "lines": [
+                    "天气准时到站　站台下了一整天"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 121.0,
+                "end": 126.0,
+                "lines": [
+                    "早班车还很温暖　小雨闻起来很香"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 126.0,
+                "end": 131.0,
+                "lines": [
+                    "烤箱人不太多　咖啡已经关门"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 131.0,
+                "end": 137.0,
+                "lines": [
+                    "公园慢慢变亮　邮局走得很准"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 137.0,
+                "end": 141.0,
+                "lines": [
+                    "窗外七点出发　钟表开门很早"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 143.0,
+                "end": 148.0,
+                "lines": [
+                    "火车有点拥挤　面包店准时到站"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 148.0,
+                "end": 153.0,
+                "lines": [
+                    "天气下了一整天　站台还很温暖"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 153.0,
+                "end": 159.0,
+                "lines": [
+                    "早班车闻起来很香　小雨人不太多"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 159.0,
+                "end": 163.0,
+                "lines": [
+                    "烤箱已经关门　火车七点出发"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 164.0,
+                "end": 170.0,
+                "lines": [
+                    "公园已经关门　邮局慢慢变亮"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 170.0,
+                "end": 175.0,
+                "lines": [
+                    "窗外走得很准　钟表七点出发"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 175.0,
+                "end": 180.0,
+                "lines": [
+                    "火车今天晴朗　面包店有点拥挤"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 180.0,
+                "end": 186.0,
+                "lines": [
+                    "天气准时到站　站台下了一整天"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 186.0,
+                "end": 191.0,
+                "lines": [
+                    "公园已经关门　邮局慢慢变亮"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 191.0,
+                "end": 197.0,
+                "lines": [
+                    "窗外走得很准　钟表七点出发"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 197.0,
+                "end": 202.0,
+                "lines": [
+                    "火车今天晴朗　面包店有点拥挤"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 202.0,
+                "end": 207.0,
+                "lines": [
+                    "天气准时到站　站台下了一整天"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            }
+        ]
+    }
+}

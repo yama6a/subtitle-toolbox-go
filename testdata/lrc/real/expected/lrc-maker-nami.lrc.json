@@ -1,0 +1,453 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "朝の電車",
+            "artist": "見本太郎(見本花子)",
+            "album": "えきまえのぱんや 第1巻 特典CD"
+        },
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 1.0,
+                "lines": [
+                    "電車は七時に出る：example"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1.0,
+                "end": 10.065,
+                "lines": [
+                    "パン屋は早く開く：example"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 20.231,
+                "end": 25.437,
+                "lines": [
+                    "——天気は晴れです、駅は少し混む。"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 25.738,
+                "end": 29.822,
+                "lines": [
+                    "バスは時間通りに着く"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 29.822,
+                "end": 35.656,
+                "lines": [
+                    "朝ごはんが一日続く　公園はまだ温かい"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 35.656,
+                "end": 42.41,
+                "lines": [
+                    "雨はいい香り　窓は静かです"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 42.41,
+                "end": 45.896,
+                "lines": [
+                    "時計は止まった"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 46.013,
+                "end": 55.005,
+                "lines": [
+                    "郵便局は明るくなる"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 55.005,
+                "end": 61.323,
+                "lines": [
+                    "坂道は遠くない　電車は早く開く"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 61.323,
+                "end": 66.122,
+                "lines": [
+                    "パン屋は晴れです"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 66.306,
+                "end": 71.207,
+                "lines": [
+                    "天気は少し混む　駅は時間通りに着く"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 71.207,
+                "end": 76.524,
+                "lines": [
+                    "バスが一日続く　朝ごはんはまだ温かい"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 76.524,
+                "end": 81.625,
+                "lines": [
+                    "公園はいい香り"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 81.625,
+                "end": 84.802,
+                "lines": [
+                    "雨は静かです"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 84.802,
+                "end": 89.403,
+                "lines": [
+                    "窓は止まった…時計は明るくなる、郵便局は遠くない"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 89.403,
+                "end": 93.986,
+                "lines": [
+                    "坂道は七時に出る"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 102.171,
+                "end": 106.403,
+                "lines": [
+                    "電車は晴れです　パン屋は少し混む"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 106.403,
+                "end": 112.321,
+                "lines": [
+                    "天気は時間通りに着く"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 112.321,
+                "end": 116.738,
+                "lines": [
+                    "駅が一日続く"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 116.738,
+                "end": 120.513,
+                "lines": [
+                    "「バスはまだ温かい」"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 120.513,
+                "end": 122.164,
+                "lines": [
+                    "朝ごはんはいい香り　公園は静かです"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 122.363,
+                "end": 132.148,
+                "lines": [
+                    "雨は止まった"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 132.148,
+                "end": 138.255,
+                "lines": [
+                    "窓は明るくなる　時計は遠くない\"郵便局は七時に出る\"坂道は早く開く"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 138.255,
+                "end": 143.088,
+                "lines": [
+                    "電車は少し混む　パン屋は時間通りに着く"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 143.404,
+                "end": 148.354,
+                "lines": [
+                    "天気が一日続く"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 148.354,
+                "end": 153.488,
+                "lines": [
+                    "駅はまだ温かい"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 153.488,
+                "end": 158.521,
+                "lines": [
+                    "バスはいい香り"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 158.521,
+                "end": 162.038,
+                "lines": [
+                    "朝ごはんは静かです"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 162.288,
+                "end": 168.057,
+                "lines": [
+                    "雨はいい香り　公園は止まった　雨は明るくなる"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 168.057,
+                "end": 173.723,
+                "lines": [
+                    "窓は遠くない　時計は七時に出る"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 184.239,
+                "end": 189.564,
+                "lines": [
+                    "郵便局は早く開く　坂道は晴れです"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 189.564,
+                "end": 196.132,
+                "lines": [
+                    "電車は時間通りに着く…パン屋が一日続く"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 196.515,
+                "end": 200.807,
+                "lines": [
+                    "天気は少し混む　駅は時間通りに着く"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 200.807,
+                "end": 206.108,
+                "lines": [
+                    "バスが一日続く　朝ごはんはまだ温かい"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 206.108,
+                "end": 211.092,
+                "lines": [
+                    "天気はまだ温かい　駅はいい香り"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 211.092,
+                "end": 214.226,
+                "lines": [
+                    "雨は静かです"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 214.226,
+                "end": 224.05,
+                "lines": [
+                    "窓は止まった　バスは静かです"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 224.05,
+                "end": 229.668,
+                "lines": [
+                    "坂道は七時に出る"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            },
+            {
+                "start": 235.536,
+                "end": 243.353,
+                "lines": [
+                    "——天気は晴れです、駅は少し混む。"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "lrc": {
+                        "endLine": true
+                    }
+                }
+            }
+        ]
+    }
+}

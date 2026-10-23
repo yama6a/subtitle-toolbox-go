@@ -1,0 +1,52 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Slow River",
+            "artist": "Jane Doe"
+        },
+        "comments": [],
+        "formatData": {
+            "lrc": {
+                "idTags": {
+                    "lr": "John Roe",
+                    "length": "1:05"
+                },
+                "spacedWordTimes": true
+            }
+        },
+        "cues": [
+            {
+                "start": 3.0,
+                "end": 5.9,
+                "lines": [
+                    "<00:00:03.000>Slow <00:00:03.550>river <00:00:04.400>runs"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.9,
+                "end": 9.6,
+                "lines": [
+                    "<00:00:05.900>Past <00:00:06.350>the <00:00:06.700>old <00:00:07.200>mill"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 9.6,
+                "end": 14.6,
+                "lines": [
+                    "<00:00:09.600>Into <00:00:10.100>the <00:00:10.650>sea"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

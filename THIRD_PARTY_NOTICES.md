@@ -78,6 +78,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   - `testdata/sami/real/mantas_smi_formatted.smi`, in the shape of `tests/files/smi_formatted.smi`
   - `testdata/microdvd/real/sub_microdvd.sub`, in the shape of `tests/files/sub_microdvd.sub`
   - `testdata/microdvd/real/sub_microdvd_with_styles.sub`, in the shape of `tests/files/sub_microdvd_with_styles.sub`
+  - `testdata/lrc/real/mantas-done-lrc.lrc`, in the shape of `tests/files/lrc.lrc`
+  - `testdata/lrc/hours_with_text_on_next_line.lrc`, in the shape of the `testNotLrc` input in `tests/formats/LrcTest.php`
 
 ```text
 MIT License
@@ -622,6 +624,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 - Files written for this repository in the shape of its fixtures:
   - `testdata/sami/real/subsrt_sample.smi`, in the shape of `test/fixtures/sample.smi`
   - `testdata/sbv/real/subsrt_shape.sbv`, in the shape of `test/fixtures/sample.sbv` at `46deebd95703be9b6a76eb3c1aaf915713f30394`
+  - `testdata/lrc/real/subsrt-sample.lrc`, in the shape of `test/fixtures/sample.lrc` at `46deebd95703be9b6a76eb3c1aaf915713f30394`
 
 ```text
 MIT License

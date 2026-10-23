@@ -34,7 +34,7 @@ func TestUsageErrors(t *testing.T) {
 		{"from takes no frame rate", []string{"convert", "trip.srt", "--from", "25", "--to", "23.976"}, `Unknown format "25". Run "stbox formats" for the list.`},
 		{"subrip is no name", []string{"convert", "trip.srt", "--to", "subrip"}, `Unknown format "subrip". Run "stbox formats" for the list.`},
 		{"txt can be neither read nor written", []string{"convert", "trip.srt", "--from", "txt", "--to", "vtt"}, `Unknown format "txt". Run "stbox formats" for the list.`},
-		{"lrc can be neither read nor written", []string{"convert", "trip.srt", "--to", "lrc"}, `Unknown format "lrc". Run "stbox formats" for the list.`},
+		{"qttext can be neither read nor written", []string{"convert", "trip.srt", "--to", "qttext"}, `Unknown format "qttext". Run "stbox formats" for the list.`},
 		{"no input", []string{"convert", "--to", "vtt"}, "Pass at least one input file, or - for standard input."},
 		{"line ending cr", []string{"convert", "trip.srt", "--to", "vtt", "--line-ending", "cr"}, `The option --line-ending must be lf or crlf, got "cr".`},
 		{"bom and no bom", []string{"convert", "trip.srt", "--to", "vtt", "--bom", "--no-bom"}, "Pass only one of --bom and --no-bom."},
@@ -78,6 +78,8 @@ func TestFormatArgument(t *testing.T) {
 		{"TMPlayer", stbox.TMPlayer},
 		{"mpsub", stbox.MPSub},
 		{".MPSub", stbox.MPSub},
+		{"LRC", stbox.LRC},
+		{".lrc", stbox.LRC},
 	}
 	for _, tt := range tests {
 		t.Run(tt.in, func(t *testing.T) {
@@ -88,7 +90,7 @@ func TestFormatArgument(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
-	for _, in := range []string{"subrip", "25", "", ".", "txt", "lrc", "Kass", "sʀt"} {
+	for _, in := range []string{"subrip", "25", "", ".", "txt", "qttext", "Kass", "sʀt"} {
 		_, err := findFormat(in)
 		assert.EqualError(t, err, `Unknown format "`+in+`". Run "stbox formats" for the list.`)
 	}

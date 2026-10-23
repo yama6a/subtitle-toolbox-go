@@ -1,0 +1,86 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "artist": "Station choir",
+            "album": "Songs from the bakery",
+            "title": "Weather (morning) report",
+            "author": "Writer of the words"
+        },
+        "comments": [],
+        "formatData": {
+            "lrc": {
+                "idTags": {
+                    "length": "About three minutes",
+                    "by": "Maker of this file",
+                    "offset": "+/- Shift for all times in milliseconds, plus is earlier, minus is later",
+                    "re": "Editor that wrote this file",
+                    "ve": "editor version"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 12.0,
+                "end": 17.2,
+                "lines": [
+                    "Line 1 about the train"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 17.2,
+                "end": 21.1,
+                "lines": [
+                    "F: Line 2 about the bread"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 21.1,
+                "end": 24.0,
+                "lines": [
+                    "M: Line 3 about the rain"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 24.0,
+                "end": 28.25,
+                "lines": [
+                    "Line 4 about the train"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 28.25,
+                "end": 29.02,
+                "lines": [
+                    "D: Line 5 about the sun"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 29.02,
+                "end": 34.02,
+                "lines": [
+                    "Line 6 about the bread"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

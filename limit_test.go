@@ -30,6 +30,7 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 		{"TMPlayer start at 99999:59:59", stbox.TMPlayer, "99999:59:59:last\n"},
 		{"TMPlayer start 3 s before the limit", stbox.TMPlayer, "99999:59:57:last\n"},
 		// MPL2 and MPSub have no cue without an end, so their rows end just below the limit.
+		{"LRC start near the limit", stbox.LRC, "[offset:-359999987000]\n[00:12.00]last\n"},
 		{"MPL2 end at the limit", stbox.MPL2, "[3599999990][3599999999]last\n"},
 		{"MPSub end at the limit", stbox.MPSub, "FORMAT=TIME\n\n359999999 0.999\nlast\n"},
 	}
@@ -62,7 +63,8 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 				require.Equal(t, 1, back.Len(), f)
 				c, _ := back.Cue(0)
 				assert.Less(t, c.End, timecode.MaxTime, f)
-				if f != stbox.SubRip {
+				// SubRip and LRC clamp at the largest time their readers take, 999:59:59.999 and 999:59.99.
+				if f != stbox.SubRip && f != stbox.LRC {
 					assert.GreaterOrEqual(t, c.End, timecode.MaxValidTime-time.Second, f)
 				}
 			}

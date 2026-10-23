@@ -1,0 +1,32 @@
+{
+    "name": "LRC with hours and minutes of 60 or more",
+    "format": "lrc",
+    "strict": {
+        "cues": 3
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 4,
+            "text": "The night bus runs every hour"
+        },
+        {
+            "start": 4,
+            "end": 10,
+            "text": "The last bus leaves at one"
+        },
+        {
+            "start": 10,
+            "end": 12,
+            "text": "Please have coins ready"
+        }
+    ],
+    "warnings": [
+        {
+            "line": 6,
+            "block": 4,
+            "action": "skipped",
+            "message": "The line \"[1:75:00.00]Tickets are sold on board\" has a time tag that is not valid."
+        }
+    ]
+}
