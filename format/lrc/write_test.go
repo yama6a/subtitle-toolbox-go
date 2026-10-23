@@ -117,6 +117,37 @@ func TestWriteSkipsIDTagsThatReadBackAsOther(t *testing.T) {
 	}
 }
 
+// A key in another case reads back as the same tag, so only the first one is written.
+func TestWriteIDTagKeysIgnoreCase(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		title string
+		tags  *model.Data
+		want  string
+	}{
+		{"a stored TI after the title", "Real", model.NewData(model.Field{Key: "TI", Value: "Other"}), "[ti:Real]\n"},
+		{"by and By", "", model.NewData(model.Field{Key: "By", Value: "First"}, model.Field{Key: "by", Value: "Second"}), "[By:First]\n"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s := subtitle(model.Cue{Start: time.Second, Lines: []string{"Text"}})
+			if tt.title != "" {
+				s.SetMetadata(model.MetadataTitle, tt.title)
+			}
+			require.NoError(t, s.SetFormatData("lrc", model.NewData(model.Field{Key: "idTags", Value: tt.tags})))
+			out := write(t, s, model.CommonWriteOptions{BOM: model.BOMRemove})
+			assert.Equal(t, tt.want+"[00:01.00] Text\n", out)
+			back, _, err := read(out, model.CommonReadOptions{})
+			require.NoError(t, err)
+			assert.Equal(t, s.AllMetadata(), back.AllMetadata())
+		})
+	}
+}
+
 // Rows of the 999:59.99 limit of https://github.com/yama6a/subtitle-toolbox-go/issues/32.
 func TestWriteClampsAtTheLargestReadableTime(t *testing.T) {
 	t.Parallel()

@@ -62,8 +62,10 @@ func appendIDTags(body []byte, s *model.Subtitle, file *model.Data) []byte {
 	for _, tag := range stored.Keys() {
 		value, _ := stored.String(tag)
 		value = markupcore.ToSingleLine(value)
-		if !written[tag] && readsBackAsIDTag(tag, value) {
+		// The reader lower-cases each key, so a later key in another case would replace the earlier tag.
+		if key := markupcore.ASCIILower(tag); !written[key] && readsBackAsIDTag(tag, value) {
 			body = append(body, "["+tag+":"+value+"]\n"...)
+			written[key] = true
 		}
 	}
 	return body
