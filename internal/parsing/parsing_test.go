@@ -97,6 +97,27 @@ func TestLastCueEnd(t *testing.T) {
 	}
 }
 
+func TestEndAfter(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, 3500*time.Millisecond, parsing.EndAfter(1500*time.Millisecond, 2*time.Second))
+	assert.Equal(t, timecode.MaxValidTime, parsing.EndAfter(timecode.MaxTime-time.Second, 2*time.Second))
+	assert.Equal(t, time.Second, parsing.EndAfter(2*time.Second, -time.Second))
+}
+
+func TestCheckFrameRate(t *testing.T) {
+	t.Parallel()
+
+	require.NoError(t, parsing.CheckFrameRate(23.976, "X", "The frame rate"))
+	for _, fps := range []float64{0, -1, math.NaN(), math.Inf(1)} {
+		var aerr *model.InvalidArgumentError
+		require.ErrorAs(t, parsing.CheckFrameRate(fps, "X", "The frame rate"), &aerr)
+		assert.Equal(t, "X", aerr.Option)
+		assert.Equal(t, parsing.FrameRateMessage("The frame rate", fps), aerr.Msg)
+	}
+	assert.Equal(t, "The CSV frame rate must be greater than 0, got NAN.", parsing.FrameRateMessage("The CSV frame rate", math.NaN()))
+}
+
 func TestEachStateStartsWithoutWarnings(t *testing.T) {
 	t.Parallel()
 

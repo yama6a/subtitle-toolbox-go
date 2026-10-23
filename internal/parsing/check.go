@@ -1,6 +1,7 @@
 package parsing
 
 import (
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -18,6 +19,20 @@ const (
 )
 
 var wordTimestamp = regexp.MustCompile(markupcore.WordTimestampPattern)
+
+// CheckFrameRate returns an *InvalidArgumentError with option unless fps is finite and above 0. subject starts the
+// message, as FrameRateMessage writes it.
+func CheckFrameRate(fps float64, option, subject string) error {
+	if fps > 0 && !math.IsInf(fps, 1) {
+		return nil
+	}
+	return &model.InvalidArgumentError{Option: option, Msg: FrameRateMessage(subject, fps)}
+}
+
+// FrameRateMessage returns "SUBJECT must be greater than 0, got X.", with X as PHP prints a float.
+func FrameRateMessage(subject string, fps float64) string {
+	return subject + " must be greater than 0, got " + timecode.Number(fps) + "."
+}
 
 // BoundedTime returns d, or an error on line when d is 100000 hours or more. The error has no format,
 // so the caller passes it to Fail. A caller passes timecode.MaxTime for a time that overflows time.Duration.

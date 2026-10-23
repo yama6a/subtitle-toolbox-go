@@ -30,13 +30,11 @@ var synonyms = map[string][]string{ //nolint:gochecknoglobals // a fixed table
 	"text":     {"subtitle", "caption", "dialogue", "transcript"},
 }
 
-// roleIndex is a role and its column index.
 type roleIndex struct {
 	role  string
 	index int
 }
 
-// layout holds the resolved roles of a table, in role order.
 type layout []roleIndex
 
 func (l layout) index(r string) (int, bool) {
@@ -52,7 +50,6 @@ func (l layout) has(i int) bool {
 	return slices.ContainsFunc(l, func(ri roleIndex) bool { return ri.index == i })
 }
 
-// cell returns the trimmed cell of role r, or "" when the table or the row has no such cell.
 func (l layout) cell(cells []string, r string) string {
 	if i, ok := l.index(r); ok && i < len(cells) {
 		return trim(cells[i])
@@ -251,12 +248,10 @@ func columnIndex(c Column, r string, names []string, useSynonyms bool) int {
 	return synonymIndex(r, names)
 }
 
-// needed reports whether a missing column fails the read: a mapped column, or the start or the text.
 func needed(c Column, r string) bool {
 	return !c.IsZero() || r == "start" || r == "text"
 }
 
-// columnName returns the name of column c of role r in a message.
 func columnName(c Column, r string) string {
 	switch {
 	case c.isName:
@@ -268,7 +263,6 @@ func columnName(c Column, r string) string {
 	}
 }
 
-// synonymIndex returns the index of the first header name that is a synonym of role r, or -1.
 func synonymIndex(r string, lowerNames []string) int {
 	compact := make([]string, len(lowerNames))
 	for i, n := range lowerNames {
@@ -317,7 +311,7 @@ func (rd *reader) millisecondTimes(recs []record, roles layout) bool {
 	for _, rec := range recs {
 		start, end, duration := roles.cell(rec.cells, "start"), roles.cell(rec.cells, "end"), roles.cell(rec.cells, "duration")
 		for _, t := range []string{start, end, duration} {
-			if t != "" && !isDigits(t) {
+			if t != "" && !timecode.IsDigits(t) {
 				return false
 			}
 		}
@@ -409,8 +403,7 @@ func (rd *reader) end(rec record, roles layout, start time.Duration, millis bool
 		return start, false, nil
 	}
 	d, err := parseTime(cell, rd.fps, millis, rec.line)
-	// The sum stays a valid time, as a computed last cue end does.
-	return min(start+d, timecode.MaxValidTime), true, err
+	return parsing.EndAfter(start, d), true, err
 }
 
 // otherCells returns the cells of the columns without a role, keyed by header name, else by column index. A short
@@ -467,7 +460,6 @@ func (rd *reader) closeOpenEnds(cues []model.Cue, open []int) {
 	}
 }
 
-// fileData returns the csv file data of the table.
 func (rd *reader) fileData(header *record, recs []record, roles layout, timeFormat TimeFormat) *model.Data {
 	var headerCells any
 	width := 0

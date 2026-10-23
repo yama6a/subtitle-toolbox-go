@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -37,7 +38,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 				Msg:    "MicroDVD output needs the frame rate of the video.",
 			}
 		}
-		if err := checkFrameRate(stored, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate"); err != nil {
+		if err := parsing.CheckFrameRate(stored, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate"); err != nil {
 			return err
 		}
 		fps = stored

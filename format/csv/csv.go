@@ -6,10 +6,9 @@
 package csv
 
 import (
-	"math"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
@@ -92,7 +91,6 @@ func (c Columns) isZero() bool {
 	return c == Columns{}
 }
 
-// role is a column role with its name in messages and format data, and its Go field.
 type role struct {
 	name, field string
 }
@@ -107,7 +105,6 @@ var roles = [...]role{ //nolint:gochecknoglobals // a fixed list
 	{"text", "Text"},
 }
 
-// column returns the column of the role with the name r.
 func (c Columns) column(r string) Column {
 	switch r {
 	case "identifier":
@@ -161,7 +158,7 @@ func (o ReadOptions) Validate() error {
 	if o.FrameRate == 0 {
 		return nil
 	}
-	return checkFrameRate(o.FrameRate, "ReadOptions.CSV.FrameRate", "The frame rate")
+	return parsing.CheckFrameRate(o.FrameRate, "ReadOptions.CSV.FrameRate", "The frame rate")
 }
 
 // WriteOptions holds the settings of the CSV and TSV writer.
@@ -195,7 +192,7 @@ func (o WriteOptions) Validate() error {
 	if o.FrameRate == 0 {
 		return nil
 	}
-	return checkFrameRate(o.FrameRate, "WriteOptions.CSV.FrameRate", "The CSV frame rate")
+	return parsing.CheckFrameRate(o.FrameRate, "WriteOptions.CSV.FrameRate", "The CSV frame rate")
 }
 
 func checkDelimiter(d Delimiter, option string) error {
@@ -205,14 +202,6 @@ func checkDelimiter(d Delimiter, option string) error {
 	default:
 		return invalid(option, `The CSV delimiter must be ",", ";" or a tab.`)
 	}
-}
-
-// checkFrameRate returns an *InvalidArgumentError unless fps is finite and above 0. subject starts the message.
-func checkFrameRate(fps float64, option, subject string) error {
-	if fps > 0 && !math.IsInf(fps, 1) {
-		return nil
-	}
-	return invalid(option, subject+" must be greater than 0, got "+timecode.Number(fps)+".")
 }
 
 func invalid(option, msg string) error {

@@ -86,7 +86,6 @@ func records(content string, delimiter byte, lenient bool) ([]record, []unclosed
 	return t.records, t.unclosed, nil
 }
 
-// tokenizer holds the state of records.
 type tokenizer struct {
 	content  string
 	records  []record
@@ -154,7 +153,6 @@ func quotedCell(content string, from int) (cell string, next, breaks int, ok boo
 	return "", 0, 0, false
 }
 
-// lineBreakEnd returns the offset after the line break at offset i: CR, LF or CR LF.
 func lineBreakEnd(content string, i int) int {
 	if content[i] == '\r' && i+1 < len(content) && content[i+1] == '\n' {
 		return i + 2

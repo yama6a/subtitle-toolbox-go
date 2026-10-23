@@ -52,13 +52,13 @@ func fromSeconds(secs float64) time.Duration {
 // isDecimal reports whether t matches ^\d+(?:\.\d+)?$.
 func isDecimal(t string) bool {
 	whole, fraction, hasFraction := strings.Cut(t, ".")
-	return isDigits(whole) && (!hasFraction || isDigits(fraction))
+	return timecode.IsDigits(whole) && (!hasFraction || timecode.IsDigits(fraction))
 }
 
 // frameFields splits t of the shape ^(\d+):([0-5]\d):([0-5]\d):(\d+)$.
 func frameFields(t string) ([4]string, bool) {
 	parts := strings.Split(t, ":")
-	if len(parts) != 4 || !isDigits(parts[0]) || !isSexagesimal(parts[1]) || !isSexagesimal(parts[2]) || !isDigits(parts[3]) {
+	if len(parts) != 4 || !timecode.IsDigits(parts[0]) || !timecode.IsSexagesimal(parts[1]) || !timecode.IsSexagesimal(parts[2]) || !timecode.IsDigits(parts[3]) {
 		return [4]string{}, false
 	}
 	return [4]string(parts), true
@@ -85,7 +85,7 @@ func padSeconds(t string) string {
 	var b strings.Builder
 	for i := range len(t) {
 		b.WriteByte(t[i])
-		if t[i] == ':' && i+1 < len(t) && isDigit(t[i+1]) && (i+2 == len(t) || t[i+2] == '.' || t[i+2] == ',') {
+		if t[i] == ':' && i+1 < len(t) && timecode.IsDigit(t[i+1]) && (i+2 == len(t) || t[i+2] == '.' || t[i+2] == ',') {
 			b.WriteByte('0')
 		}
 	}
@@ -149,22 +149,4 @@ func pad2(n int64) string {
 func pad3(n int64) string {
 	s := strconv.FormatInt(n, 10)
 	return strings.Repeat("0", 3-len(s)) + s
-}
-
-func isDigits(s string) bool {
-	if s == "" {
-		return false
-	}
-	for i := range len(s) {
-		if !isDigit(s[i]) {
-			return false
-		}
-	}
-	return true
-}
-
-func isDigit(b byte) bool { return b >= '0' && b <= '9' }
-
-func isSexagesimal(s string) bool {
-	return len(s) == 2 && s[0] >= '0' && s[0] <= '5' && isDigit(s[1])
 }

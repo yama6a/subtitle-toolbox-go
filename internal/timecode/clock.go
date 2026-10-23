@@ -29,7 +29,7 @@ func ClockOrLimit(s string) (d time.Duration, ok bool) {
 		return 0, false
 	}
 	seconds, millis, ok := clockSeconds(parts[len(parts)-1])
-	if !ok || !isDigits(parts[0]) || len(parts) == 3 && !isSexagesimal(parts[1]) {
+	if !ok || !IsDigits(parts[0]) || len(parts) == 3 && !IsSexagesimal(parts[1]) {
 		return 0, false
 	}
 	first := strings.TrimLeft(parts[0], "0")
@@ -53,14 +53,15 @@ func clockSeconds(s string) (seconds, millis int64, ok bool) {
 	if !hasFraction {
 		whole, fraction, hasFraction = strings.Cut(s, ",")
 	}
-	if hasFraction && !isDigits(fraction) || !isSexagesimal(whole) {
+	if hasFraction && !IsDigits(fraction) || !IsSexagesimal(whole) {
 		return 0, 0, false
 	}
 	return int64(atoi(whole)), fractionMillis(fraction), true
 }
 
-func isSexagesimal(s string) bool {
-	return len(s) == 2 && s[0] >= '0' && s[0] <= '5' && isDigit(s[1])
+// IsSexagesimal reports whether s is 2 digits from 00 to 59.
+func IsSexagesimal(s string) bool {
+	return len(s) == 2 && s[0] >= '0' && s[0] <= '5' && IsDigit(s[1])
 }
 
 func fractionMillis(fraction string) int64 {

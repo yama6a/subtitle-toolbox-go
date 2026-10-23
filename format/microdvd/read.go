@@ -157,8 +157,8 @@ func lineFrameRate(number string, option float64) (float64, error) {
 		return option, nil
 	}
 	fps, _ := strconv.ParseFloat(number, 64) // a value beyond the float range is +Inf, which the check rejects
-	if checkFrameRate(fps, "", "") != nil {
-		return 0, &model.ParseError{Format: model.MicroDVD, Msg: frameRateMessage("The frame rate", fps)}
+	if parsing.CheckFrameRate(fps, "", "") != nil {
+		return 0, &model.ParseError{Format: model.MicroDVD, Msg: parsing.FrameRateMessage("The frame rate", fps)}
 	}
 	return fps, nil
 }

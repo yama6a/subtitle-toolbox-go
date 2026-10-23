@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -24,7 +25,6 @@ type column struct {
 	key  string
 }
 
-// settings holds the resolved options of one write.
 type settings struct {
 	delimiter  string
 	timeFormat TimeFormat
@@ -104,7 +104,6 @@ func isNull(d *model.Data, key string) bool {
 	return v == nil
 }
 
-// resolve returns the settings of the options, else of the stored file data, else of the defaults.
 func resolve(file *model.Data, opts WriteOptions) (settings, error) {
 	set := settings{delimiter: string(opts.Delimiter), timeFormat: opts.TimeFormat, fps: opts.FrameRate, escape: opts.EscapeFormulas}
 	if set.delimiter == "" {
@@ -122,7 +121,7 @@ func resolve(file *model.Data, opts WriteOptions) (settings, error) {
 	}
 	if set.fps == 0 {
 		if fps, ok := file.Number("frameRate"); ok {
-			if err := checkFrameRate(fps, "WriteOptions.CSV.FrameRate", "The frame rate"); err != nil {
+			if err := parsing.CheckFrameRate(fps, "WriteOptions.CSV.FrameRate", "The frame rate"); err != nil {
 				return settings{}, err
 			}
 			set.fps = fps
@@ -176,7 +175,6 @@ func storedLayout(file *model.Data) (columns []column, header []string, quoted [
 	return columns, header, quoted
 }
 
-// roleAt returns the first stored role whose column index is i.
 func roleAt(storedRoles any, i int64) (string, bool) {
 	d, ok := storedRoles.(*model.Data)
 	if !ok {
@@ -209,7 +207,6 @@ func defaultLayout(cues []model.Cue) (columns []column, header []string) {
 	return columns, header
 }
 
-// storedCells returns the stored csv.columns of c: a list or an object.
 func storedCells(c model.Cue) any {
 	d, _ := c.FormatData(formatDataKey)
 	v, _ := d.Get("columns")
@@ -233,7 +230,6 @@ func item(v any, key string) (any, bool) {
 	}
 }
 
-// keys returns the PHP array keys of a list or an object.
 func keys(v any) []string {
 	switch v := v.(type) {
 	case []any:
@@ -321,7 +317,6 @@ func secondTexts(cues, second []model.Cue) []string {
 	return texts
 }
 
-// cell returns the cell of column col for cue c, the i-th row.
 func (set settings) cell(c model.Cue, col column, speaker, text string, seconds []string, i int) string {
 	switch col.role {
 	case "identifier":
