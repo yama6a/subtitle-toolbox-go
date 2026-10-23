@@ -242,6 +242,44 @@ func TestAttributeValuesAfterDeclarationsAndComments(t *testing.T) {
 	assert.Equal(t, ` <x a="1`+"\n"+`2"/> `, r.Children[0].Data[1:])
 }
 
+// Covers https://github.com/yama6a/subtitle-toolbox-go/issues/181. PHP 8.5 reads each case, and the attribute
+// after the DOCTYPE keeps the space of its literal LF.
+func TestProcessingInstructionInTheDoctypeSubset(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name, subset, directive string
+	}{
+		{"apostrophe", "<?pi it's ?>", ""},
+		{"quote", `<?pi "x ?>`, ""},
+		{"greater-than sign", "<?pi a>b ?>", ""},
+		{"less-than sign", "<?pi a<b ?>", ""},
+		{"opening bracket", "<?pi [ ?>", ""},
+		{"closing bracket", "<?pi ] ?>", ""},
+		{"in an entity value", `<!ENTITY e "<?pi it's ?>">`, ""},
+		{"before a comment", "<?pi ?><!-- ' -->", "DOCTYPE tt [<?pi ?> ]"},
+		{"over 3 lines", "<?pi\n'\n?>", ""},
+		{"comment start in the instruction", "<?pi <!-- ?><!-- x -->", "DOCTYPE tt [<?pi <!-- ?> ]"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			doc := parse(t, "<?xml version=\"1.0\"?>\n<!DOCTYPE tt ["+tt.subset+"]>\n<tt a=\"1\n2\">\n<p/></tt>", false)
+			want := tt.directive
+			if want == "" {
+				want = "DOCTYPE tt [" + tt.subset + "]"
+			}
+			require.Equal(t, xmlraw.DirectiveNode, doc.Children[0].Kind)
+			assert.Equal(t, want, doc.Children[0].Data)
+			r := root(t, doc)
+			assert.Equal(t, "1 2", r.Attrs[0].Value)
+			lines := strings.Count(tt.subset, "\n")
+			assert.Equal(t, []int{4 + lines, 5 + lines}, []int{r.Line, r.Children[1].Line})
+		})
+	}
+}
+
 // TestAttributeLineBreaksGrowth parses n and 10n elements with a LF in an attribute value.
 func TestAttributeLineBreaksGrowth(t *testing.T) {
 	t.Parallel()

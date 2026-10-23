@@ -763,3 +763,18 @@ func TestAttributeReferences(t *testing.T) {
 		})
 	}
 }
+
+// Covers https://github.com/yama6a/subtitle-toolbox-go/issues/181, with the result of PHP 8.5.
+func TestProcessingInstructionInTheDoctypeSubset(t *testing.T) {
+	t.Parallel()
+
+	in := "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE tt [<?pi it's ?>]>\n" +
+		`<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p begin="1s" end="2s">Hello</p></div></body></tt>` + "\n"
+	for _, lenient := range []bool{false, true} {
+		s, warnings := mustRead(t, in, lenient)
+		assert.Empty(t, warnings)
+		assert.Equal(t, []cueRow{{sec(1), sec(2), "Hello"}}, cueRows(s))
+	}
+	perr := readError(t, "<!DOCTYPE tt [<?pi it's ?>]>\n<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div>\n<p begin=\"5s\" end=\"2s\">Hello</p></div></body></tt>", false)
+	assert.Equal(t, 3, perr.Line)
+}
