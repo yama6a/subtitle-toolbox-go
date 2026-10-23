@@ -490,7 +490,7 @@ type countingReader struct {
 func (c *countingReader) Read(b []byte) (int, error) {
 	n, err := c.r.Read(b)
 	c.n += n
-	return n, err //nolint:wrapcheck // a test double passes the error through
+	return n, err
 }
 
 type errReader struct{ err error }

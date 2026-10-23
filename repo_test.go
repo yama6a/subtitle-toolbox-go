@@ -388,7 +388,7 @@ func unmatchedRows(fsys fs.FS) ([]string, error) {
 		}
 		content, err := fs.ReadFile(fsys, p)
 		if err != nil {
-			return err //nolint:wrapcheck // the fs.PathError names the file and unmatchedRows wraps once
+			return err
 		}
 		folder := path.Dir(p)
 		files, err := filesBelow(fsys, folder)
@@ -476,7 +476,7 @@ func isCredited(fsys fs.FS, p, folder string) (bool, error) {
 				}
 			}
 		case !errors.Is(err, fs.ErrNotExist):
-			return false, err //nolint:wrapcheck // the fs.PathError names the file and uncredited wraps once
+			return false, err
 		}
 		if dir == folder {
 			return false, nil
@@ -506,5 +506,5 @@ func filesBelow(fsys fs.FS, folder string) ([]string, error) {
 		}
 		return nil
 	})
-	return files, err //nolint:wrapcheck // the fs.PathError names the file and unmatchedRows wraps once
+	return files, err
 }

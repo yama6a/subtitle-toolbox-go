@@ -85,7 +85,7 @@ func (d *diffCommand) prepare(a *args, r *runner) error {
 	}
 	d.newFile = a.positionals[1]
 	a.positionals = a.positionals[:1]
-	return d.opts.Validate() //nolint:wrapcheck // the CLI message reads the error type of the library
+	return d.opts.Validate()
 }
 
 func (*diffCommand) checkInputs(_ *runner, inputs []string) error {
@@ -104,7 +104,7 @@ func (d *diffCommand) process(_ context.Context, r *runner, in *input) error {
 	}
 	differences, err := diff.Compare(in.sub, updated.sub, d.opts)
 	if err != nil {
-		return err //nolint:wrapcheck // the CLI message reads the error type of the library
+		return err
 	}
 	if len(differences) > 0 {
 		r.result = true

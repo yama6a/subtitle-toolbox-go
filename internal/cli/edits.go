@@ -196,7 +196,7 @@ var _ edit = errorsEdit{}
 func (e errorsEdit) apply(_ context.Context, s *stbox.Subtitle, c *console, label string) (*stbox.Subtitle, error) {
 	report, err := fixing.Apply(s, e.opts)
 	if err != nil {
-		return nil, err //nolint:wrapcheck // the CLI message reads the error type of the library
+		return nil, err
 	}
 	if !e.list {
 		return s, nil
@@ -266,7 +266,7 @@ func buildSDH(a *args, add func(edit)) error {
 	}
 	add(steps{inPlace(func(s *stbox.Subtitle) error {
 		_, err := hearingimpaired.Apply(s, opts)
-		return err //nolint:wrapcheck // the CLI message reads the error type of the library
+		return err
 	})})
 	return nil
 }

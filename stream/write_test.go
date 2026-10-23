@@ -306,5 +306,5 @@ func (f *failingWriter) Write(b []byte) (int, error) {
 	if f.err != nil && f.calls > f.after {
 		return 0, f.err
 	}
-	return f.Buffer.Write(b) //nolint:wrapcheck // a test double passes the error through
+	return f.Buffer.Write(b)
 }
