@@ -70,6 +70,9 @@ func TestSerialize(t *testing.T) {
 		{"referenced CR in an attribute", `<tt><x a="a&#13;b"/></tt>`, `<x a="a&#13;b"/>`},
 		{"literal LF and TAB in an attribute become spaces", "<tt><x a=\"a\nb\tc\"/></tt>", `<x a="a b c"/>`},
 		{"literal CR LF in an attribute becomes one space", "<tt><x a=\"a\r\nb\"/></tt>", `<x a="a b"/>`},
+		{"referenced LF, TAB and CR in an attribute stay", `<tt><x a="a&#10;b&#9;c&#13;d&#xA;e"/></tt>`, `<x a="a&#10;b&#9;c&#13;d&#10;e"/>`},
+		{"literal and referenced LF in an attribute", "<tt><x a='e&#10;\nf'/></tt>", `<x a="e&#10; f"/>`},
+		{"literal LF in text, a comment and CDATA stays", "<tt><x a=\">\">a\nb<!--\n--><![CDATA[\n\t]]></x></tt>", "<x a=\"&gt;\">a\nb<!--\n-->\n\t</x>"},
 		{"character reference in text", `<tt><x>caf&#233;</x></tt>`, "<x>caf\u00e9</x>"},
 		{"non-ASCII attribute value as UTF-8", "<tt><x tts:fontFamily=\"Caf\u00e9\"/></tt>", "<x tts:fontFamily=\"Caf\u00e9\"/>"},
 		{"comment and processing instruction", `<tt><x><!-- c --><?pi data?><?bare?></x></tt>`, `<x><!-- c --><?pi data?><?bare?></x>`},
@@ -174,6 +177,52 @@ func TestParseRecoverWithoutRootFails(t *testing.T) {
 		require.ErrorAs(t, err, &serr, in)
 		assert.Equal(t, "the document has no root element", serr.Msg, in)
 	}
+}
+
+// XML 1.0 section 3.3.3 turns only literal white space of an attribute value into a space. libxml2 keeps a character
+// that a reference gives.
+func TestAttributeValueNormalization(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name, in, want string
+	}{
+		{"referenced LF", `a&#10;b`, "a\nb"},
+		{"referenced TAB", `a&#9;b`, "a\tb"},
+		{"referenced CR", `a&#13;b`, "a\rb"},
+		{"literal LF", "c\nd", "c d"},
+		{"literal TAB", "c\td", "c d"},
+		{"literal CR LF", "c\r\nd", "c d"},
+		{"literal CR", "c\rd", "c d"},
+		{"referenced space and hex TAB", `&#32;g&#x9;`, " g\t"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			for _, quote := range []string{`"`, "'"} {
+				r := root(t, parse(t, "<tt a="+quote+tt.in+quote+"><x b="+quote+tt.in+quote+"/></tt>", false))
+				assert.Equal(t, tt.want, r.Attrs[0].Value)
+				assert.Equal(t, tt.want, r.Children[0].Attrs[0].Value)
+			}
+		})
+	}
+}
+
+func TestParseLinesWithLineBreaksInAttributeValues(t *testing.T) {
+	t.Parallel()
+
+	doc := parse(t, "<tt a=\"1\n2\">\n<p b='3\r\n4\r5'\n>x</p>\n<q c=\"&#10;\"/></tt>", false)
+	var lines []int
+	for n := range doc.Descendants() {
+		lines = append(lines, n.Line)
+	}
+	assert.Equal(t, []int{2, 6, 7}, lines)
+
+	_, err := xmlraw.Parse(strings.NewReader("<tt a=\"1\n2\">\n<p b=\"3\n4\">\n</q></tt>"), xmlraw.ParseOptions{})
+	var serr *xmlraw.SyntaxError
+	require.ErrorAs(t, err, &serr)
+	assert.Equal(t, 5, serr.Line)
 }
 
 func TestParseLines(t *testing.T) {

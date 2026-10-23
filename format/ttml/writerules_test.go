@@ -376,6 +376,8 @@ func TestAttributeValuesKeepTabLFAndCR(t *testing.T) {
 	out = writeDefault(t, s)
 	assert.Contains(t, out, ` xml:lang="" baz="1&#9;2">`)
 	assert.Contains(t, out, `<body qux="d&#10;e">`)
+	back, _ = mustRead(t, out, false)
+	assert.Equal(t, out, writeDefault(t, back))
 }
 
 func TestOutputOptions(t *testing.T) {
