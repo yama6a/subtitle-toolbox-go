@@ -226,6 +226,16 @@ func TestChangedStyleWritesNewCodesAndKeepsOtherCodes(t *testing.T) {
 	assert.Equal(t, "{1}{1}25\n{25}{50}{y:i}{f:Arial}One\n", writeAt(t, s, 25), "new codes for another line count")
 }
 
+func TestLineBreakInsideALineDropsTheStoredCodes(t *testing.T) {
+	t.Parallel()
+
+	s, _ := mustRead(t, "{25}{50}p|{f:Arial}q", false, 25)
+	c, _ := s.Cue(0)
+	c.Lines = []string{"x\ny", "q"}
+	require.NoError(t, s.SetCue(0, c))
+	assert.Equal(t, "{25}{50}x|y|q\n", writeAt(t, s, 25))
+}
+
 // Ports testStylesThatSpanLinesStyleEachLine of tests/Formatters/MicroDvdFormatterTest.php of subtitle-toolbox-php.
 func TestStylesThatSpanLinesStyleEachLine(t *testing.T) {
 	t.Parallel()

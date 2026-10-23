@@ -86,9 +86,14 @@ func (rd *Reader) Blocks(lines iter.Seq2[int, string]) iter.Seq[blocks.Block] {
 
 func (rd *Reader) isTimingLine(line string) bool {
 	if rd.st.Lenient() {
-		return lenientTimingLineRegexp.MatchString(fullWidth.Replace(line))
+		return isLenientTimingLine(line)
 	}
 	return strictTimingLineRegexp.MatchString(line)
+}
+
+// isLenientTimingLine reports whether lenient mode reads line as a timing line. Strict mode reads fewer lines.
+func isLenientTimingLine(line string) bool {
+	return lenientTimingLineRegexp.MatchString(fullWidth.Replace(line))
 }
 
 // ParseBlock returns the cues of block b, number index, split before each timing line. Lenient mode skips a

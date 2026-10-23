@@ -110,12 +110,37 @@ func TestPlainLines(t *testing.T) {
 		{"no lines", nil, nil},
 		{"quote in a voice tag", []string{"<v O'Neil>We're out.", "<i></i>"}, []string{"We're out."}},
 		{"ruby", []string{"<ruby>K<rt>kan</rt></ruby> end"}, []string{"K (kan) end"}},
+		{"line breaks", []string{"<i>a\n b</i>", "c\r\nd", "e&#10;f&NewLine;"}, []string{"a", "b", "c", "d", "e", "f"}},
+		{"entity of an entity", []string{"&amp;amp;"}, []string{"&amp;"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			assert.Equal(t, tt.want, markupcore.PlainLines(tt.lines))
+		})
+	}
+}
+
+func TestSplitLineBreaks(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		line string
+		want []string
+	}{
+		{"no line break", "<i>a &amp; b</i>", []string{"<i>a &amp; b</i>"}},
+		{"line feed and carriage return", "a\nb\r\nc\rd", []string{"a", "b", "c", "d"}},
+		{"entities of a line feed", "a&#10;b&#x0A;c&NewLine;d", []string{"a", "b", "c", "d"}},
+		{"entity of a carriage return stays", "a&#13;b", []string{"a&#13;b"}},
+		{"escaped entity stays", "a&amp;#10;b", []string{"a&amp;#10;b"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, markupcore.SplitLineBreaks(tt.line))
 		})
 	}
 }

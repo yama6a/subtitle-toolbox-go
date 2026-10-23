@@ -83,8 +83,9 @@ func checkCues(t *testing.T, s *model.Subtitle) {
 	}
 }
 
-// checkWrite writes s in version v and reads the output back. Text with [ or | can read back as other lines, so it
-// only has to read without an error in lenient mode. Other text keeps its cues, lines and header.
+// checkWrite writes s in version v and reads the output back. A header with [, | or * can read back as other tags,
+// so it only has to read without an error in lenient mode. Otherwise the cues, lines and header stay. A line may
+// gain a word joiner and turn | into U+00A6, as the writer escapes text that would read as structure.
 func checkWrite(t *testing.T, s *model.Subtitle, v subviewer.Version) {
 	t.Helper()
 
@@ -123,7 +124,7 @@ func checkWrite(t *testing.T, s *model.Subtitle, v subviewer.Version) {
 				t.Fatalf("cue %d is %v to %v, want %v to %v", i, c.Start, c.End, w.Start, w.End)
 			}
 		}
-		if got := markupcore.PlainLines(c.Lines); strings.Join(got, "\n") != strings.Join(w.Lines, "\n") {
+		if got := markupcore.PlainLines(c.Lines); unescaped(got) != unescaped(w.Lines) {
 			t.Fatalf("cue %d has the lines %q, want %q", i, got, w.Lines)
 		}
 	}
@@ -136,16 +137,9 @@ func checkWrite(t *testing.T, s *model.Subtitle, v subviewer.Version) {
 	}
 }
 
-// hasMarkup reports whether a line, the title or the author of s has a character that the writer cannot keep apart
-// from the syntax of the format.
+// hasMarkup reports whether the header or the metadata of s has a character that the writer cannot keep apart from
+// the syntax of the format.
 func hasMarkup(s *model.Subtitle) bool {
-	for _, c := range s.All() {
-		for _, l := range c.Lines {
-			if strings.ContainsAny(l, "[|*") {
-				return true
-			}
-		}
-	}
 	d, _ := s.FormatData("subviewer")
 	for _, v := range plain(d).(map[string]any) {
 		if strings.ContainsAny(strings.Join(flatten(v), ""), "[|*") {
@@ -158,6 +152,10 @@ func hasMarkup(s *model.Subtitle) bool {
 		}
 	}
 	return false
+}
+
+func unescaped(lines []string) string {
+	return strings.NewReplacer("\u2060", "", "\u00a6", "|").Replace(strings.Join(lines, "\n"))
 }
 
 func flatten(v any) []string {

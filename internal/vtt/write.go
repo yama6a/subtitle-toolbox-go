@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yama6a/subtitle-toolbox-go/internal/blocks"
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/internal/position"
@@ -172,7 +173,14 @@ func (w *Writer) text(c model.Cue, i int) string {
 		}
 		text = keepSpanTags(text)
 	}
-	return strings.ReplaceAll(text, arrow, "--&gt;")
+	// A line that holds only a dropped tag or a BOM reads as an empty line, and an empty line ends the cue.
+	var kept []string
+	for line := range strings.SplitSeq(text, "\n") {
+		if blocks.CleanLine(line) != "" {
+			kept = append(kept, line)
+		}
+	}
+	return strings.ReplaceAll(strings.Join(kept, "\n"), arrow, "--&gt;")
 }
 
 // keepSpanTags keeps the inline timestamps and the span tags of WebVTT with their classes, such as <c.yellow>.

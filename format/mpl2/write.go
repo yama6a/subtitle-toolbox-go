@@ -14,7 +14,8 @@ import (
 
 var italicTagRegexp = regexp.MustCompile(`<(/?)[iI]>`)
 
-// Write writes s as MPL2. It writes every cue, also one without text.
+// Write writes s as MPL2. It writes every cue, also one without text. A line break inside a line becomes |, and a |
+// in the text becomes U+00A6 BROKEN BAR.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
 	var body []byte
 	for _, c := range s.All() {
@@ -23,19 +24,22 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 		body = append(body, "]["...)
 		body = strconv.AppendInt(body, timecode.Units(c.End, tenth), 10)
 		body = append(body, ']')
-		body = append(body, strings.Join(italicLines(c.Lines), "|")...)
+		body = append(body, writing.PipeText(italicLines(c.Lines))...)
 		body = append(body, '\n')
 	}
 	return writing.Write(w, model.MPL2, body, common, false)
 }
 
-// italicLines returns the visible text of each line. A line gets a / prefix when all its visible text is italic.
-// The italic state runs on from one line to the next, also over a line without text.
+// italicLines returns the visible text of each line, split at its line breaks. A line gets a / prefix when all its
+// visible text is italic. The italic state runs on from one line to the next, also over a line without text.
 func italicLines(lines []string) []string {
+	split := make([]string, 0, len(lines))
+	for _, line := range lines {
+		split = append(split, markupcore.SplitLineBreaks(markupcore.RubyAsText(line))...)
+	}
 	var out []string
 	italic := false
-	for _, line := range lines {
-		line = markupcore.RubyAsText(line)
+	for _, line := range split {
 		allItalic := true
 		pos := 0
 		for _, m := range italicTagRegexp.FindAllStringSubmatchIndex(line, -1) {

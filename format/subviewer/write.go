@@ -29,7 +29,9 @@ func defaultTags(version Version) []tag {
 // Write writes s as SubViewer 1 or 2. The header holds the title and the author, then the stored header tags, or the
 // tags that Subtitle Edit writes when s has none. A CR or LF in a header value becomes a space, and a stored tag
 // that the reader would read as another tag is not written, so the header always reads back. A cue without visible
-// text is not written, because an empty line ends a cue.
+// text is not written, because an empty line ends a cue. A | in SubViewer 1 text becomes U+00A6 BROKEN BAR. Text that
+// the reader would read as a line break, a time line, a timing line, a style line or the script line gets U+2060
+// WORD JOINER.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
 	if err := opts.Validate(); err != nil {
 		return err
@@ -126,7 +128,7 @@ func appendVersion1(body []byte, s *model.Subtitle, tags []tag) []byte {
 		}
 		body = appendTime1(body, c.Start)
 		body = append(body, '\n')
-		body = append(body, strings.Join(lines, "|")...)
+		body = append(body, textLine1(lines)...)
 		body = append(body, '\n')
 		body = appendTime1(body, c.End)
 		body = append(body, "\n\n"...)
@@ -175,10 +177,46 @@ func appendBlocks2(body []byte, s *model.Subtitle) []byte {
 		body = append(body, ',')
 		body = appendTime2(body, c.End)
 		body = append(body, '\n')
-		body = append(body, strings.Join(lines, "[br]")...)
+		body = append(body, textLine2(lines)...)
 		body = append(body, '\n')
 	}
 	return body
+}
+
+// textLine1 joins lines with | into a text line that the SubViewer 1 reader reads back as the same lines. A line that
+// reads as a time line gets a word joiner at its start.
+func textLine1(lines []string) string {
+	text := writing.PipeText(lines)
+	if v1TimeRegexp.MatchString(text) {
+		return writing.WordJoiner + text
+	}
+	return text
+}
+
+// textLine2 joins lines with [br] into a text line that the SubViewer 2 reader reads back as the same lines. A [br]
+// in a line gets a word joiner after its [. A line that reads as a timing line gets one before each field in the
+// shape of a time. A line that reads as a style line or the script line gets one at its start.
+func textLine2(lines []string) string {
+	parts := make([]string, len(lines))
+	for i, line := range lines {
+		parts[i] = strings.ReplaceAll(line, "[br]", "["+writing.WordJoiner+"br]")
+	}
+	text := strings.Join(parts, "[br]")
+	if v2TimeRegexp.MatchString(text) || looksLikeTimingLine(text) {
+		first, second, _ := strings.Cut(text, ",")
+		text = guardClock(first) + "," + guardClock(second)
+	}
+	if isStyleLine(text) || text == startScript {
+		text = writing.WordJoiner + text
+	}
+	return text
+}
+
+func guardClock(field string) string {
+	if clockLikeRegexp.MatchString(field) {
+		return writing.WordJoiner + field
+	}
+	return field
 }
 
 var lineBreaks = strings.NewReplacer("\r", " ", "\n", " ") //nolint:gochecknoglobals // a fixed replacer

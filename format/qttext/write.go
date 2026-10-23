@@ -51,7 +51,8 @@ type count struct {
 // Write writes s as QuickTime text. The header is the stored header, or the header of Subtitle Edit with the paired
 // layout for a new file. A CR or LF in a stored header line becomes a space, a stored header line that reads as a
 // timestamp is not written, and a header that does not start with {QTtext} gets that line first, so the output
-// always reads back. The style descriptors of a cue without stored source text come from the markup.
+// always reads back. The style descriptors of a cue without stored source text come from the markup. Such a text
+// line that reads as a timestamp line starts with U+2060 WORD JOINER.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
 	file, _ := s.FormatData(formatDataKey)
 	stored, hasHeader := file.Strings("header")
@@ -202,9 +203,14 @@ func (wr *writer) textLines(c model.Cue) []string {
 	}
 	var out []string
 	for _, line := range markupcore.CarryOpenTags(lines) {
-		if text := wr.markupLine(line); text != "" {
-			out = append(out, text)
+		text := wr.markupLine(line)
+		switch {
+		case text == "":
+			continue
+		case isTimestampLine(text):
+			text = writing.WordJoiner + text
 		}
+		out = append(out, text)
 	}
 	return out
 }
