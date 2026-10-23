@@ -1,0 +1,30 @@
+[TITLE]
+Harbour walk
+[AUTHOR]
+[SOURCE]
+[PRG]
+[FILEPATH]
+[DELAY]
+0
+[CD TRACK]
+0
+[BEGIN]
+******** START SCRIPT ********
+[00:00:02]
+The ferry leaves at nine.
+[00:00:05]
+
+[00:00:06]
+Tickets are sold|at the kiosk.
+[00:00:09]
+
+[00:00:10]
+Fish & chips <large> cost 8 euros.
+[00:00:13]
+
+[00:01:30]
+The last boat returns at six.
+[00:01:34]
+
+[end]
+******** END SCRIPT ********

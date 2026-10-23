@@ -1,0 +1,39 @@
+{
+    "name": "SubViewer 1 with minutes and seconds of 60 or more",
+    "format": "subviewer",
+    "strict": {
+        "error": "The time \"[00:00:75]\" is not valid.",
+        "line": 17
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The night bus runs every hour."
+        },
+        {
+            "start": 7,
+            "end": 10,
+            "text": "The last bus leaves at one."
+        },
+        {
+            "start": 10,
+            "end": 12,
+            "text": "Please have coins ready."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 17,
+            "block": 1,
+            "action": "skipped",
+            "message": "The time \"[00:00:75]\" is not valid."
+        },
+        {
+            "line": 23,
+            "block": 2,
+            "action": "skipped",
+            "message": "The time \"[00:75:09]\" is not valid."
+        }
+    ]
+}

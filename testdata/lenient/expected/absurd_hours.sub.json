@@ -1,0 +1,28 @@
+{
+    "name": "SubViewer 2 with 20 hour digits",
+    "format": "subviewer",
+    "strict": {
+        "error": "The timing line \"99999999999999999999:00:04.00,99999999999999999999:00:06.00\" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.",
+        "line": 8
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The pool opens at seven."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "No running, please."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 8,
+            "block": 1,
+            "action": "skipped",
+            "message": "The timing line \"99999999999999999999:00:04.00,99999999999999999999:00:06.00\" has a time that is not valid."
+        }
+    ]
+}

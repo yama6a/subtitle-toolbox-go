@@ -171,6 +171,9 @@ func TestConvertWritesTheFormatOfTo(t *testing.T) {
 		{"mpsub/real/mplayer_doc_frames.sub", stbox.WebVTT},
 		{"srt/real/own_styled.srt", stbox.MPSub},
 		{"sbv/real/youtube_studio_lf.sbv", stbox.PlainText},
+		{"subviewer/real/subviewer2_crlf.sub", stbox.SubRip},
+		{"subviewer/real/subviewer1_delay.sub", stbox.WebVTT},
+		{"srt/real/own_styled.srt", stbox.SubViewer},
 	}
 	for _, tt := range tests {
 		t.Run(tt.path, func(t *testing.T) {

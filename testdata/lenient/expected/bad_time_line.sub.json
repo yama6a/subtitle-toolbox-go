@@ -1,0 +1,34 @@
+{
+    "name": "SubViewer 2 with text before the header and a bad time line",
+    "format": "subviewer",
+    "strict": {
+        "error": "The line \"Downloaded from a subtitle site\" is neither a header tag nor a timing line.",
+        "line": 1
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The market opens at eight."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "The stalls close\nat noon."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 1,
+            "block": 0,
+            "action": "skipped",
+            "message": "The line \"Downloaded from a subtitle site\" is neither a header tag nor a timing line."
+        },
+        {
+            "line": 9,
+            "block": 1,
+            "action": "skipped",
+            "message": "The timing line \"00:00:04.00,00:00:0x.00\" has a time that is not valid."
+        }
+    ]
+}

@@ -1,0 +1,50 @@
+{
+    "name": "SubViewer 2 with 4 fraction digits, no fraction and 1-digit fields",
+    "format": "subviewer",
+    "strict": {
+        "error": "The timing line \"00:00:03.5004,00:00:04.0000\" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.",
+        "line": 8
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 2,
+            "text": "The ovens warm up at four."
+        },
+        {
+            "start": 3.5,
+            "end": 4,
+            "text": "The first loaves come out at six."
+        },
+        {
+            "start": 5,
+            "end": 6,
+            "text": "Rye bread sells out first."
+        },
+        {
+            "start": 7.5,
+            "end": 8,
+            "text": "The shop opens at seven."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 8,
+            "block": 1,
+            "action": "repaired",
+            "message": "The timing line \"00:00:03.5004,00:00:04.0000\" is not in the form hh:mm:ss.ff,hh:mm:ss.ff. The parser read it as 3.5 s to 4 s."
+        },
+        {
+            "line": 11,
+            "block": 2,
+            "action": "repaired",
+            "message": "The timing line \"00:00:05,00:00:06\" is not in the form hh:mm:ss.ff,hh:mm:ss.ff. The parser read it as 5 s to 6 s."
+        },
+        {
+            "line": 14,
+            "block": 3,
+            "action": "repaired",
+            "message": "The timing line \"0:0:7.50,0:0:8.00\" is not in the form hh:mm:ss.ff,hh:mm:ss.ff. The parser read it as 7.5 s to 8 s."
+        }
+    ]
+}

@@ -87,6 +87,16 @@ func TestConvertWritesMPSubIntoAnMPSubFile(t *testing.T) {
 		call{dir: dir}.run(t, "convert", "trip.srt", "--to", "mpsub", "-o", "trip.vtt"))
 }
 
+func TestConvertWritesSubViewerIntoASubFile(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	assert.Equal(t, result{Stdout: "trip.srt -> trip.sub\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "subviewer", "-o", "trip.sub"))
+	assert.Equal(t, convertAs(t, "trip.srt", stbox.SubViewer), readFile(t, dir, "trip.sub"))
+	assert.Equal(t, usageResult("convert", "The extension of --output trip.vtt names the format vtt, not the --to format subviewer."),
+		call{dir: dir}.run(t, "convert", "trip.srt", "--to", "subviewer", "-o", "trip.vtt"))
+}
+
 func TestConvertWithoutToKeepsTheInputFormat(t *testing.T) {
 	t.Parallel()
 

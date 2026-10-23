@@ -13,13 +13,14 @@
 | SAMI | `stbox.SAMI` | `sami` | `.smi`, `.sami` | [SAMI](#sami) |
 | SBV | `stbox.SBV` | `sbv` | `.sbv` | [SBV](#sbv) |
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
+| SubViewer 1 and 2 | `stbox.SubViewer` | `subviewer` | `.sub` | [SubViewer](#subviewer) |
 | TTML, IMSC, DFXP | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | [TTML](#ttml) |
 | plain text | `stbox.PlainText` | `txt` | `.txt` | [Plain text](#plain-text) |
 | MPL2 | `stbox.MPL2` | `mpl2` | `.txt` | [MPL2](#mpl2) |
 | TMPlayer, TMPlayer+ | `stbox.TMPlayer` | `tmplayer` | `.txt` | [TMPlayer](#tmplayer) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
 
-- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`.
+- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub and SubViewer files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`.
 - **Time limit**: every time in every format is below 100000 hours. A reader rejects a time at or above it. A retime that moves a cue past it returns an error that matches `ErrInvalidArgument`. Writers clamp a negative time to 0, except the JSON writer.
 - **Options**: each section lists the fields of the format in `ReadOptions` and `WriteOptions`. The fields that every format shares are in [reading-writing.md](reading-writing.md). A reader ignores the fields of other formats.
 - **Sections**: each section has what the reader accepts, what the writer writes, the options and the limits. The godoc of the format package holds the reference of each function.
@@ -919,3 +920,98 @@ The root `ReadOptions.CSV` holds a `csv.ReadOptions` and `WriteOptions.CSV` a `c
 - **Checks**: `Validate` rejects a negative column index (`The column index of start must be 0 or more, got -1.`), a column name or a missing index with `NoHeader` (`A table without a header row needs a column index for start.`), another delimiter (`The CSV delimiter must be ",", ";" or a tab.`), another time format, and a frame rate that is negative, NaN or infinite. Each error matches `ErrInvalidArgument` and names the option path, such as `ReadOptions.CSV.Columns.Start`.
 - **Frames without a frame rate**: `TimeFrames` without a frame rate in the options or the file data fails at write time with `The time format hh:mm:ss:ff needs a frame rate.` and `Option` `WriteOptions.CSV.FrameRate`.
 - **Stored frame rate**: a stored `frameRate` that is not above 0 fails at write time with, for example, `The frame rate must be greater than 0, got 0.` and the same `Option`, also for another time format.
+
+## SubViewer
+
+SubViewer 1 and 2 are the `.sub` formats of old DivX releases and DVD rippers. Package `format/subviewer` reads and writes both versions. The format name is `subviewer`, the extension `.sub`. MicroDVD owns `.sub` in `FormatFromPath`, so `Load` finds SubViewer files by their content. No BOM by default.
+
+SubViewer 2 has a header of `[TAG]value` lines and cue blocks with centisecond times:
+
+```text
+[INFORMATION]
+[TITLE]Morning at the bakery
+[END INFORMATION]
+[SUBTITLE]
+00:00:01.50,00:00:04.00
+The bakery opens at six.[br]Come early.
+```
+
+SubViewer 1 has a header, then the line `******** START SCRIPT ********`, then time lines in whole seconds:
+
+```text
+[TITLE]
+Morning at the bakery
+[DELAY]
+2
+******** START SCRIPT ********
+[00:00:01]
+The bakery opens at six.|Come early.
+[00:00:04]
+```
+
+### Read
+
+Each line is trimmed first. A line that equals `******** START SCRIPT ********` makes the file SubViewer 1. The lines before it are the header and the lines after it the script. Every other file is SubViewer 2.
+
+**SubViewer 1 header**
+
+- **Tags**: each non-empty line must be `[TAG]value`. The tag is trimmed and upper-cased, the value trimmed. A line that is no tag is an error.
+- **Value on the next line**: when the value is empty and the next line is not empty and does not start with `[`, the next line is the value. So `[TITLE]` and `Market` on the next line give the title `Market`.
+- **TITLE and AUTHOR**: they set the metadata `title` and `author`. An empty value deletes the key.
+- **DELAY**: the reader adds the delay in whole seconds to every time, as FFmpeg does. It reads the number at the start of the value as PHP `(int)` does: `2` from `2.5`, `12` from `12abc`, `1000` from `1e3`, `0` from `abc`, and `0` from a number beyond the float range such as `1e999`. A negative delay is allowed. The stored header value becomes `0`, because the times already hold the delay.
+- **Other tags**: they go to `header` under their upper-case tag.
+
+**SubViewer 1 script**
+
+- **Start**: a time line such as `[00:00:01]` followed by a text line that is no time line starts a cue at that time. Only that one line is read. `|` splits it into lines.
+- **End**: a time line followed by an empty line or by another time line ends the last open cue at that time. The end of the file does the same for a pending time.
+- **No end line**: a cue ends at the start of the next cue in the file that does not start before it. The last such cue lasts `LastCueDuration`, and its end stops at 99999:59:59.999.
+- **Order**: a cue that a time line ended must not end before it starts.
+- **Example**: with `[DELAY]` 2, the script `[00:00:01]` `Sunny|cloudy` `[00:00:04]`, an empty line, `[00:00:06]` `Light wind` `[00:00:09]` `Snow tonight` gives `Sunny` and `cloudy` from 3 to 6 s, `Light wind` from 8 to 11 s, and `Snow tonight` from 11 s for `LastCueDuration`.
+- **Time limit**: the time plus the delay must be below 100000 hours and above -100000 hours. The message quotes the time line and the delay, such as `The time "[00:00:12] with DELAY 359999990" is not below 100000 hours.` Without a delay it quotes the time line alone.
+
+**SubViewer 2**
+
+- **Timing line**: `hh:mm:ss.f,hh:mm:ss.f`. The hours have up to 5 digits after leading zeros. Minutes and seconds are 00 to 59. The fraction has 1 to 3 digits and is a decimal fraction, as FFmpeg reads it: `.5` is 0.5 s and `.05` is 0.05 s.
+- **Text**: the lines after a timing line. Each splits at `[br]` in lower case, and each part is trimmed. A timing line without text gives no cue, as in FFmpeg.
+- **Style line**: a line that starts with `[` and holds `[COLF]`, `[SIZE]`, `[FONT]` or `[STYLE]` is never text. The reader stores only the first style line before the first cue, as `style`.
+- **Header**: the lines before the first cue are `[TAG]value`. `[INFORMATION]`, `[END INFORMATION]` and `[SUBTITLE]` are skipped. `[TITLE]` and `[AUTHOR]` set the metadata, as in SubViewer 1. Other tags go to `header`. `[DELAY]` is kept as text and not applied.
+- **A line that is no tag**: before the first cue, it is an error.
+- **Text that looks like a timing line**: a line of 2 fields split at a comma where a field is a time such as `0:0:1` must be a valid timing line. Else it is an error. A line such as `We meet at 10:30, at the gate.` is text, because no field is a whole time.
+- **Block index**: the timing lines counted from 0.
+
+**Both versions**
+
+- **Format data**: `{version: 1, header: {TAG: value}}` or `{version: 2, header: {TAG: value}, style: "..."}`. A file without header tags stores `header` as an empty list. The tags `0`, `1` and so on in this order also store a list, because a PHP array with these keys is a list.
+- **Order**: the cues sort by start.
+- **Encoding**: invalid UTF-8 stays in the text. Lenient mode adds the decode warning of [encodings.md](encodings.md).
+- **Errors**: strict mode returns a `*ParseError` with the line of the error. Lenient mode records a `Skipped` warning. The rules are in [lenient-parsing.md](lenient-parsing.md#subviewer).
+
+### Write
+
+`WriteOptions.SubViewer.Version` sets the version. The zero value writes the version that the reader stored in the file format data, else SubViewer 2. So a SubViewer 1 file reads and writes as SubViewer 1, and `V2` converts it. PHP always writes SubViewer 2 and ignores the stored version.
+
+**Header tags**: `TITLE` and `AUTHOR` from the metadata, empty when missing. Then the stored `header` in stored order, or these tags when no header is stored. The tag names are the ones that Subtitle Edit writes. The values are empty except where shown.
+
+| Version | Default tags, in order |
+|:--- |:--- |
+| SubViewer 1 | `SOURCE`, `PRG`, `FILEPATH`, `DELAY` = `0`, `CD TRACK` = `0`, `BEGIN` |
+| SubViewer 2 | `SOURCE`, `PRG`, `FILEPATH`, `DELAY` = `0`, `CD TRACK` = `0`, `COMMENT` |
+
+- **SubViewer 1 layout**: each tag as `[TAG]`, then its value on the next line when it has one. A `DELAY` tag writes `0`, because the reader added the delay to the times. Then `******** START SCRIPT ********`. Each cue with text writes its start time, the lines joined with `|`, its end time and an empty line. At the end come `[end]` and `******** END SCRIPT ********`.
+- **SubViewer 2 layout**: `[INFORMATION]`, each tag as `[TAG]value`, `[END INFORMATION]`, `[SUBTITLE]` and the stored style line. Then the cue blocks, each a timing line and the lines joined with `[br]`. One empty line separates the blocks.
+- **Times**: SubViewer 2 rounds to whole centiseconds and SubViewer 1 to whole seconds, half up on whole milliseconds. A time within half a unit below 100000 hours stops at 99999:59:59.99 or 99999:59:59. The hours have 2 digits, or 3 from 100 hours. A negative time is 0.
+- **Text**: the visible text of each line, with tags removed and entities decoded. A cue without visible text is not written, because an empty line ends a cue.
+- **Header lines**: a CR or LF in a value becomes a space. A stored tag that the reader would read as another tag is not written. That is a tag that is empty, has `]`, has white space at its ends or has a lower-case ASCII letter. SubViewer 2 also skips `INFORMATION`, `END INFORMATION`, `SUBTITLE`, `COLF`, `SIZE`, `FONT` and `STYLE`. A SubViewer 2 value that makes the line a style line or a timing line is written empty. A SubViewer 1 value that starts with `[` or equals the script line is written on the tag line.
+- **Style line**: the stored style is written when it is still a style line after CR and LF become spaces and the ends are trimmed. A text that is no style line, and a style line that looks like a timing line such as `[COLF]a,1:2:3`, is not written.
+- **Lost on write**: the markup, the speakers, the precision below a centisecond in SubViewer 2 and below a second in SubViewer 1, the delay of SubViewer 1, style lines after the first cue, and the white space at the ends of a header value. A cue line with `[br]` in SubViewer 2 or `|` in SubViewer 1 reads back as 2 lines. A cue line that is a style line, a timing line or the script line reads back as another line or as no cue.
+
+### Options
+
+`subviewer.ReadOptions` has no fields. The reader reads `Lenient`, `Encoding` and `LastCueDuration`, which SubViewer 1 uses for a last cue without an end line. The root `WriteOptions.SubViewer` holds a `subviewer.WriteOptions`. The writer reads `LineEnding` and `BOM`. The detection rule is in the doc comment of `subviewer.Detect` and in [detection.md](detection.md).
+
+| Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |
+| `Version` | `Version` | `VersionDefault`: the stored version, else SubViewer 2 | `V1` writes SubViewer 1, `V2` writes SubViewer 2 |
+
+- **Check**: `Validate` rejects a version above `V2`, for example `The SubViewer version must be 1 or 2, got 3.`, with an error that matches `ErrInvalidArgument`.

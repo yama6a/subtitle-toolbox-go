@@ -62,6 +62,12 @@ Every file except `mantas_utf16.srt` and `mantas_multiple_new_lines.vtt` is writ
 | `bad_timing_line.mpsub` | MPSub. No `FORMAT=` line, a letter as duration, a last cue without text, LF | MIT |
 | `broken_time_tag.lrc` | a letter in the seconds of a time tag, CR LF | MIT |
 | `sixty_minutes.lrc` | a time tag with hours and 75 minutes, `[1:75:00.00]`, LF | MIT |
+| `bad_time_line.sub` | SubViewer 2, a note line before the header, a letter in the end time of cue 2, CR LF | MIT |
+| `absurd_hours.sub` | SubViewer 2. A timing line with 20 hour digits between two good cues, LF | MIT |
+| `absurd_delay_subviewer.sub` | SubViewer 1 with a `[DELAY]` of 359999990 seconds. The third cue starts past 100,000 hours, LF | MIT |
+| `sixty_minutes.sub` | SubViewer 2 timing lines with 75 minutes and with 75 and 99 seconds, in the shape of the SubViewer 2 example in https://github.com/yama6a/subtitle-toolbox/issues/73, CR LF | MIT |
+| `sixty_minutes_v1.sub` | SubViewer 1 time lines with 75 seconds and with 75 minutes, in the shape of the SubViewer 1.0 output of Subtitle Edit, CR LF | MIT |
+| `loose_times.sub` | SubViewer 2 timing lines with 4 fraction digits, without a fraction and with 1-digit fields, CR LF | MIT |
 | `expected/*.json` | written for subtitle-toolbox-go. Each file holds the values of `damagedFiles()` in `tests/Parsers/LenientParsingTest.php` of this repository for the fixture of the same name, and the full message and line of the strict error that the PHP parser returns | MIT |
 | `expected/release_name.sub.json` | written for subtitle-toolbox-go, as `expected/*.json`. Changed: the strict error is the Go message, which names no PHP option such as `MicroDvdReadOptions::$frameRate`, see [php-differences.md](../../docs/php-differences.md) | MIT |
 | `expected/joined_files.vtt.json` | written for subtitle-toolbox-go. `damagedFiles()` has no row for this fixture, so the file holds the values of the 3 `joined_files` tests in `tests/Parsers/LenientWebVttTest.php` of this repository, and the strict error that the PHP parser returns | MIT |

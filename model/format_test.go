@@ -27,7 +27,7 @@ func TestFormatFacts(t *testing.T) {
 		{model.SAMI, []string{"smi", "sami"}, true, true, true},
 		{model.SBV, []string{"sbv"}, true, true, true},
 		{model.SubRip, []string{"srt"}, true, true, true},
-		{model.SubViewer, []string{"sub"}, false, false, false},
+		{model.SubViewer, []string{"sub"}, true, true, true},
 		{model.TTML, []string{"ttml", "dfxp", "xml"}, true, true, true},
 		{model.TSV, []string{"tsv"}, true, true, false},
 		{model.PlainText, []string{"txt"}, false, true, true},

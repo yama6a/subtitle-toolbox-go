@@ -12,6 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/format/subviewer"
 	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -59,6 +60,8 @@ type WriteOptions struct {
 	PlainText plaintext.WriteOptions
 	// CSV holds the settings of the CSV and TSV writer. The zero value keeps the layout that the reader stored.
 	CSV csv.WriteOptions
+	// SubViewer holds the settings of the SubViewer writer. The zero value writes the stored version, else SubViewer 2.
+	SubViewer subviewer.WriteOptions
 }
 
 // ReadInfo holds the facts of a read that are not subtitle content.
@@ -124,7 +127,10 @@ func (o WriteOptions) Validate() error {
 	if err := o.PlainText.Validate(); err != nil {
 		return err
 	}
-	return o.CSV.Validate()
+	if err := o.CSV.Validate(); err != nil {
+		return err
+	}
+	return o.SubViewer.Validate()
 }
 
 func (o ReadOptions) common() model.CommonReadOptions {

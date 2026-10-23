@@ -1,0 +1,25 @@
+[TITLE]
+Weather report
+[AUTHOR]
+Tom Berg
+[DELAY]
+0
+******** START SCRIPT ********
+[00:00:03]
+Sunny in the north|and cloudy in the south.
+[00:00:06]
+
+[00:00:08]
+Light wind from the east.
+[00:00:11]
+
+[00:00:11]
+Snow on the hills tonight.
+[00:00:14]
+
+[00:00:17]
+Back at eight with the news.
+[00:00:22]
+
+[end]
+******** END SCRIPT ********
