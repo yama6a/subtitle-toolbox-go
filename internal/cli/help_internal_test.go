@@ -12,6 +12,7 @@ import (
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
 	"github.com/yama6a/subtitle-toolbox-go/diff"
+	"github.com/yama6a/subtitle-toolbox-go/dual"
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 	"github.com/yama6a/subtitle-toolbox-go/refsync"
@@ -56,6 +57,7 @@ func TestGlobalHelp(t *testing.T) {
   sync     Find the offset and frame-rate scale against a reference subtitle,
            and retime the input.
   diff     List the added, removed and changed cues between two subtitle files.
+  dual     Merge two subtitles in two languages into one file that shows both.
   formats  List the format names and file extensions for --from and --to.
   help     Show the help of a command.
 ` + globalHelpTail
@@ -324,9 +326,13 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 	codeDefaults["timing-min-gap"] = formatNumber(defaultMinGap.Seconds())
 	codeDefaults["ass-karaoke-tag"] = ass.WriteOptions{}.KaraokeTag.String()
 	codeDefaults["time-tolerance"] = formatNumber(diff.DefaultTimeTolerance.Seconds())
+	codeDefaults["mode"] = string(dual.ModeStack)
+	codeDefaults["secondary-alignment"] = strconv.Itoa(dual.DefaultSecondaryAlignment.Numpad())
+	codeDefaults["snap-tolerance"] = formatNumber(dual.DefaultTimeTolerance.Seconds())
 	described := []string{
 		"the format detected from the content", "stop at the first failure", "the input format",
 		"the BOM rule of the output format", "as for --from", "the frame rate of a MicroDVD input",
+		"none", "the format of the primary file",
 	}
 	unwrap := regexp.MustCompile(`\n {3,}(\S)`)
 	defaultText := regexp.MustCompile(`(?m)^  (?:-\w, )?--([\w-]+).*? Default: (.+?)\.(?: |$)`)

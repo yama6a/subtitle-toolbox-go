@@ -76,12 +76,18 @@ func asUsage(err error) error {
 }
 
 const (
-	unknownFormatMessage = "Format detection found no subtitle format. Pass --from FORMAT."
+	noFormatFound        = "Format detection found no subtitle format. Pass --"
+	unknownFormatMessage = noFormatFound + "from FORMAT."
 	missingFileMessage   = "The file does not exist."
 	lenientHint          = "Pass --lenient to skip or repair broken cues."
 	encodingHint         = "Pass --encoding to set the source encoding."
 	encodingAdvice       = "Pass --encoding with the source encoding of the file."
 )
+
+// unknownFormatAdvice is the message for a file with no detectable format, with the option that sets its format.
+func unknownFormatAdvice(option string) string {
+	return noFormatFound + option + " FORMAT."
+}
 
 // message returns the CLI text of err, without a label. It names no Go type and no Go option path.
 func message(err error) string {

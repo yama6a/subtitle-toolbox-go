@@ -69,7 +69,7 @@ MicroDVD counts time in video frames, so a MicroDVD read and a MicroDVD write ne
 | Option | Commands | Sets | Without it |
 |:--- |:--- |:--- |:--- |
 | `--input-fps RATE` | every command that reads subtitle files | `ReadOptions.MicroDVD.FrameRate` and `ReadOptions.CSV.FrameRate` | `--fps`, else the `{1}{1}<fps>` line of a MicroDVD file. A CSV or TSV time in `hh:mm:ss:ff` fails |
-| `--output-fps RATE` | `convert`, `sync` | `WriteOptions.MicroDVD.FrameRate`, for MicroDVD output only | `--fps`, else the frame rate of a MicroDVD input |
+| `--output-fps RATE` | `convert`, `sync`, `dual` | `WriteOptions.MicroDVD.FrameRate`, for MicroDVD output only | `--fps`, else the frame rate of a MicroDVD input |
 | `--fps RATE` | every command that reads subtitle files | both rates | |
 
 - **Check**: each rate is a number above 0. `--fps` is checked first, also when the specific option is given, so a bad `--fps` always fails. `--input-fps` comes before `--from` in the check order, and `--output-fps` right after `--to`.
@@ -310,6 +310,21 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 - **Failure**: a failed file prints `PATH: MESSAGE` with its own path and exits 3. A message about the format of NEW names `--new-from`.
 - **No `--keep-going`**: the command has one pair of files.
 - **JSON**: one object with the keys `oldFile`, `newFile`, `equal`, `differences`, `oldWarnings` and `newWarnings`. Cue times are seconds, such as `6.2`.
+
+## dual
+
+`stbox dual --primary FILE --secondary FILE` merges two subtitles in two languages with `dual.FromPair` of [editing.md](editing.md#dual-subtitles). The output has the format of the primary file, unless `--to` sets another one.
+
+```
+stbox dual --primary movie.en.srt --secondary movie.de.srt --secondary-style i -o movie.en-de.srt
+stbox dual --primary movie.en.srt --secondary movie.de.srt --mode top-bottom --to ass -o movie.en-de.ass
+```
+
+- **Files**: both go by option, and `dual` takes no positional argument. `--primary` can be `-` and goes through the input expansion, so a glob or directory that gives 2 or more files fails with exit 2. `--secondary` is used as given, and it cannot be `-`.
+- **Input options**: `--primary-from` replaces `--from` and sets the format of the primary file. `--secondary-from` sets the format of the secondary file, which otherwise comes from the content. The secondary file does not inherit `--primary-from`. `--encoding`, `--lenient`, `--input-fps` and `--fps` apply to both files. A message about the format names the option of its file.
+- **Failure**: a failed secondary file prints `PATH: MESSAGE` with its own path and exits 3. The secondary file counts as a file that the command reads, so `-o` cannot name it. `--output-dir` takes the base name of the primary file.
+- **Options**: `--mode` is `stack` or `top-bottom`. `--secondary-alignment` is a numpad value from 1 to 9, `--snap-tolerance` a time of 0 or more, and `--secondary-style` a core tag such as `i` or `font color="#ffff00"`.
+- **No `--keep-going`**: the command has one pair of files.
 
 ## formats
 
