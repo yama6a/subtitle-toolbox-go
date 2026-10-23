@@ -456,6 +456,7 @@ SOFTWARE.
   - `testdata/json/real/pysubs2_regions_3x.json`
   - `testdata/ttml/real/pysubs2_regions.ttml`
   - `testdata/sami/real/pysubs2_source_id.smi`, in the shape of `SAMI_INPUT1` in `tests/formats/test_sami.py`
+  - `testdata/mpl2/real/pysubs2_shape_bom.txt`, in the shape of `tests/formats/test_mpl2.py`
 
 ```text
 Copyright (c) 2014-2026 Tomas Karabela

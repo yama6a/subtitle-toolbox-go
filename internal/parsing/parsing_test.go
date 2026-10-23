@@ -472,3 +472,28 @@ func TestAddParsed(t *testing.T) {
 		})
 	}
 }
+
+func TestPipeLines(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		in   string
+		want []string
+	}{
+		{"one line", "Hello", []string{"Hello"}},
+		{"two lines", "Where are you?|Home.", []string{"Where are you?", "Home."}},
+		{"parts are trimmed", " \tA \x00|\x0bB\t", []string{"A", "B"}},
+		{"empty parts are dropped", "|A||  |B|", []string{"A", "B"}},
+		{"nothing", " | ", nil},
+		{"empty", "", nil},
+		{"a non-breaking space stays", "\u00a0|A", []string{"\u00a0", "A"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, parsing.PipeLines(tt.in))
+		})
+	}
+}

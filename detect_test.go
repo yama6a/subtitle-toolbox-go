@@ -76,11 +76,11 @@ func detectTests() []detectTest {
 		{name: "LRC without fraction", content: "[00:12]Hello\n", later: "LRC"},
 		{name: "LRC next to MPL2", content: "[00:01.00]Hello\n[00:02.50]world\n", later: "LRC"},
 		{name: "LRC with minutes only", content: "[00:01]Hello\n", later: "LRC"},
-		{name: "MPL2", content: "[10][25]Hello|/world\n", later: "MPL2"},
-		{name: "TMPlayer", content: "00:00:01:Hello|world\n", later: "TMPlayer"},
-		{name: "TMPlayer+ with equals sign", content: "0:00:01=Hello\n", later: "TMPlayer"},
-		{name: "TMPlayer+ with line numbers", content: "00:00:01,1=Hello\n00:00:01,2=world\n", later: "TMPlayer"},
-		{name: "TMPlayer with a number", content: "00:00:01:5 trains leave\n", later: "TMPlayer"},
+		{name: "MPL2", content: "[10][25]Hello|/world\n", want: stbox.MPL2},
+		{name: "TMPlayer", content: "00:00:01:Hello|world\n", want: stbox.TMPlayer},
+		{name: "TMPlayer+ with equals sign", content: "0:00:01=Hello\n", want: stbox.TMPlayer},
+		{name: "TMPlayer+ with line numbers", content: "00:00:01,1=Hello\n00:00:01,2=world\n", want: stbox.TMPlayer},
+		{name: "TMPlayer with a number", content: "00:00:01:5 trains leave\n", want: stbox.TMPlayer},
 
 		{name: "Spruce STL", content: "00:00:01:10 , 00:00:03:10 , The bakery opens at seven.\n", later: "Spruce STL, 2.x"},
 		{name: "Spruce STL without spaces", content: "00:00:01:10,00:00:03:10,The bakery opens at seven.\n", later: "Spruce STL, 2.x"},
@@ -233,7 +233,7 @@ type fixture struct {
 func fixtures(t *testing.T) []fixture {
 	t.Helper()
 
-	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "microdvd": stbox.MicroDVD, "sami": stbox.SAMI, "sbv": stbox.SBV, "srt": stbox.SubRip, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
+	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "microdvd": stbox.MicroDVD, "mpl2": stbox.MPL2, "sami": stbox.SAMI, "sbv": stbox.SBV, "srt": stbox.SubRip, "tmplayer": stbox.TMPlayer, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
 	var list []fixture
 	for dir, f := range folders {
 		for _, sub := range []string{dir, dir + "/real"} {
@@ -360,12 +360,32 @@ func TestDetectThenRead(t *testing.T) {
 	}
 }
 
+// Ports testSubtitleParseDetectsMpl2 of tests/Parsers/Mpl2ParserTest.php of subtitle-toolbox-php.
+func TestParseDetectsMPL2(t *testing.T) {
+	t.Parallel()
+
+	s, info, err := stbox.Parse(strings.NewReader("[12][45]Where are you?|/Home.\r\n"), stbox.ReadOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, stbox.MPL2, info.Format)
+	assert.Equal(t, "[12][45]Where are you?|/Home.\n", string(writeAs(t, s, stbox.MPL2)))
+}
+
+// Ports testSubtitleParseDetectsTmPlayer of tests/Parsers/TmPlayerParserTest.php of subtitle-toolbox-php.
+func TestParseDetectsTMPlayer(t *testing.T) {
+	t.Parallel()
+
+	s, info, err := stbox.Parse(strings.NewReader("00:00:01:Where are you?\r\n00:00:04:Home.\r\n"), stbox.ReadOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, stbox.TMPlayer, info.Format)
+	assert.Equal(t, 2, s.Len())
+}
+
 func FuzzDetect(f *testing.F) {
 	for _, tt := range detectTests() {
 		f.Add([]byte(tt.content))
 	}
 	root := testfiles.Root(f)
-	for _, dir := range []string{"ass", "json", "microdvd", "microdvd/real", "sami/real", "sbv", "srt", "ttml/real", "forced", "vtt", "lenient"} {
+	for _, dir := range []string{"ass", "json", "microdvd", "microdvd/real", "mpl2/real", "sami/real", "sbv", "srt", "tmplayer/real", "ttml/real", "forced", "vtt", "lenient"} {
 		entries, err := os.ReadDir(filepath.Join(root, dir))
 		if err != nil {
 			f.Fatal(err)

@@ -10,9 +10,11 @@
 | SAMI | `stbox.SAMI` | `sami` | `.smi`, `.sami` | [SAMI](#sami) |
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
 | TTML, IMSC, DFXP | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | [TTML](#ttml) |
+| MPL2 | `stbox.MPL2` | `mpl2` | `.txt` | [MPL2](#mpl2) |
+| TMPlayer, TMPlayer+ | `stbox.TMPlayer` | `tmplayer` | `.txt` | [TMPlayer](#tmplayer) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
 
-- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. To read a file as another format, pass `ReadOptions.Format`.
+- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`.
 - **Time limit**: every time in every format is below 100000 hours. A reader rejects a time at or above it. A retime that moves a cue past it returns an error that matches `ErrInvalidArgument`. Writers clamp a negative time to 0, except the JSON writer.
 - **Options**: each section lists the fields of the format in `ReadOptions` and `WriteOptions`. The fields that every format shares are in [reading-writing.md](reading-writing.md). A reader ignores the fields of other formats.
 - **Sections**: each section has what the reader accepts, what the writer writes, the options and the limits. The godoc of the format package holds the reference of each function.
@@ -524,3 +526,89 @@ The first block reads as one cue from 1.5 s to 4 s. SBV has no markup, so `<i>` 
 ### Options
 
 `sbv.ReadOptions` and `sbv.WriteOptions` have no fields. The reader reads `Lenient`. The writer reads `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#sbv).
+
+## MPL2
+
+MPL2 is a one-line-per-cue format from Polish subtitle downloads. Package `format/mpl2` reads and writes it. The format name is `mpl2`, the extension `.txt`.
+
+```text
+[12][45]Where are you?|/Home.
+```
+
+This line reads as one cue from 1.2 s to 4.5 s with the lines `Where are you?` and `<i>Home.</i>`.
+
+### Read
+
+- **Line**: `[start][end]text`, with both times in tenths of a second. Empty lines are skipped. Every other line that does not match is an error.
+- **Line break**: `|` ends a text line. Each part is trimmed, and an empty part is dropped.
+- **Italics**: a part that starts with `/` is italic. The reader drops the `/`, trims the part and wraps it in `<i>`. A `/` later in a part stays text. So `[50][60]/ Both| / lines` reads as `<i>Both</i>` and `<i>lines</i>`.
+- **Escaping**: MPL2 has no other markup, so `&`, `<` and `>` become entities. `<b>` reads as `&lt;b&gt;`.
+- **Order**: the cues sort by start.
+- **Encoding**: most downloads are Windows-1250. Pass `ReadOptions.Encoding` when the detection of [encodings.md](encodings.md) misses it. Invalid UTF-8 stays in the text.
+
+### Write
+
+- **Line**: `[start][end]` and the lines joined with `|`. A time rounds to tenths of a second, half away from zero, and a negative time writes as 0. So 1.24 s writes `12` and 4.46 s writes `45`.
+- **Every cue**: a cue without text writes `[10][20]`.
+- **Italics**: ruby becomes `base (annotation)`. A line gets a `/` prefix when all its visible text is inside `<i>`. The italic state runs on into the next line of the cue, so `<i>Three` and `Four</i>` write `/Three|/Four`. Every other tag drops, and entities decode.
+- **BOM**: none by default.
+- **Lost on write**: all styles except whole-line italics, speakers, word timestamps and alignment. Times keep only 0.1 s.
+
+### Options
+
+`mpl2.ReadOptions` and `mpl2.WriteOptions` have no fields. The reader reads `Lenient` and `Encoding`. The writer reads `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#mpl2-and-tmplayer).
+
+## TMPlayer
+
+TMPlayer is a one-line-per-entry format from Polish subtitle downloads. It has a start time in whole seconds and no end time. Package `format/tmplayer` reads and writes it, with the TMPlayer+ variants. The format name is `tmplayer`, the extension `.txt`.
+
+```text
+00:00:01:Rain
+00:00:04:
+00:00:09:Sun
+```
+
+This file reads as `Rain` from 1 s to 4 s and `Sun` from 9 s to 14 s.
+
+### Read
+
+| Form | Example | Meaning |
+|:--- |:--- |:--- |
+| TMPlayer | `00:00:01:Where are you?\|Home.` | start 1 s, 2 lines |
+| TMPlayer+ | `0:00:01=Where are you?` | `=` instead of `:` |
+| TMPlayer+ with line numbers | `00:00:01,1=Where are you?` then `00:00:01,2=Home.` | one cue with 2 lines |
+| the same with `:` | `00:00:01,1:Where are you?` then `00:00:01,2:Home.` | one cue with 2 lines |
+| end entry | `00:00:04:` | no text: ends the cue before it |
+
+- **Line**: `H:MM:SS`, an optional `,N` line number, `:` or `=`, then the text. The hours have 1 or more digits. The minutes and seconds are `00` to `59`. Colons in the text stay. Empty lines are skipped. Every other line that does not match is an error.
+- **Line break and escaping**: as in MPL2. `|` ends a text line, and `&`, `<` and `>` become entities. There are no italics.
+- **Line numbers**: an entry with a line number above 1 and the same time as the entry before it in the file adds its lines to that entry. Line number 1 or no number starts a new entry.
+- **End times**: the entries sort by time, and entries with the same time keep their file order. An entry with text becomes a cue that ends at the time of the next entry. An entry without text gives no cue. The last cue ends at its start plus `LastCueDuration`, as [reading-writing.md](reading-writing.md#last-cue-default) says.
+- **Equal times**: the next entry ends a cue also when it has the same time. So `00:00:01,1=One` and `00:00:01,1=Two` give `One` from 1 s to 1 s and `Two` from 1 s to 6 s.
+- **Out of order**: `00:00:07:B` before `00:00:04:A` gives `A` from 4 s to 7 s. The reader reports no time order error.
+- **Encoding**: as in MPL2.
+
+### Write
+
+- **Cues**: only cues with visible text. An entry without text would end the cue before it.
+- **Line**: `HH:MM:SS:`, then the lines joined with `|`. The start rounds to whole seconds, half away from zero, and a negative start writes as 0. The separator is always `:`.
+- **Gap entries**: after each cue except the last, the writer takes the end rounded to whole seconds, at least 1 s after the start. When that end is before the start of the next written cue, it writes `HH:MM:SS:` without text at the end. After the last cue it writes nothing.
+- **BOM**: none by default.
+- **Lost on write**: everything but plain text and whole-second starts. End times survive only as gap entries.
+
+The cues `Where are you?` and `Home.` from 1 to 4 s, `Next` from 4 to 6 s, `Later` from 3725.4 to 3727 s and `Last` from 3727.6 to 3730 s write as:
+
+```text
+00:00:01:Where are you?|Home.
+00:00:04:Next
+00:00:06:
+01:02:05:Later
+01:02:07:
+01:02:08:Last
+```
+
+The cue `Short` from 1.1 to 1.3 s, then the cue `Next` at 5 s, write `00:00:01:Short`, `00:00:02:` and `00:00:05:Next`.
+
+### Options
+
+`tmplayer.ReadOptions` and `tmplayer.WriteOptions` have no fields. The reader reads `Lenient`, `LastCueDuration` and `Encoding`. The writer reads `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#mpl2-and-tmplayer). The detection rule is in the doc comment of `tmplayer.Detect` and in [detection.md](detection.md).

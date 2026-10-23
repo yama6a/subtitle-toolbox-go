@@ -17,7 +17,7 @@ var update = flag.Bool("update", false, "rewrite the write golden files")
 
 // roundTripFolders holds the folders whose every real file is a round trip case.
 func roundTripFolders() []string {
-	return []string{"ass", "microdvd", "sami", "sbv", "srt", "vtt"}
+	return []string{"ass", "microdvd", "mpl2", "sami", "sbv", "srt", "tmplayer", "vtt"}
 }
 
 // roundTripFile is a round trip case in a folder that roundTripFolders does not hold. Its golden is
@@ -48,16 +48,22 @@ func conversions() []conversion {
 		{"ass", "own_aegisub.ass", stbox.WebVTT, ""},
 		{"ass", "own_signs_crlf.ass", stbox.SubRip, ""},
 		{"ass", "own_signs_crlf.ass", stbox.WebVTT, ""},
-		{"sbv", "youtube_studio_lf.sbv", stbox.SubRip, ""},
-		{"sbv", "youtube_studio_lf.sbv", stbox.WebVTT, ""},
-		{"sbv", "youtube_studio_lf.sbv", stbox.ASS, ""},
+		{"mpl2", "subtitle_edit_shape.txt", stbox.SubRip, ""},
+		{"mpl2", "subtitle_edit_shape.txt", stbox.WebVTT, ""},
+		{"mpl2", "subtitle_edit_shape.txt", stbox.ASS, ""},
 		{"sami", "multi_language.smi", stbox.SubRip, "ENCC"},
 		{"sami", "multi_language.smi", stbox.WebVTT, "ENCC"},
 		{"sami", "multi_language.smi", stbox.ASS, "ENCC"},
+		{"sbv", "youtube_studio_lf.sbv", stbox.SubRip, ""},
+		{"sbv", "youtube_studio_lf.sbv", stbox.WebVTT, ""},
+		{"sbv", "youtube_studio_lf.sbv", stbox.ASS, ""},
 		{"srt", "own_styled.srt", stbox.SAMI, ""},
 		{"srt", "own_styled.srt", stbox.ASS, ""},
 		{"srt", "own_styled.srt", stbox.TTML, ""},
 		{"srt", "own_styled.srt", stbox.WebVTT, ""},
+		{"tmplayer", "tmplayer_multiline_bom.txt", stbox.SubRip, ""},
+		{"tmplayer", "tmplayer_multiline_bom.txt", stbox.WebVTT, ""},
+		{"tmplayer", "tmplayer_multiline_bom.txt", stbox.ASS, ""},
 		{"vtt", "w3c_voices.vtt", stbox.ASS, ""},
 		{"ttml", "bbc_ebu_tt_d.ttml", stbox.SubRip, ""},
 		{"ttml", "bbc_ebu_tt_d.ttml", stbox.WebVTT, ""},

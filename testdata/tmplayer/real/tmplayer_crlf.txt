@@ -1,0 +1,8 @@
+00:00:01:The train to the coast|leaves from platform two.
+00:00:05:
+00:00:07:Please have your tickets ready.
+00:00:10:The next stop is the harbour.
+00:00:14:
+00:01:02:Snacks are sold in coach three.
+00:01:06:
+01:00:00:We arrive on time today.

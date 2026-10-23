@@ -1,0 +1,62 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 5.0,
+                "lines": [
+                    "The train to the coast",
+                    "leaves from platform two."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 7.0,
+                "end": 10.0,
+                "lines": [
+                    "Please have your tickets ready."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 10.0,
+                "end": 14.0,
+                "lines": [
+                    "The next stop is the harbour."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 62.0,
+                "end": 66.0,
+                "lines": [
+                    "Snacks are sold in coach three."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3600.0,
+                "end": 3605.0,
+                "lines": [
+                    "We arrive on time today."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}
