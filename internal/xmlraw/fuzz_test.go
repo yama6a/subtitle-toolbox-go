@@ -29,6 +29,9 @@ func FuzzParse(f *testing.F) {
 		"<tt>\n<p>x</div>\n</tt>",
 		"<tt><p>a<span>b</p></div></tt>",
 		"<!DOCTYPE tt [<!ENTITY a \"b\">]><a:b:c/>",
+		"<!DOCTYPE tt [<!-- it's -->]><tt a=\"1\n2\"/>",
+		"<!DOCTYPE tt [<!-- [ -->]><tt a=\"1\n2\"/>",
+		"<tt><!--> <x a=\"1\n2\"/> --><!---><y a='3\t4&#10;'/>--></tt>",
 	} {
 		f.Add([]byte(seed))
 	}

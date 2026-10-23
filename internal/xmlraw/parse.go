@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 )
 
@@ -27,7 +28,8 @@ func Parse(r io.Reader, opts ParseOptions) (*Node, error) {
 		return nil, fmt.Errorf("xmlraw: %w", err)
 	}
 	p := &parser{opts: opts, doc: &Node{Kind: DocumentNode}}
-	src, p.breaks = spaceAttributeValues(lfLineEnds(src))
+	src = lfLineEnds(src)
+	p.breaks = spaceAttributeValues(src)
 	p.dec = xml.NewDecoder(bytes.NewReader(src))
 	p.dec.Strict = true
 	p.dec.CharsetReader = func(_ string, input io.Reader) (io.Reader, error) { return input, nil }
@@ -127,67 +129,58 @@ func (p *parser) syntaxError(err error) error {
 // line returns the line of the decoder in the input, with the LFs that spaceAttributeValues replaced.
 func (p *parser) line() int {
 	line, _ := p.dec.InputPos()
-	offset := p.dec.InputOffset()
-	for _, b := range p.breaks {
-		if int64(b) >= offset {
-			break
-		}
-		line++
-	}
-	return line
+	return line + sort.SearchInts(p.breaks, int(p.dec.InputOffset()))
 }
 
 // spaceAttributeValues turns each literal TAB and LF in the attribute values of the tags into a space, as XML 1.0
 // section 3.3.3 says, and returns the offsets of the LFs. It runs before encoding/xml decodes the references, so a
 // TAB or LF of a reference such as &#10; stays, as in libxml2. Comments, CDATA sections, processing instructions
-// and the DOCTYPE keep their content.
-func spaceAttributeValues(src []byte) ([]byte, []int) {
-	if !bytes.ContainsAny(src, "\t\n") {
-		return src, nil
-	}
-	out := bytes.Clone(src)
+// and the DOCTYPE keep their content. It changes src in place.
+func spaceAttributeValues(src []byte) []int {
 	var breaks []int
-	for i := 0; i < len(out); i++ {
-		if out[i] != '<' {
+	for i := 0; i < len(src); i++ {
+		if src[i] != '<' {
 			continue
 		}
-		rest := out[i:]
+		rest := src[i:]
 		switch {
 		case bytes.HasPrefix(rest, []byte("<!--")):
-			i += skipPast(rest, "-->")
+			i += skipPast(rest, "<!--", "-->")
 		case bytes.HasPrefix(rest, []byte("<![CDATA[")):
-			i += skipPast(rest, "]]>")
+			i += skipPast(rest, "<![CDATA[", "]]>")
 		case bytes.HasPrefix(rest, []byte("<?")):
-			i += skipPast(rest, "?>")
+			i += skipPast(rest, "<?", "?>")
 		case bytes.HasPrefix(rest, []byte("<!")):
 			i += skipDeclaration(rest)
 		default:
 			i += spaceTag(rest, i, &breaks)
 		}
 	}
-	return out, breaks
+	return breaks
 }
 
-// skipPast returns the length of s up to and with end, or of all of s.
-func skipPast(s []byte, end string) int {
-	if j := bytes.Index(s, []byte(end)); j >= 0 {
-		return j + len(end) - 1
+func skipPast(s []byte, start, end string) int {
+	if j := bytes.Index(s[len(start):], []byte(end)); j >= 0 {
+		return len(start) + j + len(end) - 1
 	}
 	return len(s)
 }
 
 // skipDeclaration returns the length of a declaration such as <!DOCTYPE ...>, whose internal subset in [ and ] and
-// whose quoted strings can hold >.
+// whose quoted strings can hold >. A comment of the subset can hold quotes and brackets, as encoding/xml reads it.
 func skipDeclaration(s []byte) int {
 	depth := 0
 	var quote byte
-	for j, c := range s {
+	for j := 0; j < len(s); j++ {
+		c := s[j]
 		switch {
 		case quote != 0:
 			if c == quote {
 				quote = 0
 			}
-		case c == '"' || c == '\'':
+		case bytes.HasPrefix(s[j:], []byte("<!--")):
+			j += skipPast(s[j:], "<!--", "-->")
+		case c == '"', c == '\'':
 			quote = c
 		case c == '[':
 			depth++
@@ -200,34 +193,29 @@ func skipDeclaration(s []byte) int {
 	return len(s)
 }
 
-// spaceTag spaces the attribute values of the tag that starts s at offset at, and returns the length of the tag.
 func spaceTag(s []byte, at int, breaks *[]int) int {
 	var quote byte
 	for j, c := range s {
-		switch {
-		case quote != 0:
-			quote = spaceValueByte(s, j, at, quote, breaks)
-		case c == '"' || c == '\'':
-			quote = c
-		case c == '>':
-			return j
+		if quote == 0 {
+			switch c {
+			case '"', '\'':
+				quote = c
+			case '>':
+				return j
+			}
+			continue
+		}
+		switch c {
+		case quote:
+			quote = 0
+		case '\n':
+			*breaks = append(*breaks, at+j)
+			s[j] = ' '
+		case '\t':
+			s[j] = ' '
 		}
 	}
 	return len(s)
-}
-
-// spaceValueByte spaces the byte j of an attribute value in quote and returns the quote, or 0 at its end.
-func spaceValueByte(s []byte, j, at int, quote byte, breaks *[]int) byte {
-	switch s[j] {
-	case quote:
-		return 0
-	case '\n':
-		*breaks = append(*breaks, at+j)
-		s[j] = ' '
-	case '\t':
-		s[j] = ' '
-	}
-	return quote
 }
 
 func lfLineEnds(src []byte) []byte {
