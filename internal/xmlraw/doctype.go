@@ -11,8 +11,8 @@ type directive struct {
 	changed, original string
 }
 
-// spaceProcessingInstructions returns the length of a declaration such as <!DOCTYPE ...>, whose internal subset in
-// [ and ] and whose quoted strings can hold >. A comment of the subset can hold quotes and brackets. It turns the
+// spaceProcessingInstructions returns the offset of the > that closes a declaration such as <!DOCTYPE ...>, or the
+// length of s without one. The internal subset in [ and ] and the quoted strings can hold >. A comment of the subset can hold quotes and brackets. It turns the
 // quotes, < and > in each processing instruction of the subset into spaces, because encoding/xml reads them as
 // strings and nesting, and then misses the end of the declaration
 // (https://github.com/yama6a/subtitle-toolbox-go/issues/181). The directive gives the text back.
