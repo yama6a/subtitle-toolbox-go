@@ -1,0 +1,67 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "lrc": {
+                "idTags": {
+                    "by": "whisper.cpp"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 3.88,
+                "lines": [
+                    "The train to the coast leaves at seven."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.88,
+                "end": 8.02,
+                "lines": [
+                    "It stops at every station after the bridge."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 8.02,
+                "end": 12.36,
+                "lines": [
+                    "On Sundays it leaves one hour later."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 12.36,
+                "end": 60.15,
+                "lines": [
+                    "The last train back leaves at ten past eleven."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 60.15,
+                "end": 65.15,
+                "lines": [
+                    "Thank you for listening."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

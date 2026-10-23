@@ -1,0 +1,32 @@
+{
+    "name": "LRC with a broken time tag",
+    "format": "lrc",
+    "strict": {
+        "cues": 3
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 4.5,
+            "text": "The sun comes up"
+        },
+        {
+            "start": 4.5,
+            "end": 9,
+            "text": "Birds sing in the trees"
+        },
+        {
+            "start": 9,
+            "end": 12,
+            "text": "We walk to the lake"
+        }
+    ],
+    "warnings": [
+        {
+            "line": 6,
+            "block": 4,
+            "action": "skipped",
+            "message": "The line \"[01:2x.00]The path is long\" has a time tag that is not valid."
+        }
+    ]
+}

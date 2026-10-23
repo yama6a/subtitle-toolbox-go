@@ -1,0 +1,61 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 8.62,
+                "end": 9.64,
+                "lines": [
+                    "Trains run early"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 9.64,
+                "end": 11.66,
+                "lines": [
+                    "I'll buy the bread before the bakery gets busy"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 11.66,
+                "end": 18.68,
+                "lines": [
+                    "It's cold and it's windy on the platform today, oh well"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 18.68,
+                "end": 22.63,
+                "lines": [
+                    "The platform today, oh well"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 22.63,
+                "end": 27.63,
+                "lines": [
+                    "Rain comes later"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}
