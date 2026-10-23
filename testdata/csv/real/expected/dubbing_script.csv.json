@@ -1,0 +1,93 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "csv": {
+                "delimiter": ",",
+                "header": [
+                    "Start TC",
+                    "Character",
+                    "Text",
+                    "Notes"
+                ],
+                "roles": {
+                    "start": 0,
+                    "speaker": 1,
+                    "text": 2
+                },
+                "width": 4,
+                "timeFormat": "hh:mm:ss:ff",
+                "frameRate": 25.0
+            }
+        },
+        "cues": [
+            {
+                "start": 36001.48,
+                "end": 36004.0,
+                "lines": [
+                    "<v NARRATOR>The weather turns cold tonight."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "csv": {
+                        "columns": {
+                            "Notes": ""
+                        }
+                    }
+                }
+            },
+            {
+                "start": 36004.0,
+                "end": 36005.8,
+                "lines": [
+                    "<v ANNA>- Take a coat."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "csv": {
+                        "columns": {
+                            "Notes": "warm tone"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 36005.8,
+                "end": 36008.2,
+                "lines": [
+                    "<v BEN>- I have one."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "csv": {
+                        "columns": {
+                            "Notes": ""
+                        }
+                    }
+                }
+            },
+            {
+                "start": 36008.2,
+                "end": 36013.2,
+                "lines": [
+                    "<v NARRATOR>Snow falls in the hills, rain in the valley."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "csv": {
+                        "columns": {
+                            "Notes": "check length"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

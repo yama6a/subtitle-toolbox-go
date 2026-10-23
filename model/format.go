@@ -38,7 +38,7 @@ type formatFact struct {
 //nolint:gochecknoglobals // lookup table of the format facts
 var formatFacts = []formatFact{
 	{format: ASS, extensions: []string{"ass", "ssa"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: CSV, extensions: []string{"csv"}},
+	{format: CSV, extensions: []string{"csv"}, canRead: true, canWrite: true},
 	{format: JSON, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: LRC, extensions: []string{"lrc"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MicroDVD, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
@@ -48,7 +48,7 @@ var formatFacts = []formatFact{
 	{format: SubRip, extensions: []string{"srt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubViewer, extensions: []string{"sub"}},
 	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: TSV, extensions: []string{"tsv"}},
+	{format: TSV, extensions: []string{"tsv"}, canRead: true, canWrite: true},
 	{format: PlainText, extensions: []string{"txt"}, canWrite: true, autoDetected: true},
 	{format: MPL2, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TMPlayer, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},

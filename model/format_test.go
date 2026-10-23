@@ -19,7 +19,7 @@ func TestFormatFacts(t *testing.T) {
 		autoDetected bool
 	}{
 		{model.ASS, []string{"ass", "ssa"}, true, true, true},
-		{model.CSV, []string{"csv"}, false, false, false},
+		{model.CSV, []string{"csv"}, true, true, false},
 		{model.JSON, []string{"json"}, true, true, true},
 		{model.LRC, []string{"lrc"}, true, true, true},
 		{model.MicroDVD, []string{"sub"}, true, true, true},
@@ -29,7 +29,7 @@ func TestFormatFacts(t *testing.T) {
 		{model.SubRip, []string{"srt"}, true, true, true},
 		{model.SubViewer, []string{"sub"}, false, false, false},
 		{model.TTML, []string{"ttml", "dfxp", "xml"}, true, true, true},
-		{model.TSV, []string{"tsv"}, false, false, false},
+		{model.TSV, []string{"tsv"}, true, true, false},
 		{model.PlainText, []string{"txt"}, false, true, true},
 		{model.MPL2, []string{"txt"}, true, true, true},
 		{model.TMPlayer, []string{"txt"}, true, true, true},

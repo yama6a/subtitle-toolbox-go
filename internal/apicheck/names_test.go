@@ -33,7 +33,10 @@ var ruleText = map[string]string{
 
 // exceptions maps "<package dir>:<name>:<rule>" to the reason why the name breaks the rule.
 // The package dir is relative to the module root, "." for the root package.
-var exceptions = map[string]string{}
+var exceptions = map[string]string{
+	"format/csv:TimeSeconds:N4":      "names a CSV time format, not the unit of a value",
+	"format/csv:TimeMilliseconds:N4": "names a CSV time format, not the unit of a value",
+}
 
 var bannedWords = []string{"colour", "fps", "secs", "seconds", "millis"}
 

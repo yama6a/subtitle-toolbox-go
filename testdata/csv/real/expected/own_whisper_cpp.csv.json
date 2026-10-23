@@ -1,0 +1,91 @@
+{
+    "warnings": [
+        {
+            "message": "The times are whole numbers, and the median cue lasts 2640 seconds. The parser reads the times as milliseconds.",
+            "lineNumber": 2,
+            "blockIndex": null,
+            "block": [
+                "0,1980, The museum opens at ten."
+            ],
+            "action": "repaired"
+        }
+    ],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "csv": {
+                "delimiter": ",",
+                "header": [
+                    "start",
+                    "end",
+                    "text"
+                ],
+                "roles": {
+                    "start": 0,
+                    "end": 1,
+                    "text": 2
+                },
+                "width": 3,
+                "timeFormat": "milliseconds",
+                "frameRate": null,
+                "quotedColumns": [
+                    2
+                ]
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 1.98,
+                "lines": [
+                    "The museum opens at ten."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1.98,
+                "end": 4.62,
+                "lines": [
+                    "Tickets cost twelve euros, or eight for students."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.62,
+                "end": 8.15,
+                "lines": [
+                    "The guide calls this room \"the heart of the house\"."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 8.15,
+                "end": 11.4,
+                "lines": [
+                    "Photos are fine, but please turn off the flash."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 11.4,
+                "end": 13.89,
+                "lines": [
+                    "The café is on the second floor."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

@@ -1,0 +1,79 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "csv": {
+                "delimiter": ",",
+                "header": [
+                    "Start",
+                    "End",
+                    "Text"
+                ],
+                "roles": {
+                    "start": 0,
+                    "end": 1,
+                    "text": 2
+                },
+                "width": 3,
+                "timeFormat": "seconds",
+                "frameRate": null
+            }
+        },
+        "cues": [
+            {
+                "start": 1.5,
+                "end": 4.0,
+                "lines": [
+                    "The bakery opens at seven, every day."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.25,
+                "end": 7.8,
+                "lines": [
+                    "Fresh bread comes out",
+                    "of the oven at eight."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 9.0,
+                "end": 11.375,
+                "lines": [
+                    "Rolls cost one euro each."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 12.04,
+                "end": 15.5,
+                "lines": [
+                    "The sign says \"closed\" on Mondays."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 16.0,
+                "end": 18.2,
+                "lines": [
+                    "Please queue at the door, not inside."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

@@ -71,6 +71,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 | MPL2, TMPlayer | the line of the error |
 | MPSub | the line of the error. A cue without text reports its timing line |
 | LRC | 0. `The file has text but no cues.` gives the first line of plain text |
+| CSV and TSV | the line where the row starts, or where an unclosed quote opens. A missing column gives the line of the header row, or 1 without a header row |
 
 Each format adds its row here when its reader ships.
 

@@ -8,4 +8,5 @@ The JSON files hold the cues that PHP 1.x read from a real file, as `[start, end
 |:--- |:--- |:--- |
 | `french_windows_1252.json` | Cues of `../encoding/french-windows-1252.srt`, read with the source encoding `Windows-1252` | MIT |
 | `sami_multi_language_frcc.json` | Cues of `../sami/real/multi_language.smi`, read by `new SamiParser("FRCC")` | MIT |
+| `csv_excel_de_semicolon.json` | Cues of `../csv/real/excel_de_semicolon.csv`, read by `new CsvParser(delimiter: ";")` | MIT |
 | `microdvd_subsrt_sample.json` | Cues of `../microdvd/real/subsrt_sample.sub`, read by `new MicroDvdParser(23.976)` | MIT |

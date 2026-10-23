@@ -71,6 +71,7 @@ A cue without an end ends at the first later start of another cue. The last such
 | LRC | the last time tag with text. An LRC cue ends at the next time tag in time, also one without text or with the same time |
 | TMPlayer | the last entry with text. A TMPlayer cue ends at the next entry in time, also one with the same time |
 | SAMI | the last cue of the class. A SAMI cue ends at the next `SYNC` block of its class, also one with the same start |
+| CSV and TSV | a row with an empty end cell and no duration cell |
 
 Each reader that uses the default adds its row here.
 

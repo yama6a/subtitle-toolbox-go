@@ -37,7 +37,7 @@ Options:
                     UTF-8 and UTF-16 input win over it.
   --lenient         Skip or repair broken cues and print a warning for each.
   --input-fps RATE  Frame rate of a MicroDVD input without a {1}{1}<fps> first
-                    line.
+                    line, and of CSV or TSV times in hh:mm:ss:ff.
   --fps RATE        Same as --input-fps.
   --keep-going      Go on with the next file after a file fails. Default: stop
                     at the first failure.
