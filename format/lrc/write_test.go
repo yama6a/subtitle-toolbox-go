@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/lrc"
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -80,10 +81,69 @@ func TestWriteCommentsAndIDTags(t *testing.T) {
 	require.NoError(t, s.SetFormatData("lrc", model.NewData(model.Field{Key: "idTags", Value: tags})))
 	require.NoError(t, s.AddComment("Last", 5))
 	assert.Equal(t, bom+"[ti:]\n[au:Jane Doe]\n[by:Editor]\n[00:01.00] Text\n[#:Last]\n", write(t, s, model.CommonWriteOptions{}))
+}
 
-	s = subtitle()
-	require.NoError(t, s.SetFormatData("lrc", model.NewData(model.Field{Key: "idTags", Value: []any{"a", "b"}})))
-	assert.Equal(t, bom+"[0:a]\n[1:b]\n", write(t, s, model.CommonWriteOptions{}))
+// Rows of the ID tag filter of https://github.com/yama6a/subtitle-toolbox-go/issues/32. A stored tag that would read
+// back as something else is not written.
+func TestWriteSkipsIDTagsThatReadBackAsOther(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		value any
+		want  string
+	}{
+		{"an integer offset", model.NewData(model.Field{Key: "offset", Value: "500"}), ""},
+		{"an integer offset in any case with spaces", model.NewData(model.Field{Key: "OFFSET", Value: " -20\n"}), ""},
+		{"an offset that is no integer", model.NewData(model.Field{Key: "offset", Value: "soon"}), "[offset:soon]\n"},
+		{"a key with a line end", model.NewData(model.Field{Key: "a]\n[00:05.00]Injected\n[b", Value: "x"}), ""},
+		{"a key with a space", model.NewData(model.Field{Key: "my tag", Value: "y"}), ""},
+		{"a key of digits", model.NewData(model.Field{Key: "0", Value: "12"}), ""},
+		{"a list", []any{"12"}, ""},
+		{"a key with digits and _", model.NewData(model.Field{Key: "x_1", Value: "z"}), "[x_1:z]\n"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s := subtitle(model.Cue{Start: time.Second, End: 20 * time.Second, Lines: []string{"First"}})
+			require.NoError(t, s.SetFormatData("lrc", model.NewData(model.Field{Key: "idTags", Value: tt.value})))
+			out := write(t, s, model.CommonWriteOptions{})
+			assert.Equal(t, bom+tt.want+"[00:01.00] First\n", out)
+			back, _, err := read(out, model.CommonReadOptions{})
+			require.NoError(t, err)
+			assert.Equal(t, []cueRow{{time.Second, 6 * time.Second, "First"}}, cueRows(back))
+		})
+	}
+}
+
+// Rows of the 999:59.99 limit of https://github.com/yama6a/subtitle-toolbox-go/issues/32.
+func TestWriteClampsAtTheLargestReadableTime(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		start time.Duration
+		want  string
+	}{
+		{"999:59.99", 59999990 * ms, "[999:59.99] w <999:59.99>x\n[999:59.99]\n"},
+		{"999:59.995", 59999995 * ms, "[999:59.99] w <999:59.99>x\n[999:59.99]\n"},
+		{"20 h", 20 * time.Hour, "[999:59.99] w <999:59.99>x\n[999:59.99]\n"},
+		{"1004.6 ms", 1004600 * time.Microsecond, "[00:01.01] w <00:01.01>x\n[999:59.99]\n"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			c := model.Cue{Start: tt.start, End: 21 * time.Hour, Lines: []string{"w <" + markupcore.CoreTimestamp(tt.start) + ">x"}}
+			require.NoError(t, c.SetFormatData("lrc", model.NewData(model.Field{Key: "endLine", Value: true})))
+			out := write(t, subtitle(c), model.CommonWriteOptions{BOM: model.BOMRemove})
+			assert.Equal(t, tt.want, out)
+			back, _, err := read(out, model.CommonReadOptions{})
+			require.NoError(t, err)
+			require.Equal(t, 1, back.Len())
+		})
+	}
 }
 
 // Ports testSubtitleIsFormattedCorrectly, testUnsupportedXmlTagsAreStrippedAway,

@@ -727,8 +727,8 @@ This file has the title `Morning Train` and 3 cues:
 
 ### Write
 
-- **ID tags**: `[ti:]`, `[ar:]`, `[al:]` and `[au:]` for each metadata key that is set, then the `idTags` of the file format data. Each value goes on one line. No `[offset:]` tag, because the times already hold the offset.
-- **Line**: `[mm:ss.cc]`, a space and the text. The time rounds to whole centiseconds, half away from zero, and the hours go into the minutes. So 59.996 s writes `01:00.00` and 3661.905 s writes `61:01.91`. A negative time writes as 0.
+- **ID tags**: `[ti:]`, `[ar:]`, `[al:]` and `[au:]` for each metadata key that is set, then the `idTags` of the file format data. Each value goes on one line. A stored key that is not a letter, then letters, digits or `_`, is not written, because it would not read back as the same tag. An `offset` with an integer value is not written either, because the times already hold the offset.
+- **Line**: `[mm:ss.cc]`, a space and the text. The time rounds to whole centiseconds, half away from zero, and the hours go into the minutes. So 59.996 s writes `01:00.00` and 3661.905 s writes `61:01.91`. A negative time writes as 0. A time from 999:59.99 on writes as `999:59.99`, the largest time that the reader takes. This holds for line times, end lines and word times.
 - **Text**: the lines join with a space. Ruby becomes `base (annotation)`, tags drop and entities decode. A word timestamp writes as `<mm:ss.cc>`. With `spacedWordTimes`, a space separates each word time from the words.
 - **End lines**: a cue with `endLine` gets a line `[mm:ss.cc]` without text at its end.
 - **Comments**: `[#:text]` before their cue, or at the end.

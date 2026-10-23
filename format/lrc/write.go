@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -13,7 +12,13 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
-var wordTimestampRegexp = regexp.MustCompile(markupcore.WordTimestampPattern)
+var (
+	wordTimestampRegexp = regexp.MustCompile(markupcore.WordTimestampPattern)
+	idTagKeyRegexp      = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9_]*$`)
+)
+
+// maxCentiseconds is 999:59.99, the largest time that the reader takes in the mm:ss.cc form.
+const maxCentiseconds = 999*6000 + 59*100 + 99
 
 // Write writes s as LRC. It writes the ID tags, then one line per cue in start order with centisecond times,
 // and a time tag without text at the end of a cue with the cue data endLine. The BOM is on by default.
@@ -47,32 +52,27 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 
 func appendIDTags(body []byte, s *model.Subtitle, file *model.Data) []byte {
 	written := map[string]bool{}
-	add := func(tag, value string) {
-		if !written[tag] {
-			written[tag] = true
-			body = append(body, "["+tag+":"+markupcore.ToSingleLine(value)+"]\n"...)
-		}
-	}
 	for _, t := range metadataTags {
 		if value, ok := s.Metadata(t.key); ok {
-			add(t.tag, value)
+			body = append(body, "["+t.tag+":"+markupcore.ToSingleLine(value)+"]\n"...)
+			written[t.tag] = true
 		}
 	}
-	stored, _ := file.Get("idTags")
-	switch stored := stored.(type) {
-	case *model.Data:
-		for _, tag := range stored.Keys() {
-			value, _ := stored.String(tag)
-			add(tag, value)
-		}
-	case []any:
-		// A JSON list reads into PHP as an array with the keys 0, 1 and so on.
-		for i, item := range stored {
-			value, _ := item.(string)
-			add(strconv.Itoa(i), value)
+	stored, _ := file.Object("idTags")
+	for _, tag := range stored.Keys() {
+		value, _ := stored.String(tag)
+		value = markupcore.ToSingleLine(value)
+		if !written[tag] && readsBackAsIDTag(tag, value) {
+			body = append(body, "["+tag+":"+value+"]\n"...)
 		}
 	}
 	return body
+}
+
+// readsBackAsIDTag rejects a key that a read would not give back as the same tag, such as one with a space or a
+// line end, and an integer offset, which a read would apply to the written times a second time.
+func readsBackAsIDTag(tag, value string) bool {
+	return idTagKeyRegexp.MatchString(tag) && (markupcore.ASCIILower(tag) != "offset" || !offsetRegexp.MatchString(value))
 }
 
 func appendComments(body []byte, comments []string) []byte {
@@ -120,6 +120,6 @@ func isTrimByte(b byte) bool {
 }
 
 func appendStamp(body []byte, d time.Duration) []byte {
-	cs := (max(d, 0).Round(time.Millisecond).Milliseconds() + 5) / 10
+	cs := min((max(d, 0).Round(time.Millisecond).Milliseconds()+5)/10, maxCentiseconds)
 	return fmt.Appendf(body, "%02d:%02d.%02d", cs/6000, cs/100%60, cs%100)
 }
