@@ -46,15 +46,14 @@ var (
 // pronoun I in upper case. A run of invalid UTF-8 changes its ASCII letters only. ChangeCase returns an error
 // that matches ErrInvalidArgument for a mode other than the 3 constants.
 func (s *Subtitle) ChangeCase(mode CaseMode, language string) error {
-	primary := primaryLanguage(language)
-	turkic := primary == "tr" || primary == "az"
+	turkic := markupcore.IsTurkic(language)
 	switch mode {
 	case CaseUpper:
 		s.MapText(func(text string, _ Cue) string { return upperCase(text, turkic) })
 	case CaseLower:
 		s.MapText(func(text string, _ Cue) string { return lowerCase(text, turkic) })
 	case CaseSentence:
-		s.sentenceCase(turkic, language == "" || primary == "en")
+		s.sentenceCase(turkic, language == "" || markupcore.PrimaryLanguage(language) == "en")
 	default:
 		return invalidArgument(fmt.Sprintf("The case mode %s is not upper, lower or sentence.", quote(string(mode))))
 	}
@@ -93,14 +92,6 @@ func upperCaseEnglishI(line string) string {
 		k++
 		return upper[k-1]
 	})[0]
-}
-
-// primaryLanguage returns the part of a BCP 47 code before the first "-" or "_", in lower case.
-func primaryLanguage(code string) string {
-	if i := strings.IndexAny(code, "-_"); i >= 0 {
-		code = code[:i]
-	}
-	return asciiLower(code)
 }
 
 func upperCase(text string, turkic bool) string {
