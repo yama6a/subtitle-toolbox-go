@@ -30,6 +30,8 @@ const (
 	CommentNode
 	ProcInstNode
 	DirectiveNode
+	// CDATANode is a CDATA section. Its Data is the text between <![CDATA[ and ]]>.
+	CDATANode
 )
 
 // Node is one node of a parsed document. Names keep their prefixes as written.
@@ -133,7 +135,7 @@ func (n *Node) Text() string {
 func (n *Node) appendText(b *strings.Builder) {
 	for _, c := range n.Children {
 		switch c.Kind {
-		case TextNode:
+		case TextNode, CDATANode:
 			b.WriteString(c.Data)
 		case ElementNode:
 			c.appendText(b)

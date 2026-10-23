@@ -655,7 +655,7 @@ func preservesSpace(n *xmlraw.Node, inherited bool) bool {
 func (r *reader) collectRuns(n *xmlraw.Node, st style, agent string, preserveSpace bool, iv interval, runs *[]run) {
 	for _, child := range n.Children {
 		switch {
-		case child.Kind == xmlraw.TextNode:
+		case child.Kind == xmlraw.TextNode, child.Kind == xmlraw.CDATANode:
 			addTextRuns(runs, child.Data, st, agent, preserveSpace)
 		case isElement(child, r.ns, "br"):
 			*runs = append(*runs, run{lineBreak: true})
