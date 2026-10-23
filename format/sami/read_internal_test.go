@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-
 	"github.com/stretchr/testify/assert"
+
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 )
 
 // phpTextLine is findTextLineWithoutCues of src/Parsers/SamiParser.php of subtitle-toolbox-php. Its regular
