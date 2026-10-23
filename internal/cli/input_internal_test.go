@@ -203,6 +203,8 @@ func TestLenientEncodingLineEndingAndBOMOptions(t *testing.T) {
 	assert.True(t, strings.HasPrefix(got.Stdout, bom+"1\n00:00:10,000 --> "), got.Stdout)
 	got = call{dir: dir}.run(t, "convert", "shop.vtt", "--to", "srt", "-o", "-", "--no-bom")
 	assert.True(t, strings.HasPrefix(got.Stdout, "1\n"), got.Stdout)
+	got = call{dir: dir}.run(t, "convert", "shop.vtt", "--to", "sbv", "-o", "-", "--bom")
+	assert.Equal(t, result{Stdout: bom + "0:00:10.000,0:00:12.000\nGood morning.\n\n0:00:13.000,0:00:15.500\nThe shop opens at nine.\n"}, got)
 }
 
 func TestEmptyInput(t *testing.T) {
