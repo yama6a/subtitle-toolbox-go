@@ -1,0 +1,29 @@
+﻿1
+00:00:01,000 --> 00:00:04,000
+The train to Hamburg leaves from platform 4.
+<i>Der Zug nach Hamburg fährt von Gleis 4.</i>
+
+2
+00:00:04,400 --> 00:00:07,400
+It is ten minutes late today.
+<i>Er hat heute zehn Minuten Verspätung.</i>
+
+3
+00:00:07,900 --> 00:00:11,100
+The bakery next to the station opens at six.
+They sell fresh rolls.
+<i>Die Bäckerei am Bahnhof öffnet um sechs.</i>
+<i>Sie verkauft frische Brötchen.</i>
+
+4
+00:00:12,000 --> 00:00:13,500
+<i>Rain is coming.</i>
+
+5
+00:00:13,200 --> 00:00:19,000
+Take an umbrella with you.
+<i>Morgen scheint wieder die Sonne.</i>
+
+6
+00:00:19,200 --> 00:00:21,000
+<i>Gute Reise!</i>

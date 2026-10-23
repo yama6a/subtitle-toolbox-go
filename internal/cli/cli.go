@@ -43,6 +43,7 @@ func commands() []command {
 		&infoCommand{},
 		&syncCommand{},
 		&diffCommand{},
+		&dualCommand{},
 		formatsCommand{},
 	}
 }

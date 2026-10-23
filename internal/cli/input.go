@@ -2,6 +2,8 @@ package cli
 
 import (
 	"bytes"
+	"cmp"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -96,6 +98,7 @@ func label(arg string) string {
 }
 
 // prepareRead builds the read options of --input-fps, --from, --encoding and --lenient and checks them.
+// A command that renames --from sets fromOption first.
 func (r *runner) prepareRead(a *args) error {
 	fps, ok, err := a.Rate("input-fps")
 	if err != nil {
@@ -105,7 +108,7 @@ func (r *runner) prepareRead(a *args) error {
 		r.readOptions.MicroDVD.FrameRate = fps
 		r.readOptions.CSV.FrameRate = fps
 	}
-	if v, ok := a.Value("from"); ok {
+	if v, ok := a.Value(cmp.Or(r.fromOption, "from")); ok {
 		f, err := readableFormat(v)
 		if err != nil {
 			return err
@@ -143,6 +146,19 @@ func (r *runner) readWith(arg string, opts stbox.ReadOptions) (*input, error) {
 		return nil, err
 	}
 	r.printWarnings(in)
+	return in, nil
+}
+
+// readOther reads a file other than the input of the call, such as the new file of diff, and prints its warnings.
+// A failure carries the path as its label. A file with no detectable format gets the advice for fromOption.
+func (r *runner) readOther(path string, opts stbox.ReadOptions, fromOption string) (*input, error) {
+	in, err := r.readWith(path, opts)
+	if errors.Is(err, stbox.ErrUnknownFormat) {
+		err = usage(unknownFormatAdvice(fromOption))
+	}
+	if err != nil {
+		return nil, &labeledError{label: path, err: err}
+	}
 	return in, nil
 }
 

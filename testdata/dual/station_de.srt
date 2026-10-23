@@ -1,0 +1,23 @@
+1
+00:00:01,200 --> 00:00:03,900
+Der Zug nach Hamburg fährt von Gleis 4.
+
+2
+00:00:04,400 --> 00:00:07,400
+Er hat heute zehn Minuten Verspätung.
+
+3
+00:00:07,900 --> 00:00:09,600
+Die Bäckerei am Bahnhof öffnet um sechs.
+
+4
+00:00:09,600 --> 00:00:11,100
+Sie verkauft frische Brötchen.
+
+5
+00:00:13,200 --> 00:00:16,600
+Morgen scheint wieder die Sonne.
+
+6
+00:00:19,200 --> 00:00:21,000
+Gute Reise!

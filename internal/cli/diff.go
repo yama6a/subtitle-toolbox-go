@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"errors"
 	"slices"
 	"strconv"
 	"time"
@@ -11,8 +10,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/diff"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
-
-const newFormatUnknown = "Format detection found no subtitle format. Pass --new-from FORMAT."
 
 // diffCommand lists the differences between an old and a new subtitle file.
 type diffCommand struct {
@@ -101,7 +98,7 @@ func (*diffCommand) checkInputs(_ *runner, inputs []string) error {
 func (*diffCommand) loadSideFiles(context.Context, *runner) error { return nil }
 
 func (d *diffCommand) process(_ context.Context, r *runner, in *input) error {
-	updated, err := d.readNew(r)
+	updated, err := r.readOther(d.newFile, d.newOptions, "new-from")
 	if err != nil {
 		return err
 	}
@@ -124,18 +121,6 @@ func (d *diffCommand) process(_ context.Context, r *runner, in *input) error {
 }
 
 func (d *diffCommand) finish(r *runner) error { return d.report.finish(r) }
-
-// readNew reads the new file and prints its warnings. A failure carries the path of the new file as its label.
-func (d *diffCommand) readNew(r *runner) (*input, error) {
-	in, err := r.readWith(d.newFile, d.newOptions)
-	if errors.Is(err, stbox.ErrUnknownFormat) {
-		err = usage(newFormatUnknown)
-	}
-	if err != nil {
-		return nil, &labeledError{label: d.newFile, err: err}
-	}
-	return in, nil
-}
 
 // diffEntry is the --json entry of one pair of files. Field order is the JSON key order.
 type diffEntry struct {

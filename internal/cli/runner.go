@@ -28,7 +28,9 @@ type fileCommand interface {
 type runner struct {
 	c           *console
 	readOptions stbox.ReadOptions
-	files       *outputFiles
+	// fromOption is the name of the option that sets the input format, "" for --from.
+	fromOption string
+	files      *outputFiles
 	// reportToStderr sends the report lines and the summary to stderr, because stdout gets data.
 	reportToStderr bool
 	// result makes the call exit with code 1 when no input failed, for a broken rule or a difference.
@@ -137,7 +139,7 @@ func (r *runner) processInput(ctx context.Context, fc fileCommand, arg string) (
 		if l, ok := errors.AsType[*labeledError](err); ok {
 			name, err, readFailed = l.label, l.err, true
 		}
-		r.c.err(name + ": " + message(err) + "\n")
+		r.c.err(name + ": " + r.message(err) + "\n")
 		if _, ok := errors.AsType[*stbox.ParseError](err); ok && readFailed && !r.readOptions.Lenient {
 			r.c.err(lenientHint + "\n")
 		}
@@ -145,6 +147,14 @@ func (r *runner) processInput(ctx context.Context, fc fileCommand, arg string) (
 	}
 	r.succeeded++
 	return true, nil
+}
+
+// message returns the CLI text of err, with the name of the option that sets the input format.
+func (r *runner) message(err error) string {
+	if r.fromOption != "" && errors.Is(err, stbox.ErrUnknownFormat) {
+		return unknownFormatAdvice(r.fromOption)
+	}
+	return message(err)
 }
 
 // report prints a report line, such as "trip.srt -> out/trip.vtt" or the batch summary.

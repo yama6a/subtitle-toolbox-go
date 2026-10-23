@@ -1,0 +1,44 @@
+﻿1
+00:00:01,000 --> 00:00:04,000
+The train to Hamburg leaves from platform 4.
+
+2
+00:00:01,000 --> 00:00:04,000
+{\an8}<font color="#ffff00">Der Zug nach Hamburg fährt von Gleis 4.</font>
+
+3
+00:00:04,500 --> 00:00:07,250
+It is ten minutes late today.
+
+4
+00:00:04,500 --> 00:00:07,250
+{\an8}<font color="#ffff00">Er hat heute zehn Minuten Verspätung.</font>
+
+5
+00:00:08,000 --> 00:00:11,000
+The bakery next to the station opens at six.
+They sell fresh rolls.
+
+6
+00:00:08,000 --> 00:00:09,600
+{\an8}<font color="#ffff00">Die Bäckerei am Bahnhof öffnet um sechs.</font>
+
+7
+00:00:09,600 --> 00:00:11,000
+{\an8}<font color="#ffff00">Sie verkauft frische Brötchen.</font>
+
+8
+00:00:12,000 --> 00:00:13,500
+<i>Rain is coming.</i>
+
+9
+00:00:13,200 --> 00:00:16,600
+{\an8}<font color="#ffff00">Morgen scheint wieder die Sonne.</font>
+
+10
+00:00:16,000 --> 00:00:19,000
+Take an umbrella with you.
+
+11
+00:00:19,000 --> 00:00:21,000
+{\an8}<font color="#ffff00">Gute Reise!</font>

@@ -272,3 +272,87 @@ for _, c := range s.All() {
 - **Joining**: 2 lines join with a space, or without one when a CJK character ends the first and starts the second.
 - **Right-to-left lines**: a cue with the embedding of `FixRightToLeft` gets a new embedding on each new line, because a line break ends every embedding in the Unicode bidi algorithm.
 - **Errors**: a limit below 1 returns an error that matches `ErrInvalidArgument`, and the subtitle stays unchanged.
+
+## Dual subtitles
+
+A language learner watches a film with the English and the German subtitle at once. Most players show only one subtitle track, so both languages go into one file. `dual.FromPair(&english, &german, dual.Options{SecondaryStyle: "i"})` joins the English cue `Where are you going?` from 1 s to 4 s and the German cue `Wohin gehst du?` from 1.2 s to 3.9 s into one cue from 1 s to 4 s.
+
+<!-- example: ExampleFromPair -->
+```go
+var english, german model.Subtitle
+english.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Where are you going?"}})
+german.AddCue(model.Cue{Start: 1200 * time.Millisecond, End: 3900 * time.Millisecond, Lines: []string{"Wohin gehst du?"}})
+
+result, err := dual.FromPair(&english, &german, dual.Options{SecondaryStyle: "i"})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+for _, c := range result.All() {
+	fmt.Println(c.Start, c.End)
+	fmt.Println(c.Text())
+}
+// Output:
+// 1s 4s
+// Where are you going?
+// <i>Wohin gehst du?</i>
+```
+
+The primary subtitle sets the times. The secondary subtitle is the second language. `FromPair` returns a new subtitle and changes neither input.
+
+| `Mode` | CLI value | Result |
+|:--- |:--- |:--- |
+| `ModeStack` (default) | `stack` | the lines of each secondary cue go below the lines of the primary cue that it overlaps most |
+| `ModeTopBottom` | `top-bottom` | both cues stay. The secondary cue gets the secondary alignment, top center by default, and its times snap to close primary times |
+
+| Field | Effect |
+|:--- |:--- |
+| `Mode` | The empty string acts as `ModeStack` |
+| `SecondaryStyle` | A core markup tag around each secondary line, such as `i` or `font color="#ffff00"`. A secondary line `Wohin gehst du?` becomes `<i>Wohin gehst du?</i>`. Both tags use the lower-case tag name, so `I` also gives `<i>`. The empty string adds none |
+| `TimeTolerance` | `ModeTopBottom` only. A secondary time moves to a primary time at most this far away. Nil means 250 ms. `0` snaps only to an equal time |
+| `SecondaryAlignment` | `ModeTopBottom` only. Nil means `TopCenter`. `BottomCenter`, the zero `Alignment`, is legal and puts the secondary cues at the bottom |
+
+`Validate` returns an error that matches `ErrInvalidArgument` for a negative tolerance, a style whose tag is not `b`, `i`, `u`, `s`, `font` or `v`, a mode other than the 2 constants, and an alignment outside the 9 values.
+
+### Stack
+
+- **Partner**: the primary cue with the largest overlap, which is the earlier end minus the later start. The overlap must be above 0, so cues that only touch stay apart. The first primary cue wins a tie.
+- **Example**: the primary cues `first` from 0 s to 2 s and `second` from 2 s to 4 s, and the secondary cue `between` from 1.5 s to 2.5 s. Both overlaps are 0.5 s, so `between` joins `first`, which then runs from 0 s to 2.5 s.
+- **Joined cue**: the lines of its partners come after its own lines, in start order of the partners. It runs from the earliest start to the latest end of the group. It keeps its ID, alignment, forced flag and format data.
+- **No partner**: the secondary cue stays a cue of its own.
+
+### Top-bottom
+
+- **Snap**: each secondary start and each secondary end moves on its own to the closest start or end of a primary cue, when that time is at most `TimeTolerance` away. The earlier time wins a tie. The word timestamps in the lines do not move.
+- **Short cue**: the old times stay when the snapped end is not after the snapped start. The primary cue `first` from 1 s to 4 s and the secondary cue `kurz` from 3.9 s to 4.1 s would both snap to 4 s, so `kurz` keeps 3.9 s to 4.1 s.
+- **Alignment**: the secondary cues get the secondary alignment. The primary cues keep their own, which is bottom center in most formats.
+
+<!-- example: ExampleFromPair_topBottom -->
+```go
+var english, german model.Subtitle
+english.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Where are you going?"}})
+german.AddCue(model.Cue{Start: 1250 * time.Millisecond, End: 3700 * time.Millisecond, Lines: []string{"Wohin gehst du?"}})
+
+result, err := dual.FromPair(&english, &german, dual.Options{Mode: dual.ModeTopBottom})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+for _, c := range result.All() {
+	fmt.Println(c.Start, c.End, c.Alignment, c.Text())
+}
+// Output:
+// 1s 4s BottomCenter Where are you going?
+// 1s 3.7s TopCenter Wohin gehst du?
+```
+
+### Result
+
+- **Order**: all cues in start order. At an equal start, the primary cue comes first.
+- **From the primary**: the metadata, the comments and the file format data. A comment stays before its cue. A comment after the last primary cue stays after the last cue.
+- **Language**: when both inputs have `language` metadata, the result gets both, such as `en+de`. Else it keeps the language of the primary.
+- **Secondary cue of its own**: it keeps its times, lines, alignment and forced flag. It has no ID and no format data, because they belong to the format of the secondary subtitle.
+- **Forced flag**: a secondary cue that stays a cue of its own keeps `Forced`, because the secondary language needs a forced narrative as much as the primary language. In stack mode, the flag of the primary cue counts. PHP drops the flag of every secondary cue ([php-differences.md](php-differences.md)).
+- **Output formats**: in top-bottom mode, the alignment survives in SubRip as `{\an8}`, and in WebVTT, ASS and TTML. Other formats drop it.
+
+`stbox dual --primary FILE --secondary FILE` runs the same code. [cli.md](cli.md#dual) lists its options.
