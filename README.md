@@ -69,6 +69,8 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [SBV](https://support.google.com/youtube/answer/2734698) | `stbox.SBV` | `sbv` | `.sbv` | yes | yes | YouTube Studio captions |
 | [SubRip](https://en.wikipedia.org/wiki/SubRip) | `stbox.SubRip` | `srt` | `.srt` | yes | yes | |
 | [TTML, IMSC, DFXP](https://www.w3.org/TR/ttml2/) | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | yes | yes | also iTT |
+| [MPL2](https://pysubs2.readthedocs.io/en/latest/supported-formats.html) | `stbox.MPL2` | `mpl2` | `.txt` | yes | yes | found by content |
+| [TMPlayer](https://pysubs2.readthedocs.io/en/latest/supported-formats.html) | `stbox.TMPlayer` | `tmplayer` | `.txt` | yes | yes | also TMPlayer+, found by content |
 | [WebVTT](https://www.w3.org/TR/webvtt1/) | `stbox.WebVTT` | `vtt` | `.vtt` | yes | yes | also chapters |
 
 The name is the value of `--from` and `--to`. [docs/formats.md](docs/formats.md) has one section for each format.

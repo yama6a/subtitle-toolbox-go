@@ -1,0 +1,52 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 2.0,
+                "end": 6.0,
+                "lines": [
+                    "Rain moves in from the west."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 6.0,
+                "end": 11.0,
+                "lines": [
+                    "Clouds stay over the hills",
+                    "until the evening."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 15.0,
+                "end": 19.0,
+                "lines": [
+                    "Tomorrow will be dry and cold."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 150.0,
+                "end": 155.0,
+                "lines": [
+                    "Frost on the roads in the morning."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

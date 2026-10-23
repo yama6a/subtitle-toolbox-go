@@ -1,0 +1,13 @@
+﻿1
+00:00:03,000 --> 00:00:07,000
+The shop opens at eight.
+Fresh milk arrives at nine.
+
+2
+00:00:09,000 --> 00:00:12,000
+Apples are on sale today.
+
+3
+00:00:12,000 --> 00:00:16,000
+Bring your own bag.
+Paper bags cost ten cents.

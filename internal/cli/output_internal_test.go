@@ -40,6 +40,18 @@ func TestConvertWritesTheFormatOfToIntoTheOutputFile(t *testing.T) {
 	assert.Equal(t, convertAs(t, "trip.srt", stbox.JSON), readFile(t, dir, "new/deep/trip.json"))
 }
 
+func TestConvertWritesMPL2IntoATxtFile(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	assert.Equal(t, result{Stdout: "trip.srt -> trip.txt\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "mpl2", "-o", "trip.txt"))
+	assert.Equal(t, convertAs(t, "trip.srt", stbox.MPL2), readFile(t, dir, "trip.txt"))
+	assert.Equal(t, result{Stdout: "trip.srt -> film.txt\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "tmplayer", "-o", "film.txt"))
+	assert.Equal(t, convertAs(t, "trip.srt", stbox.TMPlayer), readFile(t, dir, "film.txt"))
+	assert.Equal(t, usageResult("convert", "The extension of --output trip.vtt names the format vtt, not the --to format mpl2."),
+		call{dir: dir}.run(t, "convert", "trip.srt", "--to", "mpl2", "-o", "trip.vtt"))
+}
+
 func TestConvertWithoutToKeepsTheInputFormat(t *testing.T) {
 	t.Parallel()
 

@@ -32,9 +32,12 @@
 | 5 | MicroDVD | `{digits}{digits or nothing}` at the start, such as `{24}{72}` or `{24}{}` |
 | 6 | SubRip | a cue number and a timing line. Or a timing line with 2 or more hour digits and a comma, alone or after up to 5 lines of text and a cue number |
 | 7 | SBV | the first line is `H:MM:SS.mmm,H:MM:SS.mmm` plus optional spaces or tabs |
+| 8 | MPL2 | `[digits][digits]` at the start |
+| 9 | TMPlayer | `H:MM:SS` with minutes and seconds up to 59, an optional `,` and digits, then `=` or `:`. A `:` does not count when 1 or 2 digits, spaces or tabs and a comma follow it, or digits `:dd:dd` |
 
 - **ASS header**: `ass.Detect` holds rule 4. A file that starts with a comment line before `[Script Info]` is not detected, but the ASS reader reads it.
 - **MicroDVD**: `microdvd.Detect` holds rule 5. It accepts an empty end frame, but the reader needs digits, so `{24}{}Hello` detects as MicroDVD and then fails.
+- **TMPlayer and frame timecodes**: the two exceptions of rule 9 keep out the `hh:mm:ss:ff` frame timecodes of Spruce STL and CSV, such as `00:00:01:10,00:00:03:10,"Hello"`. The text `00:00:01:5 trains leave` still matches. `tmplayer.Detect` holds the rule, and its doc comment states it.
 - **Order**: WebVTT comes before SubRip, because a WebVTT file without its header looks like SubRip. A new format inserts its signature at its place in the PHP order. `TestDetectionListsFollowTheOrder` in [registry_test.go](../registry_test.go) holds that order.
 - **SubRip hours and comma**: a timing line without a cue number on the line before it needs 2 hour digits and a comma. So a headerless WebVTT file that starts with `00:00:01.000 -->` and SBV with `0:00:01,500` do not match. A headerless WebVTT file that starts with a cue number, such as `1` LF `00:00:01.000 -->`, detects as SubRip.
 - **SBV fraction**: SBV has 3 fraction digits and SubViewer has 2, so `0:00:01.5,0:00:04.000` is no SBV signature. `sbv.Detect` holds rule 7.

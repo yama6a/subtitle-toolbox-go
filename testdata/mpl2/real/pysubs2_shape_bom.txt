@@ -1,0 +1,6 @@
+﻿[0][25] The bakery opens at six.
+[30][62] / Fresh bread every morning.
+[70][110] Rolls are on the left|   and cakes on the right.
+[120][155] / The oven is hot.|/ Please wait a moment.
+[160][200] Prices: 2 < 3 & 4 > 1.
+[36000][36042] Closed on Sundays.

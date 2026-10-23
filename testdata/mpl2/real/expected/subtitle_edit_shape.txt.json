@@ -1,0 +1,63 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 1.5,
+                "end": 4.0,
+                "lines": [
+                    "The ferry leaves at nine."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.5,
+                "end": 8.0,
+                "lines": [
+                    "<i>Tickets are sold on board.</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 8.5,
+                "end": 13.0,
+                "lines": [
+                    "The deck is wet",
+                    "after the rain."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 14.0,
+                "end": 17.5,
+                "lines": [
+                    "<i>Mind the step.</i>",
+                    "Thank you."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 18.0,
+                "end": 22.0,
+                "lines": [
+                    "Arrival in two hours."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

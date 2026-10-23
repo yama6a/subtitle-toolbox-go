@@ -39,12 +39,14 @@ func goldenFolders() []goldenFolder {
 			"sub_microdvd_with_styles.sub": microDVDAt25,
 			"subsrt_sample.sub":            microDVDAt25,
 		}},
+		{name: "mpl2", format: stbox.MPL2, files: 2},
 		{
 			name: "sami", format: stbox.SAMI, files: 11,
 			options: map[string]stbox.ReadOptions{"own_korean_cp949.smi": {Encoding: "CP949"}},
 		},
 		{name: "sbv", format: stbox.SBV, files: 5},
 		{name: "srt", format: stbox.SubRip, files: 19},
+		{name: "tmplayer", format: stbox.TMPlayer, files: 4},
 		{name: "ttml", format: stbox.TTML, files: 29},
 		{name: "vtt", format: stbox.WebVTT, files: 30},
 	}

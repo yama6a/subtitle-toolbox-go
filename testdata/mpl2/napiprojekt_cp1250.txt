@@ -1,0 +1,8 @@
+[12][45]Dzieñ dobry, piekarnia jest ju¿ otwarta.
+[50][82]Chleb ¿ytni kosztuje dziœ|cztery z³ote.
+[90][121]/Ciasto dro¿d¿owe jest jeszcze ciep³e.
+[130][168]Proszê dwie bu³ki|/i jeden rogal.
+[175][210]/Poci¹g do Gdañska|/odje¿d¿a o ósmej.
+[600][642]Jutro bêdzie s³onecznie.
+[650][688]Wiatr os³abnie wieczorem.
+[3600][3645]Do zobaczenia w poniedzia³ek!

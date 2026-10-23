@@ -1,0 +1,5 @@
+[15][40]The ferry leaves at nine.
+[45][80]/Tickets are sold on board.
+[85][130]The deck is wet|after the rain.
+[140][175]/Mind the step.|Thank you.
+[180][220]Arrival in two hours.

@@ -68,6 +68,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 | ASS and SSA | the line of the error: the event line, or the `Format:` line for a field name that is a number. A file without `[Events]` and `[Script Info]` gives 0 |
 | MicroDVD | the line of the error. A missing or bad frame rate gives 0 |
 | SAMI | the line of the `<SYNC` tag. `The SAMI file has no class X.` has no line |
+| MPL2, TMPlayer | the line of the error |
 
 Each format adds its row here when its reader ships.
 

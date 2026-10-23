@@ -168,6 +168,18 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Block numbers**: B counts the blocks after the join, from 0.
 - **Line numbers**: the cue warnings report the timing line.
 
+## MPL2 and TMPlayer
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| a line that is not a cue, such as a site banner or `[4x][60]Text` | `The line "L" is not an MPL2 cue.` or `The line "L" is not a TMPlayer line.` | skips the line. `Skipped` |
+| a time of 100000 hours or more | `The time "[N]" is not below 100000 hours.` for MPL2, `The time "H:MM:SS" is not below 100000 hours.` for TMPlayer, with the digits as written | skips the line. `Skipped` |
+| an MPL2 cue that ends before it starts | `The cue ends at E s, before it starts at S s.` | swaps the times when the cue then lasts 30 s or less. `Repaired`. Else skips the line. `Skipped` |
+
+- **Block numbers**: the block of a warning is the index of the line among the non-empty lines, from 0. It counts the lines that fail.
+- **Line numbers**: the 1-based line of the file, empty lines included.
+- **TMPlayer order**: TMPlayer has no time order error. The reader sorts the entries.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -43,22 +42,18 @@ func inputOptions(manyInputs bool, fpsHelp string) []option {
 }
 
 // findFormat returns the format of a --from or --to value: a format name or a file extension, in any ASCII case
-// and with leading dots. It skips the formats that can be neither read nor written.
+// and with leading dots. A format that can be neither read nor written is unknown. An extension names the format
+// that stbox.FormatFromPath gives, so txt names plain text and is unknown, not MPL2.
 func findFormat(v string) (stbox.Format, error) {
 	key := strings.TrimLeft(asciiLower(v), ".")
 	usable := func(f stbox.Format) bool { return f.CanRead() || f.CanWrite() }
-	formats := stbox.Formats()
-	for _, f := range formats {
+	for _, f := range stbox.Formats() {
 		if string(f) == key && usable(f) {
 			return f, nil
 		}
 	}
-	if ext := strings.TrimPrefix(filepath.Ext("file."+key), "."); ext != "" {
-		for _, f := range formats {
-			if usable(f) && slices.Contains(f.Extensions(), ext) {
-				return f, nil
-			}
-		}
+	if f, ok := stbox.FormatFromPath("file." + key); ok && usable(f) {
+		return f, nil
 	}
 	return "", usage("Unknown format " + quote(v) + `. Run "stbox formats" for the list.`)
 }

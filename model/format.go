@@ -50,8 +50,8 @@ var formatFacts = []formatFact{
 	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TSV, extensions: []string{"tsv"}},
 	{format: PlainText, extensions: []string{"txt"}, autoDetected: true},
-	{format: MPL2, extensions: []string{"txt"}},
-	{format: TMPlayer, extensions: []string{"txt"}},
+	{format: MPL2, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: TMPlayer, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: QuickTimeText, extensions: []string{"txt"}},
 	{format: WebVTT, extensions: []string{"vtt"}, canRead: true, canWrite: true, autoDetected: true},
 }

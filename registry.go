@@ -9,10 +9,12 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/format/mpl2"
 	"github.com/yama6a/subtitle-toolbox-go/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/format/sbv"
 	"github.com/yama6a/subtitle-toolbox-go/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/format/tmplayer"
 	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/model"
@@ -49,6 +51,12 @@ var (
 	_ readFunc[sbv.ReadOptions]         = sbv.Read
 	_ writeFunc[sbv.WriteOptions]       = sbv.Write
 	_ detectFunc                        = sbv.Detect
+	_ readFunc[mpl2.ReadOptions]        = mpl2.Read
+	_ writeFunc[mpl2.WriteOptions]      = mpl2.Write
+	_ detectFunc                        = mpl2.Detect
+	_ readFunc[tmplayer.ReadOptions]    = tmplayer.Read
+	_ writeFunc[tmplayer.WriteOptions]  = tmplayer.Write
+	_ detectFunc                        = tmplayer.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -77,8 +85,8 @@ var registry = []formatFuncs{
 	{format: TTML, read: readTTML, write: writeTTML},
 	{format: TSV},
 	{format: PlainText},
-	{format: MPL2},
-	{format: TMPlayer},
+	{format: MPL2, read: readMPL2, write: writeMPL2},
+	{format: TMPlayer, read: readTMPlayer, write: writeTMPlayer},
 	{format: QuickTimeText},
 	{format: WebVTT, read: readWebVTT, write: writeWebVTT},
 }
@@ -106,6 +114,8 @@ var (
 		{format: MicroDVD, match: microdvd.Detect},
 		{format: SubRip, match: srt.Detect},
 		{format: SBV, match: sbv.Detect},
+		{format: MPL2, match: mpl2.Detect},
+		{format: TMPlayer, match: tmplayer.Detect},
 	}
 )
 
@@ -196,6 +206,22 @@ func readSBV(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subti
 
 func writeSBV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
 	return sbv.Write(w, s, common, sbv.WriteOptions{})
+}
+
+func readMPL2(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return mpl2.Read(r, common, mpl2.ReadOptions{})
+}
+
+func writeMPL2(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+	return mpl2.Write(w, s, common, mpl2.WriteOptions{})
+}
+
+func readTMPlayer(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return tmplayer.Read(r, common, tmplayer.ReadOptions{})
+}
+
+func writeTMPlayer(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+	return tmplayer.Write(w, s, common, tmplayer.WriteOptions{})
 }
 
 func lookup(f Format) (formatFuncs, bool) {

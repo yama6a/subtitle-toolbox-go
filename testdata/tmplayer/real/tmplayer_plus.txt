@@ -1,0 +1,6 @@
+0:00:02=Rain moves in from the west.
+0:00:06=Clouds stay over the hills|until the evening.
+0:00:11=
+0:00:15=Tomorrow will be dry and cold.
+0:00:19=
+0:02:30=Frost on the roads in the morning.

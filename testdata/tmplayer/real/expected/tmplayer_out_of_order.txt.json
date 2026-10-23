@@ -1,0 +1,52 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 4.0,
+                "lines": [
+                    "The ferry leaves at nine."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.0,
+                "end": 7.0,
+                "lines": [
+                    "Please mind the gap."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 7.0,
+                "end": 10.0,
+                "lines": [
+                    "Tickets are sold",
+                    "on the upper deck."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 12.0,
+                "end": 16.0,
+                "lines": [
+                    "We arrive at the island at noon."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

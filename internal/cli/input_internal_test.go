@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 )
 
 const (
@@ -32,7 +34,7 @@ func TestUsageErrors(t *testing.T) {
 		{"from takes no frame rate", []string{"convert", "trip.srt", "--from", "25", "--to", "23.976"}, `Unknown format "25". Run "stbox formats" for the list.`},
 		{"subrip is no name", []string{"convert", "trip.srt", "--to", "subrip"}, `Unknown format "subrip". Run "stbox formats" for the list.`},
 		{"txt can be neither read nor written", []string{"convert", "trip.srt", "--from", "txt", "--to", "vtt"}, `Unknown format "txt". Run "stbox formats" for the list.`},
-		{"mpl2 can be neither read nor written", []string{"convert", "trip.srt", "--to", "mpl2"}, `Unknown format "mpl2". Run "stbox formats" for the list.`},
+		{"lrc can be neither read nor written", []string{"convert", "trip.srt", "--to", "lrc"}, `Unknown format "lrc". Run "stbox formats" for the list.`},
 		{"no input", []string{"convert", "--to", "vtt"}, "Pass at least one input file, or - for standard input."},
 		{"line ending cr", []string{"convert", "trip.srt", "--to", "vtt", "--line-ending", "cr"}, `The option --line-ending must be lf or crlf, got "cr".`},
 		{"bom and no bom", []string{"convert", "trip.srt", "--to", "vtt", "--bom", "--no-bom"}, "Pass only one of --bom and --no-bom."},
@@ -72,6 +74,8 @@ func TestFormatArgument(t *testing.T) {
 		{"ssa", stbox.ASS},
 		{"sami", stbox.SAMI},
 		{"SMI", stbox.SAMI},
+		{"mpl2", stbox.MPL2},
+		{"TMPlayer", stbox.TMPlayer},
 	}
 	for _, tt := range tests {
 		t.Run(tt.in, func(t *testing.T) {
@@ -137,6 +141,25 @@ func TestADirectoryKeepsATxtFileThatDetectionReads(t *testing.T) {
 		result{Stdout: "in/film.txt -> out/film.srt\nin/lib.JSON -> out/lib.srt\nin/trip.srt -> out/trip.srt\n3 files: 3 succeeded, 0 failed.\n"},
 		call{dir: dir}.run(t, "convert", "in/", "--to", "srt", "--output-dir", "out"))
 	assert.Equal(t, convertAs(t, "shop.vtt", stbox.SubRip), readFile(t, dir, "out/film.srt"))
+}
+
+func TestADirectoryConvertsAnMPL2TxtFileAndSkipsNotes(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	copyFile(t, filepath.Join(dir, "trip.srt"), filepath.Join(dir, "in", "trip.srt"))
+	copyFile(t, testfiles.Path(t, "mpl2/real/subtitle_edit_shape.txt"), filepath.Join(dir, "in", "film.txt"))
+	copyFile(t, filepath.Join(dir, "notes.txt"), filepath.Join(dir, "in", "notes.txt"))
+	assert.Equal(t,
+		result{Stdout: "in/film.txt -> out/film.srt\nin/trip.srt -> out/trip.srt\n2 files: 2 succeeded, 0 failed.\n"},
+		call{dir: dir}.run(t, "convert", "in", "--to", "srt", "--output-dir", "out"))
+	assert.Equal(t, convertAs(t, "trip.srt", stbox.SubRip), readFile(t, dir, "out/trip.srt"))
+	assert.NoFileExists(t, filepath.Join(dir, "out", "notes.srt"))
+	film, _, err := stbox.Load(testfiles.Path(t, "mpl2/real/subtitle_edit_shape.txt"), stbox.ReadOptions{})
+	require.NoError(t, err)
+	var want bytes.Buffer
+	require.NoError(t, stbox.Write(&want, film, stbox.SubRip, stbox.WriteOptions{}))
+	assert.Equal(t, want.String(), readFile(t, dir, "out/film.srt"))
 }
 
 func TestDashReadsStandardInputAndWritesStandardOutput(t *testing.T) {

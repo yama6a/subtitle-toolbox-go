@@ -79,6 +79,7 @@ func TestLastCueDuration(t *testing.T) {
 		format stbox.Format
 		start  time.Duration
 	}{
+		{"TMPlayer", "tmplayer/real/tmplayer_crlf.txt", stbox.TMPlayer, 3600 * time.Second},
 		{"SAMI", "sami/real/mantas_smi_formatted.smi", stbox.SAMI, 17350 * time.Millisecond},
 	}
 	for _, tt := range tests {
