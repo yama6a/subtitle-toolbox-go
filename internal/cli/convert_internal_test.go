@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/fixing"
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/hearingimpaired"
@@ -83,6 +84,13 @@ func sdh(opts hearingimpaired.Options) func(s *stbox.Subtitle) error {
 	}
 }
 
+func fix(opts fixing.Options) func(s *stbox.Subtitle) error {
+	return func(s *stbox.Subtitle) error {
+		_, err := fixing.Apply(s, opts)
+		return err //nolint:wrapcheck // the test compares the result, not the error
+	}
+}
+
 func shift(d time.Duration) func(s *stbox.Subtitle) error {
 	return func(s *stbox.Subtitle) error { return s.Shift(d) }
 }
@@ -91,6 +99,7 @@ func TestConvertRunsTheGroupsInAFixedOrder(t *testing.T) {
 	t.Parallel()
 
 	want := libraryOutput(t, "cli/trip.srt", stbox.SubRip, stbox.WriteOptions{}, all(
+		fix(fixing.Options{Language: "en"}),
 		sdh(hearingimpaired.Options{KeepParentheses: true}),
 		func(s *stbox.Subtitle) error {
 			return s.ReplaceText("Too late", "[late] too late", model.ReplaceOptions{})
@@ -108,7 +117,7 @@ func TestConvertRunsTheGroupsInAFixedOrder(t *testing.T) {
 		"--timing-min-duration", "1", "--timing-fix-overlaps", "--timing-min-gap", "0.1", "--scale", "1.001",
 		"--shift", "-0.5", "--structure-merge-duplicates", "--structure-wrap", "--structure-max-cpl", "20",
 		"--case", "upper", "--strip-tags", "--replace", "Too late=[late] too late", "--sdh", "--sdh-keep-parentheses",
-		"--language", "en",
+		"--language", "en", "--errors-fix",
 	}
 	dir := newDir(t)
 	got := call{dir: dir}.run(t, append([]string{"convert", "trip.srt", "--to", "srt", "-o", "-"}, words...)...)
@@ -739,8 +748,8 @@ func TestConvertUsageErrors(t *testing.T) {
 		{"case title", []string{"--case", "title"}, `The option --case must be upper, lower or sentence, got "title".`},
 		{"case before rtl", []string{"--rtl", "left", "--case", "title"}, `The option --case must be upper, lower or sentence, got "title".`},
 		{"rtl left", []string{"--rtl", "left"}, `The option --rtl must be fix or clean, got "left".`},
-		{"language alone", []string{"--language", "tr"}, "Pass --case with --language."},
-		{"language before groups", []string{"--language", "tr", "--replace-regex"}, "Pass --case with --language."},
+		{"language alone", []string{"--language", "tr"}, "Pass --case or --errors-fix with --language."},
+		{"language before groups", []string{"--language", "tr", "--replace-regex"}, "Pass --case or --errors-fix with --language."},
 		{"output options before language", []string{"--language", "tr", "--line-ending", "cr"}, `The option --line-ending must be lf or crlf, got "cr".`},
 		{"regex", []string{"--regex", "--replace", "a=b"}, "Unknown option --regex."},
 		{"case language", []string{"--case-language", "tr"}, "Unknown option --case-language."},

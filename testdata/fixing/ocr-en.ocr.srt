@@ -1,0 +1,25 @@
+﻿1
+00:00:01,000 --> 00:00:03,500
+l'm sure l'll be late.
+lt's the bus again.
+
+2
+00:00:04,000 --> 00:00:06,500
+lf l can, l will call you at 9.
+
+3
+00:00:07,000 --> 00:00:09,500
+-ls it open?
+-l think so.
+
+4
+00:00:10,000 --> 00:00:12,500
+DON'T LEAVE lT lN THE CAR.
+
+5
+00:00:13,000 --> 00:00:15,500
+l've seen it. l'd go again.
+
+6
+00:00:16,000 --> 00:00:18,500
+Wait . . . *eally ?

@@ -3,6 +3,7 @@ package cli
 import (
 	"cmp"
 	"context"
+	"encoding/json"
 	"errors"
 	"regexp"
 	"slices"
@@ -14,8 +15,10 @@ import (
 	"github.com/dlclark/regexp2/v2"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/fixing"
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -87,7 +90,7 @@ func flagSteps(a *args, flags []flagStep) steps {
 
 // convertGroups lists the groups in pipeline order.
 func convertGroups() []group {
-	return []group{forcedGroup(), sdhGroup(), replaceGroup(), textGroup(), structureGroup(), retimeGroup(), timingGroup(), assGroup()}
+	return []group{forcedGroup(), errorsGroup(), sdhGroup(), replaceGroup(), textGroup(), structureGroup(), retimeGroup(), timingGroup(), assGroup()}
 }
 
 func needs(a *args, needed string, opts ...string) error {
@@ -127,6 +130,90 @@ func forcedGroup() group {
 			return nil
 		},
 	}
+}
+
+func errorsGroup() group {
+	return group{
+		name:    "errors",
+		summary: "Fix spacing, punctuation and OCR errors.",
+		options: []option{
+			flagOption("errors-fix", "Fix spacing, punctuation, dash, tag and OCR errors such as lt's for It's."),
+			valueOption("errors-enable", "NAME[,NAME]", "Also apply these rules that are off by default with --errors-fix: "+
+				ruleNames(fixing.OptionalRules())+"."),
+			flagOption("errors-list-fixes", "Print each change of --errors-fix to standard error."),
+		},
+		build: buildErrors,
+	}
+}
+
+func ruleNames(rules []fixing.Rule) string {
+	names := make([]string, len(rules))
+	for i, r := range rules {
+		names[i] = string(r)
+	}
+	return strings.Join(names, ", ")
+}
+
+func buildErrors(a *args, add func(edit)) error {
+	if err := needs(a, "errors-fix", "errors-enable", "errors-list-fixes"); err != nil {
+		return err
+	}
+	if !a.Has("errors-fix") {
+		return nil
+	}
+	language, _ := a.Value("language")
+	e := errorsEdit{opts: fixing.Options{Language: language}, list: a.Has("errors-list-fixes")}
+	optional := fixing.OptionalRules()
+	names, _ := a.Value("errors-enable")
+	for name := range strings.SplitSeq(names, ",") {
+		name = strings.Trim(name, markupcore.PHPTrimSet)
+		if name == "" {
+			continue
+		}
+		i := slices.IndexFunc(optional, func(r fixing.Rule) bool { return asciiLower(string(r)) == asciiLower(name) })
+		if i < 0 {
+			return usage("Unknown rule " + quote(name) + " in --errors-enable. The valid names are " + ruleNames(optional) + ".")
+		}
+		if !slices.Contains(e.opts.Enable, optional[i]) {
+			e.opts.Enable = append(e.opts.Enable, optional[i])
+		}
+	}
+	add(e)
+	return nil
+}
+
+// errorsEdit runs fixing.Apply and prints each fix with list.
+type errorsEdit struct {
+	opts fixing.Options
+	list bool
+}
+
+var _ edit = errorsEdit{}
+
+func (e errorsEdit) apply(_ context.Context, s *stbox.Subtitle, c *console, label string) (*stbox.Subtitle, error) {
+	report, err := fixing.Apply(s, e.opts)
+	if err != nil {
+		return nil, err //nolint:wrapcheck // the CLI message reads the error type of the library
+	}
+	if !e.list {
+		return s, nil
+	}
+	for _, f := range report.Fixes {
+		c.err(label + ": cue " + strconv.Itoa(f.CueIndex+1) + ": " + string(f.Rule) + ": " + jsonString(f.Before) + " -> " +
+			jsonString(f.After) + "\n")
+	}
+	return s, nil
+}
+
+// jsonString writes s as a JSON string as PHP does with JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE and
+// JSON_INVALID_UTF8_SUBSTITUTE.
+func jsonString(s string) string {
+	var b strings.Builder
+	enc := json.NewEncoder(&b)
+	enc.SetEscapeHTML(false)
+	//nolint:errchkjson // a string encodes without error into a strings.Builder
+	_ = enc.Encode(s)
+	return strings.TrimSuffix(b.String(), "\n")
 }
 
 func sdhGroup() group {

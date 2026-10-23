@@ -1,0 +1,197 @@
+[
+ {
+  "name": "two non-breaking spaces",
+  "rule": "doubleSpaces",
+  "language": "en",
+  "before": [
+   "Hi  there"
+  ],
+  "after": [
+   "Hi there"
+  ]
+ },
+ {
+  "name": "missing space after , ! ? and ...",
+  "rule": "missingSpaceAfterPunctuation",
+  "language": "es",
+  "before": [
+   "Hola,Ana!¿Vienes?Sí...vale"
+  ],
+  "after": [
+   "Hola, Ana! ¿Vienes? Sí... vale"
+  ]
+ },
+ {
+  "name": "en dash in italics",
+  "rule": "dialogueDashes",
+  "language": "en",
+  "before": [
+   "<i>–Hi.</i>"
+  ],
+  "after": [
+   "<i>- Hi.</i>"
+  ]
+ },
+ {
+  "name": "German",
+  "rule": "ocrLowercaseL",
+  "language": "de",
+  "before": [
+   "lch weiß. lst das lhr Hund?"
+  ],
+  "after": [
+   "Ich weiß. Ist das Ihr Hund?"
+  ]
+ },
+ {
+  "name": "French",
+  "rule": "ocrLowercaseL",
+  "language": "fr",
+  "before": [
+   "ll dit. lls vont à l'hôtel."
+  ],
+  "after": [
+   "Il dit. Ils vont à l'hôtel."
+  ]
+ },
+ {
+  "name": "Spanish keeps ll",
+  "rule": "ocrLowercaseL",
+  "language": "es",
+  "before": [
+   "lr a la isla. lván llama."
+  ],
+  "after": [
+   "Ir a la isla. Iván llama."
+  ]
+ },
+ {
+  "name": "lone i with contractions",
+  "rule": "loneLowercaseI",
+  "language": "en",
+  "before": [
+   "i'm sure, i’ll go, i'd and i've"
+  ],
+  "after": [
+   "I'm sure, I’ll go, I'd and I've"
+  ]
+ },
+ {
+  "name": "music note and a dash before",
+  "rule": "sentenceStartCase",
+  "language": "en",
+  "before": [
+   "♪ la la!",
+   "- été."
+  ],
+  "after": [
+   "♪ La la!",
+   "- Été."
+  ]
+ },
+ {
+  "name": "Turkish dotted i",
+  "rule": "sentenceStartCase",
+  "language": "tr",
+  "before": [
+   "iyi."
+  ],
+  "after": [
+   "İyi."
+  ]
+ },
+ {
+  "name": "hash music signs",
+  "rule": "musicNotes",
+  "language": "en",
+  "before": [
+   "# Happy birthday #"
+  ],
+  "after": [
+   "♪ Happy birthday ♪"
+  ]
+ },
+ {
+  "name": "star music signs",
+  "rule": "musicNotes",
+  "language": "en",
+  "before": [
+   "* Happy birthday *"
+  ],
+  "after": [
+   "♪ Happy birthday ♪"
+  ]
+ },
+ {
+  "name": "music sign in a tag",
+  "rule": "musicNotes",
+  "language": "en",
+  "before": [
+   "<i># la la la</i>"
+  ],
+  "after": [
+   "<i>♪ la la la</i>"
+  ]
+ },
+ {
+  "name": "music sign after a dash",
+  "rule": "musicNotes",
+  "language": "en",
+  "before": [
+   "- # la la",
+   "- * oh *"
+  ],
+  "after": [
+   "- ♪ la la",
+   "- ♪ oh ♪"
+  ]
+ },
+ {
+  "name": "music sign as the whole line",
+  "rule": "musicNotes",
+  "language": "en",
+  "before": [
+   "#"
+  ],
+  "after": [
+   "♪"
+  ]
+ },
+ {
+  "name": "double U+2019",
+  "rule": "doubleApostrophes",
+  "language": "en",
+  "before": [
+   "’’Go’’"
+  ],
+  "after": [
+   "\"Go\""
+  ]
+ },
+ {
+  "name": "ellipsis after a question",
+  "rule": "unneededPeriods",
+  "language": "en",
+  "before": [
+   "What?...",
+   "Wait!..",
+   "Really?…"
+  ],
+  "after": [
+   "What?...",
+   "Wait!..",
+   "Really?…"
+  ]
+ },
+ {
+  "name": "text without case",
+  "rule": "sentenceStartCase",
+  "language": "ja",
+  "before": [
+   "こんにちは。"
+  ],
+  "after": [
+   "こんにちは。"
+  ]
+ }
+]
