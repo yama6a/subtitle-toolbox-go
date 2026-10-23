@@ -115,11 +115,12 @@ The edits run in this order, whatever the order of the flags. A group runs only 
 | # | Group | Options | Why at this place |
 |---:|:--- |:--- |:--- |
 | 1 | `forced` | `--forced-only` | later steps see only the cues that stay |
-| 2 | `replace` | `--replace FROM=TO`, `--replace-regex`, `--replace-ignore-case` | |
-| 3 | `text` | `--case`, `--strip-tags`, `--rtl` | text edits change the line lengths, so they run before `structure` |
-| 4 | `structure` | `--structure-*` | joins and splits change the cues, so the timing edits run after it |
-| 5 | `retime` | `--sync`, `--shift`, `--scale`, `--from-fps` with `--to-fps`, in this order | |
-| 6 | `timing` | `--timing-*` | |
+| 2 | `sdh` | `--sdh`, `--sdh-*` | the replacements and the text edits see the text without annotations |
+| 3 | `replace` | `--replace FROM=TO`, `--replace-regex`, `--replace-ignore-case` | |
+| 4 | `text` | `--case`, `--strip-tags`, `--rtl` | text edits change the line lengths, so they run before `structure` |
+| 5 | `structure` | `--structure-*` | joins and splits change the cues, so the timing edits run after it |
+| 6 | `retime` | `--sync`, `--shift`, `--scale`, `--from-fps` with `--to-fps`, in this order | |
+| 7 | `timing` | `--timing-*` | |
 
 The `ass` group comes last in the help. It runs no edit: it sets how the ASS writer writes the output.
 
@@ -142,6 +143,24 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 | 5 | `--structure-merge-duplicates` | `RemoveDuplicateCues(0)` |
 
 `--structure-merge-same-time` comes last in the help but runs second. So its joined cues take part in the merge of short cues and in the wrap.
+
+### Hearing-impaired annotations
+
+`--sdh` runs `hearingimpaired.Apply` with the rules of [text.md](text.md#hearing-impaired-annotations). `stbox convert film.srt --sdh -o film.clean.srt` removes `[DOOR SLAMS]`, `(laughs)`, `JOHN:` and lines of music symbols, and each cue with no text left.
+
+| Option | Value | Library field |
+|:--- |:--- |:--- |
+| `--sdh` | flag, turns the group on | |
+| `--sdh-keep-square-brackets` | flag | `KeepSquareBrackets` |
+| `--sdh-keep-parentheses` | flag | `KeepParentheses` |
+| `--sdh-keep-speaker-labels` | flag | `KeepSpeakerLabels` |
+| `--sdh-keep-music-lines` | flag | `KeepMusicLines` |
+| `--sdh-any-case-labels` | flag | `AnyCaseLabels` |
+| `--sdh-lyrics` | flag | `Lyrics` |
+| `--sdh-brackets PAIR` | repeatable, exactly 2 characters such as `{}` or `**` | `CustomBrackets`, in flag order |
+
+- **Checks**: every option except `--sdh` needs `--sdh`: `Pass --sdh with --sdh-lyrics.` The options are checked in the order of the table. Then each PAIR in flag order: `The option --sdh-brackets needs two characters, an opening and a closing one, got "{".`
+- **Character**: one Unicode code point. A PAIR of invalid UTF-8 fails.
 
 ### Sync points
 

@@ -15,6 +15,7 @@ import (
 	stbox "github.com/yama6a/subtitle-toolbox-go"
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/hearingimpaired"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -75,6 +76,13 @@ func all(edits ...func(s *stbox.Subtitle) error) func(s *stbox.Subtitle) error {
 	}
 }
 
+func sdh(opts hearingimpaired.Options) func(s *stbox.Subtitle) error {
+	return func(s *stbox.Subtitle) error {
+		_, err := hearingimpaired.Apply(s, opts)
+		return err //nolint:wrapcheck // the test compares the result, not the error
+	}
+}
+
 func shift(d time.Duration) func(s *stbox.Subtitle) error {
 	return func(s *stbox.Subtitle) error { return s.Shift(d) }
 }
@@ -83,6 +91,7 @@ func TestConvertRunsTheGroupsInAFixedOrder(t *testing.T) {
 	t.Parallel()
 
 	want := libraryOutput(t, "cli/trip.srt", stbox.SubRip, stbox.WriteOptions{}, all(
+		sdh(hearingimpaired.Options{KeepParentheses: true}),
 		func(s *stbox.Subtitle) error {
 			return s.ReplaceText("Too late", "[late] too late", model.ReplaceOptions{})
 		},
@@ -98,7 +107,8 @@ func TestConvertRunsTheGroupsInAFixedOrder(t *testing.T) {
 	words := []string{
 		"--timing-min-duration", "1", "--timing-fix-overlaps", "--timing-min-gap", "0.1", "--scale", "1.001",
 		"--shift", "-0.5", "--structure-merge-duplicates", "--structure-wrap", "--structure-max-cpl", "20",
-		"--case", "upper", "--strip-tags", "--replace", "Too late=[late] too late", "--language", "en",
+		"--case", "upper", "--strip-tags", "--replace", "Too late=[late] too late", "--sdh", "--sdh-keep-parentheses",
+		"--language", "en",
 	}
 	dir := newDir(t)
 	got := call{dir: dir}.run(t, append([]string{"convert", "trip.srt", "--to", "srt", "-o", "-"}, words...)...)
@@ -121,9 +131,12 @@ func TestConvertRunsTextAndTimingEditsInOneCall(t *testing.T) {
 	t.Parallel()
 
 	want := libraryOutput(t, "cli/trip.srt", stbox.WebVTT, stbox.WriteOptions{},
-		all(shift(-500*time.Millisecond), func(s *stbox.Subtitle) error { return s.FixOverlaps(0) }))
+		all(sdh(hearingimpaired.Options{}), shift(-500*time.Millisecond), func(s *stbox.Subtitle) error { return s.FixOverlaps(0) }))
 	assert.Equal(t, result{Stdout: want},
-		runCLI(t, "convert", "trip.srt", "--timing-fix-overlaps", "--shift", "-0.5", "--to", "vtt", "-o", "-"))
+		runCLI(t, "convert", "trip.srt", "--sdh", "--timing-fix-overlaps", "--shift", "-0.5", "--to", "vtt", "-o", "-"))
+	assert.Equal(t, "\ufeffWEBVTT\n\n1\n00:00:00.500 --> 00:00:02.000\n<i>The train leaves at noon.</i>\n\n"+
+		"2\n00:00:02.000 --> 00:00:04.500\nWe need two tickets for the long ride to the coast.\n\n"+
+		"3\n00:00:05.500 --> 00:00:05.900\nToo late.\n", want)
 }
 
 func TestConvertKeepsTheInputFormatWithoutTo(t *testing.T) {
@@ -532,6 +545,58 @@ func TestConvertTextEdits(t *testing.T) {
 	assert.Contains(t, got.Stdout, "\n([sigh|s]) Too late.\n")
 }
 
+// Ported from testStripSdh of tests/Cli/BinaryEditTest.php, testConvertSdhKeepOption of
+// tests/Cli/BinaryOptionCoverageTest.php and the "SDH" row of tests/Cli/ApplicationConvertTest.php of
+// subtitle-toolbox-php.
+func TestConvertSDH(t *testing.T) {
+	t.Parallel()
+
+	dir := fixtureDir(t, map[string]string{"sdh.srt": "hearing-impaired/own_sdh.srt"})
+	braces := []hearingimpaired.BracketPair{{Open: "{", Close: "}"}, {Open: "\u00ab", Close: "\u00bb"}}
+	tests := []struct {
+		name   string
+		words  []string
+		opts   hearingimpaired.Options
+		write  stbox.WriteOptions
+		golden string
+	}{
+		{
+			"defaults with CR LF and BOM",
+			[]string{"--line-ending", "crlf", "--bom"},
+			hearingimpaired.Options{},
+			stbox.WriteOptions{LineEnding: stbox.CRLF, BOM: stbox.BOMAdd},
+			"own_sdh_removed.srt",
+		},
+		{"keep square brackets", []string{"--sdh-keep-square-brackets"}, hearingimpaired.Options{KeepSquareBrackets: true}, stbox.WriteOptions{}, "own_sdh_removed_keep_square_brackets.srt"},
+		{"keep music lines", []string{"--sdh-keep-music-lines"}, hearingimpaired.Options{KeepMusicLines: true}, stbox.WriteOptions{}, "own_sdh_removed_keep_music_lines.srt"},
+		{"any case labels", []string{"--sdh-any-case-labels"}, hearingimpaired.Options{AnyCaseLabels: true}, stbox.WriteOptions{}, "own_sdh_removed_any_case_labels.srt"},
+		{"keep parentheses", []string{"--sdh-keep-parentheses"}, hearingimpaired.Options{KeepParentheses: true}, stbox.WriteOptions{}, "own_sdh_removed_keep_parentheses.srt"},
+		{"keep speaker labels", []string{"--sdh-keep-speaker-labels"}, hearingimpaired.Options{KeepSpeakerLabels: true}, stbox.WriteOptions{}, "own_sdh_removed_keep_speaker_labels.srt"},
+		{
+			"all options",
+			[]string{"--sdh-any-case-labels", "--sdh-brackets", "{}", "--sdh-lyrics", "--sdh-brackets", "\u00ab\u00bb"},
+			hearingimpaired.Options{AnyCaseLabels: true, CustomBrackets: braces, Lyrics: true},
+			stbox.WriteOptions{},
+			"own_sdh_removed_all_options.srt",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := call{dir: dir}.run(t, append([]string{"convert", "sdh.srt", "--to", "srt", "--sdh"}, tt.words...)...)
+			assert.Equal(t, result{Stdout: libraryOutput(t, "hearing-impaired/own_sdh.srt", stbox.SubRip, tt.write, sdh(tt.opts))}, got)
+			assert.Equal(t, string(testfiles.Read(t, "hearing-impaired/"+tt.golden)), got.Stdout)
+		})
+	}
+
+	got := runCLI(t, "convert", "trip.srt", "--sdh", "--to", "vtt", "-o", "-")
+	assert.Equal(t, 0, got.Code, got.Stderr)
+	assert.Contains(t, got.Stdout, "\nWe need two tickets for the long ride to the coast.\n")
+	assert.Contains(t, got.Stdout, "\nToo late.\n")
+	assert.NotContains(t, got.Stdout, "BELL")
+}
+
 // Ported from testForcedOnly of tests/Cli/BinaryEditTest.php of subtitle-toolbox-php, with the TTML fixture.
 func TestConvertForcedOnlyOfTTML(t *testing.T) {
 	t.Parallel()
@@ -641,6 +706,19 @@ func TestConvertUsageErrors(t *testing.T) {
 		words []string
 		msg   string
 	}{
+		{"sdh lyrics without sdh", []string{"--sdh-lyrics"}, "Pass --sdh with --sdh-lyrics."},
+		{"sdh brackets without sdh", []string{"--sdh-brackets", "{}"}, "Pass --sdh with --sdh-brackets."},
+		{"sdh keep square brackets without sdh", []string{"--sdh-keep-square-brackets"}, "Pass --sdh with --sdh-keep-square-brackets."},
+		{"sdh keep parentheses without sdh", []string{"--sdh-keep-parentheses"}, "Pass --sdh with --sdh-keep-parentheses."},
+		{"sdh keep speaker labels without sdh", []string{"--sdh-keep-speaker-labels"}, "Pass --sdh with --sdh-keep-speaker-labels."},
+		{"sdh keep music lines without sdh", []string{"--sdh-keep-music-lines"}, "Pass --sdh with --sdh-keep-music-lines."},
+		{"sdh any case labels without sdh", []string{"--sdh-any-case-labels"}, "Pass --sdh with --sdh-any-case-labels."},
+		{"sdh checks in option order", []string{"--sdh-brackets", "{}", "--sdh-lyrics"}, "Pass --sdh with --sdh-lyrics."},
+		{"sdh brackets of one character", []string{"--sdh", "--sdh-brackets", "{"}, `The option --sdh-brackets needs two characters, an opening and a closing one, got "{".`},
+		{"sdh brackets of three characters", []string{"--sdh", "--sdh-brackets", "{}}"}, `The option --sdh-brackets needs two characters, an opening and a closing one, got "{}}".`},
+		{"sdh brackets empty", []string{"--sdh", "--sdh-brackets="}, `The option --sdh-brackets needs two characters, an opening and a closing one, got "".`},
+		{"sdh brackets of invalid UTF-8", []string{"--sdh", "--sdh-brackets", "{\xff"}, "The option --sdh-brackets needs two characters, an opening and a closing one, got \"{\xff\"."},
+		{"sdh before replace", []string{"--replace", "x", "--sdh-lyrics"}, "Pass --sdh with --sdh-lyrics."},
 		{"replace without =", []string{"--replace", "colour"}, `The option --replace needs FROM=TO, got "colour".`},
 		{"replace with empty FROM", []string{"--replace", "=x"}, `The option --replace needs FROM=TO, got "=x".`},
 		{"replace regex invalid", []string{"--replace-regex", "--replace", "/(/=x"}, `The option --replace has the invalid regular expression "/(/".`},
