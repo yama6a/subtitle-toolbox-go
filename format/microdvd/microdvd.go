@@ -6,10 +6,9 @@
 package microdvd
 
 import (
-	"math"
 	"regexp"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
@@ -26,7 +25,7 @@ func (o ReadOptions) Validate() error {
 	if o.FrameRate == 0 {
 		return nil
 	}
-	return checkFrameRate(o.FrameRate, "ReadOptions.MicroDVD.FrameRate", "The frame rate")
+	return parsing.CheckFrameRate(o.FrameRate, "ReadOptions.MicroDVD.FrameRate", "The frame rate")
 }
 
 // WriteOptions holds the settings of the MicroDVD writer.
@@ -42,19 +41,7 @@ func (o WriteOptions) Validate() error {
 	if o.FrameRate == 0 {
 		return nil
 	}
-	return checkFrameRate(o.FrameRate, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate")
-}
-
-// checkFrameRate returns an *InvalidArgumentError unless fps is finite and above 0. subject starts the message.
-func checkFrameRate(fps float64, option, subject string) error {
-	if fps > 0 && !math.IsInf(fps, 1) {
-		return nil
-	}
-	return &model.InvalidArgumentError{Option: option, Msg: frameRateMessage(subject, fps)}
-}
-
-func frameRateMessage(subject string, fps float64) string {
-	return subject + " must be greater than 0, got " + timecode.Number(fps) + "."
+	return parsing.CheckFrameRate(o.FrameRate, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate")
 }
 
 var signatureRegexp = regexp.MustCompile(`\A\{\d+\}\{\d*\}`)

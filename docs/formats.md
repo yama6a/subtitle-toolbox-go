@@ -5,6 +5,7 @@
 | Format | Go constant | Name | Extensions | Section |
 |:--- |:--- |:--- |:--- |:--- |
 | ASS and SSA | `stbox.ASS` | `ass` | `.ass`, `.ssa` | [ASS and SSA](#ass-and-ssa) |
+| CSV and TSV | `stbox.CSV`, `stbox.TSV` | `csv`, `tsv` | `.csv`, `.tsv` | [CSV and TSV](#csv-and-tsv) |
 | library JSON | `stbox.JSON` | `json` | `.json` | [JSON](#json) |
 | LRC | `stbox.LRC` | `lrc` | `.lrc` | [LRC](#lrc) |
 | MicroDVD | `stbox.MicroDVD` | `microdvd` | `.sub` | [MicroDVD](#microdvd) |
@@ -800,3 +801,121 @@ All rows use these 4 cues. They are `<v Mara><b>Hello</b>` and `world.` from 1 t
 - **Names**: PHP has 2 bools that default to true, `joinLines` and `joinCues`. Go names them so that false is the default. `ParagraphGap` is a pointer because 0 is legal and differs from the default.
 - **One paragraph**: `ParagraphGap: new(plaintext.NoParagraphBreaks)`. PHP passes `INF`, and a `time.Duration` has no infinity. `NoParagraphBreaks` is the largest `time.Duration`, about 292 years, which no gap between cues reaches.
 - **Check**: `Validate` rejects a negative gap, for example `The paragraph gap must be 0 or more seconds, got -1.`, with an error that matches `ErrInvalidArgument`.
+
+## CSV and TSV
+
+Translators edit subtitles in Excel or Google Sheets, and openai-whisper and whisper.cpp write tables. Package `format/csv` reads and writes such tables with RFC 4180 quoting. The format names are `csv` and `tsv`, the extensions `.csv` and `.tsv`. Both formats store the format data key `csv`. A BOM is written by default, because Excel needs it to read UTF-8.
+
+```csv
+start,end,speaker,text
+00:00:01.000,00:00:04.000,Anna,Where are you going?
+00:00:04.500,00:00:06.000,Ben,"Home.
+Now."
+```
+
+This table reads as 2 cues: `<v Anna>Where are you going?` and `<v Ben>Home.` plus `Now.`. A table read and written unchanged comes out byte for byte, with its columns, header, delimiter, time format and quoting.
+
+- **Detection**: none. A table has no signature, so `Load` takes CSV and TSV from the extension, and `Parse` needs `ReadOptions.Format`.
+- **TSV and CSV**: the reader detects the delimiter, so it reads both. Without `WriteOptions.CSV.Delimiter`, TSV output writes tabs, and CSV output writes `,` when the stored delimiter is a tab.
+
+### Columns
+
+| Role | Header name | Meaning |
+|:--- |:--- |:--- |
+| `identifier` | `identifier` | `Cue.ID`, trimmed. An empty cell gives no ID |
+| `start` | `start` | the start time. Required |
+| `end` | `end` | the end time |
+| `duration` | `duration` | the cue length. An end cell wins |
+| `speaker` | `speaker` | the speaker, trimmed. It becomes a `<v Name>` tag before the first line |
+| `text` | `text` | the cue text, with `&`, `<` and `>` escaped and split at LF. Required |
+
+- **Header names** compare without case and after a trim.
+- **Synonyms**: when `Columns` is zero and the header lacks `start` or `text`, a role without a header of its name takes the first synonym in the table below. The names compare in lower case with spaces, `_` and `-` removed, so `Start Time` and `start_time` both match `starttime`. A table with both `start` and `text` headers uses no synonyms, so in `start,end,text,name` the `name` column gives no speaker.
+- **Synonym warning**: a role found under another name warns in both modes, for example `The parser reads the column "Begin" as start.`, action `Repaired`.
+- **Column layout**: `ReadOptions.CSV.Columns` maps a role to a header name with `csv.ColumnNamed` or to a 0-based index with `csv.ColumnAt`. A layout turns the synonyms off. Map one role, for example `Start: csv.ColumnNamed("start")`, to read without synonyms.
+- **No header**: with `NoHeader`, `Start`, `Text` and every other mapped role need an index.
+- **Missing column**: a missing `start` or `text`, or a mapped column that the table lacks, fails in both modes with `The table has no column "NAME" for ROLE.` at the line of the header row. An index without a header must be below 1000.
+- **Other columns**: the cells of a column without a role go to cue data `csv.columns`, keyed by header name, or by column index without a header. A short row is padded with `""` up to the header width.
+
+| Role | Synonyms, in order |
+|:--- |:--- |
+| start | `begin`, `in`, `starttime`, `starttc`, `timecode`, `tcin` |
+| end | `out`, `stop`, `endtime`, `endtc`, `tcout` |
+| duration | `length` |
+| speaker | `name`, `character` |
+| text | `subtitle`, `caption`, `dialogue`, `transcript` |
+
+### Read
+
+- **Delimiter**: `,`, `;` or tab, from the option or from the first line that has one. Outside quotes, the most frequent wins, and a tie goes to `,`, then `;`.
+- **Quoting**: a `"` at the start of a cell starts a quoted cell. `""` inside is one quote, and a line break inside becomes LF. Text after the closing quote appends to the cell. A `"` inside an unquoted cell is text.
+- **Unclosed quote**: strict mode fails with `A quoted CSV cell has no closing quote.` at the line where the row starts. Lenient mode ends the cell at the end of its line, with a `Repaired` warning.
+- **Blank rows**: a row whose cells are all blank is dropped.
+- **Width**: a row of more than 1000 cells fails in both modes: `The table has 1001 columns. The limit is 1000.`
+- **Rows before the header**: lenient mode drops the rows before the first row that has the needed columns, with one `Skipped` warning such as `The table has 2 rows before the header row.`
+- **Row errors**: a row with a bad time fails in strict mode. Lenient mode skips it.
+- **End before start**: fails the row in both modes, because a comma in a time or a cut-off last row gives such an end. The reader never swaps.
+- **End**: the end cell, else the start plus the duration cell, at most 99999:59:59.999. Without both, the cue ends at the first later start of all cues, else at its start plus `LastCueDuration`, as [reading-writing.md](reading-writing.md#last-cue-default) says.
+
+| Time shape | Example | Rule |
+|:--- |:--- |:--- |
+| seconds | `62.5` | digits with an optional fraction. Milliseconds in a millisecond table |
+| frames | `00:01:02:12` | whole seconds plus the frames divided by `ReadOptions.CSV.FrameRate`. The frame number is not checked against the rate |
+| clock | `00:01:02.500`, `00:01:02,500`, `1:02:03` | `h:mm:ss` with an optional `.` or `,` fraction of any length |
+| minutes and seconds | `01:02.500`, `61:02` | `m:ss` with an optional fraction. The minutes may be 60 or more |
+| one-digit seconds | `00:00:1`, `0:00:5.5` | a single digit after the last colon gets a `0` first |
+
+- **Rounding**: every time rounds to whole milliseconds, then must be below 100000 hours: `The time "T" is not below 100000 hours.`
+- **Frames without a frame rate**: `The time "T" counts frames and needs a frame rate.` The error has `Option` `ReadOptions.CSV.FrameRate`, and the CLI adds `Pass --fps or --input-fps.`
+- **Other shapes**: `The time "T" is not seconds, h:mm:ss.mmm, m:ss.mmm, hh:mm:ss,mmm or hh:mm:ss:ff.`
+- **Millisecond table**: when every non-empty start, end and duration cell is digits only, and the median cue duration is 100 or more, every time counts milliseconds. A duration is the end minus the start, else the duration cell. The median of an even count is the mean of the 2 middle values. The reader warns in both modes, for example `The times are whole numbers, and the median cue lasts 2550 seconds. The parser reads the times as milliseconds.` So `0,2340,Hello` reads as 0 to 2.34 s, and `1,4,Hello` stays in seconds.
+
+| File data `csv` | Meaning |
+|:--- |:--- |
+| `delimiter` | the delimiter of the read |
+| `header` | the header cells, null without a header row |
+| `roles` | role to column index, for the roles found |
+| `width` | the larger of the header width and the widest data row |
+| `timeFormat` | the shape of the first read start: `hh:mm:ss,mmm` with a `,`, `hh:mm:ss:ff` with 3 colons, `hh:mm:ss.mmm` with a colon, else `seconds`. `milliseconds` for a millisecond table |
+| `frameRate` | `ReadOptions.CSV.FrameRate`, null when zero |
+| `quotedColumns` | the columns quoted in every data row, when there are any |
+
+### Write
+
+- **Columns of a read table**: the stored columns, roles and header. The other columns write the stored `csv.columns` cells. A table without a header row writes none.
+- **Columns of other input**: `identifier` when a cue has an ID, then `start`, `end`, `text`, then the keys of the stored `csv.columns` of the cues, in first-seen order.
+- **Speaker**: a `speaker` column goes before `text` when the first line of a cue starts with a `<v>` tag and the layout has no speaker column. The cell holds the name of that tag. Later `<v>` tags are lost.
+- **Text**: the plain text of the lines, ruby as text and entities decoded, joined with LF.
+- **Second text**: `SecondText` adds a column after `text` with the header `SecondTextHeader`. Each row gets the plain text of the cue of `SecondText` with the largest positive overlap. A second cue fills only the first row that picks it.
+- **Quoting**: a cell that holds `"`, CR, LF or the delimiter gets quotes, and so does every cell of a stored quoted column. Each `"` doubles.
+- **Formulas**: `EscapeFormulas` puts `'` before a cell that starts with `=`, `+`, `-` or `@`, header cells too. It is off by default, because dialogue lines start with `-`.
+- **Line endings**: the rows end with the line ending of the write options. A line break inside a cell stays LF, as Excel writes it.
+- **Lost on write**: markup, alignment, speakers after the first `<v>` tag, and the leading space of whisper.cpp texts.
+
+| Time format | 62.5 s writes |
+|:--- |:--- |
+| `seconds` | `62.5`. 4 s writes `4` |
+| `hh:mm:ss.mmm` | `00:01:02.500` |
+| `hh:mm:ss,mmm` | `00:01:02,500` |
+| `hh:mm:ss:ff` | `00:01:02:13` at 25 fps. A frame at or above the rounded frame rate moves to the next second as frame 0. A time that would write 100000 hours writes the last frame below it, such as `99999:59:59:24` at 25 fps |
+| `milliseconds` | `62500` |
+
+### Options
+
+The root `ReadOptions.CSV` holds a `csv.ReadOptions` and `WriteOptions.CSV` a `csv.WriteOptions`. They serve CSV and TSV. Each zero value takes the stored value, else the default. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#csv-and-tsv).
+
+| Option | Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |:--- |
+| `ReadOptions.CSV` | `Columns` | `csv.Columns` | zero: the header names, with synonyms | the column layout |
+| `ReadOptions.CSV` | `Delimiter` | `csv.Delimiter` | detect from the first line | `,`, `;` or tab |
+| `ReadOptions.CSV` | `FrameRate` | `float64` | 0: none | frames per second of `hh:mm:ss:ff` times |
+| `WriteOptions.CSV` | `Delimiter` | `csv.Delimiter` | the stored delimiter, else `,` | `,`, `;` or tab |
+| `WriteOptions.CSV` | `TimeFormat` | `csv.TimeFormat` | the stored time format, else `hh:mm:ss.mmm` | one of the 5 time formats |
+| `WriteOptions.CSV` | `FrameRate` | `float64` | 0: the stored frame rate | frames per second of `hh:mm:ss:ff` |
+| `WriteOptions.CSV` | `SecondText` | `*model.Subtitle` | nil: no second column | the cues of the second text column |
+| `WriteOptions.CSV` | `SecondTextHeader` | `string` | `text2` | the header of the second text column |
+| `WriteOptions.CSV` | `EscapeFormulas` | `bool` | false | put `'` before a formula cell |
+
+- **Checks**: `Validate` rejects a negative column index (`The column index of start must be 0 or more, got -1.`), a column name or a missing index with `NoHeader` (`A table without a header row needs a column index for start.`), another delimiter (`The CSV delimiter must be ",", ";" or a tab.`), another time format, and a frame rate that is negative, NaN or infinite. Each error matches `ErrInvalidArgument` and names the option path, such as `ReadOptions.CSV.Columns.Start`.
+- **Frames without a frame rate**: `TimeFrames` without a frame rate in the options or the file data fails at write time with `The time format hh:mm:ss:ff needs a frame rate.` and `Option` `WriteOptions.CSV.FrameRate`.
+- **Stored frame rate**: a stored `frameRate` that is not above 0 fails at write time with, for example, `The frame rate must be greater than 0, got 0.` and the same `Option`, also for another time format.

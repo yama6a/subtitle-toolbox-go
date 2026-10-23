@@ -43,6 +43,7 @@ Every file except `mantas_utf16.srt` and `mantas_multiple_new_lines.vtt` is writ
 | `absurd_word_timestamp.vtt` | a cue with a word timestamp of 20 hour digits between two good cues, LF | MIT |
 | `broken_events.ass` | no `Format:` line in `[Events]`, an event with 4 fields, a letter in an end time, UTF-8 BOM, CR LF | MIT |
 | `absurd_hours.ass` | a `Dialogue` line with 20 hour digits between two good lines, LF | MIT |
+| `absurd_hours.csv` | a row with 20 hour digits between two good rows, LF | MIT |
 | `loose_times.ass` | Start and End times with 4 fraction digits, without a fraction, with `,` before the fraction and with `:` before the fraction, LF | MIT |
 | `numeric_field_name.ass` | the number `1` as a field name in the `Format:` line of `[Events]`, in the shape of an Aegisub file, UTF-8 BOM, CR LF | MIT |
 | `sixty_minutes.ass` | an End time with 75 minutes and a Start time with 75 seconds, both with a 2-digit fraction, in the shape of an Aegisub file, LF | MIT |

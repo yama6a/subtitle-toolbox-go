@@ -31,7 +31,7 @@ func inputOptions(manyInputs bool, fpsHelp string) []option {
 		valueOption("encoding", "NAME", "Encoding of input that is not UTF-8, for example Windows-1252. "+
 			"It replaces code page detection. A BOM, valid UTF-8 and UTF-16 input win over it."),
 		flagOption("lenient", "Skip or repair broken cues and print a warning for each."),
-		valueOption("input-fps", "RATE", "Frame rate of a MicroDVD input without a {1}{1}<fps> first line."),
+		valueOption("input-fps", "RATE", "Frame rate of a MicroDVD input without a {1}{1}<fps> first line, and of CSV or TSV times in hh:mm:ss:ff."),
 		valueOption("fps", "RATE", fpsHelp),
 	}
 	if manyInputs {
@@ -103,6 +103,7 @@ func (r *runner) prepareRead(a *args) error {
 	}
 	if ok {
 		r.readOptions.MicroDVD.FrameRate = fps
+		r.readOptions.CSV.FrameRate = fps
 	}
 	if v, ok := a.Value("from"); ok {
 		f, err := readableFormat(v)

@@ -218,12 +218,18 @@ func writeString(t *testing.T, row formatFuncs, s *Subtitle, opts WriteOptions) 
 	return out.String()
 }
 
-func outputSubtitle(t *testing.T) *Subtitle {
+// outputSubtitle returns the subtitle of the output option tests. CSV and TSV keep a line break inside a cell as
+// LF, so their cue holds one line.
+func outputSubtitle(t *testing.T, f Format) *Subtitle {
 	t.Helper()
 
+	lines := []string{"<i>Bonjour</i>", "ca va ?"}
+	if f == CSV || f == TSV {
+		lines = []string{"<i>Bonjour</i> ca va ?"}
+	}
 	s := &Subtitle{}
 	s.SetMetadata(MetadataTitle, "Cafe")
-	s.AddCue(Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"<i>Bonjour</i>", "ca va ?"}})
+	s.AddCue(Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: lines})
 	s.AddCue(Cue{Start: 5 * time.Second, End: 7250 * time.Millisecond, Lines: []string{"Second cue"}})
 	require.NoError(t, s.AddComment("Note", 1))
 	return s
@@ -237,7 +243,7 @@ func TestOutputOptions(t *testing.T) {
 		t.Run(string(row.format), func(t *testing.T) {
 			t.Parallel()
 
-			s := outputSubtitle(t)
+			s := outputSubtitle(t, row.format)
 			def := writeString(t, row, s, WriteOptions{})
 			assert.Equal(t, writesBOM[row.format], strings.HasPrefix(def, utf8BOM), "format BOM")
 			assert.NotContains(t, def, "\r")
@@ -286,7 +292,7 @@ func TestStripTagsChangesTheOutput(t *testing.T) {
 		t.Run(string(f), func(t *testing.T) {
 			t.Parallel()
 
-			s := outputSubtitle(t)
+			s := outputSubtitle(t, f)
 			assert.NotEqual(t, writeString(t, row, s, WriteOptions{}), writeString(t, row, s, WriteOptions{StripTags: true}))
 		})
 	}

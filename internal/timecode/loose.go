@@ -53,7 +53,7 @@ func looseHours(s string) (int, string, bool) {
 	if digits == "" && h != "" {
 		digits = "0"
 	}
-	if !ok || !isDigits(h) || len(digits) > maxLooseHourDigits {
+	if !ok || !IsDigits(h) || len(digits) > maxLooseHourDigits {
 		return 0, s, false
 	}
 	return atoi(digits), rest, true
@@ -64,7 +64,7 @@ func looseFraction(s, separators string) (int, bool) {
 		return 0, true
 	}
 	fraction := s[1:]
-	if !strings.Contains(separators, s[:1]) || len(fraction) > maxLooseFractionDigits || !isDigits(fraction) {
+	if !strings.Contains(separators, s[:1]) || len(fraction) > maxLooseFractionDigits || !IsDigits(fraction) {
 		return 0, false
 	}
 	return atoi(fraction + strings.Repeat("0", maxLooseFractionDigits-len(fraction))), true
@@ -72,7 +72,7 @@ func looseFraction(s, separators string) (int, bool) {
 
 func sexagesimal(s string) (int, string, bool) {
 	n := 0
-	for n < len(s) && isDigit(s[n]) {
+	for n < len(s) && IsDigit(s[n]) {
 		n++
 	}
 	if n == 0 || n > 2 || n == 2 && s[0] > '5' {
@@ -81,19 +81,21 @@ func sexagesimal(s string) (int, string, bool) {
 	return atoi(s[:n]), s[n:], true
 }
 
-func isDigits(s string) bool {
+// IsDigits reports whether s is one or more ASCII digits.
+func IsDigits(s string) bool {
 	if s == "" {
 		return false
 	}
 	for i := range len(s) {
-		if !isDigit(s[i]) {
+		if !IsDigit(s[i]) {
 			return false
 		}
 	}
 	return true
 }
 
-func isDigit(b byte) bool { return b >= '0' && b <= '9' }
+// IsDigit reports whether b is an ASCII digit.
+func IsDigit(b byte) bool { return b >= '0' && b <= '9' }
 
 // atoi reads a string of at most 9 digits.
 func atoi(s string) int {

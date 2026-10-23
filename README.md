@@ -63,6 +63,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | Format | Go constant | Name | Extensions | Read | Write | Notes |
 |:--- |:--- |:--- |:--- |:--- |:--- |:--- |
 | [ASS and SSA](https://en.wikipedia.org/wiki/SubStation_Alpha) | `stbox.ASS` | `ass` | `.ass`, `.ssa` | yes | yes | |
+| [CSV](https://www.rfc-editor.org/rfc/rfc4180) | `stbox.CSV` | `csv` | `.csv` | yes | yes | not detected from the content |
 | [JSON of this library](docs/json.md) | `stbox.JSON` | `json` | `.json` | yes | yes | |
 | [LRC](https://en.wikipedia.org/wiki/LRC_(file_format)) | `stbox.LRC` | `lrc` | `.lrc` | yes | yes | with enhanced LRC word times |
 | [MicroDVD](https://en.wikipedia.org/wiki/MicroDVD) | `stbox.MicroDVD` | `microdvd` | `.sub` | yes | yes | needs the frame rate of the video |
@@ -71,6 +72,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [SBV](https://support.google.com/youtube/answer/2734698) | `stbox.SBV` | `sbv` | `.sbv` | yes | yes | YouTube Studio captions |
 | [SubRip](https://en.wikipedia.org/wiki/SubRip) | `stbox.SubRip` | `srt` | `.srt` | yes | yes | |
 | [TTML, IMSC, DFXP](https://www.w3.org/TR/ttml2/) | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | yes | yes | also iTT |
+| [TSV](https://www.iana.org/assignments/media-types/text/tab-separated-values) | `stbox.TSV` | `tsv` | `.tsv` | yes | yes | not detected from the content |
 | [Plain text](docs/formats.md#plain-text) | `stbox.PlainText` | `txt` | `.txt` | no | yes | a transcript of the words, owns `.txt` |
 | [MPL2](https://pysubs2.readthedocs.io/en/latest/supported-formats.html) | `stbox.MPL2` | `mpl2` | `.txt` | yes | yes | found by content |
 | [TMPlayer](https://pysubs2.readthedocs.io/en/latest/supported-formats.html) | `stbox.TMPlayer` | `tmplayer` | `.txt` | yes | yes | also TMPlayer+, found by content |

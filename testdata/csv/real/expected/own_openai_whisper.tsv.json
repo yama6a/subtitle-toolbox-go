@@ -1,0 +1,98 @@
+{
+    "warnings": [
+        {
+            "message": "The times are whole numbers, and the median cue lasts 3020 seconds. The parser reads the times as milliseconds.",
+            "lineNumber": 2,
+            "blockIndex": null,
+            "block": [
+                "0\t2340\tGood morning and welcome to the harbour tour."
+            ],
+            "action": "repaired"
+        }
+    ],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "csv": {
+                "delimiter": "\t",
+                "header": [
+                    "start",
+                    "end",
+                    "text"
+                ],
+                "roles": {
+                    "start": 0,
+                    "end": 1,
+                    "text": 2
+                },
+                "width": 3,
+                "timeFormat": "milliseconds",
+                "frameRate": null
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 2.34,
+                "lines": [
+                    "Good morning and welcome to the harbour tour."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 2.34,
+                "end": 5.1,
+                "lines": [
+                    "Our boat leaves the pier in five minutes."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.1,
+                "end": 9.48,
+                "lines": [
+                    "Please keep your tickets ready for the crew."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 9.48,
+                "end": 12.76,
+                "lines": [
+                    "On the left you can see the old lighthouse."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 12.76,
+                "end": 17.02,
+                "lines": [
+                    "It was built in 1871 and still works today."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 17.02,
+                "end": 19.3,
+                "lines": [
+                    "Thank you, and enjoy the trip!"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

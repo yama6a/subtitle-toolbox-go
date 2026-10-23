@@ -129,10 +129,14 @@ func (s *State) EndAtNextStart(starts []time.Duration, i int) time.Duration {
 	return s.LastCueEnd(starts[i])
 }
 
-// LastCueEnd returns the end of a last cue without an end: start plus the last cue duration, rounded to whole
-// milliseconds. An end at or beyond the time limit becomes timecode.MaxValidTime, so every writer output reads back.
+// LastCueEnd returns the end of a last cue without an end: EndAfter of start and the last cue duration.
 func (s *State) LastCueEnd(start time.Duration) time.Duration {
-	d := s.LastCueDuration()
+	return EndAfter(start, s.LastCueDuration())
+}
+
+// EndAfter returns the end of a cue that lasts d from start, rounded to whole milliseconds. An end at or beyond the
+// time limit becomes timecode.MaxValidTime, so every writer output reads back.
+func EndAfter(start, d time.Duration) time.Duration {
 	end := start + d
 	if d > 0 && end < start {
 		end = math.MaxInt64

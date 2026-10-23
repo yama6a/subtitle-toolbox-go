@@ -60,3 +60,33 @@ func TestClock(t *testing.T) {
 		})
 	}
 }
+
+func TestClockOrLimit(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		in     string
+		want   time.Duration
+		wantOK bool
+	}{
+		{"01:02.5", 62500 * time.Millisecond, true},
+		{"99999:59:59.999", timecode.MaxValidTime, true},
+		{"99999:59:59.9996", timecode.MaxTime, true},
+		{"5999999:59.9996", timecode.MaxTime, true},
+		{"100000:00:00", timecode.MaxTime, true},
+		{"6000000:00", timecode.MaxTime, true},
+		{"99999999999999999999:00:00", timecode.MaxTime, true},
+		{"99999999999999999999:60:00", 0, false},
+		{"99999999999999999999:00:0", 0, false},
+		{"00:00:01:12", 0, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.in, func(t *testing.T) {
+			t.Parallel()
+
+			got, ok := timecode.ClockOrLimit(tt.in)
+			assert.Equal(t, tt.wantOK, ok)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

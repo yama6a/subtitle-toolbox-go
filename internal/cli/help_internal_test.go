@@ -208,7 +208,7 @@ Options:
   --lenient              Skip or repair broken cues and print a warning for
                          each.
   --input-fps RATE       Frame rate of a MicroDVD input without a {1}{1}<fps>
-                         first line.
+                         first line, and of CSV or TSV times in hh:mm:ss:ff.
   --fps RATE             Sets --input-fps and --output-fps. A specific option
                          wins over --fps.
   --keep-going           Go on with the next file after a file fails. Default:

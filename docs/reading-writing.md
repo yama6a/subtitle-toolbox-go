@@ -64,13 +64,14 @@ Every text reader runs these steps in this order, before its own parsing. [inter
 A cue without an end ends at the first later start of another cue. The last such cue ends at its start plus `LastCueDuration`, rounded to whole milliseconds. "Later" means strictly later, so 2 cues with the same start do not end each other.
 
 - **Time limit**: the end stops at 99999:59:59.999, the largest time below 100000 hours. So a last cue that starts less than `LastCueDuration` before the limit is shorter. `LastCueEnd` in [internal/parsing/parsing.go](../internal/parsing/parsing.go) holds the rule.
-- **Writer output**: every writer output reads back with its reader, except plain text, which has no reader. A writer that rounds a time to a unit coarser than a millisecond stops at the largest value below the limit in that unit, so ASS writes `99999:59:59.99` and MPL2 writes `[3599999999]`. `Units` in [internal/timecode/timecode.go](../internal/timecode/timecode.go) holds the rule for ASS, LRC, MPL2 and TMPlayer, and `Frames` in the same file holds it for MicroDVD and MPSub. The SubRip writer stops at 999:59:59,999, because its reader takes at most 3 hour digits. `maxTime` in [internal/subrip/write.go](../internal/subrip/write.go) holds that limit. The LRC writer stops at 999:59.99, because its reader takes at most 3 minute digits. `maxTime` in [format/lrc/write.go](../format/lrc/write.go) holds that limit.
+- **Writer output**: every writer output reads back with its reader, except plain text, which has no reader. A writer that rounds a time to a unit coarser than a millisecond stops at the largest value below the limit in that unit, so ASS writes `99999:59:59.99` and MPL2 writes `[3599999999]`. `Units` in [internal/timecode/timecode.go](../internal/timecode/timecode.go) holds the rule for ASS, LRC, MPL2 and TMPlayer, and `Frames` in the same file holds it for MicroDVD and MPSub. The CSV writer counts frames inside each second, so `frameCell` in [format/csv/time.go](../format/csv/time.go) holds its own step back to the last frame below the limit. The SubRip writer stops at 999:59:59,999, because its reader takes at most 3 hour digits. `maxTime` in [internal/subrip/write.go](../internal/subrip/write.go) holds that limit. The LRC writer stops at 999:59.99, because its reader takes at most 3 minute digits. `maxTime` in [format/lrc/write.go](../format/lrc/write.go) holds that limit.
 
 | Reader | Cue without an end |
 |:--- |:--- |
 | LRC | the last time tag with text. An LRC cue ends at the next time tag in time, also one without text or with the same time |
 | TMPlayer | the last entry with text. A TMPlayer cue ends at the next entry in time, also one with the same time |
 | SAMI | the last cue of the class. A SAMI cue ends at the next `SYNC` block of its class, also one with the same start |
+| CSV and TSV | a row with an empty end cell and no duration cell |
 
 Each reader that uses the default adds its row here.
 
@@ -90,6 +91,8 @@ Each reader that uses the default adds its row here.
 A writer builds the whole output with LF line endings in memory. [internal/writing/writing.go](../internal/writing/writing.go) then applies the line ending and the BOM rule and writes the result in one `Write` call. An error of the `io.Writer` returns wrapped and leaves incomplete output.
 
 - **Line ending**: `CRLF` replaces each LF that has no CR before it with CR LF. A CR LF that a writer writes on purpose stays.
+- **CSV and TSV line endings**: the CSV writer ends each row with the line ending itself and keeps a line break inside a cell as LF, as Excel writes it. Only the BOM rule runs after it.
+- **CSV and TSV delimiter**: `stbox.Write` sets the delimiter when `WriteOptions.CSV.Delimiter` is empty. TSV output gets a tab. CSV output gets `,` when the stored delimiter is a tab. `csv.Write` called directly keeps the stored delimiter.
 - **BOM**: the line ending comes first, then the BOM. `BOMAdd` adds one UTF-8 BOM unless the output starts with one. `BOMRemove` removes every leading BOM. `BOMDefault` adds the BOM for ASS, CSV, TSV, LRC, MPSub, SubRip and WebVTT, and leaves the output of the other formats as the writer wrote it.
 - **StripTags**: the ASS, MicroDVD, SAMI, SubRip, TTML and WebVTT writers read it. The other writers hold no markup or always write plain text. Library JSON keeps the markup.
 - **Negative times**: every writer except library JSON writes a negative time as 0. Library JSON writes it as it is.

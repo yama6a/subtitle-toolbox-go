@@ -1,0 +1,5 @@
+identifier	start	end	text
+intro	00:00:00.500	00:00:03.000	Welcome to the station.
+platform	00:00:03.500	00:00:06.000	Trains to the coast leave from platform 2.
+	00:00:06.500	00:00:09.250	Tickets are sold at the machine by the door.
+end	00:00:10.000	00:00:12.000	Have a safe trip.

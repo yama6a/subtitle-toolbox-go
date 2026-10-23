@@ -54,7 +54,7 @@
 | 2 | **Decode** the content to UTF-8, as [encodings.md](encodings.md) says |
 | 3 | **Empty content**: nothing is left after the BOMs and the bytes of step 1 of `Detect` go, at both ends. `Load` returns an empty subtitle in the format of the extension, under the fallback rule of step 5 |
 | 4 | **Detect** the format of the decoded content |
-| 5 | **Extension fallback**: without a detection result, `Load` uses `FormatFromPath`, when the library can read that format and the extension is not `json`, `txt` or `ffmeta` |
+| 5 | **Extension fallback**: without a detection result, `Load` uses `FormatFromPath`, when the library can read that format and the extension is not `json`, `txt` or `ffmeta`. CSV and TSV have no signature, so `.csv` and `.tsv` files load only by this step |
 | 6 | **No format**: an error that matches `ErrUnknownFormat`, with `Format detection found no subtitle format.` `Parse` has no path, so it skips steps 3 and 5 |
 
 | Head | Bytes |

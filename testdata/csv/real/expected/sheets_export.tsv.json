@@ -1,0 +1,70 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "csv": {
+                "delimiter": "\t",
+                "header": [
+                    "identifier",
+                    "start",
+                    "end",
+                    "text"
+                ],
+                "roles": {
+                    "identifier": 0,
+                    "start": 1,
+                    "end": 2,
+                    "text": 3
+                },
+                "width": 4,
+                "timeFormat": "hh:mm:ss.mmm",
+                "frameRate": null
+            }
+        },
+        "cues": [
+            {
+                "start": 0.5,
+                "end": 3.0,
+                "lines": [
+                    "Welcome to the station."
+                ],
+                "identifier": "intro",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3.5,
+                "end": 6.0,
+                "lines": [
+                    "Trains to the coast leave from platform 2."
+                ],
+                "identifier": "platform",
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 6.5,
+                "end": 9.25,
+                "lines": [
+                    "Tickets are sold at the machine by the door."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 10.0,
+                "end": 12.0,
+                "lines": [
+                    "Have a safe trip."
+                ],
+                "identifier": "end",
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

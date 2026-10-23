@@ -2,12 +2,14 @@ package stbox
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"path/filepath"
 	"slices"
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/format/lrc"
 	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/format/mpl2"
@@ -67,6 +69,8 @@ var (
 	_ writeFunc[lrc.WriteOptions]       = lrc.Write
 	_ detectFunc                        = lrc.Detect
 	_ writeFunc[plaintext.WriteOptions] = plaintext.Write
+	_ readFunc[csv.ReadOptions]         = csv.Read
+	_ writeFunc[csv.WriteOptions]       = csv.Write
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -83,7 +87,7 @@ type formatFuncs struct {
 //nolint:gochecknoglobals // lookup table of the format functions
 var registry = []formatFuncs{
 	{format: ASS, read: readASS, write: writeASS},
-	{format: CSV},
+	{format: CSV, read: readCSV, write: writeCSV},
 	{format: JSON, read: readJSON, write: writeJSON},
 	{format: LRC, read: readLRC, write: writeLRC},
 	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
@@ -93,7 +97,7 @@ var registry = []formatFuncs{
 	{format: SubRip, read: readSubRip, write: writeSubRip},
 	{format: SubViewer},
 	{format: TTML, read: readTTML, write: writeTTML},
-	{format: TSV},
+	{format: TSV, read: readTSV, write: writeTSV},
 	{format: PlainText, write: writePlainText},
 	{format: MPL2, read: readMPL2, write: writeMPL2},
 	{format: TMPlayer, read: readTMPlayer, write: writeTMPlayer},
@@ -254,6 +258,43 @@ func writeLRC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ Write
 
 func writePlainText(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
 	return plaintext.Write(w, s, common, opts.PlainText)
+}
+
+func readCSV(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return csv.Read(r, common, opts.CSV)
+}
+
+// readTSV reads with the CSV reader, which detects the delimiter, and names TSV in its errors.
+func readTSV(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	s, warnings, err := csv.Read(r, common, opts.CSV)
+	var perr *ParseError
+	if errors.As(err, &perr) && perr.Format == CSV {
+		withFormat := *perr
+		withFormat.Format = TSV
+		return nil, nil, &withFormat
+	}
+	return s, warnings, err
+}
+
+// writeCSV writes a comma for a subtitle whose stored delimiter is a tab, unless the options set a delimiter.
+func writeCSV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+	if d, _ := s.FormatData(string(CSV)); opts.CSV.Delimiter == csv.DelimiterDefault && isTab(d) {
+		opts.CSV.Delimiter = csv.Comma
+	}
+	return csv.Write(w, s, common, opts.CSV)
+}
+
+func isTab(d *model.Data) bool {
+	delimiter, _ := d.String("delimiter")
+	return delimiter == string(csv.Tab)
+}
+
+// writeTSV writes a tab unless the options set a delimiter.
+func writeTSV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+	if opts.CSV.Delimiter == csv.DelimiterDefault {
+		opts.CSV.Delimiter = csv.Tab
+	}
+	return csv.Write(w, s, common, opts.CSV)
 }
 
 func lookup(f Format) (formatFuncs, bool) {

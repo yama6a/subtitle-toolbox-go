@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/format/plaintext"
@@ -32,6 +33,9 @@ type ReadOptions struct {
 	SAMI sami.ReadOptions
 	// MicroDVD holds the settings of the MicroDVD reader. The zero value takes the frame rate of a {1}{1}<fps> line.
 	MicroDVD microdvd.ReadOptions
+	// CSV holds the settings of the CSV and TSV reader. The zero value reads the columns by their header names and
+	// detects the delimiter.
+	CSV csv.ReadOptions
 }
 
 // WriteOptions holds the settings of a write. The zero value writes with the defaults.
@@ -53,6 +57,8 @@ type WriteOptions struct {
 	// PlainText holds the settings of the plain text writer. The zero value joins the lines of a cue and the cues
 	// of a paragraph with a space, starts a paragraph at a gap of 2 s and writes no times.
 	PlainText plaintext.WriteOptions
+	// CSV holds the settings of the CSV and TSV writer. The zero value keeps the layout that the reader stored.
+	CSV csv.WriteOptions
 }
 
 // ReadInfo holds the facts of a read that are not subtitle content.
@@ -86,7 +92,10 @@ func (o ReadOptions) Validate() error {
 	if err := o.SAMI.Validate(); err != nil {
 		return err
 	}
-	return o.MicroDVD.Validate()
+	if err := o.MicroDVD.Validate(); err != nil {
+		return err
+	}
+	return o.CSV.Validate()
 }
 
 // Validate checks every field of o, also the fields of formats that a write does not use.
@@ -112,7 +121,10 @@ func (o WriteOptions) Validate() error {
 	if err := o.MPSub.Validate(); err != nil {
 		return err
 	}
-	return o.PlainText.Validate()
+	if err := o.PlainText.Validate(); err != nil {
+		return err
+	}
+	return o.CSV.Validate()
 }
 
 func (o ReadOptions) common() model.CommonReadOptions {

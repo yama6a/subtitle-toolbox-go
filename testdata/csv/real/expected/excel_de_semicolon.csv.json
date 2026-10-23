@@ -1,0 +1,71 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "csv": {
+                "delimiter": ";",
+                "header": [
+                    "Start",
+                    "Ende",
+                    "Sprecher",
+                    "Text"
+                ],
+                "roles": {
+                    "start": 0,
+                    "end": 1,
+                    "speaker": 2,
+                    "text": 3
+                },
+                "width": 4,
+                "timeFormat": "hh:mm:ss,mmm",
+                "frameRate": null
+            }
+        },
+        "cues": [
+            {
+                "start": 2.0,
+                "end": 4.5,
+                "lines": [
+                    "<v Lena>Der Zug nach Basel fährt um 7:15 Uhr."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.0,
+                "end": 8.25,
+                "lines": [
+                    "<v Tom>Gleis 4, bitte.",
+                    "Der Wagen 3 ist vorne."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 9.12,
+                "end": 11.0,
+                "lines": [
+                    "Achtung an Gleis 4."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 12.0,
+                "end": 14.64,
+                "lines": [
+                    "<v Lena>Danke; bis morgen!"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

@@ -64,16 +64,17 @@ The words after the command name follow the PHP 5.x CLI. The standard `flag` pac
 
 ### Frame rates
 
-MicroDVD counts time in video frames, so a MicroDVD read and a MicroDVD write need the frame rate of the video. Example: `stbox convert film.sub --fps 25 --to srt -o film.srt` reads a MicroDVD file without a `{1}{1}<fps>` first line at 25 fps.
+MicroDVD counts time in video frames, so a MicroDVD read and a MicroDVD write need the frame rate of the video. So do CSV and TSV times in `hh:mm:ss:ff`. Example: `stbox convert film.sub --fps 25 --to srt -o film.srt` reads a MicroDVD file without a `{1}{1}<fps>` first line at 25 fps.
 
 | Option | Commands | Sets | Without it |
 |:--- |:--- |:--- |:--- |
-| `--input-fps RATE` | every command that reads subtitle files | `ReadOptions.MicroDVD.FrameRate` | `--fps`, else the `{1}{1}<fps>` line of the file |
+| `--input-fps RATE` | every command that reads subtitle files | `ReadOptions.MicroDVD.FrameRate` and `ReadOptions.CSV.FrameRate` | `--fps`, else the `{1}{1}<fps>` line of a MicroDVD file. A CSV or TSV time in `hh:mm:ss:ff` fails |
 | `--output-fps RATE` | `convert`, `sync` | `WriteOptions.MicroDVD.FrameRate`, for MicroDVD output only | `--fps`, else the frame rate of a MicroDVD input |
 | `--fps RATE` | every command that reads subtitle files | both rates | |
 
 - **Check**: each rate is a number above 0. `--fps` is checked first, also when the specific option is given, so a bad `--fps` always fails. `--input-fps` comes before `--from` in the check order, and `--output-fps` right after `--to`.
-- **Advice**: `frames.sub: The frame rate is unknown. Pass --fps or --input-fps, start the file with {1}{1}<fps>, or pass --lenient for 23.976 fps.` and `trip.srt: MicroDVD output needs the frame rate of the video. Pass --fps or --output-fps.`, both exit 3.
+- **Advice**: `frames.sub: The frame rate is unknown. Pass --fps or --input-fps, start the file with {1}{1}<fps>, or pass --lenient for 23.976 fps.`, `frames.csv: line 2: The time "00:00:01:12" counts frames and needs a frame rate. Pass --fps or --input-fps.` and `trip.srt: MicroDVD output needs the frame rate of the video. Pass --fps or --output-fps.`. Each exits 3.
+- **TSV to CSV**: `convert trip.tsv --to csv` writes commas, and `--to tsv` writes tabs, as [formats.md](formats.md#csv-and-tsv) says.
 - **Frame rate change**: `--from-fps` and `--to-fps` of the `retime` group retime the cues. They do not take `--fps`.
 
 ### Text files in a directory
@@ -302,6 +303,7 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 ```
 Name      Extensions        Read  Write
 ass       .ass .ssa         yes   yes
+csv       .csv              yes   yes
 json      .json             yes   yes
 lrc       .lrc              yes   yes
 microdvd  .sub              yes   yes
@@ -310,6 +312,7 @@ sami      .smi .sami        yes   yes
 sbv       .sbv              yes   yes
 srt       .srt              yes   yes
 ttml      .ttml .dfxp .xml  yes   yes
+tsv       .tsv              yes   yes
 txt       .txt              no    yes
 mpl2      .txt              yes   yes
 tmplayer  .txt              yes   yes

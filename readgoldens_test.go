@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
 )
@@ -29,9 +30,25 @@ type goldenFolder struct {
 // microDVDAt25 is the read option of the MicroDVD read goldens, as tests/files/generate-read-goldens.php sets it.
 var microDVDAt25 = stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: 25}}
 
+// dubbingScript is the CSV layout of csv/real/dubbing_script.csv in the read golden table of #9.
+var dubbingScript = csv.ReadOptions{
+	Columns:   csv.Columns{Start: csv.ColumnNamed("Start TC"), Speaker: csv.ColumnNamed("Character")},
+	FrameRate: 25,
+}
+
 func goldenFolders() []goldenFolder {
 	return []goldenFolder{
 		{name: "ass", format: stbox.ASS, files: 7},
+		{name: "csv", format: stbox.CSV, files: 7, options: map[string]stbox.ReadOptions{
+			"dubbing_script.csv": {CSV: dubbingScript},
+			"headerless_frame_times.csv": {CSV: csv.ReadOptions{
+				Columns:   csv.Columns{Start: csv.ColumnAt(0), End: csv.ColumnAt(1), Text: csv.ColumnAt(2), NoHeader: true},
+				FrameRate: 25,
+			}},
+			"excel_de_semicolon.csv": {CSV: csv.ReadOptions{
+				Columns: csv.Columns{End: csv.ColumnNamed("Ende"), Speaker: csv.ColumnNamed("Sprecher")},
+			}},
+		}},
 		{name: "json", format: stbox.JSON, files: 6},
 		{name: "lrc", format: stbox.LRC, files: 9},
 		{name: "microdvd", format: stbox.MicroDVD, files: 4, options: map[string]stbox.ReadOptions{

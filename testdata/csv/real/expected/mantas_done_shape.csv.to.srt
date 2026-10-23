@@ -1,0 +1,20 @@
+﻿1
+00:00:01,500 --> 00:00:04,000
+The bakery opens at seven, every day.
+
+2
+00:00:04,250 --> 00:00:07,800
+Fresh bread comes out
+of the oven at eight.
+
+3
+00:00:09,000 --> 00:00:11,375
+Rolls cost one euro each.
+
+4
+00:00:12,040 --> 00:00:15,500
+The sign says "closed" on Mondays.
+
+5
+00:00:16,000 --> 00:00:18,200
+Please queue at the door, not inside.

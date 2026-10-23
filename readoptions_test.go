@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go"
+	"github.com/yama6a/subtitle-toolbox-go/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/format/sami"
 )
@@ -41,6 +42,13 @@ func TestReadOptionGoldens(t *testing.T) {
 			golden: "microdvd_subsrt_sample",
 			file:   "microdvd/real/subsrt_sample.sub",
 			opts:   stbox.ReadOptions{Format: stbox.MicroDVD, MicroDVD: microdvd.ReadOptions{FrameRate: 23.976}},
+		},
+		{
+			golden: "csv_excel_de_semicolon",
+			file:   "csv/real/excel_de_semicolon.csv",
+			opts: stbox.ReadOptions{
+				Format: stbox.CSV, LastCueDuration: new(10 * time.Second), CSV: csv.ReadOptions{Delimiter: csv.Semicolon},
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -74,14 +82,15 @@ func TestLastCueDuration(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name   string
-		file   string
-		format stbox.Format
-		start  time.Duration
+		name  string
+		file  string
+		opts  stbox.ReadOptions
+		start time.Duration
 	}{
-		{"LRC", "lrc/real/handwritten-core.lrc", stbox.LRC, 32800 * time.Millisecond},
-		{"TMPlayer", "tmplayer/real/tmplayer_crlf.txt", stbox.TMPlayer, 3600 * time.Second},
-		{"SAMI", "sami/real/mantas_smi_formatted.smi", stbox.SAMI, 17350 * time.Millisecond},
+		{"LRC", "lrc/real/handwritten-core.lrc", stbox.ReadOptions{Format: stbox.LRC}, 32800 * time.Millisecond},
+		{"TMPlayer", "tmplayer/real/tmplayer_crlf.txt", stbox.ReadOptions{Format: stbox.TMPlayer}, 3600 * time.Second},
+		{"SAMI", "sami/real/mantas_smi_formatted.smi", stbox.ReadOptions{Format: stbox.SAMI}, 17350 * time.Millisecond},
+		{"CSV", "csv/real/dubbing_script.csv", stbox.ReadOptions{Format: stbox.CSV, CSV: dubbingScript}, 36008200 * time.Millisecond},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -92,7 +101,9 @@ func TestLastCueDuration(t *testing.T) {
 				last *time.Duration
 				want time.Duration
 			}{{nil, 5 * time.Second}, {new(7 * time.Second), 7 * time.Second}, {new(time.Duration(0)), 0}} {
-				s, _, err := stbox.Load(path, stbox.ReadOptions{Format: tt.format, LastCueDuration: c.last})
+				opts := tt.opts
+				opts.LastCueDuration = c.last
+				s, _, err := stbox.Load(path, opts)
 				require.NoError(t, err)
 				last, _ := s.Cue(s.Len() - 1)
 				assert.Equal(t, [2]time.Duration{tt.start, tt.start + c.want}, [2]time.Duration{last.Start, last.End})

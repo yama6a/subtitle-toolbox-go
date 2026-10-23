@@ -1,0 +1,48 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "csv": {
+                "delimiter": ",",
+                "header": null,
+                "roles": {
+                    "start": 0,
+                    "end": 1,
+                    "text": 2
+                },
+                "width": 3,
+                "timeFormat": "hh:mm:ss:ff",
+                "frameRate": 25.0,
+                "quotedColumns": [
+                    2
+                ]
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 2.0,
+                "lines": [
+                    "The train leaves at nine!"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 2.0,
+                "end": 3.0,
+                "lines": [
+                    "If it rains on the coast,",
+                    "bring a warm coat"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

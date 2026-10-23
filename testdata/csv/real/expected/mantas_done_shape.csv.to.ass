@@ -1,0 +1,17 @@
+﻿[Script Info]
+ScriptType: v4.00+
+PlayResX: 384
+PlayResY: 288
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,16,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,10,10,10,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:01.50,0:00:04.00,Default,,0,0,0,,The bakery opens at seven, every day.
+Dialogue: 0,0:00:04.25,0:00:07.80,Default,,0,0,0,,Fresh bread comes out\Nof the oven at eight.
+Dialogue: 0,0:00:09.00,0:00:11.38,Default,,0,0,0,,Rolls cost one euro each.
+Dialogue: 0,0:00:12.04,0:00:15.50,Default,,0,0,0,,The sign says "closed" on Mondays.
+Dialogue: 0,0:00:16.00,0:00:18.20,Default,,0,0,0,,Please queue at the door, not inside.

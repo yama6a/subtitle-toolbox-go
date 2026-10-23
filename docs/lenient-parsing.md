@@ -208,6 +208,22 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Block numbers**: the block of a warning is the index of the line among the non-empty lines, from 0.
 - **Line numbers**: the warning of a broken time tag has the 1-based line of the file, empty lines included.
 
+## CSV and TSV
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| a quoted cell without a closing quote | `A quoted CSV cell has no closing quote.` at the line where the row starts | ends the cell at the end of its line. `A quoted CSV cell has no closing quote. The cell ends at the end of the line.` `Repaired`, at the line of the quote, with that line |
+| rows before the header row, such as an export note | `The table has no column "start" for start.` | drops them. `The table has 2 rows before the header row.` `Skipped`, at the line of the first row, with the dropped rows |
+| a time of another shape, such as `soon` | `The time "soon" is not seconds, h:mm:ss.mmm, m:ss.mmm, hh:mm:ss,mmm or hh:mm:ss:ff.` | skips the row. `Skipped` |
+| a time of 100000 hours or more | `The time "T" is not below 100000 hours.` | skips the row. `Skipped` |
+| a row that ends before it starts, such as a cut-off last row | `The cue ends at E s, before it starts at S s.` | skips the row. `Skipped` |
+| a row of more than 1000 cells | `The table has N columns. The limit is 1000.` | the same error |
+| a missing `start` or `text` column | `The table has no column "NAME" for ROLE.` | the same error |
+
+- **Block numbers**: the block of a row warning is the index of the row among the data rows, from 0. The warning holds the cells joined with the delimiter.
+- **Line numbers**: the line where the row starts. A quoted line break counts as a line.
+- **Both modes**: the synonym warning and the millisecond warning of [formats.md](formats.md#csv-and-tsv) come also in strict mode.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.
