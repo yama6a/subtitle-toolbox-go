@@ -4,7 +4,7 @@ A German SubRip file for a 25 fps release runs late and drifts against a 23.976 
 
 ## Sync to a reference subtitle
 
-<!-- example: ExampleApply -->
+<!-- example: refsync/ExampleApply -->
 ```go
 at := func(start, end float64, text string) model.Cue {
 	return model.Cue{

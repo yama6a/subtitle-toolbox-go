@@ -157,3 +157,53 @@ A **dialogue dash** is a hyphen-minus, U+2010, U+2013 or U+2014 at the start of 
 | `DialogueDashEnDashSpace` | U+2013 and a space |
 | `DialogueDashEmDash` | U+2014 |
 | `DialogueDashEmDashSpace` | U+2014 and a space |
+
+## Hearing-impaired annotations
+
+Subtitles for the deaf and hard of hearing (SDH) carry text that a hearing viewer does not need. `hearingimpaired.Apply(s, opts)` removes it. The cue `- [gasps] No!` + LF + `- MARY: Yes.` becomes `- No!` + LF + `- Yes.`, and the cue `[DOOR SLAMS]` goes.
+
+<!-- example: hearingimpaired/ExampleApply -->
+```go
+const content = "1\n00:00:01,000 --> 00:00:03,000\n[DOOR SLAMS]\n\n" +
+	"2\n00:00:03,500 --> 00:00:06,000\n- [gasps] No!\n- MARY: Yes.\n\n" +
+	"3\n00:00:06,500 --> 00:00:09,000\n<i>(whispering) Over here.</i>\n"
+s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+report, err := hearingimpaired.Apply(s, hearingimpaired.Options{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+fmt.Println("removed lines:", report.RemovedLines, "removed cues:", report.RemovedCues)
+for _, c := range s.All() {
+	fmt.Println(c.Start, c.Text())
+}
+// Output:
+// removed lines: 1 removed cues: 1
+// 3.5s - No!
+// - Yes.
+// 6.5s <i>Over here.</i>
+```
+
+| Kind | Example | Zero `Options` | Option |
+|:--- |:--- |:--- |:--- |
+| square brackets | `[DOOR SLAMS]` | removed | `KeepSquareBrackets` |
+| parentheses | `(laughs)` | removed | `KeepParentheses` |
+| speaker label at a line start or after its dash | `JOHN:`, `MAN 2:`, `DR. O'NEIL:` | removed, upper case labels only | `KeepSpeakerLabels`, `AnyCaseLabels` |
+| line of only music symbols | U+266A U+266A, `- #` | removed | `KeepMusicLines` |
+| custom bracket pairs | `{laughs}`, `*sighs*` | none | `CustomBrackets` |
+| lyrics: text between 2 music symbols, and lines that start or end with one | `# Never gonna stop #` | kept | `Lyrics` |
+
+- **Source**: the rules follow the "Remove text for hearing impaired" tool of [Subtitle Edit](https://github.com/SubtitleEdit/subtitleedit/blob/5b9ee8baf08c472c7a74fbc337446b656dedabb4/src/libse/Forms/RemoveTextForHI.cs).
+- **Music symbol**: U+2669 to U+266C, or a `#` with white space or the text edge on both sides. So `#1 fan` holds no music symbol.
+- **Visible text**: the rules match the text without tags, with `&lt;`, `&gt;` and `&amp;` decoded, the lines joined with LF. A removal cuts the raw bytes of the match, so tags stay, and a bracket can span tags and lines: `[BELL <i>RINGS</i>] Hello.` gives `Hello.`.
+- **Nesting**: the bracket rules repeat until nothing changes, so `[[echo]] Hi.` gives `Hi.`. An opening bracket before a backslash starts no match, so the ASS override `{\an8}` stays with the pair `{` `}`.
+- **Spaces**: the spaces around a bracket or music match go, so `Wait (sighs) for it.` and `Wait for it (sighs).` both give `Wait for it.`. A speaker label takes only the spaces after its colon.
+- **Emptied lines**: a line left with no text or only a dash goes. Its tags move to the next line, so `<i>[sighs]` + LF + `Hello</i>` gives `<i>Hello</i>`. When 1 of 2 or more dialogue lines is left, it loses its dash: `- Is it open?` + LF + `- (laughs)` gives `Is it open?`.
+- **Cues**: a cue left without visible text goes, as the [cue removal rule](#cue-removal-rule) says. `Report` counts the removed lines and cues.
+- **Invalid UTF-8**: a cue whose visible text is not valid UTF-8 stays as it is.
+- **One line**: `hearingimpaired.IsAnnotation(line, opts)` reports whether `Apply` would change or remove `line`. `JOHN: Hi.` is an annotation, `Note: this stays.` is not.
