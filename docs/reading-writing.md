@@ -63,7 +63,8 @@ Every text reader runs these steps in this order, before its own parsing. [inter
 
 A cue without an end ends at the first later start of another cue. The last such cue ends at its start plus `LastCueDuration`, rounded to whole milliseconds. "Later" means strictly later, so 2 cues with the same start do not end each other.
 
-- **Time limit**: the end stops at 99999:59:59.999, the largest time below 100000 hours. So a last cue that starts less than `LastCueDuration` before the limit is shorter. A writer that rounds the end can still write 100000 hours, such as the MPL2 writer for `99999:59:59.999`, and the reader then rejects the file. [#179](https://github.com/yama6a/subtitle-toolbox-go/issues/179) tracks this. `LastCueEnd` in [internal/parsing/parsing.go](../internal/parsing/parsing.go) holds the rule.
+- **Time limit**: the end stops at 99999:59:59.999, the largest time below 100000 hours. So a last cue that starts less than `LastCueDuration` before the limit is shorter. `LastCueEnd` in [internal/parsing/parsing.go](../internal/parsing/parsing.go) holds the rule.
+- **Writer output**: a writer that rounds a time to a unit coarser than a millisecond stops at the largest value below the limit in that unit. ASS writes `99999:59:59.99` and MPL2 writes `[3599999999]`. Every writer output reads back with its reader, except SubRip. The SubRip reader takes at most 3 hour digits, so it rejects a time from 1000 hours. `Units` in [internal/timecode/timecode.go](../internal/timecode/timecode.go) holds the rule.
 
 | Reader | Cue without an end |
 |:--- |:--- |
