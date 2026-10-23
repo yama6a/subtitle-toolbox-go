@@ -2,7 +2,6 @@ package microdvd
 
 import (
 	"io"
-	"math"
 	"regexp"
 	"slices"
 	"strconv"
@@ -62,11 +61,8 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	return writing.Write(w, model.MicroDVD, body, common, false)
 }
 
-// appendFrame appends the frame of d, rounded half away from zero. The seconds come from whole milliseconds, as
-// PHP holds them, because d.Seconds() can differ in the last bit.
 func appendFrame(dst []byte, d time.Duration, fps float64) []byte {
-	secs := float64(max(d, 0).Milliseconds()) / 1000
-	return strconv.AppendFloat(dst, math.Round(secs*fps), 'f', 0, 64)
+	return strconv.AppendFloat(dst, timecode.Frames(d, fps), 'f', 0, 64)
 }
 
 // writeText returns the text of c with control codes for the styles that wrap a whole line. A line keeps its

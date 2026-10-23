@@ -52,6 +52,36 @@ func Number(f float64) string {
 	return strconv.FormatFloat(f, 'g', 14, 64)
 }
 
+// Units returns d in whole units, rounded half away from zero on whole milliseconds, from 0 up to the largest count
+// below MaxTime.
+func Units(d, unit time.Duration) int64 {
+	return min(int64(max(d, 0).Round(time.Millisecond).Round(unit)/unit), int64((MaxTime-1)/unit))
+}
+
+// FromFrames returns the time of frame n at fps frames per second, rounded to whole milliseconds, or MaxTime for a
+// time at or beyond the limit.
+func FromFrames(n, fps float64) time.Duration {
+	secs := n / fps
+	// The check comes before the conversion, because a larger value would overflow a time.Duration.
+	if secs < MaxTime.Seconds() {
+		return FromSeconds(secs)
+	}
+	return MaxTime
+}
+
+// Frames returns the frame of d at fps frames per second, rounded half away from zero on whole milliseconds, from 0
+// up to the largest frame whose FromFrames time is below MaxTime.
+func Frames(d time.Duration, fps float64) float64 {
+	secs := float64(max(min(d, MaxValidTime), 0).Milliseconds()) / 1000
+	n := math.Round(secs * fps)
+	// Up to 1000 fps a frame is at least 1 ms long, so one frame back is below the limit. Above 1000 fps the
+	// rounding to milliseconds never reaches the limit.
+	if FromFrames(n, fps) >= MaxTime {
+		n--
+	}
+	return n
+}
+
 // AppendClock appends d as h:mm:ss, the separator sep and mmm, with at least hourWidth hour digits.
 // It rounds d to whole milliseconds, half away from zero. A negative time writes as 0.
 func AppendClock(dst []byte, d time.Duration, hourWidth int, sep byte) []byte {

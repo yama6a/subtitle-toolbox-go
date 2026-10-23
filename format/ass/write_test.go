@@ -570,3 +570,56 @@ func TestAWebVTTColorClassBecomesTheTextColor(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, writeDefault(t, s), `,,{\c&H00FFFF&}Hi{\c}`+"\n")
 }
+
+func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
+	t.Parallel()
+
+	const limit = 100000 * time.Hour
+	tests := []struct {
+		name       string
+		start, end time.Duration
+		want       string
+	}{
+		{"99999:59:59.999 clamps", 0, limit - 1*ms, "Dialogue: 0,0:00:00.00,99999:59:59.99,Default,,0,0,0,,x\n"},
+		{"99999:59:59.995 clamps", 0, limit - 5*ms, "Dialogue: 0,0:00:00.00,99999:59:59.99,Default,,0,0,0,,x\n"},
+		{"99999:59:59.900 stays", 0, limit - 100*ms, "Dialogue: 0,0:00:00.00,99999:59:59.90,Default,,0,0,0,,x\n"},
+		{"a start at the limit", limit - 1*ms, limit - 1*ms, "Dialogue: 0,99999:59:59.99,99999:59:59.99,Default,,0,0,0,,x\n"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := writeDefault(t, subtitle(t, cue(tt.start, tt.end, "x")))
+			assert.Contains(t, got, tt.want)
+			_, _, err := read(t, got, false)
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestKaraokeStaysBelowTheTimeLimit(t *testing.T) {
+	t.Parallel()
+
+	const limit = 100000 * time.Hour
+	tests := []struct {
+		name string
+		line string
+		text string
+	}{
+		{"timestamp .990", "a <99999:59:59.990>b", `{\k99}a {\k0}b`},
+		{"timestamp .995", "a <99999:59:59.995>b", `{\k99}a {\k0}b`},
+		{"timestamp .900", "a <99999:59:59.900>b", `{\k90}a {\k9}b`},
+		{"timestamp beyond the limit", "a <100000:00:05.000>b", `{\k99}a {\k0}b`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s := subtitle(t, cue(limit-time.Second, limit-1*ms, tt.line))
+			got := writeDefault(t, s)
+			assert.Contains(t, got, ",Default,,0,0,0,,"+tt.text+"\n")
+			_, _, err := read(t, got, false)
+			require.NoError(t, err)
+		})
+	}
+}

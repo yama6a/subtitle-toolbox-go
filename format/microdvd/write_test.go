@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -274,4 +275,39 @@ func TestWriteFrameBeyondTheIntRange(t *testing.T) {
 	s := &model.Subtitle{}
 	s.AddCue(model.Cue{Start: 359999999 * 1000 * ms, End: 359999999 * 1000 * ms, Lines: []string{"x"}})
 	assert.Equal(t, "{359999999000000004096}{359999999000000004096}x\n", writeAt(t, s, 1e12))
+}
+
+func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
+	t.Parallel()
+
+	const limit = 100000 * time.Hour
+	tests := []struct {
+		name string
+		fps  float64
+		end  time.Duration
+		want string
+	}{
+		{"25 fps, 99999:59:59.999 clamps", 25, limit - 1*ms, "{0}{8999999999}x\n"},
+		{"25 fps, 99999:59:59.995 clamps", 25, limit - 5*ms, "{0}{8999999999}x\n"},
+		{"25 fps, 99999:59:59.900 stays", 25, limit - 100*ms, "{0}{8999999998}x\n"},
+		{"23.976 fps, 99999:59:59.999 clamps", 23.976, limit - 1*ms, "{0}{8631359999}x\n"},
+		{"1 fps, 99999:59:59.999 clamps", 1, limit - 1*ms, "{0}{359999999}x\n"},
+		{"1 fps, 99999:59:59.400 stays", 1, limit - 600*ms, "{0}{359999999}x\n"},
+		{"1 fps, 99999:59:58.400 stays", 1, limit - 1600*ms, "{0}{359999998}x\n"},
+		{"0.5 fps, 99999:59:59.999 clamps", 0.5, limit - 1*ms, "{0}{179999999}x\n"},
+		{"25 fps, 100000:00:01 clamps", 25, limit + time.Second, "{0}{8999999999}x\n"},
+		{"1000000 fps, 100000 h clamps", 1e6, limit, "{0}{359999999999000}x\n"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s := &model.Subtitle{}
+			s.AddCue(model.Cue{Start: 0, End: tt.end, Lines: []string{"x"}})
+			got := writeAt(t, s, tt.fps)
+			assert.Equal(t, tt.want, got)
+			_, _, err := read(got, false, tt.fps)
+			require.NoError(t, err)
+		})
+	}
 }

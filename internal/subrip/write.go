@@ -3,19 +3,23 @@ package subrip
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
 
+// maxTime is 999:59:59.999. The SubRip reader takes at most 3 hour digits, so a later time would not read back.
+const maxTime = 1000*time.Hour - time.Millisecond
+
 // AppendCue appends the block of cue c with cue number n, which ends with LF.
 func AppendCue(dst []byte, n int, c model.Cue, stripTags bool) []byte {
 	dst = strconv.AppendInt(dst, int64(n), 10)
 	dst = append(dst, '\n')
-	dst = timecode.AppendClock(dst, c.Start, 2, ',')
+	dst = timecode.AppendClock(dst, min(c.Start, maxTime), 2, ',')
 	dst = append(dst, " --> "...)
-	dst = timecode.AppendClock(dst, c.End, 2, ',')
+	dst = timecode.AppendClock(dst, min(c.End, maxTime), 2, ',')
 	dst = appendCoordinates(dst, c)
 	if text := cueLines(c, stripTags); text != "" {
 		dst = append(dst, '\n')

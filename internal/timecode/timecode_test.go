@@ -183,3 +183,112 @@ func TestAppendClock(t *testing.T) {
 		})
 	}
 }
+
+func TestUnits(t *testing.T) {
+	t.Parallel()
+
+	const centisecond = 10 * time.Millisecond
+	const tenth = 100 * time.Millisecond
+
+	tests := []struct {
+		name string
+		in   time.Duration
+		unit time.Duration
+		want int64
+	}{
+		{"1.240 s in tenths", 1240 * time.Millisecond, tenth, 12},
+		{"1.250 s in tenths rounds up", 1250 * time.Millisecond, tenth, 13},
+		{"1.249 s in tenths rounds down", 1249 * time.Millisecond, tenth, 12},
+		{"1.005 s in centiseconds rounds up", 1005 * time.Millisecond, centisecond, 101},
+		{"1.500 s in seconds rounds up", 1500 * time.Millisecond, time.Second, 2},
+		{"1.499 s in seconds rounds down", 1499 * time.Millisecond, time.Second, 1},
+		{"1 ms unit keeps the milliseconds", 1234 * time.Millisecond, time.Millisecond, 1234},
+		{"499.5 ms in seconds rounds to 500 ms first", 499500 * time.Microsecond, time.Second, 1},
+		{"499.4 ms in seconds", 499400 * time.Microsecond, time.Second, 0},
+		{"49.5 ms in tenths rounds to 50 ms first", 49500 * time.Microsecond, tenth, 1},
+		{"4.999 ms in centiseconds rounds to 5 ms first", 4999 * time.Microsecond, centisecond, 1},
+		{"0", 0, tenth, 0},
+		{"below 0", -3 * time.Second, tenth, 0},
+		{"99999:59:59.900 in tenths", timecode.MaxTime - 100*time.Millisecond, tenth, 3599999999},
+		{"99999:59:59.949 in tenths", timecode.MaxTime - 51*time.Millisecond, tenth, 3599999999},
+		{"99999:59:59.950 in tenths clamps", timecode.MaxTime - 50*time.Millisecond, tenth, 3599999999},
+		{"99999:59:59.999 in tenths clamps", timecode.MaxValidTime, tenth, 3599999999},
+		{"99999:59:59.990 in centiseconds", timecode.MaxTime - 10*time.Millisecond, centisecond, 35999999999},
+		{"99999:59:59.995 in centiseconds clamps", timecode.MaxTime - 5*time.Millisecond, centisecond, 35999999999},
+		{"99999:59:59.499 in seconds", timecode.MaxTime - 501*time.Millisecond, time.Second, 359999999},
+		{"99999:59:59.500 in seconds clamps", timecode.MaxTime - 500*time.Millisecond, time.Second, 359999999},
+		{"99999:59:59.999 in seconds clamps", timecode.MaxValidTime, time.Second, 359999999},
+		{"99999:59:59.999 in milliseconds", timecode.MaxValidTime, time.Millisecond, 359999999999},
+		{"the limit clamps", timecode.MaxTime, tenth, 3599999999},
+		{"the largest duration clamps", time.Duration(math.MaxInt64), time.Second, 359999999},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, timecode.Units(tt.in, tt.unit))
+		})
+	}
+}
+
+func TestFrames(t *testing.T) {
+	t.Parallel()
+
+	const limit = timecode.MaxTime
+	tests := []struct {
+		name string
+		in   time.Duration
+		fps  float64
+		want float64
+	}{
+		{"1 s at 25 fps", time.Second, 25, 25},
+		{"1.020 s at 25 fps rounds up", 1020 * time.Millisecond, 25, 26},
+		{"1.019 s at 25 fps rounds down", 1019 * time.Millisecond, 25, 25},
+		{"below 0", -time.Second, 25, 0},
+		{"99999:59:59.900 at 25 fps", limit - 100*time.Millisecond, 25, 8999999998},
+		{"99999:59:59.999 at 25 fps clamps", timecode.MaxValidTime, 25, 8999999999},
+		{"99999:59:59.995 at 25 fps clamps", limit - 5*time.Millisecond, 25, 8999999999},
+		{"99999:59:59.999 at 23.976 fps clamps", timecode.MaxValidTime, 23.976, 8631359999},
+		{"99999:59:59.999 at 1 fps clamps", timecode.MaxValidTime, 1, 359999999},
+		{"99999:59:59.999 at 0.5 fps clamps", timecode.MaxValidTime, 0.5, 179999999},
+		{"99999:59:59.999 at 0.001 fps clamps", timecode.MaxValidTime, 0.001, 359999},
+		{"the limit at 25 fps clamps", limit, 25, 8999999999},
+		{"100000:00:01 at 25 fps clamps", limit + time.Second, 25, 8999999999},
+		{"the limit at 1000 fps clamps", limit, 1000, 359999999999},
+		{"the limit at 1e6 fps clamps", limit, 1e6, 359999999999000},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := timecode.Frames(tt.in, tt.fps)
+			assert.InDelta(t, tt.want, got, 0)
+			assert.Less(t, timecode.FromFrames(got, tt.fps), timecode.MaxTime)
+		})
+	}
+}
+
+func TestFromFrames(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		n    float64
+		fps  float64
+		want time.Duration
+	}{
+		{"25 frames at 25 fps", 25, 25, time.Second},
+		{"1 frame at 24 fps rounds to the millisecond", 1, 24, 42 * time.Millisecond},
+		{"8999999999 frames at 25 fps", 8999999999, 25, 359999999960 * time.Millisecond},
+		{"9000000000 frames at 25 fps is the limit", 9000000000, 25, timecode.MaxTime},
+		{"beyond the limit", 1e300, 25, timecode.MaxTime},
+		{"rounds up to the limit", 359999999.9996, 1, timecode.MaxTime},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, timecode.FromFrames(tt.n, tt.fps))
+		})
+	}
+}

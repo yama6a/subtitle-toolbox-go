@@ -5,9 +5,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/model"
 )
@@ -19,19 +19,14 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 	var body []byte
 	for _, c := range s.All() {
 		body = append(body, '[')
-		body = strconv.AppendInt(body, writtenTenths(c.Start), 10)
+		body = strconv.AppendInt(body, timecode.Units(c.Start, tenth), 10)
 		body = append(body, "]["...)
-		body = strconv.AppendInt(body, writtenTenths(c.End), 10)
+		body = strconv.AppendInt(body, timecode.Units(c.End, tenth), 10)
 		body = append(body, ']')
 		body = append(body, strings.Join(italicLines(c.Lines), "|")...)
 		body = append(body, '\n')
 	}
 	return writing.Write(w, model.MPL2, body, common, false)
-}
-
-// writtenTenths rounds d to tenths of a second, half away from zero on whole milliseconds. A time below 0 is 0.
-func writtenTenths(d time.Duration) int64 {
-	return (max(d, 0).Round(time.Millisecond).Milliseconds() + 50) / 100
 }
 
 // italicLines returns the visible text of each line. A line gets a / prefix when all its visible text is italic.
