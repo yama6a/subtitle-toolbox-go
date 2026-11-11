@@ -45,6 +45,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 		"sami       .smi .sami        yes   yes",
 		"sbv        .sbv              yes   yes",
 		"srt        .srt              yes   yes",
+		"stl        .stl              yes   no",
 		"subviewer  .sub              yes   yes",
 		"ttml       .ttml .dfxp .xml  yes   yes",
 		"tsv        .tsv              yes   yes",

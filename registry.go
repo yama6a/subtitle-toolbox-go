@@ -10,6 +10,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/lrc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpl2"
@@ -79,6 +80,8 @@ var (
 	_ readFunc[subviewer.ReadOptions]                          = subviewer.Read
 	_ writeFunc[subviewer.WriteOptions, subviewer.WriteReport] = subviewer.Write
 	_ detectFunc                                               = subviewer.Detect
+	_ readFunc[ebustl.ReadOptions]                             = ebustl.Read
+	_ detectFunc                                               = ebustl.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -103,6 +106,7 @@ var registry = []formatFuncs{
 	{format: SAMI, read: readSAMI, write: writeSAMI},
 	{format: SBV, read: readSBV, write: writeSBV},
 	{format: SubRip, read: readSubRip, write: writeSubRip},
+	{format: EBUSTL, read: readEBUSTL},
 	{format: SubViewer, read: readSubViewer, write: writeSubViewer},
 	{format: TTML, read: readTTML, write: writeTTML},
 	{format: TSV, read: readTSV, write: writeTSV},
@@ -140,6 +144,7 @@ var (
 		{format: SBV, match: sbv.Detect},
 		{format: SubViewer, match: subviewer.Detect},
 		{format: LRC, match: lrc.Detect},
+		{format: EBUSTL, match: ebustl.Detect},
 		{format: MPL2, match: mpl2.Detect},
 		{format: TMPlayer, match: tmplayer.Detect},
 	}
@@ -158,7 +163,7 @@ func Formats() []Format {
 // When formats share an extension, the first row of the registry owns it: ".sub" is MicroDVD,
 // ".txt" is plain text, ".xml" is TTML and ".json" is the library JSON.
 func FormatFromPath(path string) (Format, bool) {
-	ext := strings.ToLower(strings.TrimPrefix(filepath.Ext(path), "."))
+	ext := extension(path)
 	if ext == "" {
 		return "", false
 	}
@@ -168,6 +173,15 @@ func FormatFromPath(path string) (Format, bool) {
 		}
 	}
 	return "", false
+}
+
+// extension returns the file extension of path without the dot, in lower case.
+func extension(path string) string {
+	return strings.ToLower(strings.TrimPrefix(filepath.Ext(path), "."))
+}
+
+func readEBUSTL(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return ebustl.Read(r, common, opts.EBUSTL)
 }
 
 func readJSON(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {

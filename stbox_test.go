@@ -208,6 +208,7 @@ func ExampleFormats() {
 	// sami [smi sami]
 	// sbv [sbv]
 	// srt [srt]
+	// stl [stl]
 	// subviewer [sub]
 	// ttml [ttml dfxp xml]
 	// tsv [tsv]

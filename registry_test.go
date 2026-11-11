@@ -15,7 +15,7 @@ func TestFormatsFollowTheRowOrder(t *testing.T) {
 	t.Parallel()
 
 	want := []Format{
-		ASS, CSV, JSON, LRC, MicroDVD, MPSub, SAMI, SBV, SubRip,
+		ASS, CSV, JSON, LRC, MicroDVD, MPSub, SAMI, SBV, SubRip, EBUSTL,
 		SubViewer, TTML, TSV, PlainText, MPL2, TMPlayer, QuickTimeText, WebVTT,
 	}
 	assert.Equal(t, want, Formats())
@@ -77,7 +77,7 @@ func TestDetectionListsFollowTheOrder(t *testing.T) {
 
 	jsonOrder := []Format{JSON}
 	signatureOrder := []Format{
-		WebVTT, TTML, SAMI, ASS, MPSub, MicroDVD, QuickTimeText, SubRip, SBV, SubViewer, LRC, MPL2, TMPlayer,
+		WebVTT, TTML, SAMI, ASS, MPSub, MicroDVD, QuickTimeText, SubRip, SBV, SubViewer, LRC, EBUSTL, MPL2, TMPlayer,
 	}
 	jsonFormats := make([]Format, 0, len(jsonChecks))
 	signatureFormats := make([]Format, 0, len(signatures))

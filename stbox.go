@@ -80,6 +80,7 @@ const (
 	SAMI          = model.SAMI
 	SBV           = model.SBV
 	SubRip        = model.SubRip
+	EBUSTL        = model.EBUSTL
 	SubViewer     = model.SubViewer
 	TTML          = model.TTML
 	TSV           = model.TSV

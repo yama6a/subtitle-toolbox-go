@@ -1,0 +1,166 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Météo du port",
+            "language": "fr"
+        },
+        "comments": [],
+        "formatData": {
+            "stl": {
+                "gsi": {
+                    "CPN": "850",
+                    "DFC": "STL30.01",
+                    "DSC": "0",
+                    "CCT": "00",
+                    "LC": "0F",
+                    "OPT": "Météo du port",
+                    "OET": "",
+                    "TPT": "",
+                    "TET": "",
+                    "TN": "",
+                    "TCD": "",
+                    "SLR": "",
+                    "CD": "261002",
+                    "RD": "261002",
+                    "RN": "00",
+                    "TNB": "00005",
+                    "TNS": "00005",
+                    "TNG": "002",
+                    "MNC": "38",
+                    "MNR": "15",
+                    "TCS": "1",
+                    "TCP": "00000000",
+                    "TCF": "00000115",
+                    "TND": "1",
+                    "DSN": "1",
+                    "CO": "FRA",
+                    "PUB": "",
+                    "EN": "",
+                    "ECD": "",
+                    "spare": "",
+                    "UDA": ""
+                },
+                "startOfProgrammeSubtracted": false,
+                "firstSubtitleNumber": 0,
+                "comments": [],
+                "counts": {
+                    "TNB": 5,
+                    "TNS": 5,
+                    "TNG": 2,
+                    "TCF": "00000115"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 1.5,
+                "end": 6.0,
+                "lines": [
+                    "Le vent tourne au nord."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 1,
+                        "verticalPosition": 13,
+                        "justificationCode": 2,
+                        "text": "Le vent tourne au nord.",
+                        "blocks": [
+                            "000000ff010000010f000006000d02004c652076656e7420746f75726e65206175206e6f72642e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 2.967,
+                "end": 6.0,
+                "lines": [
+                    "La mer reste calme."
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 2,
+                        "verticalPosition": 0,
+                        "justificationCode": 2,
+                        "text": "La mer reste calme.",
+                        "blocks": [
+                            "000100ff020000021d00000600000200844c61206d65722072657374652063616c6d652e858f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 4.333,
+                "end": 6.0,
+                "lines": [
+                    "<u>Les bateaux</u>",
+                    "<u>restent au port.</u>"
+                ],
+                "identifier": null,
+                "alignment": 4,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 3,
+                        "verticalPosition": 7,
+                        "justificationCode": 1,
+                        "text": "<u>Les bateaux</u>\n<u>restent au port.</u>",
+                        "blocks": [
+                            "000200ff030000040a00000600070100824c657320626174656175788a72657374656e7420617520706f72742e838f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 7.0,
+                "end": 9.667,
+                "lines": [
+                    "Bonne soirée."
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 1,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 13,
+                        "justificationCode": 3,
+                        "text": "Bonne soirée.",
+                        "blocks": [
+                            "010300ff0000000700000009140d0300426f6e6e6520736f6972c265652e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 60.0,
+                "end": 62.967,
+                "lines": [
+                    "Le port ferme à minuit.",
+                    "<i>Fin</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 1,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 12,
+                        "justificationCode": 2,
+                        "text": "Le port ferme à minuit.\n<i>Fin</i>",
+                        "blocks": [
+                            "010400ff00000100000001021d0c02004c6520706f7274206665726d6520c161206d696e7569742e8a8046696e818f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

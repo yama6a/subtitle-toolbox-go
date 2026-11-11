@@ -16,6 +16,7 @@ const (
 	SAMI          Format = "sami"
 	SBV           Format = "sbv"
 	SubRip        Format = "srt"
+	EBUSTL        Format = "stl"
 	SubViewer     Format = "subviewer"
 	TTML          Format = "ttml"
 	TSV           Format = "tsv"
@@ -46,6 +47,7 @@ var formatFacts = []formatFact{
 	{format: SAMI, extensions: []string{"smi", "sami"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SBV, extensions: []string{"sbv"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubRip, extensions: []string{"srt"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: EBUSTL, extensions: []string{"stl"}, canRead: true, autoDetected: true, binary: true},
 	{format: SubViewer, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TSV, extensions: []string{"tsv"}, canRead: true, canWrite: true},
@@ -83,4 +85,10 @@ func (f Format) CanWrite() bool {
 // True does not mean that detection finds f by its content.
 func (f Format) IsAutoDetected() bool {
 	return f.fact().autoDetected
+}
+
+// IsBinary reports whether f is a binary format. Its reader gets the raw bytes of the input with no decoding,
+// and ReadInfo.SourceEncoding is "". Its writer ignores LineEnding and BOM.
+func (f Format) IsBinary() bool {
+	return f.fact().binary
 }
