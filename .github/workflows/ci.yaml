@@ -2,7 +2,7 @@ name: ci
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, 2.x]  # 2.x collects the v2.0.0 break until it merges to main
     # labeled/unlabeled so the label jobs run again on a label change, not only on a push.
     types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
