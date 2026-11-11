@@ -51,6 +51,9 @@ func FuzzRead(f *testing.F) {
 					t.Fatalf("cue %d starts before cue %d", i, i-1)
 				}
 				previous = c.Start
+				if err := c.Position.Validate(); err != nil {
+					t.Fatalf("cue %d has the position %+v: %v", i, c.Position, err)
+				}
 				for _, d := range []time.Duration{c.Start, c.End} {
 					if d%time.Millisecond != 0 || d >= timecode.MaxTime || d <= -timecode.MaxTime {
 						t.Fatalf("cue %d has the time %v", i, d)

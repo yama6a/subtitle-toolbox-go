@@ -1,0 +1,102 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Train",
+            "language": "ru"
+        },
+        "comments": [],
+        "formatData": {
+            "stl": {
+                "gsi": {
+                    "CPN": "850",
+                    "DFC": "STL25.01",
+                    "DSC": "1",
+                    "CCT": "01",
+                    "LC": "56",
+                    "OPT": "Train",
+                    "OET": "",
+                    "TPT": "",
+                    "TET": "",
+                    "TN": "",
+                    "TCD": "",
+                    "SLR": "",
+                    "CD": "261002",
+                    "RD": "261002",
+                    "RN": "00",
+                    "TNB": "00002",
+                    "TNS": "00002",
+                    "TNG": "001",
+                    "MNC": "40",
+                    "MNR": "23",
+                    "TCS": "1",
+                    "TCP": "00000000",
+                    "TCF": "00000200",
+                    "TND": "1",
+                    "DSN": "1",
+                    "CO": "",
+                    "PUB": "",
+                    "EN": "",
+                    "ECD": "",
+                    "spare": "",
+                    "UDA": ""
+                },
+                "startOfProgrammeSubtracted": false,
+                "firstSubtitleNumber": 1,
+                "comments": [],
+                "counts": {
+                    "TNB": 2,
+                    "TNS": 2,
+                    "TNG": 1,
+                    "TCF": "00000200"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 2.0,
+                "end": 4.0,
+                "lines": [
+                    "Поезд отправляется в семь часов."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 22,
+                        "justificationCode": 2,
+                        "text": "Поезд отправляется в семь часов.",
+                        "blocks": [
+                            "000100ff0000000200000004001602000d0b0bbfded5d7d420dee2dfe0d0d2dbefd5e2e1ef20d220e1d5dcec20e7d0e1ded22e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 5.0,
+                "end": 8.0,
+                "lines": [
+                    "Следующая станция:",
+                    "<font color=\"#00ff00\">Северный вокзал.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 20,
+                        "justificationCode": 2,
+                        "text": "Следующая станция:\n<font color=\"#00ff00\">Северный вокзал.</font>",
+                        "blocks": [
+                            "000200ff0000000500000008001402000d0b0bc1dbd5d4e3eee9d0ef20e1e2d0dde6d8ef3a0a0a8a8a0d0b0b02c1d5d2d5e0ddebd920d2dedad7d0db2e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

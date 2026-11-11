@@ -81,6 +81,7 @@ const (
 	SBV           = model.SBV
 	SCC           = model.SCC
 	SubRip        = model.SubRip
+	EBUSTL        = model.EBUSTL
 	SubViewer     = model.SubViewer
 	TTML          = model.TTML
 	TSV           = model.TSV
@@ -88,6 +89,7 @@ const (
 	MPL2          = model.MPL2
 	TMPlayer      = model.TMPlayer
 	QuickTimeText = model.QuickTimeText
+	SpruceSTL     = model.SpruceSTL
 	WebVTT        = model.WebVTT
 )
 

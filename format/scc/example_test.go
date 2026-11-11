@@ -33,3 +33,9 @@ func ExampleDetect() {
 	// true
 	// false
 }
+
+func ExampleReadOptions_Validate() {
+	fmt.Println(scc.ReadOptions{Channel: 3}.Validate())
+	// Output:
+	// stbox: invalid argument: ReadOptions.SCC.Channel: The SCC data channel must be 1 or 2, got 3.
+}

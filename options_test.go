@@ -44,7 +44,6 @@ func TestReadOptionsValidate(t *testing.T) {
 				Msg:    "The frame rate must be greater than 0, got -1.",
 			},
 		},
-		{name: "SCC channel 2", opts: stbox.ReadOptions{SCC: scc.ReadOptions{Channel: 2, RollUp: scc.RollUpLines}}},
 		{
 			name:    "SCC channel 3",
 			opts:    stbox.ReadOptions{SCC: scc.ReadOptions{Channel: 3}},

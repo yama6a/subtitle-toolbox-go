@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
@@ -28,7 +29,7 @@ type CEA608Options struct {
 
 // CEA608Cues decodes the code lines and returns a cue for each change of the displayed captions.
 // The scc format data of a cue holds its mode, and the row and column of each line.
-// The last cue lasts lastCueDuration.
+// The last cue lasts lastCueDuration, up to the time limit.
 func CEA608Cues(lines []cea608.CodeLine, opts CEA608Options, lastCueDuration time.Duration) []model.Cue {
 	d := cea608.NewDecoder(opts.Channel)
 	states := d.Decode(lines)
@@ -40,7 +41,7 @@ func CEA608Cues(lines []cea608.CodeLine, opts CEA608Options, lastCueDuration tim
 			continue
 		}
 		start := frameTime(s.Frame)
-		end := start + lastCueDuration
+		end := parsing.EndAfter(start, lastCueDuration)
 		if i+1 < len(states) {
 			end = frameTime(states[i+1].Frame)
 			if end <= start {
@@ -60,7 +61,7 @@ func rollUpCues(rows []cea608.RollUpLine, lastCueDuration time.Duration) []model
 	var cues []model.Cue
 	for _, l := range rows {
 		start := frameTime(l.Start)
-		end := start + lastCueDuration
+		end := parsing.EndAfter(start, lastCueDuration)
 		if l.HasEnd {
 			end = frameTime(l.End)
 		}

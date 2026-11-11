@@ -13,7 +13,7 @@ A package imports only packages of a lower layer. Every layer may also import th
 
 | Layer | Packages | May import |
 |---:|:--- |:--- |
-| 0 | leaf helpers in `internal/`: `markupcore`, `linewrap`, `paragraphs`, `timecode`, `grapheme`, `ssatag`, `phpkey`, `stringlist`, `textenc`, `xmlraw`, `extfallback`, `codepage`, the test helpers `testfiles` and `golden`, `cea608`, later `cea708`, `ebml`, `orderedjson` | other layer 0 packages |
+| 0 | leaf helpers in `internal/`: `markupcore`, `linewrap`, `paragraphs`, `timecode`, `grapheme`, `ssatag`, `phpkey`, `stringlist`, `textenc`, `xmlraw`, `extfallback`, `codepage`, the test helpers `testfiles` and `golden`, `cea608`, `cea708`, `ebml`, `orderedjson` | other layer 0 packages |
 | 1 | `markup` | layer 0 |
 | 2 | `model` | layers 0 and 1 |
 | 3 | `internal/` helpers that work on model types: `blocks`, `subrip`, `vtt`, `position`, `parsing`, `writing`, `caption`, later `ttmlwrite`, `wordgroup` | layers 0 to 2, and other layer 3 packages. Go rejects an import cycle |
@@ -170,7 +170,7 @@ Its exception table names the rule and the reason for each exception.
 
 | # | Rule | Example |
 |---:|:--- |:--- |
-| N1 | A `Format` value is the CLI format name. Format data keys use the same value. No aliases | `"srt"`, `"vtt"`, `"ass"`, `"ttml"`, `"sami"`, `"sbv"`, `"microdvd"`, `"mpl2"`, `"tmplayer"`, `"mpsub"`, `"subviewer"`, `"qttext"`, `"lrc"`, `"csv"`, `"tsv"`, `"json"`, `"txt"`. `sub`, `smi` and `ssa` are extensions, never format names |
+| N1 | A `Format` value is the CLI format name. Format data keys use the same value. No aliases | `"srt"`, `"vtt"`, `"ass"`, `"ttml"`, `"sami"`, `"sbv"`, `"microdvd"`, `"mpl2"`, `"tmplayer"`, `"mpsub"`, `"subviewer"`, `"qttext"`, `"spruce-stl"`, `"lrc"`, `"csv"`, `"tsv"`, `"json"`, `"txt"`. `sub`, `smi` and `ssa` are extensions, never format names |
 | N2 | A format constant carries the format's own name. A format package has the lower-case name from the package map | `SubRip`, `WebVTT`, `ASS`, `TTML`, `SAMI`, `SBV`, `MicroDVD`, `MPL2`, `TMPlayer`, `MPSub`, `SubViewer`, `QuickTimeText`, `LRC`, `CSV`, `TSV`, `JSON`, `PlainText`. Packages `srt`, `webvtt`, `ass` |
 | N3 | Initialisms are all capitals, as Go style and the `revive` linter want. Brand names keep their own capitals | `ID`, `URL`, `BOM`, `CRLF`, `PNG`, `OCR`. `SubRip`, `WebVTT`, `MicroDVD` |
 | N4 | Full words and US spelling | `FrameRate`, not `FPS`. `MaxLinesPerCue`, not `MaxLines`. `Color`, not `Colour` |

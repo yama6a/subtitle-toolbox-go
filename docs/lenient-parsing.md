@@ -238,6 +238,20 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **L**: the whole line, as PHP does, without the cut at 60 characters.
 - **Bad time line**: after a SubViewer 1 time line that fails, the text line below it is not read as a cue.
 
+## EBU STL
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| fewer than 1024 bytes | `An EBU STL file starts with a GSI block of 1024 bytes.` | the same error |
+| `(length - 1024) % 128` is not 0 | `The TTI blocks of an EBU STL file must have 128 bytes each.` | cuts the partial last block. `Skipped`, no line, block = the count of complete blocks, lines = the hex of the cut bytes |
+| DFC is not `STL25.01` or `STL30.01` | `The disk format code "X" is not STL25.01 or STL30.01.` | the same error |
+| CCT is not `00` to `04` | `The character code table "X" is not 00, 01, 02, 03 or 04.` | the same error |
+| TCI or TCO with hours above 23, minutes or seconds above 59, or frames at or above the frame rate | reads the cue as it is, without a warning | skips the set. `Subtitle number N has a time code that is not valid: HHMMSSFF to HHMMSSFF.` `Skipped`, no line, block = index of the first block of the set, lines = the hex of each block of the set |
+
+- **Order**: the cut of a partial block comes first, then the checks of the GSI.
+- **Line numbers**: none. Every binary format has `NoLine` in its warnings and errors.
+- **Undefined bytes**: a byte without an entry in a code table is dropped and never warns.
+
 ## CSV and TSV
 
 | Damage | Strict | Lenient |
@@ -266,6 +280,20 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Block numbers**: none. A warning of QuickTime text has `NoBlock`.
 - **Line numbers**: the 1-based line of the file. A swapped or skipped sample reports its timestamp line.
 - **Skipped timestamp**: the text lines after a skipped timestamp line are skipped too, up to the next timestamp line.
+
+## Spruce STL
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| no frame rate in the options, with at least one cue line | reads at 25 or 30 fps, guessed from the frame numbers, without a warning | the same, with `The file does not give its frame rate. The parser read the frames at R fps.` `Repaired`, no line and no block |
+| a line that is no cue, command, comment or blank line | `The line "L" is no Spruce STL subtitle, command or comment.` | skips the line. `Skipped`, no block |
+| a frame number at or above the frame rate | `The frame number in "hh:mm:ss:ff" is not below the frame rate of R fps.` | skips the line |
+| a time of 100000 hours or more, such as `100000:00:00:00` | `The time "hh:mm:ss:ff" is not below 100000 hours.` | skips the line |
+| a cue that ends before it starts | `The cue ends at E s, before it starts at S s.` | swaps the times when the cue then lasts 30 s or less. `Repaired`. Else skips the line |
+
+- **Block numbers**: none. A warning of Spruce STL has `NoBlock` and holds the raw line.
+- **Line numbers**: the 1-based line of the file.
+- **R**: the rate prints as PHP prints a float: `25`, `29.97`.
 
 ## Tests
 

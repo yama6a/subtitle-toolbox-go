@@ -1,0 +1,170 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "stl": {
+                "gsi": {
+                    "CPN": "850",
+                    "DFC": "STL25.01",
+                    "DSC": "0",
+                    "CCT": "00",
+                    "LC": "09",
+                    "OPT": "",
+                    "OET": "",
+                    "TPT": "",
+                    "TET": "",
+                    "TN": "",
+                    "TCD": "",
+                    "SLR": "",
+                    "CD": "200110",
+                    "RD": "200110",
+                    "RN": "01",
+                    "TNB": "00005",
+                    "TNS": "00005",
+                    "TNG": "001",
+                    "MNC": "38",
+                    "MNR": "11",
+                    "TCS": "1",
+                    "TCP": "00000000",
+                    "TCF": "00000000",
+                    "TND": "1",
+                    "DSN": "1",
+                    "CO": "NOR",
+                    "PUB": "",
+                    "EN": "",
+                    "ECD": "",
+                    "spare": "",
+                    "UDA": ""
+                },
+                "startOfProgrammeSubtracted": false,
+                "firstSubtitleNumber": 0,
+                "comments": [],
+                "counts": {
+                    "TNB": 5,
+                    "TNS": 5,
+                    "TNG": 1,
+                    "TCF": "00000000"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 0.32,
+                "lines": [
+                    "Title: Test-OPN",
+                    "Story:",
+                    "Lang: opn",
+                    "Config: 1"
+                ],
+                "identifier": null,
+                "alignment": 1,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 8,
+                        "justificationCode": 1,
+                        "text": "Title: Test-OPN\nStory:\nLang: opn\nConfig: 1",
+                        "blocks": [
+                            "000000ff0000000000000000080801005469746c653a20546573742d4f504e8a53746f72793a8a4c616e673a206f706e8a436f6e6669673a20318f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 12.92,
+                "end": 18.48,
+                "lines": [
+                    "<i>TEST ÆæØøÅå</i>",
+                    "<i>#123&amp;\"@!?`++?'*$£-§§</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 10,
+                        "justificationCode": 2,
+                        "text": "<i>TEST ÆæØøÅå</i>\n<i>#123&amp;\"@!?`++?'*$£-§§</i>",
+                        "blocks": [
+                            "000100ff0000000c170000120c0a0200805445535420e1f1e9f9ca41ca61818a8023313233262240213f602b2b3f272aa4a32da7a7818f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 18.56,
+                "end": 21.0,
+                "lines": [
+                    "<i>TEST ÆæØøÅå</i>",
+                    "<i>#123&amp;\"@!?`++?'*$£-</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 10,
+                        "justificationCode": 2,
+                        "text": "<i>TEST ÆæØøÅå</i>\n<i>#123&amp;\"@!?`++?'*$£-</i>",
+                        "blocks": [
+                            "000200ff000000120e000015000a0200805445535420e1f1e9f9ca41ca61818a8023313233262240213f602b2b3f272aa4a32d818f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 21.08,
+                "end": 24.6,
+                "lines": [
+                    "<i>TEST ÆæØøÅå</i>",
+                    "<i>#123&amp;\"@!?`++?'*$£-</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 10,
+                        "justificationCode": 2,
+                        "text": "<i>TEST ÆæØøÅå</i>\n<i>#123&amp;\"@!?`++?'*$£-</i>",
+                        "blocks": [
+                            "000300ff00000015020000180f0a0200805445535420e1f1e9f9ca41ca61818a8023313233262240213f602b2b3f272aa4a32d818f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 72.16,
+                "end": 77.36,
+                "lines": [
+                    "<i>TEST ÆæØøÅå</i>",
+                    "<i>#123&amp;\"@!?`++?'*$£-</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 10,
+                        "justificationCode": 2,
+                        "text": "<i>TEST ÆæØøÅå</i>\n<i>#123&amp;\"@!?`++?'*$£-</i>",
+                        "blocks": [
+                            "000400ff0000010c04000111090a0200805445535420e1f1e9f9ca41ca61818a8023313233262240213f602b2b3f272aa4a32d818f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

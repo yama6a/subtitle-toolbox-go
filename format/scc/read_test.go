@@ -35,10 +35,6 @@ func TestReadPopOn(t *testing.T) {
 	rows, _ := data.Get("rows")
 	columns, _ := data.Get("columns")
 	assert.Equal(t, []any{"pop-on", []any{int64(14)}, []any{int64(5)}}, []any{mode, rows, columns})
-	file, ok := s.FormatData("scc")
-	require.True(t, ok)
-	dropFrame, _ := file.Get("dropFrame")
-	assert.Equal(t, true, dropFrame)
 }
 
 func TestReadTimes(t *testing.T) {
@@ -69,24 +65,36 @@ func TestReadTimes(t *testing.T) {
 	}
 }
 
-func TestReadNonDropFileWithoutCues(t *testing.T) {
+func TestReadFileData(t *testing.T) {
 	t.Parallel()
 
-	s, _ := mustRead(t, "Scenarist_SCC V1.0\r\n\r\n00:00:01:00\t942c 942c\r\n", model.CommonReadOptions{}, scc.ReadOptions{})
-	assert.Zero(t, s.Len())
-	file, ok := s.FormatData("scc")
-	require.True(t, ok)
-	dropFrame, _ := file.Get("dropFrame")
-	assert.Equal(t, false, dropFrame)
-}
+	tests := []struct {
+		name    string
+		content string
+		cues    int
+		want    any // the dropFrame value, nil when the file has no format data
+	}{
+		{"drop-frame code line", popOnHello, 1, true},
+		{"non-drop code line with CR LF", "Scenarist_SCC V1.0\r\n\r\n00:00:01:00\t942c 942c\r\n", 0, false},
+		{"first code line decides", header + "00:00:01:00\t942c 942c\n00:00:02;00\t942c 942c\n", 0, false},
+		{"no code line", "Scenarist_SCC V1.0\n", 0, nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-func TestReadWithoutCodeLine(t *testing.T) {
-	t.Parallel()
-
-	s, _ := mustRead(t, "Scenarist_SCC V1.0\n", model.CommonReadOptions{}, scc.ReadOptions{})
-	assert.Zero(t, s.Len())
-	_, ok := s.FormatData("scc")
-	assert.False(t, ok, "a file without a code line has no format data")
+			s, _ := mustRead(t, tt.content, model.CommonReadOptions{}, scc.ReadOptions{})
+			assert.Equal(t, tt.cues, s.Len())
+			file, ok := s.FormatData("scc")
+			if tt.want == nil {
+				assert.False(t, ok)
+				return
+			}
+			require.True(t, ok)
+			dropFrame, _ := file.Get("dropFrame")
+			assert.Equal(t, tt.want, dropFrame)
+		})
+	}
 }
 
 func TestReadChannel(t *testing.T) {

@@ -112,7 +112,7 @@ func startFrame(m []string, dropFrame bool) int64 {
 	if dropFrame {
 		rate = model.FrameRate2997DF
 	}
-	return rate.FrameOf(model.Timecode{Hours: field[0], Minutes: field[1], Seconds: field[2], Frames: field[3], DropFrame: dropFrame})
+	return rate.FrameOf(model.Timecode{Hours: field[0], Minutes: field[1], Seconds: field[2], Frames: field[3]})
 }
 
 // readBytePair returns the word of a pair. A bad pair fails in strict mode. Lenient mode warns and returns padding,

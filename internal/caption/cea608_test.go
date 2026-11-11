@@ -1,6 +1,7 @@
 package caption_test
 
 import (
+	"math"
 	"strconv"
 	"strings"
 	"testing"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/caption"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 )
 
 func line(t *testing.T, start int64, tokens string) cea608.CodeLine {
@@ -124,6 +126,30 @@ func TestCEA608Cues(t *testing.T) {
 			}
 			assert.Equal(t, tt.want, got)
 		})
+	}
+}
+
+func TestCEA608CuesClampTheLastEnd(t *testing.T) {
+	t.Parallel()
+
+	lines := []cea608.CodeLine{
+		line(t, 30, "9425 9425 94ad 94ad 9470 9470 t:ONE"),
+		line(t, 60, "9420 9420 9470 9470 t:TWO 942f 942f"),
+	}
+	for _, rollUp := range []caption.RollUp{caption.RollUpScreen, caption.RollUpLines} {
+		for _, last := range []time.Duration{400000 * time.Hour, math.MaxInt64} {
+			t.Run(string(rollUp)+" "+last.String(), func(t *testing.T) {
+				t.Parallel()
+
+				cues := caption.CEA608Cues(lines, caption.CEA608Options{Channel: 1, RollUp: rollUp}, last)
+				require.NotEmpty(t, cues)
+				for _, c := range cues {
+					assert.Positive(t, c.End)
+					assert.LessOrEqual(t, c.End, timecode.MaxValidTime)
+				}
+				assert.Equal(t, timecode.MaxValidTime, cues[len(cues)-1].End)
+			})
+		}
 	}
 }
 
