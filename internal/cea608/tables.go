@@ -11,8 +11,8 @@ const (
 	MaxLines = 4
 )
 
-// White is the color index of white. Color indexes 0 to 6 select the entries of Colors.
-const White = 0
+// white is the color index of white. Color indexes 0 to 6 select the entries of colors.
+const white = 0
 
 const (
 	cmdRCL = 0x20 // resume caption loading
@@ -38,8 +38,8 @@ const (
 	styleItalic    = 7
 )
 
-// Colors holds the "#rrggbb" value of each color index of preamble address codes and mid-row codes.
-var Colors = [...]string{"#ffffff", "#00ff00", "#0000ff", "#00ffff", "#ff0000", "#ffff00", "#ff00ff"} //nolint:gochecknoglobals // constant table
+// colors holds the "#rrggbb" value of each color index of preamble address codes and mid-row codes.
+var colors = [...]string{"#ffffff", "#00ff00", "#0000ff", "#00ffff", "#ff0000", "#ffff00", "#ff00ff"} //nolint:gochecknoglobals // constant table
 
 // standardOverrides holds the characters of the standard set that differ from ASCII.
 var standardOverrides = map[byte]rune{ //nolint:gochecknoglobals // constant table
@@ -142,9 +142,9 @@ func decodePac(first, second byte) (pac, bool) {
 	return pac{row: row, color: style, underline: underline}, true
 }
 
-// encodePac returns the 7-bit bytes of the preamble address code, and false for a row outside 1 to 15.
+// encodePac returns the 7-bit bytes of the preamble address code for a row from 1 to 15.
 // Italics wins over a color. Only column 0 holds a color or italics.
-func encodePac(p pac) (first, second byte, ok bool) {
+func encodePac(p pac) (first, second byte) {
 	for low, rows := range pacRows {
 		for half, row := range rows {
 			if row != p.row {
@@ -154,7 +154,7 @@ func encodePac(p pac) (first, second byte, ok bool) {
 			switch {
 			case p.italic:
 				attributes = 0x0E
-			case p.color != White:
+			case p.color != white:
 				attributes = byte(p.color) << 1
 			default:
 				attributes = 0x10 | byte(p.column/indentStep)<<1&0x0E
@@ -163,10 +163,10 @@ func encodePac(p pac) (first, second byte, ok bool) {
 			if p.underline {
 				second |= 0x01
 			}
-			return 0x10 | byte(low), second, true
+			return 0x10 | byte(low), second
 		}
 	}
-	return 0, 0, false
+	return 0, 0
 }
 
 // midRow returns the second byte of the mid-row code for a color index, or for italics with styleItalic.

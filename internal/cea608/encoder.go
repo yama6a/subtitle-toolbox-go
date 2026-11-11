@@ -11,7 +11,7 @@ import (
 // Char is one character of a line with its style.
 type Char struct {
 	R         rune
-	Color     int // 0 to 6, see Colors
+	Color     int // 0 to 6, see the color indexes of preamble address codes
 	Italic    bool
 	Underline bool
 }
@@ -58,6 +58,8 @@ func Encodable(r rune) bool {
 	return ok
 }
 
+var spaces = strings.NewReplacer("\u00a0", " ", "\t", " ") //nolint:gochecknoglobals // constant table
+
 var tagRegexp = regexp.MustCompile(`(?i)^<\s*(/?)\s*([a-z]+)\b([^>]*)>$`)
 
 type lineStyle struct {
@@ -67,7 +69,7 @@ type lineStyle struct {
 
 func (s *lineStyle) top() int {
 	if len(s.colors) == 0 {
-		return White
+		return white
 	}
 	return s.colors[len(s.colors)-1]
 }
@@ -97,7 +99,7 @@ func (s *lineStyle) applyFont(closing bool, attrs string) {
 	color := s.top()
 	if c, ok := markupcore.FontColor(attrs); ok {
 		if hex, ok := markupcore.ColorHex(c); ok {
-			if i := slices.Index(Colors[:], hex); i >= 0 {
+			if i := slices.Index(colors[:], hex); i >= 0 {
 				color = i
 			}
 		}
@@ -117,7 +119,7 @@ func StyledCharacters(line string) []Char {
 			}
 			continue
 		}
-		decoded := strings.NewReplacer("\u00a0", " ", "\t", " ").Replace(markupcore.DecodeEntities(part))
+		decoded := spaces.Replace(markupcore.DecodeEntities(part))
 		for _, r := range decoded {
 			chars = append(chars, Char{R: r, Color: style.top(), Italic: style.italic > 0, Underline: style.underline > 0})
 		}
@@ -132,14 +134,8 @@ func StyledCharacters(line string) []Char {
 	return chars[start:end]
 }
 
-type style struct {
-	color     int
-	italic    bool
-	underline bool
-}
-
-func (c Char) style() style {
-	return style{c.Color, c.Italic, c.Underline}
+func (c Char) attrs() attributes {
+	return attributes{c.Color, c.Italic, c.Underline}
 }
 
 // Cells turns the characters into cells. A style change takes mid-row codes, which show as spaces.
@@ -147,9 +143,9 @@ func (c Char) style() style {
 // A line that needs more than 32 cells drops every style.
 func Cells(chars []Char) []Cell {
 	var cells []Cell
-	var current style
+	var current attributes
 	for _, c := range chars {
-		if want := c.style(); c.R != ' ' && want != current {
+		if want := c.attrs(); c.R != ' ' && want != current {
 			cells = appendCodes(cells, midRowCodes(current, want))
 			current = want
 		}
@@ -180,7 +176,7 @@ func appendCodes(cells []Cell, codes []byte) []Cell {
 
 // midRowCodes returns the second bytes of the mid-row codes that change the style. A color code turns italics off,
 // and the italics code keeps the color, as 47 CFR 15.119 (h)(1)(ii) says.
-func midRowCodes(from, to style) []byte {
+func midRowCodes(from, to attributes) []byte {
 	if to.color != from.color || (from.italic && !to.italic) || (!to.italic && to.underline != from.underline) {
 		codes := []byte{midRow(to.color, !to.italic && to.underline)}
 		if to.italic {
@@ -200,7 +196,7 @@ func RowWords(row, column int, cells []Cell) []uint16 {
 		return nil
 	}
 	p, start, cells := rowPac(row, column, cells)
-	first, second, _ := encodePac(p)
+	first, second := encodePac(p)
 	w := Word(first, second)
 	words := []uint16{w, w}
 	if start%indentStep > 0 {
@@ -230,7 +226,7 @@ func rowPac(row, column int, cells []Cell) (pac, int, []Cell) {
 		attrs.underline = underline
 	}
 	cells = cells[leading:]
-	if attrs.italic && attrs.color != White {
+	if attrs.italic && attrs.color != white {
 		cells = append([]Cell{{MidRow: midRow(styleItalic, attrs.underline)}}, cells...)
 		return pac{row: row, color: attrs.color}, 0, cells
 	}

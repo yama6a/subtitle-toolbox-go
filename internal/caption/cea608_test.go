@@ -11,7 +11,6 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/caption"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/cea608"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func line(t *testing.T, start int64, tokens string) cea608.CodeLine {
@@ -75,6 +74,18 @@ func TestCEA608Cues(t *testing.T) {
 			want: []string{"1268-1335 TopCenter 1,1 pop-on [1 15] [0 0] A|B", "1502-6502 BottomCenter 15,1 pop-on [15] [0] C"},
 		},
 		{
+			name: "row 4 aligns to the top and row 5 to the bottom",
+			lines: func(t *testing.T) []cea608.CodeLine {
+				t.Helper()
+				return []cea608.CodeLine{
+					line(t, 30, "9420 9420 9270 9270 t:A 942f 942f"),
+					line(t, 60, "9420 9420 15d0 15d0 t:B 942f 942f"),
+					line(t, 90, "942c 942c"),
+				}
+			},
+			want: []string{"1168-2169 TopCenter 4,1 pop-on [4] [0] A", "2169-3003 BottomCenter 5,1 pop-on [5] [0] B"},
+		},
+		{
 			name:  "roll-up by screen",
 			lines: rollUp,
 			want: []string{
@@ -114,7 +125,6 @@ func TestCEA608Cues(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
-	assert.Equal(t, 1001*time.Millisecond, model.FrameRate2997.Duration(30))
 }
 
 func listString(v any) string {

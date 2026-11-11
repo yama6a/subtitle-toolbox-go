@@ -445,8 +445,8 @@ func renderRow(cells map[int]cell) (column int, markup string, ok bool) {
 			c = cell{r: ' '}
 		}
 		run := markupcore.Run{Text: string(c.r), Italic: c.italic, Underline: c.underline}
-		if c.color != White {
-			run.Color = Colors[c.color]
+		if c.color != white {
+			run.Color = colors[c.color]
 		}
 		runs = append(runs, run)
 	}

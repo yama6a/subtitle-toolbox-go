@@ -24,8 +24,7 @@ func TestParity(t *testing.T) {
 func TestPacRoundTrip(t *testing.T) {
 	t.Parallel()
 	roundTrip := func(p pac) pac {
-		first, second, ok := encodePac(p)
-		require.True(t, ok)
+		first, second := encodePac(p)
 		got, ok := decodePac(first, second)
 		require.True(t, ok)
 		return got
@@ -37,7 +36,7 @@ func TestPacRoundTrip(t *testing.T) {
 				assert.Equal(t, want, roundTrip(want))
 			}
 		}
-		for color := range Colors {
+		for color := range colors {
 			assert.Equal(t, pac{row: row, color: color}, roundTrip(pac{row: row, color: color}))
 		}
 		assert.Equal(t, pac{row: row, italic: true}, roundTrip(pac{row: row, italic: true}))
@@ -51,11 +50,9 @@ func TestPacRoundTrip(t *testing.T) {
 		{pac{row: 15, column: 28, underline: true}, [2]byte{0x94, 0x7F}},
 		{pac{row: 3, color: 6, underline: true}, [2]byte{0x92, 0xCD}},
 	} {
-		first, second, _ := encodePac(tt.p)
+		first, second := encodePac(tt.p)
 		assert.Equal(t, tt.want, [2]byte{WithParity(first), WithParity(second)})
 	}
-	_, _, ok := encodePac(pac{row: 16})
-	assert.False(t, ok)
 }
 
 func TestCharacterCodes(t *testing.T) {
@@ -113,5 +110,5 @@ func TestMidRow(t *testing.T) {
 	style, underline = decodeMidRow(0x2E)
 	assert.Equal(t, []any{styleItalic, false}, []any{style, underline})
 	assert.Equal(t, byte(0x2F), midRow(styleItalic, true))
-	assert.Equal(t, byte(0x20), midRow(White, false))
+	assert.Equal(t, byte(0x20), midRow(white, false))
 }

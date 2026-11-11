@@ -84,14 +84,21 @@ func FuzzEncode(f *testing.F) {
 		if len(chars) > cea608.Columns {
 			return
 		}
-		var plain strings.Builder
 		for _, c := range chars {
 			if !cea608.Encodable(c.R) {
 				return
 			}
+		}
+		var plain strings.Builder
+		for _, c := range cea608.Cells(chars) {
+			if c.MidRow != 0 {
+				plain.WriteByte(' ')
+				continue
+			}
 			plain.WriteRune(c.R)
 		}
-		if plain.Len() == 0 {
+		want := strings.Trim(plain.String(), " ")
+		if want == "" {
 			return
 		}
 		eoc := cea608.Word(0x14, 0x2f)
@@ -102,8 +109,8 @@ func FuzzEncode(f *testing.F) {
 			t.Fatalf("no caption for %q", s)
 		}
 		got := markupcore.DecodeEntities(markupcore.StripAllTags(states[len(states)-1].Lines[0].Text))
-		if got != plain.String() {
-			t.Fatalf("decoded %q, want %q", got, plain.String())
+		if got != want {
+			t.Fatalf("decoded %q, want %q", got, want)
 		}
 	})
 }
