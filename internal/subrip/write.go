@@ -77,7 +77,7 @@ func cueLines(c model.Cue, stripTags bool) string {
 		kept = append(kept, line)
 	}
 	text = strings.Join(kept, "\n")
-	if n := c.Alignment.Numpad(); n != model.BottomCenter.Numpad() {
+	if n := c.Position.Alignment.Numpad(); n != model.BottomCenter.Numpad() {
 		text = `{\an` + strconv.Itoa(n) + "}" + text
 	}
 	return text

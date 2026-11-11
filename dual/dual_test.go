@@ -250,7 +250,7 @@ func TestFromPairMatchesTheExpectedFiles(t *testing.T) {
 func cuesOf(s *model.Subtitle) []model.Cue {
 	cues := s.Cues()
 	for i := range cues {
-		cues[i] = model.Cue{Start: cues[i].Start, End: cues[i].End, Lines: cues[i].Lines, Alignment: cues[i].Alignment}
+		cues[i] = model.Cue{Start: cues[i].Start, End: cues[i].End, Lines: cues[i].Lines, Position: model.Position{Alignment: cues[i].Position.Alignment}}
 	}
 	return cues
 }
@@ -359,7 +359,7 @@ func TestFromPairKeepsThePrimaryCueData(t *testing.T) {
 	var primaryCue model.Cue
 	primaryCue.Start, primaryCue.End = 0, 2*time.Second
 	primaryCue.Lines = []string{"first"}
-	primaryCue.ID, primaryCue.Alignment, primaryCue.Forced = "7", model.TopLeft, true
+	primaryCue.ID, primaryCue.Position.Alignment, primaryCue.Forced = "7", model.TopLeft, true
 	require.NoError(t, primaryCue.SetFormatData("ass", model.NewData(model.Field{Key: "text", Value: "raw"})))
 	var primary model.Subtitle
 	primary.AddCue(primaryCue)
@@ -370,7 +370,7 @@ func TestFromPairKeepsThePrimaryCueData(t *testing.T) {
 	got, ok := result.Cue(0)
 	require.True(t, ok)
 	assert.Equal(t, "7", got.ID)
-	assert.Equal(t, model.TopLeft, got.Alignment)
+	assert.Equal(t, model.TopLeft, got.Position.Alignment)
 	assert.True(t, got.Forced)
 	assert.Equal(t, []string{"ass"}, got.FormatDataKeys())
 	assert.Equal(t, 3*time.Second, got.End)

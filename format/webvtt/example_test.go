@@ -26,7 +26,7 @@ intro
 		return
 	}
 	c, _ := s.Cue(0)
-	fmt.Println(c.ID, c.Start, c.End, c.Alignment, c.Text())
+	fmt.Println(c.ID, c.Start, c.End, c.Position.Alignment, c.Text())
 	fmt.Println(s.Comments()[0].Text)
 	file, _ := s.FormatData("vtt")
 	headerLines, _ := file.Strings("headerLines")
@@ -39,7 +39,7 @@ intro
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<v Anna>Good morning."}, Alignment: model.TopLeft})
+	s.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<v Anna>Good morning."}, Position: model.Position{Alignment: model.TopLeft}})
 	if err := s.AddComment("Morning show", 0); err != nil {
 		fmt.Println(err)
 		return

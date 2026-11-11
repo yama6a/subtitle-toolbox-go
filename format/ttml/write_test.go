@@ -162,8 +162,8 @@ func TestChangedAlignmentReplacesTheStoredRegion(t *testing.T) {
 
 	s, _ := readFile(t, realDir+"/pysubs2_regions.ttml", false)
 	unchanged := writeDefault(t, s)
-	setCue(t, s, 0, func(c *model.Cue) { c.Alignment = model.BottomCenter })
-	setCue(t, s, 1, func(c *model.Cue) { c.Alignment = model.TopRight })
+	setCue(t, s, 0, func(c *model.Cue) { c.Position.Alignment = model.BottomCenter })
+	setCue(t, s, 1, func(c *model.Cue) { c.Position.Alignment = model.TopRight })
 	out := writeDefault(t, s)
 
 	assert.Contains(t, out, `<p xml:id="subtitle1" begin="00:00:01.375" end="00:00:05.750" style="s1" region="bottomCenter">`)
@@ -174,7 +174,7 @@ func TestChangedAlignmentReplacesTheStoredRegion(t *testing.T) {
 	back, _ := mustRead(t, out, false)
 	alignments := make([]model.Alignment, 0, 4)
 	for _, c := range back.Cues()[:4] {
-		alignments = append(alignments, c.Alignment)
+		alignments = append(alignments, c.Position.Alignment)
 	}
 	assert.Equal(t, []model.Alignment{model.BottomCenter, model.TopRight, model.TopCenter, model.BottomCenter}, alignments)
 }
@@ -184,16 +184,16 @@ func TestOutputParsesBackToTheSameCues(t *testing.T) {
 	t.Parallel()
 
 	first := cue(time.Second, 2*time.Second, "<v Ann>one</v> <v Ben>two", "<b>bold <i>open")
-	first.Alignment = model.MiddleLeft
+	first.Position.Alignment = model.MiddleLeft
 	s := subtitleOf(first, cue(3*time.Second, 4*time.Second, "<i>mis<b>nested</i>tags</b> &lt;3 <c.yellow>class</c> <00:00:03.500>word"))
 
 	back, _ := mustRead(t, writeDefault(t, s), false)
 	cues := back.Cues()
 	require.Len(t, cues, 2)
 	assert.Equal(t, "<v Ann>one </v><v Ben>two\n<b>bold <i>open</i></b>", cues[0].Text())
-	assert.Equal(t, model.MiddleLeft, cues[0].Alignment)
+	assert.Equal(t, model.MiddleLeft, cues[0].Position.Alignment)
 	assert.Equal(t, "<i>mis</i><b><i>nested</i>tags</b> &lt;3 <font color=\"#ffff00\">class</font> word", cues[1].Text())
-	assert.Equal(t, model.BottomCenter, cues[1].Alignment)
+	assert.Equal(t, model.BottomCenter, cues[1].Position.Alignment)
 }
 
 // Ports testAllXmlTagsAreStrippedAwayIfOptionIsSet of tests/Formatters/TtmlFormatterTest.php of subtitle-toolbox-php.
@@ -519,7 +519,7 @@ func TestCDATASections(t *testing.T) {
 			c, _ := s.Cue(0)
 			assert.Equal(t, tt.text, c.Text())
 
-			setCue(t, s, 0, func(c *model.Cue) { c.Lines, c.Alignment = []string{"<v Ann>" + c.Text()}, model.TopCenter })
+			setCue(t, s, 0, func(c *model.Cue) { c.Lines, c.Position.Alignment = []string{"<v Ann>" + c.Text()}, model.TopCenter })
 			assert.Contains(t, writeDefault(t, s), "\n"+tt.written)
 		})
 	}

@@ -56,7 +56,7 @@ func TestWriteDocuments(t *testing.T) {
 				s := &model.Subtitle{}
 				s.SetMetadata(model.MetadataTitle, "Big Buck Bunny")
 				s.SetMetadata(model.MetadataLanguage, "en")
-				s.AddCue(model.Cue{Start: ms(1500), End: ms(4000), Lines: []string{"Hello", "<i>world</i>"}, ID: "intro", Alignment: model.TopCenter})
+				s.AddCue(model.Cue{Start: ms(1500), End: ms(4000), Lines: []string{"Hello", "<i>world</i>"}, ID: "intro", Position: model.Position{Alignment: model.TopCenter}})
 				require.NoError(t, s.AddComment("Translated by Jane Doe", 0))
 				return s
 			},
@@ -151,7 +151,22 @@ func TestWriteCueFields(t *testing.T) {
 		want string
 	}{
 		{"bottom center as null", model.Cue{Start: 0, End: ms(1)}, `{"start":0.0,"end":0.001,"lines":[],"identifier":null,"alignment":null,"formatData":{}}`},
-		{"bottom left", model.Cue{Alignment: model.BottomLeft}, `{"start":0.0,"end":0.0,"lines":[],"identifier":null,"alignment":1,"formatData":{}}`},
+		{"bottom left", model.Cue{Position: model.Position{Alignment: model.BottomLeft}}, `{"start":0.0,"end":0.0,"lines":[],"identifier":null,"alignment":1,"formatData":{}}`},
+		{
+			"row and offset",
+			model.Cue{Position: model.Position{Row: 2, Column: 1, Grid: model.Grid{Rows: 15, Columns: 32}, Offset: &model.Offset{X: 50, Y: 10.5}}},
+			`{"start":0.0,"end":0.0,"lines":[],"identifier":null,"alignment":null,"position":{"row":2,"column":1,"grid":{"rows":15,"columns":32},"offset":{"x":50.0,"y":10.5}},"formatData":{}}`,
+		},
+		{
+			"offset only",
+			model.Cue{Position: model.Position{Offset: &model.Offset{X: 0, Y: 100}}},
+			`{"start":0.0,"end":0.0,"lines":[],"identifier":null,"alignment":null,"position":{"offset":{"x":0.0,"y":100.0}},"formatData":{}}`,
+		},
+		{
+			"an invalid position is left out",
+			model.Cue{Position: model.Position{Row: 2}},
+			`{"start":0.0,"end":0.0,"lines":[],"identifier":null,"alignment":null,"formatData":{}}`,
+		},
 		{"forced", model.Cue{Forced: true, ID: "7"}, `{"start":0.0,"end":0.0,"lines":[],"identifier":"7","alignment":null,"forced":true,"formatData":{}}`},
 		{"negative times", model.Cue{Start: ms(-2500), End: ms(-1)}, `{"start":-2.5,"end":-0.001,"lines":[],"identifier":null,"alignment":null,"formatData":{}}`},
 		{
