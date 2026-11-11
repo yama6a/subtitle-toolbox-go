@@ -67,7 +67,8 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions) str
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, sbv.Write(&out, s, common, sbv.WriteOptions{}))
+	_, err := sbv.Write(&out, s, common, sbv.WriteOptions{})
+	require.NoError(t, err)
 	return out.String()
 }
 

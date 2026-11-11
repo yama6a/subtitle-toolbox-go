@@ -33,7 +33,7 @@ func ExampleWrite() {
 		model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Where are you?", "Home."}},
 		model.Cue{Start: 9 * time.Second, End: 11 * time.Second, Lines: []string{"<i>Sun</i>"}},
 	)
-	if err := tmplayer.Write(os.Stdout, s, model.CommonWriteOptions{}, tmplayer.WriteOptions{}); err != nil {
+	if _, err := tmplayer.Write(os.Stdout, s, model.CommonWriteOptions{}, tmplayer.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

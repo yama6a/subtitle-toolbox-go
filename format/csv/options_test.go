@@ -1,7 +1,6 @@
 package csv_test
 
 import (
-	"math"
 	"strings"
 	"testing"
 
@@ -22,7 +21,7 @@ func TestReadOptionsValidate(t *testing.T) {
 		msg    string
 	}{
 		{name: "zero", opts: csv.ReadOptions{}},
-		{name: "every delimiter", opts: csv.ReadOptions{Delimiter: csv.Tab, FrameRate: 23.976}},
+		{name: "every delimiter", opts: csv.ReadOptions{Delimiter: csv.Tab, FrameRate: model.FrameRate{Num: 2997, Den: 125}}},
 		{
 			name: "indexes without a header",
 			opts: csv.ReadOptions{Columns: csv.Columns{Start: csv.ColumnAt(0), Text: csv.ColumnAt(1), Speaker: csv.ColumnAt(2), NoHeader: true}},
@@ -50,9 +49,7 @@ func TestReadOptionsValidate(t *testing.T) {
 			name: "pipe delimiter", opts: csv.ReadOptions{Delimiter: "|"},
 			option: "ReadOptions.CSV.Delimiter", msg: `The CSV delimiter must be ",", ";" or a tab.`,
 		},
-		{name: "negative frame rate", opts: csv.ReadOptions{FrameRate: -1}, option: "ReadOptions.CSV.FrameRate", msg: "The frame rate must be greater than 0, got -1."},
-		{name: "NaN frame rate", opts: csv.ReadOptions{FrameRate: math.NaN()}, option: "ReadOptions.CSV.FrameRate", msg: "The frame rate must be greater than 0, got NAN."},
-		{name: "infinite frame rate", opts: csv.ReadOptions{FrameRate: math.Inf(1)}, option: "ReadOptions.CSV.FrameRate", msg: "The frame rate must be greater than 0, got INF."},
+		{name: "negative frame rate", opts: csv.ReadOptions{FrameRate: model.FrameRate{Num: -1, Den: 1}}, option: "ReadOptions.CSV.FrameRate", msg: "The frame rate must be greater than 0, got -1."},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -81,7 +78,7 @@ func TestWriteOptionsValidate(t *testing.T) {
 		msg    string
 	}{
 		{name: "zero", opts: csv.WriteOptions{}},
-		{name: "every field", opts: csv.WriteOptions{Delimiter: csv.Semicolon, TimeFormat: csv.TimeFrames, FrameRate: 25, SecondTextHeader: "de", EscapeFormulas: true}},
+		{name: "every field", opts: csv.WriteOptions{Delimiter: csv.Semicolon, TimeFormat: csv.TimeFrames, FrameRate: model.FrameRate{Num: 25, Den: 1}, SecondTextHeader: "de", EscapeFormulas: true}},
 		{
 			// Ports testRejectsAnInvalidDelimiterWhenTheOptionsAreCreated of tests/Formatters/CsvFormatterTest.php of subtitle-toolbox-php.
 			name: "pipe delimiter", opts: csv.WriteOptions{Delimiter: "|"},
@@ -91,9 +88,7 @@ func TestWriteOptionsValidate(t *testing.T) {
 			name: "unknown time format", opts: csv.WriteOptions{TimeFormat: "hh:mm:ss;fff"}, option: "WriteOptions.CSV.TimeFormat",
 			msg: `The CSV time format must be seconds, hh:mm:ss.mmm, hh:mm:ss,mmm, hh:mm:ss:ff or milliseconds, got "hh:mm:ss;fff".`,
 		},
-		{name: "negative frame rate", opts: csv.WriteOptions{FrameRate: -1}, option: "WriteOptions.CSV.FrameRate", msg: "The CSV frame rate must be greater than 0, got -1."},
-		{name: "NaN frame rate", opts: csv.WriteOptions{FrameRate: math.NaN()}, option: "WriteOptions.CSV.FrameRate", msg: "The CSV frame rate must be greater than 0, got NAN."},
-		{name: "infinite frame rate", opts: csv.WriteOptions{FrameRate: math.Inf(1)}, option: "WriteOptions.CSV.FrameRate", msg: "The CSV frame rate must be greater than 0, got INF."},
+		{name: "negative frame rate", opts: csv.WriteOptions{FrameRate: model.FrameRate{Num: -1, Den: 1}}, option: "WriteOptions.CSV.FrameRate", msg: "The CSV frame rate must be greater than 0, got -1."},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -105,7 +100,8 @@ func TestWriteOptionsValidate(t *testing.T) {
 				return
 			}
 			assert.Equal(t, &model.InvalidArgumentError{Option: tt.option, Msg: tt.msg}, err)
-			require.ErrorIs(t, csv.Write(&strings.Builder{}, &model.Subtitle{}, model.CommonWriteOptions{}, tt.opts), model.ErrInvalidArgument)
+			_, err = csv.Write(&strings.Builder{}, &model.Subtitle{}, model.CommonWriteOptions{}, tt.opts)
+			require.ErrorIs(t, err, model.ErrInvalidArgument)
 		})
 	}
 }

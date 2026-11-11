@@ -24,12 +24,12 @@ A package imports only packages of a lower layer. Every layer may also import th
 
 ### Format packages
 
-Every format package declares `ReadOptions` and `WriteOptions`, empty where the format has no options. Its functions always take them, so a first option is a new field and never a signature change. A format without a reader has no `Read`. A format without a signature has no `Detect`.
+Every format package declares `ReadOptions`, `WriteOptions` and `WriteReport`, empty where the format has no options or reports nothing. Its functions always take them, so a first option or report field is a new field and never a signature change. A format without a reader has no `Read`. A format without a signature has no `Detect`.
 
 ```go
 // Read reads UTF-8 text. The root decodes other encodings first.
 func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model.Subtitle, []model.ParseWarning, error)
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error)
 // Detect gets the content without leading BOMs or white space, with LF line endings.
 func Detect(content []byte) bool
 ```

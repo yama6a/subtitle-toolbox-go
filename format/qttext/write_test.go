@@ -446,7 +446,7 @@ func TestWriteRelativeTimestampsTakeTheDifferenceFromTheReader(t *testing.T) {
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	err := qttext.Write(errWriter{}, subtitle(cue(0, time.Second, "A")), model.CommonWriteOptions{}, qttext.WriteOptions{})
+	_, err := qttext.Write(errWriter{}, subtitle(cue(0, time.Second, "A")), model.CommonWriteOptions{}, qttext.WriteOptions{})
 	require.Error(t, err)
 	assert.ErrorIs(t, err, errWrite)
 }

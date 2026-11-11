@@ -33,7 +33,8 @@ func repeatWithNotes(tb testing.TB, n int) []byte {
 		require.NoError(tb, s.AddComment(comments[i%len(comments)].Text, i))
 	}
 	var out bytes.Buffer
-	require.NoError(tb, webvtt.Write(&out, s, model.CommonWriteOptions{}, webvtt.WriteOptions{}))
+	_, err = webvtt.Write(&out, s, model.CommonWriteOptions{}, webvtt.WriteOptions{})
+	require.NoError(tb, err)
 	return out.Bytes()
 }
 

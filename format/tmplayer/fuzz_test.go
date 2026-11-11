@@ -63,7 +63,7 @@ func FuzzRead(f *testing.F) {
 				}
 			}
 			var out bytes.Buffer
-			if err := tmplayer.Write(&out, s, model.CommonWriteOptions{}, tmplayer.WriteOptions{}); err != nil {
+			if _, err := tmplayer.Write(&out, s, model.CommonWriteOptions{}, tmplayer.WriteOptions{}); err != nil {
 				t.Fatalf("Write returned %v", err)
 			}
 			if _, _, err := tmplayer.Read(&out, model.CommonReadOptions{}, tmplayer.ReadOptions{}); err != nil {

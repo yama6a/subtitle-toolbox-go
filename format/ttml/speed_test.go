@@ -28,7 +28,8 @@ func TestDuplicateCueIDsGrowth(t *testing.T) {
 		fastest := time.Duration(1<<63 - 1)
 		for range 3 {
 			begin := time.Now()
-			require.NoError(t, ttml.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, ttml.WriteOptions{}))
+			_, err := ttml.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, ttml.WriteOptions{})
+			require.NoError(t, err)
 			fastest = min(fastest, time.Since(begin))
 		}
 		return fastest

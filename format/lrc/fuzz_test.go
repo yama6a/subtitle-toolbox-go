@@ -67,7 +67,7 @@ func FuzzRead(f *testing.F) {
 				}
 			}
 			var out bytes.Buffer
-			if err := lrc.Write(&out, s, model.CommonWriteOptions{}, lrc.WriteOptions{}); err != nil {
+			if _, err := lrc.Write(&out, s, model.CommonWriteOptions{}, lrc.WriteOptions{}); err != nil {
 				t.Fatalf("Write returned %v", err)
 			}
 			if _, _, err := lrc.Read(&out, model.CommonReadOptions{}, lrc.ReadOptions{}); err != nil {

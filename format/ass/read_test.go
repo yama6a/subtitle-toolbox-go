@@ -179,7 +179,8 @@ func TestStyleItalicsAndAlignmentReachSubRip(t *testing.T) {
 	t.Parallel()
 
 	var out bytes.Buffer
-	require.NoError(t, srt.Write(&out, readFile(t, realDir+"/own_style_flags.ass"), model.CommonWriteOptions{}, srt.WriteOptions{}))
+	_, err := srt.Write(&out, readFile(t, realDir+"/own_style_flags.ass"), model.CommonWriteOptions{}, srt.WriteOptions{})
+	require.NoError(t, err)
 	assert.Contains(t, out.String(), "00:00:03,200 --> 00:00:05,400\n{\\an8}<i>I should have taken the earlier bus.</i>\n")
 }
 

@@ -27,7 +27,7 @@ func TestWriteCueTextThatReadsAsStructure(t *testing.T) {
 
 	sv1 := stbox.WriteOptions{SubViewer: subviewer.WriteOptions{Version: subviewer.V1}}
 	sv2 := stbox.WriteOptions{SubViewer: subviewer.WriteOptions{Version: subviewer.V2}}
-	fps := stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 25}}
+	fps := stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}}
 	writers := []struct {
 		name   string
 		format stbox.Format
@@ -192,10 +192,11 @@ func TestWriteCueTextThatReadsAsStructure(t *testing.T) {
 					stbox.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"C"}},
 				)
 				var out bytes.Buffer
-				require.NoError(t, stbox.Write(&out, s, w.format, w.opts))
+				_, err := stbox.Write(&out, s, w.format, w.opts)
+				require.NoError(t, err)
 				assert.Contains(t, out.String(), tt.written)
 				for _, lenient := range []bool{false, true} {
-					opts := stbox.ReadOptions{Format: w.format, Lenient: lenient, MicroDVD: microdvd.ReadOptions{FrameRate: 25}}
+					opts := stbox.ReadOptions{Format: w.format, Lenient: lenient, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}}
 					back, _, err := stbox.Parse(bytes.NewReader(out.Bytes()), opts)
 					require.NoError(t, err, "lenient %v", lenient)
 					require.Equal(t, 3, back.Len(), "lenient %v", lenient)

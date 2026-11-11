@@ -88,7 +88,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if delimiter == DelimiterDefault {
 		delimiter = detectDelimiter(text)
 	}
-	rd := &reader{st: st, columns: opts.Columns, delimiter: string(delimiter), fps: opts.FrameRate}
+	rd := &reader{st: st, columns: opts.Columns, delimiter: string(delimiter), fps: opts.FrameRate.Float64()}
 	s, err := rd.read(text)
 	if err != nil {
 		return nil, nil, err

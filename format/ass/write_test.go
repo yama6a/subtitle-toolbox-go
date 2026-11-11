@@ -181,11 +181,12 @@ func TestStyleOptionErrors(t *testing.T) {
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
 			assert.Equal(t, "WriteOptions.ASS.Style", aerr.Option)
 			assert.Equal(t, tt.msg, aerr.Msg)
-			require.ErrorIs(t, ass.Write(&bytes.Buffer{}, &model.Subtitle{}, model.CommonWriteOptions{}, ass.WriteOptions{Style: tt.style}), model.ErrInvalidArgument)
+			_, err = ass.Write(&bytes.Buffer{}, &model.Subtitle{}, model.CommonWriteOptions{}, ass.WriteOptions{Style: tt.style})
+			require.ErrorIs(t, err, model.ErrInvalidArgument)
 		})
 	}
 
-	err := ass.Write(&bytes.Buffer{}, readFile(t, realDir+"/own_ssa_v4.ssa"), model.CommonWriteOptions{}, ass.WriteOptions{Style: "underline=-1"})
+	_, err := ass.Write(&bytes.Buffer{}, readFile(t, realDir+"/own_ssa_v4.ssa"), model.CommonWriteOptions{}, ass.WriteOptions{Style: "underline=-1"})
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	require.ErrorIs(t, err, model.ErrUnwritable)
@@ -499,7 +500,9 @@ func TestWriteOptionsOfOutput(t *testing.T) {
 func TestWriteError(t *testing.T) {
 	t.Parallel()
 
-	require.ErrorIs(t, ass.Write(errWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, ass.WriteOptions{}), errRead)
+	_, err := ass.Write(errWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, ass.WriteOptions{})
+
+	require.ErrorIs(t, err, errRead)
 }
 
 // Ports the ASS row of tests/Formatters/RubyFallbackTest.php of subtitle-toolbox-php.

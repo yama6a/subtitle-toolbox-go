@@ -63,7 +63,7 @@ func FuzzRead(f *testing.F) {
 				}
 			}
 			var out bytes.Buffer
-			if err := ttml.Write(&out, s, model.CommonWriteOptions{}, ttml.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
+			if _, err := ttml.Write(&out, s, model.CommonWriteOptions{}, ttml.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
 				t.Fatalf("Write returned %v", err)
 			}
 		}

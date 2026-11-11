@@ -2,14 +2,14 @@
 
 ## Retiming
 
-A SubRip file made for a 25 fps release plays 4.3 % too fast on a 23.976 fps copy. With `s.ConvertFrameRate(25, 23.976)`, the cue from 100 s to 102.5 s becomes 104.271 s to 106.878 s.
+A SubRip file made for a 25 fps release plays 4.3 % too fast on a 23.976 fps copy. With `s.ConvertFrameRate(stbox.FrameRate{Num: 25, Den: 1}, stbox.FrameRate{Num: 2997, Den: 125})`, the cue from 100 s to 102.5 s becomes 104.271 s to 106.878 s.
 
 | Method | Moves |
 |:--- |:--- |
 | `Shift(d)` | every cue by `d`, which may be negative |
 | `ShiftRange(d, from, to)` | each cue with `from <= Start < to` by `d`. A nil bound sets no limit on that side |
 | `Scale(factor)` | every time `t` to `t * factor`. The factor is finite and above 0 |
-| `ConvertFrameRate(from, to)` | every time by `Scale(from / to)`, with frame rates in frames per second |
+| `ConvertFrameRate(from, to)` | every time by `Scale(from.Float64() / to.Float64())`, with 2 `FrameRate` values |
 | `SyncByPoints(points)` | every time onto the line through the sync points |
 
 - **Word timestamps**: every `<hh:mm:ss.mmm>` tag in the cue lines moves with the same map as the cue times.

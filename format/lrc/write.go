@@ -27,7 +27,7 @@ const maxTime = 1000*time.Minute - centisecond
 // Write writes s as LRC. It writes the ID tags, then one line per cue in start order with centisecond times,
 // and a time tag without text at the end of a cue with the cue data endLine. The BOM is on by default. A line break
 // inside a line becomes a space.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	file, _ := s.FormatData(formatDataKey)
 	spaced, _ := file.Bool("spacedWordTimes")
 	comments := make([][]string, s.Len()+1)
@@ -52,7 +52,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 		}
 	}
 	body = appendComments(body, comments[s.Len()])
-	return writing.Write(w, model.LRC, body, common, true)
+	return WriteReport{}, writing.Write(w, model.LRC, body, common, true)
 }
 
 func appendIDTags(body []byte, s *model.Subtitle, file *model.Data) []byte {

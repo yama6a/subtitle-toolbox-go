@@ -12,7 +12,7 @@ if err != nil {
 	return
 }
 var out bytes.Buffer
-err = stbox.Write(&out, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF})
+_, err = stbox.Write(&out, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF})
 if err != nil {
 	fmt.Println(err)
 	return
