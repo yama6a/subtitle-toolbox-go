@@ -41,6 +41,7 @@ func commands() []command {
 	return []command{
 		&convertCommand{},
 		&infoCommand{},
+		&validateCommand{},
 		&syncCommand{},
 		&diffCommand{},
 		&dualCommand{},
@@ -192,7 +193,7 @@ func (a *app) help(version string) string {
 		"Several inputs need --output-dir DIR. The tool never overwrites a file.")
 	exitCodes := table([][]string{
 		{"0", "Success."},
-		{"1", "diff found a difference."},
+		{"1", "diff found a difference, or validate found a broken rule."},
 		{"2", "Invalid arguments."},
 		{"3", "A file could not be read or written."},
 		{"130", "Stopped by Ctrl-C or SIGTERM. Finished outputs stay."},

@@ -38,6 +38,11 @@ func Seconds(d time.Duration) string {
 	return Number(d.Seconds())
 }
 
+// FloatSeconds returns the whole milliseconds of d as seconds, so 6200 ms gives 6.2.
+func FloatSeconds(d time.Duration) float64 {
+	return float64(d.Milliseconds()) / 1000
+}
+
 // Number writes f as PHP prints a float: 14 significant digits, no trailing zeros, and "NAN", "INF" or "-INF".
 // A value from 1e14 on or below 1e-4 in size gets the exponent form of strconv, such as "8e+300" where PHP writes "8.0E+300".
 func Number(f float64) string {

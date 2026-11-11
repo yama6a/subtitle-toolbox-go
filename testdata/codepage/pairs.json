@@ -1,0 +1,146 @@
+[
+ {
+  "table": "iso8859_5",
+  "bytes": "BFDED5D7D420F0",
+  "text": "Поезд №",
+  "mode": "both"
+ },
+ {
+  "table": "iso8859_6",
+  "bytes": "C7E4CEC8D2AC20BF",
+  "text": "الخبز، ؟",
+  "mode": "both"
+ },
+ {
+  "table": "iso8859_7_1987",
+  "bytes": "C1FDF1E9EF",
+  "text": "Αύριο",
+  "mode": "both"
+ },
+ {
+  "table": "iso8859_8_1988",
+  "bytes": "F9ECE5ED",
+  "text": "שלום",
+  "mode": "both"
+ },
+ {
+  "table": "cp850",
+  "bytes": "4D8274826F209C",
+  "text": "Météo £",
+  "mode": "both"
+ },
+ {
+  "table": "cp437",
+  "bytes": "8162657220E1",
+  "text": "über ß",
+  "mode": "both"
+ },
+ {
+  "table": "iso8859_7_1987",
+  "bytes": "61A4A5AA62",
+  "text": "ab",
+  "mode": "decode"
+ },
+ {
+  "table": "iso8859_7_1987",
+  "bytes": "613F62",
+  "text": "a€b",
+  "mode": "encode"
+ },
+ {
+  "table": "iso8859_8_1988",
+  "bytes": "61FDFE62",
+  "text": "ab",
+  "mode": "decode"
+ },
+ {
+  "table": "cp437",
+  "bytes": "41090A",
+  "text": "A\t\n",
+  "mode": "both"
+ },
+ {
+  "table": "cp437",
+  "bytes": "3F203F203F",
+  "text": "€ 中 ́",
+  "mode": "encode"
+ },
+ {
+  "table": "iso6937",
+  "bytes": "436166C265",
+  "text": "Café",
+  "mode": "both"
+ },
+ {
+  "table": "iso6937",
+  "bytes": "C84120C365",
+  "text": "Ä ê",
+  "mode": "both"
+ },
+ {
+  "table": "iso6937",
+  "bytes": "E1F9FBF8",
+  "text": "Æøßł",
+  "mode": "both"
+ },
+ {
+  "table": "iso6937",
+  "bytes": "A42024",
+  "text": "$ ¤",
+  "mode": "both"
+ },
+ {
+  "table": "iso6937",
+  "bytes": "A961B920AA62BA",
+  "text": "‘a’ “b”",
+  "mode": "both"
+ },
+ {
+  "table": "iso6937",
+  "bytes": "CF73CE61",
+  "text": "šą",
+  "mode": "both"
+ },
+ {
+  "table": "iso6937",
+  "bytes": "48656C6C6F2C20776F726C6421202331",
+  "text": "Hello, world! #1",
+  "mode": "both"
+ },
+ {
+  "table": "iso6937",
+  "bytes": "C242",
+  "text": "B́",
+  "mode": "both"
+ },
+ {
+  "table": "iso6937",
+  "bytes": "61A6A8C9E562C2",
+  "text": "ab",
+  "mode": "decode"
+ },
+ {
+  "table": "iso6937",
+  "bytes": "C2C865",
+  "text": "ë",
+  "mode": "decode"
+ },
+ {
+  "table": "iso6937",
+  "bytes": "3F203F203F",
+  "text": "€ 中 ́",
+  "mode": "encode"
+ },
+ {
+  "table": "iso6937",
+  "bytes": "3F",
+  "text": "\u0001",
+  "mode": "encode"
+ },
+ {
+  "table": "iso6937",
+  "bytes": "C265",
+  "text": "é",
+  "mode": "encode"
+ }
+]

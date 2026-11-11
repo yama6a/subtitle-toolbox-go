@@ -1,0 +1,31 @@
+﻿1
+00:00:01,000 --> 00:00:03,000
+<i>Bonjour, café crème.</i>
+
+2
+00:00:03,040 --> 00:00:03,440
+This sentence is far too long to read in time
+
+3
+00:00:04,000 --> 00:00:11,500
+A line that holds more than forty-two characters.
+Second line.
+Third line.
+
+4
+00:00:11,000 --> 00:00:12,500
+Fish & chips
+
+5
+00:00:12,583 --> 00:00:13,416
+Ça va ?
+
+6
+00:00:14,000 --> 00:00:17,000
+<b>Größe: zwölf Äpfel, dreißig Birnen, sechs.</b>
+<font color="#ffff00">-Ja.</font>
+
+7
+00:00:18,000 --> 00:00:20,000
+<i></i>
+
