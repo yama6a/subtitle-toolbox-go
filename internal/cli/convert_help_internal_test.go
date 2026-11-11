@@ -43,8 +43,8 @@ Options:
                          each.
   --input-fps RATE       Frame rate of a MicroDVD input without a {1}{1}<fps>
                          first line, and of CSV or TSV times in hh:mm:ss:ff.
-  --fps RATE             Sets --input-fps and --output-fps. A specific option
-                         wins over --fps.
+  --fps RATE             Sets --input-fps, --output-fps and --video-fps. A
+                         specific option wins over --fps.
   --keep-going           Go on with the next file after a file fails. Default:
                          stop at the first failure.
   --language CODE        Language for --case and --errors-fix, for example en,
@@ -62,6 +62,8 @@ Option groups, in the order that convert runs their edits:
   text       Change the case, remove tags, fix right-to-left text.
   structure  Join, wrap and unwrap cues.
   retime     Shift and scale the times, or change the frame rate.
+  snap       Time cues to shot changes and close gaps shorter than
+             --snap-window-frames.
   timing     Fix overlaps, short cues and long cues, and add lead-in and
              lead-out.
   masking    Mask words and write the mute times for players.
@@ -148,6 +150,27 @@ var convertGroupHelp = []string{
   --to-fps RATE           Frame rate of the video that the subtitle must fit.
                           Needs --from-fps.
 `,
+	`snap: Time cues to shot changes and close gaps shorter than
+--snap-window-frames.
+  --snap-shot-changes FILE           Time cues to the shot changes in this file.
+                                     It holds one time per line in seconds or
+                                     hh:mm:ss.mmm, or the log of the FFmpeg
+                                     showinfo filter.
+  --video-fps RATE                   Frame rate of the video, for the shot
+                                     changes and the other snap options.
+                                     Required with them.
+  --snap-window-frames FRAMES        Largest move to a shot change, and largest
+                                     gap that closes. Default: half the
+                                     --video-fps, rounded to the nearest frame.
+                                     A half frame rounds down. 12 at 24 and 25
+                                     fps, 15 at 30 fps.
+  --snap-min-gap-frames FRAMES       Minimum gap between a cue and the next cue
+                                     or shot change. Default: 2.
+  --snap-min-duration-frames FRAMES  No move makes a cue shorter than this.
+                                     Default: 20.
+  --no-snap-chain                    Do not close gaps shorter than
+                                     --snap-window-frames.
+`,
 	`timing: Fix overlaps, short cues and long cues, and add lead-in and lead-out.
   --timing-fix-overlaps          End each cue at least --timing-min-gap seconds
                                  before the next cue starts.
@@ -194,7 +217,7 @@ func TestConvertHelp(t *testing.T) {
 	all := result{Stdout: convertCommonHelp + "\n" + strings.Join(convertGroupHelp, "\n")}
 	unknown := func(topic string) result {
 		return usageResult("convert", "Unknown option group "+quote(topic)+
-			". The groups are forced, errors, sdh, replace, text, structure, retime, timing, masking, ass, and all for every option.")
+			". The groups are forced, errors, sdh, replace, text, structure, retime, snap, timing, masking, ass, and all for every option.")
 	}
 	tests := []struct {
 		name  string

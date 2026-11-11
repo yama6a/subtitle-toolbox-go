@@ -19,7 +19,7 @@ A package imports only packages of a lower layer. Every layer may also import th
 | 3 | `internal/` helpers that work on model types: `blocks`, `subrip`, `vtt`, `position`, `parsing`, `writing`, `caption`, later `ttmlwrite`, `wordgroup` | layers 0 to 2, and other layer 3 packages. Go rejects an import cycle |
 | 4 | `format/<name>` | layers 0 to 3. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML. Other shared code goes to `internal/` |
 | 4b | `container/<name>`, from 3.x | layers 0 to 4. A container returns cues, so it calls the format readers |
-| 5 | root `stbox` and the service packages, such as `stats`, `diff` and `validation` | layers 0 to 4b. A service never imports the root. The root never imports a service |
+| 5 | root `stbox` and the service packages, such as `stats`, `diff`, `validation` and `timing` | layers 0 to 4b. A service never imports the root. The root never imports a service |
 | 6 | `internal/cli`, `cmd/stbox` | everything |
 
 ### Format packages
