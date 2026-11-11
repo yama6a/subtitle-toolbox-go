@@ -422,6 +422,7 @@ microdvd    .sub              yes   yes
 mpsub       .mpsub            yes   yes
 sami        .smi .sami        yes   yes
 sbv         .sbv              yes   yes
+scc         .scc              yes   no
 srt         .srt              yes   yes
 stl         .stl              yes   no
 spruce-stl  .stl              yes   yes

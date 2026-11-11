@@ -12,6 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/sprucestl"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
@@ -41,6 +42,9 @@ type ReadOptions struct {
 	// CSV holds the settings of the CSV and TSV reader. The zero value reads the columns by their header names and
 	// detects the delimiter.
 	CSV csv.ReadOptions
+	// SCC holds the settings of the SCC reader. The zero value reads channel 1 and gives one cue per screen of
+	// roll-up captions.
+	SCC scc.ReadOptions
 	// EBUSTL holds the settings of the EBU STL reader. The zero value keeps the times of the file.
 	EBUSTL ebustl.ReadOptions
 	// SpruceSTL holds the settings of the Spruce STL reader. The zero value guesses 25 or 30 fps from the frame numbers.
@@ -115,6 +119,9 @@ func (o ReadOptions) Validate() error {
 		return err
 	}
 	if err := o.CSV.Validate(); err != nil {
+		return err
+	}
+	if err := o.SCC.Validate(); err != nil {
 		return err
 	}
 	return o.SpruceSTL.Validate()

@@ -168,6 +168,18 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Block numbers**: B counts the blocks after the join, from 0.
 - **Line numbers**: the cue warnings report the timing line.
 
+## SCC
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| a line without a time code, also a cut-off one such as `01:00:03;0` | `The SCC line "L" does not start with a time code.` | skips the line. `Skipped` |
+| an invalid byte pair such as the `9` of a cut-off last line, or `94x0` | `The SCC line has the invalid byte pair "P".` | one `Skipped` warning per bad pair. The pair becomes `8080`, so the later pairs of the line keep their frames |
+| no `Scenarist_SCC V1.0` header | `An SCC file must start with the line "Scenarist_SCC V1.0".` | the same error |
+
+- **Block numbers**: B counts the non-empty lines from 0. The header is block 0.
+- **Line numbers**: the 1-based line of the file. The warning holds the trimmed line.
+- **Cut-off file**: the file `popon_broadcast_df.scc` cut at 90 % of its bytes ends with the line `01:00:03;00<TAB>942c 9`. Lenient mode returns the first 9 cues and one warning for line 35, block 17.
+
 ## MPL2 and TMPlayer
 
 | Damage | Strict | Lenient |

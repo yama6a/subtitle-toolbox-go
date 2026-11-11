@@ -75,6 +75,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 | SubViewer | the line of the error: the header line, the timing line or the time line |
 | Spruce STL | the line of the error |
 | QuickTime text | the line of the error. A missing `{QTtext}` reports line 1, and a swapped cue reports the line of its timestamp |
+| SCC | the line of the error: the header line, the code line or the line with the bad byte pair. A file with no header gives the first non-empty line |
 | EBU STL | 0. A binary format has no lines |
 
 Each format adds its row here when its reader ships.

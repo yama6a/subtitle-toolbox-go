@@ -79,6 +79,7 @@ const (
 	MPSub         = model.MPSub
 	SAMI          = model.SAMI
 	SBV           = model.SBV
+	SCC           = model.SCC
 	SubRip        = model.SubRip
 	EBUSTL        = model.EBUSTL
 	SubViewer     = model.SubViewer

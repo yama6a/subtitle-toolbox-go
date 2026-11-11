@@ -38,8 +38,9 @@
 | 11 | LRC | an LRC time tag or an ID tag such as `[ti:Rain]` at the start, and a line that starts with an LRC time tag after optional spaces or tabs |
 | 12 | EBU STL | 3 ASCII digits, then `STL25.01` or `STL30.01`, at the start. A byte check |
 | 13 | Spruce STL | `$` or `//` lines, then a cue line. Or a cue line whose text does not start with a double quote. A cue line is `hh:mm:ss:ff`, a comma, `hh:mm:ss:ff` and a comma, with exactly 2 hour digits, minutes and seconds up to 59 and optional spaces or tabs around the commas |
-| 14 | MPL2 | `[digits][digits]` at the start |
-| 15 | TMPlayer | `H:MM:SS` with minutes and seconds up to 59, an optional `,` and digits, then `=` or `:`. A `:` does not count when 1 or 2 digits, spaces or tabs and a comma follow it, or digits `:dd:dd` |
+| 14 | SCC | the first line is `Scenarist_SCC V1.0` plus optional spaces or tabs |
+| 15 | MPL2 | `[digits][digits]` at the start |
+| 16 | TMPlayer | `H:MM:SS` with minutes and seconds up to 59, an optional `,` and digits, then `=` or `:`. A `:` does not count when 1 or 2 digits, spaces or tabs and a comma follow it, or digits `:dd:dd` |
 
 - **ASS header**: `ass.Detect` holds rule 4. A file that starts with a comment line before `[Script Info]` is not detected, but the ASS reader reads it.
 - **MPSub**: `mpsub.Detect` holds rule 5. A file with headers but no `FORMAT=` line, such as `TITLE=Bakery` and `AUTHOR=Jane Doe`, is not detected, but the MPSub reader reads it. MPSub files often use the extension `.sub`, which `FormatFromPath` maps to MicroDVD. The content decides first, so `Load` reads them as MPSub.
@@ -48,8 +49,9 @@
 - **QuickTime text**: `qttext.Detect` holds rule 7. A file without the `{QTtext}` line is not detected as QuickTime text. It detects as LRC, because `[00:00:01.00]` is an LRC time tag. Pass the format `qttext` with the lenient option to read it.
 - **MicroDVD**: `microdvd.Detect` holds rule 6. It accepts an empty end frame, but the reader needs digits, so `{24}{}Hello` detects as MicroDVD and then fails.
 - **LRC time tag**: `[`, optional hours and `:`, minutes of 1 to 3 digits, `:`, seconds `00` to `59`, an optional `.` and 1 to 3 digits, `]`. Spaces or tabs may stand inside the brackets. The hours count only when 1 or 2 minute digits up to 59 and `:` follow them, so `[1:75:00.00]` and `[1234:45.67]` are no time tags. `lrc.Detect` holds rule 11, and its doc comment states it.
-- **TMPlayer and frame timecodes**: the two exceptions of rule 15 keep out the `hh:mm:ss:ff` frame timecodes of Spruce STL and CSV, such as `00:00:01:10,00:00:03:10,"Hello"`. The text `00:00:01:5 trains leave` still matches. `tmplayer.Detect` holds the rule, and its doc comment states it.
+- **TMPlayer and frame timecodes**: the two exceptions of rule 16 keep out the `hh:mm:ss:ff` frame timecodes of Spruce STL and CSV, such as `00:00:01:10,00:00:03:10,"Hello"`. The text `00:00:01:5 trains leave` still matches. `tmplayer.Detect` holds the rule, and its doc comment states it.
 - **Binary signatures**: `Load` and `Parse` run `Detect` on the raw bytes before they decode. A binary result reads the raw bytes.
+- **SCC**: `scc.Detect` holds rule 14. The SCC header is a line of its own, so it needs no rule against other formats. It comes after Spruce STL and before MPL2, in the PHP order.
 - **Order**: WebVTT comes before SubRip, because a WebVTT file without its header looks like SubRip. A new format inserts its signature at its place in the PHP order. `TestDetectionListsFollowTheOrder` in [registry_test.go](../registry_test.go) holds that order.
 - **SubRip hours and comma**: a timing line without a cue number on the line before it needs 2 hour digits and a comma. So a headerless WebVTT file that starts with `00:00:01.000 -->` and SBV with `0:00:01,500` do not match. A headerless WebVTT file that starts with a cue number, such as `1` LF `00:00:01.000 -->`, detects as SubRip.
 - **SBV fraction**: SBV has 3 fraction digits and SubViewer has 2, so `0:00:01.5,0:00:04.000` is no SBV signature. `sbv.Detect` holds rule 9.

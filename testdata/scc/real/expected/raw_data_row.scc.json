@@ -1,0 +1,75 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "scc": {
+                "dropFrame": false
+            }
+        },
+        "cues": [
+            {
+                "start": 0.234,
+                "end": 4.004,
+                "lines": [
+                    "OK"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 27.828,
+                "end": 30.03,
+                "lines": [
+                    "-Ehñ5JAz9çr'&lt;G&amp;T"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            2
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 31.665,
+                "end": 34.034,
+                "lines": [
+                    "THE NEXT CAPTION IS FINE."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            4
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

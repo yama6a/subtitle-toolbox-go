@@ -207,6 +207,7 @@ func ExampleFormats() {
 	// mpsub [mpsub]
 	// sami [smi sami]
 	// sbv [sbv]
+	// scc [scc]
 	// srt [srt]
 	// stl [stl]
 	// spruce-stl [stl]

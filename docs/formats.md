@@ -12,6 +12,7 @@
 | MPSub | `stbox.MPSub` | `mpsub` | `.mpsub` | [MPSub](#mpsub) |
 | SAMI | `stbox.SAMI` | `sami` | `.smi`, `.sami` | [SAMI](#sami) |
 | SBV | `stbox.SBV` | `sbv` | `.sbv` | [SBV](#sbv) |
+| SCC | `stbox.SCC` | `scc` | `.scc` | [SCC](#scc) |
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
 | EBU STL | `stbox.EBUSTL` | `stl` | `.stl` | [EBU STL](#ebu-stl) |
 | Spruce STL | `stbox.SpruceSTL` | `spruce-stl` | `.stl` | [Spruce STL](#spruce-stl) |
@@ -627,6 +628,44 @@ The first block reads as one cue from 1.5 s to 4 s. SBV has no markup, so `<i>` 
 ### Options
 
 `sbv.ReadOptions` and `sbv.WriteOptions` have no fields. The reader reads `Lenient`. The writer reads `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#sbv).
+
+## SCC
+
+Scenarist Closed Captions (SCC) is the delivery format of US broadcast captions. Package `format/scc` reads it. The format name is `scc`, the extension `.scc`. This version has no SCC writer. The reader decodes CEA-608, the line 21 caption standard of NTSC video.
+
+```text
+Scenarist_SCC V1.0
+
+00:00:01;12	9420 9420 94ae 94ae 9452 9452 97a1 97a1 c8e5 ecec efa1 942f 942f
+
+00:00:04;00	942c 942c
+```
+
+The file reads as one cue from 1.768 s to 4.004 s with the line `Hello!` on row 14, aligned `BottomCenter`. The text starts at column 5 when counted from 0, as the format data `columns` does. `Cue.Position.Column` counts from 1, so it is 6.
+
+### Read
+
+- **Header**: the first non-empty line must be `Scenarist_SCC V1.0`. Else the read fails, also in lenient mode.
+- **Code line**: a time code, white space and byte pairs. The time code is `HH:MM:SS:FF` or `HH:MM:SS;FF`. The `;` marks drop-frame for that line. The fields have no range check.
+- **Byte pairs**: 4 hex digits in any case, one pair for each frame. Word k of a line plays k frames after the start of the line.
+- **Times at 29.97 fps**: a frame lasts 1001/30000 s. The time code `00:00:01;12` is frame 42. Its first end-of-caption command is the 12th word, frame 53, so the cue starts at 53 * 1001 / 30000 = 1.768 s. Drop-frame skips the labels `;00` and `;01` at the start of each minute, except every tenth minute. So `00:01:00;02` and `00:01:00:00` are both frame 1800, and `01:00:00;00` is frame 107892.
+- **Order**: the reader sorts the code lines by start frame before it decodes them, because some writers emit lines out of time order.
+- **Cues**: each change of the captions on screen starts a new cue. A caption that nothing erases lasts `LastCueDuration`, 5 s by default.
+- **Position**: `Cue.Position` holds the first row of the cue, its first column counted from 1 (the format data `columns` count from 0), and the 15 by 32 grid. Rows 1 to 4 give `TopCenter`. Rows 5 to 15 give `BottomCenter`.
+- **Roll-up captions**: `RollUpScreen` gives one cue per screen. `RollUpLines` gives one cue per row, from its first character until it rolls up or the screen clears.
+- **Text**: `&`, `<` and `>` are escaped. Mid-row codes become `<i>`, `<u>` and `<font color>` tags.
+- **Format data**: the file holds `dropFrame`, true when the first code line has `;` before the frames. It is absent when the file has no code line. Each cue holds `mode` (`pop-on`, `roll-up` or `paint-on`), `rows` (the row of each line, 1 to 15) and `columns` (the first column of each line, 0 to 31). The cue data has no schema row, so it passes unchecked.
+- **Lenient repairs**: see [lenient-parsing.md](lenient-parsing.md#scc).
+
+### Options
+
+| Option | Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |:--- |
+| `ReadOptions.SCC` | `Channel` | `int` | 0, read as 1 | 1 reads CC1 and CC3. 2 reads CC2 and CC4 |
+| `ReadOptions.SCC` | `RollUp` | `scc.RollUp` | `RollUpScreen` | `RollUpScreen` or `RollUpLines`. The text forms are `screen` and `lines` |
+
+- **Check**: `Validate` rejects a channel other than 0, 1 and 2 with `The SCC data channel must be 1 or 2, got 3.` and an unknown roll-up mode. Both match `ErrInvalidArgument`.
+- **Reader**: it reads `Lenient` and `LastCueDuration` too.
 
 ## MPL2
 

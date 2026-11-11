@@ -65,6 +65,7 @@ func goldenFolders() []goldenFolder {
 			options: map[string]stbox.ReadOptions{"own_korean_cp949.smi": {Encoding: "CP949"}},
 		},
 		{name: "sbv", format: stbox.SBV, files: 5},
+		{name: "scc", format: stbox.SCC, files: 9},
 		{name: "spruce-stl", format: stbox.SpruceSTL, files: 3},
 		{name: "srt", format: stbox.SubRip, files: 19},
 		{name: "stl", format: stbox.EBUSTL, files: 17},
