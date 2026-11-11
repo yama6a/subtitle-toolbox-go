@@ -51,7 +51,7 @@ func lines(t *testing.T, s *model.Subtitle, r validation.Rules) []string {
 
 	got, err := validation.Check(s, r)
 	require.NoError(t, err)
-	var out []string
+	var out []string //nolint:prealloc // an empty result must stay nil for the table
 	for _, v := range got {
 		line := fmt.Sprintf("%d %s %s", v.Cue, v.Rule, number(v.Value))
 		if v.Limit != nil {
@@ -126,6 +126,12 @@ func TestTimeRules(t *testing.T) {
 			[]model.Cue{cue(5000, 5000, "Hi there")},
 			validation.Rules{MaxCharactersPerSecond: math.Inf(1), MaxWordsPerMinute: math.Inf(1)},
 			nil,
+		},
+		{
+			"minimum per word at the exact limit",
+			[]model.Cue{cue(0, 1001, "word"), cue(2000, 3000, "word")},
+			validation.Rules{MinDurationPerWord: 1001 * time.Millisecond},
+			[]string{"1 minSecondsPerWord 1, limit 1.001"},
 		},
 		{
 			"word rules skip cues without words and match milliseconds",
@@ -306,7 +312,7 @@ func TestRulesValidate(t *testing.T) {
 		msg   string
 	}{
 		{"negative cps", validation.Rules{MaxCharactersPerSecond: -1}, "Rules.MaxCharactersPerSecond", "The limit maxCharactersPerSecond must be 0 or more, got -1."},
-		{"NaN wpm", validation.Rules{MaxWordsPerMinute: math.NaN()}, "Rules.MaxWordsPerMinute", "The limit maxWordsPerMinute must be 0 or more, got NaN."},
+		{"NaN wpm", validation.Rules{MaxWordsPerMinute: math.NaN()}, "Rules.MaxWordsPerMinute", "The limit maxWordsPerMinute must be 0 or more, got NAN."},
 		{"negative cpl", validation.Rules{MaxCharactersPerLine: -2}, "Rules.MaxCharactersPerLine", "The limit maxCharactersPerLine must be 0 or more, got -2."},
 		{"negative lines", validation.Rules{MaxLinesPerCue: -1}, "Rules.MaxLinesPerCue", "The limit maxLinesPerCue must be 0 or more, got -1."},
 		{"negative speakers", validation.Rules{MaxSpeakersPerCue: -1}, "Rules.MaxSpeakersPerCue", "The limit maxSpeakersPerCue must be 0 or more, got -1."},

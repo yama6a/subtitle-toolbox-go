@@ -19,53 +19,58 @@ var (
 	bracketSpan = regexp.MustCompile(`\[[^\]]*\]|\([^)]*\)`)
 )
 
-// textRules applies the text and word rules of one cue. raw holds the lines with markup and text holds the plain
-// lines that have text.
-func (c *checker) textRules(i int, raw, text []string, words int, secs float64) error {
-	r := c.rules
-	if r.NoDoubleSpaces {
+func (c *checker) spaceRules(i int, m measures) {
+	if c.rules.NoDoubleSpaces {
 		n := 0
-		for _, line := range text {
+		for _, line := range m.text {
 			n += doubleSpaces(line)
 		}
 		c.count(i, RuleNoDoubleSpaces, n)
 	}
-	if r.NoLeadingOrTrailingSpaces {
-		n := 0
-		for _, line := range text {
+	if c.rules.NoLeadingOrTrailingSpaces {
+		c.count(i, RuleNoLeadingOrTrailingSpaces, countLines(m.text, func(line string) bool {
 			ch := newChars(line)
-			if ch.horizontal(0) || ch.horizontal(len(ch.runes)-1) {
-				n++
-			}
-		}
-		c.count(i, RuleNoLeadingOrTrailingSpaces, n)
+			return ch.horizontal(0) || ch.horizontal(len(ch.runes)-1)
+		}))
 	}
-	rawText := strings.Join(raw, "\n")
+}
+
+func (c *checker) tagAndSpeakerRules(i int, m measures) {
+	r := c.rules
 	if r.NoUnbalancedTags {
-		c.count(i, RuleNoUnbalancedTags, unbalancedTags(rawText))
+		c.count(i, RuleNoUnbalancedTags, unbalancedTags(m.raw))
 	}
 	if r.DialogueDashStyle != nil {
-		c.count(i, RuleDialogueDashStyle, wrongDashes(text, *r.DialogueDashStyle))
+		c.count(i, RuleDialogueDashStyle, wrongDashes(m.text, *r.DialogueDashStyle))
 	}
 	if r.MaxSpeakersPerCue > 0 {
-		if n := speakers(rawText, text); n > r.MaxSpeakersPerCue {
+		if n := speakers(m.raw, m.text); n > r.MaxSpeakersPerCue {
 			c.add(i, RuleMaxSpeakersPerCue, float64(n), limitOf(float64(r.MaxSpeakersPerCue)))
 		}
 	}
-	if r.MaxWordsPerMinute > 0 && words > 0 {
-		if v := perSecond(float64(words), secs) * 60; v > r.MaxWordsPerMinute {
+}
+
+func (c *checker) wordRules(i int, m measures) {
+	r := c.rules
+	if m.words == 0 {
+		return
+	}
+	if r.MaxWordsPerMinute > 0 {
+		if v := perSecond(float64(m.words), m.secs) * 60; v > r.MaxWordsPerMinute {
 			c.add(i, RuleMaxWordsPerMinute, v, limitOf(r.MaxWordsPerMinute))
 		}
 	}
-	if limit := r.MinDurationPerWord; limit > 0 && words > 0 {
-		need := math.Round(limit.Seconds() * float64(words) * 1000)
-		if secs*1000 < need {
-			c.add(i, RuleMinDurationPerWord, secs/float64(words), limitOf(limit.Seconds()))
+	if limit := r.MinDurationPerWord; limit > 0 {
+		if need := int64(math.Round(limit.Seconds() * float64(m.words) * 1000)); m.duration.Milliseconds() < need {
+			c.add(i, RuleMinDurationPerWord, m.secs/float64(m.words), limitOf(limit.Seconds()))
 		}
 	}
-	if r.AllowedCharacters != "" {
+}
+
+func (c *checker) characterRules(i int, m measures) error {
+	if c.rules.AllowedCharacters != "" {
 		n := 0
-		for _, line := range text {
+		for _, line := range m.text {
 			k, err := c.disallowed(line)
 			if err != nil {
 				return err
@@ -74,16 +79,20 @@ func (c *checker) textRules(i int, raw, text []string, words int, secs float64) 
 		}
 		c.count(i, RuleAllowedCharacters, n)
 	}
-	if r.NoAllCapsLines {
-		n := 0
-		for _, line := range text {
-			if isAllCaps(line) {
-				n++
-			}
-		}
-		c.count(i, RuleNoAllCapsLines, n)
+	if c.rules.NoAllCapsLines {
+		c.count(i, RuleNoAllCapsLines, countLines(m.text, isAllCaps))
 	}
 	return nil
+}
+
+func countLines(lines []string, matches func(string) bool) int {
+	n := 0
+	for _, line := range lines {
+		if matches(line) {
+			n++
+		}
+	}
+	return n
 }
 
 // chars holds the characters of a line: its code points, or its bytes when the line is not valid UTF-8.
@@ -153,32 +162,41 @@ func unbalancedTags(raw string) int {
 	var open []string
 	n := 0
 	for _, m := range tagRegexp.FindAllStringSubmatch(markupcore.ASCIILower(raw), -1) {
-		name := m[2]
-		if m[1] == "" {
-			if name == "rt" {
-				if len(open) > 0 && open[len(open)-1] == "rt" {
-					open = open[:len(open)-1]
-				}
-				if !slices.Contains(open, "ruby") {
-					n++
-				}
-			}
-			open = append(open, name)
-			continue
-		}
-		at := lastIndex(open, name)
-		if at < 0 {
-			n++
-			continue
-		}
-		inner := open[at+1:]
-		if name == "ruby" && len(inner) > 0 && inner[0] == "rt" {
-			inner = inner[1:]
-		}
-		n += unclosed(inner)
-		open = open[:at]
+		var k int
+		open, k = applyTag(open, m[1] == "", m[2])
+		n += k
 	}
 	return n + unclosed(open)
+}
+
+// applyTag adds one tag to the stack of open names and returns the new stack and the tags that it finds unbalanced.
+func applyTag(open []string, opening bool, name string) ([]string, int) {
+	if opening {
+		return openTag(open, name)
+	}
+	at := lastIndex(open, name)
+	if at < 0 {
+		return open, 1
+	}
+	inner := open[at+1:]
+	if name == "ruby" && len(inner) > 0 && inner[0] == "rt" {
+		inner = inner[1:]
+	}
+	return open[:at], unclosed(inner)
+}
+
+// openTag pushes name. An open <rt> closes before the next <rt>, and an <rt> outside <ruby> counts 1.
+func openTag(open []string, name string) ([]string, int) {
+	if name != "rt" {
+		return append(open, name), 0
+	}
+	if len(open) > 0 && open[len(open)-1] == "rt" {
+		open = open[:len(open)-1]
+	}
+	if slices.Contains(open, "ruby") {
+		return append(open, name), 0
+	}
+	return append(open, name), 1
 }
 
 func unclosed(names []string) int {

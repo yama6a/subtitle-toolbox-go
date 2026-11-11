@@ -14,7 +14,7 @@ import (
 )
 
 // ruleOrder is the order of the violations of one cue.
-var ruleOrder = []validation.Rule{ //nolint:gochecknoglobals // a read-only table for the order check
+var ruleOrder = []validation.Rule{
 	validation.RuleRequireCues, validation.RuleNoNegativeDuration, validation.RuleNoEmptyCues,
 	validation.RuleMaxCharactersPerLine, validation.RuleMaxLinesPerCue, validation.RuleMaxCharactersPerSecond,
 	validation.RuleMinDuration, validation.RuleMaxDuration, validation.RuleNoDoubleSpaces,

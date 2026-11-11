@@ -123,12 +123,11 @@ func (r Rules) prepare() (*regexp2.Regexp, error) {
 		{RuleMaxCharactersPerSecond, "MaxCharactersPerSecond", r.MaxCharactersPerSecond},
 		{RuleMaxCharactersPerLine, "MaxCharactersPerLine", float64(r.MaxCharactersPerLine)},
 		{RuleMaxLinesPerCue, "MaxLinesPerCue", float64(r.MaxLinesPerCue)},
-		{RuleMaxDuration, "MaxDuration", r.MaxDuration.Seconds()},
 		{RuleMaxSpeakersPerCue, "MaxSpeakersPerCue", float64(r.MaxSpeakersPerCue)},
 		{RuleMaxWordsPerMinute, "MaxWordsPerMinute", r.MaxWordsPerMinute},
 	} {
 		if f.value < 0 || math.IsNaN(f.value) {
-			return nil, limitError(f.rule, f.field, strconv.FormatFloat(f.value, 'f', -1, 64))
+			return nil, limitError(f.rule, f.field, timecode.Number(f.value))
 		}
 	}
 	for _, f := range [...]struct {
@@ -137,6 +136,7 @@ func (r Rules) prepare() (*regexp2.Regexp, error) {
 		value time.Duration
 	}{
 		{RuleMinDuration, "MinDuration", r.MinDuration},
+		{RuleMaxDuration, "MaxDuration", r.MaxDuration},
 		{RuleMinGap, "MinGap", r.MinGap},
 		{RuleMinDurationPerWord, "MinDurationPerWord", r.MinDurationPerWord},
 	} {
@@ -151,7 +151,7 @@ func (r Rules) prepare() (*regexp2.Regexp, error) {
 		}
 	}
 	if !isClass(r.AllowedCharacters) {
-		return nil, nil
+		return nil, nil //nolint:nilnil // nil means a list, which needs no pattern
 	}
 	return compileClass(r.AllowedCharacters)
 }

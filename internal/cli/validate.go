@@ -82,7 +82,7 @@ func (c *validateCommand) prepare(a *args, r *runner) error {
 	return nil
 }
 
-// validateRules reads the rule options in the order of the check list of docs/cli.md.
+// validateRules reads the rule options. The first bad value gives the usage error.
 func validateRules(a *args) (validation.Rules, error) {
 	var (
 		rules validation.Rules
@@ -155,7 +155,7 @@ func (*validateCommand) loadSideFiles(context.Context, *runner) error { return n
 func (c *validateCommand) process(_ context.Context, r *runner, in *input) error {
 	violations, err := validation.Check(in.sub, c.rules)
 	if err != nil {
-		return err
+		return err //nolint:wrapcheck // the *InvalidArgumentError carries the message that the CLI prints
 	}
 	if len(violations) > 0 {
 		r.results++

@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -110,10 +109,12 @@ func TestValidateJSON(t *testing.T) {
 	srt := "1\n00:00:01,000 --> 00:00:01,000\nHello\n\n2\n00:00:01,000 --> 00:00:03,000\nHi\n\n3\n00:00:02,500 --> 00:00:04,000\nYo\n"
 	dir := newDir(t)
 	tests := []struct {
-		name  string
-		stdin string
-		words []string
-		want  string
+		name   string
+		stdin  string
+		words  []string
+		want   string
+		code   int
+		stderr string
 	}{
 		{
 			"a limit", "",
@@ -135,7 +136,7 @@ func TestValidateJSON(t *testing.T) {
         "warnings": []
     }
 ]
-`,
+`, exitResult, "",
 		},
 		{
 			"infinite value and no limit", srt,
@@ -164,7 +165,7 @@ func TestValidateJSON(t *testing.T) {
         "warnings": []
     }
 ]
-`,
+`, exitResult, "",
 		},
 		{
 			"valid with warnings", "",
@@ -185,7 +186,7 @@ func TestValidateJSON(t *testing.T) {
         ]
     }
 ]
-`,
+`, 0, "broken.srt: line 6: Block #1 has no timing line on its second line. The line is \"00:00:03,000 => 00:00:04,000\". (skipped)\n",
 		},
 	}
 	for _, tt := range tests {
@@ -193,8 +194,7 @@ func TestValidateJSON(t *testing.T) {
 			t.Parallel()
 
 			got := call{dir: dir, stdin: tt.stdin}.run(t, append([]string{"validate"}, append(tt.words, "--json")...)...)
-			assert.Equal(t, tt.want, got.Stdout)
-			assert.Equal(t, strings.Contains(tt.want, `"valid": false`), got.Code == exitResult)
+			assert.Equal(t, result{Code: tt.code, Stdout: tt.want, Stderr: tt.stderr}, got)
 		})
 	}
 }
