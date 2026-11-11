@@ -19,6 +19,8 @@ type convertCommand struct {
 	ass *ass.WriteOptions
 	// masking is the edit of the masking group, nil without --mask-words.
 	masking *maskingEdit
+	// snap is the edit of the snap group, nil without a trigger option.
+	snap *snapEdit
 }
 
 var (
@@ -57,7 +59,7 @@ func (*convertCommand) options() []option {
 }
 
 func commonConvertOptions() []option {
-	return slices.Concat(outputOptions("Output format. Default: the input format."), inputOptions(true, writeFPSHelp))
+	return slices.Concat(outputOptions("Output format. Default: the input format."), inputOptions(true, convertFPSHelp))
 }
 
 func (cc *convertCommand) help(c *console, topic string) (string, error) {
@@ -147,8 +149,11 @@ func (cc *convertCommand) prepare(a *args, r *runner) error {
 // prepareGroups checks the groups in pipeline order and builds their edits, then checks the --to ass rule.
 func (cc *convertCommand) prepareGroups(a *args) error {
 	add := func(e edit) {
-		if m, ok := e.(*maskingEdit); ok {
-			cc.masking = m
+		switch e := e.(type) {
+		case *maskingEdit:
+			cc.masking = e
+		case *snapEdit:
+			cc.snap = e
 		}
 		cc.edits = append(cc.edits, e)
 	}
@@ -171,9 +176,13 @@ func (cc *convertCommand) prepareGroups(a *args) error {
 }
 
 func (cc *convertCommand) checkInputs(r *runner, inputs []string) error {
+	readPaths := slices.Clone(inputs)
+	if cc.snap != nil && cc.snap.path != "" {
+		readPaths = append(readPaths, cc.snap.path)
+	}
 	m := cc.masking
 	if m == nil {
-		return cc.out.checkInputs(r, inputs, inputs, nil)
+		return cc.out.checkInputs(r, inputs, readPaths, nil)
 	}
 	if len(m.muteFiles) > 0 && len(inputs) > 1 {
 		return usage("--mute-edl and --mute-filter take one input file, got " + strconv.Itoa(len(inputs)) + ".")
@@ -182,10 +191,15 @@ func (cc *convertCommand) checkInputs(r *runner, inputs []string) error {
 	for i, f := range m.muteFiles {
 		side[i] = f.sideOutput
 	}
-	return cc.out.checkInputs(r, inputs, append(slices.Clone(inputs), m.wordsPath), side)
+	return cc.out.checkInputs(r, inputs, append(readPaths, m.wordsPath), side)
 }
 
 func (cc *convertCommand) loadSideFiles(_ context.Context, r *runner) error {
+	if cc.snap != nil {
+		if err := cc.snap.loadShots(r.c); err != nil {
+			return err
+		}
+	}
 	if cc.masking == nil {
 		return nil
 	}

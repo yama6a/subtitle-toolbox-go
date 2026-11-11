@@ -255,6 +255,20 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Line numbers**: the 1-based line of the file. A swapped or skipped sample reports its timestamp line.
 - **Skipped timestamp**: the text lines after a skipped timestamp line are skipped too, up to the next timestamp line.
 
+## Spruce STL
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| no frame rate in the options, with at least one cue line | reads at 25 or 30 fps, guessed from the frame numbers, without a warning | the same, with `The file does not give its frame rate. The parser read the frames at R fps.` `Repaired`, no line and no block |
+| a line that is no cue, command, comment or blank line | `The line "L" is no Spruce STL subtitle, command or comment.` | skips the line. `Skipped`, no block |
+| a frame number at or above the frame rate | `The frame number in "hh:mm:ss:ff" is not below the frame rate of R fps.` | skips the line |
+| a time of 100000 hours or more, such as `100000:00:00:00` | `The time "hh:mm:ss:ff" is not below 100000 hours.` | skips the line |
+| a cue that ends before it starts | `The cue ends at E s, before it starts at S s.` | swaps the times when the cue then lasts 30 s or less. `Repaired`. Else skips the line |
+
+- **Block numbers**: none. A warning of Spruce STL has `NoBlock` and holds the raw line.
+- **Line numbers**: the 1-based line of the file.
+- **R**: the rate prints as PHP prints a float: `25`, `29.97`.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

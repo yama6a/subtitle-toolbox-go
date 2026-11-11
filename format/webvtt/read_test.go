@@ -364,6 +364,8 @@ func TestReadOffset(t *testing.T) {
 		{"line:90%,end", model.BottomCenter, nil},
 		{"line:95%,end", model.BottomCenter, &model.Offset{X: 50, Y: 95}},
 		{"line:0,end position:30%", model.BottomCenter, nil},
+		{"line:50%,center align:left", model.MiddleLeft, nil},
+		{"line:50%,center position:20%,line-left align:left", model.MiddleLeft, &model.Offset{X: 20, Y: 50}},
 		{"line:90%", model.BottomCenter, nil},
 		{"line:15% position:50% align:middle", model.BottomCenter, nil},
 		{"line:0 position:30% align:left", model.TopLeft, &model.Offset{X: 30, Y: 0}},

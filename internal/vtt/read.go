@@ -717,6 +717,9 @@ func offsetY(d *model.Data, a model.Alignment) (y float64, percent, ok bool) {
 	if line == "0" || line == "0,start" {
 		return 0, false, a.Row() == 2
 	}
+	if line == "50%,center" {
+		return 50, false, a.Row() == 1
+	}
 	value, align, _ := strings.Cut(line, ",")
 	rows := map[string]int{"": 2, "start": 2, "center": 1, "end": 0}
 	row, known := rows[align]

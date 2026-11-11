@@ -1,0 +1,39 @@
+//Font select and font size
+$FontName       = Arial
+$FontSize       = 36
+
+//Character attributes (global)
+$Bold           = False
+$Underlined     = False
+$Italic         = False
+
+//Position Control
+$HorzAlign      = Center
+$VertAlign      = Bottom
+$XOffset        = 0
+$YOffset        = 0
+
+//Contrast Control
+$TextContrast           = 15
+$Outline1Contrast       = 15
+$Outline2Contrast       = 15
+$BackgroundContrast     = 0
+
+//Effects Control
+$ForceDisplay   = False
+$FadeIn         = 0
+$FadeOut        = 0
+
+//Other Controls
+$TapeOffset     = False
+
+00:00:03:24 , 00:00:06:29 , The ferry to the island|leaves at half past eight.
+00:00:07:05 , 00:00:09:15 , Tickets are ^Bsold out^B today.
+//Song lyrics in italics
+$Italic         = True
+00:00:10:00 , 00:00:12:20 , Over the water we go,|the gulls are flying low.
+$Italic         = False
+$VertAlign      = Top
+00:00:13:02 , 00:00:15:00 , HARBOUR MASTER
+$VertAlign      = Bottom
+00:00:15:10 , 00:00:18:00 , Please keep your ^Iboarding pass^I ready.
