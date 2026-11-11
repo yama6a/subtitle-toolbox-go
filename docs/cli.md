@@ -423,6 +423,7 @@ mpsub       .mpsub            yes   yes
 sami        .smi .sami        yes   yes
 sbv         .sbv              yes   yes
 srt         .srt              yes   yes
+stl         .stl              yes   no
 spruce-stl  .stl              yes   yes
 subviewer   .sub              yes   yes
 ttml        .ttml .dfxp .xml  yes   yes

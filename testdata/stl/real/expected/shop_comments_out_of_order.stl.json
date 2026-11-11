@@ -1,0 +1,144 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Shop",
+            "language": "en"
+        },
+        "comments": [
+            {
+                "text": "The door opens before the shop.",
+                "beforeCueIndex": 0
+            },
+            {
+                "text": "End of the shop scene.",
+                "beforeCueIndex": 3
+            }
+        ],
+        "formatData": {
+            "stl": {
+                "gsi": {
+                    "CPN": "850",
+                    "DFC": "STL25.01",
+                    "DSC": "0",
+                    "CCT": "00",
+                    "LC": "09",
+                    "OPT": "Shop",
+                    "OET": "",
+                    "TPT": "",
+                    "TET": "",
+                    "TN": "",
+                    "TCD": "",
+                    "SLR": "",
+                    "CD": "261006",
+                    "RD": "261006",
+                    "RN": "00",
+                    "TNB": "00005",
+                    "TNS": "00003",
+                    "TNG": "001",
+                    "MNC": "40",
+                    "MNR": "23",
+                    "TCS": "1",
+                    "TCP": "00000000",
+                    "TCF": "00000500",
+                    "TND": "1",
+                    "DSN": "1",
+                    "CO": "GBR",
+                    "PUB": "",
+                    "EN": "",
+                    "ECD": "",
+                    "spare": "",
+                    "UDA": ""
+                },
+                "startOfProgrammeSubtracted": false,
+                "firstSubtitleNumber": 1,
+                "comments": [
+                    {
+                        "text": "The door opens before the shop.",
+                        "blocks": [
+                            "000200ff00000001000000030014020154686520646f6f72206f70656e73206265666f7265207468652073686f702e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    },
+                    {
+                        "text": "End of the shop scene.",
+                        "blocks": [
+                            "000500ff0000000b0000000b00140201456e64206f66207468652073686f70207363656e652e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                ],
+                "counts": {
+                    "TNB": 5,
+                    "TNS": 3,
+                    "TNG": 1,
+                    "TCF": "00000500"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "The door opens."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 20,
+                        "justificationCode": 2,
+                        "text": "The door opens.",
+                        "blocks": [
+                            "000300ff00000001000000030014020054686520646f6f72206f70656e732e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 5.0,
+                "end": 7.0,
+                "lines": [
+                    "The shop is open."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 20,
+                        "justificationCode": 2,
+                        "text": "The shop is open.",
+                        "blocks": [
+                            "000100ff0000000500000007001402005468652073686f70206973206f70656e2e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 9.0,
+                "end": 11.0,
+                "lines": [
+                    "The shop closes."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 20,
+                        "justificationCode": 2,
+                        "text": "The shop closes.",
+                        "blocks": [
+                            "000400ff000000090000000b001402005468652073686f7020636c6f7365732e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

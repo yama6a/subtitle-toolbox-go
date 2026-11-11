@@ -157,11 +157,11 @@ func TestReadPassesTheCommonOptions(t *testing.T) {
 	assert.Equal(t, model.CommonReadOptions{Lenient: true, LastCueDuration: last}, got)
 }
 
-// textReaders returns the stub row and every registry row with a reader. 1.x has text formats only.
+// textReaders returns the stub row and every registry row with a reader of a text format.
 func textReaders() []formatFuncs {
 	rows := []formatFuncs{stubRow}
 	for _, row := range registry {
-		if row.read != nil {
+		if row.read != nil && !row.format.IsBinary() {
 			rows = append(rows, row)
 		}
 	}

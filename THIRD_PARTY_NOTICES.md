@@ -424,10 +424,11 @@ END OF TERMS AND CONDITIONS
 
 - Project: <https://github.com/asticode/go-astisub>
 - Licence: MIT
-- Checked at: `f285923a0c8d5b2ecce67d8eaf9ed26cce16e5b0`, and `58297a613f70cac3d29e5ce52a7215a3b4038b40` and `b6b18718ddb6ee0da08772d8ab310c9c3d2d0459` for the SubRip files, and `7671e72e9d47287d6f8ded80a004560b63a2ead5` for the TTML files, with the same licence text
+- Checked at: `f285923a0c8d5b2ecce67d8eaf9ed26cce16e5b0`, and `58297a613f70cac3d29e5ce52a7215a3b4038b40` and `b6b18718ddb6ee0da08772d8ab310c9c3d2d0459` for the SubRip files, and `7671e72e9d47287d6f8ded80a004560b63a2ead5` for the TTML files and the STL file, with the same licence text
 - Files copied from it:
   - `testdata/ttml/real/astisub_breaklines.ttml`, from `testdata/example-in-breaklines.ttml`
   - `testdata/ttml/real/astisub_merging_style.ttml`, from `testdata/example-in-merging-style.ttml`
+  - `testdata/stl/real/astisub_opn.stl`, from `testdata/example-opn-in.stl`
 - Files written for this repository in the shape of its fixtures:
   - `testdata/ttml/real/astisub_smpte.ttml`
   - `testdata/vtt/real/astisub_carriage_return.vtt`
@@ -599,6 +600,37 @@ SOFTWARE.
   - `testdata/ttml/real/ttconv_referential_styling.ttml`, from `src/test/resources/ttml/referential_styling.ttml`
   - `testdata/ttml/real/ttconv_lwsp_default.ttml`, from `src/test/resources/ttml/lwsp_default.ttml`
   - `testdata/ttml/real/ttconv_lwsp_preserve.ttml`, from `src/test/resources/ttml/lwsp_preserve.ttml`
+- Files copied unchanged from `src/test/resources/stl/sandflow/`:
+  - `testdata/stl/real/sandflow_cumulative_set.stl`, from `cumulative_set.stl`
+  - `testdata/stl/real/sandflow_multi_tti_subtitle.stl`, from `multi_tti_subtitle.stl`
+  - `testdata/stl/real/sandflow_overlapping_tti.stl`, from `overlapping_tti.stl`
+  - `testdata/stl/real/sandflow_vp18_3_lines.stl`, from `vp18_3_lines.stl`
+- Files copied unchanged from `src/test/resources/stl/irt/`, under Apache-2.0 with the NOTICE below. Sandflow made them from the XML test files of the IRT Subtitle Conversion Framework, <https://github.com/irt-open-source/scf>, Apache-2.0, which is the source of the data:
+  - `testdata/stl/real/irt_requirement-0056-001_modified.stl`
+  - `testdata/stl/real/irt_requirement-0061-001.stl`
+  - `testdata/stl/real/irt_requirement-0074-001.stl`
+  - `testdata/stl/real/irt_requirement-0076-001.stl`
+  - `testdata/stl/real/irt_requirement-0076-009.stl`
+- The licence of the `irt` folder is the Apache License 2.0, <https://www.apache.org/licenses/LICENSE-2.0>. Its NOTICE file, copied unchanged:
+
+```text
+Copyright/Attribution Notice
+
+The STL test files in this directory are a modified versions of the STL 
+test files developed by Institut fuer Rundfunktechnik as part of 
+the Subtitle Conversion Framework ("SCF") 
+(https://github.com/irt-open-source/scf).
+
+The Subtitle Conversion Framework ("SCF") offered by Institut fuer 
+Rundfunktechnik on GitHub is subject to the Apache 2.0 license.
+
+The STL test files have been translated from an XML representation
+to a binary representation that conforms to the EBU-STL specification.
+
+Copyright (c) 2020, Sandflow Consulting LLC
+```
+
+- The licence of the rest of the project:
 
 ```text
 Copyright (c) 2020, Sandflow Consulting LLC

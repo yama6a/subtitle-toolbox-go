@@ -1,4 +1,4 @@
-// Package extfallback holds the rule of docs/detection.md step 5: which file extensions may set the format of a
+// Package extfallback holds the rule of docs/detection.md step 7: which file extensions may set the format of a
 // read when content detection finds none. The root package and the CLI both read it, so a read and the output
 // plan of the CLI pick the same format.
 package extfallback

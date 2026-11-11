@@ -7,6 +7,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
@@ -25,6 +26,7 @@ type ReadOptions struct {
 	Format Format
 	// Encoding is the name of the source encoding, one of Encodings, compared without case. The zero value detects
 	// the encoding. A BOM and UTF-16 without a BOM win over it, and valid UTF-8 without a NUL byte stays UTF-8.
+	// A binary format ignores it.
 	Encoding string
 	// Lenient skips or repairs broken blocks and reports each as a warning. False stops at the first broken block.
 	// A lenient read with warnings returns a nil error.
@@ -39,6 +41,8 @@ type ReadOptions struct {
 	// CSV holds the settings of the CSV and TSV reader. The zero value reads the columns by their header names and
 	// detects the delimiter.
 	CSV csv.ReadOptions
+	// EBUSTL holds the settings of the EBU STL reader. The zero value keeps the times of the file.
+	EBUSTL ebustl.ReadOptions
 	// SpruceSTL holds the settings of the Spruce STL reader. The zero value guesses 25 or 30 fps from the frame numbers.
 	SpruceSTL sprucestl.ReadOptions
 }

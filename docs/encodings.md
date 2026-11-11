@@ -1,6 +1,6 @@
 # Text encodings
 
-The reader turns every text input into UTF-8 before a parser sees it. `ReadInfo.SourceEncoding` names the encoding it read.
+The reader turns every text input into UTF-8 before a parser sees it. `ReadInfo.SourceEncoding` names the encoding it read. Binary formats read the raw bytes and ignore `Encoding`.
 
 <!-- example: ExampleParse_encoding -->
 ```go

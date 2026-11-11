@@ -67,6 +67,7 @@ func goldenFolders() []goldenFolder {
 		{name: "sbv", format: stbox.SBV, files: 5},
 		{name: "spruce-stl", format: stbox.SpruceSTL, files: 3},
 		{name: "srt", format: stbox.SubRip, files: 19},
+		{name: "stl", format: stbox.EBUSTL, files: 17},
 		{name: "subviewer", format: stbox.SubViewer, files: 6},
 		{name: "tmplayer", format: stbox.TMPlayer, files: 4},
 		{name: "ttml", format: stbox.TTML, files: 29},

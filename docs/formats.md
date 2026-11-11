@@ -13,6 +13,7 @@
 | SAMI | `stbox.SAMI` | `sami` | `.smi`, `.sami` | [SAMI](#sami) |
 | SBV | `stbox.SBV` | `sbv` | `.sbv` | [SBV](#sbv) |
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
+| EBU STL | `stbox.EBUSTL` | `stl` | `.stl` | [EBU STL](#ebu-stl) |
 | Spruce STL | `stbox.SpruceSTL` | `spruce-stl` | `.stl` | [Spruce STL](#spruce-stl) |
 | SubViewer 1 and 2 | `stbox.SubViewer` | `subviewer` | `.sub` | [SubViewer](#subviewer) |
 | TTML, IMSC, DFXP | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | [TTML](#ttml) |
@@ -1100,6 +1101,61 @@ The root `ReadOptions.CSV` holds a `csv.ReadOptions` and `WriteOptions.CSV` a `c
 - **Checks**: `Validate` rejects a negative column index (`The column index of start must be 0 or more, got -1.`), a column name or a missing index with `NoHeader` (`A table without a header row needs a column index for start.`), another delimiter (`The CSV delimiter must be ",", ";" or a tab.`), another time format, and a frame rate that is negative, NaN or infinite. Each error matches `ErrInvalidArgument` and names the option path, such as `ReadOptions.CSV.Columns.Start`.
 - **Frames without a frame rate**: `TimeFrames` without a frame rate in the options or the file data fails at write time with `The time format hh:mm:ss:ff needs a frame rate.` and `Option` `WriteOptions.CSV.FrameRate`.
 - **Stored frame rate**: a stored `frameRate` that is not above 0 fails at write time with, for example, `The frame rate must be greater than 0, got 0.` and the same `Option`, also for another time format.
+
+## EBU STL
+
+EBU STL is the binary subtitle exchange format of European broadcasters, defined in [EBU Tech 3264](https://tech.ebu.ch/docs/tech/tech3264.pdf). Package `format/ebustl` reads it. The format name is `stl`, the extension `.stl`. EBU STL comes before Spruce STL in the registry, so it owns `.stl` in `FormatFromPath`. The package has no writer yet.
+
+A file starts with one GSI block (General Subtitle Information) of 1024 bytes. Each subtitle then takes one or more TTI blocks (Text and Timing Information) of 128 bytes. Example: a TTI block has time code in `00 00 01 05`, time code out `00 00 02 0A` and the text field `80 43 61 66 65 81 8A`. At 25 fps it reads as a cue from 1.2 s to 2.4 s with the line `<i>Cafe</i>`.
+
+**Binary format**: the reader gets the raw bytes of the input. It does no BOM removal, no UTF-8 check and no code page detection. `ReadOptions.Encoding` has no effect, `ReadInfo.SourceEncoding` is empty and the read has no decode warning. `Load` and `Parse` find the format by its signature on the raw bytes. `Load` also finds it by the extension `.stl`, as [detection.md](detection.md) says.
+
+### Read
+
+**Read option**: `ReadOptions.EBUSTL.SubtractStartOfProgramme`, default false. It subtracts the GSI field TCP (start of programme), such as `10:00:00:00`, from every cue time. A time before it becomes 0. TCP is 8 ASCII digits `HHMMSSFF`, else the offset is 0.
+
+**Blocks**: a file under 1024 bytes fails. A partial last TTI block fails a strict read, and a lenient read cuts it. The DFC field (disk format code) must be `STL25.01` or `STL30.01`, which sets 25 or 30 fps. The CCT field (character code table) must be `00` to `04`. A file without TTI blocks gives an empty subtitle.
+
+**GSI**: the reader decodes each of the 31 fields with the code page of the first 3 bytes (CPN). The code pages are 437, 850, 860, 863 and 865. Any other value reads as 850. Trailing spaces go, NUL bytes stay. OPT without trailing spaces and NUL bytes is the metadata `title`. LC (language code) gives the metadata `language` through the table of EBU Tech 3264 appendix 3. Example: `0F` gives `fr`. An unknown LC sets nothing.
+
+**Sets**: consecutive TTI blocks with the same 2 subtitle number bytes form one set. A block with extension block number `FFh` closes the set, and a change of subtitle number closes it too. The reader joins the text fields of the blocks with EBN `00h` to `EFh` and `FFh`. It skips user data blocks (`FEh`) and the reserved numbers `F0h` to `FDh`. Then it removes every `8Fh` (unused space). The join comes before decoding. So an ISO 6937 diacritic at the end of one block combines with the letter at the start of the next. A diacritic just before a control code is dropped.
+
+**Character codes**: CCT `00` decodes with ISO 6937. CCT `01` to `04` decode with ISO 8859-5, -6, -7 (1987) and -8 (1988). Bytes `20h` to `7Fh` and `A0h` to `FFh` are characters. A byte without an entry in the table is dropped, without a warning. Every other byte is a control code. It ends the run of characters. A code below `20h` also adds a space, because a teletext control code takes a character cell.
+
+| Code | Effect |
+|:--- |:--- |
+| `00h` to `07h` | alpha color: black `#000000`, red `#ff0000`, green `#00ff00`, yellow `#ffff00`, blue `#0000ff`, magenta `#ff00ff`, cyan `#00ffff`, white. White gives no tag |
+| `80h`, `81h` | italics on, off |
+| `82h`, `83h` | underline on, off |
+| `8Ah` | new row. The color goes back to white. Italics and underline go on into the next row |
+| other `08h` to `1Fh` | a space only: flash, steady, end box, start box, normal height, double height, double width, mosaic colors, black background, new background |
+| `84h`, `85h` (boxing) and other `80h` to `9Fh` | ends the run, no space, no style |
+
+The reader writes each row as core markup and escapes its text. Example: `01 red 8A white` gives the lines `<font color="#ff0000">red</font>` and `white`. The model drops blank rows. Double height, boxing, flash, backgrounds and the content of user data blocks are not modelled.
+
+**Comments**: a set whose first block has CF 1 is a comment, not a cue. Its rows are trimmed, empty rows dropped and the rest joined with LF. Tags go and entities decode. The comment stays before the next cue of the file, also when the cues are out of time order.
+
+**Times**: the 4 time code bytes are hours, minutes, seconds and frames, read in the clock model of [frame-rates.md](frame-rates.md). `00 00 01 05` is 1.2 s at 25 fps and 1.167 s at 30 fps. A strict read takes every time code as written, also hour 255 or frame 200. TCS (time code status) is not read.
+
+**Cumulative sets**: each subtitle of a cumulative set becomes its own cue with its own times. The text of earlier members is not added.
+
+**Alignment and position**: JC (justification code) 1 is left, 3 right, and 0 or 2 center. The maximum row is 23 when DSC (display standard code) is `1` or `2`, teletext level 1 or 2. Else it is MNR (maximum number of rows) when above 0, else 23. MNR and MNC are read like a PHP `(int)` cast, so `2x` is 2. VP (vertical position) gives the row band: top when `3*VP < max`, middle when `3*VP < 2*max`, else bottom. Examples: teletext VP 1 with JC 1 is `TopLeft`, VP 12 with JC 3 is `MiddleRight` and VP 22 with JC 2 is `BottomCenter`.
+
+`Position.Row` and `Position.Grid` follow EBU Tech 3264. Teletext rows count from 1, so `Row` is VP and `Grid.Rows` is 23. Open subtitles (DSC `0`) count VP from 0. So `Row` is VP plus 1 and `Grid.Rows` is the maximum row plus 1. `Grid.Columns` is MNC when above 0, else 40. A VP outside the grid gives a cue with an alignment but no row, no column and a zero grid. Examples: teletext VP 0, and open VP 30 with MNR 23.
+
+**Known edge**: teletext VP 8 gets `MiddleCenter` with row 8 of 23. `Position.RowOn` puts row 8 in the top band, so a writer that calls it drops the row of such a cue. No other teletext VP is affected.
+
+**Strict and lenient**: a time code is bad when hours are above 23, minutes or seconds above 59, or frames at or above the frame rate. A strict read keeps the cue as it is, without a warning. A lenient read skips the whole set with a warning. So strict mode is more permissive than lenient mode here. [lenient-parsing.md](lenient-parsing.md#ebu-stl) lists every error and warning. Binary formats have no line numbers, so every warning has `NoLine`. `Block` is the index of the first TTI block of the set, counted without the GSI block.
+
+**Format data**: the file key `stl` holds these fields.
+
+- `gsi`: all 31 GSI fields by name, `spare` and `UDA` too.
+- `startOfProgrammeSubtracted`: the read option.
+- `firstSubtitleNumber`: SN of the first set, or null without sets.
+- `comments`: a list of `{text, blocks}`.
+- `counts`: `TNB` is the TTI block count after a cut. `TNS` is the cue count. `TNG` is the count of distinct group numbers of cues. `TCF` is the 8 TCI digits of the first cue before any subtraction, or `00000000`.
+
+The cue key `stl` holds `subtitleGroupNumber`, `cumulativeStatus`, `verticalPosition` and `justificationCode` of the first block. It also holds `text`, the cue text at read time. And it holds `blocks`, the hex of every block of the set, 256 hex digits each.
 
 ## SubViewer
 

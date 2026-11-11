@@ -1,0 +1,33 @@
+{
+    "name": "EBU STL with frame 30 in a 25 fps time code out and a cut last block",
+    "format": "stl",
+    "strict": {
+        "error": "The TTI blocks of an EBU STL file must have 128 bytes each."
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The bread is fresh."
+        },
+        {
+            "start": 7,
+            "end": 9,
+            "text": "We close at five."
+        }
+    ],
+    "warnings": [
+        {
+            "line": null,
+            "block": 3,
+            "action": "skipped",
+            "message": "The TTI blocks of an EBU STL file must have 128 bytes each."
+        },
+        {
+            "line": null,
+            "block": 1,
+            "action": "skipped",
+            "message": "Subtitle number 2 has a time code that is not valid: 00000400 to 00000630."
+        }
+    ]
+}
