@@ -814,7 +814,7 @@ func (r *reader) setCueData(c *model.Cue, p *xmlraw.Node, sc scope, region strin
 		data.Set("attributes", attrs)
 	}
 	if a, ok := r.alignment(region, hasRegion, textAlign, hasTextAlign); ok {
-		c.Alignment = a
+		c.Position.Alignment = a
 		data.Set("alignment", int64(a.Numpad()))
 	}
 	if data.Len() == 0 {

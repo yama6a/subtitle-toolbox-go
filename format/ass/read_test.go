@@ -103,7 +103,7 @@ func TestAegisubFileConvertsOverrideTagsAndKaraoke(t *testing.T) {
 
 	assert.Equal(t, []string{"<v Conductor>The train to the coast", "leaves from platform four."}, cueAt(t, s, 1).Lines)
 	assert.Equal(t, []string{`Platform 4: <font color="#ffd700">Coast Express</font>`}, cueAt(t, s, 3).Lines)
-	assert.Equal(t, model.TopCenter, cueAt(t, s, 3).Alignment)
+	assert.Equal(t, model.TopCenter, cueAt(t, s, 3).Position.Alignment)
 	assert.Equal(t, []string{"<b><00:00:13.500>The <00:00:13.900>train <00:00:14.250>leaves <00:00:14.750>at <00:00:15.350>noon</b>"},
 		cueAt(t, s, 5).Lines)
 	d := cueData(t, cueAt(t, s, 2))
@@ -124,7 +124,7 @@ func TestSignsFileSortsCuesAndSkipsDrawingsAndUnknownTags(t *testing.T) {
 	assert.Equal(t, []string{"SUNNY", "25 \xc2\xb0C"}, cueAt(t, s, 2).Lines)
 	assert.Equal(t, "1", str(t, object(t, cueData(t, cueAt(t, s, 2)), "fields"), "Layer"))
 	assert.Empty(t, cueAt(t, s, 3).Lines)
-	assert.Equal(t, model.TopLeft, cueAt(t, s, 3).Alignment)
+	assert.Equal(t, model.TopLeft, cueAt(t, s, 3).Position.Alignment)
 	assert.Equal(t, []string{"<v Reporter>Expect light rain,\xc2\xa0mostly after 10\xc2\xa0pm."}, cueAt(t, s, 4).Lines)
 	assert.Equal(t, []string{"<b><i>Tomorrow:</i></b> dry and windy"}, cueAt(t, s, 5).Lines)
 
@@ -146,7 +146,7 @@ func TestSSAFileReadsMarkedColumnAndLegacyAlignment(t *testing.T) {
 	styles, _ := d.List("styles")
 	back, _ := styles[0].(*model.Data).String("BackColour")
 	assert.Equal(t, "-2147483640", back)
-	assert.Equal(t, model.TopCenter, cueAt(t, s, 1).Alignment)
+	assert.Equal(t, model.TopCenter, cueAt(t, s, 1).Position.Alignment)
 	assert.Equal(t, "Marked=1", str(t, object(t, cueData(t, cueAt(t, s, 2)), "fields"), "Marked"))
 	assert.Equal(t, "!Effect", str(t, object(t, cueData(t, cueAt(t, s, 3)), "fields"), "Effect"))
 	assert.Equal(t, []model.Comment{{Text: "Timetable section", BeforeCue: 1}}, s.Comments())
@@ -162,7 +162,7 @@ func TestStyleFlagsAndAlignmentApplyToTheCues(t *testing.T) {
 	}
 	var got []row
 	for _, c := range readFile(t, realDir+"/own_style_flags.ass").All() {
-		got = append(got, row{c.Lines, c.Alignment})
+		got = append(got, row{c.Lines, c.Position.Alignment})
 	}
 	assert.Equal(t, []row{
 		{[]string{"<v Driver>Last stop is the depot."}, model.BottomCenter},
@@ -268,7 +268,7 @@ func TestStylesApply(t *testing.T) {
 			s, _ := mustRead(t, tt.content, false)
 			c := cueAt(t, s, 0)
 			assert.Equal(t, tt.want, c.Lines)
-			assert.Equal(t, tt.alignment, c.Alignment)
+			assert.Equal(t, tt.alignment, c.Position.Alignment)
 		})
 	}
 }
@@ -368,7 +368,7 @@ func TestAlignmentTagsSetTheAlignment(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, event(t, tt.text).Alignment)
+			assert.Equal(t, tt.want, event(t, tt.text).Position.Alignment)
 		})
 	}
 }

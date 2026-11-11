@@ -82,7 +82,7 @@ func TestBottomCenterFromAnotherFormatGetsNoAlignmentTag(t *testing.T) {
 
 	s, _, err := webvtt.Read(bytes.NewReader(testfiles.Read(t, "vtt/real/w3c_cue_settings.vtt")), model.CommonReadOptions{}, webvtt.ReadOptions{})
 	require.NoError(t, err)
-	assert.Equal(t, model.BottomCenter, cueAt(t, s, 2).Alignment)
+	assert.Equal(t, model.BottomCenter, cueAt(t, s, 2).Position.Alignment)
 	assert.True(t, strings.HasSuffix(writeDefault(t, s), "Dialogue: 0,0:00:04.00,0:00:06.50,Default,,0,0,0,,What are you waiting for?\n"))
 }
 
@@ -91,7 +91,7 @@ func TestCuesFromOtherFormatsGetTheDefaultHeader(t *testing.T) {
 	t.Parallel()
 
 	top := cue(3004*ms, 4996*ms, "Top")
-	top.Alignment = model.TopCenter
+	top.Position.Alignment = model.TopCenter
 	s := subtitle(t, cue(time.Second, 2500*ms, "<i>Hello</i>", "world"), top)
 	assert.Equal(t, defaultHeader+
 		`Dialogue: 0,0:00:01.00,0:00:02.50,Default,,0,0,0,,{\i1}Hello{\i0}\Nworld`+"\n"+
@@ -332,7 +332,7 @@ func TestChangedCueIsWrittenFromItsLines(t *testing.T) {
 
 	s := readFile(t, realDir+"/own_aegisub.ass")
 	setCue(t, s, 2, func(c *model.Cue) { c.Lines = []string{"<v Guard>Is it <i>late</i> today?"} })
-	setCue(t, s, 3, func(c *model.Cue) { c.Alignment = model.TopLeft })
+	setCue(t, s, 3, func(c *model.Cue) { c.Position.Alignment = model.TopLeft })
 
 	got := writeDefault(t, s)
 	assert.Contains(t, got, `Dialogue: 0,0:00:06.30,0:00:08.00,Default,Guard,0,0,0,,Is it {\i1}late{\i0} today?`+"\n")
@@ -347,7 +347,7 @@ func TestChangedCueOmitsTheTagsThatItsStyleImplies(t *testing.T) {
 	s := readFile(t, realDir+"/own_style_flags.ass")
 	setCue(t, s, 1, func(c *model.Cue) { c.Lines = []string{"<i>I should have taken the night bus.</i>"} })
 	setCue(t, s, 2, func(c *model.Cue) { c.Lines = []string{"Upright now"} })
-	setCue(t, s, 3, func(c *model.Cue) { c.Alignment = model.BottomCenter })
+	setCue(t, s, 3, func(c *model.Cue) { c.Position.Alignment = model.BottomCenter })
 	setCue(t, s, 5, func(c *model.Cue) { c.Lines = []string{"<i>Left</i> again"} })
 
 	got := writeDefault(t, s)
@@ -370,7 +370,7 @@ func TestSSAUsesLegacyAlignmentAndKeepsTheMarkedColumn(t *testing.T) {
 	t.Parallel()
 
 	s := readFile(t, realDir+"/own_ssa_v4.ssa")
-	setCue(t, s, 1, func(c *model.Cue) { c.Alignment = model.MiddleLeft })
+	setCue(t, s, 1, func(c *model.Cue) { c.Position.Alignment = model.MiddleLeft })
 	assert.Contains(t, writeDefault(t, s), `Dialogue: Marked=0,0:00:05.50,0:00:08.00,Notice,,0000,0000,0000,,{\a9}Next ferry: 9:00`+"\n")
 }
 
@@ -451,7 +451,7 @@ func TestUnchangedRule(t *testing.T) {
 	}{
 		{"no change", func(*model.Cue) {}, false, `{\an8\fs40}Hi`},
 		{"changed lines", func(c *model.Cue) { c.Lines = []string{"Hello"} }, false, `{\an8}Hello`},
-		{"changed alignment", func(c *model.Cue) { c.Alignment = model.TopLeft }, false, `{\an7}Hi`},
+		{"changed alignment", func(c *model.Cue) { c.Position.Alignment = model.TopLeft }, false, `{\an7}Hi`},
 		{"strip tags keeps the alignment tag", func(*model.Cue) {}, true, `{\an8}Hi`},
 		{"no stored text", func(c *model.Cue) {
 			d := cueData(t, *c).Clone()

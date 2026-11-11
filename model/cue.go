@@ -19,8 +19,8 @@ type Cue struct { //nolint:recvcheck // the API reads a copy with value receiver
 	Lines []string
 	// ID is the identifier of the cue, such as a WebVTT cue identifier. The empty string means none.
 	ID string
-	// Alignment is the place of the cue on the screen.
-	Alignment Alignment
+	// Position is the place of the cue on the screen.
+	Position Position
 	// Forced marks a forced narrative, which a player shows also when the viewer turned subtitles off.
 	Forced bool
 
@@ -53,13 +53,15 @@ func (c *Cue) MapWordTimestamps(fn func(time.Duration) time.Duration) {
 	}
 }
 
-// Clone returns a copy of c that shares no slice with c.
+// Clone returns a copy of c that shares no slice and no Offset with c.
 func (c Cue) Clone() Cue {
 	c.Lines = slices.Clone(c.Lines)
+	c.Position = c.Position.clone()
 	return c
 }
 
 func (c Cue) normalized() Cue {
+	c.Position = c.Position.clone()
 	c.Start = c.Start.Round(time.Millisecond)
 	c.End = c.End.Round(time.Millisecond)
 	c.Lines = cleanLines(c.Lines)

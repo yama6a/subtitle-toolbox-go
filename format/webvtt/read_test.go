@@ -345,7 +345,7 @@ func TestReadCueSettings(t *testing.T) {
 
 			s, _ := parse(t, "WEBVTT\n\n00:01.000 --> "+tt.end+"\nOne\n", tt.lenient)
 			c := firstCue(t, s)
-			assert.Equal(t, tt.alignment, c.Alignment)
+			assert.Equal(t, tt.alignment, c.Position.Alignment)
 			assert.Equal(t, tt.data, cueData(t, c))
 		})
 	}

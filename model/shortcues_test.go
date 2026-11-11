@@ -276,8 +276,8 @@ func TestMergeShortCuesJoinCheck(t *testing.T) {
 		change func(*model.Cue)
 		want   int
 	}{
-		{"another alignment", func(c *model.Cue) { c.Alignment = model.TopCenter }, 2},
-		{"the same alignment", func(c *model.Cue) { c.Alignment = model.BottomCenter }, 1},
+		{"another alignment", func(c *model.Cue) { c.Position.Alignment = model.TopCenter }, 2},
+		{"the same alignment", func(c *model.Cue) { c.Position.Alignment = model.BottomCenter }, 1},
 		{"another forced flag", func(c *model.Cue) { c.Forced = true }, 2},
 	}
 	for _, tt := range tests {

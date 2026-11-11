@@ -18,7 +18,7 @@ type realCue struct {
 }
 
 func describe(c model.Cue) realCue {
-	return realCue{c.Start.Seconds(), c.End.Seconds(), c.Text(), c.Alignment}
+	return realCue{c.Start.Seconds(), c.End.Seconds(), c.Text(), c.Position.Alignment}
 }
 
 // Ports testRealFileParses of tests/Parsers/TtmlRealFileTest.php of subtitle-toolbox-php.

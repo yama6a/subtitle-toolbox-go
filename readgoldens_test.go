@@ -120,12 +120,24 @@ func TestReadGoldens(t *testing.T) {
 				require.NoError(t, err)
 				var subtitle any
 				require.NoError(t, json.Unmarshal(library.Bytes(), &subtitle))
+				dropPositions(subtitle)
 				got := map[string]any{"warnings": goldenWarnings(info.Warnings), "subtitle": subtitle}
 
 				var want any
 				require.NoError(t, json.Unmarshal(testfiles.Read(t, g.name+"/real/expected/"+file+".json"), &want))
 				assert.Equal(t, canonicalJSON(t, want), canonicalJSON(t, got))
 			})
+		}
+	}
+}
+
+// dropPositions removes the key position from each cue, because the PHP goldens never hold it.
+func dropPositions(subtitle any) {
+	root, _ := subtitle.(map[string]any)
+	cues, _ := root["cues"].([]any)
+	for _, c := range cues {
+		if cue, ok := c.(map[string]any); ok {
+			delete(cue, "position")
 		}
 	}
 }
