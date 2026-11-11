@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
 // Ported from tests/Cli/BinaryEditTest.php of subtitle-toolbox-php, without the replace list.

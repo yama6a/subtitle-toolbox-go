@@ -9,11 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/sbv"
-	"github.com/yama6a/subtitle-toolbox-go/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/sbv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func cue(start, end time.Duration, lines ...string) model.Cue {

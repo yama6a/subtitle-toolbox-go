@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
 const unknownFormatMessage = "stbox: unsupported format: no format detected: Format detection found no subtitle format."

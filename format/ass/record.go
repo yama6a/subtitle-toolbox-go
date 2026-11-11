@@ -3,7 +3,7 @@ package ass
 import (
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // record is an ordered object of strings, such as one style or the fields of one event. A repeated name keeps

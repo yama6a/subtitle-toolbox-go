@@ -10,13 +10,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/diff"
-	"github.com/yama6a/subtitle-toolbox-go/dual"
-	"github.com/yama6a/subtitle-toolbox-go/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/model"
-	"github.com/yama6a/subtitle-toolbox-go/profanity"
-	"github.com/yama6a/subtitle-toolbox-go/refsync"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/diff"
+	"github.com/yama6a/subtitle-toolbox-go/v2/dual"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/profanity"
+	"github.com/yama6a/subtitle-toolbox-go/v2/refsync"
 )
 
 // summaryCommand is a command with a name and a summary only, for the layout of the global help.

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 )
 
 var voiceTagRegexp = regexp.MustCompile(`(?i)` + markupcore.VoiceTagPattern)

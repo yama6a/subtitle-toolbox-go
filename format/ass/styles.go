@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/ssatag"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/ssatag"
 )
 
 // flagFields maps the core tag names to the style fields that turn them on, in the order b, i, u, s.

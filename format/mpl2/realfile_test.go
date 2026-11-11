@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/text/encoding/charmap"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/mpl2"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpl2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Ports testRealFileParses and testRealFileSurvivesARoundTrip of tests/Parsers/Mpl2ParserTest.php of

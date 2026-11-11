@@ -4,9 +4,9 @@ import (
 	"io"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/vtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/vtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Write writes s as WebVTT. A cue line that reads as an empty line, such as a line of only a dropped tag, is not

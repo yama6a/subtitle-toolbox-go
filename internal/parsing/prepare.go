@@ -5,8 +5,8 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const (

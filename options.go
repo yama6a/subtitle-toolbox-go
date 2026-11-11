@@ -5,16 +5,16 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // ReadOptions holds the settings of a read. The zero value reads with the defaults.

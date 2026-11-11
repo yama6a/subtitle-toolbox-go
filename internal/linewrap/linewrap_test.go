@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/linewrap"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/linewrap"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
 // Adapted from testTagsCountNoCharactersAndEntitiesCountOne in tests/LineWrapperTest.php of subtitle-toolbox-php.

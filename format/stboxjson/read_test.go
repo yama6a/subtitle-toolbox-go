@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const oneCue = `{"start": 1, "end": 2, "lines": ["Hello"]}`

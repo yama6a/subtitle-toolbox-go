@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Ports tests/Parsers/LenientWebVttTest.php of subtitle-toolbox-php. The 13 WebVTT fixtures of testdata/lenient

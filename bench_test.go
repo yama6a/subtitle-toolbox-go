@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 )
 
 const benchCues = 20000

@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // TestDuplicateCueIDsGrowth writes cues that all have the ID c1, which come out as c1, c1_2, c1_3 and so on.

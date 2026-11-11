@@ -8,8 +8,8 @@ import (
 	"math"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // NoParagraphBreaks is the ParagraphGap that writes all cues as one paragraph.

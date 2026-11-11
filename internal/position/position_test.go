@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/position"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/position"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func TestAlignmentUnchanged(t *testing.T) {
