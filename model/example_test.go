@@ -186,3 +186,14 @@ func ExampleFrameRateFromFloat() {
 	// 2997 125 23.976 <nil>
 	// stbox: invalid argument: The frame rate must be greater than 0, got 0.
 }
+
+func ExampleFrameRate_TimecodeOf() {
+	fmt.Println(model.FrameRate2997DF.TimecodeOf(1800))
+	// Output: 00:01:00;02
+}
+
+func ExampleParseTime() {
+	d, err := model.ParseTime("00:01:02:12", model.FrameRate25)
+	fmt.Println(d, err)
+	// Output: 1m2.48s <nil>
+}
