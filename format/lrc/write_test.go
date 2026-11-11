@@ -283,7 +283,7 @@ func (failingWriter) Write([]byte) (int, error) { return 0, errors.New("disk ful
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	err := lrc.Write(failingWriter{}, subtitle(model.Cue{Lines: []string{"x"}}), model.CommonWriteOptions{}, lrc.WriteOptions{})
+	_, err := lrc.Write(failingWriter{}, subtitle(model.Cue{Lines: []string{"x"}}), model.CommonWriteOptions{}, lrc.WriteOptions{})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "disk full")
 }

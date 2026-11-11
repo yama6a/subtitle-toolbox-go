@@ -556,7 +556,8 @@ func (s *reportingConvert) run(ctx context.Context, a *args, c *console) error {
 func (s *reportingConvert) prepare(a *args, r *runner) error {
 	s.out.encode = func(in *input, out io.Writer, sub *stbox.Subtitle, f stbox.Format) error {
 		r.c.err(in.label() + ": " + strconv.Itoa(sub.Len()) + " cues as " + string(f) + "\n")
-		return stbox.Write(out, sub, f, s.out.opts)
+		_, err := stbox.Write(out, sub, f, s.out.opts)
+		return err
 	}
 	if err := r.prepareRead(a); err != nil {
 		return err

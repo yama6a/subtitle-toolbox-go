@@ -72,7 +72,7 @@ func FuzzRead(f *testing.F) {
 				}
 			}
 			var out bytes.Buffer
-			if err := qttext.Write(&out, s, model.CommonWriteOptions{}, qttext.WriteOptions{}); err != nil {
+			if _, err := qttext.Write(&out, s, model.CommonWriteOptions{}, qttext.WriteOptions{}); err != nil {
 				t.Fatalf("Write returned %v", err)
 			}
 			if looksLikeATimestamp(s) {

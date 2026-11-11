@@ -59,7 +59,7 @@ func FuzzRead(f *testing.F) {
 					}
 				}
 			}
-			if err := webvtt.Write(io.Discard, s, model.CommonWriteOptions{}, webvtt.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
+			if _, err := webvtt.Write(io.Discard, s, model.CommonWriteOptions{}, webvtt.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
 				t.Fatalf("Write of Read(%q) returned %v", content, err)
 			}
 		}

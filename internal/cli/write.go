@@ -123,7 +123,8 @@ func (w *writeOutput) write(r *runner, in *input, edit func(*stbox.Subtitle) (*s
 	encode := w.encode
 	if encode == nil {
 		encode = func(_ *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error {
-			return stbox.Write(out, s, f, w.optionsFor(f))
+			_, err := stbox.Write(out, s, f, w.optionsFor(f))
+			return err
 		}
 	}
 	if err := encode(in, &buf, s, f); err != nil {

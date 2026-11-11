@@ -44,7 +44,7 @@ func ExampleWrite() {
 	s.SetMetadata(model.MetadataTitle, "Station news")
 	s.SetMetadata(model.MetadataLanguage, "en-US")
 	s.AddCues(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"The bridge is <b>open</b>", "again."}})
-	if err := sami.Write(os.Stdout, s, model.CommonWriteOptions{}, sami.WriteOptions{}); err != nil {
+	if _, err := sami.Write(os.Stdout, s, model.CommonWriteOptions{}, sami.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

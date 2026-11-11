@@ -119,7 +119,7 @@ func (failingWriter) Write([]byte) (int, error) { return 0, errors.New("disk ful
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	err := tmplayer.Write(failingWriter{}, subtitle(model.Cue{Lines: []string{"x"}}), model.CommonWriteOptions{}, tmplayer.WriteOptions{})
+	_, err := tmplayer.Write(failingWriter{}, subtitle(model.Cue{Lines: []string{"x"}}), model.CommonWriteOptions{}, tmplayer.WriteOptions{})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "disk full")
 }

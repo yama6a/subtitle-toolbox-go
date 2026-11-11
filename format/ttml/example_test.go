@@ -45,7 +45,7 @@ func ExampleDetect() {
 func ExampleWrite() {
 	s := &model.Subtitle{}
 	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>Hello</i>"}, Alignment: model.TopCenter})
-	if err := ttml.Write(os.Stdout, s, model.CommonWriteOptions{}, ttml.WriteOptions{}); err != nil {
+	if _, err := ttml.Write(os.Stdout, s, model.CommonWriteOptions{}, ttml.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

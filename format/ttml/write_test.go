@@ -34,7 +34,8 @@ func writeTTML(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions)
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, ttml.Write(&out, s, common, ttml.WriteOptions{}))
+	_, err := ttml.Write(&out, s, common, ttml.WriteOptions{})
+	require.NoError(t, err)
 	return out.String()
 }
 
@@ -47,7 +48,7 @@ func writeDefault(t *testing.T, s *model.Subtitle) string {
 func writeError(t *testing.T, s *model.Subtitle) *model.UnwritableError {
 	t.Helper()
 
-	err := ttml.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, ttml.WriteOptions{})
+	_, err := ttml.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, ttml.WriteOptions{})
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	require.ErrorIs(t, err, model.ErrUnwritable)

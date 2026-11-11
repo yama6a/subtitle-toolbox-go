@@ -161,6 +161,9 @@ func (o ReadOptions) Validate() error {
 	return parsing.CheckFrameRate(o.FrameRate, "ReadOptions.CSV.FrameRate", "The frame rate")
 }
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 // WriteOptions holds the settings of the CSV and TSV writer.
 type WriteOptions struct {
 	// Delimiter is the cell separator. The zero value takes the stored delimiter, else Comma.

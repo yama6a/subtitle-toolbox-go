@@ -20,7 +20,8 @@ func writeString(t *testing.T, s *model.Subtitle, common model.CommonWriteOption
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, stboxjson.Write(&out, s, common, opts))
+	_, err := stboxjson.Write(&out, s, common, opts)
+	require.NoError(t, err)
 	return out.String()
 }
 
@@ -271,7 +272,7 @@ func TestWriteErrors(t *testing.T) {
 			t.Parallel()
 
 			var out bytes.Buffer
-			err := stboxjson.Write(&out, tt.s, model.CommonWriteOptions{}, stboxjson.WriteOptions{PrettyPrint: true})
+			_, err := stboxjson.Write(&out, tt.s, model.CommonWriteOptions{}, stboxjson.WriteOptions{PrettyPrint: true})
 			var uerr *model.UnwritableError
 			require.ErrorAs(t, err, &uerr)
 			require.ErrorIs(t, err, model.ErrUnwritable)
@@ -293,7 +294,7 @@ func (failingWriter) Write([]byte) (int, error) { return 0, errDiskFull }
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	err := stboxjson.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
+	_, err := stboxjson.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
 	require.ErrorIs(t, err, errDiskFull)
 }
 

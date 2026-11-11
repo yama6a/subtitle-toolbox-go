@@ -120,16 +120,16 @@ func TestWriteNeedsAFrameRate(t *testing.T) {
 	t.Parallel()
 
 	for _, opts := range []microdvd.WriteOptions{{}, {WriteFrameRateLine: true}} {
-		err := microdvd.Write(&bytes.Buffer{}, subtitle([]string{"Hello"}), model.CommonWriteOptions{}, opts)
+		_, err := microdvd.Write(&bytes.Buffer{}, subtitle([]string{"Hello"}), model.CommonWriteOptions{}, opts)
 		assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "MicroDVD output needs the frame rate of the video."}, err)
 	}
 
 	s := subtitle([]string{"Hello"})
 	require.NoError(t, s.SetFormatData("microdvd", model.NewData(model.Field{Key: "frameRate", Value: 0.0})))
-	err := microdvd.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, microdvd.WriteOptions{})
+	_, err := microdvd.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, microdvd.WriteOptions{})
 	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "The MicroDVD frame rate must be greater than 0, got 0."}, err)
 
-	err = microdvd.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: -1})
+	_, err = microdvd.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: -1})
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 }
 

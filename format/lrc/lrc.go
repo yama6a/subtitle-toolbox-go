@@ -13,6 +13,9 @@ import (
 // ReadOptions holds the settings of the LRC reader. LRC has none yet.
 type ReadOptions struct{}
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 // WriteOptions holds the settings of the LRC writer. LRC has none yet.
 type WriteOptions struct{}
 

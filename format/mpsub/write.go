@@ -20,9 +20,9 @@ const (
 // Write writes s as MPSub. The header holds the title and the author, then the stored keys, then FORMAT and NOTE.
 // A stored key that is not ASCII capitals is not written, and a CR or LF in a header value becomes a space, so the
 // output always reads back. A cue without visible text is not written. The FORMAT line is TIME, or the frame rate of opts.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	if err := opts.Validate(); err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	body := appendHeader(nil, s, opts.FrameRate)
 	var previousEnd time.Duration
@@ -41,7 +41,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		body = append(body, '\n')
 		previousEnd = end
 	}
-	return writing.Write(w, model.MPSub, body, common, true)
+	return WriteReport{}, writing.Write(w, model.MPSub, body, common, true)
 }
 
 func appendHeader(body []byte, s *model.Subtitle, fps float64) []byte {

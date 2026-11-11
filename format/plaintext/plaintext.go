@@ -17,6 +17,9 @@ const NoParagraphBreaks = time.Duration(math.MaxInt64)
 
 const defaultParagraphGap = 2 * time.Second
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 // WriteOptions holds the settings of the plain text writer.
 type WriteOptions struct {
 	// KeepLineBreaks writes each line of a cue on its own line. False joins them with a space.

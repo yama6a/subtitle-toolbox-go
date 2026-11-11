@@ -113,7 +113,8 @@ func TestRealFilesSurviveARoundTrip(t *testing.T) {
 			s := readFile(t, realDir+"/"+f.name)
 			common, opts := optionsFor(content)
 			var out bytes.Buffer
-			require.NoError(t, subviewer.Write(&out, s, common, opts))
+			_, err := subviewer.Write(&out, s, common, opts)
+			require.NoError(t, err)
 			back, warnings, err := subviewer.Read(bytes.NewReader(out.Bytes()), model.CommonReadOptions{}, subviewer.ReadOptions{})
 			require.NoError(t, err)
 			assert.Empty(t, warnings)
@@ -138,7 +139,8 @@ func TestRealFilesWriteTheirOwnBytes(t *testing.T) {
 			content := string(testfiles.Read(t, realDir+"/"+f.name))
 			common, opts := optionsFor(content)
 			var out bytes.Buffer
-			require.NoError(t, subviewer.Write(&out, readFile(t, realDir+"/"+f.name), common, opts))
+			_, err := subviewer.Write(&out, readFile(t, realDir+"/"+f.name), common, opts)
+			require.NoError(t, err)
 			ending := "\n"
 			if common.LineEnding == model.CRLF {
 				ending = "\r\n"

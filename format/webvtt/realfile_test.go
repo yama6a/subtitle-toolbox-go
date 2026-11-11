@@ -81,7 +81,8 @@ func TestRealFilesRoundTripKeepsAllData(t *testing.T) {
 
 			s := readFile(t, path)
 			var out bytes.Buffer
-			require.NoError(t, webvtt.Write(&out, s, model.CommonWriteOptions{}, webvtt.WriteOptions{}))
+			_, err := webvtt.Write(&out, s, model.CommonWriteOptions{}, webvtt.WriteOptions{})
+			require.NoError(t, err)
 			again, _ := read(t, out.Bytes(), false)
 			assert.Equal(t, describe(t, s), describe(t, again))
 			assert.Equal(t, s.Comments(), again.Comments())
@@ -90,7 +91,8 @@ func TestRealFilesRoundTripKeepsAllData(t *testing.T) {
 			assert.Equal(t, d, dAgain)
 
 			var second bytes.Buffer
-			require.NoError(t, webvtt.Write(&second, again, model.CommonWriteOptions{}, webvtt.WriteOptions{}))
+			_, err = webvtt.Write(&second, again, model.CommonWriteOptions{}, webvtt.WriteOptions{})
+			require.NoError(t, err)
 			assert.Equal(t, out.String(), second.String())
 		})
 	}

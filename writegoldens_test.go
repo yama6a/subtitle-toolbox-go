@@ -113,7 +113,8 @@ func writeAs(t *testing.T, s *stbox.Subtitle, f stbox.Format) []byte {
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, stbox.Write(&out, s, f, stbox.WriteOptions{}))
+	_, err := stbox.Write(&out, s, f, stbox.WriteOptions{})
+	require.NoError(t, err)
 	return out.Bytes()
 }
 

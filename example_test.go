@@ -54,7 +54,7 @@ func ExampleWrite() {
 		stbox.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"<i>Fish &amp; Chips</i>"}},
 		stbox.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"<c.yellow>Now</c> open"}, Alignment: stbox.TopCenter},
 	)
-	err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stbox.BOMRemove})
+	_, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stbox.BOMRemove})
 	if err != nil {
 		fmt.Println(err)
 	}

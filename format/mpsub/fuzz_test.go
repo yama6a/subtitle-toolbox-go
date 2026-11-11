@@ -79,7 +79,7 @@ func checkWrite(t *testing.T, s *model.Subtitle, opts mpsub.WriteOptions) {
 	t.Helper()
 
 	var out bytes.Buffer
-	if err := mpsub.Write(&out, s, model.CommonWriteOptions{}, opts); err != nil {
+	if _, err := mpsub.Write(&out, s, model.CommonWriteOptions{}, opts); err != nil {
 		t.Fatalf("Write returned %v", err)
 	}
 	back, _, err := mpsub.Read(&out, model.CommonReadOptions{}, mpsub.ReadOptions{})

@@ -30,54 +30,54 @@ import (
 // The shapes of the Read, Write and Detect functions of a format package.
 type (
 	readFunc[O any]  func(io.Reader, model.CommonReadOptions, O) (*model.Subtitle, []model.ParseWarning, error)
-	writeFunc[O any] func(io.Writer, *model.Subtitle, model.CommonWriteOptions, O) error
+	writeFunc[O, R any] func(io.Writer, *model.Subtitle, model.CommonWriteOptions, O) (R, error)
 	detectFunc       func([]byte) bool
 )
 
 var (
 	_ readFunc[stboxjson.ReadOptions]   = stboxjson.Read
-	_ writeFunc[stboxjson.WriteOptions] = stboxjson.Write
+	_ writeFunc[stboxjson.WriteOptions, stboxjson.WriteReport] = stboxjson.Write
 	_ readFunc[webvtt.ReadOptions]      = webvtt.Read
-	_ writeFunc[webvtt.WriteOptions]    = webvtt.Write
+	_ writeFunc[webvtt.WriteOptions, webvtt.WriteReport]    = webvtt.Write
 	_ detectFunc                        = webvtt.Detect
 	_ readFunc[srt.ReadOptions]         = srt.Read
-	_ writeFunc[srt.WriteOptions]       = srt.Write
+	_ writeFunc[srt.WriteOptions, srt.WriteReport]       = srt.Write
 	_ detectFunc                        = srt.Detect
 	_ readFunc[ass.ReadOptions]         = ass.Read
-	_ writeFunc[ass.WriteOptions]       = ass.Write
+	_ writeFunc[ass.WriteOptions, ass.WriteReport]       = ass.Write
 	_ detectFunc                        = ass.Detect
 	_ readFunc[ttml.ReadOptions]        = ttml.Read
-	_ writeFunc[ttml.WriteOptions]      = ttml.Write
+	_ writeFunc[ttml.WriteOptions, ttml.WriteReport]      = ttml.Write
 	_ readFunc[microdvd.ReadOptions]    = microdvd.Read
-	_ writeFunc[microdvd.WriteOptions]  = microdvd.Write
+	_ writeFunc[microdvd.WriteOptions, microdvd.WriteReport]  = microdvd.Write
 	_ detectFunc                        = microdvd.Detect
 	_ detectFunc                        = ttml.Detect
 	_ readFunc[sami.ReadOptions]        = sami.Read
-	_ writeFunc[sami.WriteOptions]      = sami.Write
+	_ writeFunc[sami.WriteOptions, sami.WriteReport]      = sami.Write
 	_ detectFunc                        = sami.Detect
 	_ readFunc[sbv.ReadOptions]         = sbv.Read
-	_ writeFunc[sbv.WriteOptions]       = sbv.Write
+	_ writeFunc[sbv.WriteOptions, sbv.WriteReport]       = sbv.Write
 	_ detectFunc                        = sbv.Detect
 	_ readFunc[mpl2.ReadOptions]        = mpl2.Read
-	_ writeFunc[mpl2.WriteOptions]      = mpl2.Write
+	_ writeFunc[mpl2.WriteOptions, mpl2.WriteReport]      = mpl2.Write
 	_ detectFunc                        = mpl2.Detect
 	_ readFunc[tmplayer.ReadOptions]    = tmplayer.Read
-	_ writeFunc[tmplayer.WriteOptions]  = tmplayer.Write
+	_ writeFunc[tmplayer.WriteOptions, tmplayer.WriteReport]  = tmplayer.Write
 	_ detectFunc                        = tmplayer.Detect
 	_ readFunc[mpsub.ReadOptions]       = mpsub.Read
-	_ writeFunc[mpsub.WriteOptions]     = mpsub.Write
+	_ writeFunc[mpsub.WriteOptions, mpsub.WriteReport]     = mpsub.Write
 	_ detectFunc                        = mpsub.Detect
 	_ readFunc[lrc.ReadOptions]         = lrc.Read
-	_ writeFunc[lrc.WriteOptions]       = lrc.Write
+	_ writeFunc[lrc.WriteOptions, lrc.WriteReport]       = lrc.Write
 	_ detectFunc                        = lrc.Detect
 	_ readFunc[qttext.ReadOptions]      = qttext.Read
-	_ writeFunc[qttext.WriteOptions]    = qttext.Write
+	_ writeFunc[qttext.WriteOptions, qttext.WriteReport]    = qttext.Write
 	_ detectFunc                        = qttext.Detect
-	_ writeFunc[plaintext.WriteOptions] = plaintext.Write
+	_ writeFunc[plaintext.WriteOptions, plaintext.WriteReport] = plaintext.Write
 	_ readFunc[csv.ReadOptions]         = csv.Read
-	_ writeFunc[csv.WriteOptions]       = csv.Write
+	_ writeFunc[csv.WriteOptions, csv.WriteReport]       = csv.Write
 	_ readFunc[subviewer.ReadOptions]   = subviewer.Read
-	_ writeFunc[subviewer.WriteOptions] = subviewer.Write
+	_ writeFunc[subviewer.WriteOptions, subviewer.WriteReport] = subviewer.Write
 	_ detectFunc                        = subviewer.Detect
 )
 
@@ -86,7 +86,7 @@ var (
 type formatFuncs struct {
 	format Format
 	read   func(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error)
-	write  func(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error
+	write  func(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error)
 }
 
 // registry lists the formats in the PHP row order, because the first row that lists an
@@ -174,100 +174,116 @@ func readJSON(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subt
 	return stboxjson.Read(r, common, stboxjson.ReadOptions{})
 }
 
-func writeJSON(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
-	return stboxjson.Write(w, s, common, opts.JSON)
+func writeJSON(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	_, err := stboxjson.Write(w, s, common, opts.JSON)
+	return WriteReport{}, err
 }
 
 func readWebVTT(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return webvtt.Read(r, common, webvtt.ReadOptions{})
 }
 
-func writeWebVTT(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
-	return webvtt.Write(w, s, common, webvtt.WriteOptions{})
+func writeWebVTT(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	report, err := webvtt.Write(w, s, common, webvtt.WriteOptions{})
+	if err != nil {
+		return WriteReport{}, err
+	}
+	return WriteReport{WebVTT: &report}, nil
 }
 
 func readSubRip(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return srt.Read(r, common, srt.ReadOptions{})
 }
 
-func writeSubRip(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
-	return srt.Write(w, s, common, srt.WriteOptions{})
+func writeSubRip(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := srt.Write(w, s, common, srt.WriteOptions{})
+	return WriteReport{}, err
 }
 
 func readASS(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return ass.Read(r, common, ass.ReadOptions{})
 }
 
-func writeASS(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
-	return ass.Write(w, s, common, opts.ASS)
+func writeASS(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	_, err := ass.Write(w, s, common, opts.ASS)
+	return WriteReport{}, err
 }
 
 func readTTML(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return ttml.Read(r, common, ttml.ReadOptions{})
 }
 
-func writeTTML(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
-	return ttml.Write(w, s, common, ttml.WriteOptions{})
+func writeTTML(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := ttml.Write(w, s, common, ttml.WriteOptions{})
+	return WriteReport{}, err
 }
 
 func readSAMI(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return sami.Read(r, common, opts.SAMI)
 }
 
-func writeSAMI(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
-	return sami.Write(w, s, common, sami.WriteOptions{})
+func writeSAMI(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := sami.Write(w, s, common, sami.WriteOptions{})
+	return WriteReport{}, err
 }
 
 func readMicroDVD(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return microdvd.Read(r, common, opts.MicroDVD)
 }
 
-func writeMicroDVD(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
-	return microdvd.Write(w, s, common, opts.MicroDVD)
+func writeMicroDVD(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	_, err := microdvd.Write(w, s, common, opts.MicroDVD)
+	return WriteReport{}, err
 }
 
 func readSBV(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return sbv.Read(r, common, sbv.ReadOptions{})
 }
 
-func writeSBV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
-	return sbv.Write(w, s, common, sbv.WriteOptions{})
+func writeSBV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := sbv.Write(w, s, common, sbv.WriteOptions{})
+	return WriteReport{}, err
 }
 
 func readMPL2(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return mpl2.Read(r, common, mpl2.ReadOptions{})
 }
 
-func writeMPL2(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
-	return mpl2.Write(w, s, common, mpl2.WriteOptions{})
+func writeMPL2(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := mpl2.Write(w, s, common, mpl2.WriteOptions{})
+	return WriteReport{}, err
 }
 
 func readTMPlayer(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return tmplayer.Read(r, common, tmplayer.ReadOptions{})
 }
 
-func writeTMPlayer(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
-	return tmplayer.Write(w, s, common, tmplayer.WriteOptions{})
+func writeTMPlayer(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := tmplayer.Write(w, s, common, tmplayer.WriteOptions{})
+	return WriteReport{}, err
 }
 
 func readMPSub(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return mpsub.Read(r, common, mpsub.ReadOptions{})
 }
 
-func writeMPSub(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
-	return mpsub.Write(w, s, common, opts.MPSub)
+func writeMPSub(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	_, err := mpsub.Write(w, s, common, opts.MPSub)
+	return WriteReport{}, err
 }
 
 func readLRC(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return lrc.Read(r, common, lrc.ReadOptions{})
 }
 
-func writeLRC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
-	return lrc.Write(w, s, common, lrc.WriteOptions{})
+func writeLRC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := lrc.Write(w, s, common, lrc.WriteOptions{})
+	return WriteReport{}, err
 }
 
-func writePlainText(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
-	return plaintext.Write(w, s, common, opts.PlainText)
+func writePlainText(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	_, err := plaintext.Write(w, s, common, opts.PlainText)
+	return WriteReport{}, err
 }
 
 func readCSV(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
@@ -287,11 +303,12 @@ func readTSV(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Su
 }
 
 // writeCSV writes a comma for a subtitle whose stored delimiter is a tab, unless the options set a delimiter.
-func writeCSV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+func writeCSV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	if d, _ := s.FormatData(string(CSV)); opts.CSV.Delimiter == csv.DelimiterDefault && isTab(d) {
 		opts.CSV.Delimiter = csv.Comma
 	}
-	return csv.Write(w, s, common, opts.CSV)
+	_, err := csv.Write(w, s, common, opts.CSV)
+	return WriteReport{}, err
 }
 
 func isTab(d *model.Data) bool {
@@ -300,27 +317,30 @@ func isTab(d *model.Data) bool {
 }
 
 // writeTSV writes a tab unless the options set a delimiter.
-func writeTSV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+func writeTSV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	if opts.CSV.Delimiter == csv.DelimiterDefault {
 		opts.CSV.Delimiter = csv.Tab
 	}
-	return csv.Write(w, s, common, opts.CSV)
+	_, err := csv.Write(w, s, common, opts.CSV)
+	return WriteReport{}, err
 }
 
 func readSubViewer(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return subviewer.Read(r, common, subviewer.ReadOptions{})
 }
 
-func writeSubViewer(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
-	return subviewer.Write(w, s, common, opts.SubViewer)
+func writeSubViewer(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	_, err := subviewer.Write(w, s, common, opts.SubViewer)
+	return WriteReport{}, err
 }
 
 func readQuickTimeText(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return qttext.Read(r, common, qttext.ReadOptions{})
 }
 
-func writeQuickTimeText(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
-	return qttext.Write(w, s, common, qttext.WriteOptions{})
+func writeQuickTimeText(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := qttext.Write(w, s, common, qttext.WriteOptions{})
+	return WriteReport{}, err
 }
 
 func lookup(f Format) (formatFuncs, bool) {

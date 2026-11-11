@@ -53,7 +53,7 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 					continue
 				}
 				var out bytes.Buffer
-				err := stbox.Write(&out, s, f, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 25}})
+				_, err := stbox.Write(&out, s, f, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 25}})
 				if errors.Is(err, stbox.ErrUnsupportedFormat) {
 					continue
 				}

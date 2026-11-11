@@ -31,7 +31,7 @@ func ExampleWrite() {
 		model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>Where are you?", "Home.</i>"}},
 		model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{"Fish &amp; Chips"}},
 	)
-	err := microdvd.Write(os.Stdout, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: 23.976, WriteFrameRateLine: true})
+	_, err := microdvd.Write(os.Stdout, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: 23.976, WriteFrameRateLine: true})
 	if err != nil {
 		fmt.Println(err)
 	}

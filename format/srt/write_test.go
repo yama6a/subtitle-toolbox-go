@@ -244,7 +244,7 @@ func (failingWriter) Write([]byte) (int, error) { return 0, errDiskFull }
 func TestWriteError(t *testing.T) {
 	t.Parallel()
 
-	err := srt.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, srt.WriteOptions{})
+	_, err := srt.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, srt.WriteOptions{})
 	require.ErrorIs(t, err, errDiskFull)
 }
 
@@ -256,7 +256,8 @@ func TestWriteThenReadKeepsTheCues(t *testing.T) {
 		model.Cue{Start: 3 * time.Second, End: 4 * time.Second},
 	)
 	var out bytes.Buffer
-	require.NoError(t, srt.Write(&out, s, model.CommonWriteOptions{}, srt.WriteOptions{}))
+	_, err := srt.Write(&out, s, model.CommonWriteOptions{}, srt.WriteOptions{})
+	require.NoError(t, err)
 	back, _ := mustRead(t, out.String(), false)
 	assert.Equal(t, cueRows(s), cueRows(back))
 	assert.Equal(t, model.TopLeft, firstCue(t, back).Alignment)

@@ -116,7 +116,8 @@ func TestReadGoldens(t *testing.T) {
 
 				s, info := g.read(t, file)
 				var library bytes.Buffer
-				require.NoError(t, stbox.Write(&library, s, stbox.JSON, stbox.WriteOptions{}))
+				_, err := stbox.Write(&library, s, stbox.JSON, stbox.WriteOptions{})
+				require.NoError(t, err)
 				var subtitle any
 				require.NoError(t, json.Unmarshal(library.Bytes(), &subtitle))
 				got := map[string]any{"warnings": goldenWarnings(info.Warnings), "subtitle": subtitle}

@@ -86,9 +86,34 @@ func TestWriteUnsupportedFormat(t *testing.T) {
 			t.Parallel()
 
 			var out bytes.Buffer
-			err := stbox.Write(&out, &stbox.Subtitle{}, f, stbox.WriteOptions{})
+			_, err := stbox.Write(&out, &stbox.Subtitle{}, f, stbox.WriteOptions{})
 			require.ErrorIs(t, err, stbox.ErrUnsupportedFormat)
 			assert.Zero(t, out.Len())
+		})
+	}
+}
+
+func TestWriteReportIsSetForWebVTTOnly(t *testing.T) {
+	t.Parallel()
+
+	s := &stbox.Subtitle{}
+	s.AddCue(stbox.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{`<font color="#123456">dark</font>`}})
+	for _, f := range stbox.Formats() {
+		if !f.CanWrite() || f == stbox.MicroDVD {
+			continue
+		}
+		t.Run(string(f), func(t *testing.T) {
+			t.Parallel()
+
+			var out bytes.Buffer
+			report, err := stbox.Write(&out, s, f, stbox.WriteOptions{})
+			require.NoError(t, err)
+			if f != stbox.WebVTT {
+				assert.Nil(t, report.WebVTT)
+				return
+			}
+			require.NotNil(t, report.WebVTT)
+			assert.Len(t, report.WebVTT.DroppedColors, 1)
 		})
 	}
 }
@@ -103,16 +128,18 @@ func TestWritePlainText(t *testing.T) {
 		stbox.Cue{Start: 6 * time.Second, End: 7 * time.Second, Lines: []string{"Home &amp; bed."}},
 	)
 	var out bytes.Buffer
-	require.NoError(t, stbox.Write(&out, s, stbox.PlainText, stbox.WriteOptions{}))
+	_, err := stbox.Write(&out, s, stbox.PlainText, stbox.WriteOptions{})
+	require.NoError(t, err)
 	assert.Equal(t, "Hello world. Where are you going?\n\nHome & bed.\n", out.String())
 
 	out.Reset()
 	opts := stbox.WriteOptions{LineEnding: stbox.CRLF, PlainText: plaintext.WriteOptions{WithTimes: true, ParagraphGap: new(plaintext.NoParagraphBreaks)}}
-	require.NoError(t, stbox.Write(&out, s, stbox.PlainText, opts))
+	_, err = stbox.Write(&out, s, stbox.PlainText, opts)
+	require.NoError(t, err)
 	assert.Equal(t, "[00:00:01] Hello world. Where are you going? Home & bed.\r\n", out.String())
 
 	out.Reset()
-	err := stbox.Write(&out, s, stbox.PlainText, stbox.WriteOptions{PlainText: plaintext.WriteOptions{ParagraphGap: new(-time.Second)}})
+	_, err = stbox.Write(&out, s, stbox.PlainText, stbox.WriteOptions{PlainText: plaintext.WriteOptions{ParagraphGap: new(-time.Second)}})
 	require.ErrorIs(t, err, stbox.ErrInvalidArgument)
 	assert.Zero(t, out.Len())
 }
