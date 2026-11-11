@@ -521,7 +521,7 @@ func cue(entry any, i int) (model.Cue, string) {
 		return model.Cue{}, path + " must be an object."
 	}
 	var c model.Cue
-	for _, check := range []func(*model.Cue, *model.Data, string) string{cueTimes, cueLines, cueSettings, cueForced} {
+	for _, check := range []func(*model.Cue, *model.Data, string) string{cueTimes, cueLines, cueSettings, cuePosition, cueForced} {
 		if msg := check(&c, d, path); msg != "" {
 			return model.Cue{}, msg
 		}
@@ -573,8 +573,101 @@ func cueSettings(c *model.Cue, d *model.Data, path string) string {
 		if !ok || n < 1 || n > 9 {
 			return path + ".alignment must be an integer from 1 to 9 or null."
 		}
-		c.Alignment, _ = model.AlignmentFromNumpad(int(n))
+		c.Position.Alignment, _ = model.AlignmentFromNumpad(int(n))
 	}
+	return ""
+}
+
+func cuePosition(c *model.Cue, d *model.Data, path string) string {
+	v, _ := d.Get("position")
+	if v == nil {
+		return ""
+	}
+	path += ".position"
+	obj, ok := v.(*model.Data)
+	if !ok {
+		return path + " must be an object or null."
+	}
+	for _, f := range []struct {
+		key string
+		to  *int
+	}{{"row", &c.Position.Row}, {"column", &c.Position.Column}} {
+		if msg := optionalInt(obj, f.key, f.to, path); msg != "" {
+			return msg
+		}
+	}
+	if msg := positionGrid(&c.Position.Grid, obj, path); msg != "" {
+		return msg
+	}
+	if msg := positionOffset(&c.Position, obj, path); msg != "" {
+		return msg
+	}
+	var iae *model.InvalidArgumentError
+	if errors.As(c.Position.Validate(), &iae) {
+		parts := strings.Split(iae.Option, ".")
+		for i, part := range parts {
+			parts[i] = strings.ToLower(part)
+		}
+		return path + strings.TrimPrefix(strings.Join(parts, "."), "position") + " is out of range. " + iae.Msg
+	}
+	return ""
+}
+
+// optionalInt sets to from the integer d[key]. A missing key and null leave it at 0.
+func optionalInt(d *model.Data, key string, to *int, path string) string {
+	v, _ := d.Get(key)
+	if v == nil {
+		return ""
+	}
+	n, ok := integer(v)
+	if !ok || n < math.MinInt32 || n > math.MaxInt32 {
+		return path + "." + key + " must be an integer or null."
+	}
+	*to = int(n)
+	return ""
+}
+
+func positionGrid(g *model.Grid, d *model.Data, path string) string {
+	v, _ := d.Get("grid")
+	if v == nil {
+		return ""
+	}
+	obj, ok := v.(*model.Data)
+	if !ok {
+		return path + ".grid must be an object or null."
+	}
+	for _, f := range []struct {
+		key string
+		to  *int
+	}{{"rows", &g.Rows}, {"columns", &g.Columns}} {
+		if msg := optionalInt(obj, f.key, f.to, path+".grid"); msg != "" {
+			return msg
+		}
+	}
+	return ""
+}
+
+func positionOffset(p *model.Position, d *model.Data, path string) string {
+	v, _ := d.Get("offset")
+	if v == nil {
+		return ""
+	}
+	obj, ok := v.(*model.Data)
+	if !ok {
+		return path + ".offset must be an object or null."
+	}
+	var o model.Offset
+	for _, f := range []struct {
+		key string
+		to  *float64
+	}{{"x", &o.X}, {"y", &o.Y}} {
+		n, ok := finite(obj.Get(f.key))
+		if !ok {
+			return path + ".offset." + f.key + " must be a finite number."
+		}
+		*f.to = n.f
+	}
+	p.Offset = &o
 	return ""
 }
 
@@ -601,7 +694,7 @@ func cueFormatData(c *model.Cue, d *model.Data, i int) string {
 			return "The field " + cuePath(i) + ".formatData." + key + " must be an object."
 		}
 		data := toModelData(obj)
-		addAlignment(data, key, c.Alignment)
+		addAlignment(data, key, c.Position.Alignment)
 		if msg := formatDataMessage(c.SetFormatData(key, data), cuePath(i)); msg != "" {
 			return msg
 		}

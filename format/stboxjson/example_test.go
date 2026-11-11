@@ -25,7 +25,7 @@ func ExampleRead() {
 	title, _ := s.Metadata(model.MetadataTitle)
 	c, _ := s.Cue(0)
 	fmt.Println(title)
-	fmt.Println(c.Start, c.End, c.Alignment, c.Text())
+	fmt.Println(c.Start, c.End, c.Position.Alignment, c.Text())
 
 	_, _, err = stboxjson.Read(strings.NewReader(`{"version": 1, "cues": [{"start": "1", "end": 2, "lines": []}]}`),
 		model.CommonReadOptions{}, stboxjson.ReadOptions{})

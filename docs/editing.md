@@ -339,7 +339,7 @@ if err != nil {
 	return
 }
 for _, c := range result.All() {
-	fmt.Println(c.Start, c.End, c.Alignment, c.Text())
+	fmt.Println(c.Start, c.End, c.Position.Alignment, c.Text())
 }
 // Output:
 // 1s 4s BottomCenter Where are you going?

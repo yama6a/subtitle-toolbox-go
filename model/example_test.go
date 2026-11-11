@@ -186,3 +186,10 @@ func ExampleFrameRateFromFloat() {
 	// 2997 125 23.976 <nil>
 	// stbox: invalid argument: The frame rate must be greater than 0, got 0.
 }
+
+func ExamplePosition_RowOn() {
+	scc := model.Position{Row: 15, Grid: model.Grid{Rows: 15, Columns: 32}}
+	row, ok := scc.RowOn(model.Grid{Rows: 23, Columns: 40}, 1)
+	fmt.Println(row, ok)
+	// Output: 23 true
+}

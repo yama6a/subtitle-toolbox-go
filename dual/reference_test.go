@@ -56,7 +56,7 @@ func naiveStack(primary, secondary *model.Subtitle) []got {
 	slices.SortStableFunc(all, func(a, b model.Cue) int { return int(a.Start - b.Start) })
 	out := make([]got, len(all))
 	for i, c := range all {
-		out[i] = got{c.Start, c.End, c.Text(), c.Alignment}
+		out[i] = got{c.Start, c.End, c.Text(), c.Position.Alignment}
 	}
 	return out
 }
@@ -85,13 +85,13 @@ func naiveTopBottom(primary, secondary *model.Subtitle, tol time.Duration) []got
 		if end > start {
 			c.Start, c.End = start, end
 		}
-		c.Alignment = model.TopCenter
+		c.Position.Alignment = model.TopCenter
 		all = append(all, c)
 	}
 	slices.SortStableFunc(all, func(a, b model.Cue) int { return int(a.Start - b.Start) })
 	out := make([]got, len(all))
 	for i, c := range all {
-		out[i] = got{c.Start, c.End, c.Text(), c.Alignment}
+		out[i] = got{c.Start, c.End, c.Text(), c.Position.Alignment}
 	}
 	return out
 }

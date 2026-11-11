@@ -40,7 +40,7 @@ type writeRule struct {
 func alignTo(a model.Alignment) func(*testing.T, *model.Subtitle) {
 	return func(t *testing.T, s *model.Subtitle) {
 		t.Helper()
-		setCue(t, s, 0, func(c *model.Cue) { c.Alignment = a })
+		setCue(t, s, 0, func(c *model.Cue) { c.Position.Alignment = a })
 	}
 }
 
@@ -476,7 +476,7 @@ func TestNewElementsInAHeadWithItsOwnDeclarations(t *testing.T) {
 	change := func(t *testing.T, s *model.Subtitle) {
 		t.Helper()
 		s.SetMetadata(model.MetadataTitle, "T")
-		setCue(t, s, 0, func(c *model.Cue) { c.Alignment, c.Lines = model.TopLeft, []string{"<v Ann>x"} })
+		setCue(t, s, 0, func(c *model.Cue) { c.Position.Alignment, c.Lines = model.TopLeft, []string{"<v Ann>x"} })
 	}
 	body := "<div>" + oneParagraph + "</div>"
 	runWriteRules(t, []writeRule{

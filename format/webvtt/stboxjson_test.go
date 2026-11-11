@@ -37,7 +37,7 @@ func TestJSONFrom3xStillTakesANewAlignment(t *testing.T) {
 	s := readJSON(t, testfiles.Read(t, "json/real/w3c_cue_settings_3x.json"))
 	c, ok := s.Cue(0)
 	require.True(t, ok)
-	c.Alignment = model.TopCenter
+	c.Position.Alignment = model.TopCenter
 	require.NoError(t, s.SetCue(0, c))
 	assert.Contains(t, write(t, s, model.CommonWriteOptions{}), "00:00:00.000 --> 00:00:04.000 size:35% line:0\n")
 }
@@ -72,5 +72,5 @@ func TestBottomCenterIsWrittenAsNull(t *testing.T) {
 
 	again, ok := readJSON(t, out.Bytes()).Cue(2)
 	require.True(t, ok)
-	assert.Equal(t, model.BottomCenter, again.Alignment)
+	assert.Equal(t, model.BottomCenter, again.Position.Alignment)
 }

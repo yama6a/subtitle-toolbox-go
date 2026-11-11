@@ -21,7 +21,7 @@ func ExampleRead() {
 		return
 	}
 	for _, c := range s.All() {
-		fmt.Println(c.Start, c.End, c.Lines, c.Alignment)
+		fmt.Println(c.Start, c.End, c.Lines, c.Position.Alignment)
 	}
 	lang, _ := s.Metadata(model.MetadataLanguage)
 	data, _ := s.FormatData("ttml")
@@ -44,7 +44,7 @@ func ExampleDetect() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>Hello</i>"}, Alignment: model.TopCenter})
+	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>Hello</i>"}, Position: model.Position{Alignment: model.TopCenter}})
 	if _, err := ttml.Write(os.Stdout, s, model.CommonWriteOptions{}, ttml.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
