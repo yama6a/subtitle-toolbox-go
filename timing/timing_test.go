@@ -115,10 +115,11 @@ func TestApplyExamples(t *testing.T) {
 				t.Parallel()
 				r := rate(t, f)
 				s := subtitleOf(r, tt.before)
-				tt.opts.FrameRate = r
-				tt.opts.ShotChanges = shotTimes(r, tt.shots)
+				opts := tt.opts
+				opts.FrameRate = r
+				opts.ShotChanges = shotTimes(r, tt.shots)
 
-				_, err := timing.Apply(s, tt.opts)
+				_, err := timing.Apply(s, opts)
 
 				require.NoError(t, err)
 				assert.Equal(t, tt.after, framesOf(r, s))

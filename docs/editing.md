@@ -199,7 +199,7 @@ A shot change is the frame where the picture cuts to a new shot. The snap window
 2. **In-times**, for each cue in start order: when the last shot change at or before the start is at most the snap window away, the start moves to it.
 3. **Allowed**: a move happens only when the cue stays longer than 0 frames, it does not become shorter than `MinDurationFrames` unless it was shorter already, its end does not come closer than `MinGapFrames` to the next start, and its start does not come closer than `MinGapFrames` to the previous end. A move that makes a short cue longer still happens.
 4. **Chain**, unless `KeepGaps`: when the gap between a cue and the next one is longer than `MinGapFrames` and shorter than the snap window, and no shot change lies inside it, the first cue ends `MinGapFrames` before the next one. The chain does not check the rule above.
-5. **Write back**: every start and end becomes `FrameRate.Duration(frame)`, rounded to whole milliseconds. So every time falls on a frame, also a time that did not move.
+5. **Write back**: every start and end becomes `FrameRate.Duration(frame)`, rounded to whole milliseconds. So every time falls on a frame, also a time that did not move. A time that would reach 100,000 hours stops at 99999:59:59.999.
 
 - **Inside a cue**: a shot change shortly before an end does not pull the end back. A shot change shortly after a start does not push the start forward.
 - **On a shot change**: an end on a shot change frame moves `MinGapFrames` earlier.
