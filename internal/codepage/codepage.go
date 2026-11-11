@@ -21,8 +21,7 @@ func newTable(upper [128]rune) *Table {
 	return t
 }
 
-//nolint:gochecknoglobals // fixed code page tables
-//nolint:revive // names follow x/text charmap
+//nolint:gochecknoglobals,revive // fixed code page tables, and the names follow x/text charmap
 var (
 	ISO8859_5      = newTable(iso8859_5Upper)
 	ISO8859_6      = newTable(iso8859_6Upper)

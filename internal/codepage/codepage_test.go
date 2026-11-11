@@ -1,9 +1,9 @@
 package codepage
 
 import (
+	"bytes"
 	"encoding/hex"
 	"encoding/json"
-	"strings"
 	"testing"
 	"unicode/utf8"
 
@@ -13,7 +13,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
-var testTables = map[string]*Table{ //nolint:gochecknoglobals // test lookup
+var testTables = map[string]*Table{
 	"iso8859_5":      ISO8859_5,
 	"iso8859_6":      ISO8859_6,
 	"iso8859_7_1987": ISO8859_7_1987,
@@ -29,7 +29,10 @@ func TestPairs(t *testing.T) {
 	t.Parallel()
 
 	var pairs []struct {
-		Table, Bytes, Text, Mode string
+		Table string `json:"table"`
+		Bytes string `json:"bytes"`
+		Text  string `json:"text"`
+		Mode  string `json:"mode"`
 	}
 	require.NoError(t, json.Unmarshal(testfiles.Read(t, "codepage/pairs.json"), &pairs))
 
@@ -121,7 +124,7 @@ func TestEncodableISO6937(t *testing.T) {
 	t.Parallel()
 
 	for r := rune(0); r < 0x3000; r++ {
-		want := r == Replacement || !strings.ContainsRune(string(EncodeISO6937(string(r))), Replacement)
+		want := r == Replacement || !bytes.ContainsRune(EncodeISO6937(string(r)), Replacement)
 		assert.Equal(t, want, EncodableISO6937(r), "%U", r)
 	}
 }
