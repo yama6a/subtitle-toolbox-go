@@ -117,7 +117,7 @@ func TestReadNoFormatData(t *testing.T) {
 
 	s := readFile(t, "sbv/valid.sbv")
 	for _, c := range s.All() {
-		assert.Zero(t, c.Alignment)
+		assert.Zero(t, c.Position.Alignment)
 		assert.Empty(t, c.ID)
 	}
 	assert.Empty(t, s.Comments())

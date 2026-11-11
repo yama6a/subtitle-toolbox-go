@@ -44,8 +44,8 @@ func TestCanJoin(t *testing.T) {
 		{"same speakers in another order", Cue{Lines: []string{"<v Anna>a", "<v Ben>b"}}, Cue{Lines: []string{"<V Ben>c", "<v Anna >d"}}, true},
 		{"other speakers", Cue{Lines: []string{"<v Anna>a"}}, Cue{Lines: []string{"<v Ben>a"}}, false},
 		{"a speaker and none", Cue{Lines: []string{"<v Anna>a"}}, Cue{Lines: []string{"a"}}, false},
-		{"other alignment", Cue{}, Cue{Alignment: TopCenter}, false},
-		{"an alignment outside the grid counts as bottom center", Cue{}, Cue{Alignment: Alignment(42)}, true},
+		{"other alignment", Cue{}, Cue{Position: Position{Alignment: TopCenter}}, false},
+		{"an alignment outside the grid counts as bottom center", Cue{}, Cue{Position: Position{Alignment: Alignment(42)}}, true},
 		{"other forced flag", Cue{}, Cue{Forced: true}, false},
 	}
 	for _, tt := range tests {

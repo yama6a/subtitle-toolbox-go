@@ -205,6 +205,51 @@ func TestReadNumbers(t *testing.T) {
 	}
 }
 
+func TestReadPosition(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		position string
+		want     model.Position
+		err      string
+	}{
+		{name: "null", position: `null`},
+		{name: "empty object", position: `{}`},
+		{
+			name:     "row, column and offset",
+			position: `{"row": 2, "column": 1, "grid": {"rows": 15, "columns": 32}, "offset": {"x": 50, "y": 0.5}}`,
+			want:     model.Position{Row: 2, Column: 1, Grid: model.Grid{Rows: 15, Columns: 32}, Offset: &model.Offset{X: 50, Y: 0.5}},
+		},
+		{name: "not an object", position: `5`, err: "The field cues[0].position must be an object or null."},
+		{name: "row not an integer", position: `{"row": 2.5}`, err: "The field cues[0].position.row must be an integer or null."},
+		{name: "grid not an object", position: `{"grid": []}`, err: "The field cues[0].position.grid must be an object or null."},
+		{name: "grid rows not an integer", position: `{"grid": {"rows": "x"}}`, err: "The field cues[0].position.grid.rows must be an integer or null."},
+		{name: "offset y missing", position: `{"offset": {"x": 5}}`, err: "The field cues[0].position.offset.y must be a finite number."},
+		{
+			name: "row outside the grid", position: `{"row": 16, "grid": {"rows": 15, "columns": 32}}`,
+			err: "The field cues[0].position.row is out of range. The row must be from 0 to the grid rows 15, got 16.",
+		},
+		{name: "row without a grid", position: `{"row": 1}`, err: "The field cues[0].position.row is out of range. The row must be from 0 to the grid rows 0, got 1."},
+		{name: "offset above 100", position: `{"offset": {"x": 5, "y": 100.5}}`, err: "The field cues[0].position.offset.y is out of range. The offset must be from 0 to 100, got 100.5."},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			content := `{"version": 1, "cues": [{"start": 1, "end": 2, "lines": ["Hi"], "position": ` + tt.position + `}]}`
+			s, _, err := read(t, content, false)
+			if tt.err != "" {
+				require.EqualError(t, err, "json: "+tt.err)
+				return
+			}
+			require.NoError(t, err)
+			c, _ := s.Cue(0)
+			assert.Equal(t, tt.want, c.Position)
+		})
+	}
+}
+
 // Ports testReadsMetadataCommentsAndCueFields of tests/Parsers/JsonParserTest.php of subtitle-toolbox-php.
 func TestReadsMetadataCommentsAndCueFields(t *testing.T) {
 	t.Parallel()
@@ -222,7 +267,7 @@ func TestReadsMetadataCommentsAndCueFields(t *testing.T) {
 	assert.Equal(t, map[string]string{"title": "Big Buck Bunny", "language": "en"}, s.AllMetadata())
 	assert.Equal(t, []model.Comment{{Text: "Translated by Jane Doe", BeforeCue: 0}}, s.Comments())
 	assert.Equal(t, []model.Cue{{
-		Start: ms(1500), End: ms(4000), Lines: []string{"Hello", "<i>world</i>"}, ID: "intro", Alignment: model.TopCenter,
+		Start: ms(1500), End: ms(4000), Lines: []string{"Hello", "<i>world</i>"}, ID: "intro", Position: model.Position{Alignment: model.TopCenter},
 	}}, s.Cues())
 }
 

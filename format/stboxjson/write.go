@@ -193,14 +193,38 @@ func (e *encoder) cue(c model.Cue) {
 		e.string(c.ID)
 	}
 	e.raw(`,"alignment":`)
-	if c.Alignment == model.BottomCenter {
+	if c.Position.Alignment == model.BottomCenter {
 		e.raw("null")
 	} else {
-		e.raw(strconv.Itoa(c.Alignment.Numpad()))
+		e.raw(strconv.Itoa(c.Position.Alignment.Numpad()))
 	}
+	e.position(c.Position)
 	if c.Forced {
 		e.raw(`,"forced":true`)
 	}
+}
+
+// position writes the key position when the cue has a row, a column or an offset, and Validate accepts them.
+func (e *encoder) position(p model.Position) {
+	if p.Row == 0 && p.Column == 0 && p.Offset == nil || p.Validate() != nil {
+		return
+	}
+	e.raw(`,"position":{`)
+	if p.Row != 0 || p.Column != 0 {
+		e.raw(`"row":` + strconv.Itoa(p.Row) + `,"column":` + strconv.Itoa(p.Column) +
+			`,"grid":{"rows":` + strconv.Itoa(p.Grid.Rows) + `,"columns":` + strconv.Itoa(p.Grid.Columns) + `}`)
+	}
+	if p.Offset != nil {
+		if p.Row != 0 || p.Column != 0 {
+			e.raw(",")
+		}
+		e.raw(`"offset":{"x":`)
+		e.out = appendFloat(e.out, p.Offset.X)
+		e.raw(`,"y":`)
+		e.out = appendFloat(e.out, p.Offset.Y)
+		e.raw("}")
+	}
+	e.raw("}")
 }
 
 // seconds writes a time with whole milliseconds as seconds with at least 1 fraction digit, such as 4.0 or 1.001.

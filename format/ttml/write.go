@@ -208,7 +208,7 @@ func (w *writer) rootAttributes(s *model.Subtitle, stored []attr) string {
 
 // paragraph returns the <p> without "<p" and without xml:id, so the caller adds the ID in output order.
 func (w *writer) paragraph(containers []properties, c model.Cue, cueData *model.Data, defaultRegion bool) string {
-	alignment, _ := model.AlignmentFromNumpad(c.Alignment.Numpad())
+	alignment, _ := model.AlignmentFromNumpad(c.Position.Alignment.Numpad())
 	out := w.attribute("begin", w.profile.timestamp(c.Start)) + w.attribute("end", w.profile.timestamp(c.End))
 
 	stored := storedAttrs(cueData, "attributes")

@@ -369,7 +369,7 @@ func newCue(start, end time.Duration, lines []string, numpad int, f eventFields,
 	c.SetText(strings.Join(lines, "\n"))
 	var alignment any
 	if numpad > 0 {
-		c.Alignment, _ = model.AlignmentFromNumpad(numpad)
+		c.Position.Alignment, _ = model.AlignmentFromNumpad(numpad)
 		alignment = int64(numpad)
 	}
 	kept := record{names: make([]string, 0, len(f.names)), values: make([]string, 0, len(f.names))}

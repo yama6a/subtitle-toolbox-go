@@ -187,6 +187,23 @@ func ExampleFrameRateFromFloat() {
 	// stbox: invalid argument: The frame rate must be greater than 0, got 0.
 }
 
+func ExamplePosition_RowOn() {
+	scc := model.Grid{Rows: 15, Columns: 32}
+	teletext := model.Grid{Rows: 23, Columns: 40}
+	for _, p := range []model.Position{
+		{Alignment: model.TopCenter, Row: 2, Grid: scc},
+		{Alignment: model.BottomCenter, Row: 15, Grid: scc},
+		{Alignment: model.MiddleCenter, Row: 8, Grid: scc},
+	} {
+		row, ok := p.RowOn(teletext, 1)
+		fmt.Println(row, ok)
+	}
+	// Output:
+	// 2 true
+	// 23 true
+	// 12 true
+}
+
 func ExampleFrameRate_TimecodeOf() {
 	fmt.Println(model.FrameRate2997DF.TimecodeOf(1800))
 	// Output: 00:01:00;02

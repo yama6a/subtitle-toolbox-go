@@ -47,7 +47,7 @@ func TestWriteCues(t *testing.T) {
 		return model.Cue{Start: start, End: end, Lines: lines}
 	}
 	aligned := func(c model.Cue, a model.Alignment) model.Cue {
-		c.Alignment = a
+		c.Position.Alignment = a
 		return c
 	}
 	withCoordinates := model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Text"}}
@@ -252,7 +252,7 @@ func TestWriteThenReadKeepsTheCues(t *testing.T) {
 	t.Parallel()
 
 	s := subtitle(t,
-		model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"<b>One</b> &amp; two"}, Alignment: model.TopLeft},
+		model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"<b>One</b> &amp; two"}, Position: model.Position{Alignment: model.TopLeft}},
 		model.Cue{Start: 3 * time.Second, End: 4 * time.Second},
 	)
 	var out bytes.Buffer
@@ -260,7 +260,7 @@ func TestWriteThenReadKeepsTheCues(t *testing.T) {
 	require.NoError(t, err)
 	back, _ := mustRead(t, out.String(), false)
 	assert.Equal(t, cueRows(s), cueRows(back))
-	assert.Equal(t, model.TopLeft, firstCue(t, back).Alignment)
+	assert.Equal(t, model.TopLeft, firstCue(t, back).Position.Alignment)
 }
 
 func TestWriteStaysAtTheLargestTimeThatTheReaderReads(t *testing.T) {

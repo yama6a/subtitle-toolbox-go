@@ -136,7 +136,7 @@ func (w *Writer) CueBlock(c model.Cue, i int) string {
 // cueSettingsText writes the stored settings while the alignment is unchanged, and the settings of the alignment otherwise.
 func cueSettingsText(c model.Cue) string {
 	d, _ := c.FormatData(string(model.WebVTT))
-	unchanged := position.AlignmentUnchanged(d, c.Alignment)
+	unchanged := position.AlignmentUnchanged(d, c.Position.Alignment)
 	names := cueSettings
 	if !unchanged {
 		names = keptSettings
@@ -147,10 +147,10 @@ func cueSettingsText(c model.Cue) string {
 			settings = append(settings, k+":"+v)
 		}
 	}
-	if unchanged && len(settings) > 0 || c.Alignment.Numpad() == model.BottomCenter.Numpad() {
+	if unchanged && len(settings) > 0 || c.Position.Alignment.Numpad() == model.BottomCenter.Numpad() {
 		return strings.Join(settings, " ")
 	}
-	for _, s := range []string{rowSettings[c.Alignment.Row()], columnSettings[c.Alignment.Column()]} {
+	for _, s := range []string{rowSettings[c.Position.Alignment.Row()], columnSettings[c.Position.Alignment.Column()]} {
 		if s != "" {
 			settings = append(settings, s)
 		}

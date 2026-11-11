@@ -25,7 +25,7 @@ Dialogue: 0,0:00:01.50,0:00:04.00,Thoughts,Anna,0,0,0,,{\an8}Not {\b1}again{\b0}
 		return
 	}
 	for _, c := range s.All() {
-		fmt.Println(c.Start, c.End, c.Alignment, c.Lines)
+		fmt.Println(c.Start, c.End, c.Position.Alignment, c.Lines)
 	}
 	// Output:
 	// 1.5s 4s TopCenter [<v Anna><i>Not <b>again</b></i>]
@@ -35,7 +35,7 @@ func ExampleWrite() {
 	s := &model.Subtitle{}
 	s.AddCues(
 		model.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"<i>Fish &amp; Chips</i>", "today"}},
-		model.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"On the menu"}, Alignment: model.TopCenter},
+		model.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"On the menu"}, Position: model.Position{Alignment: model.TopCenter}},
 	)
 	_, err := ass.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, ass.WriteOptions{})
 	if err != nil {

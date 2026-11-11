@@ -455,7 +455,7 @@ func TestRegionMapsToAlignment(t *testing.T) {
 			s, _ := mustRead(t, document(`<div><p region="r1" end="1s">x</p></div>`, `tts:extent="640px 480px"`,
 				`<layout><region xml:id="r1" `+tt.region+`/></layout>`), false)
 			c, _ := s.Cue(0)
-			assert.Equal(t, tt.want, c.Alignment)
+			assert.Equal(t, tt.want, c.Position.Alignment)
 		})
 	}
 }
@@ -488,7 +488,7 @@ func TestAlignmentRules(t *testing.T) {
 
 			s, _ := mustRead(t, document(tt.body, tt.root, tt.head), false)
 			c, _ := s.Cue(0)
-			assert.Equal(t, tt.want, c.Alignment)
+			assert.Equal(t, tt.want, c.Position.Alignment)
 			d, _ := c.FormatData("ttml")
 			_, ok := d.Get("alignment")
 			assert.Equal(t, tt.wantData, ok)
@@ -498,7 +498,7 @@ func TestAlignmentRules(t *testing.T) {
 	s, _ := mustRead(t, header+`><head><layout><region xml:id="r" tts:origin="0px 400px" tts:extent="640px 80px"/></layout></head>`+
 		`<body tts:extent="640px 480px"><div><p region="r" tts:textAlign="center" end="1s">x</p></div></body></tt>`, false)
 	c, _ := s.Cue(0)
-	assert.Equal(t, model.BottomCenter, c.Alignment)
+	assert.Equal(t, model.BottomCenter, c.Position.Alignment)
 	assert.Equal(t, int64(2), intOf(t, cueData(t, c), "alignment"), "pixels with the extent of the body")
 }
 
@@ -509,7 +509,7 @@ func TestParagraphTextAlignWinsOverRegion(t *testing.T) {
 		`<layout><region xml:id="r1"><style tts:displayAlign="after"/><style tts:textAlign="center"/></region></layout>`), false)
 	c, _ := s.Cue(0)
 
-	assert.Equal(t, model.BottomLeft, c.Alignment)
+	assert.Equal(t, model.BottomLeft, c.Position.Alignment)
 	assert.Equal(t, attrs("tts:textAlign", "left", "region", "r1"), objectOf(t, cueData(t, c), "attributes"))
 }
 
