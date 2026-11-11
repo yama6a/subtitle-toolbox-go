@@ -46,7 +46,8 @@ type Offset struct {
 //
 // A top row keeps its number, and a bottom row keeps the distance of the last line from the bottom row. A middle row
 // scales as (Row - 1) * (g.Rows - 1) / (p.Grid.Rows - 1) + 1, rounded. The result is clamped so that all lines fit on g.
-// Example: with 1 line, rows 2, 15 and 8 of a 15-row grid give rows 2, 23 and 12 of a 23-row grid.
+// Example: with 1 line, rows 2 with TopCenter, 15 with BottomCenter and 8 with MiddleCenter of a 15-row grid
+// give rows 2, 23 and 12 of a 23-row grid.
 func (p Position) RowOn(g Grid, lines int) (int, bool) {
 	rows := p.Grid.Rows
 	if p.Row < 1 || p.Row > rows || g.Rows < 1 {

@@ -188,8 +188,29 @@ func ExampleFrameRateFromFloat() {
 }
 
 func ExamplePosition_RowOn() {
-	scc := model.Position{Row: 15, Grid: model.Grid{Rows: 15, Columns: 32}}
-	row, ok := scc.RowOn(model.Grid{Rows: 23, Columns: 40}, 1)
-	fmt.Println(row, ok)
-	// Output: 23 true
+	scc := model.Grid{Rows: 15, Columns: 32}
+	teletext := model.Grid{Rows: 23, Columns: 40}
+	for _, p := range []model.Position{
+		{Alignment: model.TopCenter, Row: 2, Grid: scc},
+		{Alignment: model.BottomCenter, Row: 15, Grid: scc},
+		{Alignment: model.MiddleCenter, Row: 8, Grid: scc},
+	} {
+		row, ok := p.RowOn(teletext, 1)
+		fmt.Println(row, ok)
+	}
+	// Output:
+	// 2 true
+	// 23 true
+	// 12 true
+}
+
+func ExampleFrameRate_TimecodeOf() {
+	fmt.Println(model.FrameRate2997DF.TimecodeOf(1800))
+	// Output: 00:01:00;02
+}
+
+func ExampleParseTime() {
+	d, err := model.ParseTime("00:01:02:12", model.FrameRate25)
+	fmt.Println(d, err)
+	// Output: 1m2.48s <nil>
 }

@@ -51,7 +51,7 @@ Text outside tags holds `&`, `<` and `>` as `&amp;`, `&lt;` and `&gt;`.
 
 Package `markup` holds the public helpers. They help in an OCR engine, a text change of your own, or a reader for a format that the library does not have. The helpers that only the format packages need live in `internal/markupcore`, so they stay out of the API.
 
-<!-- example: Example -->
+<!-- example: markup/Example -->
 ```go
 fmt.Println(markup.StripAllTags("<b>Hi</b> &amp; bye"))
 fmt.Println(markup.PlainText("<b>Hi</b> &amp; bye"))

@@ -9,7 +9,11 @@
 // A program that needs one format can import its package under format/ alone.
 package stbox
 
-import "github.com/yama6a/subtitle-toolbox-go/v2/model"
+import (
+	"time"
+
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+)
 
 // Aliases of the model types. Package model documents their methods.
 type (
@@ -31,6 +35,10 @@ type (
 	Offset = model.Offset
 	// FrameRate is a frame rate as an exact fraction, with a drop-frame flag.
 	FrameRate = model.FrameRate
+	// Timecode is a SMPTE time code label.
+	Timecode = model.Timecode
+	// DropFrameMode selects the time code labels of the SCC and MCC writers.
+	DropFrameMode = model.DropFrameMode
 	// Format is the name of a subtitle format.
 	Format = model.Format
 	// LineEnding is the line ending that a writer uses.
@@ -156,6 +164,39 @@ const (
 	DefaultMaxDuration          = model.DefaultMaxDuration
 	DefaultMergeMaxGap          = model.DefaultMergeMaxGap
 )
+
+// The DropFrameMode values.
+const (
+	DropFrameKeep = model.DropFrameKeep
+	DropFrameOn   = model.DropFrameOn
+	DropFrameOff  = model.DropFrameOff
+)
+
+// The named frame rates. Treat them as read-only.
+//
+//nolint:gochecknoglobals // re-exported named frame rate
+var (
+	FrameRate23976  = model.FrameRate23976
+	FrameRate24     = model.FrameRate24
+	FrameRate25     = model.FrameRate25
+	FrameRate2997   = model.FrameRate2997
+	FrameRate2997DF = model.FrameRate2997DF
+	FrameRate30     = model.FrameRate30
+	FrameRate50     = model.FrameRate50
+	FrameRate5994   = model.FrameRate5994
+	FrameRate5994DF = model.FrameRate5994DF
+	FrameRate60     = model.FrameRate60
+)
+
+// ParseTimecode reads the label HH:MM:SS:FF or HH:MM:SS;FF.
+func ParseTimecode(s string) (Timecode, error) {
+	return model.ParseTimecode(s)
+}
+
+// ParseTime returns the time of a time string such as "00:01:02,500", "01:02.5" or, with r, "00:01:02:12".
+func ParseTime(s string, r FrameRate) (time.Duration, error) {
+	return model.ParseTime(s, r)
+}
 
 // FrameRateFromFloat returns the shortest decimal of fps as a fraction, so 23.976 gives 2997/125.
 func FrameRateFromFloat(fps float64) (FrameRate, error) {

@@ -36,6 +36,7 @@ var ruleText = map[string]string{
 var exceptions = map[string]string{
 	"format/csv:TimeSeconds:N4":      "names a CSV time format, not the unit of a value",
 	"format/csv:TimeMilliseconds:N4": "names a CSV time format, not the unit of a value",
+	"model:Timecode.Seconds:N4":      "the seconds field of a SMPTE label, not the unit of a value",
 }
 
 var bannedWords = []string{"colour", "fps", "secs", "seconds", "millis"}
