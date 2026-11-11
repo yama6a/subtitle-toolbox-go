@@ -153,7 +153,7 @@ make ci      # tidy-check, generate-check, fmt-check, lint, vet, test, vuln
 make test    # go test -race ./...
 make fmt     # rewrite formatting in place
 make golden  # rewrite the Go write goldens, then review each diff by hand
-make fuzz    # run each fuzz target for 30 s
+make fuzz    # run each fuzz target for 30 s, FUZZSHARD=0 FUZZSHARDS=5 runs a fifth
 make bench   # run the benchmarks
 make build   # write bin/stbox
 ```

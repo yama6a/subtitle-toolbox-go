@@ -5,6 +5,8 @@ IMAGE              ?= ghcr.io/yama6a/subtitle-toolbox-go
 VERSION            ?= dev
 FUZZTIME           ?= 30s
 BENCHTIME          ?= 1s
+FUZZSHARD          ?= 0
+FUZZSHARDS         ?= 1
 
 .PHONY: lint-config generate fmt fmt-check lint vet test cover vuln tidy tidy-check \
 	generate-check mod image ci build cross fuzz bench golden dist smoke
@@ -90,13 +92,15 @@ cross:
 	done
 
 # go test -fuzz takes one package and one target per run.
+# FUZZSHARD and FUZZSHARDS split the sorted target list. With the defaults every target runs.
 fuzz:
-	pkgs=$$(go list ./...) || exit 1; \
-	for pkg in $$pkgs; do \
-		targets=$$(go test -list '^Fuzz' $$pkg) || exit 1; \
-		for target in $$(echo "$$targets" | grep '^Fuzz'); do \
-			go test -run '^$$' -fuzz "^$$target\$$" -fuzztime $(FUZZTIME) $$pkg || exit 1; \
-		done; \
+	list=$$(find . -name '*_test.go' -not -path '*/testdata/*' -exec grep -HE '^func Fuzz[A-Za-z0-9_]*\(' {} + \
+		| sed -E 's|^(.*)/[^/]*_test\.go:func (Fuzz[A-Za-z0-9_]*)\(.*|\1 \2|' | LC_ALL=C sort); \
+	mine=$$(echo "$$list" | awk -v s=$(FUZZSHARD) -v n=$(FUZZSHARDS) 'NF && (NR - 1) % n == s'); \
+	[ -n "$$mine" ] || { echo "no fuzz target in shard $(FUZZSHARD) of $(FUZZSHARDS)" >&2; exit 1; }; \
+	echo "$$mine" | while read -r pkg target; do \
+		echo "fuzz $$pkg $$target"; \
+		go test -run '^$$' -fuzz "^$$target\$$" -fuzztime $(FUZZTIME) $$pkg || exit 1; \
 	done
 
 bench:
