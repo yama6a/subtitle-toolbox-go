@@ -1,0 +1,46 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "spruce-stl": {
+                "frameRate": 25.0,
+                "header": [
+                    "//Default Formatting for STL subtitles",
+                    "$FontName           = Arial",
+                    "$FontSize           = 28",
+                    "$HorzAlign          = Center",
+                    "$VertAlign          = Bottom",
+                    ""
+                ],
+                "separator": " , ",
+                "lineBreak": " | "
+            }
+        },
+        "cues": [
+            {
+                "start": 137.4,
+                "end": 140.36,
+                "lines": [
+                    "The bakery opens at seven,",
+                    "every day of the week."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 140.44,
+                "end": 142.48,
+                "lines": [
+                    "Fresh bread, warm rolls."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

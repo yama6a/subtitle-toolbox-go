@@ -13,6 +13,7 @@
 | SAMI | `stbox.SAMI` | `sami` | `.smi`, `.sami` | [SAMI](#sami) |
 | SBV | `stbox.SBV` | `sbv` | `.sbv` | [SBV](#sbv) |
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
+| Spruce STL | `stbox.SpruceSTL` | `spruce-stl` | `.stl` | [Spruce STL](#spruce-stl) |
 | SubViewer 1 and 2 | `stbox.SubViewer` | `subviewer` | `.sub` | [SubViewer](#subviewer) |
 | TTML, IMSC, DFXP | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | [TTML](#ttml) |
 | plain text | `stbox.PlainText` | `txt` | `.txt` | [Plain text](#plain-text) |
@@ -21,7 +22,7 @@
 | QuickTime text | `stbox.QuickTimeText` | `qttext` | `.txt` | [QuickTime text](#quicktime-text) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
 
-- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub and SubViewer files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`.
+- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub and SubViewer files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`. Spruce STL uses `.stl`, which EBU STL uses too. The first format in the registry owns it, so the Spruce STL row owns `.stl` until EBU STL ships. Content detection tells the two apart.
 - **Time limit**: every time in every format is below 100000 hours. A reader rejects a time at or above it. A retime that moves a cue past it returns an error that matches `ErrInvalidArgument`. Writers clamp a negative time to 0, except the JSON writer.
 - **Options**: each section lists the fields of the format in `ReadOptions` and `WriteOptions`. The fields that every format shares are in [reading-writing.md](reading-writing.md). A reader ignores the fields of other formats.
 - **Sections**: each section has what the reader accepts, what the writer writes, the options and the limits. The godoc of the format package holds the reference of each function.
@@ -171,6 +172,93 @@ This block reads as one cue from 1.5 s to 4 s with the alignment `TopCenter`, th
 ### Options
 
 `srt.ReadOptions` and `srt.WriteOptions` have no fields. The reader reads `Lenient`. The writer reads `StripTags`, `LineEnding` and `BOM`.
+
+## Spruce STL
+
+Spruce STL is the text subtitle file of DVD Studio Pro and Spruce DVDMaestro. Package `format/sprucestl` reads and writes it. The format name is `spruce-stl`, the extension `.stl`. No BOM by default.
+
+```text
+$VertAlign = Bottom
+00:02:17:10 , 00:02:20:10 , The bakery opens at seven, | every day of the week.
+```
+
+At 25 fps this file reads as one cue from 137.4 s to 140.4 s with 2 lines. The file does not name its frame rate. The time code counts frames in the last field.
+
+### Grammar
+
+| Line, after trimming | Rule |
+|:--- |:--- |
+| cue | `hh:mm:ss:ff<sep>hh:mm:ss:ff<sep>text`. The hours have 2 or more digits. Minutes and seconds are 00 to 59. The separator is a comma with optional spaces or tabs around it |
+| command | `$Name = value`. Names and values compare without case |
+| comment | starts with `//` |
+| line break in the text | `\|` with optional spaces or tabs around it |
+| toggle in the text | `^B` bold, `^I` italics, `^U` underline. Each flips its flag |
+
+- **Frame rate**: `ReadOptions.FrameRate`. Without it, the highest frame number of all cue lines decides: 25 or more gives 30 fps, else 25 fps. A file without cue lines gives 25 fps. In lenient mode, the guess adds the warning `The file does not give its frame rate. The parser read the frames at 25 fps.`, `Repaired`, with no line and no block.
+- **Times**: hours, minutes and seconds are clock time. The frames add `frames / rate` seconds, rounded to whole milliseconds. `99:00:00:00` is 356400 s. The option rate can be a non-integer rate such as 29.97. The frame number must be below the rate rounded up, else the read fails with `The frame number in "hh:mm:ss:ff" is not below the frame rate of R fps.`
+- **Detection**: the file starts with `$` or `//` lines and a cue line, or with a cue line whose text does not start with a double quote. The signature needs exactly 2 hour digits. So a file whose first cue starts at hour 100 is not detected, but the reader reads it. `sprucestl.Detect` holds the rule.
+- **Shared extension**: EBU STL uses `.stl` too. `FormatFromPath` returns the format of the first registry row.
+
+### Read
+
+1. Each line is trimmed for matching. A blank line is ignored after the first cue line.
+2. A line that is no cue, command, comment or blank fails with `The line "L" is no Spruce STL subtitle, command or comment.`, and lenient mode skips it.
+3. A cue line with a bad frame number, a time of 100000 hours or more, or an end before the start fails as in [lenient-parsing.md](lenient-parsing.md#spruce-stl) says.
+4. **Style**: bold, italics and underline start off, the alignment starts at `BottomCenter`. `$Bold`, `$Italic` and `$Underlined` take `True` or `False`. `$HorzAlign` takes `Left`, `Center` or `Right`. `$VertAlign` takes `Top`, `Center` or `Bottom`. Every `$` line applies to the state, also in the header. Other commands and other values change nothing.
+5. **Cue text**: the text splits at the line breaks. Each part is trimmed and split at the toggles. The style starts from the commands for every cue and carries from one line of the cue to the next. `&`, `<` and `>` become entities. Empty lines drop.
+6. **Alignment**: the vertical and horizontal commands give one of the 9 alignments. `$VertAlign = Center` gives the middle row.
+7. **After the first cue**: a `//` line becomes a comment before the next cue. A `$` line goes to the cue data `commands` of the next cue.
+
+| Input | Lines |
+|:--- |:--- |
+| `$Italic = TRUE`, then `... , Sung ^Ispoken^I sung\|still sung` | `<i>Sung</i> spoken <i>sung</i>` and `<i>still sung</i>` |
+| the next cue `... , ^IPlain` | `Plain` |
+| `... , Tickets are ^Bsold out^B today.` | `Tickets are <b>sold out</b> today.` |
+
+The file data `spruce-stl` holds:
+
+| Level | Field | Type | Meaning |
+|:--- |:--- |:--- |:--- |
+| file | `frameRate` | number | the rate that the reader used |
+| file | `header` | list of strings | every raw line before the first cue line, with blank, `$` and `//` lines, not trimmed |
+| file | `separator` | string | the first separator, such as ` , ` or a tab, comma and tab. Absent without a cue line |
+| file | `lineBreak` | string | the first `\|` with its spaces. Absent without a `\|` |
+| file | `trailer` | list of strings | the `$` lines after the last cue. Absent without such lines |
+| cue | `commands` | list of strings | the raw `$` lines between the previous cue and this one |
+
+The text after the last line end is no line, so a header without cues does not grow a blank line on each round trip.
+
+### Write
+
+1. **Rate**: `WriteOptions.FrameRate`, else the stored `frameRate`, else 25 fps.
+2. **Separator and line break**: the stored `separator` when it is a comma with optional spaces or tabs, else ` , `. The stored `lineBreak` when it is `|` with optional spaces or tabs, else `|`.
+3. **Header**: the stored `header` lines, also when the list is empty. Without stored data, the 17 default commands `$FontName = Arial` to `$TapeOffset = False` and an empty line. DVD Studio Pro can fail to import a file without them. The header lines update the style.
+4. **Per cue**: the comments as `//` lines, one per comment line. The stored `commands`. Then `$HorzAlign` and `$VertAlign` when the alignment of the cue differs from the style. Then the cue line.
+5. **Time code**: whole seconds, then the frame `round(fraction * rate)`. A frame at or above the rate rounded up rolls into the next second as frame 0. 2.99 s at 25 fps writes `00:00:03:00`. A time within half a frame below 100000 hours stops at `99999:59:59:24`, so the file reads back.
+6. **Text**: ruby becomes text and each tag but `<b>`, `<i>` and `<u>` goes. A toggle goes before each text that needs another style than the one before, in the order `^B`, `^I`, `^U`. The first style is the one of the commands. Lines are trimmed, empty lines drop, and the lines join with the line break.
+7. **Comments** after the last cue come after it. The `trailer` lines follow them.
+
+| Case | Output |
+|:--- |:--- |
+| a new file, a cue 137.4 s to 140.36 s with 2 lines | the default header, then `00:02:17:10 , 00:02:20:09 , The bakery opens at seven,\|every day of the week.` |
+| a cue `One`, a cue `Sign` at `TopLeft`, a cue `Two` | `... One`, `$HorzAlign = Left`, `$VertAlign = Top`, `... Sign`, `$HorzAlign = Center`, `$VertAlign = Bottom`, `... Two` |
+| 1.6 s read at 25 fps and written at 30 fps | `00:00:01:18` |
+
+- **Escapes**: the text of a line cannot hold `|` or a toggle. A `|` in the text writes as U+00A6 BROKEN BAR. A `^` before `B`, `I` or `U` gets U+2060 WORD JOINER after it. A line break inside a line becomes the line break of the format.
+- **Stored lines**: a CR or LF in a stored `header`, `commands` or `trailer` line writes as a space, so each stored line stays one line.
+- **Lost on write**: colors, strike, voices, fonts and ruby structure. The input line ending and the blank lines after the first cue. The output ends with LF.
+- **Round trip**: a file with a final line end comes out byte for byte with the same `LineEnding`, except for blank lines after the first cue.
+
+### Options
+
+The root `ReadOptions.SpruceSTL` holds a `sprucestl.ReadOptions`, `WriteOptions.SpruceSTL` a `sprucestl.WriteOptions`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#spruce-stl).
+
+| Option | Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |:--- |
+| `ReadOptions.SpruceSTL` | `FrameRate` | `FrameRate` | zero value: guess 25 or 30 fps | the frame rate of the time codes |
+| `WriteOptions.SpruceSTL` | `FrameRate` | `FrameRate` | zero value: the stored frame rate, else 25 | the output frame rate |
+
+- **Check**: `Validate` rejects a frame rate that fails `FrameRate.Validate`. The `Option` is `ReadOptions.SpruceSTL.FrameRate` or `WriteOptions.SpruceSTL.FrameRate`. The messages are `The frame rate must be greater than 0, got X.` and `The Spruce STL frame rate must be greater than 0, got X.`
 
 ## ASS and SSA
 

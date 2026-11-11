@@ -1,0 +1,124 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [
+            {
+                "text": "Song lyrics in italics",
+                "beforeCueIndex": 2
+            }
+        ],
+        "formatData": {
+            "spruce-stl": {
+                "frameRate": 30.0,
+                "header": [
+                    "//Font select and font size",
+                    "$FontName       = Arial",
+                    "$FontSize       = 36",
+                    "",
+                    "//Character attributes (global)",
+                    "$Bold           = False",
+                    "$Underlined     = False",
+                    "$Italic         = False",
+                    "",
+                    "//Position Control",
+                    "$HorzAlign      = Center",
+                    "$VertAlign      = Bottom",
+                    "$XOffset        = 0",
+                    "$YOffset        = 0",
+                    "",
+                    "//Contrast Control",
+                    "$TextContrast           = 15",
+                    "$Outline1Contrast       = 15",
+                    "$Outline2Contrast       = 15",
+                    "$BackgroundContrast     = 0",
+                    "",
+                    "//Effects Control",
+                    "$ForceDisplay   = False",
+                    "$FadeIn         = 0",
+                    "$FadeOut        = 0",
+                    "",
+                    "//Other Controls",
+                    "$TapeOffset     = False",
+                    ""
+                ],
+                "separator": " , ",
+                "lineBreak": "|"
+            }
+        },
+        "cues": [
+            {
+                "start": 3.8,
+                "end": 6.967,
+                "lines": [
+                    "The ferry to the island",
+                    "leaves at half past eight."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 7.167,
+                "end": 9.5,
+                "lines": [
+                    "Tickets are <b>sold out</b> today."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 10.0,
+                "end": 12.667,
+                "lines": [
+                    "<i>Over the water we go,</i>",
+                    "<i>the gulls are flying low.</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "spruce-stl": {
+                        "commands": [
+                            "$Italic         = True"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 13.067,
+                "end": 15.0,
+                "lines": [
+                    "HARBOUR MASTER"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {
+                    "spruce-stl": {
+                        "commands": [
+                            "$Italic         = False",
+                            "$VertAlign      = Top"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 15.333,
+                "end": 18.0,
+                "lines": [
+                    "Please keep your <i>boarding pass</i> ready."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "spruce-stl": {
+                        "commands": [
+                            "$VertAlign      = Bottom"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

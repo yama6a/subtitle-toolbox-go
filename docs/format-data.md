@@ -79,7 +79,7 @@ Data enters only through `SetFormatData`, which checks the fields that writers r
 | `itt` | `frameRate` string, `frameRateMultiplier` string |
 | `mcc` | `version` oneOf(`1.0`, `2.0`), `frameRate` oneOf(`23.976`, `24`, `25`, `29.97`, `30`, `50`, `59.94`, `60`), `dropFrame` bool, `header` strings |
 | `scc` | `dropFrame` bool |
-| `spruce-stl` | `frameRate` number, `header` strings, `separator` string, `lineBreak` string |
+| `spruce-stl` | `frameRate` number, `header` strings, `separator` string, `lineBreak` string. The reader also stores `trailer`, which the schema does not list, so it passes unchecked |
 | `stl` | `gsi` strings, `startOfProgrammeSubtracted` bool, `firstSubtitleNumber` ?int, `comments` list(object(!text string, !blocks list(ttiBlock))) |
 | `ffmeta-chapters` | `tags` list(?string), `streams` list(strings) |
 

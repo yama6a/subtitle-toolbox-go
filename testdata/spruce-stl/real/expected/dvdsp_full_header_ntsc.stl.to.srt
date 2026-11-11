@@ -1,0 +1,21 @@
+﻿1
+00:00:03,800 --> 00:00:06,967
+The ferry to the island
+leaves at half past eight.
+
+2
+00:00:07,167 --> 00:00:09,500
+Tickets are <b>sold out</b> today.
+
+3
+00:00:10,000 --> 00:00:12,667
+<i>Over the water we go,</i>
+<i>the gulls are flying low.</i>
+
+4
+00:00:13,067 --> 00:00:15,000
+{\an8}HARBOUR MASTER
+
+5
+00:00:15,333 --> 00:00:18,000
+Please keep your <i>boarding pass</i> ready.
