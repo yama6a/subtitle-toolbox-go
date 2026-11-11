@@ -436,8 +436,10 @@ func TestRegionMapsToAlignment(t *testing.T) {
 		want         model.Alignment
 		wantOffset   *model.Offset
 	}{
-		{"bottom center", `tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="after" tts:textAlign="center"`, model.BottomCenter, &model.Offset{X: 50, Y: 90}},
-		{"top center, display align before", `tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="before" tts:textAlign="center"`, model.TopCenter, &model.Offset{X: 50, Y: 10}},
+		{"bottom center", `tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="after" tts:textAlign="center"`, model.BottomCenter, nil},
+		{"top center, display align before", `tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="before" tts:textAlign="center"`, model.TopCenter, nil},
+		{"bottom center above the default anchor", `tts:origin="10% 10%" tts:extent="80% 85%" tts:displayAlign="after" tts:textAlign="center"`, model.BottomCenter, &model.Offset{X: 50, Y: 95}},
+		{"anchor at exactly a third of the height is no offset", `tts:origin="0c 5c" tts:extent="32c 0c" tts:textAlign="center"`, model.MiddleCenter, nil},
 		{"top left", `tts:displayAlign="before" tts:textAlign="left"`, model.TopLeft, nil},
 		{"middle right", `tts:displayAlign="center" tts:textAlign="right"`, model.MiddleRight, nil},
 		{"small region at the bottom", `tts:origin="10% 80%" tts:extent="80% 10%" tts:displayAlign="before" tts:textAlign="center"`, model.BottomCenter, &model.Offset{X: 50, Y: 80}},
@@ -449,7 +451,7 @@ func TestRegionMapsToAlignment(t *testing.T) {
 		{"start depends on direction", `tts:displayAlign="after" tts:textAlign="start"`, model.BottomCenter, nil},
 		{"no text alignment", `tts:displayAlign="after"`, model.BottomCenter, nil},
 		{"unknown unit", `tts:origin="10em 10em" tts:textAlign="center"`, model.BottomCenter, nil},
-		{"middle row at the edge", `tts:origin="0% 50%" tts:extent="10% 1%" tts:textAlign="right"`, model.MiddleRight, &model.Offset{X: 10, Y: 50}},
+		{"middle row at the edge", `tts:origin="0% 50%" tts:extent="10% 1%" tts:textAlign="right"`, model.MiddleRight, nil},
 		{"unknown display alignment", `tts:displayAlign="middle" tts:textAlign="center"`, model.BottomCenter, nil},
 	}
 	for _, tt := range tests {

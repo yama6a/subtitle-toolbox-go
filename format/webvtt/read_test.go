@@ -360,8 +360,10 @@ func TestReadOffset(t *testing.T) {
 		want      *model.Offset
 	}{
 		{"line:0%", model.TopCenter, &model.Offset{X: 50, Y: 0}},
-		{"line:50%,center", model.MiddleCenter, &model.Offset{X: 50, Y: 50}},
-		{"line:90%,end", model.BottomCenter, &model.Offset{X: 50, Y: 90}},
+		{"line:50%,center", model.MiddleCenter, nil},
+		{"line:90%,end", model.BottomCenter, nil},
+		{"line:95%,end", model.BottomCenter, &model.Offset{X: 50, Y: 95}},
+		{"line:0,end position:30%", model.BottomCenter, nil},
 		{"line:90%", model.BottomCenter, nil},
 		{"line:15% position:50% align:middle", model.BottomCenter, nil},
 		{"line:0 position:30% align:left", model.TopLeft, &model.Offset{X: 30, Y: 0}},

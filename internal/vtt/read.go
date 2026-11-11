@@ -706,7 +706,7 @@ func settingsOffset(d *model.Data, a model.Alignment) *model.Offset {
 	if !ok || !yPercent && !xPercent {
 		return nil
 	}
-	return &model.Offset{X: x, Y: y}
+	return position.ReadOffset(a, model.Offset{X: x, Y: y})
 }
 
 func offsetY(d *model.Data, a model.Alignment) (y float64, percent, ok bool) {
@@ -714,14 +714,14 @@ func offsetY(d *model.Data, a model.Alignment) (y float64, percent, ok bool) {
 	if !ok || line == "-1" {
 		return 100, false, a.Row() == 0
 	}
+	if line == "0" || line == "0,start" {
+		return 0, false, a.Row() == 2
+	}
 	value, align, _ := strings.Cut(line, ",")
 	rows := map[string]int{"": 2, "start": 2, "center": 1, "end": 0}
 	row, known := rows[align]
 	if !known || row != a.Row() {
 		return 0, false, false
-	}
-	if value == "0" {
-		return 0, false, true
 	}
 	y, ok = percentage(value)
 	return y, true, ok

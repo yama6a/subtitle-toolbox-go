@@ -18,18 +18,33 @@ func AlignmentUnchanged(d *model.Data, a model.Alignment) bool {
 	return n == int64(a.Numpad())
 }
 
-// OffsetFits reports whether o lies in the screen cell of a. X below 100/3 is the left column, above 200/3 the
-// right column, else the center column. Y below 100/3 is the top row, above 200/3 the bottom row, else the middle
-// row. A nil offset, or a value outside 0 to 100 or NaN, does not fit.
+// OffsetFits reports whether o, rounded to 3 decimals as writers print it, lies in the screen cell of a.
+// X below 100/3 is the left column, above 200/3 the right column, else the center column.
+// Y below 100/3 is the top row, above 200/3 the bottom row, else the middle row.
+// A nil offset, or a value outside 0 to 100 or NaN, does not fit.
 func OffsetFits(a model.Alignment, o *model.Offset) bool {
 	if o == nil || !(o.X >= 0 && o.X <= 100 && o.Y >= 0 && o.Y <= 100) {
 		return false
 	}
-	return Column(o.X) == a.Column() && Row(o.Y) == a.Row()
+	return column(Round(o.X)) == a.Column() && row(Round(o.Y)) == a.Row()
 }
 
-// Column returns the column of the screen cell that holds x percent: 1 left, 2 center, 3 right.
-func Column(x float64) int {
+// DefaultAnchor returns the point where the 1.x TTML region of a puts its anchor: 10 %, 50 % or 90 % on each axis.
+// A reader stores no offset for this point, because it says no more than the alignment.
+func DefaultAnchor(a model.Alignment) model.Offset {
+	return model.Offset{X: [...]float64{10, 50, 90}[a.Column()-1], Y: [...]float64{90, 50, 10}[a.Row()]}
+}
+
+// ReadOffset returns o rounded to 3 decimals, or nil when o is the default anchor of a.
+func ReadOffset(a model.Alignment, o model.Offset) *model.Offset {
+	o = model.Offset{X: Round(o.X), Y: Round(o.Y)}
+	if o == DefaultAnchor(a) {
+		return nil
+	}
+	return &o
+}
+
+func column(x float64) int {
 	switch {
 	case x < 100.0/3:
 		return 1
@@ -40,8 +55,8 @@ func Column(x float64) int {
 	}
 }
 
-// Row returns the row of the screen cell that holds y percent, numbered as model.Alignment.Row: 2 top, 1 middle, 0 bottom.
-func Row(y float64) int {
+// row returns the row of the screen cell that holds y percent, numbered as model.Alignment.Row: 2 top, 1 middle, 0 bottom.
+func row(y float64) int {
 	switch {
 	case y < 100.0/3:
 		return 2

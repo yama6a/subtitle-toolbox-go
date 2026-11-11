@@ -869,12 +869,16 @@ func (r *reader) offset(region string, hasRegion bool, a model.Alignment) *model
 			return nil
 		}
 	}
-	return &model.Offset{X: percent(anchor[0]), Y: percent(anchor[1])}
+	o := model.Offset{X: percent(anchor[0]), Y: percent(anchor[1])}
+	if !position.OffsetFits(a, &o) {
+		return nil
+	}
+	return position.ReadOffset(a, o)
 }
 
 // percent turns a fraction of the root container into percent, clamped to 0 to 100 and rounded to 3 decimals.
 func percent(fraction float64) float64 {
-	return position.Round(min(max(fraction*100, 0), 100))
+	return min(max(fraction*100, 0), 100)
 }
 
 // row returns the grid row of the anchor of a region: below 1/3 of the height the top row, above 2/3 the bottom row.

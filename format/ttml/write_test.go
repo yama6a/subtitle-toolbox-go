@@ -601,7 +601,7 @@ func TestWriteOffsetKeepsStoredRegion(t *testing.T) {
 	head := `<layout><region xml:id="r1" tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="after" tts:textAlign="center"/></layout>`
 	s, _ := mustRead(t, document(`<div><p region="r1" begin="1s" end="2s">x</p></div>`, "", head), false)
 	c, _ := s.Cue(0)
-	require.Equal(t, &model.Offset{X: 50, Y: 90}, c.Position.Offset)
+	require.Nil(t, c.Position.Offset)
 
 	c.Position.Offset = &model.Offset{X: 50, Y: 70}
 	require.NoError(t, s.SetCue(0, c))

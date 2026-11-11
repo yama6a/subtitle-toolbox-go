@@ -30,10 +30,10 @@ go get github.com/yama6a/subtitle-toolbox-go/v2@latest
 
 ## Conversions that change output
 
-WebVTT and TTML readers fill `Cue.Position.Offset`, and their writers use it for a cue with no stored position of the output format. The `.out` round trips of WebVTT and TTML, and every conversion of a cue without an offset, stay the same. To get the 1.x result, set `cue.Position.Offset = nil` before the write.
+WebVTT and TTML readers fill `Cue.Position.Offset`, and their writers use it for a cue with no stored position of the output format. A reader stores no offset for the default anchor of an alignment, such as (50, 90) for `BottomCenter`, so a plain SubRip to TTML to WebVTT chain keeps its output. The `.out` round trips of WebVTT and TTML stay the same. No conversion golden of the repository changes. To get the 1.x result, set `cue.Position.Offset = nil` before the write.
 
-| Input | 1.x output | 2.0 output |
-|:--- |:--- |:--- |
-| TTML `bbc_ebu_tt_d.ttml`, converted to WebVTT. Its bottom cues sit in a region with `tts:origin="10% 10%"`, `tts:extent="80% 80%"` and `tts:displayAlign="after"` | `00:00:10.000 --> 00:00:13.000` | `00:00:10.000 --> 00:00:13.000 line:90%,end`. The top cues keep `line:0` |
-| TTML with a region that has `tts:origin`, converted to WebVTT, with a bottom center cue not at the screen edge | no cue settings | `line:Y%,end`, plus `position:X%,center` when X is not 50. Other rows keep `line:0` or `line:50%,center`, with `position` and `align` for the column |
-| WebVTT with a percent `line` or `position` that names the same anchor as its alignment, converted to TTML, such as `line:90%,end` | the region `bottomCenter` or no region | the region `bottomCenter-50-90`, which puts the cue at 90% from the top |
+| Input | 1.x output | 2.0 output | Keep the 1.x output |
+|:--- |:--- |:--- |:--- |
+| TTML whose region has `tts:origin`, such as `10% 10%` with `tts:extent="80% 85%"` and `tts:displayAlign="after"`, converted to WebVTT, with a `BottomCenter` cue | no cue settings | `line:95%,end`, plus `position:X%,center` when X is not 50 | `cue.Position.Offset = nil` |
+| the same TTML with a top, middle or side cue | `line:0`, `line:50%,center`, `align:left` or `align:right` | the same, plus `position:X%,...` for a column that is not at the screen edge | `cue.Position.Offset = nil` |
+| WebVTT with a percent `line` or `position` that names the same anchor as its alignment, converted to TTML, such as `line:95%,end` | the region `bottomCenter` or no region | the region `bottomCenter-50-95`, which puts the cue at 95% from the top | `cue.Position.Offset = nil` |

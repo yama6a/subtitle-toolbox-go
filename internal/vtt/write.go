@@ -193,7 +193,7 @@ func hasPlacement(d *model.Data) bool {
 func offsetSettings(a model.Alignment, o model.Offset) []string {
 	var settings []string
 	switch {
-	case a == model.BottomCenter:
+	case a.Numpad() == model.BottomCenter.Numpad():
 		if y := position.Round(o.Y); y != 100 {
 			settings = append(settings, "line:"+position.Format(y)+"%,end")
 		}

@@ -21,10 +21,11 @@ func TestOffsetRoundTrip(t *testing.T) {
 		offset     stbox.Offset
 		wantOffset *stbox.Offset
 	}{
-		{"TTML bottom center", stbox.TTML, stbox.BottomCenter, stbox.Offset{X: 50, Y: 90}, &stbox.Offset{X: 50, Y: 90}},
+		{"TTML bottom center", stbox.TTML, stbox.BottomCenter, stbox.Offset{X: 50, Y: 95}, &stbox.Offset{X: 50, Y: 95}},
+		{"TTML default anchor reads back as none", stbox.TTML, stbox.BottomCenter, stbox.Offset{X: 50, Y: 90}, nil},
 		{"TTML top left", stbox.TTML, stbox.TopLeft, stbox.Offset{X: 10, Y: 5}, &stbox.Offset{X: 10, Y: 5}},
 		{"TTML middle right", stbox.TTML, stbox.MiddleRight, stbox.Offset{X: 80, Y: 40}, &stbox.Offset{X: 80, Y: 40}},
-		{"WebVTT bottom center", stbox.WebVTT, stbox.BottomCenter, stbox.Offset{X: 50, Y: 90}, &stbox.Offset{X: 50, Y: 90}},
+		{"WebVTT bottom center", stbox.WebVTT, stbox.BottomCenter, stbox.Offset{X: 50, Y: 95}, &stbox.Offset{X: 50, Y: 95}},
 		{"WebVTT top left keeps the column, not the height", stbox.WebVTT, stbox.TopLeft, stbox.Offset{X: 20, Y: 5}, &stbox.Offset{X: 20, Y: 0}},
 		{"WebVTT top center keeps no offset", stbox.WebVTT, stbox.TopCenter, stbox.Offset{X: 50, Y: 10}, nil},
 	}

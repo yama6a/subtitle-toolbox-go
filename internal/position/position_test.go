@@ -71,6 +71,8 @@ func TestOffsetFits(t *testing.T) {
 		{"66.7 is above 200/3", model.MiddleCenter, &model.Offset{X: 50, Y: 66.7}, false},
 		{"bottom right corner", model.BottomRight, &model.Offset{X: 100, Y: 100}, true},
 		{"outside 0 to 100", model.BottomCenter, &model.Offset{X: 50, Y: 101}, false},
+		{"33.3334 rounds to 33.333, the left column", model.BottomCenter, &model.Offset{X: 33.3334, Y: 90}, false},
+		{"66.6666 rounds to 66.667, the bottom row", model.MiddleCenter, &model.Offset{X: 50, Y: 66.6666}, false},
 		{"NaN", model.BottomCenter, &model.Offset{X: math.NaN(), Y: 90}, false},
 		{"nil", model.BottomCenter, nil, false},
 	}
