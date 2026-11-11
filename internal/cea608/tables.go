@@ -182,3 +182,8 @@ func midRow(style int, underline bool) byte {
 func decodeMidRow(second byte) (style int, underline bool) {
 	return int(second & 0x0E >> 1), second&0x01 == 1
 }
+
+// Color returns the "#rrggbb" value of a color index 0 to 6 of a preamble address code or a mid-row code.
+func Color(index int) string {
+	return colors[index]
+}
