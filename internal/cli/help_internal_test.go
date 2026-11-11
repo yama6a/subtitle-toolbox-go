@@ -327,6 +327,7 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 	codeDefaults["structure-max-cpl"] = strconv.Itoa(model.DefaultMaxCharactersPerLine)
 	codeDefaults["structure-max-lines"] = strconv.Itoa(model.DefaultMaxLinesPerCue)
 	codeDefaults["timing-min-gap"] = formatNumber(defaultMinGap.Seconds())
+	codeDefaults["video-fps"] = formatNumber(defaultVideoFPS)
 	codeDefaults["ass-karaoke-tag"] = ass.WriteOptions{}.KaraokeTag.String()
 	codeDefaults["mask"] = string(profanity.MaskStars)
 	codeDefaults["mute-padding"] = formatNumber(profanity.Options{}.Padding.Seconds())
