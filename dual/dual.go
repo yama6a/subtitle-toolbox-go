@@ -42,7 +42,7 @@ func secondaryCopies(s *model.Subtitle, opts Options) []model.Cue {
 		for i, line := range c.Lines {
 			lines[i] = opts.style(line)
 		}
-		cues = append(cues, model.Cue{Start: c.Start, End: c.End, Lines: lines, Position: model.Position{Alignment: c.Position.Alignment}, Forced: c.Forced})
+		cues = append(cues, model.Cue{Start: c.Start, End: c.End, Lines: lines, Position: c.Position, Forced: c.Forced})
 	}
 	return cues
 }

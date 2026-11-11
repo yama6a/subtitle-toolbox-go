@@ -578,6 +578,12 @@ func cueSettings(c *model.Cue, d *model.Data, path string) string {
 	return ""
 }
 
+// validateKeys maps the Option of a Position.Validate error to the JSON key path below position.
+var validateKeys = map[string]string{ //nolint:gochecknoglobals // a lookup table
+	"Position.Row": ".row", "Position.Column": ".column", "Position.Grid": ".grid",
+	"Position.Offset.X": ".offset.x", "Position.Offset.Y": ".offset.y",
+}
+
 func cuePosition(c *model.Cue, d *model.Data, path string) string {
 	v, _ := d.Get("position")
 	if v == nil {
@@ -604,11 +610,7 @@ func cuePosition(c *model.Cue, d *model.Data, path string) string {
 	}
 	var iae *model.InvalidArgumentError
 	if errors.As(c.Position.Validate(), &iae) {
-		parts := strings.Split(iae.Option, ".")
-		for i, part := range parts {
-			parts[i] = strings.ToLower(part)
-		}
-		return path + strings.TrimPrefix(strings.Join(parts, "."), "position") + " is out of range. " + iae.Msg
+		return path + validateKeys[iae.Option] + " is out of range. " + iae.Msg
 	}
 	return ""
 }
