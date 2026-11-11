@@ -24,6 +24,16 @@ go get github.com/yama6a/subtitle-toolbox-go/v2@latest
 
 `FrameRateFromFloat(23.976)` gives 2997/125, so a 1.x frame rate keeps its result. It returns an error for NaN, infinity, 0, a negative value and a number of more than 18 digits, such as `1e-300`. 1.x accepted such a rate. The CLI options `--fps`, `--input-fps`, `--output-fps`, `--from-fps` and `--to-fps` fail with exit code 2 for it.
 
-`Cue.Position` also holds a row and a column on a `Grid`, and an `Offset` in percent of the video. 2.0 readers and writers of the 1.x formats fill and use only `Alignment`, so no output changes. `SetCue` returns an error that matches `ErrInvalidArgument` when `Position.Validate` fails. Library JSON stays version 1. A cue gets the optional key `position`, and a 1.x reader ignores it.
+`Cue.Position` also holds a row and a column on a `Grid`, and an `Offset` in percent of the video. 2.0 readers and writers of the 1.x formats fill and use only `Alignment`, except WebVTT and TTML, which read and write `Offset`. A conversion from a file with offsets to WebVTT or TTML can change output. See the table below. `SetCue` returns an error that matches `ErrInvalidArgument` when `Position.Validate` fails. Library JSON stays version 1. A cue gets the optional key `position`, and a 1.x reader ignores it.
 
 `Position.RowOn(g, lines)` moves the row to another grid. It returns false when the row lies outside its grid or when the third of the grid that holds the row conflicts with the alignment. A top alignment conflicts with a bottom third row. A bottom alignment conflicts with a top third row. A middle alignment conflicts with any other row. A bottom alignment on a middle third row keeps its row, because a CEA-608 reader gives every cue below row 4 a bottom alignment. Example: SCC row 8 with `BottomCenter` keeps its row. SCC row 14 set to `TopCenter` loses it, and so does SCC row 2 set to `BottomCenter`. A writer then uses the row of the alignment, as in 1.x.
+
+## Conversions that change output
+
+WebVTT and TTML readers fill `Cue.Position.Offset`, and their writers use it for a cue with no stored position of the output format. A reader stores no offset for the default anchor of an alignment, such as (50, 90) for `BottomCenter`, so a plain SubRip to TTML to WebVTT chain keeps its output. The `.out` round trips of WebVTT and TTML stay the same. No conversion golden of the repository changes. To get the 1.x result, set `cue.Position.Offset = nil` before the write.
+
+| Input | 1.x output | 2.0 output | Keep the 1.x output |
+|:--- |:--- |:--- |:--- |
+| TTML whose region has `tts:origin`, such as `10% 10%` with `tts:extent="80% 85%"` and `tts:displayAlign="after"`, converted to WebVTT, with a `BottomCenter` cue | no cue settings | `line:95%,end`, plus `position:X%,center` when X is not 50 | `cue.Position.Offset = nil` |
+| the same TTML with a top, middle or side cue | `line:0`, `line:50%,center`, `align:left` or `align:right` | the same, plus `position:X%,...` for a column that is not at the screen edge | `cue.Position.Offset = nil` |
+| WebVTT with a percent `line` or `position` that names the same anchor as its alignment, converted to TTML, such as `line:95%,end` | the region `bottomCenter` or no region | the region `bottomCenter-50-95`, which puts the cue at 95% from the top | `cue.Position.Offset = nil` |

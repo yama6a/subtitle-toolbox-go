@@ -57,7 +57,7 @@ type writer struct {
 	usedIDs       map[string]bool
 	nextSuffix    map[string]int
 	agentIDs      map[string]string
-	regionIDs     map[model.Alignment]string
+	regionIDs     map[string]string
 	forcedRegions map[string]bool
 	// cue is the index of the cue that the writer writes, -1 outside the cues.
 	cue int
@@ -95,7 +95,7 @@ func writeDocument(s *model.Subtitle, common model.CommonWriteOptions, p profile
 		usedIDs:       map[string]bool{},
 		nextSuffix:    map[string]int{},
 		agentIDs:      map[string]string{},
-		regionIDs:     map[model.Alignment]string{},
+		regionIDs:     map[string]string{},
 		forcedRegions: map[string]bool{},
 		cue:           -1,
 	}
@@ -225,8 +225,8 @@ func (w *writer) paragraph(containers []properties, c model.Cue, cueData *model.
 	forced := w.forcedDisplay(stored, cueData, c.Forced)
 	out += w.formatAttributes(stored)
 	region, hasRegion := value(stored, "region")
-	if !hasRegion && (alignment != model.BottomCenter || defaultRegion || realigned) {
-		out += w.attribute("region", w.regionID(alignment))
+	if !hasRegion {
+		out += w.regionAttribute(alignment, c.Position.Offset, defaultRegion || realigned)
 	}
 	out += forced
 
@@ -244,6 +244,19 @@ func (w *writer) paragraph(containers []properties, c model.Cue, cueData *model.
 		out += w.attribute(w.ttm+":agent", w.agentID(agent))
 	}
 	return out + ">" + content + "</p>"
+}
+
+// regionAttribute writes the region of a cue without a stored region: the offset region when the offset fits the
+// alignment, else the region of the alignment. A bottom center cue gets none unless always is set.
+func (w *writer) regionAttribute(a model.Alignment, o *model.Offset, always bool) string {
+	switch {
+	case position.OffsetFits(a, o):
+		return w.attribute("region", w.offsetRegionID(a, *o))
+	case a != model.BottomCenter || always:
+		return w.attribute("region", w.regionID(a))
+	default:
+		return ""
+	}
 }
 
 // withTextAlign sets tts:textAlign to the column of a, when the styles of the containers or of the paragraph set
