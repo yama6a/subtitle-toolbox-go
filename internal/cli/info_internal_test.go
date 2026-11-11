@@ -162,6 +162,22 @@ func TestInfoReportsTheSourceEncoding(t *testing.T) {
 	assert.Regexp(t, `(?m)^  Encoding: +Windows-1252$`, call{dir: dir}.run(t, "info", "latin1.srt").Stdout)
 }
 
+func TestInfoOfABinaryFileHasNoEncoding(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	copyFile(t, testfiles.Path(t, "stl/real/bakery_teletext_25fps.stl"), filepath.Join(dir, "bakery.stl"))
+	text := call{dir: dir}.run(t, "info", "bakery.stl")
+	require.Equal(t, 0, text.Code, text.Stderr)
+	assert.NotContains(t, text.Stdout, "Encoding:")
+	got := call{dir: dir}.run(t, "info", "bakery.stl", "--json")
+	require.Equal(t, 0, got.Code, got.Stderr)
+	var list []map[string]any
+	require.NoError(t, json.Unmarshal([]byte(got.Stdout), &list))
+	assert.Equal(t, "stl", list[0]["format"])
+	assert.Nil(t, list[0]["encoding"])
+}
+
 func TestInfoDecodeWarning(t *testing.T) {
 	t.Parallel()
 

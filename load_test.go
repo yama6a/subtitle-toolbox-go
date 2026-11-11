@@ -267,3 +267,55 @@ func TestMicroDVDWithoutFrameRateLine(t *testing.T) {
 		})
 	}
 }
+
+// TestBinaryFormatRead covers the read path of a binary format: the raw bytes reach the reader, Encoding is
+// ignored and SourceEncoding stays empty.
+func TestBinaryFormatRead(t *testing.T) {
+	t.Parallel()
+
+	stl := testfiles.Read(t, "stl/real/bakery_teletext_25fps.stl")
+	spaced := append([]byte("   "), stl[3:]...)
+	want, _, err := stbox.Parse(bytes.NewReader(stl), stbox.ReadOptions{Format: stbox.EBUSTL})
+	require.NoError(t, err)
+	require.Positive(t, want.Len())
+
+	tests := []struct {
+		name    string
+		file    string // empty reads with Parse
+		content []byte
+		opts    stbox.ReadOptions
+		cues    int
+		wantErr error
+	}{
+		{name: "Parse with a format and an encoding", content: stl, opts: stbox.ReadOptions{Format: stbox.EBUSTL, Encoding: "ISO-8859-7"}, cues: want.Len()},
+		{name: "Parse by content", content: stl, cues: want.Len()},
+		{name: "Load by content", file: "show.bin", content: stl, cues: want.Len()},
+		{name: "Load by content with an encoding", file: "show.stl", content: stl, opts: stbox.ReadOptions{Encoding: "ISO-8859-7"}, cues: want.Len()},
+		{name: "Load of an empty .stl file", file: "show.stl", content: nil},
+		{name: "Load by extension when the code page field is spaces", file: "show.stl", content: spaced, cues: want.Len()},
+		{name: "Parse when the code page field is spaces", content: spaced, wantErr: stbox.ErrUnknownFormat},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var s *stbox.Subtitle
+			var info stbox.ReadInfo
+			var err error
+			if tt.file == "" {
+				s, info, err = stbox.Parse(bytes.NewReader(tt.content), tt.opts)
+			} else {
+				s, info, err = stbox.Load(writeTemp(t, tt.file, tt.content), tt.opts)
+			}
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, stbox.EBUSTL, info.Format)
+			assert.Empty(t, info.SourceEncoding)
+			assert.Empty(t, info.Warnings)
+			assert.Equal(t, tt.cues, s.Len())
+		})
+	}
+}
