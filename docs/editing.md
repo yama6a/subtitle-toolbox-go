@@ -142,6 +142,82 @@ Speech-to-text output often splits a sentence into cues of less than 1 s. Take `
 - **Result**: the joined cue keeps the start, the ID, the alignment, the forced flag and the format data of the first cue. A comment before a joined cue moves before the result.
 - **Rounding**: the checks round `MinDuration`, `MaxDuration` and `MaxGap` to whole milliseconds, as PHP does.
 
+## Shot changes and gaps
+
+Broadcasters and streaming services want cue times on video frames, out of the way of shot changes, and gaps that do not flicker. At 24 fps, a cue starts at 62.708 s, 5 frames after a shot change at 62.5 s, so `timing.Apply` moves it to 62.5 s. A cue ends at 69.75 s, 6 frames before a shot change at 70 s, so it ends 2 frames before it, at 69.917 s. A gap of 7 frames between 2 cues shrinks to 2 frames. The library reads no video. The caller passes the shot change times, for example from an FFmpeg log. `stbox convert` runs the same code with the [`snap` group](cli.md#snap).
+
+<!-- example: timing/ExampleApply -->
+```go
+at := func(start, end float64) model.Cue {
+	return model.Cue{
+		Start: time.Duration(start * float64(time.Second)), End: time.Duration(end * float64(time.Second)),
+		Lines: []string{"Text"},
+	}
+}
+var s model.Subtitle
+s.AddCues(at(8, 10), at(10.292, 12), at(62.708, 65), at(67, 69.75))
+shots := []time.Duration{62500 * time.Millisecond, 70 * time.Second}
+
+report, err := timing.Apply(&s, timing.Options{FrameRate: model.FrameRate{Num: 24, Den: 1}, ShotChanges: shots})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+fmt.Println("moved starts:", report.MovedStarts, "moved ends:", report.MovedEnds)
+for _, c := range s.All() {
+	fmt.Println(c.Start, c.End)
+}
+// Output:
+// moved starts: 1 moved ends: 2
+// 8s 10.208s
+// 10.292s 12s
+// 1m2.5s 1m5s
+// 1m7s 1m9.917s
+```
+
+A shot change is the frame where the picture cuts to a new shot. The snap window is the largest distance in frames over which a cue time moves to a shot change. It is also the length below which a gap closes.
+
+| Field of `timing.Options` | Type | Zero value | Meaning |
+|:--- |:--- |:--- |:--- |
+| `FrameRate` | `model.FrameRate` | fails `Validate` | the frame rate of the video. Every other rule counts frames of it |
+| `ShotChanges` | `[]time.Duration` | no shot changes | the shot change times, in any order. `Apply` then only closes gaps and puts the times on frames |
+| `SnapWindowFrames` | `*int` | `DefaultSnapWindow(FrameRate)` | the snap window. 0 is legal: only a shot change on the same frame counts |
+| `MinGapFrames` | `*int` | `DefaultMinGapFrames`, 2 | frames between a cue and the next cue or shot change |
+| `MinDurationFrames` | `*int` | `DefaultMinDurationFrames`, 20 | no move makes a cue shorter than this |
+| `KeepGaps` | `bool` | false | true keeps the gaps that `Apply` would close |
+
+- **Default window**: half the frame rate in frames, rounded to the nearest frame, a half frame rounds down. It is 12 at 23.976, 24 and 25 fps, 15 at 29.97 and 30 fps, 25 at 50 fps and 30 at 59.94 and 60 fps.
+- **Pointers**: 0 is a legal frame count and differs from the default, so the 3 counts are `*int`.
+- **Errors**: `Validate` returns an `*model.InvalidArgumentError` for a frame rate that is not valid and for a negative count. On an error `Apply` changes nothing.
+- **Result**: `Report` holds `MovedStarts` and `MovedEnds`, the cues whose start or end moved by 1 frame or more.
+
+### Rules
+
+`Apply` counts whole frames. A cue time becomes `FrameRate.Frames(d)`, the frame nearest to `d`, a half rounds away from zero.
+
+1. **Out-times**, for each cue in start order: when the first shot change at or after the end is at most the snap window away, the end moves to `MinGapFrames` before it.
+2. **In-times**, for each cue in start order: when the last shot change at or before the start is at most the snap window away, the start moves to it.
+3. **Allowed**: a move happens only when the cue stays longer than 0 frames, it does not become shorter than `MinDurationFrames` unless it was shorter already, its end does not come closer than `MinGapFrames` to the next start, and its start does not come closer than `MinGapFrames` to the previous end. A move that makes a short cue longer still happens.
+4. **Chain**, unless `KeepGaps`: when the gap between a cue and the next one is longer than `MinGapFrames` and shorter than the snap window, and no shot change lies inside it, the first cue ends `MinGapFrames` before the next one. The chain does not check the rule above.
+5. **Write back**: every start and end becomes `FrameRate.Duration(frame)`, rounded to whole milliseconds. So every time falls on a frame, also a time that did not move. A time that would reach 100,000 hours stops at 99999:59:59.999.
+
+- **Inside a cue**: a shot change shortly before an end does not pull the end back. A shot change shortly after a start does not push the start forward.
+- **On a shot change**: an end on a shot change frame moves `MinGapFrames` earlier.
+- **Word timestamps**: the timestamp tags in the lines do not move.
+- **Order**: the cues go through `(*Subtitle).ReplaceCues`, so they stay in start order and each comment keeps its cue.
+
+### Shot change lists
+
+| Function | Input | Rule |
+|:--- |:--- |:--- |
+| `ShotChangesFromFFmpegLog` | the stderr log of `ffmpeg -i in.mp4 -vf "select='gt(scene,0.3)',showinfo" -f null -` | every match of `\bpts_time:\s*(\d+(?:\.\d+)?)` in the whole log |
+| `ShotChangesFromText` | one time per line | a UTF-8 BOM goes, CR LF and CR end a line, each line is trimmed, empty lines go. A line is seconds such as `62.5` or `h:mm:ss[.fff]` such as `00:01:02.500` |
+
+- **Result**: both return the times sorted, without duplicates, each rounded to whole milliseconds. A log without `pts_time:` gives an empty list.
+- **Errors**: `ShotChangesFromText` returns a `*model.ParseError` for a bad line, and both readers return one for a time of 100,000 hours or more. `Line` is the 1-based line, `Format` is empty and the message reads `The shot change time "00:01:2x" is not valid. Use seconds or hh:mm:ss.mmm.` The error matches `ErrParse`.
+
+The frame rules follow the [Netflix Subtitle Timing Guidelines](https://partnerhelp.netflixstudios.com/hc/en-us/articles/360051554394) as a behaviour reference. The shot change reader follows the log format of the [FFmpeg showinfo filter](https://ffmpeg.org/ffmpeg-filters.html#showinfo).
+
 ## Cue structure
 
 A film comes as `film_part1.srt` and `film_part2.srt`. `part1.Append(part2, 3130*time.Second)` adds the cues of part 2 at 52:10. HLS WebVTT repeats a cue across a segment boundary, and `RemoveDuplicateCues(0)` joins the copies into one cue.

@@ -24,6 +24,7 @@ format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microd
 stats/ stream/ hearingimpaired/ fixing/ profanity/ refsync/ diff/ dual/
                The 1.x services. A service never imports the root package
 validation/    The 2.x service that checks a subtitle against rules. It follows the same layer rule
+timing/        The 2.x service that moves cue times to shot changes and frames. Same layer rule
 internal/      Helpers: markupcore, linewrap, timecode, textenc, extfallback, grapheme, ssatag, phpkey, stringlist, xmlraw, paragraphs, blocks, subrip,
                vtt, position, parsing, writing, cli, and the test helpers testfiles and golden
 cmd/stbox/     The CLI main. Wiring, no business logic
