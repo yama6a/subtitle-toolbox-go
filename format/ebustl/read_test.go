@@ -164,31 +164,39 @@ func TestReadPositions(t *testing.T) {
 func TestReadInvalidFiles(t *testing.T) {
 	t.Parallel()
 
+	const (
+		tooShort  = "An EBU STL file starts with a GSI block of 1024 bytes."
+		blockSize = "The TTI blocks of an EBU STL file must have 128 bytes each."
+	)
 	partial := bytes.Repeat([]byte{0x8F}, 100)
 	badCode := ttiBlock(tti{tco: [4]byte{0, 0, 2, 25}, tci: [4]byte{0, 0, 1, 5}})
 	tests := []struct {
-		name         string
-		content      []byte
-		strictError  string
+		name    string
+		content []byte
+		// strictError is the message of the strict read, "" when it succeeds with strictCues cues.
+		strictError string
+		strictCues  int
+		// lenientError is the message of the lenient read, "" when it succeeds with the warnings.
 		lenientError string
-		lenientCues  int
-		strictCues   int
 		warnings     []model.ParseWarning
 	}{
+		{name: "too short", content: bytes.Repeat([]byte{' '}, 1023), strictError: tooShort, lenientError: tooShort},
 		{
-			name: "too short", content: bytes.Repeat([]byte{' '}, 1023),
-			strictError: "An EBU STL file starts with a GSI block of 1024 bytes.",
-		},
-		{
-			name: "partial TTI block", content: append(gsiBlock(nil), partial...),
-			strictError: "The TTI blocks of an EBU STL file must have 128 bytes each.",
+			name: "partial TTI block", content: append(gsiBlock(nil), partial...), strictError: blockSize,
 			warnings: []model.ParseWarning{{
-				Message: "The TTI blocks of an EBU STL file must have 128 bytes each.", Line: model.NoLine, Block: 0,
-				Lines: []string{hex.EncodeToString(partial)}, Action: model.Skipped,
+				Message: blockSize, Line: model.NoLine, Block: 0, Lines: []string{hex.EncodeToString(partial)}, Action: model.Skipped,
 			}},
 		},
-		{name: "disk format code", content: gsiBlock(map[string]string{"DFC": "STL24.01"}), strictError: `The disk format code "STL24.01" is not STL25.01 or STL30.01.`},
-		{name: "character code table", content: gsiBlock(map[string]string{"CCT": "05"}), strictError: `The character code table "05" is not 00, 01, 02, 03 or 04.`},
+		{
+			name: "disk format code", content: gsiBlock(map[string]string{"DFC": "STL24.01"}),
+			strictError:  `The disk format code "STL24.01" is not STL25.01 or STL30.01.`,
+			lenientError: `The disk format code "STL24.01" is not STL25.01 or STL30.01.`,
+		},
+		{
+			name: "character code table", content: gsiBlock(map[string]string{"CCT": "05"}),
+			strictError:  `The character code table "05" is not 00, 01, 02, 03 or 04.`,
+			lenientError: `The character code table "05" is not 00, 01, 02, 03 or 04.`,
+		},
 		{
 			name: "frame above the frame rate", content: append(gsiBlock(nil), badCode...), strictCues: 1,
 			warnings: []model.ParseWarning{{
@@ -202,24 +210,23 @@ func TestReadInvalidFiles(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			_, _, err := ebustl.Read(bytes.NewReader(tt.content), model.CommonReadOptions{}, ebustl.ReadOptions{})
-			if tt.strictError != "" {
-				var perr *model.ParseError
-				require.ErrorAs(t, err, &perr)
-				assert.Equal(t, tt.strictError, perr.Msg)
-				assert.Equal(t, model.EBUSTL, perr.Format)
-			} else {
+			for _, lenient := range []bool{false, true} {
+				s, warnings, err := ebustl.Read(bytes.NewReader(tt.content), model.CommonReadOptions{Lenient: lenient}, ebustl.ReadOptions{})
+				wantError, wantCues, wantWarnings := tt.strictError, tt.strictCues, []model.ParseWarning(nil)
+				if lenient {
+					wantError, wantCues, wantWarnings = tt.lenientError, 0, tt.warnings
+				}
+				if wantError != "" {
+					var perr *model.ParseError
+					require.ErrorAs(t, err, &perr)
+					assert.Equal(t, wantError, perr.Msg)
+					assert.Equal(t, model.EBUSTL, perr.Format)
+					continue
+				}
 				require.NoError(t, err)
+				assert.Equal(t, wantCues, s.Len())
+				assert.Equal(t, wantWarnings, warnings)
 			}
-
-			s, warnings, err := ebustl.Read(bytes.NewReader(tt.content), model.CommonReadOptions{Lenient: true}, ebustl.ReadOptions{})
-			if tt.warnings == nil && tt.strictError != "" {
-				require.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
-			assert.Equal(t, tt.warnings, warnings)
-			assert.Zero(t, s.Len())
 		})
 	}
 }

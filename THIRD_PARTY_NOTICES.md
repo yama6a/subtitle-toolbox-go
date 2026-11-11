@@ -419,7 +419,7 @@ END OF TERMS AND CONDITIONS
 
 - Project: <https://github.com/asticode/go-astisub>
 - Licence: MIT
-- Checked at: `f285923a0c8d5b2ecce67d8eaf9ed26cce16e5b0`, and `58297a613f70cac3d29e5ce52a7215a3b4038b40` and `b6b18718ddb6ee0da08772d8ab310c9c3d2d0459` for the SubRip files, and `7671e72e9d47287d6f8ded80a004560b63a2ead5` for the TTML files, with the same licence text
+- Checked at: `f285923a0c8d5b2ecce67d8eaf9ed26cce16e5b0`, and `58297a613f70cac3d29e5ce52a7215a3b4038b40` and `b6b18718ddb6ee0da08772d8ab310c9c3d2d0459` for the SubRip files, and `7671e72e9d47287d6f8ded80a004560b63a2ead5` for the TTML files and the STL file, with the same licence text
 - Files copied from it:
   - `testdata/ttml/real/astisub_breaklines.ttml`, from `testdata/example-in-breaklines.ttml`
   - `testdata/ttml/real/astisub_merging_style.ttml`, from `testdata/example-in-merging-style.ttml`

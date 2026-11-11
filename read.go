@@ -108,10 +108,11 @@ func parseDetected(content []byte, path string, opts ReadOptions) (*Subtitle, Re
 }
 
 // binaryFormat returns the binary format of content that a read without a format picks before any decoding:
-// the format that Detect finds in the raw bytes, else the format of an extension that only binary formats list.
+// the format that Detect finds in the raw bytes when it is binary. When Detect finds no format, the format of an
+// extension that only binary formats list. A text format that Detect finds wins over the extension.
 func binaryFormat(content []byte, path string) (Format, bool) {
-	if f, ok := Detect(content); ok && f.IsBinary() {
-		return f, true
+	if f, ok := Detect(content); ok {
+		return f, f.IsBinary()
 	}
 	if !binaryExtension(path) {
 		return "", false

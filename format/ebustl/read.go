@@ -60,7 +60,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 		return nil, nil, err
 	}
 	sets := readSets(content[gsiSize:])
-	rd.readSets(sets)
+	rd.addSets(sets)
 	s := &model.Subtitle{}
 	if title := strings.TrimRight(gsi.get("OPT"), " \x00"); title != "" {
 		s.SetMetadata(model.MetadataTitle, title)
@@ -178,7 +178,7 @@ func readSets(tti []byte) [][][]byte {
 	return sets
 }
 
-func (rd *reader) readSets(sets [][][]byte) {
+func (rd *reader) addSets(sets [][][]byte) {
 	blockIndex := 0
 	for _, blocks := range sets {
 		first := blockIndex

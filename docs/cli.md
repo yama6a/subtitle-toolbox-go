@@ -70,7 +70,7 @@ MicroDVD counts time in video frames, so a MicroDVD read and a MicroDVD write ne
 |:--- |:--- |:--- |:--- |
 | `--input-fps RATE` | every command that reads subtitle files | `ReadOptions.MicroDVD.FrameRate` and `ReadOptions.CSV.FrameRate` | `--fps`, else the `{1}{1}<fps>` line of a MicroDVD file. A CSV or TSV time in `hh:mm:ss:ff` fails |
 | `--output-fps RATE` | `convert`, `sync`, `dual` | `WriteOptions.MicroDVD.FrameRate`, for MicroDVD output only | `--fps`, else the frame rate of a MicroDVD input |
-| `--fps RATE` | every command that reads subtitle files | both rates | |
+| `--fps RATE` | every command that reads subtitle files | both rates, and the rate of the video for `--video-fps` of `convert` | |
 
 - **Check**: each rate is a number above 0. `--fps` is checked first, also when the specific option is given, so a bad `--fps` always fails. `--input-fps` comes before `--from` in the check order, and `--output-fps` right after `--to`.
 - **Advice**: `frames.sub: The frame rate is unknown. Pass --fps or --input-fps, start the file with {1}{1}<fps>, or pass --lenient for 23.976 fps.`, `frames.csv: line 2: The time "00:00:01:12" counts frames and needs a frame rate. Pass --fps or --input-fps.` and `trip.srt: MicroDVD output needs the frame rate of the video. Pass --fps or --output-fps.`. Each exits 3.
@@ -122,8 +122,9 @@ The edits run in this order, whatever the order of the flags. A group runs only 
 | 5 | `text` | `--case`, `--strip-tags`, `--rtl` | text edits change the line lengths, so they run before `structure` |
 | 6 | `structure` | `--structure-*` | joins and splits change the cues, so the timing edits run after it |
 | 7 | `retime` | `--sync`, `--shift`, `--scale`, `--from-fps` with `--to-fps`, in this order | |
-| 8 | `timing` | `--timing-*` | |
-| 9 | `masking` | `--mask-words FILE`, `--mask`, `--mute-*` | the mute ranges of `--mute-edl` and `--mute-filter` need the final times |
+| 8 | `snap` | `--snap-*`, `--video-fps`, `--no-snap-chain` | the shot changes need the final times of the retime group, and the timing fixes in seconds come after the frames |
+| 9 | `timing` | `--timing-*` | |
+| 10 | `masking` | `--mask-words FILE`, `--mask`, `--mute-*` | the mute ranges of `--mute-edl` and `--mute-filter` need the final times |
 
 The `ass` group comes last in the help. It runs no edit: it sets how the ASS writer writes the output.
 
@@ -196,6 +197,31 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 - **One input**: the mute files hold the ranges of one input. With 2 or more inputs, `--mute-edl` and `--mute-filter` fail: `--mute-edl and --mute-filter take one input file, got 2.`
 - **Mute files**: they join the output checks. Each must not exist, must not be a file that the command reads, such as the word file, and must differ from the subtitle output and from each other: `The --mute-filter file radio.mute is also the output of --mute-edl.`
 - **Write**: the mute files come after the subtitle output, each with its report line such as `radio.vtt -> radio.edl`. A file that is not empty ends with LF. Without a match both files are empty, 0 bytes.
+
+### Snap
+
+`--snap-shot-changes FILE` runs `timing.Apply` of [editing.md](editing.md#shot-changes-and-gaps). `stbox convert garden.srt -o timed.srt --video-fps 24 --snap-shot-changes scenes.txt` moves each cue time that lies within 12 frames of a shot change onto it, closes gaps shorter than 12 frames and puts every time on a frame.
+
+| Option | Value | Default | `Options` field |
+|:--- |:--- |:--- |:--- |
+| `--snap-shot-changes FILE` | a side file | none | `ShotChanges` |
+| `--video-fps RATE` | a number above 0 | `--fps` | `FrameRate` |
+| `--snap-window-frames FRAMES` | a whole number of 0 or more | half the frame rate in frames | `SnapWindowFrames` |
+| `--snap-min-gap-frames FRAMES` | a whole number of 0 or more | 2 | `MinGapFrames` |
+| `--snap-min-duration-frames FRAMES` | a whole number of 0 or more | 20 | `MinDurationFrames` |
+| `--no-snap-chain` | flag | the chain is on | `KeepGaps` |
+
+- **Trigger**: the group runs when one of `--snap-shot-changes`, `--snap-window-frames`, `--snap-min-gap-frames`, `--snap-min-duration-frames` or `--no-snap-chain` is set. Without `--snap-shot-changes`, it only closes gaps and puts the times on frames.
+- **Rates**: `--video-fps` sets only the snap rate, `--input-fps` sets only the read rate and `--fps` sets both. A MicroDVD file written at 25 fps, read with `--input-fps 25 --video-fps 24`, snaps at 24 fps on the times read at 25 fps.
+- **Checks**, in this order, each exit 2:
+  1. The rate: `--fps`, then `--video-fps`.
+  2. `--video-fps` without a trigger: `Pass --snap-shot-changes FILE with --video-fps.` `--fps` alone does not fail, because other groups use it.
+  3. A trigger without a rate: `Pass --video-fps RATE or --fps RATE with --snap-window-frames.` It names the first set trigger of the table.
+  4. `--no-snap-chain` without shot changes: `Pass --snap-shot-changes FILE. With --no-snap-chain and no shot changes, snapping changes nothing.`
+  5. The frame counts, in table order: `The option --snap-window-frames needs a whole number of 0 or more, got "-1".`
+  6. `Options.Validate`.
+- **Shot change file**: the tool reads it once, after the checks of the arguments. Content with `pts_time:` is an FFmpeg `showinfo` log, other content is one time per line in seconds or `hh:mm:ss.mmm`. A missing file stops the run with exit 3: `Error: missing.txt: The file does not exist.` A bad line does too: `Error: scenes.txt: line 3: The shot change time "00:01:2x" is not valid. Use seconds or hh:mm:ss.mmm.`
+- **Output checks**: the shot change file is a file that the command reads, so no output may replace it.
 
 ### Sync points
 
@@ -318,7 +344,14 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 
 ## validate
 
-`stbox validate <input>... [rule options] [--json] [options]` checks each input with `validation.Check` of [validation.md](validation.md). It takes `--json` and the input options.
+`stbox validate <input>... [--preset NAME] [rule options] [--json] [options]` checks each input with `validation.Check` of [validation.md](validation.md). It takes `--json` and the input options.
+
+| Option | Effect |
+|:--- |:--- |
+| `--preset NAME` | `netflix-en` or `bbc` in any ASCII case. The preset is the base rules: `validation.NetflixEnglish(rate)` or `validation.BBC()` |
+| `--video-fps RATE` | The frame rate of the `netflix-en` gap. Default: 23.976. Without it, `--fps` sets the rate. The option needs `--preset netflix-en` |
+
+A rule option sets its field on the preset result. A flag can only turn a check on. Example: `--preset netflix-en --max-cps 30` keeps the other Netflix rules and allows 30 characters per second. `--fps` sets `--input-fps` and `--video-fps`, and a specific option wins over `--fps`.
 
 | Option | Rule |
 |:--- |:--- |
@@ -340,7 +373,7 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 | `--check-unbalanced-tags` | `noUnbalancedTags` |
 | `--check-all-caps-lines` | `noAllCapsLines` |
 
-- **Usage errors**: a bad option value, a rule that `Rules.Validate` rejects, and a call without a rule option (`Pass at least one rule option.`) exit with 2. The rules `requireCues` and `noNegativeDuration` have no option.
+- **Usage errors**: a bad option value, a rule that `Rules.Validate` rejects, an unknown preset, `--video-fps` without `--preset netflix-en`, and a call without a preset or rule option (`Pass --preset or at least one rule option.`) exit with 2. The rules `requireCues` and `noNegativeDuration` have no option.
 - **Text**: one line per violation, `LABEL: cue N: RULE VALUE` and `, limit LIMIT` for a rule with a limit. N counts from 1 and the part `cue N: ` is left out for a rule about the whole subtitle. Numbers have at most 3 decimals, and `INF` stands for an infinite value. An input without a violation prints `LABEL: no problems`.
 - **JSON**: one object per input with the keys `file`, `format`, `valid`, `violations` and `warnings`. A violation has the keys `cueIndex` (0-based, `null` for no cue), `rule`, `value`, `infinite` and `limit`. `value` is `null` and `infinite` is `true` for an infinite value, because JSON has no infinity.
 - **Summary**: with 2 or more inputs, `N files: V valid, P with problems, F failed.` follows the lines. It goes to stderr with `--json`.

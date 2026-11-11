@@ -1,20 +1,34 @@
 package cli
 
 import (
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
-const validateHelp = `Usage: stbox validate <input>... [--max-cpl CHARS] [--check-overlaps] [...]
+const validateHelp = `Usage: stbox validate <input>... --preset netflix-en|bbc [options]
+       stbox validate <input>... [--max-cpl CHARS] [--check-overlaps] [...]
                       [options]
 
 Check the cues against reading speed, line length, timing and text rules.
 
 Prints one line per broken rule. Cue numbers start at 1. The exit code is 1 when
 a file breaks a rule.
+The netflix-en preset has the limits of the Netflix English (USA) Timed Text
+Style Guide. These are 20 characters per second, 42 characters per line and 2
+lines. A cue lasts 0.833 s to 7 s and keeps a gap of 2 frames, with no overlaps.
+The bbc preset has the limits of the BBC Subtitle Guidelines. These are 37
+characters per line, 180 words per minute and 0.3 s per word.
+A rule option overrides the value of the preset.
 
 Options:
+  --preset NAME                       Rule set: netflix-en or bbc.
+  --video-fps RATE                    Frame rate of the video, for the 2-frame
+                                      gap of netflix-en. Default: 23.976.
   --max-cps CHARS                     Maximum characters per second.
   --max-cpl CHARS                     Maximum characters per line.
   --max-lines LINES                   Maximum lines per cue.
@@ -51,7 +65,8 @@ Options:
   --input-fps RATE                    Frame rate of a MicroDVD input without a
                                       {1}{1}<fps> first line, and of CSV or TSV
                                       times in hh:mm:ss:ff.
-  --fps RATE                          Same as --input-fps.
+  --fps RATE                          Sets --input-fps and --video-fps. A
+                                      specific option wins over --fps.
   --keep-going                        Go on with the next file after a file
                                       fails. Default: stop at the first failure.
   -h, --help                          Show this help.
@@ -224,7 +239,14 @@ func TestValidateUsageErrors(t *testing.T) {
 		msg   string
 	}{
 		{"unknown option", []string{"trip.srt", "--no-overlap"}, "Unknown option --no-overlap."},
-		{"no rule option", []string{"shop.vtt"}, "Pass at least one rule option."},
+		{"no rule option", []string{"shop.vtt"}, "Pass --preset or at least one rule option."},
+		{"unknown preset", []string{"trip.srt", "--preset", "nope"}, `The option --preset must be netflix-en or bbc, got "nope".`},
+		{
+			"video-fps without netflix-en",
+			[]string{"trip.srt", "--preset", "bbc", "--video-fps", "25"},
+			"--video-fps sets the frame rate of the netflix-en gap rule. Pass --preset netflix-en, or leave out --video-fps.",
+		},
+		{"bad video-fps", []string{"trip.srt", "--preset", "netflix-en", "--video-fps", "0"}, "The option --video-fps must be greater than 0."},
 		{"invalid class", []string{"-", "--allowed-characters", "[z-a]"}, `The allowed characters "[z-a]" are not a valid character class: [z-a] range in reverse order.`},
 		{
 			"POSIX class",
@@ -276,6 +298,66 @@ func TestValidateInputOptions(t *testing.T) {
 			t.Parallel()
 
 			assert.Equal(t, tt.want, runCLI(t, append([]string{"validate"}, tt.words...)...))
+		})
+	}
+}
+
+// Ports testValidateWithThePreset, testValidateTakesTheVideoFrameRateForTheGap, testValidateWithTheBbcPreset and
+// testRuleOptionsOverrideTheBase of subtitle-toolbox-php.
+func TestValidatePresets(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	copyFile(t, testfiles.Path(t, "validation/own_netflix_checks.srt"), filepath.Join(dir, "checks.srt"))
+	tests := []struct {
+		name  string
+		words []string
+		want  string
+		code  int
+	}{
+		{"netflix", []string{"trip.srt", "--preset", "NETFLIX-EN"}, "trip.srt: cue 2: maxCharactersPerLine 57, limit 42\n" +
+			"trip.srt: cue 2: maxCharactersPerSecond 27.6, limit 20\n" + "trip.srt: cue 2: noOverlap 0.5\n" +
+			"trip.srt: cue 3: maxCharactersPerSecond 42.5, limit 20\n" + "trip.srt: cue 3: minDuration 0.4, limit 0.833\n", exitResult},
+		{"netflix with override", []string{"shop.vtt", "--preset", "netflix-en", "--max-cps", "30"}, "shop.vtt: no problems\n", 0},
+		{"bbc", []string{"trip.srt", "--preset", "bbc"}, "trip.srt: cue 2: maxCharactersPerLine 57, limit 37\n" +
+			"trip.srt: cue 2: maxWordsPerMinute 336, limit 180\n" + "trip.srt: cue 2: minSecondsPerWord 0.179, limit 0.3\n" +
+			"trip.srt: cue 3: maxWordsPerMinute 450, limit 180\n" + "trip.srt: cue 3: minSecondsPerWord 0.133, limit 0.3\n", exitResult},
+		{
+			"bbc with overrides",
+			[]string{"trip.srt", "--preset", "bbc", "--max-wpm", "500", "--min-seconds-per-word", "00:00.1"},
+			"trip.srt: cue 2: maxCharactersPerLine 57, limit 37\n", exitResult,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, result{Code: tt.code, Stdout: tt.want}, call{dir: dir}.run(t, append([]string{"validate"}, tt.words...)...))
+		})
+	}
+
+	gaps := []struct {
+		name  string
+		words []string
+		want  string
+	}{
+		{"default video rate", []string{"--preset", "netflix-en"}, "checks.srt: cue 2: minGap 0.04, limit 0.083\n"},
+		{"video rate 25", []string{"--preset", "netflix-en", "--video-fps", "25"}, "checks.srt: cue 2: minGap 0.04, limit 0.08\n"},
+		{"fps 25", []string{"--preset", "netflix-en", "--fps", "25"}, "checks.srt: cue 2: minGap 0.04, limit 0.08\n"},
+		{"video rate 50", []string{"--preset", "netflix-en", "--video-fps", "50"}, ""},
+	}
+	for _, tt := range gaps {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := call{dir: dir}.run(t, append([]string{"validate", "checks.srt"}, tt.words...)...)
+			var gap string
+			for line := range strings.Lines(got.Stdout) {
+				if strings.Contains(line, ": minGap ") {
+					gap += line
+				}
+			}
+			assert.Equal(t, tt.want, gap)
 		})
 	}
 }

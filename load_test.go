@@ -284,7 +284,7 @@ func TestBinaryFormatRead(t *testing.T) {
 		file    string // empty reads with Parse
 		content []byte
 		opts    stbox.ReadOptions
-		cues    int
+		cues    int // -1 reads SubRip
 		wantErr error
 	}{
 		{name: "Parse with a format and an encoding", content: stl, opts: stbox.ReadOptions{Format: stbox.EBUSTL, Encoding: "ISO-8859-7"}, cues: want.Len()},
@@ -293,6 +293,7 @@ func TestBinaryFormatRead(t *testing.T) {
 		{name: "Load by content with an encoding", file: "show.stl", content: stl, opts: stbox.ReadOptions{Encoding: "ISO-8859-7"}, cues: want.Len()},
 		{name: "Load of an empty .stl file", file: "show.stl", content: nil},
 		{name: "Load by extension when the code page field is spaces", file: "show.stl", content: spaced, cues: want.Len()},
+		{name: "Load of SubRip content named .stl", file: "show.stl", content: testfiles.Read(t, "srt/real/own_styled.srt"), cues: -1},
 		{name: "Parse when the code page field is spaces", content: spaced, wantErr: stbox.ErrUnknownFormat},
 	}
 	for _, tt := range tests {
@@ -312,6 +313,11 @@ func TestBinaryFormatRead(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
+			if tt.cues < 0 {
+				assert.Equal(t, stbox.SubRip, info.Format)
+				assert.Positive(t, s.Len())
+				return
+			}
 			assert.Equal(t, stbox.EBUSTL, info.Format)
 			assert.Empty(t, info.SourceEncoding)
 			assert.Empty(t, info.Warnings)
