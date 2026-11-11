@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func TestParseUnsupportedFormat(t *testing.T) {

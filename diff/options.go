@@ -3,8 +3,8 @@ package diff
 import (
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // DefaultTimeTolerance is the time tolerance that Compare uses when Options.TimeTolerance is nil.

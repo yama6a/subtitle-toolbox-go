@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // moveSecondHalfFirst shifts the cues of the second half of s before the first cue, so all cues sort again.

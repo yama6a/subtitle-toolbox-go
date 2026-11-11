@@ -15,15 +15,15 @@ import (
 
 	"github.com/dlclark/regexp2/v2"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/hearingimpaired"
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
-	"github.com/yama6a/subtitle-toolbox-go/profanity"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/profanity"
 )
 
 // group is one option group of convert.

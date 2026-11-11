@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
 )
 
 // lineEndings maps the values of --line-ending to the library values. The first entry is the default.

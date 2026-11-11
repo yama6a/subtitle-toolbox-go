@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/internal/extfallback"
-	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/extfallback"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
 )
 
 const stdinArg = "-"

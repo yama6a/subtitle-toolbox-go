@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const (

@@ -11,8 +11,8 @@ import (
 	"golang.org/x/text/encoding/korean"
 	"golang.org/x/text/encoding/simplifiedchinese"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
 )
 
 type detected struct {

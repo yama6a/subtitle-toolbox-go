@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // styledRoot is a root start tag that declares tts and ttm, without its closing >.

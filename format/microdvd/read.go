@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/stringlist"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/stringlist"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // lenientFrameRate is the default of mantas-done/subtitles, pysubs2 and subtitle_it, as a plain float and not 24000/1001.

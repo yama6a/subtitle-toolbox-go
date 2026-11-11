@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // convertCommand reads subtitle files, runs the edits of its option groups in pipeline order, and writes them.

@@ -10,11 +10,11 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/position"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/xmlraw"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/position"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const invalidUTF8 = "The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding."

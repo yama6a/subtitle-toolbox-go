@@ -7,8 +7,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/linewrap"
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/linewrap"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
 )
 
 func FuzzWrap(f *testing.F) {

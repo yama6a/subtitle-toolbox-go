@@ -5,9 +5,9 @@ import (
 	"io"
 	"sort"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/vtt"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/vtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Read reads WebVTT text. It expects UTF-8, as stbox.Parse passes it.

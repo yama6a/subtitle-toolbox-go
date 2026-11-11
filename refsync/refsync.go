@@ -6,7 +6,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Report is the result of Apply.

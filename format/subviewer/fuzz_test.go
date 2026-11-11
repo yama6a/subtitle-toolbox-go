@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func FuzzRead(f *testing.F) {

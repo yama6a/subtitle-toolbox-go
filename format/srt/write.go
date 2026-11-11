@@ -3,9 +3,9 @@ package srt
 import (
 	"io"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/subrip"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/subrip"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Write writes s as SubRip. A text line that the reader would read as a timing line starts with U+2060 WORD JOINER.

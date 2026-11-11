@@ -8,8 +8,8 @@ package ttml
 import (
 	"regexp"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/xmlraw"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const formatDataKey = string(model.TTML)

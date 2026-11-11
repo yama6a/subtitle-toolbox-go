@@ -9,9 +9,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const (

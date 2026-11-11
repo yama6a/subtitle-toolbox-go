@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // withCueField returns the JSON of a real file with the field key of cue 0 set to the JSON value.

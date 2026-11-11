@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
 // Ports testAegisubFileKeepsMetadataCommentsAndFormatData of tests/Parsers/JsonRealFilesTest.php of

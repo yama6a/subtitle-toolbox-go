@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 )
 
 // TestCappedLastCueEndReadsBack reads a file whose last cue end the reader caps at 99999:59:59.999, writes it in

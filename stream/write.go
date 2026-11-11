@@ -6,12 +6,12 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/subrip"
-	"github.com/yama6a/subtitle-toolbox-go/internal/vtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/subrip"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/vtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func errClosed() error {

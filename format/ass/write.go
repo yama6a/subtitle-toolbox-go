@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/position"
-	"github.com/yama6a/subtitle-toolbox-go/internal/ssatag"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/position"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/ssatag"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 var (

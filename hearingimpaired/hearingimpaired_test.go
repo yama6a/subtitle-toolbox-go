@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/hearingimpaired"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // fromTexts gives one cue per text, the cue i from i s to i+1 s.

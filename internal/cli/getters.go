@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 )
 
 // phpSpace holds the white space that a PHP numeric string may have at both ends.

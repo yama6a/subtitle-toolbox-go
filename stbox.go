@@ -9,7 +9,7 @@
 // A program that needs one format can import its package under format/ alone.
 package stbox
 
-import "github.com/yama6a/subtitle-toolbox-go/model"
+import "github.com/yama6a/subtitle-toolbox-go/v2/model"
 
 // Aliases of the model types. Package model documents their methods.
 type (

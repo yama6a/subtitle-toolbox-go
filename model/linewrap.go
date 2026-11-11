@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/linewrap"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/linewrap"
 )
 
 // WrapLines breaks the lines of each cue that has more than maxLinesPerCue lines or a line longer than

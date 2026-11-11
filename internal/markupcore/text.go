@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/grapheme"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/grapheme"
 )
 
 var (

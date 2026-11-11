@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
 )
 
 // outputPlan plans the output file of each input of a write command from -o, --output-dir and --to, and

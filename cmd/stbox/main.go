@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/cli"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/cli"
 )
 
 func main() {

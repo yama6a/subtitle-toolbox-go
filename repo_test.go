@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	mainModule  = "github.com/yama6a/subtitle-toolbox-go"
+	mainModule  = "github.com/yama6a/subtitle-toolbox-go/v2"
 	sourcesFile = "SOURCES.md"
 	testdataDir = "testdata"
 	fuzzDir     = "fuzz"

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/sbv"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/sbv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func ExampleRead() {

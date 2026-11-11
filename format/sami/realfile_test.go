@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Ports testRealFileParses of tests/Parsers/SamiParserTest.php of subtitle-toolbox-php. The read goldens hold the

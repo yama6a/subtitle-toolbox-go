@@ -14,10 +14,10 @@ import (
 
 	"github.com/dlclark/regexp2/v2"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/grapheme"
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/grapheme"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Mask is how Apply writes a match. The values are the values of the CLI option --mask.
