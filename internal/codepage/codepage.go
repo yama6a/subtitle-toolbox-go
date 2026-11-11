@@ -21,17 +21,28 @@ func newTable(upper [128]rune) *Table {
 	return t
 }
 
-//nolint:gochecknoglobals,revive // fixed code page tables, and the names follow x/text charmap
+// The code pages of EBU Tech 3264. The ISO 8859 names follow x/text charmap.
+//
+//nolint:gochecknoglobals,revive // fixed code page tables
 var (
-	ISO8859_5      = newTable(iso8859_5Upper)
-	ISO8859_6      = newTable(iso8859_6Upper)
+	// ISO8859_5 is Cyrillic, character code table 01.
+	ISO8859_5 = newTable(iso8859_5Upper)
+	// ISO8859_6 is Arabic, character code table 02.
+	ISO8859_6 = newTable(iso8859_6Upper)
+	// ISO8859_7_1987 is the 1987 edition of Greek, character code table 03.
 	ISO8859_7_1987 = newTable(iso8859_7_1987Upper)
+	// ISO8859_8_1988 is the 1988 edition of Hebrew, character code table 04.
 	ISO8859_8_1988 = newTable(iso8859_8_1988Upper)
-	CP437          = newTable(cp437Upper)
-	CP850          = newTable(cp850Upper)
-	CP860          = newTable(cp860Upper)
-	CP863          = newTable(cp863Upper)
-	CP865          = newTable(cp865Upper)
+	// CP437 is DOS code page 437.
+	CP437 = newTable(cp437Upper)
+	// CP850 is DOS code page 850.
+	CP850 = newTable(cp850Upper)
+	// CP860 is DOS code page 860.
+	CP860 = newTable(cp860Upper)
+	// CP863 is DOS code page 863.
+	CP863 = newTable(cp863Upper)
+	// CP865 is DOS code page 865.
+	CP865 = newTable(cp865Upper)
 )
 
 // Decode returns the text of b. It drops each byte without an entry.

@@ -17,8 +17,7 @@ var iso6937 = newISO6937()
 
 const (
 	iso6937Currency = 0x24
-	iso6937Dollar   = 0xA4
-	firstDiacritic  = 0xC0
+	diacriticColumn = 0xC0
 	lastDiacritic   = 0xCF
 )
 
@@ -36,7 +35,7 @@ func newISO6937() *iso6937Codec {
 	}
 	for i, r := range iso6937Marks {
 		if r != 0 {
-			c.markToByte[r] = byte(firstDiacritic + i)
+			c.markToByte[r] = byte(diacriticColumn + i)
 		}
 	}
 	for _, p := range iso6937Composed {
@@ -60,7 +59,7 @@ func iso6937Character(b byte) rune {
 }
 
 func isDiacritic(b byte) bool {
-	return b > firstDiacritic && b <= lastDiacritic && iso6937Marks[b-firstDiacritic] != 0
+	return b > diacriticColumn && b <= lastDiacritic && iso6937Marks[b-diacriticColumn] != 0
 }
 
 // DecodeISO6937 returns the text of b. It drops each undefined byte and each diacritic byte without a character after it.
@@ -79,7 +78,7 @@ func DecodeISO6937(b []byte) string {
 			case ok:
 				out = append(out, composed)
 			default:
-				out = append(out, r, iso6937Marks[held-firstDiacritic])
+				out = append(out, r, iso6937Marks[held-diacriticColumn])
 			}
 		}
 		held = 0
@@ -94,18 +93,22 @@ func EncodeISO6937(s string) []byte {
 	for _, r := range s {
 		wasLetter := letter
 		letter = false
-		if c, ok := iso6937.encode[r]; ok {
+		c, inTable := iso6937.encode[r]
+		k, composed := iso6937.decompose[r]
+		m, isMark := iso6937.markToByte[r]
+		switch {
+		case inTable:
 			out = append(out, c)
-		} else if r >= 0x20 && r < 0x7F {
+		case r >= 0x20 && r < 0x7F:
 			out = append(out, byte(r))
 			letter = isASCIILetter(byte(r))
-		} else if k, ok := iso6937.decompose[r]; ok {
+		case composed:
 			out = append(out, k.diacritic, k.base)
-		} else if m, ok := iso6937.markToByte[r]; ok && wasLetter {
+		case isMark && wasLetter:
 			last := out[len(out)-1]
 			out[len(out)-1] = m
 			out = append(out, last)
-		} else {
+		default:
 			out = append(out, Replacement)
 		}
 	}
@@ -114,6 +117,7 @@ func EncodeISO6937(s string) []byte {
 
 // EncodableISO6937 reports whether EncodeISO6937 writes r without Replacement when r stands alone.
 // A combining mark is not encodable alone, because it needs a letter before it.
+// A caller that counts replacements by code point must count a mark after an ASCII letter as encodable.
 func EncodableISO6937(r rune) bool {
 	_, inTable := iso6937.encode[r]
 	_, composed := iso6937.decompose[r]

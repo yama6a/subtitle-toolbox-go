@@ -136,7 +136,13 @@ func FuzzISO6937(f *testing.F) {
 		DecodeISO6937(b)
 		out := EncodeISO6937(s)
 		if utf8.ValidString(s) {
-			assert.LessOrEqual(t, len(out), 2*utf8.RuneCountInString(s))
+			want := utf8.RuneCountInString(s)
+			for _, r := range s {
+				if _, ok := iso6937.decompose[r]; ok {
+					want++
+				}
+			}
+			assert.Len(t, out, want)
 		}
 	})
 }
