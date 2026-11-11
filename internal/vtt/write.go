@@ -133,29 +133,81 @@ func (w *Writer) CueBlock(c model.Cue, i int) string {
 	return out
 }
 
-// cueSettingsText writes the stored settings while the alignment is unchanged, and the settings of the alignment otherwise.
+// cueSettingsText writes the stored settings while the alignment is unchanged. Else it writes the offset when it
+// fits the alignment, and the settings of the alignment otherwise.
 func cueSettingsText(c model.Cue) string {
 	d, _ := c.FormatData(string(model.WebVTT))
 	unchanged := position.AlignmentUnchanged(d, c.Position.Alignment)
+	// A stored vertical setting swaps the axes of line and position, so an offset cannot use them.
+	_, vertical := d.String("vertical")
+	stored := unchanged && hasPlacement(d)
+	if !stored && !vertical && position.OffsetFits(c.Position.Alignment, c.Position.Offset) {
+		return strings.Join(append(storedSettings(d, keptSettings), offsetSettings(c.Position.Alignment, *c.Position.Offset)...), " ")
+	}
+	return alignmentSettings(c.Position.Alignment, d, unchanged)
+}
+
+// alignmentSettings writes the stored settings while the alignment is unchanged, and the settings of the alignment
+// after the kept ones otherwise.
+func alignmentSettings(a model.Alignment, d *model.Data, unchanged bool) string {
 	names := cueSettings
 	if !unchanged {
 		names = keptSettings
 	}
+	settings := storedSettings(d, names)
+	if unchanged && len(settings) > 0 || a.Numpad() == model.BottomCenter.Numpad() {
+		return strings.Join(settings, " ")
+	}
+	for _, s := range []string{rowSettings[a.Row()], columnSettings[a.Column()]} {
+		if s != "" {
+			settings = append(settings, s)
+		}
+	}
+	return strings.Join(settings, " ")
+}
+
+// storedSettings returns the stored settings whose names are in names, as name:value in stored order.
+func storedSettings(d *model.Data, names []string) []string {
 	var settings []string
 	for _, k := range d.Keys() {
 		if v, ok := d.String(k); ok && slices.Contains(names, k) {
 			settings = append(settings, k+":"+v)
 		}
 	}
-	if unchanged && len(settings) > 0 || c.Position.Alignment.Numpad() == model.BottomCenter.Numpad() {
-		return strings.Join(settings, " ")
-	}
-	for _, s := range []string{rowSettings[c.Position.Alignment.Row()], columnSettings[c.Position.Alignment.Column()]} {
-		if s != "" {
-			settings = append(settings, s)
+	return settings
+}
+
+// hasPlacement reports whether the stored settings hold line, position or align.
+func hasPlacement(d *model.Data) bool {
+	for _, k := range []string{"line", "position", "align"} {
+		if _, ok := d.String(k); ok {
+			return true
 		}
 	}
-	return strings.Join(settings, " ")
+	return false
+}
+
+// offsetSettings returns the line, position and align settings that put the anchor point of alignment a at o.
+// Only a bottom center cue gets an exact height, because the reader maps every other line value to a bottom center
+// cue. The other rows keep the settings of the alignment.
+func offsetSettings(a model.Alignment, o model.Offset) []string {
+	var settings []string
+	switch {
+	case a == model.BottomCenter:
+		if y := position.Round(o.Y); y != 100 {
+			settings = append(settings, "line:"+position.Format(y)+"%,end")
+		}
+	case rowSettings[a.Row()] != "":
+		settings = append(settings, rowSettings[a.Row()])
+	}
+	column := a.Column()
+	if x := position.Round(o.X); x != [...]float64{0, 50, 100}[column-1] {
+		settings = append(settings, "position:"+position.Format(x)+"%,"+[...]string{"line-left", "center", "line-right"}[column-1])
+	}
+	if s := columnSettings[column]; s != "" {
+		settings = append(settings, s)
+	}
+	return settings
 }
 
 func (w *Writer) text(c model.Cue, i int) string {

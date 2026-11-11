@@ -14,6 +14,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/blocks"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/position"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
@@ -42,6 +43,7 @@ var (
 	shortTimestampRegexp = regexp.MustCompile(`<([0-5]\d:[0-5]\d\.\d{3})>`)
 	keywordRegexp        = regexp.MustCompile(`(?i)^(?:NOTE|STYLE|REGION)`)
 	spacesRegexp         = regexp.MustCompile(`[ \t]+`)
+	percentageRegexp     = regexp.MustCompile(`^\d+(?:\.\d+)?%$`)
 )
 
 type line struct {
@@ -526,6 +528,7 @@ func (r *Reader) parseCue(b blocks.Block, index int) (model.Cue, error) {
 		c.Position.Alignment = a
 		settings.Set("alignment", int64(a.Numpad()))
 	}
+	c.Position.Offset = settingsOffset(settings, c.Position.Alignment)
 	if err := c.SetFormatData(string(model.WebVTT), settings); err != nil {
 		return model.Cue{}, fmt.Errorf("%s cue data: %w", model.WebVTT, err)
 	}
@@ -686,6 +689,72 @@ func settingsAlignment(d *model.Data) (model.Alignment, bool) {
 		return model.BottomCenter, false
 	}
 	return model.AlignmentAt(row, column)
+}
+
+// settingsOffset returns the point that the settings line and position name, or nil. An axis counts only when its
+// setting anchors the same point as alignment a. The offset needs both axes and at least one percentage value.
+// A line number sets a line of text, not a height, so it gives no offset.
+func settingsOffset(d *model.Data, a model.Alignment) *model.Offset {
+	if _, vertical := d.Get("vertical"); vertical {
+		return nil
+	}
+	y, yPercent, ok := offsetY(d, a)
+	if !ok {
+		return nil
+	}
+	x, xPercent, ok := offsetX(d, a)
+	if !ok || !yPercent && !xPercent {
+		return nil
+	}
+	return &model.Offset{X: x, Y: y}
+}
+
+func offsetY(d *model.Data, a model.Alignment) (y float64, percent, ok bool) {
+	line, ok := d.String("line")
+	if !ok || line == "-1" {
+		return 100, false, a.Row() == 0
+	}
+	value, align, _ := strings.Cut(line, ",")
+	rows := map[string]int{"": 2, "start": 2, "center": 1, "end": 0}
+	row, known := rows[align]
+	if !known || row != a.Row() {
+		return 0, false, false
+	}
+	if value == "0" {
+		return 0, false, true
+	}
+	y, ok = percentage(value)
+	return y, true, ok
+}
+
+func offsetX(d *model.Data, a model.Alignment) (x float64, percent, ok bool) {
+	pos, ok := d.String("position")
+	if !ok {
+		return [...]float64{0, 50, 100}[a.Column()-1], false, true
+	}
+	value, anchor, _ := strings.Cut(pos, ",")
+	if anchor == "" || anchor == "auto" {
+		align, _ := d.String("align")
+		anchor = map[string]string{"left": "line-left", "": "center", "center": "center", "right": "line-right"}[align]
+	}
+	columns := map[string]int{"line-left": 1, "center": 2, "line-right": 3}
+	if columns[anchor] != a.Column() {
+		return 0, false, false
+	}
+	x, ok = percentage(value)
+	return x, true, ok
+}
+
+// percentage reads a WebVTT percentage of at most 100 and rounds it to 3 decimals.
+func percentage(s string) (float64, bool) {
+	if !percentageRegexp.MatchString(s) {
+		return 0, false
+	}
+	v, err := strconv.ParseFloat(strings.TrimSuffix(s, "%"), 64)
+	if err != nil || v > 100 {
+		return 0, false
+	}
+	return position.Round(v), true
 }
 
 func settingsRow(line string, ok bool) (int, bool) {

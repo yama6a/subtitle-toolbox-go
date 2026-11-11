@@ -109,12 +109,14 @@ Data enters only through `SetFormatData`, which checks the fields that writers r
 
 A reader stores the alignment it read as a numpad int in the field `alignment` of its cue data. A writer writes the stored exact position only while the alignment is unchanged. Unchanged means that `alignment`, 2 when missing, equals `Cue.Position.Alignment.Numpad()`. The writers share the rule as `AlignmentUnchanged` in [internal/position](../internal/position/position.go).
 
+A reader also fills `Cue.Position.Offset` for WebVTT and TTML. A writer uses the offset only for a cue that has no stored position of its own format, and only when the offset lies in the screen cell of the alignment. An explicit alignment wins here too: `TopCenter` on a cue with offset (50, 90) gives the top output of 1.x. A caller who changes only `Offset` on a read cue must also clear the format data or change the alignment.
+
 Example: a WebVTT cue with the settings `line:0 position:30% align:left` reads as `TopLeft`, with `alignment` 7. Written back unchanged, the 3 settings return. After `SetCue` with `Position.Alignment` set to `BottomRight`, the writer drops them.
 
 | Format | Alignment unchanged | Alignment changed |
 |:--- |:--- |:--- |
-| WebVTT | writes the stored `line`, `position` and `align` settings | drops them and writes the settings of the new alignment |
-| TTML | writes the stored `region` of the `<p>` | drops it, writes a region of the new alignment, and sets a `tts:textAlign` of the styles that differs from the new column |
+| WebVTT | writes the stored `line`, `position` and `align` settings | drops them. Writes the offset settings when the offset fits the new alignment, else the settings of the new alignment |
+| TTML | writes the stored `region` of the `<p>` | drops it. Writes an offset region when the offset fits the new alignment, else a region of the new alignment. Sets a `tts:textAlign` of the styles that differs from the new column |
 
 ## Defaults
 

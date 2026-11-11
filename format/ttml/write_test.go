@@ -524,3 +524,93 @@ func TestCDATASections(t *testing.T) {
 		})
 	}
 }
+
+func TestWriteOffsetRegion(t *testing.T) {
+	t.Parallel()
+
+	withOffset := func(a model.Alignment, x, y float64) model.Cue {
+		c := cue(time.Second, 2*time.Second, "One")
+		c.Position = model.Position{Alignment: a, Offset: &model.Offset{X: x, Y: y}}
+		return c
+	}
+	region := func(id, origin, extent, displayAlign, textAlign string) string {
+		return `<region xml:id="` + id + `" tts:origin="` + origin + `" tts:extent="` + extent + `" tts:displayAlign="` + displayAlign +
+			`" tts:textAlign="` + textAlign + `"/>`
+	}
+	tests := []struct {
+		name    string
+		cues    []model.Cue
+		regions []string
+		refs    []string
+	}{
+		{
+			"bottom center",
+			[]model.Cue{withOffset(model.BottomCenter, 50, 90)},
+			[]string{region("bottomCenter-50-90", "0% 0%", "100% 90%", "after", "center")},
+			[]string{"bottomCenter-50-90"},
+		},
+		{
+			"top left",
+			[]model.Cue{withOffset(model.TopLeft, 10, 5)},
+			[]string{region("topLeft-10-5", "10% 5%", "90% 95%", "before", "left")},
+			[]string{"topLeft-10-5"},
+		},
+		{
+			"middle right",
+			[]model.Cue{withOffset(model.MiddleRight, 80, 40)},
+			[]string{region("middleRight-80-40", "0% 0%", "80% 80%", "center", "right")},
+			[]string{"middleRight-80-40"},
+		},
+		{
+			"middle center with decimals",
+			[]model.Cue{withOffset(model.MiddleCenter, 45.5, 60.0004)},
+			[]string{region("middleCenter-45.5-60", "0% 20%", "91% 80%", "center", "center")},
+			[]string{"middleCenter-45.5-60"},
+		},
+		{
+			"two cues share one region",
+			[]model.Cue{withOffset(model.BottomCenter, 50, 90), withOffset(model.BottomCenter, 50, 90)},
+			[]string{region("bottomCenter-50-90", "0% 0%", "100% 90%", "after", "center")},
+			[]string{"bottomCenter-50-90", "bottomCenter-50-90"},
+		},
+		{
+			"an offset outside its cell gets the region of the alignment",
+			[]model.Cue{withOffset(model.TopCenter, 50, 90)},
+			[]string{region("topCenter", "10% 10%", "80% 80%", "before", "center")},
+			[]string{"topCenter"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			out := writeDefault(t, subtitleOf(tt.cues...))
+			for _, r := range tt.regions {
+				assert.Equal(t, 1, strings.Count(out, r), r)
+			}
+			for _, ref := range tt.refs {
+				assert.Contains(t, out, `end="00:00:02.000" region="`+ref+`"`)
+			}
+		})
+	}
+}
+
+func TestWriteOffsetKeepsStoredRegion(t *testing.T) {
+	t.Parallel()
+
+	head := `<layout><region xml:id="r1" tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="after" tts:textAlign="center"/></layout>`
+	s, _ := mustRead(t, document(`<div><p region="r1" begin="1s" end="2s">x</p></div>`, "", head), false)
+	c, _ := s.Cue(0)
+	require.Equal(t, &model.Offset{X: 50, Y: 90}, c.Position.Offset)
+
+	c.Position.Offset = &model.Offset{X: 50, Y: 70}
+	require.NoError(t, s.SetCue(0, c))
+	out := writeDefault(t, s)
+	assert.Contains(t, out, `region="r1"`)
+	assert.NotContains(t, out, "bottomCenter-")
+
+	c.Position.Alignment, c.Position.Offset = model.TopLeft, &model.Offset{X: 50, Y: 90}
+	require.NoError(t, s.SetCue(0, c))
+	out = writeDefault(t, s)
+	assert.Contains(t, out, `region="topLeft"`)
+}

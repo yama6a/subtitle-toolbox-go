@@ -297,6 +297,53 @@ func TestWriteSettings(t *testing.T) {
 	}
 }
 
+func TestWriteOffset(t *testing.T) {
+	t.Parallel()
+
+	f := func(k string, v any) model.Field { return model.Field{Key: k, Value: v} }
+	tests := []struct {
+		name      string
+		alignment model.Alignment
+		offset    model.Offset
+		data      []model.Field
+		want      string
+	}{
+		{name: "bottom center height", alignment: model.BottomCenter, offset: model.Offset{X: 50, Y: 90}, want: " line:90%,end"},
+		{name: "bottom center height and column", alignment: model.BottomCenter, offset: model.Offset{X: 45, Y: 90}, want: " line:90%,end position:45%,center"},
+		{name: "bottom center edge", alignment: model.BottomCenter, offset: model.Offset{X: 50, Y: 100}, want: ""},
+		{name: "bottom left", alignment: model.BottomLeft, offset: model.Offset{X: 10, Y: 90}, want: " position:10%,line-left align:left"},
+		{name: "top center keeps the row setting", alignment: model.TopCenter, offset: model.Offset{X: 50, Y: 10}, want: " line:0"},
+		{name: "top left", alignment: model.TopLeft, offset: model.Offset{X: 20, Y: 5}, want: " line:0 position:20%,line-left align:left"},
+		{name: "middle right", alignment: model.MiddleRight, offset: model.Offset{X: 80, Y: 50}, want: " line:50%,center position:80%,line-right align:right"},
+		{name: "decimals", alignment: model.BottomCenter, offset: model.Offset{X: 50, Y: 84.66666}, want: " line:84.667%,end"},
+		{name: "offset outside the cell of the alignment", alignment: model.TopCenter, offset: model.Offset{X: 50, Y: 90}, want: " line:0"},
+		{
+			name: "kept settings come first", alignment: model.BottomCenter, offset: model.Offset{X: 50, Y: 90},
+			data: []model.Field{f("size", "35%"), f("region", "r"), f("line", "0"), f("alignment", int64(8))}, want: " size:35% region:r line:90%,end",
+		},
+		{
+			name: "stored settings win while the alignment is unchanged", alignment: model.TopLeft, offset: model.Offset{X: 10, Y: 5},
+			data: []model.Field{f("line", "0"), f("align", "left"), f("alignment", int64(7))}, want: " line:0 align:left",
+		},
+		{
+			name: "vertical text takes no offset", alignment: model.BottomCenter, offset: model.Offset{X: 50, Y: 90},
+			data: []model.Field{f("vertical", "rl")}, want: " vertical:rl",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			c := cue(sec, 2*sec, "One")
+			c.Position = model.Position{Alignment: tt.alignment, Offset: &tt.offset}
+			if tt.data != nil {
+				c = withData(t, c, tt.data...)
+			}
+			assert.Equal(t, bom+"WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.000"+tt.want+"\nOne\n", write(t, subtitle(t, c), model.CommonWriteOptions{}))
+		})
+	}
+}
+
 // Ports testAlignmentRoundTripsThroughCueSettings of tests/Formatters/WebVttFormatterTest.php of subtitle-toolbox-php.
 func TestWriteAlignmentRoundTrip(t *testing.T) {
 	t.Parallel()
