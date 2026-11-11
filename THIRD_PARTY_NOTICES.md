@@ -662,6 +662,7 @@ SOFTWARE.
 - Checked at: `5b9ee8baf08c472c7a74fbc337446b656dedabb4`
 - Code adapted from it:
   - `hearingimpaired`, the hearing-impaired rules, from `src/libse/Forms/RemoveTextForHI.cs` at `5b9ee8baf08c472c7a74fbc337446b656dedabb4`
+  - `internal/cea708`, the G2 table, from `src/libse/Cea708/Cea708.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`
 
 ```text
 MIT License
