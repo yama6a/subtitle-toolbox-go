@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -38,6 +39,9 @@ var defaultHeader = []string{
 	"",
 }
 
+// maxFrameLimit is the largest frame rate, rounded up, whose frame numbers have 2 digits.
+const maxFrameLimit = 100
+
 const (
 	defaultSeparator = " , "
 	defaultLineBreak = "|"
@@ -63,6 +67,13 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	if err != nil {
 		return WriteReport{}, err
 	}
+	if frameLimit(rate) > maxFrameLimit {
+		return WriteReport{}, &model.UnwritableError{
+			Format: model.SpruceSTL, CueIndex: -1,
+			Reason: writeFrameRateOption + ": The frame number has 2 digits, so the Spruce STL frame rate must not be above " +
+				strconv.Itoa(maxFrameLimit) + " fps, got " + timecode.Number(rate.Float64()) + ".",
+		}
+	}
 	separator := storedOr(file, "separator", separatorRegexp, defaultSeparator)
 	lineBreak := storedOr(file, "lineBreak", breakRegexp, defaultLineBreak)
 	header, ok := file.Strings("header")
@@ -73,7 +84,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	st := defaultStyle()
 	var body []byte
 	for _, line := range header {
-		body = appendCommand(body, line, &st)
+		body = appendStored(body, line, &st, true)
 	}
 	comments := make([][]string, s.Len()+1)
 	for _, c := range s.Comments() {
@@ -85,7 +96,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		data, _ := c.FormatData(formatDataKey)
 		commands, _ := data.Strings("commands")
 		for _, command := range commands {
-			body = appendCommand(body, command, &st)
+			body = appendStored(body, command, &st, false)
 		}
 		body = appendAlignment(body, c.Position.Alignment, &st)
 		body = append(body, timeCode(c.Start, rate)+separator+timeCode(c.End, rate)+separator+writtenText(c, st, lineBreak)+"\n"...)
@@ -93,7 +104,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	body = appendComments(body, comments[s.Len()])
 	trailer, _ := file.Strings("trailer")
 	for _, line := range trailer {
-		body = appendCommand(body, line, &st)
+		body = appendStored(body, line, &st, false)
 	}
 	return WriteReport{}, writing.Write(w, model.SpruceSTL, body, common, false)
 }
@@ -119,9 +130,22 @@ func outputRate(opts WriteOptions, file *model.Data) (model.FrameRate, error) {
 	return rate, parsing.FrameRateOption(err, writeFrameRateOption, "The Spruce STL frame rate")
 }
 
+// appendStored writes a stored header, command or trailer line, with CR and LF as spaces, and applies it to st. It
+// skips a line that the reader would not read as that kind of line: only a header line may be blank or a // comment,
+// and every other line must be a $ command.
+func appendStored(body []byte, line string, st *style, isHeader bool) []byte {
+	line = lineEnds.Replace(line)
+	trimmed := strings.Trim(line, markupcore.PHPTrimSet)
+	isCommand := strings.HasPrefix(trimmed, "$")
+	isHeaderOnly := trimmed == "" || strings.HasPrefix(trimmed, "//")
+	if isCommand || isHeader && isHeaderOnly {
+		return appendCommand(body, line, st)
+	}
+	return body
+}
+
 // appendCommand writes a header, command or trailer line and applies it to st.
 func appendCommand(body []byte, line string, st *style) []byte {
-	line = lineEnds.Replace(line)
 	st.apply(line)
 	return append(append(body, line...), '\n')
 }
@@ -148,11 +172,18 @@ func appendAlignment(body []byte, a model.Alignment, st *style) []byte {
 
 // timeCode returns d as hh:mm:ss:ff. It stops at the largest time code below 100000 hours.
 func timeCode(d time.Duration, rate model.FrameRate) string {
-	tc := rate.ClockTimecode(d)
-	if tc.Hours >= timecode.MaxHours {
-		tc = model.Timecode{Hours: timecode.MaxHours - 1, Minutes: 59, Seconds: 59, Frames: rate.Labels() - 1}
+	limit := frameLimit(rate)
+	d = max(d.Round(time.Millisecond), 0)
+	whole := int64(d / time.Second)
+	frame := int(rate.Frames(d % time.Second))
+	if frame >= limit {
+		whole++
+		frame = 0
 	}
-	return fmt.Sprintf("%02d:%02d:%02d:%02d", tc.Hours, tc.Minutes, tc.Seconds, tc.Frames)
+	if whole >= timecode.MaxHours*3600 {
+		whole, frame = timecode.MaxHours*3600-1, limit-1
+	}
+	return fmt.Sprintf("%02d:%02d:%02d:%02d", whole/3600, whole/60%60, whole%60, frame)
 }
 
 // writtenText returns the lines of c joined with lineBreak. A toggle goes before each text that needs another bold,

@@ -79,6 +79,11 @@ func Detect(content []byte) bool {
 	return !bytes.HasPrefix(bytes.TrimLeft(content[loc[1]:], " \t"), []byte(`"`))
 }
 
+// frameLimit returns the rate rounded up. A frame number must be below it.
+func frameLimit(r model.FrameRate) int {
+	return int((r.Num + r.Den - 1) / r.Den)
+}
+
 // style is the state that the "$" commands set. It applies to every cue until a command changes it.
 type style struct {
 	bold, italic, underline bool

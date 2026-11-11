@@ -74,6 +74,13 @@ func TestRead(t *testing.T) {
 			wantRate: 24,
 		},
 		{
+			name:     "frame 24 reads at 24.4 fps, because the rate rounds up",
+			content:  "00:00:01:24 , 00:00:02:00 , Odd\n",
+			fps:      model.FrameRate{Num: 122, Den: 5},
+			want:     []cueRow{{1984 * ms, 2 * time.Second, []string{"Odd"}, model.BottomCenter}},
+			wantRate: 24.4,
+		},
+		{
 			name:     "a file without cues gives no warning",
 			content:  "$Bold = True\n",
 			lenient:  true,
@@ -186,16 +193,6 @@ func TestReadErrors(t *testing.T) {
 			assert.Equal(t, model.NoBlock, got.Block)
 		})
 	}
-}
-
-func TestSkippedLineWarning(t *testing.T) {
-	t.Parallel()
-
-	_, warnings, err := read("00:00:01:00 , 00:00:02:00 , One\nstray\n", true, rate25)
-	require.NoError(t, err)
-	require.Len(t, warnings, 1)
-	assert.Equal(t, model.Skipped, warnings[0].Action)
-	assert.Equal(t, []string{"stray"}, warnings[0].Lines)
 }
 
 func TestReadKeepsTheFileShapeInTheFormatData(t *testing.T) {

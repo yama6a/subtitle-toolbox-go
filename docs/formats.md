@@ -245,9 +245,10 @@ The text after the last line end is no line, so a header without cues does not g
 | 1.6 s read at 25 fps and written at 30 fps | `00:00:01:18` |
 
 - **Escapes**: the text of a line cannot hold `|` or a toggle. A `|` in the text writes as U+00A6 BROKEN BAR. A `^` before `B`, `I` or `U` gets U+2060 WORD JOINER after it. A line break inside a line becomes the line break of the format.
-- **Stored lines**: a CR or LF in a stored `header`, `commands` or `trailer` line writes as a space, so each stored line stays one line.
+- **Stored lines**: a CR or LF in a stored `header`, `commands` or `trailer` line writes as a space, so each stored line stays one line. The writer skips a stored line that the reader would not read as that kind of line: a header line that is not blank, `$` or `//`, and a command or trailer line that does not start with `$`.
+- **Frame rate limit**: a rate above 100 fps fails with an `*UnwritableError` that names `WriteOptions.SpruceSTL.FrameRate`, because a frame number has 2 digits.
 - **Lost on write**: colors, strike, voices, fonts and ruby structure. The input line ending and the blank lines after the first cue. The output ends with LF.
-- **Round trip**: a file with a final line end comes out byte for byte with the same `LineEnding`, except for blank lines after the first cue.
+- **Round trip**: a file with a final line end comes out byte for byte with the same `LineEnding`, except for what the writer does not keep. That is the order of `$` and `//` lines between 2 cues (comments come first), blank lines after the first cue, white space around the line break of a later cue, and a separator that differs from the first one.
 
 ### Options
 

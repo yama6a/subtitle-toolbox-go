@@ -90,6 +90,18 @@ func TestWrite(t *testing.T) {
 			want: "$A = 1  $B = 2\n00:00:01:00 , 00:00:02:00 , One\n$C = 3 \n",
 		},
 		{
+			name: "stored lines that the reader would not read as that kind are skipped",
+			s: withFileData(subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"One"}}),
+				model.NewData(model.Field{Key: "header", Value: []any{"Hello", "//c", "", "00:00:01:00 , 00:00:02:00 , Two"}}, model.Field{Key: "trailer", Value: []any{"//x", "$T = 1"}})),
+			want: "//c\n\n00:00:01:00 , 00:00:02:00 , One\n$T = 1\n",
+		},
+		{
+			name: "frame 24 stays at 24.4 fps",
+			s:    subtitle(cue(time.Second, 1984*ms, "One"), cue(2*time.Second, 2999*ms, "Two")),
+			opts: sprucestl.WriteOptions{FrameRate: model.FrameRate{Num: 122, Den: 5}},
+			want: defaultHeader + "00:00:01:00 , 00:00:01:24 , One\n00:00:02:00 , 00:00:02:24 , Two\n",
+		},
+		{
 			name: "an empty stored header writes no header",
 			s:    withFileData(subtitle(cue(time.Second, 2*time.Second, "One")), model.NewData(model.Field{Key: "header", Value: []any{}})),
 			want: "00:00:01:00 , 00:00:02:00 , One\n",
@@ -183,4 +195,14 @@ func withFileData(s *model.Subtitle, data *model.Data) *model.Subtitle {
 func writeErr(s *model.Subtitle, opts sprucestl.WriteOptions) error {
 	_, err := sprucestl.Write(io.Discard, s, model.CommonWriteOptions{}, opts)
 	return err
+}
+
+func TestWriteRejectsAFrameRateAbove100(t *testing.T) {
+	t.Parallel()
+
+	err := writeErr(subtitle(cue(time.Second, 2*time.Second, "One")), sprucestl.WriteOptions{FrameRate: model.FrameRate{Num: 101, Den: 1}})
+	var uerr *model.UnwritableError
+	require.ErrorAs(t, err, &uerr)
+	assert.Contains(t, uerr.Reason, "WriteOptions.SpruceSTL.FrameRate")
+	require.NoError(t, writeErr(subtitle(cue(time.Second, 2*time.Second, "One")), sprucestl.WriteOptions{FrameRate: model.FrameRate{Num: 100, Den: 1}}))
 }

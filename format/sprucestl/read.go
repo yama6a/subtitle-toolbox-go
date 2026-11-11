@@ -200,7 +200,7 @@ func (rd *reader) readCue(number int, line string, cl cueLine) (model.Cue, error
 func (rd *reader) time(fields [4]string, line int) (time.Duration, error) {
 	text := strings.Join(fields[:], ":")
 	frames := atoi(fields[3])
-	if frames >= rd.rate.Labels() {
+	if frames >= frameLimit(rd.rate) {
 		return 0, &model.ParseError{Line: line, Msg: `The frame number in "` + text + `" is not below the frame rate of ` +
 			timecode.Number(rd.rate.Float64()) + " fps."}
 	}
