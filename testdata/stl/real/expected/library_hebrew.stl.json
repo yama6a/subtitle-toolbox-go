@@ -1,0 +1,122 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Library",
+            "language": "he"
+        },
+        "comments": [],
+        "formatData": {
+            "stl": {
+                "gsi": {
+                    "CPN": "850",
+                    "DFC": "STL25.01",
+                    "DSC": "1",
+                    "CCT": "04",
+                    "LC": "6C",
+                    "OPT": "Library",
+                    "OET": "",
+                    "TPT": "",
+                    "TET": "",
+                    "TN": "",
+                    "TCD": "",
+                    "SLR": "",
+                    "CD": "261002",
+                    "RD": "261002",
+                    "RN": "00",
+                    "TNB": "00003",
+                    "TNS": "00003",
+                    "TNG": "001",
+                    "MNC": "40",
+                    "MNR": "23",
+                    "TCS": "1",
+                    "TCP": "00000000",
+                    "TCF": "00000100",
+                    "TND": "1",
+                    "DSN": "1",
+                    "CO": "ISR",
+                    "PUB": "",
+                    "EN": "",
+                    "ECD": "",
+                    "spare": "",
+                    "UDA": ""
+                },
+                "startOfProgrammeSubtracted": false,
+                "firstSubtitleNumber": 1,
+                "comments": [],
+                "counts": {
+                    "TNB": 3,
+                    "TNS": 3,
+                    "TNG": 1,
+                    "TCF": "00000100"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "הספרייה פתוחה עד שמונה."
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 22,
+                        "justificationCode": 3,
+                        "text": "הספרייה פתוחה עד שמונה.",
+                        "blocks": [
+                            "000100ff0000000100000003001603000d0b0be4f1f4f8e9e9e420f4fae5e7e420f2e320f9eee5f0e42e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3.4,
+                "end": 6.0,
+                "lines": [
+                    "הרכבת יוצאת בשבע."
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 22,
+                        "justificationCode": 3,
+                        "text": "הרכבת יוצאת בשבע.",
+                        "blocks": [
+                            "000200ff000000030a000006001603000d0b0be4f8ebe1fa20e9e5f6e0fa20e1f9e1f22e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 6.4,
+                "end": 9.0,
+                "lines": [
+                    "תודה ולהתראות."
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 22,
+                        "justificationCode": 3,
+                        "text": "תודה ולהתראות.",
+                        "blocks": [
+                            "000300ff000000060a000009001603000d0b0bfae5e3e420e5ece4faf8e0e5fa2e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

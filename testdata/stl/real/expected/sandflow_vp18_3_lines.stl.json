@@ -1,0 +1,81 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "stl": {
+                "gsi": {
+                    "CPN": "850",
+                    "DFC": "STL25.01",
+                    "DSC": "2",
+                    "CCT": "00",
+                    "LC": "09",
+                    "OPT": "",
+                    "OET": "",
+                    "TPT": "",
+                    "TET": "",
+                    "TN": "",
+                    "TCD": "",
+                    "SLR": "Test File ttconv",
+                    "CD": "991231",
+                    "RD": "991231",
+                    "RN": "0",
+                    "TNB": "1",
+                    "TNS": "1",
+                    "TNG": "1",
+                    "MNC": "40",
+                    "MNR": "23",
+                    "TCS": "1",
+                    "TCP": "00000000",
+                    "TCF": "00000000",
+                    "TND": "1",
+                    "DSN": "1",
+                    "CO": "USA",
+                    "PUB": "",
+                    "EN": "",
+                    "ECD": "",
+                    "spare": "",
+                    "UDA": ""
+                },
+                "startOfProgrammeSubtracted": false,
+                "firstSubtitleNumber": 1,
+                "comments": [],
+                "counts": {
+                    "TNB": 1,
+                    "TNS": 1,
+                    "TNG": 1,
+                    "TCF": "00000001"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 0.04,
+                "end": 3.0,
+                "lines": [
+                    "<font color=\"#ffff00\">This</font>",
+                    "is",
+                    "row 18"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 1,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 18,
+                        "justificationCode": 2,
+                        "text": "<font color=\"#ffff00\">This</font>\nis\nrow 18",
+                        "blocks": [
+                            "010100ff0000000001000003001202000d001d030b0b546869738a69738a726f77203138200a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -15,6 +15,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/position"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/xmlraw"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
@@ -28,7 +29,7 @@ var (
 	frameLabelRegexp = regexp.MustCompile(`^\d{2,}:\d{2}:\d{2}:(\d{2})(?:\.\d+)?$`)
 	collapseRegexp   = regexp.MustCompile(`[ \t\n]+`)
 	lengthRegexp     = regexp.MustCompile(`^([+-]?\d+(?:\.\d+)?)(%|px|c)$`)
-	rootExtentRegexp = regexp.MustCompile(`^[\t\n\v\f\r ]*\d+(?:\.\d+)?px[\t\n\v\f\r ]+(\d+(?:\.\d+)?)px[\t\n\v\f\r ]*$`)
+	rootExtentRegexp = regexp.MustCompile(`^[\t\n\v\f\r ]*(\d+(?:\.\d+)?)px[\t\n\v\f\r ]+(\d+(?:\.\d+)?)px[\t\n\v\f\r ]*$`)
 )
 
 type reader struct {
@@ -816,6 +817,7 @@ func (r *reader) setCueData(c *model.Cue, p *xmlraw.Node, sc scope, region strin
 	if a, ok := r.alignment(region, hasRegion, textAlign, hasTextAlign); ok {
 		c.Position.Alignment = a
 		data.Set("alignment", int64(a.Numpad()))
+		c.Position.Offset = r.offset(region, hasRegion, a)
 	}
 	if data.Len() == 0 {
 		return nil
@@ -844,10 +846,45 @@ func (r *reader) alignment(region string, hasRegion bool, textAlign string, hasT
 	return model.AlignmentAt(row, column)
 }
 
+// offset returns the anchor point of the region in percent of the root container, or nil. The region needs an
+// explicit tts:origin. The vertical anchor is the one that row uses. The horizontal anchor is the origin, the
+// middle or the far edge of the region by the column of alignment a.
+func (r *reader) offset(region string, hasRegion bool, a model.Alignment) *model.Offset {
+	props := r.styles.regionProperties(region, hasRegion)
+	if origin, ok := props["origin"]; !ok || strings.Trim(origin, markupcore.PHPTrimSet) == "auto" {
+		return nil
+	}
+	var anchor [2]float64
+	for axis := range anchor {
+		origin, originOK := r.axisLength(props["origin"], axis, 0)
+		extent, extentOK := r.axisLength(propOr(props, "extent", "auto"), axis, 1)
+		if !originOK || !extentOK {
+			return nil
+		}
+		share := [...]float64{0, 0.5, 1}[a.Column()-1]
+		if axis == 1 {
+			share = map[string]float64{"before": 0, "center": 0.5, "after": 1}[strings.Trim(propOr(props, "displayAlign", "before"), markupcore.PHPTrimSet)]
+		}
+		if anchor[axis] = origin + extent*share; math.IsNaN(anchor[axis]) {
+			return nil
+		}
+	}
+	o := model.Offset{X: percent(anchor[0]), Y: percent(anchor[1])}
+	if !position.OffsetFits(a, &o) {
+		return nil
+	}
+	return position.ReadOffset(a, o)
+}
+
+// percent turns a fraction of the root container into percent, clamped to 0 to 100 and rounded to 3 decimals.
+func percent(fraction float64) float64 {
+	return min(max(fraction*100, 0), 100)
+}
+
 // row returns the grid row of the anchor of a region: below 1/3 of the height the top row, above 2/3 the bottom row.
 func (r *reader) row(props properties) (int, bool) {
-	origin, originOK := r.verticalLength(propOr(props, "origin", "auto"), 0)
-	extent, extentOK := r.verticalLength(propOr(props, "extent", "auto"), 1)
+	origin, originOK := r.axisLength(propOr(props, "origin", "auto"), 1, 0)
+	extent, extentOK := r.axisLength(propOr(props, "extent", "auto"), 1, 1)
 	if !originOK || !extentOK {
 		return 0, false
 	}
@@ -872,8 +909,9 @@ func (r *reader) row(props properties) (int, bool) {
 	}
 }
 
-// verticalLength returns the second length of an origin or extent value as a fraction of the root container height.
-func (r *reader) verticalLength(value string, auto float64) (float64, bool) {
+// axisLength returns the length of an origin or extent value on an axis as a fraction of the root container. The
+// axis is 0 for the first length and the width, and 1 for the second length and the height.
+func (r *reader) axisLength(value string, axis int, auto float64) (float64, bool) {
 	parts := splitSpace(value)
 	if len(parts) == 1 && parts[0] == "auto" {
 		return auto, true
@@ -881,7 +919,7 @@ func (r *reader) verticalLength(value string, auto float64) (float64, bool) {
 	if len(parts) != 2 {
 		return 0, false
 	}
-	m := lengthRegexp.FindStringSubmatch(parts[1])
+	m := lengthRegexp.FindStringSubmatch(parts[axis])
 	if m == nil {
 		return 0, false
 	}
@@ -890,36 +928,36 @@ func (r *reader) verticalLength(value string, auto float64) (float64, bool) {
 	case "%":
 		return length / 100, true
 	case "c":
-		return r.cellLength(length)
+		return r.cellLength(length, axis)
 	default:
-		return r.pixelLength(length)
+		return r.pixelLength(length, axis)
 	}
 }
 
-// cellLength returns a length in cells as a fraction of the height, by the rows of ttp:cellResolution.
-func (r *reader) cellLength(length float64) (float64, bool) {
+// cellLength returns a length in cells as a fraction of the width or height, by the columns or rows of ttp:cellResolution.
+func (r *reader) cellLength(length float64, axis int) (float64, bool) {
 	v, ok := r.parameter("cellResolution")
 	if !ok {
 		v = "32 15"
 	}
 	resolution := spaceRegexp.Split(strings.Trim(v, markupcore.PHPTrimSet), -1)
-	if len(resolution) != 2 || phpInt(resolution[1]) <= 0 {
+	if len(resolution) != 2 || phpInt(resolution[axis]) <= 0 {
 		return 0, false
 	}
-	return length / float64(phpInt(resolution[1])), true
+	return length / float64(phpInt(resolution[axis])), true
 }
 
-// pixelLength returns a length in pixels as a fraction of the height of tts:extent on <tt>, else on <body>.
-func (r *reader) pixelLength(length float64) (float64, bool) {
+// pixelLength returns a length in pixels as a fraction of the width or height of tts:extent on <tt>, else on <body>.
+func (r *reader) pixelLength(length float64, axis int) (float64, bool) {
 	extent, ok := stylingAttributes(r.root)["extent"]
 	if !ok && r.body != nil {
 		extent, ok = stylingAttributes(r.body)["extent"]
 	}
 	m := rootExtentRegexp.FindStringSubmatch(extent)
-	if !ok || m == nil || phpFloat(m[1]) <= 0 {
+	if !ok || m == nil || phpFloat(m[1+axis]) <= 0 {
 		return 0, false
 	}
-	return length / phpFloat(m[1]), true
+	return length / phpFloat(m[1+axis]), true
 }
 
 func propOr(props properties, name, fallback string) string {

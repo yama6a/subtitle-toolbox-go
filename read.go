@@ -51,30 +51,89 @@ func parse(content []byte, path string, opts ReadOptions) (*Subtitle, ReadInfo, 
 		}
 		return nil, ReadInfo{}, unsupported(subject + " is " + c + " file. This version reads no video files.")
 	}
-	var row formatFuncs
-	if opts.Format != "" {
-		var err error
-		if row, err = readable(opts.Format); err != nil {
-			return nil, ReadInfo{}, err
-		}
-	}
-	text, err := textenc.Decode(content, opts.Encoding)
-	if err != nil {
-		return nil, ReadInfo{}, &ParseError{Format: opts.Format, Msg: err.Error(), Err: err}
-	}
 	if opts.Format == "" {
-		f, empty, err := formatOf(text.Text, path)
-		if err != nil {
-			return nil, ReadInfo{}, err
-		}
-		if empty {
-			return &Subtitle{}, readInfo(f, text, nil, opts), nil
-		}
-		if row, err = readable(f); err != nil {
-			return nil, ReadInfo{}, err
-		}
+		return parseDetected(content, path, opts)
+	}
+	row, err := readable(opts.Format)
+	if err != nil {
+		return nil, ReadInfo{}, err
+	}
+	if opts.Format.IsBinary() {
+		return read(row, textenc.Decoded{Text: content}, opts)
+	}
+	text, err := decode(content, opts)
+	if err != nil {
+		return nil, ReadInfo{}, err
 	}
 	return read(row, text, opts)
+}
+
+func decode(content []byte, opts ReadOptions) (textenc.Decoded, error) {
+	text, err := textenc.Decode(content, opts.Encoding)
+	if err != nil {
+		return textenc.Decoded{}, &ParseError{Format: opts.Format, Msg: err.Error(), Err: err}
+	}
+	return text, nil
+}
+
+// parseDetected reads content of an unknown format: a binary format by content or extension first, else the
+// decoded text by detection and extension, as docs/detection.md says.
+func parseDetected(content []byte, path string, opts ReadOptions) (*Subtitle, ReadInfo, error) {
+	raw := textenc.Decoded{Text: content}
+	f, binary := binaryFormat(content, path)
+	var text textenc.Decoded
+	var empty bool
+	if binary {
+		text, empty = raw, isBlank(content)
+	} else {
+		var err error
+		if text, err = decode(content, opts); err != nil {
+			return nil, ReadInfo{}, err
+		}
+		if f, empty, err = formatOf(text.Text, path); err != nil {
+			return nil, ReadInfo{}, err
+		}
+		if f.IsBinary() {
+			text = raw
+		}
+	}
+	if empty {
+		return &Subtitle{}, readInfo(f, text, nil, opts), nil
+	}
+	row, err := readable(f)
+	if err != nil {
+		return nil, ReadInfo{}, err
+	}
+	return read(row, text, opts)
+}
+
+// binaryFormat returns the binary format of content that a read without a format picks before any decoding:
+// the format that Detect finds in the raw bytes when it is binary. When Detect finds no format, the format of an
+// extension that only binary formats list. A text format that Detect finds wins over the extension.
+func binaryFormat(content []byte, path string) (Format, bool) {
+	if f, ok := Detect(content); ok {
+		return f, f.IsBinary()
+	}
+	if !binaryExtension(path) {
+		return "", false
+	}
+	return formatOfExtension(path)
+}
+
+// binaryExtension reports whether every format that lists the extension of path is binary. ".890" is.
+// ".stl" is not one, because Spruce STL lists it too. A .stl file with no binary signature goes through the text path.
+func binaryExtension(path string) bool {
+	ext := extension(path)
+	found := false
+	for _, row := range registry {
+		if slices.Contains(row.format.Extensions(), ext) {
+			if !row.format.IsBinary() {
+				return false
+			}
+			found = true
+		}
+	}
+	return found
 }
 
 // formatOf returns the format of text by detection, else by the extension of path. empty reports that text is

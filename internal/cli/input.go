@@ -206,6 +206,9 @@ func (r *runner) detect(path string) (stbox.Format, bool) {
 	if err != nil {
 		return "", false
 	}
+	if f, ok := stbox.Detect(content); ok && f.IsBinary() {
+		return f, true
+	}
 	text, err := textenc.Decode(content, r.readOptions.Encoding)
 	if err != nil {
 		return "", false
