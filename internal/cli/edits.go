@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"os"
 	"regexp"
 	"slices"
 	"strconv"
@@ -93,7 +92,7 @@ func flagSteps(a *args, flags []flagStep) steps {
 
 // convertGroups lists the groups in pipeline order.
 func convertGroups() []group {
-	return []group{forcedGroup(), errorsGroup(), sdhGroup(), replaceGroup(), textGroup(), structureGroup(), retimeGroup(), timingGroup(), maskingGroup(), assGroup()}
+	return []group{forcedGroup(), errorsGroup(), sdhGroup(), replaceGroup(), textGroup(), structureGroup(), retimeGroup(), snapGroup(), timingGroup(), maskingGroup(), assGroup()}
 }
 
 func needs(a *args, needed string, opts ...string) error {
@@ -789,13 +788,9 @@ func (m *maskingEdit) apply(_ context.Context, s *stbox.Subtitle, _ *console, _ 
 // loadWords reads one word per line. A UTF-8 BOM, the line endings CR LF, LF and CR, the spaces around a word and
 // empty lines do not count. A word list that fails Validate is a usage error.
 func (m *maskingEdit) loadWords(c *console) error {
-	path := c.path(m.wordsPath)
-	if st, err := os.Stat(path); err != nil || !st.Mode().IsRegular() {
-		return &fileError{msg: m.wordsPath + ": " + missingFileMessage}
-	}
-	content, err := os.ReadFile(path)
+	content, err := readSideText(c, m.wordsPath)
 	if err != nil {
-		return &fileError{msg: m.wordsPath + ": Cannot read the file."}
+		return err
 	}
 	text := string(content)
 	for strings.HasPrefix(text, "\ufeff") {

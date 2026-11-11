@@ -85,6 +85,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   - `testdata/subviewer/real/mantas_headers_shape.sub`, in the shape of `tests/files/sub_viewer_with_headers.sub`
   - `testdata/subviewer/real/mantas_plain_shape.sub`, in the shape of `tests/files/sub_viewer.sub`
   - `testdata/qttext/real/subtitle_edit_shape.txt`, in the shape of the `$qttxt` string in `tests/formats/TxtQuickTimeTest.php`
+  - `testdata/spruce-stl/real/bakery.stl`, in the shape of `tests/files/stl.stl`
+  - `testdata/spruce-stl/real/bakery_with_header.stl`, in the shape of `tests/files/stl_with_comments.stl`
+- Code adapted from it:
+  - `format/sprucestl/read.go`, the frame rate guess, from `src/Code/Converters/StlConverter.php` at `959d1705b1ed12cbb9ddba517f8bcb814e1919a8`
+  - `format/sprucestl/read_test.go`, the test of tabs around the commas and hours above 24, from `testClientFile` and `testTimesBiggerThan24Hours` in `tests/formats/StlTest.php` at the same commit
 
 ```text
 MIT License
