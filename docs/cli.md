@@ -316,6 +316,36 @@ morning.srt
 
 A minor release may add keys to these objects. [compatibility.md](compatibility.md) states the rule.
 
+## validate
+
+`stbox validate <input>... [rule options] [--json] [options]` checks each input with `validation.Check` of [validation.md](validation.md). It takes `--json` and the input options.
+
+| Option | Rule |
+|:--- |:--- |
+| `--max-cps CHARS` | `maxCharactersPerSecond` |
+| `--max-cpl CHARS` | `maxCharactersPerLine` |
+| `--max-lines LINES` | `maxLinesPerCue` |
+| `--min-duration SECONDS` | `minDuration` |
+| `--max-duration SECONDS` | `maxDuration` |
+| `--min-gap SECONDS` | `minGap` |
+| `--check-overlaps` | `noOverlap` |
+| `--check-empty-cues` | `noEmptyCues` |
+| `--max-wpm WORDS` | `maxWordsPerMinute` |
+| `--min-seconds-per-word SECONDS` | `minSecondsPerWord` |
+| `--max-speakers SPEAKERS` | `maxSpeakersPerCue` |
+| `--dialogue-dash STYLE` | `dialogueDashStyle`. STYLE is the exact text of one of the 8 styles, such as `"- "` or `"-"` |
+| `--allowed-characters LIST` | `allowedCharacters`. LIST is a list or a class, passed as it is |
+| `--check-double-spaces` | `noDoubleSpaces` |
+| `--check-leading-or-trailing-spaces` | `noLeadingOrTrailingSpaces` |
+| `--check-unbalanced-tags` | `noUnbalancedTags` |
+| `--check-all-caps-lines` | `noAllCapsLines` |
+
+- **Usage errors**: a bad option value, a rule that `Rules.Validate` rejects, and a call without a rule option (`Pass at least one rule option.`) exit with 2. The rules `requireCues` and `noNegativeDuration` have no option.
+- **Text**: one line per violation, `LABEL: cue N: RULE VALUE` and `, limit LIMIT` for a rule with a limit. N counts from 1 and the part `cue N: ` is left out for a rule about the whole subtitle. Numbers have at most 3 decimals, and `INF` stands for an infinite value. An input without a violation prints `LABEL: no problems`.
+- **JSON**: one object per input with the keys `file`, `format`, `valid`, `violations` and `warnings`. A violation has the keys `cueIndex` (0-based, `null` for no cue), `rule`, `value`, `infinite` and `limit`. `value` is `null` and `infinite` is `true` for an infinite value, because JSON has no infinity.
+- **Summary**: with 2 or more inputs, `N files: V valid, P with problems, F failed.` follows the lines. It goes to stderr with `--json`.
+- **Exit code**: 3 when an input failed, else 1 when an input has a violation, else 0.
+
 ## sync
 
 `stbox sync <input>... --reference FILE [options]` retimes each input to the cue times of a reference subtitle. It finds the offset and the frame-rate scale. [sync.md](sync.md#command-line) lists its options and output.
@@ -386,7 +416,7 @@ vtt        .vtt              yes   yes
 | Code | Meaning | Example |
 |---:|:--- |:--- |
 | 0 | success | every input was written |
-| 1 | result | `diff` found a difference. Not an error |
+| 1 | result | `diff` found a difference, or `validate` found a broken rule. Not an error |
 | 2 | invalid arguments | an unknown option, no input, an output that exists, `--encoding CP1125` |
 | 3 | a file could not be read or written | a missing input, a broken cue in strict mode, an output directory that cannot be created |
 | 130 | stopped by Ctrl-C or SIGTERM | the finished outputs stay |

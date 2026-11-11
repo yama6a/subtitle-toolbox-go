@@ -4,10 +4,10 @@ import (
 	"context"
 	"slices"
 	"strconv"
-	"time"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
 	"github.com/yama6a/subtitle-toolbox-go/v2/diff"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
@@ -107,7 +107,7 @@ func (d *diffCommand) process(_ context.Context, r *runner, in *input) error {
 		return err
 	}
 	if len(differences) > 0 {
-		r.result = true
+		r.results++
 	}
 	d.report.emit(r, diff.Text(differences), diffEntry{
 		OldFile:     in.arg,
@@ -170,10 +170,5 @@ func cueToJSON(c *model.Cue) *cueJSON {
 	if lines == nil {
 		lines = []string{}
 	}
-	return &cueJSON{Start: secondsOf(c.Start), End: secondsOf(c.End), Lines: lines, Forced: c.Forced}
-}
-
-// secondsOf returns the whole milliseconds of d as seconds, so 6200 ms gives 6.2.
-func secondsOf(d time.Duration) float64 {
-	return float64(d.Milliseconds()) / 1000
+	return &cueJSON{Start: timecode.FloatSeconds(c.Start), End: timecode.FloatSeconds(c.End), Lines: lines, Forced: c.Forced}
 }

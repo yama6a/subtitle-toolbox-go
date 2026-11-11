@@ -85,8 +85,8 @@ The CLI maps an error to an exit code by the phase in which it occurs, not by it
 
 | Code | Meaning | When |
 |---:|:--- |:--- |
-| 0 | success | no input failed, and no difference was found |
-| 1 | result | `diff` found a difference. Not an error |
+| 0 | success | no input failed, no difference was found and no rule was broken |
+| 1 | result | `diff` found a difference, or `validate` found a broken rule. Not an error |
 | 2 | usage | a flag parse error, an unknown command, no input, every check before the first read, and every error before the input loop starts. Example: `Validate()` of the options that the CLI built returns an error that matches `ErrInvalidArgument`. So a `--mask-words` file with no word or a bad word exits 2 |
 | 3 | file | any error while one input is read, edited or written, whatever its type. A side file that is missing or does not parse, such as the reference of `sync`. An output file that the CLI cannot create. Any other error outside the input loop |
 | 130 | interrupt | Ctrl-C or SIGTERM stopped the run. The finished outputs stay |

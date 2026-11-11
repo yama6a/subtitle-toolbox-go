@@ -71,6 +71,7 @@ var layers = map[string]layer{
 	"refsync":              layerFacade,
 	"diff":                 layerFacade,
 	"dual":                 layerFacade,
+	"validation":           layerFacade,
 	"internal/cli":         layerCLI,
 	"cmd/stbox":            layerCLI,
 }

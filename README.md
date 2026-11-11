@@ -89,6 +89,7 @@ stbox convert film.srt --to vtt -o film.vtt        # one file
 stbox convert season1 --to vtt --output-dir out    # every subtitle file of a folder
 stbox convert film.srt --to vtt --shift -2.5       # WebVTT with all cues 2.5 s earlier, on stdout
 stbox info film.srt --json                         # format, encoding, statistics and warnings
+stbox validate film.srt --max-cpl 42 --check-overlaps   # one line for each broken rule, exit code 1
 stbox formats                                      # names and extensions for --from and --to
 ```
 
