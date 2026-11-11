@@ -1,0 +1,64 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "scc": {
+                "dropFrame": false
+            }
+        },
+        "cues": [
+            {
+                "start": 30.998,
+                "end": 33.2,
+                "lines": [
+                    "<i>[Station announcer]</i>",
+                    "<i>The ferry to the island</i>",
+                    "<i>leaves from pier four,</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            13,
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            2,
+                            2,
+                            2
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 33.267,
+                "end": 35.035,
+                "lines": [
+                    "<i>not from pier two</i>",
+                    "<i>as printed in the guide.</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            3,
+                            3
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

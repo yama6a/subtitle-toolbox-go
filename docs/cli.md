@@ -396,6 +396,7 @@ microdvd   .sub              yes   yes
 mpsub      .mpsub            yes   yes
 sami       .smi .sami        yes   yes
 sbv        .sbv              yes   yes
+scc        .scc              yes   no
 srt        .srt              yes   yes
 subviewer  .sub              yes   yes
 ttml       .ttml .dfxp .xml  yes   yes

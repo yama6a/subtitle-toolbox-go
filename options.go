@@ -11,6 +11,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
@@ -38,6 +39,9 @@ type ReadOptions struct {
 	// CSV holds the settings of the CSV and TSV reader. The zero value reads the columns by their header names and
 	// detects the delimiter.
 	CSV csv.ReadOptions
+	// SCC holds the settings of the SCC reader. The zero value reads channel 1 and gives one cue per screen of
+	// roll-up captions.
+	SCC scc.ReadOptions
 }
 
 // WriteOptions holds the settings of a write. The zero value writes with the defaults.
@@ -105,7 +109,10 @@ func (o ReadOptions) Validate() error {
 	if err := o.MicroDVD.Validate(); err != nil {
 		return err
 	}
-	return o.CSV.Validate()
+	if err := o.CSV.Validate(); err != nil {
+		return err
+	}
+	return o.SCC.Validate()
 }
 
 // Validate checks every field of o, also the fields of formats that a write does not use.

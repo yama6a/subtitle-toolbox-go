@@ -98,7 +98,7 @@ func detectTests() []detectTest {
 		{name: "Spruce STL with tabs", content: "$FadeOut\t=\t0\n \n00:00:01:10\t,\t00:00:03:10\t,\tBakery\n", later: "Spruce STL, 2.x"},
 		{name: "Spruce STL quote after comment", content: "//Subtitles\n00:00:01:10 , 00:00:03:10 , \"Bakery\"\n", later: "Spruce STL, 2.x"},
 		{name: "EBU STL at 30 fps", content: "865STL30.011" + strings.Repeat(" ", 1012), later: "EBU STL, 2.x"},
-		{name: "SCC header", content: "Scenarist_SCC V1.0\n\n00:00:00:00\t9420 9420\n", later: "SCC, 2.x"},
+		{name: "SCC header", content: "Scenarist_SCC V1.0\n\n00:00:00:00\t9420 9420\n", want: stbox.SCC},
 		{name: "YouTube srv3", content: "<?xml version=\"1.0\" encoding=\"utf-8\" ?><timedtext format=\"3\">\n<body>\n</body>\n</timedtext>\n", later: "YouTube, 4.x"},
 		{name: "YouTube srv1", content: `<transcript><text start="1.2" dur="2.3">Hello</text></transcript>`, later: "YouTube, 4.x"},
 		{name: "Podcasting 2.0 HTML", content: "<cite>Anna:</cite>\n<time>0:00</time>\n<p>Hello</p>\n", later: "HTML transcript, 4.x"},

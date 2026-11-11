@@ -1,0 +1,101 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "scc": {
+                "dropFrame": false
+            }
+        },
+        "cues": [
+            {
+                "start": 10.143,
+                "end": 11.144,
+                "lines": [
+                    "BAKERY NEWS"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "paint-on",
+                        "rows": [
+                            14
+                        ],
+                        "columns": [
+                            4
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 11.144,
+                "end": 12.212,
+                "lines": [
+                    "BAKERY NEWS",
+                    "BREAD IS READY"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "paint-on",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            4,
+                            4
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 12.212,
+                "end": 14.014,
+                "lines": [
+                    "BAKERY NEWS",
+                    "BREAD IS READY SOON."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "paint-on",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            4,
+                            4
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 15.148,
+                "end": 17.017,
+                "lines": [
+                    "<font color=\"#00ffff\">SEE YOU TOMORROW.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "paint-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

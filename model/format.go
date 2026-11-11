@@ -15,6 +15,7 @@ const (
 	MPSub         Format = "mpsub"
 	SAMI          Format = "sami"
 	SBV           Format = "sbv"
+	SCC           Format = "scc"
 	SubRip        Format = "srt"
 	SubViewer     Format = "subviewer"
 	TTML          Format = "ttml"
@@ -45,6 +46,7 @@ var formatFacts = []formatFact{
 	{format: MPSub, extensions: []string{"mpsub"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SAMI, extensions: []string{"smi", "sami"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SBV, extensions: []string{"sbv"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: SCC, extensions: []string{"scc"}, canRead: true, autoDetected: true},
 	{format: SubRip, extensions: []string{"srt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubViewer, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, canWrite: true, autoDetected: true},

@@ -14,6 +14,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 )
 
 // Ports testRealFilesGiveTheCuesOf1x of tests/ReadOptionsTest.php of subtitle-toolbox-php.
@@ -49,6 +50,11 @@ func TestReadOptionGoldens(t *testing.T) {
 			opts: stbox.ReadOptions{
 				Format: stbox.CSV, LastCueDuration: new(10 * time.Second), CSV: csv.ReadOptions{Delimiter: csv.Semicolon},
 			},
+		},
+		{
+			golden: "scc_rollup_news_ndf",
+			file:   "scc/real/rollup_news_ndf.scc",
+			opts:   stbox.ReadOptions{Format: stbox.SCC, LastCueDuration: new(4 * time.Second), SCC: scc.ReadOptions{Channel: 1}},
 		},
 	}
 	for _, tt := range tests {
@@ -92,6 +98,7 @@ func TestLastCueDuration(t *testing.T) {
 		{"TMPlayer", "tmplayer/real/tmplayer_crlf.txt", stbox.ReadOptions{Format: stbox.TMPlayer}, 3600 * time.Second},
 		{"SAMI", "sami/real/mantas_smi_formatted.smi", stbox.ReadOptions{Format: stbox.SAMI}, 17350 * time.Millisecond},
 		{"CSV", "csv/real/dubbing_script.csv", stbox.ReadOptions{Format: stbox.CSV, CSV: dubbingScript}, 36008200 * time.Millisecond},
+		{"SCC", "read-options/last_caption_without_erase.scc", stbox.ReadOptions{Format: stbox.SCC}, 3504601 * time.Millisecond},
 		{"SubViewer 1", "subviewer/real/subviewer1_delay.sub", stbox.ReadOptions{Format: stbox.SubViewer}, 17 * time.Second},
 	}
 	for _, tt := range tests {

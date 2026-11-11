@@ -16,6 +16,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
@@ -42,6 +43,12 @@ func TestReadOptionsValidate(t *testing.T) {
 				Option: "ReadOptions.MicroDVD.FrameRate",
 				Msg:    "The frame rate must be greater than 0, got -1.",
 			},
+		},
+		{name: "SCC channel 2", opts: stbox.ReadOptions{SCC: scc.ReadOptions{Channel: 2, RollUp: scc.RollUpLines}}},
+		{
+			name:    "SCC channel 3",
+			opts:    stbox.ReadOptions{SCC: scc.ReadOptions{Channel: 3}},
+			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.SCC.Channel", Msg: "The SCC data channel must be 1 or 2, got 3."},
 		},
 		{
 			name:    "unknown encoding",

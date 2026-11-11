@@ -1,0 +1,81 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "scc": {
+                "dropFrame": true
+            }
+        },
+        "cues": [
+            {
+                "start": 2.302,
+                "end": 4.671,
+                "lines": [
+                    "THE WINTER TIMETABLE",
+                    "STARTS ON MONDAY."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            8,
+                            8
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 5.472,
+                "end": 7.007,
+                "lines": [
+                    "<i>[ANNOUNCER]</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 8.475,
+                "end": 11.011,
+                "lines": [
+                    "THE COAST TRAIN LEAVES AT",
+                    "6:50, TEN MINUTES EARLIER."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            4,
+                            4
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

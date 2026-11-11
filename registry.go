@@ -18,6 +18,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/qttext"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/sbv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
@@ -58,6 +59,8 @@ var (
 	_ readFunc[sbv.ReadOptions]                                = sbv.Read
 	_ writeFunc[sbv.WriteOptions, sbv.WriteReport]             = sbv.Write
 	_ detectFunc                                               = sbv.Detect
+	_ readFunc[scc.ReadOptions]                                = scc.Read
+	_ detectFunc                                               = scc.Detect
 	_ readFunc[mpl2.ReadOptions]                               = mpl2.Read
 	_ writeFunc[mpl2.WriteOptions, mpl2.WriteReport]           = mpl2.Write
 	_ detectFunc                                               = mpl2.Detect
@@ -102,6 +105,7 @@ var registry = []formatFuncs{
 	{format: MPSub, read: readMPSub, write: writeMPSub},
 	{format: SAMI, read: readSAMI, write: writeSAMI},
 	{format: SBV, read: readSBV, write: writeSBV},
+	{format: SCC, read: readSCC},
 	{format: SubRip, read: readSubRip, write: writeSubRip},
 	{format: SubViewer, read: readSubViewer, write: writeSubViewer},
 	{format: TTML, read: readTTML, write: writeTTML},
@@ -140,6 +144,7 @@ var (
 		{format: SBV, match: sbv.Detect},
 		{format: SubViewer, match: subviewer.Detect},
 		{format: LRC, match: lrc.Detect},
+		{format: SCC, match: scc.Detect},
 		{format: MPL2, match: mpl2.Detect},
 		{format: TMPlayer, match: tmplayer.Detect},
 	}
@@ -234,6 +239,10 @@ func readMicroDVD(r io.Reader, common model.CommonReadOptions, opts ReadOptions)
 func writeMicroDVD(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	_, err := microdvd.Write(w, s, common, opts.MicroDVD)
 	return WriteReport{}, err
+}
+
+func readSCC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return scc.Read(r, common, opts.SCC)
 }
 
 func readSBV(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {

@@ -1,0 +1,95 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "scc": {
+                "dropFrame": false
+            }
+        },
+        "cues": [
+            {
+                "start": 2.269,
+                "end": 2.436,
+                "lines": [
+                    "the bus was late again today."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 2.503,
+                "end": 3.737,
+                "lines": [
+                    "so,"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 4.571,
+                "end": 5.072,
+                "lines": [
+                    "And then,"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 5.138,
+                "end": 5.506,
+                "lines": [
+                    "oh"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}
