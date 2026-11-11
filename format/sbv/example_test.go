@@ -33,7 +33,7 @@ func ExampleWrite() {
 		model.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"<i>Fish &amp; Chips</i>"}},
 		model.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"On the menu"}},
 	)
-	err := sbv.Write(os.Stdout, s, model.CommonWriteOptions{}, sbv.WriteOptions{})
+	_, err := sbv.Write(os.Stdout, s, model.CommonWriteOptions{}, sbv.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)
 	}

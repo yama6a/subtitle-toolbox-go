@@ -64,7 +64,7 @@ func FuzzRead(f *testing.F) {
 			}
 
 			var out bytes.Buffer
-			err = stboxjson.Write(&out, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
+			_, err = stboxjson.Write(&out, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
 			if err != nil {
 				var uerr *model.UnwritableError
 				if !errors.As(err, &uerr) || uerr.Reason != infOrNaN {

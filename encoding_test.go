@@ -188,7 +188,8 @@ func TestTextReadWithItsEncodingIsWrittenAsTTML(t *testing.T) {
 	s, _, err := stbox.Load("testdata/ass/own_windows_1252.ass", stbox.ReadOptions{Format: stbox.ASS, Encoding: "Windows-1252"})
 	require.NoError(t, err)
 	var out bytes.Buffer
-	require.NoError(t, stbox.Write(&out, s, stbox.TTML, stbox.WriteOptions{}))
+	_, err = stbox.Write(&out, s, stbox.TTML, stbox.WriteOptions{})
+	require.NoError(t, err)
 	assert.Contains(t, out.String(), "Le café ouvre à sept heures.")
 
 	back, _, err := stbox.Parse(bytes.NewReader(out.Bytes()), stbox.ReadOptions{Format: stbox.TTML})

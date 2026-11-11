@@ -334,7 +334,7 @@ func TestWriteChecksTheOptions(t *testing.T) {
 	t.Parallel()
 
 	var out failingWriter
-	err := mpsub.Write(out, subtitle(cue(0, time.Second, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: 29.97})
+	_, err := mpsub.Write(out, subtitle(cue(0, time.Second, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: 29.97})
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 }
 
@@ -345,7 +345,7 @@ func (failingWriter) Write([]byte) (int, error) { return 0, errors.New("disk ful
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	err := mpsub.Write(failingWriter{}, subtitle(cue(0, time.Second, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{})
+	_, err := mpsub.Write(failingWriter{}, subtitle(cue(0, time.Second, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "disk full")
 }

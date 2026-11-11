@@ -168,7 +168,8 @@ func TestADirectoryConvertsAnMPL2TxtFileAndSkipsNotes(t *testing.T) {
 	film, _, err := stbox.Load(testfiles.Path(t, "mpl2/real/subtitle_edit_shape.txt"), stbox.ReadOptions{})
 	require.NoError(t, err)
 	var want bytes.Buffer
-	require.NoError(t, stbox.Write(&want, film, stbox.SubRip, stbox.WriteOptions{}))
+	_, err = stbox.Write(&want, film, stbox.SubRip, stbox.WriteOptions{})
+	require.NoError(t, err)
 	assert.Equal(t, want.String(), readFile(t, dir, "out/film.srt"))
 }
 
@@ -185,7 +186,8 @@ func TestADirectoryConvertsAQuickTimeTextTxtFileAndSkipsNotes(t *testing.T) {
 	film, _, err := stbox.Load(testfiles.Path(t, "qttext/real/subtitle_edit_shape.txt"), stbox.ReadOptions{})
 	require.NoError(t, err)
 	var want bytes.Buffer
-	require.NoError(t, stbox.Write(&want, film, stbox.SubRip, stbox.WriteOptions{}))
+	_, err = stbox.Write(&want, film, stbox.SubRip, stbox.WriteOptions{})
+	require.NoError(t, err)
 	assert.Equal(t, want.String(), readFile(t, dir, "out/film.srt"))
 	assert.NoFileExists(t, filepath.Join(dir, "out", "notes.srt"))
 }
@@ -203,7 +205,8 @@ func TestADirectoryConvertsAnMPSubSubFileByItsContent(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, stbox.MPSub, info.Format)
 	var want bytes.Buffer
-	require.NoError(t, stbox.Write(&want, film, stbox.SubRip, stbox.WriteOptions{}))
+	_, err = stbox.Write(&want, film, stbox.SubRip, stbox.WriteOptions{})
+	require.NoError(t, err)
 	assert.Equal(t, want.String(), readFile(t, dir, "out/film.srt"))
 }
 
@@ -220,7 +223,8 @@ func TestADirectoryConvertsASubViewerSubFileByItsContent(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, stbox.SubViewer, info.Format)
 	var want bytes.Buffer
-	require.NoError(t, stbox.Write(&want, film, stbox.SubRip, stbox.WriteOptions{}))
+	_, err = stbox.Write(&want, film, stbox.SubRip, stbox.WriteOptions{})
+	require.NoError(t, err)
 	assert.Equal(t, want.String(), readFile(t, dir, "out/film.srt"))
 }
 

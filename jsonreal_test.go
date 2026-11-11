@@ -25,7 +25,8 @@ func TestAegisubJSONEqualsTheASSFile(t *testing.T) {
 
 	library := func(s *stbox.Subtitle) string {
 		var out bytes.Buffer
-		require.NoError(t, stbox.Write(&out, s, stbox.JSON, stbox.WriteOptions{}))
+		_, err := stbox.Write(&out, s, stbox.JSON, stbox.WriteOptions{})
+		require.NoError(t, err)
 		return out.String()
 	}
 	assert.Equal(t, library(original), library(fromJSON))

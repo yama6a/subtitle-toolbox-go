@@ -51,7 +51,8 @@ func write(t *testing.T, s *model.Subtitle, opts stboxjson.WriteOptions) []byte 
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, stboxjson.Write(&out, s, model.CommonWriteOptions{}, opts))
+	_, err := stboxjson.Write(&out, s, model.CommonWriteOptions{}, opts)
+	require.NoError(t, err)
 	return out.Bytes()
 }
 

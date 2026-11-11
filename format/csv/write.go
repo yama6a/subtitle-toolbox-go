@@ -35,14 +35,14 @@ type settings struct {
 // Write writes s as a CSV or TSV table. A subtitle that Read returned keeps its columns, header names, delimiter,
 // time format and quoting. A line break inside a cell stays LF, as Excel writes it. The rows end with the line
 // ending of common.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	if err := opts.Validate(); err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	file, hasFile := s.FormatData(formatDataKey)
 	set, err := resolve(file, opts)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	cues := s.Cues()
 	speakers := make([]string, len(cues))
@@ -76,7 +76,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		b.WriteString(eol)
 	}
 	common.LineEnding = model.LF
-	return writing.Write(w, model.CSV, []byte(b.String()), common, true)
+	return WriteReport{}, writing.Write(w, model.CSV, []byte(b.String()), common, true)
 }
 
 // withSecondText inserts the SecondText column after the text column, as PHP inserts it: at index 1 without one.

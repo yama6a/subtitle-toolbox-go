@@ -52,7 +52,8 @@ func TestBottomCenterIsWrittenAsNull(t *testing.T) {
 	assert.Equal(t, "center", align)
 
 	var out bytes.Buffer
-	require.NoError(t, stboxjson.Write(&out, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{OmitFormatData: true}))
+	_, err := stboxjson.Write(&out, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{OmitFormatData: true})
+	require.NoError(t, err)
 	var doc struct {
 		Cues []struct {
 			Alignment *int `json:"alignment"`

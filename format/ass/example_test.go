@@ -37,7 +37,7 @@ func ExampleWrite() {
 		model.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"<i>Fish &amp; Chips</i>", "today"}},
 		model.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"On the menu"}, Alignment: model.TopCenter},
 	)
-	err := ass.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, ass.WriteOptions{})
+	_, err := ass.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, ass.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -63,7 +63,7 @@ func ExampleWriteOptions() {
 	s.AddCue(model.Cue{Start: 10 * time.Second, End: 12 * time.Second, Lines: []string{"Ka<00:00:10.300>ra"}})
 	opts := ass.WriteOptions{KaraokeTag: ass.KaraokeFill, Style: "Fontname=Roboto,Fontsize=48"}
 	var out strings.Builder
-	if err := ass.Write(&out, s, model.CommonWriteOptions{}, opts); err != nil {
+	if _, err := ass.Write(&out, s, model.CommonWriteOptions{}, opts); err != nil {
 		fmt.Println(err)
 		return
 	}

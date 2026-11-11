@@ -20,6 +20,9 @@ const formatDataKey = string(model.QuickTimeText)
 // ReadOptions holds the settings of the QuickTime text reader. It has none yet.
 type ReadOptions struct{}
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 // WriteOptions holds the settings of the QuickTime text writer. It has none yet.
 type WriteOptions struct{}
 

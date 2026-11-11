@@ -9,15 +9,9 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
-// Write writes s as WebVTT. A cue line that reads as an empty line, such as a line of only a dropped tag, is not
-// written, because an empty line ends the cue.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
-	_, err := WriteWithReport(w, s, common, opts)
-	return err
-}
-
-// WriteWithReport writes s as WebVTT and returns what the output leaves out.
-func WriteWithReport(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+// Write writes s as WebVTT and returns what the output leaves out. A cue line that reads as an empty line, such as a
+// line of only a dropped tag, is not written, because an empty line ends the cue.
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	var report WriteReport
 	cw := &vtt.Writer{
 		StripTags: common.StripTags,

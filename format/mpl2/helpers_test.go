@@ -55,7 +55,8 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions) str
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, mpl2.Write(&out, s, common, mpl2.WriteOptions{}))
+	_, err := mpl2.Write(&out, s, common, mpl2.WriteOptions{})
+	require.NoError(t, err)
 	return out.String()
 }
 

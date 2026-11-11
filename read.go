@@ -159,20 +159,20 @@ func readable(f Format) (formatFuncs, error) {
 
 // Write writes s to w in format f. The format package builds the whole output first and writes it
 // in one call, so an error of w leaves incomplete output on w.
-func Write(w io.Writer, s *Subtitle, f Format, opts WriteOptions) error {
+func Write(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteReport, error) {
 	if err := opts.Validate(); err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	row, ok := lookup(f)
 	switch {
 	case !ok:
-		return unknownFormat(f)
+		return WriteReport{}, unknownFormat(f)
 	case row.write != nil:
 		return row.write(w, s, opts.common(), opts)
 	case row.read != nil:
-		return unsupported("The format " + string(f) + " can be read but not written.")
+		return WriteReport{}, unsupported("The format " + string(f) + " can be read but not written.")
 	default:
-		return unsupported("The format " + string(f) + " cannot be written.")
+		return WriteReport{}, unsupported("The format " + string(f) + " cannot be written.")
 	}
 }
 

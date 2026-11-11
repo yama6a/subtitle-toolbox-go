@@ -35,7 +35,7 @@ type writer struct {
 }
 
 // Write writes s as SAMI with one language class. A line break inside a line becomes <br>.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	file, _ := s.FormatData(formatDataKey)
 	language, hasLanguage := s.Metadata(model.MetadataLanguage)
 	style, hasStyle := file.String("style")
@@ -53,7 +53,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 
 	body := head(s, file, style)
 	if !utf8.Valid(body) {
-		return unwritable(-1)
+		return WriteReport{}, unwritable(-1)
 	}
 
 	cues := s.Cues()
@@ -67,11 +67,11 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 			body = append(body, "<SYNC Start="+strconv.FormatInt(end, 10)+">"+wr.openParagraph(nil)+"&nbsp;\n"...)
 		}
 		if !utf8.Valid(body[mark:]) {
-			return unwritable(i)
+			return WriteReport{}, unwritable(i)
 		}
 	}
 	body = append(body, "</BODY>\n</SAMI>\n"...)
-	return writing.Write(w, model.SAMI, body, common, false)
+	return WriteReport{}, writing.Write(w, model.SAMI, body, common, false)
 }
 
 func head(s *model.Subtitle, file *model.Data, style string) []byte {

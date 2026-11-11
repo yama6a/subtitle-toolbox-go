@@ -9,7 +9,7 @@ import (
 )
 
 // Write writes s as SubRip. A text line that the reader would read as a timing line starts with U+2060 WORD JOINER.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	var body []byte
 	for i, c := range s.All() {
 		if i > 0 {
@@ -17,5 +17,5 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 		}
 		body = subrip.AppendCue(body, i+1, c, common.StripTags)
 	}
-	return writing.Write(w, model.SubRip, body, common, true)
+	return WriteReport{}, writing.Write(w, model.SubRip, body, common, true)
 }

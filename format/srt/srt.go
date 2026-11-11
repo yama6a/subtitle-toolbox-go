@@ -10,6 +10,9 @@ import "regexp"
 // ReadOptions holds the settings of the SubRip reader. It has no fields yet.
 type ReadOptions struct{}
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 // WriteOptions holds the settings of the SubRip writer. It has no fields yet.
 type WriteOptions struct{}
 

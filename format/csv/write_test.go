@@ -364,14 +364,15 @@ func TestWriteFrameRateErrors(t *testing.T) {
 	t.Parallel()
 
 	// Ports testFramesWithoutAFrameRateThrow of tests/Formatters/CsvFormatterTest.php of subtitle-toolbox-php.
-	err := csv.Write(&bytes.Buffer{}, english(), model.CommonWriteOptions{}, csv.WriteOptions{TimeFormat: csv.TimeFrames})
+	_, err := csv.Write(&bytes.Buffer{}, english(), model.CommonWriteOptions{}, csv.WriteOptions{TimeFormat: csv.TimeFrames})
 	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.CSV.FrameRate", Msg: "The time format hh:mm:ss:ff needs a frame rate."}, err)
 
 	s, _ := mustRead(t, "start,end,text\n1,2,a\n", strict, csv.ReadOptions{})
 	d := fileData(t, s)
 	d.Set("frameRate", int64(0))
 	require.NoError(t, s.SetFormatData("csv", d))
-	err = csv.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, csv.WriteOptions{})
+	_, err = csv.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, csv.WriteOptions{})
 	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.CSV.FrameRate", Msg: "The frame rate must be greater than 0, got 0."}, err)
-	require.NoError(t, csv.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, csv.WriteOptions{FrameRate: 25}))
+	_, err = csv.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, csv.WriteOptions{FrameRate: 25})
+	require.NoError(t, err)
 }

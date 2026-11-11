@@ -44,7 +44,7 @@ func ExampleWrite() {
 		fmt.Println(err)
 		return
 	}
-	err := webvtt.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
+	_, err := webvtt.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -58,11 +58,11 @@ func ExampleWrite() {
 	// <v Anna>Good morning.
 }
 
-func ExampleWriteWithReport() {
+func ExampleWrite_droppedColors() {
 	s := &model.Subtitle{}
 	s.AddCue(model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{`<font color="#123456">Rain</font> <font color="#ffff00">and sun</font>`}})
 	var out strings.Builder
-	report, err := webvtt.WriteWithReport(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
+	report, err := webvtt.Write(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return
