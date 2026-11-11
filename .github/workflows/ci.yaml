@@ -70,16 +70,26 @@ jobs:
           cache: false # one shared key would hand darwin, windows or fuzz builds to the other jobs
       - run: make cross
 
-  fuzz:
+  fuzz-shard:
+    name: fuzz shard ${{ matrix.shard }}
     runs-on: ubuntu-26.04-arm
-    timeout-minutes: 30
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
           cache: false # one shared key would hand darwin, windows or fuzz builds to the other jobs
-      - run: make fuzz FUZZTIME=10s
+      - run: make fuzz FUZZTIME=10s FUZZSHARD="$SHARD" FUZZSHARDS="$SHARDS"
+        env:
+          SHARD: ${{ strategy.job-index }}
+          SHARDS: ${{ strategy.job-total }}
       # go test -fuzz writes each failing input to <package>/testdata/fuzz/<FuzzName>/.
       - name: Collect the new fuzz inputs
         if: failure()
@@ -96,8 +106,22 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: fuzz-findings
+          name: fuzz-findings-${{ matrix.shard }}
           path: ${{ runner.temp }}/fuzz-findings
+
+  # The required check is named fuzz, and a matrix reports one check per shard.
+  fuzz:
+    needs: fuzz-shard
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 5
+    steps:
+      - name: Fail unless every shard passed
+        env:
+          RESULT: ${{ needs.fuzz-shard.result }}
+        run: |
+          echo "fuzz shards: $RESULT"
+          [ "$RESULT" = success ]
 
   bench:
     runs-on: ubuntu-26.04-arm
