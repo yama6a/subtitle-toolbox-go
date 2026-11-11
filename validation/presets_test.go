@@ -12,7 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/validation"
 )
 
-// Ports testNetflixEnglishPresetValues, testBbcPresetValues and the frame rate table of #70. Each preset is
+// Ports testNetflixEnglishPresetValues and testBbcPresetValues. Each preset is
 // compared with a literal, so a changed number or a new rule fails here.
 func TestPresetNumbers(t *testing.T) {
 	t.Parallel()
@@ -62,11 +62,30 @@ func TestNetflixEnglishGap(t *testing.T) {
 func TestNetflixEnglishErrors(t *testing.T) {
 	t.Parallel()
 
-	for _, r := range []stbox.FrameRate{{}, {Num: 0, Den: 1}} {
-		_, err := validation.NetflixEnglish(r)
-		var arg *model.InvalidArgumentError
-		require.ErrorAs(t, err, &arg)
-		assert.Equal(t, &model.InvalidArgumentError{Option: "frameRate", Msg: "The frame rate of the Netflix gap rule must be greater than 0."}, arg)
+	const zero = "The frame rate of the Netflix gap rule must be greater than 0."
+	tests := []struct {
+		name string
+		rate stbox.FrameRate
+		msg  string
+	}{
+		{"zero value", stbox.FrameRate{}, zero},
+		{"zero numerator", stbox.FrameRate{Num: 0, Den: 1}, zero},
+		{"negative", stbox.FrameRate{Num: -24, Den: 1}, zero},
+		{
+			"drop-frame at 25",
+			stbox.FrameRate{Num: 25, Den: 1, DropFrame: true},
+			"The frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got 25.",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := validation.NetflixEnglish(tt.rate)
+			var arg *model.InvalidArgumentError
+			require.ErrorAs(t, err, &arg)
+			assert.Equal(t, &model.InvalidArgumentError{Option: "frameRate", Msg: tt.msg}, arg)
+		})
 	}
 }
 

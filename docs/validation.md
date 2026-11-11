@@ -150,7 +150,7 @@ for _, v := range violations {
 // cue 2 noOverlap 0.5
 ```
 
-A preset never gets a new rule inside a major line. Its numbers are documented behavior. A number changes only in the release that opens the next major line, or in a patch release that fixes a number that differs from its source. The release notes name each such fix.
+A preset never gets a new rule inside a major line. Its numbers are documented behaviour. A number changes only in the release that opens the next major line, or in a patch release that fixes a number that differs from its source. The release notes name each such fix.
 
 ### NetflixEnglish
 

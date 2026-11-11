@@ -164,7 +164,8 @@ func validateRules(a *args, rules validation.Rules) (validation.Rules, error) {
 	return validateTextRules(a, rules)
 }
 
-// validateTextRules is the second half of validateRules.
+// validateTextRules reads the dialogue dash, speaker, words per minute, time per word and allowed character
+// options, and the check flags.
 func validateTextRules(a *args, rules validation.Rules) (validation.Rules, error) {
 	style, err := dialogueDashStyle(a)
 	if err != nil {
