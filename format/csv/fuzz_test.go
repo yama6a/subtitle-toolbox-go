@@ -39,7 +39,7 @@ func FuzzRead(f *testing.F) {
 	}
 	layouts := []csv.ReadOptions{
 		{},
-		{Columns: csv.Columns{Start: csv.ColumnAt(0), End: csv.ColumnAt(1), Text: csv.ColumnAt(2), NoHeader: true}, FrameRate: 25},
+		{Columns: csv.Columns{Start: csv.ColumnAt(0), End: csv.ColumnAt(1), Text: csv.ColumnAt(2), NoHeader: true}, FrameRate: model.FrameRate{Num: 25, Den: 1}},
 	}
 
 	f.Fuzz(func(t *testing.T, content []byte) {

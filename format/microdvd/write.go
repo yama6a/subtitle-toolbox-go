@@ -29,8 +29,8 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		return WriteReport{}, err
 	}
 	fileData, _ := s.FormatData(formatDataKey)
-	fps := opts.FrameRate
-	if fps == 0 {
+	rate := opts.FrameRate
+	if rate.IsZero() {
 		stored, ok := fileData.Number("frameRate")
 		if !ok {
 			return WriteReport{}, &model.InvalidArgumentError{
@@ -38,11 +38,12 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 				Msg:    "MicroDVD output needs the frame rate of the video.",
 			}
 		}
-		if err := parsing.CheckFrameRate(stored, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate"); err != nil {
-			return WriteReport{}, err
+		var err error
+		if rate, err = model.FrameRateFromFloat(stored); err != nil {
+			return WriteReport{}, parsing.FrameRateOption(err, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate")
 		}
-		fps = stored
 	}
+	fps := rate.Float64()
 
 	var body []byte
 	if frameRateLine, _ := fileData.Bool("frameRateLine"); opts.WriteFrameRateLine || frameRateLine {

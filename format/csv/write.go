@@ -105,7 +105,7 @@ func isNull(d *model.Data, key string) bool {
 }
 
 func resolve(file *model.Data, opts WriteOptions) (settings, error) {
-	set := settings{delimiter: string(opts.Delimiter), timeFormat: opts.TimeFormat, fps: opts.FrameRate, escape: opts.EscapeFormulas}
+	set := settings{delimiter: string(opts.Delimiter), timeFormat: opts.TimeFormat, fps: opts.FrameRate.Float64(), escape: opts.EscapeFormulas}
 	if set.delimiter == "" {
 		set.delimiter, _ = file.String("delimiter")
 	}
@@ -121,10 +121,11 @@ func resolve(file *model.Data, opts WriteOptions) (settings, error) {
 	}
 	if set.fps == 0 {
 		if fps, ok := file.Number("frameRate"); ok {
-			if err := parsing.CheckFrameRate(fps, "WriteOptions.CSV.FrameRate", "The frame rate"); err != nil {
-				return settings{}, err
+			rate, err := model.FrameRateFromFloat(fps)
+			if err != nil {
+				return settings{}, parsing.FrameRateOption(err, "WriteOptions.CSV.FrameRate", "The frame rate")
 			}
-			set.fps = fps
+			set.fps = rate.Float64()
 		}
 	}
 	if set.timeFormat == TimeFrames && set.fps == 0 {

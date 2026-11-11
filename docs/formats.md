@@ -482,11 +482,11 @@ The root `ReadOptions.MicroDVD` holds a `microdvd.ReadOptions`, `WriteOptions.Mi
 
 | Option | Field | Type | Default | Meaning |
 |:--- |:--- |:--- |:--- |:--- |
-| `ReadOptions.MicroDVD` | `FrameRate` | `float64` | 0: the `{1}{1}<fps>` line | the frame rate of the video. It wins over the line |
-| `WriteOptions.MicroDVD` | `FrameRate` | `float64` | 0: the stored frame rate | the output frame rate |
+| `ReadOptions.MicroDVD` | `FrameRate` | `FrameRate` | zero value: the `{1}{1}<fps>` line | the frame rate of the video. It wins over the line |
+| `WriteOptions.MicroDVD` | `FrameRate` | `FrameRate` | zero value: the stored frame rate | the output frame rate |
 | `WriteOptions.MicroDVD` | `WriteFrameRateLine` | `bool` | false: only when the input had the line | write `{1}{1}<fps>` first |
 
-- **Check**: `Validate` rejects a frame rate that is negative, NaN or infinite, for example `The frame rate must be greater than 0, got -1.`, with an error that matches `ErrInvalidArgument`.
+- **Check**: `Validate` rejects a frame rate that fails `FrameRate.Validate`, for example `The frame rate must be greater than 0, got -1.`, with an error that matches `ErrInvalidArgument`.
 
 ## SBV
 
@@ -692,9 +692,9 @@ Then each cue with visible text writes an empty line, its timing line and its te
 
 | Field | Type | Default | Meaning |
 |:--- |:--- |:--- |:--- |
-| `FrameRate` | `float64` | 0: seconds and `FORMAT=TIME` | write frames at this rate and `FORMAT=<rate>` |
+| `FrameRate` | `FrameRate` | zero value: seconds and `FORMAT=TIME` | write frames at this whole rate and `FORMAT=<rate>` |
 
-- **Check**: `Validate` rejects a frame rate that is negative, not whole, NaN or infinite, for example `The MPSub frame rate must be a positive integer, got 29.97.`, with an error that matches `ErrInvalidArgument`. MPlayer and FFmpeg read `FORMAT=29.97` as 29 fps, so a fractional rate would not read back.
+- **Check**: `Validate` rejects a frame rate that fails `FrameRate.Validate` or is not whole, for example `The MPSub frame rate must be a positive integer, got 29.97.`, with an error that matches `ErrInvalidArgument`. MPlayer and FFmpeg read `FORMAT=29.97` as 29 fps, so a fractional rate would not read back.
 
 ## LRC
 
@@ -996,10 +996,10 @@ The root `ReadOptions.CSV` holds a `csv.ReadOptions` and `WriteOptions.CSV` a `c
 |:--- |:--- |:--- |:--- |:--- |
 | `ReadOptions.CSV` | `Columns` | `csv.Columns` | zero: the header names, with synonyms | the column layout |
 | `ReadOptions.CSV` | `Delimiter` | `csv.Delimiter` | detect from the first line | `,`, `;` or tab |
-| `ReadOptions.CSV` | `FrameRate` | `float64` | 0: none | frames per second of `hh:mm:ss:ff` times |
+| `ReadOptions.CSV` | `FrameRate` | `FrameRate` | zero value: none | frames per second of `hh:mm:ss:ff` times |
 | `WriteOptions.CSV` | `Delimiter` | `csv.Delimiter` | the stored delimiter, else `,` | `,`, `;` or tab |
 | `WriteOptions.CSV` | `TimeFormat` | `csv.TimeFormat` | the stored time format, else `hh:mm:ss.mmm` | one of the 5 time formats |
-| `WriteOptions.CSV` | `FrameRate` | `float64` | 0: the stored frame rate | frames per second of `hh:mm:ss:ff` |
+| `WriteOptions.CSV` | `FrameRate` | `FrameRate` | zero value: the stored frame rate | frames per second of `hh:mm:ss:ff` |
 | `WriteOptions.CSV` | `SecondText` | `*model.Subtitle` | nil: no second column | the cues of the second text column |
 | `WriteOptions.CSV` | `SecondTextHeader` | `string` | `text2` | the header of the second text column |
 | `WriteOptions.CSV` | `EscapeFormulas` | `bool` | false | put `'` before a formula cell |

@@ -38,7 +38,7 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 		t.Run(in.name, func(t *testing.T) {
 			t.Parallel()
 
-			opts := stbox.ReadOptions{Format: in.format, MicroDVD: microdvd.ReadOptions{FrameRate: 25}}
+			opts := stbox.ReadOptions{Format: in.format, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}}
 			s, _, err := stbox.Parse(strings.NewReader(in.content), opts)
 			require.NoError(t, err)
 			require.Equal(t, 1, s.Len())
@@ -53,7 +53,7 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 					continue
 				}
 				var out bytes.Buffer
-				_, err := stbox.Write(&out, s, f, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 25}})
+				_, err := stbox.Write(&out, s, f, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
 				if errors.Is(err, stbox.ErrUnsupportedFormat) {
 					continue
 				}
@@ -61,7 +61,7 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 				written++
 
 				text := out.String()
-				back, _, err := stbox.Parse(&out, stbox.ReadOptions{Format: f, MicroDVD: microdvd.ReadOptions{FrameRate: 25}})
+				back, _, err := stbox.Parse(&out, stbox.ReadOptions{Format: f, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
 				require.NoError(t, err, "%s: %q", f, text)
 				require.Equal(t, 1, back.Len(), f)
 				c, _ := back.Cue(0)

@@ -29,7 +29,7 @@ type warningRow struct {
 }
 
 func read(content string, lenient bool, fps float64) (*model.Subtitle, []model.ParseWarning, error) {
-	return microdvd.Read(strings.NewReader(content), model.CommonReadOptions{Lenient: lenient}, microdvd.ReadOptions{FrameRate: fps})
+	return microdvd.Read(strings.NewReader(content), model.CommonReadOptions{Lenient: lenient}, microdvd.ReadOptions{FrameRate: rate(fps)})
 }
 
 func mustRead(t *testing.T, content string, lenient bool, fps float64) (*model.Subtitle, []model.ParseWarning) {
@@ -81,4 +81,16 @@ func cueLines(t *testing.T, s *model.Subtitle, i int) []string {
 	c, ok := s.Cue(i)
 	require.True(t, ok)
 	return c.Lines
+}
+
+// rate returns fps as a FrameRate, and the zero value for 0.
+func rate(fps float64) model.FrameRate {
+	if fps == 0 {
+		return model.FrameRate{}
+	}
+	r, err := model.FrameRateFromFloat(fps)
+	if err != nil {
+		panic(err)
+	}
+	return r
 }

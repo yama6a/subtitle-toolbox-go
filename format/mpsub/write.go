@@ -24,7 +24,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	if err := opts.Validate(); err != nil {
 		return WriteReport{}, err
 	}
-	body := appendHeader(nil, s, opts.FrameRate)
+	body := appendHeader(nil, s, opts.FrameRate.Float64())
 	var previousEnd time.Duration
 	for _, c := range s.All() {
 		lines := markupcore.PlainLines(c.Lines)
@@ -33,9 +33,9 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		}
 		start, end := max(c.Start, 0), max(c.End, 0)
 		body = append(body, '\n')
-		body = appendNumber(body, start, previousEnd, opts.FrameRate)
+		body = appendNumber(body, start, previousEnd, opts.FrameRate.Float64())
 		body = append(body, ' ')
-		body = appendNumber(body, end, start, opts.FrameRate)
+		body = appendNumber(body, end, start, opts.FrameRate.Float64())
 		body = append(body, '\n')
 		body = append(body, strings.Join(lines, "\n")...)
 		body = append(body, '\n')
