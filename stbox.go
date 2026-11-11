@@ -88,6 +88,7 @@ const (
 	MPL2          = model.MPL2
 	TMPlayer      = model.TMPlayer
 	QuickTimeText = model.QuickTimeText
+	SpruceSTL     = model.SpruceSTL
 	WebVTT        = model.WebVTT
 )
 

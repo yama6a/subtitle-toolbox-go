@@ -209,6 +209,7 @@ func ExampleFormats() {
 	// sbv [sbv]
 	// srt [srt]
 	// stl [stl]
+	// spruce-stl [stl]
 	// subviewer [sub]
 	// ttml [ttml dfxp xml]
 	// tsv [tsv]

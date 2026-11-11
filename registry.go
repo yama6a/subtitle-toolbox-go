@@ -19,6 +19,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/qttext"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/sbv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/sprucestl"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
@@ -82,6 +83,9 @@ var (
 	_ detectFunc                                               = subviewer.Detect
 	_ readFunc[ebustl.ReadOptions]                             = ebustl.Read
 	_ detectFunc                                               = ebustl.Detect
+	_ readFunc[sprucestl.ReadOptions]                          = sprucestl.Read
+	_ writeFunc[sprucestl.WriteOptions, sprucestl.WriteReport] = sprucestl.Write
+	_ detectFunc                                               = sprucestl.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -107,6 +111,7 @@ var registry = []formatFuncs{
 	{format: SBV, read: readSBV, write: writeSBV},
 	{format: SubRip, read: readSubRip, write: writeSubRip},
 	{format: EBUSTL, read: readEBUSTL},
+	{format: SpruceSTL, read: readSpruceSTL, write: writeSpruceSTL},
 	{format: SubViewer, read: readSubViewer, write: writeSubViewer},
 	{format: TTML, read: readTTML, write: writeTTML},
 	{format: TSV, read: readTSV, write: writeTSV},
@@ -145,6 +150,7 @@ var (
 		{format: SubViewer, match: subviewer.Detect},
 		{format: LRC, match: lrc.Detect},
 		{format: EBUSTL, match: ebustl.Detect},
+		{format: SpruceSTL, match: sprucestl.Detect},
 		{format: MPL2, match: mpl2.Detect},
 		{format: TMPlayer, match: tmplayer.Detect},
 	}
@@ -247,6 +253,15 @@ func readMicroDVD(r io.Reader, common model.CommonReadOptions, opts ReadOptions)
 
 func writeMicroDVD(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	_, err := microdvd.Write(w, s, common, opts.MicroDVD)
+	return WriteReport{}, err
+}
+
+func readSpruceSTL(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return sprucestl.Read(r, common, opts.SpruceSTL)
+}
+
+func writeSpruceSTL(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	_, err := sprucestl.Write(w, s, common, opts.SpruceSTL)
 	return WriteReport{}, err
 }
 

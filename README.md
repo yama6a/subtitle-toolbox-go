@@ -72,6 +72,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [SBV](https://support.google.com/youtube/answer/2734698) | `stbox.SBV` | `sbv` | `.sbv` | yes | yes | YouTube Studio captions |
 | [SubRip](https://en.wikipedia.org/wiki/SubRip) | `stbox.SubRip` | `srt` | `.srt` | yes | yes | |
 | [EBU STL](https://tech.ebu.ch/docs/tech/tech3264.pdf) | `stbox.EBUSTL` | `stl` | `.stl` | yes | no | binary, broadcast subtitles |
+| [Spruce STL](https://www.spectacle.co.uk/uploads/other%20media/Manual_DVD_Studio_Pro_4.pdf) | `stbox.SpruceSTL` | `spruce-stl` | `.stl` | yes | yes | DVD Studio Pro text subtitles, time codes in frames |
 | [SubViewer 1 and 2](https://man.archlinux.org/man/mplayer.1.en) | `stbox.SubViewer` | `subviewer` | `.sub` | yes | yes | old DivX releases, found by content |
 | [TTML, IMSC, DFXP](https://www.w3.org/TR/ttml2/) | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | yes | yes | also iTT |
 | [TSV](https://www.iana.org/assignments/media-types/text/tab-separated-values) | `stbox.TSV` | `tsv` | `.tsv` | yes | yes | not detected from the content |

@@ -17,6 +17,7 @@ const (
 	SBV           Format = "sbv"
 	SubRip        Format = "srt"
 	EBUSTL        Format = "stl"
+	SpruceSTL     Format = "spruce-stl"
 	SubViewer     Format = "subviewer"
 	TTML          Format = "ttml"
 	TSV           Format = "tsv"
@@ -48,6 +49,7 @@ var formatFacts = []formatFact{
 	{format: SBV, extensions: []string{"sbv"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubRip, extensions: []string{"srt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: EBUSTL, extensions: []string{"stl"}, canRead: true, autoDetected: true, binary: true},
+	{format: SpruceSTL, extensions: []string{"stl"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubViewer, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TSV, extensions: []string{"tsv"}, canRead: true, canWrite: true},

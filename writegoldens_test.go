@@ -18,7 +18,7 @@ var update = flag.Bool("update", false, "rewrite the write golden files")
 
 // roundTripFolders holds the folders whose every real file is a round trip case.
 func roundTripFolders() []string {
-	return []string{"ass", "lrc", "microdvd", "mpl2", "mpsub", "qttext", "sami", "sbv", "srt", "subviewer", "tmplayer", "vtt"}
+	return []string{"ass", "lrc", "microdvd", "mpl2", "mpsub", "qttext", "sami", "sbv", "spruce-stl", "srt", "subviewer", "tmplayer", "vtt"}
 }
 
 // roundTripFile is a round trip case in a folder that roundTripFolders does not hold. Its golden is
@@ -72,6 +72,9 @@ func conversions() []conversion {
 		{"sbv", "youtube_studio_lf.sbv", stbox.SubRip, ""},
 		{"sbv", "youtube_studio_lf.sbv", stbox.WebVTT, ""},
 		{"sbv", "youtube_studio_lf.sbv", stbox.ASS, ""},
+		{"spruce-stl", "dvdsp_full_header_ntsc.stl", stbox.SubRip, ""},
+		{"spruce-stl", "dvdsp_full_header_ntsc.stl", stbox.WebVTT, ""},
+		{"spruce-stl", "dvdsp_full_header_ntsc.stl", stbox.ASS, ""},
 		{"srt", "own_styled.srt", stbox.SAMI, ""},
 		{"srt", "own_styled.srt", stbox.ASS, ""},
 		{"srt", "own_styled.srt", stbox.TTML, ""},

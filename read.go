@@ -121,7 +121,7 @@ func binaryFormat(content []byte, path string) (Format, bool) {
 }
 
 // binaryExtension reports whether every format that lists the extension of path is binary. ".890" is.
-// ".stl" stops being one when Spruce STL lists it too.
+// ".stl" is not one, because Spruce STL lists it too. A .stl file with no binary signature goes through the text path.
 func binaryExtension(path string) bool {
 	ext := extension(path)
 	found := false
