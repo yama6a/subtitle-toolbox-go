@@ -39,7 +39,7 @@ make test    # go test -race ./...
 make build   # write bin/stbox, VERSION=1.2.3 stamps the version
 make golden  # rewrite the Go write goldens, then review each diff by hand
 make cross   # build and vet for darwin and windows
-make fuzz    # run each fuzz target for 30 s, FUZZTIME=10s shortens it
+make fuzz    # run each fuzz target for 30 s, FUZZTIME=10s shortens it, FUZZSHARD=0 FUZZSHARDS=5 runs a fifth
 make bench   # run the benchmarks, BENCHTIME=1x runs each once
 make image   # build the container image from .build/Dockerfile
 make dist    # write the 6 release archives and the checksum file to an empty dist/
