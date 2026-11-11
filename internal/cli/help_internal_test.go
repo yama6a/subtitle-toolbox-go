@@ -17,6 +17,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 	"github.com/yama6a/subtitle-toolbox-go/v2/profanity"
 	"github.com/yama6a/subtitle-toolbox-go/v2/refsync"
+	"github.com/yama6a/subtitle-toolbox-go/v2/timing"
 )
 
 // summaryCommand is a command with a name and a summary only, for the layout of the global help.
@@ -331,13 +332,15 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 	codeDefaults["mask"] = string(profanity.MaskStars)
 	codeDefaults["mute-padding"] = formatNumber(profanity.Options{}.Padding.Seconds())
 	codeDefaults["time-tolerance"] = formatNumber(diff.DefaultTimeTolerance.Seconds())
+	codeDefaults["snap-min-gap-frames"] = strconv.Itoa(timing.DefaultMinGapFrames)
+	codeDefaults["snap-min-duration-frames"] = strconv.Itoa(timing.DefaultMinDurationFrames)
 	codeDefaults["mode"] = string(dual.ModeStack)
 	codeDefaults["secondary-alignment"] = strconv.Itoa(dual.DefaultSecondaryAlignment.Numpad())
 	codeDefaults["snap-tolerance"] = formatNumber(dual.DefaultTimeTolerance.Seconds())
 	described := []string{
 		"the format detected from the content", "stop at the first failure", "the input format",
 		"the BOM rule of the output format", "as for --from", "the frame rate of a MicroDVD input",
-		"none", "the format of the primary file",
+		"none", "the format of the primary file", "half the --video-fps, rounded to the nearest frame",
 	}
 	unwrap := regexp.MustCompile(`\n {3,}(\S)`)
 	defaultText := regexp.MustCompile(`(?m)^  (?:-\w, )?--([\w-]+).*? Default: (.+?)\.(?: |$)`)

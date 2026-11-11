@@ -22,6 +22,8 @@ const stdinArg = "-"
 const (
 	writeFPSHelp  = "Sets --input-fps and --output-fps. A specific option wins over --fps."
 	reportFPSHelp = "Same as --input-fps."
+	// convertFPSHelp also names --video-fps of the snap group.
+	convertFPSHelp = "Sets --input-fps, --output-fps and --video-fps. A specific option wins over --fps."
 )
 
 // inputOptions returns the options of a command that reads subtitle files. A command that reads one input only
