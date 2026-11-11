@@ -44,7 +44,7 @@ func subtitle(rows ...row) *model.Subtitle {
 func describe(s *model.Subtitle) []got {
 	out := make([]got, 0, s.Len())
 	for _, c := range s.All() {
-		out = append(out, got{c.Start, c.End, c.Text(), c.Alignment})
+		out = append(out, got{c.Start, c.End, c.Text(), c.Position.Alignment})
 	}
 	return out
 }

@@ -104,7 +104,7 @@ func describe(t *testing.T, s *model.Subtitle) []any {
 
 	var out []any
 	for _, c := range s.All() {
-		out = append(out, []any{c.Start, c.End, c.Lines, c.Alignment, cueData(t, c)})
+		out = append(out, []any{c.Start, c.End, c.Lines, c.Position.Alignment, cueData(t, c)})
 	}
 	return out
 }
@@ -127,7 +127,7 @@ func TestReadRealFileDetails(t *testing.T) {
 		assert.Equal(t, []string{"fred", "bill"}, ids)
 		c, _ := s.Cue(1)
 		assert.Equal(t, vttData(model.Field{Key: "region", Value: "bill"}, model.Field{Key: "align", Value: "right"}, model.Field{Key: "alignment", Value: int64(3)}), cueData(t, c))
-		assert.Equal(t, model.BottomRight, c.Alignment)
+		assert.Equal(t, model.BottomRight, c.Position.Alignment)
 	})
 	t.Run("a cue without text has no lines", func(t *testing.T) {
 		t.Parallel()

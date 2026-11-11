@@ -320,7 +320,7 @@ func (wr *writer) unchanged(c model.Cue, data *model.Data) bool {
 	if !ok || !slices.Equal(lines, c.Lines) {
 		return false
 	}
-	return position.AlignmentUnchanged(data, c.Alignment)
+	return position.AlignmentUnchanged(data, c.Position.Alignment)
 }
 
 // convertLines returns the Text field and the speaker name of the core markup of c. It leaves out the tags
@@ -331,7 +331,7 @@ func (wr *writer) convertLines(c model.Cue, style record) (string, string) {
 	name := strings.ReplaceAll(speaker, ",", "")
 
 	var parts []part
-	numpad := c.Alignment.Numpad()
+	numpad := c.Position.Alignment.Numpad()
 	styleNumpad := styleAlignment(style, wr.legacy)
 	if styleNumpad == 0 {
 		styleNumpad = model.BottomCenter.Numpad()

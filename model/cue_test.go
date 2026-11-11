@@ -125,11 +125,16 @@ func TestCueMapWordTimestamps(t *testing.T) {
 func TestCueClone(t *testing.T) {
 	t.Parallel()
 
-	c := model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"a", "b"}, ID: "intro", Alignment: model.TopLeft, Forced: true}
+	c := model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"a", "b"}, ID: "intro", Position: model.Position{Alignment: model.TopLeft}, Forced: true}
 	clone := c.Clone()
 	assert.Equal(t, c, clone)
 
 	clone.Lines[0] = "changed"
 	assert.Equal(t, []string{"a", "b"}, c.Lines)
 	assert.Nil(t, model.Cue{}.Clone().Lines)
+
+	c.Position.Offset = &model.Offset{X: 50, Y: 10}
+	clone = c.Clone()
+	clone.Position.Offset.Y = 90
+	assert.InDelta(t, 10.0, c.Position.Offset.Y, 0)
 }

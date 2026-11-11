@@ -73,10 +73,12 @@ fmt.Println(s.Comments())
 - **ReplaceCues with an anchor**: the anchor maps each old cue index to an index in the new list, and each comment follows its cue there. A comment after the last old cue stays after the last cue.
 - **ReplaceCues without an anchor**: `BeforeCue` counts as an index into the new list. Example: a comment at index 3 of a 3-cue subtitle comes before new cue 3 after `ReplaceCues` with 5 cues. A reader that adds the comments before the cues needs this rule.
 
-## Metadata, alignment and forced cues
+## Metadata, position and forced cues
 
 - **Metadata**: free string keys, with the constants `MetadataTitle`, `MetadataAuthor`, `MetadataArtist`, `MetadataAlbum` and `MetadataLanguage`. An empty value is a value. `DeleteMetadata` removes a key.
 - **Alignment**: 9 places on a numeric keypad grid. The zero value is `BottomCenter`. `Numpad()` gives the keypad key, for example 8 for `TopCenter` as in the ASS tag `{\an8}`. Library JSON stores this number. A value outside the 9 constants counts as `BottomCenter`.
+- **Position**: `Cue.Position` holds `Alignment`, an optional `Row` and `Column` on a `Grid`, and an optional `Offset`. `Row` and `Column` are 1-based, and 0 means none. `Offset` is a point in percent of the video, `X` from the left edge and `Y` from the top edge. Nil means no offset. `Validate` returns an error that matches `ErrInvalidArgument` unless `Row` and `Column` lie on `Grid` and `Offset` is from 0 to 100. `SetCue` and the library JSON reader call it. `AddCue`, `AddCues` and `ReplaceCues` do not, so a writer treats a position that fails `Validate` as having no row. `Equal` compares `Offset` by value. A cue copy from `Clone` or `Subtitle.Cue` holds its own `Offset`.
+- **RowOn**: `Position.RowOn(g, lines)` moves the row to grid `g`. It splits the rows into thirds by the first row: top when `3*(Row-1) < Rows-1`, bottom when `3*(Row-1) >= 2*(Rows-1)`. A top row keeps its number. A bottom row keeps the distance of the last line from the bottom row. A middle row scales with the grid height. The result lets all `lines` fit on `g`. Example: SCC rows 2, 15 and 8 with the alignments `TopCenter`, `BottomCenter` and `MiddleCenter` and 1 line give rows 2, 23 and 12 on the 23-row teletext grid. It returns false when there is no row, the row lies outside its grid, or the third of the row conflicts with the alignment. See [upgrade-2.0.md](upgrade-2.0.md) for the conflict rule.
 - **Forced**: a forced cue is a forced narrative. The player shows it also when the viewer turned subtitles off.
 - **ID**: the empty string means the cue has no identifier.
 

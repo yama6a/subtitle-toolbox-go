@@ -523,7 +523,7 @@ func (r *Reader) parseCue(b blocks.Block, index int) (model.Cue, error) {
 	c.SetText(strings.Join(text, "\n"))
 	settings := parseSettings(settingsText, cueSettings)
 	if a, ok := settingsAlignment(settings); ok {
-		c.Alignment = a
+		c.Position.Alignment = a
 		settings.Set("alignment", int64(a.Numpad()))
 	}
 	if err := c.SetFormatData(string(model.WebVTT), settings); err != nil {

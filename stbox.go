@@ -27,6 +27,12 @@ type (
 	SyncPoint = model.SyncPoint
 	// Alignment is the place of a cue on the screen.
 	Alignment = model.Alignment
+	// Position is where a cue shows on the screen: an alignment, a row and column on a grid, and an offset.
+	Position = model.Position
+	// Grid is a caption grid of rows and columns.
+	Grid = model.Grid
+	// Offset is a point in percent of the video width and height.
+	Offset = model.Offset
 	// FrameRate is a frame rate as an exact fraction, with a drop-frame flag.
 	FrameRate = model.FrameRate
 	// Timecode is a SMPTE time code label.

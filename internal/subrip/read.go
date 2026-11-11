@@ -160,7 +160,7 @@ func (rd *Reader) parseCue(lines, shown []string, index, line int) (model.Cue, e
 	c := model.Cue{Start: start, End: end}
 	text, numpad := cueText(lines[2:])
 	c.SetText(text)
-	c.Alignment, _ = model.AlignmentFromNumpad(numpad)
+	c.Position.Alignment, _ = model.AlignmentFromNumpad(numpad)
 	if err := rd.applyTextAfterEndTime(&c, t.rest, numpad, index, line, shown); err != nil {
 		return model.Cue{}, err
 	}

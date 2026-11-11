@@ -53,7 +53,7 @@ func TestAlignmentZeroValueIsBottomCenter(t *testing.T) {
 
 	var a model.Alignment
 	assert.Equal(t, model.BottomCenter, a)
-	assert.Equal(t, model.BottomCenter, model.Cue{}.Alignment)
+	assert.Equal(t, model.BottomCenter, model.Cue{}.Position.Alignment)
 }
 
 func TestAlignmentOutsideTheGrid(t *testing.T) {

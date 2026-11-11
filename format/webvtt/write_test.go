@@ -288,7 +288,7 @@ func TestWriteSettings(t *testing.T) {
 			t.Parallel()
 
 			c := cue(sec, 2*sec, "One")
-			c.Alignment = tt.alignment
+			c.Position.Alignment = tt.alignment
 			if tt.data != nil {
 				c = withData(t, c, tt.data...)
 			}
@@ -306,12 +306,12 @@ func TestWriteAlignmentRoundTrip(t *testing.T) {
 		a, ok := model.AlignmentFromNumpad(n)
 		require.True(t, ok)
 		c := cue(time.Duration(n)*sec, time.Duration(n+1)*sec, "Cue")
-		c.Alignment = a
+		c.Position.Alignment = a
 		cues = append(cues, c)
 	}
 	s, _ := parse(t, write(t, subtitle(t, cues...), model.CommonWriteOptions{}), false)
 	for i, c := range s.All() {
-		assert.Equal(t, i+1, c.Alignment.Numpad())
+		assert.Equal(t, i+1, c.Position.Alignment.Numpad())
 	}
 }
 
@@ -324,7 +324,7 @@ func TestWriteChangedAlignmentReplacesTheStoredPosition(t *testing.T) {
 	s := readFile(t, path)
 	for i, a := range []model.Alignment{model.TopCenter, model.BottomCenter} {
 		c, _ := s.Cue(i)
-		c.Alignment = a
+		c.Position.Alignment = a
 		require.NoError(t, s.SetCue(i, c))
 	}
 	want := strings.NewReplacer(

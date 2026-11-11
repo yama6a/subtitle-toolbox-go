@@ -25,7 +25,7 @@ func fuzzSubtitle(data []byte) *model.Subtitle {
 		to := min(from+int(data[i+3]&0x0f), len(data))
 		s.AddCue(model.Cue{
 			Start: start, End: start + length, Lines: []string{string(data[from:to])},
-			Forced: data[i+3]&0x80 != 0, Alignment: model.Alignment(data[i+3] >> 4 & 0x07),
+			Forced: data[i+3]&0x80 != 0, Position: model.Position{Alignment: model.Alignment(data[i+3] >> 4 & 0x07)},
 		})
 	}
 	return &s

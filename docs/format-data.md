@@ -107,9 +107,9 @@ Data enters only through `SetFormatData`, which checks the fields that writers r
 
 ## An explicit alignment wins over a stored position
 
-A reader stores the alignment it read as a numpad int in the field `alignment` of its cue data. A writer writes the stored exact position only while the alignment is unchanged. Unchanged means that `alignment`, 2 when missing, equals `Cue.Alignment.Numpad()`. The writers share the rule as `AlignmentUnchanged` in [internal/position](../internal/position/position.go).
+A reader stores the alignment it read as a numpad int in the field `alignment` of its cue data. A writer writes the stored exact position only while the alignment is unchanged. Unchanged means that `alignment`, 2 when missing, equals `Cue.Position.Alignment.Numpad()`. The writers share the rule as `AlignmentUnchanged` in [internal/position](../internal/position/position.go).
 
-Example: a WebVTT cue with the settings `line:0 position:30% align:left` reads as `TopLeft`, with `alignment` 7. Written back unchanged, the 3 settings return. After `SetCue` with `Alignment: BottomRight`, the writer drops them.
+Example: a WebVTT cue with the settings `line:0 position:30% align:left` reads as `TopLeft`, with `alignment` 7. Written back unchanged, the 3 settings return. After `SetCue` with `Position.Alignment` set to `BottomRight`, the writer drops them.
 
 | Format | Alignment unchanged | Alignment changed |
 |:--- |:--- |:--- |
