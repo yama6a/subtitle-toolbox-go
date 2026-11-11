@@ -54,15 +54,15 @@ Do every step on the last commit of `main`. For a major N of 2 or more, do step 
 
    Expected for 1.0.0: no output. Expected for N of 2 or more: no tag `vN.*`.
 
-3. Check that the 12 required checks are green on the last commit of `main`. The command prints only the required checks. It ignores the other runs, such as `renovate / renovate`.
+3. Check that the 9 required checks that run on `main` are green on the last commit of `main`. The command prints only the required checks. It ignores the other runs, such as `renovate / renovate`.
 
    ```bash
    gh api 'repos/yama6a/subtitle-toolbox-go/commits/main/check-runs?per_page=100' --jq '
-     ["release label","version check","gorelease","go / go","cross-compile","fuzz","bench","smoke","docker / docker","shell","yaml","renovate-config"] as $required
+     ["go / go","cross-compile","fuzz","bench","smoke","docker / docker","shell","yaml","renovate-config"] as $required
      | .check_runs[] | select(.name as $n | $required | index($n)) | "\(.name) \(.conclusion)"' | sort
    ```
 
-   Expected: 12 lines. `release label`, `version check` and `gorelease` end in `skipped`, because they run on pull requests only. The other 9 end in `success`.
+   Expected: 9 lines, all `success`. The checks `release label`, `version check` and `gorelease` run on pull requests only, so `main` has no result for them.
 
    ```text
    bench success
@@ -70,16 +70,13 @@ Do every step on the last commit of `main`. For a major N of 2 or more, do step 
    docker / docker success
    fuzz success
    go / go success
-   gorelease skipped
-   release label skipped
    renovate-config success
    shell success
    smoke success
-   version check skipped
    yaml success
    ```
 
-   If the list differs from the branch protection of `main`, update it. Read the protection with:
+   The branch protection of `main` lists those 9 checks and the 3 pull request checks. Keep all 12. Read the protection with:
 
    ```bash
    gh api repos/yama6a/subtitle-toolbox-go/branches/main/protection -q '.required_status_checks.checks[].context'
@@ -290,7 +287,7 @@ Replace `1.0.0` with the version of the release.
 - **Open pull requests after the first tag**: before `v1.0.0`, `version check` fails every pull request labelled `patch` or `minor`. The check reruns only on a push or a label change. After the tag, rerun the failed job of each such pull request:
 
   ```bash
-  gh run list -R yama6a/subtitle-toolbox-go --workflow ci --branch <branch> --limit 1
+  gh run list -R yama6a/subtitle-toolbox-go --workflow labels --branch <branch> --limit 1
   gh run rerun <run-id> -R yama6a/subtitle-toolbox-go --failed
   ```
 

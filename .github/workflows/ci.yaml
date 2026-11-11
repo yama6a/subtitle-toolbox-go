@@ -3,59 +3,19 @@ name: ci
 on:
   pull_request:
     branches: [main]
-    # labeled/unlabeled so the label jobs run again on a label change, not only on a push.
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened]
   push:
     branches: [main]  # go-ci saves its caches only from non-PR runs
 
 concurrency:
-  # Only push runs of a PR share a group, so a label event never cancels another run.
-  group: ci-${{ github.ref }}-${{ github.event.action == 'synchronize' && 'sync' || github.run_id }}
+  # A push run on main gets its own group, so a newer push never cancels a pending run.
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }} # a push run on main always finishes
 
 permissions:
   contents: read
 
 jobs:
-  release-label:
-    name: release label
-    # A push to main carries no PR labels, so the label jobs run on the PR only.
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-26.04-arm
-    steps:
-      - uses: yama6a/gha/.github/actions/release-label@v2
-
-  version-check:
-    name: version check
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-26.04-arm
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0 # the newest release tag sets the expected major
-      - run: .build/version-check_test.sh
-      - run: .build/version-check.sh
-        env:
-          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
-
-  gorelease:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-26.04-arm
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0 # the newest release tag is the base of the API comparison
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version-file: go.mod
-          cache: false # the job builds only gorelease and shares no build with the other jobs
-      - run: .build/gorelease_test.sh
-      - run: .build/gorelease.sh
-        env:
-          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
-
   go:
     uses: yama6a/gha/.github/workflows/go-ci.yaml@v2
 
