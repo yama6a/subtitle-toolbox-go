@@ -82,6 +82,7 @@ func TestFrameConversion(t *testing.T) {
 		{"250 frames at 25 is 10 s", model.FrameRate25, 10 * time.Second, 250},
 		{"1 s at 30000/1001", model.FrameRate2997, time.Second, 30},
 		{"0.4 ms", model.FrameRate25, 400 * time.Microsecond, 0},
+		{"30000/1001 from a float, a Den of 1e14", model.FrameRate{Num: 2997002997002997, Den: 100000000000000}, time.Second, 30},
 		{"99999 h at 60000/1001", model.FrameRate5994, 99999 * time.Hour, 21578205794},
 	}
 	for _, tt := range tests {
@@ -113,14 +114,6 @@ func TestFrameRateZeroValue(t *testing.T) {
 	assert.Equal(t, int64(5), r.FrameOf(model.Timecode{Frames: 5}))
 	assert.Equal(t, model.Timecode{}, r.ClockTimecode(time.Hour))
 	assert.Equal(t, time.Minute, r.ClockDuration(model.Timecode{Minutes: 1, Frames: 7}))
-
-	long, err := model.FrameRateFromFloat(30000.0 / 1001)
-	require.NoError(t, err)
-	assert.Equal(t, int64(30), long.Frames(time.Second))
-	assert.InDelta(t, float64(1001*time.Millisecond), float64(long.Duration(30)), float64(time.Microsecond))
-	got, err := model.ParseTime("00:00:01:12", long)
-	require.NoError(t, err)
-	assert.Equal(t, ms(1400), got)
 }
 
 // TestFramesMatchTheFloatFormula compares Frames with round(ms / 1000 * fps) of PHP for every millisecond of the first
@@ -300,6 +293,7 @@ func TestParseTime(t *testing.T) {
 		{in: "00:00:01.0004", want: ms(1000)},
 		{in: "00:01:02:12", rate: model.FrameRate25, want: ms(62480)},
 		{in: "00:00:01:12", rate: model.FrameRate23976, want: ms(1501)},
+		{in: "00:00:01:12", rate: model.FrameRate{Num: 2997002997002997, Den: 100000000000000}, want: ms(1400)},
 		{in: "00:00:01:012", rate: model.FrameRate25, want: ms(1480)},
 		{in: "0099999:00:00:00", rate: model.FrameRate25, want: 99999 * time.Hour},
 		{in: "99999:59:59.9996", err: limit},

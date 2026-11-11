@@ -37,7 +37,7 @@ overwrites a file.
 
 Exit codes:
   0    Success.
-  1    diff found a difference.
+  1    diff found a difference, or validate found a broken rule.
   2    Invalid arguments.
   3    A file could not be read or written.
   130  Stopped by Ctrl-C or SIGTERM. Finished outputs stay.
@@ -52,15 +52,17 @@ func TestGlobalHelp(t *testing.T) {
 
 	head := "stbox 1.2.3\nConverts, retimes, checks and fixes subtitle files.\n\nUsage: stbox <command> [<file>...] [options]\n\n"
 	want := head + `Commands:
-  convert  Convert subtitle files to another format, and run text, structure and
-           timing edits on the way.
-  info     Print the format, the cue count and statistics of subtitle files.
-  sync     Find the offset and frame-rate scale against a reference subtitle,
-           and retime the input.
-  diff     List the added, removed and changed cues between two subtitle files.
-  dual     Merge two subtitles in two languages into one file that shows both.
-  formats  List the format names and file extensions for --from and --to.
-  help     Show the help of a command.
+  convert   Convert subtitle files to another format, and run text, structure
+            and timing edits on the way.
+  info      Print the format, the cue count and statistics of subtitle files.
+  validate  Check the cues against reading speed, line length, timing and text
+            rules.
+  sync      Find the offset and frame-rate scale against a reference subtitle,
+            and retime the input.
+  diff      List the added, removed and changed cues between two subtitle files.
+  dual      Merge two subtitles in two languages into one file that shows both.
+  formats   List the format names and file extensions for --from and --to.
+  help      Show the help of a command.
 ` + globalHelpTail
 	assert.Equal(t, result{Stdout: want}, call{}.run(t))
 }
