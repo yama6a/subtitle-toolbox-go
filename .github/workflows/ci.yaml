@@ -112,7 +112,7 @@ jobs:
   # The required check is named fuzz, and a matrix reports one check per shard.
   fuzz:
     needs: fuzz-shard
-    if: ${{ !cancelled() }}
+    if: ${{ always() }}
     runs-on: ubuntu-26.04-arm
     timeout-minutes: 5
     steps:

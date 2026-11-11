@@ -95,7 +95,7 @@ cross:
 # FUZZSHARD and FUZZSHARDS split the sorted target list. With the defaults every target runs.
 fuzz:
 	list=$$(find . -name '*_test.go' -not -path '*/testdata/*' -exec grep -HE '^func Fuzz[A-Za-z0-9_]*\(' {} + \
-		| sed -E 's|^(.*)/[^/]*_test\.go:func (Fuzz[A-Za-z0-9_]*)\(.*|\1 \2|' | sort) || exit 1; \
+		| sed -E 's|^(.*)/[^/]*_test\.go:func (Fuzz[A-Za-z0-9_]*)\(.*|\1 \2|' | LC_ALL=C sort); \
 	mine=$$(echo "$$list" | awk -v s=$(FUZZSHARD) -v n=$(FUZZSHARDS) 'NF && (NR - 1) % n == s'); \
 	[ -n "$$mine" ] || { echo "no fuzz target in shard $(FUZZSHARD) of $(FUZZSHARDS)" >&2; exit 1; }; \
 	echo "$$mine" | while read -r pkg target; do \
