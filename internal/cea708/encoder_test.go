@@ -110,3 +110,13 @@ func TestBlocksCapacity(t *testing.T) {
 	require.NotZero(t, show.Frame)
 	assert.EqualValues(t, 15, show.Frame)
 }
+
+func TestBlocksCapacityFloor(t *testing.T) {
+	t.Parallel()
+	captions := []cea708.Caption{{Start: second, End: 2 * second, Lines: []string{"Hi"}, AnchorPoint: 7}}
+	want := cea708.Blocks(captions, frameOf, 7)
+	require.NotEmpty(t, want)
+	for _, c := range []int{0, 6} {
+		assert.Equal(t, want, cea708.Blocks(captions, frameOf, c), c)
+	}
+}

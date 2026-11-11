@@ -56,3 +56,14 @@ var g2 = map[byte]rune{ //nolint:gochecknoglobals // constant table
 
 // channelHex holds the hex value of a 2-bit color channel.
 var channelHex = [4]string{"00", "55", "aa", "ff"} //nolint:gochecknoglobals // constant table
+
+// g2Codes maps a G2 character to its code, without the transparent spaces.
+var g2Codes = func() map[rune]byte { //nolint:gochecknoglobals // lookup built once from g2
+	m := make(map[rune]byte, len(g2))
+	for code, r := range g2 {
+		if code > 0x21 {
+			m[r] = code
+		}
+	}
+	return m
+}()

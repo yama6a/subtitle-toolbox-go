@@ -149,7 +149,7 @@ func load(window int, lines []styledLine, point int) [][]byte {
 				commands = append(commands, command(cmdSPA, 0x01, flags), command(cmdSPC, color(c.Color), solidBlack, 0x00))
 				current = &c
 			}
-			commands = append(commands, character(c.R, true))
+			commands = append(commands, character(c.R))
 		}
 	}
 	return commands
@@ -172,18 +172,9 @@ func color(index int) byte {
 
 // character returns the bytes of a character: G0, the music note, G1, G2 after EXT1, or the CEA-608 replacement of
 // a character that neither set holds.
-func character(r rune, replace bool) []byte {
-	switch {
-	case r >= 0x20 && r < 0x7F || r >= 0xA0 && r <= 0xFF:
-		return []byte{byte(r)}
-	case r == '\u266a':
-		return []byte{musicNote}
-	}
-	if code, ok := g2Code(r); ok {
-		return []byte{codeEXT1, code}
-	}
-	if !replace {
-		return []byte{'?'}
+func character(r rune) []byte {
+	if b, ok := direct(r); ok {
+		return b
 	}
 	to, ok := cea608.Transliterate(r)
 	if !ok {
@@ -191,19 +182,27 @@ func character(r rune, replace bool) []byte {
 	}
 	var out []byte
 	for _, t := range to {
-		out = append(out, character(t, false)...)
+		b, ok := direct(t)
+		if !ok {
+			b = []byte{'?'}
+		}
+		out = append(out, b...)
 	}
 	return out
 }
 
-// g2Code returns the code of a G2 character other than the transparent spaces.
-func g2Code(r rune) (byte, bool) {
-	for code, g := range g2 {
-		if g == r && code > 0x21 {
-			return code, true
-		}
+// direct returns the bytes of a character that G0, G1 or G2 holds.
+func direct(r rune) ([]byte, bool) {
+	switch {
+	case r >= 0x20 && r < 0x7F || r >= 0xA0 && r <= 0xFF:
+		return []byte{byte(r)}, true
+	case r == '\u266A':
+		return []byte{musicNote}, true
 	}
-	return 0, false
+	if code, ok := g2Codes[r]; ok {
+		return []byte{codeEXT1, code}, true
+	}
+	return nil, false
 }
 
 func command(code byte, parameters ...byte) []byte {
