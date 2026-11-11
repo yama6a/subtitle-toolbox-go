@@ -60,7 +60,7 @@ func TestCEA608Cues(t *testing.T) {
 				t.Helper()
 				return []cea608.CodeLine{line(t, 42, "9420 9420 94ae 94ae 9452 9452 97a1 97a1 c8e5 ecec efa1 942f 942f")}
 			},
-			want: []string{"1768-6768 BottomCenter pop-on [14] [5] Hello!"},
+			want: []string{"1768-6768 BottomCenter 14,6 pop-on [14] [5] Hello!"},
 		},
 		{
 			name: "top row aligns to the top",
@@ -72,16 +72,16 @@ func TestCEA608Cues(t *testing.T) {
 					line(t, 40, "9420 9420 9470 9470 t:C 942f 942f"),
 				}
 			},
-			want: []string{"1268-1335 TopCenter pop-on [1 15] [0 0] A|B", "1502-6502 BottomCenter pop-on [15] [0] C"},
+			want: []string{"1268-1335 TopCenter 1,1 pop-on [1 15] [0 0] A|B", "1502-6502 BottomCenter 15,1 pop-on [15] [0] C"},
 		},
 		{
 			name:  "roll-up by screen",
 			lines: rollUp,
 			want: []string{
-				"1201-2002 BottomCenter roll-up [15] [0] ONE",
-				"2002-3070 BottomCenter roll-up [15] [0] ONE TWO",
-				"3070-4071 BottomCenter roll-up [14 15] [0 0] ONE TWO|THREE",
-				"4071-5005 BottomCenter roll-up [14 15] [0 0] THREE|FOUR",
+				"1201-2002 BottomCenter 15,1 roll-up [15] [0] ONE",
+				"2002-3070 BottomCenter 15,1 roll-up [15] [0] ONE TWO",
+				"3070-4071 BottomCenter 14,1 roll-up [14 15] [0 0] ONE TWO|THREE",
+				"4071-5005 BottomCenter 14,1 roll-up [14 15] [0 0] THREE|FOUR",
 			},
 		},
 		{
@@ -89,9 +89,9 @@ func TestCEA608Cues(t *testing.T) {
 			lines: rollUp,
 			opts:  caption.CEA608Options{RollUp: caption.RollUpLines},
 			want: []string{
-				"1201-3070 BottomCenter roll-up [15] [0] ONE TWO",
-				"3203-4071 BottomCenter roll-up [15] [0] THREE",
-				"4204-5005 BottomCenter roll-up [15] [0] FOUR",
+				"1201-3070 BottomCenter 15,1 roll-up [15] [0] ONE TWO",
+				"3203-4071 BottomCenter 15,1 roll-up [15] [0] THREE",
+				"4204-5005 BottomCenter 15,1 roll-up [15] [0] FOUR",
 			},
 		},
 	}
@@ -109,7 +109,7 @@ func TestCEA608Cues(t *testing.T) {
 				rows, _ := d.Get("rows")
 				columns, _ := d.Get("columns")
 				got = append(got, strconv.FormatInt(c.Start.Milliseconds(), 10)+"-"+strconv.FormatInt(c.End.Milliseconds(), 10)+" "+
-					c.Alignment.String()+" "+mode.(string)+" "+listString(rows)+" "+listString(columns)+" "+strings.Join(c.Lines, "|"))
+					c.Position.Alignment.String()+" "+strconv.Itoa(c.Position.Row)+","+strconv.Itoa(c.Position.Column)+" "+mode.(string)+" "+listString(rows)+" "+listString(columns)+" "+strings.Join(c.Lines, "|"))
 			}
 			assert.Equal(t, tt.want, got)
 		})

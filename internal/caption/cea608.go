@@ -77,9 +77,15 @@ func frameTime(frame int64) time.Duration {
 }
 
 func newCue(start, end time.Duration, lines []cea608.Line, mode cea608.Mode) model.Cue {
-	c := model.Cue{Start: start, End: end, Alignment: model.BottomCenter}
+	c := model.Cue{Start: start, End: end}
+	c.Position = model.Position{
+		Alignment: model.BottomCenter,
+		Row:       lines[0].Row,
+		Column:    lines[0].Column + 1,
+		Grid:      model.Grid{Rows: cea608.Rows, Columns: cea608.Columns},
+	}
 	if lines[0].Row <= cea608.MaxLines {
-		c.Alignment = model.TopCenter
+		c.Position.Alignment = model.TopCenter
 	}
 	rows := make([]any, len(lines))
 	columns := make([]any, len(lines))
