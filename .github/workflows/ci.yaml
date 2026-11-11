@@ -8,7 +8,8 @@ on:
     branches: [main]  # go-ci saves its caches only from non-PR runs
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # A push run on main gets its own group, so a newer push never cancels a pending run.
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }} # a push run on main always finishes
 
 permissions:
