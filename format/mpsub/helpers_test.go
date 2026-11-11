@@ -97,3 +97,15 @@ func fileData(s *model.Subtitle) map[string]any {
 	}
 	return out
 }
+
+// rate returns fps as a FrameRate, and the zero value for 0.
+func rate(fps float64) model.FrameRate {
+	if fps == 0 {
+		return model.FrameRate{}
+	}
+	r, err := model.FrameRateFromFloat(fps)
+	if err != nil {
+		panic(err)
+	}
+	return r
+}

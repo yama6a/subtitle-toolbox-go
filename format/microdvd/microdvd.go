@@ -16,32 +16,32 @@ const formatDataKey = string(model.MicroDVD)
 
 // ReadOptions holds the settings of the MicroDVD reader.
 type ReadOptions struct {
-	// FrameRate is the frame rate of the video in frames per second. It wins over a {1}{1}<fps> line. Zero takes that line.
-	FrameRate float64
+	// FrameRate is the frame rate of the video. It wins over a {1}{1}<fps> line. The zero value takes that line.
+	FrameRate model.FrameRate
 }
 
-// Validate returns an error that matches model.ErrInvalidArgument for a frame rate that is negative, NaN or infinite.
+// Validate returns an error that matches model.ErrInvalidArgument for a frame rate that fails model.FrameRate.Validate.
 func (o ReadOptions) Validate() error {
-	if o.FrameRate == 0 {
+	if o.FrameRate.IsZero() {
 		return nil
 	}
-	return parsing.CheckFrameRate(o.FrameRate, "ReadOptions.MicroDVD.FrameRate", "The frame rate")
+	return parsing.FrameRateOption(o.FrameRate.Validate(), "ReadOptions.MicroDVD.FrameRate", "The frame rate")
 }
 
 // WriteOptions holds the settings of the MicroDVD writer.
 type WriteOptions struct {
-	// FrameRate is the output frame rate in frames per second. Zero takes the frame rate that Read stored.
-	FrameRate float64
+	// FrameRate is the output frame rate. The zero value takes the frame rate that Read stored.
+	FrameRate model.FrameRate
 	// WriteFrameRateLine writes {1}{1}<fps> as the first line. A subtitle read from a file with that line gets it anyway.
 	WriteFrameRateLine bool
 }
 
-// Validate returns an error that matches model.ErrInvalidArgument for a frame rate that is negative, NaN or infinite.
+// Validate returns an error that matches model.ErrInvalidArgument for a frame rate that fails model.FrameRate.Validate.
 func (o WriteOptions) Validate() error {
-	if o.FrameRate == 0 {
+	if o.FrameRate.IsZero() {
 		return nil
 	}
-	return parsing.CheckFrameRate(o.FrameRate, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate")
+	return parsing.FrameRateOption(o.FrameRate.Validate(), "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate")
 }
 
 var signatureRegexp = regexp.MustCompile(`\A\{\d+\}\{\d*\}`)

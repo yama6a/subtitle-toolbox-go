@@ -32,18 +32,19 @@ func TestRateGetter(t *testing.T) {
 	tests := []struct {
 		name   string
 		words  []string
-		want   float64
+		want   stbox.FrameRate
 		wantOK bool
 		err    string
 	}{
-		{"fps alone", []string{"--fps", "25"}, 25, true, ""},
-		{"own option wins", []string{"--fps", "25", "--input-fps", "24"}, 24, true, ""},
-		{"own option alone", []string{"--input-fps", "23.976"}, 23.976, true, ""},
-		{"neither", nil, 0, false, ""},
-		{"bad fps with own option", []string{"--fps", "0", "--input-fps", "24"}, 0, false, "The option --fps must be greater than 0."},
-		{"bad own option", []string{"--input-fps", "-1"}, 0, false, "The option --input-fps must be greater than 0."},
-		{"no number", []string{"--input-fps", "x"}, 0, false, `The option --input-fps needs a number, got "x".`},
-		{"infinite", []string{"--fps", "1e999"}, 0, false, `The option --fps needs a finite number, got "1e999".`},
+		{"fps alone", []string{"--fps", "25"}, stbox.FrameRate{Num: 25, Den: 1}, true, ""},
+		{"own option wins", []string{"--fps", "25", "--input-fps", "24"}, stbox.FrameRate{Num: 24, Den: 1}, true, ""},
+		{"own option alone", []string{"--input-fps", "23.976"}, stbox.FrameRate{Num: 2997, Den: 125}, true, ""},
+		{"neither", nil, stbox.FrameRate{}, false, ""},
+		{"bad fps with own option", []string{"--fps", "0", "--input-fps", "24"}, stbox.FrameRate{}, false, "The option --fps must be greater than 0."},
+		{"bad own option", []string{"--input-fps", "-1"}, stbox.FrameRate{}, false, "The option --input-fps must be greater than 0."},
+		{"no number", []string{"--input-fps", "x"}, stbox.FrameRate{}, false, `The option --input-fps needs a number, got "x".`},
+		{"too many digits", []string{"--fps", "1e-300"}, stbox.FrameRate{}, false, "The option --fps must be a frame rate of at most 18 digits."},
+		{"infinite", []string{"--fps", "1e999"}, stbox.FrameRate{}, false, `The option --fps needs a finite number, got "1e999".`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -58,7 +59,7 @@ func TestRateGetter(t *testing.T) {
 			}
 			require.NoError(t, err)
 			assert.Equal(t, tt.wantOK, ok)
-			assert.InDelta(t, tt.want, got, 0)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -228,7 +229,7 @@ func TestConvertMicroDVDGolden(t *testing.T) {
 func TestMicroDVDOptionsOnlyForMicroDVDOutput(t *testing.T) {
 	t.Parallel()
 
-	w := writeOutput{outputFPS: 25}
-	assert.Equal(t, microdvd.WriteOptions{FrameRate: 25}, w.optionsFor(stbox.MicroDVD).MicroDVD)
+	w := writeOutput{outputFPS: stbox.FrameRate{Num: 25, Den: 1}}
+	assert.Equal(t, microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}, w.optionsFor(stbox.MicroDVD).MicroDVD)
 	assert.Equal(t, microdvd.WriteOptions{}, w.optionsFor(stbox.SubRip).MicroDVD)
 }

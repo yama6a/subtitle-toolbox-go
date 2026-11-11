@@ -283,7 +283,7 @@ func TestConvertRetimeBeyondTheTimeLimitFailsTheFile(t *testing.T) {
 	require.NoError(t, err)
 	want := result{Code: exitFile, Stderr: "trip.srt: " + message(s.Scale(1e300)) + "\n"}
 	assert.Equal(t, want, runCLI(t, "convert", "trip.srt", "--scale", "1e300"))
-	assert.Equal(t, want, runCLI(t, "convert", "trip.srt", "--from-fps", "1", "--to-fps", "1e-300"))
+	assert.Equal(t, exitUsage, runCLI(t, "convert", "trip.srt", "--from-fps", "1", "--to-fps", "1e-300").Code)
 }
 
 func TestConvertSync(t *testing.T) {
@@ -344,7 +344,9 @@ func TestConvertScaleAndFrameRate(t *testing.T) {
 	require.Equal(t, 0, got.Code, got.Stderr)
 	assertCuesOf(t, "sync/own_target_de_23976fps.srt", got.Stdout, stbox.SubRip)
 
-	frameRate := func(s *stbox.Subtitle) error { return s.ConvertFrameRate(25, 23.976) }
+	frameRate := func(s *stbox.Subtitle) error {
+		return s.ConvertFrameRate(stbox.FrameRate{Num: 25, Den: 1}, stbox.FrameRate{Num: 2997, Den: 125})
+	}
 	assert.Equal(t, result{Stdout: libraryOutput(t, "cli/trip.srt", stbox.WebVTT, stbox.WriteOptions{}, frameRate)},
 		call{dir: dir}.run(t, "convert", "trip.srt", "--from-fps", "25", "--to-fps", "23.976", "--to", "vtt", "-o", "-"))
 

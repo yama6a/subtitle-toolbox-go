@@ -123,7 +123,9 @@ func TestRetimeFixtures(t *testing.T) {
 		{
 			name: "convert the frame rate of a real file",
 			in:   "sync/own_target_de_25fps.srt", want: "sync/own_target_de_23976fps.srt",
-			retime: func(s *model.Subtitle) error { return s.ConvertFrameRate(25, 23.976) },
+			retime: func(s *model.Subtitle) error {
+				return s.ConvertFrameRate(model.FrameRate{Num: 25, Den: 1}, model.FrameRate{Num: 2997, Den: 125})
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -229,10 +231,12 @@ func TestRetimeTimes(t *testing.T) {
 			want:   [][2]float64{{0.5, 1.001}},
 		},
 		{
-			name:   "convert the frame rate from PAL to film",
-			in:     [][2]float64{{100, 102.5}},
-			retime: func(s *model.Subtitle) error { return s.ConvertFrameRate(25, 23.976) },
-			want:   [][2]float64{{104.271, 106.878}},
+			name: "convert the frame rate from PAL to film",
+			in:   [][2]float64{{100, 102.5}},
+			retime: func(s *model.Subtitle) error {
+				return s.ConvertFrameRate(model.FrameRate{Num: 25, Den: 1}, model.FrameRate{Num: 2997, Den: 125})
+			},
+			want: [][2]float64{{104.271, 106.878}},
 		},
 		{
 			name: "sync by 2 points",
@@ -468,24 +472,25 @@ func TestRetimeErrors(t *testing.T) {
 			want:   "The scale factor must be greater than 0, got INF.",
 		},
 		{
-			name:   "frame rate 0",
-			retime: func(s *model.Subtitle) error { return s.ConvertFrameRate(25, 0) },
-			want:   "The frame rate must be greater than 0, got 0.",
+			name: "frame rate 0",
+			retime: func(s *model.Subtitle) error {
+				return s.ConvertFrameRate(model.FrameRate{Num: 25, Den: 1}, model.FrameRate{Num: 0, Den: 1})
+			},
+			want: "The frame rate must be greater than 0, got 0.",
 		},
 		{
-			name:   "frame rate NaN",
-			retime: func(s *model.Subtitle) error { return s.ConvertFrameRate(math.NaN(), 25) },
-			want:   "The frame rate must be greater than 0, got NAN.",
+			name: "frame rate not set",
+			retime: func(s *model.Subtitle) error {
+				return s.ConvertFrameRate(model.FrameRate{}, model.FrameRate{Num: 25, Den: 1})
+			},
+			want: "The frame rate must be greater than 0, got 0.",
 		},
 		{
-			name:   "frame rate minus infinity",
-			retime: func(s *model.Subtitle) error { return s.ConvertFrameRate(25, math.Inf(-1)) },
-			want:   "The frame rate must be greater than 0, got -INF.",
-		},
-		{
-			name:   "frame rates whose ratio is infinite",
-			retime: func(s *model.Subtitle) error { return s.ConvertFrameRate(1e300, 1e-300) },
-			want:   "The scale factor must be greater than 0, got INF.",
+			name: "frame rate with a zero denominator",
+			retime: func(s *model.Subtitle) error {
+				return s.ConvertFrameRate(model.FrameRate{Num: 25, Den: 0}, model.FrameRate{Num: 25, Den: 1})
+			},
+			want: "The frame rate must be greater than 0, got INF.",
 		},
 		{
 			name:   "no sync points",
@@ -531,9 +536,11 @@ func TestRetimeErrors(t *testing.T) {
 			want:   "The retimed cue 1 would end at 8e+300 s. Cue times must be below 100000 hours.",
 		},
 		{
-			name:   "frame rate beyond the time limit",
-			retime: func(s *model.Subtitle) error { return s.ConvertFrameRate(1, 1e-300) },
-			want:   "The retimed cue 1 would end at 8e+300 s. Cue times must be below 100000 hours.",
+			name: "frame rate beyond the time limit",
+			retime: func(s *model.Subtitle) error {
+				return s.ConvertFrameRate(model.FrameRate{Num: 1, Den: 1}, model.FrameRate{Num: 1, Den: 1e18})
+			},
+			want: "The retimed cue 1 would end at 8e+18 s. Cue times must be below 100000 hours.",
 		},
 		{
 			name:   "shift beyond the time limit",

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 )
 
@@ -56,15 +57,29 @@ func (a *args) PositiveFloat(name string) (float64, bool, error) {
 	return f, ok, err
 }
 
+// FrameRate returns the frame rate of the option name. It fails for 0 and below, and for a number that
+// stbox.FrameRateFromFloat rejects.
+func (a *args) FrameRate(name string) (stbox.FrameRate, bool, error) {
+	f, ok, err := a.PositiveFloat(name)
+	if !ok || err != nil {
+		return stbox.FrameRate{}, false, err
+	}
+	r, err := stbox.FrameRateFromFloat(f)
+	if err != nil {
+		return stbox.FrameRate{}, false, usage("The option --" + name + " must be a frame rate of at most 18 digits.")
+	}
+	return r, true, nil
+}
+
 // Rate returns the frame rate of the option name, else of --fps, which sets every frame rate. It checks --fps
 // first, also when the call gives name, so a bad --fps always fails.
-func (a *args) Rate(name string) (float64, bool, error) {
-	fps, fpsGiven, err := a.PositiveFloat("fps")
+func (a *args) Rate(name string) (stbox.FrameRate, bool, error) {
+	fps, fpsGiven, err := a.FrameRate("fps")
 	if err != nil {
-		return 0, false, err
+		return stbox.FrameRate{}, false, err
 	}
-	if f, ok, err := a.PositiveFloat(name); err != nil || ok {
-		return f, ok, err
+	if r, ok, err := a.FrameRate(name); err != nil || ok {
+		return r, ok, err
 	}
 	return fps, fpsGiven, nil
 }

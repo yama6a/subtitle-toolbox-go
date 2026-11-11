@@ -223,7 +223,7 @@ func TestReadNoContainer(t *testing.T) {
 func TestLoadAndWriteMicroDVD(t *testing.T) {
 	t.Parallel()
 
-	s, info, err := stbox.Load(testfiles.Path(t, "cli/frames.sub"), stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: 25}})
+	s, info, err := stbox.Load(testfiles.Path(t, "cli/frames.sub"), stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
 	require.NoError(t, err)
 	assert.Equal(t, stbox.MicroDVD, info.Format)
 	first, _ := s.Cue(0)
@@ -231,9 +231,9 @@ func TestLoadAndWriteMicroDVD(t *testing.T) {
 
 	var stored, explicit, other bytes.Buffer
 	require.NoError(t, stbox.Write(&stored, s, stbox.MicroDVD, stbox.WriteOptions{}))
-	require.NoError(t, stbox.Write(&explicit, s, stbox.MicroDVD, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 25}}))
+	require.NoError(t, stbox.Write(&explicit, s, stbox.MicroDVD, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}}))
 	assert.Equal(t, explicit.String(), stored.String())
-	require.NoError(t, stbox.Write(&other, s, stbox.MicroDVD, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 50}}))
+	require.NoError(t, stbox.Write(&other, s, stbox.MicroDVD, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 50, Den: 1}}}))
 	assert.True(t, strings.HasPrefix(other.String(), "{50}{150}"), other.String())
 
 	trip, _, err := stbox.Load(testfiles.Path(t, "cli/trip.srt"), stbox.ReadOptions{})

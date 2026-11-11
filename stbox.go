@@ -23,6 +23,8 @@ type (
 	SyncPoint = model.SyncPoint
 	// Alignment is the place of a cue on the screen.
 	Alignment = model.Alignment
+	// FrameRate is a frame rate as an exact fraction, with a drop-frame flag.
+	FrameRate = model.FrameRate
 	// Format is the name of a subtitle format.
 	Format = model.Format
 	// LineEnding is the line ending that a writer uses.
@@ -148,3 +150,8 @@ const (
 	DefaultMaxDuration          = model.DefaultMaxDuration
 	DefaultMergeMaxGap          = model.DefaultMergeMaxGap
 )
+
+// FrameRateFromFloat returns the shortest decimal of fps as a fraction, so 23.976 gives 2997/125.
+func FrameRateFromFloat(fps float64) (FrameRate, error) {
+	return model.FrameRateFromFloat(fps)
+}

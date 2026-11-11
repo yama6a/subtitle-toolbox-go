@@ -142,12 +142,12 @@ type ReadOptions struct {
 	Columns Columns
 	// Delimiter is the cell separator. The zero value detects it from the first line.
 	Delimiter Delimiter
-	// FrameRate is the frames per second of times in hh:mm:ss:ff. Zero means none.
-	FrameRate float64
+	// FrameRate is the frame rate of times in hh:mm:ss:ff. The zero value means none.
+	FrameRate model.FrameRate
 }
 
 // Validate returns an error that matches model.ErrInvalidArgument for a negative column index, a column name
-// without a header row, an unknown delimiter, or a frame rate that is negative, NaN or infinite.
+// without a header row, an unknown delimiter, or a frame rate that fails model.FrameRate.Validate.
 func (o ReadOptions) Validate() error {
 	if err := o.Columns.validate(); err != nil {
 		return err
@@ -155,10 +155,10 @@ func (o ReadOptions) Validate() error {
 	if err := checkDelimiter(o.Delimiter, "ReadOptions.CSV.Delimiter"); err != nil {
 		return err
 	}
-	if o.FrameRate == 0 {
+	if o.FrameRate.IsZero() {
 		return nil
 	}
-	return parsing.CheckFrameRate(o.FrameRate, "ReadOptions.CSV.FrameRate", "The frame rate")
+	return parsing.FrameRateOption(o.FrameRate.Validate(), "ReadOptions.CSV.FrameRate", "The frame rate")
 }
 
 // WriteOptions holds the settings of the CSV and TSV writer.
@@ -167,8 +167,8 @@ type WriteOptions struct {
 	Delimiter Delimiter
 	// TimeFormat is the format of the time cells. The zero value takes the stored format, else TimeDot.
 	TimeFormat TimeFormat
-	// FrameRate is the frames per second of TimeFrames. Zero takes the stored frame rate.
-	FrameRate float64
+	// FrameRate is the frame rate of TimeFrames. The zero value takes the stored frame rate.
+	FrameRate model.FrameRate
 	// SecondText holds the cues whose text goes into a column after the text. Nil writes no such column.
 	SecondText *model.Subtitle
 	// SecondTextHeader is the header of the SecondText column. The zero value is "text2".
@@ -178,7 +178,7 @@ type WriteOptions struct {
 }
 
 // Validate returns an error that matches model.ErrInvalidArgument for an unknown delimiter or time format, or a
-// frame rate that is negative, NaN or infinite.
+// frame rate that fails model.FrameRate.Validate.
 func (o WriteOptions) Validate() error {
 	if err := checkDelimiter(o.Delimiter, "WriteOptions.CSV.Delimiter"); err != nil {
 		return err
@@ -189,10 +189,10 @@ func (o WriteOptions) Validate() error {
 		return invalid("WriteOptions.CSV.TimeFormat", "The CSV time format must be seconds, hh:mm:ss.mmm, hh:mm:ss,mmm, "+
 			"hh:mm:ss:ff or milliseconds, got "+strconv.Quote(string(o.TimeFormat))+".")
 	}
-	if o.FrameRate == 0 {
+	if o.FrameRate.IsZero() {
 		return nil
 	}
-	return parsing.CheckFrameRate(o.FrameRate, "WriteOptions.CSV.FrameRate", "The CSV frame rate")
+	return parsing.FrameRateOption(o.FrameRate.Validate(), "WriteOptions.CSV.FrameRate", "The CSV frame rate")
 }
 
 func checkDelimiter(d Delimiter, option string) error {

@@ -154,7 +154,7 @@ func TestWriteGoldens(t *testing.T) {
 			}
 			if c.folder == "microdvd" {
 				// The PHP write goldens read MicroDVD at 23.976 fps, the read goldens at 25 fps.
-				opts.MicroDVD.FrameRate = 23.976
+				opts.MicroDVD.FrameRate = stbox.FrameRate{Num: 2997, Den: 125}
 			}
 			s, _ := g.readWith(t, c.file, opts)
 			golden.Equal(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(c.to))), writeAs(t, s, c.to), *update)

@@ -99,3 +99,15 @@ func fileData(t *testing.T, s *model.Subtitle) *model.Data {
 	require.True(t, ok)
 	return d
 }
+
+// rate returns fps as a FrameRate, and the zero value for 0.
+func rate(fps float64) model.FrameRate {
+	if fps == 0 {
+		return model.FrameRate{}
+	}
+	r, err := model.FrameRateFromFloat(fps)
+	if err != nil {
+		panic(err)
+	}
+	return r
+}

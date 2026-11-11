@@ -40,8 +40,8 @@ type writeOutput struct {
 	to   stbox.Format
 	plan *outputPlan
 	opts stbox.WriteOptions
-	// outputFPS is the rate of --output-fps or --fps, 0 when the call gives neither.
-	outputFPS float64
+	// outputFPS is the rate of --output-fps or --fps, the zero value when the call gives neither.
+	outputFPS stbox.FrameRate
 	// encode writes s in format f to out. nil means stbox.Write with opts. A command sets it for a writer with a
 	// report, such as the dropped colours of WebVTT, and prints the report with the label of in.
 	encode func(in *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error

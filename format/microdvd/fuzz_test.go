@@ -41,7 +41,7 @@ func FuzzRead(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, content []byte) {
 		for _, lenient := range []bool{false, true} {
-			s, warnings, err := microdvd.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, microdvd.ReadOptions{FrameRate: 25})
+			s, warnings, err := microdvd.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, microdvd.ReadOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}})
 			if err != nil {
 				var perr *model.ParseError
 				if !errors.As(err, &perr) {
@@ -57,7 +57,7 @@ func FuzzRead(f *testing.F) {
 			}
 			var opts microdvd.WriteOptions
 			if _, ok := s.FormatData("microdvd"); !ok {
-				opts.FrameRate = 25 // a blank input gives no frame rate to write with
+				opts.FrameRate = model.FrameRate{Num: 25, Den: 1} // a blank input gives no frame rate to write with
 			}
 			var out bytes.Buffer
 			if err := microdvd.Write(&out, s, model.CommonWriteOptions{}, opts); err != nil && !errors.Is(err, model.ErrUnwritable) {
