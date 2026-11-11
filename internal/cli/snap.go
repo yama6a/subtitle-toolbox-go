@@ -3,7 +3,6 @@ package cli
 import (
 	"bytes"
 	"context"
-	"os"
 	"strconv"
 	"time"
 
@@ -119,13 +118,9 @@ func (e *snapEdit) loadShots(c *console) error {
 	if e.path == "" {
 		return nil
 	}
-	path := c.path(e.path)
-	if st, err := os.Stat(path); err != nil || !st.Mode().IsRegular() {
-		return &fileError{msg: e.path + ": " + missingFileMessage}
-	}
-	content, err := os.ReadFile(path)
+	content, err := readSideText(c, e.path)
 	if err != nil {
-		return &fileError{msg: e.path + ": Cannot read the file."}
+		return err
 	}
 	read := timing.ShotChangesFromText
 	if bytes.Contains(content, []byte("pts_time:")) {

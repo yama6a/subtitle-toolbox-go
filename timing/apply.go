@@ -4,6 +4,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
@@ -65,11 +66,17 @@ func Apply(s *model.Subtitle, opts Options) (Report, error) {
 		if sn.ends[i] != originalEnds[i] {
 			report.MovedEnds++
 		}
-		cues[i].Start = r.Duration(sn.starts[i]).Round(time.Millisecond)
-		cues[i].End = r.Duration(sn.ends[i]).Round(time.Millisecond)
+		cues[i].Start = onFrame(r, sn.starts[i])
+		cues[i].End = onFrame(r, sn.ends[i])
 	}
 	s.ReplaceCues(cues, func(old int) int { return old })
 	return report, nil
+}
+
+// onFrame returns the time of frame n in whole milliseconds. It stops at the largest cue time, because the last frame
+// below 100000 h can round up to it.
+func onFrame(r model.FrameRate, n int64) time.Duration {
+	return min(r.Duration(n).Round(time.Millisecond), timecode.MaxValidTime)
 }
 
 func (sn *snapper) snapEnds() {

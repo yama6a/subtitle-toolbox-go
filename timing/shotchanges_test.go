@@ -37,6 +37,7 @@ func TestShotChangeReaders(t *testing.T) {
 		{"log rounds up to the limit", timing.ShotChangesFromFFmpegLog, "pts_time:359999999.9996", nil, 1, "359999999.9996"},
 		{"text mixed", timing.ShotChangesFromText, "\xef\xbb\xbf01:00:00.040\r\n\r\n  2  \r\n00:00:01\r\n", ms(1000, 2000, 3600040), 0, ""},
 		{"text lone CR and NUL", timing.ShotChangesFromText, "1.5\r\x002.25\x00\r0:00:01.0005", ms(1001, 1500, 2250), 0, ""},
+		{"text rounds half a millisecond up", timing.ShotChangesFromText, "0.0205", ms(21), 0, ""},
 		{"text bad line", timing.ShotChangesFromText, "1.5\n\n00:01:2x\n", nil, 3, "00:01:2x"},
 		{"text bad shapes", timing.ShotChangesFromText, "1.\n", nil, 1, "1."},
 		{"text minutes over 59", timing.ShotChangesFromText, "00:60:00\n", nil, 1, "00:60:00"},

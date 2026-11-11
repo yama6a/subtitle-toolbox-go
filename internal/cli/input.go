@@ -19,6 +19,7 @@ import (
 const stdinArg = "-"
 
 // The help texts of --fps. A command that writes subtitles gets writeFPSHelp, a command that reports gets reportFPSHelp.
+// validate has its own text, because --fps also sets --video-fps.
 const (
 	writeFPSHelp  = "Sets --input-fps and --output-fps. A specific option wins over --fps."
 	reportFPSHelp = "Same as --input-fps."

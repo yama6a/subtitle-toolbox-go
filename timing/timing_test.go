@@ -156,6 +156,13 @@ func TestApplyTimes(t *testing.T) {
 			nil,
 			[][2]time.Duration{{sec(8), sec(10.208)}, {sec(10.292), sec(12)}},
 		},
+		{"half frame at 25 fps rounds up", rate(t, 25), [][2]time.Duration{{sec(0.58), sec(2)}}, nil, [][2]time.Duration{{sec(0.6), sec(2)}}},
+		{
+			"time limit", rate(t, 25),
+			[][2]time.Duration{{359999999900 * time.Millisecond, 359999999990 * time.Millisecond}},
+			nil,
+			[][2]time.Duration{{359999999920 * time.Millisecond, 359999999999 * time.Millisecond}},
+		},
 		{"half frame at 2997/125 rounds up", model.FrameRate{Num: 2997, Den: 125}, [][2]time.Duration{{sec(62.5), sec(70)}}, nil, [][2]time.Duration{{sec(62.521), sec(69.987)}}},
 		{"half frame at 2997/100 rounds up", model.FrameRate{Num: 2997, Den: 100}, [][2]time.Duration{{sec(50), sec(60)}}, nil, [][2]time.Duration{{sec(50.017), sec(59.993)}}},
 	}
