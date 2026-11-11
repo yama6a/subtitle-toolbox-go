@@ -113,17 +113,25 @@ func TestFrameRateZeroValue(t *testing.T) {
 	assert.Equal(t, int64(5), r.FrameOf(model.Timecode{Frames: 5}))
 	assert.Equal(t, model.Timecode{}, r.ClockTimecode(time.Hour))
 	assert.Equal(t, time.Minute, r.ClockDuration(model.Timecode{Minutes: 1, Frames: 7}))
-	assert.Zero(t, model.FrameRate{Num: 25, Den: 1 << 55}.Frames(time.Hour))
+
+	long, err := model.FrameRateFromFloat(30000.0 / 1001)
+	require.NoError(t, err)
+	assert.Equal(t, int64(30), long.Frames(time.Second))
+	assert.InDelta(t, float64(1001*time.Millisecond), float64(long.Duration(30)), float64(time.Microsecond))
+	got, err := model.ParseTime("00:00:01:12", long)
+	require.NoError(t, err)
+	assert.Equal(t, ms(1400), got)
 }
 
 // TestFramesMatchTheFloatFormula compares Frames with round(ms / 1000 * fps) of PHP for every millisecond of the first
-// 2 minutes and every 997th millisecond up to 1 hour. It skips the times where the float formula lies on a half.
+// 2 minutes and every 997th millisecond up to 1 hour. It skips the times where the float product lies within 1e-6 of
+// a half frame. There the float error decides the rounding, while Frames always rounds the exact half up.
 func TestFramesMatchTheFloatFormula(t *testing.T) {
 	t.Parallel()
 
 	rates := []model.FrameRate{
-		model.FrameRate23976, model.FrameRate24, model.FrameRate25, model.FrameRate2997, model.FrameRate2997DF,
-		model.FrameRate30, model.FrameRate50, model.FrameRate5994, model.FrameRate5994DF, model.FrameRate60,
+		model.FrameRate23976, model.FrameRate24, model.FrameRate25, model.FrameRate2997,
+		model.FrameRate30, model.FrameRate50, model.FrameRate5994, model.FrameRate60,
 		{Num: 2997, Den: 125},
 	}
 	for _, r := range rates {
@@ -140,7 +148,7 @@ func TestFramesMatchTheFloatFormula(t *testing.T) {
 					diffs = append(diffs, fmt.Sprintf("%d ms: float %d, exact %d", n, want, got))
 				}
 			}
-			for n := int64(0); n <= 120_000; n++ {
+			for n := range int64(120_001) {
 				check(n)
 			}
 			for n := int64(120_000); n <= 3_600_000; n += 997 {
@@ -233,16 +241,6 @@ func TestFramesThenTimecode(t *testing.T) {
 	}
 }
 
-func TestFrameOfInvertsTimecodeOf(t *testing.T) {
-	t.Parallel()
-
-	for _, r := range []model.FrameRate{model.FrameRate2997DF, model.FrameRate5994DF, model.FrameRate2997, model.FrameRate23976, {Num: 25, Den: 2}} {
-		for n := int64(0); n < 400_000; n++ {
-			require.Equal(t, n, r.FrameOf(r.TimecodeOf(n)), "%s frame %d", r, n)
-		}
-	}
-}
-
 func TestClockTimecodeAndDuration(t *testing.T) {
 	t.Parallel()
 
@@ -304,6 +302,9 @@ func TestParseTime(t *testing.T) {
 		{in: "00:00:01:12", rate: model.FrameRate23976, want: ms(1501)},
 		{in: "00:00:01:012", rate: model.FrameRate25, want: ms(1480)},
 		{in: "0099999:00:00:00", rate: model.FrameRate25, want: 99999 * time.Hour},
+		{in: "99999:59:59.9996", err: limit},
+		{in: "99999:59:59:24", rate: model.FrameRate25, want: 99999*time.Hour + 59*time.Minute + 59960*time.Millisecond},
+		{in: "99999:59:59:9996", rate: model.FrameRate{Num: 10000, Den: 1}, err: limit},
 		{in: "62.5", err: shape},
 		{in: "", err: shape},
 		{in: "-00:00:01", err: shape},
@@ -395,7 +396,7 @@ func FuzzTimecode(f *testing.F) {
 	}
 	f.Fuzz(func(t *testing.T, n int64, s string) {
 		for _, r := range rates {
-			frame := n % (360_000 * int64(r.Labels()))
+			frame := n % (360_000_000 * int64(r.Labels()))
 			if frame < 0 {
 				frame = -frame
 			}

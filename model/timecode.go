@@ -1,7 +1,6 @@
 package model
 
 import (
-	"math"
 	"math/big"
 	"regexp"
 	"strconv"
@@ -13,7 +12,6 @@ import (
 // labelsPerDropped is the labels per second for each label that drop-frame skips at a minute: 2 at 30, 4 at 60.
 const labelsPerDropped = 15
 
-//nolint:gochecknoglobals // compiled once, read-only
 var (
 	timecodeLabel = regexp.MustCompile(`^(\d{2,}):(\d{2}):(\d{2})([:;])(\d{2})$`)
 	timeFrames    = regexp.MustCompile(`^(\d+):([0-5]\d):([0-5]\d):(\d{2,})$`)
@@ -88,25 +86,19 @@ func (r FrameRate) Labels() int {
 // Frames returns the frame nearest to d, which is d * Num / Den rounded half away from zero.
 // It returns 0 for a rate that fails Validate.
 func (r FrameRate) Frames(d time.Duration) int64 {
-	if !r.exact() {
+	if r.Num <= 0 || r.Den <= 0 {
 		return 0
 	}
-	return roundDiv(int64(d), r.Num, r.Den*int64(time.Second))
+	return roundDiv(product(int64(d), r.Num), product(r.Den, int64(time.Second)))
 }
 
 // Duration returns the exact time of frame n, which is n * Den / Num seconds rounded to the nearest nanosecond.
 // It returns 0 for a rate that fails Validate.
 func (r FrameRate) Duration(n int64) time.Duration {
-	if !r.exact() {
+	if r.Num <= 0 || r.Den <= 0 {
 		return 0
 	}
-	return time.Duration(roundDiv(n, r.Den*int64(time.Second), r.Num))
-}
-
-// exact reports whether the integer math of Frames and Duration can run: Num above 0 and Den above 0, and Den times
-// one second in nanoseconds inside the int64 range.
-func (r FrameRate) exact() bool {
-	return r.Num > 0 && r.Den > 0 && r.Den <= math.MaxInt64/int64(time.Second)
+	return time.Duration(roundDiv(product(n, r.Den, int64(time.Second)), product(r.Num)))
 }
 
 // Near reports whether r and o differ by 0.01 frames per second or less. It ignores DropFrame.
@@ -185,15 +177,22 @@ func splitSeconds(seconds int64, frames int) Timecode {
 	}
 }
 
-// roundDiv returns a * b / c rounded half away from zero. c must be above 0. A result beyond the int64 range stops
-// at the limit.
-func roundDiv(a, b, c int64) int64 {
-	x := new(big.Int).Mul(big.NewInt(a), big.NewInt(b))
-	neg := x.Sign() < 0
-	x.Abs(x)
-	cc := big.NewInt(c)
-	x.Add(x, new(big.Int).Rsh(cc, 1))
-	x.Quo(x, cc)
+// product multiplies without overflow, so a large Den cannot wrap around.
+func product(xs ...int64) *big.Int {
+	p := big.NewInt(1)
+	for _, x := range xs {
+		p.Mul(p, big.NewInt(x))
+	}
+	return p
+}
+
+// roundDiv returns num / den rounded half away from zero. den must be above 0. A result beyond the int64 range
+// stops at the limit.
+func roundDiv(num, den *big.Int) int64 {
+	neg := num.Sign() < 0
+	x := new(big.Int).Abs(num)
+	x.Add(x, new(big.Int).Rsh(den, 1))
+	x.Quo(x, den)
 	if neg {
 		x.Neg(x)
 	}
@@ -235,7 +234,11 @@ func ParseTime(s string, r FrameRate) (time.Duration, error) {
 		return 0, invalidArgument(`The timecode "` + s + `" has a frame number that is not below ` + strconv.Itoa(labels) + ".")
 	}
 	t := Timecode{Hours: int(hours), Minutes: int(digitsValue(m[2])), Seconds: int(digitsValue(m[3])), Frames: int(frames)}
-	return r.ClockDuration(t).Round(time.Millisecond), nil
+	d := r.ClockDuration(t).Round(time.Millisecond)
+	if d >= timecode.MaxTime {
+		return 0, timeBelowLimit(s)
+	}
+	return d, nil
 }
 
 func timeBelowLimit(s string) error {

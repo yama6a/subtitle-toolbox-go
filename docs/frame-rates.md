@@ -21,7 +21,7 @@ A `FrameRate` has `Num` frames in `Den` seconds, and a `DropFrame` flag. `FrameR
 
 The labels per second are the rate rounded to a whole number, half away from zero. `Labels` returns them. 25/2 gives 13.
 
-`Validate` allows `DropFrame` only at 30000/1001, 2997/100, 60000/1001 and 2997/50. The methods below need a rate that passes `Validate`. With a zero rate they return 0 or the zero `Timecode` and never panic.
+`Validate` allows `DropFrame` only at 30000/1001, 2997/100, 60000/1001 and 2997/50. The methods below need a rate that passes `Validate`. With a zero rate, `Frames` and `Duration` return 0, `TimecodeOf` and `ClockTimecode` return the zero `Timecode`, and none of them panics.
 
 ## Frames and durations
 
@@ -30,7 +30,7 @@ The labels per second are the rate rounded to a whole number, half away from zer
 | `Frames(d)` | the frame nearest to `d`. 1 s at 30000/1001 gives frame 30 |
 | `Duration(n)` | the exact time of frame `n`, to the nearest nanosecond. Frame 30 at 30000/1001 is 1.001 s |
 
-Both use integer math, so 99999 hours at 60000/1001 does not overflow. A time that lies exactly on half a frame rounds up. 20 ms at 25 fps gives frame 1. A cue rounds a `Duration` result to whole milliseconds, so frame 15 at 30000/1001 gives 501 ms.
+Both use integer math, so 99999 hours at 60000/1001 does not overflow. A time that lies exactly on half a frame rounds half away from zero. 20 ms at 25 fps gives frame 1. A cue rounds a `Duration` result to whole milliseconds, so frame 15 at 30000/1001 gives 501 ms.
 
 ## The 2 time models
 
