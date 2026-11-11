@@ -29,56 +29,56 @@ import (
 
 // The shapes of the Read, Write and Detect functions of a format package.
 type (
-	readFunc[O any]  func(io.Reader, model.CommonReadOptions, O) (*model.Subtitle, []model.ParseWarning, error)
+	readFunc[O any]     func(io.Reader, model.CommonReadOptions, O) (*model.Subtitle, []model.ParseWarning, error)
 	writeFunc[O, R any] func(io.Writer, *model.Subtitle, model.CommonWriteOptions, O) (R, error)
-	detectFunc       func([]byte) bool
+	detectFunc          func([]byte) bool
 )
 
 var (
-	_ readFunc[stboxjson.ReadOptions]   = stboxjson.Read
+	_ readFunc[stboxjson.ReadOptions]                          = stboxjson.Read
 	_ writeFunc[stboxjson.WriteOptions, stboxjson.WriteReport] = stboxjson.Write
-	_ readFunc[webvtt.ReadOptions]      = webvtt.Read
-	_ writeFunc[webvtt.WriteOptions, webvtt.WriteReport]    = webvtt.Write
-	_ detectFunc                        = webvtt.Detect
-	_ readFunc[srt.ReadOptions]         = srt.Read
-	_ writeFunc[srt.WriteOptions, srt.WriteReport]       = srt.Write
-	_ detectFunc                        = srt.Detect
-	_ readFunc[ass.ReadOptions]         = ass.Read
-	_ writeFunc[ass.WriteOptions, ass.WriteReport]       = ass.Write
-	_ detectFunc                        = ass.Detect
-	_ readFunc[ttml.ReadOptions]        = ttml.Read
-	_ writeFunc[ttml.WriteOptions, ttml.WriteReport]      = ttml.Write
-	_ readFunc[microdvd.ReadOptions]    = microdvd.Read
-	_ writeFunc[microdvd.WriteOptions, microdvd.WriteReport]  = microdvd.Write
-	_ detectFunc                        = microdvd.Detect
-	_ detectFunc                        = ttml.Detect
-	_ readFunc[sami.ReadOptions]        = sami.Read
-	_ writeFunc[sami.WriteOptions, sami.WriteReport]      = sami.Write
-	_ detectFunc                        = sami.Detect
-	_ readFunc[sbv.ReadOptions]         = sbv.Read
-	_ writeFunc[sbv.WriteOptions, sbv.WriteReport]       = sbv.Write
-	_ detectFunc                        = sbv.Detect
-	_ readFunc[mpl2.ReadOptions]        = mpl2.Read
-	_ writeFunc[mpl2.WriteOptions, mpl2.WriteReport]      = mpl2.Write
-	_ detectFunc                        = mpl2.Detect
-	_ readFunc[tmplayer.ReadOptions]    = tmplayer.Read
-	_ writeFunc[tmplayer.WriteOptions, tmplayer.WriteReport]  = tmplayer.Write
-	_ detectFunc                        = tmplayer.Detect
-	_ readFunc[mpsub.ReadOptions]       = mpsub.Read
-	_ writeFunc[mpsub.WriteOptions, mpsub.WriteReport]     = mpsub.Write
-	_ detectFunc                        = mpsub.Detect
-	_ readFunc[lrc.ReadOptions]         = lrc.Read
-	_ writeFunc[lrc.WriteOptions, lrc.WriteReport]       = lrc.Write
-	_ detectFunc                        = lrc.Detect
-	_ readFunc[qttext.ReadOptions]      = qttext.Read
-	_ writeFunc[qttext.WriteOptions, qttext.WriteReport]    = qttext.Write
-	_ detectFunc                        = qttext.Detect
+	_ readFunc[webvtt.ReadOptions]                             = webvtt.Read
+	_ writeFunc[webvtt.WriteOptions, webvtt.WriteReport]       = webvtt.Write
+	_ detectFunc                                               = webvtt.Detect
+	_ readFunc[srt.ReadOptions]                                = srt.Read
+	_ writeFunc[srt.WriteOptions, srt.WriteReport]             = srt.Write
+	_ detectFunc                                               = srt.Detect
+	_ readFunc[ass.ReadOptions]                                = ass.Read
+	_ writeFunc[ass.WriteOptions, ass.WriteReport]             = ass.Write
+	_ detectFunc                                               = ass.Detect
+	_ readFunc[ttml.ReadOptions]                               = ttml.Read
+	_ writeFunc[ttml.WriteOptions, ttml.WriteReport]           = ttml.Write
+	_ readFunc[microdvd.ReadOptions]                           = microdvd.Read
+	_ writeFunc[microdvd.WriteOptions, microdvd.WriteReport]   = microdvd.Write
+	_ detectFunc                                               = microdvd.Detect
+	_ detectFunc                                               = ttml.Detect
+	_ readFunc[sami.ReadOptions]                               = sami.Read
+	_ writeFunc[sami.WriteOptions, sami.WriteReport]           = sami.Write
+	_ detectFunc                                               = sami.Detect
+	_ readFunc[sbv.ReadOptions]                                = sbv.Read
+	_ writeFunc[sbv.WriteOptions, sbv.WriteReport]             = sbv.Write
+	_ detectFunc                                               = sbv.Detect
+	_ readFunc[mpl2.ReadOptions]                               = mpl2.Read
+	_ writeFunc[mpl2.WriteOptions, mpl2.WriteReport]           = mpl2.Write
+	_ detectFunc                                               = mpl2.Detect
+	_ readFunc[tmplayer.ReadOptions]                           = tmplayer.Read
+	_ writeFunc[tmplayer.WriteOptions, tmplayer.WriteReport]   = tmplayer.Write
+	_ detectFunc                                               = tmplayer.Detect
+	_ readFunc[mpsub.ReadOptions]                              = mpsub.Read
+	_ writeFunc[mpsub.WriteOptions, mpsub.WriteReport]         = mpsub.Write
+	_ detectFunc                                               = mpsub.Detect
+	_ readFunc[lrc.ReadOptions]                                = lrc.Read
+	_ writeFunc[lrc.WriteOptions, lrc.WriteReport]             = lrc.Write
+	_ detectFunc                                               = lrc.Detect
+	_ readFunc[qttext.ReadOptions]                             = qttext.Read
+	_ writeFunc[qttext.WriteOptions, qttext.WriteReport]       = qttext.Write
+	_ detectFunc                                               = qttext.Detect
 	_ writeFunc[plaintext.WriteOptions, plaintext.WriteReport] = plaintext.Write
-	_ readFunc[csv.ReadOptions]         = csv.Read
-	_ writeFunc[csv.WriteOptions, csv.WriteReport]       = csv.Write
-	_ readFunc[subviewer.ReadOptions]   = subviewer.Read
+	_ readFunc[csv.ReadOptions]                                = csv.Read
+	_ writeFunc[csv.WriteOptions, csv.WriteReport]             = csv.Write
+	_ readFunc[subviewer.ReadOptions]                          = subviewer.Read
 	_ writeFunc[subviewer.WriteOptions, subviewer.WriteReport] = subviewer.Write
-	_ detectFunc                        = subviewer.Detect
+	_ detectFunc                                               = subviewer.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
