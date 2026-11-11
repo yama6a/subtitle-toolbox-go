@@ -36,7 +36,8 @@ type Offset struct {
 	Y float64
 }
 
-// RowOn returns the row on grid g of the first of lines lines of p, and false when p has no row or g or p.Grid has no rows.
+// RowOn returns the row on grid g of the first line of a cue of the given number of lines, and false when p has no row,
+// or when g or p.Grid has no rows.
 // It splits the rows of p.Grid into thirds by the first row. A top row keeps its number, and a bottom row keeps
 // the distance of the last line from the bottom row. A middle row scales as (row - 1) * (g.Rows - 1) / (p.Grid.Rows - 1) + 1,
 // rounded. The result is clamped so that all lines fit on g. Example: with 1 line, rows 2, 15 and 8 of
@@ -103,4 +104,3 @@ func (p Position) Validate() error {
 func positionError(field, msg string) error {
 	return &InvalidArgumentError{Option: "Position." + field, Msg: msg}
 }
-
