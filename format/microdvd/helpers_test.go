@@ -44,7 +44,8 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions, opt
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, microdvd.Write(&out, s, common, opts))
+	_, err := microdvd.Write(&out, s, common, opts)
+	require.NoError(t, err)
 	return out.String()
 }
 

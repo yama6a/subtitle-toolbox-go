@@ -100,7 +100,8 @@ func TestWriteOptionsValidate(t *testing.T) {
 				return
 			}
 			assert.Equal(t, &model.InvalidArgumentError{Option: tt.option, Msg: tt.msg}, err)
-			require.ErrorIs(t, csv.Write(&strings.Builder{}, &model.Subtitle{}, model.CommonWriteOptions{}, tt.opts), model.ErrInvalidArgument)
+			_, err = csv.Write(&strings.Builder{}, &model.Subtitle{}, model.CommonWriteOptions{}, tt.opts)
+			require.ErrorIs(t, err, model.ErrInvalidArgument)
 		})
 	}
 }

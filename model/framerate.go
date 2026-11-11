@@ -11,13 +11,13 @@ import (
 // maxDecimalDigits is the most digits that FrameRateFromFloat accepts, so that the numerator and the denominator fit in an int64.
 const maxDecimalDigits = 18
 
-// FrameRate is a frame rate as an exact fraction of frames per seconds. The zero value means "not set".
+// FrameRate is a frame rate as an exact fraction: Num frames in Den seconds. The zero value means "not set".
 type FrameRate struct {
 	// Num is the number of frames.
 	Num int64
 	// Den is the number of seconds that Num frames take.
 	Den int64
-	// DropFrame selects drop-frame time codes. Validate allows it for rates from 29.5 up to below 30 fps and from 59.5 up to below 60 fps.
+	// DropFrame selects drop-frame time codes. Validate allows it for 30000/1001, 2997/100, 60000/1001 and 2997/50 only.
 	DropFrame bool
 }
 
@@ -69,16 +69,25 @@ func (r FrameRate) String() string {
 }
 
 // Validate returns an error that matches ErrInvalidArgument unless Num and Den are above 0 and DropFrame is allowed.
-// DropFrame is allowed for a rate from 29.5 up to below 30 fps, and from 59.5 up to below 60 fps.
+// DropFrame is allowed for 30000/1001, 2997/100, 60000/1001 and 2997/50 only.
 func (r FrameRate) Validate() error {
 	if r.Num <= 0 || r.Den <= 0 {
 		return badFrameRate(r.number())
 	}
-	if f := r.Float64(); r.DropFrame && !(f >= 29.5 && f < 30 || f >= 59.5 && f < 60) {
-		return invalidArgument("The frame rate must be from 29.5 to below 30 fps or from 59.5 to below 60 fps for drop-frame time codes, got " +
-			timecode.Number(f) + ".")
+	if r.DropFrame && !r.dropFrameAllowed() {
+		return invalidArgument("The frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got " +
+			timecode.Number(r.Float64()) + ".")
 	}
 	return nil
+}
+
+func (r FrameRate) dropFrameAllowed() bool {
+	switch r.reduced() {
+	case FrameRate{Num: 30000, Den: 1001, DropFrame: true}, FrameRate{Num: 2997, Den: 100, DropFrame: true},
+		FrameRate{Num: 60000, Den: 1001, DropFrame: true}, FrameRate{Num: 2997, Den: 50, DropFrame: true}:
+		return true
+	}
+	return false
 }
 
 func (r FrameRate) reduced() FrameRate {

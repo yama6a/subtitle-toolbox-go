@@ -171,7 +171,7 @@ func TestWriteNoCues(t *testing.T) {
 func TestWriteFailsOnWriterError(t *testing.T) {
 	t.Parallel()
 
-	err := sbv.Write(errWriter{}, subtitle(t, cue(0, time.Second, "A")), model.CommonWriteOptions{}, sbv.WriteOptions{})
+	_, err := sbv.Write(errWriter{}, subtitle(t, cue(0, time.Second, "A")), model.CommonWriteOptions{}, sbv.WriteOptions{})
 	require.ErrorIs(t, err, errRead)
 }
 

@@ -40,7 +40,7 @@ func ExampleWrite() {
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataTitle, "Morning train")
 	s.AddCue(model.Cue{Start: time.Second, End: 3500 * time.Millisecond, Lines: []string{"The train leaves at nine."}, Forced: true})
-	err := stboxjson.Write(os.Stdout, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{PrettyPrint: true, OmitFormatData: true})
+	_, err := stboxjson.Write(os.Stdout, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{PrettyPrint: true, OmitFormatData: true})
 	if err != nil {
 		fmt.Println(err)
 	}

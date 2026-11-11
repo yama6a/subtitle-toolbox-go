@@ -55,7 +55,8 @@ func write(t *testing.T, s *model.Subtitle, opts subviewer.WriteOptions) string 
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, subviewer.Write(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, opts))
+	_, err := subviewer.Write(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, opts)
+	require.NoError(t, err)
 	return out.String()
 }
 

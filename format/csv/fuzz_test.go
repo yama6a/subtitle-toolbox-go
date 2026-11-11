@@ -71,7 +71,7 @@ func FuzzRead(f *testing.F) {
 					}
 				}
 				var out bytes.Buffer
-				if err := csv.Write(&out, s, model.CommonWriteOptions{}, csv.WriteOptions{}); err != nil {
+				if _, err := csv.Write(&out, s, model.CommonWriteOptions{}, csv.WriteOptions{}); err != nil {
 					t.Fatalf("Write returned %v", err)
 				}
 			}

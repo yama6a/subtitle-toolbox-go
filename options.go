@@ -13,6 +13,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
@@ -62,6 +63,12 @@ type WriteOptions struct {
 	CSV csv.WriteOptions
 	// SubViewer holds the settings of the SubViewer writer. The zero value writes the stored version, else SubViewer 2.
 	SubViewer subviewer.WriteOptions
+}
+
+// WriteReport holds the changes that a writer made to fit the subtitle into its format.
+type WriteReport struct {
+	// WebVTT is non-nil after a WebVTT write, also when it holds no dropped color.
+	WebVTT *webvtt.WriteReport
 }
 
 // ReadInfo holds the facts of a read that are not subtitle content.

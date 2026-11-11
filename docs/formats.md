@@ -98,14 +98,14 @@ This file reads as one cue from 1 s to 4 s with the identifier `intro`, the alig
 
 ### Dropped colors
 
-The writer turns `<font color>` into a [color class](markup.md#colors) when the color is one of the 8 WebVTT colors, so `#FFFF00`, `#ff0` and `yellow` all become `<c.yellow>`. WebVTT has no class for other colors, so the writer drops them. `webvtt.WriteWithReport` returns the output and one `DroppedColor` per dropped color. `stbox.Write` returns no report.
+The writer turns `<font color>` into a [color class](markup.md#colors) when the color is one of the 8 WebVTT colors, so `#FFFF00`, `#ff0` and `yellow` all become `<c.yellow>`. WebVTT has no class for other colors, so the writer drops them. `webvtt.Write` and `stbox.Write` return a `WriteReport` with one `DroppedColor` per dropped color. In `stbox.Write`, the field `WebVTT` of the report holds it.
 
-<!-- example: format/webvtt/ExampleWriteWithReport -->
+<!-- example: format/webvtt/ExampleWrite_droppedColors -->
 ```go
 s := &model.Subtitle{}
 s.AddCue(model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{`<font color="#123456">Rain</font> <font color="#ffff00">and sun</font>`}})
 var out strings.Builder
-report, err := webvtt.WriteWithReport(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
+report, err := webvtt.Write(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -840,7 +840,7 @@ s.AddCues(
 	model.Cue{Start: 2500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"Where are you going?"}},
 	model.Cue{Start: 6 * time.Second, End: 7 * time.Second, Lines: []string{"<i>Home</i> &amp; bed."}},
 )
-if err := plaintext.Write(os.Stdout, s, model.CommonWriteOptions{}, plaintext.WriteOptions{}); err != nil {
+if _, err := plaintext.Write(os.Stdout, s, model.CommonWriteOptions{}, plaintext.WriteOptions{}); err != nil {
 	fmt.Println(err)
 }
 // Output:

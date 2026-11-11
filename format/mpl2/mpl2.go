@@ -9,6 +9,9 @@ import "regexp"
 // ReadOptions holds the settings of the MPL2 reader. MPL2 has none yet.
 type ReadOptions struct{}
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 // WriteOptions holds the settings of the MPL2 writer. MPL2 has none yet.
 type WriteOptions struct{}
 

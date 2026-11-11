@@ -66,7 +66,8 @@ func (a *args) FrameRate(name string) (stbox.FrameRate, bool, error) {
 	}
 	r, err := stbox.FrameRateFromFloat(f)
 	if err != nil {
-		return stbox.FrameRate{}, false, usage("The option --" + name + " must be a frame rate of at most 18 digits.")
+		v, _ := a.Value(name)
+		return stbox.FrameRate{}, false, usage("The option --" + name + " must be a frame rate of at most 18 digits, got " + strconv.Quote(v) + ".")
 	}
 	return r, true, nil
 }

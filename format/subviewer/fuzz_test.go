@@ -90,7 +90,7 @@ func checkWrite(t *testing.T, s *model.Subtitle, v subviewer.Version) {
 	t.Helper()
 
 	var out bytes.Buffer
-	if err := subviewer.Write(&out, s, model.CommonWriteOptions{}, subviewer.WriteOptions{Version: v}); err != nil {
+	if _, err := subviewer.Write(&out, s, model.CommonWriteOptions{}, subviewer.WriteOptions{Version: v}); err != nil {
 		t.Fatalf("Write returned %v", err)
 	}
 	if _, _, err := subviewer.Read(bytes.NewReader(out.Bytes()), model.CommonReadOptions{Lenient: true}, subviewer.ReadOptions{}); err != nil {

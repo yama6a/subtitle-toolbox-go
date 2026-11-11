@@ -43,7 +43,7 @@ func TestRateGetter(t *testing.T) {
 		{"bad fps with own option", []string{"--fps", "0", "--input-fps", "24"}, stbox.FrameRate{}, false, "The option --fps must be greater than 0."},
 		{"bad own option", []string{"--input-fps", "-1"}, stbox.FrameRate{}, false, "The option --input-fps must be greater than 0."},
 		{"no number", []string{"--input-fps", "x"}, stbox.FrameRate{}, false, `The option --input-fps needs a number, got "x".`},
-		{"too many digits", []string{"--fps", "1e-300"}, stbox.FrameRate{}, false, "The option --fps must be a frame rate of at most 18 digits."},
+		{"too many digits", []string{"--fps", "1e-300"}, stbox.FrameRate{}, false, `The option --fps must be a frame rate of at most 18 digits, got "1e-300".`},
 		{"infinite", []string{"--fps", "1e999"}, stbox.FrameRate{}, false, `The option --fps needs a finite number, got "1e999".`},
 	}
 	for _, tt := range tests {

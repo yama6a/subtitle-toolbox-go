@@ -75,7 +75,8 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions) str
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, sami.Write(&out, s, common, sami.WriteOptions{}))
+	_, err := sami.Write(&out, s, common, sami.WriteOptions{})
+	require.NoError(t, err)
 	return out.String()
 }
 

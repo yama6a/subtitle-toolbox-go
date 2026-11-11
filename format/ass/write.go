@@ -56,9 +56,9 @@ type part struct {
 
 // Write writes s as ASS, or as SSA when s was read from SSA. The text \N, \n or \h gets U+2060 WORD JOINER after the
 // backslash, so it reads back as text.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	if err := opts.Validate(); err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	stored, _ := s.FormatData(formatDataKey)
 	f := readFileData(stored)
@@ -71,7 +71,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	}
 	if opts.Style != "" {
 		if err := f.applyStyle(opts.Style); err != nil {
-			return err
+			return WriteReport{}, err
 		}
 	}
 
@@ -85,7 +85,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 			body = append(body, l+"\n"...)
 		}
 	}
-	return writing.Write(w, model.ASS, body, common, true)
+	return WriteReport{}, writing.Write(w, model.ASS, body, common, true)
 }
 
 // order returns the sections to write: the stored order with [Script Info] first and [Events] last when the

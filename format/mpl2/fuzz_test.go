@@ -63,7 +63,7 @@ func FuzzRead(f *testing.F) {
 				}
 			}
 			var out bytes.Buffer
-			if err := mpl2.Write(&out, s, model.CommonWriteOptions{}, mpl2.WriteOptions{}); err != nil {
+			if _, err := mpl2.Write(&out, s, model.CommonWriteOptions{}, mpl2.WriteOptions{}); err != nil {
 				t.Fatalf("Write returned %v", err)
 			}
 			back, _, err := mpl2.Read(&out, model.CommonReadOptions{}, mpl2.ReadOptions{})

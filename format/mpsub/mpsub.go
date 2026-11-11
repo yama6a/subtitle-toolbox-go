@@ -17,6 +17,9 @@ const formatDataKey = string(model.MPSub)
 // ReadOptions holds the settings of the MPSub reader. MPSub has none yet.
 type ReadOptions struct{}
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 // WriteOptions holds the settings of the MPSub writer.
 type WriteOptions struct {
 	// FrameRate writes the times as frames at this whole number of frames per second, such as 25/1 or 50/2.

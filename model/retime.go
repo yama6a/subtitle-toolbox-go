@@ -49,8 +49,8 @@ func (s *Subtitle) Scale(factor float64) error {
 
 // ConvertFrameRate moves the cues of a video at the frame rate from to the same video at the frame rate to.
 // It calls Scale(from.Float64() / to.Float64()), so 25 to 23.976 makes every time longer by 25/23.976.
-// It returns an error that matches ErrInvalidArgument and changes nothing when a frame rate fails Validate,
-// when the factor overflows to infinity or underflows to 0, or when a cue would end at 100,000 hours or later.
+// It returns an error that matches ErrInvalidArgument and changes nothing when a frame rate fails Validate
+// or when a cue would end at 100,000 hours or later.
 func (s *Subtitle) ConvertFrameRate(from, to FrameRate) error {
 	for _, rate := range []FrameRate{from, to} {
 		if err := rate.Validate(); err != nil {

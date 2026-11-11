@@ -21,7 +21,8 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions) str
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, webvtt.Write(&out, s, common, webvtt.WriteOptions{}))
+	_, err := webvtt.Write(&out, s, common, webvtt.WriteOptions{})
+	require.NoError(t, err)
 	return out.String()
 }
 
@@ -399,7 +400,7 @@ func TestWriteArrowInText(t *testing.T) {
 	assert.Equal(t, []string{"a --&gt; b", "c"}, firstCue(t, again).Lines)
 }
 
-func TestWriteWithReport(t *testing.T) {
+func TestWriteReport(t *testing.T) {
 	t.Parallel()
 
 	s := subtitle(t,
@@ -408,7 +409,7 @@ func TestWriteWithReport(t *testing.T) {
 		cue(5500*ms, 6*sec, "plain"),
 	)
 	var out bytes.Buffer
-	report, err := webvtt.WriteWithReport(&out, s, model.CommonWriteOptions{}, webvtt.WriteOptions{})
+	report, err := webvtt.Write(&out, s, model.CommonWriteOptions{}, webvtt.WriteOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, webvtt.WriteReport{DroppedColors: []webvtt.DroppedColor{
 		{CueIndex: 0, Color: "#123456", Message: `Cue #0 at 1 s: dropped the color "#123456", because WebVTT has classes for 8 colors only.`},
@@ -418,7 +419,7 @@ func TestWriteWithReport(t *testing.T) {
 	assert.Contains(t, out.String(), "\na b <c.white>c</c>\n")
 
 	out.Reset()
-	report, err = webvtt.WriteWithReport(&out, s, model.CommonWriteOptions{StripTags: true}, webvtt.WriteOptions{})
+	report, err = webvtt.Write(&out, s, model.CommonWriteOptions{StripTags: true}, webvtt.WriteOptions{})
 	require.NoError(t, err)
 	assert.Empty(t, report.DroppedColors)
 }
@@ -432,8 +433,6 @@ func (failingWriter) Write([]byte) (int, error) { return 0, errDiskFull }
 func TestWriteError(t *testing.T) {
 	t.Parallel()
 
-	err := webvtt.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, webvtt.WriteOptions{})
-	require.ErrorIs(t, err, errDiskFull)
-	_, err = webvtt.WriteWithReport(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, webvtt.WriteOptions{})
+	_, err := webvtt.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, webvtt.WriteOptions{})
 	require.ErrorIs(t, err, errDiskFull)
 }

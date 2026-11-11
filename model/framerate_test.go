@@ -67,11 +67,16 @@ func TestFrameRateValidate(t *testing.T) {
 		{name: "zero denominator", rate: model.FrameRate{Num: 1}, err: "The frame rate must be greater than 0, got INF."},
 		{
 			name: "exactly 30 drop-frame", rate: model.FrameRate{Num: 30, Den: 1, DropFrame: true},
-			err: "The frame rate must be from 29.5 to below 30 fps or from 59.5 to below 60 fps for drop-frame time codes, got 30.",
+			err: "The frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got 30.",
 		},
 		{
+			name: "29.6 drop-frame", rate: model.FrameRate{Num: 148, Den: 5, DropFrame: true},
+			err: "The frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got 29.6.",
+		},
+		{name: "5994/200 drop-frame is reduced first", rate: model.FrameRate{Num: 5994, Den: 200, DropFrame: true}},
+		{
 			name: "25 drop-frame", rate: model.FrameRate{Num: 25, Den: 1, DropFrame: true},
-			err: "The frame rate must be from 29.5 to below 30 fps or from 59.5 to below 60 fps for drop-frame time codes, got 25.",
+			err: "The frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got 25.",
 		},
 	}
 	for _, tt := range tests {

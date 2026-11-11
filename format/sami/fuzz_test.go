@@ -64,7 +64,7 @@ func FuzzRead(f *testing.F) {
 				}
 			}
 			var out bytes.Buffer
-			if err := sami.Write(&out, s, model.CommonWriteOptions{}, sami.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
+			if _, err := sami.Write(&out, s, model.CommonWriteOptions{}, sami.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
 				t.Fatalf("Write returned %v", err)
 			}
 		}

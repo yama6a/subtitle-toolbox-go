@@ -28,6 +28,9 @@ func (o ReadOptions) Validate() error {
 	return parsing.FrameRateOption(o.FrameRate.Validate(), "ReadOptions.MicroDVD.FrameRate", "The frame rate")
 }
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 // WriteOptions holds the settings of the MicroDVD writer.
 type WriteOptions struct {
 	// FrameRate is the output frame rate. The zero value takes the frame rate that Read stored.

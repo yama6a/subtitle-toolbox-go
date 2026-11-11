@@ -60,7 +60,7 @@ func FuzzRead(f *testing.F) {
 				opts.FrameRate = model.FrameRate{Num: 25, Den: 1} // a blank input gives no frame rate to write with
 			}
 			var out bytes.Buffer
-			if err := microdvd.Write(&out, s, model.CommonWriteOptions{}, opts); err != nil && !errors.Is(err, model.ErrUnwritable) {
+			if _, err := microdvd.Write(&out, s, model.CommonWriteOptions{}, opts); err != nil && !errors.Is(err, model.ErrUnwritable) {
 				t.Fatalf("Write returned %v", err)
 			}
 		}
