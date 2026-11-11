@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/position"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/xmlraw"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
@@ -176,7 +177,43 @@ func (w *writer) agentID(name string) string {
 // regionID returns the ID of the region of an alignment, and adds the region at the end of the last layout of the
 // head on first use. The region has the shape of the IMSC 1.1 examples with a safe area of 10%.
 func (w *writer) regionID(a model.Alignment) string {
-	if id, ok := w.regionIDs[a]; ok {
+	return w.addRegion(regionName(a), "10% 10%", "80% 80%", a)
+}
+
+// offsetRegionID returns the ID of the region whose anchor for alignment a is the point o, and adds the region on
+// first use. The region reaches from the point to the edges of the screen, so it stays inside the root container.
+func (w *writer) offsetRegionID(a model.Alignment, o model.Offset) string {
+	o = model.Offset{X: position.Round(o.X), Y: position.Round(o.Y)}
+	originX, extentX := span(o.X, a.Column()-1)
+	originY, extentY := span(o.Y, 2-a.Row())
+	name := regionName(a) + "-" + position.Format(o.X) + "-" + position.Format(o.Y)
+	return w.addRegion(name, originX+" "+originY, extentX+" "+extentY, a)
+}
+
+// span returns the origin and the extent in percent of a region on one axis. Side 0 anchors at the start of the
+// region, 1 at its middle and 2 at its end. The anchor sits at v percent.
+func span(v float64, side int) (origin, extent string) {
+	var start, length float64
+	switch side {
+	case 0:
+		start, length = v, 100-v
+	case 1:
+		half := min(v, 100-v)
+		start, length = v-half, 2*half
+	default:
+		start, length = 0, v
+	}
+	return position.Format(start) + "%", position.Format(length) + "%"
+}
+
+func regionName(a model.Alignment) string {
+	name := a.String()
+	return markupcore.ASCIILower(name[:1]) + name[1:]
+}
+
+// addRegion adds a region to the layout unless name has one, and returns its ID.
+func (w *writer) addRegion(name, origin, extent string, a model.Alignment) string {
+	if id, ok := w.regionIDs[name]; ok {
 		return id
 	}
 	var layout *xmlraw.Node
@@ -191,17 +228,16 @@ func (w *writer) regionID(a model.Alignment) string {
 		reconcile(layout, w.ns)
 	}
 
-	name := a.String()
-	id := w.unusedID(markupcore.ASCIILower(name[:1]) + name[1:])
+	id := w.unusedID(name)
 	style := func(local, value string) xml.Attr {
 		return xml.Attr{Name: xml.Name{Space: w.tts, Local: local}, Value: value}
 	}
-	region := newElement("", "region", xmlIDAttr(id), style("origin", "10% 10%"), style("extent", "80% 80%"),
+	region := newElement("", "region", xmlIDAttr(id), style("origin", origin), style("extent", extent),
 		style("displayAlign", [...]string{"after", "center", "before"}[a.Row()]), style("textAlign", columnName(a)))
 	insertChild(layout, region, nil, 3)
 	reconcile(region, w.ns)
 	reconcileAttributes(region, w.tts, w.uris[w.tts])
-	w.regionIDs[a] = id
+	w.regionIDs[name] = id
 	return id
 }
 
