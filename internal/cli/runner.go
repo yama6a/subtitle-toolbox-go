@@ -33,10 +33,13 @@ type runner struct {
 	files      *outputFiles
 	// reportToStderr sends the report lines and the summary to stderr, because stdout gets data.
 	reportToStderr bool
-	// result makes the call exit with code 1 when no input failed, for a broken rule or a difference.
-	result    bool
-	succeeded int
-	failed    int
+	// results counts the inputs with a result: a broken rule or a difference. 1 or more makes the call exit with
+	// code 1 when no input failed.
+	results int
+	// summarizeProblems makes the batch summary count the inputs with and without a result, as validate does.
+	summarizeProblems bool
+	succeeded         int
+	failed            int
 }
 
 func runFiles(ctx context.Context, a *args, c *console, fc fileCommand) error {
@@ -81,7 +84,7 @@ func (r *runner) exitError(interrupted bool) error {
 		return &ExitError{Code: exitInterrupt}
 	case r.failed > 0:
 		return &ExitError{Code: exitFile}
-	case r.result:
+	case r.results > 0:
 		return &ExitError{Code: exitResult}
 	default:
 		return nil
@@ -115,7 +118,11 @@ func (r *runner) summarize(total int, interrupted bool) {
 	if total < 2 {
 		return
 	}
-	summary := strconv.Itoa(total) + " files: " + strconv.Itoa(r.succeeded) + " succeeded, " + strconv.Itoa(r.failed) + " failed"
+	counts := strconv.Itoa(r.succeeded) + " succeeded"
+	if r.summarizeProblems {
+		counts = strconv.Itoa(r.succeeded-r.results) + " valid, " + strconv.Itoa(r.results) + " with problems"
+	}
+	summary := strconv.Itoa(total) + " files: " + counts + ", " + strconv.Itoa(r.failed) + " failed"
 	if skipped > 0 {
 		summary += ", " + strconv.Itoa(skipped) + " skipped"
 	}

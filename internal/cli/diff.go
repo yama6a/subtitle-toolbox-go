@@ -107,7 +107,7 @@ func (d *diffCommand) process(_ context.Context, r *runner, in *input) error {
 		return err
 	}
 	if len(differences) > 0 {
-		r.result = true
+		r.results++
 	}
 	d.report.emit(r, diff.Text(differences), diffEntry{
 		OldFile:     in.arg,
