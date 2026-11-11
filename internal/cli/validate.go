@@ -13,6 +13,9 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/validation"
 )
 
+// defaultVideoFPS is the video frame rate of the netflix-en gap without --video-fps and --fps.
+const defaultVideoFPS = 23.976
+
 // validateCommand checks the cues of each input against the rules that its options turn on.
 type validateCommand struct {
 	report reportOutput
@@ -28,15 +31,30 @@ func (*validateCommand) summary() string {
 }
 
 func (*validateCommand) usage() []string {
-	return []string{"<input>... [--max-cpl CHARS] [--check-overlaps] [...] [options]"}
+	return []string{
+		"<input>... --preset netflix-en|bbc [options]",
+		"<input>... [--max-cpl CHARS] [--check-overlaps] [...] [options]",
+	}
 }
 
 func (*validateCommand) details() string {
-	return "Prints one line per broken rule. Cue numbers start at 1. The exit code is 1 when a file breaks a rule."
+	return "Prints one line per broken rule. Cue numbers start at 1. The exit code is 1 when a file breaks a rule.\n" +
+		"The netflix-en preset has the limits of the Netflix English (USA) Timed Text Style Guide. These are " +
+		strconv.Itoa(validation.NetflixMaxCharactersPerSecond) + " characters per second, " +
+		strconv.Itoa(model.DefaultMaxCharactersPerLine) + " characters per line and " +
+		strconv.Itoa(model.DefaultMaxLinesPerCue) + " lines. A cue lasts 0.833 s to " +
+		strconv.Itoa(int(model.DefaultMaxDuration/time.Second)) + " s and keeps a gap of 2 frames, with no overlaps.\n" +
+		"The bbc preset has the limits of the BBC Subtitle Guidelines. These are " +
+		strconv.Itoa(validation.BBCMaxCharactersPerLine) + " characters per line, " +
+		strconv.Itoa(validation.BBCMaxWordsPerMinute) + " words per minute and " +
+		formatNumber(validation.BBCMinDurationPerWord.Seconds()) + " s per word.\n" +
+		"A rule option overrides the value of the preset."
 }
 
 func (*validateCommand) options() []option {
 	return slices.Concat([]option{
+		valueOption("preset", "NAME", "Rule set: netflix-en or bbc."),
+		valueOption("video-fps", "RATE", "Frame rate of the video, for the 2-frame gap of netflix-en. Default: "+formatNumber(defaultVideoFPS)+"."),
 		valueOption("max-cps", "CHARS", "Maximum characters per second."),
 		valueOption("max-cpl", "CHARS", "Maximum characters per line."),
 		valueOption("max-lines", "LINES", "Maximum lines per cue."),
@@ -55,7 +73,7 @@ func (*validateCommand) options() []option {
 		flagOption("check-unbalanced-tags", "Report formatting tags without a partner tag."),
 		flagOption("check-all-caps-lines", "Report lines in upper case only."),
 		flagOption("json", jsonHelp),
-	}, inputOptions(true, reportFPSHelp))
+	}, inputOptions(true, "Sets --input-fps and --video-fps. A specific option wins over --fps."))
 }
 
 func (c *validateCommand) run(ctx context.Context, a *args, console *console) error {
@@ -68,7 +86,11 @@ func (c *validateCommand) prepare(a *args, r *runner) error {
 	}
 	c.report.prepare(a, r)
 	r.summarizeProblems = true
-	rules, err := validateRules(a)
+	base, err := presetRules(a)
+	if err != nil {
+		return err
+	}
+	rules, err := validateRules(a, base)
 	if err != nil {
 		return err
 	}
@@ -76,63 +98,120 @@ func (c *validateCommand) prepare(a *args, r *runner) error {
 		return usage(message(err))
 	}
 	if rules == (validation.Rules{}) {
-		return usage("Pass at least one rule option.")
+		return usage("Pass --preset or at least one rule option.")
 	}
 	c.rules = rules
 	return nil
 }
 
-// validateRules reads the rule options. The first bad value gives the usage error.
-func validateRules(a *args) (validation.Rules, error) {
-	var (
-		rules validation.Rules
-		err   error
-	)
-	if rules.MaxCharactersPerSecond, _, err = a.PositiveFloat("max-cps"); err != nil {
+// presetRules returns the rules of --preset, or the zero Rules without the option.
+func presetRules(a *args) (validation.Rules, error) {
+	preset, _, err := a.Choice("preset", "netflix-en", "bbc")
+	if err != nil {
+		return validation.Rules{}, err
+	}
+	if a.Has("video-fps") && preset != "netflix-en" {
+		return validation.Rules{}, usage("--video-fps sets the frame rate of the netflix-en gap rule. " +
+			"Pass --preset netflix-en, or leave out --video-fps.")
+	}
+	switch preset {
+	case "bbc":
+		return validation.BBC(), nil
+	case "netflix-en":
+		rate, ok, err := a.Rate("video-fps")
+		if err != nil {
+			return validation.Rules{}, err
+		}
+		if !ok {
+			rate, _ = stbox.FrameRateFromFloat(defaultVideoFPS)
+		}
+		rules, err := validation.NetflixEnglish(rate)
+		if err != nil {
+			return validation.Rules{}, usage(message(err))
+		}
+		return rules, nil
+	}
+	return validation.Rules{}, nil
+}
+
+// validateRules sets each field that a rule option names on rules. The first bad value gives the usage error.
+func validateRules(a *args, rules validation.Rules) (validation.Rules, error) {
+	if f, ok, err := a.PositiveFloat("max-cps"); err != nil {
 		return rules, err
+	} else if ok {
+		rules.MaxCharactersPerSecond = f
 	}
 	for _, o := range []struct {
 		name string
 		to   *int
 	}{{"max-cpl", &rules.MaxCharactersPerLine}, {"max-lines", &rules.MaxLinesPerCue}} {
-		n, _, err := a.PositiveInt(o.name)
-		if err != nil {
+		if n, ok, err := a.PositiveInt(o.name); err != nil {
 			return rules, err
+		} else if ok {
+			*o.to = int(n)
 		}
-		*o.to = int(n)
 	}
 	for _, o := range []struct {
 		name string
 		to   *time.Duration
 	}{{"min-duration", &rules.MinDuration}, {"max-duration", &rules.MaxDuration}, {"min-gap", &rules.MinGap}} {
-		d, _, err := a.PositiveTime(o.name)
-		if err != nil {
+		if d, ok, err := a.PositiveTime(o.name); err != nil {
 			return rules, err
+		} else if ok {
+			*o.to = d
 		}
-		*o.to = d
 	}
-	if rules.DialogueDashStyle, err = dialogueDashStyle(a); err != nil {
-		return rules, err
-	}
-	n, _, err := a.PositiveInt("max-speakers")
+	return validateTextRules(a, rules)
+}
+
+// validateTextRules is the second half of validateRules.
+func validateTextRules(a *args, rules validation.Rules) (validation.Rules, error) {
+	style, err := dialogueDashStyle(a)
 	if err != nil {
 		return rules, err
 	}
-	rules.MaxSpeakersPerCue = int(n)
-	if rules.MaxWordsPerMinute, _, err = a.PositiveFloat("max-wpm"); err != nil {
-		return rules, err
+	if style != nil {
+		rules.DialogueDashStyle = style
 	}
-	if rules.MinDurationPerWord, _, err = a.PositiveTime("min-seconds-per-word"); err != nil {
+	if n, ok, err := a.PositiveInt("max-speakers"); err != nil {
 		return rules, err
+	} else if ok {
+		rules.MaxSpeakersPerCue = int(n)
 	}
-	rules.AllowedCharacters, _ = a.Value("allowed-characters")
-	rules.NoOverlap = a.Has("check-overlaps")
-	rules.NoEmptyCues = a.Has("check-empty-cues")
-	rules.NoDoubleSpaces = a.Has("check-double-spaces")
-	rules.NoLeadingOrTrailingSpaces = a.Has("check-leading-or-trailing-spaces")
-	rules.NoUnbalancedTags = a.Has("check-unbalanced-tags")
-	rules.NoAllCapsLines = a.Has("check-all-caps-lines")
-	return rules, nil
+	if f, ok, err := a.PositiveFloat("max-wpm"); err != nil {
+		return rules, err
+	} else if ok {
+		rules.MaxWordsPerMinute = f
+	}
+	if d, ok, err := a.PositiveTime("min-seconds-per-word"); err != nil {
+		return rules, err
+	} else if ok {
+		rules.MinDurationPerWord = d
+	}
+	if v, ok := a.Value("allowed-characters"); ok {
+		rules.AllowedCharacters = v
+	}
+	return checkFlags(a, rules), nil
+}
+
+// checkFlags turns on each check whose flag is given.
+func checkFlags(a *args, rules validation.Rules) validation.Rules {
+	for _, o := range []struct {
+		name string
+		to   *bool
+	}{
+		{"check-overlaps", &rules.NoOverlap},
+		{"check-empty-cues", &rules.NoEmptyCues},
+		{"check-double-spaces", &rules.NoDoubleSpaces},
+		{"check-leading-or-trailing-spaces", &rules.NoLeadingOrTrailingSpaces},
+		{"check-unbalanced-tags", &rules.NoUnbalancedTags},
+		{"check-all-caps-lines", &rules.NoAllCapsLines},
+	} {
+		if a.Has(o.name) {
+			*o.to = true
+		}
+	}
+	return rules
 }
 
 func dialogueDashStyle(a *args) (*model.DialogueDashStyle, error) {

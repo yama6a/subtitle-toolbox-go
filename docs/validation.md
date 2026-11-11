@@ -116,6 +116,89 @@ So a plain cue has 1 speaker, and `<v Anna>Hi`, `<v.loud Tom>Hello`, `<v Anna>By
 
 The rule removes each `[...]` and `(...)` span, without nesting. A line counts when the rest has 2 or more upper case letters and no lower case letter. For a line that is not valid UTF-8, only `A` to `Z` and `a` to `z` count. So `I`, `[BELL RINGS]` and `(SHOUTS) Stop!` do not count.
 
+## Presets
+
+A **preset** is a function that returns the `Rules` of a delivery spec. A caller may change fields of the result before `Check`. Example: `validation.NetflixEnglish(stbox.FrameRate23976)` returns the Netflix English limits with a gap of 2 frames at 23.976 fps. Then `validation.Check(s, rules)` applies them.
+
+<!-- example: ExampleNetflixEnglish -->
+```go
+const content = "1\n00:00:01,000 --> 00:00:03,000\n<i>The train leaves at noon.</i>\n\n" +
+	"2\n00:00:02,500 --> 00:00:02,900\nANNA: We need two tickets for the long ride to the coast.\n"
+s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+rules, err := validation.NetflixEnglish(stbox.FrameRate23976)
+if err != nil {
+	fmt.Println(err)
+	return
+}
+violations, err := validation.Check(s, rules)
+if err != nil {
+	fmt.Println(err)
+	return
+}
+for _, v := range violations {
+	fmt.Println("cue", v.Cue+1, v.Rule, v.Value)
+}
+// Output:
+// cue 2 maxCharactersPerLine 57
+// cue 2 maxCharactersPerSecond 142.5
+// cue 2 minDuration 0.4
+// cue 2 noOverlap 0.5
+```
+
+A preset never gets a new rule inside a major line. Its numbers are documented behavior. A number changes only in the release that opens the next major line, or in a patch release that fixes a number that differs from its source. The release notes name each such fix.
+
+### NetflixEnglish
+
+`NetflixEnglish(r)` returns the limits for adult programs. `r` is the frame rate of the video. A zero or invalid `r` returns an `*model.InvalidArgumentError` with `Option` `frameRate`.
+
+| Field | Value | Source |
+|:--- |:--- |:--- |
+| `MaxCharactersPerSecond` | 20 (`NetflixMaxCharactersPerSecond`) | [English (USA) Timed Text Style Guide](https://partnerhelp.netflixstudios.com/hc/en-us/articles/217350977-English-USA-Timed-Text-Style-Guide), reading speed for adult programs. The guide gives 17 for children's programs, which no preset uses |
+| `MaxCharactersPerLine` | 42 (`model.DefaultMaxCharactersPerLine`) | the same guide, character limitation |
+| `MaxLinesPerCue` | 2 (`model.DefaultMaxLinesPerCue`) | [Timed Text Style Guide: General Requirements](https://partnerhelp.netflixstudios.com/hc/en-us/articles/215758617) |
+| `MinDuration` | `5 * time.Second / 6`, 20 frames at 24 fps. The check rounds it to 0.833 s | General Requirements, minimum duration of an event |
+| `MaxDuration` | 7 s (`model.DefaultMaxDuration`) | General Requirements, maximum duration of an event |
+| `MinGap` | 2 frames at `r`, which is `r.Duration(2)` | [Subtitle Timing Guidelines](https://partnerhelp.netflixstudios.com/hc/en-us/articles/360051554394), the minimum gap between events |
+| `NoOverlap` | on | `MinGap` checks only gaps of 0 or more, so an overlap needs its own rule |
+
+The gap depends on `r`. `DropFrame` does not change it.
+
+| `r` | `MinGap` | Limit after rounding to ms |
+|:--- |:--- |:--- |
+| 2997/125 (`FrameRateFromFloat(23.976)`, the CLI default) | 83.41675 ms | 83 ms |
+| 24000/1001 (`FrameRate23976`) | 83.41666 ms | 83 ms |
+| 24/1 | 83.33333 ms | 83 ms |
+| 25/1 | 80 ms | 80 ms |
+| 30000/1001 | 66.73333 ms | 67 ms |
+| 50/1 | 40 ms | 40 ms |
+
+### BBC
+
+`BBC()` returns the line length and reading speed limits.
+
+| Field | Value | Source |
+|:--- |:--- |:--- |
+| `MaxCharactersPerLine` | 37 (`BBCMaxCharactersPerLine`) | [BBC Subtitle Guidelines](https://www.bbc.co.uk/accessibility/forproducts/guides/subtitles/), section 3.1, the broadcast line length |
+| `MaxWordsPerMinute` | 180 (`BBCMaxWordsPerMinute`) | the same guidelines, section 4: the upper end of 160 to 180 words per minute |
+| `MinDurationPerWord` | 300 ms (`BBCMinDurationPerWord`) | the same guidelines, section 4.1: 0.3 s per word |
+
+0.3 s per word allows 200 words per minute. So a cue can break `MaxWordsPerMinute` and still meet `MinDurationPerWord`. Characters per second, line count, durations and gaps stay off.
+
+### Structure
+
+`Structure()` returns the checks of a well-formed cue list. It has no CLI name. The source is the cue list invariants of [subtitle.md](subtitle.md).
+
+| Field | Value |
+|:--- |:--- |
+| `RequireCues` | on |
+| `NoNegativeDuration` | on |
+| `NoOverlap` | on |
+
 ## Errors
 
 `Rules.Validate` returns an `*model.InvalidArgumentError` that matches `ErrInvalidArgument`. Its `Option` is the field path, such as `Rules.MaxCharactersPerLine`. `Check` calls `Validate` first.
@@ -130,4 +213,4 @@ The rule removes each `[...]` and `(...)` span, without nesting. A line counts w
 
 ## Command line
 
-`stbox validate <input>... [rule options] [--json] [input options]` reads each input and prints its violations. [cli.md](cli.md#validate) lists the options.
+`stbox validate <input>... [--preset NAME] [rule options] [--json] [input options]` reads each input and prints its violations. [cli.md](cli.md#validate) lists the options.

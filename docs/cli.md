@@ -318,7 +318,14 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 
 ## validate
 
-`stbox validate <input>... [rule options] [--json] [options]` checks each input with `validation.Check` of [validation.md](validation.md). It takes `--json` and the input options.
+`stbox validate <input>... [--preset NAME] [rule options] [--json] [options]` checks each input with `validation.Check` of [validation.md](validation.md). It takes `--json` and the input options.
+
+| Option | Effect |
+|:--- |:--- |
+| `--preset NAME` | `netflix-en` or `bbc` in any ASCII case. The preset is the base rules: `validation.NetflixEnglish(rate)` or `validation.BBC()` |
+| `--video-fps RATE` | The frame rate of the `netflix-en` gap. Default: 23.976. Without it, `--fps` sets the rate. The option needs `--preset netflix-en` |
+
+A rule option sets its field on the preset result. A flag can only turn a check on. Example: `--preset netflix-en --max-cps 30` keeps the other Netflix rules and allows 30 characters per second. `--fps` sets `--input-fps` and `--video-fps`, and a specific option wins over `--fps`.
 
 | Option | Rule |
 |:--- |:--- |
@@ -340,7 +347,7 @@ A minor release may add keys to these objects. [compatibility.md](compatibility.
 | `--check-unbalanced-tags` | `noUnbalancedTags` |
 | `--check-all-caps-lines` | `noAllCapsLines` |
 
-- **Usage errors**: a bad option value, a rule that `Rules.Validate` rejects, and a call without a rule option (`Pass at least one rule option.`) exit with 2. The rules `requireCues` and `noNegativeDuration` have no option.
+- **Usage errors**: a bad option value, a rule that `Rules.Validate` rejects, an unknown preset, `--video-fps` without `--preset netflix-en`, and a call without a preset or rule option (`Pass --preset or at least one rule option.`) exit with 2. The rules `requireCues` and `noNegativeDuration` have no option.
 - **Text**: one line per violation, `LABEL: cue N: RULE VALUE` and `, limit LIMIT` for a rule with a limit. N counts from 1 and the part `cue N: ` is left out for a rule about the whole subtitle. Numbers have at most 3 decimals, and `INF` stands for an infinite value. An input without a violation prints `LABEL: no problems`.
 - **JSON**: one object per input with the keys `file`, `format`, `valid`, `violations` and `warnings`. A violation has the keys `cueIndex` (0-based, `null` for no cue), `rule`, `value`, `infinite` and `limit`. `value` is `null` and `infinite` is `true` for an infinite value, because JSON has no infinity.
 - **Summary**: with 2 or more inputs, `N files: V valid, P with problems, F failed.` follows the lines. It goes to stderr with `--json`.

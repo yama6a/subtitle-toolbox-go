@@ -29,3 +29,32 @@ func ExampleCheck() {
 	// cue 2 maxCharactersPerLine 57
 	// cue 2 noOverlap 0.5
 }
+
+func ExampleNetflixEnglish() {
+	const content = "1\n00:00:01,000 --> 00:00:03,000\n<i>The train leaves at noon.</i>\n\n" +
+		"2\n00:00:02,500 --> 00:00:02,900\nANNA: We need two tickets for the long ride to the coast.\n"
+	s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	rules, err := validation.NetflixEnglish(stbox.FrameRate23976)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	violations, err := validation.Check(s, rules)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for _, v := range violations {
+		fmt.Println("cue", v.Cue+1, v.Rule, v.Value)
+	}
+	// Output:
+	// cue 2 maxCharactersPerLine 57
+	// cue 2 maxCharactersPerSecond 142.5
+	// cue 2 minDuration 0.4
+	// cue 2 noOverlap 0.5
+}
