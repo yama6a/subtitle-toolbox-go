@@ -36,6 +36,9 @@ func (o ReadOptions) Validate() error {
 	return nil
 }
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 // WriteOptions holds the settings of the SAMI writer. It has no fields yet.
 type WriteOptions struct{}
 

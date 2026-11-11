@@ -458,7 +458,8 @@ func retimeGroup() group {
 // retimeValues holds the values of the retime options. A nil pointer is an option that the call does not set.
 type retimeValues struct {
 	shift, shiftAfter, shiftBefore *time.Duration
-	scale, fromFPS, toFPS          *float64
+	scale                          *float64
+	fromFPS, toFPS                 *stbox.FrameRate
 	sync                           []syncPoint
 }
 
@@ -498,19 +499,25 @@ func readRetime(a *args) (retimeValues, error) {
 			*t.to = &d
 		}
 	}
+	scale, ok, err := a.PositiveFloat("scale")
+	if err != nil {
+		return v, err
+	}
+	if ok {
+		v.scale = &scale
+	}
 	for _, n := range []struct {
 		name string
-		to   **float64
-	}{{"scale", &v.scale}, {"from-fps", &v.fromFPS}, {"to-fps", &v.toFPS}} {
-		f, ok, err := a.PositiveFloat(n.name)
+		to   **stbox.FrameRate
+	}{{"from-fps", &v.fromFPS}, {"to-fps", &v.toFPS}} {
+		r, ok, err := a.FrameRate(n.name)
 		if err != nil {
 			return v, err
 		}
 		if ok {
-			*n.to = &f
+			*n.to = &r
 		}
 	}
-	var err error
 	v.sync, err = syncPoints(a.Values("sync"))
 	return v, err
 }

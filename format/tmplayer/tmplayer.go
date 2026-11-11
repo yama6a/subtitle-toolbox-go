@@ -6,6 +6,9 @@ package tmplayer
 // ReadOptions holds the settings of the TMPlayer reader. TMPlayer has none yet.
 type ReadOptions struct{}
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 // WriteOptions holds the settings of the TMPlayer writer. TMPlayer has none yet.
 type WriteOptions struct{}
 

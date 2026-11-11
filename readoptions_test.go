@@ -41,7 +41,7 @@ func TestReadOptionGoldens(t *testing.T) {
 		{
 			golden: "microdvd_subsrt_sample",
 			file:   "microdvd/real/subsrt_sample.sub",
-			opts:   stbox.ReadOptions{Format: stbox.MicroDVD, MicroDVD: microdvd.ReadOptions{FrameRate: 23.976}},
+			opts:   stbox.ReadOptions{Format: stbox.MicroDVD, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 2997, Den: 125}}},
 		},
 		{
 			golden: "csv_excel_de_semicolon",

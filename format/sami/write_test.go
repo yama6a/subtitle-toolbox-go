@@ -251,7 +251,7 @@ func TestWriteInvalidUTF8(t *testing.T) {
 			t.Parallel()
 
 			var out bytes.Buffer
-			err := sami.Write(&out, tt.s(), model.CommonWriteOptions{}, sami.WriteOptions{})
+			_, err := sami.Write(&out, tt.s(), model.CommonWriteOptions{}, sami.WriteOptions{})
 			var uerr *model.UnwritableError
 			require.ErrorAs(t, err, &uerr)
 			require.ErrorIs(t, err, model.ErrInvalidUTF8)

@@ -30,7 +30,7 @@ if err := s.Shift(-2500 * time.Millisecond); err != nil {
 	fmt.Println(err)
 	return
 }
-if err := stbox.Write(os.Stdout, s, stbox.WebVTT, stbox.WriteOptions{BOM: stbox.BOMRemove}); err != nil {
+if _, err := stbox.Write(os.Stdout, s, stbox.WebVTT, stbox.WriteOptions{BOM: stbox.BOMRemove}); err != nil {
 	fmt.Println(err)
 }
 // Output:
@@ -105,7 +105,7 @@ stbox formats                                      # names and extensions for --
 ```text
 func Load(path string, opts ReadOptions) (*Subtitle, ReadInfo, error)
 func Parse(r io.Reader, opts ReadOptions) (*Subtitle, ReadInfo, error)
-func Write(w io.Writer, s *Subtitle, f Format, opts WriteOptions) error
+func Write(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteReport, error)
 func Detect(content []byte) (Format, bool)
 ```
 

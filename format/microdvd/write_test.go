@@ -18,7 +18,7 @@ import (
 func writeAt(t *testing.T, s *model.Subtitle, fps float64) string {
 	t.Helper()
 
-	return write(t, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: fps})
+	return write(t, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: rate(fps)})
 }
 
 // Ports testRealFileRoundTrips of tests/Formatters/MicroDvdFormatterTest.php of subtitle-toolbox-php.
@@ -52,7 +52,7 @@ func TestValidFileRoundTrips(t *testing.T) {
 
 	raw := string(testfiles.Read(t, "microdvd/valid.sub"))
 	s, _ := mustRead(t, raw, false, 0)
-	assert.Equal(t, raw, write(t, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: 23.976, WriteFrameRateLine: true}))
+	assert.Equal(t, raw, write(t, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 125}, WriteFrameRateLine: true}))
 	assert.Equal(t, raw, write(t, s, model.CommonWriteOptions{}, microdvd.WriteOptions{WriteFrameRateLine: true}))
 	assert.Equal(t, raw, write(t, s, model.CommonWriteOptions{}, microdvd.WriteOptions{}))
 }
@@ -91,11 +91,11 @@ func TestFrameRateOfTheWrite(t *testing.T) {
 		// Ports testFrameRateOptionWinsOverTheStoredFrameRate of tests/Formatters/MicroDvdFormatterTest.php of subtitle-toolbox-php.
 		{
 			name: "option wins over the stored frame rate", input: "{1}{1}25\n{25}{50}Hello\n",
-			opts: microdvd.WriteOptions{FrameRate: 50, WriteFrameRateLine: true}, want: "{1}{1}50\n{50}{100}Hello\n",
+			opts: microdvd.WriteOptions{FrameRate: model.FrameRate{Num: 50, Den: 1}, WriteFrameRateLine: true}, want: "{1}{1}50\n{50}{100}Hello\n",
 		},
-		{name: "frame rate line of 25", input: "{25}{50}Hello", opts: microdvd.WriteOptions{FrameRate: 25, WriteFrameRateLine: true}, want: "{1}{1}25\n{25}{50}Hello\n"},
-		{name: "frame rate line of 23.976", input: "{25}{50}Hello", opts: microdvd.WriteOptions{FrameRate: 23.976, WriteFrameRateLine: true}, want: "{1}{1}23.976\n{24}{48}Hello\n"},
-		{name: "frame rate line of 30000/1001", input: "{25}{50}Hello", opts: microdvd.WriteOptions{FrameRate: 30000.0 / 1001, WriteFrameRateLine: true}, want: "{1}{1}29.97002997003\n{30}{60}Hello\n"},
+		{name: "frame rate line of 25", input: "{25}{50}Hello", opts: microdvd.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}, WriteFrameRateLine: true}, want: "{1}{1}25\n{25}{50}Hello\n"},
+		{name: "frame rate line of 23.976", input: "{25}{50}Hello", opts: microdvd.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 125}, WriteFrameRateLine: true}, want: "{1}{1}23.976\n{24}{48}Hello\n"},
+		{name: "frame rate line of 30000/1001", input: "{25}{50}Hello", opts: microdvd.WriteOptions{FrameRate: model.FrameRate{Num: 30000, Den: 1001}, WriteFrameRateLine: true}, want: "{1}{1}29.97002997003\n{30}{60}Hello\n"},
 		{name: "stored integer frame rate", input: "{25}{50}Hello", edit: func(t *testing.T, s *model.Subtitle) {
 			t.Helper()
 			require.NoError(t, s.SetFormatData("microdvd", model.NewData(model.Field{Key: "frameRate", Value: int64(50)})))
@@ -120,16 +120,16 @@ func TestWriteNeedsAFrameRate(t *testing.T) {
 	t.Parallel()
 
 	for _, opts := range []microdvd.WriteOptions{{}, {WriteFrameRateLine: true}} {
-		err := microdvd.Write(&bytes.Buffer{}, subtitle([]string{"Hello"}), model.CommonWriteOptions{}, opts)
+		_, err := microdvd.Write(&bytes.Buffer{}, subtitle([]string{"Hello"}), model.CommonWriteOptions{}, opts)
 		assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "MicroDVD output needs the frame rate of the video."}, err)
 	}
 
 	s := subtitle([]string{"Hello"})
 	require.NoError(t, s.SetFormatData("microdvd", model.NewData(model.Field{Key: "frameRate", Value: 0.0})))
-	err := microdvd.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, microdvd.WriteOptions{})
+	_, err := microdvd.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, microdvd.WriteOptions{})
 	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "The MicroDVD frame rate must be greater than 0, got 0."}, err)
 
-	err = microdvd.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: -1})
+	_, err = microdvd.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: model.FrameRate{Num: -1, Den: 1}})
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 }
 
@@ -200,7 +200,7 @@ func TestStripTags(t *testing.T) {
 	t.Parallel()
 
 	strip := model.CommonWriteOptions{StripTags: true}
-	assert.Equal(t, "{25}{50}Hello\n", write(t, subtitle([]string{"<i>Hello</i>"}), strip, microdvd.WriteOptions{FrameRate: 25}))
+	assert.Equal(t, "{25}{50}Hello\n", write(t, subtitle([]string{"<i>Hello</i>"}), strip, microdvd.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}}))
 
 	s, _ := mustRead(t, string(testfiles.Read(t, realDir+"/sub_microdvd_with_styles.sub")), false, 23.976)
 	assert.Equal(t, "{3294}{3366}Passengers, the train is now|arriving at the central station.\n{89682}{89730}Thank you, conductor.\n",
@@ -276,7 +276,7 @@ func TestWriteLineEndingAndBOM(t *testing.T) {
 	t.Parallel()
 
 	s := subtitle([]string{"Hello"})
-	assert.Equal(t, "\xEF\xBB\xBF{25}{50}Hello\r\n", write(t, s, model.CommonWriteOptions{LineEnding: model.CRLF, BOM: model.BOMAdd}, microdvd.WriteOptions{FrameRate: 25}))
+	assert.Equal(t, "\xEF\xBB\xBF{25}{50}Hello\r\n", write(t, s, model.CommonWriteOptions{LineEnding: model.CRLF, BOM: model.BOMAdd}, microdvd.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}}))
 }
 
 func TestWriteFrameBeyondTheIntRange(t *testing.T) {

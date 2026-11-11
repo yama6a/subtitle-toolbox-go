@@ -9,8 +9,6 @@ import (
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // convertCommand reads subtitle files, runs the edits of its option groups in pipeline order, and writes them.
@@ -128,20 +126,18 @@ func (cc *convertCommand) prepare(a *args, r *runner) error {
 		return err
 	}
 	cc.out.encode = func(in *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error {
-		if f != stbox.WebVTT {
-			opts := cc.out.optionsFor(f)
-			if cc.ass != nil {
-				opts.ASS = *cc.ass
-			}
-			return stbox.Write(out, s, f, opts)
+		opts := cc.out.optionsFor(f)
+		if cc.ass != nil {
+			opts.ASS = *cc.ass
 		}
-		common := model.CommonWriteOptions{LineEnding: cc.out.opts.LineEnding, BOM: cc.out.opts.BOM, StripTags: cc.out.opts.StripTags}
-		report, err := webvtt.WriteWithReport(out, s, common, webvtt.WriteOptions{})
+		report, err := stbox.Write(out, s, f, opts)
 		if err != nil {
 			return err
 		}
-		for _, d := range report.DroppedColors {
-			r.c.err(in.label() + ": " + d.Message + "\n")
+		if report.WebVTT != nil {
+			for _, d := range report.WebVTT.DroppedColors {
+				r.c.err(in.label() + ": " + d.Message + "\n")
+			}
 		}
 		return nil
 	}

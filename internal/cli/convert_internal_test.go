@@ -45,7 +45,8 @@ func libraryOutput(t *testing.T, path string, f stbox.Format, opts stbox.WriteOp
 		require.NoError(t, edit(s))
 	}
 	var buf bytes.Buffer
-	require.NoError(t, stbox.Write(&buf, s, f, opts))
+	_, err = stbox.Write(&buf, s, f, opts)
+	require.NoError(t, err)
 	return buf.String()
 }
 
@@ -283,7 +284,7 @@ func TestConvertRetimeBeyondTheTimeLimitFailsTheFile(t *testing.T) {
 	require.NoError(t, err)
 	want := result{Code: exitFile, Stderr: "trip.srt: " + message(s.Scale(1e300)) + "\n"}
 	assert.Equal(t, want, runCLI(t, "convert", "trip.srt", "--scale", "1e300"))
-	assert.Equal(t, want, runCLI(t, "convert", "trip.srt", "--from-fps", "1", "--to-fps", "1e-300"))
+	assert.Equal(t, exitUsage, runCLI(t, "convert", "trip.srt", "--from-fps", "1", "--to-fps", "1e-300").Code)
 }
 
 func TestConvertSync(t *testing.T) {
@@ -326,7 +327,8 @@ func TestConvertSyncPointsThatDoNotFitTheFileFailTheFile(t *testing.T) {
 		runCLI(t, "convert", "trip.srt", "--sync", "10=12", "--sync", "last=20"))
 
 	var empty bytes.Buffer
-	require.NoError(t, stbox.Write(&empty, &stbox.Subtitle{}, stbox.JSON, stbox.WriteOptions{}))
+	_, err := stbox.Write(&empty, &stbox.Subtitle{}, stbox.JSON, stbox.WriteOptions{})
+	require.NoError(t, err)
 	assert.Equal(t, result{Code: exitFile, Stderr: "stdin: The --sync points need a subtitle with cues.\n"},
 		call{stdin: empty.String()}.run(t, "convert", "-", "--sync", "first=1"))
 }
@@ -344,7 +346,9 @@ func TestConvertScaleAndFrameRate(t *testing.T) {
 	require.Equal(t, 0, got.Code, got.Stderr)
 	assertCuesOf(t, "sync/own_target_de_23976fps.srt", got.Stdout, stbox.SubRip)
 
-	frameRate := func(s *stbox.Subtitle) error { return s.ConvertFrameRate(25, 23.976) }
+	frameRate := func(s *stbox.Subtitle) error {
+		return s.ConvertFrameRate(stbox.FrameRate{Num: 25, Den: 1}, stbox.FrameRate{Num: 2997, Den: 125})
+	}
 	assert.Equal(t, result{Stdout: libraryOutput(t, "cli/trip.srt", stbox.WebVTT, stbox.WriteOptions{}, frameRate)},
 		call{dir: dir}.run(t, "convert", "trip.srt", "--from-fps", "25", "--to-fps", "23.976", "--to", "vtt", "-o", "-"))
 
@@ -650,12 +654,15 @@ func TestConvertForcedOnly(t *testing.T) {
 		require.NoError(t, s.RemoveCue(2))
 	}
 	var in bytes.Buffer
-	require.NoError(t, stbox.Write(&in, s, stbox.JSON, stbox.WriteOptions{}))
+	_, err = stbox.Write(&in, s, stbox.JSON, stbox.WriteOptions{})
+	require.NoError(t, err)
 	cl := call{stdin: in.String()}
 
 	var both, forced bytes.Buffer
-	require.NoError(t, stbox.Write(&both, s, stbox.SubRip, stbox.WriteOptions{}))
-	require.NoError(t, stbox.Write(&forced, s.ForcedCuesOnly(), stbox.SubRip, stbox.WriteOptions{}))
+	_, err = stbox.Write(&both, s, stbox.SubRip, stbox.WriteOptions{})
+	require.NoError(t, err)
+	_, err = stbox.Write(&forced, s.ForcedCuesOnly(), stbox.SubRip, stbox.WriteOptions{})
+	require.NoError(t, err)
 	assert.Equal(t, result{Stdout: forced.String()}, cl.run(t, "convert", "-", "--from", "json", "--to", "srt", "-o", "-", "--forced-only"))
 	assert.Equal(t, 1, strings.Count(forced.String(), " --> "))
 	assert.Equal(t, result{Stdout: both.String()}, cl.run(t, "convert", "-", "--from", "json", "--to", "srt", "-o", "-"))
@@ -673,7 +680,7 @@ func TestConvertReadAndWriteOptions(t *testing.T) {
 
 	s, _, err := stbox.Load(filepath.Join(dir, "latin1.srt"), stbox.ReadOptions{Encoding: "UTF-8"})
 	require.NoError(t, err)
-	writeErr := stbox.Write(&bytes.Buffer{}, s, stbox.JSON, stbox.WriteOptions{})
+	_, writeErr := stbox.Write(&bytes.Buffer{}, s, stbox.JSON, stbox.WriteOptions{})
 	_, ok := errors.AsType[*stbox.UnwritableError](writeErr)
 	require.True(t, ok, writeErr)
 	unwritable := call{dir: dir}.run(t, "convert", "latin1.srt", "--encoding", "UTF-8", "--to", "json", "-o", "-")
@@ -681,7 +688,7 @@ func TestConvertReadAndWriteOptions(t *testing.T) {
 	assert.Empty(t, unwritable.Stdout)
 	assert.True(t, strings.HasSuffix(unwritable.Stderr, "latin1.srt: "+message(writeErr)+"\n"), unwritable.Stderr)
 
-	ttmlErr := stbox.Write(&bytes.Buffer{}, s, stbox.TTML, stbox.WriteOptions{})
+	_, ttmlErr := stbox.Write(&bytes.Buffer{}, s, stbox.TTML, stbox.WriteOptions{})
 	uerr, ok := errors.AsType[*stbox.UnwritableError](ttmlErr)
 	require.True(t, ok, ttmlErr)
 	require.ErrorIs(t, uerr, stbox.ErrInvalidUTF8)
@@ -706,7 +713,7 @@ func TestConvertPrintsTheDroppedColorsOfWebVTT(t *testing.T) {
 	s, _, err := stbox.Load(filepath.Join(dir, "ferry.srt"), stbox.ReadOptions{})
 	require.NoError(t, err)
 	var want bytes.Buffer
-	report, err := webvtt.WriteWithReport(&want, s, model.CommonWriteOptions{LineEnding: stbox.CRLF}, webvtt.WriteOptions{})
+	report, err := webvtt.Write(&want, s, model.CommonWriteOptions{LineEnding: stbox.CRLF}, webvtt.WriteOptions{})
 	require.NoError(t, err)
 	require.Len(t, report.DroppedColors, 1)
 

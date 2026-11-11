@@ -12,7 +12,7 @@ import (
 
 func ExampleRead() {
 	content := "{25}{75}Where are you?|{y:i}Home.\n{100}{150}{c:$0000FF}Stop!\n"
-	s, _, err := microdvd.Read(strings.NewReader(content), model.CommonReadOptions{}, microdvd.ReadOptions{FrameRate: 25})
+	s, _, err := microdvd.Read(strings.NewReader(content), model.CommonReadOptions{}, microdvd.ReadOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}})
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -31,7 +31,7 @@ func ExampleWrite() {
 		model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>Where are you?", "Home.</i>"}},
 		model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{"Fish &amp; Chips"}},
 	)
-	err := microdvd.Write(os.Stdout, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: 23.976, WriteFrameRateLine: true})
+	_, err := microdvd.Write(os.Stdout, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 125}, WriteFrameRateLine: true})
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -50,13 +50,13 @@ func ExampleDetect() {
 }
 
 func ExampleReadOptions_Validate() {
-	fmt.Println(microdvd.ReadOptions{FrameRate: -1}.Validate())
+	fmt.Println(microdvd.ReadOptions{FrameRate: model.FrameRate{Num: -1, Den: 1}}.Validate())
 	// Output:
 	// stbox: invalid argument: ReadOptions.MicroDVD.FrameRate: The frame rate must be greater than 0, got -1.
 }
 
 func ExampleWriteOptions_Validate() {
-	fmt.Println(microdvd.WriteOptions{FrameRate: 25}.Validate())
+	fmt.Println(microdvd.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}}.Validate())
 	// Output:
 	// <nil>
 }

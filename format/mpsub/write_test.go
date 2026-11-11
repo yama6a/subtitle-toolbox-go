@@ -2,7 +2,6 @@ package mpsub_test
 
 import (
 	"errors"
-	"math"
 	"strconv"
 	"testing"
 	"time"
@@ -118,7 +117,7 @@ func TestWrite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := write(t, subtitle(tt.cues...), model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: tt.fps})
+			got := write(t, subtitle(tt.cues...), model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: rate(tt.fps)})
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -235,7 +234,7 @@ func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := write(t, subtitle(cue(0, tt.end, "x")), model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: tt.fps})
+			got := write(t, subtitle(cue(0, tt.end, "x")), model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: rate(tt.fps)})
 			assert.Contains(t, got, tt.want)
 			_, _, err := read(got, false)
 			require.NoError(t, err)
@@ -247,7 +246,7 @@ func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
 			t.Parallel()
 
 			for _, end := range []time.Duration{limit - 1*ms, limit - 2*ms, limit - 499*ms, limit - 500*ms, limit - 501*ms} {
-				got := write(t, subtitle(cue(end-ms, end, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: fps})
+				got := write(t, subtitle(cue(end-ms, end, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: rate(fps)})
 				s, _, err := read(got, false)
 				require.NoError(t, err, "end %v in %q", end, got)
 				require.Equal(t, 1, s.Len())
@@ -261,7 +260,7 @@ func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
 func TestWriteFrameBeyondTheIntRange(t *testing.T) {
 	t.Parallel()
 
-	got := write(t, subtitle(cue(0, 359999999*time.Second, "x")), model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: 1e12})
+	got := write(t, subtitle(cue(0, 359999999*time.Second, "x")), model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 1e12, Den: 1}})
 	assert.Contains(t, got, "\n0 359999999000000004096\nx\n")
 }
 
@@ -278,7 +277,7 @@ func TestFramesRoundTripWithinHalfAFrame(t *testing.T) {
 				cues = append(cues, cue(start, start+time.Duration(i%7*311+5)*ms, "x"))
 			}
 			s := subtitle(cues...)
-			back, _ := mustRead(t, write(t, s, model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: fps}), false)
+			back, _ := mustRead(t, write(t, s, model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: rate(fps)}), false)
 			require.Equal(t, s.Len(), back.Len())
 			half := time.Duration(float64(time.Second) / fps / 2)
 			for i, c := range s.All() {
@@ -296,21 +295,18 @@ func TestValidate(t *testing.T) {
 
 	tests := []struct {
 		name string
-		fps  float64
+		fps  model.FrameRate
 		want string
 	}{
-		{"zero writes seconds", 0, ""},
-		{"negative zero writes seconds", math.Copysign(0, -1), ""},
-		{"25", 25, ""},
-		{"1", 1, ""},
-		{"a large whole rate", 1e15, ""},
-		{"29.97", 29.97, "The MPSub frame rate must be a positive integer, got 29.97."},
-		{"0.5", 0.5, "The MPSub frame rate must be a positive integer, got 0.5."},
-		{"negative", -1, "The MPSub frame rate must be a positive integer, got -1."},
-		{"negative and fractional", -25.5, "The MPSub frame rate must be a positive integer, got -25.5."},
-		{"NaN", math.NaN(), "The MPSub frame rate must be a positive integer, got NAN."},
-		{"infinity", math.Inf(1), "The MPSub frame rate must be a positive integer, got INF."},
-		{"negative infinity", math.Inf(-1), "The MPSub frame rate must be a positive integer, got -INF."},
+		{"zero writes seconds", model.FrameRate{}, ""},
+		{"25", model.FrameRate{Num: 25, Den: 1}, ""},
+		{"50/2 is whole", model.FrameRate{Num: 50, Den: 2}, ""},
+		{"a large whole rate", model.FrameRate{Num: 1e15, Den: 1}, ""},
+		{"29.97", model.FrameRate{Num: 2997, Den: 100}, "The MPSub frame rate must be a positive integer, got 29.97."},
+		{"0.5", model.FrameRate{Num: 1, Den: 2}, "The MPSub frame rate must be a positive integer, got 0.5."},
+		{"negative", model.FrameRate{Num: -1, Den: 1}, "The MPSub frame rate must be a positive integer, got -1."},
+		{"zero frames", model.FrameRate{Num: 0, Den: 1}, "The MPSub frame rate must be a positive integer, got 0."},
+		{"zero seconds", model.FrameRate{Num: 25, Den: 0}, "The MPSub frame rate must be a positive integer, got 0."},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -334,7 +330,7 @@ func TestWriteChecksTheOptions(t *testing.T) {
 	t.Parallel()
 
 	var out failingWriter
-	err := mpsub.Write(out, subtitle(cue(0, time.Second, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: 29.97})
+	_, err := mpsub.Write(out, subtitle(cue(0, time.Second, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 100}})
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 }
 
@@ -345,7 +341,7 @@ func (failingWriter) Write([]byte) (int, error) { return 0, errors.New("disk ful
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	err := mpsub.Write(failingWriter{}, subtitle(cue(0, time.Second, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{})
+	_, err := mpsub.Write(failingWriter{}, subtitle(cue(0, time.Second, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "disk full")
 }

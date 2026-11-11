@@ -27,6 +27,7 @@ func TestEditingFixtures(t *testing.T) {
 	s = readFile(t, "editing/own_same_time_speakers.ass")
 	require.NoError(t, s.MergeSameTimeCues(0))
 	var out bytes.Buffer
-	require.NoError(t, srt.Write(&out, s, noBOM, srt.WriteOptions{}))
+	_, err := srt.Write(&out, s, noBOM, srt.WriteOptions{})
+	require.NoError(t, err)
 	assert.Equal(t, string(testfiles.Read(t, "editing/own_same_time_speakers_merged.srt")), out.String())
 }

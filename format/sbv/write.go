@@ -12,7 +12,7 @@ import (
 
 // Write writes s as SBV. It skips a cue without text, because an empty line would end the SBV cue. A text line that
 // the reader would read as a timing line starts with U+2060 WORD JOINER.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	var body []byte
 	first := true
 	for _, c := range s.All() {
@@ -33,7 +33,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 			body = append(body, '\n')
 		}
 	}
-	return writing.Write(w, model.SBV, body, common, false)
+	return WriteReport{}, writing.Write(w, model.SBV, body, common, false)
 }
 
 // textLines returns the visible lines of c that the reader reads as text lines. It drops a line that is empty in the

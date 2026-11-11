@@ -754,7 +754,8 @@ func TestAttributeReferences(t *testing.T) {
 			assert.Equal(t, `<head><styling><style xml:id="s" foo="`+tt.head+`"/></styling></head>`, head)
 
 			var out bytes.Buffer
-			require.NoError(t, ttml.Write(&out, s, model.CommonWriteOptions{}, ttml.WriteOptions{}))
+			_, err := ttml.Write(&out, s, model.CommonWriteOptions{}, ttml.WriteOptions{})
+			require.NoError(t, err)
 			back, _ := mustRead(t, out.String(), false)
 			backCue, _ := back.Cue(0)
 			assert.Equal(t, cueData(t, c), cueData(t, backCue))

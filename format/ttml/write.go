@@ -24,6 +24,9 @@ var skippedRootParameters = []string{"timeBase", "clockMode", "dropMode", "marke
 
 var paragraphIDRegexp = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_.-]*$`)
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 // WriteOptions holds the settings of the TTML writer. It has no fields yet.
 type WriteOptions struct{}
 
@@ -74,12 +77,12 @@ type paragraph struct {
 }
 
 // Write writes s as TTML. It keeps the namespace, head and attributes that Read stored.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	body, err := writeDocument(s, common, profile{format: model.TTML, timestamp: markupcore.CoreTimestamp})
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
-	return writing.Write(w, model.TTML, body, common, false)
+	return WriteReport{}, writing.Write(w, model.TTML, body, common, false)
 }
 
 // writeDocument returns the TTML document of s with LF line ends.

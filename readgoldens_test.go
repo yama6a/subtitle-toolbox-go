@@ -28,12 +28,12 @@ type goldenFolder struct {
 }
 
 // microDVDAt25 is the read option of the MicroDVD read goldens, as tests/files/generate-read-goldens.php sets it.
-var microDVDAt25 = stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: 25}}
+var microDVDAt25 = stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}}
 
 // dubbingScript is the CSV layout of csv/real/dubbing_script.csv in the read golden table of #9.
 var dubbingScript = csv.ReadOptions{
 	Columns:   csv.Columns{Start: csv.ColumnNamed("Start TC"), Speaker: csv.ColumnNamed("Character")},
-	FrameRate: 25,
+	FrameRate: stbox.FrameRate{Num: 25, Den: 1},
 }
 
 func goldenFolders() []goldenFolder {
@@ -43,7 +43,7 @@ func goldenFolders() []goldenFolder {
 			"dubbing_script.csv": {CSV: dubbingScript},
 			"headerless_frame_times.csv": {CSV: csv.ReadOptions{
 				Columns:   csv.Columns{Start: csv.ColumnAt(0), End: csv.ColumnAt(1), Text: csv.ColumnAt(2), NoHeader: true},
-				FrameRate: 25,
+				FrameRate: stbox.FrameRate{Num: 25, Den: 1},
 			}},
 			"excel_de_semicolon.csv": {CSV: csv.ReadOptions{
 				Columns: csv.Columns{End: csv.ColumnNamed("Ende"), Speaker: csv.ColumnNamed("Sprecher")},
@@ -116,7 +116,8 @@ func TestReadGoldens(t *testing.T) {
 
 				s, info := g.read(t, file)
 				var library bytes.Buffer
-				require.NoError(t, stbox.Write(&library, s, stbox.JSON, stbox.WriteOptions{}))
+				_, err := stbox.Write(&library, s, stbox.JSON, stbox.WriteOptions{})
+				require.NoError(t, err)
 				var subtitle any
 				require.NoError(t, json.Unmarshal(library.Bytes(), &subtitle))
 				got := map[string]any{"warnings": goldenWarnings(info.Warnings), "subtitle": subtitle}

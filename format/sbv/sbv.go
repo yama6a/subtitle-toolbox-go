@@ -9,6 +9,9 @@ import "regexp"
 // ReadOptions holds the settings of the SBV reader. It has no fields yet.
 type ReadOptions struct{}
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 // WriteOptions holds the settings of the SBV writer. It has no fields yet.
 type WriteOptions struct{}
 

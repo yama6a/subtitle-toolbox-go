@@ -58,7 +58,8 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions) str
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, qttext.Write(&out, s, common, qttext.WriteOptions{}))
+	_, err := qttext.Write(&out, s, common, qttext.WriteOptions{})
+	require.NoError(t, err)
 	return out.String()
 }
 

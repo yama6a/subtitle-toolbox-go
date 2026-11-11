@@ -176,3 +176,13 @@ func ExampleCue_SetFormatData() {
 	// stbox: invalid argument: The field formatData.srt.coordinates.x2 is missing.
 	// stbox: invalid argument: The field formatData.ass.text has the unsupported Go type int.
 }
+
+func ExampleFrameRateFromFloat() {
+	r, err := model.FrameRateFromFloat(23.976)
+	fmt.Println(r.Num, r.Den, r, err)
+	_, err = model.FrameRateFromFloat(0)
+	fmt.Println(err)
+	// Output:
+	// 2997 125 23.976 <nil>
+	// stbox: invalid argument: The frame rate must be greater than 0, got 0.
+}

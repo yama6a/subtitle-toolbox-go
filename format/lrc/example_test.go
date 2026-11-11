@@ -37,7 +37,7 @@ func ExampleWrite() {
 		model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>First</i> line"}},
 		model.Cue{Start: 3 * time.Second, End: 5 * time.Second, Lines: []string{"<00:00:03.000>Slow <00:00:03.550>river"}},
 	)
-	err := lrc.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, lrc.WriteOptions{})
+	_, err := lrc.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, lrc.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)
 	}

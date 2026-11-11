@@ -458,7 +458,7 @@ func (failingWriter) Write([]byte) (int, error) { return 0, errWrite }
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	err := ttml.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, ttml.WriteOptions{})
+	_, err := ttml.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, ttml.WriteOptions{})
 	require.ErrorIs(t, err, errWrite)
 }
 

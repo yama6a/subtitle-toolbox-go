@@ -68,7 +68,7 @@ func FuzzRead(f *testing.F) {
 				}
 			}
 			checkWrite(t, s, mpsub.WriteOptions{})
-			checkWrite(t, s, mpsub.WriteOptions{FrameRate: 25})
+			checkWrite(t, s, mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}})
 		}
 	})
 }
@@ -79,7 +79,7 @@ func checkWrite(t *testing.T, s *model.Subtitle, opts mpsub.WriteOptions) {
 	t.Helper()
 
 	var out bytes.Buffer
-	if err := mpsub.Write(&out, s, model.CommonWriteOptions{}, opts); err != nil {
+	if _, err := mpsub.Write(&out, s, model.CommonWriteOptions{}, opts); err != nil {
 		t.Fatalf("Write returned %v", err)
 	}
 	back, _, err := mpsub.Read(&out, model.CommonReadOptions{}, mpsub.ReadOptions{})
@@ -89,7 +89,7 @@ func checkWrite(t *testing.T, s *model.Subtitle, opts mpsub.WriteOptions) {
 	if back.Len() != s.Len() {
 		t.Fatalf("the written output reads as %d cues, want %d", back.Len(), s.Len())
 	}
-	if opts.FrameRate != 0 {
+	if !opts.FrameRate.IsZero() {
 		return
 	}
 	for i, c := range s.All() {

@@ -45,12 +45,12 @@ func stubRead(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subt
 }
 
 // stubWrite writes the lines of each cue and an empty line after each cue. Its format default is a BOM.
-func stubWrite(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func stubWrite(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	var b strings.Builder
 	for _, c := range s.All() {
 		b.WriteString(strings.Join(c.Lines, "\n") + "\n\n")
 	}
-	return writing.Write(w, stubFormat, []byte(b.String()), common, true)
+	return WriteReport{}, writing.Write(w, stubFormat, []byte(b.String()), common, true)
 }
 
 var stubRow = formatFuncs{format: stubFormat, read: stubRead, write: stubWrite}
@@ -209,12 +209,13 @@ func textWriters() []formatFuncs {
 func writeString(t *testing.T, row formatFuncs, s *Subtitle, opts WriteOptions) string {
 	t.Helper()
 
-	if opts.MicroDVD.FrameRate == 0 {
-		opts.MicroDVD.FrameRate = 25 // a subtitle without MicroDVD format data has no frame rate to write with
+	if opts.MicroDVD.FrameRate.IsZero() {
+		opts.MicroDVD.FrameRate = FrameRate{Num: 25, Den: 1} // a subtitle without MicroDVD format data has no frame rate to write with
 	}
 	require.NoError(t, opts.Validate())
 	var out bytes.Buffer
-	require.NoError(t, row.write(&out, s, opts.common(), opts))
+	_, err := row.write(&out, s, opts.common(), opts)
+	require.NoError(t, err)
 	return out.String()
 }
 

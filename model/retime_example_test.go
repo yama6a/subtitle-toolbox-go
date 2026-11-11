@@ -11,7 +11,7 @@ func ExampleSubtitle_ConvertFrameRate() {
 	var s model.Subtitle
 	s.AddCue(model.Cue{Start: 100 * time.Second, End: 102500 * time.Millisecond, Lines: []string{"Hello"}})
 
-	if err := s.ConvertFrameRate(25, 23.976); err != nil {
+	if err := s.ConvertFrameRate(model.FrameRate{Num: 25, Den: 1}, model.FrameRate{Num: 2997, Den: 125}); err != nil {
 		fmt.Println(err)
 		return
 	}

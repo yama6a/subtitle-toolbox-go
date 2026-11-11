@@ -16,7 +16,7 @@ import (
 var (
 	strict  = model.CommonReadOptions{}
 	lenient = model.CommonReadOptions{Lenient: true}
-	at25    = csv.ReadOptions{FrameRate: 25}
+	at25    = csv.ReadOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}}
 )
 
 // Ports the cue tests of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.
