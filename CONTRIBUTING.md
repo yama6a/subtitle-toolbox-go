@@ -120,6 +120,7 @@ Every 1.x row and `Format` constant exists from 1.0.0, so `FormatFromPath` gives
 | KDE Subtitle Composer | GPL-2.0-or-later | behaviour only |
 | MKVToolNix | GPL-2.0 | behaviour only |
 | FFmpeg | LGPL-2.1 or later, some parts GPL | behaviour only |
+| VSFilter, MPC-HC | GPL-3.0 | behaviour only |
 | libass | ISC | adapt with credit |
 | CCExtractor | GPL-2.0 | behaviour only |
 | subparse, Rust | MPL-2.0, copyleft per file | behaviour only |

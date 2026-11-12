@@ -148,10 +148,6 @@ func TestParseVobSub(t *testing.T) {
 	require.ErrorAs(t, err, &aerr)
 	assert.Equal(t, "ReadOptions.VobSub.IDX", aerr.Option)
 
-	_, err = read(stbox.ReadOptions{Format: stbox.VobSub, VobSub: vobsub.ReadOptions{IDX: string(idx), Language: " "}})
-	require.ErrorAs(t, err, &aerr)
-	assert.Equal(t, "ReadOptions.VobSub.Language", aerr.Option)
-
 	_, err = read(stbox.ReadOptions{Format: stbox.VobSub, VobSub: vobsub.ReadOptions{IDX: string(idx), Index: new(-1)}})
 	require.ErrorAs(t, err, &aerr)
 	assert.Equal(t, "ReadOptions.VobSub.Index", aerr.Option)

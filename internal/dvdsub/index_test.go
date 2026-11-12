@@ -44,6 +44,7 @@ func TestParseIndexErrors(t *testing.T) {
 		{"time of 100000 hours", first + "size: 720x576\n" + palette + "id: en, index: 0\ntimestamp: 100000:00:00:000, filepos: 0\n", `The time "timestamp: 100000:00:00:000, filepos: 0" is not below 100000 hours.`},
 		{"time that only the minutes push over", first + "size: 720x576\n" + palette + "id: en, index: 0\ntimestamp: 99999:99:99:999, filepos: 0\n", `The time "timestamp: 99999:99:99:999, filepos: 0" is not below 100000 hours.`},
 		{"sum with the delay over the limit", first + "size: 720x576\n" + palette + "id: en, index: 0\ndelay: 00:00:10:500\ntimestamp: 99999:59:55:000, filepos: 0\n", `The time "timestamp: 99999:59:55:000, filepos: 0 with delay 10.5s" is not below 100000 hours.`},
+		{"sum with the delay below the negative limit", first + "size: 720x576\n" + palette + "id: en, index: 0\ndelay: -99999:00:00:000\ntimestamp: -99999:00:00:000, filepos: 0\n", `The time "timestamp: -99999:00:00:000, filepos: 0 with delay -359996400s" is not below 100000 hours.`},
 		{"bad delay", first + "size: 720x576\n" + palette + "id: en, index: 0\ndelay: soon\n", `The .idx time "delay: soon" is not valid.`},
 	}
 	for _, tt := range tests {
@@ -84,6 +85,16 @@ func TestParseIndex(t *testing.T) {
 		}},
 		{ID: "", Index: 0, Entries: []dvdsub.Entry{{Time: time.Hour + 2*time.Minute + 3*time.Second + 4*time.Millisecond, FilePos: 0, Line: 0}}},
 	}, got.Tracks)
+}
+
+func TestParseIndexKeepsASumOfDelaysThatPassesTheLimit(t *testing.T) {
+	t.Parallel()
+
+	idx := first + "size: 720x576\n" + palette + "id: en, index: 0\ndelay: -99999:00:00:000\ndelay: -99999:00:00:000\n" +
+		"delay: 99999:00:00:000\ntimestamp: 00:00:01:000, filepos: 0\n"
+	got, err := dvdsub.ParseIndex([]byte(idx))
+	require.NoError(t, err)
+	assert.Equal(t, -99999*time.Hour+time.Second, got.Tracks[0].Entries[0].Time)
 }
 
 func FuzzParseIndex(f *testing.F) {

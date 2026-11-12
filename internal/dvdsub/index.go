@@ -113,7 +113,7 @@ func (p *parser) parseLine(line string) error {
 	key, value, _ := strings.Cut(line, ":")
 	value = strings.Trim(value, markupcore.PHPTrimSet)
 	var err error
-	switch asciiLower(strings.Trim(key, markupcore.PHPTrimSet)) {
+	switch strings.ToLower(strings.Trim(key, markupcore.PHPTrimSet)) {
 	case "size":
 		err = p.parseSize(value, line)
 	case "palette":
@@ -149,19 +149,9 @@ func (p *parser) parsePalette(value, line string) error {
 func (p *parser) parseDelay(value, line string) error {
 	d, err := parseTime(value, line)
 	if err == nil {
-		// The clamp keeps a file of many delay lines from overflowing the sum.
-		p.delay = max(min(p.delay+d, timecode.MaxTime), -timecode.MaxTime)
+		p.delay += d
 	}
 	return err
-}
-
-func asciiLower(s string) string {
-	return strings.Map(func(r rune) rune {
-		if r >= 'A' && r <= 'Z' {
-			return r + 'a' - 'A'
-		}
-		return r
-	}, s)
 }
 
 func (p *parser) parseSize(value, line string) error {
@@ -245,7 +235,7 @@ func (p *parser) parseEntry(value, line string) error {
 		text += " with delay " + timecode.Seconds(p.delay) + "s"
 	}
 	d += p.delay
-	if d >= timecode.MaxTime {
+	if d >= timecode.MaxTime || d <= -timecode.MaxTime {
 		return parseError(`The time "` + text + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours.")
 	}
 	pos, err := strconv.ParseInt(m[2], 16, 64)

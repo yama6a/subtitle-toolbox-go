@@ -80,6 +80,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 }
 
 // subtitleOf returns the image cues of units. A unit without an image adds no cue but still ends the cue before it.
+// A cue never ends before it starts, which a stop delay below the start delay or a later unit with an earlier start would cause.
 func subtitleOf(st *parsing.State, track dvdsub.Track, units []entryUnit) *model.Subtitle {
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataLanguage, track.ID)
@@ -94,7 +95,7 @@ func subtitleOf(st *parsing.State, track dvdsub.Track, units []entryUnit) *model
 				end = min(end, units[i+1].start)
 			}
 		}
-		s.AddCue(model.Cue{Start: eu.start, End: end, Forced: eu.unit.Forced, Image: eu.unit.Image})
+		s.AddCue(model.Cue{Start: eu.start, End: max(end, eu.start), Forced: eu.unit.Forced, Image: eu.unit.Image})
 	}
 	return s
 }

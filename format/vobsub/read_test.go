@@ -50,6 +50,12 @@ func TestReadBuiltUnits(t *testing.T) {
 			[]cue{box8(1114*ms, 2138*ms, false)},
 		},
 		{
+			"a stop before the start ends the cue at its start",
+			[]packet{{unit: shown(sequence{delay: 100, params: true, commands: []byte{start}}, sequence{commands: []byte{stop}}).unit()}},
+			[]time.Duration{time.Second},
+			[]cue{box8(2138*ms, 2138*ms, false)},
+		},
+		{
 			"the forced start command sets forced",
 			[]packet{{unit: shown(sequence{params: true, commands: []byte{forcedStart}}).unit()}},
 			[]time.Duration{time.Second},
@@ -114,30 +120,43 @@ func TestReadPaintsThePixels(t *testing.T) {
 		head string
 		pic  picture
 		want map[[2]int]uint32
+		// later is a command in a sequence after the start command, which one image cannot show.
+		later []byte
 	}{
 		{
 			"palette colours with the contrast as alpha, on an odd height",
 			"palette: " + palette + "\n",
 			picture{rows: rows, colors: [4]int{0, 3, 5, 9}, contrasts: [4]int{0, 15, 8, 4}},
 			map[[2]int]uint32{{0, 0}: 0x300000FF, {2, 0}: 0x50000088, {0, 1}: 0x90000044, {2, 1}: 0, {1, 2}: 0x50000088, {2, 2}: 0x300000FF},
+			nil,
+		},
+		{
+			"a colour change after the start command is ignored",
+			"palette: " + palette + "\n",
+			picture{rows: rows, colors: [4]int{0, 3, 5, 9}, contrasts: [4]int{0, 15, 8, 4}},
+			map[[2]int]uint32{{0, 0}: 0x300000FF, {2, 0}: 0x50000088},
+			[]byte{0x03, 0xFF, 0xFF},
 		},
 		{
 			"custom colours replace the palette and the contrast",
 			custom,
 			picture{rows: rows, colors: [4]int{0, 3, 5, 9}, contrasts: [4]int{0, 15, 8, 4}},
 			map[[2]int]uint32{{0, 0}: 0xFF0000FF, {2, 0}: 0x00FF00FF, {0, 1}: 0x0000FFFF, {2, 1}: 0},
+			nil,
 		},
 		{
 			"the bottom field first",
 			"palette: " + palette + "\n",
 			picture{rows: rows, colors: [4]int{0, 3, 5, 9}, contrasts: [4]int{0, 15, 8, 4}, bottomFirst: true},
 			map[[2]int]uint32{{0, 0}: 0x300000FF, {0, 1}: 0x90000044, {1, 2}: 0x50000088},
+			nil,
 		},
 		{
 			"codes of 1 to 4 nibbles and a last run to the end of the row",
 			"palette: " + palette + "\n",
 			picture{rows: [][]byte{long, long}, colors: [4]int{0, 3, 5, 9}, contrasts: [4]int{15, 15, 15, 15}},
 			map[[2]int]uint32{{1, 0}: 0x300000FF, {2, 0}: 0x500000FF, {11, 0}: 0x500000FF, {12, 0}: 0x900000FF, {51, 1}: 0x900000FF, {52, 1}: 0x300000FF, {299, 1}: 0x300000FF},
+			nil,
 		},
 	}
 	for _, tt := range tests {
@@ -145,6 +164,9 @@ func TestReadPaintsThePixels(t *testing.T) {
 			t.Parallel()
 
 			tt.pic.sequences = []sequence{start0()}
+			if tt.later != nil {
+				tt.pic.sequences = append(tt.pic.sequences, sequence{delay: 5, commands: tt.later})
+			}
 			sub, positions := program(packet{unit: tt.pic.unit()})
 			idx := index(tt.head, "id: en, index: 0", "timestamp: 00:00:01:000, filepos: "+hex9(positions[0]))
 			c, ok := mustRead(t, sub, idx).Cue(0)

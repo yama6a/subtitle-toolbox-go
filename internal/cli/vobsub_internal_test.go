@@ -44,9 +44,9 @@ func TestVobSubInputRules(t *testing.T) {
 		},
 		{
 			"no output may overwrite the .idx file of a .sub input",
-			[]string{"convert", "two-tracks-pal.sub", "--from", "vobsub", "--to", "microdvd", "--output-dir", "."},
+			[]string{"convert", "two-tracks-pal.sub", "--from", "vobsub", "-o", "two-tracks-pal.idx"},
 			"",
-			usageResult("convert", "The output ./two-tracks-pal.sub is a file that the command reads. Pass another output file or directory."),
+			usageResult("convert", "The output two-tracks-pal.idx is a file that the command reads. Pass another output file or directory."),
 		},
 	}
 	for _, tt := range tests {
@@ -62,12 +62,16 @@ func TestVobSubDirectoryInputIsTheIndexFile(t *testing.T) {
 	t.Parallel()
 
 	dir := vobSubDir(t)
-	copyFile(t, testfiles.Path(t, "vobsub/one-packet-pal.sub"), filepath.Join(dir, "d", "Movie.SUB"))
-	copyFile(t, testfiles.Path(t, "vobsub/one-packet-pal.idx"), filepath.Join(dir, "d", "MOVIE.idx"))
+	for from, to := range map[string]string{
+		"one-packet-pal.sub": "d/MOVIE.SUB", "one-packet-pal.idx": "d/MOVIE.idx",
+		"two-tracks-pal.sub": "d/Lone.SUB", "two-tracks-pal.idx": "d/lone.idx",
+	} {
+		copyFile(t, testfiles.Path(t, "vobsub/"+from), filepath.Join(dir, to))
+	}
 	copyFile(t, filepath.Join(dir, "frames.sub"), filepath.Join(dir, "d", "frames.sub"))
 	r := &runner{c: &console{dir: dir}}
 
 	got, err := r.expand([]string{"d"})
 	require.NoError(t, err)
-	assert.Equal(t, []string{"d/MOVIE.idx", "d/frames.sub"}, got)
+	assert.Equal(t, []string{"d/Lone.SUB", "d/MOVIE.idx", "d/frames.sub", "d/lone.idx"}, got, "Lone.SUB has no .idx file that opens it")
 }

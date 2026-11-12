@@ -98,7 +98,7 @@ VobSub has 2 files, such as `movie.idx` and `movie.sub`. See [VobSub in formats.
 
 - **Input**: pass the `.idx` path. Pass the `.sub` path with `--from vobsub`.
 - **Standard input**: `--from vobsub` with `-` fails with exit 2 before any read: `VobSub needs the path of the .idx file. Standard input does not work.`
-- **Directory**: a `.sub` file with an `.idx` file of the same name, in any letter case, is not an input of its own. The `.idx` file is the input.
+- **Directory**: a `.sub` file that the read of an `.idx` file of the folder opens is not an input of its own. The read looks for the same stem, with `.sub` or `.SUB`. The `.idx` file is the input.
 - **Never overwrite**: for a VobSub input, the `.idx` file and the `.sub` file both count as files that the command reads. No output may overwrite either.
 
 ### Text files in a directory

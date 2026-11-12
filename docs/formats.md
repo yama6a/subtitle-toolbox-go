@@ -1794,7 +1794,7 @@ A **subpicture unit** (SPU) is one DVD subtitle bitmap with its control commands
 ### Read
 
 - **Tracks**: each `id: en, index: 0` line starts a track. The sub-stream of a track is `0x20` plus its `index:` value, at most 31. The `delay:` lines add up within a track, and each `id:` line resets the sum.
-- **Cue times**: the start is the time of the `timestamp:` line plus the start delay of the unit. The end is the stop delay of the unit. A unit without a stop command ends at the start of the next unit, or after `LastCueDuration`, whichever is first. The PES time stamps are not read.
+- **Cue times**: the start is the time of the `timestamp:` line plus the start delay of the unit. The end is the time of the `timestamp:` line plus the stop delay of the unit. A unit without a stop command ends at the start of the next unit, or after `LastCueDuration`, whichever is first. A cue never ends before it starts, so its end becomes its start. The time of a `timestamp:` line with its `delay:` lines must be above -100000 hours and below 100000 hours. The PES time stamps are not read.
 - **Colours**: the `palette:` colours and the contrast of the unit, or the 4 colours of an enabled `custom colors:` line. The image has the size of the display area of the unit, on the screen size of the `size:` line.
 - **Position**: every cue keeps the alignment bottom center. `Cue.Forced` is true for a unit that starts with the forced start command.
 - **No picture**: a unit with no display area adds no cue. It still ends the cue before it.

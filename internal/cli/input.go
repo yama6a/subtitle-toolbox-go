@@ -312,8 +312,8 @@ func (r *runner) expandArg(arg string) ([]string, error) {
 }
 
 // directoryFiles returns the files of dir, sorted by name, that hold a readable format by their extension. A
-// .txt file stays when content detection finds a format in it. A .sub file with an .idx file of the same name, in any
-// letter case, is the second file of a VobSub pair. The .idx file is the input.
+// .txt file stays when content detection finds a format in it. A .sub file that the read of an .idx file of the
+// folder opens is the second file of a VobSub pair. The .idx file is the input.
 func (r *runner) directoryFiles(dir string) []string {
 	entries, err := os.ReadDir(r.c.path(dir))
 	if err != nil {
@@ -367,6 +367,9 @@ func (r *runner) glob(pattern string) []string {
 func (r *runner) vobSubPartners(inputs []string) []string {
 	var partners []string
 	for _, arg := range inputs {
+		if arg == stdinArg || r.readOptions.Format != stbox.VobSub && !strings.EqualFold(filepath.Ext(arg), ".idx") {
+			continue
+		}
 		if r.peek(arg) != stbox.VobSub {
 			continue
 		}
@@ -381,19 +384,17 @@ func (r *runner) vobSubPartners(inputs []string) []string {
 	return partners
 }
 
-// withoutVobSubData returns entries without the .sub files that have an .idx file of the same name in any letter case.
+// withoutVobSubData returns entries without the .sub files that the read of an .idx file in entries uses. The names come
+// from extfallback.Partners, the rule of the read, so a hidden file is never missing for the .idx file.
 func withoutVobSubData(entries []os.DirEntry) []os.DirEntry {
-	indexes := make(map[string]bool)
+	hidden := make(map[string]bool)
 	for _, e := range entries {
 		if strings.EqualFold(filepath.Ext(e.Name()), ".idx") {
-			indexes[lowerStem(e.Name())] = true
+			candidates, _ := extfallback.Partners(e.Name())
+			for _, c := range candidates {
+				hidden[c] = true
+			}
 		}
 	}
-	return slices.DeleteFunc(slices.Clone(entries), func(e os.DirEntry) bool {
-		return strings.EqualFold(filepath.Ext(e.Name()), ".sub") && indexes[lowerStem(e.Name())]
-	})
-}
-
-func lowerStem(name string) string {
-	return strings.ToLower(strings.TrimSuffix(name, filepath.Ext(name)))
+	return slices.DeleteFunc(slices.Clone(entries), func(e os.DirEntry) bool { return hidden[e.Name()] })
 }
