@@ -419,6 +419,7 @@ csv         .csv              yes   yes
 itt         .itt              yes   yes
 json        .json             yes   yes
 lrc         .lrc              yes   yes
+mcc         .mcc              yes   yes
 microdvd    .sub              yes   yes
 mpsub       .mpsub            yes   yes
 sami        .smi .sami        yes   yes

@@ -180,6 +180,16 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Line numbers**: the 1-based line of the file. The warning holds the trimmed line.
 - **Cut-off file**: the file `popon_broadcast_df.scc` cut at 90 % of its bytes ends with the line `01:00:03;00<TAB>942c 9`. Lenient mode returns the first 9 cues and one warning for line 35, block 17.
 
+## MCC
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| a data line that breaks the pattern, with a bad hex character or half a byte, or a packet that holds no CDP or a cut-off CDP | the message of the damage, such as `The MCC data ends with half a byte.` or `The MCC line "L" does not start with a time code.` | skips the line. `Skipped` |
+| no valid `Time Code Rate` field | `The MCC file has no Time Code Rate line.` or `The MCC Time Code Rate "25DF" is unknown.` | warns with the message and ` The parser read 30DF.` and reads 30DF. `Repaired` |
+| no `File Format=MacCaption_MCC V` header, or a version other than 1.0 and 2.0 | the error | the same error |
+
+- **Line numbers**: the 1-based line of the file. The warning holds the trimmed line and no block. The `Time Code Rate` warning has no line.
+
 ## MPL2 and TMPlayer
 
 | Damage | Strict | Lenient |

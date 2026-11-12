@@ -1,0 +1,86 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "mcc": {
+                "version": "1.0",
+                "frameRate": "23.976",
+                "dropFrame": false,
+                "header": {
+                    "UUID": "0A1B2C3D-4E5F-4061-8273-8495A6B7C8D9",
+                    "Creation Program": "Subtitle Toolbox fixture generator",
+                    "Creation Date": "Sunday, October 11, 2026",
+                    "Creation Time": "17:40:22"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 0.701,
+                "end": 4.071,
+                "lines": [
+                    "Welcome to the station office."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 4.071,
+                "end": 6.84,
+                "lines": [
+                    "Tickets for the coast line",
+                    "are sold at window two."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            0,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 6.84,
+                "end": 9.51,
+                "lines": [
+                    "<font color=\"#ffff00\">The last train leaves at 11:15.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

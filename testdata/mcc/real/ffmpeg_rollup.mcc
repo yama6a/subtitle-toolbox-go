@@ -1,0 +1,52 @@
+File Format=MacCaption_MCC V2.0
+
+///////////////////////////////////////////////////////////////////////////////////
+// Computer Prompting and Captioning Company
+// Ancillary Data Packet Transfer File
+//
+// Permission to generate this format is granted provided that
+//   1. This ANC Transfer file format is used on an as-is basis and no warranty is given, and
+//   2. This entire descriptive information text is included in a generated .mcc file.
+//
+// General file format:
+//   HH:MM:SS:FF(tab)[Hexadecimal ANC data in groups of 2 characters]
+//     Hexadecimal data starts with the Ancillary Data Packet DID (Data ID defined in S291M)
+//       and concludes with the Check Sum following the User Data Words.
+//     Each time code line must contain at most one complete ancillary data packet.
+//     To transfer additional ANC Data successive lines may contain identical time code.
+//     Time Code Rate=[24, 25, 30, 30DF, 50, 60, 60DF]
+//
+//   ANC data bytes may be represented by one ASCII character according to the following schema:
+//     G  FAh 00h 00h
+//     H  2 x (FAh 00h 00h)
+//     I  3 x (FAh 00h 00h)
+//     J  4 x (FAh 00h 00h)
+//     K  5 x (FAh 00h 00h)
+//     L  6 x (FAh 00h 00h)
+//     M  7 x (FAh 00h 00h)
+//     N  8 x (FAh 00h 00h)
+//     O  9 x (FAh 00h 00h)
+//     P  FBh 80h 80h
+//     Q  FCh 80h 80h
+//     R  FDh 80h 80h
+//     S  96h 69h
+//     T  61h 01h
+//     U  E1h 00h 00h 00h
+//     Z  00h
+//
+///////////////////////////////////////////////////////////////////////////////////
+
+UUID=0087C4F6-A6B4-5469-8C8E-BBF44950401D
+Creation Program=Lavf
+Creation Date=Tuesday, October 13, 2026
+Creation Time=12:00:00
+Time Code Rate=30DF
+
+00:10:00:00	T3AS3A4F43ZZ72EFFC9425FC9425FC94ADFC94ADFC94E0FC94E0FC3E3EFC2054FCC845FC2043FC4FD5FCCE43FC494CFC20CDFC455474ZZ109C
+00:10:01:10	T22S224F43Z0172E7FC2054FC4FCEFC49C7FCC854FC20C1FCC24FFCD55474Z01C284
+00:10:02:20	T3AS3A4F43Z0272EFFC9425FC9425FC94ADFC94ADFC94E0FC94E0FC54C8FC4520FCCE45FC5720FCC2D5FCD320FC4C49FCCE45FCAE8074Z02519C
+00:10:04:00	T43S434F43Z0372F2FC9425FC9425FC94ADFC94ADFC94E0FC94E0FC4954FC2052FCD5CEFCD320FC4652FC4FCDFC2054FCC845FC20C8FCC152FCC24FFCD55274Z03ADA5
+00:10:05:15	T37S374F43Z0472EEFC9425FC9425FC94ADFC94ADFC94E0FC94E0FC544FFC2054FCC845FC20D3FC54C1FC5449FC4FCEFCAE8074Z04A499
+00:10:06:25	T3AS3A4F43Z0572EFFC9425FC9425FC94ADFC94ADFC94E0FC94E0FC3E3EFC20D3FC4552FCD649FC4345FC20D3FC54C1FC5254FCD38074Z05089C
+00:10:08:00	T1CS1C4F43Z0672E5FC2049FCCE20FCCDC1FC5243FCC8AE74Z06A07E
+00:10:09:10	T13S134F43Z0772E2FC942CFC942C74Z070E75

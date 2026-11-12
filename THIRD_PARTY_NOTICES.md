@@ -732,6 +732,8 @@ SOFTWARE.
 - Code adapted from it:
   - `hearingimpaired`, the hearing-impaired rules, from `src/libse/Forms/RemoveTextForHI.cs` at `5b9ee8baf08c472c7a74fbc337446b656dedabb4`
   - `internal/cea708`, the G2 table, from `src/libse/Cea708/Cea708.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`
+  - `format/mcc`, the alias letters and the hex codec, and `internal/cea708`, the CDP codec `ReadCDP` and `WriteCDP`, from `src/libse/SubtitleFormats/MacCaption10.cs` and `src/libse/Cea708/Smpte291M.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`
+- Text copied from it: the header text of `format/mcc`, from `src/libse/SubtitleFormats/MacCaption10.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`. It is the notice of the MCC format by the Computer Prompting and Captioning Company. Its own terms ask every generated `.mcc` file to hold it unchanged, so the writer copies it verbatim
 
 ```text
 MIT License

@@ -1,0 +1,13 @@
+﻿1
+00:00:02,302 --> 00:00:05,472
+L'horaire d'hiver
+débute lundi…
+
+2
+00:00:05,472 --> 00:00:07,007
+{\an7}<i>♪ Annonce ♪</i>
+
+3
+00:00:08,475 --> 00:00:11,011
+<font color="#ffff00">Le train côtier part</font>
+à 6 h 50.

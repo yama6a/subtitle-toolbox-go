@@ -1,0 +1,89 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "mcc": {
+                "version": "2.0",
+                "frameRate": "29.97",
+                "dropFrame": true,
+                "header": {
+                    "UUID": "6F1D3C2A-4B5E-4F60-8A71-92B3C4D5E6F7",
+                    "Creation Program": "Subtitle Toolbox fixture generator",
+                    "Creation Date": "Monday, October 12, 2026",
+                    "Creation Time": "09:14:05"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 2.302,
+                "end": 4.671,
+                "lines": [
+                    "THE WINTER TIMETABLE",
+                    "STARTS ON MONDAY."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            8,
+                            8
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 5.472,
+                "end": 7.007,
+                "lines": [
+                    "<i>[ANNOUNCER]</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 8.475,
+                "end": 11.011,
+                "lines": [
+                    "THE COAST TRAIN LEAVES AT",
+                    "6:50, TEN MINUTES EARLIER."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            4,
+                            4
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

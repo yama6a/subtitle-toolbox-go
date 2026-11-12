@@ -5,6 +5,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/cea608"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/cea708"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
@@ -28,7 +29,7 @@ func cea708Cues(states []cea708.State, lastCueDuration time.Duration) []model.Cu
 		if len(s.Lines) == 0 {
 			continue
 		}
-		end := s.Time + lastCueDuration
+		end := parsing.EndAfter(s.Time, lastCueDuration)
 		if i+1 < len(states) {
 			end = states[i+1].Time
 		}

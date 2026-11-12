@@ -9,6 +9,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mcc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
@@ -46,6 +47,9 @@ type ReadOptions struct {
 	// SCC holds the settings of the SCC reader. The zero value reads channel 1 and gives one cue per screen of
 	// roll-up captions.
 	SCC scc.ReadOptions
+	// MCC holds the settings of the MCC reader. The zero value reads the captions of CEA-708 service 1, else the
+	// CEA-608 captions of channel 1 with one cue per screen of roll-up captions.
+	MCC mcc.ReadOptions
 	// EBUSTL holds the settings of the EBU STL reader. The zero value keeps the times of the file.
 	EBUSTL ebustl.ReadOptions
 	// SpruceSTL holds the settings of the Spruce STL reader. The zero value guesses 25 or 30 fps from the frame numbers.
@@ -83,6 +87,9 @@ type WriteOptions struct {
 	// SCC holds the settings of the SCC writer. The zero value keeps the stored drop-frame mode, else writes
 	// drop-frame labels, and fails for a cue that SCC cannot hold.
 	SCC scc.WriteOptions
+	// MCC holds the settings of the MCC writer. The zero value keeps the stored frame rate and drop-frame mode, else
+	// writes 29.97 fps with drop-frame labels.
+	MCC mcc.WriteOptions
 }
 
 // WriteReport holds the changes that a writer made to fit the subtitle into its format.
@@ -91,6 +98,8 @@ type WriteReport struct {
 	WebVTT *webvtt.WriteReport
 	// SCC is non-nil after an SCC write, also when Fit made no change.
 	SCC *scc.WriteReport
+	// MCC is non-nil after an MCC write, also when the fit made no change.
+	MCC *mcc.WriteReport
 }
 
 // ReadInfo holds the facts of a read that are not subtitle content.
@@ -121,17 +130,10 @@ func (o ReadOptions) Validate() error {
 			Msg:    fmt.Sprintf("The last cue duration must be 0 or more, got %s.", *o.LastCueDuration),
 		}
 	}
-	if err := o.SAMI.Validate(); err != nil {
-		return err
-	}
-	if err := o.MicroDVD.Validate(); err != nil {
-		return err
-	}
-	if err := o.CSV.Validate(); err != nil {
-		return err
-	}
-	if err := o.SCC.Validate(); err != nil {
-		return err
+	for _, check := range []func() error{o.SAMI.Validate, o.MicroDVD.Validate, o.CSV.Validate, o.SCC.Validate, o.MCC.Validate} {
+		if err := check(); err != nil {
+			return err
+		}
 	}
 	return o.SpruceSTL.Validate()
 }
@@ -152,7 +154,7 @@ func (o WriteOptions) Validate() error {
 	}
 	for _, check := range []func() error{
 		o.ASS.Validate, o.MicroDVD.Validate, o.MPSub.Validate, o.PlainText.Validate, o.CSV.Validate, o.ITT.Validate,
-		o.SubViewer.Validate, o.SCC.Validate,
+		o.SubViewer.Validate, o.SCC.Validate, o.MCC.Validate,
 	} {
 		if err := check(); err != nil {
 			return err

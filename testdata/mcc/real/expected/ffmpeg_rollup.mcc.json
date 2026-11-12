@@ -1,0 +1,178 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "mcc": {
+                "version": "2.0",
+                "frameRate": "29.97",
+                "dropFrame": true,
+                "header": {
+                    "UUID": "0087C4F6-A6B4-5469-8C8E-BBF44950401D",
+                    "Creation Program": "Lavf",
+                    "Creation Date": "Tuesday, October 13, 2026",
+                    "Creation Time": "12:00:00"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 600.2,
+                "end": 601.334,
+                "lines": [
+                    "&gt;&gt; THE COUNCIL MET"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 601.334,
+                "end": 602.735,
+                "lines": [
+                    "&gt;&gt; THE COUNCIL MET TONIGHT ABOUT"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 602.735,
+                "end": 604.07,
+                "lines": [
+                    "&gt;&gt; THE COUNCIL MET TONIGHT ABOUT",
+                    "THE NEW BUS LINE."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            0,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 604.07,
+                "end": 605.572,
+                "lines": [
+                    "THE NEW BUS LINE.",
+                    "IT RUNS FROM THE HARBOUR"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            0,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 605.572,
+                "end": 606.906,
+                "lines": [
+                    "IT RUNS FROM THE HARBOUR",
+                    "TO THE STATION."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            0,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 606.906,
+                "end": 608.007,
+                "lines": [
+                    "TO THE STATION.",
+                    "&gt;&gt; SERVICE STARTS"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            0,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 608.007,
+                "end": 609.342,
+                "lines": [
+                    "TO THE STATION.",
+                    "&gt;&gt; SERVICE STARTS IN MARCH."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            0,
+                            0
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

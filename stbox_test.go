@@ -94,7 +94,7 @@ func TestWriteUnsupportedFormat(t *testing.T) {
 	}
 }
 
-func TestWriteReportIsSetForWebVTTAndSCCOnly(t *testing.T) {
+func TestWriteReportIsSetForWebVTTSCCAndMCCOnly(t *testing.T) {
 	t.Parallel()
 
 	s := &stbox.Subtitle{}
@@ -110,6 +110,7 @@ func TestWriteReportIsSetForWebVTTAndSCCOnly(t *testing.T) {
 			report, err := stbox.Write(&out, s, f, stbox.WriteOptions{ITT: itt.WriteOptions{FrameRate: stbox.FrameRate25}})
 			require.NoError(t, err)
 			assert.Equal(t, f == stbox.SCC, report.SCC != nil)
+			assert.Equal(t, f == stbox.MCC, report.MCC != nil)
 			if f != stbox.WebVTT {
 				assert.Nil(t, report.WebVTT)
 				return
@@ -206,6 +207,7 @@ func ExampleFormats() {
 	// itt [itt]
 	// json [json]
 	// lrc [lrc]
+	// mcc [mcc]
 	// microdvd [sub]
 	// mpsub [mpsub]
 	// sami [smi sami]
