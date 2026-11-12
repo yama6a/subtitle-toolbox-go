@@ -1,4 +1,4 @@
-package ttml
+package ttmlwrite
 
 import (
 	"fmt"
@@ -12,9 +12,9 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/xmlraw"
 )
 
-// maxStyleDepth limits the style references that the reader follows, because styles can refer to each other in a
+// MaxStyleDepth limits the style references that Sheet and the reader follow, because styles can refer to each other in a
 // loop.
-const maxStyleDepth = 20
+const MaxStyleDepth = 20
 
 var (
 	spaceRegexp    = regexp.MustCompile(`[\t\n\v\f\r ]+`)
@@ -23,103 +23,104 @@ var (
 		`[\t\n\v\f\r ]*(\d{1,3})[\t\n\v\f\r ]*(?:,[\t\n\v\f\r ]*\d{1,3}[\t\n\v\f\r ]*)?\)$`)
 )
 
-// style is the part of the TTML style that core markup holds. An empty color means none.
-type style struct {
+// Style is the part of the TTML style that core markup holds. An empty color means none.
+type Style struct {
 	bold, italic, underline, strike bool
 	color                           string
 }
 
-// properties maps the local names of styling attributes, such as "fontWeight", to their values.
-type properties map[string]string
+// Properties maps the local names of styling attributes, such as "fontWeight", to their values.
+type Properties map[string]string
 
-// styles resolves the styles that become core markup.
-type styles struct {
+// Sheet resolves the styles that become core markup.
+type Sheet struct {
 	ns      string
-	styles  map[string]*xmlraw.Node
-	regions map[string]*xmlraw.Node
+	Styles  map[string]*xmlraw.Node // the <style> elements of the head by xml:id
+	Regions map[string]*xmlraw.Node // the <region> elements of the head by xml:id
 }
 
-func newStyles(ns string, head *xmlraw.Node) styles {
-	s := styles{ns: ns}
-	s.styles = s.elementsByID(head, "style")
-	s.regions = s.elementsByID(head, "region")
+// NewSheet returns the styles and regions of head, the elements in the root namespace ns.
+func NewSheet(ns string, head *xmlraw.Node) Sheet {
+	s := Sheet{ns: ns}
+	s.Styles = s.elementsByID(head, "style")
+	s.Regions = s.elementsByID(head, "region")
 	return s
 }
 
 // elementsByID returns the elements of local name in the root namespace below head by their xml:id. The first
 // element of an ID wins.
-func (s styles) elementsByID(head *xmlraw.Node, local string) map[string]*xmlraw.Node {
+func (s Sheet) elementsByID(head *xmlraw.Node, local string) map[string]*xmlraw.Node {
 	out := map[string]*xmlraw.Node{}
 	if head == nil {
 		return out
 	}
 	for n := range head.Descendants() {
-		id := xmlAttr(n, "id")
-		if _, ok := out[id]; !ok && id != "" && isElement(n, s.ns, local) {
+		id := XMLAttr(n, "id")
+		if _, ok := out[id]; !ok && id != "" && IsElement(n, s.ns, local) {
 			out[id] = n
 		}
 	}
 	return out
 }
 
-// ownProperties returns the properties of the styles that n references and of its own styling attributes.
+// OwnProperties returns the properties of the styles that n references and of its own styling attributes.
 // The own attributes win.
-func (s styles) ownProperties(n *xmlraw.Node) properties {
+func (s Sheet) OwnProperties(n *xmlraw.Node) Properties {
 	return s.ownPropertiesAt(n, 0)
 }
 
-func (s styles) ownPropertiesAt(n *xmlraw.Node, depth int) properties {
-	out := properties{}
-	if depth < maxStyleDepth {
-		for _, id := range styleIDs(n) {
-			if ref, ok := s.styles[id]; ok {
+func (s Sheet) ownPropertiesAt(n *xmlraw.Node, depth int) Properties {
+	out := Properties{}
+	if depth < MaxStyleDepth {
+		for _, id := range StyleIDs(n) {
+			if ref, ok := s.Styles[id]; ok {
 				maps.Copy(out, s.ownPropertiesAt(ref, depth+1))
 			}
 		}
 	}
-	maps.Copy(out, stylingAttributes(n))
+	maps.Copy(out, StylingAttributes(n))
 	return out
 }
 
-// regionProperties returns the properties of a region: its own, then those of each nested <style>, then its own
+// RegionProperties returns the properties of a region: its own, then those of each nested <style>, then its own
 // styling attributes again. See https://www.w3.org/TR/ttml2/#semantics-style-inheritance-content.
-func (s styles) regionProperties(id string, ok bool) properties {
-	region, found := s.regions[id]
+func (s Sheet) RegionProperties(id string, ok bool) Properties {
+	region, found := s.Regions[id]
 	if !ok || !found {
-		return properties{}
+		return Properties{}
 	}
-	out := s.ownProperties(region)
+	out := s.OwnProperties(region)
 	for _, c := range region.Children {
-		if isElement(c, s.ns, "style") {
-			maps.Copy(out, s.ownProperties(c))
+		if IsElement(c, s.ns, "style") {
+			maps.Copy(out, s.OwnProperties(c))
 		}
 	}
-	maps.Copy(out, stylingAttributes(region))
+	maps.Copy(out, StylingAttributes(region))
 	return out
 }
 
-// styleIDs returns the IDs of the unprefixed style attribute.
-func styleIDs(n *xmlraw.Node) []string {
-	v, _ := plainAttr(n, "style")
-	return splitSpace(v)
+// StyleIDs returns the IDs of the unprefixed style attribute.
+func StyleIDs(n *xmlraw.Node) []string {
+	v, _ := PlainAttr(n, "style")
+	return SplitSpace(v)
 }
 
-// stylingAttributes returns the attributes of n in a styling namespace by local name. An attribute tts:x whose
+// StylingAttributes returns the attributes of n in a styling namespace by local name. An attribute tts:x whose
 // prefix is not declared counts too.
-func stylingAttributes(n *xmlraw.Node) properties {
-	out := properties{}
-	for _, a := range attributes(n) {
-		if slices.Contains(stylingNamespaces, n.AttrNamespaceURI(a)) {
+func StylingAttributes(n *xmlraw.Node) Properties {
+	out := Properties{}
+	for _, a := range Attributes(n) {
+		if slices.Contains(StylingNamespaces, n.AttrNamespaceURI(a)) {
 			out[a.Name.Local] = a.Value
-		} else if name := undeclaredName(n, a); strings.HasPrefix(name, "tts:") {
+		} else if name := UndeclaredName(n, a); strings.HasPrefix(name, "tts:") {
 			out[name[len("tts:"):]] = a.Value
 		}
 	}
 	return out
 }
 
-// apply returns s with the properties applied. See https://www.w3.org/TR/ttml2/#semantics-style-resolution-processing-sss.
-func (s style) apply(props properties) style {
+// Apply returns s with the properties applied. See https://www.w3.org/TR/ttml2/#semantics-style-resolution-processing-sss.
+func (s Style) Apply(props Properties) Style {
 	for name, value := range props {
 		value = strings.Trim(value, markupcore.PHPTrimSet)
 		switch name {
@@ -158,17 +159,17 @@ func normalizeColor(color string) string {
 	return hex
 }
 
-func (s style) run(text string) markupcore.Run {
+func (s Style) Run(text string) markupcore.Run {
 	return markupcore.Run{Text: text, Color: s.color, Bold: s.bold, Italic: s.italic, Underline: s.underline, Strike: s.strike}
 }
 
-// splitSpace splits s at runs of white space and drops the empty parts.
-func splitSpace(s string) []string {
+// SplitSpace splits s at runs of white space and drops the empty parts.
+func SplitSpace(s string) []string {
 	return strings.FieldsFunc(s, func(r rune) bool { return strings.ContainsRune("\t\n\v\f\r ", r) })
 }
 
 // decorate applies the tokens of tts:textDecoration. none turns underline and line-through off first.
-func (s style) decorate(tokens []string) style {
+func (s Style) decorate(tokens []string) Style {
 	if slices.Contains(tokens, "none") {
 		s.underline, s.strike = false, false
 	}
