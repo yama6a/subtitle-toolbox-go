@@ -212,6 +212,9 @@ func writeString(t *testing.T, row formatFuncs, s *Subtitle, opts WriteOptions) 
 	if opts.MicroDVD.FrameRate.IsZero() {
 		opts.MicroDVD.FrameRate = FrameRate{Num: 25, Den: 1} // a subtitle without MicroDVD format data has no frame rate to write with
 	}
+	if opts.ITT.FrameRate.IsZero() {
+		opts.ITT.FrameRate = FrameRate25 // a subtitle without iTT format data has no frame rate to write with
+	}
 	require.NoError(t, opts.Validate())
 	var out bytes.Buffer
 	_, err := row.write(&out, s, opts.common(), opts)

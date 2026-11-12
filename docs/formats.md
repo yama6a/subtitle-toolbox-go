@@ -6,6 +6,7 @@
 |:--- |:--- |:--- |:--- |:--- |
 | ASS and SSA | `stbox.ASS` | `ass` | `.ass`, `.ssa` | [ASS and SSA](#ass-and-ssa) |
 | CSV and TSV | `stbox.CSV`, `stbox.TSV` | `csv`, `tsv` | `.csv`, `.tsv` | [CSV and TSV](#csv-and-tsv) |
+| iTunes Timed Text | `stbox.ITT` | `itt` | `.itt` | [iTT](#itt) |
 | library JSON | `stbox.JSON` | `json` | `.json` | [JSON](#json) |
 | LRC | `stbox.LRC` | `lrc` | `.lrc` | [LRC](#lrc) |
 | MicroDVD | `stbox.MicroDVD` | `microdvd` | `.sub` | [MicroDVD](#microdvd) |
@@ -351,7 +352,7 @@ This file reads as one cue from 1.5 s to 4 s with the alignment `TopCenter` and 
 
 ## TTML
 
-TTML is the W3C XML format for timed text. IMSC is its profile for streaming and broadcast, and DFXP is its draft form that Netflix deliveries and Flash players use. Package `format/ttml` reads and writes all 3. The format name is `ttml`, the extensions `.ttml`, `.dfxp` and `.xml`. iTT files read as TTML.
+TTML is the W3C XML format for timed text. IMSC is its profile for streaming and broadcast, and DFXP is its draft form that Netflix deliveries and Flash players use. Package `format/ttml` reads and writes all 3. The format name is `ttml`, the extensions `.ttml`, `.dfxp` and `.xml`. An iTT file has the TTML signature, so `Detect` and `Parse` read it as TTML. See [iTT](#itt) for `.itt` files.
 
 ```xml
 <tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xml:lang="en">
@@ -440,6 +441,68 @@ The writer keeps what the reader stored, so a DFXP file stays DFXP after a retim
 ### Options
 
 `ttml.ReadOptions` and `ttml.WriteOptions` have no fields, so the root `WriteOptions` has no TTML field. The reader reads `Lenient`. The writer reads `StripTags`, `LineEnding` and `BOM`. By default the output has no BOM. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#ttml).
+
+## iTT
+
+iTunes Timed Text (iTT) is the TTML profile that Apple asks for in iTunes Store and Apple TV deliveries. It uses SMPTE time codes, one `<div>` and a top and a bottom region. Package `format/itt` reads and writes it on top of the TTML code. The format name is `itt`, the extension `.itt`. No BOM by default.
+
+```xml
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttp="http://www.w3.org/ns/ttml#parameter" ttp:timeBase="smpte" ttp:frameRate="24" ttp:frameRateMultiplier="999 1000">
+  <body><div><p begin="00:00:01:12" end="00:00:04:00">Hello</p></div></body>
+</tt>
+```
+
+This file reads as one cue from 1.502 s to 4.004 s, because the effective frame rate is 24 times 999/1000, which is 23.976 fps.
+
+- **Detection**: iTT has no signature of its own. `Detect` returns `ttml` for an iTT file. `Load` returns `itt` when the content is TTML and the file extension is `.itt`, see [detection.md](detection.md#load-and-parse-without-a-format). `Parse` without `ReadOptions.Format` has no file name and reads the same bytes as TTML.
+
+### Read
+
+`itt.Read` calls the TTML reader. The cues, the warnings and the `ttml` format data are what `ttml.Read` gives, with the same lenient rules. It adds the file data `itt`. Its fields are the root attributes `timeBase`, `frameRate`, `frameRateMultiplier` and `dropMode`, in this order, as strings trimmed of white space. A field is there only when the root has the attribute. The prefix of the attribute must map to a TTML parameter namespace, or must be `ttp` without a declaration. A file without such an attribute has no `itt` data.
+
+- **Two namespaces**: `ttp:frameRate="25"` and `p2:frameRate="30"` can name a parameter in 2 namespaces, the TTML one and the DFXP one. The `itt` data keeps the first, which is also the frame rate that the TTML reader reads the times with.
+
+### Write
+
+The writer builds a TTML document with the TTML writer and changes these parts:
+
+| Output | Rule |
+|:--- |:--- |
+| head | the fixed Apple head: the style `normal` and the regions `top` and `bottom`. A title adds `ttm:title` first, as in TTML. The stored head, styles and regions are dropped |
+| `<body>` | `style="normal"`, no other attribute |
+| `<div>` | one for all cues |
+| region | `top` for the alignments `TopLeft`, `TopCenter` and `TopRight`, else `bottom`. The writer ignores `Offset` and the column, because the Apple profile has only these 2 regions |
+| markup | `<b>`, `<i>`, `<u>` and `<font color>`. Ruby becomes `base (annotation)` and WebVTT color classes become `<font color>`. A value that is no color gives a plain `<font>`, which writes no span. `<s>`, speakers, `<c>` without a color, `<lang>` and word timestamps go |
+| `<tt>` attributes | after the ones of TTML: `ttp:timeBase="smpte"`, `ttp:frameRate`, `ttp:frameRateMultiplier`, `ttp:dropMode="nonDrop"` |
+| `begin`, `end` | SMPTE labels `HH:MM:SS:FF` of the frame count model, see [frame-rates.md](frame-rates.md) |
+
+- **Frame rates**: the writer supports 5 rows. A rate matches a row when it is within 0.01 fps of the effective rate.
+
+| Rate | `ttp:frameRate` | `ttp:frameRateMultiplier` | Effective rate |
+|:--- |:--- |:--- |:--- |
+| 23.976 | `24` | `999 1000` | 2997/125 |
+| 24 | `24` | `1 1` | 24/1 |
+| 25 | `25` | `1 1` | 25/1 |
+| 29.97 | `30` | `999 1000` | 2997/100 |
+| 30 | `30` | `1 1` | 30/1 |
+
+- **Which rate**: `WriteOptions.ITT.FrameRate` wins over the stored rate. The stored rate is `itt.frameRate` times `itt.frameRateMultiplier` (`1 1` when missing), when it matches a row and its `frameRate` equals the `ttp:frameRate` of that row. When the option and the stored rate name the same row, the stored strings stay, so `1000 1001` is not rewritten. A subtitle without a usable stored rate and without the option returns an `*InvalidArgumentError` with `Option` `WriteOptions.ITT.FrameRate` and `iTT output needs the frame rate of the video.`. An option outside the table returns the same type with `The ITT formatter accepts the frame rates 23.976, 24, 25, 29.97 and 30, got 50.`.
+- **Multiplier**: the writer counts the stored multiplier as the TTML reader does: 2 numbers above 0, split at white space or `:`. Anything else counts as `1 1`. So `1000x 1001` is 1000/1001.
+- **Drop-frame**: `FrameRate2997DF` is near the 29.97 row. The writer writes that row with `ttp:dropMode="nonDrop"`. Labels are never drop-frame.
+- **Times**: begin frame is the start rounded to the nearest frame, and 0 for a negative start. End frame is the end rounded the same way, and at least the begin frame plus 1. So each cue lasts 1 frame or more. Both stop at the last frame below 100000 hours, `99999:59:59:24` at 25 fps. At 29.97 fps the label `01:00:00:00` is 3603.6 s.
+- **Forced flag**: a forced cue writes `itts:forcedDisplay="true"` and declares `itts`. Output without a forced cue has no `itts`.
+- **Unique IDs**: the rules of TTML apply, and the head holds the IDs `normal`, `top` and `bottom`. A cue with the ID `top` comes out as `top_2`.
+- **Lost on write**: everything that the TTML writer loses. Also the input head, styles and regions other than `top` and `bottom`, the left and right column, the middle row, `<s>`, speakers, color classes without a color, drop-frame mode and time below one frame.
+
+### Options
+
+`itt.ReadOptions` has no fields, so the root `ReadOptions` has no iTT field. The reader reads `Lenient`. The lenient rules are those of [TTML](lenient-parsing.md#ttml).
+
+| Option | Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |:--- |
+| `WriteOptions.ITT` | `FrameRate` | `FrameRate` | zero value: the stored frame rate | the output frame rate. 23.976, 24, 25, 29.97 or 30, each within 0.01 fps |
+
+The writer reads `StripTags`, `LineEnding` and `BOM`. `Validate` rejects a frame rate outside the table.
 
 ## SAMI
 

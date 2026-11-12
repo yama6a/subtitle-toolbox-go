@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttp="http://www.w3.org/ns/ttml#parameter" xmlns:tts="http://www.w3.org/ns/ttml#styling" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xml:lang="de-DE" ttp:timeBase="smpte" ttp:frameRate="30" ttp:frameRateMultiplier="999 1000" ttp:dropMode="nonDrop">
+  <head>
+    <metadata>
+      <ttm:title>Wetterbericht</ttm:title>
+    </metadata>
+    <styling>
+      <style xml:id="normal" tts:fontFamily="sansSerif" tts:fontWeight="normal" tts:fontStyle="normal" tts:color="white" tts:fontSize="100%" />
+    </styling>
+    <layout>
+      <region xml:id="top" tts:origin="0% 0%" tts:extent="100% 15%" tts:textAlign="center" tts:displayAlign="before" />
+      <region xml:id="bottom" tts:origin="0% 85%" tts:extent="100% 15%" tts:textAlign="center" tts:displayAlign="after" />
+    </layout>
+  </head>
+  <body style="normal">
+    <div>
+      <p begin="00:59:58:00" end="01:00:00:15" region="bottom">Guten Abend, hier ist das Wetter.</p>
+      <p begin="01:00:00:16" end="01:00:03:29" region="bottom">Im Norden bleibt es kühl,<br />im Süden scheint die Sonne.</p>
+      <p begin="01:00:04:00" end="01:00:06:10" region="top"><span tts:fontStyle="italic">Grafik: Temperaturen</span></p>
+      <p begin="01:00:06:11" end="01:00:09:00" region="bottom">Morgen früh gibt es Nebel<br />über den Flüssen.</p>
+      <p begin="01:00:09:05" end="01:00:11:20" region="bottom">Am Wochenende wird es <span tts:fontWeight="bold">wärmer</span>.</p>
+      <p begin="01:00:12:00" end="01:00:14:29" region="bottom">Das war das Wetter. Gute Nacht.</p>
+    </div>
+  </body>
+</tt>

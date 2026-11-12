@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 )
@@ -53,7 +54,10 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 					continue
 				}
 				var out bytes.Buffer
-				_, err := stbox.Write(&out, s, f, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
+				_, err := stbox.Write(&out, s, f, stbox.WriteOptions{
+					MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}},
+					ITT:      itt.WriteOptions{FrameRate: stbox.FrameRate25},
+				})
 				if errors.Is(err, stbox.ErrUnsupportedFormat) {
 					continue
 				}
