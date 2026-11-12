@@ -20,7 +20,10 @@ type ptsEvent struct {
 // cannot read the time stamp of an M2TS packet, so the aligner does both and filters the packets that the pass
 // does not need.
 // counter holds the last continuity counter of a PID as the file has it and as go-astits gets it.
-type counter struct{ raw, fixed uint8 }
+type counter struct {
+	raw, fixed uint8
+	payload    []byte
+}
 
 type aligner struct {
 	r          *bufio.Reader
@@ -122,11 +125,14 @@ func (a *aligner) fixCounter(pid uint16, p *[tsPacketSize]byte) bool {
 	c, seen := a.counters[pid]
 	raw := p[3] & 0x0F
 	// go-astits checks the counter gap before the repeat, so a repeated packet inside a PES would empty it.
-	// The aligner drops the repeat. A jump becomes the expected counter, so go-astits keeps the data across it.
-	if seen && raw == c.raw {
+	// The aligner drops the repeat. ISO/IEC 13818-1 section 2.4.3.3 defines it as the same counter and the same
+	// payload. A packet with the same counter and another payload, such as one after a discontinuity or after a
+	// damaged jump, is data. A jump becomes the expected counter, so go-astits keeps the data across it.
+	data := payload(p)
+	if seen && raw == c.raw && bytes.Equal(data, c.payload) {
 		return false
 	}
-	c.raw = raw
+	c.raw, c.payload = raw, append(c.payload[:0], data...)
 	if seen {
 		c.fixed = (c.fixed + 1) & 0x0F
 	} else {

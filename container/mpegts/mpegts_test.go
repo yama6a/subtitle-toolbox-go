@@ -264,6 +264,46 @@ func TestRepeatedPacket(t *testing.T) {
 	}
 }
 
+// TestEqualCounter pins that a packet with the counter of the previous packet is data when its payload differs.
+func TestEqualCounter(t *testing.T) {
+	t.Parallel()
+
+	w := single(eng888())
+	w.shortTeletextPES(teletextPID, 90000*11, pageHeader(888), row(888, 22, startBox+"One"))
+	w.shortTeletextPES(teletextPID, 90000*12, pageHeader(888), row(888, 22, startBox+"Two"))
+	w.shortTeletextPES(teletextPID, 90000*13, pageHeader(888))
+	want := []cueRow{cue(0, 1, "One"), cue(1, 2, "Two")}
+	require.Equal(t, want, extract(t, w.bytes(), 888, model.CommonReadOptions{}))
+
+	tests := []struct {
+		name string
+		edit func(p []byte, previous byte)
+	}{
+		{"the discontinuity indicator and the counter of the previous packet", func(p []byte, previous byte) {
+			p[3] = p[3]&0xF0 | previous
+			p[5] |= 0x80
+		}},
+		{"a damaged jump of 16", func(p []byte, previous byte) { p[3] = p[3]&0xF0 | previous }},
+		{"a damaged jump of 15", func(p []byte, previous byte) { p[3] = p[3]&0xF0 | (previous+15)&0x0F }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			packets := split(w.bytes())
+			var teletext []int
+			for i, p := range packets {
+				if pid(p) == teletextPID {
+					teletext = append(teletext, i)
+				}
+			}
+			require.Len(t, teletext, 3)
+			tt.edit(packets[teletext[1]], packets[teletext[0]][3]&0x0F)
+			assert.Equal(t, want, extract(t, join(packets), 888, model.CommonReadOptions{}))
+		})
+	}
+}
+
 func TestDamagedSyncByte(t *testing.T) {
 	t.Parallel()
 
@@ -331,9 +371,7 @@ func TestWrongPATChecksum(t *testing.T) {
 	damaged[187] ^= 0xFF
 
 	assert.Empty(t, open(t, damaged).Tracks())
-	bad := bytes.Clone(damaged[:188])
-	bad[3] |= 0x0F // another counter than the valid PAT, which the reader would drop as a repeat
-	assert.Len(t, open(t, append(bad, good...)).Tracks(), 5)
+	assert.Len(t, open(t, append(bytes.Clone(damaged[:188]), good...)).Tracks(), 5)
 }
 
 // nullReaderAt serves a PAT, null packets and the other packets of a file without holding the null packets.

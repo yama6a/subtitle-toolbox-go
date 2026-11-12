@@ -73,7 +73,7 @@ The reader skips damage without a message. The result depends on the damage.
 | M2TS packets | the reader drops the time stamp and reads the same cues |
 | a packet with the transport error flag | the reader drops it. A PES packet that spans 2 packets and loses one is dropped whole. PHP decodes the part that arrived |
 | a continuity counter jump with no lost data | the reader keeps the data and reads the same cues |
-| a packet that repeats the previous one with the same counter, also inside a PES packet | the reader drops the repeat, as ISO/IEC 13818-1 section 2.4.3.3 says |
+| a packet that repeats the previous one of its PID with the same counter and the same payload, also inside a PES packet | the reader drops the repeat, as ISO/IEC 13818-1 section 2.4.3.3 says. A packet with the same counter and another payload is data, as after a discontinuity |
 | a wrong CRC32 in the PAT or a PMT | the reader skips that table. A later copy of the table counts. Without one the file has no track |
 | a PMT with a descriptor that go-astits cannot parse | the program has no tracks |
 | an adaptation field that fills the packet, or a PES header length past the packet | the packet gives no data, or the data starts after the header length |

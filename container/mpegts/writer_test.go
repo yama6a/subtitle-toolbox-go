@@ -73,6 +73,20 @@ func teletextStream(pid int, pages ...ttPage) pmtStream {
 // teletextPES adds a teletext PES packet with the teletext packets and stuffing data units, so that it fills
 // whole packets. Each teletext packet has 42 bytes in the bit order of ETS 300 706.
 func (w *tsWriter) teletextPES(pid int, pts int64, packets ...[]byte) {
+	data := teletextData(packets)
+	for (45+len(data))%184 != 0 {
+		data = append(data, 0xFF, 0x2C)
+		data = append(data, bytes.Repeat([]byte{0xFF}, 44)...)
+	}
+	w.packets(pid, pes(0xBD, pts, data, 36))
+}
+
+// shortTeletextPES adds a teletext PES packet without stuffing data units. Its last packet has an adaptation field.
+func (w *tsWriter) shortTeletextPES(pid int, pts int64, packets ...[]byte) {
+	w.packets(pid, pes(0xBD, pts, teletextData(packets), 36))
+}
+
+func teletextData(packets [][]byte) []byte {
 	data := []byte{0x10}
 	for i, p := range packets {
 		data = append(data, 0x03, 0x2C, byte(0xE0|(7+i)), 0xE4)
@@ -80,11 +94,7 @@ func (w *tsWriter) teletextPES(pid int, pts int64, packets ...[]byte) {
 			data = append(data, bits.Reverse8(b))
 		}
 	}
-	for (45+len(data))%184 != 0 {
-		data = append(data, 0xFF, 0x2C)
-		data = append(data, bytes.Repeat([]byte{0xFF}, 44)...)
-	}
-	w.packets(pid, pes(0xBD, pts, data, 36))
+	return data
 }
 
 // m2ts returns the packets with a 4-byte time stamp in front of each.
