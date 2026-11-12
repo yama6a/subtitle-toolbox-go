@@ -16,7 +16,7 @@ import (
 
 const formatDataKey = string(model.TTML)
 
-const invalidUTF8 = "The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding."
+const invalidUTF8 = xmlraw.InvalidUTF8Reason
 
 //nolint:gochecknoglobals // the root parameters that change the time model, which the media times of the output replace
 var skippedRootParameters = []string{"timeBase", "clockMode", "dropMode", "markerMode"}
@@ -379,19 +379,13 @@ func (w *writer) text(s string) string {
 	return textEscaper.Replace(w.xmlText(markupcore.DecodeEntities(s)))
 }
 
-// xmlText removes the characters that XML 1.0 forbids: the C0 controls except tab, LF and CR, U+FFFE and U+FFFF.
-// Text that is not valid UTF-8 fails the write.
+// xmlText removes the characters that XML 1.0 forbids. Text that is not valid UTF-8 fails the write.
 func (w *writer) xmlText(s string) string {
-	if !utf8.ValidString(s) {
+	out, ok := xmlraw.Text(s)
+	if !ok {
 		w.fail()
-		return ""
 	}
-	return strings.Map(func(r rune) rune {
-		if r < 0x20 && r != '\t' && r != '\n' && r != '\r' || r == 0xfffe || r == 0xffff {
-			return -1
-		}
-		return r
-	}, s)
+	return out
 }
 
 func (w *writer) fail() {

@@ -128,6 +128,22 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Time limit**: the limit applies to the expression and to its sum with the times of the parents, after the rounding to whole milliseconds. So `99999999999999999999:00:04.000` fails in both modes.
 - **Order**: the text warning, the entity warning and the repair warning come first, then the frame rate warning, then the warnings of the containers and paragraphs in document order.
 
+## DCP subtitles
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| text before the XML, such as a credit line | `The file has text before the XML: "L".` on the line of the text | skips it. The message plus ` The parser skipped it.` `Repaired`, the skipped lines |
+| a `<Subtitle>` that holds an `Image` and no `Text` | `The subtitle at T is an image. The parser reads only text subtitles.` T is the `TimeIn` as written | skips the subtitle. `Skipped`, on the line of the `<Subtitle>` |
+| a time that is no DCP time code, or an EE at or above the rate | `The time "T" is not a DCP time code at R units per second.` | skips the subtitle |
+| a time of 100000 hours or more | `The time "T" is not below 100000 hours.` | skips the subtitle |
+| a subtitle that ends before it starts | `The cue ends at E s, before it starts at S s.` | swaps the times when the cue then lasts 30 s or less. `Repaired`. Else skips the subtitle |
+| XML that is not well-formed, also text that is not valid UTF-8 | `The content is not well-formed XML.` | the same error. The reader does no repair |
+| a root that is not `<DCSubtitle>` or `<SubtitleReel>` | `The root element must be <DCSubtitle> or <SubtitleReel>, not <NAME>.` | the same error |
+
+- **Block numbers**: none. A warning of DCP subtitles has `NoBlock` and no lines, except the text before the XML.
+- **Line numbers**: the line of the `<Subtitle>` element, which is the line of the `>` that ends its start tag.
+- **R**: the rate prints as PHP prints a float: `250`, `25`.
+
 ## SAMI
 
 | Damage | Strict | Lenient |
@@ -260,6 +276,21 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 | TCI or TCO with hours above 23, minutes or seconds above 59, or frames at or above the frame rate | reads the cue as it is, without a warning | skips the set. `Subtitle number N has a time code that is not valid: HHMMSSFF to HHMMSSFF.` `Skipped`, no line, block = index of the first block of the set, lines = the hex of each block of the set |
 
 - **Order**: the cut of a partial block comes first, then the checks of the GSI.
+- **Line numbers**: none. Every binary format has `NoLine` in its warnings and errors.
+- **Undefined bytes**: a byte without an entry in a code table is dropped and never warns.
+
+## PAC
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| the content does not start with `01h` and 19 zero bytes | `A PAC file starts with the byte 01h and 19 zero bytes.` | the same error |
+| a record whose mark is outside `60h` to `67h`, or whose end runs past the file or is below the first text byte | `The PAC record at byte N is not complete.` | `Skipped`, no line, block = the count of records read, lines = the hex of the rest. The rest becomes the footer and reading stops |
+| bytes after the records that do not start with `FFh` | `The byte at N is neither a PAC record nor the end block.` | `Skipped`, no line, block = the count of records read, lines = the hex of the rest. The cues and the footer stay |
+| minutes above 59, seconds above 59, or frames at or above the frame rate | `Subtitle number N has a time code that is not valid.` | skips the record. `Skipped`, no line, block = the index of the record after the story record, lines = the hex of the record |
+| a code page that the detector cannot pick | `The code page of the PAC file is not clear. REASON Set the code page of the file, for example ISO-8859-7 for Greek.` | reads the text with the first candidate. `Repaired`, no line, no block, with the same text and ` The parser read it as VALUE.` |
+
+- **Order**: the header check comes first, then the records, the end block, the code page and the time codes.
+- **Offsets**: N in a message is the decimal byte offset in the file, except in the time code message, where N is the subtitle number.
 - **Line numbers**: none. Every binary format has `NoLine` in its warnings and errors.
 - **Undefined bytes**: a byte without an entry in a code table is dropped and never warns.
 

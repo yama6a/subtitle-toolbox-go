@@ -1,0 +1,54 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "pac": {
+                "codePage": "hebrew",
+                "frameRate": 25,
+                "firstNumber": 0,
+                "header": "0100000000000000000000000000000000000000",
+                "footer": "ff0000000000000000000000110064756d6d7920656e64206f662066696c65"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "הספרייה פתוחה עד שמונה.",
+                    "תודה ולהתראות."
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 10,
+                        "alignment": 0,
+                        "text": "הספרייה פתוחה עד שמונה.\nתודה ולהתראות.",
+                        "bytes": "fe0003a4b1b4b8a9a9a420b4baa5a7a420b2a320b9aea5b0a42efe0003baa5a3a420a5aca4bab8a0a5ba2e"
+                    }
+                }
+            },
+            {
+                "start": 6.4,
+                "end": 9.0,
+                "lines": [
+                    "קומה 3, חדר abc"
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 0,
+                        "text": "קומה 3, חדר abc",
+                        "bytes": "fe0003b7a5aea420332c20a7a3b820636261"
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -21,7 +21,7 @@ var update = flag.Bool("update", false, "rewrite the write golden files")
 
 // roundTripFolders holds the folders whose every real file is a round trip case.
 func roundTripFolders() []string {
-	return []string{"ass", "lrc", "microdvd", "mpl2", "mpsub", "qttext", "sami", "sbv", "spruce-stl", "srt", "subviewer", "tmplayer", "vtt"}
+	return []string{"ass", "dcp", "lrc", "microdvd", "mpl2", "mpsub", "qttext", "sami", "sbv", "spruce-stl", "srt", "subviewer", "tmplayer", "vtt"}
 }
 
 // roundTripFile is a round trip case in a folder that roundTripFolders does not hold. Its golden is
@@ -62,6 +62,12 @@ func conversions() []conversion {
 		{"csv", "mantas_done_shape.csv", stbox.ASS, ""},
 		{"csv", "own_openai_whisper.tsv", stbox.SubRip, ""},
 		{"csv", "own_whisper_cpp.csv", stbox.SubRip, ""},
+		{"dcp", "monal_interop_shape.xml", stbox.SubRip, ""},
+		{"dcp", "monal_interop_shape.xml", stbox.WebVTT, ""},
+		{"dcp", "monal_interop_shape.xml", stbox.ASS, ""},
+		{"dcp", "subtitle_edit_smpte2014_shape.xml", stbox.SubRip, ""},
+		{"dcp", "subtitle_edit_smpte2014_shape.xml", stbox.WebVTT, ""},
+		{"dcp", "subtitle_edit_smpte2014_shape.xml", stbox.ASS, ""},
 		{"itt", "fcp_23976_styles.itt", stbox.SubRip, ""},
 		{"itt", "fcp_23976_styles.itt", stbox.WebVTT, ""},
 		{"itt", "fcp_23976_styles.itt", stbox.ASS, ""},
@@ -74,6 +80,9 @@ func conversions() []conversion {
 		{"mpsub", "mplayer_doc_time.sub", stbox.SubRip, ""},
 		{"mpsub", "mplayer_doc_time.sub", stbox.WebVTT, ""},
 		{"mpsub", "mplayer_doc_time.sub", stbox.ASS, ""},
+		{"pac", "bakery_latin.pac", stbox.SubRip, ""},
+		{"pac", "bakery_latin.pac", stbox.WebVTT, ""},
+		{"pac", "bakery_latin.pac", stbox.ASS, ""},
 		{"qttext", "quicktime_export_styles.txt", stbox.SubRip, ""},
 		{"qttext", "quicktime_export_styles.txt", stbox.WebVTT, ""},
 		{"qttext", "quicktime_export_styles.txt", stbox.ASS, ""},
@@ -91,6 +100,7 @@ func conversions() []conversion {
 		{"srt", "own_styled.srt", stbox.ASS, ""},
 		{"srt", "own_styled.srt", stbox.TTML, ""},
 		{"srt", "own_styled.srt", stbox.WebVTT, ""},
+		{"srt", "own_styled.srt", stbox.PAC, ""},
 		{"srt", "own_styled.srt", stbox.SCC, ""},
 		{"scc", "popon_broadcast_df.scc", stbox.SubRip, ""},
 		{"scc", "popon_broadcast_df.scc", stbox.WebVTT, ""},

@@ -1,0 +1,106 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "pac": {
+                "codePage": "latin",
+                "frameRate": 25,
+                "firstNumber": 1,
+                "header": "0100000000000000000000000000000000000000000000600000000000000000200000fe020353544f52593a42616b657279204e657773fe02034c616e673a454e47",
+                "footer": "ff0000000000000000000000110064756d6d7920656e64206f662066696c65"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.48,
+                "lines": [
+                    "The ovens are warm.",
+                    "Bread is ready at six."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 10,
+                        "alignment": 2,
+                        "text": "The ovens are warm.\nBread is ready at six.",
+                        "bytes": "fe0203546865206f76656e7320617265207761726d2efe02034272656164206973207265616479206174207369782e"
+                    }
+                }
+            },
+            {
+                "start": 4.0,
+                "end": 6.0,
+                "lines": [
+                    "Fresh rolls are <i>warm</i> today."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "Fresh rolls are <i>warm</i> today.",
+                        "bytes": "fe0203467265736820726f6c6c73206172653c7761726d3e746f6461792e"
+                    }
+                }
+            },
+            {
+                "start": 7.2,
+                "end": 10.0,
+                "lines": [
+                    "<i>Café crème £3 or §2</i>",
+                    "Äpfel, Straße und Køge – 5 €"
+                ],
+                "identifier": null,
+                "alignment": 7,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 1,
+                        "alignment": 1,
+                        "text": "<i>Café crème £3 or §2</i>\nÄpfel, Straße und Køge – 5 €",
+                        "bytes": "fe01033c436166e265206372e3656d65202333206f72207e32fe0103e5417066656c2c2053747261816520756e64204b7d6765205f2035209e"
+                    }
+                }
+            },
+            {
+                "start": 11.0,
+                "end": 13.0,
+                "lines": [
+                    "Señor, ¿dónde está el pan?"
+                ],
+                "identifier": null,
+                "alignment": 6,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 6,
+                        "alignment": 0,
+                        "text": "Señor, ¿dónde está el pan?",
+                        "bytes": "fe00035365e06e6f722c20a864e26f6e646520657374e26120656c2070616e3f"
+                    }
+                }
+            },
+            {
+                "start": 3600.0,
+                "end": 3602.96,
+                "lines": [
+                    "#1 [rye] Good night."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "#1 [rye] Good night.",
+                        "bytes": "fe0203803120c0727965c120476f6f64206e696768742e"
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -12,6 +12,7 @@
 | LRC | `stbox.LRC` | `lrc` | `.lrc` | [LRC](#lrc) |
 | MicroDVD | `stbox.MicroDVD` | `microdvd` | `.sub` | [MicroDVD](#microdvd) |
 | MPSub | `stbox.MPSub` | `mpsub` | `.mpsub` | [MPSub](#mpsub) |
+| PAC and PAC Unicode | `stbox.PAC` | `pac` | `.pac`, `.fpc` | [PAC](#pac) |
 | SAMI | `stbox.SAMI` | `sami` | `.smi`, `.sami` | [SAMI](#sami) |
 | SBV | `stbox.SBV` | `sbv` | `.sbv` | [SBV](#sbv) |
 | SCC | `stbox.SCC` | `scc` | `.scc` | [SCC](#scc) |
@@ -20,6 +21,7 @@
 | Spruce STL | `stbox.SpruceSTL` | `spruce-stl` | `.stl` | [Spruce STL](#spruce-stl) |
 | SubViewer 1 and 2 | `stbox.SubViewer` | `subviewer` | `.sub` | [SubViewer](#subviewer) |
 | TTML, IMSC, DFXP | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | [TTML](#ttml) |
+| DCP subtitles | `stbox.DCP` | `dcp` | `.xml` | [DCP subtitles](#dcp-subtitles) |
 | plain text | `stbox.PlainText` | `txt` | `.txt` | [Plain text](#plain-text) |
 | MPL2 | `stbox.MPL2` | `mpl2` | `.txt` | [MPL2](#mpl2) |
 | TMPlayer, TMPlayer+ | `stbox.TMPlayer` | `tmplayer` | `.txt` | [TMPlayer](#tmplayer) |
@@ -443,6 +445,102 @@ The writer keeps what the reader stored, so a DFXP file stays DFXP after a retim
 
 `ttml.ReadOptions` and `ttml.WriteOptions` have no fields, so the root `WriteOptions` has no TTML field. The reader reads `Lenient`. The writer reads `StripTags`, `LineEnding` and `BOM`. By default the output has no BOM. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#ttml).
 
+## DCP subtitles
+
+A digital cinema package (DCP) holds subtitles as XML in 2 dialects. Interop `<DCSubtitle>` comes from the CineCanvas specification. SMPTE ST 428-7 `<SubtitleReel>` comes in the 2007, 2010 and 2014 namespaces. Package `format/dcp` reads and writes both. The format name is `dcp`, the extension `.xml`. TTML owns `.xml` in `FormatFromPath`, so `Load` finds a DCP file by [detection](detection.md) and a write needs `Format: stbox.DCP`.
+
+```xml
+<DCSubtitle Version="1.0">
+  <Subtitle SpotNumber="1" TimeIn="00:01:30:020" TimeOut="00:01:33:031" FadeUpTime="20" FadeDownTime="20">
+    <Text VAlign="bottom" VPosition="15">The ferry leaves at nine,</Text>
+    <Text VAlign="bottom" VPosition="8">from the north pier.</Text>
+  </Subtitle>
+</DCSubtitle>
+```
+
+This file reads as one cue from 90.08 s to 93.124 s with 2 lines and the alignment `BottomCenter`. The last field of an Interop time counts ticks of 4 ms, 250 per second. The line at `VPosition` 15 comes first, because it is higher on the screen.
+
+### Read
+
+| Input | Goes to |
+|:--- |:--- |
+| the root: `DCSubtitle` is Interop, `SubtitleReel` is SMPTE, with any prefix | file data `dcp.dialect`. Another root gives `The root element must be <DCSubtitle> or <SubtitleReel>, not <NAME>.` with the name as written |
+| `MovieTitle` (Interop) or `ContentTitleText` (SMPTE), a child of the root | the metadata `title`, trimmed. An empty title gives none |
+| SMPTE `Language` | the metadata `language`, trimmed. Interop names the language in words, such as `English`, so the reader skips it |
+| the root namespace URI and prefix of an SMPTE root | file data `dcp.namespace` and `dcp.prefix`. The reader does not check the URI |
+| the rate of the SMPTE times | file data `dcp.timeCodeRate` |
+| the root attributes in file order, plus `xmlns:xs` when declared | file data `dcp.attributes`. The names are local names, as the PHP library writes them |
+| each child of the root that has no child element, other than `Font`, `Subtitle`, `SubtitleList` and `LoadFont` | file data `dcp.header`, the local name to the text, not trimmed |
+| each `LoadFont` child of the root | file data `dcp.loadFonts`, a list of `attributes` and `text` |
+| the attributes of the first `Font` child of the subtitle list | file data `dcp.font`. The subtitle list is the root for Interop and `SubtitleList` for SMPTE, or the root when SMPTE has none |
+| each `Subtitle` with `Text` lines | a cue. The cue data `dcp.subtitle` holds its attributes |
+| each `Text` that gives a line, top line first | a line of the cue. The cue data `dcp.texts` holds the attributes of each |
+
+- **Rate**: Interop counts 250 ticks per second. SMPTE uses `TimeCodeRate` when it is a whole number from 1 to 1000. Else it uses `EditRate` as `a b`, the quotient rounded, when both are above 0 and the result is from 1 to 1000. Else it uses 24. So `<EditRate>48 1</EditRate>` gives 48.
+- **`StartTime`**: the reader does not subtract it. It stays in `dcp.header`, so a caller can shift the cues. A `StartTime` of `10:00:00:00` and `TimeIn="00:00:13:00"` give 13 s.
+- **Times**: `HH:MM:SS:EE` with 1 to 3 digits in EE, below the rate. `00:01:30:020` is 90.08 s, and SMPTE `00:00:30:04` at 25 fps is 30.16 s. Interop also reads `HH:MM:SS.sss` with any count of fraction digits, so `01:12:42.5` is 4362.5 s. Minutes and seconds have 1 or 2 digits and no range check. The reader rounds each time to whole milliseconds. Another shape, or an EE at or above the rate, fails with `The time "T" is not a DCP time code at R units per second.` R prints as `250` or `25`.
+- **Fonts**: `Font` elements nest around `Subtitle`, inside it and inside `Text`. Each passes its attributes to the elements inside it, with lower-case names and values. `color` of 8 hex digits `AARRGGBB` gives `<font color="#rrggbb">` unless it is white, and the alpha is dropped. `weight` `bold` gives `<b>`. `italic` `yes`, `left` or `right` gives `<i>`. `underlined` (Interop) or `underline` (SMPTE) `yes` gives `<u>`. Font name, size, effect and script are ignored.
+- **Lines**: each `Text` is one line. Inside it, CR, LF and tab drop, `Space` is a space, and `Ruby` becomes `base (note)`, or `base` without a note.
+- **Height**: `VAlign` `top` gives `VPosition` as the height from the top in percent. `bottom` gives 100 minus `VPosition`. `center` or no `VAlign` gives 50 plus `VPosition`. A `VPosition` that is no number counts as 0. Lines sort by height, top first, and empty lines drop.
+- **Alignment**: the mean height of the lines gives the row. Below a third it is top, above two thirds it is bottom, else middle. `HAlign` of the top line gives the column: `left`, `right`, else center.
+- **Offset**: `Cue.Position.Offset` is the anchor edge of the alignment. `Y` is the height of the top line for a top row, of the bottom line for a bottom row, and the mean height for a middle row. So a 1-line and a 2-line cue at the same place read the same `Y`. `HPosition` of the top line counts from the edge that `HAlign` names, so it gives `X`: left gives `HPosition`, right gives 100 minus it, center gives 50 plus it. A line without `HPosition` has the default anchor of its column: 10, 50 or 90. Values are clamped to 0 to 100. A top or bottom row whose edge line lies within 10 % of the screen edge, such as `VAlign="bottom" VPosition="8"`, has no offset when `X` is the default anchor of the column. `HAlign="left" HPosition="10"` is such a place.
+- **No lines**: a `Subtitle` without `Text` gives no cue. When it holds an `Image` element, it fails with `The subtitle at T is an image. The parser reads only text subtitles.` The reader reads only text subtitles.
+- **Text before the XML**: strict mode fails and lenient mode skips it, as in [lenient-parsing.md](lenient-parsing.md#dcp-subtitles).
+- **XML**: the reader loads no DTD and does no repair. Malformed XML fails with `The content is not well-formed XML.` in both modes. Text that is not valid UTF-8 makes the XML malformed. Elements match by local name.
+
+### Write
+
+The writer keeps the dialect, root, header, fonts and positions of the input. A subtitle without a stored dialect gets the defaults of DCP-o-matic: SMPTE ST 428-7:2014 at 24 fps. A cue from 5 s to 7.125 s with the lines `The ferry leaves at nine,` and `from the <i>north</i> pier.` writes as:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<SubtitleReel xmlns="http://www.smpte-ra.org/schemas/428-7/2014/DCST" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Id>urn:uuid:7f9b6950-3c59-3ac4-899d-fe2670a92d7e</Id>
+  <ContentTitleText></ContentTitleText>
+  <IssueDate>2026-10-12T00:00:00</IssueDate>
+  <ReelNumber>1</ReelNumber>
+  <Language>en</Language>
+  <EditRate>24 1</EditRate>
+  <TimeCodeRate>24</TimeCodeRate>
+  <StartTime>00:00:00:00</StartTime>
+  <LoadFont ID="font">urn:uuid:089a80de-bed7-3cfc-8bde-d41ea8e3cec0</LoadFont>
+  <SubtitleList>
+    <Font AspectAdjust="1.0" Color="FFFFFFFF" Effect="none" EffectColor="FF000000" ID="font" Italic="no" Script="normal" Size="42" Underline="no" Weight="normal">
+      <Subtitle SpotNumber="1" TimeIn="00:00:05:00" TimeOut="00:00:07:03" FadeUpTime="00:00:00:00" FadeDownTime="00:00:00:00">
+        <Text Valign="bottom" Vposition="15">The ferry leaves at nine,</Text>
+        <Text Valign="bottom" Vposition="8">from the <Font Italic="yes">north</Font> pier.</Text>
+      </Subtitle>
+    </Font>
+  </SubtitleList>
+</SubtitleReel>
+```
+
+`IssueDate` is the time of the write in UTC. A caller who needs the same bytes sets `dcp.header.IssueDate` in the format data. The `Id` and the `LoadFont` text are name-based UUIDs of version 3. The `Id` is the MD5 hash of the `Font` and `Subtitle` elements as written, so the same subtitles give the same file. A stored header value replaces its default in place, and its other fields come after.
+
+| Output | Comes from |
+|:--- |:--- |
+| the root | the stored dialect, namespace, prefix and attributes. With a prefix such as `dcst`, every element uses it and the root declares `xmlns:dcst` |
+| a title | `ContentTitleText` (SMPTE, always) or `MovieTitle` (Interop, only when the header has it) |
+| a language | SMPTE `Language`, only when the header has it |
+| the header and the `LoadFont` elements | `dcp.header` and `dcp.loadFonts`, in stored order |
+| the `Font` around the subtitles | `dcp.font`, when present. One `Font` surrounds all subtitles |
+| `SpotNumber` | the position of the cue, from 1 |
+| `TimeIn` and `TimeOut` | `HH:MM:SS:EE` from the time at the rate of the file. EE has 3 digits for Interop and for a rate above 100, else 2 |
+| `FadeUpTime` and `FadeDownTime` | the stored values. A stored subtitle without them gets `20` for Interop or `00:00:00:00` for SMPTE |
+| the other `Subtitle` attributes | `dcp.subtitle` of the cue |
+| each `Text` | a line of the cue, after ruby becomes text and open tags carry over. Lines without visible text drop |
+| the `Text` attributes | see below |
+| an inner `Font` | a run whose style differs from the `Font` around the subtitles. It holds only the differing attributes in the order `Color`, `Italic`, `Weight`, `Underlined` (Interop) or `Underline` (SMPTE) |
+
+- **Positions**: the cue keeps its stored `Text` attributes while it has the same number of lines and the stored attributes give its alignment. Else the alignment sets the positions: a bottom row gets `Valign="bottom"` and `Vposition` 8, 15, 22, from the bottom line up. A top row gets `Valign="top"` and 8, 15, 22 from the top line down. A middle row gets `Valign="center"` and (i - (n - 1) / 2) x 7, so 2 lines give `-3.5` and `3.5`. `Halign` comes first, only for left and right. Interop writes `VAlign`, `HAlign` and `VPosition`. A cue whose `Offset` lies in the screen cell of its alignment moves the anchor edge: the bottom line of a bottom row sits at `Vposition` 100 minus `Y`, the top line of a top row at `Y`, and the middle of a middle row at `Y` minus 50. The other lines keep 7 % apart on the same side, so they stay on the screen. `Hposition` is `X` for left, 100 minus `X` for right, and `X` minus 50 for center when that is not 0.
+- **Runs**: the base style is the stored `font`, white and plain by default. `<b>`, `<i>`, `<u>` and `<font color>` change the style of a run. Text is entity-decoded, loses the characters that XML 1.0 forbids, and gets `&`, `<`, `>` and `"` escaped. `<s>`, `<v>`, word timestamps and other tags drop.
+- **Time limit**: a time that rounds to 100000 hours stops at the last unit below it, so the output reads back.
+- **Check**: the writer parses its output. A result that is not well-formed returns an `*UnwritableError` with `The formatter wrote XML that is not well-formed.` Text that is not valid UTF-8 returns an `*UnwritableError` whose `Err` is `ErrInvalidUTF8`.
+- **Lost on write**: comments, indentation, header elements with child elements, `Font` elements inside `Subtitle`, which the writer rebuilds per run, font name, size and effect, `<s>`, speakers, word timestamps, images, and more than one `Font` around the subtitles.
+
+### Options
+
+`dcp.ReadOptions` and `dcp.WriteOptions` have no fields, so the root `ReadOptions` and `WriteOptions` have no DCP field. The reader reads `Lenient`. The writer reads `LineEnding` and `BOM`. By default the output has no BOM. `StripTags` has no effect. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#dcp-subtitles).
 ## iTT
 
 iTunes Timed Text (iTT) is the TTML profile that Apple asks for in iTunes Store and Apple TV deliveries. It uses SMPTE time codes, one `<div>` and a top and a bottom region. Package `format/itt` reads and writes it on top of the TTML code. The format name is `itt`, the extension `.itt`. No BOM by default.
@@ -1405,6 +1503,108 @@ The writer pads a line to 51 bytes with `7Fh`, or `00h` for Chinese.
 ### Options
 
 None. `ReadOptions` and `WriteOptions` of the package are empty structs, and the root options have no field for the format. The writer reads `CommonWriteOptions.StripTags`. `LineEnding` and `BOM` do not apply to a binary format.
+
+## PAC
+
+PAC is the binary subtitle file of the Screen Electronics systems. PAC Unicode (`.fpc`) is its form with UTF-8 text. Package `format/pac` reads and writes both. The format name is `pac`, the extensions are `.pac` and `.fpc`. PAC has no public spec. The code follows `Pac.cs` of Subtitle Edit, see [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
+
+```text
+file   = header(20) [story record] record* footer
+header = 01h + 19 x 00h
+record = 00h | SN (uint16 LE) | mark 60h..67h | TCI (4) | TCO (4) | LEN (uint16 LE) | VP (1) | text (LEN - 1 bytes)
+TC     = uint16 LE (hours*100 + minutes) | uint16 LE (seconds*100 + frames)
+text   = junk* line*
+line   = FEh | alignment byte | one more byte (03h when written) | content
+footer = FFh ... (default: FFh, 11 x 00h, 11h, 00h, "dummy end of file")
+```
+
+Example: a record has the subtitle number 0, the time codes `00 00 64 00` and `00 00 38 01`, vertical position 10 and the line bytes `FE 02 03 Fresh rolls are<warm>today.`. At 25 fps it reads as a bottom-center cue from 1 s to 3.48 s whose first line is `Fresh rolls are <i>warm</i> today.`.
+
+**Binary format**: the reader gets the raw bytes of the input. `ReadOptions.Encoding` does not decode the file, `ReadInfo.SourceEncoding` is empty, and the writer ignores `LineEnding` and `BOM`. `Load` and `Parse` find PAC by its signature on the raw bytes, see [detection.md](detection.md).
+
+### Code pages
+
+The file does not store its code page. `pac.CodePage` is a string type with these values. The reader stores the value in the file data `pac.codePage`.
+
+| Value | Single-byte table | Double-byte text | Encoding names that select it |
+|:--- |:--- |:--- |:--- |
+| `latin` | Latin | | ISO-8859-1, ISO8859-1, LATIN1, Windows-1252, CP1252 |
+| `latin-czech` | Latin | | ISO-8859-2, ISO8859-2, Windows-1250, CP1250 |
+| `latin-turkish` | Turkish over Latin | | ISO-8859-9, ISO8859-9, Windows-1254, CP1254 |
+| `greek` | Greek | | ISO-8859-7, ISO8859-7, Windows-1253, CP1253 |
+| `cyrillic` | Cyrillic | | ISO-8859-5, ISO8859-5, Windows-1251, CP1251 |
+| `arabic` | Arabic | | ISO-8859-6, ISO8859-6, Windows-1256, CP1256 |
+| `hebrew` | Hebrew | | ISO-8859-8, ISO8859-8, Windows-1255, CP1255 |
+| `thai` | Thai | | Windows-874, CP874, ISO-8859-11, ISO8859-11 |
+| `chinese-traditional` | Latin | Big5 | Big5, CP950 |
+| `chinese-simplified` | Latin | GBK | GBK, CP936, GB18030 |
+| `korean` | Latin | EUC-KR table of CP949 | CP949, UHC, EUC-KR |
+| `japanese` | Latin | Shift_JIS | Shift_JIS, SJIS, CP932 |
+| `unicode` | Latin | | UTF-8, UTF8 |
+
+- **Choice**: the first rule that holds decides. 1. `ReadOptions.PAC.CodePage`. 2. The `LANG:XXX` code of the story record, in any case: DAR, OAR, ARA and ARB give `arabic`. ISR and HEB give `hebrew`. GRC, GRE and ELL give `greek`. DRU, RUS, BGR, MKD, MNG and UKR give `cyrillic`. THA gives `thai`. TRD, OCH and CHT give `chinese-traditional`. SIM and CHS give `chinese-simplified`. DJA and JPN give `japanese`. DKO and KOR give `korean`. TUR gives `latin-turkish`. CSK and CZE give `latin-czech`. 3. The detector.
+- **Encoding option**: `stbox.Parse` and `stbox.Load` set `PAC.CodePage` from `ReadOptions.Encoding` when `PAC.CodePage` is empty. `pac.CodePageFromEncoding` maps the canonical name of [encodings.md](encodings.md), so the names in the last column work and `Encoding` accepts them in any case. A name that no PAC code page uses, such as `KOI8-R`, fails with an `*InvalidArgumentError` for `ReadOptions.Encoding`. `PAC.CodePage` wins when both are set, and `pac.Read` never sees `Encoding`. The spellings `TIS-620`, `BIG-5`, `GB2312`, `LATIN2` and `LATIN5` are no encoding names in this library, so `Encoding` rejects them before PAC sees them.
+- **Detector**: the detector decodes the text of all cues with each candidate and checks that the result looks like the script of the code page. Any PAC Unicode run gives `unicode`. Double-byte runs give the candidates `korean`, `japanese`, `chinese-simplified` and `chinese-traditional`. Else the candidates are `latin`, `latin-czech`, `latin-turkish`, `greek`, `cyrillic`, `hebrew`, `arabic` and `thai`. A candidate that leaves more than 1 % of the characters undefined gets no fit. The other checks are in the godoc of the package. When the best fit is a tie between Latin pages, `textenc.ScoreText` decides if the top score leads by 0.5.
+- **Unclear code page**: a strict read fails with `The code page of the PAC file is not clear. REASON Set the code page of the file, for example ISO-8859-7 for Greek.`. A lenient read warns with the same text and ` The parser read it as VALUE.` as a `Repaired` warning without a line or block. Examples of the reason: `No code page gives text in its script.` for the bytes `C3 C4`, and `These code pages fit: greek, cyrillic.` for the bytes `Lf`.
+- **Double-byte tables**: the decoders of the 4 double-byte pages are the `golang.org/x/text` decoders. They follow the WHATWG indexes, which differ from iconv in a few codes. The Big5 and Shift_JIS writers do not use the x/text encoders. x/text writes Hong Kong extension codes such as `FABDh` for U+5305, which CP950 readers cannot read, and the NEC selected IBM extension where CP932 writes the IBM extension. These 2 writers use a table of the lowest CP950 or CP932 code of each character, built from the x/text decoder, plus the 7 one-way CP932 codes such as U+301C to `8160h`. The GBK and CP949 writers use x/text. A character that has no 2-byte code, or whose code starts with `FEh`, is written as `00h ?`. Each of the 13 fixtures reads as in the PHP library and writes back byte for byte.
+
+### Read
+
+| Input | Goes to |
+|:--- |:--- |
+| a record whose text holds `STORY:`, in any case, as the first record | no cue. Its bytes join the stored header |
+| `FEh` | starts a line. The next byte is the alignment byte. The 3 bytes from `FEh` on are skipped, and the mode goes back to single-byte. An `FEh` that starts a character starts a line, also in double-byte text. A trail byte `FEh` does not, so `A5FEh` in Big5 is one character |
+| `1Fh W16.` | double-byte mode |
+| `1Fh EFh BBh BFh` | Unicode mode, which ends at the next `.`. `FFh` in it reads as `.` |
+| `1Fh C` and a digit | a 3-byte code, skipped |
+| `1Fh C` and another byte | a comment up to the end of the text. The split stops |
+| bytes before the first `FEh` | no text |
+| `<` and `>` | italics on and off. The end of a line ends italics |
+
+- **Single-byte decoding**: a table code has 1, 2 or 3 bytes, high byte first, so `E2 65` is `e` with an acute accent. A Latin code page looks up a 2-byte code first, unless a code also starts at the second byte, so `L` before an accented letter stays `L`. Other code pages try 3, 2, then 1 byte. `FFh` is a space. `20h` to `7Eh` without a table entry is ASCII. `A0h` and up in a Latin code page goes through ISO-8859-1, -2 or -9. Anything else, such as the colors `01h` to `07h`, gives no text.
+- **Latin table**: it moves some ASCII bytes. `23h` is the pound sign, `5Ch` the capital AE ligature, `7Ch` the small ae ligature and `80h` is `#`. The Greek and Cyrillic tables put their letters on the ASCII letter bytes. A byte from `80h` without an entry in a code page that is not Latin counts as undefined for the detector.
+- **Arabic marks**: a vowel mark byte (`E0h` to `EAh`) right before a letter byte from `80h` gives the letter, then the mark.
+- **Double-byte runs**: a byte below `80h` is one ASCII character, and `00h` escapes the next byte. Only `20h` to `7Eh` give text. Other bytes go in pairs through the decoder of the code page, or Big5 for a code page without one. A pair that the decoder does not define gives no text.
+- **Unicode runs**: UTF-8 with `FFh` as a period. Each invalid sequence becomes `?`, as PHP `mb_scrub` writes it.
+- **Right to left**: for Arabic and Hebrew lines the reader swaps `(` with `)` and `[` with `]` after decoding, then reverses each run of Latin characters. For Arabic a run is digits and ASCII letters of both cases. For Hebrew it is digits and lower-case ASCII letters only, as in Subtitle Edit.
+- **Italics**: a space goes in before `<` after a letter or digit, and after `>` before a letter or digit. Then the runs become `<i>` tags. `Go<now>, he said<quietly` gives `Go <i>now</i>, he said <i>quietly</i>`.
+- **Not read**: colors, and a second code page that Screen marks for some lines.
+- **Frame rate**: 30 fps when any TCI or TCO of any record has a frame number from 25 to 29, else 25 fps.
+- **Times**: the clock model of [frame-rates.md](frame-rates.md). Hours = first number / 100, minutes = first number % 100, seconds = second number / 100, frames = second number % 100. Hours have no upper check, up to 655. A cue with minutes or seconds above 59, or frames at or above the frame rate, is an error, see [lenient-parsing.md](lenient-parsing.md#pac).
+- **Alignment and position**: VP 0 to 4 is the top row, 5 to 8 the middle and 9 and up the bottom. The alignment byte of the first line, masked with `03h`, gives the column: 1 left, 0 right, 2 and 3 center. A record without lines is centered. `Position.Row` is VP plus 1 on a grid of 12 rows. A VP above 11 gives an alignment but no row, no column and a zero grid. `Column` stays 0.
+- **Format data**: the file key `pac` holds `codePage`, `frameRate` (25 or 30), `firstNumber` (SN of the first record after the story, 0 without records), `header` (hex of the 20 header bytes and the story record) and `footer` (hex of the bytes after the last record). The cue key `pac` holds `verticalPosition`, `alignment` (the raw alignment byte of the first line), `text` (the cue text at read time) and `bytes` (hex of the text bytes after VP).
+
+### Write
+
+- **Code page**: the stored `codePage` when it names a known value. Else `latin` when the Latin encoder writes no `?` for any cue, else `unicode`. A new file with text that Latin cannot hold always becomes PAC Unicode, never Greek, Cyrillic or a CJK code page.
+- **Frame rate**: the stored `frameRate` when it is 25 or 30, else 25. No option changes it.
+- **Numbers**: the stored `firstNumber` plus the cue index, else from 0. A number above 65535 gives an `*UnwritableError` with `PAC allows subtitle numbers up to 65535.`. Text of 65535 bytes or more gives one with `PAC allows cue text of up to 65534 bytes.`.
+- **Time code**: the frame of the time at the frame rate, with hours capped at 654, written as `hours*100 + minutes` and `seconds*100 + frames`. A negative time is 0.
+- **Reuse**: the writer keeps the stored vertical position and bytes of a cue when all of these hold. The cue has stored `verticalPosition`, `alignment`, `text` and `bytes`. `StripTags` is off. The text is unchanged. The cue still has the alignment and the `Position.Row` that the reader gave it. So an unchanged file writes back byte for byte.
+- **New text, vertical position**: `Position.RowOn` on a grid of 12 rows, minus 1, when the band of that row matches the alignment row. Else the top is 1, the middle 6 and the bottom `max(9, 12 - lines)`, and the stored VP stays when the line count is unchanged and the stored VP is in the same band.
+- **New text, lines**: each line is `FEh`, the alignment byte (left 1, right 0, center 2), `03h` and the encoded line. PAC Unicode starts the text with `80h 80h 80h`, as Subtitle Edit writes it.
+- **Line text**: ruby becomes text and open tags carry to the next line. Entities decode. A literal `<` or `>` becomes `?`. `<i>` writes `<` and `</i>` writes `>`, with nesting counted. Other tags drop, all tags with `StripTags`. One space before `<` after a letter or digit, and one space after `>` before a letter or digit, goes, and a `>` at the line end goes. `U+2026` becomes `...` except in PAC Unicode. Arabic and Hebrew lines get the right-to-left order.
+- **Encoding a line**: PAC Unicode writes `1Fh EFh BBh BFh`, the UTF-8 text with `.` as `FFh`, then `.`. A double-byte code page and a line with a character outside `20h` to `7Eh` writes `1Fh W16.`, then per character the 2-byte code, or `00h` and the ASCII byte, or `00h ?`. Else the line is single-byte: the longest table match of 3, 2 or 1 characters, where the first code of a character wins. In a Latin code page a character outside the table falls back to its ISO-8859-1, -2 or -9 byte from `A0h`, else `?`. In Arabic, a vowel mark goes before its letter.
+- **Header and footer**: the stored hex when it decodes. A stored header must be the 20 header bytes, optionally followed by one complete record. A stored footer must be empty or start with `FFh`. Else the default header and footer.
+- **Bad stored values**: an unknown stored code page, a frame rate other than 25 or 30, a negative number, a header that is not the 20 header bytes and a complete story record, a footer that does not start with `FFh`, and hex that does not decode count as missing.
+- **Lossy**: bold, underline, colors, voice and fonts are lost. A literal `<` or `>` becomes `?`. A character outside the stored code page becomes `?`. A Greek file with the word Kalimera in Greek letters and 2 Han characters reads back with the Greek word and `??`.
+
+| Alignment, lines | VP | Alignment byte |
+|:--- |---:|---:|
+| `BottomCenter`, 2 | 10 | 2 |
+| `BottomLeft`, 1 | 11 | 1 |
+| `MiddleRight`, 1 | 6 | 0 |
+| `TopCenter`, 3 | 1 | 2 |
+
+### Options
+
+`pac.ReadOptions` has one field. The root `ReadOptions.PAC` holds it. `pac.WriteOptions` has no field.
+
+| Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |
+| `CodePage` | `pac.CodePage` | `CodePageAuto` | the code page of the text. `CodePageAuto` takes the story record language, else detects it |
+
+- **Shared fields**: `Lenient` applies. `LineEnding` and `BOM` have no effect.
 
 ## SubViewer
 

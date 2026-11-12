@@ -15,6 +15,7 @@ const (
 	LRC           Format = "lrc"
 	MicroDVD      Format = "microdvd"
 	MPSub         Format = "mpsub"
+	PAC           Format = "pac"
 	SAMI          Format = "sami"
 	SBV           Format = "sbv"
 	SCC           Format = "scc"
@@ -23,6 +24,7 @@ const (
 	SpruceSTL     Format = "spruce-stl"
 	SubViewer     Format = "subviewer"
 	TTML          Format = "ttml"
+	DCP           Format = "dcp"
 	TSV           Format = "tsv"
 	PlainText     Format = "txt"
 	MPL2          Format = "mpl2"
@@ -50,6 +52,7 @@ var formatFacts = []formatFact{
 	{format: LRC, extensions: []string{"lrc"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MicroDVD, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MPSub, extensions: []string{"mpsub"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: PAC, extensions: []string{"pac", "fpc"}, canRead: true, canWrite: true, autoDetected: true, binary: true},
 	{format: SAMI, extensions: []string{"smi", "sami"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SBV, extensions: []string{"sbv"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SCC, extensions: []string{"scc"}, canRead: true, canWrite: true, autoDetected: true},
@@ -58,6 +61,7 @@ var formatFacts = []formatFact{
 	{format: SpruceSTL, extensions: []string{"stl"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubViewer, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: DCP, extensions: []string{"xml"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TSV, extensions: []string{"tsv"}, canRead: true, canWrite: true},
 	{format: PlainText, extensions: []string{"txt"}, canWrite: true, autoDetected: true},
 	{format: MPL2, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},

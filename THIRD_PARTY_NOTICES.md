@@ -87,6 +87,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   - `testdata/qttext/real/subtitle_edit_shape.txt`, in the shape of the `$qttxt` string in `tests/formats/TxtQuickTimeTest.php`
   - `testdata/spruce-stl/real/bakery.stl`, in the shape of `tests/files/stl.stl`
   - `testdata/spruce-stl/real/bakery_with_header.stl`, in the shape of `tests/files/stl_with_comments.stl`
+  - `testdata/dcp/real/monal_interop_shape.xml`, in the shape of the `testParsesDCSubtitles` input in `tests/formats/TtmlTest.php`
+  - `testdata/dcp/real/subtitle_edit_smpte2014_shape.xml`, in the shape of the `testConvertFromXml6b` input in `tests/formats/TtmlTest.php`
 - Code adapted from it:
   - `format/sprucestl/read.go`, the frame rate guess, from `src/Code/Converters/StlConverter.php` at `959d1705b1ed12cbb9ddba517f8bcb814e1919a8`
   - `format/sprucestl/read_test.go`, the test of tabs around the commas and hours above 24, from `testClientFile` and `testTimesBiggerThan24Hours` in `tests/formats/StlTest.php` at the same commit
@@ -728,7 +730,7 @@ SOFTWARE.
 
 - Project: <https://github.com/SubtitleEdit/subtitleedit>
 - Licence: MIT
-- Checked at: `5b9ee8baf08c472c7a74fbc337446b656dedabb4`, `58fad713d9c2b322784bc2fa52148e078dbc8759` and `a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c` with the same licence text
+- Checked at: `5b9ee8baf08c472c7a74fbc337446b656dedabb4`, and `58fad713d9c2b322784bc2fa52148e078dbc8759` and `a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c` with the same licence text. The `LICENSE` file at each commit is MIT
 - Files written for this repository in the shape of its fixtures:
   - `testdata/cavena890/real/ferry_danish.890`
   - `testdata/cavena890/real/harbour_english.890`
@@ -741,8 +743,24 @@ SOFTWARE.
   - `format/cavena890`, the reader, the writer and the variant rules, from `src/libse/SubtitleFormats/Cavena890.cs` at `a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c`
   - `hearingimpaired`, the hearing-impaired rules, from `src/libse/Forms/RemoveTextForHI.cs` at `5b9ee8baf08c472c7a74fbc337446b656dedabb4`
   - `internal/cea708`, the G2 table, from `src/libse/Cea708/Cea708.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`
+  - `format/pac`, the reader, the writer, the line splitter and the code page detector, from `src/libse/SubtitleFormats/Pac.cs` at `a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c`
+  - `format/pac/tables.go`, the 7 character tables and the Arabic marks, copied from the same file at the same commit
 - Data used:
   - `format/cavena890/tables.go`, the 5 text tables, and `format/cavena890/cavena890.go`, the new header, from `src/libse/SubtitleFormats/Cavena890.cs` at `a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c`, copied byte for byte
+- Files written for this repository in the shape of its fixtures, with the character bytes of the code tables of `Pac.cs`:
+  - `testdata/pac/real/bakery_latin.pac`
+  - `testdata/pac/real/bakery_unicode.fpc`
+  - `testdata/pac/real/bazaar_turkish.pac`
+  - `testdata/pac/real/cafe_korean.pac`
+  - `testdata/pac/real/harbour_30fps.pac`
+  - `testdata/pac/real/library_hebrew.pac`
+  - `testdata/pac/real/market_arabic.pac`
+  - `testdata/pac/real/noodle_chinese_simplified.pac`
+  - `testdata/pac/real/noodle_chinese_traditional.pac`
+  - `testdata/pac/real/station_japanese.pac`
+  - `testdata/pac/real/temple_thai.pac`
+  - `testdata/pac/real/train_cyrillic.pac`
+  - `testdata/pac/real/weather_greek.pac`
 
 ```text
 MIT License

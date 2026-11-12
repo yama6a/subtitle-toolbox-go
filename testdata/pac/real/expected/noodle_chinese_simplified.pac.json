@@ -1,0 +1,54 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "pac": {
+                "codePage": "chinese-simplified",
+                "frameRate": 25,
+                "firstNumber": 0,
+                "header": "0100000000000000000000000000000000000000",
+                "footer": "ff0000000000000000000000110064756d6d7920656e64206f662066696c65"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "面包店七点开门。"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "面包店七点开门。",
+                        "bytes": "fe02031f5731362ec3e6b0fcb5eac6dfb5e3bfaac3c5a1a3"
+                    }
+                }
+            },
+            {
+                "start": 4.0,
+                "end": 6.0,
+                "lines": [
+                    "面包还是热的。",
+                    "OK"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 10,
+                        "alignment": 2,
+                        "text": "面包还是热的。\nOK",
+                        "bytes": "fe02031f5731362ec3e6b0fcbbb9cac7c8c8b5c4a1a3fe02034f4b"
+                    }
+                }
+            }
+        ]
+    }
+}

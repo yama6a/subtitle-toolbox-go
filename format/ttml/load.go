@@ -17,9 +17,7 @@ import (
 const notWellFormed = "The file is not well-formed XML."
 
 var (
-	xmlStartRegexp  = regexp.MustCompile(`<(?:\?xml[\t\n\v\f\r ]|!--|!DOCTYPE[\t\n\v\f\r ]|` + rootPattern + `[\t\n\v\f\r />])`)
-	lineBreakRegexp = regexp.MustCompile(`\r\n?|\n`)
-	eolRegexp       = regexp.MustCompile(`\r+\n|\r`)
+	xmlStartRegexp  = xmlraw.StartRegexp(rootPattern) //nolint:gochecknoglobals // a compiled pattern
 	entityRegexp    = regexp.MustCompile(`&([A-Za-z][A-Za-z0-9]*);`)
 	referenceRegexp = regexp.MustCompile(`^(?:amp|lt|gt|quot|apos|#[0-9]+|#x[0-9A-Fa-f]+);`)
 	openBreakRegexp = regexp.MustCompile(`(?i)<(?:[A-Za-z_][\w.-]*:)?br(?:[\t\n\v\f\r ][^<>]*)?>`)
@@ -30,7 +28,7 @@ var xmlEntities = []string{"amp", "lt", "gt", "quot", "apos"}
 
 // load parses content. Lenient mode repairs HTML entities and markup that is not well-formed.
 func (r *reader) load(content string) (*xmlraw.Node, error) {
-	repaired, skipped := skipLeadingText(content)
+	repaired, skipped := xmlraw.SkipLeadingText(content, xmlStartRegexp)
 	if skipped != "" {
 		if err := r.skipTextBeforeXML(content, skipped); err != nil {
 			return nil, err
@@ -80,39 +78,8 @@ func parse(content string, recovering bool) (*xmlraw.Node, error) {
 	return xmlraw.Parse(strings.NewReader(content), xmlraw.ParseOptions{Recover: recovering})
 }
 
-// skipLeadingText removes the text before the XML declaration, a comment, a DOCTYPE or the root element. Line
-// breaks replace that text after the XML declaration, so the parser still reports the line numbers of the file.
-// It returns the new content and the removed text without white space at its ends.
-func skipLeadingText(content string) (string, string) {
-	trimmed := strings.TrimLeft(content, markupcore.PHPTrimSet)
-	start := len(content) - len(trimmed)
-	if !strings.HasPrefix(trimmed, "<") {
-		loc := xmlStartRegexp.FindStringIndex(content)
-		if loc == nil {
-			return content, ""
-		}
-		start = loc[0]
-	}
-	if start == 0 {
-		return content, ""
-	}
-
-	prefix := content[:start]
-	breaks := strings.Repeat("\n", len(lineBreakRegexp.FindAllStringIndex(prefix, -1)))
-	content = content[start:]
-	if strings.HasPrefix(content, "<?xml") {
-		if end := strings.Index(content, "?>"); end >= 0 {
-			return content[:end+2] + breaks + content[end+2:], strings.Trim(prefix, markupcore.PHPTrimSet)
-		}
-	}
-	return breaks + content, strings.Trim(prefix, markupcore.PHPTrimSet)
-}
-
 func (r *reader) skipTextBeforeXML(content, skipped string) error {
-	before, _, _ := strings.Cut(content, skipped)
-	line := 1 + strings.Count(before, "\n")
-	lines := strings.Split(eolRegexp.ReplaceAllLiteralString(skipped, "\n"), "\n")
-	msg := "The file has text before the XML: \"" + lines[0] + "\"."
+	line, lines, msg := xmlraw.LeadingText(content, skipped)
 	if !r.st.Lenient() {
 		return r.parseError(line, msg)
 	}
