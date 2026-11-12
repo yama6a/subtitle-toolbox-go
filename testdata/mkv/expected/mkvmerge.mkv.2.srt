@@ -1,0 +1,25 @@
+1
+00:00:01,200 --> 00:00:03,800
+The ferry to the island leaves at nine.
+
+2
+00:00:04,500 --> 00:00:07,250
+<i>Tickets are sold</i>
+at the kiosk by the pier.
+
+3
+00:00:08,000 --> 00:00:09,600
+Mind the step.
+
+4
+00:00:11,040 --> 00:00:14,000
+The café on deck opens at ten.
+
+5
+00:00:14,000 --> 00:00:16,480
+Bring a coat. The wind is cold
+on the open sea.
+
+6
+00:00:17,900 --> 00:00:19,500
+Welcome aboard.
