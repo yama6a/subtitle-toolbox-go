@@ -12,10 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/internal/golden"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/golden"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 var update = flag.Bool("update", false, "rewrite the write golden files")
@@ -51,7 +51,8 @@ func write(t *testing.T, s *model.Subtitle, opts stboxjson.WriteOptions) []byte 
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, stboxjson.Write(&out, s, model.CommonWriteOptions{}, opts))
+	_, err := stboxjson.Write(&out, s, model.CommonWriteOptions{}, opts)
+	require.NoError(t, err)
 	return out.Bytes()
 }
 

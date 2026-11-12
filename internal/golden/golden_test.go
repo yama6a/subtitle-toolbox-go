@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/golden"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/golden"
 )
 
 // recorder records failures instead of failing the test.

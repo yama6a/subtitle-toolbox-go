@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const (
@@ -345,8 +345,47 @@ func TestReadCueSettings(t *testing.T) {
 
 			s, _ := parse(t, "WEBVTT\n\n00:01.000 --> "+tt.end+"\nOne\n", tt.lenient)
 			c := firstCue(t, s)
-			assert.Equal(t, tt.alignment, c.Alignment)
+			assert.Equal(t, tt.alignment, c.Position.Alignment)
 			assert.Equal(t, tt.data, cueData(t, c))
+		})
+	}
+}
+
+func TestReadOffset(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		settings  string
+		alignment model.Alignment
+		want      *model.Offset
+	}{
+		{"line:0%", model.TopCenter, &model.Offset{X: 50, Y: 0}},
+		{"line:50%,center", model.MiddleCenter, nil},
+		{"line:90%,end", model.BottomCenter, nil},
+		{"line:95%,end", model.BottomCenter, &model.Offset{X: 50, Y: 95}},
+		{"line:0,end position:30%", model.BottomCenter, nil},
+		{"line:50%,center align:left", model.MiddleLeft, nil},
+		{"line:50%,center position:20%,line-left align:left", model.MiddleLeft, &model.Offset{X: 20, Y: 50}},
+		{"line:90%", model.BottomCenter, nil},
+		{"line:15% position:50% align:middle", model.BottomCenter, nil},
+		{"line:0 position:30% align:left", model.TopLeft, &model.Offset{X: 30, Y: 0}},
+		{"position:10%,line-left align:left size:35%", model.BottomLeft, &model.Offset{X: 10, Y: 100}},
+		{"position:45%,line-right align:center", model.BottomCenter, nil},
+		{"align:start position:0%", model.BottomCenter, nil},
+		{"line:5 position:30%", model.BottomCenter, nil},
+		{"vertical:rl line:10%", model.BottomCenter, nil},
+		{"line:0", model.TopCenter, nil},
+		{"position:33.3333%,center", model.BottomCenter, &model.Offset{X: 33.333, Y: 100}},
+		{"position:101%", model.BottomCenter, nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.settings, func(t *testing.T) {
+			t.Parallel()
+
+			s, _ := parse(t, "WEBVTT\n\n00:01.000 --> 00:02.000 "+tt.settings+"\nOne\n", false)
+			c := firstCue(t, s)
+			assert.Equal(t, tt.alignment, c.Position.Alignment)
+			assert.Equal(t, tt.want, c.Position.Offset)
 		})
 	}
 }

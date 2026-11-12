@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/xmlraw"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const (
@@ -35,6 +35,9 @@ func (o ReadOptions) Validate() error {
 	}
 	return nil
 }
+
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
 
 // WriteOptions holds the settings of the SAMI writer. It has no fields yet.
 type WriteOptions struct{}

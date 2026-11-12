@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // TestDuplicateCueIDsGrowth writes cues that all have the ID c1, which come out as c1, c1_2, c1_3 and so on.
@@ -28,7 +28,8 @@ func TestDuplicateCueIDsGrowth(t *testing.T) {
 		fastest := time.Duration(1<<63 - 1)
 		for range 3 {
 			begin := time.Now()
-			require.NoError(t, ttml.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, ttml.WriteOptions{}))
+			_, err := ttml.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, ttml.WriteOptions{})
+			require.NoError(t, err)
 			fastest = min(fastest, time.Since(begin))
 		}
 		return fastest

@@ -36,16 +36,22 @@
 | 9 | SBV | the first line is `H:MM:SS.mmm,H:MM:SS.mmm` plus optional spaces or tabs |
 | 10 | SubViewer | a line `******** START SCRIPT ********` anywhere, or `[INFORMATION]` as the first line, or lines that start with `[`, then a SubViewer 2 timing line with exactly 2 fraction digits, such as `00:00:01.50,00:00:04.00`. Each line may end in spaces or tabs |
 | 11 | LRC | an LRC time tag or an ID tag such as `[ti:Rain]` at the start, and a line that starts with an LRC time tag after optional spaces or tabs |
-| 12 | MPL2 | `[digits][digits]` at the start |
-| 13 | TMPlayer | `H:MM:SS` with minutes and seconds up to 59, an optional `,` and digits, then `=` or `:`. A `:` does not count when 1 or 2 digits, spaces or tabs and a comma follow it, or digits `:dd:dd` |
+| 12 | EBU STL | 3 ASCII digits, then `STL25.01` or `STL30.01`, at the start. A byte check |
+| 13 | Spruce STL | `$` or `//` lines, then a cue line. Or a cue line whose text does not start with a double quote. A cue line is `hh:mm:ss:ff`, a comma, `hh:mm:ss:ff` and a comma, with exactly 2 hour digits, minutes and seconds up to 59 and optional spaces or tabs around the commas |
+| 14 | SCC | the first line is `Scenarist_SCC V1.0` plus optional spaces or tabs |
+| 15 | MPL2 | `[digits][digits]` at the start |
+| 16 | TMPlayer | `H:MM:SS` with minutes and seconds up to 59, an optional `,` and digits, then `=` or `:`. A `:` does not count when 1 or 2 digits, spaces or tabs and a comma follow it, or digits `:dd:dd` |
 
 - **ASS header**: `ass.Detect` holds rule 4. A file that starts with a comment line before `[Script Info]` is not detected, but the ASS reader reads it.
 - **MPSub**: `mpsub.Detect` holds rule 5. A file with headers but no `FORMAT=` line, such as `TITLE=Bakery` and `AUTHOR=Jane Doe`, is not detected, but the MPSub reader reads it. MPSub files often use the extension `.sub`, which `FormatFromPath` maps to MicroDVD. The content decides first, so `Load` reads them as MPSub.
 - **SubViewer**: `subviewer.Detect` holds rule 10. It comes after SBV and before LRC, which also matches `[00:00:01]`. A SubViewer 2 file without `[INFORMATION]` and without a timing line after its `[` lines is not detected, but the reader reads it. A SubViewer 1 file without a script line is not detected either. SubViewer files often use the extension `.sub`, which `FormatFromPath` maps to MicroDVD. The content decides first, so `Load` reads them as SubViewer.
+- **Spruce STL**: `sprucestl.Detect` holds rule 13. It comes after LRC and before MPL2. A cue line with a quote after its times, such as `00:00:01:10,00:00:03:10,"Hello"`, is a headerless CSV row. It detects as Spruce STL only after a `$` or `//` line. The reader takes 2 or more hour digits, but the signature needs exactly 2, so a file whose first cue starts at hour 100 is not detected. Spruce STL files use the extension `.stl`, which EBU STL uses too.
 - **QuickTime text**: `qttext.Detect` holds rule 7. A file without the `{QTtext}` line is not detected as QuickTime text. It detects as LRC, because `[00:00:01.00]` is an LRC time tag. Pass the format `qttext` with the lenient option to read it.
 - **MicroDVD**: `microdvd.Detect` holds rule 6. It accepts an empty end frame, but the reader needs digits, so `{24}{}Hello` detects as MicroDVD and then fails.
 - **LRC time tag**: `[`, optional hours and `:`, minutes of 1 to 3 digits, `:`, seconds `00` to `59`, an optional `.` and 1 to 3 digits, `]`. Spaces or tabs may stand inside the brackets. The hours count only when 1 or 2 minute digits up to 59 and `:` follow them, so `[1:75:00.00]` and `[1234:45.67]` are no time tags. `lrc.Detect` holds rule 11, and its doc comment states it.
-- **TMPlayer and frame timecodes**: the two exceptions of rule 13 keep out the `hh:mm:ss:ff` frame timecodes of Spruce STL and CSV, such as `00:00:01:10,00:00:03:10,"Hello"`. The text `00:00:01:5 trains leave` still matches. `tmplayer.Detect` holds the rule, and its doc comment states it.
+- **TMPlayer and frame timecodes**: the two exceptions of rule 16 keep out the `hh:mm:ss:ff` frame timecodes of Spruce STL and CSV, such as `00:00:01:10,00:00:03:10,"Hello"`. The text `00:00:01:5 trains leave` still matches. `tmplayer.Detect` holds the rule, and its doc comment states it.
+- **Binary signatures**: `Load` and `Parse` run `Detect` on the raw bytes before they decode. A binary result reads the raw bytes.
+- **SCC**: `scc.Detect` holds rule 14. The SCC header is a line of its own, so it needs no rule against other formats. It comes after Spruce STL and before MPL2, in the PHP order.
 - **Order**: WebVTT comes before SubRip, because a WebVTT file without its header looks like SubRip. A new format inserts its signature at its place in the PHP order. `TestDetectionListsFollowTheOrder` in [registry_test.go](../registry_test.go) holds that order.
 - **SubRip hours and comma**: a timing line without a cue number on the line before it needs 2 hour digits and a comma. So a headerless WebVTT file that starts with `00:00:01.000 -->` and SBV with `0:00:01,500` do not match. A headerless WebVTT file that starts with a cue number, such as `1` LF `00:00:01.000 -->`, detects as SubRip.
 - **SBV fraction**: SBV has 3 fraction digits and SubViewer has 2, so `0:00:01.5,0:00:04.000` is no SBV signature. `sbv.Detect` holds rule 9.
@@ -55,11 +61,13 @@
 | Step | Rule |
 |---:|:--- |
 | 1 | **Video file**: content that starts with a Matroska, MP4 or MPEG-TS head returns an error that matches `ErrUnsupportedFormat`: `movie.mkv is a Matroska file. This version reads no video files.` An MP4 file gives `is an MP4 file`, an MPEG-TS file `is an MPEG-TS file`. `Parse` says `The content is a Matroska file.` This step runs with a format too |
-| 2 | **Decode** the content to UTF-8, as [encodings.md](encodings.md) says |
-| 3 | **Empty content**: nothing is left after the BOMs and the bytes of step 1 of `Detect` go, at both ends. `Load` returns an empty subtitle in the format of the extension, under the fallback rule of step 5 |
-| 4 | **Detect** the format of the decoded content |
-| 5 | **Extension fallback**: without a detection result, `Load` uses `FormatFromPath`, when the library can read that format and the extension is not `json`, `txt` or `ffmeta`. CSV and TSV have no signature, so `.csv` and `.tsv` files load only by this step |
-| 6 | **No format**: an error that matches `ErrUnknownFormat`, with `Format detection found no subtitle format.` `Parse` has no path, so it skips steps 3 and 5 |
+| 2 | **Binary by content**: `Detect` on the raw bytes. A binary format reads the raw bytes. `Encoding` is ignored and `SourceEncoding` is empty |
+| 3 | **Binary by extension**: only `Load`. When every format that lists the extension is binary, the extension decides before any decoding. `.890` is such an extension. `.stl` is not, because Spruce STL lists it too. Blank content gives an empty subtitle, as in step 5 |
+| 4 | **Decode** the content to UTF-8, as [encodings.md](encodings.md) says |
+| 5 | **Empty content**: nothing is left after the BOMs and the bytes of step 1 of `Detect` go, at both ends. `Load` returns an empty subtitle in the format of the extension, under the fallback rule of step 7 |
+| 6 | **Detect** the format of the decoded content |
+| 7 | **Extension fallback**: without a detection result, `Load` uses `FormatFromPath`, when the library can read that format and the extension is not `json`, `txt` or `ffmeta`. CSV and TSV have no signature, so `.csv` and `.tsv` files load only by this step. A binary format from this step reads the raw bytes, not the decoded text |
+| 8 | **No format**: an error that matches `ErrUnknownFormat`, with `Format detection found no subtitle format.` `Parse` has no path, so it skips steps 3, 5 and 7 |
 
 | Head | Bytes |
 |:--- |:--- |

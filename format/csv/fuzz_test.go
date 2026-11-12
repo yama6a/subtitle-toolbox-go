@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func FuzzRead(f *testing.F) {
@@ -39,7 +39,7 @@ func FuzzRead(f *testing.F) {
 	}
 	layouts := []csv.ReadOptions{
 		{},
-		{Columns: csv.Columns{Start: csv.ColumnAt(0), End: csv.ColumnAt(1), Text: csv.ColumnAt(2), NoHeader: true}, FrameRate: 25},
+		{Columns: csv.Columns{Start: csv.ColumnAt(0), End: csv.ColumnAt(1), Text: csv.ColumnAt(2), NoHeader: true}, FrameRate: model.FrameRate{Num: 25, Den: 1}},
 	}
 
 	f.Fuzz(func(t *testing.T, content []byte) {
@@ -71,7 +71,7 @@ func FuzzRead(f *testing.F) {
 					}
 				}
 				var out bytes.Buffer
-				if err := csv.Write(&out, s, model.CommonWriteOptions{}, csv.WriteOptions{}); err != nil {
+				if _, err := csv.Write(&out, s, model.CommonWriteOptions{}, csv.WriteOptions{}); err != nil {
 					t.Fatalf("Write returned %v", err)
 				}
 			}

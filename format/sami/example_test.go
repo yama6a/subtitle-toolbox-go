@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func ExampleRead() {
@@ -44,7 +44,7 @@ func ExampleWrite() {
 	s.SetMetadata(model.MetadataTitle, "Station news")
 	s.SetMetadata(model.MetadataLanguage, "en-US")
 	s.AddCues(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"The bridge is <b>open</b>", "again."}})
-	if err := sami.Write(os.Stdout, s, model.CommonWriteOptions{}, sami.WriteOptions{}); err != nil {
+	if _, err := sami.Write(os.Stdout, s, model.CommonWriteOptions{}, sami.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/mpl2"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpl2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Ports testWritesTenthsOfASecondAndLineBreaks, testWritesAnItalicLineWithASlash and
@@ -109,7 +109,7 @@ func (failingWriter) Write([]byte) (int, error) { return 0, errors.New("disk ful
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	err := mpl2.Write(failingWriter{}, subtitle(model.Cue{Lines: []string{"x"}}), model.CommonWriteOptions{}, mpl2.WriteOptions{})
+	_, err := mpl2.Write(failingWriter{}, subtitle(model.Cue{Lines: []string{"x"}}), model.CommonWriteOptions{}, mpl2.WriteOptions{})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "disk full")
 }

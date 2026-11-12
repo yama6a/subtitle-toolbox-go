@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
 )
 
 const formatsHelp = `Usage: stbox formats
@@ -35,24 +35,27 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 
 	//nolint:dupword // the output repeats yes
 	want := strings.Join([]string{
-		"Name       Extensions        Read  Write",
-		"ass        .ass .ssa         yes   yes",
-		"csv        .csv              yes   yes",
-		"json       .json             yes   yes",
-		"lrc        .lrc              yes   yes",
-		"microdvd   .sub              yes   yes",
-		"mpsub      .mpsub            yes   yes",
-		"sami       .smi .sami        yes   yes",
-		"sbv        .sbv              yes   yes",
-		"srt        .srt              yes   yes",
-		"subviewer  .sub              yes   yes",
-		"ttml       .ttml .dfxp .xml  yes   yes",
-		"tsv        .tsv              yes   yes",
-		"txt        .txt              no    yes",
-		"mpl2       .txt              yes   yes",
-		"tmplayer   .txt              yes   yes",
-		"qttext     .txt              yes   yes",
-		"vtt        .vtt              yes   yes",
+		"Name        Extensions        Read  Write",
+		"ass         .ass .ssa         yes   yes",
+		"csv         .csv              yes   yes",
+		"json        .json             yes   yes",
+		"lrc         .lrc              yes   yes",
+		"microdvd    .sub              yes   yes",
+		"mpsub       .mpsub            yes   yes",
+		"sami        .smi .sami        yes   yes",
+		"sbv         .sbv              yes   yes",
+		"scc         .scc              yes   yes",
+		"srt         .srt              yes   yes",
+		"stl         .stl              yes   no",
+		"spruce-stl  .stl              yes   yes",
+		"subviewer   .sub              yes   yes",
+		"ttml        .ttml .dfxp .xml  yes   yes",
+		"tsv         .tsv              yes   yes",
+		"txt         .txt              no    yes",
+		"mpl2        .txt              yes   yes",
+		"tmplayer    .txt              yes   yes",
+		"qttext      .txt              yes   yes",
+		"vtt         .vtt              yes   yes",
 	}, "\n") + "\n"
 	assert.Equal(t, result{Stdout: want}, call{}.run(t, "formats"))
 }

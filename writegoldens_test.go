@@ -9,16 +9,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/internal/golden"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/golden"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
 var update = flag.Bool("update", false, "rewrite the write golden files")
 
 // roundTripFolders holds the folders whose every real file is a round trip case.
 func roundTripFolders() []string {
-	return []string{"ass", "lrc", "microdvd", "mpl2", "mpsub", "qttext", "sami", "sbv", "srt", "subviewer", "tmplayer", "vtt"}
+	return []string{"ass", "lrc", "microdvd", "mpl2", "mpsub", "qttext", "sami", "sbv", "spruce-stl", "srt", "subviewer", "tmplayer", "vtt"}
 }
 
 // roundTripFile is a round trip case in a folder that roundTripFolders does not hold. Its golden is
@@ -32,6 +33,7 @@ func roundTripFiles() []roundTripFile {
 		{"ttml", "bbc_ebu_tt_d.ttml"},
 		{"ttml", "mantas_netflix_ticks.dfxp"},
 		{"ttml", "w3c_imsc11_regions.ttml"},
+		{"scc", "popon_broadcast_df.scc"},
 	}
 }
 
@@ -72,10 +74,20 @@ func conversions() []conversion {
 		{"sbv", "youtube_studio_lf.sbv", stbox.SubRip, ""},
 		{"sbv", "youtube_studio_lf.sbv", stbox.WebVTT, ""},
 		{"sbv", "youtube_studio_lf.sbv", stbox.ASS, ""},
+		{"spruce-stl", "dvdsp_full_header_ntsc.stl", stbox.SubRip, ""},
+		{"spruce-stl", "dvdsp_full_header_ntsc.stl", stbox.WebVTT, ""},
+		{"spruce-stl", "dvdsp_full_header_ntsc.stl", stbox.ASS, ""},
 		{"srt", "own_styled.srt", stbox.SAMI, ""},
 		{"srt", "own_styled.srt", stbox.ASS, ""},
 		{"srt", "own_styled.srt", stbox.TTML, ""},
 		{"srt", "own_styled.srt", stbox.WebVTT, ""},
+		{"srt", "own_styled.srt", stbox.SCC, ""},
+		{"scc", "popon_broadcast_df.scc", stbox.SubRip, ""},
+		{"scc", "popon_broadcast_df.scc", stbox.WebVTT, ""},
+		{"scc", "popon_broadcast_df.scc", stbox.ASS, ""},
+		{"scc", "rollup_news_ndf.scc", stbox.SubRip, ""},
+		{"scc", "rollup_news_ndf.scc", stbox.WebVTT, ""},
+		{"scc", "rollup_news_ndf.scc", stbox.ASS, ""},
 		{"subviewer", "subviewer2_crlf.sub", stbox.SubRip, ""},
 		{"subviewer", "subviewer2_crlf.sub", stbox.WebVTT, ""},
 		{"subviewer", "subviewer2_crlf.sub", stbox.ASS, ""},
@@ -113,7 +125,8 @@ func writeAs(t *testing.T, s *stbox.Subtitle, f stbox.Format) []byte {
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, stbox.Write(&out, s, f, stbox.WriteOptions{}))
+	_, err := stbox.Write(&out, s, f, stbox.WriteOptions{})
+	require.NoError(t, err)
 	return out.Bytes()
 }
 
@@ -154,12 +167,23 @@ func TestWriteGoldens(t *testing.T) {
 			}
 			if c.folder == "microdvd" {
 				// The PHP write goldens read MicroDVD at 23.976 fps, the read goldens at 25 fps.
-				opts.MicroDVD.FrameRate = 23.976
+				opts.MicroDVD.FrameRate = stbox.FrameRate{Num: 2997, Den: 125}
 			}
 			s, _ := g.readWith(t, c.file, opts)
 			golden.Equal(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(c.to))), writeAs(t, s, c.to), *update)
 		})
 	}
+}
+
+func TestWriteGoldenSCCNonDropFrame(t *testing.T) {
+	t.Parallel()
+
+	g := folder(t, "srt")
+	s, _ := g.read(t, "own_styled.srt")
+	var out bytes.Buffer
+	_, err := stbox.Write(&out, s, stbox.SCC, stbox.WriteOptions{SCC: scc.WriteOptions{DropFrame: stbox.DropFrameOff}})
+	require.NoError(t, err)
+	golden.Equal(t, testfiles.Path(t, goldenPath(g, "own_styled.srt", ".to.ndf.scc")), out.Bytes(), *update)
 }
 
 // conversionSuffix returns .to.<format>, plus .<extension> when the first extension of f differs from its name,

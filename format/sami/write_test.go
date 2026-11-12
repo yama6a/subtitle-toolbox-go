@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Ports testRealFileRoundTrips of tests/Formatters/SamiFormatterTest.php of subtitle-toolbox-php.
@@ -251,7 +251,7 @@ func TestWriteInvalidUTF8(t *testing.T) {
 			t.Parallel()
 
 			var out bytes.Buffer
-			err := sami.Write(&out, tt.s(), model.CommonWriteOptions{}, sami.WriteOptions{})
+			_, err := sami.Write(&out, tt.s(), model.CommonWriteOptions{}, sami.WriteOptions{})
 			var uerr *model.UnwritableError
 			require.ErrorAs(t, err, &uerr)
 			require.ErrorIs(t, err, model.ErrInvalidUTF8)

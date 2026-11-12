@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const (
@@ -34,7 +34,8 @@ func writeTTML(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions)
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, ttml.Write(&out, s, common, ttml.WriteOptions{}))
+	_, err := ttml.Write(&out, s, common, ttml.WriteOptions{})
+	require.NoError(t, err)
 	return out.String()
 }
 
@@ -47,7 +48,7 @@ func writeDefault(t *testing.T, s *model.Subtitle) string {
 func writeError(t *testing.T, s *model.Subtitle) *model.UnwritableError {
 	t.Helper()
 
-	err := ttml.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, ttml.WriteOptions{})
+	_, err := ttml.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, ttml.WriteOptions{})
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	require.ErrorIs(t, err, model.ErrUnwritable)
@@ -161,8 +162,8 @@ func TestChangedAlignmentReplacesTheStoredRegion(t *testing.T) {
 
 	s, _ := readFile(t, realDir+"/pysubs2_regions.ttml", false)
 	unchanged := writeDefault(t, s)
-	setCue(t, s, 0, func(c *model.Cue) { c.Alignment = model.BottomCenter })
-	setCue(t, s, 1, func(c *model.Cue) { c.Alignment = model.TopRight })
+	setCue(t, s, 0, func(c *model.Cue) { c.Position.Alignment = model.BottomCenter })
+	setCue(t, s, 1, func(c *model.Cue) { c.Position.Alignment = model.TopRight })
 	out := writeDefault(t, s)
 
 	assert.Contains(t, out, `<p xml:id="subtitle1" begin="00:00:01.375" end="00:00:05.750" style="s1" region="bottomCenter">`)
@@ -173,7 +174,7 @@ func TestChangedAlignmentReplacesTheStoredRegion(t *testing.T) {
 	back, _ := mustRead(t, out, false)
 	alignments := make([]model.Alignment, 0, 4)
 	for _, c := range back.Cues()[:4] {
-		alignments = append(alignments, c.Alignment)
+		alignments = append(alignments, c.Position.Alignment)
 	}
 	assert.Equal(t, []model.Alignment{model.BottomCenter, model.TopRight, model.TopCenter, model.BottomCenter}, alignments)
 }
@@ -183,16 +184,16 @@ func TestOutputParsesBackToTheSameCues(t *testing.T) {
 	t.Parallel()
 
 	first := cue(time.Second, 2*time.Second, "<v Ann>one</v> <v Ben>two", "<b>bold <i>open")
-	first.Alignment = model.MiddleLeft
+	first.Position.Alignment = model.MiddleLeft
 	s := subtitleOf(first, cue(3*time.Second, 4*time.Second, "<i>mis<b>nested</i>tags</b> &lt;3 <c.yellow>class</c> <00:00:03.500>word"))
 
 	back, _ := mustRead(t, writeDefault(t, s), false)
 	cues := back.Cues()
 	require.Len(t, cues, 2)
 	assert.Equal(t, "<v Ann>one </v><v Ben>two\n<b>bold <i>open</i></b>", cues[0].Text())
-	assert.Equal(t, model.MiddleLeft, cues[0].Alignment)
+	assert.Equal(t, model.MiddleLeft, cues[0].Position.Alignment)
 	assert.Equal(t, "<i>mis</i><b><i>nested</i>tags</b> &lt;3 <font color=\"#ffff00\">class</font> word", cues[1].Text())
-	assert.Equal(t, model.BottomCenter, cues[1].Alignment)
+	assert.Equal(t, model.BottomCenter, cues[1].Position.Alignment)
 }
 
 // Ports testAllXmlTagsAreStrippedAwayIfOptionIsSet of tests/Formatters/TtmlFormatterTest.php of subtitle-toolbox-php.
@@ -518,8 +519,98 @@ func TestCDATASections(t *testing.T) {
 			c, _ := s.Cue(0)
 			assert.Equal(t, tt.text, c.Text())
 
-			setCue(t, s, 0, func(c *model.Cue) { c.Lines, c.Alignment = []string{"<v Ann>" + c.Text()}, model.TopCenter })
+			setCue(t, s, 0, func(c *model.Cue) { c.Lines, c.Position.Alignment = []string{"<v Ann>" + c.Text()}, model.TopCenter })
 			assert.Contains(t, writeDefault(t, s), "\n"+tt.written)
 		})
 	}
+}
+
+func TestWriteOffsetRegion(t *testing.T) {
+	t.Parallel()
+
+	withOffset := func(a model.Alignment, x, y float64) model.Cue {
+		c := cue(time.Second, 2*time.Second, "One")
+		c.Position = model.Position{Alignment: a, Offset: &model.Offset{X: x, Y: y}}
+		return c
+	}
+	region := func(id, origin, extent, displayAlign, textAlign string) string {
+		return `<region xml:id="` + id + `" tts:origin="` + origin + `" tts:extent="` + extent + `" tts:displayAlign="` + displayAlign +
+			`" tts:textAlign="` + textAlign + `"/>`
+	}
+	tests := []struct {
+		name    string
+		cues    []model.Cue
+		regions []string
+		refs    []string
+	}{
+		{
+			"bottom center",
+			[]model.Cue{withOffset(model.BottomCenter, 50, 90)},
+			[]string{region("bottomCenter-50-90", "0% 0%", "100% 90%", "after", "center")},
+			[]string{"bottomCenter-50-90"},
+		},
+		{
+			"top left",
+			[]model.Cue{withOffset(model.TopLeft, 10, 5)},
+			[]string{region("topLeft-10-5", "10% 5%", "90% 95%", "before", "left")},
+			[]string{"topLeft-10-5"},
+		},
+		{
+			"middle right",
+			[]model.Cue{withOffset(model.MiddleRight, 80, 40)},
+			[]string{region("middleRight-80-40", "0% 0%", "80% 80%", "center", "right")},
+			[]string{"middleRight-80-40"},
+		},
+		{
+			"middle center with decimals",
+			[]model.Cue{withOffset(model.MiddleCenter, 45.5, 60.0004)},
+			[]string{region("middleCenter-45.5-60", "0% 20%", "91% 80%", "center", "center")},
+			[]string{"middleCenter-45.5-60"},
+		},
+		{
+			"two cues share one region",
+			[]model.Cue{withOffset(model.BottomCenter, 50, 90), withOffset(model.BottomCenter, 50, 90)},
+			[]string{region("bottomCenter-50-90", "0% 0%", "100% 90%", "after", "center")},
+			[]string{"bottomCenter-50-90", "bottomCenter-50-90"},
+		},
+		{
+			"an offset outside its cell gets the region of the alignment",
+			[]model.Cue{withOffset(model.TopCenter, 50, 90)},
+			[]string{region("topCenter", "10% 10%", "80% 80%", "before", "center")},
+			[]string{"topCenter"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			out := writeDefault(t, subtitleOf(tt.cues...))
+			for _, r := range tt.regions {
+				assert.Equal(t, 1, strings.Count(out, r), r)
+			}
+			for _, ref := range tt.refs {
+				assert.Contains(t, out, `end="00:00:02.000" region="`+ref+`"`)
+			}
+		})
+	}
+}
+
+func TestWriteOffsetKeepsStoredRegion(t *testing.T) {
+	t.Parallel()
+
+	head := `<layout><region xml:id="r1" tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="after" tts:textAlign="center"/></layout>`
+	s, _ := mustRead(t, document(`<div><p region="r1" begin="1s" end="2s">x</p></div>`, "", head), false)
+	c, _ := s.Cue(0)
+	require.Nil(t, c.Position.Offset)
+
+	c.Position.Offset = &model.Offset{X: 50, Y: 70}
+	require.NoError(t, s.SetCue(0, c))
+	out := writeDefault(t, s)
+	assert.Contains(t, out, `region="r1"`)
+	assert.NotContains(t, out, "bottomCenter-")
+
+	c.Position.Alignment, c.Position.Offset = model.TopLeft, &model.Offset{X: 50, Y: 90}
+	require.NoError(t, s.SetCue(0, c))
+	out = writeDefault(t, s)
+	assert.Contains(t, out, `region="topLeft"`)
 }

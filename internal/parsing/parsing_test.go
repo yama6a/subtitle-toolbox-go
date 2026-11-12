@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func TestLastCueDuration(t *testing.T) {
@@ -105,17 +105,12 @@ func TestEndAfter(t *testing.T) {
 	assert.Equal(t, time.Second, parsing.EndAfter(2*time.Second, -time.Second))
 }
 
-func TestCheckFrameRate(t *testing.T) {
+func TestFrameRateOption(t *testing.T) {
 	t.Parallel()
 
-	require.NoError(t, parsing.CheckFrameRate(23.976, "X", "The frame rate"))
-	for _, fps := range []float64{0, -1, math.NaN(), math.Inf(1)} {
-		var aerr *model.InvalidArgumentError
-		require.ErrorAs(t, parsing.CheckFrameRate(fps, "X", "The frame rate"), &aerr)
-		assert.Equal(t, "X", aerr.Option)
-		assert.Equal(t, parsing.FrameRateMessage("The frame rate", fps), aerr.Msg)
-	}
-	assert.Equal(t, "The CSV frame rate must be greater than 0, got NAN.", parsing.FrameRateMessage("The CSV frame rate", math.NaN()))
+	require.NoError(t, parsing.FrameRateOption(nil, "X", "The frame rate"))
+	err := parsing.FrameRateOption(model.FrameRate{Num: -1, Den: 1}.Validate(), "X", "The CSV frame rate")
+	assert.Equal(t, &model.InvalidArgumentError{Option: "X", Msg: "The CSV frame rate must be greater than 0, got -1."}, err)
 }
 
 func TestEachStateStartsWithoutWarnings(t *testing.T) {

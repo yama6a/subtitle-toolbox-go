@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
 )
 
 // paragraph is a <P> of a SYNC block, or the loose content of the block outside every <P>.

@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
 )
 
 func TestUnsupportedFormatMessages(t *testing.T) {
@@ -55,7 +55,7 @@ func TestUnsupportedFormatMessages(t *testing.T) {
 				require.EqualError(t, err, "stbox: unsupported format: "+tt.wantRead)
 			}
 			if tt.wantWrite != "" {
-				err := stbox.Write(&bytes.Buffer{}, &stbox.Subtitle{}, tt.format, stbox.WriteOptions{})
+				_, err := stbox.Write(&bytes.Buffer{}, &stbox.Subtitle{}, tt.format, stbox.WriteOptions{})
 				require.ErrorIs(t, err, stbox.ErrUnsupportedFormat)
 				require.EqualError(t, err, "stbox: unsupported format: "+tt.wantWrite)
 			}

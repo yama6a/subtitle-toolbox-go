@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/qttext"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/qttext"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func cue(start, end time.Duration, lines ...string) model.Cue {
@@ -446,7 +446,7 @@ func TestWriteRelativeTimestampsTakeTheDifferenceFromTheReader(t *testing.T) {
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	err := qttext.Write(errWriter{}, subtitle(cue(0, time.Second, "A")), model.CommonWriteOptions{}, qttext.WriteOptions{})
+	_, err := qttext.Write(errWriter{}, subtitle(cue(0, time.Second, "A")), model.CommonWriteOptions{}, qttext.WriteOptions{})
 	require.Error(t, err)
 	assert.ErrorIs(t, err, errWrite)
 }

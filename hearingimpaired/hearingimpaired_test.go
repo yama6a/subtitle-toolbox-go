@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/hearingimpaired"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // fromTexts gives one cue per text, the cue i from i s to i+1 s.
@@ -89,7 +89,8 @@ func assertWrites(t *testing.T, s *model.Subtitle, f stbox.Format, opts stbox.Wr
 	t.Helper()
 
 	var buf bytes.Buffer
-	require.NoError(t, stbox.Write(&buf, s, f, opts))
+	_, err := stbox.Write(&buf, s, f, opts)
+	require.NoError(t, err)
 	assert.Equal(t, string(testfiles.Read(t, want)), buf.String())
 }
 
@@ -115,7 +116,8 @@ func TestRealSubRipFileRoundTrips(t *testing.T) {
 	}, cuesOf(s)[13])
 
 	var buf bytes.Buffer
-	require.NoError(t, stbox.Write(&buf, s, stbox.SubRip, stbox.WriteOptions{LineEnding: stbox.CRLF, BOM: stbox.BOMAdd}))
+	_, err = stbox.Write(&buf, s, stbox.SubRip, stbox.WriteOptions{LineEnding: stbox.CRLF, BOM: stbox.BOMAdd})
+	require.NoError(t, err)
 	assert.Equal(t, string(content), buf.String())
 }
 
@@ -169,7 +171,8 @@ func TestRealWebVTTFileRoundTrips(t *testing.T) {
 	assert.Equal(t, cueLines{21500 * time.Millisecond, 24 * time.Second, []string{"<i>[door opens]", "(footsteps)</i>"}}, cuesOf(s)[7])
 
 	var buf bytes.Buffer
-	require.NoError(t, stbox.Write(&buf, s, stbox.WebVTT, stbox.WriteOptions{}))
+	_, err := stbox.Write(&buf, s, stbox.WebVTT, stbox.WriteOptions{})
+	require.NoError(t, err)
 	again, _, err := stbox.Parse(&buf, stbox.ReadOptions{Format: stbox.WebVTT})
 	require.NoError(t, err)
 	assertSameCues(t, s, again)

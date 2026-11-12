@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func ExampleRead() {
@@ -40,7 +40,7 @@ func ExampleWrite() {
 		model.Cue{Start: 4400 * time.Millisecond, End: 6 * time.Second, Lines: []string{"Nach Hause."}},
 	)
 	opts := csv.WriteOptions{SecondText: german, SecondTextHeader: "text (de)", TimeFormat: csv.TimeSeconds}
-	err := csv.Write(os.Stdout, english, model.CommonWriteOptions{BOM: model.BOMRemove}, opts)
+	_, err := csv.Write(os.Stdout, english, model.CommonWriteOptions{BOM: model.BOMRemove}, opts)
 	if err != nil {
 		fmt.Println(err)
 	}

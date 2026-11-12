@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/position"
-	"github.com/yama6a/subtitle-toolbox-go/internal/ssatag"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/position"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/ssatag"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 var (
@@ -56,9 +56,9 @@ type part struct {
 
 // Write writes s as ASS, or as SSA when s was read from SSA. The text \N, \n or \h gets U+2060 WORD JOINER after the
 // backslash, so it reads back as text.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	if err := opts.Validate(); err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	stored, _ := s.FormatData(formatDataKey)
 	f := readFileData(stored)
@@ -71,7 +71,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	}
 	if opts.Style != "" {
 		if err := f.applyStyle(opts.Style); err != nil {
-			return err
+			return WriteReport{}, err
 		}
 	}
 
@@ -85,7 +85,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 			body = append(body, l+"\n"...)
 		}
 	}
-	return writing.Write(w, model.ASS, body, common, true)
+	return WriteReport{}, writing.Write(w, model.ASS, body, common, true)
 }
 
 // order returns the sections to write: the stored order with [Script Info] first and [Events] last when the
@@ -320,7 +320,7 @@ func (wr *writer) unchanged(c model.Cue, data *model.Data) bool {
 	if !ok || !slices.Equal(lines, c.Lines) {
 		return false
 	}
-	return position.AlignmentUnchanged(data, c.Alignment)
+	return position.AlignmentUnchanged(data, c.Position.Alignment)
 }
 
 // convertLines returns the Text field and the speaker name of the core markup of c. It leaves out the tags
@@ -331,7 +331,7 @@ func (wr *writer) convertLines(c model.Cue, style record) (string, string) {
 	name := strings.ReplaceAll(speaker, ",", "")
 
 	var parts []part
-	numpad := c.Alignment.Numpad()
+	numpad := c.Position.Alignment.Numpad()
 	styleNumpad := styleAlignment(style, wr.legacy)
 	if styleNumpad == 0 {
 		styleNumpad = model.BottomCenter.Numpad()

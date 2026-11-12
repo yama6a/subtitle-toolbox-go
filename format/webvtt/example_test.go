@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func ExampleRead() {
@@ -26,7 +26,7 @@ intro
 		return
 	}
 	c, _ := s.Cue(0)
-	fmt.Println(c.ID, c.Start, c.End, c.Alignment, c.Text())
+	fmt.Println(c.ID, c.Start, c.End, c.Position.Alignment, c.Text())
 	fmt.Println(s.Comments()[0].Text)
 	file, _ := s.FormatData("vtt")
 	headerLines, _ := file.Strings("headerLines")
@@ -39,12 +39,12 @@ intro
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<v Anna>Good morning."}, Alignment: model.TopLeft})
+	s.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<v Anna>Good morning."}, Position: model.Position{Alignment: model.TopLeft}})
 	if err := s.AddComment("Morning show", 0); err != nil {
 		fmt.Println(err)
 		return
 	}
-	err := webvtt.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
+	_, err := webvtt.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -58,11 +58,11 @@ func ExampleWrite() {
 	// <v Anna>Good morning.
 }
 
-func ExampleWriteWithReport() {
+func ExampleWrite_droppedColors() {
 	s := &model.Subtitle{}
 	s.AddCue(model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{`<font color="#123456">Rain</font> <font color="#ffff00">and sun</font>`}})
 	var out strings.Builder
-	report, err := webvtt.WriteWithReport(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
+	report, err := webvtt.Write(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return

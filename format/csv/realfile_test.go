@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 type realFile struct {
@@ -45,7 +45,7 @@ func realFiles() []realFile {
 		},
 		{
 			name: "dubbing script", file: "dubbing_script.csv", cues: 4,
-			opts:  csv.ReadOptions{Columns: dubbingColumns, FrameRate: 25},
+			opts:  csv.ReadOptions{Columns: dubbingColumns, FrameRate: model.FrameRate{Num: 25, Den: 1}},
 			first: cueRow{36001480 * ms, 36004 * time.Second, []string{"<v NARRATOR>The weather turns cold tonight."}},
 			last:  cueRow{36008200 * ms, 36013200 * ms, []string{"<v NARRATOR>Snow falls in the hills, rain in the valley."}},
 		},
@@ -141,7 +141,7 @@ func TestRealFileWhisperCppKeepsItsQuotedTextColumn(t *testing.T) {
 func TestRealFileDubbingScriptKeepsTheNotesColumn(t *testing.T) {
 	t.Parallel()
 
-	s := readReal(t, "dubbing_script.csv", csv.ReadOptions{Columns: dubbingColumns, FrameRate: 25})
+	s := readReal(t, "dubbing_script.csv", csv.ReadOptions{Columns: dubbingColumns, FrameRate: model.FrameRate{Num: 25, Den: 1}})
 	c, _ := s.Cue(1)
 	d, _ := c.FormatData("csv")
 	assert.Equal(t, model.NewData(model.Field{Key: "columns", Value: model.NewData(model.Field{Key: "Notes", Value: "warm tone"})}), d)

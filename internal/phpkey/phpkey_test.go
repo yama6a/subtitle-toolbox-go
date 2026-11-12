@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/phpkey"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/phpkey"
 )
 
 func TestIsIntKey(t *testing.T) {

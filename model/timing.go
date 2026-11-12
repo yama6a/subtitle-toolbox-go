@@ -8,7 +8,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 )
 
 // FixOverlaps ends each cue at least minGap before the next later start, but never before its own start.

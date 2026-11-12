@@ -11,17 +11,20 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/internal/extfallback"
-	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/extfallback"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
 )
 
 const stdinArg = "-"
 
 // The help texts of --fps. A command that writes subtitles gets writeFPSHelp, a command that reports gets reportFPSHelp.
+// validate has its own text, because --fps also sets --video-fps.
 const (
 	writeFPSHelp  = "Sets --input-fps and --output-fps. A specific option wins over --fps."
 	reportFPSHelp = "Same as --input-fps."
+	// convertFPSHelp also names --video-fps of the snap group.
+	convertFPSHelp = "Sets --input-fps, --output-fps and --video-fps. A specific option wins over --fps."
 )
 
 // inputOptions returns the options of a command that reads subtitle files. A command that reads one input only
@@ -202,6 +205,9 @@ func (r *runner) detect(path string) (stbox.Format, bool) {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return "", false
+	}
+	if f, ok := stbox.Detect(content); ok && f.IsBinary() {
+		return f, true
 	}
 	text, err := textenc.Decode(content, r.readOptions.Encoding)
 	if err != nil {

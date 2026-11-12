@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 type realCue struct {
@@ -18,7 +18,7 @@ type realCue struct {
 }
 
 func describe(c model.Cue) realCue {
-	return realCue{c.Start.Seconds(), c.End.Seconds(), c.Text(), c.Alignment}
+	return realCue{c.Start.Seconds(), c.End.Seconds(), c.Text(), c.Position.Alignment}
 }
 
 // Ports testRealFileParses of tests/Parsers/TtmlRealFileTest.php of subtitle-toolbox-php.

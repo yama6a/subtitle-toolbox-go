@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Ports testTheParserReadsTheTimeExpression and testReadsALooseExpression of tests/Parsers/TtmlClockTest.php of

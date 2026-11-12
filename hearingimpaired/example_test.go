@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/hearingimpaired"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func ExampleApply() {

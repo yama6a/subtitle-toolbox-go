@@ -1,0 +1,28 @@
+ffmpeg version 6.1.1 Copyright (c) 2000-2023 the FFmpeg developers
+  built with gcc 13 (GCC)
+  configuration: --prefix=/usr --enable-gpl --enable-libx264
+  libavutil      58. 29.100 / 58. 29.100
+  libavcodec     60. 31.102 / 60. 31.102
+  libavformat    60. 16.100 / 60. 16.100
+  libavfilter     9. 12.100 /  9. 12.100
+Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'garden.mp4':
+  Metadata:
+    major_brand     : isom
+    minor_version   : 512
+    compatible_brands: isomiso2avc1mp41
+    encoder         : Lavf60.16.100
+  Duration: 00:01:35.00, start: 0.000000, bitrate: 1210 kb/s
+  Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(progressive), 1280x720 [SAR 1:1 DAR 16:9], 1205 kb/s, 24 fps, 24 tbr, 12288 tbn (default)
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> wrapped_avframe (native))
+Press [q] to stop, [?] for help
+[Parsed_showinfo_1 @ 0x5581c3a4e2c0] config in time_base: 1/12288, frame_rate: 24/1
+[Parsed_showinfo_1 @ 0x5581c3a4e2c0] config out time_base: 0/0, frame_rate: 0/0
+[Parsed_showinfo_1 @ 0x5581c3a4e2c0] n:   0 pts: 153600 pts_time:12.5    duration:    512 duration_time:0.0416667 fmt:yuv420p cl:left sar:1/1 s:1280x720 i:P iskey:0 type:P checksum:5E7B1C4A plane_checksum:[2C6E7A9D 21B5D6F3 0F9C2A11] mean:[94 127 129] stdev:[51.2 4.1 5.3]
+[Parsed_showinfo_1 @ 0x5581c3a4e2c0] color_range:tv color_space:bt709 color_primaries:bt709 color_trc:bt709
+[Parsed_showinfo_1 @ 0x5581c3a4e2c0] n:   1 pts: 768000 pts_time:62.5    duration:    512 duration_time:0.0416667 fmt:yuv420p cl:left sar:1/1 s:1280x720 i:P iskey:0 type:P checksum:0A9F33D1 plane_checksum:[2C6E7A9D 21B5D6F3 0F9C2A11] mean:[94 127 129] stdev:[51.2 4.1 5.3]
+[Parsed_showinfo_1 @ 0x5581c3a4e2c0] n:   2 pts: 860160 pts_time:70      duration:    512 duration_time:0.0416667 fmt:yuv420p cl:left sar:1/1 s:1280x720 i:P iskey:0 type:P checksum:7C21E80B plane_checksum:[2C6E7A9D 21B5D6F3 0F9C2A11] mean:[94 127 129] stdev:[51.2 4.1 5.3]
+[Parsed_showinfo_1 @ 0x5581c3a4e2c0] n:   3 pts: 983040 pts_time:80      duration:    512 duration_time:0.0416667 fmt:yuv420p cl:left sar:1/1 s:1280x720 i:P iskey:0 type:P checksum:D3416F92 plane_checksum:[2C6E7A9D 21B5D6F3 0F9C2A11] mean:[94 127 129] stdev:[51.2 4.1 5.3]
+[Parsed_showinfo_1 @ 0x5581c3a4e2c0] n:   4 pts:1121280 pts_time:91.25   duration:    512 duration_time:0.0416667 fmt:yuv420p cl:left sar:1/1 s:1280x720 i:P iskey:0 type:P checksum:118BA6E5 plane_checksum:[2C6E7A9D 21B5D6F3 0F9C2A11] mean:[94 127 129] stdev:[51.2 4.1 5.3]
+[out#0/null @ 0x5581c3a51a80] video:2kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: unknown
+frame=    5 fps=0.0 q=-0.0 Lsize=N/A time=00:01:31.29 bitrate=N/A speed= 152x

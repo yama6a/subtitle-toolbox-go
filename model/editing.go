@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 )
 
 var voiceTagRegexp = regexp.MustCompile(`(?i)` + markupcore.VoiceTagPattern)
@@ -239,7 +239,7 @@ func (s *Subtitle) MergeSameTimeCues(timeTolerance time.Duration) error {
 	}
 	tol := timeTolerance.Round(time.Millisecond)
 	s.joinRuns(func(first Cue, _ time.Duration, c Cue) bool {
-		return c.Forced == first.Forced && c.Alignment.Numpad() == first.Alignment.Numpad() &&
+		return c.Forced == first.Forced && c.Position.Alignment.Numpad() == first.Position.Alignment.Numpad() &&
 			(c.Start-first.Start).Abs() <= tol && (c.End-first.End).Abs() <= tol
 	}, func(run []Cue) []string {
 		var lines []string
@@ -291,7 +291,7 @@ func (s *Subtitle) joinRuns(continues func(first Cue, runEnd time.Duration, c Cu
 
 // canJoin reports whether a and b have the same alignment, the same forced flag and the same speakers.
 func canJoin(a, b Cue) bool {
-	return a.Alignment.Numpad() == b.Alignment.Numpad() && a.Forced == b.Forced && slices.Equal(speakers(a), speakers(b))
+	return a.Position.Alignment.Numpad() == b.Position.Alignment.Numpad() && a.Forced == b.Forced && slices.Equal(speakers(a), speakers(b))
 }
 
 // speakers returns the names of the <v> tags of c, trimmed, without repeats, in byte order.

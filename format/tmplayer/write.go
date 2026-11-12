@@ -5,16 +5,16 @@ import (
 	"io"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Write writes s as TMPlayer. A cue without visible text is not written. After a cue that ends before the next
 // one starts, it writes an entry without text at the end of the cue, except after the last cue. A line break inside
 // a line becomes |, and a | in the text becomes U+00A6 BROKEN BAR.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	var cues []model.Cue
 	var texts [][]string
 	for _, c := range s.All() {
@@ -38,7 +38,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 			body = append(body, '\n')
 		}
 	}
-	return writing.Write(w, model.TMPlayer, body, common, false)
+	return WriteReport{}, writing.Write(w, model.TMPlayer, body, common, false)
 }
 
 func appendTime(body []byte, seconds int64) []byte {

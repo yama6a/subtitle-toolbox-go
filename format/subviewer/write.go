@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const endScript = "******** END SCRIPT ********"
@@ -32,9 +32,9 @@ func defaultTags(version Version) []tag {
 // text is not written, because an empty line ends a cue. A | in SubViewer 1 text becomes U+00A6 BROKEN BAR. Text that
 // the reader would read as a line break, a time line, a timing line, a style line or the script line gets U+2060
 // WORD JOINER.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	if err := opts.Validate(); err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	data, _ := s.FormatData(formatDataKey)
 	version := opts.Version
@@ -51,7 +51,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	} else {
 		body = appendVersion2(body, s, tags, data)
 	}
-	return writing.Write(w, model.SubViewer, body, common, false)
+	return WriteReport{}, writing.Write(w, model.SubViewer, body, common, false)
 }
 
 // headerTags returns the title, the author, then the stored header or the default tags.

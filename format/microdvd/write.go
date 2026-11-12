@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 var fontTagRegexp = regexp.MustCompile(`(?i)</?font\b`)
@@ -24,25 +24,26 @@ type storedLine struct {
 }
 
 // Write writes s as MicroDVD. A line break inside a line becomes |, and a | in the text becomes U+00A6 BROKEN BAR.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	if err := opts.Validate(); err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	fileData, _ := s.FormatData(formatDataKey)
-	fps := opts.FrameRate
-	if fps == 0 {
+	rate := opts.FrameRate
+	if rate.IsZero() {
 		stored, ok := fileData.Number("frameRate")
 		if !ok {
-			return &model.InvalidArgumentError{
+			return WriteReport{}, &model.InvalidArgumentError{
 				Option: "WriteOptions.MicroDVD.FrameRate",
 				Msg:    "MicroDVD output needs the frame rate of the video.",
 			}
 		}
-		if err := parsing.CheckFrameRate(stored, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate"); err != nil {
-			return err
+		var err error
+		if rate, err = model.FrameRateFromFloat(stored); err != nil {
+			return WriteReport{}, parsing.FrameRateOption(err, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate")
 		}
-		fps = stored
 	}
+	fps := rate.Float64()
 
 	var body []byte
 	if frameRateLine, _ := fileData.Bool("frameRateLine"); opts.WriteFrameRateLine || frameRateLine {
@@ -59,7 +60,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		body = append(body, writeText(c, common.StripTags)...)
 		body = append(body, '\n')
 	}
-	return writing.Write(w, model.MicroDVD, body, common, false)
+	return WriteReport{}, writing.Write(w, model.MicroDVD, body, common, false)
 }
 
 func appendFrame(dst []byte, d time.Duration, fps float64) []byte {

@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // styledRoot is a root start tag that declares tts and ttm, without its closing >.
@@ -40,7 +40,7 @@ type writeRule struct {
 func alignTo(a model.Alignment) func(*testing.T, *model.Subtitle) {
 	return func(t *testing.T, s *model.Subtitle) {
 		t.Helper()
-		setCue(t, s, 0, func(c *model.Cue) { c.Alignment = a })
+		setCue(t, s, 0, func(c *model.Cue) { c.Position.Alignment = a })
 	}
 }
 
@@ -458,7 +458,7 @@ func (failingWriter) Write([]byte) (int, error) { return 0, errWrite }
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	err := ttml.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, ttml.WriteOptions{})
+	_, err := ttml.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, ttml.WriteOptions{})
 	require.ErrorIs(t, err, errWrite)
 }
 
@@ -476,7 +476,7 @@ func TestNewElementsInAHeadWithItsOwnDeclarations(t *testing.T) {
 	change := func(t *testing.T, s *model.Subtitle) {
 		t.Helper()
 		s.SetMetadata(model.MetadataTitle, "T")
-		setCue(t, s, 0, func(c *model.Cue) { c.Alignment, c.Lines = model.TopLeft, []string{"<v Ann>x"} })
+		setCue(t, s, 0, func(c *model.Cue) { c.Position.Alignment, c.Lines = model.TopLeft, []string{"<v Ann>x"} })
 	}
 	body := "<div>" + oneParagraph + "</div>"
 	runWriteRules(t, []writeRule{

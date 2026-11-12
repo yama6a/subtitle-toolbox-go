@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const bom = "\ufeff"
@@ -47,7 +47,7 @@ func TestWriteCues(t *testing.T) {
 		return model.Cue{Start: start, End: end, Lines: lines}
 	}
 	aligned := func(c model.Cue, a model.Alignment) model.Cue {
-		c.Alignment = a
+		c.Position.Alignment = a
 		return c
 	}
 	withCoordinates := model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Text"}}
@@ -244,7 +244,7 @@ func (failingWriter) Write([]byte) (int, error) { return 0, errDiskFull }
 func TestWriteError(t *testing.T) {
 	t.Parallel()
 
-	err := srt.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, srt.WriteOptions{})
+	_, err := srt.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, srt.WriteOptions{})
 	require.ErrorIs(t, err, errDiskFull)
 }
 
@@ -252,14 +252,15 @@ func TestWriteThenReadKeepsTheCues(t *testing.T) {
 	t.Parallel()
 
 	s := subtitle(t,
-		model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"<b>One</b> &amp; two"}, Alignment: model.TopLeft},
+		model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"<b>One</b> &amp; two"}, Position: model.Position{Alignment: model.TopLeft}},
 		model.Cue{Start: 3 * time.Second, End: 4 * time.Second},
 	)
 	var out bytes.Buffer
-	require.NoError(t, srt.Write(&out, s, model.CommonWriteOptions{}, srt.WriteOptions{}))
+	_, err := srt.Write(&out, s, model.CommonWriteOptions{}, srt.WriteOptions{})
+	require.NoError(t, err)
 	back, _ := mustRead(t, out.String(), false)
 	assert.Equal(t, cueRows(s), cueRows(back))
-	assert.Equal(t, model.TopLeft, firstCue(t, back).Alignment)
+	assert.Equal(t, model.TopLeft, firstCue(t, back).Position.Alignment)
 }
 
 func TestWriteStaysAtTheLargestTimeThatTheReaderReads(t *testing.T) {

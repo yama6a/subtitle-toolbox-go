@@ -5,16 +5,20 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // ReadOptions holds the settings of a read. The zero value reads with the defaults.
@@ -23,6 +27,7 @@ type ReadOptions struct {
 	Format Format
 	// Encoding is the name of the source encoding, one of Encodings, compared without case. The zero value detects
 	// the encoding. A BOM and UTF-16 without a BOM win over it, and valid UTF-8 without a NUL byte stays UTF-8.
+	// A binary format ignores it.
 	Encoding string
 	// Lenient skips or repairs broken blocks and reports each as a warning. False stops at the first broken block.
 	// A lenient read with warnings returns a nil error.
@@ -37,6 +42,13 @@ type ReadOptions struct {
 	// CSV holds the settings of the CSV and TSV reader. The zero value reads the columns by their header names and
 	// detects the delimiter.
 	CSV csv.ReadOptions
+	// SCC holds the settings of the SCC reader. The zero value reads channel 1 and gives one cue per screen of
+	// roll-up captions.
+	SCC scc.ReadOptions
+	// EBUSTL holds the settings of the EBU STL reader. The zero value keeps the times of the file.
+	EBUSTL ebustl.ReadOptions
+	// SpruceSTL holds the settings of the Spruce STL reader. The zero value guesses 25 or 30 fps from the frame numbers.
+	SpruceSTL sprucestl.ReadOptions
 }
 
 // WriteOptions holds the settings of a write. The zero value writes with the defaults.
@@ -62,6 +74,19 @@ type WriteOptions struct {
 	CSV csv.WriteOptions
 	// SubViewer holds the settings of the SubViewer writer. The zero value writes the stored version, else SubViewer 2.
 	SubViewer subviewer.WriteOptions
+	// SpruceSTL holds the settings of the Spruce STL writer. The zero value takes the frame rate that the reader stored, else 25.
+	SpruceSTL sprucestl.WriteOptions
+	// SCC holds the settings of the SCC writer. The zero value keeps the stored drop-frame mode, else writes
+	// drop-frame labels, and fails for a cue that SCC cannot hold.
+	SCC scc.WriteOptions
+}
+
+// WriteReport holds the changes that a writer made to fit the subtitle into its format.
+type WriteReport struct {
+	// WebVTT is non-nil after a WebVTT write, also when it holds no dropped color.
+	WebVTT *webvtt.WriteReport
+	// SCC is non-nil after an SCC write, also when Fit made no change.
+	SCC *scc.WriteReport
 }
 
 // ReadInfo holds the facts of a read that are not subtitle content.
@@ -98,7 +123,13 @@ func (o ReadOptions) Validate() error {
 	if err := o.MicroDVD.Validate(); err != nil {
 		return err
 	}
-	return o.CSV.Validate()
+	if err := o.CSV.Validate(); err != nil {
+		return err
+	}
+	if err := o.SCC.Validate(); err != nil {
+		return err
+	}
+	return o.SpruceSTL.Validate()
 }
 
 // Validate checks every field of o, also the fields of formats that a write does not use.
@@ -130,7 +161,13 @@ func (o WriteOptions) Validate() error {
 	if err := o.CSV.Validate(); err != nil {
 		return err
 	}
-	return o.SubViewer.Validate()
+	if err := o.SubViewer.Validate(); err != nil {
+		return err
+	}
+	if err := o.SCC.Validate(); err != nil {
+		return err
+	}
+	return o.SpruceSTL.Validate()
 }
 
 func (o ReadOptions) common() model.CommonReadOptions {

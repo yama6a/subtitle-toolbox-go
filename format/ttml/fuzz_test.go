@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func FuzzRead(f *testing.F) {
@@ -51,6 +51,9 @@ func FuzzRead(f *testing.F) {
 					t.Fatalf("cue %d starts before cue %d", i, i-1)
 				}
 				previous = c.Start
+				if err := c.Position.Validate(); err != nil {
+					t.Fatalf("cue %d has the position %+v: %v", i, c.Position, err)
+				}
 				for _, d := range []time.Duration{c.Start, c.End} {
 					if d%time.Millisecond != 0 || d >= timecode.MaxTime || d <= -timecode.MaxTime {
 						t.Fatalf("cue %d has the time %v", i, d)
@@ -63,7 +66,7 @@ func FuzzRead(f *testing.F) {
 				}
 			}
 			var out bytes.Buffer
-			if err := ttml.Write(&out, s, model.CommonWriteOptions{}, ttml.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
+			if _, err := ttml.Write(&out, s, model.CommonWriteOptions{}, ttml.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
 				t.Fatalf("Write returned %v", err)
 			}
 		}

@@ -1,0 +1,179 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "scc": {
+                "dropFrame": false
+            }
+        },
+        "cues": [
+            {
+                "start": 0.2,
+                "end": 1.335,
+                "lines": [
+                    "&gt;&gt; GOOD MORNING."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 1.335,
+                "end": 2.069,
+                "lines": [
+                    "&gt;&gt; GOOD MORNING. HERE IS THE"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 2.069,
+                "end": 3.57,
+                "lines": [
+                    "&gt;&gt; GOOD MORNING. HERE IS THE",
+                    "WEATHER FOR TODAY."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            0,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3.57,
+                "end": 5.072,
+                "lines": [
+                    "&gt;&gt; GOOD MORNING. HERE IS THE",
+                    "WEATHER FOR TODAY.",
+                    "CLOUDS IN THE MORNING,"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            13,
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 5.072,
+                "end": 6.74,
+                "lines": [
+                    "WEATHER FOR TODAY.",
+                    "CLOUDS IN THE MORNING,",
+                    "SUN IN THE AFTERNOON."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            13,
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 6.74,
+                "end": 8.008,
+                "lines": [
+                    "CLOUDS IN THE MORNING,",
+                    "SUN IN THE AFTERNOON.",
+                    "&gt;&gt; NOW THE TRAFFIC."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            13,
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 8.008,
+                "end": 10.01,
+                "lines": [
+                    "&gt;&gt; NOW THE TRAFFIC.",
+                    "THE BRIDGE IS OPEN."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "roll-up",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            0,
+                            0
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

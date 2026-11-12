@@ -1,11 +1,11 @@
-package ttml
+package ttmlwrite
 
 import (
 	"regexp"
 	"slices"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
 )
 
 var (
@@ -29,7 +29,7 @@ type resets struct {
 // converter holds the state of one content conversion.
 type converter struct {
 	w         *writer
-	inherited style
+	inherited Style
 	b         strings.Builder
 	stack     []entry
 	resets    resets
@@ -37,7 +37,7 @@ type converter struct {
 
 // content returns the core markup of text as TTML spans. A speaker of the whole text comes back apart, for the
 // ttm:agent of the <p>.
-func (w *writer) content(text string, inherited style) (agent string, hasAgent bool, out string) {
+func (w *writer) content(text string, inherited Style) (agent string, hasAgent bool, out string) {
 	agent, hasAgent, tokens := paragraphAgent(markupcore.SplitTags(text), text)
 	c := &converter{w: w, inherited: inherited}
 	for i, token := range tokens {
@@ -191,7 +191,7 @@ func closeSpan(stack *[]entry, tag string) string {
 }
 
 // add notes the inherited styles that the open spans do not repeat. A <c> span with a color counts as a color.
-func (r *resets) add(inherited style, stack []entry) {
+func (r *resets) add(inherited Style, stack []entry) {
 	open := map[string]bool{}
 	for _, e := range stack {
 		switch {

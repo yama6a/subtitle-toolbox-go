@@ -1,0 +1,39 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "spruce-stl": {
+                "frameRate": 25.0,
+                "header": [],
+                "separator": " , ",
+                "lineBreak": " | "
+            }
+        },
+        "cues": [
+            {
+                "start": 137.4,
+                "end": 140.4,
+                "lines": [
+                    "The bakery opens at seven,",
+                    "every day of the week."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3740.48,
+                "end": 3742.48,
+                "lines": [
+                    "Fresh bread, warm rolls."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

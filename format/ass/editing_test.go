@@ -7,10 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Ports testRemoveDuplicateCuesKeepsAssEventsWithAnotherStyleOrLayer and testMergeSameTimeCuesRealAssFile of
@@ -27,6 +27,7 @@ func TestEditingFixtures(t *testing.T) {
 	s = readFile(t, "editing/own_same_time_speakers.ass")
 	require.NoError(t, s.MergeSameTimeCues(0))
 	var out bytes.Buffer
-	require.NoError(t, srt.Write(&out, s, noBOM, srt.WriteOptions{}))
+	_, err := srt.Write(&out, s, noBOM, srt.WriteOptions{})
+	require.NoError(t, err)
 	assert.Equal(t, string(testfiles.Read(t, "editing/own_same_time_speakers_merged.srt")), out.String())
 }

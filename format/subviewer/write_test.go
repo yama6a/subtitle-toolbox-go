@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const (
@@ -365,11 +365,13 @@ func TestLineEndingAndBOM(t *testing.T) {
 
 	s := subtitle(cue(time.Second, 2*time.Second, "A"))
 	var out bytes.Buffer
-	require.NoError(t, subviewer.Write(&out, s, model.CommonWriteOptions{}, v2))
+	_, err := subviewer.Write(&out, s, model.CommonWriteOptions{}, v2)
+	require.NoError(t, err)
 	assert.Equal(t, info2+"00:00:01.00,00:00:02.00\nA\n", out.String(), "no BOM by default")
 
 	out.Reset()
-	require.NoError(t, subviewer.Write(&out, s, model.CommonWriteOptions{LineEnding: model.CRLF, BOM: model.BOMAdd}, v1))
+	_, err = subviewer.Write(&out, s, model.CommonWriteOptions{LineEnding: model.CRLF, BOM: model.BOMAdd}, v1)
+	require.NoError(t, err)
 	want := "\xEF\xBB\xBF" + bytes.NewBufferString(head1+"[00:00:01]\nA\n[00:00:02]\n\n"+tail1).String()
 	assert.Equal(t, string(bytes.ReplaceAll([]byte(want), []byte("\n"), []byte("\r\n"))), out.String())
 }
@@ -388,7 +390,7 @@ func TestValidate(t *testing.T) {
 	assert.Equal(t, "The SubViewer version must be 1 or 2, got 3.", aerr.Msg)
 
 	var out bytes.Buffer
-	err = subviewer.Write(&out, subtitle(), model.CommonWriteOptions{}, subviewer.WriteOptions{Version: subviewer.Version(200)})
+	_, err = subviewer.Write(&out, subtitle(), model.CommonWriteOptions{}, subviewer.WriteOptions{Version: subviewer.Version(200)})
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 	assert.Empty(t, out.String())
 }

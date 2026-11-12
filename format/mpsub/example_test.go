@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func ExampleRead() {
@@ -36,7 +36,7 @@ func ExampleWrite() {
 		model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"First"}},
 		model.Cue{Start: 2500 * time.Millisecond, End: 5 * time.Second, Lines: []string{"<i>Second</i>"}},
 	)
-	if err := mpsub.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: 25}); err != nil {
+	if _, err := mpsub.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:
@@ -54,8 +54,8 @@ func ExampleWrite() {
 }
 
 func ExampleWriteOptions_Validate() {
-	fmt.Println(mpsub.WriteOptions{FrameRate: 25}.Validate())
-	fmt.Println(mpsub.WriteOptions{FrameRate: 29.97}.Validate())
+	fmt.Println(mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}}.Validate())
+	fmt.Println(mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 100}}.Validate())
 	// Output:
 	// <nil>
 	// stbox: invalid argument: WriteOptions.MPSub.FrameRate: The MPSub frame rate must be a positive integer, got 29.97.

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func TestAlignmentGrid(t *testing.T) {
@@ -53,7 +53,7 @@ func TestAlignmentZeroValueIsBottomCenter(t *testing.T) {
 
 	var a model.Alignment
 	assert.Equal(t, model.BottomCenter, a)
-	assert.Equal(t, model.BottomCenter, model.Cue{}.Alignment)
+	assert.Equal(t, model.BottomCenter, model.Cue{}.Position.Alignment)
 }
 
 func TestAlignmentOutsideTheGrid(t *testing.T) {

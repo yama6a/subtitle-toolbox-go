@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 type cueSpec struct {
@@ -248,7 +248,7 @@ func TestAppendCopiesTheCueFields(t *testing.T) {
 
 	other := subtitleOf(cueSpec{1, 2, "one"})
 	setCue(t, other, 0, func(c *model.Cue) {
-		c.ID, c.Alignment, c.Forced = "intro", model.TopCenter, true
+		c.ID, c.Position.Alignment, c.Forced = "intro", model.TopCenter, true
 		vttLine(t, "0")(c)
 	})
 	s := &model.Subtitle{}
@@ -440,7 +440,7 @@ func TestSplitCueKeepsCommentsAndCueDataAndClearsTheSecondID(t *testing.T) {
 	s := withComments(t, subtitleOf(cueSpec{0, 6, "First sentence.\nSecond sentence."}, cueSpec{7, 8, "next"}),
 		model.Comment{Text: "about the split cue", BeforeCue: 0}, model.Comment{Text: "about next", BeforeCue: 1})
 	setCue(t, s, 0, func(c *model.Cue) {
-		c.ID, c.Alignment, c.Forced = "intro", model.TopCenter, true
+		c.ID, c.Position.Alignment, c.Forced = "intro", model.TopCenter, true
 		vttLine(t, "0")(c)
 	})
 
@@ -450,7 +450,7 @@ func TestSplitCueKeepsCommentsAndCueDataAndClearsTheSecondID(t *testing.T) {
 	first, _ := s.Cue(0)
 	second, _ := s.Cue(1)
 	assert.Equal(t, []string{"intro", ""}, []string{first.ID, second.ID})
-	assert.Equal(t, []model.Alignment{model.TopCenter, model.TopCenter}, []model.Alignment{first.Alignment, second.Alignment})
+	assert.Equal(t, []model.Alignment{model.TopCenter, model.TopCenter}, []model.Alignment{first.Position.Alignment, second.Position.Alignment})
 	assert.True(t, second.Forced)
 	line, _ := second.FormatData("vtt")
 	assert.Equal(t, model.NewData(model.Field{Key: "line", Value: "0"}), line)
@@ -512,15 +512,15 @@ func TestJoinCuesKeepsCommentsAndTheFirstCueData(t *testing.T) {
 		model.Comment{Text: "about four", BeforeCue: 4},
 		model.Comment{Text: "end", BeforeCue: 5},
 	)
-	setCue(t, s, 1, func(c *model.Cue) { c.ID, c.Alignment = "first", model.TopLeft })
-	setCue(t, s, 2, func(c *model.Cue) { c.Alignment, c.Forced = model.TopRight, true })
+	setCue(t, s, 1, func(c *model.Cue) { c.ID, c.Position.Alignment = "first", model.TopLeft })
+	setCue(t, s, 2, func(c *model.Cue) { c.Position.Alignment, c.Forced = model.TopRight, true })
 
 	require.NoError(t, s.JoinCues(1, 3))
 
 	assert.Equal(t, []cueSpec{{0, 1, "zero"}, {1, 6, "one\ntwo\nthree"}, {7, 8, "four"}}, describe(s))
 	joined, _ := s.Cue(1)
 	assert.Equal(t, "first", joined.ID)
-	assert.Equal(t, model.TopLeft, joined.Alignment)
+	assert.Equal(t, model.TopLeft, joined.Position.Alignment)
 	assert.False(t, joined.Forced)
 	assert.Equal(t, [][2]string{
 		{"about one", "one\ntwo\nthree"},
@@ -617,7 +617,7 @@ func TestRemoveDuplicateCuesKeepsSameTextCuesThatCannotJoin(t *testing.T) {
 		first func(*model.Cue)
 		other func(*model.Cue)
 	}{
-		{name: "other alignment", other: func(c *model.Cue) { c.Alignment = model.TopCenter }},
+		{name: "other alignment", other: func(c *model.Cue) { c.Position.Alignment = model.TopCenter }},
 		{name: "forced", other: func(c *model.Cue) { c.Forced = true }},
 		{name: "other format data", other: vttLine(t, "0")},
 		{name: "other format data value", first: vttLine(t, "1"), other: vttLine(t, "0")},
@@ -703,7 +703,7 @@ func TestRemoveDuplicateCuesTreatsAnAlignmentOutsideTheGridAsBottomCenter(t *tes
 	t.Parallel()
 
 	s := subtitleOf(cueSpec{1, 3, "Hello"}, cueSpec{1, 3, "Hello"})
-	setCue(t, s, 1, func(c *model.Cue) { c.Alignment = model.Alignment(42) })
+	setCue(t, s, 1, func(c *model.Cue) { c.Position.Alignment = model.Alignment(42) })
 
 	require.NoError(t, s.RemoveDuplicateCues(0))
 
@@ -769,7 +769,7 @@ func TestMergeSameTimeCuesKeepsCuesWithAnotherAlignmentOrForcedFlag(t *testing.T
 		name  string
 		other func(*model.Cue)
 	}{
-		{"other alignment", func(c *model.Cue) { c.Alignment = model.TopCenter }},
+		{"other alignment", func(c *model.Cue) { c.Position.Alignment = model.TopCenter }},
 		{"forced", func(c *model.Cue) { c.Forced = true }},
 	}
 	for _, tt := range tests {

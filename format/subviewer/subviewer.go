@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const formatDataKey = string(model.SubViewer)
@@ -39,6 +39,9 @@ func (v Version) String() string {
 
 // ReadOptions holds the settings of the SubViewer reader. SubViewer has none yet.
 type ReadOptions struct{}
+
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
 
 // WriteOptions holds the settings of the SubViewer writer.
 type WriteOptions struct {

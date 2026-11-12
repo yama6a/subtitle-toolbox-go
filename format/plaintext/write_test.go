@@ -11,12 +11,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/format/sbv"
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/golden"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/sbv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/golden"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 var update = flag.Bool("update", false, "rewrite the write golden files")
@@ -37,7 +37,8 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions, opt
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, plaintext.Write(&out, s, common, opts))
+	_, err := plaintext.Write(&out, s, common, opts)
+	require.NoError(t, err)
 	return out.String()
 }
 
@@ -257,7 +258,8 @@ func TestValidate(t *testing.T) {
 			assert.Equal(t, tt.want, err)
 
 			var out bytes.Buffer
-			require.ErrorIs(t, plaintext.Write(&out, walk(), model.CommonWriteOptions{}, opts), model.ErrInvalidArgument)
+			_, err = plaintext.Write(&out, walk(), model.CommonWriteOptions{}, opts)
+			require.ErrorIs(t, err, model.ErrInvalidArgument)
 			assert.Empty(t, out.String())
 		})
 	}
@@ -272,7 +274,7 @@ func (errWriter) Write([]byte) (int, error) { return 0, errDisk }
 func TestWriteFailsOnWriterError(t *testing.T) {
 	t.Parallel()
 
-	err := plaintext.Write(errWriter{}, walk(), model.CommonWriteOptions{}, plaintext.WriteOptions{})
+	_, err := plaintext.Write(errWriter{}, walk(), model.CommonWriteOptions{}, plaintext.WriteOptions{})
 	require.ErrorIs(t, err, errDisk)
 	assert.Contains(t, err.Error(), "txt")
 }
@@ -298,7 +300,8 @@ func TestRealFiles(t *testing.T) {
 			require.NoError(t, err)
 			require.Empty(t, warnings)
 			var out bytes.Buffer
-			require.NoError(t, plaintext.Write(&out, s, model.CommonWriteOptions{}, tt.opts))
+			_, err = plaintext.Write(&out, s, model.CommonWriteOptions{}, tt.opts)
+			require.NoError(t, err)
 			golden.Equal(t, testfiles.Path(t, "plaintext/real/"+tt.file), out.Bytes(), *update)
 		})
 	}

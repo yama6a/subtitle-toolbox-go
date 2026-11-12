@@ -1,0 +1,78 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "scc": {
+                "dropFrame": true
+            }
+        },
+        "cues": [
+            {
+                "start": 0.701,
+                "end": 4.071,
+                "lines": [
+                    "Welcome to the station office."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 4.071,
+                "end": 6.84,
+                "lines": [
+                    "Tickets for the coast line",
+                    "are sold at window two."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            0,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 6.84,
+                "end": 9.51,
+                "lines": [
+                    "<font color=\"#ffff00\">The last train leaves at 11:15.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

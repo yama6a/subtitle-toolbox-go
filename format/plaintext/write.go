@@ -7,19 +7,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/paragraphs"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/paragraphs"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 var spacesRegexp = regexp.MustCompile(`[ \t]+`)
 
 // Write writes the text of s as plain text paragraphs. A cue without text is skipped. Tags are removed and entities
 // are decoded as markup.PlainText does, so the output holds the words only. StripTags changes nothing.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	if err := opts.Validate(); err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	var items []paragraphs.Item[string]
 	for _, c := range s.All() {
@@ -40,7 +40,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		b.WriteByte('\n')
 		blocks = append(blocks, b.String())
 	}
-	return writing.Write(w, model.PlainText, []byte(strings.Join(blocks, "\n")), common, false)
+	return WriteReport{}, writing.Write(w, model.PlainText, []byte(strings.Join(blocks, "\n")), common, false)
 }
 
 func lineSeparator(newLine bool) string {

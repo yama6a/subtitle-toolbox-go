@@ -8,15 +8,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 var (
 	strict  = model.CommonReadOptions{}
 	lenient = model.CommonReadOptions{Lenient: true}
-	at25    = csv.ReadOptions{FrameRate: 25}
+	at25    = csv.ReadOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}}
 )
 
 // Ports the cue tests of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.

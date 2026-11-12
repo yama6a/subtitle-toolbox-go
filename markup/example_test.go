@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v2/markup"
 )
 
 func ExampleStripAllTags() {

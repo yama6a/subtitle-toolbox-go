@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
 const unknownFormatMessage = "stbox: unsupported format: no format detected: Format detection found no subtitle format."
@@ -223,22 +223,25 @@ func TestReadNoContainer(t *testing.T) {
 func TestLoadAndWriteMicroDVD(t *testing.T) {
 	t.Parallel()
 
-	s, info, err := stbox.Load(testfiles.Path(t, "cli/frames.sub"), stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: 25}})
+	s, info, err := stbox.Load(testfiles.Path(t, "cli/frames.sub"), stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
 	require.NoError(t, err)
 	assert.Equal(t, stbox.MicroDVD, info.Format)
 	first, _ := s.Cue(0)
 	assert.Equal(t, []time.Duration{time.Second, 3 * time.Second}, []time.Duration{first.Start, first.End})
 
 	var stored, explicit, other bytes.Buffer
-	require.NoError(t, stbox.Write(&stored, s, stbox.MicroDVD, stbox.WriteOptions{}))
-	require.NoError(t, stbox.Write(&explicit, s, stbox.MicroDVD, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 25}}))
+	_, err = stbox.Write(&stored, s, stbox.MicroDVD, stbox.WriteOptions{})
+	require.NoError(t, err)
+	_, err = stbox.Write(&explicit, s, stbox.MicroDVD, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
+	require.NoError(t, err)
 	assert.Equal(t, explicit.String(), stored.String())
-	require.NoError(t, stbox.Write(&other, s, stbox.MicroDVD, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: 50}}))
+	_, err = stbox.Write(&other, s, stbox.MicroDVD, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 50, Den: 1}}})
+	require.NoError(t, err)
 	assert.True(t, strings.HasPrefix(other.String(), "{50}{150}"), other.String())
 
 	trip, _, err := stbox.Load(testfiles.Path(t, "cli/trip.srt"), stbox.ReadOptions{})
 	require.NoError(t, err)
-	err = stbox.Write(&bytes.Buffer{}, trip, stbox.MicroDVD, stbox.WriteOptions{})
+	_, err = stbox.Write(&bytes.Buffer{}, trip, stbox.MicroDVD, stbox.WriteOptions{})
 	var argErr *stbox.InvalidArgumentError
 	require.ErrorAs(t, err, &argErr)
 	assert.Equal(t, "WriteOptions.MicroDVD.FrameRate", argErr.Option)
@@ -261,6 +264,64 @@ func TestMicroDVDWithoutFrameRateLine(t *testing.T) {
 				assert.Equal(t, "ReadOptions.MicroDVD.FrameRate", perr.Option)
 				assert.True(t, strings.HasPrefix(perr.Msg, "The frame rate is unknown."), perr.Msg)
 			}
+		})
+	}
+}
+
+// TestBinaryFormatRead covers the read path of a binary format: the raw bytes reach the reader, Encoding is
+// ignored and SourceEncoding stays empty.
+func TestBinaryFormatRead(t *testing.T) {
+	t.Parallel()
+
+	stl := testfiles.Read(t, "stl/real/bakery_teletext_25fps.stl")
+	spaced := append([]byte("   "), stl[3:]...)
+	want, _, err := stbox.Parse(bytes.NewReader(stl), stbox.ReadOptions{Format: stbox.EBUSTL})
+	require.NoError(t, err)
+	require.Positive(t, want.Len())
+
+	tests := []struct {
+		name    string
+		file    string // empty reads with Parse
+		content []byte
+		opts    stbox.ReadOptions
+		cues    int // -1 reads SubRip
+		wantErr error
+	}{
+		{name: "Parse with a format and an encoding", content: stl, opts: stbox.ReadOptions{Format: stbox.EBUSTL, Encoding: "ISO-8859-7"}, cues: want.Len()},
+		{name: "Parse by content", content: stl, cues: want.Len()},
+		{name: "Load by content", file: "show.bin", content: stl, cues: want.Len()},
+		{name: "Load by content with an encoding", file: "show.stl", content: stl, opts: stbox.ReadOptions{Encoding: "ISO-8859-7"}, cues: want.Len()},
+		{name: "Load of an empty .stl file", file: "show.stl", content: nil},
+		{name: "Load by extension when the code page field is spaces", file: "show.stl", content: spaced, cues: want.Len()},
+		{name: "Load of SubRip content named .stl", file: "show.stl", content: testfiles.Read(t, "srt/real/own_styled.srt"), cues: -1},
+		{name: "Parse when the code page field is spaces", content: spaced, wantErr: stbox.ErrUnknownFormat},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var s *stbox.Subtitle
+			var info stbox.ReadInfo
+			var err error
+			if tt.file == "" {
+				s, info, err = stbox.Parse(bytes.NewReader(tt.content), tt.opts)
+			} else {
+				s, info, err = stbox.Load(writeTemp(t, tt.file, tt.content), tt.opts)
+			}
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			if tt.cues < 0 {
+				assert.Equal(t, stbox.SubRip, info.Format)
+				assert.Positive(t, s.Len())
+				return
+			}
+			assert.Equal(t, stbox.EBUSTL, info.Format)
+			assert.Empty(t, info.SourceEncoding)
+			assert.Empty(t, info.Warnings)
+			assert.Equal(t, tt.cues, s.Len())
 		})
 	}
 }

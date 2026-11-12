@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func writeDefault(t *testing.T, s *model.Subtitle) string {
@@ -82,7 +82,7 @@ func TestBottomCenterFromAnotherFormatGetsNoAlignmentTag(t *testing.T) {
 
 	s, _, err := webvtt.Read(bytes.NewReader(testfiles.Read(t, "vtt/real/w3c_cue_settings.vtt")), model.CommonReadOptions{}, webvtt.ReadOptions{})
 	require.NoError(t, err)
-	assert.Equal(t, model.BottomCenter, cueAt(t, s, 2).Alignment)
+	assert.Equal(t, model.BottomCenter, cueAt(t, s, 2).Position.Alignment)
 	assert.True(t, strings.HasSuffix(writeDefault(t, s), "Dialogue: 0,0:00:04.00,0:00:06.50,Default,,0,0,0,,What are you waiting for?\n"))
 }
 
@@ -91,7 +91,7 @@ func TestCuesFromOtherFormatsGetTheDefaultHeader(t *testing.T) {
 	t.Parallel()
 
 	top := cue(3004*ms, 4996*ms, "Top")
-	top.Alignment = model.TopCenter
+	top.Position.Alignment = model.TopCenter
 	s := subtitle(t, cue(time.Second, 2500*ms, "<i>Hello</i>", "world"), top)
 	assert.Equal(t, defaultHeader+
 		`Dialogue: 0,0:00:01.00,0:00:02.50,Default,,0,0,0,,{\i1}Hello{\i0}\Nworld`+"\n"+
@@ -181,11 +181,12 @@ func TestStyleOptionErrors(t *testing.T) {
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
 			assert.Equal(t, "WriteOptions.ASS.Style", aerr.Option)
 			assert.Equal(t, tt.msg, aerr.Msg)
-			require.ErrorIs(t, ass.Write(&bytes.Buffer{}, &model.Subtitle{}, model.CommonWriteOptions{}, ass.WriteOptions{Style: tt.style}), model.ErrInvalidArgument)
+			_, err = ass.Write(&bytes.Buffer{}, &model.Subtitle{}, model.CommonWriteOptions{}, ass.WriteOptions{Style: tt.style})
+			require.ErrorIs(t, err, model.ErrInvalidArgument)
 		})
 	}
 
-	err := ass.Write(&bytes.Buffer{}, readFile(t, realDir+"/own_ssa_v4.ssa"), model.CommonWriteOptions{}, ass.WriteOptions{Style: "underline=-1"})
+	_, err := ass.Write(&bytes.Buffer{}, readFile(t, realDir+"/own_ssa_v4.ssa"), model.CommonWriteOptions{}, ass.WriteOptions{Style: "underline=-1"})
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	require.ErrorIs(t, err, model.ErrUnwritable)
@@ -331,7 +332,7 @@ func TestChangedCueIsWrittenFromItsLines(t *testing.T) {
 
 	s := readFile(t, realDir+"/own_aegisub.ass")
 	setCue(t, s, 2, func(c *model.Cue) { c.Lines = []string{"<v Guard>Is it <i>late</i> today?"} })
-	setCue(t, s, 3, func(c *model.Cue) { c.Alignment = model.TopLeft })
+	setCue(t, s, 3, func(c *model.Cue) { c.Position.Alignment = model.TopLeft })
 
 	got := writeDefault(t, s)
 	assert.Contains(t, got, `Dialogue: 0,0:00:06.30,0:00:08.00,Default,Guard,0,0,0,,Is it {\i1}late{\i0} today?`+"\n")
@@ -346,7 +347,7 @@ func TestChangedCueOmitsTheTagsThatItsStyleImplies(t *testing.T) {
 	s := readFile(t, realDir+"/own_style_flags.ass")
 	setCue(t, s, 1, func(c *model.Cue) { c.Lines = []string{"<i>I should have taken the night bus.</i>"} })
 	setCue(t, s, 2, func(c *model.Cue) { c.Lines = []string{"Upright now"} })
-	setCue(t, s, 3, func(c *model.Cue) { c.Alignment = model.BottomCenter })
+	setCue(t, s, 3, func(c *model.Cue) { c.Position.Alignment = model.BottomCenter })
 	setCue(t, s, 5, func(c *model.Cue) { c.Lines = []string{"<i>Left</i> again"} })
 
 	got := writeDefault(t, s)
@@ -369,7 +370,7 @@ func TestSSAUsesLegacyAlignmentAndKeepsTheMarkedColumn(t *testing.T) {
 	t.Parallel()
 
 	s := readFile(t, realDir+"/own_ssa_v4.ssa")
-	setCue(t, s, 1, func(c *model.Cue) { c.Alignment = model.MiddleLeft })
+	setCue(t, s, 1, func(c *model.Cue) { c.Position.Alignment = model.MiddleLeft })
 	assert.Contains(t, writeDefault(t, s), `Dialogue: Marked=0,0:00:05.50,0:00:08.00,Notice,,0000,0000,0000,,{\a9}Next ferry: 9:00`+"\n")
 }
 
@@ -450,7 +451,7 @@ func TestUnchangedRule(t *testing.T) {
 	}{
 		{"no change", func(*model.Cue) {}, false, `{\an8\fs40}Hi`},
 		{"changed lines", func(c *model.Cue) { c.Lines = []string{"Hello"} }, false, `{\an8}Hello`},
-		{"changed alignment", func(c *model.Cue) { c.Alignment = model.TopLeft }, false, `{\an7}Hi`},
+		{"changed alignment", func(c *model.Cue) { c.Position.Alignment = model.TopLeft }, false, `{\an7}Hi`},
 		{"strip tags keeps the alignment tag", func(*model.Cue) {}, true, `{\an8}Hi`},
 		{"no stored text", func(c *model.Cue) {
 			d := cueData(t, *c).Clone()
@@ -499,7 +500,9 @@ func TestWriteOptionsOfOutput(t *testing.T) {
 func TestWriteError(t *testing.T) {
 	t.Parallel()
 
-	require.ErrorIs(t, ass.Write(errWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, ass.WriteOptions{}), errRead)
+	_, err := ass.Write(errWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, ass.WriteOptions{})
+
+	require.ErrorIs(t, err, errRead)
 }
 
 // Ports the ASS row of tests/Formatters/RubyFallbackTest.php of subtitle-toolbox-php.

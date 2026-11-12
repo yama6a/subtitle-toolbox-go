@@ -1,6 +1,8 @@
 # Reading and writing
 
-`stbox.Load` reads a file, `stbox.Parse` reads an `io.Reader`, and `stbox.Write` writes one format. One `ReadOptions` and one `WriteOptions` value serve every format. Each reader and writer ignores the fields of other formats, so one value serves a batch of mixed files.
+`stbox.Load` reads a file, `stbox.Parse` reads an `io.Reader`, and `stbox.Write` writes one format and returns a `WriteReport`. One `ReadOptions` and one `WriteOptions` value serve every format. Each reader and writer ignores the fields of other formats, so one value serves a batch of mixed files.
+
+The `WriteReport` lists the changes a writer made to fit the subtitle into its format. It has one pointer field per format that reports. The field `WebVTT` is non-nil after a WebVTT write and holds one `DroppedColor` per dropped text color. All other fields stay nil, and a format with no report leaves the whole value empty. Use `_, err :=` to ignore it.
 
 <!-- example: ExampleWrite_lineEnding -->
 ```go
@@ -12,7 +14,7 @@ if err != nil {
 	return
 }
 var out bytes.Buffer
-err = stbox.Write(&out, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF})
+_, err = stbox.Write(&out, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -64,7 +66,7 @@ Every text reader runs these steps in this order, before its own parsing. [inter
 A cue without an end ends at the first later start of another cue. The last such cue ends at its start plus `LastCueDuration`, rounded to whole milliseconds. "Later" means strictly later, so 2 cues with the same start do not end each other.
 
 - **Time limit**: the end stops at 99999:59:59.999, the largest time below 100000 hours. So a last cue that starts less than `LastCueDuration` before the limit is shorter. `LastCueEnd` in [internal/parsing/parsing.go](../internal/parsing/parsing.go) holds the rule.
-- **Writer output**: every writer output reads back with its reader, except plain text, which has no reader. A writer that rounds a time to a unit coarser than a millisecond stops at the largest value below the limit in that unit, so ASS writes `99999:59:59.99` and MPL2 writes `[3599999999]`. `Units` in [internal/timecode/timecode.go](../internal/timecode/timecode.go) holds the rule for ASS, LRC, MPL2, SubViewer and TMPlayer, and `Frames` in the same file holds it for MicroDVD, MPSub and QuickTime text. The CSV writer counts frames inside each second, so `frameCell` in [format/csv/time.go](../format/csv/time.go) holds its own step back to the last frame below the limit. The SubRip writer stops at 999:59:59,999, because its reader takes at most 3 hour digits. `maxTime` in [internal/subrip/write.go](../internal/subrip/write.go) holds that limit. The LRC writer stops at 999:59.99, because its reader takes at most 3 minute digits. `maxTime` in [format/lrc/write.go](../format/lrc/write.go) holds that limit.
+- **Writer output**: every writer output reads back with its reader, except plain text, which has no reader. A writer that rounds a time to a unit coarser than a millisecond stops at the largest value below the limit in that unit, so ASS writes `99999:59:59.99` and MPL2 writes `[3599999999]`. The Spruce STL writer stops at `99999:59:59:24` at 25 fps. `Units` in [internal/timecode/timecode.go](../internal/timecode/timecode.go) holds the rule for ASS, LRC, MPL2, SubViewer and TMPlayer, and `Frames` in the same file holds it for MicroDVD, MPSub and QuickTime text. The CSV writer counts frames inside each second, so `frameCell` in [format/csv/time.go](../format/csv/time.go) holds its own step back to the last frame below the limit. The SubRip writer stops at 999:59:59,999, because its reader takes at most 3 hour digits. `maxTime` in [internal/subrip/write.go](../internal/subrip/write.go) holds that limit. The LRC writer stops at 999:59.99, because its reader takes at most 3 minute digits. `maxTime` in [format/lrc/write.go](../format/lrc/write.go) holds that limit.
 
 | Reader | Cue without an end |
 |:--- |:--- |
@@ -96,7 +98,7 @@ A writer builds the whole output with LF line endings in memory. [internal/writi
 - **CSV and TSV line endings**: the CSV writer ends each row with the line ending itself and keeps a line break inside a cell as LF, as Excel writes it. Only the BOM rule runs after it.
 - **CSV and TSV delimiter**: `stbox.Write` sets the delimiter when `WriteOptions.CSV.Delimiter` is empty. TSV output gets a tab. CSV output gets `,` when the stored delimiter is a tab. `csv.Write` called directly keeps the stored delimiter.
 - **BOM**: the line ending comes first, then the BOM. `BOMAdd` adds one UTF-8 BOM unless the output starts with one. `BOMRemove` removes every leading BOM. `BOMDefault` adds the BOM for ASS, CSV, TSV, LRC, MPSub, SubRip and WebVTT, and leaves the output of the other formats as the writer wrote it.
-- **StripTags**: the ASS, MicroDVD, SAMI, SubRip, TTML and WebVTT writers read it. The other writers hold no markup or always write plain text. Library JSON keeps the markup.
+- **StripTags**: the ASS, MicroDVD, SAMI, SubRip, TTML and WebVTT writers read it. The other writers hold no markup or always write plain text. The SCC writer ignores it and writes the styles that CEA-608 holds. Library JSON keeps the markup.
 - **Negative times**: every writer except library JSON writes a negative time as 0. Library JSON writes it as it is.
 - **No save function**: a caller opens the file and calls `Write`. The format comes from the caller, never from the file extension.
 

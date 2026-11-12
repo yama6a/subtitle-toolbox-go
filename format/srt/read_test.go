@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Ports the exception tests of tests/Parsers/SubRipParserTest.php of subtitle-toolbox-php.
@@ -466,7 +466,7 @@ func TestReadText(t *testing.T) {
 			s, _ := mustRead(t, "1\n00:00:01,000 --> 00:00:04,000\n"+tt.text+"\n", false)
 			c := firstCue(t, s)
 			assert.Equal(t, tt.want, c.Lines)
-			assert.Equal(t, tt.align, c.Alignment)
+			assert.Equal(t, tt.align, c.Position.Alignment)
 		})
 	}
 }

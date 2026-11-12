@@ -10,14 +10,17 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const formatDataKey = string(model.ASS)
 
 // ReadOptions holds the settings of the ASS reader. It has no fields yet.
 type ReadOptions struct{}
+
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
 
 // WriteOptions holds the settings of the ASS and SSA writer.
 type WriteOptions struct {

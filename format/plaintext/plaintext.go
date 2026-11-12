@@ -8,14 +8,17 @@ import (
 	"math"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // NoParagraphBreaks is the ParagraphGap that writes all cues as one paragraph.
 const NoParagraphBreaks = time.Duration(math.MaxInt64)
 
 const defaultParagraphGap = 2 * time.Second
+
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
 
 // WriteOptions holds the settings of the plain text writer.
 type WriteOptions struct {

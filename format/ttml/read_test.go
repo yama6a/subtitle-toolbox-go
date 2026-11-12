@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // The tests in this file port tests/Parsers/TtmlParserTest.php of subtitle-toolbox-php, then add rows of their own.
@@ -434,19 +434,25 @@ func TestRegionMapsToAlignment(t *testing.T) {
 	tests := []struct {
 		name, region string
 		want         model.Alignment
+		wantOffset   *model.Offset
 	}{
-		{"bottom center", `tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="after" tts:textAlign="center"`, model.BottomCenter},
-		{"top left", `tts:displayAlign="before" tts:textAlign="left"`, model.TopLeft},
-		{"middle right", `tts:displayAlign="center" tts:textAlign="right"`, model.MiddleRight},
-		{"small region at the bottom", `tts:origin="10% 80%" tts:extent="80% 10%" tts:displayAlign="before" tts:textAlign="center"`, model.BottomCenter},
-		{"pixels", `tts:origin="0px 400px" tts:extent="640px 80px" tts:textAlign="center"`, model.BottomCenter},
-		{"cells", `tts:origin="0c 13c" tts:extent="32c 2c" tts:textAlign="center"`, model.BottomCenter},
-		{"start depends on direction", `tts:displayAlign="after" tts:textAlign="start"`, model.BottomCenter},
-		{"no text alignment", `tts:displayAlign="after"`, model.BottomCenter},
-		{"unknown unit", `tts:origin="10em 10em" tts:textAlign="center"`, model.BottomCenter},
-		{"auto origin and extent", `tts:origin="auto" tts:extent="auto" tts:displayAlign="center" tts:textAlign="left"`, model.MiddleLeft},
-		{"middle row at the edge", `tts:origin="0% 50%" tts:extent="10% 1%" tts:textAlign="right"`, model.MiddleRight},
-		{"unknown display alignment", `tts:displayAlign="middle" tts:textAlign="center"`, model.BottomCenter},
+		{"bottom center", `tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="after" tts:textAlign="center"`, model.BottomCenter, nil},
+		{"top center, display align before", `tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="before" tts:textAlign="center"`, model.TopCenter, nil},
+		{"bottom center above the default anchor", `tts:origin="10% 10%" tts:extent="80% 85%" tts:displayAlign="after" tts:textAlign="center"`, model.BottomCenter, &model.Offset{X: 50, Y: 95}},
+		{"anchor at exactly a third of the height is no offset", `tts:origin="0c 5c" tts:extent="32c 0c" tts:textAlign="center"`, model.MiddleCenter, nil},
+		{"top left", `tts:displayAlign="before" tts:textAlign="left"`, model.TopLeft, nil},
+		{"middle right", `tts:displayAlign="center" tts:textAlign="right"`, model.MiddleRight, nil},
+		{"small region at the bottom", `tts:origin="10% 80%" tts:extent="80% 10%" tts:displayAlign="before" tts:textAlign="center"`, model.BottomCenter, &model.Offset{X: 50, Y: 80}},
+		{"small region, left text", `tts:origin="10% 80%" tts:extent="80% 10%" tts:textAlign="left"`, model.BottomLeft, &model.Offset{X: 10, Y: 80}},
+		{"pixels", `tts:origin="0px 400px" tts:extent="640px 80px" tts:textAlign="center"`, model.BottomCenter, &model.Offset{X: 50, Y: 83.333}},
+		{"cells", `tts:origin="0c 13c" tts:extent="32c 2c" tts:textAlign="center"`, model.BottomCenter, &model.Offset{X: 50, Y: 86.667}},
+		{"origin without extent is clamped", `tts:origin="10% 10%" tts:displayAlign="after" tts:textAlign="center"`, model.BottomCenter, &model.Offset{X: 60, Y: 100}},
+		{"auto origin gives no offset", `tts:origin="auto" tts:extent="auto" tts:displayAlign="center" tts:textAlign="left"`, model.MiddleLeft, nil},
+		{"start depends on direction", `tts:displayAlign="after" tts:textAlign="start"`, model.BottomCenter, nil},
+		{"no text alignment", `tts:displayAlign="after"`, model.BottomCenter, nil},
+		{"unknown unit", `tts:origin="10em 10em" tts:textAlign="center"`, model.BottomCenter, nil},
+		{"middle row at the edge", `tts:origin="0% 50%" tts:extent="10% 1%" tts:textAlign="right"`, model.MiddleRight, nil},
+		{"unknown display alignment", `tts:displayAlign="middle" tts:textAlign="center"`, model.BottomCenter, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -455,7 +461,8 @@ func TestRegionMapsToAlignment(t *testing.T) {
 			s, _ := mustRead(t, document(`<div><p region="r1" end="1s">x</p></div>`, `tts:extent="640px 480px"`,
 				`<layout><region xml:id="r1" `+tt.region+`/></layout>`), false)
 			c, _ := s.Cue(0)
-			assert.Equal(t, tt.want, c.Alignment)
+			assert.Equal(t, tt.want, c.Position.Alignment)
+			assert.Equal(t, tt.wantOffset, c.Position.Offset)
 		})
 	}
 }
@@ -488,7 +495,7 @@ func TestAlignmentRules(t *testing.T) {
 
 			s, _ := mustRead(t, document(tt.body, tt.root, tt.head), false)
 			c, _ := s.Cue(0)
-			assert.Equal(t, tt.want, c.Alignment)
+			assert.Equal(t, tt.want, c.Position.Alignment)
 			d, _ := c.FormatData("ttml")
 			_, ok := d.Get("alignment")
 			assert.Equal(t, tt.wantData, ok)
@@ -498,7 +505,7 @@ func TestAlignmentRules(t *testing.T) {
 	s, _ := mustRead(t, header+`><head><layout><region xml:id="r" tts:origin="0px 400px" tts:extent="640px 80px"/></layout></head>`+
 		`<body tts:extent="640px 480px"><div><p region="r" tts:textAlign="center" end="1s">x</p></div></body></tt>`, false)
 	c, _ := s.Cue(0)
-	assert.Equal(t, model.BottomCenter, c.Alignment)
+	assert.Equal(t, model.BottomCenter, c.Position.Alignment)
 	assert.Equal(t, int64(2), intOf(t, cueData(t, c), "alignment"), "pixels with the extent of the body")
 }
 
@@ -509,7 +516,7 @@ func TestParagraphTextAlignWinsOverRegion(t *testing.T) {
 		`<layout><region xml:id="r1"><style tts:displayAlign="after"/><style tts:textAlign="center"/></region></layout>`), false)
 	c, _ := s.Cue(0)
 
-	assert.Equal(t, model.BottomLeft, c.Alignment)
+	assert.Equal(t, model.BottomLeft, c.Position.Alignment)
 	assert.Equal(t, attrs("tts:textAlign", "left", "region", "r1"), objectOf(t, cueData(t, c), "attributes"))
 }
 
@@ -754,7 +761,8 @@ func TestAttributeReferences(t *testing.T) {
 			assert.Equal(t, `<head><styling><style xml:id="s" foo="`+tt.head+`"/></styling></head>`, head)
 
 			var out bytes.Buffer
-			require.NoError(t, ttml.Write(&out, s, model.CommonWriteOptions{}, ttml.WriteOptions{}))
+			_, err := ttml.Write(&out, s, model.CommonWriteOptions{}, ttml.WriteOptions{})
+			require.NoError(t, err)
 			back, _ := mustRead(t, out.String(), false)
 			backCue, _ := back.Cue(0)
 			assert.Equal(t, cueData(t, c), cueData(t, backCue))

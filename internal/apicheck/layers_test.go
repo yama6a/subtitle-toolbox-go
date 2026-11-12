@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const modulePath = "github.com/yama6a/subtitle-toolbox-go"
+const modulePath = "github.com/yama6a/subtitle-toolbox-go/v2"
 
 type layer int
 
@@ -71,6 +71,8 @@ var layers = map[string]layer{
 	"refsync":              layerFacade,
 	"diff":                 layerFacade,
 	"dual":                 layerFacade,
+	"validation":           layerFacade,
+	"timing":               layerFacade,
 	"internal/cli":         layerCLI,
 	"cmd/stbox":            layerCLI,
 }

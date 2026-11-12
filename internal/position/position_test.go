@@ -1,12 +1,13 @@
 package position_test
 
 import (
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/position"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/position"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func TestAlignmentUnchanged(t *testing.T) {
@@ -49,6 +50,37 @@ func TestAlignmentUnchanged(t *testing.T) {
 			t.Parallel()
 
 			assert.Equal(t, tt.want, position.AlignmentUnchanged(tt.data, tt.alignment))
+		})
+	}
+}
+
+func TestOffsetFits(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		alignment model.Alignment
+		offset    *model.Offset
+		want      bool
+	}{
+		{"bottom center", model.BottomCenter, &model.Offset{X: 50, Y: 90}, true},
+		{"top center, Y in the bottom row", model.TopCenter, &model.Offset{X: 50, Y: 90}, false},
+		{"bottom center, X in the left column", model.BottomCenter, &model.Offset{X: 10, Y: 90}, false},
+		{"top left", model.TopLeft, &model.Offset{X: 10, Y: 5}, true},
+		{"33.333 is below 100/3", model.MiddleLeft, &model.Offset{X: 33.333, Y: 50}, true},
+		{"66.7 is above 200/3", model.MiddleCenter, &model.Offset{X: 50, Y: 66.7}, false},
+		{"bottom right corner", model.BottomRight, &model.Offset{X: 100, Y: 100}, true},
+		{"outside 0 to 100", model.BottomCenter, &model.Offset{X: 50, Y: 101}, false},
+		{"33.3334 rounds to 33.333, the left column", model.BottomCenter, &model.Offset{X: 33.3334, Y: 90}, false},
+		{"66.6666 rounds to 66.667, the bottom row", model.MiddleCenter, &model.Offset{X: 50, Y: 66.6666}, false},
+		{"NaN", model.BottomCenter, &model.Offset{X: math.NaN(), Y: 90}, false},
+		{"nil", model.BottomCenter, nil, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, position.OffsetFits(tt.alignment, tt.offset))
 		})
 	}
 }

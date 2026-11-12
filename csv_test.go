@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
 // Ports the TSV and CSV rows of testLoadWithoutFormatReadsTheFormatOfTheContentOrTheExtension of tests/LoadSaveTest.php
@@ -67,7 +67,8 @@ func TestTSVWrittenAsCSV(t *testing.T) {
 	assert.Contains(t, first, ",")
 	assert.NotContains(t, string(asCSV), "\t")
 	var comma bytes.Buffer
-	require.NoError(t, stbox.Write(&comma, tsv, stbox.CSV, stbox.WriteOptions{CSV: csv.WriteOptions{Delimiter: csv.Comma}}))
+	_, err = stbox.Write(&comma, tsv, stbox.CSV, stbox.WriteOptions{CSV: csv.WriteOptions{Delimiter: csv.Comma}})
+	require.NoError(t, err)
 	assert.Equal(t, comma.String(), string(asCSV))
 	first, _, _ = strings.Cut(string(writeAs(t, tsv, stbox.TSV)), "\n")
 	assert.Contains(t, first, "\t")
@@ -80,7 +81,8 @@ func TestTSVWrittenAsCSV(t *testing.T) {
 	assert.Contains(t, first, "\t")
 
 	var semicolon bytes.Buffer
-	require.NoError(t, stbox.Write(&semicolon, tsv, stbox.CSV, stbox.WriteOptions{CSV: csv.WriteOptions{Delimiter: csv.Semicolon}}))
+	_, err = stbox.Write(&semicolon, tsv, stbox.CSV, stbox.WriteOptions{CSV: csv.WriteOptions{Delimiter: csv.Semicolon}})
+	require.NoError(t, err)
 	first, _, _ = strings.Cut(semicolon.String(), "\n")
 	assert.Contains(t, first, ";")
 }
@@ -97,7 +99,8 @@ func TestTSVRealFilesWriteTheirOwnBytes(t *testing.T) {
 			s, _, err := stbox.Load(testfiles.Path(t, file), stbox.ReadOptions{})
 			require.NoError(t, err)
 			var out bytes.Buffer
-			require.NoError(t, stbox.Write(&out, s, stbox.TSV, stbox.WriteOptions{BOM: stbox.BOMRemove}))
+			_, err = stbox.Write(&out, s, stbox.TSV, stbox.WriteOptions{BOM: stbox.BOMRemove})
+			require.NoError(t, err)
 			assert.Equal(t, string(testfiles.Read(t, file)), out.String())
 		})
 	}

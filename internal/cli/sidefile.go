@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
 )
 
 // sideFileUnknownFormat replaces the --from advice of unknownFormatMessage, because --from does not apply to a side file.
@@ -32,4 +32,18 @@ func (r *runner) readSideFile(path string) (*stbox.Subtitle, error) {
 	}
 	r.printWarnings(&input{arg: path, sub: sub, info: info})
 	return sub, nil
+}
+
+// readSideText returns the content of a file that an option names. A file that is missing or is no regular file, or
+// that cannot be read, is a *fileError that stops the run.
+func readSideText(c *console, name string) ([]byte, error) {
+	path := c.path(name)
+	if st, err := os.Stat(path); err != nil || !st.Mode().IsRegular() {
+		return nil, &fileError{msg: name + ": " + missingFileMessage}
+	}
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return nil, &fileError{msg: name + ": Cannot read the file."}
+	}
+	return content, nil
 }

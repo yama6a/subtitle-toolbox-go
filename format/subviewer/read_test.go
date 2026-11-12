@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const script = "******** START SCRIPT ********\n"
@@ -154,7 +154,8 @@ func TestHeaderOfNumberedTagsIsAList(t *testing.T) {
 			s := mustReadAll(t, tt.content)
 			assert.Equal(t, tt.want, fileData(s)["header"])
 			var out bytes.Buffer
-			require.NoError(t, subviewer.Write(&out, s, model.CommonWriteOptions{}, subviewer.WriteOptions{}))
+			_, err := subviewer.Write(&out, s, model.CommonWriteOptions{}, subviewer.WriteOptions{})
+			require.NoError(t, err)
 			back := mustReadAll(t, out.String())
 			assert.Equal(t, tt.want, fileData(back)["header"])
 		})

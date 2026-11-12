@@ -73,7 +73,10 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 | LRC | 0. `The file has text but no cues.` gives the first line of plain text |
 | CSV and TSV | the line where the row starts, also for an unclosed quote. A missing column gives the line of the header row, or 1 without a header row |
 | SubViewer | the line of the error: the header line, the timing line or the time line |
+| Spruce STL | the line of the error |
 | QuickTime text | the line of the error. A missing `{QTtext}` reports line 1, and a swapped cue reports the line of its timestamp |
+| SCC | the line of the error: the header line, the code line or the line with the bad byte pair. A file with no header gives the first non-empty line |
+| EBU STL | 0. A binary format has no lines |
 
 Each format adds its row here when its reader ships.
 
@@ -85,8 +88,8 @@ The CLI maps an error to an exit code by the phase in which it occurs, not by it
 
 | Code | Meaning | When |
 |---:|:--- |:--- |
-| 0 | success | no input failed, and no difference was found |
-| 1 | result | `diff` found a difference. Not an error |
+| 0 | success | no input failed, no difference was found and no rule was broken |
+| 1 | result | `diff` found a difference, or `validate` found a broken rule. Not an error |
 | 2 | usage | a flag parse error, an unknown command, no input, every check before the first read, and every error before the input loop starts. Example: `Validate()` of the options that the CLI built returns an error that matches `ErrInvalidArgument`. So a `--mask-words` file with no word or a bad word exits 2 |
 | 3 | file | any error while one input is read, edited or written, whatever its type. A side file that is missing or does not parse, such as the reference of `sync`. An output file that the CLI cannot create. Any other error outside the input loop |
 | 130 | interrupt | Ctrl-C or SIGTERM stopped the run. The finished outputs stay |

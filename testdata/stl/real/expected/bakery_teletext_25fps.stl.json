@@ -1,0 +1,204 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Bakery News",
+            "language": "en"
+        },
+        "comments": [
+            {
+                "text": "Check the price list before air.",
+                "beforeCueIndex": 3
+            }
+        ],
+        "formatData": {
+            "stl": {
+                "gsi": {
+                    "CPN": "850",
+                    "DFC": "STL25.01",
+                    "DSC": "1",
+                    "CCT": "00",
+                    "LC": "09",
+                    "OPT": "Bakery News",
+                    "OET": "Morning bake",
+                    "TPT": "",
+                    "TET": "",
+                    "TN": "Jane Doe",
+                    "TCD": "",
+                    "SLR": "BAKERY-0001",
+                    "CD": "260930",
+                    "RD": "261001",
+                    "RN": "02",
+                    "TNB": "00009",
+                    "TNS": "00006",
+                    "TNG": "001",
+                    "MNC": "40",
+                    "MNR": "23",
+                    "TCS": "1",
+                    "TCP": "10000000",
+                    "TCF": "10000100",
+                    "TND": "1",
+                    "DSN": "1",
+                    "CO": "GBR",
+                    "PUB": "Harbour Bakery Ltd",
+                    "EN": "",
+                    "ECD": "",
+                    "spare": "",
+                    "UDA": "Written for subtitle-toolbox tests."
+                },
+                "startOfProgrammeSubtracted": false,
+                "firstSubtitleNumber": 1,
+                "comments": [
+                    {
+                        "text": "Check the price list before air.",
+                        "blocks": [
+                            "000400ff000a000b000a000d00160201436865636b20746865207072696365206c697374206265666f7265206169722e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                ],
+                "counts": {
+                    "TNB": 9,
+                    "TNS": 6,
+                    "TNG": 1,
+                    "TCF": "10000100"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 36001.0,
+                "end": 36003.48,
+                "lines": [
+                    "The ovens are warm.",
+                    "Bread is ready at six."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 20,
+                        "justificationCode": 2,
+                        "text": "The ovens are warm.\nBread is ready at six.",
+                        "blocks": [
+                            "000100ff000a0001000a00030c1402000d0b0b546865206f76656e7320617265207761726d2e0a0a8a8a0d0b0b4272656164206973207265616479206174207369782e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 36004.0,
+                "end": 36006.0,
+                "lines": [
+                    "<font color=\"#ff0000\">Fresh</font> rolls are <i>warm</i> today."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 22,
+                        "justificationCode": 2,
+                        "text": "<font color=\"#ff0000\">Fresh</font> rolls are <i>warm</i> today.",
+                        "blocks": [
+                            "000200ff000a0004000a0006001602000d0b0b01467265736807726f6c6c732061726520807761726d8120746f6461792e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 36007.2,
+                "end": 36010.0,
+                "lines": [
+                    "Café <i>crème</i> $3 or £2",
+                    "<u>Äpfel</u> und Straße"
+                ],
+                "identifier": null,
+                "alignment": 7,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 1,
+                        "justificationCode": 1,
+                        "text": "Café <i>crème</i> $3 or £2\n<u>Äpfel</u> und Straße",
+                        "blocks": [
+                            "000300ff000a0007050a000a000101000d0b0b436166c26520806372c1656d658120a433206f7220a3320a0a8a8a0d0b0b82c8417066656c8320756e642053747261fb650a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 36011.0,
+                "end": 36013.0,
+                "lines": [
+                    "Sign: ‘Open’ ¤"
+                ],
+                "identifier": null,
+                "alignment": 6,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 12,
+                        "justificationCode": 3,
+                        "text": "Sign: ‘Open’ ¤",
+                        "blocks": [
+                            "000500fe000a000b000a000d000c03005052494345204c4953542056328f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+                            "000500ff000a000b000a000d000c03000d0b0b5369676e3a20a94f70656eb920240a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 36014.0,
+                "end": 36020.0,
+                "lines": [
+                    "<font color=\"#ffff00\">Our bakery opens at six every morning.</font>",
+                    "<font color=\"#ffff00\">The first loaves come out at seven.</font>",
+                    "<font color=\"#ffff00\">Rye bread and white bread are baked</font>",
+                    "<font color=\"#ffff00\">in the stone oven behind the shop.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 16,
+                        "justificationCode": 2,
+                        "text": "<font color=\"#ffff00\">Our bakery opens at six every morning.</font>\n<font color=\"#ffff00\">The first loaves come out at seven.</font>\n<font color=\"#ffff00\">Rye bread and white bread are baked</font>\n<font color=\"#ffff00\">in the stone oven behind the shop.</font>",
+                        "blocks": [
+                            "00060000000a000e000a0014001002000d0b0b034f75722062616b657279206f70656e7320617420736978206576657279206d6f726e696e672e0a0a8a8a0d0b0b03546865206669727374206c6f6176657320636f6d65206f757420617420736576656e2e0a0a8a8a0d0b0b0352796520627265616420616e64207768697465",
+                            "000600ff000a000e000a001400100200206272656164206172652062616b65640a0a8a8a0d0b0b03696e207468652073746f6e65206f76656e20626568696e64207468652073686f702e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 36030.96,
+                "end": 36033.0,
+                "lines": [
+                    "Good night."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 22,
+                        "justificationCode": 0,
+                        "text": "Good night.",
+                        "blocks": [
+                            "000700ff000a001e180a0021001600000d0b0b2020202020476f6f64206e696768742e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

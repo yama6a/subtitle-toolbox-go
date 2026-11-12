@@ -9,16 +9,19 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/phpkey"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/phpkey"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const formatDataKey = string(model.QuickTimeText)
 
 // ReadOptions holds the settings of the QuickTime text reader. It has none yet.
 type ReadOptions struct{}
+
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
 
 // WriteOptions holds the settings of the QuickTime text writer. It has none yet.
 type WriteOptions struct{}

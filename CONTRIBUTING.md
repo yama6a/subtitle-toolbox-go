@@ -13,23 +13,23 @@ A package imports only packages of a lower layer. Every layer may also import th
 
 | Layer | Packages | May import |
 |---:|:--- |:--- |
-| 0 | leaf helpers in `internal/`: `markupcore`, `linewrap`, `paragraphs`, `timecode`, `grapheme`, `ssatag`, `phpkey`, `stringlist`, `textenc`, `xmlraw`, `extfallback`, the test helpers `testfiles` and `golden`, later `codepage`, `cea608`, `cea708`, `ebml`, `orderedjson` | other layer 0 packages |
+| 0 | leaf helpers in `internal/`: `markupcore`, `linewrap`, `paragraphs`, `timecode`, `grapheme`, `ssatag`, `phpkey`, `stringlist`, `textenc`, `xmlraw`, `extfallback`, `codepage`, the test helpers `testfiles` and `golden`, `cea608`, `cea708`, `ebml`, `orderedjson` | other layer 0 packages |
 | 1 | `markup` | layer 0 |
 | 2 | `model` | layers 0 and 1 |
-| 3 | `internal/` helpers that work on model types: `blocks`, `subrip`, `vtt`, `position`, `parsing`, `writing`, later `caption`, `ttmlwrite`, `wordgroup` | layers 0 to 2, and other layer 3 packages. Go rejects an import cycle |
+| 3 | `internal/` helpers that work on model types: `blocks`, `subrip`, `vtt`, `position`, `parsing`, `writing`, `caption`, `ttmlwrite`, later `wordgroup` | layers 0 to 2, and other layer 3 packages. Go rejects an import cycle |
 | 4 | `format/<name>` | layers 0 to 3. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML. Other shared code goes to `internal/` |
 | 4b | `container/<name>`, from 3.x | layers 0 to 4. A container returns cues, so it calls the format readers |
-| 5 | root `stbox` and the service packages | layers 0 to 4b. A service never imports the root. The root never imports a service |
+| 5 | root `stbox` and the service packages, such as `stats`, `diff`, `validation` and `timing` | layers 0 to 4b. A service never imports the root. The root never imports a service |
 | 6 | `internal/cli`, `cmd/stbox` | everything |
 
 ### Format packages
 
-Every format package declares `ReadOptions` and `WriteOptions`, empty where the format has no options. Its functions always take them, so a first option is a new field and never a signature change. A format without a reader has no `Read`. A format without a signature has no `Detect`.
+Every format package declares `ReadOptions`, `WriteOptions` and `WriteReport`, empty where the format has no options or reports nothing. Its functions always take them, so a first option or report field is a new field and never a signature change. A format without a reader has no `Read`. A format without a signature has no `Detect`.
 
 ```go
 // Read reads UTF-8 text. The root decodes other encodings first.
 func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model.Subtitle, []model.ParseWarning, error)
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error)
 // Detect gets the content without leading BOMs or white space, with LF line endings.
 func Detect(content []byte) bool
 ```
@@ -170,7 +170,7 @@ Its exception table names the rule and the reason for each exception.
 
 | # | Rule | Example |
 |---:|:--- |:--- |
-| N1 | A `Format` value is the CLI format name. Format data keys use the same value. No aliases | `"srt"`, `"vtt"`, `"ass"`, `"ttml"`, `"sami"`, `"sbv"`, `"microdvd"`, `"mpl2"`, `"tmplayer"`, `"mpsub"`, `"subviewer"`, `"qttext"`, `"lrc"`, `"csv"`, `"tsv"`, `"json"`, `"txt"`. `sub`, `smi` and `ssa` are extensions, never format names |
+| N1 | A `Format` value is the CLI format name. Format data keys use the same value. No aliases | `"srt"`, `"vtt"`, `"ass"`, `"ttml"`, `"sami"`, `"sbv"`, `"microdvd"`, `"mpl2"`, `"tmplayer"`, `"mpsub"`, `"subviewer"`, `"qttext"`, `"spruce-stl"`, `"lrc"`, `"csv"`, `"tsv"`, `"json"`, `"txt"`. `sub`, `smi` and `ssa` are extensions, never format names |
 | N2 | A format constant carries the format's own name. A format package has the lower-case name from the package map | `SubRip`, `WebVTT`, `ASS`, `TTML`, `SAMI`, `SBV`, `MicroDVD`, `MPL2`, `TMPlayer`, `MPSub`, `SubViewer`, `QuickTimeText`, `LRC`, `CSV`, `TSV`, `JSON`, `PlainText`. Packages `srt`, `webvtt`, `ass` |
 | N3 | Initialisms are all capitals, as Go style and the `revive` linter want. Brand names keep their own capitals | `ID`, `URL`, `BOM`, `CRLF`, `PNG`, `OCR`. `SubRip`, `WebVTT`, `MicroDVD` |
 | N4 | Full words and US spelling | `FrameRate`, not `FPS`. `MaxLinesPerCue`, not `MaxLines`. `Color`, not `Colour` |

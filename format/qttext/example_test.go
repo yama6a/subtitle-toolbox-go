@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/qttext"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/qttext"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func ExampleRead() {
@@ -32,7 +32,7 @@ func ExampleWrite() {
 		model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"<i>Sung</i> and <b>loud</b>"}},
 		model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Lines: []string{"<i>Sung</i>"}},
 	)
-	err := qttext.Write(os.Stdout, s, model.CommonWriteOptions{}, qttext.WriteOptions{})
+	_, err := qttext.Write(os.Stdout, s, model.CommonWriteOptions{}, qttext.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)
 	}

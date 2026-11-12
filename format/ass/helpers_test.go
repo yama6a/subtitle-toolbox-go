@@ -9,9 +9,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const (
@@ -94,7 +94,8 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions, opt
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, ass.Write(&out, s, common, opts))
+	_, err := ass.Write(&out, s, common, opts)
+	require.NoError(t, err)
 	return out.String()
 }
 

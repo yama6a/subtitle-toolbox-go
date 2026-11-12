@@ -5,8 +5,8 @@ A Go library and command line tool that reads, edits and writes subtitle files.
 ## Install
 
 ```sh
-go get github.com/yama6a/subtitle-toolbox-go
-go install github.com/yama6a/subtitle-toolbox-go/cmd/stbox@latest
+go get github.com/yama6a/subtitle-toolbox-go/v2
+go install github.com/yama6a/subtitle-toolbox-go/v2/cmd/stbox@latest
 ```
 
 [docs/cli.md](docs/cli.md#install) shows how to install the command from a release archive or from the container image.
@@ -30,7 +30,7 @@ if err := s.Shift(-2500 * time.Millisecond); err != nil {
 	fmt.Println(err)
 	return
 }
-if err := stbox.Write(os.Stdout, s, stbox.WebVTT, stbox.WriteOptions{BOM: stbox.BOMRemove}); err != nil {
+if _, err := stbox.Write(os.Stdout, s, stbox.WebVTT, stbox.WriteOptions{BOM: stbox.BOMRemove}); err != nil {
 	fmt.Println(err)
 }
 // Output:
@@ -70,7 +70,10 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [MPSub](https://github.com/pigoz/mplayer-svn/blob/7f6453553628729b151490144f13eae290a0fd67/DOCS/tech/mpsub.sub) | `stbox.MPSub` | `mpsub` | `.mpsub` | yes | yes | MPlayer, often named `.sub`, found by content |
 | [SAMI](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/dnacc/understanding-sami-1.0) | `stbox.SAMI` | `sami` | `.smi`, `.sami` | yes | yes | one language class per read |
 | [SBV](https://support.google.com/youtube/answer/2734698) | `stbox.SBV` | `sbv` | `.sbv` | yes | yes | YouTube Studio captions |
+| [SCC](https://en.wikipedia.org/wiki/EIA-608) | `stbox.SCC` | `scc` | `.scc` | yes | yes | CEA-608 broadcast captions |
 | [SubRip](https://en.wikipedia.org/wiki/SubRip) | `stbox.SubRip` | `srt` | `.srt` | yes | yes | |
+| [EBU STL](https://tech.ebu.ch/docs/tech/tech3264.pdf) | `stbox.EBUSTL` | `stl` | `.stl` | yes | no | binary, broadcast subtitles |
+| [Spruce STL](https://www.spectacle.co.uk/uploads/other%20media/Manual_DVD_Studio_Pro_4.pdf) | `stbox.SpruceSTL` | `spruce-stl` | `.stl` | yes | yes | DVD Studio Pro text subtitles, time codes in frames |
 | [SubViewer 1 and 2](https://man.archlinux.org/man/mplayer.1.en) | `stbox.SubViewer` | `subviewer` | `.sub` | yes | yes | old DivX releases, found by content |
 | [TTML, IMSC, DFXP](https://www.w3.org/TR/ttml2/) | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | yes | yes | also iTT |
 | [TSV](https://www.iana.org/assignments/media-types/text/tab-separated-values) | `stbox.TSV` | `tsv` | `.tsv` | yes | yes | not detected from the content |
@@ -89,6 +92,7 @@ stbox convert film.srt --to vtt -o film.vtt        # one file
 stbox convert season1 --to vtt --output-dir out    # every subtitle file of a folder
 stbox convert film.srt --to vtt --shift -2.5       # WebVTT with all cues 2.5 s earlier, on stdout
 stbox info film.srt --json                         # format, encoding, statistics and warnings
+stbox validate film.srt --max-cpl 42 --check-overlaps   # one line for each broken rule, exit code 1
 stbox formats                                      # names and extensions for --from and --to
 ```
 
@@ -104,7 +108,7 @@ stbox formats                                      # names and extensions for --
 ```text
 func Load(path string, opts ReadOptions) (*Subtitle, ReadInfo, error)
 func Parse(r io.Reader, opts ReadOptions) (*Subtitle, ReadInfo, error)
-func Write(w io.Writer, s *Subtitle, f Format, opts WriteOptions) error
+func Write(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteReport, error)
 func Detect(content []byte) (Format, bool)
 ```
 
@@ -133,7 +137,7 @@ Each format has its own field in `ReadOptions` and `WriteOptions`. See [docs/for
 
 ## Compatibility
 
-Every 1.x release keeps the API, the option defaults and the conversion output. See [docs/compatibility.md](docs/compatibility.md).
+Every 2.x release keeps the API, the option defaults and the conversion output. See [docs/compatibility.md](docs/compatibility.md).
 
 ## Documentation
 

@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 type textCue struct {
@@ -85,7 +85,7 @@ func describe(s *model.Subtitle) []described {
 			}
 		}
 		coordinates, _ := c.FormatData("srt")
-		out = append(out, described{c.Start, c.End, lines, c.Alignment, coordinates})
+		out = append(out, described{c.Start, c.End, lines, c.Position.Alignment, coordinates})
 	}
 	return out
 }
@@ -178,7 +178,7 @@ func TestRealFileBlocks(t *testing.T) {
 func numpads(s *model.Subtitle) []int {
 	var out []int
 	for _, c := range s.All() {
-		out = append(out, c.Alignment.Numpad())
+		out = append(out, c.Position.Alignment.Numpad())
 	}
 	return out
 }

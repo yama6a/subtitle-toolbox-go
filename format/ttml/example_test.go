@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func ExampleRead() {
@@ -21,7 +21,7 @@ func ExampleRead() {
 		return
 	}
 	for _, c := range s.All() {
-		fmt.Println(c.Start, c.End, c.Lines, c.Alignment)
+		fmt.Println(c.Start, c.End, c.Lines, c.Position.Alignment)
 	}
 	lang, _ := s.Metadata(model.MetadataLanguage)
 	data, _ := s.FormatData("ttml")
@@ -44,8 +44,8 @@ func ExampleDetect() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>Hello</i>"}, Alignment: model.TopCenter})
-	if err := ttml.Write(os.Stdout, s, model.CommonWriteOptions{}, ttml.WriteOptions{}); err != nil {
+	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>Hello</i>"}, Position: model.Position{Alignment: model.TopCenter}})
+	if _, err := ttml.Write(os.Stdout, s, model.CommonWriteOptions{}, ttml.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

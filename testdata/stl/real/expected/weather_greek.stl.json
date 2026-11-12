@@ -1,0 +1,122 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Weather",
+            "language": "el"
+        },
+        "comments": [],
+        "formatData": {
+            "stl": {
+                "gsi": {
+                    "CPN": "850",
+                    "DFC": "STL25.01",
+                    "DSC": "1",
+                    "CCT": "03",
+                    "LC": "70",
+                    "OPT": "Weather",
+                    "OET": "",
+                    "TPT": "",
+                    "TET": "",
+                    "TN": "",
+                    "TCD": "",
+                    "SLR": "",
+                    "CD": "261002",
+                    "RD": "261002",
+                    "RN": "00",
+                    "TNB": "00003",
+                    "TNS": "00003",
+                    "TNG": "001",
+                    "MNC": "40",
+                    "MNR": "23",
+                    "TCS": "1",
+                    "TCP": "00000000",
+                    "TCF": "00000100",
+                    "TND": "1",
+                    "DSN": "1",
+                    "CO": "GRC",
+                    "PUB": "",
+                    "EN": "",
+                    "ECD": "",
+                    "spare": "",
+                    "UDA": ""
+                },
+                "startOfProgrammeSubtracted": false,
+                "firstSubtitleNumber": 1,
+                "comments": [],
+                "counts": {
+                    "TNB": 3,
+                    "TNS": 3,
+                    "TNG": 1,
+                    "TCF": "00000100"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "Αύριο θα βρέξει."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 22,
+                        "justificationCode": 2,
+                        "text": "Αύριο θα βρέξει.",
+                        "blocks": [
+                            "000100ff0000000100000003001602000d0b0bc1fdf1e9ef20e8e120e2f1ddeee5e92e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3.4,
+                "end": 6.0,
+                "lines": [
+                    "Ο ήλιος βγαίνει στις έξι."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 22,
+                        "justificationCode": 2,
+                        "text": "Ο ήλιος βγαίνει στις έξι.",
+                        "blocks": [
+                            "000200ff000000030a000006001602000d0b0bcf20deebe9eff220e2e3e1dfede5e920f3f4e9f220ddeee92e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 6.4,
+                "end": 9.0,
+                "lines": [
+                    "Ο άνεμος είναι ασθενής."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 22,
+                        "justificationCode": 2,
+                        "text": "Ο άνεμος είναι ασθενής.",
+                        "blocks": [
+                            "000300ff000000060a000009001602000d0b0bcf20dcede5eceff220e5dfede1e920e1f3e8e5eddef22e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

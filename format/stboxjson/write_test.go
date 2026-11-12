@@ -12,15 +12,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func writeString(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions, opts stboxjson.WriteOptions) string {
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, stboxjson.Write(&out, s, common, opts))
+	_, err := stboxjson.Write(&out, s, common, opts)
+	require.NoError(t, err)
 	return out.String()
 }
 
@@ -55,7 +56,7 @@ func TestWriteDocuments(t *testing.T) {
 				s := &model.Subtitle{}
 				s.SetMetadata(model.MetadataTitle, "Big Buck Bunny")
 				s.SetMetadata(model.MetadataLanguage, "en")
-				s.AddCue(model.Cue{Start: ms(1500), End: ms(4000), Lines: []string{"Hello", "<i>world</i>"}, ID: "intro", Alignment: model.TopCenter})
+				s.AddCue(model.Cue{Start: ms(1500), End: ms(4000), Lines: []string{"Hello", "<i>world</i>"}, ID: "intro", Position: model.Position{Alignment: model.TopCenter}})
 				require.NoError(t, s.AddComment("Translated by Jane Doe", 0))
 				return s
 			},
@@ -150,7 +151,22 @@ func TestWriteCueFields(t *testing.T) {
 		want string
 	}{
 		{"bottom center as null", model.Cue{Start: 0, End: ms(1)}, `{"start":0.0,"end":0.001,"lines":[],"identifier":null,"alignment":null,"formatData":{}}`},
-		{"bottom left", model.Cue{Alignment: model.BottomLeft}, `{"start":0.0,"end":0.0,"lines":[],"identifier":null,"alignment":1,"formatData":{}}`},
+		{"bottom left", model.Cue{Position: model.Position{Alignment: model.BottomLeft}}, `{"start":0.0,"end":0.0,"lines":[],"identifier":null,"alignment":1,"formatData":{}}`},
+		{
+			"row and offset",
+			model.Cue{Position: model.Position{Row: 2, Column: 1, Grid: model.Grid{Rows: 15, Columns: 32}, Offset: &model.Offset{X: 50, Y: 10.5}}},
+			`{"start":0.0,"end":0.0,"lines":[],"identifier":null,"alignment":null,"position":{"row":2,"column":1,"grid":{"rows":15,"columns":32},"offset":{"x":50.0,"y":10.5}},"formatData":{}}`,
+		},
+		{
+			"offset only",
+			model.Cue{Position: model.Position{Offset: &model.Offset{X: 0, Y: 100}}},
+			`{"start":0.0,"end":0.0,"lines":[],"identifier":null,"alignment":null,"position":{"offset":{"x":0.0,"y":100.0}},"formatData":{}}`,
+		},
+		{
+			"an invalid position is left out",
+			model.Cue{Position: model.Position{Row: 2}},
+			`{"start":0.0,"end":0.0,"lines":[],"identifier":null,"alignment":null,"formatData":{}}`,
+		},
 		{"forced", model.Cue{Forced: true, ID: "7"}, `{"start":0.0,"end":0.0,"lines":[],"identifier":"7","alignment":null,"forced":true,"formatData":{}}`},
 		{"negative times", model.Cue{Start: ms(-2500), End: ms(-1)}, `{"start":-2.5,"end":-0.001,"lines":[],"identifier":null,"alignment":null,"formatData":{}}`},
 		{
@@ -271,7 +287,7 @@ func TestWriteErrors(t *testing.T) {
 			t.Parallel()
 
 			var out bytes.Buffer
-			err := stboxjson.Write(&out, tt.s, model.CommonWriteOptions{}, stboxjson.WriteOptions{PrettyPrint: true})
+			_, err := stboxjson.Write(&out, tt.s, model.CommonWriteOptions{}, stboxjson.WriteOptions{PrettyPrint: true})
 			var uerr *model.UnwritableError
 			require.ErrorAs(t, err, &uerr)
 			require.ErrorIs(t, err, model.ErrUnwritable)
@@ -293,7 +309,7 @@ func (failingWriter) Write([]byte) (int, error) { return 0, errDiskFull }
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	err := stboxjson.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
+	_, err := stboxjson.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
 	require.ErrorIs(t, err, errDiskFull)
 }
 

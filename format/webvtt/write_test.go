@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const bom = "\ufeff"
@@ -21,7 +21,8 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions) str
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, webvtt.Write(&out, s, common, webvtt.WriteOptions{}))
+	_, err := webvtt.Write(&out, s, common, webvtt.WriteOptions{})
+	require.NoError(t, err)
 	return out.String()
 }
 
@@ -287,7 +288,54 @@ func TestWriteSettings(t *testing.T) {
 			t.Parallel()
 
 			c := cue(sec, 2*sec, "One")
-			c.Alignment = tt.alignment
+			c.Position.Alignment = tt.alignment
+			if tt.data != nil {
+				c = withData(t, c, tt.data...)
+			}
+			assert.Equal(t, bom+"WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.000"+tt.want+"\nOne\n", write(t, subtitle(t, c), model.CommonWriteOptions{}))
+		})
+	}
+}
+
+func TestWriteOffset(t *testing.T) {
+	t.Parallel()
+
+	f := func(k string, v any) model.Field { return model.Field{Key: k, Value: v} }
+	tests := []struct {
+		name      string
+		alignment model.Alignment
+		offset    model.Offset
+		data      []model.Field
+		want      string
+	}{
+		{name: "bottom center height", alignment: model.BottomCenter, offset: model.Offset{X: 50, Y: 90}, want: " line:90%,end"},
+		{name: "bottom center height and column", alignment: model.BottomCenter, offset: model.Offset{X: 45, Y: 90}, want: " line:90%,end position:45%,center"},
+		{name: "bottom center edge", alignment: model.BottomCenter, offset: model.Offset{X: 50, Y: 100}, want: ""},
+		{name: "bottom left", alignment: model.BottomLeft, offset: model.Offset{X: 10, Y: 90}, want: " position:10%,line-left align:left"},
+		{name: "top center keeps the row setting", alignment: model.TopCenter, offset: model.Offset{X: 50, Y: 10}, want: " line:0"},
+		{name: "top left", alignment: model.TopLeft, offset: model.Offset{X: 20, Y: 5}, want: " line:0 position:20%,line-left align:left"},
+		{name: "middle right", alignment: model.MiddleRight, offset: model.Offset{X: 80, Y: 50}, want: " line:50%,center position:80%,line-right align:right"},
+		{name: "decimals", alignment: model.BottomCenter, offset: model.Offset{X: 50, Y: 84.66666}, want: " line:84.667%,end"},
+		{name: "offset outside the cell of the alignment", alignment: model.TopCenter, offset: model.Offset{X: 50, Y: 90}, want: " line:0"},
+		{
+			name: "kept settings come first", alignment: model.BottomCenter, offset: model.Offset{X: 50, Y: 90},
+			data: []model.Field{f("size", "35%"), f("region", "r"), f("line", "0"), f("alignment", int64(8))}, want: " size:35% region:r line:90%,end",
+		},
+		{
+			name: "stored settings win while the alignment is unchanged", alignment: model.TopLeft, offset: model.Offset{X: 10, Y: 5},
+			data: []model.Field{f("line", "0"), f("align", "left"), f("alignment", int64(7))}, want: " line:0 align:left",
+		},
+		{
+			name: "vertical text takes no offset", alignment: model.BottomCenter, offset: model.Offset{X: 50, Y: 90},
+			data: []model.Field{f("vertical", "rl")}, want: " vertical:rl",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			c := cue(sec, 2*sec, "One")
+			c.Position = model.Position{Alignment: tt.alignment, Offset: &tt.offset}
 			if tt.data != nil {
 				c = withData(t, c, tt.data...)
 			}
@@ -305,12 +353,12 @@ func TestWriteAlignmentRoundTrip(t *testing.T) {
 		a, ok := model.AlignmentFromNumpad(n)
 		require.True(t, ok)
 		c := cue(time.Duration(n)*sec, time.Duration(n+1)*sec, "Cue")
-		c.Alignment = a
+		c.Position.Alignment = a
 		cues = append(cues, c)
 	}
 	s, _ := parse(t, write(t, subtitle(t, cues...), model.CommonWriteOptions{}), false)
 	for i, c := range s.All() {
-		assert.Equal(t, i+1, c.Alignment.Numpad())
+		assert.Equal(t, i+1, c.Position.Alignment.Numpad())
 	}
 }
 
@@ -323,7 +371,7 @@ func TestWriteChangedAlignmentReplacesTheStoredPosition(t *testing.T) {
 	s := readFile(t, path)
 	for i, a := range []model.Alignment{model.TopCenter, model.BottomCenter} {
 		c, _ := s.Cue(i)
-		c.Alignment = a
+		c.Position.Alignment = a
 		require.NoError(t, s.SetCue(i, c))
 	}
 	want := strings.NewReplacer(
@@ -399,7 +447,7 @@ func TestWriteArrowInText(t *testing.T) {
 	assert.Equal(t, []string{"a --&gt; b", "c"}, firstCue(t, again).Lines)
 }
 
-func TestWriteWithReport(t *testing.T) {
+func TestWriteReport(t *testing.T) {
 	t.Parallel()
 
 	s := subtitle(t,
@@ -408,7 +456,7 @@ func TestWriteWithReport(t *testing.T) {
 		cue(5500*ms, 6*sec, "plain"),
 	)
 	var out bytes.Buffer
-	report, err := webvtt.WriteWithReport(&out, s, model.CommonWriteOptions{}, webvtt.WriteOptions{})
+	report, err := webvtt.Write(&out, s, model.CommonWriteOptions{}, webvtt.WriteOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, webvtt.WriteReport{DroppedColors: []webvtt.DroppedColor{
 		{CueIndex: 0, Color: "#123456", Message: `Cue #0 at 1 s: dropped the color "#123456", because WebVTT has classes for 8 colors only.`},
@@ -418,7 +466,7 @@ func TestWriteWithReport(t *testing.T) {
 	assert.Contains(t, out.String(), "\na b <c.white>c</c>\n")
 
 	out.Reset()
-	report, err = webvtt.WriteWithReport(&out, s, model.CommonWriteOptions{StripTags: true}, webvtt.WriteOptions{})
+	report, err = webvtt.Write(&out, s, model.CommonWriteOptions{StripTags: true}, webvtt.WriteOptions{})
 	require.NoError(t, err)
 	assert.Empty(t, report.DroppedColors)
 }
@@ -432,8 +480,6 @@ func (failingWriter) Write([]byte) (int, error) { return 0, errDiskFull }
 func TestWriteError(t *testing.T) {
 	t.Parallel()
 
-	err := webvtt.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, webvtt.WriteOptions{})
-	require.ErrorIs(t, err, errDiskFull)
-	_, err = webvtt.WriteWithReport(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, webvtt.WriteOptions{})
+	_, err := webvtt.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, webvtt.WriteOptions{})
 	require.ErrorIs(t, err, errDiskFull)
 }

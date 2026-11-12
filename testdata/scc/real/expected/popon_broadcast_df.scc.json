@@ -1,0 +1,224 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "scc": {
+                "dropFrame": true
+            }
+        },
+        "cues": [
+            {
+                "start": 3501.131,
+                "end": 3503.3,
+                "lines": [
+                    "THE NEXT TRAIN TO LAKESIDE",
+                    "LEAVES AT NINE."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            5,
+                            8
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3504.601,
+                "end": 3506.47,
+                "lines": [
+                    "<i>Doors are closing.</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3508.105,
+                "end": 3510.607,
+                "lines": [
+                    "THE BAKERY ON MAIN STREET",
+                    "OPENS AT SIX."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            4,
+                            10
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3510.741,
+                "end": 3512.976,
+                "lines": [
+                    "♪ SOFT PIANO MUSIC ♪"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            8
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3537.768,
+                "end": 3539.669,
+                "lines": [
+                    "[ STATION BELL RINGS ]"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            1
+                        ],
+                        "columns": [
+                            9
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3540.771,
+                "end": 3543.94,
+                "lines": [
+                    "WE HAVE <i>FRESH</i> BREAD TODAY."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            4
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3546.043,
+                "end": 3547.944,
+                "lines": [
+                    "<font color=\"#ffff00\">RAIN IS LIKELY TONIGHT.</font>",
+                    "TAKE AN UMBRELLA."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            14,
+                            15
+                        ],
+                        "columns": [
+                            0,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3597.027,
+                "end": 3599.329,
+                "lines": [
+                    "“CAFÉ NORD” — OPEN DAILY."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            4
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3600.697,
+                "end": 3602.999,
+                "lines": [
+                    "PLATFORM <u>TWO</u> NOT THREE."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            15
+                        ],
+                        "columns": [
+                            4
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3604.868,
+                "end": 3607.003,
+                "lines": [
+                    "¡HASTA MAÑANA, ZÜRICH!"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {
+                    "scc": {
+                        "mode": "pop-on",
+                        "rows": [
+                            2
+                        ],
+                        "columns": [
+                            8
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

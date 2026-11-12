@@ -9,12 +9,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const bom = "\ufeff"
@@ -79,7 +79,7 @@ func TestWrite(t *testing.T) {
 			want: "start,end,text,text2\n0,1,a,\n",
 		},
 		{
-			name: "negative times write as 0", common: noBOM, opts: csv.WriteOptions{TimeFormat: csv.TimeFrames, FrameRate: 25},
+			name: "negative times write as 0", common: noBOM, opts: csv.WriteOptions{TimeFormat: csv.TimeFrames, FrameRate: model.FrameRate{Num: 25, Den: 1}},
 			s:    subtitle(model.Cue{Start: -2 * time.Second, End: -time.Second, Lines: []string{"a"}}),
 			want: "start,end,text\n00:00:00:00,00:00:00:00,a\n",
 		},
@@ -117,7 +117,7 @@ func TestWriteTimeFormats(t *testing.T) {
 			t.Parallel()
 
 			s := subtitle(model.Cue{Start: 62480 * ms, End: 3599990 * ms, Lines: []string{"a"}})
-			assert.Equal(t, "start,end,text\n"+tt.start+","+tt.end+",a\n", write(t, s, noBOM, csv.WriteOptions{TimeFormat: tt.format, FrameRate: 25}))
+			assert.Equal(t, "start,end,text\n"+tt.start+","+tt.end+",a\n", write(t, s, noBOM, csv.WriteOptions{TimeFormat: tt.format, FrameRate: model.FrameRate{Num: 25, Den: 1}}))
 		})
 	}
 }
@@ -153,7 +153,7 @@ func TestWriteTimeCells(t *testing.T) {
 
 			s := subtitle(model.Cue{Start: tt.d, End: tt.d, Lines: []string{"a"}})
 			want := "start,end,text\n" + tt.want + "," + tt.want + ",a\n"
-			assert.Equal(t, want, write(t, s, noBOM, csv.WriteOptions{TimeFormat: tt.format, FrameRate: tt.fps}))
+			assert.Equal(t, want, write(t, s, noBOM, csv.WriteOptions{TimeFormat: tt.format, FrameRate: rate(tt.fps)}))
 		})
 	}
 }
@@ -187,10 +187,10 @@ func TestWriteFrameRateOptionWins(t *testing.T) {
 
 	opts := csv.ReadOptions{
 		Columns:   csv.Columns{Start: csv.ColumnNamed("Start TC"), Text: csv.ColumnNamed("Text"), Speaker: csv.ColumnNamed("Character")},
-		FrameRate: 25,
+		FrameRate: model.FrameRate{Num: 25, Den: 1},
 	}
 	s, _ := mustRead(t, string(testfiles.Read(t, realDir+"/dubbing_script.csv")), strict, opts)
-	assert.Contains(t, write(t, s, model.CommonWriteOptions{}, csv.WriteOptions{FrameRate: 24}), "\n10:00:05:19,BEN,- I have one.,\n")
+	assert.Contains(t, write(t, s, model.CommonWriteOptions{}, csv.WriteOptions{FrameRate: model.FrameRate{Num: 24, Den: 1}}), "\n10:00:05:19,BEN,- I have one.,\n")
 	assert.Contains(t, write(t, s, model.CommonWriteOptions{}, csv.WriteOptions{}), "\n10:00:05:20,BEN,- I have one.,\n")
 }
 
@@ -200,7 +200,7 @@ func TestWriteTimeFormatOptionWins(t *testing.T) {
 	t.Parallel()
 
 	s, _ := mustRead(t, string(testfiles.Read(t, realDir+"/excel_de_semicolon.csv")), strict, csv.ReadOptions{})
-	assert.Contains(t, write(t, s, model.CommonWriteOptions{}, csv.WriteOptions{TimeFormat: csv.TimeFrames, FrameRate: 25}), "\n00:00:02:00;")
+	assert.Contains(t, write(t, s, model.CommonWriteOptions{}, csv.WriteOptions{TimeFormat: csv.TimeFrames, FrameRate: model.FrameRate{Num: 25, Den: 1}}), "\n00:00:02:00;")
 }
 
 // Ports testWritesIdentifiersAndOtherColumnsFromAnotherFormat of tests/Formatters/CsvFormatterTest.php of subtitle-toolbox-php.
@@ -364,14 +364,15 @@ func TestWriteFrameRateErrors(t *testing.T) {
 	t.Parallel()
 
 	// Ports testFramesWithoutAFrameRateThrow of tests/Formatters/CsvFormatterTest.php of subtitle-toolbox-php.
-	err := csv.Write(&bytes.Buffer{}, english(), model.CommonWriteOptions{}, csv.WriteOptions{TimeFormat: csv.TimeFrames})
+	_, err := csv.Write(&bytes.Buffer{}, english(), model.CommonWriteOptions{}, csv.WriteOptions{TimeFormat: csv.TimeFrames})
 	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.CSV.FrameRate", Msg: "The time format hh:mm:ss:ff needs a frame rate."}, err)
 
 	s, _ := mustRead(t, "start,end,text\n1,2,a\n", strict, csv.ReadOptions{})
 	d := fileData(t, s)
 	d.Set("frameRate", int64(0))
 	require.NoError(t, s.SetFormatData("csv", d))
-	err = csv.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, csv.WriteOptions{})
+	_, err = csv.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, csv.WriteOptions{})
 	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.CSV.FrameRate", Msg: "The frame rate must be greater than 0, got 0."}, err)
-	require.NoError(t, csv.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, csv.WriteOptions{FrameRate: 25}))
+	_, err = csv.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, csv.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}})
+	require.NoError(t, err)
 }

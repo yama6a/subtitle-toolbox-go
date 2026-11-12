@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func ExampleRead() {
@@ -25,7 +25,7 @@ Dialogue: 0,0:00:01.50,0:00:04.00,Thoughts,Anna,0,0,0,,{\an8}Not {\b1}again{\b0}
 		return
 	}
 	for _, c := range s.All() {
-		fmt.Println(c.Start, c.End, c.Alignment, c.Lines)
+		fmt.Println(c.Start, c.End, c.Position.Alignment, c.Lines)
 	}
 	// Output:
 	// 1.5s 4s TopCenter [<v Anna><i>Not <b>again</b></i>]
@@ -35,9 +35,9 @@ func ExampleWrite() {
 	s := &model.Subtitle{}
 	s.AddCues(
 		model.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"<i>Fish &amp; Chips</i>", "today"}},
-		model.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"On the menu"}, Alignment: model.TopCenter},
+		model.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"On the menu"}, Position: model.Position{Alignment: model.TopCenter}},
 	)
-	err := ass.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, ass.WriteOptions{})
+	_, err := ass.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, ass.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -63,7 +63,7 @@ func ExampleWriteOptions() {
 	s.AddCue(model.Cue{Start: 10 * time.Second, End: 12 * time.Second, Lines: []string{"Ka<00:00:10.300>ra"}})
 	opts := ass.WriteOptions{KaraokeTag: ass.KaraokeFill, Style: "Fontname=Roboto,Fontsize=48"}
 	var out strings.Builder
-	if err := ass.Write(&out, s, model.CommonWriteOptions{}, opts); err != nil {
+	if _, err := ass.Write(&out, s, model.CommonWriteOptions{}, opts); err != nil {
 		fmt.Println(err)
 		return
 	}

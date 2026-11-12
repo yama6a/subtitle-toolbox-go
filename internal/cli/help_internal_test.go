@@ -10,13 +10,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/diff"
-	"github.com/yama6a/subtitle-toolbox-go/dual"
-	"github.com/yama6a/subtitle-toolbox-go/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/model"
-	"github.com/yama6a/subtitle-toolbox-go/profanity"
-	"github.com/yama6a/subtitle-toolbox-go/refsync"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/diff"
+	"github.com/yama6a/subtitle-toolbox-go/v2/dual"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/profanity"
+	"github.com/yama6a/subtitle-toolbox-go/v2/refsync"
+	"github.com/yama6a/subtitle-toolbox-go/v2/timing"
 )
 
 // summaryCommand is a command with a name and a summary only, for the layout of the global help.
@@ -37,7 +38,7 @@ overwrites a file.
 
 Exit codes:
   0    Success.
-  1    diff found a difference.
+  1    diff found a difference, or validate found a broken rule.
   2    Invalid arguments.
   3    A file could not be read or written.
   130  Stopped by Ctrl-C or SIGTERM. Finished outputs stay.
@@ -52,15 +53,17 @@ func TestGlobalHelp(t *testing.T) {
 
 	head := "stbox 1.2.3\nConverts, retimes, checks and fixes subtitle files.\n\nUsage: stbox <command> [<file>...] [options]\n\n"
 	want := head + `Commands:
-  convert  Convert subtitle files to another format, and run text, structure and
-           timing edits on the way.
-  info     Print the format, the cue count and statistics of subtitle files.
-  sync     Find the offset and frame-rate scale against a reference subtitle,
-           and retime the input.
-  diff     List the added, removed and changed cues between two subtitle files.
-  dual     Merge two subtitles in two languages into one file that shows both.
-  formats  List the format names and file extensions for --from and --to.
-  help     Show the help of a command.
+  convert   Convert subtitle files to another format, and run text, structure
+            and timing edits on the way.
+  info      Print the format, the cue count and statistics of subtitle files.
+  validate  Check the cues against reading speed, line length, timing and text
+            rules.
+  sync      Find the offset and frame-rate scale against a reference subtitle,
+            and retime the input.
+  diff      List the added, removed and changed cues between two subtitle files.
+  dual      Merge two subtitles in two languages into one file that shows both.
+  formats   List the format names and file extensions for --from and --to.
+  help      Show the help of a command.
 ` + globalHelpTail
 	assert.Equal(t, result{Stdout: want}, call{}.run(t))
 }
@@ -325,17 +328,20 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 	codeDefaults["structure-max-cpl"] = strconv.Itoa(model.DefaultMaxCharactersPerLine)
 	codeDefaults["structure-max-lines"] = strconv.Itoa(model.DefaultMaxLinesPerCue)
 	codeDefaults["timing-min-gap"] = formatNumber(defaultMinGap.Seconds())
+	codeDefaults["video-fps"] = formatNumber(defaultVideoFPS)
 	codeDefaults["ass-karaoke-tag"] = ass.WriteOptions{}.KaraokeTag.String()
 	codeDefaults["mask"] = string(profanity.MaskStars)
 	codeDefaults["mute-padding"] = formatNumber(profanity.Options{}.Padding.Seconds())
 	codeDefaults["time-tolerance"] = formatNumber(diff.DefaultTimeTolerance.Seconds())
+	codeDefaults["snap-min-gap-frames"] = strconv.Itoa(timing.DefaultMinGapFrames)
+	codeDefaults["snap-min-duration-frames"] = strconv.Itoa(timing.DefaultMinDurationFrames)
 	codeDefaults["mode"] = string(dual.ModeStack)
 	codeDefaults["secondary-alignment"] = strconv.Itoa(dual.DefaultSecondaryAlignment.Numpad())
 	codeDefaults["snap-tolerance"] = formatNumber(dual.DefaultTimeTolerance.Seconds())
 	described := []string{
 		"the format detected from the content", "stop at the first failure", "the input format",
 		"the BOM rule of the output format", "as for --from", "the frame rate of a MicroDVD input",
-		"none", "the format of the primary file",
+		"none", "the format of the primary file", "half the --video-fps, rounded to the nearest frame",
 	}
 	unwrap := regexp.MustCompile(`\n {3,}(\S)`)
 	defaultText := regexp.MustCompile(`(?m)^  (?:-\w, )?--([\w-]+).*? Default: (.+?)\.(?: |$)`)

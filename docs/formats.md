@@ -12,7 +12,10 @@
 | MPSub | `stbox.MPSub` | `mpsub` | `.mpsub` | [MPSub](#mpsub) |
 | SAMI | `stbox.SAMI` | `sami` | `.smi`, `.sami` | [SAMI](#sami) |
 | SBV | `stbox.SBV` | `sbv` | `.sbv` | [SBV](#sbv) |
+| SCC | `stbox.SCC` | `scc` | `.scc` | [SCC](#scc) |
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
+| EBU STL | `stbox.EBUSTL` | `stl` | `.stl` | [EBU STL](#ebu-stl) |
+| Spruce STL | `stbox.SpruceSTL` | `spruce-stl` | `.stl` | [Spruce STL](#spruce-stl) |
 | SubViewer 1 and 2 | `stbox.SubViewer` | `subviewer` | `.sub` | [SubViewer](#subviewer) |
 | TTML, IMSC, DFXP | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | [TTML](#ttml) |
 | plain text | `stbox.PlainText` | `txt` | `.txt` | [Plain text](#plain-text) |
@@ -21,7 +24,7 @@
 | QuickTime text | `stbox.QuickTimeText` | `qttext` | `.txt` | [QuickTime text](#quicktime-text) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
 
-- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub and SubViewer files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`.
+- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub and SubViewer files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`. Spruce STL uses `.stl`, which EBU STL uses too. The first format in the registry owns it, so the Spruce STL row owns `.stl` until EBU STL ships. Content detection tells the two apart.
 - **Time limit**: every time in every format is below 100000 hours. A reader rejects a time at or above it. A retime that moves a cue past it returns an error that matches `ErrInvalidArgument`. Writers clamp a negative time to 0, except the JSON writer.
 - **Options**: each section lists the fields of the format in `ReadOptions` and `WriteOptions`. The fields that every format shares are in [reading-writing.md](reading-writing.md). A reader ignores the fields of other formats.
 - **Sections**: each section has what the reader accepts, what the writer writes, the options and the limits. The godoc of the format package holds the reference of each function.
@@ -89,6 +92,8 @@ This file reads as one cue from 1 s to 4 s with the identifier `intro`, the alig
 - **Order**: the header, every `REGION` block, every `STYLE` block, then each cue with the comments before it, then the comments after the last cue. So a `NOTE` before a `STYLE` block in the input comes out after it.
 - **Identifiers**: a cue without an identifier, or with one that holds `-->`, LF or CR, gets its cue number from 1.
 - **Times**: always with hours, at least 2 hour digits. A negative time is written as 0.
+- **Offset from cue settings**: a percent `line` or `position` gives `Cue.Position.Offset`, the point of the alignment in percent of the video. Example: `line:95%,end` gives (50, 95), and `line:0 position:30% align:left` gives (30, 0). An axis counts only when its setting names the same anchor as the alignment. `line:90%` has the anchor `start`, which is no bottom anchor, so it gives no offset. A `line` number such as `line:5` counts lines of text and gives none. A cue with `vertical`, or with no percent value, gets no offset. `line:0` alone gives none too. Each value has at most 3 decimals. An offset that equals the default anchor of its alignment (10, 50 or 90 percent on each axis, such as (50, 90) for `BottomCenter`) is not stored, because it says no more than the alignment.
+- **Offset on write**: a cue with no stored `line`, `position` or `align`, no stored `vertical`, and an offset inside the screen cell of its alignment gets the offset as settings, after the kept `size` and `region`. The writer rounds the offset to 3 decimals before the cell test. Only `BottomCenter` writes its height: (45, 95) gives `line:95%,end position:45%,center`. The other rows keep the row setting of the alignment, because the reader maps any other `line` value to `BottomCenter`. So (20, 5) with `TopLeft` writes `line:0 position:20%,line-left align:left` and reads back as (20, 0). The cell is the third of the screen that holds the alignment: below 100/3 percent is the left column or top row, above 200/3 the right column or bottom row.
 - **Settings**: the stored settings of the 6 names come back in stored order while the cue alignment is unchanged. After a change of the alignment, the writer keeps `vertical`, `size` and `region` and writes the settings of the new alignment: `line:0` or `line:50%,center` for the row, `align:left` or `align:right` for the column. See [format-data.md](format-data.md#an-explicit-alignment-wins-over-a-stored-position).
 - **Tags**: the writer keeps `<b>`, `<i>`, `<u>`, `<strong>`, `<v>`, `<lang>`, `<c>`, `<ruby>` and `<rt>`, their class forms such as `<c.yellow>` or `<v.first.loud Fred>`, and inline timestamps. It drops every other tag and keeps its text. `StripTags` drops every tag and the inline timestamps.
 - **Comments**: the writer replaces `-->` in a comment with `->` until none is left, trims each line and drops the empty lines, because an empty line would end the `NOTE` block. A comment of one line is written as `NOTE text`, a longer one starts on the line after `NOTE`.
@@ -98,14 +103,14 @@ This file reads as one cue from 1 s to 4 s with the identifier `intro`, the alig
 
 ### Dropped colors
 
-The writer turns `<font color>` into a [color class](markup.md#colors) when the color is one of the 8 WebVTT colors, so `#FFFF00`, `#ff0` and `yellow` all become `<c.yellow>`. WebVTT has no class for other colors, so the writer drops them. `webvtt.WriteWithReport` returns the output and one `DroppedColor` per dropped color. `stbox.Write` returns no report.
+The writer turns `<font color>` into a [color class](markup.md#colors) when the color is one of the 8 WebVTT colors, so `#FFFF00`, `#ff0` and `yellow` all become `<c.yellow>`. WebVTT has no class for other colors, so the writer drops them. `webvtt.Write` and `stbox.Write` return a `WriteReport` with one `DroppedColor` per dropped color. In `stbox.Write`, the field `WebVTT` of the report holds it.
 
-<!-- example: format/webvtt/ExampleWriteWithReport -->
+<!-- example: format/webvtt/ExampleWrite_droppedColors -->
 ```go
 s := &model.Subtitle{}
 s.AddCue(model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{`<font color="#123456">Rain</font> <font color="#ffff00">and sun</font>`}})
 var out strings.Builder
-report, err := webvtt.WriteWithReport(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
+report, err := webvtt.Write(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -171,6 +176,94 @@ This block reads as one cue from 1.5 s to 4 s with the alignment `TopCenter`, th
 ### Options
 
 `srt.ReadOptions` and `srt.WriteOptions` have no fields. The reader reads `Lenient`. The writer reads `StripTags`, `LineEnding` and `BOM`.
+
+## Spruce STL
+
+Spruce STL is the text subtitle file of DVD Studio Pro and Spruce DVDMaestro. Package `format/sprucestl` reads and writes it. The format name is `spruce-stl`, the extension `.stl`. No BOM by default.
+
+```text
+$VertAlign = Bottom
+00:02:17:10 , 00:02:20:10 , The bakery opens at seven, | every day of the week.
+```
+
+At 25 fps this file reads as one cue from 137.4 s to 140.4 s with 2 lines. The file does not name its frame rate. The time code counts frames in the last field.
+
+### Grammar
+
+| Line, after trimming | Rule |
+|:--- |:--- |
+| cue | `hh:mm:ss:ff<sep>hh:mm:ss:ff<sep>text`. The hours have 2 or more digits. Minutes and seconds are 00 to 59. The separator is a comma with optional spaces or tabs around it |
+| command | `$Name = value`. Names and values compare without case |
+| comment | starts with `//` |
+| line break in the text | `\|` with optional spaces or tabs around it |
+| toggle in the text | `^B` bold, `^I` italics, `^U` underline. Each flips its flag |
+
+- **Frame rate**: `ReadOptions.FrameRate`. Without it, the highest frame number of all cue lines decides: 25 or more gives 30 fps, else 25 fps. A file without cue lines gives 25 fps. In lenient mode, the guess adds the warning `The file does not give its frame rate. The parser read the frames at 25 fps.`, `Repaired`, with no line and no block.
+- **Times**: hours, minutes and seconds are clock time. The frames add `frames / rate` seconds, rounded to whole milliseconds. `99:00:00:00` is 356400 s. The option rate can be a non-integer rate such as 29.97. The frame number must be below the rate rounded up, else the read fails with `The frame number in "hh:mm:ss:ff" is not below the frame rate of R fps.`
+- **Detection**: the file starts with `$` or `//` lines and a cue line, or with a cue line whose text does not start with a double quote. The signature needs exactly 2 hour digits. So a file whose first cue starts at hour 100 is not detected, but the reader reads it. `sprucestl.Detect` holds the rule.
+- **Shared extension**: EBU STL uses `.stl` too. `FormatFromPath` returns the format of the first registry row.
+
+### Read
+
+1. Each line is trimmed for matching. A blank line is ignored after the first cue line.
+2. A line that is no cue, command, comment or blank fails with `The line "L" is no Spruce STL subtitle, command or comment.`, and lenient mode skips it.
+3. A cue line with a bad frame number, a time of 100000 hours or more, or an end before the start fails as in [lenient-parsing.md](lenient-parsing.md#spruce-stl) says.
+4. **Style**: bold, italics and underline start off, the alignment starts at `BottomCenter`. `$Bold`, `$Italic` and `$Underlined` take `True` or `False`. `$HorzAlign` takes `Left`, `Center` or `Right`. `$VertAlign` takes `Top`, `Center` or `Bottom`. Every `$` line applies to the state, also in the header. Other commands and other values change nothing.
+5. **Cue text**: the text splits at the line breaks. Each part is trimmed and split at the toggles. The style starts from the commands for every cue and carries from one line of the cue to the next. `&`, `<` and `>` become entities. Empty lines drop.
+6. **Alignment**: the vertical and horizontal commands give one of the 9 alignments. `$VertAlign = Center` gives the middle row.
+7. **After the first cue**: a `//` line becomes a comment before the next cue. A `$` line goes to the cue data `commands` of the next cue.
+
+| Input | Lines |
+|:--- |:--- |
+| `$Italic = TRUE`, then `... , Sung ^Ispoken^I sung\|still sung` | `<i>Sung</i> spoken <i>sung</i>` and `<i>still sung</i>` |
+| the next cue `... , ^IPlain` | `Plain` |
+| `... , Tickets are ^Bsold out^B today.` | `Tickets are <b>sold out</b> today.` |
+
+The file data `spruce-stl` holds:
+
+| Level | Field | Type | Meaning |
+|:--- |:--- |:--- |:--- |
+| file | `frameRate` | number | the rate that the reader used |
+| file | `header` | list of strings | every raw line before the first cue line, with blank, `$` and `//` lines, not trimmed |
+| file | `separator` | string | the first separator, such as ` , ` or a tab, comma and tab. Absent without a cue line |
+| file | `lineBreak` | string | the first `\|` with its spaces. Absent without a `\|` |
+| file | `trailer` | list of strings | the `$` lines after the last cue. Absent without such lines |
+| cue | `commands` | list of strings | the raw `$` lines between the previous cue and this one |
+
+The text after the last line end is no line, so a header without cues does not grow a blank line on each round trip.
+
+### Write
+
+1. **Rate**: `WriteOptions.FrameRate`, else the stored `frameRate`, else 25 fps.
+2. **Separator and line break**: the stored `separator` when it is a comma with optional spaces or tabs, else ` , `. The stored `lineBreak` when it is `|` with optional spaces or tabs, else `|`.
+3. **Header**: the stored `header` lines, also when the list is empty. Without stored data, the 17 default commands `$FontName = Arial` to `$TapeOffset = False` and an empty line. DVD Studio Pro can fail to import a file without them. The header lines update the style.
+4. **Per cue**: the comments as `//` lines, one per comment line. The stored `commands`. Then `$HorzAlign` and `$VertAlign` when the alignment of the cue differs from the style. Then the cue line.
+5. **Time code**: whole seconds, then the frame `round(fraction * rate)`. A frame at or above the rate rounded up rolls into the next second as frame 0. 2.99 s at 25 fps writes `00:00:03:00`. A time within half a frame below 100000 hours stops at `99999:59:59:24`, so the file reads back.
+6. **Text**: ruby becomes text and each tag but `<b>`, `<i>` and `<u>` goes. A toggle goes before each text that needs another style than the one before, in the order `^B`, `^I`, `^U`. The first style is the one of the commands. Lines are trimmed, empty lines drop, and the lines join with the line break.
+7. **Comments** after the last cue come after it. The `trailer` lines follow them.
+
+| Case | Output |
+|:--- |:--- |
+| a new file, a cue 137.4 s to 140.36 s with 2 lines | the default header, then `00:02:17:10 , 00:02:20:09 , The bakery opens at seven,\|every day of the week.` |
+| a cue `One`, a cue `Sign` at `TopLeft`, a cue `Two` | `... One`, `$HorzAlign = Left`, `$VertAlign = Top`, `... Sign`, `$HorzAlign = Center`, `$VertAlign = Bottom`, `... Two` |
+| 1.6 s read at 25 fps and written at 30 fps | `00:00:01:18` |
+
+- **Escapes**: the text of a line cannot hold `|` or a toggle. A `|` in the text writes as U+00A6 BROKEN BAR. A `^` before `B`, `I` or `U` gets U+2060 WORD JOINER after it. A line break inside a line becomes the line break of the format.
+- **Stored lines**: a CR or LF in a stored `header`, `commands` or `trailer` line writes as a space, so each stored line stays one line. The writer skips a stored line that the reader would not read as that kind of line: a header line that is not blank, `$` or `//`, and a command or trailer line that does not start with `$`.
+- **Frame rate limit**: a rate above 100 fps fails with an `*UnwritableError` that names `WriteOptions.SpruceSTL.FrameRate`, because a frame number has 2 digits.
+- **Lost on write**: colors, strike, voices, fonts and ruby structure. The input line ending and the blank lines after the first cue. The output ends with LF.
+- **Round trip**: a file with a final line end comes out byte for byte with the same `LineEnding`, except for what the writer does not keep. That is the order of `$` and `//` lines between 2 cues (comments come first), blank lines after the first cue, white space around the line break of a later cue, and a separator that differs from the first one.
+
+### Options
+
+The root `ReadOptions.SpruceSTL` holds a `sprucestl.ReadOptions`, `WriteOptions.SpruceSTL` a `sprucestl.WriteOptions`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#spruce-stl).
+
+| Option | Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |:--- |
+| `ReadOptions.SpruceSTL` | `FrameRate` | `FrameRate` | zero value: guess 25 or 30 fps | the frame rate of the time codes |
+| `WriteOptions.SpruceSTL` | `FrameRate` | `FrameRate` | zero value: the stored frame rate, else 25 | the output frame rate |
+
+- **Check**: `Validate` rejects a frame rate that fails `FrameRate.Validate`. The `Option` is `ReadOptions.SpruceSTL.FrameRate` or `WriteOptions.SpruceSTL.FrameRate`. The messages are `The frame rate must be greater than 0, got X.` and `The Spruce STL frame rate must be greater than 0, got X.`
 
 ## ASS and SSA
 
@@ -332,7 +425,9 @@ The writer keeps what the reader stored, so a DFXP file stays DFXP after a retim
 | `ttm:agent` elements in the head | each new speaker name, with the ID `agent1`, `agent2` and so on. An agent of the head with the same name keeps its ID |
 
 - **Attributes that are lost**: an attribute whose prefix the output does not declare, such as a prefix that the input declared on the `<p>` itself. On `<tt>`, `ttp:timeBase`, `ttp:clockMode`, `ttp:dropMode` and `ttp:markerMode` whatever their value, because the output holds media times. `ttp:frameRate` and `ttp:tickRate` stay.
-- **Regions from alignments**: a cue without a stored region gets the region of its alignment. A `BottomCenter` cue gets none, unless it was realigned or the subtitle has no `ttml` data. The writer adds each region once, at the end of the last `<layout>` of the head. It has the shape of the IMSC 1.1 examples with a safe area of 10%: `tts:origin="10% 10%"`, `tts:extent="80% 80%"`, and the `tts:displayAlign` and `tts:textAlign` of the row and the column. Its ID is the alignment name in lower camel case, such as `bottomCenter`.
+- **Offset from a region**: a region with an explicit `tts:origin` gives `Cue.Position.Offset`, the anchor of the cue in percent of the root container. The vertical anchor follows `tts:displayAlign`. The horizontal anchor follows the column of the alignment: the origin for left, the middle for center, the far edge for right. The units are `%`, `px` and cells, with the sizes of `tts:extent` on `<tt>` and the `ttp:cellResolution` as for the row. A missing extent counts as 100%, and values are clamped to 0 to 100. Example: `tts:origin="10% 10%" tts:extent="80% 85%" tts:displayAlign="after" tts:textAlign="center"` gives (50, 95). The same region with `80% 80%` gives (50, 90), the default anchor of `BottomCenter`, so no offset. An anchor that falls outside the cell of its alignment, such as exactly 1/3 of the height, gives none. A region without `tts:origin`, or with another unit, gives none.
+- **Regions from offsets**: a cue with no stored region and an offset inside the screen cell of its alignment gets an offset region. It reaches from the anchor point to the screen edges, so it stays inside the root. Example: `BottomCenter` at (50, 95) gets `tts:origin="0% 0%"` and `tts:extent="100% 95%"`. Its ID is the alignment name, the X and the Y: `bottomCenter-50-95`. Cues with the same offset share one region. The reader gives the same alignment and offset back.
+- **Regions from alignments**: a cue without a stored region and without a fitting offset gets the region of its alignment. A `BottomCenter` cue gets none, unless it was realigned or the subtitle has no `ttml` data. The writer adds each region once, at the end of the last `<layout>` of the head. It has the shape of the IMSC 1.1 examples with a safe area of 10%: `tts:origin="10% 10%"`, `tts:extent="80% 80%"`, and the `tts:displayAlign` and `tts:textAlign` of the row and the column. Its ID is the alignment name in lower camel case, such as `bottomCenter`.
 - **Realigned cue**: a cue whose alignment differs from the stored `ttml.alignment` loses its stored `region`, as [format-data.md](format-data.md#an-explicit-alignment-wins-over-a-stored-position) says. When the styles of `<body>`, `<div>` or `<p>` set another `tts:textAlign` than the new column, the `<p>` gets `tts:textAlign` of the new column.
 - **Forced flag**: the `<p>`, the `<div>` or the region can give the forced flag already. The writer writes `Cue.Forced` only when it differs from that flag. A stored attribute on the `<p>` changes in place, else a new `itts:forcedDisplay` comes last.
 - **Resets**: core markup has no tag that turns an inherited style off. The styles of the region, `<body>`, `<div>` and `<p>` can make text bold, italic, underlined, struck or colored. When no open span repeats such a style for some text, the whole content goes inside one `<span>` that turns it off. The span holds only the needed attributes of `tts:fontWeight="normal"`, `tts:fontStyle="normal"`, `tts:textDecoration="noUnderline noLineThrough"` and `tts:color="white"`.
@@ -482,11 +577,11 @@ The root `ReadOptions.MicroDVD` holds a `microdvd.ReadOptions`, `WriteOptions.Mi
 
 | Option | Field | Type | Default | Meaning |
 |:--- |:--- |:--- |:--- |:--- |
-| `ReadOptions.MicroDVD` | `FrameRate` | `float64` | 0: the `{1}{1}<fps>` line | the frame rate of the video. It wins over the line |
-| `WriteOptions.MicroDVD` | `FrameRate` | `float64` | 0: the stored frame rate | the output frame rate |
+| `ReadOptions.MicroDVD` | `FrameRate` | `FrameRate` | zero value: the `{1}{1}<fps>` line | the frame rate of the video. It wins over the line |
+| `WriteOptions.MicroDVD` | `FrameRate` | `FrameRate` | zero value: the stored frame rate | the output frame rate |
 | `WriteOptions.MicroDVD` | `WriteFrameRateLine` | `bool` | false: only when the input had the line | write `{1}{1}<fps>` first |
 
-- **Check**: `Validate` rejects a frame rate that is negative, NaN or infinite, for example `The frame rate must be greater than 0, got -1.`, with an error that matches `ErrInvalidArgument`.
+- **Check**: `Validate` rejects a frame rate that fails `FrameRate.Validate`, for example `The frame rate must be greater than 0, got -1.`, with an error that matches `ErrInvalidArgument`.
 
 ## SBV
 
@@ -533,6 +628,74 @@ The first block reads as one cue from 1.5 s to 4 s. SBV has no markup, so `<i>` 
 ### Options
 
 `sbv.ReadOptions` and `sbv.WriteOptions` have no fields. The reader reads `Lenient`. The writer reads `LineEnding` and `BOM`. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#sbv).
+
+## SCC
+
+Scenarist Closed Captions (SCC) is the delivery format of US broadcast captions. Package `format/scc` reads and writes it. The format name is `scc`, the extension `.scc`. The reader decodes CEA-608, the line 21 caption standard of NTSC video. The writer writes pop-on captions on data channel 1.
+
+```text
+Scenarist_SCC V1.0
+
+00:00:01;12	9420 9420 94ae 94ae 9452 9452 97a1 97a1 c8e5 ecec efa1 942f 942f
+
+00:00:04;00	942c 942c
+```
+
+The file reads as one cue from 1.768 s to 4.004 s with the line `Hello!` on row 14, aligned `BottomCenter`. The text starts at column 5 when counted from 0, as the format data `columns` does. `Cue.Position.Column` counts from 1, so it is 6.
+
+### Read
+
+- **Header**: the first non-empty line must be `Scenarist_SCC V1.0`. Else the read fails, also in lenient mode.
+- **Code line**: a time code, white space and byte pairs. The time code is `HH:MM:SS:FF` or `HH:MM:SS;FF`. The `;` marks drop-frame for that line. The fields have no range check.
+- **Byte pairs**: 4 hex digits in any case, one pair for each frame. Word k of a line plays k frames after the start of the line.
+- **Times at 29.97 fps**: a frame lasts 1001/30000 s. The time code `00:00:01;12` is frame 42. Its first end-of-caption command is the 12th word, frame 53, so the cue starts at 53 * 1001 / 30000 = 1.768 s. Drop-frame skips the labels `;00` and `;01` at the start of each minute, except every tenth minute. So `00:01:00;02` and `00:01:00:00` are both frame 1800, and `01:00:00;00` is frame 107892.
+- **Order**: the reader sorts the code lines by start frame before it decodes them, because some writers emit lines out of time order.
+- **Cues**: each change of the captions on screen starts a new cue. A caption that nothing erases lasts `LastCueDuration`, 5 s by default.
+- **Position**: `Cue.Position` holds the first row of the cue, its first column counted from 1 (the format data `columns` count from 0), and the 15 by 32 grid. Rows 1 to 4 give `TopCenter`. Rows 5 to 15 give `BottomCenter`.
+- **Roll-up captions**: `RollUpScreen` gives one cue per screen. `RollUpLines` gives one cue per row, from its first character until it rolls up or the screen clears.
+- **Text**: `&`, `<` and `>` are escaped. Mid-row codes become `<i>`, `<u>` and `<font color>` tags.
+- **Format data**: the file holds `dropFrame`, true when the first code line has `;` before the frames. It is absent when the file has no code line. Each cue holds `mode` (`pop-on`, `roll-up` or `paint-on`), `rows` (the row of each line, 1 to 15) and `columns` (the first column of each line, 0 to 31). The cue data has no schema row, so it passes unchecked.
+- **Lenient repairs**: see [lenient-parsing.md](lenient-parsing.md#scc).
+
+### Write
+
+The writer turns each cue into a pop-on caption. The caption loads into hidden memory in the frames before the cue start. The EOC command (end of caption) shows it on the start frame. The EDM command (erase displayed memory) clears it at the cue end. A cue from 1 s to 3 s with `Hello!` writes the file at the top of this section, except that the writer puts ENM (erase hidden memory) before RCL (resume caption loading): `94ae 94ae 9420 9420 9476 9476 97a1 97a1 c8e5 ecec efa1 942f 942f`.
+
+- **Output**: the header, an empty line, then one line for each run of consecutive frames. A line holds the label of its first frame, a tab and the words as 4 lowercase hex digits. Lines are separated by an empty line. The output ends with one LF. A subtitle without text writes the header and an LF.
+- **Time codes**: `DropFrameOn` writes `00:01:00;02`. `DropFrameOff` writes `00:01:00:00`. `DropFrameKeep` takes the stored `dropFrame` of the file, else drop-frame. A cue from 58 s to 61 s ends with `00:01:01;00` by default and `00:01:00:28` without drop-frame.
+- **Line ending and BOM**: `LineEnding` and `BOM` apply. The default writes no BOM. The writer ignores `StripTags`.
+- **Limits**: a cue holds at most 4 lines of 32 characters, and only characters that CEA-608 has. A cue that breaks a limit gives an `*UnwritableError`. Its message says the fix in words, for example `Cue #0 at 1 s has a line with 33 characters, but SCC allows 32. Wrap the lines to 4 lines of 32 characters first.` The error wraps `scc.ErrWrapFirst` when the text fits 4 lines of 32 characters after a wrap, and `scc.ErrSplitFirst` when it needs a split into cues first. A cue without text writes nothing.
+- **Markup**: `<i>`, `<u>` and `<font color>` in the 7 CEA-608 colors become PAC styles and mid-row codes. Another color becomes white. Other tags drop. A style change inside a word costs a space, because a mid-row code shows as a space. Text that looks like a tag stays: `a &lt; b &gt; c` reads back as the same text.
+- **Positions**: the first rule that holds sets the rows and columns. First, the cue data `rows` and `columns` of a read, when both list one integer for each line, the rows rise from 1 to 15, a first row of 4 or less goes with a top alignment, and `Position.Row` equals the first stored row. A column is moved to fit the line. Second, `Position.RowOn` on the 15 by 32 grid, with every line at `Position.Column` when the position is on the CEA-608 grid. Third, the alignment: row 1 for top, the middle rows for middle and the last rows for bottom, with column 0 for left, the end for right and the middle for center.
+- **Row edge**: the reader gives rows 1 to 4 a `TopCenter` alignment and rows 5 to 15 a `BottomCenter` alignment. The top third of a 15-row grid is rows 1 to 5, so a cue on SCC row 5 with `BottomCenter` loses its row in other writers that use `RowOn`, such as EBU STL.
+- **Scheduler**: each word takes one frame. The EOC goes on the cue start frame when the load fits in the frames before it. Else the EOC moves later, and the caption shows late. The EDM of the caption before goes at its cue end, when there is room. Without room, the new EOC replaces the shown caption. Cues from 1 s to 5 s and from 3 s to 4 s read back as 1.001 to 3.003 s and 3.003 to 4.004 s.
+- **Time limit**: a time code can show an hour of up to 6 digits, because drop-frame labels run ahead of real time. The reader takes them. The writer leaves out a word on a frame at or after 100000 hours.
+
+#### Fit
+
+`WriteOptions.Fit` changes what SCC cannot hold, in place of failing. `WriteReport.Changes` lists each change in cue order, as `FitChange` values with `CueIndex`, `Action` and `Message`. `stbox.WriteReport.SCC` is non-nil after every SCC write, also with no change.
+
+| Action | What the fit does | Message |
+|:--- |:--- |:--- |
+| `Transliterated` | replaces each character that CEA-608 lacks and that has a replacement, such as U+0160 with `S`. It decodes the entities of the text first | `Cue #0 at 1 s: replaced "U+0160" with "S".`, with the character itself in place of `U+0160` |
+| `Wrapped` | wraps the lines to at most 4 lines of 32 characters. It stops for more than 128 visible characters without spaces | `Cue #0 at 1 s: wrapped the text into 3 lines of at most 32 characters.` |
+| `Delayed` | writes the caption late, because the frames before its start cannot hold its data | `Cue #0 at 1 s shows at 1.969 s. The frames before its start cannot hold its caption data.` |
+| `Dropped` | leaves the cue out, because its caption data needs frames up to or after the cue end | `Cue #3 at 5 s is left out. Its caption data needs the frames up to 5.839 s, but the cue ends at 5.4 s.` |
+
+Without `Fit`, a late caption writes late and no change is reported. A cue that still breaks a limit after the fit gives the error above.
+
+### Options
+
+| Option | Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |:--- |
+| `WriteOptions.SCC` | `DropFrame` | `DropFrameMode` | `DropFrameKeep` | `DropFrameOn`, `DropFrameOff`, or the stored mode of the file, else drop-frame |
+| `WriteOptions.SCC` | `Fit` | `bool` | false | change the text and timing that SCC cannot hold, in place of failing |
+| `ReadOptions.SCC` | `Channel` | `int` | 0, read as 1 | 1 reads CC1 and CC3. 2 reads CC2 and CC4 |
+| `ReadOptions.SCC` | `RollUp` | `scc.RollUp` | `RollUpScreen` | `RollUpScreen` or `RollUpLines`. The text forms are `screen` and `lines` |
+
+- **Read check**: `ReadOptions.Validate` rejects a channel other than 0, 1 and 2 with `The SCC data channel must be 1 or 2, got 3.` and an unknown roll-up mode. Both match `ErrInvalidArgument`.
+- **Write check**: `WriteOptions.Validate` rejects an unknown drop-frame mode with `The SCC drop-frame mode 3 is unknown.`. It matches `ErrInvalidArgument`.
+- **Reader**: it reads `Lenient` and `LastCueDuration` too.
 
 ## MPL2
 
@@ -692,9 +855,9 @@ Then each cue with visible text writes an empty line, its timing line and its te
 
 | Field | Type | Default | Meaning |
 |:--- |:--- |:--- |:--- |
-| `FrameRate` | `float64` | 0: seconds and `FORMAT=TIME` | write frames at this rate and `FORMAT=<rate>` |
+| `FrameRate` | `FrameRate` | zero value: seconds and `FORMAT=TIME` | write frames at this whole rate and `FORMAT=<rate>` |
 
-- **Check**: `Validate` rejects a frame rate that is negative, not whole, NaN or infinite, for example `The MPSub frame rate must be a positive integer, got 29.97.`, with an error that matches `ErrInvalidArgument`. MPlayer and FFmpeg read `FORMAT=29.97` as 29 fps, so a fractional rate would not read back.
+- **Check**: `Validate` rejects a frame rate that fails `FrameRate.Validate` or is not whole, for example `The MPSub frame rate must be a positive integer, got 29.97.`, with an error that matches `ErrInvalidArgument`. MPlayer and FFmpeg read `FORMAT=29.97` as 29 fps, so a fractional rate would not read back.
 
 ## LRC
 
@@ -840,7 +1003,7 @@ s.AddCues(
 	model.Cue{Start: 2500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"Where are you going?"}},
 	model.Cue{Start: 6 * time.Second, End: 7 * time.Second, Lines: []string{"<i>Home</i> &amp; bed."}},
 )
-if err := plaintext.Write(os.Stdout, s, model.CommonWriteOptions{}, plaintext.WriteOptions{}); err != nil {
+if _, err := plaintext.Write(os.Stdout, s, model.CommonWriteOptions{}, plaintext.WriteOptions{}); err != nil {
 	fmt.Println(err)
 }
 // Output:
@@ -996,10 +1159,10 @@ The root `ReadOptions.CSV` holds a `csv.ReadOptions` and `WriteOptions.CSV` a `c
 |:--- |:--- |:--- |:--- |:--- |
 | `ReadOptions.CSV` | `Columns` | `csv.Columns` | zero: the header names, with synonyms | the column layout |
 | `ReadOptions.CSV` | `Delimiter` | `csv.Delimiter` | detect from the first line | `,`, `;` or tab |
-| `ReadOptions.CSV` | `FrameRate` | `float64` | 0: none | frames per second of `hh:mm:ss:ff` times |
+| `ReadOptions.CSV` | `FrameRate` | `FrameRate` | zero value: none | frames per second of `hh:mm:ss:ff` times |
 | `WriteOptions.CSV` | `Delimiter` | `csv.Delimiter` | the stored delimiter, else `,` | `,`, `;` or tab |
 | `WriteOptions.CSV` | `TimeFormat` | `csv.TimeFormat` | the stored time format, else `hh:mm:ss.mmm` | one of the 5 time formats |
-| `WriteOptions.CSV` | `FrameRate` | `float64` | 0: the stored frame rate | frames per second of `hh:mm:ss:ff` |
+| `WriteOptions.CSV` | `FrameRate` | `FrameRate` | zero value: the stored frame rate | frames per second of `hh:mm:ss:ff` |
 | `WriteOptions.CSV` | `SecondText` | `*model.Subtitle` | nil: no second column | the cues of the second text column |
 | `WriteOptions.CSV` | `SecondTextHeader` | `string` | `text2` | the header of the second text column |
 | `WriteOptions.CSV` | `EscapeFormulas` | `bool` | false | put `'` before a formula cell |
@@ -1007,6 +1170,61 @@ The root `ReadOptions.CSV` holds a `csv.ReadOptions` and `WriteOptions.CSV` a `c
 - **Checks**: `Validate` rejects a negative column index (`The column index of start must be 0 or more, got -1.`), a column name or a missing index with `NoHeader` (`A table without a header row needs a column index for start.`), another delimiter (`The CSV delimiter must be ",", ";" or a tab.`), another time format, and a frame rate that is negative, NaN or infinite. Each error matches `ErrInvalidArgument` and names the option path, such as `ReadOptions.CSV.Columns.Start`.
 - **Frames without a frame rate**: `TimeFrames` without a frame rate in the options or the file data fails at write time with `The time format hh:mm:ss:ff needs a frame rate.` and `Option` `WriteOptions.CSV.FrameRate`.
 - **Stored frame rate**: a stored `frameRate` that is not above 0 fails at write time with, for example, `The frame rate must be greater than 0, got 0.` and the same `Option`, also for another time format.
+
+## EBU STL
+
+EBU STL is the binary subtitle exchange format of European broadcasters, defined in [EBU Tech 3264](https://tech.ebu.ch/docs/tech/tech3264.pdf). Package `format/ebustl` reads it. The format name is `stl`, the extension `.stl`. EBU STL comes before Spruce STL in the registry, so it owns `.stl` in `FormatFromPath`. The package has no writer yet.
+
+A file starts with one GSI block (General Subtitle Information) of 1024 bytes. Each subtitle then takes one or more TTI blocks (Text and Timing Information) of 128 bytes. Example: a TTI block has time code in `00 00 01 05`, time code out `00 00 02 0A` and the text field `80 43 61 66 65 81 8A`. At 25 fps it reads as a cue from 1.2 s to 2.4 s with the line `<i>Cafe</i>`.
+
+**Binary format**: the reader gets the raw bytes of the input. It does no BOM removal, no UTF-8 check and no code page detection. `ReadOptions.Encoding` has no effect, `ReadInfo.SourceEncoding` is empty and the read has no decode warning. `Load` and `Parse` find the format by its signature on the raw bytes. `Load` also finds it by the extension `.stl`, as [detection.md](detection.md) says.
+
+### Read
+
+**Read option**: `ReadOptions.EBUSTL.SubtractStartOfProgramme`, default false. It subtracts the GSI field TCP (start of programme), such as `10:00:00:00`, from every cue time. A time before it becomes 0. TCP is 8 ASCII digits `HHMMSSFF`, else the offset is 0.
+
+**Blocks**: a file under 1024 bytes fails. A partial last TTI block fails a strict read, and a lenient read cuts it. The DFC field (disk format code) must be `STL25.01` or `STL30.01`, which sets 25 or 30 fps. The CCT field (character code table) must be `00` to `04`. A file without TTI blocks gives an empty subtitle.
+
+**GSI**: the reader decodes each of the 31 fields with the code page of the first 3 bytes (CPN). The code pages are 437, 850, 860, 863 and 865. Any other value reads as 850. Trailing spaces go, NUL bytes stay. OPT without trailing spaces and NUL bytes is the metadata `title`. LC (language code) gives the metadata `language` through the table of EBU Tech 3264 appendix 3. Example: `0F` gives `fr`. An unknown LC sets nothing.
+
+**Sets**: consecutive TTI blocks with the same 2 subtitle number bytes form one set. A block with extension block number `FFh` closes the set, and a change of subtitle number closes it too. The reader joins the text fields of the blocks with EBN `00h` to `EFh` and `FFh`. It skips user data blocks (`FEh`) and the reserved numbers `F0h` to `FDh`. Then it removes every `8Fh` (unused space). The join comes before decoding. So an ISO 6937 diacritic at the end of one block combines with the letter at the start of the next. A diacritic just before a control code is dropped.
+
+**Character codes**: CCT `00` decodes with ISO 6937. CCT `01` to `04` decode with ISO 8859-5, -6, -7 (1987) and -8 (1988). Bytes `20h` to `7Fh` and `A0h` to `FFh` are characters. A byte without an entry in the table is dropped, without a warning. Every other byte is a control code. It ends the run of characters. A code below `20h` also adds a space, because a teletext control code takes a character cell.
+
+| Code | Effect |
+|:--- |:--- |
+| `00h` to `07h` | alpha color: black `#000000`, red `#ff0000`, green `#00ff00`, yellow `#ffff00`, blue `#0000ff`, magenta `#ff00ff`, cyan `#00ffff`, white. White gives no tag |
+| `80h`, `81h` | italics on, off |
+| `82h`, `83h` | underline on, off |
+| `8Ah` | new row. The color goes back to white. Italics and underline go on into the next row |
+| other `08h` to `1Fh` | a space only: flash, steady, end box, start box, normal height, double height, double width, mosaic colors, black background, new background |
+| `84h`, `85h` (boxing) and other `80h` to `9Fh` | ends the run, no space, no style |
+
+The reader writes each row as core markup and escapes its text. Example: `01 red 8A white` gives the lines `<font color="#ff0000">red</font>` and `white`. The model drops blank rows. Double height, boxing, flash, backgrounds and the content of user data blocks are not modelled.
+
+**Comments**: a set whose first block has CF 1 is a comment, not a cue. Its rows are trimmed, empty rows dropped and the rest joined with LF. Tags go and entities decode. The comment stays before the next cue of the file, also when the cues are out of time order.
+
+**Times**: the 4 time code bytes are hours, minutes, seconds and frames, read in the clock model of [frame-rates.md](frame-rates.md). `00 00 01 05` is 1.2 s at 25 fps and 1.167 s at 30 fps. A strict read takes every time code as written, also hour 255 or frame 200. TCS (time code status) is not read.
+
+**Cumulative sets**: each subtitle of a cumulative set becomes its own cue with its own times. The text of earlier members is not added.
+
+**Alignment and position**: JC (justification code) 1 is left, 3 right, and 0 or 2 center. The maximum row is 23 when DSC (display standard code) is `1` or `2`, teletext level 1 or 2. Else it is MNR (maximum number of rows) when above 0, else 23. MNR and MNC are read like a PHP `(int)` cast, so `2x` is 2. VP (vertical position) gives the row band: top when `3*VP < max`, middle when `3*VP < 2*max`, else bottom. Examples: teletext VP 1 with JC 1 is `TopLeft`, VP 12 with JC 3 is `MiddleRight` and VP 22 with JC 2 is `BottomCenter`.
+
+`Position.Row` and `Position.Grid` follow EBU Tech 3264. Teletext rows count from 1, so `Row` is VP and `Grid.Rows` is 23. Open subtitles (DSC `0`) count VP from 0. So `Row` is VP plus 1 and `Grid.Rows` is the maximum row plus 1. `Grid.Columns` is MNC when above 0, else 40. A VP outside the grid gives a cue with an alignment but no row, no column and a zero grid. Examples: teletext VP 0, and open VP 30 with MNR 23.
+
+**Known edge**: teletext VP 8 gets `MiddleCenter` with row 8 of 23. `Position.RowOn` puts row 8 in the top band, so a writer that calls it drops the row of such a cue. No other teletext VP is affected.
+
+**Strict and lenient**: a time code is bad when hours are above 23, minutes or seconds above 59, or frames at or above the frame rate. A strict read keeps the cue as it is, without a warning. A lenient read skips the whole set with a warning. So strict mode is more permissive than lenient mode here. [lenient-parsing.md](lenient-parsing.md#ebu-stl) lists every error and warning. Binary formats have no line numbers, so every warning has `NoLine`. `Block` is the index of the first TTI block of the set, counted without the GSI block.
+
+**Format data**: the file key `stl` holds these fields.
+
+- `gsi`: all 31 GSI fields by name, `spare` and `UDA` too.
+- `startOfProgrammeSubtracted`: the read option.
+- `firstSubtitleNumber`: SN of the first set, or null without sets.
+- `comments`: a list of `{text, blocks}`.
+- `counts`: `TNB` is the TTI block count after a cut. `TNS` is the cue count. `TNG` is the count of distinct group numbers of cues. `TCF` is the 8 TCI digits of the first cue before any subtraction, or `00000000`.
+
+The cue key `stl` holds `subtitleGroupNumber`, `cumulativeStatus`, `verticalPosition` and `justificationCode` of the first block. It also holds `text`, the cue text at read time. And it holds `blocks`, the hex of every block of the set, 256 hex digits each.
 
 ## SubViewer
 

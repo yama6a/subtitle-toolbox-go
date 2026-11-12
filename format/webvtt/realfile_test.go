@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 type cueRow struct {
@@ -81,7 +81,8 @@ func TestRealFilesRoundTripKeepsAllData(t *testing.T) {
 
 			s := readFile(t, path)
 			var out bytes.Buffer
-			require.NoError(t, webvtt.Write(&out, s, model.CommonWriteOptions{}, webvtt.WriteOptions{}))
+			_, err := webvtt.Write(&out, s, model.CommonWriteOptions{}, webvtt.WriteOptions{})
+			require.NoError(t, err)
 			again, _ := read(t, out.Bytes(), false)
 			assert.Equal(t, describe(t, s), describe(t, again))
 			assert.Equal(t, s.Comments(), again.Comments())
@@ -90,7 +91,8 @@ func TestRealFilesRoundTripKeepsAllData(t *testing.T) {
 			assert.Equal(t, d, dAgain)
 
 			var second bytes.Buffer
-			require.NoError(t, webvtt.Write(&second, again, model.CommonWriteOptions{}, webvtt.WriteOptions{}))
+			_, err = webvtt.Write(&second, again, model.CommonWriteOptions{}, webvtt.WriteOptions{})
+			require.NoError(t, err)
 			assert.Equal(t, out.String(), second.String())
 		})
 	}
@@ -102,7 +104,7 @@ func describe(t *testing.T, s *model.Subtitle) []any {
 
 	var out []any
 	for _, c := range s.All() {
-		out = append(out, []any{c.Start, c.End, c.Lines, c.Alignment, cueData(t, c)})
+		out = append(out, []any{c.Start, c.End, c.Lines, c.Position.Alignment, cueData(t, c)})
 	}
 	return out
 }
@@ -125,7 +127,7 @@ func TestReadRealFileDetails(t *testing.T) {
 		assert.Equal(t, []string{"fred", "bill"}, ids)
 		c, _ := s.Cue(1)
 		assert.Equal(t, vttData(model.Field{Key: "region", Value: "bill"}, model.Field{Key: "align", Value: "right"}, model.Field{Key: "alignment", Value: int64(3)}), cueData(t, c))
-		assert.Equal(t, model.BottomRight, c.Alignment)
+		assert.Equal(t, model.BottomRight, c.Position.Alignment)
 	})
 	t.Run("a cue without text has no lines", func(t *testing.T) {
 		t.Parallel()

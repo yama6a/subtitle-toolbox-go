@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/golden"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/golden"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
 var update = flag.Bool("update", false, "rewrite the write golden files")
@@ -160,6 +160,22 @@ func TestInfoReportsTheSourceEncoding(t *testing.T) {
 	assert.Equal(t, "Windows-1252", encoding("info", "latin1.srt", "--json"))
 	assert.Equal(t, "Windows-1250", encoding("info", "latin1.srt", "--json", "--encoding", "Windows-1250"))
 	assert.Regexp(t, `(?m)^  Encoding: +Windows-1252$`, call{dir: dir}.run(t, "info", "latin1.srt").Stdout)
+}
+
+func TestInfoOfABinaryFileHasNoEncoding(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	copyFile(t, testfiles.Path(t, "stl/real/bakery_teletext_25fps.stl"), filepath.Join(dir, "bakery.stl"))
+	text := call{dir: dir}.run(t, "info", "bakery.stl")
+	require.Equal(t, 0, text.Code, text.Stderr)
+	assert.NotContains(t, text.Stdout, "Encoding:")
+	got := call{dir: dir}.run(t, "info", "bakery.stl", "--json")
+	require.Equal(t, 0, got.Code, got.Stderr)
+	var list []map[string]any
+	require.NoError(t, json.Unmarshal([]byte(got.Stdout), &list))
+	assert.Equal(t, "stl", list[0]["format"])
+	assert.Nil(t, list[0]["encoding"])
 }
 
 func TestInfoDecodeWarning(t *testing.T) {

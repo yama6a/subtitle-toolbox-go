@@ -1,0 +1,163 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "stl": {
+                "gsi": {
+                    "CPN": "850",
+                    "DFC": "STL25.01",
+                    "DSC": "1",
+                    "CCT": "00",
+                    "LC": "09",
+                    "OPT": "",
+                    "OET": "",
+                    "TPT": "",
+                    "TET": "",
+                    "TN": "",
+                    "TCD": "",
+                    "SLR": "String length 16",
+                    "CD": "700101",
+                    "RD": "700101",
+                    "RN": "1",
+                    "TNB": "5",
+                    "TNS": "5",
+                    "TNG": "1",
+                    "MNC": "40",
+                    "MNR": "23",
+                    "TCS": "1",
+                    "TCP": "00000000",
+                    "TCF": "00000000",
+                    "TND": "1",
+                    "DSN": "1",
+                    "CO": "GBR",
+                    "PUB": "",
+                    "EN": "",
+                    "ECD": "",
+                    "spare": "",
+                    "UDA": ""
+                },
+                "startOfProgrammeSubtracted": false,
+                "firstSubtitleNumber": 1,
+                "comments": [],
+                "counts": {
+                    "TNB": 5,
+                    "TNS": 5,
+                    "TNG": 1,
+                    "TCF": "00000001"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 0.04,
+                "end": 1.0,
+                "lines": [
+                    "Not part of cumulative set."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 1,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 22,
+                        "justificationCode": 2,
+                        "text": "Not part of cumulative set.",
+                        "blocks": [
+                            "010100ff0000000001000001001602000d0b0b4e6f742070617274206f662063756d756c6174697665207365742e0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 2.0,
+                "end": 7.0,
+                "lines": [
+                    "1"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 1,
+                        "cumulativeStatus": 1,
+                        "verticalPosition": 1,
+                        "justificationCode": 2,
+                        "text": "1",
+                        "blocks": [
+                            "010200ff0100000200000007000102000d0b0b31200a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3.0,
+                "end": 7.0,
+                "lines": [
+                    "2"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 1,
+                        "cumulativeStatus": 2,
+                        "verticalPosition": 3,
+                        "justificationCode": 2,
+                        "text": "2",
+                        "blocks": [
+                            "010300ff0200000300000007000302000d0b0b32200a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 4.0,
+                "end": 7.0,
+                "lines": [
+                    "3"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 1,
+                        "cumulativeStatus": 2,
+                        "verticalPosition": 5,
+                        "justificationCode": 2,
+                        "text": "3",
+                        "blocks": [
+                            "010400ff0200000400000007000502000d0b0b33200a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 5.0,
+                "end": 7.0,
+                "lines": [
+                    "4"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 1,
+                        "cumulativeStatus": 3,
+                        "verticalPosition": 7,
+                        "justificationCode": 2,
+                        "text": "4",
+                        "blocks": [
+                            "010500ff0300000500000007000702000d0b0b34200a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

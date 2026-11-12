@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func FuzzRead(f *testing.F) {
@@ -53,13 +53,16 @@ func FuzzRead(f *testing.F) {
 					t.Fatalf("Read(%q) gave cue %d at %s before %s", content, i, c.Start, last)
 				}
 				last = c.Start
+				if err := c.Position.Validate(); err != nil {
+					t.Fatalf("Read(%q) gave cue %d the position %+v: %v", content, i, c.Position, err)
+				}
 				for _, d := range []time.Duration{c.Start, c.End} {
 					if d%time.Millisecond != 0 || d < 0 || d >= timecode.MaxTime {
 						t.Fatalf("Read(%q) gave cue %d the time %s", content, i, d)
 					}
 				}
 			}
-			if err := webvtt.Write(io.Discard, s, model.CommonWriteOptions{}, webvtt.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
+			if _, err := webvtt.Write(io.Discard, s, model.CommonWriteOptions{}, webvtt.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
 				t.Fatalf("Write of Read(%q) returned %v", content, err)
 			}
 		}

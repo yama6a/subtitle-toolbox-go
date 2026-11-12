@@ -1,0 +1,102 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Market",
+            "language": "ar"
+        },
+        "comments": [],
+        "formatData": {
+            "stl": {
+                "gsi": {
+                    "CPN": "850",
+                    "DFC": "STL25.01",
+                    "DSC": "1",
+                    "CCT": "02",
+                    "LC": "7E",
+                    "OPT": "Market",
+                    "OET": "",
+                    "TPT": "",
+                    "TET": "",
+                    "TN": "",
+                    "TCD": "",
+                    "SLR": "",
+                    "CD": "261002",
+                    "RD": "261002",
+                    "RN": "00",
+                    "TNB": "00002",
+                    "TNS": "00002",
+                    "TNG": "001",
+                    "MNC": "40",
+                    "MNR": "23",
+                    "TCS": "1",
+                    "TCP": "00000000",
+                    "TCF": "00000100",
+                    "TND": "1",
+                    "DSN": "1",
+                    "CO": "EGY",
+                    "PUB": "",
+                    "EN": "",
+                    "ECD": "",
+                    "spare": "",
+                    "UDA": ""
+                },
+                "startOfProgrammeSubtracted": false,
+                "firstSubtitleNumber": 1,
+                "comments": [],
+                "counts": {
+                    "TNB": 2,
+                    "TNS": 2,
+                    "TNG": 1,
+                    "TCF": "00000100"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "السوق مفتوح اليوم."
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 22,
+                        "justificationCode": 3,
+                        "text": "السوق مفتوح اليوم.",
+                        "blocks": [
+                            "000100ff0000000100000003001603000d0b0bc7e4d3e8e220e5e1cae8cd20c7e4eae8e52e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3.4,
+                "end": 6.0,
+                "lines": [
+                    "الخبز طازج؟",
+                    "نعم، من الفرن."
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "stl": {
+                        "subtitleGroupNumber": 0,
+                        "cumulativeStatus": 0,
+                        "verticalPosition": 20,
+                        "justificationCode": 3,
+                        "text": "الخبز طازج؟\nنعم، من الفرن.",
+                        "blocks": [
+                            "000200ff000000030a000006001403000d0b0bc7e4cec8d220d7c7d2ccbf0a0a8a8a0d0b0be6d9e5ac20e5e620c7e4e1d1e62e0a0a8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

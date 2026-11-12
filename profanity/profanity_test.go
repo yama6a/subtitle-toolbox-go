@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
-	"github.com/yama6a/subtitle-toolbox-go/profanity"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/profanity"
 )
 
 func sec(s float64) time.Duration {
@@ -237,7 +237,8 @@ func TestApplyRealFiles(t *testing.T) {
 		assert.Equal(t, [2]time.Duration{sec(13.2), sec(15.6)}, [2]time.Duration{last.Start, last.End})
 
 		var buf bytes.Buffer
-		require.NoError(t, stbox.Write(&buf, s, stbox.SubRip, stbox.WriteOptions{LineEnding: stbox.CRLF, BOM: stbox.BOMRemove}))
+		_, err = stbox.Write(&buf, s, stbox.SubRip, stbox.WriteOptions{LineEnding: stbox.CRLF, BOM: stbox.BOMRemove})
+		require.NoError(t, err)
 		want := strings.NewReplacer("Damn it", "**** it", "the hell", "the ****", "to hell", "to ****", "damned", "******").
 			Replace(string(testfiles.Read(t, "profanity/keys.srt")))
 		assert.Equal(t, want, buf.String())
@@ -267,7 +268,8 @@ func TestApplyRealFiles(t *testing.T) {
 		assert.Equal(t, []string{"<00:00:07.500>Fine, <00:00:08.000>d*****."}, got[3])
 
 		var buf bytes.Buffer
-		require.NoError(t, stbox.Write(&buf, s, stbox.WebVTT, stbox.WriteOptions{BOM: stbox.BOMRemove}))
+		_, err = stbox.Write(&buf, s, stbox.WebVTT, stbox.WriteOptions{BOM: stbox.BOMRemove})
+		require.NoError(t, err)
 		want := strings.NewReplacer("damn <", "d*** <", "hell <", "h*** <", "damnit.", "d*****.").
 			Replace(string(testfiles.Read(t, "profanity/radio.vtt")))
 		assert.Equal(t, want, buf.String())

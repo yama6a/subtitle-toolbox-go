@@ -10,12 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/phpkey"
-	"github.com/yama6a/subtitle-toolbox-go/internal/stringlist"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/phpkey"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/stringlist"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // millisecondsMedian is the smallest median cue duration, read as seconds, of a table of whole numbers that the
@@ -88,7 +88,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if delimiter == DelimiterDefault {
 		delimiter = detectDelimiter(text)
 	}
-	rd := &reader{st: st, columns: opts.Columns, delimiter: string(delimiter), fps: opts.FrameRate}
+	rd := &reader{st: st, columns: opts.Columns, delimiter: string(delimiter), fps: opts.FrameRate.Float64()}
 	s, err := rd.read(text)
 	if err != nil {
 		return nil, nil, err

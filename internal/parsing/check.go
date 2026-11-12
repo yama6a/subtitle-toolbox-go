@@ -1,16 +1,16 @@
 package parsing
 
 import (
-	"math"
+	"errors"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const (
@@ -20,18 +20,14 @@ const (
 
 var wordTimestamp = regexp.MustCompile(markupcore.WordTimestampPattern)
 
-// CheckFrameRate returns an *InvalidArgumentError with option unless fps is finite and above 0. subject starts the
-// message, as FrameRateMessage writes it.
-func CheckFrameRate(fps float64, option, subject string) error {
-	if fps > 0 && !math.IsInf(fps, 1) {
-		return nil
+// FrameRateOption returns nil for a nil err. Else it returns the *InvalidArgumentError of FrameRate.Validate or
+// FrameRateFromFloat with option set and subject in place of the leading "The frame rate" of the message.
+func FrameRateOption(err error, option, subject string) error {
+	var aerr *model.InvalidArgumentError
+	if !errors.As(err, &aerr) {
+		return err
 	}
-	return &model.InvalidArgumentError{Option: option, Msg: FrameRateMessage(subject, fps)}
-}
-
-// FrameRateMessage returns "SUBJECT must be greater than 0, got X.", with X as PHP prints a float.
-func FrameRateMessage(subject string, fps float64) string {
-	return subject + " must be greater than 0, got " + timecode.Number(fps) + "."
+	return &model.InvalidArgumentError{Option: option, Msg: subject + strings.TrimPrefix(aerr.Msg, "The frame rate")}
 }
 
 // BoundedTime returns d, or an error on line when d is 100000 hours or more. The error has no format,

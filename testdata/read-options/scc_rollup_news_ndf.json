@@ -1,0 +1,59 @@
+[
+    [
+        0.2,
+        1.335,
+        [
+            "&gt;&gt; GOOD MORNING."
+        ]
+    ],
+    [
+        1.335,
+        2.069,
+        [
+            "&gt;&gt; GOOD MORNING. HERE IS THE"
+        ]
+    ],
+    [
+        2.069,
+        3.57,
+        [
+            "&gt;&gt; GOOD MORNING. HERE IS THE",
+            "WEATHER FOR TODAY."
+        ]
+    ],
+    [
+        3.57,
+        5.072,
+        [
+            "&gt;&gt; GOOD MORNING. HERE IS THE",
+            "WEATHER FOR TODAY.",
+            "CLOUDS IN THE MORNING,"
+        ]
+    ],
+    [
+        5.072,
+        6.74,
+        [
+            "WEATHER FOR TODAY.",
+            "CLOUDS IN THE MORNING,",
+            "SUN IN THE AFTERNOON."
+        ]
+    ],
+    [
+        6.74,
+        8.008,
+        [
+            "CLOUDS IN THE MORNING,",
+            "SUN IN THE AFTERNOON.",
+            "&gt;&gt; NOW THE TRAFFIC."
+        ]
+    ],
+    [
+        8.008,
+        10.01,
+        [
+            "&gt;&gt; NOW THE TRAFFIC.",
+            "THE BRIDGE IS OPEN."
+        ]
+    ]
+]

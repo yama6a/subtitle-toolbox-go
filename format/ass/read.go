@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/phpkey"
-	"github.com/yama6a/subtitle-toolbox-go/internal/stringlist"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/phpkey"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/stringlist"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // maxHourDigits is the digit count above which a time is 100000 hours or more, whatever its other fields.
@@ -369,7 +369,7 @@ func newCue(start, end time.Duration, lines []string, numpad int, f eventFields,
 	c.SetText(strings.Join(lines, "\n"))
 	var alignment any
 	if numpad > 0 {
-		c.Alignment, _ = model.AlignmentFromNumpad(numpad)
+		c.Position.Alignment, _ = model.AlignmentFromNumpad(numpad)
 		alignment = int64(numpad)
 	}
 	kept := record{names: make([]string, 0, len(f.names)), values: make([]string, 0, len(f.names))}

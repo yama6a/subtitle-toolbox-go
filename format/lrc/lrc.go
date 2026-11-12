@@ -7,11 +7,14 @@ package lrc
 import (
 	"regexp"
 
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // ReadOptions holds the settings of the LRC reader. LRC has none yet.
 type ReadOptions struct{}
+
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
 
 // WriteOptions holds the settings of the LRC writer. LRC has none yet.
 type WriteOptions struct{}

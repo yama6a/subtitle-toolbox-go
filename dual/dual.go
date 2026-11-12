@@ -5,7 +5,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // FromPair returns a new subtitle with the cues of primary and secondary. Neither input changes.
@@ -42,7 +42,7 @@ func secondaryCopies(s *model.Subtitle, opts Options) []model.Cue {
 		for i, line := range c.Lines {
 			lines[i] = opts.style(line)
 		}
-		cues = append(cues, model.Cue{Start: c.Start, End: c.End, Lines: lines, Alignment: c.Alignment, Forced: c.Forced})
+		cues = append(cues, model.Cue{Start: c.Start, End: c.End, Lines: lines, Position: c.Position, Forced: c.Forced})
 	}
 	return cues
 }
@@ -103,7 +103,7 @@ func placeApart(primary, secondary []model.Cue, opts Options) {
 		if end > start {
 			c.Start, c.End = start, end
 		}
-		c.Alignment = alignment
+		c.Position.Alignment = alignment
 	}
 }
 

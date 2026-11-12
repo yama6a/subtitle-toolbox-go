@@ -12,10 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
 // goldenFolder is a row of the read golden table of https://github.com/yama6a/subtitle-toolbox-go/issues/9.
@@ -28,12 +28,12 @@ type goldenFolder struct {
 }
 
 // microDVDAt25 is the read option of the MicroDVD read goldens, as tests/files/generate-read-goldens.php sets it.
-var microDVDAt25 = stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: 25}}
+var microDVDAt25 = stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}}
 
 // dubbingScript is the CSV layout of csv/real/dubbing_script.csv in the read golden table of #9.
 var dubbingScript = csv.ReadOptions{
 	Columns:   csv.Columns{Start: csv.ColumnNamed("Start TC"), Speaker: csv.ColumnNamed("Character")},
-	FrameRate: 25,
+	FrameRate: stbox.FrameRate{Num: 25, Den: 1},
 }
 
 func goldenFolders() []goldenFolder {
@@ -43,7 +43,7 @@ func goldenFolders() []goldenFolder {
 			"dubbing_script.csv": {CSV: dubbingScript},
 			"headerless_frame_times.csv": {CSV: csv.ReadOptions{
 				Columns:   csv.Columns{Start: csv.ColumnAt(0), End: csv.ColumnAt(1), Text: csv.ColumnAt(2), NoHeader: true},
-				FrameRate: 25,
+				FrameRate: stbox.FrameRate{Num: 25, Den: 1},
 			}},
 			"excel_de_semicolon.csv": {CSV: csv.ReadOptions{
 				Columns: csv.Columns{End: csv.ColumnNamed("Ende"), Speaker: csv.ColumnNamed("Sprecher")},
@@ -65,7 +65,10 @@ func goldenFolders() []goldenFolder {
 			options: map[string]stbox.ReadOptions{"own_korean_cp949.smi": {Encoding: "CP949"}},
 		},
 		{name: "sbv", format: stbox.SBV, files: 5},
+		{name: "scc", format: stbox.SCC, files: 9},
+		{name: "spruce-stl", format: stbox.SpruceSTL, files: 3},
 		{name: "srt", format: stbox.SubRip, files: 19},
+		{name: "stl", format: stbox.EBUSTL, files: 17},
 		{name: "subviewer", format: stbox.SubViewer, files: 6},
 		{name: "tmplayer", format: stbox.TMPlayer, files: 4},
 		{name: "ttml", format: stbox.TTML, files: 29},
@@ -116,15 +119,28 @@ func TestReadGoldens(t *testing.T) {
 
 				s, info := g.read(t, file)
 				var library bytes.Buffer
-				require.NoError(t, stbox.Write(&library, s, stbox.JSON, stbox.WriteOptions{}))
+				_, err := stbox.Write(&library, s, stbox.JSON, stbox.WriteOptions{})
+				require.NoError(t, err)
 				var subtitle any
 				require.NoError(t, json.Unmarshal(library.Bytes(), &subtitle))
+				dropPositions(subtitle)
 				got := map[string]any{"warnings": goldenWarnings(info.Warnings), "subtitle": subtitle}
 
 				var want any
 				require.NoError(t, json.Unmarshal(testfiles.Read(t, g.name+"/real/expected/"+file+".json"), &want))
 				assert.Equal(t, canonicalJSON(t, want), canonicalJSON(t, got))
 			})
+		}
+	}
+}
+
+// dropPositions removes the key position from each cue, because the PHP goldens never hold it.
+func dropPositions(subtitle any) {
+	root, _ := subtitle.(map[string]any)
+	cues, _ := root["cues"].([]any)
+	for _, c := range cues {
+		if cue, ok := c.(map[string]any); ok {
+			delete(cue, "position")
 		}
 	}
 }

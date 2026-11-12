@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func ExampleRead() {
@@ -19,7 +19,7 @@ func ExampleRead() {
 		return
 	}
 	for _, c := range s.All() {
-		fmt.Println(c.Start, c.End, c.Lines, c.Alignment)
+		fmt.Println(c.Start, c.End, c.Lines, c.Position.Alignment)
 	}
 	fmt.Println(len(warnings), "warnings")
 	// Output:
@@ -32,9 +32,9 @@ func ExampleWrite() {
 	s := &model.Subtitle{}
 	s.AddCues(
 		model.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"<i>Fish &amp; Chips</i>"}},
-		model.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"On the menu"}, Alignment: model.TopCenter},
+		model.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"On the menu"}, Position: model.Position{Alignment: model.TopCenter}},
 	)
-	err := srt.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, srt.WriteOptions{})
+	_, err := srt.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, srt.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)
 	}

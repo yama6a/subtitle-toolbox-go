@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/phpkey"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/phpkey"
 )
 
 // valueType is one type of the type language of the format data schema.

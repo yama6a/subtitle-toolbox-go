@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
 const framesCSV = "csv/own_frame_times.csv"
@@ -20,10 +20,11 @@ func TestInputFPSReadsCSVFrameTimes(t *testing.T) {
 	t.Parallel()
 
 	content := testfiles.Read(t, framesCSV)
-	s, _, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: stbox.CSV, CSV: csv.ReadOptions{FrameRate: 25}})
+	s, _, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: stbox.CSV, CSV: csv.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
 	require.NoError(t, err)
 	var srt bytes.Buffer
-	require.NoError(t, stbox.Write(&srt, s, stbox.SubRip, stbox.WriteOptions{}))
+	_, err = stbox.Write(&srt, s, stbox.SubRip, stbox.WriteOptions{})
+	require.NoError(t, err)
 
 	dir := fixtureDir(t, map[string]string{"frames.csv": framesCSV})
 	assert.Equal(t, result{Stdout: srt.String()}, call{dir: dir}.run(t, "convert", "frames.csv", "--to", "srt", "-o", "-", "--input-fps", "25"))

@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Version is the library JSON version that this package reads and writes.
@@ -18,6 +18,9 @@ const Version = 1
 
 // ReadOptions holds the library JSON read settings. Library JSON has none.
 type ReadOptions struct{}
+
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
 
 // WriteOptions holds the library JSON write settings.
 type WriteOptions struct {
@@ -51,10 +54,10 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 }
 
 // Write writes s to w as a library JSON document of version 1. Negative times stay as they are, and StripTags has no effect.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	body, err := document(s, opts)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
-	return writing.Write(w, model.JSON, body, common, false)
+	return WriteReport{}, writing.Write(w, model.JSON, body, common, false)
 }

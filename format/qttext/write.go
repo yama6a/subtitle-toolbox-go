@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // defaultHeader is the header that Subtitle Edit writes. It reads only 2 fraction digits.
@@ -53,7 +53,7 @@ type count struct {
 // timestamp is not written, and a header that does not start with {QTtext} gets that line first, so the output
 // always reads back. The style descriptors of a cue without stored source text come from the markup. Such a text
 // line that reads as a timestamp line starts with U+2060 WORD JOINER.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	file, _ := s.FormatData(formatDataKey)
 	stored, hasHeader := file.Strings("header")
 	paired, _ := file.Bool("pairedTimestamps")
@@ -74,7 +74,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 		wr.body = append(wr.body, '\n')
 	}
 	wr.cues(s, paired)
-	return writing.Write(w, model.QuickTimeText, wr.body, common, false)
+	return WriteReport{}, writing.Write(w, model.QuickTimeText, wr.body, common, false)
 }
 
 func (wr *writer) cues(s *model.Subtitle, paired bool) {

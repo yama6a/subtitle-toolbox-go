@@ -6,10 +6,10 @@ import (
 	"iter"
 	"slices"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/subrip"
-	"github.com/yama6a/subtitle-toolbox-go/internal/vtt"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/subrip"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/vtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // SubRipReader reads the cues of a SubRip input one block at a time.

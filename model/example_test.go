@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func ExampleSubtitle() {
@@ -175,4 +175,42 @@ func ExampleCue_SetFormatData() {
 	// Output:
 	// stbox: invalid argument: The field formatData.srt.coordinates.x2 is missing.
 	// stbox: invalid argument: The field formatData.ass.text has the unsupported Go type int.
+}
+
+func ExampleFrameRateFromFloat() {
+	r, err := model.FrameRateFromFloat(23.976)
+	fmt.Println(r.Num, r.Den, r, err)
+	_, err = model.FrameRateFromFloat(0)
+	fmt.Println(err)
+	// Output:
+	// 2997 125 23.976 <nil>
+	// stbox: invalid argument: The frame rate must be greater than 0, got 0.
+}
+
+func ExamplePosition_RowOn() {
+	scc := model.Grid{Rows: 15, Columns: 32}
+	teletext := model.Grid{Rows: 23, Columns: 40}
+	for _, p := range []model.Position{
+		{Alignment: model.TopCenter, Row: 2, Grid: scc},
+		{Alignment: model.BottomCenter, Row: 15, Grid: scc},
+		{Alignment: model.MiddleCenter, Row: 8, Grid: scc},
+	} {
+		row, ok := p.RowOn(teletext, 1)
+		fmt.Println(row, ok)
+	}
+	// Output:
+	// 2 true
+	// 23 true
+	// 12 true
+}
+
+func ExampleFrameRate_TimecodeOf() {
+	fmt.Println(model.FrameRate2997DF.TimecodeOf(1800))
+	// Output: 00:01:00;02
+}
+
+func ExampleParseTime() {
+	d, err := model.ParseTime("00:01:02:12", model.FrameRate25)
+	fmt.Println(d, err)
+	// Output: 1m2.48s <nil>
 }

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
 )
 
 func ExampleParse_shiftToWebVTT() {
@@ -25,7 +25,7 @@ func ExampleParse_shiftToWebVTT() {
 		fmt.Println(err)
 		return
 	}
-	if err := stbox.Write(os.Stdout, s, stbox.WebVTT, stbox.WriteOptions{BOM: stbox.BOMRemove}); err != nil {
+	if _, err := stbox.Write(os.Stdout, s, stbox.WebVTT, stbox.WriteOptions{BOM: stbox.BOMRemove}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:
@@ -87,7 +87,7 @@ func ExampleWrite_lineEnding() {
 		return
 	}
 	var out bytes.Buffer
-	err = stbox.Write(&out, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF})
+	_, err = stbox.Write(&out, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF})
 	if err != nil {
 		fmt.Println(err)
 		return

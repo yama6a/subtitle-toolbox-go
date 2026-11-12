@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func ExampleRead() {
@@ -25,7 +25,7 @@ func ExampleRead() {
 	title, _ := s.Metadata(model.MetadataTitle)
 	c, _ := s.Cue(0)
 	fmt.Println(title)
-	fmt.Println(c.Start, c.End, c.Alignment, c.Text())
+	fmt.Println(c.Start, c.End, c.Position.Alignment, c.Text())
 
 	_, _, err = stboxjson.Read(strings.NewReader(`{"version": 1, "cues": [{"start": "1", "end": 2, "lines": []}]}`),
 		model.CommonReadOptions{}, stboxjson.ReadOptions{})
@@ -40,7 +40,7 @@ func ExampleWrite() {
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataTitle, "Morning train")
 	s.AddCue(model.Cue{Start: time.Second, End: 3500 * time.Millisecond, Lines: []string{"The train leaves at nine."}, Forced: true})
-	err := stboxjson.Write(os.Stdout, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{PrettyPrint: true, OmitFormatData: true})
+	_, err := stboxjson.Write(os.Stdout, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{PrettyPrint: true, OmitFormatData: true})
 	if err != nil {
 		fmt.Println(err)
 	}

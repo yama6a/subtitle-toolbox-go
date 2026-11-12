@@ -10,3 +10,5 @@ The JSON files hold the cues that PHP 1.x read from a real file, as `[start, end
 | `sami_multi_language_frcc.json` | Cues of `../sami/real/multi_language.smi`, read by `new SamiParser("FRCC")` | MIT |
 | `csv_excel_de_semicolon.json` | Cues of `../csv/real/excel_de_semicolon.csv`, read by `new CsvParser(delimiter: ";")` | MIT |
 | `microdvd_subsrt_sample.json` | Cues of `../microdvd/real/subsrt_sample.sub`, read by `new MicroDvdParser(23.976)` | MIT |
+| `last_caption_without_erase.scc` | Written for this repository. The first two captions of `../scc/real/popon_broadcast_df.scc`, without the erase command after the second | MIT |
+| `scc_rollup_news_ndf.json` | Cues of `../scc/real/rollup_news_ndf.scc`, read by `new SccParser(1)` | MIT |

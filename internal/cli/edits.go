@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"os"
 	"regexp"
 	"slices"
 	"strconv"
@@ -15,15 +14,15 @@ import (
 
 	"github.com/dlclark/regexp2/v2"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/hearingimpaired"
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
-	"github.com/yama6a/subtitle-toolbox-go/profanity"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/profanity"
 )
 
 // group is one option group of convert.
@@ -93,7 +92,7 @@ func flagSteps(a *args, flags []flagStep) steps {
 
 // convertGroups lists the groups in pipeline order.
 func convertGroups() []group {
-	return []group{forcedGroup(), errorsGroup(), sdhGroup(), replaceGroup(), textGroup(), structureGroup(), retimeGroup(), timingGroup(), maskingGroup(), assGroup()}
+	return []group{forcedGroup(), errorsGroup(), sdhGroup(), replaceGroup(), textGroup(), structureGroup(), retimeGroup(), snapGroup(), timingGroup(), maskingGroup(), assGroup()}
 }
 
 func needs(a *args, needed string, opts ...string) error {
@@ -458,7 +457,8 @@ func retimeGroup() group {
 // retimeValues holds the values of the retime options. A nil pointer is an option that the call does not set.
 type retimeValues struct {
 	shift, shiftAfter, shiftBefore *time.Duration
-	scale, fromFPS, toFPS          *float64
+	scale                          *float64
+	fromFPS, toFPS                 *stbox.FrameRate
 	sync                           []syncPoint
 }
 
@@ -498,19 +498,25 @@ func readRetime(a *args) (retimeValues, error) {
 			*t.to = &d
 		}
 	}
+	scale, ok, err := a.PositiveFloat("scale")
+	if err != nil {
+		return v, err
+	}
+	if ok {
+		v.scale = &scale
+	}
 	for _, n := range []struct {
 		name string
-		to   **float64
-	}{{"scale", &v.scale}, {"from-fps", &v.fromFPS}, {"to-fps", &v.toFPS}} {
-		f, ok, err := a.PositiveFloat(n.name)
+		to   **stbox.FrameRate
+	}{{"from-fps", &v.fromFPS}, {"to-fps", &v.toFPS}} {
+		r, ok, err := a.FrameRate(n.name)
 		if err != nil {
 			return v, err
 		}
 		if ok {
-			*n.to = &f
+			*n.to = &r
 		}
 	}
-	var err error
 	v.sync, err = syncPoints(a.Values("sync"))
 	return v, err
 }
@@ -782,13 +788,9 @@ func (m *maskingEdit) apply(_ context.Context, s *stbox.Subtitle, _ *console, _ 
 // loadWords reads one word per line. A UTF-8 BOM, the line endings CR LF, LF and CR, the spaces around a word and
 // empty lines do not count. A word list that fails Validate is a usage error.
 func (m *maskingEdit) loadWords(c *console) error {
-	path := c.path(m.wordsPath)
-	if st, err := os.Stat(path); err != nil || !st.Mode().IsRegular() {
-		return &fileError{msg: m.wordsPath + ": " + missingFileMessage}
-	}
-	content, err := os.ReadFile(path)
+	content, err := readSideText(c, m.wordsPath)
 	if err != nil {
-		return &fileError{msg: m.wordsPath + ": Cannot read the file."}
+		return err
 	}
 	text := string(content)
 	for strings.HasPrefix(text, "\ufeff") {

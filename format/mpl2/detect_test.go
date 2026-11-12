@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/mpl2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpl2"
 )
 
 // Rows of the MPL2 signature of https://github.com/yama6a/subtitle-toolbox-go/issues/15.

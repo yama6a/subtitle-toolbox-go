@@ -6,17 +6,17 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 var italicTagRegexp = regexp.MustCompile(`<(/?)[iI]>`)
 
 // Write writes s as MPL2. It writes every cue, also one without text. A line break inside a line becomes |, and a |
 // in the text becomes U+00A6 BROKEN BAR.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	var body []byte
 	for _, c := range s.All() {
 		body = append(body, '[')
@@ -27,7 +27,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 		body = append(body, writing.PipeText(italicLines(c.Lines))...)
 		body = append(body, '\n')
 	}
-	return writing.Write(w, model.MPL2, body, common, false)
+	return WriteReport{}, writing.Write(w, model.MPL2, body, common, false)
 }
 
 // italicLines returns the visible text of each line, split at its line breaks. A line gets a / prefix when all its

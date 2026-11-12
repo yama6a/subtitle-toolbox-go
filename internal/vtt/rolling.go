@@ -4,8 +4,8 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // maxRepeatDuration is the longest repeat cue. yt-dlp writes it with 10 ms.

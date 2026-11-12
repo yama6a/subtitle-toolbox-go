@@ -10,11 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
-	"github.com/yama6a/subtitle-toolbox-go/stream"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/stream"
 )
 
 // Ported from tests/Streaming/StreamFixturesTest.php, optionSets.
@@ -43,7 +43,8 @@ func TestSubRipWriterWritesTheBytesOfTheFullWriter(t *testing.T) {
 				t.Parallel()
 
 				var want, got bytes.Buffer
-				require.NoError(t, srt.Write(&want, s, o.common, srt.WriteOptions{}))
+				_, err := srt.Write(&want, s, o.common, srt.WriteOptions{})
+				require.NoError(t, err)
 				w, err := stream.NewSubRipWriter(&got, o.common, srt.WriteOptions{})
 				require.NoError(t, err)
 				for _, c := range s.All() {
@@ -73,7 +74,7 @@ func TestWebVTTWriterWritesTheBytesOfTheFullWriter(t *testing.T) {
 				t.Parallel()
 
 				var want, got bytes.Buffer
-				report, err := webvtt.WriteWithReport(&want, s, o.common, webvtt.WriteOptions{})
+				report, err := webvtt.Write(&want, s, o.common, webvtt.WriteOptions{})
 				require.NoError(t, err)
 				w, err := stream.NewWebVTTWriter(&got, o.common, webvtt.WriteOptions{}, header)
 				require.NoError(t, err)
@@ -167,7 +168,7 @@ func TestWebVTTWriterListsTheColorsThatItDrops(t *testing.T) {
 	s, _, err := srt.Read(bytes.NewReader(content), model.CommonReadOptions{}, srt.ReadOptions{})
 	require.NoError(t, err)
 	var want bytes.Buffer
-	report, err := webvtt.WriteWithReport(&want, s, common, webvtt.WriteOptions{})
+	report, err := webvtt.Write(&want, s, common, webvtt.WriteOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, want.String(), out.String())
 	assert.Equal(t, report.DroppedColors, w.DroppedColors())

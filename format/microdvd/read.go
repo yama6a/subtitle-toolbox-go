@@ -11,14 +11,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/stringlist"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/stringlist"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
-// lenientFrameRate is the default of mantas-done/subtitles, pysubs2 and subtitle_it, as a plain float and not 24000/1001.
+// lenientFrameRate is the default of mantas-done/subtitles, pysubs2 and subtitle_it, 2997/125 and not 24000/1001.
 const lenientFrameRate = 23.976
 
 const frameRateOption = "ReadOptions.MicroDVD.FrameRate"
@@ -67,7 +67,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	}
 
 	lines := nonEmptyLines(string(content))
-	fps, lines, hasLine, err := frameRate(st, lines, opts.FrameRate)
+	fps, lines, hasLine, err := frameRate(st, lines, opts.FrameRate.Float64())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -157,11 +157,13 @@ func lineFrameRate(number string, option float64) (float64, error) {
 	if option != 0 {
 		return option, nil
 	}
-	fps, _ := strconv.ParseFloat(number, 64) // a value beyond the float range is +Inf, which the check rejects
-	if parsing.CheckFrameRate(fps, "", "") != nil {
-		return 0, &model.ParseError{Format: model.MicroDVD, Msg: parsing.FrameRateMessage("The frame rate", fps)}
+	fps, _ := strconv.ParseFloat(number, 64) // a value beyond the float range is +Inf, which the conversion rejects
+	rate, err := model.FrameRateFromFloat(fps)
+	var aerr *model.InvalidArgumentError
+	if errors.As(err, &aerr) {
+		return 0, &model.ParseError{Format: model.MicroDVD, Msg: aerr.Msg}
 	}
-	return fps, nil
+	return rate.Float64(), nil
 }
 
 // parseCueShape splits a line of the shape ^\{(\d+)\}\{(\d+)\}(.*)$.

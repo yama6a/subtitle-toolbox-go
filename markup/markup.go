@@ -3,7 +3,7 @@ package markup
 import (
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
 )
 
 // TimedWord is one word and the time it is spoken, for InsertWordTimestamps.

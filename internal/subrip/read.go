@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/blocks"
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/phpkey"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/blocks"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/phpkey"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const (
@@ -160,7 +160,7 @@ func (rd *Reader) parseCue(lines, shown []string, index, line int) (model.Cue, e
 	c := model.Cue{Start: start, End: end}
 	text, numpad := cueText(lines[2:])
 	c.SetText(text)
-	c.Alignment, _ = model.AlignmentFromNumpad(numpad)
+	c.Position.Alignment, _ = model.AlignmentFromNumpad(numpad)
 	if err := rd.applyTextAfterEndTime(&c, t.rest, numpad, index, line, shown); err != nil {
 		return model.Cue{}, err
 	}

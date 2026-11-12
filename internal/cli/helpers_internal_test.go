@@ -16,8 +16,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
 const testVersion = "1.2.3"
@@ -137,7 +137,8 @@ func convertAs(t *testing.T, name string, f stbox.Format) string {
 	s, _, err := stbox.Load(testfiles.Path(t, "cli/"+name), stbox.ReadOptions{})
 	require.NoError(t, err)
 	var buf bytes.Buffer
-	require.NoError(t, stbox.Write(&buf, s, f, stbox.WriteOptions{}))
+	_, err = stbox.Write(&buf, s, f, stbox.WriteOptions{})
+	require.NoError(t, err)
 	return buf.String()
 }
 

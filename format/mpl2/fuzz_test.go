@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/mpl2"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpl2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func FuzzRead(f *testing.F) {
@@ -63,7 +63,7 @@ func FuzzRead(f *testing.F) {
 				}
 			}
 			var out bytes.Buffer
-			if err := mpl2.Write(&out, s, model.CommonWriteOptions{}, mpl2.WriteOptions{}); err != nil {
+			if _, err := mpl2.Write(&out, s, model.CommonWriteOptions{}, mpl2.WriteOptions{}); err != nil {
 				t.Fatalf("Write returned %v", err)
 			}
 			back, _, err := mpl2.Read(&out, model.CommonReadOptions{}, mpl2.ReadOptions{})

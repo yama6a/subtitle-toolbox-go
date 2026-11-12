@@ -1,15 +1,15 @@
 package microdvd_test
 
 import (
-	"math"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const unknownFrameRate = "The frame rate is unknown. Start the file with {1}{1}<fps>, set the frame rate, or read the file in lenient mode for 23.976 fps."
@@ -314,13 +314,13 @@ func TestValidate(t *testing.T) {
 
 	tests := []struct {
 		name string
-		fps  float64
+		fps  model.FrameRate
 		want string
 	}{
-		{"negative", -1, "-1"},
-		{"NaN", math.NaN(), "NAN"},
-		{"infinite", math.Inf(1), "INF"},
-		{"minus infinite", math.Inf(-1), "-INF"},
+		{"negative", model.FrameRate{Num: -1, Den: 1}, "-1"},
+		{"zero frames", model.FrameRate{Num: 0, Den: 1}, "0"},
+		{"zero seconds", model.FrameRate{Num: 1, Den: 0}, "INF"},
+		{"negative zero seconds", model.FrameRate{Num: -1, Den: 0}, "-INF"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -333,10 +333,10 @@ func TestValidate(t *testing.T) {
 			err = microdvd.WriteOptions{FrameRate: tt.fps}.Validate()
 			assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "The MicroDVD frame rate must be greater than 0, got " + tt.want + "."}, err)
 
-			_, _, err = read("{0}{25}Hello", false, tt.fps)
+			_, _, err = microdvd.Read(strings.NewReader("{0}{25}Hello"), model.CommonReadOptions{}, microdvd.ReadOptions{FrameRate: tt.fps})
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
 		})
 	}
 	require.NoError(t, microdvd.ReadOptions{}.Validate())
-	require.NoError(t, microdvd.WriteOptions{FrameRate: 23.976}.Validate())
+	require.NoError(t, microdvd.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 125}}.Validate())
 }

@@ -8,10 +8,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
@@ -64,7 +64,7 @@ func FuzzRead(f *testing.F) {
 			}
 
 			var out bytes.Buffer
-			err = stboxjson.Write(&out, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
+			_, err = stboxjson.Write(&out, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
 			if err != nil {
 				var uerr *model.UnwritableError
 				if !errors.As(err, &uerr) || uerr.Reason != infOrNaN {

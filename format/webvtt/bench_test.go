@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const benchCues = 20000
@@ -33,7 +33,8 @@ func repeatWithNotes(tb testing.TB, n int) []byte {
 		require.NoError(tb, s.AddComment(comments[i%len(comments)].Text, i))
 	}
 	var out bytes.Buffer
-	require.NoError(tb, webvtt.Write(&out, s, model.CommonWriteOptions{}, webvtt.WriteOptions{}))
+	_, err = webvtt.Write(&out, s, model.CommonWriteOptions{}, webvtt.WriteOptions{})
+	require.NoError(tb, err)
 	return out.Bytes()
 }
 

@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const defaultSecondTextHeader = "text2"
@@ -35,14 +35,14 @@ type settings struct {
 // Write writes s as a CSV or TSV table. A subtitle that Read returned keeps its columns, header names, delimiter,
 // time format and quoting. A line break inside a cell stays LF, as Excel writes it. The rows end with the line
 // ending of common.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	if err := opts.Validate(); err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	file, hasFile := s.FormatData(formatDataKey)
 	set, err := resolve(file, opts)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	cues := s.Cues()
 	speakers := make([]string, len(cues))
@@ -76,7 +76,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		b.WriteString(eol)
 	}
 	common.LineEnding = model.LF
-	return writing.Write(w, model.CSV, []byte(b.String()), common, true)
+	return WriteReport{}, writing.Write(w, model.CSV, []byte(b.String()), common, true)
 }
 
 // withSecondText inserts the SecondText column after the text column, as PHP inserts it: at index 1 without one.
@@ -105,7 +105,7 @@ func isNull(d *model.Data, key string) bool {
 }
 
 func resolve(file *model.Data, opts WriteOptions) (settings, error) {
-	set := settings{delimiter: string(opts.Delimiter), timeFormat: opts.TimeFormat, fps: opts.FrameRate, escape: opts.EscapeFormulas}
+	set := settings{delimiter: string(opts.Delimiter), timeFormat: opts.TimeFormat, fps: opts.FrameRate.Float64(), escape: opts.EscapeFormulas}
 	if set.delimiter == "" {
 		set.delimiter, _ = file.String("delimiter")
 	}
@@ -121,10 +121,11 @@ func resolve(file *model.Data, opts WriteOptions) (settings, error) {
 	}
 	if set.fps == 0 {
 		if fps, ok := file.Number("frameRate"); ok {
-			if err := parsing.CheckFrameRate(fps, "WriteOptions.CSV.FrameRate", "The frame rate"); err != nil {
-				return settings{}, err
+			rate, err := model.FrameRateFromFloat(fps)
+			if err != nil {
+				return settings{}, parsing.FrameRateOption(err, "WriteOptions.CSV.FrameRate", "The frame rate")
 			}
-			set.fps = fps
+			set.fps = rate.Float64()
 		}
 	}
 	if set.timeFormat == TimeFrames && set.fps == 0 {

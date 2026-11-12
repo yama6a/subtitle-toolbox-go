@@ -9,11 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const phpNote = "NOTE=Created with the PHP Subtitle Toolbox (https://github.com/yama6a/subtitle-toolbox-php)\n"
@@ -68,7 +68,7 @@ func TestFrameBasedSampleFile(t *testing.T) {
 	assert.Equal(t, map[string]string{"title": "Harbour walk, frame based (sample)"}, s.AllMetadata())
 	assert.Empty(t, fileData(s))
 
-	output := write(t, s, model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: 25})
+	output := write(t, s, model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}})
 	assert.Contains(t, output, "\nFORMAT=25\n")
 	back, _ := mustRead(t, output, false)
 	require.Equal(t, s.Len(), back.Len())
@@ -90,7 +90,7 @@ func TestFramesFileRoundTripsByteForByte(t *testing.T) {
 	assert.Equal(t, map[string]any{"TYPE": "VIDEO"}, fileData(s))
 
 	want := "\xEF\xBB\xBF" + strings.Replace(string(raw), "FORMAT=25\n", "FORMAT=25\n"+goNote, 1)
-	assert.Equal(t, want, write(t, s, model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: 25}))
+	assert.Equal(t, want, write(t, s, model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}}))
 }
 
 // Ports testFormatterOutputParsesBackToTheSameCues of tests/Parsers/MpSubParserTest.php of subtitle-toolbox-php.
@@ -122,7 +122,7 @@ func TestWriteSubRipAsMPSub(t *testing.T) {
 		opts mpsub.WriteOptions
 	}{
 		{"mpsub/valid.mpsub", mpsub.WriteOptions{}},
-		{"mpsub/valid_25fps.mpsub", mpsub.WriteOptions{FrameRate: 25}},
+		{"mpsub/valid_25fps.mpsub", mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.file, func(t *testing.T) {

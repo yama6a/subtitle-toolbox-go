@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const (
@@ -55,7 +55,8 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions, opt
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, mpsub.Write(&out, s, common, opts))
+	_, err := mpsub.Write(&out, s, common, opts)
+	require.NoError(t, err)
 	return out.String()
 }
 
@@ -96,4 +97,16 @@ func fileData(s *model.Subtitle) map[string]any {
 		out[k], _ = d.Get(k)
 	}
 	return out
+}
+
+// rate returns fps as a FrameRate, and the zero value for 0.
+func rate(fps float64) model.FrameRate {
+	if fps == 0 {
+		return model.FrameRate{}
+	}
+	r, err := model.FrameRateFromFloat(fps)
+	if err != nil {
+		panic(err)
+	}
+	return r
 }

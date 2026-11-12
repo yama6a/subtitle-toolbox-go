@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/dual"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/dual"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func ExampleFromPair() {
@@ -39,7 +39,7 @@ func ExampleFromPair_topBottom() {
 		return
 	}
 	for _, c := range result.All() {
-		fmt.Println(c.Start, c.End, c.Alignment, c.Text())
+		fmt.Println(c.Start, c.End, c.Position.Alignment, c.Text())
 	}
 	// Output:
 	// 1s 4s BottomCenter Where are you going?

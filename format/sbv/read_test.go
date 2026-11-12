@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/sbv"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/sbv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // Ports testValidSbvFileParses and testTwoDigitHoursParse of tests/Parsers/SbvParserTest.php of subtitle-toolbox-php.
@@ -117,7 +117,7 @@ func TestReadNoFormatData(t *testing.T) {
 
 	s := readFile(t, "sbv/valid.sbv")
 	for _, c := range s.All() {
-		assert.Zero(t, c.Alignment)
+		assert.Zero(t, c.Position.Alignment)
 		assert.Empty(t, c.ID)
 	}
 	assert.Empty(t, s.Comments())

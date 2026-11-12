@@ -7,10 +7,9 @@ package mpsub
 
 import (
 	"bytes"
-	"math"
 
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 const formatDataKey = string(model.MPSub)
@@ -18,22 +17,27 @@ const formatDataKey = string(model.MPSub)
 // ReadOptions holds the settings of the MPSub reader. MPSub has none yet.
 type ReadOptions struct{}
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 // WriteOptions holds the settings of the MPSub writer.
 type WriteOptions struct {
-	// FrameRate writes the times as frames at this whole number of frames per second. Zero writes seconds.
-	// The reader does not store the FORMAT line, so a file with frames written without FrameRate has seconds.
-	FrameRate float64
+	// FrameRate writes the times as frames at this whole number of frames per second, such as 25/1 or 50/2.
+	// The zero value writes seconds. The reader does not store the FORMAT line, so a file with frames written
+	// without FrameRate has seconds.
+	FrameRate model.FrameRate
 }
 
-// Validate returns an error that matches model.ErrInvalidArgument for a frame rate that is negative, not whole, NaN or infinite.
+// Validate returns an error that matches model.ErrInvalidArgument for a frame rate that fails model.FrameRate.Validate
+// or is not a whole number of frames per second.
 func (o WriteOptions) Validate() error {
 	f := o.FrameRate
-	if f == 0 || f > 0 && !math.IsInf(f, 1) && f == math.Floor(f) {
+	if f.IsZero() || f.Validate() == nil && f.Num%f.Den == 0 {
 		return nil
 	}
 	return &model.InvalidArgumentError{
 		Option: "WriteOptions.MPSub.FrameRate",
-		Msg:    "The MPSub frame rate must be a positive integer, got " + timecode.Number(f) + ".",
+		Msg:    "The MPSub frame rate must be a positive integer, got " + timecode.Number(f.Float64()) + ".",
 	}
 }
 

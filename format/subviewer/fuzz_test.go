@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 func FuzzRead(f *testing.F) {
@@ -90,7 +90,7 @@ func checkWrite(t *testing.T, s *model.Subtitle, v subviewer.Version) {
 	t.Helper()
 
 	var out bytes.Buffer
-	if err := subviewer.Write(&out, s, model.CommonWriteOptions{}, subviewer.WriteOptions{Version: v}); err != nil {
+	if _, err := subviewer.Write(&out, s, model.CommonWriteOptions{}, subviewer.WriteOptions{Version: v}); err != nil {
 		t.Fatalf("Write returned %v", err)
 	}
 	if _, _, err := subviewer.Read(bytes.NewReader(out.Bytes()), model.CommonReadOptions{Lenient: true}, subviewer.ReadOptions{}); err != nil {

@@ -9,11 +9,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/model"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 // row is a cue in seconds.
@@ -44,7 +44,7 @@ func subtitle(rows ...row) *model.Subtitle {
 func describe(s *model.Subtitle) []got {
 	out := make([]got, 0, s.Len())
 	for _, c := range s.All() {
-		out = append(out, got{c.Start, c.End, c.Text(), c.Alignment})
+		out = append(out, got{c.Start, c.End, c.Text(), c.Position.Alignment})
 	}
 	return out
 }
@@ -83,7 +83,8 @@ func formats() []format {
 		{
 			"SubRip", "srt",
 			func(w io.Writer, s *model.Subtitle) error {
-				return srt.Write(w, s, model.CommonWriteOptions{}, srt.WriteOptions{})
+				_, err := srt.Write(w, s, model.CommonWriteOptions{}, srt.WriteOptions{})
+				return err
 			},
 			func(r io.Reader) (*model.Subtitle, error) {
 				s, _, err := srt.Read(r, model.CommonReadOptions{}, srt.ReadOptions{})
@@ -93,7 +94,8 @@ func formats() []format {
 		{
 			"WebVTT", "vtt",
 			func(w io.Writer, s *model.Subtitle) error {
-				return webvtt.Write(w, s, model.CommonWriteOptions{}, webvtt.WriteOptions{})
+				_, err := webvtt.Write(w, s, model.CommonWriteOptions{}, webvtt.WriteOptions{})
+				return err
 			},
 			func(r io.Reader) (*model.Subtitle, error) {
 				s, _, err := webvtt.Read(r, model.CommonReadOptions{}, webvtt.ReadOptions{})
@@ -103,7 +105,8 @@ func formats() []format {
 		{
 			"ASS", "ass",
 			func(w io.Writer, s *model.Subtitle) error {
-				return ass.Write(w, s, model.CommonWriteOptions{}, ass.WriteOptions{})
+				_, err := ass.Write(w, s, model.CommonWriteOptions{}, ass.WriteOptions{})
+				return err
 			},
 			func(r io.Reader) (*model.Subtitle, error) {
 				s, _, err := ass.Read(r, model.CommonReadOptions{}, ass.ReadOptions{})
