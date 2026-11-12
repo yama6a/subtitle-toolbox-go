@@ -87,6 +87,8 @@ type WriteOptions struct {
 	// SCC holds the settings of the SCC writer. The zero value keeps the stored drop-frame mode, else writes
 	// drop-frame labels, and fails for a cue that SCC cannot hold.
 	SCC scc.WriteOptions
+	// EBUSTL holds the settings of the EBU STL writer. The zero value takes the frame rate of the stored DFC, else 25.
+	EBUSTL ebustl.WriteOptions
 }
 
 // WriteReport holds the changes that a writer made to fit the subtitle into its format.
@@ -95,6 +97,8 @@ type WriteReport struct {
 	WebVTT *webvtt.WriteReport
 	// SCC is non-nil after an SCC write, also when Fit made no change.
 	SCC *scc.WriteReport
+	// EBUSTL is non-nil after an EBU STL write. It holds the character code table and the characters written as "?".
+	EBUSTL *ebustl.WriteReport
 }
 
 // ReadInfo holds the facts of a read that are not subtitle content.
@@ -159,13 +163,13 @@ func (o WriteOptions) Validate() error {
 	}
 	for _, check := range []func() error{
 		o.ASS.Validate, o.MicroDVD.Validate, o.MPSub.Validate, o.PlainText.Validate, o.CSV.Validate, o.ITT.Validate,
-		o.SubViewer.Validate, o.SCC.Validate,
+		o.SubViewer.Validate, o.SCC.Validate, o.SpruceSTL.Validate, o.EBUSTL.Validate,
 	} {
 		if err := check(); err != nil {
 			return err
 		}
 	}
-	return o.SpruceSTL.Validate()
+	return nil
 }
 
 func (o ReadOptions) common() model.CommonReadOptions {

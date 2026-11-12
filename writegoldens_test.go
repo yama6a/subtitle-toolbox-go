@@ -10,9 +10,11 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
 var update = flag.Bool("update", false, "rewrite the write golden files")
@@ -96,6 +98,18 @@ func conversions() []conversion {
 		{"scc", "rollup_news_ndf.scc", stbox.SubRip, ""},
 		{"scc", "rollup_news_ndf.scc", stbox.WebVTT, ""},
 		{"scc", "rollup_news_ndf.scc", stbox.ASS, ""},
+		{"stl", "bakery_teletext_25fps.stl", stbox.SubRip, ""},
+		{"stl", "bakery_teletext_25fps.stl", stbox.TTML, ""},
+		{"stl", "irt_requirement-0056-001_modified.stl", stbox.SubRip, ""},
+		{"stl", "irt_requirement-0056-001_modified.stl", stbox.TTML, ""},
+		{"stl", "irt_requirement-0061-001.stl", stbox.SubRip, ""},
+		{"stl", "irt_requirement-0061-001.stl", stbox.TTML, ""},
+		{"stl", "irt_requirement-0074-001.stl", stbox.SubRip, ""},
+		{"stl", "irt_requirement-0074-001.stl", stbox.TTML, ""},
+		{"stl", "irt_requirement-0076-001.stl", stbox.SubRip, ""},
+		{"stl", "irt_requirement-0076-001.stl", stbox.TTML, ""},
+		{"stl", "irt_requirement-0076-009.stl", stbox.SubRip, ""},
+		{"stl", "irt_requirement-0076-009.stl", stbox.TTML, ""},
 		{"subviewer", "subviewer2_crlf.sub", stbox.SubRip, ""},
 		{"subviewer", "subviewer2_crlf.sub", stbox.WebVTT, ""},
 		{"subviewer", "subviewer2_crlf.sub", stbox.ASS, ""},
@@ -213,4 +227,25 @@ func TestLRCWordTimesWriteAsWordsInSubRip(t *testing.T) {
 	require.True(t, ok)
 	assert.Equal(t, "<00:00:03.000>Slow <00:00:03.550>river <00:00:04.400>runs", first.Text())
 	assert.Contains(t, string(writeAs(t, s, stbox.SubRip)), "\nSlow river runs\n")
+}
+
+// TestWriteEBUSTLGoldens converts own_styled.srt at 25 and at 30 fps. The file data sets CD and RD, because a new file
+// holds today's date there.
+func TestWriteEBUSTLGoldens(t *testing.T) {
+	t.Parallel()
+
+	for _, rate := range []stbox.FrameRate{{Num: 25, Den: 1}, {Num: 30, Den: 1}} {
+		t.Run(rate.String(), func(t *testing.T) {
+			t.Parallel()
+
+			g := folder(t, "srt")
+			s, _ := g.read(t, "own_styled.srt")
+			gsi := model.NewData(model.Field{Key: "CD", Value: "261012"}, model.Field{Key: "RD", Value: "261012"})
+			require.NoError(t, s.SetFormatData("stl", model.NewData(model.Field{Key: "gsi", Value: gsi})))
+			var out bytes.Buffer
+			_, err := stbox.Write(&out, s, stbox.EBUSTL, stbox.WriteOptions{EBUSTL: ebustl.WriteOptions{FrameRate: rate}})
+			require.NoError(t, err)
+			golden.Equal(t, testfiles.Path(t, "srt/real/expected/own_styled.srt.to."+rate.String()+".stl"), out.Bytes(), *update)
+		})
+	}
 }

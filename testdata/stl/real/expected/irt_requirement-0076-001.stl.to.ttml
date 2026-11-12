@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:tts="http://www.w3.org/ns/ttml#styling" xml:lang="de">
+  <head>
+    <ttm:title>IRT Testsendung</ttm:title>
+    <layout>
+      <region xml:id="bottomCenter" tts:origin="10% 10%" tts:extent="80% 80%" tts:displayAlign="after" tts:textAlign="center"/>
+    </layout>
+  </head>
+  <body>
+    <div>
+      <p begin="10:00:00.000" end="10:00:01.000" region="bottomCenter">WhiteOnBlack <span tts:color="#000000">BlackOnBlack</span></p>
+    </div>
+  </body>
+</tt>

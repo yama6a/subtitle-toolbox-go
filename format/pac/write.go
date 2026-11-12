@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"slices"
 	"strings"
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
@@ -56,10 +56,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 		body = record
 	}
 	body = append(body, storedBytes(file, "footer", defaultFooter, validFooter)...)
-	if _, err := w.Write(body); err != nil {
-		return WriteReport{}, fmt.Errorf("write %s: %w", model.PAC, err)
-	}
-	return WriteReport{}, nil
+	return WriteReport{}, writing.WriteBytes(w, model.PAC, body)
 }
 
 // appendRecord appends the record of cue number index to body.
