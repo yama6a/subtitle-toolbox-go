@@ -14,7 +14,8 @@ import (
 
 const unknownFrameRate = "The frame rate is unknown. Start the file with {1}{1}<fps>, set the frame rate, or read the file in lenient mode for 23.976 fps."
 
-// Ports testRealFileParses of tests/Parsers/MicroDvdParserTest.php of subtitle-toolbox-php.
+// Ports testRealFileParses of tests/Parsers/MicroDvdParserTest.php of subtitle-toolbox-php. The read goldens hold the
+// files at 25 fps. These rows read at 23.976 fps.
 func TestRealFileParses(t *testing.T) {
 	t.Parallel()
 
@@ -34,11 +35,6 @@ func TestRealFileParses(t *testing.T) {
 			"mantas-done styles", "sub_microdvd_with_styles.sub", 23.976, 2,
 			cueRow{137387 * ms, 140390 * ms, []string{"Passengers, the train is now", "<i>arriving at the central station.</i>"}},
 			cueRow{3740490 * ms, 3742492 * ms, []string{`<font color="#ff0000"><b><u>Thank you, conductor.</u></b></font>`}},
-		},
-		{
-			"subsrt sample", "subsrt_sample.sub", 25, 5,
-			cueRow{599000 * ms, 4160000 * ms, []string{"Hi, my name is Alice Miller and this is John Brown"}},
-			cueRow{16700000 * ms, 21480000 * ms, []string{"Okay, so we have all the ingredients laid out here"}},
 		},
 	}
 	for _, tt := range tests {

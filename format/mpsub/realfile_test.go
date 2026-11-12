@@ -27,23 +27,13 @@ func readFile(t *testing.T, rel string) *model.Subtitle {
 	return s
 }
 
-// Ports testTimeBasedSampleFileParses, testTimeBasedSampleFileHeadersGoToMetadataAndFormatData and
-// testTimeBasedSampleFileRoundTrips of tests/Parsers/MpSubParserTest.php of subtitle-toolbox-php.
+// Ports testTimeBasedSampleFileRoundTrips of tests/Parsers/MpSubParserTest.php of subtitle-toolbox-php. The read
+// golden holds the cues, the metadata and the file data.
 func TestTimeBasedSampleFile(t *testing.T) {
 	t.Parallel()
 
 	s := readFile(t, realDir+"/mplayer_doc_time.sub")
 	rows := cueRows(s)
-	require.Len(t, rows, 8)
-	assert.Equal(t, cueRow{2 * time.Second, 5 * time.Second, []string{"The ferry leaves at nine."}}, rows[0])
-	assert.Equal(t, cueRow{20250 * ms, 22 * time.Second, []string{"Yes, that one."}}, rows[5])
-	assert.Equal(t, cueRow{27 * time.Second, 29 * time.Second, []string{"Let's go."}}, rows[7])
-	assert.Equal(t, map[string]string{"title": "Harbour walk (sample)", "author": "Subtitle Toolbox"}, s.AllMetadata())
-	assert.Equal(t, map[string]any{
-		"FILE": "1048576,0123456789abcdef0123456789abcdef",
-		"TYPE": "VIDEO",
-		"NOTE": "Sample file written after the MPlayer format notes",
-	}, fileData(s))
 
 	output := write(t, s, model.CommonWriteOptions{}, mpsub.WriteOptions{})
 	assert.True(t, strings.HasPrefix(output, "\xEF\xBB\xBFTITLE=Harbour walk (sample)\nAUTHOR=Subtitle Toolbox\n"))
@@ -54,19 +44,12 @@ func TestTimeBasedSampleFile(t *testing.T) {
 	assert.Equal(t, output, write(t, back, model.CommonWriteOptions{}, mpsub.WriteOptions{}))
 }
 
-// Ports testFrameBasedSampleFileParses and testFrameBasedSampleFileRoundTripsWithinOneFrame of
-// tests/Parsers/MpSubParserTest.php of subtitle-toolbox-php.
+// Ports testFrameBasedSampleFileRoundTripsWithinOneFrame of tests/Parsers/MpSubParserTest.php of
+// subtitle-toolbox-php. The read golden holds the cues, the metadata and the file data.
 func TestFrameBasedSampleFile(t *testing.T) {
 	t.Parallel()
 
 	s := readFile(t, realDir+"/mplayer_doc_frames.sub")
-	assert.Equal(t, []cueRow{
-		{2 * time.Second, 3500 * ms, []string{"Two seconds in,", "shown for one and a half seconds"}},
-		{3540 * ms, 7540 * ms, []string{"One frame later,", "shown for four seconds"}},
-		{8040 * ms, 11040 * ms, []string{"Half a second later,", "shown for three seconds"}},
-	}, cueRows(s))
-	assert.Equal(t, map[string]string{"title": "Harbour walk, frame based (sample)"}, s.AllMetadata())
-	assert.Empty(t, fileData(s))
 
 	output := write(t, s, model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}})
 	assert.Contains(t, output, "\nFORMAT=25\n")
