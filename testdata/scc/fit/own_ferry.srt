@@ -1,0 +1,17 @@
+1
+00:00:01,000 --> 00:00:04,000
+The ferry to Split leaves from the old harbour
+at nine. Šibenik is the second stop…
+
+2
+00:00:04,000 --> 00:00:04,300
+Wait!
+
+3
+00:00:04,300 --> 00:00:06,000
+Tickets cost twelve euros – cash only.
+
+4
+00:00:05,000 --> 00:00:05,400
+Next stop is Trogir.
+
