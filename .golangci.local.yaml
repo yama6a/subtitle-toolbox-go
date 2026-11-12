@@ -10,6 +10,7 @@ linters:
       # The CLI passes the errors of dual on unchanged, because its messages read their types.
       # The CLI passes the errors of profanity on unchanged, because its messages read their types.
       # The CLI passes the errors of diff, fixing and hearingimpaired on unchanged, because its messages read their types.
+      # The CLI passes the errors of hls on unchanged, because its messages read their types.
       # The CLI passes the *InvalidArgumentError of timing and validation on unchanged, because its messages print it.
       ignore-package-globs:
         - github.com/yama6a/subtitle-toolbox-go/v3/internal/*
@@ -23,6 +24,7 @@ linters:
         - github.com/yama6a/subtitle-toolbox-go/v3/fixing
         - github.com/yama6a/subtitle-toolbox-go/v3/hearingimpaired
         - github.com/yama6a/subtitle-toolbox-go/v3/timing
+        - github.com/yama6a/subtitle-toolbox-go/v3/hls
         - github.com/yama6a/subtitle-toolbox-go/v3/validation
   exclusions:
     rules:

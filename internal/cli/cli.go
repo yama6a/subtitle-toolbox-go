@@ -45,6 +45,7 @@ func commands() []command {
 		&syncCommand{},
 		&diffCommand{},
 		&dualCommand{},
+		&hlsCommand{},
 		formatsCommand{},
 	}
 }
