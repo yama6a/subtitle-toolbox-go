@@ -3,7 +3,7 @@
 package diff
 
 import (
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // Kind is the kind of a difference. The values are the text and JSON values.

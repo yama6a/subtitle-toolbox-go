@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
-	"github.com/yama6a/subtitle-toolbox-go/v2/profanity"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/profanity"
 )
 
 func ExampleApply() {

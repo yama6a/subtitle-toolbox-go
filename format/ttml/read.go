@@ -12,13 +12,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/position"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/ttmlwrite"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/xmlraw"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/position"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/ttmlwrite"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 //nolint:gochecknoglobals // the timing attributes of TTML

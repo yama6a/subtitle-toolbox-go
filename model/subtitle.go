@@ -9,7 +9,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
 )
 
 // The named metadata keys. Other keys are free.

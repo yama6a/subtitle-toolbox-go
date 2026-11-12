@@ -7,8 +7,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // Finish converts the LF output of a writer to the line ending and then applies the BOM rule.

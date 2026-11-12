@@ -3,7 +3,7 @@ package grapheme_test
 import (
 	"fmt"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/grapheme"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/grapheme"
 )
 
 func ExampleCount() {

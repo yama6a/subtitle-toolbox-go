@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
 )
 
 // formatsCommand lists the formats that the library can read or write.

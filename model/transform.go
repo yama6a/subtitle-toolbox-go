@@ -9,8 +9,8 @@ import (
 
 	"github.com/dlclark/regexp2/v2"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v2/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/markup"
 )
 
 // regexTimeout limits each match of a user pattern, because regexp2 backtracks and can run without end.

@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
 )
 
 // Ports the TSV and CSV rows of testLoadWithoutFormatReadsTheFormatOfTheContentOrTheExtension of tests/LoadSaveTest.php

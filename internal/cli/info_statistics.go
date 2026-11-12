@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/stats"
+	"github.com/yama6a/subtitle-toolbox-go/v3/stats"
 )
 
 func statisticsRows(st stats.Statistics) [][]string {

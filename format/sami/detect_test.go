@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/sami"
 )
 
 // Rows of the SAMI signature of https://github.com/yama6a/subtitle-toolbox-go/issues/15.

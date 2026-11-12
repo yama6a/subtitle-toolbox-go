@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/ssatag"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/ssatag"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
 )
 
 const (

@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/linewrap"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/linewrap"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
 )
 
 // The defaults of CueLimits and MergeShortCuesOptions. The line, lines and maximum duration defaults are the

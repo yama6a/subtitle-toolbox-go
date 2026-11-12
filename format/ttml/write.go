@@ -3,9 +3,9 @@ package ttml
 import (
 	"io"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/ttmlwrite"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/ttmlwrite"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // WriteReport holds what the writer reports. It has no fields yet.
