@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
 )
 
@@ -160,6 +161,11 @@ func withAdvice(msg, option string, cause error) string {
 		return msg + " Pass --fps or --input-fps."
 	case option == "WriteOptions.MicroDVD.FrameRate":
 		return msg + " Pass --fps or --output-fps."
+	case option == "WriteOptions.ITT.FrameRate":
+		return msg + " Pass --fps or --output-fps."
+	case errors.Is(cause, scc.ErrWrapFirst):
+		return strings.TrimSuffix(msg, " Wrap the lines to 4 lines of 32 characters first.") +
+			" Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4."
 	case errors.Is(cause, stbox.ErrInvalidUTF8):
 		return msg + " " + encodingAdvice
 	default:

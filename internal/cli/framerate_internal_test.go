@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
@@ -224,12 +223,4 @@ func TestConvertMicroDVDGolden(t *testing.T) {
 	assert.Equal(t, result{Stdout: "styles.sub -> out.srt\n"},
 		call{dir: dir}.run(t, "convert", "styles.sub", "--input-fps", "23.976", "--to", "srt", "-o", "out.srt"))
 	assert.Equal(t, want, readFile(t, dir, "out.srt"))
-}
-
-func TestMicroDVDOptionsOnlyForMicroDVDOutput(t *testing.T) {
-	t.Parallel()
-
-	w := writeOutput{outputFPS: stbox.FrameRate{Num: 25, Den: 1}}
-	assert.Equal(t, microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}, w.optionsFor(stbox.MicroDVD).MicroDVD)
-	assert.Equal(t, microdvd.WriteOptions{}, w.optionsFor(stbox.SubRip).MicroDVD)
 }

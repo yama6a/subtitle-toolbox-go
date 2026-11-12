@@ -133,15 +133,10 @@ func (cc *convertCommand) prepare(a *args, r *runner) error {
 			opts.ASS = *cc.ass
 		}
 		report, err := stbox.Write(out, s, f, opts)
-		if err != nil {
-			return err
+		if err == nil {
+			printWriteReport(r.c, in.label(), report)
 		}
-		if report.WebVTT != nil {
-			for _, d := range report.WebVTT.DroppedColors {
-				r.c.err(in.label() + ": " + d.Message + "\n")
-			}
-		}
-		return nil
+		return err
 	}
 	return nil
 }

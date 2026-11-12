@@ -27,12 +27,16 @@ Options:
                          standard output. The file must not exist.
   --output-dir DIR       Write each output into this directory, with the base
                          name of its input. Several inputs need it.
-  --output-fps RATE      Frame rate of MicroDVD output. Default: the frame rate
-                         of a MicroDVD input.
+  --output-fps RATE      Frame rate of MicroDVD, Spruce STL, iTT and MCC output.
+                         Default: the frame rate of a MicroDVD, Spruce STL, iTT
+                         or MCC input.
   --line-ending lf|crlf  Line ending of the output. Default: lf.
   --bom                  Start the output with a UTF-8 BOM.
   --no-bom               Write no UTF-8 BOM. Default: the BOM rule of the output
                          format.
+  --scc-fit              Wrap, replace characters and delay or drop captions
+                         that SCC output cannot hold, in place of failing.
+                         Prints each change.
   --from FORMAT          Input format. Default: the format detected from the
                          content. When detection finds no format, the file
                          extension sets it.
@@ -42,9 +46,13 @@ Options:
   --lenient              Skip or repair broken cues and print a warning for
                          each.
   --input-fps RATE       Frame rate of a MicroDVD input without a {1}{1}<fps>
-                         first line, and of CSV or TSV times in hh:mm:ss:ff.
+                         first line, of Spruce STL timecodes, and of CSV or TSV
+                         times in hh:mm:ss:ff.
   --fps RATE             Sets --input-fps, --output-fps and --video-fps. A
                          specific option wins over --fps.
+  --scc-roll-up MODE     How SCC and MCC input reads roll-up captions: screen
+                         gives one cue per screen, lines gives one cue per row.
+                         Default: screen.
   --keep-going           Go on with the next file after a file fails. Default:
                          stop at the first failure.
   --language CODE        Language for --case and --errors-fix, for example en,
