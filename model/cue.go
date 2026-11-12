@@ -23,6 +23,8 @@ type Cue struct { //nolint:recvcheck // the API reads a copy with value receiver
 	Position Position
 	// Forced marks a forced narrative, which a player shows also when the viewer turned subtitles off.
 	Forced bool
+	// Image is the bitmap of an image cue. Nil is a text cue. An image cue may also hold lines.
+	Image *Image
 
 	formatData map[string]*Data
 }
@@ -53,15 +55,17 @@ func (c *Cue) MapWordTimestamps(fn func(time.Duration) time.Duration) {
 	}
 }
 
-// Clone returns a copy of c that shares no slice and no Offset with c.
+// Clone returns a copy of c that shares no slice, no Offset and no image with c.
 func (c Cue) Clone() Cue {
 	c.Lines = slices.Clone(c.Lines)
 	c.Position = c.Position.clone()
+	c.Image = cloneImage(c.Image)
 	return c
 }
 
 func (c Cue) normalized() Cue {
 	c.Position = c.Position.clone()
+	c.Image = cloneImage(c.Image)
 	c.Start = c.Start.Round(time.Millisecond)
 	c.End = c.End.Round(time.Millisecond)
 	c.Lines = cleanLines(c.Lines)

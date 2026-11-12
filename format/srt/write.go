@@ -10,6 +10,10 @@ import (
 
 // Write writes s as SubRip. A text line that the reader would read as a timing line starts with U+2060 WORD JOINER.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.SubRip, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	var body []byte
 	for i, c := range s.All() {
 		if i > 0 {

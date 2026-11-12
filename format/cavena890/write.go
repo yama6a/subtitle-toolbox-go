@@ -21,6 +21,10 @@ import (
 // Adapted from Subtitle Edit, src/libse/SubtitleFormats/Cavena890.cs
 // (https://github.com/SubtitleEdit/subtitleedit/blob/a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c/src/libse/SubtitleFormats/Cavena890.cs), MIT.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.Cavena890, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	file, _ := s.FormatData(formatDataKey)
 	v := latin
 	if stored, _ := file.String("variant"); variant(stored).known() {

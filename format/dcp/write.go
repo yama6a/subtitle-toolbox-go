@@ -91,6 +91,10 @@ type baseStyle struct {
 // Write writes s in the dialect that Read stored, or as SMPTE ST 428-7:2014 at 24 fps. A stored subtitle without
 // FadeUpTime or FadeDownTime gets them. A middle position can be a decimal such as -3.5.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.DCP, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	body, err := writeDocument(s)
 	if err != nil {
 		return WriteReport{}, err

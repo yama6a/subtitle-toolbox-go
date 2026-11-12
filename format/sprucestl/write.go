@@ -59,6 +59,14 @@ var (
 // spaces. A | in the text becomes U+00A6 BROKEN BAR, and a ^ before B, I or U gets U+2060 WORD JOINER after it, so
 // neither reads back as a line break or a toggle.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.SpruceSTL, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
+	return write(w, s, common, opts)
+}
+
+func write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	if err := opts.Validate(); err != nil {
 		return WriteReport{}, err
 	}

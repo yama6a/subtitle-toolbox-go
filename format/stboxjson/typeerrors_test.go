@@ -156,7 +156,7 @@ func TestReadBadCueFormatData(t *testing.T) {
 			"FFmetadata time base", `{"ffmeta-chapters": {"timeBase": "0/1000"}}`,
 			`The field cues[0].formatData.ffmeta-chapters.timeBase must be a time base such as "1/1000".`,
 		},
-		{"image size string", `{"image": {"width": "2"}}`, "The field cues[0].formatData.image.width must be an integer."},
+		{"image size string", `{"image": {"png": "x", "x": 0, "y": 0, "width": "2", "height": 1, "screenWidth": 10, "screenHeight": 10}}`, "The field cues[0].formatData.image.width must be an integer."},
 		{"WebVTT setting number", `{"vtt": {"line": 0}}`, "The field cues[0].formatData.vtt.line must be a string."},
 	}
 	for _, tt := range tests {

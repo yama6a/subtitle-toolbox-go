@@ -22,6 +22,8 @@ const (
 	infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
 )
 
+const imageKey = "image"
+
 var errInfOrNaN = errors.New("inf or NaN")
 
 // document returns the library JSON of s. A string outside format data that is not valid UTF-8 fails first,
@@ -45,10 +47,10 @@ func document(s *model.Subtitle, opts WriteOptions) ([]byte, error) {
 	e.raw(`,"cues":[`)
 	for i, c := range s.All() {
 		e.comma(i)
-		e.cue(c)
+		e.cue(c, !opts.OmitFormatData)
 		if !opts.OmitFormatData {
 			e.raw(`,"formatData":`)
-			if err := e.formatData(c.FormatDataKeys(), c.FormatData); err != nil {
+			if err := e.cueFormatData(c); err != nil {
 				return nil, &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: infOrNaN}
 			}
 		}
@@ -176,7 +178,9 @@ func (e *encoder) comments(comments []model.Comment) {
 	e.raw("]")
 }
 
-func (e *encoder) cue(c model.Cue) {
+// cue writes the cue without its formatData. The forced flag of an image cue goes into image.forced, so it
+// goes into the cue only when the image is not written.
+func (e *encoder) cue(c model.Cue, withFormatData bool) {
 	e.raw(`{"start":`)
 	e.seconds(c.Start)
 	e.raw(`,"end":`)
@@ -199,7 +203,7 @@ func (e *encoder) cue(c model.Cue) {
 		e.raw(strconv.Itoa(c.Position.Alignment.Numpad()))
 	}
 	e.position(c.Position)
-	if c.Forced {
+	if c.Forced && (c.Image == nil || !withFormatData) {
 		e.raw(`,"forced":true`)
 	}
 }
@@ -245,6 +249,39 @@ func (e *encoder) formatData(keys []string, get func(string) (*model.Data, bool)
 	}
 	e.raw("}")
 	return nil
+}
+
+// cueFormatData writes the format data of the cue. The image of the cue is the key image, between the other keys in
+// sorted order.
+func (e *encoder) cueFormatData(c model.Cue) error {
+	keys := c.FormatDataKeys()
+	if c.Image == nil {
+		return e.formatData(keys, c.FormatData)
+	}
+	keys = append(keys, imageKey)
+	slices.Sort(keys)
+	return e.formatData(keys, func(key string) (*model.Data, bool) {
+		if key == imageKey {
+			return imageData(c), true
+		}
+		return c.FormatData(key)
+	})
+}
+
+// imageData returns the image of c in the shape of the key image. The PNG is a string, so the encoder writes
+// it as {"base64": "..."}, because PNG bytes are not valid UTF-8.
+func imageData(c model.Cue) *model.Data {
+	im := c.Image
+	return model.NewData(
+		model.Field{Key: "png", Value: string(im.PNG)},
+		model.Field{Key: "x", Value: int64(im.X)},
+		model.Field{Key: "y", Value: int64(im.Y)},
+		model.Field{Key: "width", Value: int64(im.Width)},
+		model.Field{Key: "height", Value: int64(im.Height)},
+		model.Field{Key: "screenWidth", Value: int64(im.ScreenWidth)},
+		model.Field{Key: "screenHeight", Value: int64(im.ScreenHeight)},
+		model.Field{Key: "forced", Value: c.Forced},
+	)
 }
 
 // value writes a format data value or a value of the decoded tree. A string that is not valid UTF-8 becomes

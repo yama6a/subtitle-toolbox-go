@@ -25,6 +25,10 @@ type storedLine struct {
 
 // Write writes s as MicroDVD. A line break inside a line becomes |, and a | in the text becomes U+00A6 BROKEN BAR.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.MicroDVD, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	if err := opts.Validate(); err != nil {
 		return WriteReport{}, err
 	}

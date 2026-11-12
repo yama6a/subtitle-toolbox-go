@@ -54,6 +54,10 @@ type WriteReport struct {
 // *model.UnwritableError, unless opts.Fit changes it. The error holds ErrWrapFirst or ErrSplitFirst for a cue that is
 // too long.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.SCC, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	if err := opts.Validate(); err != nil {
 		return WriteReport{}, err
 	}

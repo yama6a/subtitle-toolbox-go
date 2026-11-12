@@ -33,6 +33,10 @@ func defaultTags(version Version) []tag {
 // the reader would read as a line break, a time line, a timing line, a style line or the script line gets U+2060
 // WORD JOINER.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.SubViewer, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	if err := opts.Validate(); err != nil {
 		return WriteReport{}, err
 	}

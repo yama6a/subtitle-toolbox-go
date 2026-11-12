@@ -393,16 +393,6 @@ var cueSchema = map[string]valueType{
 		optional("timeBase", timeBase()),
 		optional("tags", strs()),
 	),
-	ImageKey: objectOf(
-		optional("png", str()),
-		optional("x", integer()),
-		optional("y", integer()),
-		optional("width", integer()),
-		optional("height", integer()),
-		optional("screenWidth", integer()),
-		optional("screenHeight", integer()),
-		optional("forced", boolean()),
-	),
 	"lrc": objectOf(
 		optional("endLine", boolean()),
 	),

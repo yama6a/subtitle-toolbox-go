@@ -36,6 +36,14 @@ type settings struct {
 // time format and quoting. A line break inside a cell stays LF, as Excel writes it. The rows end with the line
 // ending of common.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.CSV, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
+	return write(w, s, common, opts)
+}
+
+func write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	if err := opts.Validate(); err != nil {
 		return WriteReport{}, err
 	}

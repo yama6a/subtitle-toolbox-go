@@ -177,7 +177,7 @@ type shortCueMerge struct {
 	opts   MergeShortCuesOptions
 }
 
-// MergeShortCues joins each short cue with the next cue, or else with the previous cue, when the joined cue fits
+// MergeShortCues never joins an image cue. It joins each short cue with the next cue, or else with the previous cue, when the joined cue fits
 // the limits of opts. A cue is short when it lasts less than opts.Limits.MinDuration or has fewer visible
 // characters than opts.MinCharacters. A joined cue that is still short joins again. The joined cue keeps the
 // start, the ID, the alignment, the forced flag and the format data of the first cue. It ends at the later end

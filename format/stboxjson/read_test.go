@@ -334,7 +334,8 @@ func TestReadDecodesBase64(t *testing.T) {
 
 	s := mustRead(t, "\ufeff"+`{"version": 1, "formatData": {"x": {"list": [{"base64": "AAE="}], "more": {"base64": "AAE=", "note": "y"},
 		"spaces": {"base64": " AA\tE=\r\n"}, "unpadded": {"base64": "AAE"}, "empty": {"base64": ""}}},
-		"cues": [{"start": 1, "end": 2, "lines": [], "formatData": {"image": {"png": {"base64": "iVBORw=="}}}}]}`, false)
+		"cues": [{"start": 1, "end": 2, "lines": [], "formatData": {"image": {"png": {"base64": "iVBORw=="},
+			"x": 1, "y": 2, "width": 3, "height": 4, "screenWidth": 5, "screenHeight": 6}}}]}`, false)
 
 	x, _ := s.FormatData("x")
 	assert.Equal(t, model.NewData(
@@ -345,8 +346,7 @@ func TestReadDecodesBase64(t *testing.T) {
 		model.Field{Key: "empty", Value: ""},
 	), x)
 	c, _ := s.Cue(0)
-	image, _ := c.FormatData(model.ImageKey)
-	assert.Equal(t, model.NewData(model.Field{Key: "png", Value: "\x89PNG"}), image)
+	assert.Equal(t, &model.Image{PNG: []byte("\x89PNG"), X: 1, Y: 2, Width: 3, Height: 4, ScreenWidth: 5, ScreenHeight: 6}, c.Image)
 }
 
 func TestReadBadBase64InLenientMode(t *testing.T) {

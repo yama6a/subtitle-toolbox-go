@@ -55,7 +55,7 @@ type WordCount struct {
 	Count int
 }
 
-// Of computes the statistics of all cues of s. It does not change s.
+// Of computes the statistics of all cues of s, except the image cues without lines. It does not change s.
 func Of(s *model.Subtitle) Statistics {
 	var (
 		st                            Statistics
@@ -65,11 +65,14 @@ func Of(s *model.Subtitle) Statistics {
 		counter                       wordCounter
 		lower                         = cases.Lower(language.Und)
 	)
-	for i, c := range s.All() {
+	for _, c := range s.All() {
+		if c.IsImageWithoutText() {
+			continue
+		}
 		st.CueCount++
 		duration := c.End - c.Start
 		st.TotalDisplayTime = addSaturating(st.TotalDisplayTime, duration)
-		if i == 0 {
+		if st.CueCount == 1 {
 			first, latestEnd = c.Start, c.End
 		} else {
 			gaps.add(c.Start - latestEnd)

@@ -17,6 +17,10 @@ var italicTagRegexp = regexp.MustCompile(`<(/?)[iI]>`)
 // Write writes s as MPL2. It writes every cue, also one without text. A line break inside a line becomes |, and a |
 // in the text becomes U+00A6 BROKEN BAR.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.MPL2, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	var body []byte
 	for _, c := range s.All() {
 		body = append(body, '[')

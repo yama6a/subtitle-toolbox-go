@@ -228,10 +228,11 @@ A film comes as `film_part1.srt` and `film_part2.srt`. `part1.Append(part2, 3130
 | `Slice(from, to, moveToZero)` | keeps the cues that overlap `from` to `to`, cut at both bounds | a new subtitle |
 | `ForcedCuesOnly()` | keeps the forced cues | a new subtitle |
 | `SplitCue(index, at, splitAfterLine)` | splits one cue in 2 at a time and a line | changes `s` |
-| `JoinCues(first, last)` | joins the cues `first` to `last` into one cue | changes `s` |
+| `JoinCues(first, last)` | joins the cues `first` to `last` into one cue, and fails when one of them holds an image | changes `s` |
 | `RemoveDuplicateCues(maxGap)` | joins neighbouring cues with the same text | changes `s` |
 | `MergeSameTimeCues(timeTolerance)` | joins neighbouring cues with the same times | changes `s` |
 
+- **Image cues**: `RemoveDuplicateCues`, `MergeSameTimeCues` and `MergeShortCues` never join a cue that holds an image, because a join would drop the image.
 - **Cue indexes**: 0-based. The CLI prints 1-based numbers.
 - **Errors**: an index without a cue returns an error that matches `ErrCueNotFound`. Every other bad argument returns an error that matches `ErrInvalidArgument`. On an error the subtitle stays unchanged.
 - **Comments**: a comment stays before its cue. A comment before a joined cue moves before the cue it joined into. A comment before a split cue stays before the first part.
