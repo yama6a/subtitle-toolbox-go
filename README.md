@@ -71,7 +71,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [MPSub](https://github.com/pigoz/mplayer-svn/blob/7f6453553628729b151490144f13eae290a0fd67/DOCS/tech/mpsub.sub) | `stbox.MPSub` | `mpsub` | `.mpsub` | yes | yes | MPlayer, often named `.sub`, found by content |
 | [SAMI](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/dnacc/understanding-sami-1.0) | `stbox.SAMI` | `sami` | `.smi`, `.sami` | yes | yes | one language class per read |
 | [SBV](https://support.google.com/youtube/answer/2734698) | `stbox.SBV` | `sbv` | `.sbv` | yes | yes | YouTube Studio captions |
-| [SCC](https://en.wikipedia.org/wiki/EIA-608) | `stbox.SCC` | `scc` | `.scc` | yes | no | CEA-608 broadcast captions |
+| [SCC](https://en.wikipedia.org/wiki/EIA-608) | `stbox.SCC` | `scc` | `.scc` | yes | yes | CEA-608 broadcast captions |
 | [SubRip](https://en.wikipedia.org/wiki/SubRip) | `stbox.SubRip` | `srt` | `.srt` | yes | yes | |
 | [EBU STL](https://tech.ebu.ch/docs/tech/tech3264.pdf) | `stbox.EBUSTL` | `stl` | `.stl` | yes | no | binary, broadcast subtitles |
 | [Spruce STL](https://www.spectacle.co.uk/uploads/other%20media/Manual_DVD_Studio_Pro_4.pdf) | `stbox.SpruceSTL` | `spruce-stl` | `.stl` | yes | yes | DVD Studio Pro text subtitles, time codes in frames |
@@ -138,7 +138,7 @@ Each format has its own field in `ReadOptions` and `WriteOptions`. See [docs/for
 
 ## Compatibility
 
-Every 1.x release keeps the API, the option defaults and the conversion output. See [docs/compatibility.md](docs/compatibility.md).
+Every 2.x release keeps the API, the option defaults and the conversion output. See [docs/compatibility.md](docs/compatibility.md).
 
 ## Documentation
 

@@ -1,0 +1,22 @@
+﻿[Script Info]
+ScriptType: v4.00+
+PlayResX: 384
+PlayResY: 288
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,16,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,10,10,10,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:58:21.13,0:58:23.30,Default,,0,0,0,,THE NEXT TRAIN TO LAKESIDE\NLEAVES AT NINE.
+Dialogue: 0,0:58:24.60,0:58:26.47,Default,,0,0,0,,{\i1}Doors are closing.{\i0}
+Dialogue: 0,0:58:28.11,0:58:30.61,Default,,0,0,0,,THE BAKERY ON MAIN STREET\NOPENS AT SIX.
+Dialogue: 0,0:58:30.74,0:58:32.98,Default,,0,0,0,,♪ SOFT PIANO MUSIC ♪
+Dialogue: 0,0:58:57.77,0:58:59.67,Default,,0,0,0,,{\an8}[ STATION BELL RINGS ]
+Dialogue: 0,0:59:00.77,0:59:03.94,Default,,0,0,0,,WE HAVE {\i1}FRESH{\i0} BREAD TODAY.
+Dialogue: 0,0:59:06.04,0:59:07.94,Default,,0,0,0,,{\c&H00FFFF&}RAIN IS LIKELY TONIGHT.{\c}\NTAKE AN UMBRELLA.
+Dialogue: 0,0:59:57.03,0:59:59.33,Default,,0,0,0,,“CAFÉ NORD” — OPEN DAILY.
+Dialogue: 0,1:00:00.70,1:00:03.00,Default,,0,0,0,,PLATFORM {\u1}TWO{\u0} NOT THREE.
+Dialogue: 0,1:00:04.87,1:00:07.00,Default,,0,0,0,,{\an8}¡HASTA MAÑANA, ZÜRICH!

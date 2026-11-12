@@ -3,6 +3,7 @@ package scc_test
 import (
 	"bytes"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -45,6 +46,11 @@ func FuzzRead(f *testing.F) {
 					t.Fatalf("Read returned %v, which is no *ParseError", err)
 				}
 				continue
+			}
+			for _, fit := range []bool{false, true} {
+				if _, err := scc.Write(io.Discard, s, model.CommonWriteOptions{}, scc.WriteOptions{Fit: fit}); err != nil && !errors.Is(err, model.ErrUnwritable) {
+					t.Fatalf("Write returned %v, which does not match ErrUnwritable", err)
+				}
 			}
 			var previous time.Duration
 			for i, c := range s.Cues() {

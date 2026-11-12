@@ -20,7 +20,7 @@ import (
 const padding = 0x8080
 
 var (
-	codeLineRegexp = regexp.MustCompile(`^(\d{2}):(\d{2}):(\d{2})([:;])(\d{2})(?:[\t\n\v\f\r ]+(.*))?$`)
+	codeLineRegexp = regexp.MustCompile(`^(\d{2,6}):(\d{2}):(\d{2})([:;])(\d{2})(?:[\t\n\v\f\r ]+(.*))?$`)
 	bytePairRegexp = regexp.MustCompile(`^[0-9a-fA-F]{4}$`)
 )
 

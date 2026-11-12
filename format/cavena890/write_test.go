@@ -77,6 +77,14 @@ func TestWriteNewBlocks(t *testing.T) {
 			wantNumbers: []int{16}, wantText: []string{"<i>a\U0001F600</i>b"},
 		},
 		{
+			name: "a last C is a plain byte, so 51 characters fit", cues: [][]string{{strings.Repeat("a", 50) + "C"}},
+			wantNumbers: []int{16}, wantText: []string{strings.Repeat("a", 50) + "C"},
+		},
+		{
+			name: "Chinese keeps a character whose low byte is 7Fh at the line end", variant: "chinese", language: "\x90",
+			cues: [][]string{{string([]rune{0x5c9b, 0x5c7f})}}, wantNumbers: []int{16}, wantText: []string{string([]rune{0x5c9b, 0x5c7f})},
+		},
+		{
 			name: "Greek writes 2 characters as one code", variant: "greek", language: "\x70", cues: [][]string{{"δια"}},
 			wantNumbers: []int{16}, wantText: []string{"δια"},
 		},
@@ -122,6 +130,10 @@ func TestWriteErrors(t *testing.T) {
 		{
 			name: "a line of 52 bytes", cues: 2, lines: strings.Repeat("a", 52), wantCue: 1,
 			want: `Cavena 890 holds 51 bytes per line, got 52 for "` + strings.Repeat("a", 52) + `".`,
+		},
+		{
+			name: "a line with quotes and a backslash is quoted as it is", cues: 1, lines: `"` + strings.Repeat("a", 50) + `\`, wantCue: 0,
+			want: `Cavena 890 holds 51 bytes per line, got 52 for "` + `"` + strings.Repeat("a", 50) + `\` + `".`,
 		},
 		{
 			name: "a line of 52 bytes after the italics", cues: 1, lines: "<i>" + strings.Repeat("a", 50) + "</i>", wantCue: 0,
@@ -191,6 +203,7 @@ func TestWriteTimes(t *testing.T) {
 		{"frames at 25 fps", 1 * second, 4 * second, "000019000064"},
 		{"a negative start is 0", -second, second, "000000000019"},
 		{"a frame rounds to the nearest", 1019 * time.Millisecond, 1021 * time.Millisecond, "000019" + "00001a"},
+		{"a half frame rounds up", 1140 * time.Millisecond, 1140 * time.Millisecond, "00001d00001d"},
 		{"the end is capped at FFFFFFh", 0, 1000 * time.Hour, "000000ffffff"},
 	}
 	for _, tt := range tests {

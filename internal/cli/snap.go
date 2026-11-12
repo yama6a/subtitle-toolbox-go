@@ -110,7 +110,7 @@ var _ edit = &snapEdit{}
 
 func (e *snapEdit) apply(_ context.Context, s *stbox.Subtitle, _ *console, _ string) (*stbox.Subtitle, error) {
 	_, err := timing.Apply(s, e.opts)
-	return s, err //nolint:wrapcheck // the *InvalidArgumentError carries the message that the CLI prints
+	return s, err
 }
 
 // loadShots reads the shot change file. Content with pts_time: is an FFmpeg log, other content is one time per line.

@@ -167,7 +167,6 @@ func storedBlocks(c model.Cue) [][]byte {
 
 // frameBytes returns the frame number of d at 25 fps as 3 big-endian bytes, capped at FFFFFFh.
 func frameBytes(d time.Duration) []byte {
-	ms := max(d, 0).Round(time.Millisecond).Milliseconds()
-	frame := min((ms*framesPerS+500)/1000, maxFrame)
+	frame := min(model.FrameRate25.Frames(max(d, 0)), maxFrame)
 	return []byte{byte(frame >> 16), byte(frame >> 8), byte(frame)}
 }

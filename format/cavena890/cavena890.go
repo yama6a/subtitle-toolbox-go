@@ -70,7 +70,6 @@ const (
 	maxNumber   = 0xFFFF
 	numberStep  = 16
 	maxFrame    = 0xFFFFFF
-	framesPerS  = 25
 	newFontName = "HLV23N.V"
 )
 

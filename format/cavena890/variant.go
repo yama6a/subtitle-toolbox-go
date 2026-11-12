@@ -16,7 +16,7 @@ import (
 )
 
 // hebrewEnds holds the characters that Subtitle Edit moves from the start to the end of a Hebrew line, and back.
-const hebrewEnds = "-— !?.…\"،,():;[]+~*/<>&^%$#\\|'"
+const hebrewEnds = "-\u2014 !?.\u2026\"\u060C,():;[]+~*/<>&^%$#\\|'"
 
 // table is the text table of a variant. A code above 0xFF is a 2-byte code.
 type table struct {
@@ -142,12 +142,14 @@ func windows1252(b byte) string {
 }
 
 // chineseCodes returns the UTF-16BE code units of b. Subtitle Edit drops the zero bytes and fillers at the end
-// first, and an odd length gets a zero byte.
+// first. An odd length takes the next byte back, because it can be the low byte 7Fh of a character.
 func chineseCodes(b []byte) []uint16 {
-	b = bytes.TrimRight(b, "\x00\x7F")
-	if len(b)%2 == 1 {
+	trimmed := bytes.TrimRight(b, "\x00\x7F")
+	n := len(trimmed) + len(trimmed)%2
+	if n > len(b) {
 		b = append(slices.Clone(b), 0)
 	}
+	b = b[:n]
 	codes := make([]uint16, len(b)/2)
 	for i := range codes {
 		codes[i] = uint16(b[2*i])<<8 | uint16(b[2*i+1])
@@ -173,7 +175,7 @@ func (v variant) encode(line string, stripTags bool, cueIndex int) ([]byte, erro
 	if len(out) > textSize {
 		return nil, &model.UnwritableError{
 			Format: model.Cavena890, CueIndex: cueIndex,
-			Reason: fmt.Sprintf("Cavena 890 holds %d bytes per line, got %d for %q.", textSize, len(out), line),
+			Reason: fmt.Sprintf("Cavena 890 holds %d bytes per line, got %d for \"%s\".", textSize, len(out), line),
 		}
 	}
 	pad := byte(filler)
@@ -210,16 +212,12 @@ func (v variant) encodeText(text string) []byte {
 	chars := markupcore.Characters(text)
 	var out []byte
 	for i := 0; i < len(chars); i++ {
-		// A last character looks up as a pair of 1 character. So it finds its table code before the plain ASCII rule,
-		// as PHP does.
-		pair := chars[i]
 		if i+1 < len(chars) {
-			pair += chars[i+1]
-		}
-		if code, ok := tables[v].encode[pair]; ok {
-			out = appendCode(out, code)
-			i++
-			continue
+			if code, ok := tables[v].encode[chars[i]+chars[i+1]]; ok {
+				out = appendCode(out, code)
+				i++
+				continue
+			}
 		}
 		out = append(out, v.encodeChar(chars[i])...)
 	}
