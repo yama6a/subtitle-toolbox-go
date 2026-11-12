@@ -8,7 +8,7 @@ import (
 
 	"github.com/dlclark/regexp2/v2"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
 )
 
 // listRunner holds the lookup tables of a ReplaceList for one Apply call. Entries with an empty From are left out.

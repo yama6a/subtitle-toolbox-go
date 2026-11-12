@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 func rep(pairs ...string) []fixing.Replacement {
@@ -280,4 +280,25 @@ func TestReplaceListTimeoutLeavesTheSubtitleUnchanged(t *testing.T) {
 	assert.Contains(t, err.Error(), `The regular expression "^(a+)+$" took longer than 1 s on cue 2.`)
 	assert.Less(t, time.Since(start), 3500*time.Millisecond)
 	assert.Equal(t, []string{"lt's", slow + "<i>" + slow + "</i>" + slow + "<b>" + slow + "</b>"}, texts(s))
+}
+
+func TestReplaceListKeepsTheImageOfAnImageCue(t *testing.T) {
+	t.Parallel()
+
+	image := &model.Image{PNG: []byte{1, 2, 3}, Width: 10, Height: 10, ScreenWidth: 720, ScreenHeight: 576}
+	var s model.Subtitle
+	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Image: image})
+	s.AddCue(model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Lines: []string{"lt gets celd"}, Image: image})
+	report, err := fixing.Apply(&s, fixing.Options{
+		Language: "en", ReplaceList: &fixing.ReplaceList{WholeWords: rep("celd", "cold")},
+	})
+	require.NoError(t, err)
+
+	require.Equal(t, 2, s.Len())
+	assert.Equal(t, []fixing.Rule{fixing.RuleReplaceList, fixing.RuleOCRLowercaseL}, rules(report.Fixes))
+	for i, want := range [][]string{nil, {"It gets cold"}} {
+		c, _ := s.Cue(i)
+		assert.Equal(t, image, c.Image)
+		assert.Equal(t, want, c.Lines)
+	}
 }

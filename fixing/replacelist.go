@@ -10,7 +10,7 @@ import (
 	"github.com/dlclark/regexp2/v2"
 	"golang.org/x/text/encoding/htmlindex"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // Replacement is one search text and its replacement.

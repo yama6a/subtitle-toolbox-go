@@ -249,7 +249,7 @@ for _, c := range s.All() {
 - **Run order**: the rules run in the order of the sections below, each on the lines that the rule before it left. `Report.Fixes` holds one `Fix` for each rule that changed a cue, with the lines before and after, joined with LF. `CueIndex` is the index before any cue removal.
 - **Language**: `Options.Language` takes a code such as `en`, `de-AT` or `fra`. The empty string takes the `language` metadata. English, German, French and Spanish have their own rules for I and l. Turkish and Azerbaijani write `i` in upper case as U+0130.
 - **Text runs**: most rules see one [text run](#text-transforms) at a time, so a fix never crosses a tag. Only `unbalancedTags`, `emptyTags` and `dialogueOnOneLine` change tags. So `Really <i>?</i>` stays, because `spaceBeforePunctuation` sees `Really ` without the `?`.
-- **Cues**: a cue left without visible text goes, as the [cue removal rule](#cue-removal-rule) says. A cue without lines stays.
+- **Cues**: a cue left without visible text goes, as the [cue removal rule](#cue-removal-rule) says. A cue without lines stays, also an image cue without lines. An image cue with lines, for example from OCR, gets its lines fixed and keeps its image.
 - **Invalid UTF-8**: a rule leaves a run or line that is not valid UTF-8 as it is. `unbalancedTags` and `emptyTags` read bytes and still work. `ocrPipe` checks the text on each side of the pipe, so `a| caf` + 0xE9 gives `al caf` + 0xE9.
 - **Source**: the rule set follows the "Fix common errors" tool of [Subtitle Edit](https://github.com/SubtitleEdit/subtitleedit).
 
