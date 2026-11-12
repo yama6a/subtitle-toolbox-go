@@ -31,6 +31,7 @@ const (
 )
 
 const (
+	firstControl   = 0x14
 	firstMidRow    = 0x11
 	firstTabOffset = 0x17
 	tabOffsetBase  = 0x20
