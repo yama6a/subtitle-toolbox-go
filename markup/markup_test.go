@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v3/markup"
 )
 
 func TestInsertWordTimestamps(t *testing.T) {

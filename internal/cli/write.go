@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"strconv"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
 )
 
 // lineEndings maps the values of --line-ending to the library values. The first entry is the default.

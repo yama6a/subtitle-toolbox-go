@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/caption"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/cea708"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/caption"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/cea708"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 var fieldNameRegexp = regexp.MustCompile(`^[A-Za-z][A-Za-z ]*$`)

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/ssatag"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/ssatag"
 )
 
 // Ports testLegacyAlignmentTagsAreConverted and testInvalidLegacyAlignmentStaysInTheText

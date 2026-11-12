@@ -1,6 +1,6 @@
 package mcc
 
-import "github.com/yama6a/subtitle-toolbox-go/v2/internal/caption"
+import "github.com/yama6a/subtitle-toolbox-go/v3/internal/caption"
 
 // The sentinels that a cue the writer rejects holds as the Err of its *model.UnwritableError. A caller maps them to
 // the edit that the cue needs first.

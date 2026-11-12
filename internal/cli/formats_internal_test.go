@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
 )
 
 const formatsHelp = `Usage: stbox formats

@@ -3,7 +3,7 @@ package csv
 import (
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // record is one row of a table: the 1-based line of its start, its cells and the indexes of its quoted cells.

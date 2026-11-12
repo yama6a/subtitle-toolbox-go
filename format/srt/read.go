@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/subrip"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/subrip"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // Read reads SubRip text. It expects UTF-8, as stbox.Parse passes it.
