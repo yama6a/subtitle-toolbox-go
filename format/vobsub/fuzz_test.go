@@ -29,7 +29,7 @@ func FuzzRead(f *testing.F) {
 				}
 				continue
 			}
-			var previous time.Duration
+			previous := -timecode.MaxTime
 			for i, c := range s.All() {
 				if c.Image == nil || c.Image.Validate() != nil {
 					t.Fatalf("cue %d has no valid image", i)

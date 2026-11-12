@@ -10,6 +10,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/dvdsub"
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
@@ -119,9 +120,9 @@ func FuzzParseIndex(f *testing.F) {
 			if track.Index < 0 || track.Index > dvdsub.MaxTrackIndex {
 				t.Fatalf("the track index is %d", track.Index)
 			}
-			var previous time.Duration
+			previous := -timecode.MaxTime
 			for _, e := range track.Entries {
-				if e.Time < previous || e.Time%time.Millisecond != 0 || e.FilePos < 0 {
+				if e.Time < previous || e.Time >= timecode.MaxTime || e.Time%time.Millisecond != 0 || e.FilePos < 0 {
 					t.Fatalf("the entry %+v follows %v", e, previous)
 				}
 				previous = e.Time
