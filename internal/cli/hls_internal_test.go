@@ -106,6 +106,7 @@ func TestHlsChecksBeforeTheRead(t *testing.T) {
 			[]string{"outside7.vtt", "--output-dir", "new", "--pattern", "../outside%d.vtt", "--playlist", "p.m3u8"},
 			"The output would overwrite the input outside7.vtt. Pass another --output-dir, --playlist or --pattern.",
 		},
+		{"a space-padded segment exists", map[string]string{"out/x  7.vtt": "old"}, []string{"talk.vtt", "--output-dir", "out", "--pattern", "x%3d.vtt", "--media-duration", "10"}, "out/x  7.vtt" + hlsExists},
 		{"a segment exists", map[string]string{"out/sub99.vtt": "old"}, []string{"talk.vtt", "--output-dir", "out"}, "out/sub99.vtt" + hlsExists},
 		{
 			"the playlist exists",
@@ -279,6 +280,9 @@ func TestMatchesPattern(t *testing.T) {
 		{"part%03d.vtt", "part7.vtt", false},
 		{"part%03d.vtt", "part1000.vtt", true},
 		{"s_%d%%.vtt", "s_4%.vtt", true},
+		{"x%3d.vtt", "x  7.vtt", true},
+		{"x%3d.vtt", "x7.vtt", false},
+		{"x%3d.vtt", "x 007.vtt", false},
 		{"%d", "12", true},
 		{"sub%d.vtt", "sub99999999999999999999.vtt", false},
 	}

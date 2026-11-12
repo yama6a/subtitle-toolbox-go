@@ -53,19 +53,17 @@ func ParseTimestampMap(line string) (TimestampMap, error) {
 		name, value, _ := strings.Cut(strings.TrimSpace(attribute), ":")
 		attributes[asciiUpper(name)] = value
 	}
-	var m TimestampMap
 	ticks, okTicks := parseTicks(attributes["MPEGTS"])
 	local, okLocal := timecode.Clock(attributes["LOCAL"])
 	if !okTicks || !okLocal || !localRegexp.MatchString(attributes["LOCAL"]) {
 		return TimestampMap{}, parseError("The " + HeaderName + ` header "` + line + `" needs a LOCAL cue time and an integer MPEGTS value.`)
 	}
-	m.MPEGTS, m.Local = ticks, local
-	return m, nil
+	return TimestampMap{MPEGTS: ticks, Local: local}, nil
 }
 
 // parseTicks reads digits. A number above the int64 range becomes the largest int64, which Validate rejects.
 func parseTicks(s string) (int64, bool) {
-	if s == "" || strings.Trim(s, "0123456789") != "" {
+	if !timecode.IsDigits(s) {
 		return 0, false
 	}
 	n, err := strconv.ParseInt(s, 10, 64)

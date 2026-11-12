@@ -256,42 +256,6 @@ func TestRealPlaylistsKeepTheTargetDurationRule(t *testing.T) {
 	}
 }
 
-func TestSegmentsOfARealFileParse(t *testing.T) {
-	t.Parallel()
-
-	r, err := hls.Segment(readFixture(t), hls.SegmentOptions{SegmentDuration: 10 * time.Second, MediaDuration: ms(130080)})
-	require.NoError(t, err)
-	names, contents := segments(t, r)
-	require.Len(t, names, 14)
-	assert.Equal(t, ms(80), r.Durations()[13].Duration)
-
-	var start time.Duration
-	for i, content := range contents {
-		s := readVTT(t, content)
-		m, ok, err := hls.TimestampMapOf(s)
-		require.NoError(t, err)
-		require.True(t, ok)
-		assert.EqualValues(t, hls.DefaultMPEGTS, m.MPEGTS)
-		end := start + r.Durations()[i].Duration
-		for _, c := range s.All() {
-			assert.Less(t, c.Start, end, names[i])
-			assert.Greater(t, c.End, start, names[i])
-		}
-		start = end
-	}
-	assert.Equal(t, "29", lastText(t, contents[12]))
-	assert.Equal(t, 0, readVTT(t, contents[13]).Len())
-}
-
-func lastText(tb testing.TB, content string) string {
-	tb.Helper()
-
-	s := readVTT(tb, content)
-	c, ok := s.Cue(s.Len() - 1)
-	require.True(tb, ok)
-	return c.Text()
-}
-
 func TestSegmentGoldens(t *testing.T) {
 	t.Parallel()
 

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/hls"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 )
 
 const defaultPlaylist = "subs.m3u8"
@@ -182,7 +183,8 @@ func matchesPattern(pattern, name string) bool {
 		return false
 	}
 	digits, ok = strings.CutSuffix(digits, suffix)
-	if !ok || digits == "" || strings.Trim(digits, "0123456789") != "" {
+	// sscanf of PHP skips the spaces that a width such as %3d pads with. The comparison below rejects other padding.
+	if digits = strings.TrimLeft(digits, " "); !ok || !timecode.IsDigits(digits) {
 		return false
 	}
 	n, err := strconv.Atoi(digits)

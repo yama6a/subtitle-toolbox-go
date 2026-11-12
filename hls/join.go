@@ -2,7 +2,6 @@ package hls
 
 import (
 	"bytes"
-	"cmp"
 	"fmt"
 	"strconv"
 	"time"
@@ -23,6 +22,14 @@ func (o JoinOptions) validate() error {
 			strconv.FormatInt(MPEGTSWrap-1, 10)+", got "+strconv.FormatInt(*s, 10)+".")
 	}
 	return nil
+}
+
+// start returns the stream start: the option, else the MPEGTS of the map of the first segment.
+func (o JoinOptions) start(first TimestampMap) int64 {
+	if o.StreamStart != nil {
+		return *o.StreamStart
+	}
+	return first.MPEGTS
 }
 
 type cueKey struct {
@@ -49,7 +56,7 @@ func Join(segments [][]byte, opts JoinOptions) (*model.Subtitle, error) {
 			return nil, fmt.Errorf("read segment %d: %w", i, err)
 		}
 		if i == 0 {
-			start = *cmp.Or(opts.StreamStart, &m.MPEGTS)
+			start = opts.start(m)
 			if err := joined.SetFormatData(formatDataKey, withoutMap(segment)); err != nil {
 				return nil, err
 			}
