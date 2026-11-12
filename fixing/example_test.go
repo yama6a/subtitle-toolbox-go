@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
 	"github.com/yama6a/subtitle-toolbox-go/v2/fixing"
@@ -67,6 +68,7 @@ func ExampleRules() {
 	}
 	// Output:
 	// adCues false
+	// replaceList true
 	// unbalancedTags true
 	// emptyTags true
 	// doubleApostrophes false
@@ -104,4 +106,24 @@ func ExampleOptions_Validate() {
 	// Output:
 	// true
 	// stbox: invalid argument: fixing.Options.Enable: Unknown rule "ocrpipe".
+}
+
+func ExampleReadReplaceList() {
+	const list = `<ReplaceList><WholeWords><Word from="celd" to="cold" /></WholeWords></ReplaceList>`
+	l, err := fixing.ReadReplaceList(strings.NewReader(list))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	var s model.Subtitle
+	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"It gets celd."}})
+	if _, err := fixing.Apply(&s, fixing.Options{ReplaceList: l}); err != nil {
+		fmt.Println(err)
+		return
+	}
+	c, _ := s.Cue(0)
+	fmt.Println(c.Text())
+	// Output:
+	// It gets cold.
 }

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"cmp"
 	"context"
 	"encoding/json"
@@ -140,6 +141,7 @@ func errorsGroup() group {
 		summary: "Fix spacing, punctuation and OCR errors.",
 		options: []option{
 			flagOption("errors-fix", "Fix spacing, punctuation, dash, tag and OCR errors such as lt's for It's."),
+			valueOption("errors-replace-list", "FILE", "Also apply this Subtitle Edit OCR replace list, an XML file, with --errors-fix."),
 			valueOption("errors-enable", "NAME[,NAME]", "Also apply these rules that are off by default with --errors-fix: "+
 				ruleNames(fixing.OptionalRules())+"."),
 			flagOption("errors-list-fixes", "Print each change of --errors-fix to standard error."),
@@ -157,14 +159,15 @@ func ruleNames(rules []fixing.Rule) string {
 }
 
 func buildErrors(a *args, add func(edit)) error {
-	if err := needs(a, "errors-fix", "errors-enable", "errors-list-fixes"); err != nil {
+	if err := needs(a, "errors-fix", "errors-replace-list", "errors-enable", "errors-list-fixes"); err != nil {
 		return err
 	}
 	if !a.Has("errors-fix") {
 		return nil
 	}
 	language, _ := a.Value("language")
-	e := errorsEdit{opts: fixing.Options{Language: language}, list: a.Has("errors-list-fixes")}
+	e := &errorsEdit{opts: fixing.Options{Language: language}, list: a.Has("errors-list-fixes")}
+	e.listPath, _ = a.Value("errors-replace-list")
 	optional := fixing.OptionalRules()
 	names, _ := a.Value("errors-enable")
 	for name := range strings.SplitSeq(names, ",") {
@@ -184,15 +187,29 @@ func buildErrors(a *args, add func(edit)) error {
 	return nil
 }
 
-// errorsEdit runs fixing.Apply and prints each fix with list.
+// errorsEdit runs fixing.Apply and prints each fix with list. listPath names the replace list file, or is "".
 type errorsEdit struct {
-	opts fixing.Options
-	list bool
+	opts     fixing.Options
+	list     bool
+	listPath string
 }
 
-var _ edit = errorsEdit{}
+var _ edit = &errorsEdit{}
 
-func (e errorsEdit) apply(_ context.Context, s *stbox.Subtitle, c *console, label string) (*stbox.Subtitle, error) {
+func (e *errorsEdit) loadReplaceList(c *console) error {
+	content, err := readSideText(c, e.listPath)
+	if err != nil {
+		return err
+	}
+	l, err := fixing.ReadReplaceList(bytes.NewReader(content))
+	if err != nil {
+		return &fileError{msg: e.listPath + ": " + message(err)}
+	}
+	e.opts.ReplaceList = l
+	return nil
+}
+
+func (e *errorsEdit) apply(_ context.Context, s *stbox.Subtitle, c *console, label string) (*stbox.Subtitle, error) {
 	report, err := fixing.Apply(s, e.opts)
 	if err != nil {
 		return nil, err

@@ -255,6 +255,10 @@ for _, c := range s.All() {
 
 Off by default. It removes a cue whose visible text names OpenSubtitles, osdb, Addic7ed, YIFY, YTS, Subscene or podnapisi.net as a whole word, in any case. `www.OpenSubtitles.org` and `YTS.MX` count. `podnapisi` alone, Slovenian for "subtitles", and the English phrase `open subtitles` do not. A cue with an ad line and a dialogue line goes as a whole. The rule runs first, so the other rules report no fix on a removed cue. A web address of another site, an e-mail address and a credit such as `Subtitles by Ana` stay.
 
+### replaceList
+
+Runs only when `Options.ReplaceList` is not nil, or with `--errors-replace-list`. It is rule 2, after `adCues`, and `--errors-enable` does not name it. `Disable` can skip it. `Enable` with a nil list fails `Validate`. See [OCR replace lists](#ocr-replace-lists).
+
 ### unbalancedTags
 
 It removes each closing `b`, `i`, `u`, `s` or `font` tag without an opening tag. It closes each such tag that is still open at the end of the last line. `<b><font color="#ff0000">Hi` + LF + `you` gives `you</font></b>` as the last line. `<v Anna>Hello` and `<b.loud>Hello</b> there` stay.
@@ -322,6 +326,49 @@ Off by default. A `#` or `*` at the start or the end of a line becomes U+266A. T
 ### sentenceStartCase
 
 Off by default. It writes the first letter of a line in upper case when the line starts a sentence. The first line of a cue starts a sentence when the cue is the first one, or when the cue before it ends with `.`, `?` or `!`. Closing quotes and brackets may follow, as in `"Stop!"`. A later line starts a sentence when the line before it ends one. A cue after `...`, U+2026 or `,` continues the sentence and stays. Dashes, quotes, U+266A and tags before the letter stay. A word with an upper case letter after its first letter stays, such as `iPhone` and `eBay`.
+
+### OCR replace lists
+
+An OCR replace list is a table of known OCR misreads and their fixes, in the XML format of [Subtitle Edit](https://github.com/SubtitleEdit/subtitleedit), for example `eng_OCRFixReplaceList_User.xml`. `fixing.ReadReplaceList(r)` reads one, and `fixing.ReplaceList` holds one built in code. The package ships no list. With the list entry `<Word from="celd" to="cold" />`, the line `lt gets celd oD deck'` becomes `It gets cold on deck.` together with entries for `oD` and ` deck'` and the `ocrLowercaseL` rule.
+
+<!-- example: fixing/ExampleReadReplaceList -->
+```go
+const list = `<ReplaceList><WholeWords><Word from="celd" to="cold" /></WholeWords></ReplaceList>`
+l, err := fixing.ReadReplaceList(strings.NewReader(list))
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+var s model.Subtitle
+s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"It gets celd."}})
+if _, err := fixing.Apply(&s, fixing.Options{ReplaceList: l}); err != nil {
+	fmt.Println(err)
+	return
+}
+c, _ := s.Cue(0)
+fmt.Println(c.Text())
+// Output:
+// It gets cold.
+```
+
+| XML section | Go field | Matches |
+|:--- |:--- |:--- |
+| `WholeWords` | `WholeWords` | a word between spaces, with or without the punctuation around it |
+| `PartialWordsAlways` | `PartialWordsAlways` | any part of any word, before the second whole word lookup |
+| `WholeLines` | `WholeLines` | the whole visible text of a line |
+| `BeginLines` | `BeginLines` | the start of a line, or of a sentence after `. `, `! `, `? ` |
+| `EndLines` | `EndLines` | the end of the last line of the cue |
+| `PartialLines` | `PartialLines` | a text that starts and ends at a word boundary |
+| `PartialLinesAlways` | `PartialLinesAlways` | any part of a line |
+| `RegularExpressions` | `RegularExpressions` | a .NET pattern, replaced with a .NET substitution |
+
+- **Order**: each section is an ordered slice, and the pairs run in file order. The first entry for a search text wins. The reader skips an entry without `to`, with an empty `from`, or with `from` equal to `to`.
+- **Skipped sections**: `PartialWords` and `RegularExpressionsIfSpelledCorrectly` need a spell checker. The `Removed...` sections edit the list that Subtitle Edit ships.
+- **.NET syntax**: patterns and substitutions run with regexp2 as in .NET: `$1`, `${1}`, `${name}`, `$$`, `$&`, `` $` ``, `$'`, `$+` and `$_`. `^` and `$` match at the edges of a text run, so at tags. A pattern that does not compile is skipped by the reader, and `Validate` rejects it in a list built in code. A match that takes longer than 1 s fails `Apply` with an error that matches `ErrInvalidArgument`, and the subtitle stays unchanged.
+- **End lines**: a pair that adds a full stop is skipped when the cue continues. The next cue continues it when it starts at most 600 ms after this cue ends, and its text starts with a lower case letter.
+- **Whole words**: `(celd!)` with `celd` to `cold` becomes `(cold!)`. The lookup tries the word with its prefix of `-`, `.`, `"` and `(` and its suffix of closing punctuation, then without each.
+- **Partial lines**: a hit counts when the character before and after it is punctuation, white space, `<`, `>`, a backtick, U+00B4 or U+266A, or the text edge.
 
 ## Profanity filter
 

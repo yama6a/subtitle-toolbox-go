@@ -509,16 +509,17 @@ func TestRules(t *testing.T) {
 	t.Parallel()
 
 	all := fixing.Rules()
-	assert.Len(t, all, 17)
+	assert.Len(t, all, 18)
 	assert.Equal(t, fixing.RuleAdCues, all[0])
-	assert.Equal(t, fixing.RuleSentenceStartCase, all[16])
+	assert.Equal(t, fixing.RuleReplaceList, all[1])
+	assert.Equal(t, fixing.RuleSentenceStartCase, all[17])
 	var defaults []fixing.Rule
 	for _, r := range all {
 		if r.Default() {
 			defaults = append(defaults, r)
 		}
 	}
-	assert.Len(t, defaults, 10)
+	assert.Len(t, defaults, 11)
 	assert.False(t, fixing.Rule("nope").Default())
 	assert.Equal(t, "ocrPipe", fixing.RuleOCRPipe.String())
 	assert.Equal(t, "EllipsisUnicode", fixing.EllipsisUnicode.String())

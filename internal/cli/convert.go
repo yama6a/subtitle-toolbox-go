@@ -15,6 +15,7 @@ type convertCommand struct {
 	edits []edit
 	// masking is the edit of the masking group, nil without --mask-words.
 	masking *maskingEdit
+	errors  *errorsEdit
 	// snap is the edit of the snap group, nil without a trigger option.
 	snap *snapEdit
 }
@@ -130,6 +131,8 @@ func (cc *convertCommand) prepare(a *args, r *runner) error {
 func (cc *convertCommand) prepareGroups(a *args) error {
 	add := func(e edit) {
 		switch e := e.(type) {
+		case *errorsEdit:
+			cc.errors = e
 		case *maskingEdit:
 			cc.masking = e
 		case *snapEdit:
@@ -175,6 +178,11 @@ func (cc *convertCommand) checkInputs(r *runner, inputs []string) error {
 }
 
 func (cc *convertCommand) loadSideFiles(_ context.Context, r *runner) error {
+	if cc.errors != nil && cc.errors.listPath != "" {
+		if err := cc.errors.loadReplaceList(r.c); err != nil {
+			return err
+		}
+	}
 	if cc.snap != nil {
 		if err := cc.snap.loadShots(r.c); err != nil {
 			return err

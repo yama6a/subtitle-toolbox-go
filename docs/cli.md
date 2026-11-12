@@ -170,11 +170,13 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 | Option | Value | Library field |
 |:--- |:--- |:--- |
 | `--errors-fix` | flag, turns the group on and runs the rules that are on by default | |
+| `--errors-replace-list FILE` | a [Subtitle Edit OCR replace list](text.md#ocr-replace-lists), an XML file. It is a side file, read once per run | `ReplaceList` |
 | `--errors-enable NAME[,NAME]` | a comma list of the rules that are off by default: `adCues`, `doubleApostrophes`, `loneLowercaseI`, `unneededPeriods`, `dialogueOnOneLine`, `musicNotes`, `sentenceStartCase` | `Enable` |
 | `--errors-list-fixes` | flag, prints each fix to stderr | |
 | `--language CODE` | a common option | `Language` |
 
-- **Checks**: `--errors-enable` and `--errors-list-fixes` need `--errors-fix`: `Pass --errors-fix with --errors-list-fixes.` The names of `--errors-enable` are trimmed and match in any case. An empty name is skipped. Another name fails: `Unknown rule "X" in --errors-enable. The valid names are adCues, doubleApostrophes, loneLowercaseI, unneededPeriods, dialogueOnOneLine, musicNotes, sentenceStartCase.`
+- **Replace list**: a list that does not read prints `Error: FILE: MESSAGE` and exits 3, before any output file exists. The reader skips a pattern that does not compile, so it never fails here.
+- **Checks**: `--errors-replace-list`, `--errors-enable` and `--errors-list-fixes` need `--errors-fix`: `Pass --errors-fix with --errors-list-fixes.` The names of `--errors-enable` are trimmed and match in any case. An empty name is skipped. Another name fails: `Unknown rule "X" in --errors-enable. The valid names are adCues, doubleApostrophes, loneLowercaseI, unneededPeriods, dialogueOnOneLine, musicNotes, sentenceStartCase.`
 - **Fix line**: `LABEL: cue N: RULE: "BEFORE" -> "AFTER"`, with N from 1. BEFORE and AFTER are JSON strings, so a line feed reads `\n` and invalid UTF-8 reads U+FFFD: `film.srt: cue 3: ocrLowercaseL: "lt's late." -> "It's late."`.
 
 ### Hearing-impaired annotations

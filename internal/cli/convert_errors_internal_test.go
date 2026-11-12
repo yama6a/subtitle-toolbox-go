@@ -1,16 +1,19 @@
 package cli
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/fixing"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
-// Ported from tests/Cli/BinaryEditTest.php of subtitle-toolbox-php, without the replace list.
+// Ported from tests/Cli/BinaryEditTest.php of subtitle-toolbox-php.
 func TestConvertFixesCommonErrors(t *testing.T) {
 	t.Parallel()
 
@@ -89,6 +92,7 @@ func TestConvertErrorsUsageErrors(t *testing.T) {
 		words []string
 		msg   string
 	}{
+		{"replace list without fix", []string{"--errors-replace-list", "list.xml"}, "Pass --errors-fix with --errors-replace-list."},
 		{"enable without fix", []string{"--errors-enable", "adCues"}, "Pass --errors-fix with --errors-enable."},
 		{"list without fix", []string{"--errors-list-fixes"}, "Pass --errors-fix with --errors-list-fixes."},
 		{"enable checked before list", []string{"--errors-list-fixes", "--errors-enable", "adCues"}, "Pass --errors-fix with --errors-enable."},
@@ -118,6 +122,30 @@ func TestConvertErrorsUsageErrors(t *testing.T) {
 			before := snapshot(t, dir)
 			assert.Equal(t, usageResult("convert", tt.msg), call{dir: dir}.run(t, append([]string{"convert", "trip.srt", "--to", "srt", "-o", "-"}, tt.words...)...))
 			assert.Equal(t, before, snapshot(t, dir))
+		})
+	}
+}
+
+func TestConvertReplaceListFileErrorsStopBeforeAnyOutput(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "bad.xml"), []byte("<ReplaceList>\n<WholeWords></ReplaceList>"), 0o600))
+	tests := []struct {
+		name, list, stderr string
+	}{
+		{"missing file", "missing.xml", "Error: missing.xml: The file does not exist.\n"},
+		{
+			"broken XML", "bad.xml",
+			"Error: bad.xml: line 2: The OCR replace list is not valid XML: element <WholeWords> closed by </ReplaceList>.\n",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := call{dir: dir}.run(t, "convert", "trip.srt", "--to", "srt", "-o", "-", "--errors-fix", "--errors-replace-list", tt.list)
+			assert.Equal(t, result{Code: exitFile, Stderr: tt.stderr}, got)
 		})
 	}
 }
