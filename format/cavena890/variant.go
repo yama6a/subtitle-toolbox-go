@@ -10,9 +10,9 @@ import (
 
 	"golang.org/x/text/encoding/charmap"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/codepage"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/codepage"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // hebrewEnds holds the characters that Subtitle Edit moves from the start to the end of a Hebrew line, and back.

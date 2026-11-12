@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/cavena890"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/cavena890"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 func ExampleWrite() {

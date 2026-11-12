@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
 )
 
 const benchCues = 20000
@@ -48,7 +48,7 @@ func BenchmarkParse(b *testing.B) {
 		b.Run(string(f), func(b *testing.B) {
 			b.ReportAllocs()
 			for b.Loop() {
-				if _, _, err := stbox.Parse(bytes.NewReader(content.Bytes()), stbox.ReadOptions{Format: f}); err != nil {
+				if _, _, err := parseBytes(content.Bytes(), stbox.ReadOptions{Format: f}); err != nil {
 					b.Fatal(err)
 				}
 			}

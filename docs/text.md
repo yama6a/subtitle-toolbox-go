@@ -41,7 +41,7 @@ for _, c := range s.All() {
 
 ## Cue removal rule
 
-A cue that had visible text before a transform and has none after is removed. Its comments move to the next cue. A cue that was empty before stays.
+A cue that had visible text before a transform and has none after is removed. Its comments move to the next cue. A cue that was empty before stays. A cue that holds an image stays too, with no lines, because its removal would drop the image.
 
 - **Example**: replacing `\[\w+\]` with `""` removes the cue `[MUSIC]`, and a comment before it moves before the next cue.
 - **EditLines**: every method on this page applies the rule through `EditLines`. Code outside package `model` uses it too, because the cue list of a `Subtitle` is not exported. `fn` returns the new lines and true, or false to keep the cue as it is.
@@ -167,7 +167,8 @@ Subtitles for the deaf and hard of hearing (SDH) carry text that a hearing viewe
 const content = "1\n00:00:01,000 --> 00:00:03,000\n[DOOR SLAMS]\n\n" +
 	"2\n00:00:03,500 --> 00:00:06,000\n- [gasps] No!\n- MARY: Yes.\n\n" +
 	"3\n00:00:06,500 --> 00:00:09,000\n<i>(whispering) Over here.</i>\n"
-s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+r := strings.NewReader(content)
+s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -216,7 +217,8 @@ OCR of PGS and VobSub cues reads `It's` as `lt's`. Files from the web have space
 ```go
 const content = "1\n00:00:01,000 --> 00:00:03,000\nlt's late. l'm here, l'll go.\n\n" +
 	"2\n00:00:03,500 --> 00:00:06,000\n-Really ?\n-Yes.\n"
-s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+r := strings.NewReader(content)
+s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -378,7 +380,8 @@ Family and broadcast versions mask swear words in the subtitles and mute them in
 ```go
 const content = "WEBVTT\n\n00:01:02.000 --> 00:01:04.000\n" +
 	"<00:01:02.000>What <00:01:02.300>the <00:01:02.480>hell <00:01:02.800>is this?\n"
-s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+r := strings.NewReader(content)
+s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return

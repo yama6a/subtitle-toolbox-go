@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/hearingimpaired"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // fromTexts gives one cue per text, the cue i from i s to i+1 s.
@@ -105,7 +105,8 @@ func TestRealSubRipFileRoundTrips(t *testing.T) {
 	t.Parallel()
 
 	content := testfiles.Read(t, "hearing-impaired/own_sdh.srt")
-	s, _, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: stbox.SubRip})
+	r := bytes.NewReader(content)
+	s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{Format: stbox.SubRip})
 	require.NoError(t, err)
 	cues := s.Cues()
 	require.Len(t, cues, 14)
@@ -173,7 +174,8 @@ func TestRealWebVTTFileRoundTrips(t *testing.T) {
 	var buf bytes.Buffer
 	_, err := stbox.Write(&buf, s, stbox.WebVTT, stbox.WriteOptions{})
 	require.NoError(t, err)
-	again, _, err := stbox.Parse(&buf, stbox.ReadOptions{Format: stbox.WebVTT})
+	r := bytes.NewReader(buf.Bytes())
+	again, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{Format: stbox.WebVTT})
 	require.NoError(t, err)
 	assertSameCues(t, s, again)
 }

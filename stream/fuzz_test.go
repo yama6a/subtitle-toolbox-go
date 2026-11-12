@@ -3,7 +3,7 @@ package stream_test
 import (
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
 )
 
 func FuzzSubRipStream(f *testing.F) {

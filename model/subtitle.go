@@ -9,7 +9,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
 )
 
 // The named metadata keys. Other keys are free.
@@ -167,13 +167,19 @@ func (s *Subtitle) insert(c Cue) {
 // SetCue replaces the cue at index i with a rounded and cleaned copy of c.
 // The cues end up in the order of a stable sort of the changed list, so c can move to another index.
 // Each comment stays before its cue. SetCue returns ErrCueNotFound when no cue has the index i.
-// It returns an error that matches ErrInvalidArgument when c.Position fails Position.Validate.
+// It returns an error that matches ErrInvalidArgument when c.Position fails Position.Validate
+// or c.Image fails Image.Validate.
 func (s *Subtitle) SetCue(i int, c Cue) error {
 	if i < 0 || i >= len(s.cues) {
 		return cueNotFound(i, len(s.cues))
 	}
 	if err := c.Position.Validate(); err != nil {
 		return err
+	}
+	if c.Image != nil {
+		if err := c.Image.Validate(); err != nil {
+			return err
+		}
 	}
 	c = c.normalized()
 	s.cues[i] = c

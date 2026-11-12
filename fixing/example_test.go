@@ -6,15 +6,16 @@ import (
 	"strings"
 	"time"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 func ExampleApply() {
 	const content = "1\n00:00:01,000 --> 00:00:03,000\nlt's late. l'm here, l'll go.\n\n" +
 		"2\n00:00:03,500 --> 00:00:06,000\n-Really ?\n-Yes.\n"
-	s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+	r := strings.NewReader(content)
+	s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return

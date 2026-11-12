@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 func writeString(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions, opts stboxjson.WriteOptions) string {
@@ -131,12 +131,17 @@ func TestWritesBinaryFormatDataAsBase64(t *testing.T) {
 	s := &model.Subtitle{}
 	setFormatData(t, s, "ass", model.Field{Key: "title", Value: "B\u00e4ckerei"}, model.Field{Key: "png", Value: "png"},
 		model.Field{Key: "deep", Value: []any{model.NewData(model.Field{Key: "bytes", Value: "\xff\xfe"})}})
-	s.AddCue(cueWithData(t, model.Cue{Start: time.Second, End: 2 * time.Second}, model.ImageKey,
-		model.Field{Key: "png", Value: png}, model.Field{Key: "screenWidth", Value: int64(720)}))
+	s.AddCue(model.Cue{
+		Start: time.Second, End: 2 * time.Second, Forced: true,
+		Image: &model.Image{PNG: []byte(png), X: 1, Y: 2, Width: 3, Height: 4, ScreenWidth: 720, ScreenHeight: 576},
+	})
 
 	got := writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
 	assert.Contains(t, got, `"ass":{"title":"B`+"\u00e4"+`ckerei","png":"png","deep":[{"bytes":{"base64":"//4="}}]}`)
-	assert.Contains(t, got, `"image":{"png":{"base64":"`+base64.StdEncoding.EncodeToString([]byte(png))+`"},"screenWidth":720}`)
+	assert.Contains(t, got, `"image":{"png":{"base64":"`+base64.StdEncoding.EncodeToString([]byte(png))+
+		`"},"x":1,"y":2,"width":3,"height":4,"screenWidth":720,"screenHeight":576,"forced":true}`)
+
+	assert.NotContains(t, got, `"forced":true,"formatData"`)
 
 	again := mustRead(t, got, false)
 	assert.Equal(t, s, again)

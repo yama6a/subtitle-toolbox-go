@@ -4,14 +4,18 @@ import (
 	"io"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/vtt"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/vtt"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // Write writes s as WebVTT and returns what the output leaves out. A cue line that reads as an empty line, such as a
 // line of only a dropped tag, is not written, because an empty line ends the cue.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.WebVTT, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	var report WriteReport
 	cw := &vtt.Writer{
 		StripTags: common.StripTags,

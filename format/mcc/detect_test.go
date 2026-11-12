@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
 )
 
 func TestDetect(t *testing.T) {

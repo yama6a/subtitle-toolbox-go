@@ -13,14 +13,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v2/hearingimpaired"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
-	"github.com/yama6a/subtitle-toolbox-go/v2/profanity"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v3/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/profanity"
 )
 
 // fixtureDir returns a new directory with the CLI fixtures and copies of the testdata files in files, which maps a
@@ -54,7 +54,8 @@ func libraryOutput(t *testing.T, path string, f stbox.Format, opts stbox.WriteOp
 func cueTexts(t *testing.T, content string, f stbox.Format) []string {
 	t.Helper()
 
-	s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{Format: f})
+	r := strings.NewReader(content)
+	s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{Format: f})
 	require.NoError(t, err)
 	out := make([]string, 0, s.Len())
 	for _, c := range s.Cues() {

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/phpkey"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/phpkey"
 )
 
 // valueType is one type of the type language of the format data schema.
@@ -392,16 +392,6 @@ var cueSchema = map[string]valueType{
 	"ffmeta-chapters": objectOf(
 		optional("timeBase", timeBase()),
 		optional("tags", strs()),
-	),
-	ImageKey: objectOf(
-		optional("png", str()),
-		optional("x", integer()),
-		optional("y", integer()),
-		optional("width", integer()),
-		optional("height", integer()),
-		optional("screenWidth", integer()),
-		optional("screenHeight", integer()),
-		optional("forced", boolean()),
 	),
 	"lrc": objectOf(
 		optional("endLine", boolean()),

@@ -4,7 +4,7 @@ import (
 	"iter"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
 )
 
 // Lines yields the lines of content and their 0-based numbers. LF, a run of CR before LF, and a lone CR end a line.

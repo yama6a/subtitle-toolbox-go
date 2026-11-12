@@ -6,7 +6,8 @@ A QC step checks every cue against limits for reading speed, line length, timing
 ```go
 const content = "1\n00:00:01,000 --> 00:00:03,000\n<i>The train leaves at noon.</i>\n\n" +
 	"2\n00:00:02,500 --> 00:00:05,000\n[BELL RINGS]\nANNA: We need two tickets for the long ride to the coast.\n"
-s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+r := strings.NewReader(content)
+s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -56,6 +57,7 @@ A violation holds the measured value and, for a rule with a number limit, the li
 - **Field name of `minSecondsPerWord`**: the Go field is `MinDurationPerWord`, because a Go name for a duration does not hold `Seconds`. The `Rule` value stays `minSecondsPerWord`, because it is the CLI and JSON value.
 - **Dialogue dash style**: `DialogueDashStyle` is a pointer, because the zero `model.DialogueDashStyle` is a legal style. nil turns the rule off.
 - **Infinite limits**: `MaxCharactersPerSecond` and `MaxWordsPerMinute` accept `+Inf`, which checks nothing.
+- **Image cues**: a cue with an image and no lines gets no violation and takes no part in the gap rules. Its index still counts.
 - **Order**: `requireCues` comes first. Then each cue in start order gets its violations in the order of the table above, from `noNegativeDuration` to `minGap`. `maxCharactersPerLine` gives its violations in line order.
 - **No violation**: `Check` returns a nil slice.
 - **Read only**: `Check` never changes the subtitle.
@@ -124,7 +126,8 @@ A **preset** is a function that returns the `Rules` of a delivery spec. A caller
 ```go
 const content = "1\n00:00:01,000 --> 00:00:03,000\n<i>The train leaves at noon.</i>\n\n" +
 	"2\n00:00:02,500 --> 00:00:02,900\nANNA: We need two tickets for the long ride to the coast.\n"
-s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+r := strings.NewReader(content)
+s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
