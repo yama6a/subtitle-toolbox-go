@@ -189,6 +189,7 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 | Damage | Strict | Lenient |
 |:--- |:--- |:--- |
 | a line without a time code, also a cut-off one such as `01:00:03;0` | `The SCC line "L" does not start with a time code.` | skips the line. `Skipped` |
+| a time code at 100000 hours or later, such as `100001:00:00:00`. The check uses the time, not the hour label | `The time "T" is not below 100000 hours.` | skips the line. `Skipped` |
 | an invalid byte pair such as the `9` of a cut-off last line, or `94x0` | `The SCC line has the invalid byte pair "P".` | one `Skipped` warning per bad pair. The pair becomes `8080`, so the later pairs of the line keep their frames |
 | no `Scenarist_SCC V1.0` header | `An SCC file must start with the line "Scenarist_SCC V1.0".` | the same error |
 

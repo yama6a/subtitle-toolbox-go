@@ -33,6 +33,8 @@ func FuzzRead(f *testing.F) {
 		"Scenarist_SCC V1.0\n\n99:99:99;99\t9420 9420 9470 9470 c8e9 942f 942f\n00:00:00;00\t942c",
 		"Scenarist_SCC V1.0\n\n942c 942c\n",
 		"Scenarist_SCC V2.0\n",
+		"Scenarist_SCC V1.0\n\n100000:05:59;29\t9420 9420 94ae 94ae 9452 9452 c8e9 942f 942f\n",
+		"Scenarist_SCC V1.0\n\n100001:00:00:00\t9420 9470 c8e9 942f\n\n99999:59:59;29\t942c\n",
 	} {
 		f.Add([]byte(seed))
 	}

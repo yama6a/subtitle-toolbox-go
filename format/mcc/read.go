@@ -2,7 +2,6 @@ package mcc
 
 import (
 	"cmp"
-	"errors"
 	"fmt"
 	"io"
 	"regexp"
@@ -14,7 +13,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/cea708"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
@@ -165,14 +163,7 @@ func (lr *lineReader) resolve() error {
 	lr.resolved, lr.row, lr.dropFrame = true, row, dropFrame
 	lr.fps = row.fps
 	lr.fps.DropFrame = dropFrame
-	limit := lr.fps.Frames(timecode.MaxTime)
-	for lr.fps.Duration(limit) >= timecode.MaxTime {
-		limit--
-	}
-	for lr.fps.Duration(limit+1) < timecode.MaxTime {
-		limit++
-	}
-	lr.limit = limit + 1
+	lr.limit = parsing.FrameLimit(lr.fps)
 	return nil
 }
 
@@ -181,12 +172,7 @@ func (lr *lineReader) check(tc model.Timecode) string {
 	if lr.fps.FrameOf(tc) < lr.limit {
 		return ""
 	}
-	_, err := parsing.BoundedTime(timecode.MaxTime, tc.String(), 0)
-	var perr *model.ParseError
-	if errors.As(err, &perr) {
-		return perr.Msg
-	}
-	return ""
+	return parsing.OverLimit(tc.String(), 0).Msg
 }
 
 // timeline joins the packets of one time code in file order and returns them in time order.

@@ -197,6 +197,44 @@ func TestReadInvalidFiles(t *testing.T) {
 	}
 }
 
+func TestReadTimeLimit(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		line  string
+		clean bool
+		msg   string
+	}{
+		{"non-drop 6-digit hour", "100001:00:00:00\t942c 942c", false, `The time "100001:00:00:00" is not below 100000 hours.`},
+		{"non-drop label below 100000 hours", "99999:59:59:00\t942c 942c", false, `The time "99999:59:59:00" is not below 100000 hours.`},
+		{"non-drop time below the limit", "99900:00:00:00\t942c 942c", true, ""},
+		{"drop-frame label 100000 below the limit", "100000:05:58;29\t942c 942c", true, ""},
+		{"drop-frame label 100000 at the limit", "100000:06:00;29\t942c 942c", false, `The time "100000:06:00;29" is not below 100000 hours.`},
+		{"drop-frame label below the limit, last byte pair at it", "100000:05:59;29\t9420 9420 94ae 94ae 9452 9452 c8e9 942f 942f", false, `The time "100000:05:59;29" is not below 100000 hours.`},
+		{"drop-frame 999999 hours", "999999:59:59;29\t942c 942c", false, `The time "999999:59:59;29" is not below 100000 hours.`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			content := header + "00:00:01;00\t942c 942c\n\n" + tt.line + "\n\n00:00:02;00\t942c 942c\n"
+			_, warnings, err := read(t, content, model.CommonReadOptions{Lenient: true}, scc.ReadOptions{})
+			require.NoError(t, err)
+			_, _, strictErr := read(t, content, model.CommonReadOptions{}, scc.ReadOptions{})
+			if tt.clean {
+				require.NoError(t, strictErr)
+				assert.Empty(t, warnings)
+				return
+			}
+			assert.Equal(t, &model.ParseError{Format: model.SCC, Line: 5, Msg: tt.msg}, strictErr)
+			assert.Equal(t, []model.ParseWarning{{
+				Message: tt.msg, Line: 5, Block: 2, Lines: []string{tt.line}, Action: model.Skipped,
+			}}, warnings)
+		})
+	}
+}
+
 func TestReadLenient(t *testing.T) {
 	t.Parallel()
 
