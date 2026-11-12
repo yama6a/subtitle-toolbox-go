@@ -1,4 +1,4 @@
-package ttml
+package ttmlwrite
 
 import (
 	"encoding/xml"
@@ -16,7 +16,7 @@ const badHead = "The stored TTML head is not a well-formed <head> element."
 
 // load binds the prefixes of the output, parses the stored head inside a <tt> with the output declarations, and
 // reads the IDs, agents and forced regions of the head.
-func (w *writer) load(stored []attr, headXML string) error {
+func (w *writer) load(stored []Attr, headXML string) error {
 	w.bindPrefixes(stored)
 	declarations := w.declarations()
 	if w.err != nil {
@@ -24,11 +24,11 @@ func (w *writer) load(stored []attr, headXML string) error {
 	}
 	doc, err := xmlraw.Parse(strings.NewReader("<tt"+declarations+">"+headXML+"</tt>"), xmlraw.ParseOptions{})
 	if err != nil {
-		return &model.UnwritableError{Format: w.profile.format, CueIndex: -1, Reason: badHead, Err: err}
+		return &model.UnwritableError{Format: w.opts.Format, CueIndex: -1, Reason: badHead, Err: err}
 	}
 	root, _ := doc.Root()
-	if len(root.Children) == 0 || root.Children[0].Kind != xmlraw.ElementNode || localName(root.Children[0]) != "head" {
-		return &model.UnwritableError{Format: w.profile.format, CueIndex: -1, Reason: badHead}
+	if len(root.Children) == 0 || root.Children[0].Kind != xmlraw.ElementNode || LocalName(root.Children[0]) != "head" {
+		return &model.UnwritableError{Format: w.opts.Format, CueIndex: -1, Reason: badHead}
 	}
 	w.head = root.Children[0]
 	for n := range w.head.Descendants() {
@@ -39,43 +39,43 @@ func (w *writer) load(stored []attr, headXML string) error {
 
 // bindPrefixes binds the root namespace, the stored prefixes, and tts and ttm in the namespaces of the dialect when
 // no prefix is bound to them.
-func (w *writer) bindPrefixes(stored []attr) {
+func (w *writer) bindPrefixes(stored []Attr) {
 	w.bind("", w.ns)
 	for _, a := range stored {
-		if a.name != "" {
-			w.bind(a.name, a.value)
+		if a.Name != "" {
+			w.bind(a.Name, a.Value)
 		}
 	}
 	styling, metadata := 0, 0
 	switch w.ns {
-	case nsDFXP:
+	case NSDFXP:
 		styling, metadata = 1, 1
-	case nsDFXP200604:
+	case NSDFXP200604:
 		styling, metadata = 3, 2
 	}
-	w.tts = w.bindPrefix("tts", stylingNamespaces, styling)
-	w.ttm = w.bindPrefix("ttm", metadataNamespaces, metadata)
+	w.tts = w.bindPrefix("tts", StylingNamespaces, styling)
+	w.ttm = w.bindPrefix("ttm", MetadataNamespaces, metadata)
 	slices.Sort(w.prefixes)
 }
 
 // readHeadElement takes the xml:id of an element of the head, and reads a forced region and the names of an agent.
 // The first region of an ID and the first agent of a name win.
 func (w *writer) readHeadElement(n *xmlraw.Node) {
-	id := xmlAttr(n, "id")
+	id := XMLAttr(n, "id")
 	if id != "" {
 		w.usedIDs[id] = true
 	}
-	if forced, ok := imscForcedDisplay(n); ok && isElement(n, w.ns, "region") {
+	if forced, ok := imscForcedDisplay(n); ok && IsElement(n, w.ns, "region") {
 		if _, seen := w.forcedRegions[id]; !seen {
 			w.forcedRegions[id] = strings.Trim(forced, markupcore.PHPTrimSet) == "true"
 		}
 	}
-	if localName(n) != "agent" || !slices.Contains(metadataNamespaces, n.NamespaceURI()) {
+	if LocalName(n) != "agent" || !slices.Contains(MetadataNamespaces, n.NamespaceURI()) {
 		return
 	}
 	for name := range n.Descendants() {
 		text := strings.Trim(name.Text(), markupcore.PHPTrimSet)
-		if _, seen := w.agentIDs[text]; !seen && isElement(name, n.NamespaceURI(), "name") {
+		if _, seen := w.agentIDs[text]; !seen && IsElement(name, n.NamespaceURI(), "name") {
 			w.agentIDs[text] = id
 		}
 	}
@@ -83,8 +83,8 @@ func (w *writer) readHeadElement(n *xmlraw.Node) {
 
 // imscForcedDisplay returns the itts:forcedDisplay attribute of n in the IMSC styling namespace.
 func imscForcedDisplay(n *xmlraw.Node) (string, bool) {
-	for _, a := range attributes(n) {
-		if a.Name.Local == "forcedDisplay" && n.AttrNamespaceURI(a) == nsIMSCStyle {
+	for _, a := range Attributes(n) {
+		if a.Name.Local == "forcedDisplay" && n.AttrNamespaceURI(a) == NSIMSCStyle {
 			return a.Value, true
 		}
 	}
@@ -121,7 +121,7 @@ func (w *writer) isBound(prefix string) bool {
 
 // bindIMSCStyling returns the prefix of the IMSC styling namespace, and binds itts when no prefix is bound to it.
 func (w *writer) bindIMSCStyling() string {
-	prefix := w.bindPrefix("itts", []string{nsIMSCStyle}, 0)
+	prefix := w.bindPrefix("itts", []string{NSIMSCStyle}, 0)
 	slices.Sort(w.prefixes)
 	return prefix
 }
@@ -163,7 +163,7 @@ func (w *writer) agentID(name string) string {
 
 	var before *xmlraw.Node
 	for _, c := range w.head.Children {
-		if c.Kind == xmlraw.ElementNode && (localName(c) == "styling" || localName(c) == "layout") {
+		if c.Kind == xmlraw.ElementNode && (LocalName(c) == "styling" || LocalName(c) == "layout") {
 			before = c
 			break
 		}
@@ -218,7 +218,7 @@ func (w *writer) addRegion(name, origin, extent string, a model.Alignment) strin
 	}
 	var layout *xmlraw.Node
 	for _, c := range w.head.Children {
-		if isElement(c, w.ns, "layout") {
+		if IsElement(c, w.ns, "layout") {
 			layout = c
 		}
 	}
@@ -335,7 +335,7 @@ func addDeclaration(el *xmlraw.Node, prefix, uri string) {
 func searchNamespace(start *xmlraw.Node, uri string, orig *xmlraw.Node) (string, bool) {
 	for e := start; e != nil && e.Kind == xmlraw.ElementNode; e = e.Parent {
 		for _, a := range e.Attrs {
-			if prefix, ok := declaredPrefix(a); ok && a.Value == uri && inScope(orig, prefix, uri) {
+			if prefix, ok := DeclaredPrefix(a); ok && a.Value == uri && inScope(orig, prefix, uri) {
 				return prefix, true
 			}
 		}
