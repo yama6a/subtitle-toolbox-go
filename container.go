@@ -3,6 +3,8 @@ package stbox
 import (
 	"io"
 	"strconv"
+
+	"github.com/yama6a/subtitle-toolbox-go/v3/container/mp4"
 )
 
 // containerFile is an open container file. Each table row has an adapter type for the file type of its package.
@@ -20,7 +22,25 @@ type containerFuncs struct {
 // containers lists the containers that the library reads.
 //
 //nolint:gochecknoglobals // lookup table of the container readers
-var containers = []containerFuncs{}
+var containers = []containerFuncs{
+	{container: MP4, open: openMP4},
+}
+
+type mp4File struct{ *mp4.File } // Tracks comes from mp4.File
+
+//nolint:wrapcheck // errors of the container package pass through unwrapped
+func (f mp4File) Extract(number int, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return f.File.Extract(number, opts.common(), mp4.ExtractOptions{SCC: opts.SCC, MCC: opts.MCC})
+}
+
+//nolint:ireturn,wrapcheck // the table row type is containerFile, and errors pass through unwrapped
+func openMP4(r io.ReaderAt, size int64) (containerFile, error) {
+	f, err := mp4.Open(r, size)
+	if err != nil {
+		return nil, err
+	}
+	return mp4File{f}, nil
+}
 
 // Tracks returns the subtitle tracks of the video container in the first size bytes of r, in file order.
 // A container without subtitle tracks gives an empty list and no error. Content that is no container, and a
