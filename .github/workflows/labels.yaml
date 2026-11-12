@@ -2,7 +2,7 @@ name: labels
 
 on:
   pull_request:
-    branches: [main, 2.x]  # 2.x collects the v2.0.0 break until it merges to main
+    branches: [main]
     types: [opened, synchronize, reopened, labeled, unlabeled]
 
 concurrency:
