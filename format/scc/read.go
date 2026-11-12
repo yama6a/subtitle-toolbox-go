@@ -72,12 +72,11 @@ func readCodeLines(st *parsing.State, content string) ([]cea608.CodeLine, *bool,
 			}
 			continue
 		}
-		m := codeLineRegexp.FindStringSubmatch(raw)
+		m, start, err := matchCodeLine(st, raw, line, block)
+		if err != nil {
+			return nil, nil, err
+		}
 		if m == nil {
-			err := st.Fail(&model.ParseError{Line: line, Msg: `The SCC line "` + raw + `" does not start with a time code.`}, line, block, []string{raw})
-			if err != nil {
-				return nil, nil, err
-			}
 			continue
 		}
 		drop := m[4] == ";"
@@ -92,10 +91,26 @@ func readCodeLines(st *parsing.State, content string) ([]cea608.CodeLine, *bool,
 			}
 			words = append(words, word)
 		}
-		codeLines = append(codeLines, cea608.CodeLine{Start: startFrame(m, drop), Words: words})
+		codeLines = append(codeLines, cea608.CodeLine{Start: start, Words: words})
 	}
 	slices.SortStableFunc(codeLines, func(a, b cea608.CodeLine) int { return cmp.Compare(a.Start, b.Start) })
 	return codeLines, dropFrame, nil
+}
+
+// matchCodeLine returns the fields and the start frame of a code line. The fields are nil when lenient mode skips the line.
+func matchCodeLine(st *parsing.State, raw string, line, block int) (m []string, start int64, err error) {
+	m = codeLineRegexp.FindStringSubmatch(raw)
+	if m == nil {
+		err = st.Fail(&model.ParseError{Line: line, Msg: `The SCC line "` + raw + `" does not start with a time code.`}, line, block, []string{raw})
+		return nil, 0, err
+	}
+	dropFrame := m[4] == ";"
+	start = startFrame(m, dropFrame)
+	if start >= parsing.FrameLimit(frameRate(dropFrame)) {
+		err = st.Fail(parsing.OverLimit(m[1]+":"+m[2]+":"+m[3]+m[4]+m[5], line), line, block, []string{raw})
+		return nil, 0, err
+	}
+	return m, start, nil
 }
 
 // isSpace matches the white space of the PHP pattern \s.
@@ -108,11 +123,7 @@ func startFrame(m []string, dropFrame bool) int64 {
 	for i, v := range []string{m[1], m[2], m[3], m[5]} {
 		field[i], _ = strconv.Atoi(v) // two digits
 	}
-	rate := model.FrameRate2997
-	if dropFrame {
-		rate = model.FrameRate2997DF
-	}
-	return rate.FrameOf(model.Timecode{Hours: field[0], Minutes: field[1], Seconds: field[2], Frames: field[3]})
+	return frameRate(dropFrame).FrameOf(model.Timecode{Hours: field[0], Minutes: field[1], Seconds: field[2], Frames: field[3]})
 }
 
 // readBytePair returns the word of a pair. A bad pair fails in strict mode. Lenient mode warns and returns padding,
@@ -124,4 +135,11 @@ func readBytePair(st *parsing.State, pair string, line, block int, raw string) (
 	}
 	word, _ := strconv.ParseUint(pair, 16, 16) // four hex digits
 	return uint16(word), nil
+}
+
+func frameRate(dropFrame bool) model.FrameRate {
+	if dropFrame {
+		return model.FrameRate2997DF
+	}
+	return model.FrameRate2997
 }

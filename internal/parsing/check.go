@@ -34,9 +34,26 @@ func FrameRateOption(err error, option, subject string) error {
 // so the caller passes it to Fail. A caller passes timecode.MaxTime for a time that overflows time.Duration.
 func BoundedTime(d time.Duration, text string, line int) (time.Duration, error) {
 	if d >= timecode.MaxTime {
-		return 0, &model.ParseError{Line: line, Msg: `The time "` + text + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours."}
+		return 0, OverLimit(text, line)
 	}
 	return d, nil
+}
+
+// OverLimit returns the error on line for the time text, which is 100000 hours or more. The error has no format.
+func OverLimit(text string, line int) *model.ParseError {
+	return &model.ParseError{Line: line, Msg: `The time "` + text + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours."}
+}
+
+// FrameLimit returns the first frame of fps at 100000 hours or later.
+func FrameLimit(fps model.FrameRate) int64 {
+	limit := fps.Frames(timecode.MaxTime)
+	for fps.Duration(limit) >= timecode.MaxTime {
+		limit--
+	}
+	for fps.Duration(limit+1) < timecode.MaxTime {
+		limit++
+	}
+	return limit + 1
 }
 
 // BoundedField returns d, or an error when the time d of the JSON field path is 100000 hours or more.
