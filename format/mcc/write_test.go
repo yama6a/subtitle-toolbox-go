@@ -143,7 +143,20 @@ func TestWriteOutput(t *testing.T) {
 		prefix   string
 		matches  string
 		suffix   string
+		// absent is a regular expression that the output must not match.
+		absent string
 	}{
+		{
+			name: "a stored header field that the reader would not read is left out",
+			subtitle: func(*testing.T) *model.Subtitle {
+				s := &model.Subtitle{}
+				require.NoError(t, s.SetFormatData("mcc", model.NewData(model.Field{Key: "header", Value: model.NewData(
+					model.Field{Key: "X-Encoder", Value: "x"}, model.Field{Key: "Encoder", Value: "y"},
+				)})))
+				return s
+			},
+			matches: `\nEncoder=y\n`, absent: `X-Encoder`,
+		},
 		{
 			name: "a new file is version 2.0 at 30DF with a version 5 UUID", subtitle: func(*testing.T) *model.Subtitle { return oneCue() },
 			prefix: "File Format=MacCaption_MCC V2.0\n",
@@ -187,6 +200,10 @@ func TestWriteOutput(t *testing.T) {
 			if tt.matches != "" {
 				assert.Regexp(t, tt.matches, out)
 			}
+			if tt.absent != "" {
+				assert.NotRegexp(t, tt.absent, out)
+			}
+			read(t, out, mcc.ReadOptions{})
 			again, _ := write(t, s, tt.common, tt.opts)
 			assert.Equal(t, out, again)
 		})

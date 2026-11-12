@@ -171,6 +171,15 @@ func TestReadErrors(t *testing.T) {
 			name: "unknown Time Code Rate", content: "File Format=MacCaption_MCC V2.0\nTime Code Rate=25DF\n", repaired: true,
 			msg: `The MCC Time Code Rate "25DF" is unknown.`,
 		},
+		{
+			name: "time above 100000 hours", content: header2 + "100001:00:00:00\t" + packet(edm) + "\n", line: 4,
+			msg: `The time "100001:00:00:00" is not below 100000 hours.`,
+		},
+		{
+			name: "time of 999998 hours", content: header2 + "999998:00:00:00\t" + packet(edm) + "\n", line: 4,
+			msg: `The time "999998:00:00:00" is not below 100000 hours.`,
+		},
+		{name: "time below the limit with 5 hour digits", content: header2 + "99999:59:59:00\t" + packet(edm) + "\n", clean: true},
 		{name: "AFD packet", content: header2 + data("4105080800000000000000005E") + "\n", clean: true},
 		{name: "CDP without sections", content: header2 + data("T07S074F430000") + "\n", clean: true},
 	}

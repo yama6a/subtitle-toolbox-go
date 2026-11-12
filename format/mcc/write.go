@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"maps"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -16,6 +17,8 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
+
+var fieldNameRegexp = regexp.MustCompile(`^[A-Za-z][A-Za-z ]*$`)
 
 const (
 	defaultRate    = "29.97"
@@ -35,11 +38,8 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	row := outputRate(file, opts)
 	dropFrame := dropFrameOf(file, opts, row)
 	version, _ := file.String("version")
-	if version == "" {
+	if version == "" || dropFrame && row.labels == 60 {
 		version = defaultVersion
-	}
-	if dropFrame && row.labels == 60 {
-		version = "2.0"
 	}
 
 	words, changes, err := caption.CEA608Words(model.MCC, s.Cues(), true)
@@ -47,15 +47,15 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		return WriteReport{}, err
 	}
 	lines := dataLines(s, words, row, dropFrame)
-	text := header(version, label(row, dropFrame), file, lines) + lines
-	if err := writing.Write(w, model.MCC, []byte(text), common, false); err != nil {
+	text := append([]byte(header(version, label(row, dropFrame), file, lines)), lines...)
+	if err := writing.Write(w, model.MCC, text, common, false); err != nil {
 		return WriteReport{}, err
 	}
 	return WriteReport{Changes: changes}, nil
 }
 
 // dataLines returns one line for each frame with CEA-608 words or a CEA-708 block, in frame order.
-func dataLines(s *model.Subtitle, words []caption.FrameWord, row rate, dropFrame bool) string {
+func dataLines(s *model.Subtitle, words []caption.FrameWord, row rate, dropFrame bool) []byte {
 	byFrame := map[int64][]uint16{}
 	for _, fw := range words {
 		n := roundDiv(fw.Frame*1001*row.fps.Num, 30000*row.fps.Den)
@@ -73,7 +73,7 @@ func dataLines(s *model.Subtitle, words []caption.FrameWord, row rate, dropFrame
 
 	fps := row.fps
 	fps.DropFrame = dropFrame
-	var lines strings.Builder
+	lines := make([]byte, 0, len(frames)*64)
 	sequence := uint16(0)
 	for _, frame := range frames {
 		if fps.Duration(frame) >= timecode.MaxTime {
@@ -81,17 +81,30 @@ func dataLines(s *model.Subtitle, words []caption.FrameWord, row rate, dropFrame
 		}
 		triplets := frameTriplets(byFrame[frame], blocks[frame], sequence, row.triplets)
 		tc := fps.TimecodeOf(frame)
-		fmt.Fprintf(&lines, "%02d:%02d:%02d:%02d\t%s\n", tc.Hours, tc.Minutes, tc.Seconds, tc.Frames,
-			encodeHex(ancPacket(cea708.WriteCDP(row.code, sequence, triplets))))
+		lines = appendPadded(lines, tc.Hours)
+		for _, field := range []int{tc.Minutes, tc.Seconds, tc.Frames} {
+			lines = appendPadded(append(lines, ':'), field)
+		}
+		lines = append(lines, '\t')
+		lines = appendHex(lines, ancPacket(cea708.WriteCDP(row.code, sequence, triplets)))
+		lines = append(lines, '\n')
 		sequence++
 	}
-	return lines.String()
+	return lines
+}
+
+// appendPadded appends n with at least 2 digits.
+func appendPadded(dst []byte, n int) []byte {
+	if n < 10 {
+		dst = append(dst, '0')
+	}
+	return strconv.AppendInt(dst, int64(n), 10)
 }
 
 // frameTriplets returns the triplets of one line: the field 1 words, a field 2 null pair, the DTVCC packet and
 // empty triplets up to the count of the rate.
 func frameTriplets(words []uint16, block []byte, sequence uint16, count int) []cea708.CDPTriplet {
-	var triplets []cea708.CDPTriplet
+	triplets := make([]cea708.CDPTriplet, 0, count)
 	for _, word := range orNull(words) {
 		triplets = append(triplets, cea708.CDPTriplet{Type: cea708.Field1, Valid: true, Data: word})
 	}
@@ -186,12 +199,12 @@ func ancPacket(cdp []byte) []byte {
 
 // header returns the notice, the header fields and the empty line before the data lines. A new UUID comes from the
 // hash of the data lines, so the same captions give the same file on the same day.
-func header(version, timeCodeRateValue string, file *model.Data, lines string) string {
+func header(version, timeCodeRateValue string, file *model.Data, lines []byte) string {
 	rates := "24, 25, 30, 30DF, 50, 60"
 	if version != "1.0" {
 		rates += ", 60DF"
 	}
-	hash := sha1.Sum([]byte(lines)) //nolint:gosec // see the import
+	hash := sha1.Sum(lines) //nolint:gosec // see the import
 	fields := model.NewData(
 		model.Field{Key: "UUID", Value: uuid(hash)},
 		model.Field{Key: "Creation Program", Value: program},
@@ -199,8 +212,9 @@ func header(version, timeCodeRateValue string, file *model.Data, lines string) s
 	)
 	stored, _ := file.Object("header")
 	for _, k := range stored.Keys() {
-		v, _ := stored.String(k)
-		fields.Set(k, v)
+		if v, ok := stored.String(k); ok && fieldNameRegexp.MatchString(k) && !strings.HasPrefix(k+"="+v, versionPrefix) {
+			fields.Set(k, v)
+		}
 	}
 	fields.Set(timeCodeRate, timeCodeRateValue)
 
@@ -209,7 +223,7 @@ func header(version, timeCodeRateValue string, file *model.Data, lines string) s
 	b.WriteString("\n\n")
 	for _, k := range fields.Keys() {
 		v, _ := fields.String(k)
-		b.WriteString(oneLine(k) + "=" + oneLine(v) + "\n")
+		b.WriteString(k + "=" + oneLine(v) + "\n")
 	}
 	b.WriteString("\n")
 	return b.String()

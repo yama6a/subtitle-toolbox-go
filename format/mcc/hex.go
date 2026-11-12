@@ -1,8 +1,6 @@
 package mcc
 
 import (
-	"bytes"
-	"encoding/hex"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -13,36 +11,34 @@ const emptyTriplet = "\xFA\x00\x00"
 
 const maxEmptyRun = 9
 
-// alias returns the bytes of an alias letter. G to O stand for 1 to 9 empty triplets.
+// aliases holds the bytes of each alias letter. G to O stand for 1 to 9 empty triplets.
 //
 // Adapted from Subtitle Edit, src/libse/SubtitleFormats/MacCaption10.cs and src/libse/Cea708/Smpte291M.cs
 // (https://github.com/SubtitleEdit/subtitleedit/blob/58fad713d9c2b322784bc2fa52148e078dbc8759/src/libse/SubtitleFormats/MacCaption10.cs), MIT.
-func alias(c byte) ([]byte, bool) {
-	switch c {
-	case 'P':
-		return []byte{0xFB, 0x80, 0x80}, true
-	case 'Q':
-		return []byte{0xFC, 0x80, 0x80}, true
-	case 'R':
-		return []byte{0xFD, 0x80, 0x80}, true
-	case 'S':
-		return []byte{0x96, 0x69}, true
-	case 'T':
-		return []byte{0x61, 0x01}, true
-	case 'U':
-		return []byte{0xE1, 0, 0, 0}, true
-	case 'Z':
-		return []byte{0}, true
+//
+//nolint:gochecknoglobals // the alias table of MCC, read-only
+var aliases = newAliases()
+
+func newAliases() (table [256]string) {
+	table['P'] = "\xFB\x80\x80"
+	table['Q'] = "\xFC\x80\x80"
+	table['R'] = "\xFD\x80\x80"
+	table['S'] = "\x96\x69"
+	table['T'] = "\x61\x01"
+	table['U'] = "\xE1\x00\x00\x00"
+	table['Z'] = "\x00"
+	for n := 1; n <= maxEmptyRun; n++ {
+		table['F'+n] = strings.Repeat(emptyTriplet, n)
 	}
-	if c > 'F' && c <= 'F'+maxEmptyRun {
-		return []byte(strings.Repeat(emptyTriplet, int(c-'F'))), true
-	}
-	return nil, false
+	return table
 }
 
 // decodeHex decodes hex digit pairs in any case and alias letters. It returns an error message for a bad character.
+//
+// Adapted from Subtitle Edit, src/libse/SubtitleFormats/MacCaption10.cs
+// (https://github.com/SubtitleEdit/subtitleedit/blob/58fad713d9c2b322784bc2fa52148e078dbc8759/src/libse/SubtitleFormats/MacCaption10.cs), MIT.
 func decodeHex(text string) ([]byte, string) {
-	var out []byte
+	out := make([]byte, 0, len(text)/2+2)
 	half := -1
 	for i := range len(text) {
 		c := text[i]
@@ -55,12 +51,11 @@ func decodeHex(text string) ([]byte, string) {
 			}
 			continue
 		}
-		alias, ok := alias(c)
-		if !ok || half >= 0 {
+		if aliases[c] == "" || half >= 0 {
 			r, _ := utf8.DecodeRuneInString(text[i:])
 			return nil, "The MCC data has the invalid character " + strconv.Quote(string(r)) + " at position " + strconv.Itoa(i+1) + "."
 		}
-		out = append(out, alias...)
+		out = append(out, aliases[c]...)
 	}
 	if half >= 0 {
 		return nil, "The MCC data ends with half a byte."
@@ -82,33 +77,55 @@ func hexDigit(c byte) (int, bool) {
 
 // encodeHex writes bytes as upper-case hex digits and alias letters. U stays unused, as files disagree on its length.
 func encodeHex(data []byte) string {
-	var b strings.Builder
-	for len(data) > 0 {
-		run := 0
-		for run < maxEmptyRun && 3*run < len(data) && bytes.HasPrefix(data[3*run:], []byte(emptyTriplet)) {
-			run++
-		}
-		if run > 0 {
-			b.WriteByte(byte('F' + run))
-			data = data[3*run:]
-			continue
-		}
-		if letter, n := aliasAt(data); n > 0 {
-			b.WriteByte(letter)
-			data = data[n:]
-			continue
-		}
-		b.WriteString(strings.ToUpper(hex.EncodeToString(data[:1])))
-		data = data[1:]
-	}
-	return b.String()
+	return string(appendHex(nil, data))
 }
 
+// appendHex appends the text of data to dst. Runs of empty triplets take the longest letter first.
+//
+// Adapted from Subtitle Edit, src/libse/SubtitleFormats/MacCaption10.cs
+// (https://github.com/SubtitleEdit/subtitleedit/blob/58fad713d9c2b322784bc2fa52148e078dbc8759/src/libse/SubtitleFormats/MacCaption10.cs), MIT.
+func appendHex(dst, data []byte) []byte {
+	const digits = "0123456789ABCDEF"
+	for i := 0; i < len(data); {
+		rest := data[i:]
+		if run := emptyRun(rest); run > 0 {
+			dst = append(dst, byte('F'+run))
+			i += 3 * run
+			continue
+		}
+		if letter, n := aliasAt(rest); n > 0 {
+			dst = append(dst, letter)
+			i += n
+			continue
+		}
+		dst = append(dst, digits[rest[0]>>4], digits[rest[0]&15])
+		i++
+	}
+	return dst
+}
+
+// emptyRun returns the number of empty triplets at the start of data, 9 at most.
+func emptyRun(data []byte) int {
+	run := 0
+	for run < maxEmptyRun && len(data) >= 3*run+3 && data[3*run] == 0xFA && data[3*run+1] == 0 && data[3*run+2] == 0 {
+		run++
+	}
+	return run
+}
+
+// fixedRuns lists the letters for fixed byte runs that the writer uses.
+//
+//nolint:gochecknoglobals // the alias table of MCC, read-only
+var fixedRuns = [...]struct {
+	letter byte
+	bytes  string
+}{{'P', "\xFB\x80\x80"}, {'Q', "\xFC\x80\x80"}, {'R', "\xFD\x80\x80"}, {'S', "\x96\x69"}, {'T', "\x61\x01"}, {'Z', "\x00"}}
+
+// aliasAt returns the letter and the length of the fixed byte run at the start of data.
 func aliasAt(data []byte) (byte, int) {
-	for _, letter := range []byte("PQRSTZ") {
-		b, _ := alias(letter)
-		if bytes.HasPrefix(data, b) {
-			return letter, len(b)
+	for _, run := range fixedRuns {
+		if len(data) >= len(run.bytes) && string(data[:len(run.bytes)]) == run.bytes {
+			return run.letter, len(run.bytes)
 		}
 	}
 	return 0, 0

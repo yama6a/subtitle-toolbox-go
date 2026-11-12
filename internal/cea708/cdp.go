@@ -29,6 +29,9 @@ var ErrNoCDP = errors.New("The data holds no caption distribution packet.") //no
 
 // ReadCDP returns the frame rate code and the valid triplets of field 1 and of DTVCC data of a CDP.
 // It reads the first cc_data section after the optional time code section. A CDP without cc_data has no triplets.
+//
+// Adapted from Subtitle Edit, src/libse/SubtitleFormats/MacCaption10.cs and src/libse/Cea708/Smpte291M.cs
+// (https://github.com/SubtitleEdit/subtitleedit/blob/58fad713d9c2b322784bc2fa52148e078dbc8759/src/libse/SubtitleFormats/MacCaption10.cs), MIT.
 func ReadCDP(cdp []byte) (rateCode int, triplets []Triplet, err error) {
 	if len(cdp) < cdpHeaderSize || int(cdp[0])<<8|int(cdp[1]) != cdpIdentifier {
 		return 0, nil, ErrNoCDP
@@ -70,6 +73,9 @@ type CDPTriplet struct {
 
 // WriteCDP returns a CDP with a cc_data section, a footer and its checksum.
 // The bytes of the CDP add up to 0 modulo 256.
+//
+// Adapted from Subtitle Edit, src/libse/SubtitleFormats/MacCaption10.cs and src/libse/Cea708/Smpte291M.cs
+// (https://github.com/SubtitleEdit/subtitleedit/blob/58fad713d9c2b322784bc2fa52148e078dbc8759/src/libse/SubtitleFormats/MacCaption10.cs), MIT.
 func WriteCDP(rateCode int, sequence uint16, triplets []CDPTriplet) []byte {
 	length := cdpHeaderSize + 2 + 3*len(triplets) + 3 + 1
 	cdp := make([]byte, 0, length)

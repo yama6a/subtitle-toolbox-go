@@ -785,7 +785,7 @@ The line has the time code `00:00:01:00`, a tab, and the hex data. The letter `T
 - **Times**: the label is a frame count, as in SCC. Drop-frame skips 2 labels per minute at 30 labels and 4 at 60, except every tenth minute. Packets with the same time code join in file order.
 - **Services**: the cues come from CEA-708 service 1, or from `ReadOptions.Service`. When that service has no captions, the cues come from the CEA-608 field 1 pairs, read as in SCC. `CEA608Only` skips CEA-708.
 - **Format data**: the file holds `version`, `frameRate` (one of `23.976`, `24`, `25`, `29.97`, `30`, `50`, `59.94`, `60`), `dropFrame` and `header`. CEA-608 cues hold the `scc` cue data of SCC. CEA-708 cues hold none, and only the alignment of the window anchor.
-- **Time limit**: a cue that ends at 100000 hours or later ends at 99999:59:59.999, also a cue of CEA-708 data.
+- **Time limit**: a data line at 100000 hours or later fails with `The time "100001:00:00:00" is not below 100000 hours.` A cue that ends at 100000 hours or later ends at 99999:59:59.999, also a cue of CEA-708 data.
 - **Lenient repairs**: see [lenient-parsing.md](lenient-parsing.md#mcc).
 
 ### Write
@@ -809,7 +809,7 @@ The writer writes CEA-608 field 1 and CEA-708 service 1 into each line. It write
 
 - **Drop-frame**: only 29.97 and 59.94 have drop-frame labels. `DropFrameOn` and `DropFrameOff` win. With `DropFrameKeep`, a `FrameRate` with its `DropFrame` flag set counts as on. Else the stored `dropFrame` decides, else drop-frame. The labels always use `:`.
 - **Version**: the stored `version`, else `2.0`. Drop-frame at 59.94 forces `2.0`, because version 1.0 lists no `60DF`.
-- **Header fields**: `UUID`, `Creation Program=Subtitle Toolbox` and `Creation Date` of today in UTC, such as `Monday, October 12, 2026`. Stored fields replace these values in place and add their other fields in stored order. `Time Code Rate` comes last. A line break in a stored field writes as a space. The UUID is a version 5 style hash of the data lines, so the same captions give the same file on the same day.
+- **Header fields**: `UUID`, `Creation Program=Subtitle Toolbox` and `Creation Date` of today in UTC, such as `Monday, October 12, 2026`. Stored fields replace these values in place and add their other fields in stored order. `Time Code Rate` comes last. A stored field whose name has other characters than letters and spaces is left out, because the reader would not read it. A line break in a stored value writes as a space. The UUID is a version 5 style hash of the data lines, so the same captions give the same file on the same day.
 - **Triplets**: each line has the field 1 words (or one null pair), one null pair for field 2, the DTVCC packet of service 1, and empty triplets up to the count of the rate. The sequence counter starts at 0 and counts each line.
 - **Hex**: upper case, with the aliases `G` to `O`, `P`, `Q`, `R`, `S`, `T` and `Z`. The writer never writes `U`, because files disagree on its length.
 - **Empty subtitle**: the header only, ending with `Time Code Rate=30DF` and an empty line.
