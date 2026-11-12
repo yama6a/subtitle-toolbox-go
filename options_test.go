@@ -100,6 +100,11 @@ func TestWriteOptionsValidate(t *testing.T) {
 			opts:    stbox.WriteOptions{BOM: stbox.BOM(3)},
 			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.BOM", Msg: "The BOM rule 3 is unknown."},
 		},
+		{
+			name:    "unknown SCC drop-frame mode",
+			opts:    stbox.WriteOptions{SCC: scc.WriteOptions{DropFrame: stbox.DropFrameMode(3)}},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.SCC.DropFrame", Msg: "The SCC drop-frame mode 3 is unknown."},
+		},
 		{name: "MicroDVD frame rate", opts: stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}, WriteFrameRateLine: true}}},
 		{
 			name:    "MicroDVD frame rate with a zero denominator",

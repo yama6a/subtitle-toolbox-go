@@ -693,7 +693,8 @@ Without `Fit`, a late caption writes late and no change is reported. A cue that 
 | `ReadOptions.SCC` | `Channel` | `int` | 0, read as 1 | 1 reads CC1 and CC3. 2 reads CC2 and CC4 |
 | `ReadOptions.SCC` | `RollUp` | `scc.RollUp` | `RollUpScreen` | `RollUpScreen` or `RollUpLines`. The text forms are `screen` and `lines` |
 
-- **Check**: `Validate` rejects a channel other than 0, 1 and 2 with `The SCC data channel must be 1 or 2, got 3.`, an unknown roll-up mode and an unknown drop-frame mode. All match `ErrInvalidArgument`.
+- **Read check**: `ReadOptions.Validate` rejects a channel other than 0, 1 and 2 with `The SCC data channel must be 1 or 2, got 3.` and an unknown roll-up mode. Both match `ErrInvalidArgument`.
+- **Write check**: `WriteOptions.Validate` rejects an unknown drop-frame mode with `The SCC drop-frame mode 3 is unknown.`. It matches `ErrInvalidArgument`.
 - **Reader**: it reads `Lenient` and `LastCueDuration` too.
 
 ## MPL2

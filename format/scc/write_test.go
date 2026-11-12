@@ -74,6 +74,12 @@ func atRow(c model.Cue, row int) model.Cue {
 	return c
 }
 
+func topAt(c model.Cue, row int) model.Cue {
+	c = atRow(c, row)
+	c.Position.Alignment = model.TopCenter
+	return c
+}
+
 func TestWriteLimits(t *testing.T) {
 	t.Parallel()
 
@@ -202,6 +208,18 @@ func TestWritePositions(t *testing.T) {
 			[]int64{14, 13},
 			model.BottomCenter, false,
 		},
+		{
+			"stored rows with a changed Position.Row", topAt(withData(cue(2, 4, "Left", "Right"), []any{int64(10), int64(12)}, []any{int64(3), int64(27)}), 3),
+			[]int64{3, 4},
+			[]int64{0, 0},
+			model.TopCenter, false,
+		},
+		{
+			"stored rows without Position.Row", withData(cue(2, 4, "Left", "Right"), []any{int64(10), int64(12)}, []any{int64(3), int64(27)}),
+			[]int64{14, 15},
+			[]int64{14, 13},
+			model.BottomCenter, false,
+		},
 		{"EBU STL top row on a 23-row grid", ebu(model.TopCenter, 2), []int64{2}, []int64{12}, model.TopCenter, false},
 		{"EBU STL top row with a bottom alignment", ebu(model.BottomCenter, 2), []int64{15}, []int64{12}, model.BottomCenter, false},
 		{"column of the cue", column(5), []int64{13, 14}, []int64{4, 4}, model.BottomCenter, false},
@@ -218,23 +236,6 @@ func TestWritePositions(t *testing.T) {
 			assert.Equal(t, tt.alignment, cues[0].Position.Alignment)
 		})
 	}
-}
-
-func TestWriteStoredPositionNeedsTheStoredRow(t *testing.T) {
-	t.Parallel()
-
-	s, _ := mustRead(t, popOnHello, model.CommonReadOptions{}, scc.ReadOptions{})
-	c, _ := s.Cue(0)
-	c.Position.Row = 3
-	c.Position.Alignment = model.TopCenter
-	got := writeAndRead(t, c)
-	require.Len(t, got, 1)
-	assert.Equal(t, []int64{3}, storedInts(t, got[0], "rows"))
-
-	c, _ = s.Cue(0)
-	c.Position.Row = 0
-	got = writeAndRead(t, c)
-	assert.Equal(t, []int64{15}, storedInts(t, got[0], "rows"))
 }
 
 func TestWriteScheduler(t *testing.T) {

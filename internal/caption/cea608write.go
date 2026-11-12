@@ -64,10 +64,10 @@ func CEA608Words(f model.Format, cues []model.Cue, fit bool) ([]FrameWord, []Fit
 	return words, changes, nil
 }
 
-// The words of the commands EDM and EOC with parity, as cea608.ControlWord gives them.
-const (
-	edmWord = 0x942c
-	eocWord = 0x942f
+//nolint:gochecknoglobals // words of the commands EDM and EOC, built once
+var (
+	edmWord = cea608.ControlWord(cea608.CommandEDM)
+	eocWord = cea608.ControlWord(cea608.CommandEOC)
 )
 
 // lateChange describes a caption that shows after its cue start: dropped when its EOC is not before the cue end.

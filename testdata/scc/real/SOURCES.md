@@ -14,4 +14,4 @@ Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5
 | `premiere_popon_df.scc` | Written for this repository in the shape of an Adobe Premiere Pro SCC export: one caption per line with RCL before ENM, `942f 942f` at the end of the line, no EDM between captions, drop-frame time codes with `;` | MIT |
 | `live_rollup_ru2.scc` | Written for this repository in the shape of a live roll-up encoder: RU2, `94ad` (CR) before each line, all caps, a time code every 1 to 2 seconds, words that continue on the next line of the file | MIT |
 | `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name, written by `tests/files/generate-read-goldens.php` | MIT |
-| `expected/*.out.*`, `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand. The PHP library has no SCC write golden, so these are Go output. | MIT |
+| `expected/*.out.*`, `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand. Each file equals the PHP write golden of the same name at the pinned commit. | MIT |
