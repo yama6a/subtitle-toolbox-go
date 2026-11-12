@@ -93,6 +93,7 @@ var (
 	_ writeFunc[subviewer.WriteOptions, subviewer.WriteReport] = subviewer.Write
 	_ detectFunc                                               = subviewer.Detect
 	_ readFunc[ebustl.ReadOptions]                             = ebustl.Read
+	_ writeFunc[ebustl.WriteOptions, ebustl.WriteReport]       = ebustl.Write
 	_ detectFunc                                               = ebustl.Detect
 	_ readFunc[sprucestl.ReadOptions]                          = sprucestl.Read
 	_ writeFunc[sprucestl.WriteOptions, sprucestl.WriteReport] = sprucestl.Write
@@ -124,7 +125,7 @@ var registry = []formatFuncs{
 	{format: SBV, read: readSBV, write: writeSBV},
 	{format: SCC, read: readSCC, write: writeSCC},
 	{format: SubRip, read: readSubRip, write: writeSubRip},
-	{format: EBUSTL, read: readEBUSTL},
+	{format: EBUSTL, read: readEBUSTL, write: writeEBUSTL},
 	{format: SpruceSTL, read: readSpruceSTL, write: writeSpruceSTL},
 	{format: SubViewer, read: readSubViewer, write: writeSubViewer},
 	{format: TTML, read: readTTML, write: writeTTML},
@@ -279,6 +280,14 @@ func readMicroDVD(r io.Reader, common model.CommonReadOptions, opts ReadOptions)
 func writeMicroDVD(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	_, err := microdvd.Write(w, s, common, opts.MicroDVD)
 	return WriteReport{}, err
+}
+
+func writeEBUSTL(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	report, err := ebustl.Write(w, s, common, opts.EBUSTL)
+	if err != nil {
+		return WriteReport{}, err
+	}
+	return WriteReport{EBUSTL: &report}, nil
 }
 
 func readSCC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {

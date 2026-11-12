@@ -70,8 +70,8 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 				require.Equal(t, 1, back.Len(), f)
 				c, _ := back.Cue(0)
 				assert.Less(t, c.End, timecode.MaxTime, f)
-				// SubRip and LRC clamp at the largest time their readers take, 999:59:59.999 and 999:59.99.
-				if f != stbox.SubRip && f != stbox.LRC {
+				// SubRip, LRC and EBU STL clamp at the largest time they hold: 999:59:59.999, 999:59.99 and 255 hours.
+				if f != stbox.SubRip && f != stbox.LRC && f != stbox.EBUSTL {
 					assert.GreaterOrEqual(t, c.End, timecode.MaxValidTime-time.Second, f)
 				}
 			}
