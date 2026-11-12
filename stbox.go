@@ -85,6 +85,7 @@ const (
 	EBUSTL        = model.EBUSTL
 	SubViewer     = model.SubViewer
 	TTML          = model.TTML
+	DCP           = model.DCP
 	TSV           = model.TSV
 	PlainText     = model.PlainText
 	MPL2          = model.MPL2
