@@ -26,7 +26,12 @@ stats/ stream/ hearingimpaired/ fixing/ profanity/ refsync/ diff/ dual/
 container/<name>/ The 3.x readers of video containers, layer 4b: mkv. They call the format readers
 validation/    The 2.x service that checks a subtitle against rules. It follows the same layer rule
 timing/        The 2.x service that moves cue times to shot changes and frames. Same layer rule
+<<<<<<< HEAD
 internal/      Helpers: markupcore, linewrap, timecode, textenc, extfallback, grapheme, ssatag, phpkey, stringlist, xmlraw, ebml, paragraphs, blocks, subrip,
+=======
+hls/           The service that cuts a subtitle into HLS WebVTT segments and joins segments. Same layer rule
+internal/      Helpers: markupcore, linewrap, timecode, textenc, extfallback, grapheme, ssatag, phpkey, stringlist, xmlraw, paragraphs, blocks, subrip,
+>>>>>>> origin/main
                vtt, position, parsing, writing, ttmlwrite, cli, and the test helpers testfiles and golden
 cmd/stbox/     The CLI main. Wiring, no business logic
 testdata/      All fixtures and goldens, one folder per topic, PHP folder names for PHP data. Packages read
