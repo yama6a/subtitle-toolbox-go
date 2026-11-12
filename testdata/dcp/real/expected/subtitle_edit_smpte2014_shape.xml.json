@@ -1,0 +1,107 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Le Phare",
+            "language": "fr"
+        },
+        "comments": [],
+        "formatData": {
+            "dcp": {
+                "dialect": "smpte",
+                "namespace": "http://www.smpte-ra.org/schemas/428-7/2014/DCST",
+                "prefix": "dcst",
+                "timeCodeRate": 25,
+                "attributes": {
+                    "xmlns:xs": "http://www.w3.org/2001/XMLSchema"
+                },
+                "header": {
+                    "Id": "urn:uuid:9a1c3e5f-7b9d-4f1a-b3c5-7e9a1c3e5f7b",
+                    "ContentTitleText": "Le Phare",
+                    "AnnotationText": "Sous-titres",
+                    "IssueDate": "2026-02-04T20:17:48.000-00:00",
+                    "ReelNumber": "1",
+                    "Language": "fr",
+                    "EditRate": "25 1",
+                    "TimeCodeRate": "25",
+                    "StartTime": "00:00:00:00"
+                },
+                "loadFonts": [
+                    {
+                        "attributes": {
+                            "ID": "theFontId"
+                        },
+                        "text": "urn:uuid:3c5e7a9c-1e3f-4a5c-8e7a-9c1e3f5a7c9e"
+                    }
+                ],
+                "font": {
+                    "ID": "theFontId",
+                    "Size": "42",
+                    "Weight": "normal",
+                    "Color": "FFFFFFFF",
+                    "Effect": "border",
+                    "EffectColor": "FF000000"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 30.16,
+                "end": 33.84,
+                "lines": [
+                    "La lampe tourne encore."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "dcp": {
+                        "subtitle": {
+                            "SpotNumber": "1",
+                            "FadeUpTime": "00:00:00:00",
+                            "FadeDownTime": "00:00:00:00",
+                            "TimeIn": "00:00:30:04",
+                            "TimeOut": "00:00:33:21"
+                        },
+                        "texts": [
+                            {
+                                "Vposition": "8",
+                                "Valign": "bottom",
+                                "Halign": "center",
+                                "Direction": "ltr"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 34.0,
+                "end": 36.48,
+                "lines": [
+                    "<i><u>Radio</u></i>"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {
+                    "dcp": {
+                        "subtitle": {
+                            "SpotNumber": "2",
+                            "FadeUpTime": "00:00:00:00",
+                            "FadeDownTime": "00:00:00:00",
+                            "TimeIn": "00:00:34:00",
+                            "TimeOut": "00:00:36:12"
+                        },
+                        "texts": [
+                            {
+                                "Vposition": "10",
+                                "Valign": "top",
+                                "Halign": "center",
+                                "Direction": "ltr"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

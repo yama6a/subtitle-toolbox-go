@@ -214,6 +214,7 @@ func ExampleFormats() {
 	// spruce-stl [stl]
 	// subviewer [sub]
 	// ttml [ttml dfxp xml]
+	// dcp [xml]
 	// tsv [tsv]
 	// txt [txt]
 	// mpl2 [txt]

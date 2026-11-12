@@ -18,6 +18,7 @@
 | Spruce STL | `stbox.SpruceSTL` | `spruce-stl` | `.stl` | [Spruce STL](#spruce-stl) |
 | SubViewer 1 and 2 | `stbox.SubViewer` | `subviewer` | `.sub` | [SubViewer](#subviewer) |
 | TTML, IMSC, DFXP | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | [TTML](#ttml) |
+| DCP subtitles | `stbox.DCP` | `dcp` | `.xml` | [DCP subtitles](#dcp-subtitles) |
 | plain text | `stbox.PlainText` | `txt` | `.txt` | [Plain text](#plain-text) |
 | MPL2 | `stbox.MPL2` | `mpl2` | `.txt` | [MPL2](#mpl2) |
 | TMPlayer, TMPlayer+ | `stbox.TMPlayer` | `tmplayer` | `.txt` | [TMPlayer](#tmplayer) |
@@ -440,6 +441,103 @@ The writer keeps what the reader stored, so a DFXP file stays DFXP after a retim
 ### Options
 
 `ttml.ReadOptions` and `ttml.WriteOptions` have no fields, so the root `WriteOptions` has no TTML field. The reader reads `Lenient`. The writer reads `StripTags`, `LineEnding` and `BOM`. By default the output has no BOM. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#ttml).
+
+## DCP subtitles
+
+A digital cinema package (DCP) holds subtitles as XML in 2 dialects. Interop `<DCSubtitle>` comes from the CineCanvas specification. SMPTE ST 428-7 `<SubtitleReel>` comes in the 2007, 2010 and 2014 namespaces. Package `format/dcp` reads and writes both. The format name is `dcp`, the extension `.xml`. TTML owns `.xml` in `FormatFromPath`, so `Load` finds a DCP file by [detection](detection.md) and a write needs `Format: stbox.DCP`.
+
+```xml
+<DCSubtitle Version="1.0">
+  <Subtitle SpotNumber="1" TimeIn="00:01:30:020" TimeOut="00:01:33:031" FadeUpTime="20" FadeDownTime="20">
+    <Text VAlign="bottom" VPosition="15">The ferry leaves at nine,</Text>
+    <Text VAlign="bottom" VPosition="8">from the north pier.</Text>
+  </Subtitle>
+</DCSubtitle>
+```
+
+This file reads as one cue from 90.08 s to 93.124 s with 2 lines and the alignment `BottomCenter`. The last field of an Interop time counts ticks of 4 ms, 250 per second. The line at `VPosition` 15 comes first, because it is higher on the screen.
+
+### Read
+
+| Input | Goes to |
+|:--- |:--- |
+| the root: `DCSubtitle` is Interop, `SubtitleReel` is SMPTE, with any prefix | file data `dcp.dialect`. Another root gives `The root element must be <DCSubtitle> or <SubtitleReel>, not <NAME>.` with the name as written |
+| `MovieTitle` (Interop) or `ContentTitleText` (SMPTE), a child of the root | the metadata `title`, trimmed. An empty title gives none |
+| SMPTE `Language` | the metadata `language`, trimmed. Interop names the language in words, such as `English`, so the reader skips it |
+| the root namespace URI and prefix of an SMPTE root | file data `dcp.namespace` and `dcp.prefix`. The reader does not check the URI |
+| the rate of the SMPTE times | file data `dcp.timeCodeRate` |
+| the root attributes in file order, plus `xmlns:xs` when declared | file data `dcp.attributes`. The names are local names, as the PHP library writes them |
+| each child of the root that has no child element, other than `Font`, `Subtitle`, `SubtitleList` and `LoadFont` | file data `dcp.header`, the local name to the text, not trimmed |
+| each `LoadFont` child of the root | file data `dcp.loadFonts`, a list of `attributes` and `text` |
+| the attributes of the first `Font` child of the subtitle list | file data `dcp.font`. The subtitle list is the root for Interop and `SubtitleList` for SMPTE, or the root when SMPTE has none |
+| each `Subtitle` with `Text` lines | a cue. The cue data `dcp.subtitle` holds its attributes |
+| each `Text` that gives a line, top line first | a line of the cue. The cue data `dcp.texts` holds the attributes of each |
+
+- **Rate**: Interop counts 250 ticks per second. SMPTE uses `TimeCodeRate` when it is a whole number from 1 to 1000. Else it uses `EditRate` as `a b`, the quotient rounded, when both are above 0 and the result is from 1 to 1000. Else it uses 24. So `<EditRate>48 1</EditRate>` gives 48.
+- **`StartTime`**: the reader does not subtract it. It stays in `dcp.header`, so a caller can shift the cues. A `StartTime` of `10:00:00:00` and `TimeIn="00:00:13:00"` give 13 s.
+- **Times**: `HH:MM:SS:EE` with 1 to 3 digits in EE, below the rate. `00:01:30:020` is 90.08 s, and SMPTE `00:00:30:04` at 25 fps is 30.16 s. Interop also reads `HH:MM:SS.sss` with any count of fraction digits, so `01:12:42.5` is 4362.5 s. Minutes and seconds have 1 or 2 digits and no range check. The reader rounds each time to whole milliseconds. Another shape, or an EE at or above the rate, fails with `The time "T" is not a DCP time code at R units per second.` R prints as `250` or `25`.
+- **Fonts**: `Font` elements nest around `Subtitle`, inside it and inside `Text`. Each passes its attributes to the elements inside it, with lower-case names and values. `color` of 8 hex digits `AARRGGBB` gives `<font color="#rrggbb">` unless it is white, and the alpha is dropped. `weight` `bold` gives `<b>`. `italic` `yes`, `left` or `right` gives `<i>`. `underlined` (Interop) or `underline` (SMPTE) `yes` gives `<u>`. Font name, size, effect and script are ignored.
+- **Lines**: each `Text` is one line. Inside it, CR, LF and tab drop, `Space` is a space, and `Ruby` becomes `base (note)`, or `base` without a note.
+- **Height**: `VAlign` `top` gives `VPosition` as the height from the top in percent. `bottom` gives 100 minus `VPosition`. `center` or no `VAlign` gives 50 plus `VPosition`. A `VPosition` that is no number counts as 0. Lines sort by height, top first, and empty lines drop.
+- **Alignment**: the mean height of the lines gives the row. Below a third it is top, above two thirds it is bottom, else middle. `HAlign` of the top line gives the column: `left`, `right`, else center.
+- **Offset**: `Cue.Position.Offset` is the anchor edge of the alignment. `Y` is the height of the top line for a top row, of the bottom line for a bottom row, and the mean height for a middle row. So a 1-line and a 2-line cue at the same place read the same `Y`. `HPosition` of the top line counts from the edge that `HAlign` names, so it gives `X`: left gives `HPosition`, right gives 100 minus it, center gives 50 plus it. Values are clamped to 0 to 100. A top or bottom row whose edge line lies within 10 % of the screen edge, such as `VAlign="bottom" VPosition="8"`, has no offset when `X` is the default anchor of the column. `HAlign="left" HPosition="10"` is such a place.
+- **No lines**: a `Subtitle` without `Text` gives no cue. When it holds an `Image` element, it fails with `The subtitle at T is an image. The parser reads only text subtitles.` The reader reads only text subtitles.
+- **Text before the XML**: strict mode fails and lenient mode skips it, as in [lenient-parsing.md](lenient-parsing.md#dcp-subtitles).
+- **XML**: the reader loads no DTD and does no repair. Malformed XML fails with `The content is not well-formed XML.` in both modes. Text that is not valid UTF-8 makes the XML malformed. Elements match by local name.
+
+### Write
+
+The writer keeps the dialect, root, header, fonts and positions of the input. A subtitle without a stored dialect gets the defaults of DCP-o-matic: SMPTE ST 428-7:2014 at 24 fps. A cue from 5 s to 7.125 s with the lines `The ferry leaves at nine,` and `from the <i>north</i> pier.` writes as:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<SubtitleReel xmlns="http://www.smpte-ra.org/schemas/428-7/2014/DCST" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Id>urn:uuid:7f9b6950-3c59-3ac4-899d-fe2670a92d7e</Id>
+  <ContentTitleText></ContentTitleText>
+  <IssueDate>2026-10-12T00:00:00</IssueDate>
+  <ReelNumber>1</ReelNumber>
+  <Language>en</Language>
+  <EditRate>24 1</EditRate>
+  <TimeCodeRate>24</TimeCodeRate>
+  <StartTime>00:00:00:00</StartTime>
+  <LoadFont ID="font">urn:uuid:089a80de-bed7-3cfc-8bde-d41ea8e3cec0</LoadFont>
+  <SubtitleList>
+    <Font AspectAdjust="1.0" Color="FFFFFFFF" Effect="none" EffectColor="FF000000" ID="font" Italic="no" Script="normal" Size="42" Underline="no" Weight="normal">
+      <Subtitle SpotNumber="1" TimeIn="00:00:05:00" TimeOut="00:00:07:03" FadeUpTime="00:00:00:00" FadeDownTime="00:00:00:00">
+        <Text Valign="bottom" Vposition="15">The ferry leaves at nine,</Text>
+        <Text Valign="bottom" Vposition="8">from the <Font Italic="yes">north</Font> pier.</Text>
+      </Subtitle>
+    </Font>
+  </SubtitleList>
+</SubtitleReel>
+```
+
+`IssueDate` is the time of the write in UTC. A caller who needs the same bytes sets `dcp.header.IssueDate` in the format data. The `Id` and the `LoadFont` text are name-based UUIDs of version 3. The `Id` is the MD5 hash of the `Font` and `Subtitle` elements as written, so the same subtitles give the same file. A stored header value replaces its default in place, and its other fields come after.
+
+| Output | Comes from |
+|:--- |:--- |
+| the root | the stored dialect, namespace, prefix and attributes. With a prefix such as `dcst`, every element uses it and the root declares `xmlns:dcst` |
+| a title | `ContentTitleText` (SMPTE, always) or `MovieTitle` (Interop, only when the header has it) |
+| a language | SMPTE `Language`, only when the header has it |
+| the header and the `LoadFont` elements | `dcp.header` and `dcp.loadFonts`, in stored order |
+| the `Font` around the subtitles | `dcp.font`, when present. One `Font` surrounds all subtitles |
+| `SpotNumber` | the position of the cue, from 1 |
+| `TimeIn` and `TimeOut` | `HH:MM:SS:EE` from the time at the rate of the file. EE has 3 digits for Interop and for a rate above 100, else 2 |
+| `FadeUpTime` and `FadeDownTime` | the stored values. A stored subtitle without them gets `20` for Interop or `00:00:00:00` for SMPTE |
+| the other `Subtitle` attributes | `dcp.subtitle` of the cue |
+| each `Text` | a line of the cue, after ruby becomes text and open tags carry over. Lines without visible text drop |
+| the `Text` attributes | see below |
+| an inner `Font` | a run whose style differs from the `Font` around the subtitles. It holds only the differing attributes in the order `Color`, `Italic`, `Weight`, `Underlined` (Interop) or `Underline` (SMPTE) |
+
+- **Positions**: the cue keeps its stored `Text` attributes while it has the same number of lines and the stored attributes give its alignment. Else the alignment sets the positions: a bottom row gets `Valign="bottom"` and `Vposition` 8, 15, 22, from the bottom line up. A top row gets `Valign="top"` and 8, 15, 22 from the top line down. A middle row gets `Valign="center"` and (i - (n - 1) / 2) x 7, so 2 lines give `-3.5` and `3.5`. `Halign` comes first, only for left and right. Interop writes `VAlign`, `HAlign` and `VPosition`. A cue whose `Offset` lies in the screen cell of its alignment moves the anchor edge: the bottom line of a bottom row sits at `Vposition` 100 minus `Y`, the top line of a top row at `Y`, and the middle of a middle row at `Y` minus 50. The other lines keep 7 % apart on the same side, so they stay on the screen. `Hposition` is `X` for left, 100 minus `X` for right, and `X` minus 50 for center when that is not 0.
+- **Runs**: the base style is the stored `font`, white and plain by default. `<b>`, `<i>`, `<u>` and `<font color>` change the style of a run. Text is entity-decoded, loses the characters that XML 1.0 forbids, and gets `&`, `<`, `>` and `"` escaped. `<s>`, `<v>`, word timestamps and other tags drop.
+- **Time limit**: a time that rounds to 100000 hours stops at the last unit below it, so the output reads back.
+- **Check**: the writer parses its output. A result that is not well-formed returns an `*UnwritableError` with `The formatter wrote XML that is not well-formed.` Text that is not valid UTF-8 returns an `*UnwritableError` whose `Err` is `ErrInvalidUTF8`.
+- **Lost on write**: comments, indentation, header elements with child elements, `Font` elements inside `Subtitle`, which the writer rebuilds per run, font name, size and effect, `<s>`, speakers, word timestamps, images, and more than one `Font` around the subtitles.
+
+### Options
+
+`dcp.ReadOptions` and `dcp.WriteOptions` have no fields, so the root `ReadOptions` and `WriteOptions` have no DCP field. The reader reads `Lenient`. The writer reads `LineEnding` and `BOM`. By default the output has no BOM. `StripTags` has no effect. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#dcp-subtitles).
 
 ## SAMI
 
