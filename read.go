@@ -208,7 +208,7 @@ func pairedVobSub(content []byte, path string, open openFunc, opts ReadOptions) 
 	if err != nil {
 		return textenc.Decoded{}, opts, &ParseError{Format: VobSub, Msg: err.Error(), Err: err}
 	}
-	opts.VobSub.IDX = text.Text
+	opts.VobSub.IDX = string(text.Text)
 	return textenc.Decoded{Text: sub, Warning: text.Warning}, opts, nil
 }
 

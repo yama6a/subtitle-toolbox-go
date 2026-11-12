@@ -220,7 +220,7 @@ func cuesOf(s *model.Subtitle) []cue {
 func read(t *testing.T, sub, idx []byte, opts vobsub.ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
 	t.Helper()
 
-	opts.IDX = idx
+	opts.IDX = string(idx)
 	return vobsub.Read(bytes.NewReader(sub), model.CommonReadOptions{}, opts)
 }
 

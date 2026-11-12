@@ -1807,7 +1807,7 @@ A **subpicture unit** (SPU) is one DVD subtitle bitmap with its control commands
 
 | Field | Type | Default | Meaning |
 |:--- |:--- |:--- |:--- |
-| `IDX` | `[]byte` | nil | the `.idx` content as UTF-8. `Load` and `LoadFS` fill it |
+| `IDX` | `string` | `""` | the `.idx` content as UTF-8. `Load` and `LoadFS` fill it |
 | `Index` | `*int` | nil: no filter | the track whose `id:` line has this `index:` value. A pointer, because 0 is a valid index |
 | `Language` | `string` | `""`: no filter | the track whose `id:` value equals this, without case |
 

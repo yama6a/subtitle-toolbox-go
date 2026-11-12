@@ -102,7 +102,7 @@ func TestLoadVobSubFromFiles(t *testing.T) {
 	}{
 		{"the .idx file", idx, stbox.ReadOptions{}},
 		{"the .sub file with the format", sub, stbox.ReadOptions{Format: stbox.VobSub}},
-		{"the .idx file with a wrong IDX option", idx, stbox.ReadOptions{VobSub: vobsub.ReadOptions{IDX: []byte("wrong")}}},
+		{"the .idx file with a wrong IDX option", idx, stbox.ReadOptions{VobSub: vobsub.ReadOptions{IDX: "wrong"}}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
@@ -139,7 +139,7 @@ func TestParseVobSub(t *testing.T) {
 		return s.Len(), nil
 	}
 
-	n, err := read(stbox.ReadOptions{Format: stbox.VobSub, VobSub: vobsub.ReadOptions{IDX: idx, Index: new(1)}})
+	n, err := read(stbox.ReadOptions{Format: stbox.VobSub, VobSub: vobsub.ReadOptions{IDX: string(idx), Index: new(1)}})
 	require.NoError(t, err)
 	assert.Equal(t, 2, n)
 
@@ -148,11 +148,11 @@ func TestParseVobSub(t *testing.T) {
 	require.ErrorAs(t, err, &aerr)
 	assert.Equal(t, "ReadOptions.VobSub.IDX", aerr.Option)
 
-	_, err = read(stbox.ReadOptions{Format: stbox.VobSub, VobSub: vobsub.ReadOptions{IDX: idx, Language: " "}})
+	_, err = read(stbox.ReadOptions{Format: stbox.VobSub, VobSub: vobsub.ReadOptions{IDX: string(idx), Language: " "}})
 	require.ErrorAs(t, err, &aerr)
 	assert.Equal(t, "ReadOptions.VobSub.Language", aerr.Option)
 
-	_, err = read(stbox.ReadOptions{Format: stbox.VobSub, VobSub: vobsub.ReadOptions{IDX: idx, Index: new(-1)}})
+	_, err = read(stbox.ReadOptions{Format: stbox.VobSub, VobSub: vobsub.ReadOptions{IDX: string(idx), Index: new(-1)}})
 	require.ErrorAs(t, err, &aerr)
 	assert.Equal(t, "ReadOptions.VobSub.Index", aerr.Option)
 }

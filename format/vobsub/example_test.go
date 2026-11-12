@@ -20,7 +20,7 @@ func ExampleRead() {
 		fmt.Println(err)
 		return
 	}
-	s, _, err := vobsub.Read(bytes.NewReader(sub), model.CommonReadOptions{}, vobsub.ReadOptions{IDX: idx})
+	s, _, err := vobsub.Read(bytes.NewReader(sub), model.CommonReadOptions{}, vobsub.ReadOptions{IDX: string(idx)})
 	if err != nil {
 		fmt.Println(err)
 		return

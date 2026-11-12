@@ -21,8 +21,8 @@ import (
 
 // ReadOptions holds the settings of the VobSub reader.
 type ReadOptions struct {
-	// IDX is the content of the .idx file as UTF-8. stbox.Load and stbox.LoadFS fill it from the file next to the .sub file.
-	IDX []byte
+	// IDX is the content of the .idx file as UTF-8. It is a string, so stbox.ReadOptions stays comparable. stbox.Load and stbox.LoadFS fill it from the file next to the .sub file.
+	IDX string
 	// Index is the index: value of the track to read. Nil reads the first track that matches Language.
 	// A pointer, because 0 is a valid index.
 	Index *int
@@ -52,7 +52,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if err := opts.Validate(); err != nil {
 		return nil, nil, err
 	}
-	if opts.IDX == nil {
+	if opts.IDX == "" {
 		return nil, nil, &model.InvalidArgumentError{
 			Option: "ReadOptions.VobSub.IDX",
 			Msg:    "VobSub needs the .idx content. Set ReadOptions.VobSub.IDX.",
@@ -62,7 +62,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if err != nil {
 		return nil, nil, fmt.Errorf("read %s: %w", model.VobSub, err)
 	}
-	ix, err := dvdsub.ParseIndex(opts.IDX)
+	ix, err := dvdsub.ParseIndex([]byte(opts.IDX))
 	if err != nil {
 		return nil, nil, err
 	}

@@ -21,7 +21,7 @@ func FuzzRead(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, sub []byte) {
 		for _, lenient := range []bool{false, true} {
-			s, _, err := vobsub.Read(bytes.NewReader(sub), model.CommonReadOptions{Lenient: lenient}, vobsub.ReadOptions{IDX: idx})
+			s, _, err := vobsub.Read(bytes.NewReader(sub), model.CommonReadOptions{Lenient: lenient}, vobsub.ReadOptions{IDX: string(idx)})
 			if err != nil {
 				var perr *model.ParseError
 				if !errors.As(err, &perr) {

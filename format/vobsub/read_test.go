@@ -226,12 +226,12 @@ func TestReadOptionsErrors(t *testing.T) {
 		{"no IDX", vobsub.ReadOptions{}, model.InvalidArgumentError{Option: "ReadOptions.VobSub.IDX", Msg: "VobSub needs the .idx content. Set ReadOptions.VobSub.IDX."}},
 		{
 			"negative index",
-			vobsub.ReadOptions{IDX: []byte("x"), Index: new(-1)},
+			vobsub.ReadOptions{IDX: "x", Index: new(-1)},
 			model.InvalidArgumentError{Option: "ReadOptions.VobSub.Index", Msg: "The track index must be 0 or more, got -1."},
 		},
 		{
 			"blank language",
-			vobsub.ReadOptions{IDX: []byte("x"), Language: " \t"},
+			vobsub.ReadOptions{IDX: "x", Language: " \t"},
 			model.InvalidArgumentError{Option: "ReadOptions.VobSub.Language", Msg: "The language must not be empty."},
 		},
 	}
@@ -306,7 +306,7 @@ func TestReadReportsBrokenUnits(t *testing.T) {
 		t.Run(tt.name+" lenient", func(t *testing.T) {
 			t.Parallel()
 
-			s, warnings, err := vobsub.Read(bytes.NewReader(tt.sub), model.CommonReadOptions{Lenient: true}, vobsub.ReadOptions{IDX: idx})
+			s, warnings, err := vobsub.Read(bytes.NewReader(tt.sub), model.CommonReadOptions{Lenient: true}, vobsub.ReadOptions{IDX: string(idx)})
 			require.NoError(t, err)
 			assert.Zero(t, s.Len())
 			assert.Equal(t, []model.ParseWarning{{Message: tt.want, Line: model.NoLine, Block: 0, Action: model.Skipped}}, warnings)
@@ -343,7 +343,7 @@ func TestLenientReadSkipsABrokenUnitAndReadsTheNext(t *testing.T) {
 
 			sub, positions := program(tt.packets...)
 			idx := idxFor(0, []time.Duration{time.Second, 2 * time.Second}, positions)
-			s, warnings, err := vobsub.Read(bytes.NewReader(sub), model.CommonReadOptions{Lenient: true}, vobsub.ReadOptions{IDX: idx})
+			s, warnings, err := vobsub.Read(bytes.NewReader(sub), model.CommonReadOptions{Lenient: true}, vobsub.ReadOptions{IDX: string(idx)})
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, cuesOf(s))
 			require.Len(t, warnings, 1)
