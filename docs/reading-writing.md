@@ -1,6 +1,8 @@
 # Reading and writing
 
-`stbox.Load` reads a file, `stbox.Parse` reads an `io.Reader`, and `stbox.Write` writes one format. One `ReadOptions` and one `WriteOptions` value serve every format. Each reader and writer ignores the fields of other formats, so one value serves a batch of mixed files.
+`stbox.Load` reads a file, `stbox.Parse` reads an `io.Reader`, and `stbox.Write` writes one format and returns a `WriteReport`. One `ReadOptions` and one `WriteOptions` value serve every format. Each reader and writer ignores the fields of other formats, so one value serves a batch of mixed files.
+
+The `WriteReport` lists the changes a writer made to fit the subtitle into its format. It has one pointer field per format that reports. The field `WebVTT` is non-nil after a WebVTT write and holds one `DroppedColor` per dropped text color. All other fields stay nil, and a format with no report leaves the whole value empty. Use `_, err :=` to ignore it.
 
 <!-- example: ExampleWrite_lineEnding -->
 ```go

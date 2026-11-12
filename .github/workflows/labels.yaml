@@ -1,0 +1,50 @@
+name: labels
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  # Only push runs of a PR share a group, so a label event never cancels another run.
+  group: labels-${{ github.ref }}-${{ github.event.action == 'synchronize' && 'sync' || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  release-label:
+    name: release label
+    runs-on: ubuntu-26.04-arm
+    steps:
+      - uses: yama6a/gha/.github/actions/release-label@v2
+
+  version-check:
+    name: version check
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the newest release tag sets the expected major
+      - run: .build/version-check_test.sh
+      - run: .build/version-check.sh
+        env:
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+
+  gorelease:
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the newest release tag is the base of the API comparison
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false # the job builds only gorelease and shares no build with the other jobs
+      - run: .build/gorelease_test.sh
+      - run: .build/gorelease.sh
+        env:
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}

@@ -137,7 +137,7 @@ Each format has its own field in `ReadOptions` and `WriteOptions`. See [docs/for
 
 ## Compatibility
 
-Every 1.x release keeps the API, the option defaults and the conversion output. See [docs/compatibility.md](docs/compatibility.md).
+Every 2.x release keeps the API, the option defaults and the conversion output. See [docs/compatibility.md](docs/compatibility.md).
 
 ## Documentation
 
