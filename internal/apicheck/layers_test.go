@@ -78,6 +78,7 @@ var layers = map[string]layer{
 	"ocr":                  layerFacade,
 	"ocr/*":                layerOCREngine,
 	"ocr/auto":             layerOCRAuto,
+	"hls":                  layerFacade,
 	"internal/cli":         layerCLI,
 	"cmd/stbox":            layerCLI,
 }

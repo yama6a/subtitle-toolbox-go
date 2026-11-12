@@ -7,13 +7,14 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // Language is a Tesseract model name. Any string works, for example a custom model or "deu+eng".
 type Language string
 
-// EngineName names a built-in engine.
+// EngineName names a built-in engine. The engine chooser of package ocr/auto reads it.
 type EngineName string
 
 // The names of the built-in engines.
@@ -41,7 +42,7 @@ type Text struct {
 func (t Text) Validate() error {
 	if c := t.Confidence; c != nil && !(*c >= 0 && *c <= 1) {
 		return &model.InvalidArgumentError{
-			Msg: "The confidence must be from 0 to 1, got " + strconv.FormatFloat(*c, 'g', -1, 64) + ".",
+			Msg: "The confidence must be from 0 to 1, got " + timecode.Number(*c) + ".",
 		}
 	}
 	return nil
@@ -87,7 +88,7 @@ func (e *CueError) Is(target error) bool { return target == ErrRecognize }
 // returned it. Run calls the engine for one cue at a time, in cue order, and passes language unchanged.
 //
 // An error of the engine or of Text.Validate returns a *CueError. Cues read before it keep their new lines,
-// and the returned report lists them. A cancelled ctx stops Run before the next cue and returns its error.
+// and the returned report lists them. A cancelled ctx stops Run before the next cue and returns its error, also when the engine failed because of the cancel.
 func Run(ctx context.Context, s *model.Subtitle, engine Engine, language Language) (Report, error) {
 	var report Report
 	for i := range s.Len() {
@@ -103,15 +104,18 @@ func Run(ctx context.Context, s *model.Subtitle, engine Engine, language Languag
 			err = text.Validate()
 		}
 		if err != nil {
+			if ctxErr := ctx.Err(); ctxErr != nil {
+				return report, fmt.Errorf("ocr: %w", ctxErr)
+			}
 			return report, &CueError{CueIndex: i, Err: err}
 		}
-		report.Texts = append(report.Texts, CueText{CueIndex: i, Text: text})
 		for _, line := range text.Lines {
 			cue.AddLine(line)
 		}
 		if err := s.SetCue(i, cue); err != nil {
 			return report, &CueError{CueIndex: i, Err: err}
 		}
+		report.Texts = append(report.Texts, CueText{CueIndex: i, Text: text})
 	}
 	return report, nil
 }

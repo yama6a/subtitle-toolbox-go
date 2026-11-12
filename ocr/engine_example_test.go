@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 	"github.com/yama6a/subtitle-toolbox-go/v3/ocr"
@@ -18,7 +19,7 @@ type webEngine struct {
 }
 
 func (e webEngine) Recognize(ctx context.Context, im model.Image, language ocr.Language) (ocr.Text, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, e.url+"?lang="+string(language), bytes.NewReader(im.PNG))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, e.url+"?lang="+url.QueryEscape(string(language)), bytes.NewReader(im.PNG))
 	if err != nil {
 		return ocr.Text{}, err
 	}

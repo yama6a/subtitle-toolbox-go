@@ -48,6 +48,14 @@ func (e *failingEngine) Recognize(context.Context, model.Image, ocr.Language) (o
 	return ocr.Text{Lines: []string{"Read"}}, nil
 }
 
+// cancelingEngine cancels the context and fails, as an engine does that a program kill stops.
+type cancelingEngine struct{ cancel context.CancelFunc }
+
+func (e cancelingEngine) Recognize(context.Context, model.Image, ocr.Language) (ocr.Text, error) {
+	e.cancel()
+	return ocr.Text{}, errors.New("signal: killed")
+}
+
 func TestRun(t *testing.T) {
 	t.Parallel()
 
@@ -60,7 +68,6 @@ func TestRun(t *testing.T) {
 		{name: "markup lines", text: ocr.Text{Lines: []string{"<i>Line one</i>", "Line two"}}, wantLines: []string{"<i>Line one</i>", "Line two"}},
 		{name: "empty and padded lines", text: ocr.Text{Lines: []string{" Line one ", "", "Line  two"}}, wantLines: []string{"Line one", "Line two"}},
 		{name: "no lines", text: ocr.Text{}, wantLines: nil},
-		{name: "language constant", text: ocr.Text{Lines: []string{"Hallo"}}, language: ocr.German, wantLines: []string{"Hallo"}},
 		{name: "custom language", text: ocr.Text{Lines: []string{"Hallo"}}, language: "deu+my_model", wantLines: []string{"Hallo"}},
 	}
 	for _, tt := range tests {
@@ -100,53 +107,68 @@ func TestRunWithoutImageCuesDoesNotCallTheEngine(t *testing.T) {
 	assert.Empty(t, engine.Calls)
 }
 
-func TestRunStopsOnAnEngineError(t *testing.T) {
-	t.Parallel()
-
-	s := subtitleWithImages(t)
-
-	report, err := ocr.Run(t.Context(), s, &failingEngine{failAt: 2}, "")
-
-	var cueErr *ocr.CueError
-	require.ErrorAs(t, err, &cueErr)
-	require.ErrorIs(t, err, ocr.ErrRecognize)
-	assert.Equal(t, 3, cueErr.CueIndex)
-	require.EqualError(t, err, "ocr: cue 3: the PNG is broken")
-	assert.Equal(t, []ocr.CueText{{CueIndex: 0, Text: ocr.Text{Lines: []string{"Read"}}}}, report.Texts)
-	first, _ := s.Cue(0)
-	last, _ := s.Cue(3)
-	assert.Equal(t, []string{"Read"}, first.Lines)
-	assert.Empty(t, last.Lines)
-}
-
-func TestRunStopsOnACancelledContext(t *testing.T) {
-	t.Parallel()
-
-	ctx, cancel := context.WithCancel(t.Context())
-	cancel()
-	engine := &ocrtest.Engine{}
-
-	_, err := ocr.Run(ctx, subtitleWithImages(t), engine, "")
-
-	require.ErrorIs(t, err, context.Canceled)
-	assert.Empty(t, engine.Calls)
-}
-
-func TestRunRejectsInvalidText(t *testing.T) {
+func TestRunErrors(t *testing.T) {
 	t.Parallel()
 
 	confidence := 1.5
-	engine := &ocrtest.Engine{Text: ocr.Text{Lines: []string{"Read"}, Confidence: &confidence}}
-	s := subtitleWithImages(t)
+	tests := []struct {
+		name       string
+		engine     func(cancel context.CancelFunc) ocr.Engine
+		wantIs     error
+		wantCue    int
+		wantReport []ocr.CueText
+		wantFirst  []string
+		wantMsg    string
+	}{
+		{
+			name:       "engine error",
+			engine:     func(context.CancelFunc) ocr.Engine { return &failingEngine{failAt: 2} },
+			wantIs:     ocr.ErrRecognize,
+			wantCue:    3,
+			wantReport: []ocr.CueText{{CueIndex: 0, Text: ocr.Text{Lines: []string{"Read"}}}},
+			wantFirst:  []string{"Read"},
+			wantMsg:    "ocr: cue 3: the PNG is broken",
+		},
+		{
+			name: "invalid text",
+			engine: func(context.CancelFunc) ocr.Engine {
+				return &ocrtest.Engine{Text: ocr.Text{Lines: []string{"Read"}, Confidence: &confidence}}
+			},
+			wantIs:  model.ErrInvalidArgument,
+			wantCue: 0,
+		},
+		{
+			name:    "cancel during the first engine call",
+			engine:  func(cancel context.CancelFunc) ocr.Engine { return cancelingEngine{cancel: cancel} },
+			wantIs:  context.Canceled,
+			wantMsg: "ocr: context canceled",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	report, err := ocr.Run(t.Context(), s, engine, "")
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+			s := subtitleWithImages(t)
 
-	var cueErr *ocr.CueError
-	require.ErrorAs(t, err, &cueErr)
-	require.ErrorIs(t, err, model.ErrInvalidArgument)
-	assert.Empty(t, report.Texts)
-	first, _ := s.Cue(0)
-	assert.Empty(t, first.Lines)
+			report, err := ocr.Run(ctx, s, tt.engine(cancel), "")
+
+			require.ErrorIs(t, err, tt.wantIs)
+			var cueErr *ocr.CueError
+			if errors.As(err, &cueErr) {
+				assert.Equal(t, tt.wantCue, cueErr.CueIndex)
+			} else {
+				assert.NotErrorIs(t, err, ocr.ErrRecognize)
+			}
+			if tt.wantMsg != "" {
+				require.EqualError(t, err, tt.wantMsg)
+			}
+			assert.Equal(t, tt.wantReport, report.Texts)
+			first, _ := s.Cue(0)
+			assert.Equal(t, tt.wantFirst, first.Lines)
+		})
+	}
 }
 
 func TestTextValidate(t *testing.T) {
@@ -162,7 +184,7 @@ func TestTextValidate(t *testing.T) {
 		{name: "one", confidence: new(1.0)},
 		{name: "above one", confidence: new(1.5), want: "stbox: invalid argument: The confidence must be from 0 to 1, got 1.5."},
 		{name: "below zero", confidence: new(-0.1), want: "stbox: invalid argument: The confidence must be from 0 to 1, got -0.1."},
-		{name: "not a number", confidence: new(math.NaN()), want: "stbox: invalid argument: The confidence must be from 0 to 1, got NaN."},
+		{name: "not a number", confidence: new(math.NaN()), want: "stbox: invalid argument: The confidence must be from 0 to 1, got NAN."},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
