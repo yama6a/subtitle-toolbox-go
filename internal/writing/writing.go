@@ -91,20 +91,17 @@ func SkipImageCues(s *model.Subtitle, f model.Format, common model.CommonWriteOp
 		return s, nil
 	}
 	if !common.SkipImageCues {
-		return nil, &model.UnwritableError{
-			Format: f, CueIndex: first,
-			Reason: "Cue #" + strconv.Itoa(first) + " holds an image but no text, and " + string(f) + " needs text.",
-		}
-	}
-	kept := make([]model.Cue, 0, s.Len())
-	before := make([]int, s.Len())
-	for i, c := range s.All() {
-		before[i] = len(kept)
-		if !c.IsImageWithoutText() {
-			kept = append(kept, c)
-		}
+		return nil, ImageCueError(f, first)
 	}
 	out := s.Clone()
-	out.ReplaceCues(kept, func(old int) int { return before[old] })
+	out.RemoveCuesWhere(model.Cue.IsImageWithoutText)
 	return out, nil
+}
+
+// ImageCueError returns the error of a text writer of format f for the image cue without lines at index.
+func ImageCueError(f model.Format, index int) *model.UnwritableError {
+	return &model.UnwritableError{
+		Format: f, CueIndex: index,
+		Reason: "Cue #" + strconv.Itoa(index) + " holds an image but no text, and " + string(f) + " needs text.",
+	}
 }

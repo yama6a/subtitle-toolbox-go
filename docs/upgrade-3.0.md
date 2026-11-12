@@ -17,3 +17,4 @@ go get github.com/yama6a/subtitle-toolbox-go/v3@latest
 | a write of a subtitle with image cues without text to a text format, which wrote cues without text | an `*UnwritableError`. Pass `stbox.WriteOptions{SkipImageCues: true}` to drop those cues, or run OCR first |
 | `JoinCues`, `MergeSameTimeCues`, `MergeShortCues` and `RemoveDuplicateCues` joined cues with image data | they never join an image cue, and `JoinCues` returns an `*InvalidArgumentError` for a range that holds one |
 | `stats.Of` and `validation.Check` counted cues with image data like other cues | they skip image cues without lines |
+| `EditLines` and the text edits built on it removed a cue when all its lines went | a cue that holds an image stays, with no lines, because its removal would drop the image |

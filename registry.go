@@ -33,6 +33,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/tmplayer"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/ttml"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
@@ -463,7 +464,11 @@ func writeTSV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts Wr
 	if opts.CSV.Delimiter == csv.DelimiterDefault {
 		opts.CSV.Delimiter = csv.Tab
 	}
-	_, err := csv.Write(w, s, common, opts.CSV)
+	s, err := writing.SkipImageCues(s, model.TSV, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
+	_, err = csv.Write(w, s, common, opts.CSV)
 	return WriteReport{}, err
 }
 

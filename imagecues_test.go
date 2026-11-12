@@ -61,8 +61,8 @@ func TestWritersHandleImageCues(t *testing.T) {
 			var uerr *stbox.UnwritableError
 			require.ErrorAs(t, err, &uerr)
 			assert.Equal(t, 1, uerr.CueIndex)
-			assert.Contains(t, uerr.Reason, "Cue #1 holds an image but no text, and ")
-			assert.Contains(t, uerr.Reason, " needs text.")
+			assert.Equal(t, f, uerr.Format)
+			assert.Equal(t, "Cue #1 holds an image but no text, and "+string(f)+" needs text.", uerr.Reason)
 
 			got, err = writeBytes(t, withImages, f, stbox.WriteOptions{SkipImageCues: true})
 			want, wantErr := writeBytes(t, skipped, f, stbox.WriteOptions{})

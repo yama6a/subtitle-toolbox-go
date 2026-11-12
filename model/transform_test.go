@@ -539,6 +539,22 @@ func TestEditLines(t *testing.T) {
 		}, s.Comments())
 	})
 
+	t.Run("keeps an image cue that lost its lines", func(t *testing.T) {
+		t.Parallel()
+
+		s := fromTexts("drop", "drop too")
+		setCue(t, s, 0, func(c *model.Cue) { c.Image = testImage() })
+
+		removed := s.EditLines(func(int, model.Cue) ([]string, bool) { return nil, true }, nil)
+
+		assert.Equal(t, []int{1}, removed)
+		c, ok := s.Cue(0)
+		require.True(t, ok)
+		assert.Empty(t, c.Lines)
+		assert.NotNil(t, c.Image)
+		assert.Equal(t, 1, s.Len())
+	})
+
 	t.Run("false keeps the cue", func(t *testing.T) {
 		t.Parallel()
 
