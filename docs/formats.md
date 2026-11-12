@@ -5,6 +5,7 @@
 | Format | Go constant | Name | Extensions | Section |
 |:--- |:--- |:--- |:--- |:--- |
 | ASS and SSA | `stbox.ASS` | `ass` | `.ass`, `.ssa` | [ASS and SSA](#ass-and-ssa) |
+| Cavena 890 | `stbox.Cavena890` | `cavena890` | `.890` | [Cavena 890](#cavena-890) |
 | CSV and TSV | `stbox.CSV`, `stbox.TSV` | `csv`, `tsv` | `.csv`, `.tsv` | [CSV and TSV](#csv-and-tsv) |
 | library JSON | `stbox.JSON` | `json` | `.json` | [JSON](#json) |
 | LRC | `stbox.LRC` | `lrc` | `.lrc` | [LRC](#lrc) |
@@ -1195,6 +1196,103 @@ The reader writes each row as core markup and escapes its text. Example: `01 red
 - `counts`: `TNB` is the TTI block count after a cut. `TNS` is the cue count. `TNG` is the count of distinct group numbers of cues. `TCF` is the 8 TCI digits of the first cue before any subtraction, or `00000000`.
 
 The cue key `stl` holds `subtitleGroupNumber`, `cumulativeStatus`, `verticalPosition` and `justificationCode` of the first block. It also holds `text`, the cue text at read time. And it holds `blocks`, the hex of every block of the set, 256 hex digits each.
+
+## Cavena 890
+
+Cavena 890 is the binary subtitle file of the Cavena systems, which Scandinavian broadcasters use. Package `format/cavena890` reads and writes it. The format name is `cavena890`, the extension `.890`. The format has no public spec and no signature, so `Detect` never finds it. `Load` finds it by the extension `.890`. `Parse` needs `ReadOptions.Format`, and without it returns `ErrUnknownFormat`.
+
+A file holds a header of 388 bytes, then blocks of 128 bytes. Each block has 2 text lines of 51 bytes. Example: a block that starts with `00 10 00 00 19 00 00 64 50` is subtitle 16 from 1 s to 4 s (frames 25 and 100 at 25 fps), aligned bottom left. Its lower line `88 47 72 86 75 DF 65 98 20 E5 78 E6` reads as `<i>Gr` U+00FC U+00DF `e</i> [x]`, which is the italic word "Gruesse" with its umlaut and sharp s, then `[x]`.
+
+**Binary format**: the reader gets the raw bytes of the input. `ReadOptions.Encoding`, `LineEnding` and `BOM` have no effect, and `ReadInfo.SourceEncoding` is empty. Because `.890` is an extension of binary formats only, `Load` picks the format before it decodes the bytes. The options of the format are empty structs.
+
+```text
+file   = header(388) block(128)*. The last block may lack its last 4 bytes (short end)
+header : 146 language code of line 1, 147 language code of line 2,
+         179, 208, 210 block count (uint16 little-endian, written 3 times),
+         187 font name 1, 246 font name 2 (the reader reads 6 bytes of each)
+block  : 0   subtitle number (uint16 big-endian)
+         2   start frame (3 bytes big-endian, 25 fps)
+         5   end frame (3 bytes big-endian)
+         8   alignment code (50h left, 52h right, 54h center written)
+         9   7 x 00h
+         16  line 1 (51 bytes, filler 7Fh, Chinese filler 00h)
+         67  6 x 00h
+         73  line 2 (51 bytes)
+         124 4 x 00h (block end)
+```
+
+### Variants
+
+The language codes and the font names of the header pick the text table, called the variant. The first row that matches wins.
+
+| Variant | Header | Text |
+|:--- |:--- |:--- |
+| `hebrew` | language 1 is `8Fh`, or a font starts with `HEBNOA` | Hebrew letters on the ASCII letter bytes, Latin letters on `91h` to `CAh`. Runs and line-end punctuation are in display order |
+| `greek` | language 1 is `70h`, or a font starts with `GREEK` | Greek letters on the ASCII letter bytes, Latin letters on `91h` to `CAh`. `D9h` is the 2 characters U+03B4 U+03B9 |
+| `arabic` | language 2 is `80h`, or font 1 is exactly `ARABIC` | Arabic letters on the ASCII letter bytes |
+| `russian` | language 1 is `56h`, or a font starts with `KYRIL` | Cyrillic letters on the ASCII letter bytes |
+| `chinese` | language 1 is `90h` or `91h`, or a font starts with `CCKM44` | UTF-16BE |
+| `scandinavian` | language 1 is `07h` (Danish), `1Eh` (Norwegian) or `28h` (Swedish) | as `latin`, but `E5h` and `E6h` stay U+00E5 and U+00E6 |
+| `latin` | anything else | Windows-1252 with 2-byte accent codes |
+
+The Latin table maps `5Bh` to U+00C6, `5Ch` to U+00D8, `5Dh` to U+00C5, `E2h` to `@`, `E5h` to `[`, `E6h` to `]`, `1Bh` to U+00E6, `1Ch` to U+00F8, `1Dh` to U+00E5, `1Eh` to U+00C6, `1Fh` to U+00D8 and `EBh` to U+266A. Accent codes of 2 bytes put the accent first and the base letter second: `81` grave, `82` acute, `83` circumflex, `84` caron, `85` tilde, `86` diaeresis, `87` cedilla, `89` breve, `8C` ring, `8E` dot and `8F` ogonek. So `86 75` is U+00FC. The tables of the 5 variants come from Subtitle Edit, see [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
+
+### Read
+
+**Errors**: a file under 388 bytes fails with `A Cavena 890 file starts with a header of 388 bytes.` A body whose length leaves 124 bytes after the last whole block has a short end. The reader adds 4 zero bytes and stores `shortEnd` true. Any other body length that is not a multiple of 128 fails a strict read with `The blocks of a Cavena 890 file have 128 bytes each.` A lenient read cuts the rest and warns, see [lenient-parsing.md](lenient-parsing.md#cavena-890).
+
+**Cues**: consecutive blocks with the same 2 number bytes form one cue, with 2 lines per block. A line that is blank after decoding and trimming is dropped, so a cue with text in the lower line only has 1 line.
+
+**Times**: the start and end frame of the first block, divided by 25. The reader checks nothing and never warns about a time.
+
+**Alignment**: `50h` is `BottomLeft`, `52h` is `BottomRight`, and every other code is `BottomCenter`. The format has no row, so the reader sets no `Position.Row`.
+
+**Text**: the reader decodes each line in this order.
+
+1. Chinese drops trailing `00h` and `7Fh` bytes, pads an odd length with `00h` and reads UTF-16BE code units. A valid surrogate pair is one character, and a lone surrogate gives nothing. The other variants read single bytes.
+2. `88h` starts and `98h` ends italics, in `latin`, `scandinavian` and `chinese` only. They split style runs.
+3. A 2-byte code, from the byte and the next byte, is tried first. Then the 1-byte code.
+4. A byte without a table entry is `-` for `BEh`, and nothing for a code below `20h`, `7Fh` and the color codes `F1h` to `F8h`. Chinese turns the code unit into its character. Other variants read the byte as Windows-1252, and the bytes that Windows-1252 leaves undefined (`81h`, `8Dh`, `8Fh`, `90h`, `9Dh`) give nothing.
+5. Hebrew reverses each run of characters up to U+00FF. Then it moves the punctuation from the line start to the end and back, with mirrored brackets, because Subtitle Edit stores Hebrew lines in display order.
+6. The reader writes the runs as core markup with the white space outside the tags, and removes trailing white space.
+
+Example: the bytes `BE 20 Red 20 F1 fox F7 20 00 1D` read as `- Red fox` and U+00E5, because `1Dh` is U+00E5 in the Latin table.
+
+**Format data**: the file key `cavena890` holds `variant`, `header` (hex of the 388 bytes) and `shortEnd`. The cue key `cavena890` holds `text`, the cue text at read time, and `blocks`, the hex of each block of the cue. Neither key has a schema, so `SetFormatData` accepts any value, and the writer checks each value it reads.
+
+### Write
+
+**Variant and header**: the writer takes the stored `variant` when it names a known value, else `latin`. It takes the stored `header` when it decodes to 388 bytes, else the header of Subtitle Edit for a new file: English language codes and the font `HLV23N.V`. A value that does not fit counts as missing.
+
+**Times**: `round(t * 25)` frames, with a negative time as 0 and at most `FFFFFFh` (186 hours). 3 bytes, big-endian.
+
+**Alignment**: left column `50h`, right column `52h`, else `54h`. The row is not written, so top and middle alignments become bottom.
+
+**Stored blocks**: a cue that has `text` and `blocks` in its format data, with `StripTags` off and its text unchanged, writes its stored blocks. Bytes 2 to 8 hold the new times and alignment. The stored alignment byte stays when it means the same alignment. So a file that Read returned writes back byte for byte.
+
+**New blocks**: the writer takes the lines after `RubyAsText` and `CarryOpenTags`, 2 per block. A last single line goes into the lower line. A cue without lines writes one empty block.
+
+**Line encoding**: entities are decoded. `<i>` and `</i>` write `88h` and `98h` in `latin`, `scandinavian` and `chinese`, and Chinese writes `00h` before the code. `StripTags` drops them. Every other tag is dropped. Chinese text is UTF-16BE, with a surrogate pair for a character above U+FFFF. Hebrew text gets the punctuation move, then the run reversal. For other text, each character takes the first rule that matches.
+
+1. A table code for 2 characters.
+2. Plain ASCII `20h` to `7Eh`, when the table does not use that byte.
+3. The 1-byte or 2-byte table code. The first code of a character wins.
+4. The Windows-1252 byte, when the variant reads that byte back as the same character.
+5. `?`.
+
+The writer pads a line to 51 bytes with `7Fh`, or `00h` for Chinese.
+
+**Numbers**: a stored number stays when it is greater than the number before it. Otherwise the cue gets the number before it plus 16, as Subtitle Edit writes them, or plus 1 when plus 16 passes 65535. All blocks of a cue get the same number. A new file starts at 16. When 65535 is used up, the write fails with a `*UnwritableError` for the cue and the message `Cavena 890 allows subtitle numbers up to 65535.` So a new file holds up to 4110 cues: 4095 from 16 to 65520, then 15 from 65521 to 65535.
+
+**Counts and short end**: the writer sets the block count, at most 65535, at offsets 179, 208 and 210. When the file has blocks and the stored `shortEnd` is true or missing, the last 4 bytes are cut. A new file is short, as Subtitle Edit writes it.
+
+**Line limit**: a line of more than 51 bytes fails with a `*UnwritableError` for the cue, for example `Cavena 890 holds 51 bytes per line, got 52 for "LINE".`, where LINE is the line in core markup. There is no wrap and no fit option. Wrap long lines to 40 characters first with `WrapLines`, see [editing.md](editing.md#line-wrapping).
+
+**Lost on write**: top and middle rows, colors, bold and underline, and italics in `hebrew`, `russian`, `greek` and `arabic`. A character outside the table becomes `?`. Example: a Russian file with cue 0 set to the Russian word "Da", a comma and `Ivan.` reads back with `????` in place of `Ivan`, because the Russian table has no Latin letters.
+
+### Options
+
+None. `ReadOptions` and `WriteOptions` of the package are empty structs, and the root options have no field for the format. The writer reads `CommonWriteOptions.StripTags`. `LineEnding` and `BOM` do not apply to a binary format.
 
 ## SubViewer
 

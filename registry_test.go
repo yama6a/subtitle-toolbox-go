@@ -15,7 +15,7 @@ func TestFormatsFollowTheRowOrder(t *testing.T) {
 	t.Parallel()
 
 	want := []Format{
-		ASS, CSV, JSON, LRC, MicroDVD, MPSub, SAMI, SBV, SCC, SubRip, EBUSTL,
+		ASS, Cavena890, CSV, JSON, LRC, MicroDVD, MPSub, SAMI, SBV, SCC, SubRip, EBUSTL,
 		SpruceSTL, SubViewer, TTML, TSV, PlainText, MPL2, TMPlayer, QuickTimeText, WebVTT,
 	}
 	assert.Equal(t, want, Formats())

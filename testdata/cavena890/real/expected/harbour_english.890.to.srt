@@ -1,0 +1,18 @@
+﻿1
+00:00:01,000 --> 00:00:04,000
+The ferry leaves at nine.
+Tickets are at the north gate.
+
+2
+00:00:05,000 --> 00:00:08,000
+{\an1}<i>Café crème, Grüße aus Köln.</i>
+
+3
+00:00:10,000 --> 00:00:12,000
+{\an3}Mind the step, <i>señor</i>.
+
+4
+00:00:13,000 --> 00:00:16,000
+Hold on, it is cold.
+Wait for the signal.
+Ready?

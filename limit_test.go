@@ -67,7 +67,8 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 				c, _ := back.Cue(0)
 				assert.Less(t, c.End, timecode.MaxTime, f)
 				// SubRip and LRC clamp at the largest time their readers take, 999:59:59.999 and 999:59.99.
-				if f != stbox.SubRip && f != stbox.LRC {
+				// Cavena 890 caps a frame number at FFFFFFh, which is 186 hours at 25 fps.
+				if f != stbox.SubRip && f != stbox.LRC && f != stbox.Cavena890 {
 					assert.GreaterOrEqual(t, c.End, timecode.MaxValidTime-time.Second, f)
 				}
 			}

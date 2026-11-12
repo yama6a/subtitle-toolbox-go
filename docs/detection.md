@@ -12,6 +12,7 @@
 - **Format packages**: each `Detect` of a format package gets the content after steps 1 and 3. So a SubRip file with a BOM and CR LF line endings detects.
 - **Bad UTF-8 in JSON**: `encoding/json` reads each bad byte in a JSON string as U+FFFD, so the decode goes on.
 - **Never detected**: `Detect` returns only formats whose `IsAutoDetected` is true.
+- **No signature**: Cavena 890 has none, so `Detect` finds no result for a `.890` file. `Load` reads it by its extension before any decoding, step 3 below. `Parse` without `ReadOptions.Format` returns `ErrUnknownFormat`.
 
 ## JSON checks
 

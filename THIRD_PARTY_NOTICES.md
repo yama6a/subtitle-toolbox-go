@@ -696,10 +696,21 @@ SOFTWARE.
 
 - Project: <https://github.com/SubtitleEdit/subtitleedit>
 - Licence: MIT
-- Checked at: `5b9ee8baf08c472c7a74fbc337446b656dedabb4`, and `58fad713d9c2b322784bc2fa52148e078dbc8759` with the same licence text
+- Checked at: `5b9ee8baf08c472c7a74fbc337446b656dedabb4`, `58fad713d9c2b322784bc2fa52148e078dbc8759` and `a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c` with the same licence text
+- Files written for this repository in the shape of its fixtures:
+  - `testdata/cavena890/real/ferry_danish.890`
+  - `testdata/cavena890/real/harbour_english.890`
+  - `testdata/cavena890/real/library_hebrew.890`
+  - `testdata/cavena890/real/market_arabic.890`
+  - `testdata/cavena890/real/noodle_chinese.890`
+  - `testdata/cavena890/real/train_russian.890`
+  - `testdata/cavena890/real/weather_greek.890`
 - Code adapted from it:
+  - `format/cavena890`, the reader, the writer and the variant rules, from `src/libse/SubtitleFormats/Cavena890.cs` at `a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c`
   - `hearingimpaired`, the hearing-impaired rules, from `src/libse/Forms/RemoveTextForHI.cs` at `5b9ee8baf08c472c7a74fbc337446b656dedabb4`
   - `internal/cea708`, the G2 table, from `src/libse/Cea708/Cea708.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`
+- Data used:
+  - `format/cavena890/tables.go`, the 5 text tables, and `format/cavena890/cavena890.go`, the new header, from `src/libse/SubtitleFormats/Cavena890.cs` at `a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c`, copied byte for byte
 
 ```text
 MIT License

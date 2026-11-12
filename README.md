@@ -63,6 +63,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | Format | Go constant | Name | Extensions | Read | Write | Notes |
 |:--- |:--- |:--- |:--- |:--- |:--- |:--- |
 | [ASS and SSA](https://en.wikipedia.org/wiki/SubStation_Alpha) | `stbox.ASS` | `ass` | `.ass`, `.ssa` | yes | yes | |
+| Cavena 890 | `stbox.Cavena890` | `cavena890` | `.890` | yes | yes | binary, Scandinavian broadcasters, found by the extension |
 | [CSV](https://www.rfc-editor.org/rfc/rfc4180) | `stbox.CSV` | `csv` | `.csv` | yes | yes | not detected from the content |
 | [JSON of this library](docs/json.md) | `stbox.JSON` | `json` | `.json` | yes | yes | |
 | [LRC](https://en.wikipedia.org/wiki/LRC_(file_format)) | `stbox.LRC` | `lrc` | `.lrc` | yes | yes | with enhanced LRC word times |
