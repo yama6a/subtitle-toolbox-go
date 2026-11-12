@@ -31,7 +31,8 @@ func ExampleParse() {
 	content := "1\n00:00:01,500 --> 00:00:04,000\n<i>Fish & Chips</i>\n\n" +
 		"2\n00:00:05,000 --> 00:00:06,000\nAT&amp T\n\n" +
 		"3\n00:00:07,000 --> 00:00:0"
-	s, info, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{Lenient: true})
+	r := strings.NewReader(content)
+	s, info, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{Lenient: true})
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -75,7 +76,8 @@ func ExampleDetect() {
 		`{"version": 1, "cues": []}`,
 		"Hello\n",
 	} {
-		f, ok := stbox.Detect([]byte(content))
+		d, ok := stbox.Detect([]byte(content))
+		f := d.Format
 		fmt.Printf("%q %t\n", f, ok)
 	}
 	// Output:

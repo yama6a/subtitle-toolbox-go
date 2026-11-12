@@ -19,7 +19,8 @@ A German SubRip file starts 2.5 s too late. This code reads it, moves every cue 
 ```go
 german := "1\n00:00:03,500 --> 00:00:06,000\nGuten Morgen.\n\n2\n00:00:07,000 --> 00:00:09,000\nWie geht es Ihnen?\n"
 
-s, info, err := stbox.Parse(strings.NewReader(german), stbox.ReadOptions{})
+r := strings.NewReader(german)
+s, info, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -112,9 +113,10 @@ stbox formats                                      # names and extensions for --
 
 ```text
 func Load(path string, opts ReadOptions) (*Subtitle, ReadInfo, error)
-func Parse(r io.Reader, opts ReadOptions) (*Subtitle, ReadInfo, error)
+func Parse(r io.ReaderAt, size int64, opts ReadOptions) (*Subtitle, ReadInfo, error)
+func Tracks(r io.ReaderAt, size int64) ([]Track, error)
 func Write(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteReport, error)
-func Detect(content []byte) (Format, bool)
+func Detect(content []byte) (Detection, bool)
 ```
 
 | Option | Field | Type | Default | Meaning |
@@ -123,6 +125,7 @@ func Detect(content []byte) (Format, bool)
 | `ReadOptions` | `Encoding` | `string` | detect the encoding | the source encoding, such as `Windows-1252` |
 | `ReadOptions` | `Lenient` | `bool` | false: stop at the first broken block | skip or repair broken blocks and report each in `ReadInfo.Warnings` |
 | `ReadOptions` | `LastCueDuration` | `*time.Duration` | nil: 5 s | the length of a last cue that has no end |
+| `ReadOptions` | `Track` | `int` | 0: the only subtitle track | the number of the subtitle track to read from a video container |
 | `WriteOptions` | `LineEnding` | `LineEnding` | `LF` | the line ending of the output, `LF` or `CRLF` |
 | `WriteOptions` | `BOM` | `BOM` | `BOMDefault` | `BOMAdd` or `BOMRemove` sets the UTF-8 BOM. `BOMDefault` keeps the default of the format |
 | `WriteOptions` | `StripTags` | `bool` | false: keep the markup | write the text without tags |

@@ -8,13 +8,33 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
 )
 
-// Detect returns the format of content, or false when no auto-detected format matches.
-// Pass UTF-8 text, or the bytes of a binary format.
+// ContainerHeadSize is the number of bytes at the start of a file that Detect needs to find a container: 2*192+5.
+const ContainerHeadSize = 389
+
+// Detection is the result of Detect: a format or a container.
+type Detection struct {
+	// Format is the subtitle format, "" for a container.
+	Format Format
+	// Container is the video container, "" for a subtitle file.
+	Container Container
+}
+
+// Detect returns the format or container of content, or false when nothing matches.
+// Pass UTF-8 text, or the bytes of a binary format. Pass at least ContainerHeadSize bytes to find a container.
 //
-// Detect removes the leading UTF-8 BOMs and white space first. Content that is then a JSON object goes to the
-// JSON checks only. Other content gets LF line endings, and the signatures of the formats decide in a fixed
-// order. docs/detection.md lists the order.
-func Detect(content []byte) (Format, bool) {
+// A container wins over every format. Detect then removes the leading UTF-8 BOMs and white space. Content that is
+// a JSON object goes to the JSON checks only. Other content gets LF line endings, and the signatures of the
+// formats decide in a fixed order. docs/detection.md lists the order.
+func Detect(content []byte) (Detection, bool) {
+	if c, ok := containerOf(content); ok {
+		return Detection{Container: c}, true
+	}
+	f, ok := detectFormat(content)
+	return Detection{Format: f}, ok
+}
+
+// detectFormat returns the subtitle format of content. It never returns a container.
+func detectFormat(content []byte) (Format, bool) {
 	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.PHPTrimSet)
 	if len(content) > 0 && content[0] == '{' {
 		var keys map[string]json.RawMessage

@@ -14,7 +14,8 @@ import (
 func ExampleApply() {
 	const content = "WEBVTT\n\n00:01:02.000 --> 00:01:04.000\n" +
 		"<00:01:02.000>What <00:01:02.300>the <00:01:02.480>hell <00:01:02.800>is this?\n"
-	s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+	r := strings.NewReader(content)
+	s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return

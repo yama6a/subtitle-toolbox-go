@@ -6,14 +6,15 @@ The reader turns every text input into UTF-8 before a parser sees it. `ReadInfo.
 ```go
 latin1 := []byte("1\n00:00:01,000 --> 00:00:02,000\nCaf\xe9 au lait\n")
 
-s, info, err := stbox.Parse(bytes.NewReader(latin1), stbox.ReadOptions{})
+r := bytes.NewReader(latin1)
+s, info, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
 }
 fmt.Println(info.SourceEncoding, s.Len()) // Windows-1252 1
 
-_, info, err = stbox.Parse(bytes.NewReader(latin1), stbox.ReadOptions{Encoding: "cp1250"})
+_, info, err = stbox.Parse(r, r.Size(), stbox.ReadOptions{Encoding: "cp1250"})
 if err != nil {
 	fmt.Println(err)
 	return

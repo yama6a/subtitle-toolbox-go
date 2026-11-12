@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -50,7 +49,7 @@ func TestUnsupportedFormatMessages(t *testing.T) {
 			t.Parallel()
 
 			if tt.wantRead != "" && tt.format != "" {
-				_, _, err := stbox.Parse(strings.NewReader("1\nHello\n"), stbox.ReadOptions{Format: tt.format})
+				_, _, err := parseBytes([]byte("1\nHello\n"), stbox.ReadOptions{Format: tt.format})
 				require.ErrorIs(t, err, stbox.ErrUnsupportedFormat)
 				require.EqualError(t, err, "stbox: unsupported format: "+tt.wantRead)
 			}

@@ -197,7 +197,7 @@ func TestWriteCueTextThatReadsAsStructure(t *testing.T) {
 				assert.Contains(t, out.String(), tt.written)
 				for _, lenient := range []bool{false, true} {
 					opts := stbox.ReadOptions{Format: w.format, Lenient: lenient, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}}
-					back, _, err := stbox.Parse(bytes.NewReader(out.Bytes()), opts)
+					back, _, err := parseBytes(out.Bytes(), opts)
 					require.NoError(t, err, "lenient %v", lenient)
 					require.Equal(t, 3, back.Len(), "lenient %v", lenient)
 					c, _ := back.Cue(1)

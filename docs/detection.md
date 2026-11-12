@@ -1,8 +1,10 @@
 # Format detection
 
-`stbox.Detect` picks the format of a file from its content. `Load` and `Parse` call it when `ReadOptions.Format` is empty. Example: `stbox.Load("notes.srt", stbox.ReadOptions{})` reads a file that starts with `WEBVTT` as WebVTT. The content decides before the extension, because some extensions belong to 2 or more formats. `.sub` is MicroDVD and SubViewer, and a download often has no name at all.
+`stbox.Detect` picks the format or the video container of a file from its content. `Load` and `Parse` call it when `ReadOptions.Format` is empty. Example: `stbox.Load("notes.srt", stbox.ReadOptions{})` reads a file that starts with `WEBVTT` as WebVTT. The content decides before the extension, because some extensions belong to 2 or more formats. `.sub` is MicroDVD and SubViewer, and a download often has no name at all.
 
 ## Steps of Detect
+
+Before step 1, `Detect` looks for a video container in the raw bytes. A container wins over every format and returns a `Detection` with `Container` set and `Format` empty. A subtitle file returns a `Detection` with `Format` set. The container head needs `ContainerHeadSize` bytes, 389, so pass at least that many to find a container.
 
 1. Remove all leading UTF-8 BOMs. Then remove the leading bytes space, tab, LF, CR, NUL and VT.
 2. Content that starts with `{` and decodes as a JSON object goes to the JSON checks only. Their result is final, also when no check matches. Content that is not valid JSON goes on to step 3.
@@ -67,8 +69,8 @@
 
 | Step | Rule |
 |---:|:--- |
-| 1 | **Video file**: content that starts with a Matroska, MP4 or MPEG-TS head returns an error that matches `ErrUnsupportedFormat`: `movie.mkv is a Matroska file. This version reads no video files.` An MP4 file gives `is an MP4 file`, an MPEG-TS file `is an MPEG-TS file`. `Parse` says `The content is a Matroska file.` This step runs with a format too |
-| 2 | **Binary by content**: `Detect` on the raw bytes. A binary format reads the raw bytes. `Encoding` is ignored and `SourceEncoding` is empty |
+| 1 | **Video file**: `Load` and `Parse` read the first `ContainerHeadSize` bytes only. A Matroska, MP4 or MPEG-TS head goes to the container reader and its track rules. A version without the reader for that container returns an error that matches `ErrUnsupportedFormat`: `movie.mkv is an MKV or WebM file. This version cannot read MKV or WebM files.` `Parse` says `The content is an MKV or WebM file.` With a reader and `Format` set, the error is `movie.mkv is an MKV or WebM file. Read it by track.` The row check comes first. This step runs with a format too |
+| 2 | **Binary by content**: `Detect` on the raw bytes, for a format only. A binary format reads the raw bytes. `Encoding` is ignored and `SourceEncoding` is empty |
 | 3 | **Binary by extension**: only `Load`. When every format that lists the extension is binary, the extension decides before any decoding. `.pac`, `.fpc` and `.890` are such extensions. `.stl` is not, because Spruce STL lists it too. Blank content gives an empty subtitle, as in step 5 |
 | 4 | **Decode** the content to UTF-8, as [encodings.md](encodings.md) says |
 | 5 | **Empty content**: nothing is left after the BOMs and the bytes of step 1 of `Detect` go, at both ends. `Load` returns an empty subtitle in the format of the extension, under the fallback rule of step 8 |

@@ -54,7 +54,8 @@ func libraryOutput(t *testing.T, path string, f stbox.Format, opts stbox.WriteOp
 func cueTexts(t *testing.T, content string, f stbox.Format) []string {
 	t.Helper()
 
-	s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{Format: f})
+	r := strings.NewReader(content)
+	s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{Format: f})
 	require.NoError(t, err)
 	out := make([]string, 0, s.Len())
 	for _, c := range s.Cues() {

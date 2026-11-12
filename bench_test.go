@@ -48,7 +48,7 @@ func BenchmarkParse(b *testing.B) {
 		b.Run(string(f), func(b *testing.B) {
 			b.ReportAllocs()
 			for b.Loop() {
-				if _, _, err := stbox.Parse(bytes.NewReader(content.Bytes()), stbox.ReadOptions{Format: f}); err != nil {
+				if _, _, err := parseBytes(content.Bytes(), stbox.ReadOptions{Format: f}); err != nil {
 					b.Fatal(err)
 				}
 			}
