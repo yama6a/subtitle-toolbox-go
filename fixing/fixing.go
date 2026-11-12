@@ -6,6 +6,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
+	"unicode"
 
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
@@ -18,6 +20,8 @@ type Rule string
 const (
 	// RuleAdCues removes a cue whose visible text names a subtitle download site. An image cue stays, with no lines. Off by default.
 	RuleAdCues Rule = "adCues"
+	// RuleReplaceList applies Options.ReplaceList. It runs when the list is not nil and Disable does not name it.
+	RuleReplaceList Rule = "replaceList"
 	// RuleUnbalancedTags removes closing style tags without an opening tag, and closes style tags still open at
 	// the end of the cue.
 	RuleUnbalancedTags Rule = "unbalancedTags"
@@ -61,7 +65,7 @@ func (r Rule) String() string {
 // Rules returns every rule in run order.
 func Rules() []Rule {
 	return []Rule{
-		RuleAdCues, RuleUnbalancedTags, RuleEmptyTags, RuleDoubleApostrophes, RuleOCRPipe, RuleOCRZeroInWords,
+		RuleAdCues, RuleReplaceList, RuleUnbalancedTags, RuleEmptyTags, RuleDoubleApostrophes, RuleOCRPipe, RuleOCRZeroInWords,
 		RuleOCRLowercaseL, RuleLoneLowercaseI, RuleEllipsis, RuleUnneededPeriods, RuleDoubleSpaces,
 		RuleSpaceBeforePunctuation, RuleMissingSpaceAfterPunctuation, RuleDialogueOnOneLine, RuleDialogueDashes,
 		RuleMusicNotes, RuleSentenceStartCase,
@@ -79,10 +83,11 @@ func OptionalRules() []Rule {
 	return out
 }
 
-// Default reports whether r runs without Options.Enable. It is false for a name that is no rule.
+// Default reports whether r runs without Options.Enable. RuleReplaceList counts as default, and it still needs
+// Options.ReplaceList. It is false for a name that is no rule.
 func (r Rule) Default() bool {
 	switch r {
-	case RuleUnbalancedTags, RuleEmptyTags, RuleOCRPipe, RuleOCRZeroInWords, RuleOCRLowercaseL, RuleEllipsis,
+	case RuleReplaceList, RuleUnbalancedTags, RuleEmptyTags, RuleOCRPipe, RuleOCRZeroInWords, RuleOCRLowercaseL, RuleEllipsis,
 		RuleDoubleSpaces, RuleSpaceBeforePunctuation, RuleMissingSpaceAfterPunctuation, RuleDialogueDashes:
 		return true
 	case RuleAdCues, RuleDoubleApostrophes, RuleLoneLowercaseI, RuleUnneededPeriods, RuleDialogueOnOneLine,
@@ -127,10 +132,12 @@ type Options struct {
 	DialogueDashStyle model.DialogueDashStyle
 	// Ellipsis is the ellipsis that the ellipsis rule writes. The zero value writes "...".
 	Ellipsis EllipsisStyle
+	// ReplaceList holds the OCR replace list for the replaceList rule. Nil turns the rule off.
+	ReplaceList *ReplaceList
 }
 
 // Validate returns an error that matches model.ErrInvalidArgument for an unknown rule name, a rule in both
-// Enable and Disable, or a style outside its constants.
+// Enable and Disable, replaceList in Enable without a list, a regular expression that does not compile, or a style outside its constants.
 func (o Options) Validate() error {
 	for _, list := range []struct {
 		name  string
@@ -147,6 +154,9 @@ func (o Options) Validate() error {
 			return invalid("Enable", "The rule "+string(r)+" is in both Enable and Disable.")
 		}
 	}
+	if err := o.validateReplaceList(); err != nil {
+		return err
+	}
 	if o.DialogueDashStyle.Text() == "" {
 		return invalid("DialogueDashStyle", "The style "+o.DialogueDashStyle.String()+" is no dialogue dash style.")
 	}
@@ -154,6 +164,16 @@ func (o Options) Validate() error {
 		return invalid("Ellipsis", "The style "+o.Ellipsis.String()+" is not EllipsisThreeDots or EllipsisUnicode.")
 	}
 	return nil
+}
+
+func (o Options) validateReplaceList() error {
+	if o.ReplaceList == nil {
+		if slices.Contains(o.Enable, RuleReplaceList) {
+			return invalid("Enable", "The rule replaceList needs a replace list.")
+		}
+		return nil
+	}
+	return o.ReplaceList.Validate()
 }
 
 func invalid(field, msg string) error {
@@ -195,28 +215,54 @@ func run(s *model.Subtitle, opts Options, change bool) (Report, error) {
 		return Report{}, err
 	}
 	f := newFixer(s, opts)
+	cues := s.Cues()
 	var ends []bool
 	if slices.Contains(f.rules, RuleSentenceStartCase) {
-		for _, c := range s.All() {
+		for _, c := range cues {
 			ends = append(ends, endsSentence(markupcore.VisibleText(c.Text())))
 		}
 	}
-	edit := func(i int, c model.Cue) ([]string, bool) {
-		if len(c.Lines) == 0 {
-			return nil, false
-		}
-		f.startsSentence = i == 0 || ends != nil && ends[i-1]
-		lines := f.fixCue(i, c.Lines)
-		return lines, change && !slices.Equal(lines, c.Lines)
+	edited, changed, err := f.fixCues(cues, ends)
+	if err != nil {
+		return Report{}, err
 	}
 	if change {
-		s.EditLines(edit, func(lines []string) bool { return len(markupcore.PlainLines(lines)) > 0 })
-	} else {
-		for i, c := range s.All() {
-			edit(i, c)
-		}
+		s.EditLines(func(i int, _ model.Cue) ([]string, bool) { return edited[i], changed[i] },
+			func(lines []string) bool { return len(markupcore.PlainLines(lines)) > 0 })
 	}
 	return Report{Fixes: f.fixes}, nil
+}
+
+// fixCues returns the lines of each cue after the rules, and whether they differ from the lines before.
+func (f *fixer) fixCues(cues []model.Cue, ends []bool) (edited [][]string, changed []bool, err error) {
+	edited = make([][]string, len(cues))
+	changed = make([]bool, len(cues))
+	for i, c := range cues {
+		if len(c.Lines) == 0 {
+			continue
+		}
+		f.startsSentence = i == 0 || ends != nil && ends[i-1]
+		f.cue = i
+		f.continues = f.runner != nil && continues(cues, i)
+		edited[i] = f.fixCue(i, c.Lines)
+		if f.err != nil {
+			return nil, nil, f.err
+		}
+		changed[i] = !slices.Equal(edited[i], c.Lines)
+	}
+	return edited, changed, nil
+}
+
+// continuationGap is the longest gap between 2 cues that still holds one sentence.
+const continuationGap = 600 * time.Millisecond
+
+// continues reports whether the cue i runs on in the next cue: the next cue starts at most continuationGap after
+// it ends, and its text starts with a lower case letter.
+func continues(cues []model.Cue, i int) bool {
+	if i+1 >= len(cues) || cues[i+1].Start-cues[i].End > continuationGap {
+		return false
+	}
+	return startsWith(strings.Join(markupcore.PlainLines(cues[i+1].Lines), "\n"), unicode.IsLower)
 }
 
 // ruleLanguage returns "en", "de", "fr" or "es" for a code such as "en-US" or "deu", and "" for other languages.
@@ -240,8 +286,22 @@ type fixer struct {
 	turkic   bool
 	rules    []Rule
 	fixes    []Fix
+	runner   *listRunner
+	// cue and continues describe the cue that fixCue fixes, for the replaceList rule.
+	cue       int
+	continues bool
+	// err is the first failure of a rule. It stops the run.
+	err error
 	// startsSentence tells whether the cue that fixCue fixes starts a sentence.
 	startsSentence bool
+}
+
+// runs reports whether the options turn the rule r on, before the language check.
+func (o Options) runs(r Rule) bool {
+	if r == RuleReplaceList {
+		return o.ReplaceList != nil && !slices.Contains(o.Disable, r)
+	}
+	return slices.Contains(o.Enable, r) || r.Default() && !slices.Contains(o.Disable, r)
 }
 
 func newFixer(s *model.Subtitle, opts Options) *fixer {
@@ -251,10 +311,12 @@ func newFixer(s *model.Subtitle, opts Options) *fixer {
 	}
 	f := &fixer{opts: opts, language: ruleLanguage(code), turkic: markupcore.IsTurkic(code)}
 	for _, r := range Rules() {
-		on := slices.Contains(opts.Enable, r) || r.Default() && !slices.Contains(opts.Disable, r)
-		if on && (r != RuleLoneLowercaseI || f.language == "en") {
+		if opts.runs(r) && (r != RuleLoneLowercaseI || f.language == "en") {
 			f.rules = append(f.rules, r)
 		}
+	}
+	if opts.ReplaceList != nil {
+		f.runner = newListRunner(opts.ReplaceList)
 	}
 	return f
 }
@@ -266,6 +328,9 @@ func (f *fixer) fixCue(i int, lines []string) []string {
 			break
 		}
 		fixed := fixes[r](f, lines)
+		if f.err != nil {
+			return nil
+		}
 		if !slices.Equal(fixed, lines) {
 			f.fixes = append(f.fixes, Fix{CueIndex: i, Rule: r, Before: strings.Join(lines, "\n"), After: strings.Join(fixed, "\n")})
 			lines = fixed

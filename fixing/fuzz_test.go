@@ -49,3 +49,18 @@ func FuzzApply(f *testing.F) {
 		}
 	})
 }
+
+func FuzzReadReplaceList(f *testing.F) {
+	f.Add(testfiles.Read(f, "fixing/user_OCRFixReplaceList.xml"))
+	f.Add([]byte("<L><WholeWords><Word from='a' to='b' /></WholeWords><RegularExpressions><RegEx find='(a' replaceWith='$1' /></RegularExpressions></L>"))
+	f.Add([]byte("<L>\n<WholeWords></L>"))
+	f.Add([]byte{})
+
+	f.Fuzz(func(t *testing.T, content []byte) {
+		l, err := fixing.ReadReplaceList(bytes.NewReader(content))
+		if err != nil {
+			return
+		}
+		require.NoError(t, l.Validate())
+	})
+}
