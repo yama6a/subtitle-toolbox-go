@@ -202,6 +202,7 @@ func ExampleFormats() {
 	}
 	// Output:
 	// ass [ass ssa]
+	// cavena890 [890]
 	// csv [csv]
 	// itt [itt]
 	// json [json]

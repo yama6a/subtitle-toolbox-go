@@ -39,6 +39,7 @@ var dubbingScript = csv.ReadOptions{
 func goldenFolders() []goldenFolder {
 	return []goldenFolder{
 		{name: "ass", format: stbox.ASS, files: 7},
+		{name: "cavena890", format: stbox.Cavena890, files: 7},
 		{name: "csv", format: stbox.CSV, files: 7, options: map[string]stbox.ReadOptions{
 			"dubbing_script.csv": {CSV: dubbingScript},
 			"headerless_frame_times.csv": {CSV: csv.ReadOptions{

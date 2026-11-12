@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/cavena890"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/dcp"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
@@ -53,6 +54,8 @@ var (
 	_ readFunc[ass.ReadOptions]                                = ass.Read
 	_ writeFunc[ass.WriteOptions, ass.WriteReport]             = ass.Write
 	_ detectFunc                                               = ass.Detect
+	_ readFunc[cavena890.ReadOptions]                          = cavena890.Read
+	_ writeFunc[cavena890.WriteOptions, cavena890.WriteReport] = cavena890.Write
 	_ readFunc[ttml.ReadOptions]                               = ttml.Read
 	_ writeFunc[ttml.WriteOptions, ttml.WriteReport]           = ttml.Write
 	_ readFunc[microdvd.ReadOptions]                           = microdvd.Read
@@ -119,6 +122,7 @@ type formatFuncs struct {
 //nolint:gochecknoglobals // lookup table of the format functions
 var registry = []formatFuncs{
 	{format: ASS, read: readASS, write: writeASS},
+	{format: Cavena890, read: readCavena890, write: writeCavena890},
 	{format: CSV, read: readCSV, write: writeCSV},
 	{format: ITT, read: readITT, write: writeITT},
 	{format: JSON, read: readJSON, write: writeJSON},
@@ -208,6 +212,15 @@ func FormatFromPath(path string) (Format, bool) {
 // extension returns the file extension of path without the dot, in lower case.
 func extension(path string) string {
 	return strings.ToLower(strings.TrimPrefix(filepath.Ext(path), "."))
+}
+
+func readCavena890(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return cavena890.Read(r, common, cavena890.ReadOptions{})
+}
+
+func writeCavena890(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := cavena890.Write(w, s, common, cavena890.WriteOptions{})
+	return WriteReport{}, err
 }
 
 func readEBUSTL(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {

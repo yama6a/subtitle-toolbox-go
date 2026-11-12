@@ -254,6 +254,17 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **L**: the whole line, as PHP does, without the cut at 60 characters.
 - **Bad time line**: after a SubViewer 1 time line that fails, the text line below it is not read as a cue.
 
+## Cavena 890
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| fewer than 388 bytes | `A Cavena 890 file starts with a header of 388 bytes.` | the same error |
+| body length % 128 is 124 | reads the file. The last block lacks its last 4 bytes, and `shortEnd` is true | the same |
+| another body length that is not a multiple of 128 | `The blocks of a Cavena 890 file have 128 bytes each.` | cuts the rest. `Skipped`, no line, block = the count of complete blocks, lines = the hex of the cut bytes |
+
+- **Line numbers**: none. Every binary format has `NoLine` in its warnings and errors.
+- **Times and text**: the reader checks no time and warns about no byte. A byte without a table entry gives nothing or a Windows-1252 character, as [formats.md](formats.md#cavena-890) says.
+
 ## EBU STL
 
 | Damage | Strict | Lenient |

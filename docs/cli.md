@@ -415,6 +415,7 @@ stbox dual --primary movie.en.srt --secondary movie.de.srt --mode top-bottom --t
 ```
 Name        Extensions        Read  Write
 ass         .ass .ssa         yes   yes
+cavena890   .890              yes   yes
 csv         .csv              yes   yes
 itt         .itt              yes   yes
 json        .json             yes   yes

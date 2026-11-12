@@ -72,6 +72,7 @@ type (
 // The formats of the registry, in registry order.
 const (
 	ASS           = model.ASS
+	Cavena890     = model.Cavena890
 	CSV           = model.CSV
 	ITT           = model.ITT
 	JSON          = model.JSON

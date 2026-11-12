@@ -63,6 +63,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | Format | Go constant | Name | Extensions | Read | Write | Notes |
 |:--- |:--- |:--- |:--- |:--- |:--- |:--- |
 | [ASS and SSA](https://en.wikipedia.org/wiki/SubStation_Alpha) | `stbox.ASS` | `ass` | `.ass`, `.ssa` | yes | yes | |
+| Cavena 890 | `stbox.Cavena890` | `cavena890` | `.890` | yes | yes | binary, Scandinavian broadcasters, found by the extension |
 | [CSV](https://www.rfc-editor.org/rfc/rfc4180) | `stbox.CSV` | `csv` | `.csv` | yes | yes | not detected from the content |
 | [iTunes Timed Text](docs/formats.md#itt) | `stbox.ITT` | `itt` | `.itt` | yes | yes | needs the frame rate of the video. A TTML file named `.itt` loads as iTT |
 | [JSON of this library](docs/json.md) | `stbox.JSON` | `json` | `.json` | yes | yes | |

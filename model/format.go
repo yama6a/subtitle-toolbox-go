@@ -8,6 +8,7 @@ type Format string
 // The formats of the registry, in registry order.
 const (
 	ASS           Format = "ass"
+	Cavena890     Format = "cavena890"
 	CSV           Format = "csv"
 	ITT           Format = "itt"
 	JSON          Format = "json"
@@ -44,6 +45,7 @@ type formatFact struct {
 //nolint:gochecknoglobals // lookup table of the format facts
 var formatFacts = []formatFact{
 	{format: ASS, extensions: []string{"ass", "ssa"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: Cavena890, extensions: []string{"890"}, canRead: true, canWrite: true, binary: true},
 	{format: CSV, extensions: []string{"csv"}, canRead: true, canWrite: true},
 	{format: ITT, extensions: []string{"itt"}, canRead: true, canWrite: true},
 	{format: JSON, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
