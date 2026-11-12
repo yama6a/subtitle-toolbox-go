@@ -7,7 +7,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/bitmap"
 )
 
-// BenchmarkReduce stands in for a heap check of the reducer. The growth guard of the bench job watches its allocations.
+// BenchmarkReduce replaces a heap limit test. `make bench` prints the allocated bytes of each size.
 func BenchmarkReduce(b *testing.B) {
 	for _, size := range []struct{ w, h, colors int }{{1920, 1080, 20000}, {3840, 2160, 300}} {
 		pixels := make([]uint32, size.w*size.h)

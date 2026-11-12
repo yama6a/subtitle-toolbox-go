@@ -35,14 +35,30 @@ type Indexed struct {
 // It checks the size limit of model.Image before the data inflates.
 // Every error is an *model.InvalidArgumentError.
 func DecodePNG(data []byte) (Pixels, error) {
-	if _, err := checkedConfig(data); err != nil {
+	img, err := decodeImage(data)
+	if err != nil {
 		return Pixels{}, err
+	}
+	return pixelsOf(img), nil
+}
+
+// decodeImage decodes data after the size check. A palette image keeps only the entries of its PLTE chunk,
+// because image/png adds opaque black entries up to the highest index in use.
+func decodeImage(data []byte) (image.Image, error) {
+	cfg, err := checkedConfig(data)
+	if err != nil {
+		return nil, err
 	}
 	img, err := png.Decode(bytes.NewReader(data))
 	if err != nil {
-		return Pixels{}, decodeError(err.Error())
+		return nil, decodeError(err.Error())
 	}
-	return pixelsOf(img), nil
+	if p, ok := img.(*image.Paletted); ok {
+		if plte, ok := cfg.ColorModel.(color.Palette); ok && len(plte) < len(p.Palette) {
+			p.Palette = p.Palette[:len(plte)]
+		}
+	}
+	return img, nil
 }
 
 // DecodeIndexedPNG returns the palette bitmap of a PNG. The result is false when the PNG has no palette.
@@ -54,9 +70,9 @@ func DecodeIndexedPNG(data []byte) (Indexed, bool, error) {
 	if _, ok := cfg.ColorModel.(color.Palette); !ok {
 		return Indexed{}, false, nil
 	}
-	img, err := png.Decode(bytes.NewReader(data))
+	img, err := decodeImage(data)
 	if err != nil {
-		return Indexed{}, false, decodeError(err.Error())
+		return Indexed{}, false, err
 	}
 	p, ok := img.(*image.Paletted)
 	if !ok {

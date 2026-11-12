@@ -77,6 +77,15 @@ func NewImage(img image.Image, x, y, screenWidth, screenHeight int) (model.Image
 func nrgbaOf(img image.Image) *image.NRGBA {
 	b := img.Bounds()
 	out := image.NewNRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
+	if n, ok := img.(*image.NRGBA64); ok {
+		for y := range b.Dy() {
+			for x := range b.Dx() {
+				p := n.Pix[(b.Min.Y+y-n.Rect.Min.Y)*n.Stride+(b.Min.X+x-n.Rect.Min.X)*8:]
+				out.SetNRGBA(x, y, color.NRGBA{R: p[0], G: p[2], B: p[4], A: p[6]})
+			}
+		}
+		return out
+	}
 	for y := range b.Dy() {
 		for x := range b.Dx() {
 			c, _ := color.NRGBAModel.Convert(img.At(b.Min.X+x, b.Min.Y+y)).(color.NRGBA)

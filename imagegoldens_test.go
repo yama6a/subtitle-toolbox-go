@@ -7,6 +7,7 @@ import (
 	"image"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -30,10 +31,19 @@ type imageGolden struct {
 	golden string
 }
 
-// imageGoldens lists one row for each PGS, VobSub and DVB subtitle track that has a pixel golden.
+// imageGoldens joins the rows of the readers. Each reader has its own slice, so parallel changes do not touch the same line.
 func imageGoldens() []imageGolden {
-	return []imageGolden{}
+	return slices.Concat(pgsImageGoldens, vobsubImageGoldens, dvbImageGoldens)
 }
+
+// pgsImageGoldens lists one row for each PGS fixture.
+var pgsImageGoldens = []imageGolden{}
+
+// vobsubImageGoldens lists one row for each VobSub track.
+var vobsubImageGoldens = []imageGolden{}
+
+// dvbImageGoldens lists one row for each DVB subtitle track of a transport stream or an MKV file.
+var dvbImageGoldens = []imageGolden{}
 
 // imageGoldenDirs are the folders under testdata whose expected subfolder holds pixel goldens.
 var imageGoldenDirs = []string{"pgs", "vobsub", "mpegts", "mkv"}

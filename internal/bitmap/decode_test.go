@@ -41,6 +41,7 @@ func TestDecodePNG(t *testing.T) {
 		{"palette 2 bits", pngSpec{width: 3, height: 1, depth: 2, colorType: paletteType, palette: three, trns: []byte{0, 255, 7}, rows: [][]byte{{0x24}}}, []uint32{0xFF000000, 0x00FF0007, 0x0000FFFF}},
 		{"palette 4 bits", pngSpec{width: 2, height: 1, depth: 4, colorType: paletteType, palette: three, rows: [][]byte{{0x20}}}, []uint32{0x00FF00FF, 0xFF0000FF}},
 		{"palette 8 bits", pngSpec{width: 3, height: 1, depth: 8, colorType: paletteType, palette: three, trns: []byte{0, 255, 7}, rows: [][]byte{{2, 1, 0}}}, []uint32{0x00FF0007, 0x0000FFFF, 0xFF000000}},
+		{"palette index past the PLTE entries", pngSpec{width: 3, height: 1, depth: 8, colorType: paletteType, palette: two, rows: [][]byte{{1, 2, 9}}}, []uint32{0x0000FFFF, 0, 0}},
 		{"gray and alpha 8 bits", pngSpec{width: 1, height: 1, depth: 8, colorType: grayAlpha, rows: [][]byte{{0x40, 0x80}}}, []uint32{0x40404080}},
 		{"gray and alpha 16 bits", pngSpec{width: 1, height: 1, depth: 16, colorType: grayAlpha, rows: [][]byte{{0x40, 0x00, 0x80, 0x01}}}, []uint32{0x40404080}},
 		{"RGBA 8 bits", pngSpec{width: 1, height: 1, depth: 8, colorType: rgbaType, rows: [][]byte{{10, 20, 30, 40}}}, []uint32{0x0A141E28}},
@@ -77,7 +78,7 @@ func TestDecodePNGRejectsInvalidInput(t *testing.T) {
 		{"no IHDR", append([]byte(pngSignatureForTest), chunk("IEND", nil)...), "Cannot decode the PNG: png: invalid format: chunk out of order."},
 		{"size 0", zero, "Cannot decode the PNG: the width and the height must be at least 1."},
 		{"size over the limit", huge[:33], "Cannot decode the PNG: an image of 65535x65535 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total."},
-		{"bad zlib data", append(badZlib, chunk("IEND", nil)...), ""},
+		{"bad zlib data", append(badZlib, chunk("IEND", nil)...), "Cannot decode the PNG: zlib: invalid header."},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -108,7 +109,7 @@ func TestDecodeIndexedPNG(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, ok)
 	assert.Equal(t, []byte{0, 1, 5, 1, 1, 0}, got.Indexes)
-	assert.Equal(t, []uint32{0xFF000000, 0x00FF00FF}, got.Palette[:2])
+	assert.Equal(t, []uint32{0xFF000000, 0x00FF00FF}, got.Palette)
 
 	_, ok, err = bitmap.DecodeIndexedPNG(pngSpec{width: 1, height: 1, depth: 8, colorType: rgbaType, rows: [][]byte{{1, 2, 3, 4}}}.bytes())
 	require.NoError(t, err)

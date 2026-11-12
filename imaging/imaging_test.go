@@ -67,3 +67,15 @@ func TestEncodePNGAndNewImageReject(t *testing.T) {
 	_, err = imaging.NewImage(image.NewNRGBA(image.Rect(0, 0, 7681, 1)), 0, 0, 1920, 1080)
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 }
+
+func TestEncodePNGKeepsTheHighBytesOfNRGBA64(t *testing.T) {
+	t.Parallel()
+
+	img := image.NewNRGBA64(image.Rect(0, 0, 1, 1))
+	img.SetNRGBA64(0, 0, color.NRGBA64{R: 0x8000, A: 0x0100})
+	data, err := imaging.EncodePNG(img)
+	require.NoError(t, err)
+	got, err := imaging.DecodePNG(data)
+	require.NoError(t, err)
+	assert.Equal(t, color.NRGBA{R: 0x80, A: 0x01}, got.NRGBAAt(0, 0))
+}
