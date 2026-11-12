@@ -8,6 +8,9 @@ All files here are written for this repository. They hold no third-party text.
 |:--- |:--- |:--- |
 | `ocr-en.ocr.srt`, `ocr-de.ocr.srt`, `ocr-fr.ocr.srt`, `ocr-es.ocr.srt` | The text that `generate.php` reads from the `.sup` file of the same name, OCR errors included | MIT |
 | `text_1080p.ocr.srt` | The text that `generate.php` reads from `../pgs/text_1080p.sup`, OCR errors included | MIT |
+| `text-pal.ocr.srt` | The text that `generate.php` reads from `../vobsub/text-pal.sub`, OCR errors included | MIT |
+| `user_OCRFixReplaceList.xml` | Written for this repository in the shape of a Subtitle Edit user replace list, with entries for the OCR errors of `text-pal.ocr.srt` | MIT |
+| `text-pal.fixed.srt` | `CommonErrorFixer` output for `text-pal.ocr.srt`, language `en`, with `user_OCRFixReplaceList.xml` | MIT |
 | `web-errors.srt` | Written for this repository in the shape of a downloaded SubRip file: UTF-8 BOM, CR LF, `<i>`, `<b>` and `<font color>` tags. 12 cues with spacing, punctuation, dash and tag errors | MIT |
 | `web-errors.fixed.srt`, `ocr-*.fixed.srt` | `CommonErrorFixer` output for the file of the same name, with the default options and its language | MIT |
 | `text_1080p.fixed.srt` | `CommonErrorFixer` output for `text_1080p.ocr.srt`, language `en` | MIT |
