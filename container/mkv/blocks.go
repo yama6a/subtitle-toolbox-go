@@ -16,6 +16,7 @@ const (
 	blockHeaderTail = 3
 	lacingMask      = 0x06
 	maxInflatedSize = 64 << 20
+	maxTrackInflate = 1 << 30
 	webVTTAddID     = 1
 	scopeFrames     = 1
 	scopeCodecPriv  = 2
@@ -44,14 +45,16 @@ func (f *File) track(number int) (*trackEntry, bool) {
 
 // readBlocks reads the blocks of a track, through the Cues when the file allows it, else with a walk over all clusters.
 func (f *File) readBlocks(t *trackEntry) ([]block, error) {
-	if blocks, ok := f.readListedBlocks(t); ok {
+	budget := f.inflateCap
+	if blocks, ok := f.readListedBlocks(t, &budget); ok {
 		return blocks, nil
 	}
-	return f.walkBlocks(t)
+	budget = f.inflateCap
+	return f.walkBlocks(t, &budget)
 }
 
 // walkBlocks reads all clusters. A cluster of unknown size ends at the next cluster.
-func (f *File) walkBlocks(t *trackEntry) ([]block, error) {
+func (f *File) walkBlocks(t *trackEntry, budget *int64) ([]block, error) {
 	var blocks []block
 	var clusterTime int64
 	for pos := f.firstCluster; pos < f.segmentEnd; {
@@ -66,7 +69,7 @@ func (f *File) walkBlocks(t *trackEntry) ([]block, error) {
 			clusterTime, pos = 0, h.Offset
 			continue
 		}
-		b, found, err := f.walkStep(h, t, &clusterTime)
+		b, found, err := f.walkStep(h, t, &clusterTime, budget)
 		if err != nil {
 			return nil, err
 		}
@@ -82,7 +85,7 @@ func (f *File) walkBlocks(t *trackEntry) ([]block, error) {
 }
 
 // walkStep handles one element of a cluster: a Timestamp sets the cluster time, a block of the track is returned.
-func (f *File) walkStep(h ebml.Header, t *trackEntry, clusterTime *int64) (block, bool, error) {
+func (f *File) walkStep(h ebml.Header, t *trackEntry, clusterTime *int64, budget *int64) (block, bool, error) {
 	if h.ID == idTimestamp {
 		var v uint64
 		err := f.readUint(h, &v)
@@ -93,7 +96,7 @@ func (f *File) walkStep(h ebml.Header, t *trackEntry, clusterTime *int64) (block
 	if err != nil || !found {
 		return block{}, false, err
 	}
-	return b, true, f.finishBlock(t, h.Offset, &b, *clusterTime)
+	return b, true, f.finishBlock(t, h.Offset, &b, *clusterTime, budget)
 }
 
 // readBlockElement reads a SimpleBlock or a BlockGroup. found is false for another element and for a block of another track.
@@ -108,7 +111,7 @@ func (f *File) readBlockElement(h ebml.Header, number int) (b block, found bool,
 }
 
 // finishBlock adds the cluster time to the block time, checks the time limit and decodes the block data.
-func (f *File) finishBlock(t *trackEntry, offset int64, b *block, clusterTime int64) error {
+func (f *File) finishBlock(t *trackEntry, offset int64, b *block, clusterTime int64, budget *int64) error {
 	if b.start > 0 && clusterTime > math.MaxInt64-b.start {
 		b.start = math.MaxInt64
 	} else {
@@ -118,7 +121,7 @@ func (f *File) finishBlock(t *trackEntry, offset int64, b *block, clusterTime in
 		return damaged("The block of track %d at byte %d has the time %d at a TimestampScale of %d ns. Times must be below %d hours.",
 			t.Number, offset, b.start, f.scale, maxHours)
 	}
-	data, err := f.decode(t, b.data, scopeFrames)
+	data, err := f.decode(t, b.data, scopeFrames, budget)
 	b.data = data
 	return err
 }
@@ -134,20 +137,13 @@ func (f *File) withinLimit(t *trackEntry, b *block) bool {
 		if span, ok = f.nanos(b.duration); !ok {
 			return false
 		}
-	} else if t.defaultDuration != noPosition {
+	} else if t.defaultDuration != noDuration {
 		span = t.defaultDuration
 	}
 	if start > math.MaxInt64-span {
 		return false
 	}
-	return max(abs(start), abs(start+span)) < limitNanos
-}
-
-func abs(n int64) int64 {
-	if n < 0 {
-		return -n
-	}
-	return n
+	return start > -limitNanos && start+span < limitNanos
 }
 
 // nanos converts ticks to nanoseconds. It returns false on overflow.
@@ -246,8 +242,9 @@ func (f *File) readBlock(h ebml.Header, number int) (b block, found bool, err er
 	return block{start: int64(rel), duration: noDuration, data: data}, true, nil
 }
 
-// decode undoes the content encodings of the track that apply to scope.
-func (f *File) decode(t *trackEntry, data []byte, scope uint64) ([]byte, error) {
+// decode undoes the content encodings of the track that apply to scope. budget is the number of bytes that the
+// track may still inflate.
+func (f *File) decode(t *trackEntry, data []byte, scope uint64, budget *int64) ([]byte, error) {
 	for _, e := range t.encodings {
 		if e.scope&scope == 0 {
 			continue
@@ -262,6 +259,9 @@ func (f *File) decode(t *trackEntry, data []byte, scope uint64) ([]byte, error) 
 		inflated, err := inflate(data)
 		if err != nil {
 			return nil, damaged("The zlib data of track %d is not valid or inflates to more than %d MB.", t.Number, maxInflatedSize>>20)
+		}
+		if *budget -= int64(len(inflated)); *budget < 0 {
+			return nil, damaged("The zlib data of track %d inflates to more than %d MB in total.", t.Number, f.inflateCap>>20)
 		}
 		data = inflated
 	}

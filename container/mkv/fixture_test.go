@@ -62,8 +62,8 @@ func ebmlHeader(docType string) []byte {
 		uintElement(0x42F3, 8), element(0x4282, []byte(docType)), uintElement(0x4287, 4), uintElement(0x4285, 2)))
 }
 
-func info(writingApp string) []byte {
-	return element(idInfo, cat(uintElement(0x2AD7B1, 1000000), element(0x4D80, []byte("fixture")), element(0x5741, []byte(writingApp))))
+func info(scale uint64, writingApp string) []byte {
+	return element(idInfo, cat(uintElement(0x2AD7B1, scale), element(0x4D80, []byte("fixture")), element(0x5741, []byte(writingApp))))
 }
 
 type trackFields struct {
@@ -91,13 +91,9 @@ func subTrack(number uint64, codecID string) []byte {
 
 func tracks(entries ...[]byte) []byte { return element(idTracks, cat(entries...)) }
 
-// compression writes a ContentEncoding. algo is 0 zlib, 1 bzlib, 2 lzo and 3 header stripping.
-func compression(order, algo uint64, settings []byte, scope uint64) []byte {
-	comp := uintElement(0x4254, algo)
-	if settings != nil {
-		comp = cat(comp, element(0x4255, settings))
-	}
-	return element(0x6240, cat(uintElement(0x5031, order), uintElement(0x5032, scope), uintElement(0x5033, 0), element(0x5034, comp)))
+// compression writes a frame ContentEncoding with an algorithm: 0 zlib, 1 bzlib, 2 lzo or 3 header stripping.
+func compression(algo uint64) []byte {
+	return element(0x6240, cat(uintElement(0x5031, 0), uintElement(0x5032, 1), uintElement(0x5033, 0), element(0x5034, uintElement(0x4254, algo))))
 }
 
 func blockHead(track uint64, rel int16, flags byte) []byte {
@@ -181,12 +177,12 @@ func (r repeatReader) ReadAt(p []byte, off int64) (int, error) {
 	return n, nil
 }
 
-// zlibZeros compresses n zero bytes in steps of 1 MB, so the test never holds the inflated data.
-func zlibZeros(tb testing.TB, n int) []byte {
+// zlibFilled compresses n bytes of the value fill in steps of 1 MB, so the test never holds the inflated data.
+func zlibFilled(tb testing.TB, fill byte, n int) []byte {
 	tb.Helper()
 	var buf bytes.Buffer
 	w := zlib.NewWriter(&buf)
-	zero := make([]byte, 1<<20)
+	zero := bytes.Repeat([]byte{fill}, 1<<20)
 	for left := n; left > 0; left -= len(zero) {
 		_, err := w.Write(zero[:min(left, len(zero))])
 		require.NoError(tb, err)

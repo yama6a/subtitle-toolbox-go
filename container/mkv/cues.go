@@ -25,7 +25,7 @@ type clusterInfo struct {
 // readListedBlocks reads only the blocks that the Cues of an mkvmerge file list for the track. mkvmerge lists every
 // subtitle block and counts the blocks of a track in its NUMBER_OF_FRAMES tag. It returns false when the caller must
 // walk all clusters.
-func (f *File) readListedBlocks(t *trackEntry) ([]block, bool) {
+func (f *File) readListedBlocks(t *trackEntry, budget *int64) ([]block, bool) {
 	positions, ok := f.listedPositions(t)
 	if !ok {
 		return nil, false
@@ -33,7 +33,7 @@ func (f *File) readListedBlocks(t *trackEntry) ([]block, bool) {
 	clusters := map[int64]clusterInfo{}
 	blocks := make([]block, 0, len(positions))
 	for _, p := range positions {
-		b, ok := f.listedBlock(t, p, clusters)
+		b, ok := f.listedBlock(t, p, clusters, budget)
 		if !ok {
 			return nil, false
 		}
@@ -54,7 +54,7 @@ func (f *File) listedPositions(t *trackEntry) ([]cuePosition, bool) {
 	return positions, ok && frames == len(positions)
 }
 
-func (f *File) listedBlock(t *trackEntry, p cuePosition, clusters map[int64]clusterInfo) (block, bool) {
+func (f *File) listedBlock(t *trackEntry, p cuePosition, clusters map[int64]clusterInfo, budget *int64) (block, bool) {
 	c, seen := clusters[p.cluster]
 	if !seen {
 		var ok bool
@@ -68,7 +68,7 @@ func (f *File) listedBlock(t *trackEntry, p cuePosition, clusters map[int64]clus
 		return block{}, false
 	}
 	b, found, err := f.readBlockElement(h, t.Number)
-	if err != nil || !found || f.finishBlock(t, h.Offset, &b, c.time) != nil {
+	if err != nil || !found || f.finishBlock(t, h.Offset, &b, c.time, budget) != nil {
 		return block{}, false
 	}
 	return b, true

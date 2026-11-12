@@ -105,6 +105,7 @@ func replaceFunc(re *regexp2.Regexp, text string, fn func(string) string) string
 //nolint:gochecknoglobals // a lookup table of the rules
 var fixes = map[Rule]func(f *fixer, lines []string) []string{
 	RuleAdCues:                       (*fixer).adCues,
+	RuleReplaceList:                  (*fixer).replaceList,
 	RuleUnbalancedTags:               (*fixer).unbalancedTags,
 	RuleEmptyTags:                    (*fixer).emptyTags,
 	RuleDoubleApostrophes:            (*fixer).doubleApostrophes,

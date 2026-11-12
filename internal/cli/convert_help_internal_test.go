@@ -89,6 +89,8 @@ var convertGroupHelp = []string{
 	`errors: Fix spacing, punctuation and OCR errors.
   --errors-fix                 Fix spacing, punctuation, dash, tag and OCR
                                errors such as lt's for It's.
+  --errors-replace-list FILE   Also apply this Subtitle Edit OCR replace list,
+                               an XML file, with --errors-fix.
   --errors-enable NAME[,NAME]  Also apply these rules that are off by default
                                with --errors-fix: adCues, doubleApostrophes,
                                loneLowercaseI, unneededPeriods,

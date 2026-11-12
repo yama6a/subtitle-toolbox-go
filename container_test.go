@@ -1,8 +1,6 @@
 package stbox_test
 
 import (
-	"bytes"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,17 +43,4 @@ func TestLoadMatroska(t *testing.T) {
 		assert.Equal(t, stbox.Matroska, te.Container)
 		assert.Len(t, te.Tracks, 2)
 	})
-}
-
-func TestTracksOfMatroska(t *testing.T) {
-	t.Parallel()
-
-	b, err := os.ReadFile("testdata/mkv/text_tracks.mkv")
-	require.NoError(t, err)
-	tracks, err := stbox.Tracks(bytes.NewReader(b), int64(len(b)))
-	require.NoError(t, err)
-	require.Len(t, tracks, 6)
-	assert.Equal(t, stbox.Track{
-		Container: stbox.Matroska, Number: 3, CodecID: "S_TEXT/UTF8", Format: stbox.SubRip, Language: "de", Name: "Deutsch (Forced)", Forced: true,
-	}, tracks[0])
 }

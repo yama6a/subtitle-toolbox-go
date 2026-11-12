@@ -12,8 +12,11 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
-const unreadCodecMessage = "Track %d has the codec %s. The reader extracts only S_TEXT/UTF8, S_TEXT/ASS, S_TEXT/SSA, " +
-	"S_TEXT/WEBVTT, S_HDMV/PGS, S_VOBSUB, S_DVBSUB, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."
+const (
+	unreadCodecMessage = "Track %d has the codec %s. The reader extracts only S_TEXT/UTF8, S_TEXT/ASS, S_TEXT/SSA, " +
+		"S_TEXT/WEBVTT, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."
+	laterCodecMessage = "Track %d has the codec %s. The reader does not extract this codec yet. A later release adds it."
+)
 
 // timedBlock is a block with its times in whole milliseconds.
 type timedBlock struct {
@@ -34,9 +37,10 @@ func (f *File) extract(number int, common model.CommonReadOptions) (*model.Subti
 		return nil, nil, &model.InvalidArgumentError{Msg: fmt.Sprintf("The file has no subtitle track with the number %d.", number)}
 	}
 	if t.Format == "" {
-		return nil, nil, damaged(unreadCodecMessage, number, t.CodecID)
+		return nil, nil, damaged(unreadMessage(t.CodecID), number, t.CodecID)
 	}
-	private, err := f.decode(t, t.codecPrivate, scopeCodecPriv)
+	privateBudget := f.inflateCap
+	private, err := f.decode(t, t.codecPrivate, scopeCodecPriv, &privateBudget)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -95,7 +99,7 @@ func (f *File) endMs(blocks []block, i int, t *trackEntry, common model.CommonRe
 	case b.duration != noDuration:
 		d, _ := f.nanos(b.duration)
 		return milliseconds(startNs + d)
-	case t.defaultDuration != noPosition:
+	case t.defaultDuration != noDuration:
 		return milliseconds(startNs + t.defaultDuration)
 	case i+1 < len(blocks):
 		next, _ := f.nanos(blocks[i+1].start)
@@ -107,4 +111,13 @@ func (f *File) endMs(blocks []block, i int, t *trackEntry, common model.CommonRe
 
 func milliseconds(ns int64) int64 {
 	return (ns + 500_000) / 1_000_000
+}
+
+// unreadMessage returns the message for a codec without a reader. PGS, VobSub and DVB readers come in later releases.
+func unreadMessage(codecID string) string {
+	switch codecID {
+	case "S_HDMV/PGS", "S_VOBSUB", "S_DVBSUB":
+		return laterCodecMessage
+	}
+	return unreadCodecMessage
 }

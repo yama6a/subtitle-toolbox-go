@@ -23,7 +23,7 @@ const mkvmergeApp = "mkvmerge v99.0 ('Buka') 64-bit"
 // clusters in listed. A NUMBER_OF_FRAMES tag follows them, unless frames is "". The SeekHead points to Cues and Tags.
 // replaced holds cluster data in place of cluster N.
 func cuedFile(writingApp string, listed []int, frames string, replaced map[int][]byte) []byte {
-	head := cat(info(writingApp), tracks(
+	head := cat(info(1000000, writingApp), tracks(
 		trackEntry(trackFields{number: 1, kind: trackVideo, codecID: "V_UNCOMPRESSED"}), subTrack(2, "S_TEXT/UTF8")))
 	position := uint64(len(seekHead([][2]uint64{{0x1C53BB6B, 0}, {0x1254C367, 0}})) + len(head))
 	var clusters []byte
@@ -101,7 +101,11 @@ func TestExtractErrors(t *testing.T) {
 		want  string
 	}{
 		{"codec without a reader", aribFile, 2, "Track 2 has the codec S_ARIBSUB. The reader extracts only S_TEXT/UTF8, S_TEXT/ASS, S_TEXT/SSA, " +
-			"S_TEXT/WEBVTT, S_HDMV/PGS, S_VOBSUB, S_DVBSUB, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."},
+			"S_TEXT/WEBVTT, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."},
+		{
+			"codec for a later release", segmentFile("matroska", tracks(subTrack(2, "S_HDMV/PGS"))), 2,
+			"Track 2 has the codec S_HDMV/PGS. The reader does not extract this codec yet. A later release adds it.",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -204,7 +208,7 @@ func TestExtractReadsNoVideoData(t *testing.T) {
 	const videoSize = 64 << 20
 	videoHead := cat(idBytes(0xA3), sizeBytes(videoSize+4), blockHead(1, 0, 0x80))
 	cl := unknownSizeElement(idCluster, cat(uintElement(0xE7, 0)))
-	prefix := cat(ebmlHeader("matroska"), unknownSizeElement(idSegment, cat(info("x"),
+	prefix := cat(ebmlHeader("matroska"), unknownSizeElement(idSegment, cat(info(1000000, "x"),
 		tracks(trackEntry(trackFields{number: 1, kind: trackVideo, codecID: "V_UNCOMPRESSED"}), subTrack(2, "S_TEXT/UTF8")), cl, videoHead)))
 	suffix := blockGroup(2, 100, "The bus leaves soon.", 800)
 	r := &countingReader{prefix: prefix, suffix: suffix, from: int64(len(prefix)), to: int64(len(prefix)) + videoSize, filler: repeatReader{n: videoSize, v: 0x55}}
@@ -242,4 +246,28 @@ func ExampleFile_Extract() {
 	// 2 S_TEXT/UTF8 srt en
 	// 3 S_TEXT/ASS ass de
 	// 6 cues, The ferry to the island leaves at nine.
+}
+
+func TestTrackInflateCap(t *testing.T) {
+	t.Parallel()
+
+	zeros := string(zlibFilled(t, 'a', 1<<20))
+	blocks := make([][]byte, 4)
+	for i := range blocks {
+		blocks[i] = blockGroup(2, int16(i), zeros, 1000)
+	}
+	file := segmentFile("matroska", tracks(trackEntry(trackFields{
+		number: 2, kind: trackSub, codecID: "S_TEXT/UTF8", encodings: compression(0),
+	})), cluster(0, blocks...))
+
+	f := openFile(t, file)
+	f.SetInflateCap(4 << 20)
+	_, _, err := f.Extract(2, model.CommonReadOptions{})
+	require.NoError(t, err)
+
+	f.SetInflateCap(3 << 20)
+	_, _, err = f.Extract(2, model.CommonReadOptions{})
+	var pe *model.ParseError
+	require.ErrorAs(t, err, &pe)
+	assert.Equal(t, "The zlib data of track 2 inflates to more than 3 MB in total.", pe.Msg)
 }

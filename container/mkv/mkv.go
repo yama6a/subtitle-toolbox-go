@@ -91,7 +91,7 @@ type trackEntry struct {
 	model.Track
 	uid             string
 	codecPrivate    []byte
-	defaultDuration int64 // ns, noPosition without one
+	defaultDuration int64 // ns, noDuration without one
 	encodings       []encoding
 }
 
@@ -104,6 +104,7 @@ type File struct {
 	cuesOffset   int64
 	tagsOffset   int64
 	mkvmerge     bool
+	inflateCap   int64 // bytes that a track may inflate in total
 	scale        int64
 	tracks       []trackEntry
 }
@@ -135,7 +136,7 @@ func wrap(err error) error {
 
 // Open reads the headers and the track list. It reads no block.
 func Open(r io.ReaderAt, size int64) (*File, error) {
-	f := &File{r: ebml.NewReader(r, size), cuesOffset: noPosition, tagsOffset: noPosition, scale: defaultTimestampScale}
+	f := &File{r: ebml.NewReader(r, size), cuesOffset: noPosition, tagsOffset: noPosition, scale: defaultTimestampScale, inflateCap: maxTrackInflate}
 	if err := f.readHeaders(); err != nil {
 		return nil, wrap(err)
 	}
@@ -375,7 +376,7 @@ type entryReader struct {
 }
 
 func (f *File) readTrackEntry(entry ebml.Header) (trackEntry, bool, error) {
-	e := entryReader{f: f, t: trackEntry{defaultDuration: noPosition}}
+	e := entryReader{f: f, t: trackEntry{defaultDuration: noDuration}}
 	e.t.Container = model.Matroska
 	e.t.Default = true
 	if err := f.each(entry, e.child); err != nil {

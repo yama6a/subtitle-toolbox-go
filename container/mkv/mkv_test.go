@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v3/container/mkv"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
@@ -35,17 +36,18 @@ func TestExtractTextTracks(t *testing.T) {
 		track  int
 		format model.Format
 		forced bool
+		lang   string
 		want   string
 	}{
 		{
-			"SubRip with language and forced flag", 3, model.SubRip, true,
+			"SubRip with language and forced flag", 3, model.SubRip, true, "de",
 			"1\n00:00:01,000 --> 00:00:03,500\nDer Zug nach Hamburg fährt um acht Uhr ab.\n\n" +
 				"2\n00:00:04,000 --> 00:00:06,000\n<i>Gleis 4</i>\nBitte nicht einsteigen.\n\n" +
 				"3\n00:00:09,800 --> 00:00:12,000\nDie Bäckerei öffnet um sechs.\n\n" +
 				"4\n00:00:15,000 --> 00:00:17,250\nMorgen wird es sonnig\nund warm.\n",
 		},
 		{
-			"ASS in ReadOrder with the header of CodecPrivate", 4, model.ASS, false,
+			"ASS in ReadOrder with the header of CodecPrivate", 4, model.ASS, false, "eng",
 			"[Script Info]\n; Written for the subtitle-toolbox tests\nTitle: Station\nScriptType: v4.00+\nPlayResX: 1920\nPlayResY: 1080\nWrapStyle: 0\n\n" +
 				"[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n" +
 				"Style: Default,Arial,48,&H00FFFFFF,&H000000FF,&H00000000,&H64000000,0,0,0,0,100,100,0,0,1,2,1,2,60,60,40,1\n" +
@@ -57,7 +59,7 @@ func TestExtractTextTracks(t *testing.T) {
 				"Dialogue: 0,0:00:11.00,0:00:13.50,Default,Guard,0,0,0,,Bring an umbrella, it may rain later.\n",
 		},
 		{
-			"SSA with the Events section added", 6, model.ASS, false,
+			"SSA with the Events section added", 6, model.ASS, false, "spa",
 			"[Script Info]\nTitle: Estacion\nScriptType: v4.00\n\n[V4 Styles]\n" +
 				"Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding\n" +
 				"Style: Default,Arial,20,16777215,65535,65535,0,0,0,1,2,0,2,30,30,30,0,0\n\n" +
@@ -66,7 +68,7 @@ func TestExtractTextTracks(t *testing.T) {
 				"Dialogue: Marked=0,0:00:13.00,0:00:15.50,Default,,0000,0000,0000,,La panadería abre a las seis.\n",
 		},
 		{
-			"WebVTT with settings, identifiers, comments and relative timestamps", 5, model.WebVTT, false,
+			"WebVTT with settings, identifiers, comments and relative timestamps", 5, model.WebVTT, false, "fre",
 			"WEBVTT - Gare\n\nSTYLE\n::cue {\n  color: yellow;\n}\n\nNOTE Fichier écrit pour les tests\n\n" +
 				"annonce-1\n00:00:02.000 --> 00:00:05.000 line:10% align:start\nLe train pour Lyon part à huit heures.\n\n" +
 				"NOTE Deuxième annonce\n\n" +
@@ -74,7 +76,7 @@ func TestExtractTextTracks(t *testing.T) {
 				"3\n00:00:12.000 --> 00:00:14.000\nDemain, il fera beau.\n",
 		},
 		{
-			"blocks without duration end at the next block, the last after 5 s", 8, model.SubRip, false,
+			"blocks without duration end at the next block, the last after 5 s", 8, model.SubRip, false, "eng",
 			"1\n00:00:02,500 --> 00:00:08,000\nNext stop: Central Station.\n\n" +
 				"2\n00:00:08,000 --> 00:00:16,000\nDoors open on the left.\n\n" +
 				"3\n00:00:16,000 --> 00:00:21,000\nEnd of the line.\n",
@@ -92,19 +94,10 @@ func TestExtractTextTracks(t *testing.T) {
 			for _, c := range s.Cues() {
 				assert.Equal(t, tt.forced, c.Forced)
 			}
+			lang, ok := s.Metadata(model.MetadataLanguage)
+			assert.True(t, ok)
+			assert.Equal(t, tt.lang, lang)
 		})
-	}
-}
-
-func TestExtractSetsLanguage(t *testing.T) {
-	t.Parallel()
-
-	for track, want := range map[int]string{3: "de", 8: "eng"} {
-		s, _, err := openTestdata(t, "text_tracks.mkv").Extract(track, model.CommonReadOptions{})
-		require.NoError(t, err)
-		got, ok := s.Metadata(model.MetadataLanguage)
-		assert.True(t, ok)
-		assert.Equal(t, want, got)
 	}
 }
 
@@ -163,7 +156,7 @@ func TestExtractFixtures(t *testing.T) {
 func TestLastCueDuration(t *testing.T) {
 	t.Parallel()
 
-	file := cat(ebmlHeader("matroska"), unknownSizeElement(idSegment, cat(info("x"), tracks(subTrack(1, "S_TEXT/UTF8")),
+	file := cat(ebmlHeader("matroska"), unknownSizeElement(idSegment, cat(info(1000000, "x"), tracks(subTrack(1, "S_TEXT/UTF8")),
 		cluster(0, blockGroup(1, 1000, "Platform 4.", 1000), simpleBlock(1, 3000, "Mind the gap.", 0)))))
 	d := 1005 * time.Millisecond
 	tests := []struct {
@@ -224,22 +217,24 @@ func TestTimeLimit(t *testing.T) {
 
 	tests := []struct {
 		name    string
+		scale   uint64
 		cluster []byte
 		time    string
 	}{
-		{"cluster timestamp", cluster(1<<40, simpleBlock(2, 0, "x", 0)), "1099511627776"},
-		{"block duration", cluster(0, blockGroup(2, 0, "x", 1<<40)), "0"},
+		{"cluster timestamp", 1000000, cluster(1<<40, simpleBlock(2, 0, "x", 0)), "1099511627776"},
+		{"block duration", 1000000, cluster(0, blockGroup(2, 0, "x", 1<<40)), "0"},
+		{"start of -2^63 ns", 1 << 48, cluster(0, simpleBlock(2, -32768, "x", 0)), "-32768"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			f := openFile(t, segmentFile("matroska", tracks(subTrack(2, "S_TEXT/UTF8")), tt.cluster))
+			f := openFile(t, segmentFile("matroska", info(tt.scale, "x"), tracks(subTrack(2, "S_TEXT/UTF8")), tt.cluster))
 			_, _, err := f.Extract(2, model.CommonReadOptions{})
 			var pe *model.ParseError
 			require.ErrorAs(t, err, &pe)
 			assert.Empty(t, pe.Format)
-			assert.Regexp(t, fmt.Sprintf(`^The block of track 2 at byte \d+ has the time %s at a TimestampScale of 1000000 ns\. Times must be below 100000 hours\.$`, tt.time), pe.Msg)
+			assert.Regexp(t, fmt.Sprintf(`^The block of track 2 at byte \d+ has the time %s at a TimestampScale of %d ns\. Times must be below 100000 hours\.$`, tt.time, tt.scale), pe.Msg)
 		})
 	}
 }
@@ -271,6 +266,10 @@ func TestBrokenFiles(t *testing.T) {
 		want string
 	}{
 		{
+			"cluster timestamp of more than 8 bytes", testfiles.Read(t, "mkv/huge_timestamp.mkv"),
+			"The unsigned integer of the element 0xE7 at byte 1562 is longer than 8 bytes or not below 2^63.",
+		},
+		{
 			"laced block", brokenFile(cluster(0, simpleBlock(2, 0, "\x01\x02ab", lacingXiph)), nil, trackFields{}, 0),
 			"A block of track 2 uses lacing, which subtitle tracks do not use.",
 		},
@@ -287,12 +286,12 @@ func TestBrokenFiles(t *testing.T) {
 			"The element 0x1654AE6B at byte 57 has an unknown size, which only Segment and Cluster may have.",
 		},
 		{
-			"no Tracks element", brokenFile(nil, info("x"), trackFields{}, 0),
+			"no Tracks element", brokenFile(nil, info(1000000, "x"), trackFields{}, 0),
 			"The file has no Tracks element.",
 		},
 		{
 			"zlib data that does not inflate",
-			brokenFile(cluster(0, blockGroup(2, 0, "not zlib", 1000)), nil, trackFields{encodings: compression(0, 0, nil, 1)}, 0),
+			brokenFile(cluster(0, blockGroup(2, 0, "not zlib", 1000)), nil, trackFields{encodings: compression(0)}, 0),
 			"The zlib data of track 2 is not valid or inflates to more than 64 MB.",
 		},
 		{
@@ -300,7 +299,7 @@ func TestBrokenFiles(t *testing.T) {
 			"Track 2 uses encryption or a compression other than zlib and header stripping.",
 		},
 		{
-			"bzlib compression", brokenFile(cluster(0, blockGroup(2, 0, "x", 1000)), nil, trackFields{encodings: compression(0, 1, nil, 1)}, 0),
+			"bzlib compression", brokenFile(cluster(0, blockGroup(2, 0, "x", 1000)), nil, trackFields{encodings: compression(1)}, 0),
 			"Track 2 uses encryption or a compression other than zlib and header stripping.",
 		},
 		{
@@ -318,7 +317,7 @@ func TestBrokenFiles(t *testing.T) {
 		},
 		{
 			"zlib block that inflates past 64 MB",
-			brokenFile(cluster(0, blockGroup(2, 0, string(zlibZeros(t, 64<<20+1)), 1000)), nil, trackFields{encodings: compression(0, 0, nil, 1)}, 0),
+			brokenFile(cluster(0, blockGroup(2, 0, string(zlibFilled(t, 0, 64<<20+1)), 1000)), nil, trackFields{encodings: compression(0)}, 0),
 			"The zlib data of track 2 is not valid or inflates to more than 64 MB.",
 		},
 	}
@@ -328,7 +327,11 @@ func TestBrokenFiles(t *testing.T) {
 
 			f, err := mkv.Open(bytes.NewReader(tt.file), int64(len(tt.file)))
 			if err == nil {
-				_, _, err = f.Extract(2, model.CommonReadOptions{})
+				for _, track := range f.Tracks() {
+					if _, _, err = f.Extract(track.Number, model.CommonReadOptions{}); err != nil {
+						break
+					}
+				}
 			}
 			var pe *model.ParseError
 			require.ErrorAs(t, err, &pe)
@@ -336,13 +339,4 @@ func TestBrokenFiles(t *testing.T) {
 			assert.Equal(t, tt.want, pe.Msg)
 		})
 	}
-}
-
-func TestHugeTimestamp(t *testing.T) {
-	t.Parallel()
-
-	_, _, err := openTestdata(t, "huge_timestamp.mkv").Extract(3, model.CommonReadOptions{})
-	var pe *model.ParseError
-	require.ErrorAs(t, err, &pe)
-	assert.Equal(t, "The unsigned integer of the element 0xE7 at byte 1562 is longer than 8 bytes or not below 2^63.", pe.Msg)
 }
