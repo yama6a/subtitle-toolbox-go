@@ -16,6 +16,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/lrc"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mcc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpl2"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
@@ -86,6 +87,9 @@ var (
 	_ readFunc[lrc.ReadOptions]                                = lrc.Read
 	_ writeFunc[lrc.WriteOptions, lrc.WriteReport]             = lrc.Write
 	_ detectFunc                                               = lrc.Detect
+	_ readFunc[mcc.ReadOptions]                                = mcc.Read
+	_ writeFunc[mcc.WriteOptions, mcc.WriteReport]             = mcc.Write
+	_ detectFunc                                               = mcc.Detect
 	_ readFunc[qttext.ReadOptions]                             = qttext.Read
 	_ writeFunc[qttext.WriteOptions, qttext.WriteReport]       = qttext.Write
 	_ detectFunc                                               = qttext.Detect
@@ -127,6 +131,7 @@ var registry = []formatFuncs{
 	{format: ITT, read: readITT, write: writeITT},
 	{format: JSON, read: readJSON, write: writeJSON},
 	{format: LRC, read: readLRC, write: writeLRC},
+	{format: MCC, read: readMCC, write: writeMCC},
 	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
 	{format: MPSub, read: readMPSub, write: writeMPSub},
 	{format: PAC, read: readPAC, write: writePAC},
@@ -179,6 +184,7 @@ var (
 		{format: PAC, match: pac.Detect},
 		{format: SpruceSTL, match: sprucestl.Detect},
 		{format: SCC, match: scc.Detect},
+		{format: MCC, match: mcc.Detect},
 		{format: MPL2, match: mpl2.Detect},
 		{format: TMPlayer, match: tmplayer.Detect},
 	}
@@ -340,6 +346,18 @@ func writeSCC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts Wr
 		return WriteReport{}, err
 	}
 	return WriteReport{SCC: &report}, nil
+}
+
+func readMCC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return mcc.Read(r, common, opts.MCC)
+}
+
+func writeMCC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	report, err := mcc.Write(w, s, common, opts.MCC)
+	if err != nil {
+		return WriteReport{}, err
+	}
+	return WriteReport{MCC: &report}, nil
 }
 
 func readDCP(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {

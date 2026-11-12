@@ -9,6 +9,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mcc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/pac"
@@ -47,6 +48,9 @@ type ReadOptions struct {
 	// SCC holds the settings of the SCC reader. The zero value reads channel 1 and gives one cue per screen of
 	// roll-up captions.
 	SCC scc.ReadOptions
+	// MCC holds the settings of the MCC reader. The zero value reads the captions of CEA-708 service 1, else the
+	// CEA-608 captions of channel 1 with one cue per screen of roll-up captions.
+	MCC mcc.ReadOptions
 	// PAC holds the settings of the PAC reader. The zero value takes the code page from the story record or detects it.
 	// A binary format ignores Encoding, but PAC maps it to a code page when PAC.CodePage is empty.
 	PAC pac.ReadOptions
@@ -87,6 +91,9 @@ type WriteOptions struct {
 	// SCC holds the settings of the SCC writer. The zero value keeps the stored drop-frame mode, else writes
 	// drop-frame labels, and fails for a cue that SCC cannot hold.
 	SCC scc.WriteOptions
+	// MCC holds the settings of the MCC writer. The zero value keeps the stored frame rate and drop-frame mode, else
+	// writes 29.97 fps with drop-frame labels.
+	MCC mcc.WriteOptions
 	// EBUSTL holds the settings of the EBU STL writer. The zero value takes the frame rate of the stored DFC, else 25.
 	EBUSTL ebustl.WriteOptions
 }
@@ -97,6 +104,8 @@ type WriteReport struct {
 	WebVTT *webvtt.WriteReport
 	// SCC is non-nil after an SCC write, also when Fit made no change.
 	SCC *scc.WriteReport
+	// MCC is non-nil after an MCC write, also when the fit made no change.
+	MCC *mcc.WriteReport
 	// EBUSTL is non-nil after an EBU STL write. It holds the character code table and the characters written as "?".
 	EBUSTL *ebustl.WriteReport
 }
@@ -129,17 +138,10 @@ func (o ReadOptions) Validate() error {
 			Msg:    fmt.Sprintf("The last cue duration must be 0 or more, got %s.", *o.LastCueDuration),
 		}
 	}
-	if err := o.SAMI.Validate(); err != nil {
-		return err
-	}
-	if err := o.MicroDVD.Validate(); err != nil {
-		return err
-	}
-	if err := o.CSV.Validate(); err != nil {
-		return err
-	}
-	if err := o.SCC.Validate(); err != nil {
-		return err
+	for _, check := range []func() error{o.SAMI.Validate, o.MicroDVD.Validate, o.CSV.Validate, o.SCC.Validate, o.MCC.Validate} {
+		if err := check(); err != nil {
+			return err
+		}
 	}
 	if err := o.PAC.Validate(); err != nil {
 		return err
@@ -163,7 +165,7 @@ func (o WriteOptions) Validate() error {
 	}
 	for _, check := range []func() error{
 		o.ASS.Validate, o.MicroDVD.Validate, o.MPSub.Validate, o.PlainText.Validate, o.CSV.Validate, o.ITT.Validate,
-		o.SubViewer.Validate, o.SCC.Validate, o.SpruceSTL.Validate, o.EBUSTL.Validate,
+		o.SubViewer.Validate, o.SCC.Validate, o.MCC.Validate, o.SpruceSTL.Validate, o.EBUSTL.Validate,
 	} {
 		if err := check(); err != nil {
 			return err

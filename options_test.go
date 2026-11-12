@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mcc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
@@ -43,6 +44,11 @@ func TestReadOptionsValidate(t *testing.T) {
 				Option: "ReadOptions.MicroDVD.FrameRate",
 				Msg:    "The frame rate must be greater than 0, got -1.",
 			},
+		},
+		{
+			name:    "MCC service 64",
+			opts:    stbox.ReadOptions{MCC: mcc.ReadOptions{Service: 64}},
+			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.MCC.Service", Msg: "The CEA-708 service must be from 1 to 63, got 64."},
 		},
 		{
 			name:    "SCC channel 3",
@@ -99,6 +105,14 @@ func TestWriteOptionsValidate(t *testing.T) {
 			name:    "unknown BOM rule",
 			opts:    stbox.WriteOptions{BOM: stbox.BOM(3)},
 			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.BOM", Msg: "The BOM rule 3 is unknown."},
+		},
+		{
+			name: "MCC frame rate 48",
+			opts: stbox.WriteOptions{MCC: mcc.WriteOptions{FrameRate: stbox.FrameRate{Num: 48, Den: 1}}},
+			wantErr: &stbox.InvalidArgumentError{
+				Option: "WriteOptions.MCC.FrameRate",
+				Msg:    "The MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got 48.",
+			},
 		},
 		{
 			name:    "unknown SCC drop-frame mode",

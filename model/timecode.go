@@ -1,6 +1,7 @@
 package model
 
 import (
+	"math"
 	"math/big"
 	"regexp"
 	"strconv"
@@ -89,6 +90,11 @@ func (r FrameRate) Frames(d time.Duration) int64 {
 	if r.Num <= 0 || r.Den <= 0 {
 		return 0
 	}
+	if r.Den <= math.MaxInt64/int64(time.Second) {
+		if n, ok := smallMulDiv(int64(d), r.Num, r.Den*int64(time.Second)); ok {
+			return n
+		}
+	}
 	return roundDiv(product(int64(d), r.Num), product(r.Den, int64(time.Second)))
 }
 
@@ -98,7 +104,30 @@ func (r FrameRate) Duration(n int64) time.Duration {
 	if r.Num <= 0 || r.Den <= 0 {
 		return 0
 	}
+	if p, ok := smallProduct(n, r.Den); ok {
+		if q, ok := smallMulDiv(p, int64(time.Second), r.Num); ok {
+			return time.Duration(q)
+		}
+	}
 	return time.Duration(roundDiv(product(n, r.Den, int64(time.Second)), product(r.Num)))
+}
+
+// smallProduct returns a * b when both are 0 or more and the product fits in an int64.
+func smallProduct(a, b int64) (int64, bool) {
+	if a < 0 || b < 0 || (a != 0 && b > math.MaxInt64/a) {
+		return 0, false
+	}
+	return a * b, true
+}
+
+// smallMulDiv returns a * b / den rounded half away from zero, as roundDiv does, without big integers. It reports
+// false when an operand is negative, den is 0 or below, or a value does not fit in an int64.
+func smallMulDiv(a, b, den int64) (int64, bool) {
+	num, ok := smallProduct(a, b)
+	if !ok || den <= 0 || num > math.MaxInt64-den>>1 {
+		return 0, false
+	}
+	return (num + den>>1) / den, true
 }
 
 // Near reports whether r and o differ by 0.01 frames per second or less. It ignores DropFrame.

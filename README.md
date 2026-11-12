@@ -68,6 +68,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [iTunes Timed Text](docs/formats.md#itt) | `stbox.ITT` | `itt` | `.itt` | yes | yes | needs the frame rate of the video. A TTML file named `.itt` loads as iTT |
 | [JSON of this library](docs/json.md) | `stbox.JSON` | `json` | `.json` | yes | yes | |
 | [LRC](https://en.wikipedia.org/wiki/LRC_(file_format)) | `stbox.LRC` | `lrc` | `.lrc` | yes | yes | with enhanced LRC word times |
+| [MCC](https://www.telestream.net/pdfs/user-guides/MacCaption-UserGuide.pdf) | `stbox.MCC` | `mcc` | `.mcc` | yes | yes | MacCaption, CEA-608 and CEA-708 broadcast captions |
 | [MicroDVD](https://en.wikipedia.org/wiki/MicroDVD) | `stbox.MicroDVD` | `microdvd` | `.sub` | yes | yes | needs the frame rate of the video |
 | [MPSub](https://github.com/pigoz/mplayer-svn/blob/7f6453553628729b151490144f13eae290a0fd67/DOCS/tech/mpsub.sub) | `stbox.MPSub` | `mpsub` | `.mpsub` | yes | yes | MPlayer, often named `.sub`, found by content |
 | PAC | `stbox.PAC` | `pac` | `.pac`, `.fpc` | yes | yes | binary, Screen Electronics subtitles, also PAC Unicode |

@@ -77,6 +77,7 @@ const (
 	ITT           = model.ITT
 	JSON          = model.JSON
 	LRC           = model.LRC
+	MCC           = model.MCC
 	MicroDVD      = model.MicroDVD
 	MPSub         = model.MPSub
 	PAC           = model.PAC

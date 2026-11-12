@@ -16,6 +16,7 @@
 | SAMI | `stbox.SAMI` | `sami` | `.smi`, `.sami` | [SAMI](#sami) |
 | SBV | `stbox.SBV` | `sbv` | `.sbv` | [SBV](#sbv) |
 | SCC | `stbox.SCC` | `scc` | `.scc` | [SCC](#scc) |
+| MCC | `stbox.MCC` | `mcc` | `.mcc` | [MCC](#mcc) |
 | SubRip | `stbox.SubRip` | `srt` | `.srt` | [SubRip](#subrip) |
 | EBU STL | `stbox.EBUSTL` | `stl` | `.stl` | [EBU STL](#ebu-stl) |
 | Spruce STL | `stbox.SpruceSTL` | `spruce-stl` | `.stl` | [Spruce STL](#spruce-stl) |
@@ -857,6 +858,81 @@ Without `Fit`, a late caption writes late and no change is reported. A cue that 
 
 - **Read check**: `ReadOptions.Validate` rejects a channel other than 0, 1 and 2 with `The SCC data channel must be 1 or 2, got 3.` and an unknown roll-up mode. Both match `ErrInvalidArgument`.
 - **Write check**: `WriteOptions.Validate` rejects an unknown drop-frame mode with `The SCC drop-frame mode 3 is unknown.`. It matches `ErrInvalidArgument`.
+- **Reader**: it reads `Lenient` and `LastCueDuration` too.
+
+## MCC
+
+MCC (MacCaption) is the caption file of Telestream MacCaption and CaptionMaker. Package `format/mcc` reads and writes it. The format name is `mcc`, the extension `.mcc`. Each data line holds a time code and one SMPTE 291 ancillary data (ANC) packet in hex. The packet holds a caption distribution packet (CDP) with CEA-608 byte pairs and CEA-708 service data.
+
+```text
+File Format=MacCaption_MCC V2.0
+Time Code Rate=30DF
+
+00:00:01:00	T49S494F43Z0072F4FC9420ROO74Z0085AB
+```
+
+The line has the time code `00:00:01:00`, a tab, and the hex data. The letter `T` stands for the bytes `61 01`, the DID and SDID of a CDP packet. `S` stands for `96 69`, the CDP identifier. The line holds the captions of frame 30 at 29.97 fps, which starts at 1.001 s. The writer adds a header text of about 30 lines that the format asks every file to hold. The Go constant holds it byte for byte.
+
+### Read
+
+- **Header**: the first non-blank line must be `File Format=MacCaption_MCC V1.0` or `V2.0`. Another version gives `The MCC version 3.0 is unknown. The parser reads 1.0 and 2.0.` Both errors also stop a lenient read.
+- **Header fields**: a line `Name=Value` before or between data lines is a header field. The reader stores the fields in file order, except `Time Code Rate`. A later line of the same name replaces the value. Lines that start with `//` and blank lines are skipped.
+- **Data line**: `HH:MM:SS:FF`, white space and the hex data. The hour has 2 to 6 digits. Version 2.0 may add a field suffix and a line number, such as `01:00:00:00.1,9`. The reader ignores both. It reads no `;` in the label, because the header decides drop-frame.
+- **Hex data**: pairs of hex digits in any case, and the alias letters `G` to `O` (1 to 9 times `FA 00 00`), `P`, `Q`, `R` (`FB 80 80`, `FC 80 80`, `FD 80 80`), `S` (`96 69`), `T` (`61 01`), `U` (`E1 00 00 00`) and `Z` (`00`).
+- **Packets**: only ANC packets with DID `61h` and SDID `01h` count. The reader skips other packets with no warning, such as AFD data. It ignores both checksums, because some writers leave them wrong.
+- **Frame rate**: the header field `Time Code Rate` is 24, 25, 30, 50 or 60, with `DF` after 30 or 60. The rate code of the first CDP tells 23.976 from 24, 29.97 from 30 and 59.94 from 60. A file with `Time Code Rate=25` and no packet stores the rate `25`. Without a valid `Time Code Rate`, a strict read fails and a lenient read warns `The MCC file has no Time Code Rate line. The parser read 30DF.`
+- **Times**: the label is a frame count, as in SCC. Drop-frame skips 2 labels per minute at 30 labels and 4 at 60, except every tenth minute. Packets with the same time code join in file order.
+- **Services**: the cues come from CEA-708 service 1, or from `ReadOptions.Service`. When that service has no captions, the cues come from the CEA-608 field 1 pairs, read as in SCC. `CEA608Only` skips CEA-708.
+- **Format data**: the file holds `version`, `frameRate` (one of `23.976`, `24`, `25`, `29.97`, `30`, `50`, `59.94`, `60`), `dropFrame` and `header`. CEA-608 cues hold the `scc` cue data of SCC. CEA-708 cues hold none, and only the alignment of the window anchor.
+- **Time limit**: a data line at 100000 hours or later fails with `The time "100001:00:00:00" is not below 100000 hours.` A cue that ends at 100000 hours or later ends at 99999:59:59.999, also a cue of CEA-708 data.
+- **Lenient repairs**: see [lenient-parsing.md](lenient-parsing.md#mcc).
+
+### Write
+
+The writer writes CEA-608 field 1 and CEA-708 service 1 into each line. It writes one line for each frame that has caption data, and no line for a frame without data.
+
+- **CEA-608**: pop-on captions on channel 1, scheduled as in the SCC writer, with `Fit` always on. The 29.97 fps frames of the scheduler map to the output rate, so 2 words can share a frame.
+- **CEA-708**: pop-on windows of service 1 with the text, italics, underline, the 7 CEA-608 colors and the 9 anchor points of the alignment.
+- **Frame rates**: 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60. Each has a CDP rate code and a number of triplets per packet.
+
+| Name | Labels per second | CDP rate code | Triplets per CDP |
+|:--- |---:|---:|---:|
+| `23.976` | 24 | 1 | 25 |
+| `24` | 24 | 2 | 25 |
+| `25` | 25 | 3 | 24 |
+| `29.97` | 30 | 4 | 20 |
+| `30` | 30 | 5 | 20 |
+| `50` | 50 | 6 | 12 |
+| `59.94` | 60 | 7 | 10 |
+| `60` | 60 | 8 | 10 |
+
+- **Drop-frame**: only 29.97 and 59.94 have drop-frame labels. `DropFrameOn` and `DropFrameOff` win. With `DropFrameKeep`, a `FrameRate` with its `DropFrame` flag set counts as on. Else the stored `dropFrame` decides, else drop-frame. The labels always use `:`.
+- **Version**: the stored `version`, else `2.0`. Drop-frame at 59.94 forces `2.0`, because version 1.0 lists no `60DF`.
+- **Header fields**: `UUID`, `Creation Program=Subtitle Toolbox` and `Creation Date` of today in UTC, such as `Monday, October 12, 2026`. Stored fields replace these values in place and add their other fields in stored order. `Time Code Rate` comes last. A stored field whose name has other characters than letters and spaces is left out, because the reader would not read it. A line break in a stored value writes as a space. The UUID is a version 5 style hash of the data lines, so the same captions give the same file on the same day.
+- **Triplets**: each line has the field 1 words (or one null pair), one null pair for field 2, the DTVCC packet of service 1, and empty triplets up to the count of the rate. The sequence counter starts at 0 and counts each line.
+- **Hex**: upper case, with the aliases `G` to `O`, `P`, `Q`, `R`, `S`, `T` and `Z`. The writer never writes `U`, because files disagree on its length.
+- **Empty subtitle**: the header only, ending with `Time Code Rate=30DF` and an empty line.
+- **Line ending and BOM**: `LineEnding` and `BOM` apply. The default writes LF and no BOM.
+- **Lost on write**: field 2 (CC3 and CC4), CEA-708 styles beyond italics, underline and the 7 CEA-608 colors, and the packets of an input file. The output is always encoded again.
+- **Time limit**: the writer leaves out each frame at or after 100000 hours.
+
+#### Fit report
+
+The CEA-608 part follows the limits of SCC: 4 lines of 32 characters and characters that CEA-608 has. The writer fits the cues as SCC does with `Fit`. `WriteReport.Changes` lists each change in cue order, as in [SCC](#fit). `stbox.WriteReport.MCC` is non-nil after every MCC write, also with no change. The CEA-708 data still holds a cue that the fit leaves out of the CEA-608 data. A cue that the fit cannot repair gives an `*UnwritableError` that wraps `mcc.ErrWrapFirst` or `mcc.ErrSplitFirst`.
+
+### Options
+
+| Option | Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |:--- |
+| `ReadOptions.MCC` | `Service` | `int` | 0, read as 1 | the CEA-708 service whose captions win when it has any, 1 to 63 |
+| `ReadOptions.MCC` | `CEA608Only` | `bool` | false | read only the CEA-608 captions of field 1 |
+| `ReadOptions.MCC` | `Channel` | `int` | 0, read as 1 | CEA-608 data channel 1 or 2, as in SCC |
+| `ReadOptions.MCC` | `RollUp` | `mcc.RollUp` | `RollUpScreen` | `RollUpScreen` or `RollUpLines`, as in SCC |
+| `WriteOptions.MCC` | `FrameRate` | `FrameRate` | zero: the stored rate, else 29.97 | within 0.01 of a rate of the table, so 2997/100 writes at 29.97 |
+| `WriteOptions.MCC` | `DropFrame` | `DropFrameMode` | `DropFrameKeep` | `DropFrameOn`, `DropFrameOff`, or the rule above |
+
+- **Read check**: `ReadOptions.Validate` rejects a service above 63 with `The CEA-708 service must be from 1 to 63, got 64.`, a channel other than 0, 1 and 2, and an unknown roll-up mode.
+- **Write check**: `WriteOptions.Validate` rejects other frame rates with `The MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got 48.` and an unknown drop-frame mode.
 - **Reader**: it reads `Lenient` and `LastCueDuration` too.
 
 ## MPL2

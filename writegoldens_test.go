@@ -11,6 +11,7 @@ import (
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mcc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
@@ -37,6 +38,9 @@ func roundTripFiles() []roundTripFile {
 		{"ttml", "w3c_imsc11_regions.ttml"},
 		{"scc", "popon_broadcast_df.scc"},
 		{"itt", "fcp_23976_styles.itt"},
+		{"mcc", "captionmaker_608_708.mcc"},
+		{"mcc", "captionmaker_popon_df.mcc"},
+		{"mcc", "v1_23976_timecode.mcc"},
 	}
 }
 
@@ -108,6 +112,12 @@ func conversions() []conversion {
 		{"scc", "rollup_news_ndf.scc", stbox.SubRip, ""},
 		{"scc", "rollup_news_ndf.scc", stbox.WebVTT, ""},
 		{"scc", "rollup_news_ndf.scc", stbox.ASS, ""},
+		{"mcc", "captionmaker_608_708.mcc", stbox.SubRip, ""},
+		{"mcc", "captionmaker_608_708.mcc", stbox.WebVTT, ""},
+		{"mcc", "captionmaker_608_708.mcc", stbox.ASS, ""},
+		{"mcc", "v2_5994df_fields.mcc", stbox.SubRip, ""},
+		{"mcc", "v2_5994df_fields.mcc", stbox.WebVTT, ""},
+		{"mcc", "v2_5994df_fields.mcc", stbox.ASS, ""},
 		{"stl", "bakery_teletext_25fps.stl", stbox.SubRip, ""},
 		{"stl", "bakery_teletext_25fps.stl", stbox.TTML, ""},
 		{"stl", "irt_requirement-0056-001_modified.stl", stbox.SubRip, ""},
@@ -216,6 +226,36 @@ func TestWriteGoldenSCCNonDropFrame(t *testing.T) {
 	_, err := stbox.Write(&out, s, stbox.SCC, stbox.WriteOptions{SCC: scc.WriteOptions{DropFrame: stbox.DropFrameOff}})
 	require.NoError(t, err)
 	golden.Equal(t, testfiles.Path(t, goldenPath(g, "own_styled.srt", ".to.ndf.scc")), out.Bytes(), *update)
+}
+
+// TestWriteGoldenMCCNewFile writes a file that holds no stored header. The test sets the header field Creation Date
+// first, because a new file holds the date of the day.
+func TestWriteGoldenMCCNewFile(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		suffix string
+		opts   mcc.WriteOptions
+	}{
+		{".to.mcc", mcc.WriteOptions{}},
+		{".to.23.976.mcc", mcc.WriteOptions{FrameRate: stbox.FrameRate23976}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.suffix, func(t *testing.T) {
+			t.Parallel()
+
+			g := folder(t, "srt")
+			s, _ := g.read(t, "own_styled.srt")
+			require.NoError(t, s.SetFormatData("mcc", model.NewData(
+				model.Field{Key: "header", Value: model.NewData(model.Field{Key: "Creation Date", Value: "Monday, October 12, 2026"})},
+			)))
+			var out bytes.Buffer
+			report, err := stbox.Write(&out, s, stbox.MCC, stbox.WriteOptions{MCC: tt.opts})
+			require.NoError(t, err)
+			require.NotNil(t, report.MCC)
+			golden.Equal(t, testfiles.Path(t, goldenPath(g, "own_styled.srt", tt.suffix)), out.Bytes(), *update)
+		})
+	}
 }
 
 // conversionSuffix returns .to.<format>, plus .<extension> when the first extension of f differs from its name,

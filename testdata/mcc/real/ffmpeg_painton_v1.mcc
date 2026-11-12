@@ -1,0 +1,50 @@
+File Format=MacCaption_MCC V1.0
+
+///////////////////////////////////////////////////////////////////////////////////
+// Computer Prompting and Captioning Company
+// Ancillary Data Packet Transfer File
+//
+// Permission to generate this format is granted provided that
+//   1. This ANC Transfer file format is used on an as-is basis and no warranty is given, and
+//   2. This entire descriptive information text is included in a generated .mcc file.
+//
+// General file format:
+//   HH:MM:SS:FF(tab)[Hexadecimal ANC data in groups of 2 characters]
+//     Hexadecimal data starts with the Ancillary Data Packet DID (Data ID defined in S291M)
+//       and concludes with the Check Sum following the User Data Words.
+//     Each time code line must contain at most one complete ancillary data packet.
+//     To transfer additional ANC Data successive lines may contain identical time code.
+//     Time Code Rate=[24, 25, 30, 30DF, 50, 60]
+//
+//   ANC data bytes may be represented by one ASCII character according to the following schema:
+//     G  FAh 00h 00h
+//     H  2 x (FAh 00h 00h)
+//     I  3 x (FAh 00h 00h)
+//     J  4 x (FAh 00h 00h)
+//     K  5 x (FAh 00h 00h)
+//     L  6 x (FAh 00h 00h)
+//     M  7 x (FAh 00h 00h)
+//     N  8 x (FAh 00h 00h)
+//     O  9 x (FAh 00h 00h)
+//     P  FBh 80h 80h
+//     Q  FCh 80h 80h
+//     R  FDh 80h 80h
+//     S  96h 69h
+//     T  61h 01h
+//     U  E1h 00h 00h 00h
+//     Z  00h
+//
+///////////////////////////////////////////////////////////////////////////////////
+
+UUID=0087C4F6-A6B4-5469-8C8E-BBF44950401D
+Creation Program=Lavf
+Creation Date=Tuesday, October 13, 2026
+Creation Time=12:00:00
+Time Code Rate=30
+
+00:00:10:00	T2BS2B5F43ZZ72EAFC9429FC9429FC9452FC9452FCC2C1FCCB45FC52D9FC20CEFC4557FCD38074ZZAB8D
+00:00:11:00	T37S375F43Z0172EEFC9429FC9429FC94F2FC94F2FCC252FC45C1FC4680FC94A1FC94A1FCC420FC49D3FC2052FC45C1FCC4D974Z01A599
+00:00:12:00	T46S465F43Z0272F3FC9429FC9429FC94F8FC94F8FC9723FC9723FCC154FC20CEFC4F4FFCCE80FC94F8FC94F8FC9723FC9723FC94A4FC94A4FCD34FFC4FCEFCAE8074Z022AA8
+00:00:14:00	T13S135F43Z0372E2FC942CFC942C74Z030675
+00:00:15:00	T34S345F43Z0472EDFC9429FC9429FC94E6FC94E6FCD345FC4520FCD94FFCD520FC544FFCCD4FFC5252FC4F57FCAE8074Z044596
+00:00:17:00	T13S135F43Z0572E2FC942CFC942C74Z050275

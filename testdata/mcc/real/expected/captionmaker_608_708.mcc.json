@@ -1,0 +1,55 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "mcc": {
+                "version": "2.0",
+                "frameRate": "29.97",
+                "dropFrame": true,
+                "header": {
+                    "UUID": "7A2B4C6D-8E9F-4A0B-9C1D-2E3F4A5B6C7D",
+                    "Creation Program": "Subtitle Toolbox fixture generator",
+                    "Creation Date": "Monday, October 12, 2026",
+                    "Creation Time": "10:20:30"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 2.302,
+                "end": 5.472,
+                "lines": [
+                    "L'horaire d'hiver",
+                    "débute lundi…"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5.472,
+                "end": 7.007,
+                "lines": [
+                    "<i>♪ Annonce ♪</i>"
+                ],
+                "identifier": null,
+                "alignment": 7,
+                "formatData": {}
+            },
+            {
+                "start": 8.475,
+                "end": 11.011,
+                "lines": [
+                    "<font color=\"#ffff00\">Le train côtier part</font>",
+                    "à 6 h 50."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

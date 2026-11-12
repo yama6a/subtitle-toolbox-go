@@ -54,6 +54,7 @@ func goldenFolders() []goldenFolder {
 		{name: "itt", format: stbox.ITT, files: 3},
 		{name: "json", format: stbox.JSON, files: 6},
 		{name: "lrc", format: stbox.LRC, files: 9},
+		{name: "mcc", format: stbox.MCC, files: 6},
 		{name: "microdvd", format: stbox.MicroDVD, files: 4, options: map[string]stbox.ReadOptions{
 			"own_max_frames.sub":           microDVDAt25,
 			"sub_microdvd.sub":             microDVDAt25,
