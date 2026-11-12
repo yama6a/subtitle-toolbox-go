@@ -6,7 +6,7 @@ Version 2.0 has 4 breaks: the module path, the cue position, the frame rate type
 go get github.com/yama6a/subtitle-toolbox-go/v2@latest
 ```
 
-Library JSON stays version 1, the CLI keeps its commands, flags, exit codes and `--json` shapes, and 2.0 removes no identifier that 1.x marked deprecated. The only removed name is `webvtt.WriteWithReport`.
+Library JSON stays version 1. The CLI keeps its commands, flags, exit codes and `--json` shapes. 2.0 removes one name, `webvtt.WriteWithReport`.
 
 ## The 1.x call and the 2.0 call
 
@@ -22,7 +22,7 @@ Library JSON stays version 1, the CLI keeps its commands, flags, exit codes and 
 | `microdvd.WriteOptions{FrameRate: 23.976}` | `fr, err := stbox.FrameRateFromFloat(23.976)`, then `microdvd.WriteOptions{FrameRate: fr}` |
 | `csv.ReadOptions{FrameRate: 25}` and `csv.WriteOptions{FrameRate: 25}` | the same with `FrameRate: stbox.FrameRate{Num: 25, Den: 1}` |
 | `mpsub.WriteOptions{FrameRate: 25}` | `mpsub.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}`. The rate must be whole |
-| `s.ConvertFrameRate(25, 23.976)` | `s.ConvertFrameRate(stbox.FrameRate{Num: 25, Den: 1}, fr)`. It returns an error for a rate that fails `Validate` |
+| `err := s.ConvertFrameRate(25, 23.976)` | `err := s.ConvertFrameRate(stbox.FrameRate{Num: 25, Den: 1}, fr)`. The error also covers a rate that fails `Validate` |
 | `err := stbox.Write(w, s, f, opts)` | `report, err := stbox.Write(w, s, f, opts)`. Use `_, err :=` to ignore the report |
 | `err := srt.Write(w, s, common, opts)`, and the same call in every format package | `_, err := srt.Write(w, s, common, opts)`. Each format package declares its own `WriteReport`, empty where the format reports nothing |
 | `report, err := webvtt.WriteWithReport(w, s, common, opts)` | `report, err := webvtt.Write(w, s, common, opts)` |
@@ -51,11 +51,11 @@ cue.Alignment = stbox.TopCenter
 After:
 
 ```text
-cue.Position.Alignment = stbox.TopCenter
-cue.Position.Offset = &stbox.Offset{X: 50, Y: 10}
+cue.Position.Alignment = stbox.BottomCenter
+cue.Position.Offset = &stbox.Offset{X: 50, Y: 95}
 ```
 
-`Validate` returns an error that matches `ErrInvalidArgument` unless `Row` and `Column` lie on `Grid` and `Offset` is from 0 to 100. `SetCue` and the library JSON reader call it. Library JSON stays version 1. A cue gets the optional key `position`, written only when `Row`, `Column` or `Offset` is set, and a 1.x reader ignores it. The 1.x formats fill and use only `Alignment`, except WebVTT and TTML, which read and write `Offset`.
+`Validate` returns an error that matches `ErrInvalidArgument` unless `Row` and `Column` lie on `Grid` and `Offset` is from 0 to 100. `SetCue` and the library JSON reader call it. Library JSON stays version 1. A cue gets the optional key `position`, written only when `Row`, `Column` or `Offset` is set, and a 1.x reader ignores it. The 1.x formats fill and use only `Alignment`, except WebVTT and TTML, which read and write `Offset`. A WebVTT or TTML writer ignores an `Offset` outside the screen cell of the alignment. The cell is the third of the screen that holds the alignment. See [formats.md](formats.md) and [format-data.md](format-data.md#an-explicit-alignment-wins-over-a-stored-position).
 
 ### Band rule
 
@@ -78,9 +78,9 @@ A WebVTT or TTML reader stores no offset for the default anchor of an alignment.
 - `microdvd.ReadOptions.FrameRate` and `microdvd.WriteOptions.FrameRate`
 - `csv.ReadOptions.FrameRate` and `csv.WriteOptions.FrameRate`
 - `mpsub.WriteOptions.FrameRate`, which must be whole
-- `Subtitle.ConvertFrameRate(from, to)`, which also returns an error now
+- `Subtitle.ConvertFrameRate(from, to)`, which takes 2 `FrameRate` values and keeps its error result
 
-`FrameRateFromFloat(23.976)` gives 2997/125, not 24000/1001, so a 1.x frame rate keeps its result. It returns an error for NaN, infinity, 0, a negative value and a number of more than 18 digits, such as `1e-300`. 1.x accepted such a rate. The CLI options `--fps`, `--input-fps`, `--output-fps`, `--from-fps` and `--to-fps` keep their syntax and fail with exit code 2 for it. `DropFrame` is valid only for a rate below 30 or 60 frames per second that rounds to 30 or 60, such as 30000/1001. See [frame-rates.md](frame-rates.md).
+`FrameRateFromFloat(23.976)` gives 2997/125, not 24000/1001, so a 1.x frame rate keeps its result. It returns an error for NaN, infinity, 0, a negative value and a number of more than 18 digits, such as `1e-300`. 1.x accepted such a rate. The CLI options `--fps`, `--input-fps`, `--output-fps`, `--from-fps` and `--to-fps` keep their syntax and fail with exit code 2 for it. `DropFrame` is valid for 4 rates only: 30000/1001, 2997/100, 60000/1001 and 2997/50. `Validate` returns an error for any other rate with the flag. See [frame-rates.md](frame-rates.md).
 
 ## Write reports
 
@@ -109,6 +109,8 @@ WebVTT and TTML readers fill `Cue.Position.Offset`, and their writers use it for
 
 | Input | 1.x output | 2.0 output | Keep the 1.x output |
 |:--- |:--- |:--- |:--- |
-| TTML whose region has `tts:origin`, such as `10% 10%` with `tts:extent="80% 85%"` and `tts:displayAlign="after"`, converted to WebVTT, with a `BottomCenter` cue | no cue settings | `line:95%,end`, plus `position:X%,center` when X is not 50 | `cue.Position.Offset = nil` |
-| the same TTML with a top, middle or side cue | `line:0`, `line:50%,center`, `align:left` or `align:right` | the same, plus `position:X%,...` for a column that is not at the screen edge | `cue.Position.Offset = nil` |
-| WebVTT with a percent `line` or `position` that names the same anchor as its alignment, converted to TTML, such as `line:95%,end` | the region `bottomCenter` or no region | the region `bottomCenter-50-95`, which puts the cue at 95% from the top | `cue.Position.Offset = nil` |
+| TTML with a bottom center cue in a region such as `tts:origin="10% 10%" tts:extent="80% 85%" tts:displayAlign="after" tts:textAlign="center"`, converted to WebVTT | no cue settings | `line:95%,end`, plus `position:X%,center` when X is not 50 | `cue.Position.Offset = nil` |
+| TTML with a bottom left or right cue in a region such as `tts:origin="10% 10%" tts:extent="80% 85%" tts:displayAlign="after" tts:textAlign="left"`, converted to WebVTT | `align:left` | `position:10%,line-left align:left`. The anchor X is not at the screen edge | `cue.Position.Offset = nil` |
+| TTML with a top or middle cue, converted to WebVTT | `line:0` or `line:50%,center` | the same. The writer writes the height of `BottomCenter` only, and adds `position:X%,...` when X is not at the screen edge | `cue.Position.Offset = nil` |
+| WebVTT with a percent `line` or `position` that names the same anchor as its alignment, converted to TTML, such as `line:95%,end` or `line:0 position:30% align:left` | the region of the alignment, such as `bottomCenter` or `topLeft` | a region with the offset, such as `bottomCenter-50-95` or `topLeft-30-0`. The first puts the cue at 95% from the top | `cue.Position.Offset = nil` |
+| WebVTT or TTML with such an offset, converted to library JSON | no `position` key | the cue gets `"position":{"offset":{"x":50.0,"y":95.0}}` for `line:95%,end` | `cue.Position.Offset = nil` |

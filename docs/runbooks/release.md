@@ -263,13 +263,13 @@ Replace `1.0.0` with the version of the release.
    ./stbox --version
    ```
 
-   Expected: `1.0.0`. This also makes the proxy fetch the version.
+   For N of 2 or more, use `github.com/yama6a/subtitle-toolbox-go/vN/cmd/stbox@vN.0.0`. Expected: `1.0.0`. This also makes the proxy fetch the version.
 
-8. Open `https://pkg.go.dev/github.com/yama6a/subtitle-toolbox-go@v1.0.0`.
+8. Open `https://pkg.go.dev/github.com/yama6a/subtitle-toolbox-go@v1.0.0`. For N of 2 or more, open `https://pkg.go.dev/github.com/yama6a/subtitle-toolbox-go/vN@vN.0.0`.
 
    Expected: the docs show, and the licence reads MIT. pkg.go.dev hides the docs when it does not detect a redistributable licence.
 
-9. For a major release, edit the release notes. Put a hand-written block above the generated notes. It names the formats and the commands of the line, the 3 install forms, and links `docs/compatibility.md` at the tag.
+9. For a major release, edit the release notes. Put a hand-written block above the generated notes. It names the formats and the commands of the line, the 3 install forms, and links `docs/compatibility.md` at the tag. For N of 2 or more, it links `docs/upgrade-N.0.md` at the tag too, and shows `go get github.com/yama6a/subtitle-toolbox-go/vN@vN.0.0`.
 
    Write the block to `block.md`. Then run:
 

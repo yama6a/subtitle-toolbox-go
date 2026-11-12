@@ -163,7 +163,7 @@ func TestDocsASCII(t *testing.T) {
 	for _, file := range markdownFiles(t) {
 		for i, line := range strings.Split(readFile(t, file), "\n") {
 			for _, r := range line {
-				if r > 127 && !unicode.IsLetter(r) {
+				if r > 127 && !unicode.In(r, unicode.Lu, unicode.Ll, unicode.Lt, unicode.Lo) {
 					assert.Fail(t, "non-ASCII character", "%s line %d holds %q", file, i+1, r)
 					break
 				}
