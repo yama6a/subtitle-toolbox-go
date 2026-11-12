@@ -21,6 +21,8 @@ type (
 	Subtitle = model.Subtitle
 	// Cue is one timed text block.
 	Cue = model.Cue
+	// Image is the PNG bitmap of an image cue and its place on the screen.
+	Image = model.Image
 	// Comment is text that a writer puts before a cue, or after the last cue.
 	Comment = model.Comment
 	// SyncPoint is a time in the subtitle and the time where it belongs, for SyncByPoints.

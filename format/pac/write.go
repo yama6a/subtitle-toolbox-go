@@ -31,6 +31,10 @@ const (
 // the header and the footer that the reader stored, and the bytes of each cue that stay unchanged. Without a stored
 // code page, a subtitle that Latin can hold gets Latin, else Unicode. The writer ignores LineEnding and BOM.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.PAC, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	file, _ := s.FormatData(formatDataKey)
 	var codePage CodePage
 	if stored, ok := file.String("codePage"); ok && CodePage(stored).known() {

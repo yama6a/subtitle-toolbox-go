@@ -3,6 +3,7 @@ package stream_test
 import (
 	"bytes"
 	"errors"
+	"io"
 	"slices"
 	"testing"
 	"time"
@@ -308,4 +309,49 @@ func (f *failingWriter) Write(b []byte) (int, error) {
 		return 0, f.err
 	}
 	return f.Buffer.Write(b)
+}
+
+func TestStreamWritersGateImageCues(t *testing.T) {
+	t.Parallel()
+
+	image := model.Cue{End: time.Second, Image: &model.Image{PNG: []byte("x"), Width: 1, Height: 1, ScreenWidth: 2, ScreenHeight: 2}}
+	text := model.Cue{Start: 2 * time.Second, End: 3 * time.Second, Lines: []string{"Hello"}}
+	tests := []struct {
+		name   string
+		format model.Format
+		open   func(io.Writer, model.CommonWriteOptions) (cueWriter, error)
+	}{
+		{"SubRip", model.SubRip, func(w io.Writer, o model.CommonWriteOptions) (cueWriter, error) {
+			return stream.NewSubRipWriter(w, o, srt.WriteOptions{})
+		}},
+		{"WebVTT", model.WebVTT, func(w io.Writer, o model.CommonWriteOptions) (cueWriter, error) {
+			return stream.NewWebVTTWriter(w, o, webvtt.WriteOptions{}, nil)
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var out bytes.Buffer
+			w, err := tt.open(&out, model.CommonWriteOptions{})
+			require.NoError(t, err)
+			require.NoError(t, w.Write(text))
+			written := out.Len()
+			var uerr *model.UnwritableError
+			require.ErrorAs(t, w.Write(image), &uerr)
+			assert.Equal(t, tt.format, uerr.Format)
+			assert.Equal(t, 1, uerr.CueIndex)
+			assert.Equal(t, written, out.Len())
+
+			var skipped, plain bytes.Buffer
+			w, err = tt.open(&skipped, model.CommonWriteOptions{SkipImageCues: true})
+			require.NoError(t, err)
+			require.NoError(t, w.Write(image))
+			require.NoError(t, w.Write(text))
+			w, err = tt.open(&plain, model.CommonWriteOptions{})
+			require.NoError(t, err)
+			require.NoError(t, w.Write(text))
+			assert.Equal(t, plain.String(), skipped.String())
+		})
+	}
 }

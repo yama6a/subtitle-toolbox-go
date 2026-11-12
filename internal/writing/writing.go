@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
@@ -73,4 +74,34 @@ func WriteBytes(w io.Writer, f model.Format, body []byte) error {
 		return fmt.Errorf("write %s: %w", f, err)
 	}
 	return nil
+}
+
+// SkipImageCues is the gate that every text writer calls first. It returns s when no cue holds an image without lines.
+// Else it returns an *model.UnwritableError with the index of the first such cue, or with common.SkipImageCues
+// a copy of s without those cues. A comment before a dropped cue moves to the next kept cue.
+func SkipImageCues(s *model.Subtitle, f model.Format, common model.CommonWriteOptions) (*model.Subtitle, error) {
+	first := -1
+	for i, c := range s.All() {
+		if c.IsImageWithoutText() {
+			first = i
+			break
+		}
+	}
+	if first < 0 {
+		return s, nil
+	}
+	if !common.SkipImageCues {
+		return nil, ImageCueError(f, first)
+	}
+	out := s.Clone()
+	out.RemoveCuesWhere(model.Cue.IsImageWithoutText)
+	return out, nil
+}
+
+// ImageCueError returns the error of a text writer of format f for the image cue without lines at index.
+func ImageCueError(f model.Format, index int) *model.UnwritableError {
+	return &model.UnwritableError{
+		Format: f, CueIndex: index,
+		Reason: "Cue #" + strconv.Itoa(index) + " holds an image but no text, and " + string(f) + " needs text.",
+	}
 }

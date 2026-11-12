@@ -174,7 +174,8 @@ func (s *Subtitle) SplitCue(index int, at time.Duration, splitAfterLine int) err
 // JoinCues joins the cues first to last into cue first, with the lines of all of them in order and the latest end.
 // The joined cue keeps the start, the ID, the alignment, the forced flag and the format data of cue first, and
 // the comments before the joined cues move before it. JoinCues returns an error that matches ErrCueNotFound
-// when no cue has the index first or last, and an error that matches ErrInvalidArgument when first is not below last.
+// when no cue has the index first or last, and an error that matches ErrInvalidArgument when first is not below last
+// or a cue of the range holds an image.
 func (s *Subtitle) JoinCues(first, last int) error {
 	for _, i := range []int{first, last} {
 		if i < 0 || i >= len(s.cues) {
@@ -183,6 +184,10 @@ func (s *Subtitle) JoinCues(first, last int) error {
 	}
 	if first >= last {
 		return invalidArgument(fmt.Sprintf("Cannot join cues %d to %d: the first index must be lower than the last index.", first, last))
+	}
+
+	if i := slices.IndexFunc(s.cues[first:last+1], func(c Cue) bool { return c.Image != nil }); i >= 0 {
+		return invalidArgument(fmt.Sprintf("Cannot join cues %d to %d: cue %d holds an image, and a join would drop it.", first, last, first+i))
 	}
 
 	joined := s.cues[first]
@@ -210,7 +215,7 @@ func (s *Subtitle) JoinCues(first, last int) error {
 	return nil
 }
 
-// RemoveDuplicateCues joins each run of neighbouring cues with the same text, tags included, that overlap,
+// RemoveDuplicateCues never joins an image cue. It joins each run of neighbouring cues with the same text, tags included, that overlap,
 // touch or are at most maxGap apart. The cues of a run also have the same alignment, forced flag, speakers and
 // format data. A run joins into its first cue, which keeps its lines and ends at the latest end of the run.
 // The comments before the joined cues move before it. RemoveDuplicateCues rounds maxGap to whole milliseconds,
@@ -227,7 +232,7 @@ func (s *Subtitle) RemoveDuplicateCues(maxGap time.Duration) error {
 	return nil
 }
 
-// MergeSameTimeCues joins each run of neighbouring cues whose start and end both differ by at most timeTolerance
+// MergeSameTimeCues never joins an image cue. It joins each run of neighbouring cues whose start and end both differ by at most timeTolerance
 // from the first cue of the run. The cues of a run also have the same alignment and forced flag. The joined cue
 // holds the lines of the run in order, without the lines of a cue whose text came before in the run. It keeps the
 // start, the ID and the format data of the first cue and ends at the latest end of the run. The comments before
@@ -239,7 +244,7 @@ func (s *Subtitle) MergeSameTimeCues(timeTolerance time.Duration) error {
 	}
 	tol := timeTolerance.Round(time.Millisecond)
 	s.joinRuns(func(first Cue, _ time.Duration, c Cue) bool {
-		return c.Forced == first.Forced && c.Position.Alignment.Numpad() == first.Position.Alignment.Numpad() &&
+		return first.Image == nil && c.Image == nil && c.Forced == first.Forced && c.Position.Alignment.Numpad() == first.Position.Alignment.Numpad() &&
 			(c.Start-first.Start).Abs() <= tol && (c.End-first.End).Abs() <= tol
 	}, func(run []Cue) []string {
 		var lines []string
@@ -289,9 +294,9 @@ func (s *Subtitle) joinRuns(continues func(first Cue, runEnd time.Duration, c Cu
 	s.rebuildComments(anchors, func(old int) int { return newIndex[old] })
 }
 
-// canJoin reports whether a and b have the same alignment, the same forced flag and the same speakers.
+// canJoin reports whether a and b hold no image and have the same alignment, the same forced flag and the same speakers.
 func canJoin(a, b Cue) bool {
-	return a.Position.Alignment.Numpad() == b.Position.Alignment.Numpad() && a.Forced == b.Forced && slices.Equal(speakers(a), speakers(b))
+	return a.Image == nil && b.Image == nil && a.Position.Alignment.Numpad() == b.Position.Alignment.Numpad() && a.Forced == b.Forced && slices.Equal(speakers(a), speakers(b))
 }
 
 // speakers returns the names of the <v> tags of c, trimmed, without repeats, in byte order.

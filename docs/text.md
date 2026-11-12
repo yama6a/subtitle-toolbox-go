@@ -41,7 +41,7 @@ for _, c := range s.All() {
 
 ## Cue removal rule
 
-A cue that had visible text before a transform and has none after is removed. Its comments move to the next cue. A cue that was empty before stays.
+A cue that had visible text before a transform and has none after is removed. Its comments move to the next cue. A cue that was empty before stays. A cue that holds an image stays too, with no lines, because its removal would drop the image.
 
 - **Example**: replacing `\[\w+\]` with `""` removes the cue `[MUSIC]`, and a comment before it moves before the next cue.
 - **EditLines**: every method on this page applies the rule through `EditLines`. Code outside package `model` uses it too, because the cue list of a `Subtitle` is not exported. `fn` returns the new lines and true, or false to keep the cue as it is.

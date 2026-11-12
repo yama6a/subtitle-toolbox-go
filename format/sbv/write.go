@@ -13,6 +13,10 @@ import (
 // Write writes s as SBV. It skips a cue without text, because an empty line would end the SBV cue. A text line that
 // the reader would read as a timing line starts with U+2060 WORD JOINER.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.SBV, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	var body []byte
 	first := true
 	for _, c := range s.All() {

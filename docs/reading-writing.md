@@ -88,6 +88,7 @@ Each reader that uses the default adds its row here.
 | `LineEnding` | `LF` | `LF` or `CRLF` |
 | `BOM` | `BOMDefault`: the default of the format | `BOMDefault`, `BOMAdd` or `BOMRemove` |
 | `StripTags` | keep the markup that the format can hold | |
+| `SkipImageCues` | a text writer fails on an image cue without lines | |
 
 - **No lone CR**: readers accept a lone CR as a line end. Writers never write it.
 - **`BOM` as an enum**: it has 3 states, and the zero value keeps the default of the format.
@@ -100,6 +101,7 @@ A writer builds the whole output with LF line endings in memory. [internal/writi
 - **CSV and TSV line endings**: the CSV writer ends each row with the line ending itself and keeps a line break inside a cell as LF, as Excel writes it. Only the BOM rule runs after it.
 - **CSV and TSV delimiter**: `stbox.Write` sets the delimiter when `WriteOptions.CSV.Delimiter` is empty. TSV output gets a tab. CSV output gets `,` when the stored delimiter is a tab. `csv.Write` called directly keeps the stored delimiter.
 - **BOM**: the line ending comes first, then the BOM. `BOMAdd` adds one UTF-8 BOM unless the output starts with one. `BOMRemove` removes every leading BOM. `BOMDefault` adds the BOM for ASS, CSV, TSV, LRC, MPSub, SubRip and WebVTT, and leaves the output of the other formats as the writer wrote it.
+- **SkipImageCues**: an image cue is a cue with `Cue.Image` set. A text writer returns an `*UnwritableError` with the index of the first image cue without lines, for example `Cue #3 holds an image but no text, and srt needs text.` With `SkipImageCues`, the writer drops those cues and writes the rest. A comment before a dropped cue moves to the next kept cue. An image cue with lines is written as text. Library JSON writes every image cue.
 - **StripTags**: the ASS, iTT, MicroDVD, SAMI, SubRip, TTML and WebVTT writers read it. The other writers hold no markup or always write plain text. The SCC writer ignores it and writes the styles that CEA-608 holds. Library JSON keeps the markup.
 - **Negative times**: every writer except library JSON writes a negative time as 0. Library JSON writes it as it is.
 - **No save function**: a caller opens the file and calls `Write`. The format comes from the caller, never from the file extension.

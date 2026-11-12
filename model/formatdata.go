@@ -5,9 +5,6 @@ import (
 	"slices"
 )
 
-// ImageKey is the cue format data key of image cue data until 3.0.
-const ImageKey = "image"
-
 // FormatData returns a deep copy of the file format data of key, or false when s has none.
 func (s *Subtitle) FormatData(key string) (*Data, bool) {
 	d, ok := s.formatData[key]
@@ -47,7 +44,11 @@ func (c Cue) FormatData(key string) (*Data, bool) {
 }
 
 // SetFormatData stores a deep copy of d as the cue format data of key, or returns an error that matches ErrInvalidArgument.
+// The key "image" is the field Cue.Image, so SetFormatData rejects it.
 func (c *Cue) SetFormatData(key string, d *Data) error {
+	if key == "image" {
+		return invalidArgument("The field formatData.image is the cue image. Set Cue.Image in place of it.")
+	}
 	if err := checkFormatData(cueSchema, key, d); err != nil {
 		return err
 	}

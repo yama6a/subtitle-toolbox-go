@@ -38,7 +38,8 @@ type StripOptions struct {
 // EditLines calls fn for each cue with its index and a copy, and sets the cleaned lines that fn returns when fn
 // returns true. Then it removes each cue that had text before and has none after, by hasText, or by
 // markup.HasVisibleText when hasText is nil. A comment before a removed cue moves to the next cue.
-// A cue without text before stays. EditLines returns the old indexes of the removed cues in ascending order.
+// A cue without text before stays. A cue that holds an image stays too, because its removal would drop the image.
+// EditLines returns the old indexes of the removed cues in ascending order.
 // Fn must not change s.
 func (s *Subtitle) EditLines(fn func(i int, c Cue) (lines []string, ok bool), hasText func(lines []string) bool) []int {
 	if hasText == nil {
@@ -52,7 +53,7 @@ func (s *Subtitle) EditLines(fn func(i int, c Cue) (lines []string, ok bool), ha
 		}
 		before := s.cues[i].Lines
 		s.cues[i].Lines = cleanLines(lines)
-		if hasText(before) && !hasText(s.cues[i].Lines) {
+		if s.cues[i].Image == nil && hasText(before) && !hasText(s.cues[i].Lines) {
 			removed = append(removed, i)
 		}
 	}

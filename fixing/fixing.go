@@ -16,7 +16,7 @@ type Rule string
 
 // The rules, in run order.
 const (
-	// RuleAdCues removes a cue whose visible text names a subtitle download site. Off by default.
+	// RuleAdCues removes a cue whose visible text names a subtitle download site. An image cue stays, with no lines. Off by default.
 	RuleAdCues Rule = "adCues"
 	// RuleUnbalancedTags removes closing style tags without an opening tag, and closes style tags still open at
 	// the end of the cue.

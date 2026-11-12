@@ -214,3 +214,9 @@ func ExampleParseTime() {
 	fmt.Println(d, err)
 	// Output: 1m2.48s <nil>
 }
+
+func ExampleImage_Validate() {
+	im := model.Image{PNG: []byte("\x89PNG"), Width: 7681, Height: 1, ScreenWidth: 7681, ScreenHeight: 1}
+	fmt.Println(im.Validate())
+	// Output: stbox: invalid argument: Cannot create a cue image of 7681x1 pixels on a screen of 7681x1 pixels: an image of 7681x1 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total.
+}

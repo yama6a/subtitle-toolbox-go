@@ -57,6 +57,7 @@ A violation holds the measured value and, for a rule with a number limit, the li
 - **Field name of `minSecondsPerWord`**: the Go field is `MinDurationPerWord`, because a Go name for a duration does not hold `Seconds`. The `Rule` value stays `minSecondsPerWord`, because it is the CLI and JSON value.
 - **Dialogue dash style**: `DialogueDashStyle` is a pointer, because the zero `model.DialogueDashStyle` is a legal style. nil turns the rule off.
 - **Infinite limits**: `MaxCharactersPerSecond` and `MaxWordsPerMinute` accept `+Inf`, which checks nothing.
+- **Image cues**: a cue with an image and no lines gets no violation and takes no part in the gap rules. Its index still counts.
 - **Order**: `requireCues` comes first. Then each cue in start order gets its violations in the order of the table above, from `noNegativeDuration` to `minGap`. `maxCharactersPerLine` gives its violations in line order.
 - **No violation**: `Check` returns a nil slice.
 - **Read only**: `Check` never changes the subtitle.

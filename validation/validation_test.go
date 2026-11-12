@@ -116,6 +116,12 @@ func TestTimeRules(t *testing.T) {
 			[]string{"2 minGap 0, limit 0.5"},
 		},
 		{
+			"image cues without lines are skipped and keep the index",
+			[]model.Cue{cue(0, 1000, "a"), {Start: time.Second, End: 1500 * time.Millisecond, Image: &model.Image{PNG: []byte("x"), Width: 1, Height: 1, ScreenWidth: 2, ScreenHeight: 2}}, cue(1000, 2000, "")},
+			validation.Rules{NoEmptyCues: true, MinGap: time.Second},
+			[]string{"2 noEmptyCues 0", "2 minGap 0, limit 1"},
+		},
+		{
 			"zero duration reads at infinite speed",
 			[]model.Cue{cue(5000, 5000, "Hi"), cue(6000, 6000, "")},
 			validation.Rules{MaxCharactersPerSecond: 20},

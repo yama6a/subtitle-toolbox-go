@@ -25,6 +25,21 @@ type sink struct {
 	common model.CommonWriteOptions
 	buf    []byte
 	closed bool
+	cues   int // the cues passed to Write, also the dropped ones
+}
+
+// gate counts c and reports whether to drop it, because it holds an image and no lines and common.SkipImageCues is
+// set. Without SkipImageCues it returns the error of a text writer for such a cue.
+func (s *sink) gate(c model.Cue) (drop bool, err error) {
+	i := s.cues
+	s.cues++
+	switch {
+	case !c.IsImageWithoutText():
+		return false, nil
+	case s.common.SkipImageCues:
+		return true, nil
+	}
+	return false, writing.ImageCueError(s.f, i)
 }
 
 // prefix writes the first part, which gets the BOM.
@@ -67,10 +82,14 @@ func NewSubRipWriter(w io.Writer, common model.CommonWriteOptions, _ srt.WriteOp
 }
 
 // Write writes c as the next block. The cue numbers start at 1.
+// A cue with an image and no lines returns an *model.UnwritableError, or with SkipImageCues is dropped.
 // An error of the io.Writer returns wrapped, and the writer stays usable.
 func (w *SubRipWriter) Write(c model.Cue) error {
 	if w.closed {
 		return errClosed()
+	}
+	if drop, err := w.gate(c); drop || err != nil {
+		return err
 	}
 	w.buf = w.buf[:0]
 	if w.n > 0 {
@@ -126,6 +145,9 @@ func NewWebVTTWriter(w io.Writer, common model.CommonWriteOptions, _ webvtt.Writ
 func (w *WebVTTWriter) Write(c model.Cue) error {
 	if w.closed {
 		return errClosed()
+	}
+	if drop, err := w.gate(c); drop || err != nil {
+		return err
 	}
 	w.buf = w.buf[:0]
 	if w.hasBlocks {

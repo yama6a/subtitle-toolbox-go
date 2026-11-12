@@ -25,7 +25,7 @@ type Violation struct {
 }
 
 // Check returns one violation per broken rule, in the order of the rule table of docs/validation.md. It does not
-// change s. It calls rules.Validate first.
+// change s. It skips the image cues without lines. It calls rules.Validate first.
 func Check(s *model.Subtitle, rules Rules) ([]Violation, error) {
 	c, err := newChecker(rules)
 	if err != nil {
@@ -35,16 +35,21 @@ func Check(s *model.Subtitle, rules Rules) ([]Violation, error) {
 		c.add(NoCue, RuleRequireCues, 0, nil)
 	}
 	var latestEnd time.Duration
+	seen := false
 	for i, cue := range s.Cues() {
+		if cue.IsImageWithoutText() {
+			continue
+		}
 		if err := c.cue(i, cue); err != nil {
 			return nil, err
 		}
-		if i > 0 {
+		if seen {
 			c.gap(i, cue.Start-latestEnd)
 		}
-		if i == 0 || cue.End > latestEnd {
+		if !seen || cue.End > latestEnd {
 			latestEnd = cue.End
 		}
+		seen = true
 	}
 	return c.out, nil
 }
