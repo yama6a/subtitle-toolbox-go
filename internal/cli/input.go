@@ -12,11 +12,18 @@ import (
 	"strings"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/extfallback"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
 )
 
 const stdinArg = "-"
+
+// rollUps lists the values of --scc-roll-up. The first is the default.
+//
+//nolint:gochecknoglobals // lookup table of the --scc-roll-up values
+var rollUps = []string{string(scc.RollUpScreen), string(scc.RollUpLines)}
 
 // The help texts of --fps. A command that writes subtitles gets writeFPSHelp, a command that reports gets reportFPSHelp.
 // validate has its own text, because --fps also sets --video-fps.
@@ -36,8 +43,11 @@ func inputOptions(manyInputs bool, fpsHelp string) []option {
 		valueOption("encoding", "NAME", "Encoding of input that is not UTF-8, for example Windows-1252. "+
 			"It replaces code page detection. A BOM, valid UTF-8 and UTF-16 input win over it."),
 		flagOption("lenient", "Skip or repair broken cues and print a warning for each."),
-		valueOption("input-fps", "RATE", "Frame rate of a MicroDVD input without a {1}{1}<fps> first line, and of CSV or TSV times in hh:mm:ss:ff."),
+		valueOption("input-fps", "RATE", "Frame rate of a MicroDVD input without a {1}{1}<fps> first line, "+
+			"of Spruce STL timecodes, and of CSV or TSV times in hh:mm:ss:ff."),
 		valueOption("fps", "RATE", fpsHelp),
+		valueOption("scc-roll-up", "MODE", "How SCC and MCC input reads roll-up captions: screen gives one cue per screen, "+
+			"lines gives one cue per row. Default: "+rollUps[0]+"."),
 	}
 	if manyInputs {
 		opts = append(opts, flagOption("keep-going",
@@ -100,7 +110,7 @@ func label(arg string) string {
 	return arg
 }
 
-// prepareRead builds the read options of --input-fps, --from, --encoding and --lenient and checks them.
+// prepareRead builds the read options of --input-fps, --scc-roll-up, --from, --encoding and --lenient and checks them.
 // A command that renames --from sets fromOption first.
 func (r *runner) prepareRead(a *args) error {
 	fps, ok, err := a.Rate("input-fps")
@@ -110,6 +120,13 @@ func (r *runner) prepareRead(a *args) error {
 	if ok {
 		r.readOptions.MicroDVD.FrameRate = fps
 		r.readOptions.CSV.FrameRate = fps
+		r.readOptions.SpruceSTL.FrameRate = fps
+	}
+	if rollUp, ok, err := a.Choice("scc-roll-up", rollUps...); err != nil {
+		return err
+	} else if ok {
+		r.readOptions.SCC.RollUp = scc.RollUp(rollUp)
+		r.readOptions.MCC.RollUp = mcc.RollUp(rollUp)
 	}
 	if v, ok := a.Value(cmp.Or(r.fromOption, "from")); ok {
 		f, err := readableFormat(v)

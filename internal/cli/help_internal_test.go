@@ -14,6 +14,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/diff"
 	"github.com/yama6a/subtitle-toolbox-go/v2/dual"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 	"github.com/yama6a/subtitle-toolbox-go/v2/profanity"
 	"github.com/yama6a/subtitle-toolbox-go/v2/refsync"
@@ -199,12 +200,16 @@ Options:
                          standard output. The file must not exist.
   --output-dir DIR       Write each output into this directory, with the base
                          name of its input. Several inputs need it.
-  --output-fps RATE      Frame rate of MicroDVD output. Default: the frame rate
-                         of a MicroDVD input.
+  --output-fps RATE      Frame rate of MicroDVD, Spruce STL, iTT and MCC output.
+                         Default: the frame rate of a MicroDVD, Spruce STL, iTT
+                         or MCC input.
   --line-ending lf|crlf  Line ending of the output. Default: lf.
   --bom                  Start the output with a UTF-8 BOM.
   --no-bom               Write no UTF-8 BOM. Default: the BOM rule of the output
                          format.
+  --scc-fit              Wrap, replace characters and delay or drop captions
+                         that SCC output cannot hold, in place of failing.
+                         Prints each change.
   --from FORMAT          Input format. Default: the format detected from the
                          content. When detection finds no format, the file
                          extension sets it.
@@ -214,9 +219,13 @@ Options:
   --lenient              Skip or repair broken cues and print a warning for
                          each.
   --input-fps RATE       Frame rate of a MicroDVD input without a {1}{1}<fps>
-                         first line, and of CSV or TSV times in hh:mm:ss:ff.
+                         first line, of Spruce STL timecodes, and of CSV or TSV
+                         times in hh:mm:ss:ff.
   --fps RATE             Sets --input-fps and --output-fps. A specific option
                          wins over --fps.
+  --scc-roll-up MODE     How SCC and MCC input reads roll-up captions: screen
+                         gives one cue per screen, lines gives one cue per row.
+                         Default: screen.
   --keep-going           Go on with the next file after a file fails. Default:
                          stop at the first failure.
   -h, --help             Show this help.
@@ -224,7 +233,7 @@ Options:
 	assert.Equal(t, want, commandHelp(&reportingConvert{}))
 
 	info := call{}.run(t, "help", "info").Stdout
-	assert.Contains(t, info, "\nOptions:\n  --json            Print JSON: a list with one object for each input file.\n  --from FORMAT  ")
+	assert.Contains(t, info, "\nOptions:\n  --json              Print JSON: a list with one object for each input file.\n  --from FORMAT  ")
 }
 
 func TestCommandHelpWithDetails(t *testing.T) {
@@ -337,10 +346,11 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 	codeDefaults["snap-min-duration-frames"] = strconv.Itoa(timing.DefaultMinDurationFrames)
 	codeDefaults["mode"] = string(dual.ModeStack)
 	codeDefaults["secondary-alignment"] = strconv.Itoa(dual.DefaultSecondaryAlignment.Numpad())
+	codeDefaults["scc-roll-up"] = string(scc.RollUpScreen)
 	codeDefaults["snap-tolerance"] = formatNumber(dual.DefaultTimeTolerance.Seconds())
 	described := []string{
 		"the format detected from the content", "stop at the first failure", "the input format",
-		"the BOM rule of the output format", "as for --from", "the frame rate of a MicroDVD input",
+		"the BOM rule of the output format", "as for --from", "the frame rate of a MicroDVD, Spruce STL, iTT or MCC input",
 		"none", "the format of the primary file", "half the --video-fps, rounded to the nearest frame",
 	}
 	unwrap := regexp.MustCompile(`\n {3,}(\S)`)

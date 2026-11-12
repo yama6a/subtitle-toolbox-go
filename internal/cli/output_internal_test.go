@@ -2,11 +2,9 @@ package cli
 
 import (
 	"context"
-	"io"
 	"os"
 	"path/filepath"
 	"slices"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -534,7 +532,7 @@ func TestUnwritableContentFailsThatFile(t *testing.T) {
 		"Read a file in another encoding with its source encoding. Pass --encoding with the source encoding of the file.\n"), got.Stderr)
 }
 
-// reportingConvert is a write command without edits, with an encode step that prints a report before the write.
+// reportingConvert is a write command without edits.
 type reportingConvert struct{ out writeOutput }
 
 var _ fileCommand = &reportingConvert{}
@@ -554,11 +552,6 @@ func (s *reportingConvert) run(ctx context.Context, a *args, c *console) error {
 }
 
 func (s *reportingConvert) prepare(a *args, r *runner) error {
-	s.out.encode = func(in *input, out io.Writer, sub *stbox.Subtitle, f stbox.Format) error {
-		r.c.err(in.label() + ": " + strconv.Itoa(sub.Len()) + " cues as " + string(f) + "\n")
-		_, err := stbox.Write(out, sub, f, s.out.opts)
-		return err
-	}
 	if err := r.prepareRead(a); err != nil {
 		return err
 	}
@@ -576,16 +569,6 @@ func (s *reportingConvert) process(_ context.Context, r *runner, in *input) erro
 }
 
 func (*reportingConvert) finish(*runner) error { return nil }
-
-func TestWriteRunsTheEncodeStepOfTheCommand(t *testing.T) {
-	t.Parallel()
-
-	dir := newDir(t)
-	cl := call{dir: dir, commands: []command{&reportingConvert{}}}
-	assert.Equal(t, result{Stdout: "trip.srt -> out.vtt\n", Stderr: "trip.srt: 3 cues as vtt\n"},
-		cl.run(t, "convert", "trip.srt", "--to", "vtt", "-o", "out.vtt"))
-	assert.Equal(t, convertAs(t, "trip.srt", stbox.WebVTT), readFile(t, dir, "out.vtt"))
-}
 
 func TestConvertWritesITTIntoAnITTFile(t *testing.T) {
 	t.Parallel()

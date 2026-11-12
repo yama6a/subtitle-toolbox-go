@@ -2,9 +2,12 @@ package cli
 
 import (
 	"bytes"
-	"io"
+	"strconv"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 )
 
 // lineEndings maps the values of --line-ending to the library values. The first entry is the default.
@@ -28,10 +31,13 @@ func outputOptions(toHelp string) []option {
 		},
 		valueOption("output-dir", "DIR",
 			"Write each output into this directory, with the base name of its input. Several inputs need it."),
-		valueOption("output-fps", "RATE", "Frame rate of MicroDVD output. Default: the frame rate of a MicroDVD input."),
+		valueOption("output-fps", "RATE", "Frame rate of MicroDVD, Spruce STL, iTT and MCC output. "+
+			"Default: the frame rate of a MicroDVD, Spruce STL, iTT or MCC input."),
 		valueOption("line-ending", "lf|crlf", "Line ending of the output. Default: "+lineEndings[0].name+"."),
 		flagOption("bom", "Start the output with a UTF-8 BOM."),
 		flagOption("no-bom", "Write no UTF-8 BOM. Default: the BOM rule of the output format."),
+		flagOption("scc-fit", "Wrap, replace characters and delay or drop captions that SCC output cannot hold, "+
+			"in place of failing. Prints each change."),
 	}
 }
 
@@ -42,12 +48,13 @@ type writeOutput struct {
 	opts stbox.WriteOptions
 	// outputFPS is the rate of --output-fps or --fps, the zero value when the call gives neither.
 	outputFPS stbox.FrameRate
-	// encode writes s in format f to out. nil means stbox.Write with opts. A command sets it for a writer with a
-	// report, such as the dropped colours of WebVTT, and prints the report with the label of in.
-	encode func(in *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error
+	sccFit    bool
+	// ass holds the write options of the ass group, nil without them.
+	ass *ass.WriteOptions
 }
 
-// prepare reads --to, --output-fps, -o, --output-dir, --bom, --no-bom and --line-ending.
+// prepare reads --to, --output-fps, -o, --output-dir, --bom, --no-bom, --line-ending and --scc-fit. With --to, it
+// checks the write options of that format.
 func (w *writeOutput) prepare(a *args, r *runner) error {
 	if v, ok := a.Value("to"); ok {
 		f, err := writableFormat(v)
@@ -61,12 +68,19 @@ func (w *writeOutput) prepare(a *args, r *runner) error {
 		return err
 	}
 	w.outputFPS = fps
+	w.sccFit = a.Has("scc-fit")
 	plan, err := newOutputPlan(r.c, a, w.to)
 	if err != nil {
 		return err
 	}
 	w.plan = plan
-	return w.prepareText(a)
+	if err := w.prepareText(a); err != nil {
+		return err
+	}
+	if w.to == "" {
+		return nil
+	}
+	return w.optionsFor(w.to).Validate()
 }
 
 // prepareText reads --bom, --no-bom and --line-ending.
@@ -120,16 +134,11 @@ func (w *writeOutput) write(r *runner, in *input, edit func(*stbox.Subtitle) (*s
 		}
 	}
 	var buf bytes.Buffer
-	encode := w.encode
-	if encode == nil {
-		encode = func(_ *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error {
-			_, err := stbox.Write(out, s, f, w.optionsFor(f))
-			return err
-		}
-	}
-	if err := encode(in, &buf, s, f); err != nil {
+	report, err := stbox.Write(&buf, s, f, w.optionsFor(f))
+	if err != nil {
 		return err
 	}
+	printWriteReport(r.c, in.label(), report)
 	if target == stdinArg {
 		r.c.out(buf.String())
 		return nil
@@ -145,8 +154,23 @@ func (w *writeOutput) write(r *runner, in *input, edit func(*stbox.Subtitle) (*s
 // as docs/cli.md says.
 func (w *writeOutput) optionsFor(f stbox.Format) stbox.WriteOptions {
 	opts := w.opts
-	if f == stbox.MicroDVD {
+	if w.ass != nil {
+		opts.ASS = *w.ass
+	}
+	switch f {
+	case stbox.MicroDVD:
 		opts.MicroDVD.FrameRate = w.outputFPS
+	case stbox.SpruceSTL:
+		opts.SpruceSTL.FrameRate = w.outputFPS
+	case stbox.ITT:
+		opts.ITT.FrameRate = w.outputFPS
+	case stbox.MCC:
+		opts.MCC.FrameRate = w.outputFPS
+	case stbox.SCC:
+		opts.SCC.Fit = w.sccFit
+	case stbox.ASS, stbox.Cavena890, stbox.CSV, stbox.DCP, stbox.EBUSTL, stbox.JSON, stbox.LRC, stbox.MPL2, stbox.MPSub,
+		stbox.PAC, stbox.PlainText, stbox.QuickTimeText, stbox.SAMI, stbox.SBV, stbox.SubRip, stbox.SubViewer,
+		stbox.TMPlayer, stbox.TSV, stbox.TTML, stbox.WebVTT:
 	}
 	return opts
 }
@@ -165,4 +189,43 @@ func (w *writeOutput) output(in *input) (f stbox.Format, target string, err erro
 	}
 	target = w.plan.target(in.arg, f)
 	return f, target, w.plan.checkTarget(in.arg, target)
+}
+
+// printWriteReport prints the entries of the WebVTT, SCC, MCC and EBU STL reports on stderr, one line each, with the
+// label of the input.
+func printWriteReport(c *console, label string, r stbox.WriteReport) {
+	if r.WebVTT != nil {
+		for _, d := range r.WebVTT.DroppedColors {
+			c.err(label + ": " + d.Message + "\n")
+		}
+	}
+	if r.SCC != nil {
+		printFitChanges(c, label, r.SCC.Changes)
+	}
+	if r.MCC != nil {
+		printFitChanges(c, label, r.MCC.Changes)
+	}
+	if r.EBUSTL != nil {
+		for _, rep := range r.EBUSTL.Replaced {
+			c.err(label + ": " + replacedMessage(rep) + "\n")
+		}
+	}
+}
+
+func printFitChanges(c *console, label string, changes []scc.FitChange) {
+	for _, ch := range changes {
+		c.err(label + ": " + ch.Message + " (" + string(ch.Action) + ")\n")
+	}
+}
+
+// replacedMessage describes a character that the EBU STL writer wrote as "?". The cue number counts from 1.
+func replacedMessage(r ebustl.Replacement) string {
+	where := "Comment"
+	switch {
+	case r.Field != "":
+		where = "GSI field " + r.Field
+	case r.CueIndex >= 0:
+		where = "Cue " + strconv.Itoa(r.CueIndex+1)
+	}
+	return where + ": the character table has no " + quote(string(r.Character)) + `, so the file holds "?".`
 }

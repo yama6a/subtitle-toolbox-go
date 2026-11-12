@@ -2,21 +2,17 @@ package cli
 
 import (
 	"context"
-	"io"
 	"slices"
 	"strconv"
 	"strings"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
 )
 
 // convertCommand reads subtitle files, runs the edits of its option groups in pipeline order, and writes them.
 type convertCommand struct {
 	out   writeOutput
 	edits []edit
-	// ass holds the write options of the ass group, nil without them.
-	ass *ass.WriteOptions
 	// masking is the edit of the masking group, nil without --mask-words.
 	masking *maskingEdit
 	// snap is the edit of the snap group, nil without a trigger option.
@@ -127,22 +123,6 @@ func (cc *convertCommand) prepare(a *args, r *runner) error {
 	if err := cc.prepareGroups(a); err != nil {
 		return err
 	}
-	cc.out.encode = func(in *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error {
-		opts := cc.out.optionsFor(f)
-		if cc.ass != nil {
-			opts.ASS = *cc.ass
-		}
-		report, err := stbox.Write(out, s, f, opts)
-		if err != nil {
-			return err
-		}
-		if report.WebVTT != nil {
-			for _, d := range report.WebVTT.DroppedColors {
-				r.c.err(in.label() + ": " + d.Message + "\n")
-			}
-		}
-		return nil
-	}
 	return nil
 }
 
@@ -169,7 +149,7 @@ func (cc *convertCommand) prepareGroups(a *args) error {
 			return err
 		}
 		if ok {
-			cc.ass = &opts
+			cc.out.ass = &opts
 		}
 	}
 	return needsASSOutput(a, cc.out.to)

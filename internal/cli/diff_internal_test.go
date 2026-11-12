@@ -337,8 +337,12 @@ Options:
   --lenient                 Skip or repair broken cues and print a warning for
                             each.
   --input-fps RATE          Frame rate of a MicroDVD input without a {1}{1}<fps>
-                            first line, and of CSV or TSV times in hh:mm:ss:ff.
+                            first line, of Spruce STL timecodes, and of CSV or
+                            TSV times in hh:mm:ss:ff.
   --fps RATE                Same as --input-fps.
+  --scc-roll-up MODE        How SCC and MCC input reads roll-up captions: screen
+                            gives one cue per screen, lines gives one cue per
+                            row. Default: screen.
   --new-from FORMAT         Format of the new file. Default: as for --from.
   -h, --help                Show this help.
 `

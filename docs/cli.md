@@ -64,18 +64,33 @@ The words after the command name follow the PHP 5.x CLI. The standard `flag` pac
 
 ### Frame rates
 
-MicroDVD counts time in video frames, so a MicroDVD read and a MicroDVD write need the frame rate of the video. So do CSV and TSV times in `hh:mm:ss:ff`. Example: `stbox convert film.sub --fps 25 --to srt -o film.srt` reads a MicroDVD file without a `{1}{1}<fps>` first line at 25 fps.
+MicroDVD counts time in video frames, so a MicroDVD read and a MicroDVD write need the frame rate of the video. So do CSV and TSV times in `hh:mm:ss:ff`, the time codes of Spruce STL, and the iTT and MCC writers. Example: `stbox convert film.sub --fps 25 --to srt -o film.srt` reads a MicroDVD file without a `{1}{1}<fps>` first line at 25 fps.
 
 | Option | Commands | Sets | Without it |
 |:--- |:--- |:--- |:--- |
-| `--input-fps RATE` | every command that reads subtitle files | `ReadOptions.MicroDVD.FrameRate` and `ReadOptions.CSV.FrameRate` | `--fps`, else the `{1}{1}<fps>` line of a MicroDVD file. A CSV or TSV time in `hh:mm:ss:ff` fails |
-| `--output-fps RATE` | `convert`, `sync`, `dual` | `WriteOptions.MicroDVD.FrameRate`, for MicroDVD output only | `--fps`, else the frame rate of a MicroDVD input |
+| `--input-fps RATE` | every command that reads subtitle files | `ReadOptions.MicroDVD.FrameRate`, `ReadOptions.CSV.FrameRate` and `ReadOptions.SpruceSTL.FrameRate` | `--fps`, else the `{1}{1}<fps>` line of a MicroDVD file, and 25 or 30 fps guessed for Spruce STL. A CSV or TSV time in `hh:mm:ss:ff` fails |
+| `--output-fps RATE` | `convert`, `sync`, `dual` | the frame rate field of the output format only: `WriteOptions.MicroDVD`, `WriteOptions.SpruceSTL`, `WriteOptions.ITT` or `WriteOptions.MCC` | `--fps`, else the frame rate that the reader stored |
 | `--fps RATE` | every command that reads subtitle files | both rates, and the rate of the video for `--video-fps` of `convert` | |
 
 - **Check**: each rate is a number above 0. `--fps` is checked first, also when the specific option is given, so a bad `--fps` always fails. `--input-fps` comes before `--from` in the check order, and `--output-fps` right after `--to`.
-- **Advice**: `frames.sub: The frame rate is unknown. Pass --fps or --input-fps, start the file with {1}{1}<fps>, or pass --lenient for 23.976 fps.`, `frames.csv: line 2: The time "00:00:01:12" counts frames and needs a frame rate. Pass --fps or --input-fps.` and `trip.srt: MicroDVD output needs the frame rate of the video. Pass --fps or --output-fps.`. Each exits 3.
+- **Advice**: `frames.sub: The frame rate is unknown. Pass --fps or --input-fps, start the file with {1}{1}<fps>, or pass --lenient for 23.976 fps.`, `frames.csv: line 2: The time "00:00:01:12" counts frames and needs a frame rate. Pass --fps or --input-fps.` and `trip.srt: MicroDVD output needs the frame rate of the video. Pass --fps or --output-fps.`. Each exits 3. iTT output without a rate gives the same advice: `trip.srt: iTT output needs the frame rate of the video. Pass --fps or --output-fps.`.
+- **Rates that a format lacks**: MCC accepts 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60 fps, and iTT 23.976, 24, 25, 29.97 and 30 fps. With `--to`, `convert trip.srt --to mcc --output-fps 12` fails with exit 2 before the first read. Without `--to`, the check fails the input that writes MCC, exit 3. `--output-fps 12` with SubRip output changes nothing, because the CLI sets only the field of the output format.
+- **Drop-frame**: the CLI never sets drop-frame. MCC output at 29.97 or 59.94 fps and SCC output write drop-frame time codes, unless the input stored non-drop.
 - **TSV to CSV**: `convert trip.tsv --to csv` writes commas, and `--to tsv` writes tabs, as [formats.md](formats.md#csv-and-tsv) says.
 - **Frame rate change**: `--from-fps` and `--to-fps` of the `retime` group retime the cues. They do not take `--fps`.
+
+### Broadcast options
+
+| Option | Commands | Sets | Without it |
+|:--- |:--- |:--- |:--- |
+| `--scc-roll-up MODE` | every command that reads subtitle files | `ReadOptions.SCC.RollUp` and `ReadOptions.MCC.RollUp`. `MODE` is `screen` or `lines`, in any case | `screen`: one cue per screen of a roll-up caption. `lines` gives one cue per row |
+| `--scc-fit` | `convert`, `sync`, `dual` | `WriteOptions.SCC.Fit`, for SCC output only | an SCC write of a cue that SCC cannot hold fails |
+
+- **Order**: `--scc-roll-up` comes after `--fps` and is checked after `--input-fps`, before `--from`. `--scc-fit` comes after `--no-bom`.
+- **Write reports**: after a write, the CLI prints each change on stderr. SCC and MCC changes read `ferry.srt: Cue #3 at 5 s is left out. Its caption data needs the frames up to 5.839 s, but the cue ends at 5.4 s. (dropped)`. The action is `transliterated`, `wrapped`, `delayed` or `dropped`. The SCC changes need `--scc-fit`, and the MCC writer always fits.
+- **EBU STL report**: a character that the character code table lacks becomes `?` in the file. The CLI prints one line for each, where C stands for the character, such as an em dash in cue 1: `show.srt: Cue 1: the character table has no "C", so the file holds "?".`. A character of a GSI field gives `GSI field OPT: ...`, and a character of a comment gives `Comment: ...`. PHP prints nothing.
+- **SCC advice**: a cue that fits 4 lines of 32 characters after a wrap fails with `Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.`. A cue that needs a split fails without advice.
+- **Binary output**: EBU STL, PAC and Cavena 890 output goes to stdout or to a file as raw bytes. `info` shows no `Encoding:` row for them, and `--json` gives `"encoding": null`.
 
 ### Text files in a directory
 

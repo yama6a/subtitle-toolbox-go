@@ -91,7 +91,7 @@ func chooseOutput(data *model.Data, opts WriteOptions) (profileRate, error) {
 	}
 	if opts.FrameRate.IsZero() {
 		if storedRow < 0 {
-			return profileRate{}, &model.InvalidArgumentError{Option: frameRateOption, Msg: needsFrameRate}
+			return profileRate{}, needsFrameRateError{&model.InvalidArgumentError{Option: frameRateOption, Msg: needsFrameRate}}
 		}
 		return stored, nil
 	}

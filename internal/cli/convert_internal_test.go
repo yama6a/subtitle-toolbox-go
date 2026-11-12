@@ -164,7 +164,7 @@ func TestConvertKeepsTheInputFormatWithoutTo(t *testing.T) {
 	assert.Equal(t, convertAs(t, "shop.vtt", stbox.WebVTT), readFile(t, dir, "out/shop.vtt"))
 }
 
-// Ported from tests/Cli/ConvertGoldensTest.php of subtitle-toolbox-php, the 1.0 rows.
+// Ported from tests/Cli/ConvertGoldensTest.php of subtitle-toolbox-php, the 1.0 and 2.x rows.
 func TestConvertWritesTheFormatOfTo(t *testing.T) {
 	t.Parallel()
 
@@ -192,6 +192,9 @@ func TestConvertWritesTheFormatOfTo(t *testing.T) {
 		{"subviewer/real/subviewer2_crlf.sub", stbox.SubRip},
 		{"subviewer/real/subviewer1_delay.sub", stbox.WebVTT},
 		{"srt/real/own_styled.srt", stbox.SubViewer},
+		{"itt/real/fcp_23976_styles.itt", stbox.WebVTT},
+		{"scc/real/popon_broadcast_df.scc", stbox.SubRip},
+		{"stl/real/bakery_teletext_25fps.stl", stbox.SubRip},
 	}
 	for _, tt := range tests {
 		t.Run(tt.path, func(t *testing.T) {
