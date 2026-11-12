@@ -3,6 +3,8 @@ package stbox
 import (
 	"io"
 	"strconv"
+
+	"github.com/yama6a/subtitle-toolbox-go/v3/container/mkv"
 )
 
 // containerFile is an open container file. Each table row has an adapter type for the file type of its package.
@@ -20,7 +22,23 @@ type containerFuncs struct {
 // containers lists the containers that the library reads.
 //
 //nolint:gochecknoglobals // lookup table of the container readers
-var containers = []containerFuncs{}
+var containers = []containerFuncs{
+	{container: Matroska, open: openMatroska},
+}
+
+type matroskaFile struct{ *mkv.File }
+
+func (f matroskaFile) Extract(number int, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return f.File.Extract(number, opts.common())
+}
+
+func openMatroska(r io.ReaderAt, size int64) (containerFile, error) { //nolint:ireturn // the row type of the container table returns the interface
+	f, err := mkv.Open(r, size)
+	if err != nil {
+		return nil, err
+	}
+	return matroskaFile{f}, nil
+}
 
 // Tracks returns the subtitle tracks of the video container in the first size bytes of r, in file order.
 // A container without subtitle tracks gives an empty list and no error. Content that is no container, and a
