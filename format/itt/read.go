@@ -54,8 +54,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 func isParameterPrefix(namespaces *model.Data, prefix string) bool {
 	uri, ok := namespaces.String(prefix)
 	if !ok {
-		_, mapped := namespaces.Get(prefix)
-		return !mapped && prefix == "ttp"
+		return prefix == "ttp"
 	}
 	return slices.Contains(ttmlwrite.ParameterNamespaces, uri)
 }

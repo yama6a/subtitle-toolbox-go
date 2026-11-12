@@ -80,12 +80,17 @@ type WriteOptions struct {
 	SubViewer subviewer.WriteOptions
 	// SpruceSTL holds the settings of the Spruce STL writer. The zero value takes the frame rate that the reader stored, else 25.
 	SpruceSTL sprucestl.WriteOptions
+	// SCC holds the settings of the SCC writer. The zero value keeps the stored drop-frame mode, else writes
+	// drop-frame labels, and fails for a cue that SCC cannot hold.
+	SCC scc.WriteOptions
 }
 
 // WriteReport holds the changes that a writer made to fit the subtitle into its format.
 type WriteReport struct {
 	// WebVTT is non-nil after a WebVTT write, also when it holds no dropped color.
 	WebVTT *webvtt.WriteReport
+	// SCC is non-nil after an SCC write, also when Fit made no change.
+	SCC *scc.WriteReport
 }
 
 // ReadInfo holds the facts of a read that are not subtitle content.
@@ -145,26 +150,13 @@ func (o WriteOptions) Validate() error {
 			Msg:    "The BOM rule " + strconv.Itoa(int(o.BOM)) + " is unknown.",
 		}
 	}
-	if err := o.ASS.Validate(); err != nil {
-		return err
-	}
-	if err := o.MicroDVD.Validate(); err != nil {
-		return err
-	}
-	if err := o.MPSub.Validate(); err != nil {
-		return err
-	}
-	if err := o.PlainText.Validate(); err != nil {
-		return err
-	}
-	if err := o.CSV.Validate(); err != nil {
-		return err
-	}
-	if err := o.ITT.Validate(); err != nil {
-		return err
-	}
-	if err := o.SubViewer.Validate(); err != nil {
-		return err
+	for _, check := range []func() error{
+		o.ASS.Validate, o.MicroDVD.Validate, o.MPSub.Validate, o.PlainText.Validate, o.CSV.Validate, o.ITT.Validate,
+		o.SubViewer.Validate, o.SCC.Validate,
+	} {
+		if err := check(); err != nil {
+			return err
+		}
 	}
 	return o.SpruceSTL.Validate()
 }

@@ -93,6 +93,7 @@ func TestWriteOptions(t *testing.T) {
 		{name: "29.97 row", rate: model.FrameRate2997, want: []string{root("30", "999 1000"), "<div/>"}},
 		{name: "30 row", rate: model.FrameRate30, want: []string{root("30", "1 1"), "<div/>"}},
 		{name: "29.97 drop-frame writes nonDrop", rate: model.FrameRate2997DF, cues: []cue{{60, 61, ""}}, want: []string{root("30", "999 1000"), `begin="00:00:59:28"`}},
+		{name: "25 drop-frame writes the 25 row", rate: model.FrameRate{Num: 25, Den: 1, DropFrame: true}, want: []string{root("25", "1 1")}},
 		{
 			name: "the stored rate", stored: []string{"frameRate", "25"}, cues: []cue{{1, 2, ""}},
 			want: []string{root("25", "1 1"), `begin="00:00:01:00" end="00:00:02:00"`},

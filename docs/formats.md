@@ -492,7 +492,7 @@ The writer builds a TTML document with the TTML writer and changes these parts:
 - **Times**: begin frame is the start rounded to the nearest frame, and 0 for a negative start. End frame is the end rounded the same way, and at least the begin frame plus 1. So each cue lasts 1 frame or more. Both stop at the last frame below 100000 hours, `99999:59:59:24` at 25 fps. At 29.97 fps the label `01:00:00:00` is 3603.6 s.
 - **Forced flag**: a forced cue writes `itts:forcedDisplay="true"` and declares `itts`. Output without a forced cue has no `itts`.
 - **Unique IDs**: the rules of TTML apply, and the head holds the IDs `normal`, `top` and `bottom`. A cue with the ID `top` comes out as `top_2`.
-- **Lost on write**: everything that the TTML writer loses, the input head, styles and regions except top and bottom, the left and right column, the middle row, `<s>`, speakers, color classes without a color, drop-frame mode and time below one frame.
+- **Lost on write**: everything that the TTML writer loses. Also the input head, styles and regions other than `top` and `bottom`, the left and right column, the middle row, `<s>`, speakers, color classes without a color, drop-frame mode and time below one frame.
 
 ### Options
 
@@ -694,7 +694,7 @@ The first block reads as one cue from 1.5 s to 4 s. SBV has no markup, so `<i>` 
 
 ## SCC
 
-Scenarist Closed Captions (SCC) is the delivery format of US broadcast captions. Package `format/scc` reads it. The format name is `scc`, the extension `.scc`. This version has no SCC writer. The reader decodes CEA-608, the line 21 caption standard of NTSC video.
+Scenarist Closed Captions (SCC) is the delivery format of US broadcast captions. Package `format/scc` reads and writes it. The format name is `scc`, the extension `.scc`. The reader decodes CEA-608, the line 21 caption standard of NTSC video. The writer writes pop-on captions on data channel 1.
 
 ```text
 Scenarist_SCC V1.0
@@ -720,14 +720,44 @@ The file reads as one cue from 1.768 s to 4.004 s with the line `Hello!` on row 
 - **Format data**: the file holds `dropFrame`, true when the first code line has `;` before the frames. It is absent when the file has no code line. Each cue holds `mode` (`pop-on`, `roll-up` or `paint-on`), `rows` (the row of each line, 1 to 15) and `columns` (the first column of each line, 0 to 31). The cue data has no schema row, so it passes unchecked.
 - **Lenient repairs**: see [lenient-parsing.md](lenient-parsing.md#scc).
 
+### Write
+
+The writer turns each cue into a pop-on caption. The caption loads into hidden memory in the frames before the cue start. The EOC command (end of caption) shows it on the start frame. The EDM command (erase displayed memory) clears it at the cue end. A cue from 1 s to 3 s with `Hello!` writes the file at the top of this section, except that the writer puts ENM (erase hidden memory) before RCL (resume caption loading): `94ae 94ae 9420 9420 9476 9476 97a1 97a1 c8e5 ecec efa1 942f 942f`.
+
+- **Output**: the header, an empty line, then one line for each run of consecutive frames. A line holds the label of its first frame, a tab and the words as 4 lowercase hex digits. Lines are separated by an empty line. The output ends with one LF. A subtitle without text writes the header and an LF.
+- **Time codes**: `DropFrameOn` writes `00:01:00;02`. `DropFrameOff` writes `00:01:00:00`. `DropFrameKeep` takes the stored `dropFrame` of the file, else drop-frame. A cue from 58 s to 61 s ends with `00:01:01;00` by default and `00:01:00:28` without drop-frame.
+- **Line ending and BOM**: `LineEnding` and `BOM` apply. The default writes no BOM. The writer ignores `StripTags`.
+- **Limits**: a cue holds at most 4 lines of 32 characters, and only characters that CEA-608 has. A cue that breaks a limit gives an `*UnwritableError`. Its message says the fix in words, for example `Cue #0 at 1 s has a line with 33 characters, but SCC allows 32. Wrap the lines to 4 lines of 32 characters first.` The error wraps `scc.ErrWrapFirst` when the text fits 4 lines of 32 characters after a wrap, and `scc.ErrSplitFirst` when it needs a split into cues first. A cue without text writes nothing.
+- **Markup**: `<i>`, `<u>` and `<font color>` in the 7 CEA-608 colors become PAC styles and mid-row codes. Another color becomes white. Other tags drop. A style change inside a word costs a space, because a mid-row code shows as a space. Text that looks like a tag stays: `a &lt; b &gt; c` reads back as the same text.
+- **Positions**: the first rule that holds sets the rows and columns. First, the cue data `rows` and `columns` of a read, when both list one integer for each line, the rows rise from 1 to 15, a first row of 4 or less goes with a top alignment, and `Position.Row` equals the first stored row. A column is moved to fit the line. Second, `Position.RowOn` on the 15 by 32 grid, with every line at `Position.Column` when the position is on the CEA-608 grid. Third, the alignment: row 1 for top, the middle rows for middle and the last rows for bottom, with column 0 for left, the end for right and the middle for center.
+- **Row edge**: the reader gives rows 1 to 4 a `TopCenter` alignment and rows 5 to 15 a `BottomCenter` alignment. The top third of a 15-row grid is rows 1 to 5, so a cue on SCC row 5 with `BottomCenter` loses its row in other writers that use `RowOn`, such as EBU STL.
+- **Scheduler**: each word takes one frame. The EOC goes on the cue start frame when the load fits in the frames before it. Else the EOC moves later, and the caption shows late. The EDM of the caption before goes at its cue end, when there is room. Without room, the new EOC replaces the shown caption. Cues from 1 s to 5 s and from 3 s to 4 s read back as 1.001 to 3.003 s and 3.003 to 4.004 s.
+- **Time limit**: a time code can show an hour of up to 6 digits, because drop-frame labels run ahead of real time. The reader takes them. The writer leaves out a word on a frame at or after 100000 hours.
+
+#### Fit
+
+`WriteOptions.Fit` changes what SCC cannot hold, in place of failing. `WriteReport.Changes` lists each change in cue order, as `FitChange` values with `CueIndex`, `Action` and `Message`. `stbox.WriteReport.SCC` is non-nil after every SCC write, also with no change.
+
+| Action | What the fit does | Message |
+|:--- |:--- |:--- |
+| `Transliterated` | replaces each character that CEA-608 lacks and that has a replacement, such as U+0160 with `S`. It decodes the entities of the text first | `Cue #0 at 1 s: replaced "U+0160" with "S".`, with the character itself in place of `U+0160` |
+| `Wrapped` | wraps the lines to at most 4 lines of 32 characters. It stops for more than 128 visible characters without spaces | `Cue #0 at 1 s: wrapped the text into 3 lines of at most 32 characters.` |
+| `Delayed` | writes the caption late, because the frames before its start cannot hold its data | `Cue #0 at 1 s shows at 1.969 s. The frames before its start cannot hold its caption data.` |
+| `Dropped` | leaves the cue out, because its caption data needs frames up to or after the cue end | `Cue #3 at 5 s is left out. Its caption data needs the frames up to 5.839 s, but the cue ends at 5.4 s.` |
+
+Without `Fit`, a late caption writes late and no change is reported. A cue that still breaks a limit after the fit gives the error above.
+
 ### Options
 
 | Option | Field | Type | Default | Meaning |
 |:--- |:--- |:--- |:--- |:--- |
+| `WriteOptions.SCC` | `DropFrame` | `DropFrameMode` | `DropFrameKeep` | `DropFrameOn`, `DropFrameOff`, or the stored mode of the file, else drop-frame |
+| `WriteOptions.SCC` | `Fit` | `bool` | false | change the text and timing that SCC cannot hold, in place of failing |
 | `ReadOptions.SCC` | `Channel` | `int` | 0, read as 1 | 1 reads CC1 and CC3. 2 reads CC2 and CC4 |
 | `ReadOptions.SCC` | `RollUp` | `scc.RollUp` | `RollUpScreen` | `RollUpScreen` or `RollUpLines`. The text forms are `screen` and `lines` |
 
-- **Check**: `Validate` rejects a channel other than 0, 1 and 2 with `The SCC data channel must be 1 or 2, got 3.` and an unknown roll-up mode. Both match `ErrInvalidArgument`.
+- **Read check**: `ReadOptions.Validate` rejects a channel other than 0, 1 and 2 with `The SCC data channel must be 1 or 2, got 3.` and an unknown roll-up mode. Both match `ErrInvalidArgument`.
+- **Write check**: `WriteOptions.Validate` rejects an unknown drop-frame mode with `The SCC drop-frame mode 3 is unknown.`. It matches `ErrInvalidArgument`.
 - **Reader**: it reads `Lenient` and `LastCueDuration` too.
 
 ## MPL2

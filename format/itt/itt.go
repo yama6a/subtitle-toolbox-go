@@ -66,7 +66,7 @@ func (o WriteOptions) Validate() error {
 
 // row returns the index in profileRates of the first row that the frame rate of o is near.
 func (o WriteOptions) row() (int, bool) {
-	if o.FrameRate.Validate() != nil {
+	if o.FrameRate.Num <= 0 || o.FrameRate.Den <= 0 {
 		return 0, false
 	}
 	return rowOf(o.FrameRate)

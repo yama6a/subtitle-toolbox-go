@@ -12,8 +12,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
-const parameterNamespace = "http://www.w3.org/ns/ttml#parameter"
-
 //nolint:gochecknoglobals // the fixed Apple head
 var headLines = []string{
 	"<head>",
@@ -28,12 +26,6 @@ var headLines = []string{
 }
 
 var fontRegexp = regexp.MustCompile(`(?i)<font\b([^>]*)>`)
-
-// output is the frame rate of a write: the rate that frames the cue times and the 2 strings of the root.
-type output struct {
-	rate                  model.FrameRate
-	frameRate, multiplier string
-}
 
 // Write writes s as iTT with SMPTE time codes. WriteOptions.FrameRate wins over the rate of the itt format data.
 // A time stops at the last frame below 100000 hours.
@@ -83,8 +75,8 @@ func lastFrame(r model.FrameRate) int64 {
 
 // chooseOutput picks the frame rate of the write from the option and the itt format data. The strings of a stored
 // rate stay, so a multiplier of "1000 1001" is not rewritten when the option names the same frame rate.
-func chooseOutput(data *model.Data, opts WriteOptions) (output, error) {
-	var stored output
+func chooseOutput(data *model.Data, opts WriteOptions) (profileRate, error) {
+	var stored profileRate
 	storedRow := -1
 	if frameRate, ok := data.String("frameRate"); ok {
 		multiplier, ok := data.String("frameRateMultiplier")
@@ -93,13 +85,13 @@ func chooseOutput(data *model.Data, opts WriteOptions) (output, error) {
 		}
 		if rate, ok := storedRate(frameRate, multiplier); ok {
 			if row, near := rowOf(rate); near && profileRates[row].frameRate == frameRate {
-				stored, storedRow = output{rate, frameRate, multiplier}, row
+				stored, storedRow = profileRate{rate, frameRate, multiplier}, row
 			}
 		}
 	}
 	if opts.FrameRate.IsZero() {
 		if storedRow < 0 {
-			return output{}, &model.InvalidArgumentError{Option: frameRateOption, Msg: needsFrameRate}
+			return profileRate{}, &model.InvalidArgumentError{Option: frameRateOption, Msg: needsFrameRate}
 		}
 		return stored, nil
 	}
@@ -108,7 +100,7 @@ func chooseOutput(data *model.Data, opts WriteOptions) (output, error) {
 		return stored, nil
 	}
 	p := profileRates[row]
-	return output(p), nil
+	return p, nil
 }
 
 // copyOf returns the subtitle that the TTML document writer turns into iTT: the Apple head, a top or bottom region
@@ -122,7 +114,7 @@ func copyOf(s *model.Subtitle) *model.Subtitle {
 	}
 	_ = doc.SetFormatData(string(model.TTML), model.NewData( // the data has the shape of the schema
 		model.Field{Key: "namespace", Value: ttmlwrite.NSTTML},
-		model.Field{Key: "namespaces", Value: model.NewData(model.Field{Key: "ttp", Value: parameterNamespace})},
+		model.Field{Key: "namespaces", Value: model.NewData(model.Field{Key: "ttp", Value: ttmlwrite.ParameterNamespaces[0]})},
 		model.Field{Key: "head", Value: strings.Join(headLines, "\n")},
 		model.Field{Key: "body", Value: model.NewData(model.Field{Key: "style", Value: "normal"})},
 	))

@@ -235,7 +235,7 @@ func (*validateCommand) loadSideFiles(context.Context, *runner) error { return n
 func (c *validateCommand) process(_ context.Context, r *runner, in *input) error {
 	violations, err := validation.Check(in.sub, c.rules)
 	if err != nil {
-		return err //nolint:wrapcheck // the *InvalidArgumentError carries the message that the CLI prints
+		return err
 	}
 	if len(violations) > 0 {
 		r.results++
