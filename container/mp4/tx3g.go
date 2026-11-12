@@ -59,7 +59,7 @@ func (f *File) sampleLines(w *walker, s sample) ([]string, error) {
 		return nil, err
 	}
 	length := uint64(binary.BigEndian.Uint16(head))
-	where := " of the sample of track " + strconv.Itoa(w.number) + " at byte " + strconv.FormatUint(s.offset, 10)
+	where := " of the sample of track " + strconv.Itoa(w.t.info.Number) + " at byte " + strconv.FormatUint(s.offset, 10)
 	if length > uint64(s.size)-textLengthSize {
 		return nil, parseError("The text" + where + " is longer than the sample.")
 	}

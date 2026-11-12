@@ -62,6 +62,9 @@ func (t *track) checkExtractable(opts ExtractOptions) error {
 	if t.encrypted {
 		return parseError("Track " + n + " has the codec " + t.info.CodecID + " and is encrypted.")
 	}
+	if t.info.CodecID == "" {
+		return parseError("Track " + n + " has no sample entry.")
+	}
 	if t.info.Format == "" {
 		return parseError("Track " + n + " has the codec " + t.info.CodecID + ". The reader extracts only " +
 			codecTx3g + ", " + codecC608 + ", " + codecC708 + ".")

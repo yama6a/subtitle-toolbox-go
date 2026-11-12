@@ -79,19 +79,20 @@ func TestExtractFixtures(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name  string
-		file  string
-		track int
-		want  []cueRow
+		name     string
+		file     string
+		track    int
+		language string
+		want     []cueRow
 	}{
-		{"tx3g with gaps, a style box, UTF-16 and CR LF", "text_tracks.mp4", 2, []cueRow{
+		{"tx3g with gaps, a style box, UTF-16 and CR LF", "text_tracks.mp4", 2, "eng", []cueRow{
 			{ms(1000), ms(3500), []string{"The tram to the old town leaves from stop 3."}, false},
 			{ms(4000), ms(7000), []string{"Tickets are sold", "at the machine."}, false},
 			{ms(7000), ms(9000), []string{"<b>Bold</b> words here."}, false},
 			{ms(10000), ms(12250), []string{"Café at the corner, 2 € a cup."}, false},
 			{ms(12250), ms(14000), []string{"Line one", "Line two"}, false},
 		}},
-		{"tx3g with version 1 boxes, co64, stz2 and the forced flag", "text_tracks.mp4", 3, []cueRow{
+		{"tx3g with version 1 boxes, co64, stz2 and the forced flag", "text_tracks.mp4", 3, "fr-CA", []cueRow{
 			{ms(1000), ms(3000), []string{"Le tram part à huit heures."}, true},
 			{ms(3000), ms(5500), []string{"La boulangerie ouvre à six heures."}, true},
 		}},
@@ -103,7 +104,7 @@ func TestExtractFixtures(t *testing.T) {
 			s := extract(t, openFixture(t, tt.file), tt.track, mp4.ExtractOptions{})
 			assert.Equal(t, tt.want, rows(s))
 			lang, _ := s.Metadata(model.MetadataLanguage)
-			assert.Equal(t, openFixture(t, tt.file).Tracks()[map[int]int{2: 0, 3: 1}[tt.track]].Language, lang)
+			assert.Equal(t, tt.language, lang)
 		})
 	}
 }

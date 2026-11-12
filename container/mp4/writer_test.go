@@ -1,6 +1,7 @@
 package mp4_test
 
 import (
+	"cmp"
 	"encoding/binary"
 	"slices"
 )
@@ -136,7 +137,7 @@ func trak(t trackSpec) []byte {
 	if timescale == 0 && !t.zeroTime {
 		timescale = 1000
 	}
-	language := cmpOr(t.language, "und")
+	language := cmp.Or(t.language, "und")
 	packed := uint16(language[0]-0x60)<<10 | uint16(language[1]-0x60)<<5 | uint16(language[2]-0x60)
 	var mdhd []byte
 	if t.version1 {
@@ -168,13 +169,6 @@ func trak(t trackSpec) []byte {
 		edts = box("edts", fullBox("elst", version, 0, u32(uint32(len(t.edits))), entries))
 	}
 	return box("trak", tkhd, edts, mdia, udta)
-}
-
-func cmpOr(s, fallback string) string {
-	if s == "" {
-		return fallback
-	}
-	return s
 }
 
 func sampleTables(t trackSpec) []byte {

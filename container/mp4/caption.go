@@ -70,7 +70,7 @@ func (f *File) c708Cues(w *walker, opts mcc.ReadOptions, lastCueDuration time.Du
 			}
 			_, triplets, err := cea708.ReadCDP(ccdp.Payload())
 			if err != nil {
-				return nil, parseError("The sample of track " + strconv.Itoa(w.number) + " at byte " +
+				return nil, parseError("The sample of track " + strconv.Itoa(w.t.info.Number) + " at byte " +
 					strconv.FormatUint(s.offset, 10) + " holds a ccdp box that is not valid. " + err.Error())
 			}
 			frames = append(frames, cea708.Frame{Time: nanos(s.start), Triplets: triplets})

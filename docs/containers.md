@@ -45,7 +45,7 @@ A sample that ends at 100000 hours or later fails with `The sample of track 1 at
 ### Damage
 
 - **Not MP4**: the file has no `ftyp` box at the start. The message is `The file is not an MP4 file.`
-- **Box sizes**: a box that does not fit its parent fails with `The box "moov" at byte 28 does not fit into its parent box.` Size 0 means to the end of the file. Size 1 means that a 64-bit size follows.
+- **Box sizes**: a box that does not fit its parent fails with `The box "moov" at byte 28 does not fit into its parent box.` At the top level, size 0 means to the end of the file and size 1 means that a 64-bit size follows. Inside the `moov` box, mp4ff rejects both, so a `trak` box with a 64-bit size fails the open.
 - **No `moov`**: `The MP4 file has no moov box.`
 - **Sample tables**: the reader checks each count against the size of the box or the file before it allocates. A file that claims 4294967295 samples fails at once.
 - **Sample outside the file**: `A sample of track 1 at byte 1073741824 lies outside the file.`
