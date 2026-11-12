@@ -6,6 +6,7 @@ linters:
       # The CLI passes the errors of the root package and of the Subtitle methods on unchanged, because its messages
       # read their types.
       # A service passes the retiming errors of the model on unchanged.
+      # The root package passes the errors of the container packages on unchanged too.
       # The CLI passes the errors of refsync on unchanged, because its messages read their types.
       # The CLI passes the errors of dual on unchanged, because its messages read their types.
       # The CLI passes the errors of profanity on unchanged, because its messages read their types.
@@ -14,6 +15,7 @@ linters:
       # The CLI passes the *InvalidArgumentError of timing and validation on unchanged, because its messages print it.
       ignore-package-globs:
         - github.com/yama6a/subtitle-toolbox-go/v3/internal/*
+        - github.com/yama6a/subtitle-toolbox-go/v3/container/*
         - github.com/yama6a/subtitle-toolbox-go/v3/format/*
         - github.com/yama6a/subtitle-toolbox-go/v3
         - github.com/yama6a/subtitle-toolbox-go/v3/model

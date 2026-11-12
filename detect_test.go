@@ -339,9 +339,8 @@ func TestDetectNeverReturnsAFormatThatIsNotAutoDetected(t *testing.T) {
 		}
 		content, err := fs.ReadFile(fsys, p)
 		require.NoError(t, err)
-		if d, ok := stbox.Detect(content); ok {
-			f := d.Format
-			assert.True(t, f.IsAutoDetected(), "%s detects as %s", p, f)
+		if d, ok := stbox.Detect(content); ok && d.Container == "" {
+			assert.True(t, d.Format.IsAutoDetected(), "%s detects as %s", p, d.Format)
 		}
 		return nil
 	})

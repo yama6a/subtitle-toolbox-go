@@ -71,7 +71,7 @@ Before step 1, `Detect` looks for a video container in the raw bytes. A containe
 
 | Step | Rule |
 |---:|:--- |
-| 1 | **Video file**: `Load` and `Parse` read the first `ContainerHeadSize` bytes only. A Matroska, MP4 or MPEG-TS head goes to the container reader and its track rules. A version without the reader for that container returns an error that matches `ErrUnsupportedFormat`: `movie.mkv is an MKV or WebM file. This version cannot read MKV or WebM files.` `Parse` says `The content is an MKV or WebM file.` With a reader and `Format` set, the error is `movie.mkv is an MKV or WebM file. Read it by track.` The row check comes first. This step runs with a format too |
+| 1 | **Video file**: `Load` and `Parse` read the first `ContainerHeadSize` bytes only. A Matroska, MP4 or MPEG-TS head goes to the container reader and its track rules. A version without the reader for that container returns an error that matches `ErrUnsupportedFormat`: `movie.ts is an MPEG-TS file. This version cannot read MPEG-TS files.` `Parse` says `The content is an MPEG-TS file.` With a reader and `Format` set, the error is `movie.mkv is an MKV or WebM file. Read it by track.` The row check comes first. This step runs with a format too |
 | 2 | **Binary by content**: `Detect` on the raw bytes, for a format only. A binary format reads the raw bytes. `Encoding` is ignored and `SourceEncoding` is empty |
 | 3 | **Binary by extension**: only `Load`. When every format that lists the extension is binary, the extension decides before any decoding. `.pac`, `.fpc` and `.890` are such extensions. `.stl` is not, because Spruce STL lists it too. Blank content gives an empty subtitle, as in step 5 |
 | 4 | **Decode** the content to UTF-8, as [encodings.md](encodings.md) says |
