@@ -30,48 +30,77 @@ func realDir(t *testing.T, dir string) string {
 func TestConvertWritesTheFormatOfToIntoTheOutputFile(t *testing.T) {
 	t.Parallel()
 
-	dir := newDir(t)
-	assert.Equal(t, result{Stdout: "trip.srt -> trip.vtt\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "vtt", "-o", "trip.vtt"))
-	assert.Equal(t, convertAs(t, "trip.srt", stbox.WebVTT), readFile(t, dir, "trip.vtt"))
-	assert.Equal(t, result{Stdout: "trip.srt -> new/deep/trip.json\n"},
-		call{dir: dir}.run(t, "convert", "trip.srt", "--to", ".JSON", "-o", "new/deep/trip.json"))
-	assert.Equal(t, convertAs(t, "trip.srt", stbox.JSON), readFile(t, dir, "new/deep/trip.json"))
-}
+	extMessage := func(output, ext, to string) string {
+		return "The extension of --output " + output + " names the format " + ext + ", not the --to format " + to + "."
+	}
+	tests := []struct {
+		name    string
+		args    []string
+		stdout  string
+		format  stbox.Format
+		file    string
+		badArgs []string
+		badMsg  string
+	}{
+		{"the format of --to goes into the output file", []string{"--to", "vtt", "-o", "trip.vtt"}, "trip.srt -> trip.vtt\n", stbox.WebVTT, "trip.vtt", nil, ""},
+		{"a new directory is created and --to ignores case and a dot", []string{"--to", ".JSON", "-o", "new/deep/trip.json"}, "trip.srt -> new/deep/trip.json\n", stbox.JSON, "new/deep/trip.json", nil, ""},
+		{
+			"MPL2 goes into a txt file",
+			[]string{"--to", "mpl2", "-o", "trip.txt"},
+			"trip.srt -> trip.txt\n", stbox.MPL2, "trip.txt",
+			[]string{"--to", "mpl2", "-o", "trip.vtt"},
+			extMessage("trip.vtt", "vtt", "mpl2"),
+		},
+		{"TMPlayer goes into a txt file", []string{"--to", "tmplayer", "-o", "film.txt"}, "trip.srt -> film.txt\n", stbox.TMPlayer, "film.txt", nil, ""},
+		{
+			"QuickTime text goes into a txt file",
+			[]string{"--to", "qttext", "-o", "trip.txt"},
+			"trip.srt -> trip.txt\n", stbox.QuickTimeText, "trip.txt",
+			[]string{"--to", "qttext", "-o", "trip.vtt"},
+			extMessage("trip.vtt", "vtt", "qttext"),
+		},
+		{
+			"plain text goes into a txt file",
+			[]string{"--to", "txt", "-o", "trip.txt"},
+			"trip.srt -> trip.txt\n", stbox.PlainText, "trip.txt",
+			[]string{"--to", "txt", "-o", "trip.vtt"},
+			extMessage("trip.vtt", "vtt", "txt"),
+		},
+		{
+			"plain text goes into an output directory",
+			[]string{"--to", "txt", "--output-dir", "out"},
+			"trip.srt -> out/trip.txt\n", stbox.PlainText, "out/trip.txt",
+			[]string{"-o", "film.txt"},
+			"The output film.txt has the extension of the format txt, not of the input format srt. Pass --to txt to write that format, or use the extension of the input format.",
+		},
+		{"MPSub goes into an mpsub file", []string{"--to", "mpsub", "-o", "trip.mpsub"}, "trip.srt -> trip.mpsub\n", stbox.MPSub, "trip.mpsub", nil, ""},
+		{
+			"MPSub goes into an output directory",
+			[]string{"--to", "mpsub", "--output-dir", "out"},
+			"trip.srt -> out/trip.mpsub\n", stbox.MPSub, "out/trip.mpsub",
+			[]string{"--to", "mpsub", "-o", "trip.vtt"},
+			extMessage("trip.vtt", "vtt", "mpsub"),
+		},
+		{
+			"SubViewer goes into a sub file",
+			[]string{"--to", "subviewer", "-o", "trip.sub"},
+			"trip.srt -> trip.sub\n", stbox.SubViewer, "trip.sub",
+			[]string{"--to", "subviewer", "-o", "trip.vtt"},
+			extMessage("trip.vtt", "vtt", "subviewer"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-func TestConvertWritesMPL2IntoATxtFile(t *testing.T) {
-	t.Parallel()
-
-	dir := newDir(t)
-	assert.Equal(t, result{Stdout: "trip.srt -> trip.txt\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "mpl2", "-o", "trip.txt"))
-	assert.Equal(t, convertAs(t, "trip.srt", stbox.MPL2), readFile(t, dir, "trip.txt"))
-	assert.Equal(t, result{Stdout: "trip.srt -> film.txt\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "tmplayer", "-o", "film.txt"))
-	assert.Equal(t, convertAs(t, "trip.srt", stbox.TMPlayer), readFile(t, dir, "film.txt"))
-	assert.Equal(t, usageResult("convert", "The extension of --output trip.vtt names the format vtt, not the --to format mpl2."),
-		call{dir: dir}.run(t, "convert", "trip.srt", "--to", "mpl2", "-o", "trip.vtt"))
-}
-
-func TestConvertWritesQuickTimeTextIntoATxtFile(t *testing.T) {
-	t.Parallel()
-
-	dir := newDir(t)
-	assert.Equal(t, result{Stdout: "trip.srt -> trip.txt\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "qttext", "-o", "trip.txt"))
-	assert.Equal(t, convertAs(t, "trip.srt", stbox.QuickTimeText), readFile(t, dir, "trip.txt"))
-	assert.Equal(t, usageResult("convert", "The extension of --output trip.vtt names the format vtt, not the --to format qttext."),
-		call{dir: dir}.run(t, "convert", "trip.srt", "--to", "qttext", "-o", "trip.vtt"))
-}
-
-func TestConvertWritesPlainTextIntoATxtFile(t *testing.T) {
-	t.Parallel()
-
-	dir := newDir(t)
-	assert.Equal(t, result{Stdout: "trip.srt -> trip.txt\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "txt", "-o", "trip.txt"))
-	assert.Equal(t, convertAs(t, "trip.srt", stbox.PlainText), readFile(t, dir, "trip.txt"))
-	assert.Equal(t, result{Stdout: "trip.srt -> out/trip.txt\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "txt", "--output-dir", "out"))
-	assert.Equal(t, convertAs(t, "trip.srt", stbox.PlainText), readFile(t, dir, "out/trip.txt"))
-	assert.Equal(t, usageResult("convert", "The extension of --output trip.vtt names the format vtt, not the --to format txt."),
-		call{dir: dir}.run(t, "convert", "trip.srt", "--to", "txt", "-o", "trip.vtt"))
-	assert.Equal(t, usageResult("convert", "The output film.txt has the extension of the format txt, not of the input format srt. Pass --to txt to write that format, or use the extension of the input format."),
-		call{dir: dir}.run(t, "convert", "trip.srt", "-o", "film.txt"))
+			dir := newDir(t)
+			assert.Equal(t, result{Stdout: tt.stdout}, call{dir: dir}.run(t, append([]string{"convert", "trip.srt"}, tt.args...)...))
+			assert.Equal(t, convertAs(t, "trip.srt", tt.format), readFile(t, dir, tt.file))
+			if tt.badMsg != "" {
+				assert.Equal(t, usageResult("convert", tt.badMsg), call{dir: dir}.run(t, append([]string{"convert", "trip.srt"}, tt.badArgs...)...))
+			}
+		})
+	}
 }
 
 func TestConvertWritesPlainTextToStandardOutput(t *testing.T) {
@@ -82,27 +111,6 @@ func TestConvertWritesPlainTextToStandardOutput(t *testing.T) {
 	require.Equal(t, 0, got.Code)
 	assert.Equal(t, convertAs(t, "trip.srt", stbox.PlainText), got.Stdout)
 	assert.NotContains(t, got.Stdout, "-->")
-}
-
-func TestConvertWritesMPSubIntoAnMPSubFile(t *testing.T) {
-	t.Parallel()
-
-	dir := newDir(t)
-	assert.Equal(t, result{Stdout: "trip.srt -> trip.mpsub\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "mpsub", "-o", "trip.mpsub"))
-	assert.Equal(t, convertAs(t, "trip.srt", stbox.MPSub), readFile(t, dir, "trip.mpsub"))
-	assert.Equal(t, result{Stdout: "trip.srt -> out/trip.mpsub\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "mpsub", "--output-dir", "out"))
-	assert.Equal(t, usageResult("convert", "The extension of --output trip.vtt names the format vtt, not the --to format mpsub."),
-		call{dir: dir}.run(t, "convert", "trip.srt", "--to", "mpsub", "-o", "trip.vtt"))
-}
-
-func TestConvertWritesSubViewerIntoASubFile(t *testing.T) {
-	t.Parallel()
-
-	dir := newDir(t)
-	assert.Equal(t, result{Stdout: "trip.srt -> trip.sub\n"}, call{dir: dir}.run(t, "convert", "trip.srt", "--to", "subviewer", "-o", "trip.sub"))
-	assert.Equal(t, convertAs(t, "trip.srt", stbox.SubViewer), readFile(t, dir, "trip.sub"))
-	assert.Equal(t, usageResult("convert", "The extension of --output trip.vtt names the format vtt, not the --to format subviewer."),
-		call{dir: dir}.run(t, "convert", "trip.srt", "--to", "subviewer", "-o", "trip.vtt"))
 }
 
 func TestConvertWithoutToKeepsTheInputFormat(t *testing.T) {

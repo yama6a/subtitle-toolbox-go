@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
@@ -203,14 +202,14 @@ func TestFrameRatesOfDiffAndSync(t *testing.T) {
 }
 
 // Ports the frame rate change of cli/frames_23976.vtt of subtitle-toolbox-php. The PHP output is the cue oracle,
-// the Go golden next to it holds the bytes.
+// the same file holds the bytes.
 func TestMicroDVDFrameRateChange(t *testing.T) {
 	t.Parallel()
 
 	got := runCLI(t, "convert", "frames.sub", "--input-fps", "25", "--from-fps", "25", "--to-fps", "23.976", "--to", "vtt")
 	require.Equal(t, 0, got.Code, got.Stderr)
 	assertCuesOf(t, "cli/frames_23976.vtt", got.Stdout, stbox.WebVTT)
-	golden.Equal(t, testfiles.Path(t, "cli/expected/frames_23976.vtt"), []byte(got.Stdout), *update)
+	assert.Equal(t, string(testfiles.Read(t, "cli/frames_23976.vtt")), got.Stdout)
 }
 
 // Ports the MicroDVD row of tests/Cli/ConvertGoldensTest.php of subtitle-toolbox-php.

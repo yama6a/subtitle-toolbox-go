@@ -36,16 +36,60 @@ func TestMalformedXMLIsRepaired(t *testing.T) {
 	assert.Equal(t, model.NoLine, perr.Line)
 }
 
-func TestHTMLEntitiesAndMalformedXMLGiveTwoWarnings(t *testing.T) {
+func TestLenientReadRepairsAndWarns(t *testing.T) {
 	t.Parallel()
 
-	s, warnings := mustRead(t, bare+"\n"+`<body><div><p begin="1s" end="2s">Caf&eacute;&nbsp;ok</p>`+"\n"+
-		`<p begin="3s" end="4s">A & B</p></div></body></tt>`, true)
-	assert.Equal(t, []cueRow{{sec(1), sec(2), "Caf\u00e9\u00a0ok"}, {sec(3), sec(4), "A &amp; B"}}, cueRows(s))
-	assert.Equal(t, []warningRow{
-		{2, model.NoBlock, model.Repaired, `The file has HTML entities that XML does not define, such as "&eacute;". The parser read them as characters.`},
-		{3, model.NoBlock, model.Repaired, "The file is not well-formed XML. Invalid character entity & (no semicolon). The parser repaired it."},
-	}, warningRows(warnings))
+	tests := []struct {
+		name, content string
+		wantCues      []cueRow
+		wantWarnings  []warningRow
+	}{
+		{
+			"HTML entities and malformed XML give two warnings",
+			bare + "\n" + `<body><div><p begin="1s" end="2s">Caf&eacute;&nbsp;ok</p>` + "\n" +
+				`<p begin="3s" end="4s">A & B</p></div></body></tt>`,
+			[]cueRow{{sec(1), sec(2), "Caf\u00e9\u00a0ok"}, {sec(3), sec(4), "A &amp; B"}},
+			[]warningRow{
+				{2, model.NoBlock, model.Repaired, `The file has HTML entities that XML does not define, such as "&eacute;". The parser read them as characters.`},
+				{3, model.NoBlock, model.Repaired, "The file is not well-formed XML. Invalid character entity & (no semicolon). The parser repaired it."},
+			},
+		},
+		{
+			"frame labels of sixty or more are hundredths",
+			bare + "<body><div>\n" + `<p begin="00:00:01:75" end="00:00:03:20">Text</p>` + "\n" +
+				`<p begin="00:00:04:05" end="00:00:05.500">More</p></div></body></tt>`,
+			[]cueRow{{sec(1.75), sec(3.2), "Text"}, {sec(4.05), sec(5.5), "More"}},
+			[]warningRow{{
+				2, model.NoBlock, model.Repaired,
+				`The frame label 75 in "00:00:01:75" is not below the default frame rate of 30, and the file has no ttp:frameRate. The parser read the last field as hundredths of a second.`,
+			}},
+		},
+		{
+			"open paragraphs end at the next paragraph",
+			bare + "<body><div>\n" + `<p begin="1s">a</p>` + "\n" + `<p begin="1s" end="3s">b</p>` + "\n" +
+				`<p begin="2s"><span begin="1s" dur="1s">c</span> <span begin="2s">d</span></p></div></body></tt>`,
+			[]cueRow{{sec(1), sec(3), "a"}, {sec(1), sec(3), "b"}, {sec(3), sec(4), "c d"}},
+			[]warningRow{{
+				2, 0, model.Repaired,
+				"The paragraph that begins at 1s has no end time. The parser ended it at the next paragraph at 3s.",
+			}},
+		},
+		{
+			"a loose time on a div has no paragraph index",
+			bare + "<body>\n" + `<div begin="1000"><p begin="1s" end="2s">Text</p></div></body></tt>`,
+			[]cueRow{{sec(2), sec(3), "Text"}},
+			[]warningRow{{2, model.NoBlock, model.Repaired, `The time expression "1000" is not valid. The parser read it as 1s.`}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s, warnings := mustRead(t, tt.content, true)
+			assert.Equal(t, tt.wantCues, cueRows(s))
+			assert.Equal(t, tt.wantWarnings, warningRows(warnings))
+		})
+	}
 }
 
 func TestHTMLEntities(t *testing.T) {
@@ -256,15 +300,6 @@ func TestDivWithABadTime(t *testing.T) {
 	}}, warningRows(warnings))
 }
 
-func TestLooseTimeOnADivHasNoParagraphIndex(t *testing.T) {
-	t.Parallel()
-
-	s, warnings := mustRead(t, bare+"<body>\n"+`<div begin="1000"><p begin="1s" end="2s">Text</p></div></body></tt>`, true)
-	assert.Equal(t, []cueRow{{sec(2), sec(3), "Text"}}, cueRows(s))
-	assert.Equal(t, []warningRow{{2, model.NoBlock, model.Repaired, `The time expression "1000" is not valid. The parser read it as 1s.`}},
-		warningRows(warnings))
-}
-
 func TestFrameRateGuess(t *testing.T) {
 	t.Parallel()
 
@@ -302,37 +337,12 @@ func TestFrameRateGuess(t *testing.T) {
 	}
 }
 
-func TestFrameLabelsOfSixtyOrMoreAsHundredths(t *testing.T) {
-	t.Parallel()
-
-	s, warnings := mustRead(t, bare+"<body><div>\n"+`<p begin="00:00:01:75" end="00:00:03:20">Text</p>`+"\n"+
-		`<p begin="00:00:04:05" end="00:00:05.500">More</p></div></body></tt>`, true)
-	assert.Equal(t, []cueRow{{sec(1.75), sec(3.2), "Text"}, {sec(4.05), sec(5.5), "More"}}, cueRows(s))
-	assert.Equal(t, []warningRow{{
-		2, model.NoBlock, model.Repaired,
-		`The frame label 75 in "00:00:01:75" is not below the default frame rate of 30, and the file has no ttp:frameRate. The parser read the last field as hundredths of a second.`,
-	}},
-		warningRows(warnings))
-}
-
 func TestFrameRateGuessWithAFrameRate(t *testing.T) {
 	t.Parallel()
 
 	s, warnings := mustRead(t, header+` ttp:frameRate="60"><body><div><p begin="00:00:01:45" end="2s">x</p></div></body></tt>`, false)
 	assert.Equal(t, []cueRow{{sec(1.75), sec(2), "x"}}, cueRows(s))
 	assert.Empty(t, warnings)
-}
-
-func TestOpenParagraphs(t *testing.T) {
-	t.Parallel()
-
-	s, warnings := mustRead(t, bare+"<body><div>\n"+`<p begin="1s">a</p>`+"\n"+`<p begin="1s" end="3s">b</p>`+"\n"+
-		`<p begin="2s"><span begin="1s" dur="1s">c</span> <span begin="2s">d</span></p></div></body></tt>`, true)
-	assert.Equal(t, []cueRow{{sec(1), sec(3), "a"}, {sec(1), sec(3), "b"}, {sec(3), sec(4), "c d"}}, cueRows(s))
-	assert.Equal(t, []warningRow{{
-		2, 0, model.Repaired,
-		"The paragraph that begins at 1s has no end time. The parser ended it at the next paragraph at 3s.",
-	}}, warningRows(warnings))
 }
 
 func TestOpenParagraphKeepsItsLaterTimestamps(t *testing.T) {
