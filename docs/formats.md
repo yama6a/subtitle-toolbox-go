@@ -13,6 +13,7 @@
 | MicroDVD | `stbox.MicroDVD` | `microdvd` | `.sub` | [MicroDVD](#microdvd) |
 | MPSub | `stbox.MPSub` | `mpsub` | `.mpsub` | [MPSub](#mpsub) |
 | PAC and PAC Unicode | `stbox.PAC` | `pac` | `.pac`, `.fpc` | [PAC](#pac) |
+| PGS | `stbox.PGS` | `pgs` | `.sup` | [PGS](#pgs) |
 | SAMI | `stbox.SAMI` | `sami` | `.smi`, `.sami` | [SAMI](#sami) |
 | SBV | `stbox.SBV` | `sbv` | `.sbv` | [SBV](#sbv) |
 | SCC | `stbox.SCC` | `scc` | `.scc` | [SCC](#scc) |
@@ -1682,6 +1683,51 @@ The file does not store its code page. `pac.CodePage` is a string type with thes
 | `CodePage` | `pac.CodePage` | `CodePageAuto` | the code page of the text. `CodePageAuto` takes the story record language, else detects it |
 
 - **Shared fields**: `Lenient` applies. `LineEnding` and `BOM` have no effect.
+
+## PGS
+
+PGS (Presentation Graphic Stream) is the bitmap subtitle format of Blu-ray discs, stored as `.sup` files. Package `format/pgs` reads it. The format name is `pgs`, the extension is `.sup`. PGS has no writer yet, so `PGS.CanWrite()` is false. The code follows the sources in the package comment of `format/pgs`. It copies no code of FFmpeg or libbluray.
+
+A **display set** is the group of segments from one presentation composition segment (PCS) to its end segment. It changes the screen at one time. Each display set that shows objects gives one image cue. Example: `shapes_1080p.sup` starts with a display set at PTS 90000. It shows a 640x90 object at x 640, y 940 on a 1920x1080 screen. A display set at PTS 315000 clears it. The reader returns one image cue from 1 s to 3.5 s with that bitmap as a PNG. The cue has no lines, so [OCR](ocr.md) can fill them.
+
+**Binary format**: the reader gets the raw bytes of the input. `ReadOptions.Encoding` does not decode the file and `ReadInfo.SourceEncoding` is empty. `Load` and `Parse` find PGS by its signature on the raw bytes, see [detection.md](detection.md).
+
+### Segments
+
+Each segment has a 13-byte header, then `size` bytes of data. All integers are big endian. The header holds the magic `PG`, the PTS (ticks of a 90 kHz clock) at byte 2, the DTS (read and ignored) at byte 6, the segment type at byte 10 and the data size at byte 11.
+
+| Type | Name | Fields read |
+|:--- |:--- |:--- |
+| `0x16` | PCS | screen width and height, frame rate (ignored), composition number (ignored), composition state, palette update flag (ignored), palette id, object count. Then per object: object id, window id, flags (`0x80` cropped, `0x40` forced), x, y. A cropped object adds crop x, crop y, crop width and crop height |
+| `0x17` | WDS | window count, then per window: id, x, y, width, height. Only complete 9-byte entries count |
+| `0x14` | PDS | palette id, palette version (ignored), then 5-byte entries: entry id, Y, Cr, Cb, alpha. An incomplete last entry is ignored |
+| `0x15` | ODS | object id, version (ignored), sequence flags. The first fragment (`0x80`) adds a 3-byte data length (ignored), width, height and run-length data. A later fragment appends its run-length data to the object of the same id. A later fragment for an unknown id is dropped. An ODS with less than 4 bytes of data is ignored |
+| `0x80` | END | ends the display set |
+| other | | skipped |
+
+### Display sets
+
+- **Epoch start**: a PCS with the composition state bit `0x80` clears the palettes, objects and windows. The acquisition point state (`0x40`) and the normal state (`0x00`) keep them. So a later display set can update only the palette, or show an object of an earlier display set again.
+- **End**: a display set ends at its END segment, at the next PCS and at the end of the input. It shows nothing when no palette has the PCS palette id or when no object is left to draw.
+- **Objects**: a reference to an unknown object, or with an empty visible area, is skipped. Several objects go on one transparent RGBA image. An object that overlaps an earlier one is drawn over it.
+- **Visible area**: the crop rectangle when the reference is cropped, else the whole object, cut to the object size and to the window of the reference. A cropped object keeps the screen position of the PCS, not that position plus the crop offset. This is the libbluray behaviour.
+- **Forced**: `Cue.Forced` is true when at least one drawn reference has the flag `0x40`.
+- **Image**: one object gives a palette PNG with the used colours only. Two or more objects give an RGBA PNG. The image is at the top of the screen (`TopCenter`) when its centre is in the top third, else `BottomCenter`.
+- **Same image**: when a display set draws the image of the shown cue again, the cue goes on. A palette update of an entry that no pixel uses keeps the cue.
+- **Times**: the cue starts at the PTS of the PCS that shows it and ends at the PTS of the PCS that replaces or clears it. A PTS becomes whole milliseconds, half up. A cue never ends before it starts. The last cue ends after `CommonReadOptions.LastCueDuration`, 5 s by default. 0 gives a cue of length 0.
+- **Run-length data**: a byte other than `00h` is one pixel. `00h` and a flags byte F give a run of `F & 0x3F` pixels. With `F & 0x40` the length is `(F & 0x3F) * 256` plus the next byte. With `F & 0x80` the colour is the next byte, else 0. Rows do not align on the end-of-line code `00h 00h`. The decoder stops at `width * height` pixels and cuts the extra ones. A missing byte at the end reads as 0.
+- **Colours**: the palette holds limited range Y, Cr, Cb codes. The reader converts them to RGB with BT.601 up to a screen height of 576 lines and with BT.709 above. An entry that the palette does not define is `0x00000000`. The alpha byte is the alpha of the pixel.
+- **Limits**: an object over 7680 pixels per side or 8294400 pixels in total is an error. So is a display set whose joined image is over the same limits.
+
+Example: `shapes_576p.sup` cut to 1400 bytes reads 1 cue from 0.5 s to 3 s in lenient mode and warns `The segment header at byte 1398 is cut off.` with block 8.
+
+### Options
+
+`pgs.ReadOptions` has no field, and the root `ReadOptions` has none for PGS. `Lenient` and `LastCueDuration` apply. `LineEnding` and `BOM` have no effect.
+
+### Lenient mode
+
+Damage in the segment framing stops the read. The cues before it stay, and the display set that was open shows nothing. Damage inside a complete segment skips only its display set. The shown cue ends at the PCS time of that display set and reading goes on, so one bad object does not lose the other cues. [lenient-parsing.md](lenient-parsing.md#pgs) lists the messages. Strict mode fails on the first damage, as PHP does.
 
 ## SubViewer
 

@@ -21,6 +21,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/mpl2"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/pgs"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/qttext"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/sami"
@@ -86,6 +87,8 @@ var (
 	_ readFunc[pac.ReadOptions]                                = pac.Read
 	_ writeFunc[pac.WriteOptions, pac.WriteReport]             = pac.Write
 	_ detectFunc                                               = pac.Detect
+	_ readFunc[pgs.ReadOptions]                                = pgs.Read
+	_ detectFunc                                               = pgs.Detect
 	_ readFunc[lrc.ReadOptions]                                = lrc.Read
 	_ writeFunc[lrc.WriteOptions, lrc.WriteReport]             = lrc.Write
 	_ detectFunc                                               = lrc.Detect
@@ -138,6 +141,7 @@ var registry = []formatFuncs{
 	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
 	{format: MPSub, read: readMPSub, write: writeMPSub},
 	{format: PAC, read: readPAC, write: writePAC},
+	{format: PGS, read: readPGS},
 	{format: SAMI, read: readSAMI, write: writeSAMI},
 	{format: SBV, read: readSBV, write: writeSBV},
 	{format: SCC, read: readSCC, write: writeSCC},
@@ -170,6 +174,9 @@ type signature struct {
 var (
 	jsonChecks = []jsonCheck{
 		{format: JSON, match: stboxjson.DetectJSON},
+	}
+	rawSignatures = []signature{
+		{format: PGS, match: pgs.Detect},
 	}
 	signatures = []signature{
 		{format: WebVTT, match: webvtt.Detect},
@@ -244,6 +251,10 @@ func readITT(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subti
 func writeITT(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	_, err := itt.Write(w, s, common, opts.ITT)
 	return WriteReport{}, err
+}
+
+func readPGS(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return pgs.Read(r, common, pgs.ReadOptions{})
 }
 
 func readPAC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {

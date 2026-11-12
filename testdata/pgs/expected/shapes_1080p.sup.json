@@ -1,0 +1,80 @@
+[
+    {
+        "start": 1.0,
+        "end": 3.5,
+        "x": 640,
+        "y": 940,
+        "width": 640,
+        "height": 90,
+        "screenWidth": 1920,
+        "screenHeight": 1080,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "9a811a9bc132fab65c845b9c925f072a305828abf3944e03d20954568b4d1151"
+    },
+    {
+        "start": 5.0,
+        "end": 7.0,
+        "x": 660,
+        "y": 60,
+        "width": 600,
+        "height": 970,
+        "screenWidth": 1920,
+        "screenHeight": 1080,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "892f395ce6d65ea2b23ee6f5301f8b3d1bb8fea949aaf664a47d52f25188f346"
+    },
+    {
+        "start": 8.0,
+        "end": 9.5,
+        "x": 560,
+        "y": 50,
+        "width": 800,
+        "height": 100,
+        "screenWidth": 1920,
+        "screenHeight": 1080,
+        "forced": true,
+        "alignment": "TopCenter",
+        "rgbaSha256": "3acf6ab847034334404eb54c3a8a7641c73f38647fca549078b32cb46ccd5a1f"
+    },
+    {
+        "start": 9.5,
+        "end": 11.0,
+        "x": 560,
+        "y": 50,
+        "width": 800,
+        "height": 100,
+        "screenWidth": 1920,
+        "screenHeight": 1080,
+        "forced": true,
+        "alignment": "TopCenter",
+        "rgbaSha256": "ea6ccc6d63fce343b48bd822cdf676c189fc29f5d9c465fc4da821e9d086ff47"
+    },
+    {
+        "start": 12.0,
+        "end": 16.0,
+        "x": 860,
+        "y": 900,
+        "width": 200,
+        "height": 60,
+        "screenWidth": 1920,
+        "screenHeight": 1080,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "f3d5ba1bce47bc92bb25962d60de11faf37fcdcf007b3d44796e6ca6a52b80a1"
+    },
+    {
+        "start": 20.0,
+        "end": 25.0,
+        "x": 640,
+        "y": 940,
+        "width": 640,
+        "height": 90,
+        "screenWidth": 1920,
+        "screenHeight": 1080,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "9a811a9bc132fab65c845b9c925f072a305828abf3944e03d20954568b4d1151"
+    }
+]
