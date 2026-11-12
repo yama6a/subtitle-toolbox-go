@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
-	"github.com/yama6a/subtitle-toolbox-go/v2/timing"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/timing"
 )
 
 func ptr(n int) *int { return &n }
@@ -257,7 +257,8 @@ func TestApplyEmptyAndComments(t *testing.T) {
 
 func readSubRip(tb testing.TB, rel string) *model.Subtitle {
 	tb.Helper()
-	s, _, err := stbox.Parse(bytes.NewReader(testfiles.Read(tb, rel)), stbox.ReadOptions{Format: stbox.SubRip})
+	r := bytes.NewReader(testfiles.Read(tb, rel))
+	s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{Format: stbox.SubRip})
 	require.NoError(tb, err)
 	return s
 }

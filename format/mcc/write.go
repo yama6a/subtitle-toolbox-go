@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/caption"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/cea708"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/caption"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/cea708"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 var fieldNameRegexp = regexp.MustCompile(`^[A-Za-z][A-Za-z ]*$`)
@@ -31,6 +31,10 @@ const (
 // Write writes s as MCC with CEA-608 field 1 and CEA-708 service 1 data. A cue that CEA-608 cannot hold fails with
 // an *model.UnwritableError, unless the fit changes it. The report lists the fit changes of the CEA-608 data.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.MCC, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	if err := opts.Validate(); err != nil {
 		return WriteReport{}, err
 	}

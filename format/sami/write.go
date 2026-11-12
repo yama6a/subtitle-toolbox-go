@@ -9,9 +9,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 const (
@@ -36,6 +36,10 @@ type writer struct {
 
 // Write writes s as SAMI with one language class. A line break inside a line becomes <br>.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.SAMI, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	file, _ := s.FormatData(formatDataKey)
 	language, hasLanguage := s.Metadata(model.MetadataLanguage)
 	style, hasStyle := file.String("style")

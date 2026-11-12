@@ -12,7 +12,7 @@ package stbox
 import (
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // Aliases of the model types. Package model documents their methods.
@@ -21,6 +21,8 @@ type (
 	Subtitle = model.Subtitle
 	// Cue is one timed text block.
 	Cue = model.Cue
+	// Image is the PNG bitmap of an image cue and its place on the screen.
+	Image = model.Image
 	// Comment is text that a writer puts before a cue, or after the last cue.
 	Comment = model.Comment
 	// SyncPoint is a time in the subtitle and the time where it belongs, for SyncByPoints.
@@ -45,6 +47,13 @@ type (
 	LineEnding = model.LineEnding
 	// BOM says whether a writer starts its output with a UTF-8 BOM.
 	BOM = model.BOM
+	// Container is a video file format that holds subtitle tracks.
+	Container = model.Container
+	// Track is a subtitle track of a container.
+	Track = model.Track
+	// TrackError is the error of a container read without a track number, when the file has no subtitle track or
+	// more than one.
+	TrackError = model.TrackError
 	// ParseWarning is one problem that a parser skipped or repaired.
 	ParseWarning = model.ParseWarning
 	// WarningAction says what a parser did with a broken block.
@@ -96,6 +105,13 @@ const (
 	QuickTimeText = model.QuickTimeText
 	SpruceSTL     = model.SpruceSTL
 	WebVTT        = model.WebVTT
+)
+
+// The containers that a read can name.
+const (
+	Matroska = model.Matroska
+	MP4      = model.MP4
+	MPEGTS   = model.MPEGTS
 )
 
 // The 9 alignments of the numeric keypad grid.

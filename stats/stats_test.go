@@ -12,10 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
-	"github.com/yama6a/subtitle-toolbox-go/v2/stats"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/stats"
 )
 
 const delta = 1e-9
@@ -147,6 +147,20 @@ func TestOfCuesWithoutTextCountOnlyAsCuesAndInTimes(t *testing.T) {
 	assertRange(t, stats.Range{Min: 3.5, Average: 3.5, Max: 3.5}, got.CharactersPerSecond)
 	assertRange(t, stats.Range{Min: 60, Average: 60, Max: 60}, got.WordsPerMinute)
 	assertRange(t, stats.Range{Min: 7, Average: 7, Max: 7}, got.CharactersPerLine)
+	assertDurationRange(t, &stats.DurationRange{Min: time.Second, Average: time.Second, Max: time.Second}, got.Gaps)
+}
+
+func TestOfSkipsImageCuesWithoutLines(t *testing.T) {
+	t.Parallel()
+
+	image := &model.Image{PNG: []byte("x"), Width: 1, Height: 1, ScreenWidth: 2, ScreenHeight: 2}
+	withLines := cue(5, 6, "Two")
+	withLines.Image = image
+	got := stats.Of(subtitle(model.Cue{Start: at(1), End: at(2), Image: image}, cue(3, 4, "One"), withLines))
+
+	assert.Equal(t, 2, got.CueCount)
+	assert.Equal(t, 2*time.Second, got.TotalDisplayTime)
+	assert.Equal(t, ptr(3*time.Second), got.Span)
 	assertDurationRange(t, &stats.DurationRange{Min: time.Second, Average: time.Second, Max: time.Second}, got.Gaps)
 }
 

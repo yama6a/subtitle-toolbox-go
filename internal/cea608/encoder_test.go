@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/cea608"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
 )
 
 func hexWords(words []uint16) string {

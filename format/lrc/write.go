@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 var (
@@ -28,6 +28,10 @@ const maxTime = 1000*time.Minute - centisecond
 // and a time tag without text at the end of a cue with the cue data endLine. The BOM is on by default. A line break
 // inside a line becomes a space.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.LRC, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	file, _ := s.FormatData(formatDataKey)
 	spaced, _ := file.Bool("spacedWordTimes")
 	comments := make([][]string, s.Len()+1)

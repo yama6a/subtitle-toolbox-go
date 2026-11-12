@@ -11,11 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
-	"github.com/yama6a/subtitle-toolbox-go/v2/stats"
-	"github.com/yama6a/subtitle-toolbox-go/v2/validation"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/stats"
+	"github.com/yama6a/subtitle-toolbox-go/v3/validation"
 )
 
 // cue builds a cue from times in milliseconds.
@@ -114,6 +114,12 @@ func TestTimeRules(t *testing.T) {
 			[]model.Cue{cue(0, 2000, "a"), cue(1000, 3000, "b"), cue(3000, 4000, "c")},
 			validation.Rules{MinGap: 500 * time.Millisecond},
 			[]string{"2 minGap 0, limit 0.5"},
+		},
+		{
+			"image cues without lines are skipped and keep the index",
+			[]model.Cue{cue(0, 1000, "a"), {Start: time.Second, End: 1500 * time.Millisecond, Image: &model.Image{PNG: []byte("x"), Width: 1, Height: 1, ScreenWidth: 2, ScreenHeight: 2}}, cue(1000, 2000, "")},
+			validation.Rules{NoEmptyCues: true, MinGap: time.Second},
+			[]string{"2 noEmptyCues 0", "2 minGap 0, limit 1"},
 		},
 		{
 			"zero duration reads at infinite speed",

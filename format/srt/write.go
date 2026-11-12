@@ -3,13 +3,17 @@ package srt
 import (
 	"io"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/subrip"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/subrip"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // Write writes s as SubRip. A text line that the reader would read as a timing line starts with U+2060 WORD JOINER.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.SubRip, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	var body []byte
 	for i, c := range s.All() {
 		if i > 0 {

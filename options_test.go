@@ -5,21 +5,20 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
 )
 
 // Ports testANegativeLastCueDurationThrows of tests/ReadOptionsTest.php of subtitle-toolbox-php.
@@ -171,7 +170,7 @@ func TestEntryPointsValidateBeforeTheyRead(t *testing.T) {
 
 	read := stbox.ReadOptions{Format: "foo", LastCueDuration: new(-time.Second)}
 	_, _, loadErr := stbox.Load(filepath.Join(t.TempDir(), "missing.srt"), read)
-	_, _, parseErr := stbox.Parse(strings.NewReader(""), read)
+	_, _, parseErr := parseBytes([]byte(""), read)
 	_, writeErr := stbox.Write(&bytes.Buffer{}, &stbox.Subtitle{}, "foo", stbox.WriteOptions{BOM: stbox.BOM(3)})
 	for _, err := range []error{loadErr, parseErr, writeErr} {
 		require.ErrorIs(t, err, stbox.ErrInvalidArgument)
@@ -185,13 +184,13 @@ func TestOtherFormatsIgnoreTheMicroDVDOptions(t *testing.T) {
 	t.Parallel()
 
 	content := testfiles.Read(t, "srt/real/own_styled.srt")
-	plain, _, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: stbox.SubRip})
+	plain, _, err := parseBytes(content, stbox.ReadOptions{Format: stbox.SubRip})
 	require.NoError(t, err)
-	with, _, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: stbox.SubRip, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
+	with, _, err := parseBytes(content, stbox.ReadOptions{Format: stbox.SubRip, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
 	require.NoError(t, err)
 	assert.Equal(t, plain, with)
 
-	_, _, err = stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: stbox.SubRip, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25}}})
+	_, _, err = parseBytes(content, stbox.ReadOptions{Format: stbox.SubRip, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25}}})
 	require.ErrorIs(t, err, stbox.ErrInvalidArgument, "Validate checks the options of every format")
 
 	var a, b bytes.Buffer

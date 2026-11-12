@@ -8,10 +8,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 const infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."

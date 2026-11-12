@@ -9,8 +9,8 @@ import (
 
 	"github.com/dlclark/regexp2/v2"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // Rule names one check. The value is the name in the CLI output and the JSON output.

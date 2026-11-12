@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strconv"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
 )
 
 // fileCommand holds the hooks of a command that reads input files. Its run method calls runFiles, which drives

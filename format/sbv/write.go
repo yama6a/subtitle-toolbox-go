@@ -3,16 +3,20 @@ package sbv
 import (
 	"io"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/blocks"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/blocks"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // Write writes s as SBV. It skips a cue without text, because an empty line would end the SBV cue. A text line that
 // the reader would read as a timing line starts with U+2060 WORD JOINER.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.SBV, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	var body []byte
 	first := true
 	for _, c := range s.All() {

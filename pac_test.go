@@ -1,15 +1,14 @@
 package stbox_test
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/pac"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
 )
 
 // TestPACEncodingNamesTheCodePage covers decision D1: Encoding picks the PAC code page, and PAC.CodePage wins.
@@ -20,7 +19,7 @@ func TestPACEncodingNamesTheCodePage(t *testing.T) {
 	firstLine := func(t *testing.T, content []byte, opts stbox.ReadOptions) string {
 		t.Helper()
 
-		s, info, err := stbox.Parse(bytes.NewReader(content), opts)
+		s, info, err := parseBytes(content, opts)
 		require.NoError(t, err)
 		assert.Equal(t, stbox.PAC, info.Format)
 		assert.Empty(t, info.SourceEncoding)
@@ -62,7 +61,7 @@ func TestPACEncodingNamesTheCodePage(t *testing.T) {
 				assert.Equal(t, tt.want, firstLine(t, greek, tt.opts))
 				return
 			}
-			_, _, err := stbox.Parse(bytes.NewReader(greek), tt.opts)
+			_, _, err := parseBytes(greek, tt.opts)
 			var ierr *stbox.InvalidArgumentError
 			require.ErrorAs(t, err, &ierr)
 			assert.Equal(t, tt.option, ierr.Option)

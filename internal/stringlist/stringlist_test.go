@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/stringlist"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/stringlist"
 )
 
 func TestAny(t *testing.T) {

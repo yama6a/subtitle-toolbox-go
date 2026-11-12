@@ -11,11 +11,11 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/extfallback"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/extfallback"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
 )
 
 const stdinArg = "-"
@@ -154,7 +154,7 @@ func (r *runner) readWith(arg string, opts stbox.ReadOptions) (*input, error) {
 		if content, err = io.ReadAll(r.c.stdin); err != nil {
 			return nil, fmt.Errorf("read standard input: %w", err)
 		}
-		in.sub, in.info, err = stbox.Parse(bytes.NewReader(content), opts)
+		in.sub, in.info, err = stbox.Parse(bytes.NewReader(content), int64(len(content)), opts)
 	} else {
 		path := r.c.path(arg)
 		if st, statErr := os.Stat(path); statErr != nil || !st.Mode().IsRegular() {
@@ -217,20 +217,45 @@ func (r *runner) peek(arg string) stbox.Format {
 	return ""
 }
 
-// detect runs content detection on the file at path, after the decode of --encoding.
+// detect runs content detection on the file at path, after the decode of --encoding. A video container returns
+// false after its head, without a read of the rest.
 func (r *runner) detect(path string) (stbox.Format, bool) {
-	content, err := os.ReadFile(path)
-	if err != nil {
+	content, ok := readUnlessContainer(path)
+	if !ok {
 		return "", false
 	}
-	if f, ok := stbox.Detect(content); ok && f.IsBinary() {
-		return f, true
+	if d, ok := stbox.Detect(content); ok && d.Format.IsBinary() {
+		return d.Format, true
 	}
 	text, err := textenc.Decode(content, r.readOptions.Encoding)
 	if err != nil {
 		return "", false
 	}
-	return stbox.Detect(text.Text)
+	d, ok := stbox.Detect(text.Text)
+	return d.Format, ok && d.Format != ""
+}
+
+// readUnlessContainer returns the content of the file at path. It returns false for a file that cannot be read and
+// for a video container, which it reads only as far as its head.
+func readUnlessContainer(path string) ([]byte, bool) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, false
+	}
+	defer file.Close()
+	head := make([]byte, stbox.ContainerHeadSize)
+	n, err := io.ReadFull(file, head)
+	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.EOF) {
+		return nil, false
+	}
+	if d, ok := stbox.Detect(head[:n]); ok && d.Container != "" {
+		return nil, false
+	}
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return nil, false
+	}
+	content, err := io.ReadAll(file)
+	return content, err == nil
 }
 
 // expand turns the input arguments into input files: "-", the subtitle files of a directory, the matches of a

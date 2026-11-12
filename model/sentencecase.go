@@ -6,7 +6,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
 )
 
 // sentenceGap is the gap after the previous cue from which a cue starts a sentence.

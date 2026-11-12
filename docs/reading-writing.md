@@ -1,6 +1,6 @@
 # Reading and writing
 
-`stbox.Load` reads a file, `stbox.Parse` reads an `io.Reader`, and `stbox.Write` writes one format and returns a `WriteReport`. One `ReadOptions` and one `WriteOptions` value serve every format. Each reader and writer ignores the fields of other formats, so one value serves a batch of mixed files.
+`stbox.Load` reads a file, `stbox.Parse` reads an `io.ReaderAt` and its size, and `stbox.Write` writes one format and returns a `WriteReport`. One `ReadOptions` and one `WriteOptions` value serve every format. Each reader and writer ignores the fields of other formats, so one value serves a batch of mixed files.
 
 The `WriteReport` lists the changes a writer made to fit the subtitle into its format. It has one pointer field per format that reports. The field `WebVTT` is non-nil after a WebVTT write and holds one `DroppedColor` per dropped text color. All other fields stay nil, and a format with no report leaves the whole value empty. Use `_, err :=` to ignore it.
 
@@ -8,7 +8,8 @@ The `WriteReport` lists the changes a writer made to fit the subtitle into its f
 ```go
 srt := "1\n00:00:01,000 --> 00:00:02,000\nHello\n"
 
-s, _, err := stbox.Parse(strings.NewReader(srt), stbox.ReadOptions{})
+r := strings.NewReader(srt)
+s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -32,17 +33,18 @@ fmt.Printf("%q\n", out.String())
 | `Encoding` | detect the encoding | a name of [encodings.md](encodings.md), compared without case |
 | `Lenient` | strict mode: the first broken block returns the error. See [lenient-parsing.md](lenient-parsing.md) | |
 | `LastCueDuration` | 5 s | 0 or more. 0 gives a cue that ends where it starts |
+| `Track` | 0: read the only subtitle track of a video container. A subtitle file needs 0 | 0 or more. Matroska and MP4 count from 1. MPEG-TS uses teletext page numbers from 100, or PIDs |
 
 - **Pointer**: `LastCueDuration` is a pointer, because 0 s is legal and differs from the default. `new(2 * time.Second)` sets it in one expression.
 - **Validate first**: `Load`, `Parse` and `Write` call `Validate` before they read or write. A failed check is an `*InvalidArgumentError` whose `Option` is the Go path of the field, for example `ReadOptions.LastCueDuration`.
 
 ## Read steps
 
-1. Read the whole input into memory. For a SubRip or WebVTT file too large for that, see [streaming.md](streaming.md).
+1. Read the first 389 bytes. A video container is not read whole: its reader takes only the bytes of its track. Any other input is read whole into memory. For a SubRip or WebVTT file too large for that, see [streaming.md](streaming.md).
 2. Decode the text to UTF-8, as [encodings.md](encodings.md) says. `ReadInfo.SourceEncoding` holds the encoding.
 3. Detect the format, unless `Format` is set. [detection.md](detection.md) holds the rules, also for empty content, video files and the extension fallback of `Load`.
 4. Run the reader of the format.
-5. Return the subtitle and a `ReadInfo` with the format, the source encoding and the warnings. On error, the subtitle is nil and `ReadInfo` is the zero value.
+5. Return the subtitle and a `ReadInfo` with the format, the source encoding, the warnings, and for a container read, the `Container` and the `Track` number. On error, the subtitle is nil and `ReadInfo` is the zero value.
 
 ## Text pre-pass
 
@@ -86,6 +88,7 @@ Each reader that uses the default adds its row here.
 | `LineEnding` | `LF` | `LF` or `CRLF` |
 | `BOM` | `BOMDefault`: the default of the format | `BOMDefault`, `BOMAdd` or `BOMRemove` |
 | `StripTags` | keep the markup that the format can hold | |
+| `SkipImageCues` | a text writer fails on an image cue without lines | |
 
 - **No lone CR**: readers accept a lone CR as a line end. Writers never write it.
 - **`BOM` as an enum**: it has 3 states, and the zero value keeps the default of the format.
@@ -98,6 +101,7 @@ A writer builds the whole output with LF line endings in memory. [internal/writi
 - **CSV and TSV line endings**: the CSV writer ends each row with the line ending itself and keeps a line break inside a cell as LF, as Excel writes it. Only the BOM rule runs after it.
 - **CSV and TSV delimiter**: `stbox.Write` sets the delimiter when `WriteOptions.CSV.Delimiter` is empty. TSV output gets a tab. CSV output gets `,` when the stored delimiter is a tab. `csv.Write` called directly keeps the stored delimiter.
 - **BOM**: the line ending comes first, then the BOM. `BOMAdd` adds one UTF-8 BOM unless the output starts with one. `BOMRemove` removes every leading BOM. `BOMDefault` adds the BOM for ASS, CSV, TSV, LRC, MPSub, SubRip and WebVTT, and leaves the output of the other formats as the writer wrote it.
+- **SkipImageCues**: an image cue is a cue with `Cue.Image` set. A text writer returns an `*UnwritableError` with the index of the first image cue without lines, for example `Cue #3 holds an image but no text, and srt needs text.` With `SkipImageCues`, the writer drops those cues and writes the rest. A comment before a dropped cue moves to the next kept cue. An image cue with lines is written as text. Library JSON writes every image cue.
 - **StripTags**: the ASS, iTT, MicroDVD, SAMI, SubRip, TTML and WebVTT writers read it. The other writers hold no markup or always write plain text. The SCC writer ignores it and writes the styles that CEA-608 holds. Library JSON keeps the markup.
 - **Negative times**: every writer except library JSON writes a negative time as 0. Library JSON writes it as it is.
 - **No save function**: a caller opens the file and calls `Write`. The format comes from the caller, never from the file extension.
