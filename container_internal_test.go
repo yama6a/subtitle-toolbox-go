@@ -104,17 +104,13 @@ func TestTrackInputErrors(t *testing.T) {
 	t.Parallel()
 
 	srt := []byte("1\n00:00:01,000 --> 00:00:02,000\nHello\n")
-	ts := make([]byte, 377)
-	ts[0], ts[188], ts[376] = 0x47, 0x47, 0x47
+	mp4 := []byte("\x00\x00\x00\x10ftypisom\x00\x00\x00\x00")
 	dir := t.TempDir()
-	path := filepath.Join(dir, "movie.ts")
-	require.NoError(t, os.WriteFile(path, ts, 0o600))
 	srtPath := filepath.Join(dir, "a.srt")
 	require.NoError(t, os.WriteFile(srtPath, srt, 0o600))
 	const noTrackSize = "stbox: invalid argument: The size must be 0 or more, got -1."
-	const notContainer = "stbox: unsupported format: The content is not an MKV, WebM, MP4 or MPEG-TS file."
+	const notContainerMsg = "stbox: unsupported format: The content is not an MKV, WebM, MP4 or MPEG-TS file."
 	const onlyContainers = "stbox: invalid argument: ReadOptions.Track: Only MKV, WebM, MP4 and MPEG-TS files have tracks."
-	const noReader = " is an MPEG-TS file. This version cannot read MPEG-TS files."
 
 	tests := []struct {
 		name string
@@ -133,7 +129,7 @@ func TestTrackInputErrors(t *testing.T) {
 		{"Tracks of SubRip", func() error {
 			_, err := Tracks(bytes.NewReader(srt), int64(len(srt)))
 			return err
-		}, notContainer, ErrUnsupportedFormat},
+		}, notContainerMsg, ErrUnsupportedFormat},
 		{"a negative track", func() error {
 			_, _, err := Parse(bytes.NewReader(srt), int64(len(srt)), ReadOptions{Track: -1})
 			return err
@@ -150,22 +146,10 @@ func TestTrackInputErrors(t *testing.T) {
 			_, err := Tracks(bytes.NewReader(srt), -1)
 			return err
 		}, noTrackSize, ErrInvalidArgument},
-		{"Load of MPEG-TS without a reader", func() error {
-			_, _, err := Load(path, ReadOptions{})
+		{"Parse of MP4 with a format", func() error {
+			_, _, err := Parse(bytes.NewReader(mp4), int64(len(mp4)), ReadOptions{Format: SubRip})
 			return err
-		}, "stbox: unsupported format: " + path + noReader, ErrUnsupportedFormat},
-		{"Parse of MPEG-TS without a reader, with a format", func() error {
-			_, _, err := Parse(bytes.NewReader(ts), int64(len(ts)), ReadOptions{Format: SubRip})
-			return err
-		}, "stbox: unsupported format: The content" + noReader, ErrUnsupportedFormat},
-		{"Parse of MPEG-TS without a reader", func() error {
-			_, _, err := Parse(bytes.NewReader(ts), int64(len(ts)), ReadOptions{})
-			return err
-		}, "stbox: unsupported format: The content" + noReader, ErrUnsupportedFormat},
-		{"Tracks of MPEG-TS without a reader", func() error {
-			_, err := Tracks(bytes.NewReader(ts), int64(len(ts)))
-			return err
-		}, "stbox: unsupported format: The content" + noReader, ErrUnsupportedFormat},
+		}, "stbox: unsupported format: The content is an MP4 file. Read it by track.", ErrUnsupportedFormat},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

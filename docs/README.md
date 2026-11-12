@@ -12,8 +12,8 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [markup.md](markup.md) | the inline tags, escaping, colors and the markup helpers |
 | [reading-writing.md](reading-writing.md) | `Load`, `Parse` and `Write`, the options, line endings and the BOM |
 | [streaming.md](streaming.md) | package `stream`: SubRip and WebVTT read and written one cue at a time, and how it differs from the full reader |
+| [containers.md](containers.md) | the subtitle tracks of video files: `Tracks`, `ReadOptions.Track`, and the codecs and rules of each container |
 | [detection.md](detection.md) | how `Detect` picks a format, and the formats it never detects |
-| [containers.md](containers.md) | the rules of each video container reader: tracks, codecs, times and damage |
 | [encodings.md](encodings.md) | BOMs, UTF-16, code page detection and invalid UTF-8 |
 | [lenient-parsing.md](lenient-parsing.md) | strict and lenient mode, and the warnings of a read |
 | [frame-rates.md](frame-rates.md) | the named frame rates, frames and durations, the frame-count and clock time models, drop-frame labels and `ParseTime` |

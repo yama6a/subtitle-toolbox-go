@@ -46,6 +46,7 @@ var layers = map[string]layer{
 	"internal/ebml":        layerLeaf,
 	"internal/orderedjson": layerLeaf,
 	"internal/markupcore":  layerLeaf,
+	"internal/teletext":    layerLeaf,
 	"internal/linewrap":    layerLeaf,
 	"internal/testfiles":   layerLeaf,
 	"internal/golden":      layerLeaf,
