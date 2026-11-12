@@ -49,7 +49,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if dropFrame != nil {
 		_ = s.SetFormatData(formatDataKey, model.NewData(model.Field{Key: "dropFrame", Value: *dropFrame})) // the data has the shape of the schema
 	}
-	s.AddCues(caption.CEA608Cues(codeLines, caption.CEA608Options{Channel: max(opts.Channel, 1), RollUp: opts.RollUp}, st.LastCueDuration())...)
+	s.AddCues(caption.CEA608Cues(codeLines, caption.CEA608Options{Channel: opts.Channel, RollUp: opts.RollUp}, st.LastCueDuration())...)
 	return s, st.Warnings(), nil
 }
 
