@@ -1,7 +1,6 @@
 package stbox_test
 
 import (
-	"bytes"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -143,7 +142,8 @@ func TestDetect(t *testing.T) {
 			t.Parallel()
 
 			require.NotEqual(t, tt.want == "", tt.later == "", "a row sets either want or later")
-			f, ok := stbox.Detect([]byte(tt.content))
+			d, ok := stbox.Detect([]byte(tt.content))
+			f := d.Format
 			assert.Equal(t, tt.want != "", ok)
 			assert.Equal(t, tt.want, f)
 		})
@@ -231,7 +231,8 @@ func TestDetectFindsNoFormat(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			f, ok := stbox.Detect([]byte(tt.content))
+			d, ok := stbox.Detect([]byte(tt.content))
+			f := d.Format
 			assert.False(t, ok)
 			assert.Empty(t, f)
 		})
@@ -293,7 +294,8 @@ func TestDetectEveryFixture(t *testing.T) {
 			if b, ok := broken[fx.rel]; ok {
 				want = b
 			}
-			f, ok := stbox.Detect(testfiles.Read(t, fx.rel))
+			d, ok := stbox.Detect(testfiles.Read(t, fx.rel))
+			f := d.Format
 			assert.Equal(t, want != "", ok)
 			assert.Equal(t, want, f)
 		})
@@ -313,8 +315,8 @@ func TestDetectionGivesTheCuesOfTheFormat(t *testing.T) {
 
 			content := testfiles.Read(t, fx.rel)
 			encoding := fixtureEncodings()[fx.rel]
-			explicit, _, wantErr := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: fx.format, Encoding: encoding})
-			detected, info, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Encoding: encoding})
+			explicit, _, wantErr := parseBytes(content, stbox.ReadOptions{Format: fx.format, Encoding: encoding})
+			detected, info, err := parseBytes(content, stbox.ReadOptions{Encoding: encoding})
 			if wantErr != nil {
 				require.EqualError(t, err, wantErr.Error())
 				return
@@ -337,7 +339,8 @@ func TestDetectNeverReturnsAFormatThatIsNotAutoDetected(t *testing.T) {
 		}
 		content, err := fs.ReadFile(fsys, p)
 		require.NoError(t, err)
-		if f, ok := stbox.Detect(content); ok {
+		if d, ok := stbox.Detect(content); ok {
+			f := d.Format
 			assert.True(t, f.IsAutoDetected(), "%s detects as %s", p, f)
 		}
 		return nil
@@ -364,10 +367,11 @@ func TestDetectThenRead(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			f, ok := stbox.Detect(tt.content)
+			d, ok := stbox.Detect(tt.content)
+			f := d.Format
 			require.True(t, ok)
 			assert.Equal(t, stbox.SubRip, f)
-			s, info, err := stbox.Parse(bytes.NewReader(tt.content), stbox.ReadOptions{Lenient: tt.lenient})
+			s, info, err := parseBytes(tt.content, stbox.ReadOptions{Lenient: tt.lenient})
 			require.NoError(t, err)
 			assert.Equal(t, stbox.SubRip, info.Format)
 			assert.Equal(t, tt.wantCues, s.Len())
@@ -379,7 +383,7 @@ func TestDetectThenRead(t *testing.T) {
 func TestParseDetectsMPL2(t *testing.T) {
 	t.Parallel()
 
-	s, info, err := stbox.Parse(strings.NewReader("[12][45]Where are you?|/Home.\r\n"), stbox.ReadOptions{})
+	s, info, err := parseBytes([]byte("[12][45]Where are you?|/Home.\r\n"), stbox.ReadOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, stbox.MPL2, info.Format)
 	assert.Equal(t, "[12][45]Where are you?|/Home.\n", string(writeAs(t, s, stbox.MPL2)))
@@ -389,7 +393,7 @@ func TestParseDetectsMPL2(t *testing.T) {
 func TestParseDetectsTMPlayer(t *testing.T) {
 	t.Parallel()
 
-	s, info, err := stbox.Parse(strings.NewReader("00:00:01:Where are you?\r\n00:00:04:Home.\r\n"), stbox.ReadOptions{})
+	s, info, err := parseBytes([]byte("00:00:01:Where are you?\r\n00:00:04:Home.\r\n"), stbox.ReadOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, stbox.TMPlayer, info.Format)
 	assert.Equal(t, 2, s.Len())
@@ -401,7 +405,7 @@ func TestParseDetectsMPSub(t *testing.T) {
 	t.Parallel()
 
 	content := "TITLE=Harbour walk\r\nFORMAT=TIME\r\n\r\n1 2.5\r\nThe boat leaves.\r\n"
-	s, info, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+	s, info, err := parseBytes([]byte(content), stbox.ReadOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, stbox.MPSub, info.Format)
 	cue, _ := s.Cue(0)
@@ -434,7 +438,7 @@ func TestParseDetectsLRC(t *testing.T) {
 			t.Parallel()
 
 			for _, lenient := range []bool{false, true} {
-				s, info, err := stbox.Parse(bytes.NewReader(testfiles.Read(t, "lrc/"+tt.file)), stbox.ReadOptions{Lenient: lenient})
+				s, info, err := parseBytes(testfiles.Read(t, "lrc/"+tt.file), stbox.ReadOptions{Lenient: lenient})
 				require.NoError(t, err)
 				assert.Equal(t, stbox.LRC, info.Format)
 				assert.Empty(t, info.Warnings)
@@ -464,7 +468,7 @@ func TestParseDetectsSubViewer(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, info, err := stbox.Parse(strings.NewReader(tt.content), stbox.ReadOptions{})
+			s, info, err := parseBytes([]byte(tt.content), stbox.ReadOptions{})
 			require.NoError(t, err)
 			assert.Equal(t, stbox.SubViewer, info.Format)
 			cue, _ := s.Cue(0)
@@ -533,7 +537,7 @@ func TestParseDetectsQuickTimeText(t *testing.T) {
 			t.Parallel()
 
 			for _, lenient := range []bool{false, true} {
-				s, info, err := stbox.Parse(strings.NewReader(tt.content), stbox.ReadOptions{Lenient: lenient})
+				s, info, err := parseBytes([]byte(tt.content), stbox.ReadOptions{Lenient: lenient})
 				require.NoError(t, err)
 				assert.Equal(t, stbox.QuickTimeText, info.Format)
 				assert.Empty(t, info.Warnings)
@@ -572,16 +576,49 @@ func FuzzDetect(f *testing.F) {
 	}
 
 	f.Fuzz(func(t *testing.T, content []byte) {
-		got, ok := stbox.Detect(content)
+		d, ok := stbox.Detect(content)
+		got := d.Format
 		if ok != (got != "") {
 			t.Fatalf("Detect returned %q and %t", got, ok)
 		}
 		if ok && !got.IsAutoDetected() {
 			t.Fatalf("Detect returned %s, which is not auto-detected", got)
 		}
-		withBOM, _ := stbox.Detect(append([]byte("\xEF\xBB\xBF"), content...))
+		d2, _ := stbox.Detect(append([]byte("\xEF\xBB\xBF"), content...))
+		withBOM := d2.Format
 		if withBOM != got {
 			t.Fatalf("Detect returned %q, and %q after a BOM", got, withBOM)
 		}
 	})
+}
+
+func TestDetectContainer(t *testing.T) {
+	t.Parallel()
+
+	ts := make([]byte, 377)
+	ts[0], ts[188], ts[376] = 0x47, 0x47, 0x47
+	m2ts := make([]byte, 389)
+	m2ts[4], m2ts[196], m2ts[388] = 0x47, 0x47, 0x47
+	tests := []struct {
+		name string
+		head []byte
+		want stbox.Detection
+		ok   bool
+	}{
+		{"Matroska", []byte("\x1A\x45\xDF\xA3"), stbox.Detection{Container: stbox.Matroska}, true},
+		{"MP4", []byte("\x00\x00\x00\x20ftyp"), stbox.Detection{Container: stbox.MP4}, true},
+		{"MPEG-TS", ts, stbox.Detection{Container: stbox.MPEGTS}, true},
+		{"M2TS", m2ts, stbox.Detection{Container: stbox.MPEGTS}, true},
+		{"MPEG-TS head cut to 376 bytes", ts[:376], stbox.Detection{}, false},
+		{"SubRip", []byte("1\n00:00:01,000 --> 00:00:02,000\nHello\n"), stbox.Detection{Format: stbox.SubRip}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, ok := stbox.Detect(tt.head)
+			assert.Equal(t, tt.ok, ok)
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }

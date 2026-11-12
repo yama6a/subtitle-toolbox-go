@@ -257,7 +257,8 @@ func TestApplyEmptyAndComments(t *testing.T) {
 
 func readSubRip(tb testing.TB, rel string) *model.Subtitle {
 	tb.Helper()
-	s, _, err := stbox.Parse(bytes.NewReader(testfiles.Read(tb, rel)), stbox.ReadOptions{Format: stbox.SubRip})
+	r := bytes.NewReader(testfiles.Read(tb, rel))
+	s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{Format: stbox.SubRip})
 	require.NoError(tb, err)
 	return s
 }

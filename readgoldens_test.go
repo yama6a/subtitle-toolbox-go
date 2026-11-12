@@ -107,7 +107,7 @@ func (g goldenFolder) readWith(t *testing.T, file string, opts stbox.ReadOptions
 	t.Helper()
 
 	opts.Format = g.format
-	s, info, err := stbox.Parse(bytes.NewReader(testfiles.Read(t, g.name+"/real/"+file)), opts)
+	s, info, err := parseBytes(testfiles.Read(t, g.name+"/real/"+file), opts)
 	require.NoError(t, err)
 	return s, info
 }

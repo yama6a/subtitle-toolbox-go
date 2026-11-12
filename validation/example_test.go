@@ -11,7 +11,8 @@ import (
 func ExampleCheck() {
 	const content = "1\n00:00:01,000 --> 00:00:03,000\n<i>The train leaves at noon.</i>\n\n" +
 		"2\n00:00:02,500 --> 00:00:05,000\n[BELL RINGS]\nANNA: We need two tickets for the long ride to the coast.\n"
-	s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+	r := strings.NewReader(content)
+	s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -33,7 +34,8 @@ func ExampleCheck() {
 func ExampleNetflixEnglish() {
 	const content = "1\n00:00:01,000 --> 00:00:03,000\n<i>The train leaves at noon.</i>\n\n" +
 		"2\n00:00:02,500 --> 00:00:02,900\nANNA: We need two tickets for the long ride to the coast.\n"
-	s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+	r := strings.NewReader(content)
+	s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return

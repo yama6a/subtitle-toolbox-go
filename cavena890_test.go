@@ -46,7 +46,7 @@ func TestCavena890Files(t *testing.T) {
 				assert.True(t, bytes.Equal(raw, writeAs(t, s, stbox.Cavena890)), "round trip with encoded text")
 			}
 
-			_, _, err = stbox.Parse(bytes.NewReader(raw), stbox.ReadOptions{})
+			_, _, err = parseBytes(raw, stbox.ReadOptions{})
 			assert.ErrorIs(t, err, stbox.ErrUnknownFormat)
 		})
 	}

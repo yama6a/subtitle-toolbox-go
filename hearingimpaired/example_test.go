@@ -14,7 +14,8 @@ func ExampleApply() {
 	const content = "1\n00:00:01,000 --> 00:00:03,000\n[DOOR SLAMS]\n\n" +
 		"2\n00:00:03,500 --> 00:00:06,000\n- [gasps] No!\n- MARY: Yes.\n\n" +
 		"3\n00:00:06,500 --> 00:00:09,000\n<i>(whispering) Over here.</i>\n"
-	s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+	r := strings.NewReader(content)
+	s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return

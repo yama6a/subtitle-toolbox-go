@@ -14,7 +14,8 @@ import (
 func ExampleParse_shiftToWebVTT() {
 	german := "1\n00:00:03,500 --> 00:00:06,000\nGuten Morgen.\n\n2\n00:00:07,000 --> 00:00:09,000\nWie geht es Ihnen?\n"
 
-	s, info, err := stbox.Parse(strings.NewReader(german), stbox.ReadOptions{})
+	r := strings.NewReader(german)
+	s, info, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -44,14 +45,15 @@ func ExampleParse_shiftToWebVTT() {
 func ExampleParse_encoding() {
 	latin1 := []byte("1\n00:00:01,000 --> 00:00:02,000\nCaf\xe9 au lait\n")
 
-	s, info, err := stbox.Parse(bytes.NewReader(latin1), stbox.ReadOptions{})
+	r := bytes.NewReader(latin1)
+	s, info, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Println(info.SourceEncoding, s.Len()) // Windows-1252 1
 
-	_, info, err = stbox.Parse(bytes.NewReader(latin1), stbox.ReadOptions{Encoding: "cp1250"})
+	_, info, err = stbox.Parse(r, r.Size(), stbox.ReadOptions{Encoding: "cp1250"})
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -65,7 +67,8 @@ func ExampleParse_encoding() {
 func ExampleParse_error() {
 	content := "1\n00:00:01,000 --> 00:00:04,000\nHello\n\n2\n00:00:05,000 => 00:00:07,000\nWorld\n"
 
-	_, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{Format: stbox.SubRip})
+	r := strings.NewReader(content)
+	_, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{Format: stbox.SubRip})
 	var perr *stbox.ParseError
 	if errors.As(err, &perr) {
 		fmt.Println(perr.Format, perr.Line)
@@ -81,7 +84,8 @@ func ExampleParse_error() {
 func ExampleWrite_lineEnding() {
 	srt := "1\n00:00:01,000 --> 00:00:02,000\nHello\n"
 
-	s, _, err := stbox.Parse(strings.NewReader(srt), stbox.ReadOptions{})
+	r := strings.NewReader(srt)
+	s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return

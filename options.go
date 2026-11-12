@@ -58,6 +58,9 @@ type ReadOptions struct {
 	EBUSTL ebustl.ReadOptions
 	// SpruceSTL holds the settings of the Spruce STL reader. The zero value guesses 25 or 30 fps from the frame numbers.
 	SpruceSTL sprucestl.ReadOptions
+	// Track is the number of the subtitle track to read from a video container. Zero reads the only subtitle track.
+	// Matroska and MP4 count from 1. MPEG-TS uses teletext page numbers from 100, or PIDs. A subtitle file needs 0.
+	Track int
 }
 
 // WriteOptions holds the settings of a write. The zero value writes with the defaults.
@@ -115,11 +118,16 @@ type ReadInfo struct {
 	// Format is the format that the read used.
 	Format Format
 	// SourceEncoding is the encoding of the input: ReadOptions.Encoding as written, or the canonical name of the
-	// encoding that the read picked, for example "UTF-8" or "Windows-1252". It is "" for a binary format.
+	// encoding that the read picked, for example "UTF-8" or "Windows-1252". It is "" for a binary format and for a
+	// container track.
 	SourceEncoding string
 	// Warnings holds every warning of the read, in read order. A strict read can hold warnings too,
 	// for repairs that a reader makes in both modes.
 	Warnings []ParseWarning
+	// Container is the video container of the input, "" for a subtitle file.
+	Container Container
+	// Track is the number of the track that the read extracted, 0 for a subtitle file.
+	Track int
 }
 
 // Validate checks every field of o, also the fields of formats that a read does not use.
@@ -136,6 +144,12 @@ func (o ReadOptions) Validate() error {
 		return &InvalidArgumentError{
 			Option: "ReadOptions.LastCueDuration",
 			Msg:    fmt.Sprintf("The last cue duration must be 0 or more, got %s.", *o.LastCueDuration),
+		}
+	}
+	if o.Track < 0 {
+		return &InvalidArgumentError{
+			Option: "ReadOptions.Track",
+			Msg:    fmt.Sprintf("The track number must be 0 or more, got %d.", o.Track),
 		}
 	}
 	for _, check := range []func() error{o.SAMI.Validate, o.MicroDVD.Validate, o.CSV.Validate, o.SCC.Validate, o.MCC.Validate} {

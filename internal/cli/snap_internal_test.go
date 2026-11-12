@@ -159,7 +159,8 @@ func TestConvertSnapTakesTheVideoAndInputRatesApart(t *testing.T) {
 	shots, err := timing.ShotChangesFromFFmpegLog(testfiles.Read(t, "shot-changes/own_ffmpeg_showinfo.log"))
 	require.NoError(t, err)
 	want := func(inputFPS int64) string {
-		s, _, err := stbox.Parse(bytes.NewReader(sub.Bytes()), stbox.ReadOptions{
+		r := bytes.NewReader(sub.Bytes())
+		s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{
 			Format: stbox.MicroDVD, MicroDVD: microdvd.ReadOptions{FrameRate: model.FrameRate{Num: inputFPS, Den: 1}},
 		})
 		require.NoError(t, err)

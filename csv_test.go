@@ -31,7 +31,7 @@ func TestLoadCSVAndTSVByExtension(t *testing.T) {
 			s, info, err := stbox.Load(testfiles.Path(t, tt.file), stbox.ReadOptions{})
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, info.Format)
-			explicit, _, err := stbox.Parse(bytes.NewReader(testfiles.Read(t, tt.file)), stbox.ReadOptions{Format: tt.want})
+			explicit, _, err := parseBytes(testfiles.Read(t, tt.file), stbox.ReadOptions{Format: tt.want})
 			require.NoError(t, err)
 			assert.Equal(t, explicit, s)
 		})
@@ -50,7 +50,7 @@ func TestParseDoesNotDetectCSV(t *testing.T) {
 	} {
 		_, ok := stbox.Detect(content)
 		assert.False(t, ok)
-		_, _, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{})
+		_, _, err := parseBytes(content, stbox.ReadOptions{})
 		require.ErrorIs(t, err, stbox.ErrUnknownFormat)
 	}
 }
@@ -109,7 +109,7 @@ func TestTSVRealFilesWriteTheirOwnBytes(t *testing.T) {
 func TestTSVReadErrorsNameTSV(t *testing.T) {
 	t.Parallel()
 
-	_, _, err := stbox.Parse(strings.NewReader("start\tend\n1\t2\n"), stbox.ReadOptions{Format: stbox.TSV})
+	_, _, err := parseBytes([]byte("start\tend\n1\t2\n"), stbox.ReadOptions{Format: stbox.TSV})
 	var perr *stbox.ParseError
 	require.ErrorAs(t, err, &perr)
 	assert.Equal(t, &stbox.ParseError{Format: stbox.TSV, Line: 1, Msg: `The table has no column "text" for text.`}, perr)

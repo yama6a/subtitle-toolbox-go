@@ -35,7 +35,7 @@ func TestParseDecodeFailure(t *testing.T) {
 		t.Run(fmt.Sprintf("lenient %t", lenient), func(t *testing.T) {
 			t.Parallel()
 
-			s, info, err := stbox.Parse(bytes.NewReader([]byte("caf\xE9\x81")), stbox.ReadOptions{Encoding: "Windows-1252", Lenient: lenient})
+			s, info, err := parseBytes([]byte("caf\xE9\x81"), stbox.ReadOptions{Encoding: "Windows-1252", Lenient: lenient})
 			var perr *stbox.ParseError
 			require.ErrorAs(t, err, &perr)
 			require.ErrorIs(t, err, stbox.ErrParse)
@@ -53,7 +53,7 @@ func TestParseDecodeFailure(t *testing.T) {
 func TestParseUnknownEncoding(t *testing.T) {
 	t.Parallel()
 
-	_, _, err := stbox.Parse(strings.NewReader("Hello"), stbox.ReadOptions{Encoding: "CP1125"})
+	_, _, err := parseBytes([]byte("Hello"), stbox.ReadOptions{Encoding: "CP1125"})
 	var aerr *stbox.InvalidArgumentError
 	require.ErrorAs(t, err, &aerr)
 	assert.Equal(t, "ReadOptions.Encoding", aerr.Option)
@@ -192,7 +192,7 @@ func TestTextReadWithItsEncodingIsWrittenAsTTML(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, out.String(), "Le café ouvre à sept heures.")
 
-	back, _, err := stbox.Parse(bytes.NewReader(out.Bytes()), stbox.ReadOptions{Format: stbox.TTML})
+	back, _, err := parseBytes(out.Bytes(), stbox.ReadOptions{Format: stbox.TTML})
 	require.NoError(t, err)
 	assert.Equal(t, 3, back.Len())
 }

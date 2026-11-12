@@ -20,7 +20,8 @@ func TestInputFPSReadsCSVFrameTimes(t *testing.T) {
 	t.Parallel()
 
 	content := testfiles.Read(t, framesCSV)
-	s, _, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: stbox.CSV, CSV: csv.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
+	r := bytes.NewReader(content)
+	s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{Format: stbox.CSV, CSV: csv.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
 	require.NoError(t, err)
 	var srt bytes.Buffer
 	_, err = stbox.Write(&srt, s, stbox.SubRip, stbox.WriteOptions{})
