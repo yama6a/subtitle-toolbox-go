@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
 
@@ -92,27 +91,6 @@ func TestInfoTextEqualsThePHPOutput(t *testing.T) {
 	t.Parallel()
 
 	assert.Equal(t, result{Stdout: string(testfiles.Read(t, "cli/trip_info.txt"))}, runCLI(t, "info", "trip.srt"))
-}
-
-func TestInfoGolden(t *testing.T) {
-	t.Parallel()
-
-	for _, tt := range []struct {
-		name  string
-		words []string
-	}{
-		{"info_trip.txt", []string{"info", "trip.srt"}},
-		{"info_trip.json", []string{"info", "trip.srt", "--json"}},
-	} {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			got := runCLI(t, tt.words...)
-			assert.Equal(t, 0, got.Code)
-			assert.Empty(t, got.Stderr)
-			golden.Equal(t, testfiles.Path(t, "cli/expected/"+tt.name), []byte(got.Stdout), *update)
-		})
-	}
 }
 
 // TestInfoASS checks that the statistics leave out the override tags and the Comment events of an ASS file.

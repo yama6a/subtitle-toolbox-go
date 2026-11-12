@@ -325,14 +325,6 @@ func TestAlignmentTagsSetTheAlignment(t *testing.T) {
 	}
 }
 
-// Ports testKaraokeTagsBecomeWordTimestamps of tests/Parsers/AssParserTest.php of subtitle-toolbox-php.
-func TestKaraokeTagsBecomeWordTimestamps(t *testing.T) {
-	t.Parallel()
-
-	s, _ := mustRead(t, eventsHeader+`Dialogue: 0,0:01:00.00,0:01:05.00,Default,,0,0,0,,{\k50}Ka{\kf25}ra{\K100}o{\ko12.5}ke`+"\n", false)
-	assert.Equal(t, []string{"<00:01:00.000>Ka<00:01:00.500>ra<00:01:00.750>o<00:01:01.750>ke"}, cueAt(t, s, 0).Lines)
-}
-
 func TestKaraokeTimeLimit(t *testing.T) {
 	t.Parallel()
 
@@ -349,20 +341,39 @@ func TestKaraokeTimeLimit(t *testing.T) {
 	assert.Equal(t, `The time "\k999999999999999999999.5" is not below 100000 hours.`, huge.Msg)
 }
 
-// Ports testSoftBreakIsAHardBreakInWrapStyle2 of tests/Parsers/AssParserTest.php of subtitle-toolbox-php.
-func TestSoftBreakIsAHardBreakInWrapStyle2(t *testing.T) {
+// Ports testKaraokeTagsBecomeWordTimestamps, testSoftBreakIsAHardBreakInWrapStyle2 and
+// testNameBecomesSpeakerOnTheFirstTextLine of tests/Parsers/AssParserTest.php of subtitle-toolbox-php.
+func TestFirstCueLines(t *testing.T) {
 	t.Parallel()
 
-	s, _ := mustRead(t, "[Script Info]\nwrapstyle: 2\n\n"+eventsHeader+`Dialogue: 0,0:00:01.00,0:00:02.00,Default,,0,0,0,,a\nb`+"\n", false)
-	assert.Equal(t, []string{"a", "b"}, cueAt(t, s, 0).Lines)
-}
+	tests := []struct {
+		name, content string
+		want          []string
+	}{
+		{
+			"karaoke tags become word timestamps",
+			eventsHeader + `Dialogue: 0,0:01:00.00,0:01:05.00,Default,,0,0,0,,{\k50}Ka{\kf25}ra{\K100}o{\ko12.5}ke` + "\n",
+			[]string{"<00:01:00.000>Ka<00:01:00.500>ra<00:01:00.750>o<00:01:01.750>ke"},
+		},
+		{
+			"a soft break is a hard break in wrap style 2",
+			"[Script Info]\nwrapstyle: 2\n\n" + eventsHeader + `Dialogue: 0,0:00:01.00,0:00:02.00,Default,,0,0,0,,a\nb` + "\n",
+			[]string{"a", "b"},
+		},
+		{
+			"the name becomes the speaker on the first text line",
+			eventsHeader + `Dialogue: 0,0:00:01.00,0:00:02.00,Default,A<B,0,0,0,,{\an8}\N  Hi` + "\n",
+			[]string{"<v A&lt;B>Hi"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-// Ports testNameBecomesSpeakerOnTheFirstTextLine of tests/Parsers/AssParserTest.php of subtitle-toolbox-php.
-func TestNameBecomesSpeakerOnTheFirstTextLine(t *testing.T) {
-	t.Parallel()
-
-	s, _ := mustRead(t, eventsHeader+`Dialogue: 0,0:00:01.00,0:00:02.00,Default,A<B,0,0,0,,{\an8}\N  Hi`+"\n", false)
-	assert.Equal(t, []string{"<v A&lt;B>Hi"}, cueAt(t, s, 0).Lines)
+			s, _ := mustRead(t, tt.content, false)
+			assert.Equal(t, tt.want, cueAt(t, s, 0).Lines)
+		})
+	}
 }
 
 // Ports testWindows1252FileReadAsUtf8KeepsItsLinesAndSpeaker of tests/Parsers/AssParserTest.php of

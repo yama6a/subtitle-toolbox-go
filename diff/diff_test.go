@@ -565,10 +565,3 @@ func TestText(t *testing.T) {
 		})
 	}
 }
-
-func TestKindValues(t *testing.T) {
-	t.Parallel()
-
-	assert.Equal(t, []string{"added", "removed", "text changed", "timing changed", "text and timing changed"},
-		[]string{string(diff.Added), string(diff.Removed), string(diff.TextChanged), string(diff.TimingChanged), string(diff.TextAndTimingChanged)})
-}

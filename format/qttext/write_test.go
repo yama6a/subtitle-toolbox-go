@@ -128,14 +128,6 @@ func TestWriteSourceTakesTheStyleOfTheSource(t *testing.T) {
 		write(t, s, model.CommonWriteOptions{}))
 }
 
-func TestWriteHeaderStyleIsTheStartingStyle(t *testing.T) {
-	t.Parallel()
-
-	s := withHeader(t, []string{"{QTtext}{italic}"}, false, cue(0, time.Second, "<i>Sung</i>"), cue(2*time.Second, 3*time.Second, "<i>Sung</i> and <b>loud</b>"))
-	assert.Equal(t, "{QTtext}{italic}\n[00:00:00.000]\nSung\n[00:00:01.000]\n[00:00:02.000]\nSung{plain} and {bold}loud\n[00:00:03.000]\n",
-		write(t, s, model.CommonWriteOptions{}))
-}
-
 func TestWriteLayouts(t *testing.T) {
 	t.Parallel()
 
@@ -227,47 +219,63 @@ func TestWriteTimestampDigits(t *testing.T) {
 	}
 }
 
-func TestWriteRoundsHalfAwayFromZero(t *testing.T) {
+func TestWriteWithHeader(t *testing.T) {
 	t.Parallel()
 
-	s := withHeader(t, []string{"{QTtext}{timeScale:30}"}, true, cue(0, 17*ms, "A"), cue(0, 16*ms, "B"), cue(50*ms, 1050*ms, "C"))
-	assert.Equal(t,
-		"{QTtext}{timeScale:30}\n[00:00:00.00]\nA\n[00:00:00.01]\n\n[00:00:00.00]\nB\n[00:00:00.00]\n\n[00:00:00.02]\nC\n[00:00:01.02]\n\n",
-		write(t, s, model.CommonWriteOptions{}))
-}
+	tests := []struct {
+		name   string
+		header string
+		paired bool
+		cues   []model.Cue
+		want   string
+	}{
+		{
+			"the header style is the starting style",
+			"{QTtext}{italic}", false,
+			[]model.Cue{cue(0, time.Second, "<i>Sung</i>"), cue(2*time.Second, 3*time.Second, "<i>Sung</i> and <b>loud</b>")},
+			"{QTtext}{italic}\n[00:00:00.000]\nSung\n[00:00:01.000]\n[00:00:02.000]\nSung{plain} and {bold}loud\n[00:00:03.000]\n",
+		},
+		{
+			"time stamps round half away from zero",
+			"{QTtext}{timeScale:30}", true,
+			[]model.Cue{cue(0, 17*ms, "A"), cue(0, 16*ms, "B"), cue(50*ms, 1050*ms, "C")},
+			"{QTtext}{timeScale:30}\n[00:00:00.00]\nA\n[00:00:00.01]\n\n[00:00:00.00]\nB\n[00:00:00.00]\n\n[00:00:00.02]\nC\n[00:00:01.02]\n\n",
+		},
+		{
+			// Up to 1000 units per second the writer rounds as PHP 8.5 does, in floats, so 64.82 s at 25 per second is
+			// 1620.5 units in decimal and 1620.4999999999998 in binary.
+			"time stamps round as PHP does up to 1000 units per second",
+			"{QTtext}{timeScale:25}", true,
+			[]model.Cue{cue(64820*ms, 64820*ms, "A")},
+			"{QTtext}{timeScale:25}\n[00:01:04.20]\nA\n[00:01:04.20]\n\n",
+		},
+		{
+			"time stamps round half away from zero above 1000 units per second",
+			"{QTtext}{timeScale:2500}", true,
+			[]model.Cue{cue(ms, 3*ms, "A")},
+			"{QTtext}{timeScale:2500}\n[00:00:00.0003]\nA\n[00:00:00.0008]\n\n",
+		},
+		{
+			"times are clamped",
+			"{QTtext}{timeScale:30}", true,
+			[]model.Cue{cue(-time.Second, -2*time.Second, "A"), cue(time.Second, 500*ms, "B")},
+			"{QTtext}{timeScale:30}\n[00:00:00.00]\nA\n[00:00:00.00]\n\n[00:00:01.00]\nB\n[00:00:01.00]\n\n",
+		},
+		{
+			"relative time stamps cannot go back",
+			"{QTtext}{timeStamps:relative}", false,
+			[]model.Cue{cue(time.Second, 3*time.Second, "A"), cue(2*time.Second, 4*time.Second, "B")},
+			"{QTtext}{timeStamps:relative}\n[00:00:00.000]\n[00:00:01.000]\nA\n[00:00:02.000]\n[00:00:00.000]\nB\n[00:00:01.000]\n",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-// Up to 1000 units per second the writer rounds as PHP 8.5 does, in floats, so 64.82 s at 25 per second is 1620.5
-// units in decimal and 1620.4999999999998 in binary.
-func TestWriteRoundsAsPHPDoesUpTo1000UnitsPerSecond(t *testing.T) {
-	t.Parallel()
-
-	s := withHeader(t, []string{"{QTtext}{timeScale:25}"}, true, cue(64820*ms, 64820*ms, "A"))
-	assert.Equal(t, "{QTtext}{timeScale:25}\n[00:01:04.20]\nA\n[00:01:04.20]\n\n", write(t, s, model.CommonWriteOptions{}))
-}
-
-func TestWriteRoundsHalfAwayFromZeroAbove1000UnitsPerSecond(t *testing.T) {
-	t.Parallel()
-
-	s := withHeader(t, []string{"{QTtext}{timeScale:2500}"}, true, cue(ms, 3*ms, "A"))
-	assert.Equal(t, "{QTtext}{timeScale:2500}\n[00:00:00.0003]\nA\n[00:00:00.0008]\n\n", write(t, s, model.CommonWriteOptions{}))
-}
-
-func TestWriteClampsTimes(t *testing.T) {
-	t.Parallel()
-
-	s := withHeader(t, []string{"{QTtext}{timeScale:30}"}, true, cue(-time.Second, -2*time.Second, "A"), cue(time.Second, 500*ms, "B"))
-	assert.Equal(t,
-		"{QTtext}{timeScale:30}\n[00:00:00.00]\nA\n[00:00:00.00]\n\n[00:00:01.00]\nB\n[00:00:01.00]\n\n",
-		write(t, s, model.CommonWriteOptions{}))
-}
-
-func TestWriteRelativeTimestampsCannotGoBack(t *testing.T) {
-	t.Parallel()
-
-	s := withHeader(t, []string{"{QTtext}{timeStamps:relative}"}, false, cue(time.Second, 3*time.Second, "A"), cue(2*time.Second, 4*time.Second, "B"))
-	assert.Equal(t,
-		"{QTtext}{timeStamps:relative}\n[00:00:00.000]\n[00:00:01.000]\nA\n[00:00:02.000]\n[00:00:00.000]\nB\n[00:00:01.000]\n",
-		write(t, s, model.CommonWriteOptions{}))
+			s := withHeader(t, []string{tt.header}, tt.paired, tt.cues...)
+			assert.Equal(t, tt.want, write(t, s, model.CommonWriteOptions{}))
+		})
+	}
 }
 
 func TestWriteText(t *testing.T) {

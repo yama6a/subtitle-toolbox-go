@@ -164,42 +164,81 @@ func TestTimeLimit(t *testing.T) {
 	assert.Equal(t, sec(359999999.999), c.Start)
 }
 
-func TestParentBeginOffsetsAndEnds(t *testing.T) {
+func TestReadCueTimesAndTextOfADocument(t *testing.T) {
 	t.Parallel()
 
-	s, _ := mustRead(t, document(`<div begin="10s" end="20s"><div begin="1s">`+
-		`<p begin="1s" end="2s">relative</p>`+
-		`<p begin="2s">parent end</p>`+
-		`<p begin="3s" end="30s">clipped</p>`+
-		`<p begin="1s" end="5s" dur="1s">earlier of end and dur</p>`+
-		`</div></div>`, "", ""), false)
+	tests := []struct {
+		name, content string
+		want          []cueRow
+	}{
+		{
+			"parent begin offsets and ends",
+			document(`<div begin="10s" end="20s"><div begin="1s">`+
+				`<p begin="1s" end="2s">relative</p>`+
+				`<p begin="2s">parent end</p>`+
+				`<p begin="3s" end="30s">clipped</p>`+
+				`<p begin="1s" end="5s" dur="1s">earlier of end and dur</p>`+
+				`</div></div>`, "", ""),
+			[]cueRow{
+				{sec(12), sec(13), "relative"},
+				{sec(12), sec(13), "earlier of end and dur"},
+				{sec(13), sec(20), "parent end"},
+				{sec(14), sec(20), "clipped"},
+			},
+		},
+		{
+			"nested timed divs",
+			document(`<div begin="10s" dur="30s"><div begin="5s" end="8s"><p begin="1s" end="20s">inner end</p></div>`+
+				`<div begin="2s"><p dur="1s">dur from the div begin</p><p end="50s">outer end</p></div></div>`, "", ""),
+			[]cueRow{
+				{sec(12), sec(13), "dur from the div begin"},
+				{sec(12), sec(40), "outer end"},
+				{sec(16), sec(18), "inner end"},
+			},
+		},
+		{
+			"body begin offset",
+			header + `><body begin="5s"><div><p begin="1s" end="2s">x</p></div></body></tt>`,
+			[]cueRow{{sec(6), sec(7), "x"}},
+		},
+		{
+			"tt elements count only in the root namespace",
+			`<tt xmlns="http://www.w3.org/ns/ttml" xmlns:x="urn:x"><body><div><x:p end="1s">a</x:p><foo:p end="1s">b</foo:p>` +
+				`<p end="2s">c<x:br/>d<foo:br/>e<x:span>f</x:span></p></div></body></tt>`,
+			[]cueRow{{0, sec(2), "cde"}},
+		},
+		{
+			"tt elements count in no namespace without a root namespace",
+			`<tt><body><div><p end="1s">a<br/>b</p><p xmlns="urn:x" end="1s">c</p></div></body></tt>`,
+			[]cueRow{{0, sec(1), "a\nb"}},
+		},
+		{
+			"the 2006 namespace is read",
+			"<tt xmlns=\"http://www.w3.org/2006/04/ttaf1\" xmlns:tts=\"http://www.w3.org/2006/04/ttaf1#styling\" xml:lang=\"en\">\n" +
+				`  <body><div><p begin="00:00:01.00" end="00:00:03.00" tts:fontStyle="italic">Hello</p></div></body></tt>`,
+			[]cueRow{{sec(1), sec(3), "<i>Hello</i>"}},
+		},
+		{
+			"an external DTD is not loaded",
+			"<?xml version=\"1.0\"?>\n<!DOCTYPE tt SYSTEM \"http://127.0.0.1:1/missing.dtd\">\n" +
+				`<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p begin="0s" end="1s">x</p></div></body></tt>`,
+			[]cueRow{{0, sec(1), "x"}},
+		},
+		{
+			"a declared encoding is ignored",
+			"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
+				"<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div><p begin=\"0s\" end=\"1s\">café</p></div></body></tt>",
+			[]cueRow{{0, sec(1), "café"}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	assert.Equal(t, []cueRow{
-		{sec(12), sec(13), "relative"},
-		{sec(12), sec(13), "earlier of end and dur"},
-		{sec(13), sec(20), "parent end"},
-		{sec(14), sec(20), "clipped"},
-	}, cueRows(s))
-}
-
-func TestNestedTimedDivs(t *testing.T) {
-	t.Parallel()
-
-	s, _ := mustRead(t, document(`<div begin="10s" dur="30s"><div begin="5s" end="8s"><p begin="1s" end="20s">inner end</p></div>`+
-		`<div begin="2s"><p dur="1s">dur from the div begin</p><p end="50s">outer end</p></div></div>`, "", ""), false)
-
-	assert.Equal(t, []cueRow{
-		{sec(12), sec(13), "dur from the div begin"},
-		{sec(12), sec(40), "outer end"},
-		{sec(16), sec(18), "inner end"},
-	}, cueRows(s))
-}
-
-func TestBodyBeginOffset(t *testing.T) {
-	t.Parallel()
-
-	s, _ := mustRead(t, header+`><body begin="5s"><div><p begin="1s" end="2s">x</p></div></body></tt>`, false)
-	assert.Equal(t, []cueRow{{sec(6), sec(7), "x"}}, cueRows(s))
+			s, _ := mustRead(t, tt.content, false)
+			assert.Equal(t, tt.want, cueRows(s))
+		})
+	}
 }
 
 func TestParagraphWithoutEnd(t *testing.T) {
@@ -228,59 +267,101 @@ func TestParagraphEndBeforeBegin(t *testing.T) {
 	assert.Equal(t, []string{`<p begin="5s" end="2s">x</p>`}, warnings[0].Lines)
 }
 
-func TestWhiteSpaceIsCollapsed(t *testing.T) {
+func TestParagraphText(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct{ name, p, want string }{
+	tests := []struct{ name, p, head, want string }{
 		{
-			"PHP row",
-			"<p end=\"1s\">\n  Hello  <span tts:fontWeight=\"bold\"> bold </span>\n  world <br/>  next\tline\n</p>",
+			"white space of the PHP row is collapsed",
+			"<p end=\"1s\">\n  Hello  <span tts:fontWeight=\"bold\"> bold </span>\n  world <br/>  next\tline\n</p>", "",
 			"Hello <b>bold </b>world\nnext line",
 		},
-		{"CR and CR LF", "<p end=\"1s\">a&#13;&#10;b&#13;c</p>", "a b c"},
-		{"preserve turns LF into a line break", "<p xml:space=\"preserve\" end=\"1s\">first\nsecond</p>", "first\nsecond"},
-		{"preserve still collapses spaces", "<p xml:space=\"preserve\" end=\"1s\">a   b\n  c</p>", "a b\nc"},
-		{"preserve from the div", "<p end=\"1s\"><span xml:space=\"preserve\">a\nb</span> c</p>", "a\nb c"},
-		{"default inside preserve", "<p xml:space=\"preserve\" end=\"1s\"><span xml:space=\"default\">a\nb</span></p>", "a b"},
+		{"CR and CR LF are white space", "<p end=\"1s\">a&#13;&#10;b&#13;c</p>", "", "a b c"},
+		{"preserve turns LF into a line break", "<p xml:space=\"preserve\" end=\"1s\">first\nsecond</p>", "", "first\nsecond"},
+		{"preserve still collapses spaces", "<p xml:space=\"preserve\" end=\"1s\">a   b\n  c</p>", "", "a b\nc"},
+		{"preserve from a span", "<p end=\"1s\"><span xml:space=\"preserve\">a\nb</span> c</p>", "", "a\nb c"},
+		{"default inside preserve", "<p xml:space=\"preserve\" end=\"1s\"><span xml:space=\"default\">a\nb</span></p>", "", "a b"},
+		{"text entities stay escaped", `<p end="1s">a &lt;b&gt; &amp; "c"</p>`, "", `a &lt;b&gt; &amp; "c"`},
+		{
+			"other elements are skipped with their text",
+			`<p end="1s">a<set tts:color="red"/><metadata>b</metadata><x:y xmlns:x="urn:x">c</x:y><!-- d --> e</p>`, "", "a e",
+		},
+		{
+			"styles map to core markup",
+			`<p end="1s" style="chained">a <span style="italic" tts:fontWeight="normal">b</span>` +
+				` <span tts:textDecoration="underline lineThrough">c</span>` +
+				` <span tts:textDecoration="underline"><span tts:textDecoration="noUnderline">d</span></span>` +
+				` <span tts:color="rgb(0, 128, 255)">e</span> <span tts:color="#00FF0080">f</span>` +
+				` <span tts:color="transparent">g</span></p>`,
+			`<styling>` +
+				`<style xml:id="base" tts:fontWeight="bold"/>` +
+				`<style xml:id="chained" style="base" tts:color="yellow"/>` +
+				`<style xml:id="italic" tts:fontStyle="oblique"/>` +
+				`</styling>`,
+			`<font color="#ffff00"><b>a </b><i>b </i><b><u><s>c </s></u>d </b></font>` +
+				`<font color="#0080ff"><b>e </b></font><font color="#00ff00"><b>f </b></font><b>g</b>`,
+		},
+		{
+			"style references in a loop",
+			`<p end="1s" style="a">x</p>`,
+			`<styling><style xml:id="a" style="b" tts:fontWeight="bold"/><style xml:id="b" style="a" tts:fontStyle="italic"/></styling>`,
+			"<b><i>x</i></b>",
+		},
+		{
+			"the first style of an ID wins",
+			`<p end="1s" style="a">x</p>`,
+			`<styling><style xml:id="a" tts:fontWeight="bold"/><style xml:id="a" tts:fontStyle="italic"/></styling>`,
+			"<b>x</b>",
+		},
+		{
+			"the own attributes of a region win over its nested style",
+			`<p end="1s" region="r">x</p>`,
+			`<styling><style xml:id="s" tts:fontWeight="bold" tts:color="red"/></styling><layout>` +
+				`<region xml:id="r" style="s" tts:color="lime"><style tts:fontStyle="italic" tts:color="yellow"/></region></layout>`,
+			`<font color="#00ff00"><b><i>x</i></b></font>`,
+		},
+		{
+			"white text gives no font tag",
+			`<p end="1s" style="s1">white <span tts:color="yellow">yellow</span>` +
+				` <span tts:color="rgb(255,255,255)">rgb</span> <span tts:color="rgba(255,255,255,255)">rgba</span>` +
+				` <span tts:color="#FFFFFFFF">hex</span></p>`,
+			`<styling><style xml:id="s1" tts:color="white" tts:fontSize="100%"/></styling>`,
+			`white <font color="#ffff00">yellow </font>rgb rgba hex`,
+		},
+		{
+			"agents become speaker tags",
+			`<p end="1s" ttm:agent="a1">Hi<br/>there <span ttm:agent="b2">Bye</span></p>`,
+			`<metadata><ttm:agent xml:id="a1" type="person"><ttm:name type="full">Anna</ttm:name></ttm:agent></metadata>`,
+			"<v Anna>Hi\nthere </v><v b2>Bye",
+		},
+		{
+			"an agent name is the first name with text, trimmed",
+			`<p end="1s" ttm:agent="a">Hi</p>`,
+			`<ttm:agent xml:id="a"><ttm:name> </ttm:name><ttm:name> Anna </ttm:name><ttm:name>Ann</ttm:name></ttm:agent>`,
+			"<v Anna>Hi",
+		},
+		{
+			"a later agent of the same ID wins",
+			`<p end="1s" ttm:agent="a">Hi</p>`,
+			`<ttm:agent xml:id="a"><ttm:name>Anna</ttm:name></ttm:agent><styling><ttm:agent xml:id="a"><ttm:name>Ben</ttm:name></ttm:agent></styling>`,
+			"<v Ben>Hi",
+		},
+		{"the first of several agent IDs is the speaker", `<p end="1s" ttm:agent=" b  c ">Hi</p>`, "", "<v b>Hi"},
+		{"no voice for white space", `<p end="1s"> <span ttm:agent="a">Hi</span></p>`, "", "<v a>Hi"},
+		{
+			"an agent name is escaped",
+			`<p end="1s" ttm:agent="a">Hi</p>`,
+			`<ttm:agent xml:id="a"><ttm:name>A &amp; B</ttm:name></ttm:agent>`,
+			"<v A &amp; B>Hi",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, paragraphCue(t, tt.p, "", "").Text())
+			assert.Equal(t, tt.want, paragraphCue(t, tt.p, "", tt.head).Text())
 		})
 	}
-}
-
-func TestTextEntitiesStayEscaped(t *testing.T) {
-	t.Parallel()
-
-	assert.Equal(t, `a &lt;b&gt; &amp; "c"`, paragraphCue(t, `<p end="1s">a &lt;b&gt; &amp; "c"</p>`, "", "").Text())
-}
-
-func TestOtherElementsAreSkippedWithTheirText(t *testing.T) {
-	t.Parallel()
-
-	p := `<p end="1s">a<set tts:color="red"/><metadata>b</metadata><x:y xmlns:x="urn:x">c</x:y><!-- d --> e</p>`
-	assert.Equal(t, "a e", paragraphCue(t, p, "", "").Text())
-}
-
-func TestStylesMapToCoreMarkup(t *testing.T) {
-	t.Parallel()
-
-	head := `<styling>` +
-		`<style xml:id="base" tts:fontWeight="bold"/>` +
-		`<style xml:id="chained" style="base" tts:color="yellow"/>` +
-		`<style xml:id="italic" tts:fontStyle="oblique"/>` +
-		`</styling>`
-	text := paragraphCue(t, `<p end="1s" style="chained">a <span style="italic" tts:fontWeight="normal">b</span>`+
-		` <span tts:textDecoration="underline lineThrough">c</span>`+
-		` <span tts:textDecoration="underline"><span tts:textDecoration="noUnderline">d</span></span>`+
-		` <span tts:color="rgb(0, 128, 255)">e</span> <span tts:color="#00FF0080">f</span>`+
-		` <span tts:color="transparent">g</span></p>`, "", head).Text()
-
-	assert.Equal(t, `<font color="#ffff00"><b>a </b><i>b </i><b><u><s>c </s></u>d </b></font>`+
-		`<font color="#0080ff"><b>e </b></font><font color="#00ff00"><b>f </b></font><b>g</b>`, text)
 }
 
 func TestStyleProperties(t *testing.T) {
@@ -340,29 +421,6 @@ func TestDFXPStylingNamespaces(t *testing.T) {
 	}
 }
 
-func TestStyleReferencesInALoop(t *testing.T) {
-	t.Parallel()
-
-	head := `<styling><style xml:id="a" style="b" tts:fontWeight="bold"/><style xml:id="b" style="a" tts:fontStyle="italic"/></styling>`
-	assert.Equal(t, "<b><i>x</i></b>", paragraphCue(t, `<p end="1s" style="a">x</p>`, "", head).Text())
-}
-
-func TestFirstStyleOfAnIDWins(t *testing.T) {
-	t.Parallel()
-
-	head := `<styling><style xml:id="a" tts:fontWeight="bold"/><style xml:id="a" tts:fontStyle="italic"/></styling>`
-	assert.Equal(t, "<b>x</b>", paragraphCue(t, `<p end="1s" style="a">x</p>`, "", head).Text())
-}
-
-func TestRegionStylesInThreePlaces(t *testing.T) {
-	t.Parallel()
-
-	head := `<styling><style xml:id="s" tts:fontWeight="bold" tts:color="red"/></styling><layout>` +
-		`<region xml:id="r" style="s" tts:color="lime"><style tts:fontStyle="italic" tts:color="yellow"/></region></layout>`
-	c := paragraphCue(t, `<p end="1s" region="r">x</p>`, "", head)
-	assert.Equal(t, `<font color="#00ff00"><b><i>x</i></b></font>`, c.Text(), "the own attributes of the region win over its nested style")
-}
-
 func TestStyleInheritanceOrder(t *testing.T) {
 	t.Parallel()
 
@@ -371,53 +429,6 @@ func TestStyleInheritanceOrder(t *testing.T) {
 		"", head), false)
 	c, _ := s.Cue(0)
 	assert.Equal(t, `<font color="#ffff00">a</font>b`, c.Text())
-}
-
-func TestWhiteTextGivesNoFontTag(t *testing.T) {
-	t.Parallel()
-
-	head := `<styling><style xml:id="s1" tts:color="white" tts:fontSize="100%"/></styling>`
-	text := paragraphCue(t, `<p end="1s" style="s1">white <span tts:color="yellow">yellow</span>`+
-		` <span tts:color="rgb(255,255,255)">rgb</span> <span tts:color="rgba(255,255,255,255)">rgba</span>`+
-		` <span tts:color="#FFFFFFFF">hex</span></p>`, "", head).Text()
-
-	assert.Equal(t, `white <font color="#ffff00">yellow </font>rgb rgba hex`, text)
-}
-
-func TestAgentsBecomeSpeakerTags(t *testing.T) {
-	t.Parallel()
-
-	head := `<metadata><ttm:agent xml:id="a1" type="person"><ttm:name type="full">Anna</ttm:name></ttm:agent></metadata>`
-	text := paragraphCue(t, `<p end="1s" ttm:agent="a1">Hi<br/>there <span ttm:agent="b2">Bye</span></p>`, "", head).Text()
-
-	assert.Equal(t, "<v Anna>Hi\nthere </v><v b2>Bye", text)
-}
-
-func TestAgentNames(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct{ name, head, p, want string }{
-		{
-			"first name with text, trimmed",
-			`<ttm:agent xml:id="a"><ttm:name> </ttm:name><ttm:name> Anna </ttm:name><ttm:name>Ann</ttm:name></ttm:agent>`,
-			`<p end="1s" ttm:agent="a">Hi</p>`, "<v Anna>Hi",
-		},
-		{
-			"a later agent of the same ID wins",
-			`<ttm:agent xml:id="a"><ttm:name>Anna</ttm:name></ttm:agent><styling><ttm:agent xml:id="a"><ttm:name>Ben</ttm:name></ttm:agent></styling>`,
-			`<p end="1s" ttm:agent="a">Hi</p>`, "<v Ben>Hi",
-		},
-		{"the first of several IDs", "", `<p end="1s" ttm:agent=" b  c ">Hi</p>`, "<v b>Hi"},
-		{"no voice for white space", "", `<p end="1s"> <span ttm:agent="a">Hi</span></p>`, "<v a>Hi"},
-		{"name escaped", `<ttm:agent xml:id="a"><ttm:name>A &amp; B</ttm:name></ttm:agent>`, `<p end="1s" ttm:agent="a">Hi</p>`, "<v A &amp; B>Hi"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			assert.Equal(t, tt.want, paragraphCue(t, tt.p, "", tt.head).Text())
-		})
-	}
 }
 
 func TestAgentAttributeIsNotStored(t *testing.T) {
@@ -609,17 +620,6 @@ func TestFormatDataWithoutNamespaceOrHead(t *testing.T) {
 	assert.False(t, ok)
 }
 
-func TestTTElementsCountOnlyInTheRootNamespace(t *testing.T) {
-	t.Parallel()
-
-	s, _ := mustRead(t, `<tt xmlns="http://www.w3.org/ns/ttml" xmlns:x="urn:x"><body><div><x:p end="1s">a</x:p><foo:p end="1s">b</foo:p>`+
-		`<p end="2s">c<x:br/>d<foo:br/>e<x:span>f</x:span></p></div></body></tt>`, false)
-	assert.Equal(t, []cueRow{{0, sec(2), "cde"}}, cueRows(s))
-
-	s, _ = mustRead(t, `<tt><body><div><p end="1s">a<br/>b</p><p xmlns="urn:x" end="1s">c</p></div></body></tt>`, false)
-	assert.Equal(t, []cueRow{{0, sec(1), "a\nb"}}, cueRows(s))
-}
-
 func TestDFXPNamespacesAreRead(t *testing.T) {
 	t.Parallel()
 
@@ -631,14 +631,6 @@ func TestDFXPNamespacesAreRead(t *testing.T) {
 	assert.Equal(t, "<b>x</b>", c.Text())
 }
 
-func Test2006NamespaceIsRead(t *testing.T) {
-	t.Parallel()
-
-	s, _ := mustRead(t, "<tt xmlns=\"http://www.w3.org/2006/04/ttaf1\" xmlns:tts=\"http://www.w3.org/2006/04/ttaf1#styling\" xml:lang=\"en\">\n"+
-		`  <body><div><p begin="00:00:01.00" end="00:00:03.00" tts:fontStyle="italic">Hello</p></div></body></tt>`, false)
-	assert.Equal(t, []cueRow{{sec(1), sec(3), "<i>Hello</i>"}}, cueRows(s))
-}
-
 func TestExternalEntityIsNotLoaded(t *testing.T) {
 	t.Parallel()
 
@@ -648,22 +640,6 @@ func TestExternalEntityIsNotLoaded(t *testing.T) {
 
 	s, _ := mustRead(t, content, true)
 	assert.Equal(t, []cueRow{{0, sec(1), "a&amp;xxe;b"}}, cueRows(s))
-}
-
-func TestExternalDTDIsNotLoaded(t *testing.T) {
-	t.Parallel()
-
-	s, _ := mustRead(t, "<?xml version=\"1.0\"?>\n<!DOCTYPE tt SYSTEM \"http://127.0.0.1:1/missing.dtd\">\n"+
-		`<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p begin="0s" end="1s">x</p></div></body></tt>`, false)
-	assert.Equal(t, []cueRow{{0, sec(1), "x"}}, cueRows(s))
-}
-
-func TestDeclaredEncodingIsIgnored(t *testing.T) {
-	t.Parallel()
-
-	s, _ := mustRead(t, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"+
-		"<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div><p begin=\"0s\" end=\"1s\">caf\u00e9</p></div></body></tt>", false)
-	assert.Equal(t, []cueRow{{0, sec(1), "caf\u00e9"}}, cueRows(s))
 }
 
 func TestInvalidFile(t *testing.T) {
