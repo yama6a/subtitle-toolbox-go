@@ -139,6 +139,16 @@ func TestConvertAppliesAReplaceList(t *testing.T) {
 	assert.Contains(t, got.Stderr, ": replaceList: ")
 }
 
+func TestConvertReadsAReplaceListWithABOM(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	list := "\ufeff" + string(testfiles.Read(t, "fixing/user_OCRFixReplaceList.xml"))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "bom.xml"), []byte(list), 0o600))
+	got := call{dir: dir}.run(t, "convert", "trip.srt", "--to", "srt", "-o", "-", "--errors-fix", "--errors-replace-list", "bom.xml")
+	assert.Equal(t, 0, got.Code, got.Stderr)
+}
+
 func TestConvertReplaceListFileErrorsStopBeforeAnyOutput(t *testing.T) {
 	t.Parallel()
 

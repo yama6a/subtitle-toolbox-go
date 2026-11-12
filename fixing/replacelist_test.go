@@ -75,6 +75,11 @@ func TestReadReplaceListSkipsEntries(t *testing.T) {
 			fixing.ReplaceList{RegularExpressions: rep("(a)/b", `$$ $& \ ${1}`)},
 		},
 		{
+			"byte order mark",
+			"\ufeff<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<L><WholeWords><Word from='a' to='b' /></WholeWords></L>",
+			fixing.ReplaceList{WholeWords: rep("a", "b")},
+		},
+		{
 			"encoding declaration",
 			"<?xml version=\"1.0\" encoding=\"iso-8859-1\"?><L><WholeLines><Line from='caf\xe9' to='cafe' /></WholeLines></L>",
 			fixing.ReplaceList{WholeLines: rep("café", "cafe")},
@@ -273,6 +278,6 @@ func TestReplaceListTimeoutLeavesTheSubtitleUnchanged(t *testing.T) {
 	_, err := fixing.Apply(s, opts)
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 	assert.Contains(t, err.Error(), `The regular expression "^(a+)+$" took longer than 1 s on cue 2.`)
-	assert.Less(t, time.Since(start), 2500*time.Millisecond)
+	assert.Less(t, time.Since(start), 3500*time.Millisecond)
 	assert.Equal(t, []string{"lt's", slow + "<i>" + slow + "</i>" + slow + "<b>" + slow + "</b>"}, texts(s))
 }

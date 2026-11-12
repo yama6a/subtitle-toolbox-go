@@ -114,7 +114,11 @@ func (rd *listReader) outsideRoot(tok xml.Token) bool {
 	}
 	switch t := tok.(type) {
 	case xml.CharData:
-		return len(bytes.TrimSpace(t)) > 0
+		text := bytes.TrimSpace(t)
+		if !rd.started {
+			text = bytes.TrimSpace(bytes.TrimPrefix(text, []byte("\ufeff")))
+		}
+		return len(text) > 0
 	case xml.StartElement:
 		return rd.started
 	}
