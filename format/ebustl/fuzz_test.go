@@ -3,6 +3,7 @@ package ebustl_test
 import (
 	"bytes"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -45,6 +46,12 @@ func FuzzRead(f *testing.F) {
 					t.Fatalf("cue %d has the times %v to %v", i, c.Start, c.End)
 				}
 				previous = c.Start
+			}
+			if _, err := ebustl.Write(io.Discard, s, model.CommonWriteOptions{}, ebustl.WriteOptions{}); err != nil {
+				var uerr *model.UnwritableError
+				if !errors.As(err, &uerr) {
+					t.Fatalf("Write returned %v, which is no *UnwritableError", err)
+				}
 			}
 		}
 	})
