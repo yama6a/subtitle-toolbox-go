@@ -92,6 +92,15 @@ MicroDVD counts time in video frames, so a MicroDVD read and a MicroDVD write ne
 - **SCC advice**: a cue that fits 4 lines of 32 characters after a wrap fails with `Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.`. A cue that needs a split fails without advice.
 - **Binary output**: EBU STL, PAC and Cavena 890 output goes to stdout or to a file as raw bytes. `info` shows no `Encoding:` row for them, and `--json` gives `"encoding": null`.
 
+### VobSub input
+
+VobSub has 2 files, such as `movie.idx` and `movie.sub`. See [VobSub in formats.md](formats.md#vobsub).
+
+- **Input**: pass the `.idx` path. Pass the `.sub` path with `--from vobsub`.
+- **Standard input**: `--from vobsub` with `-` fails with exit 2 before any read: `VobSub needs the path of the .idx file. Standard input does not work.`
+- **Directory**: a `.sub` file with an `.idx` file of the same name, in any letter case, is not an input of its own. The `.idx` file is the input.
+- **Never overwrite**: for a VobSub input, the `.idx` file and the `.sub` file both count as files that the command reads. No output may overwrite either.
+
 ### Text files in a directory
 
 A `.txt` file in a directory is an input only when content detection finds a format in it. A WebVTT file named `film.txt` converts, and a note such as `notes.txt` stays out without a message.
@@ -486,6 +495,7 @@ txt         .txt              no    yes
 mpl2        .txt              yes   yes
 tmplayer    .txt              yes   yes
 qttext      .txt              yes   yes
+vobsub      .idx              yes   no
 vtt         .vtt              yes   yes
 ```
 

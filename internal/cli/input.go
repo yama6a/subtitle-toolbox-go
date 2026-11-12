@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -19,6 +20,8 @@ import (
 )
 
 const stdinArg = "-"
+
+const vobSubStdinMessage = "VobSub needs the path of the .idx file. Standard input does not work."
 
 // rollUps lists the values of --scc-roll-up. The first is the default.
 //
@@ -150,6 +153,9 @@ func (r *runner) readWith(arg string, opts stbox.ReadOptions) (*input, error) {
 	in := &input{arg: arg}
 	var err error
 	if arg == stdinArg {
+		if opts.Format == stbox.VobSub {
+			return nil, usage(vobSubStdinMessage)
+		}
 		var content []byte
 		if content, err = io.ReadAll(r.c.stdin); err != nil {
 			return nil, fmt.Errorf("read standard input: %w", err)
@@ -306,7 +312,8 @@ func (r *runner) expandArg(arg string) ([]string, error) {
 }
 
 // directoryFiles returns the files of dir, sorted by name, that hold a readable format by their extension. A
-// .txt file stays when content detection finds a format in it.
+// .txt file stays when content detection finds a format in it. A .sub file with an .idx file of the same name, in any
+// letter case, is the second file of a VobSub pair. The .idx file is the input.
 func (r *runner) directoryFiles(dir string) []string {
 	entries, err := os.ReadDir(r.c.path(dir))
 	if err != nil {
@@ -314,7 +321,7 @@ func (r *runner) directoryFiles(dir string) []string {
 	}
 	base := strings.TrimRight(dir, `/\`)
 	var files []string
-	for _, e := range entries {
+	for _, e := range withoutVobSubData(entries) {
 		path := base + "/" + e.Name()
 		if st, err := os.Stat(r.c.path(path)); err != nil || !st.Mode().IsRegular() {
 			continue
@@ -353,4 +360,40 @@ func (r *runner) glob(pattern string) []string {
 		return []string{pattern}
 	}
 	return files
+}
+
+// vobSubPartners returns the other file of the pair of each VobSub input that exists. A VobSub read opens both files,
+// so no output may overwrite either.
+func (r *runner) vobSubPartners(inputs []string) []string {
+	var partners []string
+	for _, arg := range inputs {
+		if r.peek(arg) != stbox.VobSub {
+			continue
+		}
+		candidates, _ := extfallback.Partners(arg)
+		for _, name := range candidates {
+			if st, err := os.Stat(r.c.path(name)); err == nil && st.Mode().IsRegular() {
+				partners = append(partners, name)
+				break
+			}
+		}
+	}
+	return partners
+}
+
+// withoutVobSubData returns entries without the .sub files that have an .idx file of the same name in any letter case.
+func withoutVobSubData(entries []os.DirEntry) []os.DirEntry {
+	indexes := make(map[string]bool)
+	for _, e := range entries {
+		if strings.EqualFold(filepath.Ext(e.Name()), ".idx") {
+			indexes[lowerStem(e.Name())] = true
+		}
+	}
+	return slices.DeleteFunc(slices.Clone(entries), func(e os.DirEntry) bool {
+		return strings.EqualFold(filepath.Ext(e.Name()), ".sub") && indexes[lowerStem(e.Name())]
+	})
+}
+
+func lowerStem(name string) string {
+	return strings.ToLower(strings.TrimSuffix(name, filepath.Ext(name)))
 }

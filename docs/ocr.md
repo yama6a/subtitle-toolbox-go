@@ -79,6 +79,10 @@ func (e webEngine) Recognize(ctx context.Context, im model.Image, language ocr.L
 }
 ```
 
+## VobSub input
+
+A VobSub read gives image cues, so OCR can read DVD subtitles. See [VobSub in formats.md](formats.md#vobsub). Example: `stbox.Load("movie.idx", stbox.ReadOptions{})` reads `movie.idx` and `movie.sub` into image cues without lines.
+
 ## Tests
 
 Package `ocr/ocrtest` holds `Engine`, a fake that returns the same `Text` for every image and records each call with its image and language.

@@ -31,6 +31,7 @@ const (
 	MPL2          Format = "mpl2"
 	TMPlayer      Format = "tmplayer"
 	QuickTimeText Format = "qttext"
+	VobSub        Format = "vobsub"
 	WebVTT        Format = "vtt"
 )
 
@@ -69,6 +70,7 @@ var formatFacts = []formatFact{
 	{format: MPL2, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TMPlayer, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: QuickTimeText, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: VobSub, extensions: []string{"idx"}, canRead: true, binary: true},
 	{format: WebVTT, extensions: []string{"vtt"}, canRead: true, canWrite: true, autoDetected: true},
 }
 

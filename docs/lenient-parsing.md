@@ -348,6 +348,17 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Line numbers**: the 1-based line of the file.
 - **R**: the rate prints as PHP prints a float: `25`, `29.97`.
 
+## VobSub
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| any error in the `.idx` content | a `*ParseError` of line 0 | the same. Lenient mode does not repair an `.idx` file |
+| a `filepos` at or past the end of the `.sub` content | `The filepos %09x of timestamp %.3f is outside the .sub content of N bytes.` | skips the unit. `Skipped`, no line, `Block` the position of the timestamp line in its track |
+| a packet that is cut off, has no MPEG start code or has no valid pack header | `The .sub content has no complete subtitle packet at filepos %09x. It ends or has no MPEG start code at byte N.` and the other messages of the program stream | skips the unit |
+| a unit with no valid control sequence offset, a command that runs past the end, or a bitmap that ends before its last row | `The subtitle packet of N bytes has no valid control sequence offset.`, `The subtitle packet ends inside command XX.` or `The bitmap of the subtitle packet ends before line R is complete.` | skips the unit |
+
+- **Block numbers**: the position of the timestamp line among the timestamp lines of its track, counted from 0. A warning has no line number and no lines.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

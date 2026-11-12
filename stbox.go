@@ -104,6 +104,7 @@ const (
 	TMPlayer      = model.TMPlayer
 	QuickTimeText = model.QuickTimeText
 	SpruceSTL     = model.SpruceSTL
+	VobSub        = model.VobSub
 	WebVTT        = model.WebVTT
 )
 

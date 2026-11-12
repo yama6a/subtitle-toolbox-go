@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"slices"
 	"strconv"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
@@ -109,7 +110,7 @@ func (w *writeOutput) prepareText(a *args) error {
 // checkInputs plans the outputs of inputs and the side outputs. readPaths holds every file that the command reads.
 // Without --to, the -o extension rule runs here when peek knows the input format.
 func (w *writeOutput) checkInputs(r *runner, inputs, readPaths []string, side []sideOutput) error {
-	if err := w.plan.check(inputs, readPaths, side, r.peek); err != nil {
+	if err := w.plan.check(inputs, slices.Concat(readPaths, r.vobSubPartners(inputs)), side, r.peek); err != nil {
 		return err
 	}
 	r.reportToStderr = w.plan.dataOnStdout
@@ -170,7 +171,7 @@ func (w *writeOutput) optionsFor(f stbox.Format) stbox.WriteOptions {
 		opts.SCC.Fit = w.sccFit
 	case stbox.ASS, stbox.Cavena890, stbox.CSV, stbox.DCP, stbox.EBUSTL, stbox.JSON, stbox.LRC, stbox.MPL2, stbox.MPSub,
 		stbox.PAC, stbox.PlainText, stbox.QuickTimeText, stbox.SAMI, stbox.SBV, stbox.SubRip, stbox.SubViewer,
-		stbox.TMPlayer, stbox.TSV, stbox.TTML, stbox.WebVTT:
+		stbox.TMPlayer, stbox.TSV, stbox.TTML, stbox.VobSub, stbox.WebVTT:
 	}
 	return opts
 }
