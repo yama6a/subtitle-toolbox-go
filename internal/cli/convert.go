@@ -163,6 +163,9 @@ func (cc *convertCommand) checkInputs(r *runner, inputs []string) error {
 	if cc.snap != nil && cc.snap.path != "" {
 		readPaths = append(readPaths, cc.snap.path)
 	}
+	if cc.errors != nil && cc.errors.listPath != "" {
+		readPaths = append(readPaths, cc.errors.listPath)
+	}
 	m := cc.masking
 	if m == nil {
 		return cc.out.checkInputs(r, inputs, readPaths, nil)

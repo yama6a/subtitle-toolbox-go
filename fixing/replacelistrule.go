@@ -63,6 +63,9 @@ func (f *fixer) replaceList(lines []string) []string {
 	out := make([]string, len(lines))
 	for i, line := range lines {
 		out[i] = markupcore.MapTextRuns([]string{line}, func(text string, first, last bool) string {
+			if f.err != nil {
+				return text
+			}
 			return f.runner.run(f, text, first, last, i == len(lines)-1)
 		})[0]
 	}

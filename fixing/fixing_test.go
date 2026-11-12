@@ -216,15 +216,16 @@ func TestFixesTheFileAsTheGoldenFile(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		input, language, golden string
+		input, language, golden, list string
 	}{
-		{"web-errors.srt", "en", "web-errors.fixed.srt"},
-		{"ocr-en.ocr.srt", "en", "ocr-en.fixed.srt"},
-		{"ocr-de.ocr.srt", "de", "ocr-de.fixed.srt"},
-		{"ocr-fr.ocr.srt", "fr", "ocr-fr.fixed.srt"},
-		{"ocr-es.ocr.srt", "es", "ocr-es.fixed.srt"},
-		{"text_1080p.ocr.srt", "en", "text_1080p.fixed.srt"},
-		{"rtl-dialogue.srt", "he", "rtl-dialogue.fixed.srt"},
+		{"text-pal.ocr.srt", "en", "text-pal.fixed.srt", "user_OCRFixReplaceList.xml"},
+		{"web-errors.srt", "en", "web-errors.fixed.srt", ""},
+		{"ocr-en.ocr.srt", "en", "ocr-en.fixed.srt", ""},
+		{"ocr-de.ocr.srt", "de", "ocr-de.fixed.srt", ""},
+		{"ocr-fr.ocr.srt", "fr", "ocr-fr.fixed.srt", ""},
+		{"ocr-es.ocr.srt", "es", "ocr-es.fixed.srt", ""},
+		{"text_1080p.ocr.srt", "en", "text_1080p.fixed.srt", ""},
+		{"rtl-dialogue.srt", "he", "rtl-dialogue.fixed.srt", ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
@@ -232,6 +233,9 @@ func TestFixesTheFileAsTheGoldenFile(t *testing.T) {
 
 			s := read(t, "fixing/"+tt.input)
 			opts := fixing.Options{Language: tt.language}
+			if tt.list != "" {
+				opts.ReplaceList = readList(t, string(testfiles.Read(t, "fixing/"+tt.list)))
+			}
 			report, err := fixing.Apply(s, opts)
 			require.NoError(t, err)
 			golden := read(t, "fixing/"+tt.golden)

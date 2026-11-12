@@ -98,6 +98,8 @@ func TestReadReplaceListFailsForInvalidXML(t *testing.T) {
 	}{
 		{"closing tag of another element", "<ReplaceList>\n<WholeWords></ReplaceList>", 2},
 		{"empty input", "", 1},
+		{"second root element", "<L><WholeWords><Word from='a' to='b' /></WholeWords></L><L></L>", 1},
+		{"text after the root", "<L></L>text", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -121,6 +123,9 @@ func TestReplaceListValidate(t *testing.T) {
 	err := opts.Validate()
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 	assert.Contains(t, err.Error(), `fixing.Options.ReplaceList: The regular expression "[" is not valid: `)
+
+	opts = fixing.Options{ReplaceList: &fixing.ReplaceList{RegularExpressions: rep("", "-")}}
+	require.ErrorIs(t, opts.Validate(), model.ErrInvalidArgument)
 
 	err = fixing.Options{Enable: []fixing.Rule{fixing.RuleReplaceList}}.Validate()
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
@@ -261,27 +266,13 @@ func TestReplaceListRemovesACueThatItEmpties(t *testing.T) {
 func TestReplaceListTimeoutLeavesTheSubtitleUnchanged(t *testing.T) {
 	t.Parallel()
 
-	s := fromTexts("lt's", strings.Repeat("a", 40)+"b")
+	slow := strings.Repeat("a", 40) + "b"
+	s := fromTexts("lt's", slow+"<i>"+slow+"</i>"+slow+"<b>"+slow+"</b>")
+	start := time.Now()
 	opts := fixing.Options{Language: "en", ReplaceList: &fixing.ReplaceList{RegularExpressions: rep(`^(a+)+$`, "")}}
 	_, err := fixing.Apply(s, opts)
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 	assert.Contains(t, err.Error(), `The regular expression "^(a+)+$" took longer than 1 s on cue 2.`)
-	assert.Equal(t, []string{"lt's", strings.Repeat("a", 40) + "b"}, texts(s))
-}
-
-func TestReplaceListFixesTheTextPalGolden(t *testing.T) {
-	t.Parallel()
-
-	list := readList(t, string(testfiles.Read(t, "fixing/user_OCRFixReplaceList.xml")))
-	opts := fixing.Options{Language: "en", ReplaceList: list}
-	s := read(t, "fixing/text-pal.ocr.srt")
-	report, err := fixing.Apply(s, opts)
-	require.NoError(t, err)
-	golden := read(t, "fixing/text-pal.fixed.srt")
-	assert.Equal(t, cuesOf(golden), cuesOf(s))
-	assert.Contains(t, rules(report.Fixes), fixing.RuleReplaceList)
-
-	again, err := fixing.Apply(golden, opts)
-	require.NoError(t, err)
-	assert.Empty(t, again.Fixes)
+	assert.Less(t, time.Since(start), 2500*time.Millisecond)
+	assert.Equal(t, []string{"lt's", slow + "<i>" + slow + "</i>" + slow + "<b>" + slow + "</b>"}, texts(s))
 }

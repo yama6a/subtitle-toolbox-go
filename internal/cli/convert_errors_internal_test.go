@@ -126,6 +126,19 @@ func TestConvertErrorsUsageErrors(t *testing.T) {
 	}
 }
 
+// Ported from testFixCommonErrors of tests/Cli/BinaryEditTest.php of subtitle-toolbox-php.
+func TestConvertAppliesAReplaceList(t *testing.T) {
+	t.Parallel()
+
+	dir := fixtureDir(t, map[string]string{"pal.srt": "fixing/text-pal.ocr.srt", "list.xml": "fixing/user_OCRFixReplaceList.xml"})
+	got := call{dir: dir}.run(t, "convert", "pal.srt", "--to", "srt", "-o", "-", "--errors-fix", "--language", "en",
+		"--errors-replace-list", "list.xml", "--errors-list-fixes")
+	assert.Equal(t, 0, got.Code)
+	assert.Equal(t, string(testfiles.Read(t, "fixing/text-pal.fixed.srt")), got.Stdout)
+	assert.True(t, strings.HasPrefix(got.Stderr, "pal.srt: cue 1: "), got.Stderr)
+	assert.Contains(t, got.Stderr, ": replaceList: ")
+}
+
 func TestConvertReplaceListFileErrorsStopBeforeAnyOutput(t *testing.T) {
 	t.Parallel()
 
@@ -155,4 +168,12 @@ func TestOptionalRuleNamesFollowTheLibrary(t *testing.T) {
 
 	assert.Equal(t, "adCues, doubleApostrophes, loneLowercaseI, unneededPeriods, dialogueOnOneLine, musicNotes, sentenceStartCase",
 		ruleNames(fixing.OptionalRules()))
+}
+
+func TestConvertReplaceListIsNotAnOutput(t *testing.T) {
+	t.Parallel()
+
+	dir := fixtureDir(t, map[string]string{"list.srt": "fixing/user_OCRFixReplaceList.xml"})
+	got := call{dir: dir}.run(t, "convert", "trip.srt", "--to", "srt", "-o", "list.srt", "--errors-fix", "--errors-replace-list", "list.srt")
+	assert.Equal(t, usageResult("convert", "The output list.srt is a file that the command reads. Pass another output file or directory."), got)
 }

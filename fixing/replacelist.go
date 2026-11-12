@@ -1,6 +1,7 @@
 package fixing
 
 import (
+	"bytes"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -44,6 +45,9 @@ type ReplaceList struct {
 // Validate returns an error that matches model.ErrInvalidArgument when a regular expression does not compile.
 func (l *ReplaceList) Validate() error {
 	for _, r := range l.RegularExpressions {
+		if r.From == "" {
+			return invalid("ReplaceList", `The regular expression "" is not valid: the pattern is empty.`)
+		}
 		if _, err := regexp2.Compile(r.From, regexp2.None); err != nil {
 			return invalid("ReplaceList", `The regular expression "`+r.From+`" is not valid: `+err.Error()+".")
 		}
@@ -66,7 +70,10 @@ func ReadReplaceList(r io.Reader) (*ReplaceList, error) {
 			line, _ := d.InputPos()
 			return nil, notValid(err, line)
 		}
-		rd.token(tok)
+		if err := rd.token(tok); err != nil {
+			line, _ := d.InputPos()
+			return nil, notValid(err, line)
+		}
 	}
 }
 
@@ -80,7 +87,11 @@ type listReader struct {
 	regex   bool
 }
 
-func (rd *listReader) token(tok xml.Token) {
+// token handles one token. It fails for a second root element and for text outside the root.
+func (rd *listReader) token(tok xml.Token) error {
+	if rd.outsideRoot(tok) {
+		return errExtraContent
+	}
 	switch t := tok.(type) {
 	case xml.StartElement:
 		rd.started = true
@@ -94,7 +105,23 @@ func (rd *listReader) token(tok xml.Token) {
 	case xml.EndElement:
 		rd.depth--
 	}
+	return nil
 }
+
+func (rd *listReader) outsideRoot(tok xml.Token) bool {
+	if rd.depth != 0 {
+		return false
+	}
+	switch t := tok.(type) {
+	case xml.CharData:
+		return len(bytes.TrimSpace(t)) > 0
+	case xml.StartElement:
+		return rd.started
+	}
+	return false
+}
+
+var errExtraContent = errors.New("extra content outside the root element")
 
 // addEntry appends the entry that attrs hold to section, unless the section has an entry for its search text.
 func addEntry(section *[]Replacement, seen map[*[]Replacement]map[string]bool, regex bool, attrs []xml.Attr) {
