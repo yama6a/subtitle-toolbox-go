@@ -6,7 +6,6 @@ import (
 	"flag"
 	"os"
 	"slices"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -141,53 +140,6 @@ func TestReadsReversedCuesInStartOrderWithTheirComments(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, readBytes(t, content), readBytes(t, reversed))
-}
-
-// Ports testRealFileParses and testImageCueFileHoldsThePngBytes of tests/Parsers/JsonRealFilesTest.php of subtitle-toolbox-php.
-func TestRealFileParses(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		file        string
-		cues        int
-		first, last timedText
-	}{
-		{
-			"own_aegisub.json", 7,
-			timedText{ms(1000), ms(3500), "<v Conductor>Good morning, everyone."},
-			timedText{ms(16_100), ms(18_000), "<v Passenger><u>Thank you</u>, and <s>good night</s> good day."},
-		},
-		{
-			"own_alignment_and_coordinates.json", 10,
-			timedText{ms(1000), ms(3000), "Plain first cue"},
-			timedText{ms(19_500), ms(21_000), `Keep this: {\some_unknown_tag} and {normal text}`},
-		},
-		{"own_image_cues.json", 2, timedText{ms(1000), ms(2500), ""}, timedText{ms(3000), ms(4250), "Platform four"}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.file, func(t *testing.T) {
-			t.Parallel()
-
-			got := cueTexts(readBytes(t, testfiles.Read(t, realDir+"/"+tt.file)))
-			require.Len(t, got, tt.cues)
-			assert.Equal(t, tt.first, got[0])
-			assert.Equal(t, tt.last, got[len(got)-1])
-		})
-	}
-
-	s := readBytes(t, testfiles.Read(t, realDir+"/own_image_cues.json"))
-	c, _ := s.Cue(0)
-	image, ok := c.FormatData(model.ImageKey)
-	require.True(t, ok)
-	png, _ := image.String("png")
-	assert.True(t, strings.HasPrefix(png, "\x89PNG\r\n\x1a\n"))
-	keys := []string{"x", "y", "width", "height", "screenWidth", "screenHeight", "forced"}
-	fields := make([]any, 0, len(keys))
-	for _, key := range keys {
-		v, _ := image.Get(key)
-		fields = append(fields, v)
-	}
-	assert.Equal(t, []any{int64(640), int64(940), int64(2), int64(1), int64(1920), int64(1080), true}, fields)
 }
 
 func TestReadFailsForADropFrameString(t *testing.T) {

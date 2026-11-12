@@ -11,53 +11,21 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
-// Ports testRealFileParses, testRealFileSurvivesARoundTrip and testALineOutOfTimeOrderEndsTheCueBeforeIt of
-// tests/Parsers/TmPlayerParserTest.php of subtitle-toolbox-php.
+// Ports testRealFileSurvivesARoundTrip and testALineOutOfTimeOrderEndsTheCueBeforeIt of
+// tests/Parsers/TmPlayerParserTest.php of subtitle-toolbox-php. The read goldens check what each file reads as,
+// including the cue end that an out-of-order line sets.
 func TestRealFiles(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		file        string
-		cues        int
-		first, last cueRow
+		file string
 		// crlf is true when the file is the CR LF output of the writer, so a round trip is byte-identical.
 		crlf bool
 	}{
-		{
-			"tmplayer_crlf.txt", 5,
-			cueRow{time.Second, 5 * time.Second, []string{"The train to the coast", "leaves from platform two."}},
-			cueRow{3600 * time.Second, 3605 * time.Second, []string{"We arrive on time today."}},
-			true,
-		},
-		{
-			"tmplayer_plus.txt", 4,
-			cueRow{2 * time.Second, 6 * time.Second, []string{"Rain moves in from the west."}},
-			cueRow{150 * time.Second, 155 * time.Second, []string{"Frost on the roads in the morning."}},
-			false,
-		},
-		{
-			"tmplayer_out_of_order.txt", 4,
-			cueRow{time.Second, 4 * time.Second, []string{"The ferry leaves at nine."}},
-			cueRow{12 * time.Second, 16 * time.Second, []string{"We arrive at the island at noon."}},
-			false,
-		},
-		{
-			"tmplayer_multiline_bom.txt", 3,
-			cueRow{3 * time.Second, 7 * time.Second, []string{"The shop opens at eight.", "Fresh milk arrives at nine."}},
-			cueRow{12 * time.Second, 16 * time.Second, []string{"Bring your own bag.", "Paper bags cost ten cents."}},
-			false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.file, func(t *testing.T) {
-			t.Parallel()
-
-			s := readFile(t, realDir+"/"+tt.file, model.CommonReadOptions{})
-			require.Equal(t, tt.cues, s.Len())
-			rows := cueRows(s)
-			assert.Equal(t, tt.first, rows[0])
-			assert.Equal(t, tt.last, rows[len(rows)-1])
-		})
+		{"tmplayer_crlf.txt", true},
+		{"tmplayer_plus.txt", false},
+		{"tmplayer_out_of_order.txt", false},
+		{"tmplayer_multiline_bom.txt", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.file+" round trip", func(t *testing.T) {
@@ -76,15 +44,4 @@ func TestRealFiles(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestOutOfOrderFile(t *testing.T) {
-	t.Parallel()
-
-	assert.Equal(t, []cueRow{
-		{time.Second, 4 * time.Second, []string{"The ferry leaves at nine."}},
-		{4 * time.Second, 7 * time.Second, []string{"Please mind the gap."}},
-		{7 * time.Second, 10 * time.Second, []string{"Tickets are sold", "on the upper deck."}},
-		{12 * time.Second, 16 * time.Second, []string{"We arrive at the island at noon."}},
-	}, cueRows(readFile(t, realDir+"/tmplayer_out_of_order.txt", model.CommonReadOptions{})))
 }

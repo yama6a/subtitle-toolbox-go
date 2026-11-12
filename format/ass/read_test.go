@@ -15,54 +15,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
-// Ports testRealFileParses of tests/Parsers/AssParserTest.php of subtitle-toolbox-php.
-func TestRealFilesParse(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		file        string
-		cues        int
-		first, last cueRow
-	}{
-		{
-			"own_aegisub.ass", 7,
-			cueRow{time.Second, 3500 * ms, []string{"<v Conductor>Good morning, everyone."}},
-			cueRow{16100 * ms, 18 * time.Second, []string{"<v Passenger><u>Thank you</u>, and <s>good night</s> good day."}},
-		},
-		{
-			"own_ffmpeg.ass", 7,
-			cueRow{500 * ms, 2750 * ms, []string{"The bakery opens at six."}},
-			cueRow{62040 * ms, 65960 * ms, []string{"Thank you for shopping with us"}},
-		},
-		{
-			"own_signs_crlf.ass", 7,
-			cueRow{time.Second, 4 * time.Second, []string{"<v Reporter>Good evening. Here is the weather."}},
-			cueRow{14100 * ms, 17300 * ms, []string{`<v Reporter>That's all <font color="#0080ff">for<b> tonight</b></font>` +
-				`<b><font color="#00ff00"> from</font></b><font color="#00ff00"> us.</font>`}},
-		},
-		{
-			"own_style_flags.ass", 6,
-			cueRow{time.Second, 3 * time.Second, []string{"<v Driver>Last stop is the depot."}},
-			cueRow{12700 * ms, 15 * time.Second, []string{"<i><b>Left</b></i><i> again</i><b><u><s> already</s></u></b>"}},
-		},
-		{
-			"own_ssa_v4.ssa", 5,
-			cueRow{2 * time.Second, 5 * time.Second, []string{"<v Captain><b>The ferry leaves the harbour at nine.</b>"}},
-			cueRow{14500 * ms, 17 * time.Second, []string{`<v Captain><b><font color="#ff0000">Mind the gap</font> when you board.</b>`}},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.file, func(t *testing.T) {
-			t.Parallel()
-
-			rows := cueRows(readFile(t, realDir+"/"+tt.file))
-			require.Len(t, rows, tt.cues)
-			assert.Equal(t, tt.first, rows[0])
-			assert.Equal(t, tt.last, rows[len(rows)-1])
-		})
-	}
-}
-
 // Ports testAegisubFileKeepsHeaderStylesAndComments of tests/Parsers/AssParserTest.php of subtitle-toolbox-php.
 func TestAegisubFileKeepsHeaderStylesAndComments(t *testing.T) {
 	t.Parallel()
