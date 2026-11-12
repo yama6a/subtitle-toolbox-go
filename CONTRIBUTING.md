@@ -20,6 +20,8 @@ A package imports only packages of a lower layer. Every layer may also import th
 | 4 | `format/<name>` | layers 0 to 3. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML. Other shared code goes to `internal/` |
 | 4b | `container/<name>`, from 3.x | layers 0 to 4. A container returns cues, so it calls the format readers |
 | 5 | root `stbox` and the service packages, such as `stats`, `diff`, `validation`, `timing`, `hls` and `imaging` | layers 0 to 4b. A service never imports the root. The root never imports a service |
+| 5b | `ocr/<engine>` and the test helper `ocr/ocrtest`, from 3.x | layers 0 to 5, so they import `ocr`. An engine never imports another engine |
+| 5c | `ocr/auto`, from 3.x | layers 0 to 5b. It builds an engine, so it imports the engines |
 | 6 | `internal/cli`, `cmd/stbox` | everything |
 
 ### Format packages

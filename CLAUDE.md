@@ -23,6 +23,8 @@ format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microd
                tmplayer, mpsub, subviewer, qttext, sprucestl, dcp, lrc, csv, itt, stboxjson, plaintext
 stats/ stream/ hearingimpaired/ fixing/ profanity/ refsync/ diff/ dual/
                The 1.x services. A service never imports the root package
+ocr/           The 3.x service that reads the text of image cues with an OCR engine, and ocr/ocrtest, a fake engine for tests.
+               Engines live in ocr/<engine>, the chooser in ocr/auto. Layers 5b and 5c, see CONTRIBUTING.md
 validation/    The 2.x service that checks a subtitle against rules. It follows the same layer rule
 timing/        The 2.x service that moves cue times to shot changes and frames. Same layer rule
 imaging/       The 3.x public helpers that decode and build the PNG bitmaps of image cues. Same layer rule
