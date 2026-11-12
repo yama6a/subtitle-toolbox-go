@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
 )
@@ -32,6 +33,7 @@ func roundTripFiles() []roundTripFile {
 		{"ttml", "bbc_ebu_tt_d.ttml"},
 		{"ttml", "mantas_netflix_ticks.dfxp"},
 		{"ttml", "w3c_imsc11_regions.ttml"},
+		{"scc", "popon_broadcast_df.scc"},
 	}
 }
 
@@ -83,6 +85,13 @@ func conversions() []conversion {
 		{"srt", "own_styled.srt", stbox.TTML, ""},
 		{"srt", "own_styled.srt", stbox.WebVTT, ""},
 		{"srt", "own_styled.srt", stbox.PAC, ""},
+		{"srt", "own_styled.srt", stbox.SCC, ""},
+		{"scc", "popon_broadcast_df.scc", stbox.SubRip, ""},
+		{"scc", "popon_broadcast_df.scc", stbox.WebVTT, ""},
+		{"scc", "popon_broadcast_df.scc", stbox.ASS, ""},
+		{"scc", "rollup_news_ndf.scc", stbox.SubRip, ""},
+		{"scc", "rollup_news_ndf.scc", stbox.WebVTT, ""},
+		{"scc", "rollup_news_ndf.scc", stbox.ASS, ""},
 		{"subviewer", "subviewer2_crlf.sub", stbox.SubRip, ""},
 		{"subviewer", "subviewer2_crlf.sub", stbox.WebVTT, ""},
 		{"subviewer", "subviewer2_crlf.sub", stbox.ASS, ""},
@@ -168,6 +177,17 @@ func TestWriteGoldens(t *testing.T) {
 			golden.Equal(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(c.to))), writeAs(t, s, c.to), *update)
 		})
 	}
+}
+
+func TestWriteGoldenSCCNonDropFrame(t *testing.T) {
+	t.Parallel()
+
+	g := folder(t, "srt")
+	s, _ := g.read(t, "own_styled.srt")
+	var out bytes.Buffer
+	_, err := stbox.Write(&out, s, stbox.SCC, stbox.WriteOptions{SCC: scc.WriteOptions{DropFrame: stbox.DropFrameOff}})
+	require.NoError(t, err)
+	golden.Equal(t, testfiles.Path(t, goldenPath(g, "own_styled.srt", ".to.ndf.scc")), out.Bytes(), *update)
 }
 
 // conversionSuffix returns .to.<format>, plus .<extension> when the first extension of f differs from its name,

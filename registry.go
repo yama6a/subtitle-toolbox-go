@@ -64,6 +64,7 @@ var (
 	_ writeFunc[sbv.WriteOptions, sbv.WriteReport]             = sbv.Write
 	_ detectFunc                                               = sbv.Detect
 	_ readFunc[scc.ReadOptions]                                = scc.Read
+	_ writeFunc[scc.WriteOptions, scc.WriteReport]             = scc.Write
 	_ detectFunc                                               = scc.Detect
 	_ readFunc[mpl2.ReadOptions]                               = mpl2.Read
 	_ writeFunc[mpl2.WriteOptions, mpl2.WriteReport]           = mpl2.Write
@@ -118,7 +119,7 @@ var registry = []formatFuncs{
 	{format: PAC, read: readPAC, write: writePAC},
 	{format: SAMI, read: readSAMI, write: writeSAMI},
 	{format: SBV, read: readSBV, write: writeSBV},
-	{format: SCC, read: readSCC},
+	{format: SCC, read: readSCC, write: writeSCC},
 	{format: SubRip, read: readSubRip, write: writeSubRip},
 	{format: EBUSTL, read: readEBUSTL},
 	{format: SpruceSTL, read: readSpruceSTL, write: writeSpruceSTL},
@@ -290,6 +291,14 @@ func writeMicroDVD(w io.Writer, s *Subtitle, common model.CommonWriteOptions, op
 
 func readSCC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return scc.Read(r, common, opts.SCC)
+}
+
+func writeSCC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	report, err := scc.Write(w, s, common, opts.SCC)
+	if err != nil {
+		return WriteReport{}, err
+	}
+	return WriteReport{SCC: &report}, nil
 }
 
 func readSpruceSTL(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {

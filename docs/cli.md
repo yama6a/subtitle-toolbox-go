@@ -423,7 +423,7 @@ mpsub       .mpsub            yes   yes
 pac         .pac .fpc         yes   yes
 sami        .smi .sami        yes   yes
 sbv         .sbv              yes   yes
-scc         .scc              yes   no
+scc         .scc              yes   yes
 srt         .srt              yes   yes
 stl         .stl              yes   no
 spruce-stl  .stl              yes   yes

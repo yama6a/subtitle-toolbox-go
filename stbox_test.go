@@ -93,7 +93,7 @@ func TestWriteUnsupportedFormat(t *testing.T) {
 	}
 }
 
-func TestWriteReportIsSetForWebVTTOnly(t *testing.T) {
+func TestWriteReportIsSetForWebVTTAndSCCOnly(t *testing.T) {
 	t.Parallel()
 
 	s := &stbox.Subtitle{}
@@ -108,6 +108,7 @@ func TestWriteReportIsSetForWebVTTOnly(t *testing.T) {
 			var out bytes.Buffer
 			report, err := stbox.Write(&out, s, f, stbox.WriteOptions{})
 			require.NoError(t, err)
+			assert.Equal(t, f == stbox.SCC, report.SCC != nil)
 			if f != stbox.WebVTT {
 				assert.Nil(t, report.WebVTT)
 				return
