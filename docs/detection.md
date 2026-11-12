@@ -6,13 +6,15 @@
 
 Before step 1, `Detect` looks for a video container in the raw bytes. A container wins over every format and returns a `Detection` with `Container` set and `Format` empty. A subtitle file returns a `Detection` with `Format` set. The container head needs `ContainerHeadSize` bytes, 389, so pass at least that many to find a container.
 
-1. Remove all leading UTF-8 BOMs. Then remove the leading bytes space, tab, LF, CR, NUL and VT.
-2. Content that starts with `{` and decodes as a JSON object goes to the JSON checks only. Their result is final, also when no check matches. Content that is not valid JSON goes on to step 3.
-3. Turn each run of CRs before an LF into one LF, and each other CR into LF.
-4. Try the signatures in order. The first match wins. No match gives no result.
+1. **Raw signatures**: the formats with a binary header that steps 2 to 4 would change check the bytes as they are. A match is final. PGS is the only one. Its header holds a 32-bit time at byte 2 to 9, which can contain CR, LF or bytes that step 2 removes, and its segment type is byte 10. `pgs.Detect` checks `PG` at byte 0 and one of `14h`, `15h`, `16h`, `17h` and `80h` at byte 10.
+2. Remove all leading UTF-8 BOMs. Then remove the leading bytes space, tab, LF, CR, NUL and VT.
+3. Content that starts with `{` and decodes as a JSON object goes to the JSON checks only. Their result is final, also when no check matches. Content that is not valid JSON goes on to step 4.
+4. Turn each run of CRs before an LF into one LF, and each other CR into LF.
+5. Try the signatures in order. The first match wins. No match gives no result.
 
-- **Format packages**: each `Detect` of a format package gets the content after steps 1 and 3. So a SubRip file with a BOM and CR LF line endings detects.
+- **Format packages**: each `Detect` of a format package gets the content after steps 2 and 4. So a SubRip file with a BOM and CR LF line endings detects.
 - **Bad UTF-8 in JSON**: `encoding/json` reads each bad byte in a JSON string as U+FFFD, so the decode goes on.
+- **PGS**: a BOM or white space before the header hides the PGS signature, because step 1 reads the raw bytes. A `.sup` file has none. `Load` also reads a file with the extension `.sup` as PGS when no signature matches, because only PGS lists `.sup`.
 - **Never detected**: `Detect` returns only formats whose `IsAutoDetected` is true.
 - **No signature**: Cavena 890 has none, so `Detect` finds no result for a `.890` file. `Load` reads it by its extension before any decoding, step 3 below. `Parse` without `ReadOptions.Format` returns `ErrUnknownFormat`.
 
@@ -58,7 +60,7 @@ Before step 1, `Detect` looks for a video container in the raw bytes. A containe
 - **LRC time tag**: `[`, optional hours and `:`, minutes of 1 to 3 digits, `:`, seconds `00` to `59`, an optional `.` and 1 to 3 digits, `]`. Spaces or tabs may stand inside the brackets. The hours count only when 1 or 2 minute digits up to 59 and `:` follow them, so `[1:75:00.00]` and `[1234:45.67]` are no time tags. `lrc.Detect` holds rule 12, and its doc comment states it.
 - **TMPlayer and frame timecodes**: the two exceptions of rule 19 keep out the `hh:mm:ss:ff` frame timecodes of Spruce STL and CSV, such as `00:00:01:10,00:00:03:10,"Hello"`. The text `00:00:01:5 trains leave` still matches. `tmplayer.Detect` holds the rule, and its doc comment states it.
 - **Binary signatures**: `Load` and `Parse` run `Detect` on the raw bytes before they decode. A binary result reads the raw bytes.
-- **PAC**: `pac.Detect` holds rule 14. It comes after EBU STL and before Spruce STL, in the PHP order. The check reads the first 24 bytes of the content after steps 1 and 3. So a first subtitle number whose bytes are `0Dh 0Ah` is not detected, because step 3 turns them into one LF. PHP has the same limit. A file with such a number still loads by the extension `.pac` or `.fpc`.
+- **PAC**: `pac.Detect` holds rule 14. It comes after EBU STL and before Spruce STL, in the PHP order. The check reads the first 24 bytes of the content after steps 2 and 4. So a first subtitle number whose bytes are `0Dh 0Ah` is not detected, because step 4 turns them into one LF. PHP has the same limit. A file with such a number still loads by the extension `.pac` or `.fpc`.
 - **SCC**: `scc.Detect` holds rule 16. The SCC header is a line of its own, so it needs no rule against other formats. It comes after Spruce STL and before MPL2, in the PHP order.
 - **MCC**: `mcc.Detect` holds rule 17. It accepts any version, such as `V3.0`, and the reader rejects all but 1.0 and 2.0. It comes after SCC and before MPL2, in the PHP order.
 - **Order**: WebVTT comes before SubRip, because a WebVTT file without its header looks like SubRip. A new format inserts its signature at its place in the PHP order. `TestDetectionListsFollowTheOrder` in [registry_test.go](../registry_test.go) holds that order.
@@ -73,7 +75,7 @@ Before step 1, `Detect` looks for a video container in the raw bytes. A containe
 | 2 | **Binary by content**: `Detect` on the raw bytes, for a format only. A binary format reads the raw bytes. `Encoding` is ignored and `SourceEncoding` is empty |
 | 3 | **Binary by extension**: only `Load`. When every format that lists the extension is binary, the extension decides before any decoding. `.pac`, `.fpc` and `.890` are such extensions. `.stl` is not, because Spruce STL lists it too. Blank content gives an empty subtitle, as in step 5 |
 | 4 | **Decode** the content to UTF-8, as [encodings.md](encodings.md) says |
-| 5 | **Empty content**: nothing is left after the BOMs and the bytes of step 1 of `Detect` go, at both ends. `Load` returns an empty subtitle in the format of the extension, under the fallback rule of step 8 |
+| 5 | **Empty content**: nothing is left after the BOMs and the bytes of step 2 of `Detect` go, at both ends. `Load` returns an empty subtitle in the format of the extension, under the fallback rule of step 8 |
 | 6 | **Detect** the format of the decoded content |
 | 7 | **Profile by extension**: when `Detect` gives TTML and the extension is `.itt`, `Load` reads the file as iTT |
 | 8 | **Extension fallback**: without a detection result, `Load` uses `FormatFromPath`, when the library can read that format and the extension is not `json`, `txt` or `ffmeta`. CSV and TSV have no signature, so `.csv` and `.tsv` files load only by this step. A binary format from this step reads the raw bytes, not the decoded text |

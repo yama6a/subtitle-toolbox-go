@@ -37,7 +37,14 @@ func imageGoldens() []imageGolden {
 }
 
 // pgsImageGoldens lists one row for each PGS fixture.
-var pgsImageGoldens = []imageGolden{}
+var pgsImageGoldens = []imageGolden{
+	{fixture: "pgs/shapes_1080p.sup", golden: "pgs/expected/shapes_1080p.sup"},
+	{fixture: "pgs/shapes_576p.sup", golden: "pgs/expected/shapes_576p.sup"},
+	{fixture: "pgs/text_1080p.sup", golden: "pgs/expected/text_1080p.sup"},
+	{fixture: "pgs/text_cyrillic_1080p.sup", golden: "pgs/expected/text_cyrillic_1080p.sup"},
+	{fixture: "pgs/authoring_layout_1080p.sup", golden: "pgs/expected/authoring_layout_1080p.sup"},
+	{fixture: "pgs/fade_layout_1080p.sup", golden: "pgs/expected/fade_layout_1080p.sup"},
+}
 
 // vobsubImageGoldens lists one row for each VobSub track.
 var vobsubImageGoldens = []imageGolden{}

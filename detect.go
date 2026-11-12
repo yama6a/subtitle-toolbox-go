@@ -22,9 +22,10 @@ type Detection struct {
 // Detect returns the format or container of content, or false when nothing matches.
 // Pass UTF-8 text, or the bytes of a binary format. Pass at least ContainerHeadSize bytes to find a container.
 //
-// A container wins over every format. Detect then removes the leading UTF-8 BOMs and white space. Content that is
-// a JSON object goes to the JSON checks only. Other content gets LF line endings, and the signatures of the
-// formats decide in a fixed order. docs/detection.md lists the order.
+// A container wins over every format. Then the formats with a raw signature, such as PGS, check the bytes as they are.
+// Detect then removes the leading UTF-8 BOMs and white space. Content that is a JSON object goes to the JSON checks only.
+// Other content gets LF line endings, and the signatures of the formats decide in a fixed order.
+// docs/detection.md lists the order.
 func Detect(content []byte) (Detection, bool) {
 	if c, ok := containerOf(content); ok {
 		return Detection{Container: c}, true
@@ -35,6 +36,11 @@ func Detect(content []byte) (Detection, bool) {
 
 // detectFormat returns the subtitle format of content. It never returns a container.
 func detectFormat(content []byte) (Format, bool) {
+	for _, s := range rawSignatures {
+		if s.match(content) {
+			return s.format, true
+		}
+	}
 	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.PHPTrimSet)
 	if len(content) > 0 && content[0] == '{' {
 		var keys map[string]json.RawMessage

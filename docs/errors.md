@@ -82,6 +82,7 @@ All 4 types live in package `model`. Package `stbox` aliases them under the same
 | EBU STL | 0. A binary format has no lines |
 | Cavena 890 | 0. A binary format has no lines |
 | PAC | 0. A binary format has no lines |
+| PGS | 0. A binary format has no lines |
 
 Each format adds its row here when its reader ships.
 

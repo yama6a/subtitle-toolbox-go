@@ -35,10 +35,8 @@ func ImageOf(parts []Part, screenWidth, screenHeight int) (model.Image, error) {
 	}
 
 	left, top, width, height := canvasOf(parts)
-	if width > model.MaxImageSide || height > model.MaxImageSide || width*height > model.MaxImagePixels {
-		return model.Image{}, joinError("an image of " + strconv.Itoa(width) + "x" + strconv.Itoa(height) +
-			" pixels is larger than the limit of " + strconv.Itoa(model.MaxImageSide) + " pixels per side and " +
-			strconv.Itoa(model.MaxImagePixels) + " pixels in total.")
+	if reason := SizeLimit(width, height); reason != "" {
+		return model.Image{}, joinError(reason)
 	}
 	canvas := Pixels{Width: width, Height: height, RGBA: make([]uint32, width*height)}
 	for n, p := range parts {

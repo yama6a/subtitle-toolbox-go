@@ -20,7 +20,7 @@ The package map of #8. A package appears when its issue lands.
 model/         Subtitle, Cue, format facts table, common options, shared errors
 markup/        Inline tag model and its helpers
 format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microdvd, mpl2,
-               tmplayer, mpsub, subviewer, qttext, sprucestl, dcp, lrc, csv, itt, stboxjson, plaintext
+               tmplayer, mpsub, subviewer, qttext, sprucestl, dcp, lrc, csv, itt, stboxjson, plaintext, pgs
 stats/ stream/ hearingimpaired/ fixing/ profanity/ refsync/ diff/ dual/
                The 1.x services. A service never imports the root package
 ocr/           The 3.x service that reads the text of image cues with an OCR engine, and ocr/ocrtest, a fake engine for tests.
@@ -30,7 +30,7 @@ timing/        The 2.x service that moves cue times to shot changes and frames. 
 imaging/       The 3.x public helpers that decode and build the PNG bitmaps of image cues. Same layer rule
 hls/           The service that cuts a subtitle into HLS WebVTT segments and joins segments. Same layer rule
 internal/      Helpers: markupcore, linewrap, timecode, textenc, extfallback, grapheme, ssatag, phpkey, stringlist, xmlraw, paragraphs, blocks, subrip,
-               vtt, position, parsing, writing, ttmlwrite, bitmap, cli, and the test helpers testfiles and golden
+               vtt, position, parsing, writing, ttmlwrite, bitmap, displayset, cli, and the test helpers testfiles and golden
 cmd/stbox/     The CLI main. Wiring, no business logic
 testdata/      All fixtures and goldens, one folder per topic, PHP folder names for PHP data. Packages read
                them through internal/testfiles. Only fuzz corpora stay in <package>/testdata/fuzz/

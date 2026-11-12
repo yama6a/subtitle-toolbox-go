@@ -100,12 +100,19 @@ func checkedConfig(data []byte) (image.Config, error) {
 	if err != nil {
 		return image.Config{}, decodeError(err.Error())
 	}
-	if cfg.Width > model.MaxImageSide || cfg.Height > model.MaxImageSide || cfg.Width*cfg.Height > model.MaxImagePixels {
-		return image.Config{}, decodeError("an image of " + strconv.Itoa(cfg.Width) + "x" + strconv.Itoa(cfg.Height) +
-			" pixels is larger than the limit of " + strconv.Itoa(model.MaxImageSide) + " pixels per side and " +
-			strconv.Itoa(model.MaxImagePixels) + " pixels in total.")
+	if reason := SizeLimit(cfg.Width, cfg.Height); reason != "" {
+		return image.Config{}, decodeError(reason)
 	}
 	return cfg, nil
+}
+
+// SizeLimit returns why an image of width x height pixels is too large, or "" when it fits the limits of package model.
+func SizeLimit(width, height int) string {
+	if width <= model.MaxImageSide && height <= model.MaxImageSide && width*height <= model.MaxImagePixels {
+		return ""
+	}
+	return "an image of " + strconv.Itoa(width) + "x" + strconv.Itoa(height) + " pixels is larger than the limit of " +
+		strconv.Itoa(model.MaxImageSide) + " pixels per side and " + strconv.Itoa(model.MaxImagePixels) + " pixels in total."
 }
 
 func decodeError(msg string) error {

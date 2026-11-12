@@ -584,6 +584,9 @@ func FuzzDetect(f *testing.F) {
 		if ok && !got.IsAutoDetected() {
 			t.Fatalf("Detect returned %s, which is not auto-detected", got)
 		}
+		if got == stbox.PGS {
+			return // PGS is a raw signature, so a BOM before the header hides it on purpose
+		}
 		d2, _ := stbox.Detect(append([]byte("\xEF\xBB\xBF"), content...))
 		withBOM := d2.Format
 		if withBOM != got {
