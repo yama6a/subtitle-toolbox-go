@@ -7,6 +7,7 @@
 | ASS and SSA | `stbox.ASS` | `ass` | `.ass`, `.ssa` | [ASS and SSA](#ass-and-ssa) |
 | Cavena 890 | `stbox.Cavena890` | `cavena890` | `.890` | [Cavena 890](#cavena-890) |
 | CSV and TSV | `stbox.CSV`, `stbox.TSV` | `csv`, `tsv` | `.csv`, `.tsv` | [CSV and TSV](#csv-and-tsv) |
+| iTunes Timed Text | `stbox.ITT` | `itt` | `.itt` | [iTT](#itt) |
 | library JSON | `stbox.JSON` | `json` | `.json` | [JSON](#json) |
 | LRC | `stbox.LRC` | `lrc` | `.lrc` | [LRC](#lrc) |
 | MicroDVD | `stbox.MicroDVD` | `microdvd` | `.sub` | [MicroDVD](#microdvd) |
@@ -25,7 +26,7 @@
 | QuickTime text | `stbox.QuickTimeText` | `qttext` | `.txt` | [QuickTime text](#quicktime-text) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
 
-- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub and SubViewer files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`. Spruce STL uses `.stl`, which EBU STL uses too. The first format in the registry owns it, so the Spruce STL row owns `.stl` until EBU STL ships. Content detection tells the two apart.
+- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub and SubViewer files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`. Spruce STL uses `.stl`, which EBU STL uses too. The first format in the registry owns it, so the EBU STL row owns `.stl`. Content detection tells the two apart.
 - **Time limit**: every time in every format is below 100000 hours. A reader rejects a time at or above it. A retime that moves a cue past it returns an error that matches `ErrInvalidArgument`. Writers clamp a negative time to 0, except the JSON writer.
 - **Options**: each section lists the fields of the format in `ReadOptions` and `WriteOptions`. The fields that every format shares are in [reading-writing.md](reading-writing.md). A reader ignores the fields of other formats.
 - **Sections**: each section has what the reader accepts, what the writer writes, the options and the limits. The godoc of the format package holds the reference of each function.
@@ -352,7 +353,7 @@ This file reads as one cue from 1.5 s to 4 s with the alignment `TopCenter` and 
 
 ## TTML
 
-TTML is the W3C XML format for timed text. IMSC is its profile for streaming and broadcast, and DFXP is its draft form that Netflix deliveries and Flash players use. Package `format/ttml` reads and writes all 3. The format name is `ttml`, the extensions `.ttml`, `.dfxp` and `.xml`. iTT files read as TTML.
+TTML is the W3C XML format for timed text. IMSC is its profile for streaming and broadcast, and DFXP is its draft form that Netflix deliveries and Flash players use. Package `format/ttml` reads and writes all 3. The format name is `ttml`, the extensions `.ttml`, `.dfxp` and `.xml`. An iTT file has the TTML signature, so `Detect` and `Parse` read it as TTML. See [iTT](#itt) for `.itt` files.
 
 ```xml
 <tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xml:lang="en">
@@ -441,6 +442,68 @@ The writer keeps what the reader stored, so a DFXP file stays DFXP after a retim
 ### Options
 
 `ttml.ReadOptions` and `ttml.WriteOptions` have no fields, so the root `WriteOptions` has no TTML field. The reader reads `Lenient`. The writer reads `StripTags`, `LineEnding` and `BOM`. By default the output has no BOM. The lenient rules are in [lenient-parsing.md](lenient-parsing.md#ttml).
+
+## iTT
+
+iTunes Timed Text (iTT) is the TTML profile that Apple asks for in iTunes Store and Apple TV deliveries. It uses SMPTE time codes, one `<div>` and a top and a bottom region. Package `format/itt` reads and writes it on top of the TTML code. The format name is `itt`, the extension `.itt`. No BOM by default.
+
+```xml
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttp="http://www.w3.org/ns/ttml#parameter" ttp:timeBase="smpte" ttp:frameRate="24" ttp:frameRateMultiplier="999 1000">
+  <body><div><p begin="00:00:01:12" end="00:00:04:00">Hello</p></div></body>
+</tt>
+```
+
+This file reads as one cue from 1.502 s to 4.004 s, because the effective frame rate is 24 times 999/1000, which is 23.976 fps.
+
+- **Detection**: iTT has no signature of its own. `Detect` returns `ttml` for an iTT file. `Load` returns `itt` when the content is TTML and the file extension is `.itt`, see [detection.md](detection.md#load-and-parse-without-a-format). `Parse` without `ReadOptions.Format` has no file name and reads the same bytes as TTML.
+
+### Read
+
+`itt.Read` calls the TTML reader. The cues, the warnings and the `ttml` format data are what `ttml.Read` gives, with the same lenient rules. It adds the file data `itt`. Its fields are the root attributes `timeBase`, `frameRate`, `frameRateMultiplier` and `dropMode`, in this order, as strings trimmed of white space. A field is there only when the root has the attribute. The prefix of the attribute must map to a TTML parameter namespace, or must be `ttp` without a declaration. A file without such an attribute has no `itt` data.
+
+- **Two namespaces**: `ttp:frameRate="25"` and `p2:frameRate="30"` can name a parameter in 2 namespaces, the TTML one and the DFXP one. The `itt` data keeps the first, which is also the frame rate that the TTML reader reads the times with.
+
+### Write
+
+The writer builds a TTML document with the TTML writer and changes these parts:
+
+| Output | Rule |
+|:--- |:--- |
+| head | the fixed Apple head: the style `normal` and the regions `top` and `bottom`. A title adds `ttm:title` first, as in TTML. The stored head, styles and regions are dropped |
+| `<body>` | `style="normal"`, no other attribute |
+| `<div>` | one for all cues |
+| region | `top` for the alignments `TopLeft`, `TopCenter` and `TopRight`, else `bottom`. The writer ignores `Offset` and the column, because the Apple profile has only these 2 regions |
+| markup | `<b>`, `<i>`, `<u>` and `<font color>`. Ruby becomes `base (annotation)` and WebVTT color classes become `<font color>`. A value that is no color gives a plain `<font>`, which writes no span. `<s>`, speakers, `<c>` without a color, `<lang>` and word timestamps go |
+| `<tt>` attributes | after the ones of TTML: `ttp:timeBase="smpte"`, `ttp:frameRate`, `ttp:frameRateMultiplier`, `ttp:dropMode="nonDrop"` |
+| `begin`, `end` | SMPTE labels `HH:MM:SS:FF` of the frame count model, see [frame-rates.md](frame-rates.md) |
+
+- **Frame rates**: the writer supports 5 rows. A rate matches a row when it is within 0.01 fps of the effective rate.
+
+| Rate | `ttp:frameRate` | `ttp:frameRateMultiplier` | Effective rate |
+|:--- |:--- |:--- |:--- |
+| 23.976 | `24` | `999 1000` | 2997/125 |
+| 24 | `24` | `1 1` | 24/1 |
+| 25 | `25` | `1 1` | 25/1 |
+| 29.97 | `30` | `999 1000` | 2997/100 |
+| 30 | `30` | `1 1` | 30/1 |
+
+- **Which rate**: `WriteOptions.ITT.FrameRate` wins over the stored rate. The stored rate is `itt.frameRate` times `itt.frameRateMultiplier` (`1 1` when missing), when it matches a row and its `frameRate` equals the `ttp:frameRate` of that row. When the option and the stored rate name the same row, the stored strings stay, so `1000 1001` is not rewritten. A subtitle without a usable stored rate and without the option returns an `*InvalidArgumentError` with `Option` `WriteOptions.ITT.FrameRate` and `iTT output needs the frame rate of the video.`. An option outside the table returns the same type with `The ITT formatter accepts the frame rates 23.976, 24, 25, 29.97 and 30, got 50.`.
+- **Multiplier**: the writer counts the stored multiplier as the TTML reader does: 2 numbers above 0, split at white space or `:`. Anything else counts as `1 1`. So `1000x 1001` is 1000/1001.
+- **Drop-frame**: `FrameRate2997DF` is near the 29.97 row. The writer writes that row with `ttp:dropMode="nonDrop"`. Labels are never drop-frame.
+- **Times**: begin frame is the start rounded to the nearest frame, and 0 for a negative start. End frame is the end rounded the same way, and at least the begin frame plus 1. So each cue lasts 1 frame or more. Both stop at the last frame below 100000 hours, `99999:59:59:24` at 25 fps. At 29.97 fps the label `01:00:00:00` is 3603.6 s.
+- **Forced flag**: a forced cue writes `itts:forcedDisplay="true"` and declares `itts`. Output without a forced cue has no `itts`.
+- **Unique IDs**: the rules of TTML apply, and the head holds the IDs `normal`, `top` and `bottom`. A cue with the ID `top` comes out as `top_2`.
+- **Lost on write**: everything that the TTML writer loses. Also the input head, styles and regions other than `top` and `bottom`, the left and right column, the middle row, `<s>`, speakers, color classes without a color, drop-frame mode and time below one frame.
+
+### Options
+
+`itt.ReadOptions` has no fields, so the root `ReadOptions` has no iTT field. The reader reads `Lenient`. The lenient rules are those of [TTML](lenient-parsing.md#ttml).
+
+| Option | Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |:--- |
+| `WriteOptions.ITT` | `FrameRate` | `FrameRate` | zero value: the stored frame rate | the output frame rate. 23.976, 24, 25, 29.97 or 30, each within 0.01 fps |
+
+The writer reads `StripTags`, `LineEnding` and `BOM`. `Validate` rejects a frame rate outside the table.
 
 ## SAMI
 
@@ -1174,11 +1237,11 @@ The root `ReadOptions.CSV` holds a `csv.ReadOptions` and `WriteOptions.CSV` a `c
 
 ## EBU STL
 
-EBU STL is the binary subtitle exchange format of European broadcasters, defined in [EBU Tech 3264](https://tech.ebu.ch/docs/tech/tech3264.pdf). Package `format/ebustl` reads it. The format name is `stl`, the extension `.stl`. EBU STL comes before Spruce STL in the registry, so it owns `.stl` in `FormatFromPath`. The package has no writer yet.
+EBU STL is the binary subtitle exchange format of European broadcasters, defined in [EBU Tech 3264](https://tech.ebu.ch/docs/tech/tech3264.pdf). Package `format/ebustl` reads and writes it. The format name is `stl`, the extension `.stl`. EBU STL comes before Spruce STL in the registry, so it owns `.stl` in `FormatFromPath`.
 
 A file starts with one GSI block (General Subtitle Information) of 1024 bytes. Each subtitle then takes one or more TTI blocks (Text and Timing Information) of 128 bytes. Example: a TTI block has time code in `00 00 01 05`, time code out `00 00 02 0A` and the text field `80 43 61 66 65 81 8A`. At 25 fps it reads as a cue from 1.2 s to 2.4 s with the line `<i>Cafe</i>`.
 
-**Binary format**: the reader gets the raw bytes of the input. It does no BOM removal, no UTF-8 check and no code page detection. `ReadOptions.Encoding` has no effect, `ReadInfo.SourceEncoding` is empty and the read has no decode warning. `Load` and `Parse` find the format by its signature on the raw bytes. `Load` also finds it by the extension `.stl`, as [detection.md](detection.md) says.
+**Binary format**: the reader gets the raw bytes of the input, and the writer writes bytes that no line ending or BOM rule changes. It does no BOM removal, no UTF-8 check and no code page detection. `ReadOptions.Encoding` has no effect, `ReadInfo.SourceEncoding` is empty and the read has no decode warning. `Load` and `Parse` find the format by its signature on the raw bytes. `Load` also finds it by the extension `.stl`, as [detection.md](detection.md) says.
 
 ### Read
 
@@ -1227,11 +1290,30 @@ The reader writes each row as core markup and escapes its text. Example: `01 red
 
 The cue key `stl` holds `subtitleGroupNumber`, `cumulativeStatus`, `verticalPosition` and `justificationCode` of the first block. It also holds `text`, the cue text at read time. And it holds `blocks`, the hex of every block of the set, 256 hex digits each.
 
+### Write
+
+`ebustl.Write` writes the GSI block, then the TTI blocks of each comment and cue. `WriteOptions.EBUSTL.FrameRate` is 25 or 30 fps. The zero value takes the stored DFC, else 25. Another rate fails `Validate` with `The EBU STL formatter writes 25 or 30 fps, got 24.`. The writer reads `StripTags` and ignores `LineEnding` and `BOM`.
+
+**Byte for byte**: a file that the reader read comes back with the same bytes, also after a retiming. A cue whose text did not change keeps its stored blocks, and the writer patches only the changed header fields (SGN, CS, TCI, TCO, VP, JC). When the text changed, the writer keeps the stored user data blocks and encodes the text again. A subtitle from another format gets a new GSI block. The writer writes the sets in cue order, with the comments before the cue they sit in front of. So a file with sets out of time order comes back reordered and renumbered.
+
+**New GSI values**: CPN `850`, DSC `1`, RN `00`, MNC `40`, MNR `23`, TCS `1`, TCP `00000000`, TND `1` and DSN `1` fill a missing field. CD and RD hold today in UTC as `yymmdd`. OPT is the metadata `title`, LC is the code of the metadata `language` (`en-GB` gives `09` through the primary subtag `en`, no language gives `00`), TNB, TNS, TNG and TCF are the counts of the written blocks. A stored count stays when it still equals the count that the reader stored, so a count padded with spaces keeps its bytes. MNC grows to the longest row in displayable bytes, up to 99. Rows never wrap. A field is encoded with the code page of CPN, padded with spaces and cut to its length.
+
+**Character code table**: the stored CCT stays. Without one, the writer picks the table that writes the fewest `?` for the cue and comment text. It tries 00, 01, 02, 03 and 04 in this order, and table 00 wins a tie. The count is the number of `?` bytes in the encoded text, so a `?` in the text counts too. A stored CCT outside `00` to `04` fails with `The character code table "05" is not 00, 01, 02, 03 or 04.`.
+
+**Text**: each cue line is one row, and rows join with `8Ah`. `<i>` and `<u>` write `80h` to `83h`, and only the first open and the last close of nested tags write. A `<font>` or WebVTT color class with one of the 8 teletext colors writes `00h` to `07h`, and its end tag writes the color below it, white when none. Another color writes nothing. A color code replaces one space next to it. A color code at the row end goes. Italics or underline still open at the row end get `81h` or `83h`. A style open at a row end starts again on the next row. Bold, strike, voice, ruby annotation tags and positions of WebVTT write nothing, and ruby writes as `base (annotation)`. Double height, boxing and backgrounds that the reader dropped are lost when a cue text changes. They survive only through reused blocks. A text field has 112 bytes padded with `8Fh`. The last field always holds one `8Fh`, so 112 bytes of text give a second, empty block. In table 00 a field that would end with a diacritic ends one byte early. A cue that needs more than 241 blocks fails with `The cue text needs more than 241 TTI blocks.`.
+
+**Subtitle numbers**: the first set takes `firstSubtitleNumber`, else 1, and each later set, comment sets too, takes the next number. A number above 65535 fails with `EBU STL allows subtitle numbers up to 65535.`.
+
+**Times**: the writer takes the frame nearest to the time, at 25 or 30 fps, and caps hours at 255. With `startOfProgrammeSubtracted` in the file data, the stored TCP is added back. The writer reads TCP at the rate of the stored DFC. PHP reads it at the output rate, so a file read at 25 fps and written at 30 fps differs.
+
+**Position**: the stored VP and JC stay when they still give the alignment and the row of the cue. Else the writer calls `Position.RowOn` on the grid of the file, 23 rows for teletext, else the maximum row plus 1, and writes that row as VP when it falls in the band of the alignment. Else the first row goes at the top, in the middle or at the bottom of the rows. Example: a one-line `BottomCenter` cue without a row writes VP 23 and JC 2. `RowOn` drops the row of 2 cues that the reader gives a row: teletext VP 8 read as `MiddleCenter`, and SCC row 5 with `BottomCenter`. After a conversion from SCC, or after a change of `Position.Row`, these 2 fall back to the alignment. A rewritten EBU STL file keeps VP 8, because the stored VP and JC stay.
+
+**Report**: `WriteReport.EBUSTL` is non-nil after every write. `CharacterCodeTable` is the table, `TableChosen` is true when the writer picked it, and `Replaced` lists each character written as `?` in output order. A GSI field has its name in `Field`, a cue its index in `CueIndex`, and a comment or a GSI field has `CueIndex` -1. Example: an em dash and the guillemets in cue 0 give 3 entries.
 ## Cavena 890
 
 Cavena 890 is the binary subtitle file of the Cavena systems, which Scandinavian broadcasters use. Package `format/cavena890` reads and writes it. The format name is `cavena890`, the extension `.890`. The format has no public spec and no signature, so `Detect` never finds it. `Load` finds it by the extension `.890`. `Parse` needs `ReadOptions.Format`, and without it returns `ErrUnknownFormat`.
 
-A file holds a header of 388 bytes, then blocks of 128 bytes. Each block has 2 text lines of 51 bytes. Example: a block that starts with `00 10 00 00 19 00 00 64 50` is subtitle 16 from 1 s to 4 s (frames 25 and 100 at 25 fps), aligned bottom left. Its lower line `88 47 72 86 75 DF 65 98 20 E5 78 E6` reads as `<i>Gr` U+00FC U+00DF `e</i> [x]`, which is the italic word "Gruesse" with its umlaut and sharp s, then `[x]`.
+A file holds a header of 388 bytes, then blocks of 128 bytes. Each block has 2 text lines of 51 bytes. Example: a block that starts with `00 10 00 00 19 00 00 64 50` is subtitle 16 from 1 s to 4 s, aligned bottom left. The frames 25 and 100 at 25 fps give the times. Its lower line `88 47 72 86 75 DF 65 98 20 E5 78 E6` reads as `<i>Gr` U+00FC U+00DF `e</i> [x]`, which is the italic word "Gruesse" with its umlaut and sharp s, then `[x]`.
 
 **Binary format**: the reader gets the raw bytes of the input. `ReadOptions.Encoding`, `LineEnding` and `BOM` have no effect, and `ReadInfo.SourceEncoding` is empty. Because `.890` is an extension of binary formats only, `Load` picks the format before it decodes the bytes. The options of the format are empty structs.
 
@@ -1265,7 +1347,7 @@ The language codes and the font names of the header pick the text table, called 
 | `scandinavian` | language 1 is `07h` (Danish), `1Eh` (Norwegian) or `28h` (Swedish) | as `latin`, but `E5h` and `E6h` stay U+00E5 and U+00E6 |
 | `latin` | anything else | Windows-1252 with 2-byte accent codes |
 
-The Latin table maps `5Bh` to U+00C6, `5Ch` to U+00D8, `5Dh` to U+00C5, `E2h` to `@`, `E5h` to `[`, `E6h` to `]`, `1Bh` to U+00E6, `1Ch` to U+00F8, `1Dh` to U+00E5, `1Eh` to U+00C6, `1Fh` to U+00D8 and `EBh` to U+266A. Accent codes of 2 bytes put the accent first and the base letter second: `81` grave, `82` acute, `83` circumflex, `84` caron, `85` tilde, `86` diaeresis, `87` cedilla, `89` breve, `8C` ring, `8E` dot and `8F` ogonek. So `86 75` is U+00FC. The tables of the 5 variants come from Subtitle Edit, see [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
+The Latin table maps single bytes. `5Bh` is U+00C6, `5Ch` is U+00D8 and `5Dh` is U+00C5. `E2h` is `@`, `E5h` is `[` and `E6h` is `]`. `1Bh` is U+00E6, `1Ch` is U+00F8 and `1Dh` is U+00E5. `1Eh` is U+00C6, `1Fh` is U+00D8 and `EBh` is U+266A. An accent code has 2 bytes, the accent first and the base letter second. The accents are `81` grave, `82` acute, `83` circumflex, `84` caron, `85` tilde, `86` diaeresis, `87` cedilla, `89` breve, `8C` ring, `8E` dot and `8F` ogonek. So `86 75` is U+00FC. The tables of the 5 variants come from Subtitle Edit, see [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 
 ### Read
 
@@ -1279,7 +1361,7 @@ The Latin table maps `5Bh` to U+00C6, `5Ch` to U+00D8, `5Dh` to U+00C5, `E2h` to
 
 **Text**: the reader decodes each line in this order.
 
-1. Chinese drops trailing `00h` and `7Fh` bytes, takes the next byte for an odd length, so a character with the low byte `7Fh` at the line end stays, and reads UTF-16BE code units. A valid surrogate pair is one character, and a lone surrogate gives nothing. The other variants read single bytes.
+1. Chinese drops trailing `00h` and `7Fh` bytes, takes the next byte for an odd length, and reads UTF-16BE code units. So a character with the low byte `7Fh` at the line end stays. A valid surrogate pair is one character, and a lone surrogate gives nothing. The other variants read single bytes.
 2. `88h` starts and `98h` ends italics, in `latin`, `scandinavian` and `chinese` only. They split style runs.
 3. A 2-byte code, from the byte and the next byte, is tried first. Then the 1-byte code.
 4. A byte without a table entry is `-` for `BEh`, and nothing for a code below `20h`, `7Fh` and the color codes `F1h` to `F8h`. Chinese turns the code unit into its character. Other variants read the byte as Windows-1252, and the bytes that Windows-1252 leaves undefined (`81h`, `8Dh`, `8Fh`, `90h`, `9Dh`) give nothing.
@@ -1316,9 +1398,9 @@ The writer pads a line to 51 bytes with `7Fh`, or `00h` for Chinese.
 
 **Counts and short end**: the writer sets the block count, at most 65535, at offsets 179, 208 and 210. When the file has blocks and the stored `shortEnd` is true or missing, the last 4 bytes are cut. A new file is short, as Subtitle Edit writes it.
 
-**Line limit**: a line of more than 51 bytes fails with a `*UnwritableError` for the cue, for example `Cavena 890 holds 51 bytes per line, got 52 for "LINE".`, where LINE is the line in core markup. There is no wrap and no fit option. Wrap long lines to 40 characters first with `WrapLines`, see [editing.md](editing.md#line-wrapping).
+**Line limit**: a line of more than 51 bytes fails with a `*UnwritableError` for the cue. Example: `Cavena 890 holds 51 bytes per line, got 52 for "LINE".` LINE is the line in core markup. There is no wrap and no fit option. Wrap long lines to 40 characters first with `WrapLines`, see [editing.md](editing.md#line-wrapping).
 
-**Lost on write**: top and middle rows, colors, bold and underline, and italics in `hebrew`, `russian`, `greek` and `arabic`. A character outside the table becomes `?`. Example: a Russian file with cue 0 set to the Russian word "Da", a comma and `Ivan.` reads back with `????` in place of `Ivan`, because the Russian table has no Latin letters.
+**Lost on write**: top and middle rows, colors, bold and underline, and italics in `hebrew`, `russian`, `greek` and `arabic`. A character outside the table becomes `?`. Example: a Russian file with cue 0 set to the Russian word "Da", a comma and `Ivan.` reads back with `????` in place of `Ivan`. The Russian table has no Latin letters.
 
 ### Options
 

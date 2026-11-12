@@ -1,0 +1,28 @@
+﻿1
+10:00:01,000 --> 10:00:03,480
+The ovens are warm.
+Bread is ready at six.
+
+2
+10:00:04,000 --> 10:00:06,000
+<font color="#ff0000">Fresh</font> rolls are <i>warm</i> today.
+
+3
+10:00:07,200 --> 10:00:10,000
+{\an7}Café <i>crème</i> $3 or £2
+<u>Äpfel</u> und Straße
+
+4
+10:00:11,000 --> 10:00:13,000
+{\an6}Sign: ‘Open’ ¤
+
+5
+10:00:14,000 --> 10:00:20,000
+<font color="#ffff00">Our bakery opens at six every morning.</font>
+<font color="#ffff00">The first loaves come out at seven.</font>
+<font color="#ffff00">Rye bread and white bread are baked</font>
+<font color="#ffff00">in the stone oven behind the shop.</font>
+
+6
+10:00:30,960 --> 10:00:33,000
+Good night.

@@ -8,6 +8,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
@@ -72,6 +73,9 @@ type WriteOptions struct {
 	PlainText plaintext.WriteOptions
 	// CSV holds the settings of the CSV and TSV writer. The zero value keeps the layout that the reader stored.
 	CSV csv.WriteOptions
+	// ITT holds the settings of the iTT writer. The zero value takes the frame rate that the reader stored. A subtitle
+	// without a stored rate needs one of 23.976, 24, 25, 29.97 or 30 fps.
+	ITT itt.WriteOptions
 	// SubViewer holds the settings of the SubViewer writer. The zero value writes the stored version, else SubViewer 2.
 	SubViewer subviewer.WriteOptions
 	// SpruceSTL holds the settings of the Spruce STL writer. The zero value takes the frame rate that the reader stored, else 25.
@@ -79,6 +83,8 @@ type WriteOptions struct {
 	// SCC holds the settings of the SCC writer. The zero value keeps the stored drop-frame mode, else writes
 	// drop-frame labels, and fails for a cue that SCC cannot hold.
 	SCC scc.WriteOptions
+	// EBUSTL holds the settings of the EBU STL writer. The zero value takes the frame rate of the stored DFC, else 25.
+	EBUSTL ebustl.WriteOptions
 }
 
 // WriteReport holds the changes that a writer made to fit the subtitle into its format.
@@ -87,6 +93,8 @@ type WriteReport struct {
 	WebVTT *webvtt.WriteReport
 	// SCC is non-nil after an SCC write, also when Fit made no change.
 	SCC *scc.WriteReport
+	// EBUSTL is non-nil after an EBU STL write. It holds the character code table and the characters written as "?".
+	EBUSTL *ebustl.WriteReport
 }
 
 // ReadInfo holds the facts of a read that are not subtitle content.
@@ -146,28 +154,15 @@ func (o WriteOptions) Validate() error {
 			Msg:    "The BOM rule " + strconv.Itoa(int(o.BOM)) + " is unknown.",
 		}
 	}
-	if err := o.ASS.Validate(); err != nil {
-		return err
+	for _, check := range []func() error{
+		o.ASS.Validate, o.MicroDVD.Validate, o.MPSub.Validate, o.PlainText.Validate, o.CSV.Validate, o.ITT.Validate,
+		o.SubViewer.Validate, o.SCC.Validate, o.SpruceSTL.Validate, o.EBUSTL.Validate,
+	} {
+		if err := check(); err != nil {
+			return err
+		}
 	}
-	if err := o.MicroDVD.Validate(); err != nil {
-		return err
-	}
-	if err := o.MPSub.Validate(); err != nil {
-		return err
-	}
-	if err := o.PlainText.Validate(); err != nil {
-		return err
-	}
-	if err := o.CSV.Validate(); err != nil {
-		return err
-	}
-	if err := o.SubViewer.Validate(); err != nil {
-		return err
-	}
-	if err := o.SCC.Validate(); err != nil {
-		return err
-	}
-	return o.SpruceSTL.Validate()
+	return nil
 }
 
 func (o ReadOptions) common() model.CommonReadOptions {

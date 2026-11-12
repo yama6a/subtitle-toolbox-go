@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xmlns:tt_feature="http://www.w3.org/ns/ttml/feature/" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:ttp="http://www.w3.org/ns/ttml#parameter" xmlns:tt_profile="http://www.w3.org/ns/ttml/profile/" ttp:timeBase="smpte" ttp:frameRate="24" ttp:frameRateMultiplier="999 1000" ttp:dropMode="nonDrop" xml:lang="en">
+    <head>
+        <styling>
+            <style xml:id="normal" tts:fontFamily="sansSerif" tts:fontWeight="normal" tts:fontStyle="normal" tts:color="white" tts:fontSize="100%"/>
+        </styling>
+        <layout>
+            <region xml:id="top" tts:origin="0% 0%" tts:extent="100% 15%" tts:textAlign="center" tts:displayAlign="before"/>
+            <region xml:id="bottom" tts:origin="0% 85%" tts:extent="100% 15%" tts:textAlign="center" tts:displayAlign="after"/>
+        </layout>
+    </head>
+    <body region="bottom" style="normal">
+        <div>
+            <p begin="00:00:01:12" end="00:00:04:00" region="bottom">The bakery opens at six.</p>
+            <p begin="00:00:04:06" end="00:00:06:18" region="bottom">The first bread comes out<br/>of the oven at seven.</p>
+            <p begin="00:00:07:00" end="00:00:09:23" region="top"><span tts:fontStyle="italic">[oven door creaks]</span></p>
+            <p begin="00:00:10:01" end="00:00:12:12" region="bottom">Rye bread takes <span tts:fontWeight="bold">four</span> hours.</p>
+            <p begin="00:00:12:13" end="00:00:15:00" region="bottom">Wheat bread takes <span tts:textDecoration="underline">two</span>.</p>
+            <p begin="00:00:15:08" end="00:00:17:20" region="bottom"><span tts:color="#ffff00">BAKER:</span> Mind the hot tray.</p>
+            <p begin="00:00:18:00" end="00:00:20:11" region="top">Sign: Fresh rolls<br/>every morning</p>
+            <p begin="00:00:21:02" end="00:00:23:22" region="bottom"><span tts:fontStyle="italic">The shop closes at noon.</span></p>
+        </div>
+    </body>
+</tt>

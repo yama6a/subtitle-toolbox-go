@@ -77,6 +77,9 @@ var layers = map[string]layer{
 	"cmd/stbox":            layerCLI,
 }
 
+// profiles lists the format packages that may import another format package, because their format is a profile of it.
+var profiles = map[string]string{"format/itt": "format/ttml"}
+
 // allowedModules are the modules that CLAUDE.md allows outside tests.
 var allowedModules = []string{
 	"golang.org/x/text",
@@ -140,7 +143,7 @@ func checkImports(rel string, imports []string) []string {
 		if !ok {
 			continue
 		}
-		if dep < own || (dep == own && (own == layerLeaf || own == layerModelUser || own == layerCLI)) {
+		if dep < own || profiles[rel] == depRel || (dep == own && (own == layerLeaf || own == layerModelUser || own == layerCLI)) {
 			continue
 		}
 		problems = append(problems, rel+" imports "+depRel+", which is not in a lower layer")

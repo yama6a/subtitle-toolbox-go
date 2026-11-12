@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/ttmlwrite"
 )
 
 var (
@@ -18,8 +19,6 @@ var (
 	looseMinutesRegexp = regexp.MustCompile(`^(\d{1,2}):(\d{1,2})(?:[.,](\d+))?$`)
 	bareMillisRegexp   = regexp.MustCompile(`^\d{1,15}$`)
 	bareSecondsRegexp  = regexp.MustCompile(`^\d{1,15}\.\d{1,9}$`)
-
-	phpFloatRegexp = regexp.MustCompile(`^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?`)
 )
 
 // clock reads time expressions with the timing parameters of one document, in float64 seconds as PHP computes them.
@@ -41,7 +40,7 @@ func (c clock) seconds(expression string) (float64, bool) {
 		return c.clockTime(m), true
 	}
 	if m := offsetRegexp.FindStringSubmatch(expression); m != nil {
-		return c.offsetTime(phpFloat(m[1]), m[2]), true
+		return c.offsetTime(ttmlwrite.PHPFloat(m[1]), m[2]), true
 	}
 	return 0, false
 }
@@ -63,7 +62,7 @@ func looseSeconds(expression string) (float64, bool) {
 		return float64(phpInt(expression)) / 1000, true
 	}
 	if bareSecondsRegexp.MatchString(expression) {
-		return phpFloat(expression), true
+		return ttmlwrite.PHPFloat(expression), true
 	}
 	return 0, false
 }
@@ -99,16 +98,9 @@ func clockSeconds(hours, minutes, secs, fraction string) float64 {
 	return v
 }
 
-// phpFloat reads s as the PHP cast (float) does: leading white space, then the longest decimal number, else 0.
-func phpFloat(s string) float64 {
-	m := phpFloatRegexp.FindString(strings.TrimLeft(s, " \t\n\r\v\f"))
-	v, _ := strconv.ParseFloat(m, 64)
-	return v
-}
-
 // phpInt reads s as the PHP cast (int) does, for the digit strings of the patterns. A value beyond int64 saturates.
 func phpInt(s string) int64 {
-	v := phpFloat(s)
+	v := ttmlwrite.PHPFloat(s)
 	switch {
 	case v >= math.MaxInt64:
 		return math.MaxInt64

@@ -65,6 +65,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [ASS and SSA](https://en.wikipedia.org/wiki/SubStation_Alpha) | `stbox.ASS` | `ass` | `.ass`, `.ssa` | yes | yes | |
 | Cavena 890 | `stbox.Cavena890` | `cavena890` | `.890` | yes | yes | binary, Scandinavian broadcasters, found by the extension |
 | [CSV](https://www.rfc-editor.org/rfc/rfc4180) | `stbox.CSV` | `csv` | `.csv` | yes | yes | not detected from the content |
+| [iTunes Timed Text](docs/formats.md#itt) | `stbox.ITT` | `itt` | `.itt` | yes | yes | needs the frame rate of the video. A TTML file named `.itt` loads as iTT |
 | [JSON of this library](docs/json.md) | `stbox.JSON` | `json` | `.json` | yes | yes | |
 | [LRC](https://en.wikipedia.org/wiki/LRC_(file_format)) | `stbox.LRC` | `lrc` | `.lrc` | yes | yes | with enhanced LRC word times |
 | [MicroDVD](https://en.wikipedia.org/wiki/MicroDVD) | `stbox.MicroDVD` | `microdvd` | `.sub` | yes | yes | needs the frame rate of the video |
@@ -73,10 +74,10 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [SBV](https://support.google.com/youtube/answer/2734698) | `stbox.SBV` | `sbv` | `.sbv` | yes | yes | YouTube Studio captions |
 | [SCC](https://en.wikipedia.org/wiki/EIA-608) | `stbox.SCC` | `scc` | `.scc` | yes | yes | CEA-608 broadcast captions |
 | [SubRip](https://en.wikipedia.org/wiki/SubRip) | `stbox.SubRip` | `srt` | `.srt` | yes | yes | |
-| [EBU STL](https://tech.ebu.ch/docs/tech/tech3264.pdf) | `stbox.EBUSTL` | `stl` | `.stl` | yes | no | binary, broadcast subtitles |
+| [EBU STL](https://tech.ebu.ch/docs/tech/tech3264.pdf) | `stbox.EBUSTL` | `stl` | `.stl` | yes | yes | binary, broadcast subtitles |
 | [Spruce STL](https://www.spectacle.co.uk/uploads/other%20media/Manual_DVD_Studio_Pro_4.pdf) | `stbox.SpruceSTL` | `spruce-stl` | `.stl` | yes | yes | DVD Studio Pro text subtitles, time codes in frames |
 | [SubViewer 1 and 2](https://man.archlinux.org/man/mplayer.1.en) | `stbox.SubViewer` | `subviewer` | `.sub` | yes | yes | old DivX releases, found by content |
-| [TTML, IMSC, DFXP](https://www.w3.org/TR/ttml2/) | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | yes | yes | also iTT |
+| [TTML, IMSC, DFXP](https://www.w3.org/TR/ttml2/) | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | yes | yes | an iTT file detects as TTML |
 | [TSV](https://www.iana.org/assignments/media-types/text/tab-separated-values) | `stbox.TSV` | `tsv` | `.tsv` | yes | yes | not detected from the content |
 | [Plain text](docs/formats.md#plain-text) | `stbox.PlainText` | `txt` | `.txt` | no | yes | a transcript of the words, owns `.txt` |
 | [MPL2](https://pysubs2.readthedocs.io/en/latest/supported-formats.html) | `stbox.MPL2` | `mpl2` | `.txt` | yes | yes | found by content |

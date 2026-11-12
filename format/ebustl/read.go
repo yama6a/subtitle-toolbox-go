@@ -88,7 +88,7 @@ func newReader(st *parsing.State, gsi gsiValues, opts ReadOptions) (*reader, err
 		return nil, &model.ParseError{Format: model.EBUSTL, Msg: `The character code table "` + rd.cct + `" is not 00, 01, 02, 03 or 04.`}
 	}
 	if opts.SubtractStartOfProgramme {
-		rd.offset = rd.startOfProgramme(gsi.get("TCP"))
+		rd.offset = startOfProgramme(rd.rate, gsi.get("TCP"))
 	}
 	rd.teletext = gsi.get("DSC") == "1" || gsi.get("DSC") == "2"
 	rd.maxRow = teletextRows
@@ -261,12 +261,12 @@ func (rd *reader) time(b []byte) time.Duration {
 }
 
 // startOfProgramme returns the clock time of the TCP field, or 0 when it is not 8 ASCII digits.
-func (rd *reader) startOfProgramme(tcp string) time.Duration {
+func startOfProgramme(rate model.FrameRate, tcp string) time.Duration {
 	if len(tcp) != 8 || strings.Trim(tcp, "0123456789") != "" {
 		return 0
 	}
 	n := func(i int) int { return int(tcp[i]-'0')*10 + int(tcp[i+1]-'0') }
-	return rd.rate.ClockDuration(model.Timecode{Hours: n(0), Minutes: n(2), Seconds: n(4), Frames: n(6)})
+	return rate.ClockDuration(model.Timecode{Hours: n(0), Minutes: n(2), Seconds: n(4), Frames: n(6)})
 }
 
 func timeCodeDigits(b []byte) string {
@@ -276,6 +276,16 @@ func timeCodeDigits(b []byte) string {
 // position returns the alignment from the vertical position and the justification code. The row and the grid
 // are set only when the vertical position is on the grid.
 func (rd *reader) position(vp int, jc byte) model.Position {
+	p := model.Position{Alignment: alignmentOf(vp, jc, rd.maxRow)}
+	if row := gridRow(vp, rd.teletext, rd.maxRow); row > 0 {
+		p.Row, p.Grid = row, model.Grid{Rows: gridRows(rd.teletext, rd.maxRow), Columns: rd.columns}
+	}
+	return p
+}
+
+// alignmentOf returns the alignment of a vertical position and a justification code. The thirds of maxRow rows
+// give the row, and the justification code gives the column.
+func alignmentOf(vp int, jc byte, maxRow int) model.Alignment {
 	column := 2
 	switch jc {
 	case 1:
@@ -285,21 +295,33 @@ func (rd *reader) position(vp int, jc byte) model.Position {
 	}
 	band := 0
 	switch {
-	case 3*vp < rd.maxRow:
+	case 3*vp < maxRow:
 		band = 2
-	case 3*vp < 2*rd.maxRow:
+	case 3*vp < 2*maxRow:
 		band = 1
 	}
 	a, _ := model.AlignmentAt(band, column)
-	p := model.Position{Alignment: a}
-	rows, row := rd.maxRow+1, vp+1
-	if rd.teletext {
-		rows, row = teletextRows, vp
+	return a
+}
+
+// gridRows returns the rows of the grid of a file: 23 for teletext, else the maximum row plus 1.
+func gridRows(teletext bool, maxRow int) int {
+	if teletext {
+		return teletextRows
 	}
-	if row >= 1 && row <= rows {
-		p.Row, p.Grid = row, model.Grid{Rows: rows, Columns: rd.columns}
+	return maxRow + 1
+}
+
+// gridRow returns the grid row of a vertical position, or 0 when the position is outside the grid.
+func gridRow(vp int, teletext bool, maxRow int) int {
+	row := vp + 1
+	if teletext {
+		row = vp
 	}
-	return p
+	if row < 1 || row > gridRows(teletext, maxRow) {
+		return 0
+	}
+	return row
 }
 
 // textBytes joins the text fields of the blocks that carry subtitle text, EBN 00h to EFh and FFh, and removes

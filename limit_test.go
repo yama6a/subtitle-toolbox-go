@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
 )
@@ -53,7 +54,10 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 					continue
 				}
 				var out bytes.Buffer
-				_, err := stbox.Write(&out, s, f, stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
+				_, err := stbox.Write(&out, s, f, stbox.WriteOptions{
+					MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}},
+					ITT:      itt.WriteOptions{FrameRate: stbox.FrameRate25},
+				})
 				if errors.Is(err, stbox.ErrUnsupportedFormat) {
 					continue
 				}
@@ -66,9 +70,9 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 				require.Equal(t, 1, back.Len(), f)
 				c, _ := back.Cue(0)
 				assert.Less(t, c.End, timecode.MaxTime, f)
-				// SubRip and LRC clamp at the largest time their readers take, 999:59:59.999 and 999:59.99.
+				// SubRip, LRC and EBU STL clamp at the largest time they hold: 999:59:59.999, 999:59.99 and 255 hours.
 				// Cavena 890 caps a frame number at FFFFFFh, which is 186 hours at 25 fps.
-				if f != stbox.SubRip && f != stbox.LRC && f != stbox.Cavena890 {
+				if f != stbox.SubRip && f != stbox.LRC && f != stbox.EBUSTL && f != stbox.Cavena890 {
 					assert.GreaterOrEqual(t, c.End, timecode.MaxValidTime-time.Second, f)
 				}
 			}

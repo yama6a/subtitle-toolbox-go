@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
@@ -106,7 +107,7 @@ func TestWriteReportIsSetForWebVTTAndSCCOnly(t *testing.T) {
 			t.Parallel()
 
 			var out bytes.Buffer
-			report, err := stbox.Write(&out, s, f, stbox.WriteOptions{})
+			report, err := stbox.Write(&out, s, f, stbox.WriteOptions{ITT: itt.WriteOptions{FrameRate: stbox.FrameRate25}})
 			require.NoError(t, err)
 			assert.Equal(t, f == stbox.SCC, report.SCC != nil)
 			if f != stbox.WebVTT {
@@ -203,6 +204,7 @@ func ExampleFormats() {
 	// ass [ass ssa]
 	// cavena890 [890]
 	// csv [csv]
+	// itt [itt]
 	// json [json]
 	// lrc [lrc]
 	// microdvd [sub]
@@ -221,4 +223,22 @@ func ExampleFormats() {
 	// tmplayer [txt]
 	// qttext [txt]
 	// vtt [vtt]
+}
+
+func TestBinaryWriteIgnoresLineEndingAndBOM(t *testing.T) {
+	t.Parallel()
+
+	s := &stbox.Subtitle{}
+	c := stbox.Cue{Start: time.Second, End: 2 * time.Second}
+	c.AddLine("Hello")
+	s.AddCue(c)
+	gsi := model.NewData(model.Field{Key: "CD", Value: "261012"}, model.Field{Key: "RD", Value: "261012"})
+	require.NoError(t, s.SetFormatData("stl", model.NewData(model.Field{Key: "gsi", Value: gsi})))
+	write := func(opts stbox.WriteOptions) []byte {
+		var out bytes.Buffer
+		_, err := stbox.Write(&out, s, stbox.EBUSTL, opts)
+		require.NoError(t, err)
+		return out.Bytes()
+	}
+	assert.Equal(t, write(stbox.WriteOptions{}), write(stbox.WriteOptions{LineEnding: stbox.CRLF, BOM: stbox.BOMAdd}))
 }

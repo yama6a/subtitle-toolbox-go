@@ -12,6 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/cavena890"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/lrc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpl2"
@@ -85,10 +86,13 @@ var (
 	_ writeFunc[plaintext.WriteOptions, plaintext.WriteReport] = plaintext.Write
 	_ readFunc[csv.ReadOptions]                                = csv.Read
 	_ writeFunc[csv.WriteOptions, csv.WriteReport]             = csv.Write
+	_ readFunc[itt.ReadOptions]                                = itt.Read
+	_ writeFunc[itt.WriteOptions, itt.WriteReport]             = itt.Write
 	_ readFunc[subviewer.ReadOptions]                          = subviewer.Read
 	_ writeFunc[subviewer.WriteOptions, subviewer.WriteReport] = subviewer.Write
 	_ detectFunc                                               = subviewer.Detect
 	_ readFunc[ebustl.ReadOptions]                             = ebustl.Read
+	_ writeFunc[ebustl.WriteOptions, ebustl.WriteReport]       = ebustl.Write
 	_ detectFunc                                               = ebustl.Detect
 	_ readFunc[sprucestl.ReadOptions]                          = sprucestl.Read
 	_ writeFunc[sprucestl.WriteOptions, sprucestl.WriteReport] = sprucestl.Write
@@ -111,6 +115,7 @@ var registry = []formatFuncs{
 	{format: ASS, read: readASS, write: writeASS},
 	{format: Cavena890, read: readCavena890, write: writeCavena890},
 	{format: CSV, read: readCSV, write: writeCSV},
+	{format: ITT, read: readITT, write: writeITT},
 	{format: JSON, read: readJSON, write: writeJSON},
 	{format: LRC, read: readLRC, write: writeLRC},
 	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
@@ -119,7 +124,7 @@ var registry = []formatFuncs{
 	{format: SBV, read: readSBV, write: writeSBV},
 	{format: SCC, read: readSCC, write: writeSCC},
 	{format: SubRip, read: readSubRip, write: writeSubRip},
-	{format: EBUSTL, read: readEBUSTL},
+	{format: EBUSTL, read: readEBUSTL, write: writeEBUSTL},
 	{format: SpruceSTL, read: readSpruceSTL, write: writeSpruceSTL},
 	{format: SubViewer, read: readSubViewer, write: writeSubViewer},
 	{format: TTML, read: readTTML, write: writeTTML},
@@ -209,6 +214,15 @@ func readEBUSTL(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (
 	return ebustl.Read(r, common, opts.EBUSTL)
 }
 
+func readITT(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return itt.Read(r, common, itt.ReadOptions{})
+}
+
+func writeITT(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	_, err := itt.Write(w, s, common, opts.ITT)
+	return WriteReport{}, err
+}
+
 func readJSON(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return stboxjson.Read(r, common, stboxjson.ReadOptions{})
 }
@@ -273,6 +287,14 @@ func readMicroDVD(r io.Reader, common model.CommonReadOptions, opts ReadOptions)
 func writeMicroDVD(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	_, err := microdvd.Write(w, s, common, opts.MicroDVD)
 	return WriteReport{}, err
+}
+
+func writeEBUSTL(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	report, err := ebustl.Write(w, s, common, opts.EBUSTL)
+	if err != nil {
+		return WriteReport{}, err
+	}
+	return WriteReport{EBUSTL: &report}, nil
 }
 
 func readSCC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {

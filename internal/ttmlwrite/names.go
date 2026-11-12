@@ -1,4 +1,4 @@
-// Package ttmlwrite writes TTML documents for format/ttml. It also holds the TTML names, namespaces and style
+// Package ttmlwrite writes TTML documents for format/ttml and format/itt. It also holds the TTML names, namespaces and style
 // rules, which the reader of format/ttml uses too.
 package ttmlwrite
 
@@ -70,7 +70,7 @@ const (
 
 //nolint:gochecknoglobals // lookup tables of namespaces
 var (
-	StylingNamespaces = []string{
+	stylingNamespaces = []string{
 		"http://www.w3.org/ns/ttml#styling",
 		"http://www.w3.org/2006/10/ttaf1#style",
 		"http://www.w3.org/2006/10/ttaf1#styling",

@@ -144,7 +144,7 @@ func formatOf(text []byte, path string) (f Format, empty bool, err error) {
 		return f, true, nil
 	}
 	if detected, found := Detect(text); found {
-		return detected, false, nil
+		return Format(extfallback.Profile(string(detected), path)), false, nil
 	}
 	if !ok {
 		return "", false, fmt.Errorf("%w: %s", ErrUnknownFormat, noFormat)
@@ -217,7 +217,7 @@ func readable(f Format) (formatFuncs, error) {
 }
 
 // Write writes s to w in format f. The format package builds the whole output first and writes it
-// in one call, so an error of w leaves incomplete output on w.
+// in one call, so an error of w leaves incomplete output on w. LineEnding and BOM do not apply to a binary format.
 func Write(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteReport, error) {
 	if err := opts.Validate(); err != nil {
 		return WriteReport{}, err

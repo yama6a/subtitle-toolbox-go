@@ -49,6 +49,10 @@ func TestReadFields(t *testing.T) {
 			file: append(append(header(t, nil), block(16, 0x54, "One", "Two")...), block(16, 0x50, "Three", "")...), text: "One\nTwo\nThree",
 		},
 		{
+			name: "a 2-byte code for a plain letter reads as that letter", variant: "latin", align: model.BottomCenter,
+			file: append(header(t, nil), block(16, 0x54, "", "\x80\x43at")...), text: "Cat",
+		},
+		{
 			name: "Chinese reads a last character with the low byte 7Fh", variant: "chinese", align: model.BottomCenter,
 			file: append(chinese, block(16, 0x54, "", "\x5C\x9B\x5C\x7F")...), text: string([]rune{0x5c9b, 0x5c7f}),
 		},

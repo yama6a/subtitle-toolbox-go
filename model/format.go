@@ -10,6 +10,7 @@ const (
 	ASS           Format = "ass"
 	Cavena890     Format = "cavena890"
 	CSV           Format = "csv"
+	ITT           Format = "itt"
 	JSON          Format = "json"
 	LRC           Format = "lrc"
 	MicroDVD      Format = "microdvd"
@@ -44,6 +45,7 @@ var formatFacts = []formatFact{
 	{format: ASS, extensions: []string{"ass", "ssa"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: Cavena890, extensions: []string{"890"}, canRead: true, canWrite: true, binary: true},
 	{format: CSV, extensions: []string{"csv"}, canRead: true, canWrite: true},
+	{format: ITT, extensions: []string{"itt"}, canRead: true, canWrite: true},
 	{format: JSON, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: LRC, extensions: []string{"lrc"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MicroDVD, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
@@ -52,7 +54,7 @@ var formatFacts = []formatFact{
 	{format: SBV, extensions: []string{"sbv"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SCC, extensions: []string{"scc"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubRip, extensions: []string{"srt"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: EBUSTL, extensions: []string{"stl"}, canRead: true, autoDetected: true, binary: true},
+	{format: EBUSTL, extensions: []string{"stl"}, canRead: true, canWrite: true, autoDetected: true, binary: true},
 	{format: SpruceSTL, extensions: []string{"stl"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubViewer, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, canWrite: true, autoDetected: true},

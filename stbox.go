@@ -74,6 +74,7 @@ const (
 	ASS           = model.ASS
 	Cavena890     = model.Cavena890
 	CSV           = model.CSV
+	ITT           = model.ITT
 	JSON          = model.JSON
 	LRC           = model.LRC
 	MicroDVD      = model.MicroDVD

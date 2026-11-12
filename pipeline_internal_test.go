@@ -195,7 +195,7 @@ var writesBOM = map[Format]bool{
 	stubFormat: true, ASS: true, CSV: true, TSV: true, LRC: true, MPSub: true, SubRip: true, WebVTT: true,
 }
 
-// textWriters returns the stub row and every registry row with a writer of a text format.
+// textWriters returns the stub row and every registry row with a writer. A binary format ignores the line ending and the BOM.
 func textWriters() []formatFuncs {
 	rows := []formatFuncs{stubRow}
 	for _, row := range registry {
@@ -211,6 +211,9 @@ func writeString(t *testing.T, row formatFuncs, s *Subtitle, opts WriteOptions) 
 
 	if opts.MicroDVD.FrameRate.IsZero() {
 		opts.MicroDVD.FrameRate = FrameRate{Num: 25, Den: 1} // a subtitle without MicroDVD format data has no frame rate to write with
+	}
+	if opts.ITT.FrameRate.IsZero() {
+		opts.ITT.FrameRate = FrameRate25 // a subtitle without iTT format data has no frame rate to write with
 	}
 	require.NoError(t, opts.Validate())
 	var out bytes.Buffer

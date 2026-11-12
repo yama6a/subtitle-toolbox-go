@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"slices"
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
 
@@ -57,10 +57,7 @@ func writeFile(w io.Writer, header []byte, blocks [][]byte, file *model.Data) er
 	if shortEnd, ok := file.Bool("shortEnd"); len(blocks) > 0 && (shortEnd || !ok) {
 		out = out[:len(out)-blockEnd]
 	}
-	if _, err := w.Write(out); err != nil {
-		return fmt.Errorf("write %s: %w", model.Cavena890, err)
-	}
-	return nil
+	return writing.WriteBytes(w, model.Cavena890, out)
 }
 
 // storedHeader returns the stored header when it decodes to 388 bytes, else the header of a new file.
