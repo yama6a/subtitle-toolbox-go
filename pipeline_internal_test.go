@@ -236,6 +236,10 @@ func outputSubtitle(t *testing.T, f Format) *Subtitle {
 	s.AddCue(Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: lines})
 	s.AddCue(Cue{Start: 5 * time.Second, End: 7250 * time.Millisecond, Lines: []string{"Second cue"}})
 	require.NoError(t, s.AddComment("Note", 1))
+	if f == DCP {
+		header := model.NewData(model.Field{Key: "IssueDate", Value: "2026-10-12T00:00:00"})
+		require.NoError(t, s.SetFormatData("dcp", model.NewData(model.Field{Key: "header", Value: header})))
+	}
 	return s
 }
 

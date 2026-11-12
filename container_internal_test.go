@@ -106,8 +106,11 @@ func TestTrackInputErrors(t *testing.T) {
 	srt := []byte("1\n00:00:01,000 --> 00:00:02,000\nHello\n")
 	ts := make([]byte, 377)
 	ts[0], ts[188], ts[376] = 0x47, 0x47, 0x47
-	path := filepath.Join(t.TempDir(), "movie.ts")
+	dir := t.TempDir()
+	path := filepath.Join(dir, "movie.ts")
 	require.NoError(t, os.WriteFile(path, ts, 0o600))
+	srtPath := filepath.Join(dir, "a.srt")
+	require.NoError(t, os.WriteFile(srtPath, srt, 0o600))
 	const noTrackSize = "stbox: invalid argument: The size must be 0 or more, got -1."
 	const notContainer = "stbox: unsupported format: The content is not an MKV, WebM, MP4 or MPEG-TS file."
 	const onlyContainers = "stbox: invalid argument: ReadOptions.Track: Only MKV, WebM, MP4 and MPEG-TS files have tracks."
@@ -124,9 +127,7 @@ func TestTrackInputErrors(t *testing.T) {
 			return err
 		}, onlyContainers, ErrInvalidArgument},
 		{"Load with a track on SubRip", func() error {
-			p := filepath.Join(t.TempDir(), "a.srt")
-			require.NoError(t, os.WriteFile(p, srt, 0o600))
-			_, _, err := Load(p, ReadOptions{Track: 3})
+			_, _, err := Load(srtPath, ReadOptions{Track: 3})
 			return err
 		}, onlyContainers, ErrInvalidArgument},
 		{"Tracks of SubRip", func() error {
@@ -137,6 +138,10 @@ func TestTrackInputErrors(t *testing.T) {
 			_, _, err := Parse(bytes.NewReader(srt), int64(len(srt)), ReadOptions{Track: -1})
 			return err
 		}, "stbox: invalid argument: ReadOptions.Track: The track number must be 0 or more, got -1.", ErrInvalidArgument},
+		{"Parse of an empty reader with a size", func() error {
+			_, _, err := Parse(bytes.NewReader(nil), 5, ReadOptions{Track: 1})
+			return err
+		}, onlyContainers, ErrInvalidArgument},
 		{"Parse with a negative size", func() error {
 			_, _, err := Parse(bytes.NewReader(srt), -1, ReadOptions{})
 			return err
@@ -149,6 +154,10 @@ func TestTrackInputErrors(t *testing.T) {
 			_, _, err := Load(path, ReadOptions{})
 			return err
 		}, "stbox: unsupported format: " + path + noReader, ErrUnsupportedFormat},
+		{"Parse of MPEG-TS without a reader, with a format", func() error {
+			_, _, err := Parse(bytes.NewReader(ts), int64(len(ts)), ReadOptions{Format: SubRip})
+			return err
+		}, "stbox: unsupported format: The content" + noReader, ErrUnsupportedFormat},
 		{"Parse of MPEG-TS without a reader", func() error {
 			_, _, err := Parse(bytes.NewReader(ts), int64(len(ts)), ReadOptions{})
 			return err

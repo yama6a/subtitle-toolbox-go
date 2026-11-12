@@ -92,7 +92,7 @@ func readHead(r io.ReaderAt, size int64) ([]byte, error) {
 		return head, nil
 	}
 	n, err := r.ReadAt(head, 0)
-	if err != nil && (n == 0 || !errors.Is(err, io.EOF)) {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, fmt.Errorf("read subtitle: %w", err)
 	}
 	return head[:n], nil
