@@ -60,8 +60,8 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	}
 
 	timeline := lr.timeline()
-	cues := caption.CaptionDataCues(timeline, opts.cea708Service(),
-		caption.CEA608Options{Channel: max(opts.Channel, 1), RollUp: opts.RollUp}, st.LastCueDuration())
+	cues := caption.CaptionDataCues(timeline, caption.CEA708Service(opts.Service, opts.CEA608Only),
+		caption.CEA608Options{Channel: opts.Channel, RollUp: opts.RollUp}, st.LastCueDuration())
 	s.AddCues(cues...)
 	return s, st.Warnings(), nil
 }
@@ -72,14 +72,6 @@ func trimmedLines(content string) []string {
 		lines = append(lines, strings.Trim(l, markupcore.PHPTrimSet))
 	}
 	return lines
-}
-
-// cea708Service returns the service to read, or 0 for none.
-func (o ReadOptions) cea708Service() int {
-	if o.CEA608Only {
-		return 0
-	}
-	return max(o.Service, 1)
 }
 
 func fileData(version string, row rate, dropFrame bool, header *model.Data) *model.Data {

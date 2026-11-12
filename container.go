@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/yama6a/subtitle-toolbox-go/v3/container/mkv"
+	"github.com/yama6a/subtitle-toolbox-go/v3/container/mp4"
 	"github.com/yama6a/subtitle-toolbox-go/v3/container/mpegts"
 )
 
@@ -25,6 +26,7 @@ type containerFuncs struct {
 //nolint:gochecknoglobals // lookup table of the container readers
 var containers = []containerFuncs{
 	{container: Matroska, open: openMatroska},
+	{container: MP4, open: openMP4},
 	{container: MPEGTS, open: openMPEGTS},
 }
 
@@ -42,6 +44,20 @@ func openMatroska(r io.ReaderAt, size int64) (containerFile, error) { //nolint:i
 	return matroskaFile{f}, nil
 }
 
+type mp4File struct{ *mp4.File }
+
+func (f mp4File) Extract(number int, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return f.File.Extract(number, opts.common(), mp4.ExtractOptions{SCC: opts.SCC, MCC: opts.MCC})
+}
+
+func openMP4(r io.ReaderAt, size int64) (containerFile, error) { //nolint:ireturn // the row type of the container table returns the interface
+	f, err := mp4.Open(r, size)
+	if err != nil {
+		return nil, err
+	}
+	return mp4File{f}, nil
+}
+
 type mpegtsFile struct{ *mpegts.File }
 
 func (f mpegtsFile) Extract(number int, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
@@ -56,9 +72,11 @@ func openMPEGTS(r io.ReaderAt, size int64) (containerFile, error) { //nolint:ire
 	return mpegtsFile{f}, nil
 }
 
+const notContainer = "The content is not an MKV, WebM, MP4 or MPEG-TS file."
+
 // Tracks returns the subtitle tracks of the video container in the first size bytes of r, in file order.
-// A container without subtitle tracks gives an empty list and no error. Content that is no container, and a
-// container that this version cannot read, return an error that matches ErrUnsupportedFormat.
+// A container without subtitle tracks gives an empty list and no error. Content that is no container returns
+// an error that matches ErrUnsupportedFormat.
 func Tracks(r io.ReaderAt, size int64) ([]Track, error) {
 	head, err := readHead(r, size)
 	if err != nil {
@@ -66,11 +84,11 @@ func Tracks(r io.ReaderAt, size int64) ([]Track, error) {
 	}
 	c, ok := containerOf(head)
 	if !ok {
-		return nil, unsupported("The content is not an MKV, WebM, MP4 or MPEG-TS file.")
+		return nil, unsupported(notContainer)
 	}
 	row, ok := containerRow(c)
 	if !ok {
-		return nil, noReader("The content", c)
+		return nil, unsupported(notContainer)
 	}
 	f, err := row.open(r, size)
 	if err != nil {
@@ -86,19 +104,6 @@ func containerRow(c Container) (containerFuncs, bool) {
 		}
 	}
 	return containerFuncs{}, false
-}
-
-func noReader(subject string, c Container) error {
-	return unsupported(subject + " is an " + c.Label() + " file. This version cannot read " + c.Label() + " files.")
-}
-
-// readContainer reads a track of the video container c. subject is the path, or "The content".
-func readContainer(c Container, r io.ReaderAt, size int64, subject string, opts ReadOptions) (*Subtitle, ReadInfo, error) {
-	row, ok := containerRow(c)
-	if !ok {
-		return nil, ReadInfo{}, noReader(subject, c)
-	}
-	return readTrack(row, r, size, subject, opts)
 }
 
 // readTrack opens the container file and extracts the track that opts names, or the only track.
