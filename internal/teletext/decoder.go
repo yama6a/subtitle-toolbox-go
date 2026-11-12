@@ -66,7 +66,7 @@ func (d *Decoder) Add(data []byte, pts int64) {
 		if unit := data[off:]; isTeletextUnit(unit) {
 			var packet [42]byte
 			for i, b := range unit[4:46] {
-				packet[i] = reversed[b]
+				packet[i] = bits.Reverse8(b)
 			}
 			d.packet(packet[:], pts)
 		}

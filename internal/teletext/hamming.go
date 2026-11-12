@@ -7,11 +7,6 @@ import "math/bits"
 //nolint:gochecknoglobals // lookup table
 var hamming84 = buildHamming84()
 
-// reversed maps a byte to the byte with its bits in reverse order.
-//
-//nolint:gochecknoglobals // lookup table
-var reversed = buildReversed()
-
 func hamming84Code(value int) byte {
 	d1, d2, d3, d4 := value&1, value>>1&1, value>>2&1, value>>3&1
 	p1, p2, p3 := 1^d1^d3^d4, 1^d1^d2^d4, 1^d1^d2^d3
@@ -28,14 +23,6 @@ func buildHamming84() [256]int8 {
 				t[b] = int8(v)
 			}
 		}
-	}
-	return t
-}
-
-func buildReversed() [256]byte {
-	var t [256]byte
-	for b := range t {
-		t[b] = bits.Reverse8(byte(b))
 	}
 	return t
 }

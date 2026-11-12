@@ -12,7 +12,7 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [markup.md](markup.md) | the inline tags, escaping, colors and the markup helpers |
 | [reading-writing.md](reading-writing.md) | `Load`, `Parse` and `Write`, the options, line endings and the BOM |
 | [streaming.md](streaming.md) | package `stream`: SubRip and WebVTT read and written one cue at a time, and how it differs from the full reader |
-| [containers.md](containers.md) | the subtitle tracks of video files: `Tracks`, `ReadOptions.Track`, and the MKV and WebM codecs |
+| [containers.md](containers.md) | the subtitle tracks of video files: `Tracks`, `ReadOptions.Track`, and the codecs and rules of each container |
 | [detection.md](detection.md) | how `Detect` picks a format, and the formats it never detects |
 | [encodings.md](encodings.md) | BOMs, UTF-16, code page detection and invalid UTF-8 |
 | [lenient-parsing.md](lenient-parsing.md) | strict and lenient mode, and the warnings of a read |
@@ -24,6 +24,7 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [statistics.md](statistics.md) | `stats` and the statistics of `stbox info`: counts, display time, reading speed, gaps and the most used words |
 | [validation.md](validation.md) | `validation` and `stbox validate`: the 19 rules, their units, the order of the violations and the command options |
 | [text.md](text.md) | case, replace, strip tags, right-to-left fixes, dialogue dashes, `hearingimpaired`: the removal of hearing-impaired annotations, `fixing`: the fixes of common text and OCR errors, and `profanity`: masked words and mute ranges |
+| [ocr.md](ocr.md) | package `ocr`: the engine interface, `Run`, the report, the language constants and an engine for an OCR web service |
 | [hls.md](hls.md) | package `hls` and `stbox hls`: the WebVTT segments, the playlist, the timestamp map and the joiner |
 | [cli.md](cli.md) | the `stbox` command: install, arguments, input and output files, `info`, `validate`, `sync`, `diff`, `dual`, `hls`, `formats` and exit codes |
 | [compatibility.md](compatibility.md) | what a release may change, and what stays the same for the whole 3.x line |

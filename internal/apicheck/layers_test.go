@@ -26,6 +26,8 @@ const (
 	layerFormat                 // 4
 	layerContainer              // 4b
 	layerFacade                 // 5
+	layerOCREngine              // 5b
+	layerOCRAuto                // 5c
 	layerCLI                    // 6
 )
 
@@ -61,6 +63,7 @@ var layers = map[string]layer{
 	"internal/caption":     layerModelUser,
 	"internal/ttmlwrite":   layerModelUser,
 	"internal/wordgroup":   layerModelUser,
+	"internal/bitmap":      layerModelUser,
 	"format/*":             layerFormat,
 	"container/*":          layerContainer,
 	".":                    layerFacade,
@@ -74,6 +77,10 @@ var layers = map[string]layer{
 	"dual":                 layerFacade,
 	"validation":           layerFacade,
 	"timing":               layerFacade,
+	"imaging":              layerFacade,
+	"ocr":                  layerFacade,
+	"ocr/*":                layerOCREngine,
+	"ocr/auto":             layerOCRAuto,
 	"hls":                  layerFacade,
 	"internal/cli":         layerCLI,
 	"cmd/stbox":            layerCLI,
@@ -246,6 +253,28 @@ func TestCheckImports(t *testing.T) {
 			rel:     "stats",
 			imports: []string{modulePath},
 			want:    []string{"stats imports ., which is not in a lower layer"},
+		},
+		{
+			name:    "engine and test helper import ocr",
+			rel:     "ocr/ocrtest",
+			imports: []string{modulePath + "/ocr", modulePath + "/model"},
+		},
+		{
+			name:    "chooser imports ocr and an engine",
+			rel:     "ocr/auto",
+			imports: []string{modulePath + "/ocr", modulePath + "/ocr/glyph"},
+		},
+		{
+			name:    "ocr imports its test helper",
+			rel:     "ocr",
+			imports: []string{modulePath + "/ocr/ocrtest"},
+			want:    []string{"ocr imports ocr/ocrtest, which is not in a lower layer"},
+		},
+		{
+			name:    "engine imports another engine",
+			rel:     "ocr/glyph",
+			imports: []string{modulePath + "/ocr/tesseract"},
+			want:    []string{"ocr/glyph imports ocr/tesseract, which is not in a lower layer"},
 		},
 		{
 			name:    "root imports a service",

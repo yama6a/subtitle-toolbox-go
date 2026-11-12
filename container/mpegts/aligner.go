@@ -19,6 +19,9 @@ type ptsEvent struct {
 // aligner is an io.Reader that hands go-astits clean 188-byte packets. go-astits cannot resync after damage and
 // cannot read the time stamp of an M2TS packet, so the aligner does both and filters the packets that the pass
 // does not need.
+// counter holds the last continuity counter of a PID as the file has it and as go-astits gets it.
+type counter struct{ raw, fixed uint8 }
+
 type aligner struct {
 	r          *bufio.Reader
 	packetSize int
@@ -28,7 +31,7 @@ type aligner struct {
 	pos        int64           // file offset of the next byte of r
 	err        error           // the first read error
 	events     []ptsEvent
-	counters   map[uint16]uint8
+	counters   map[uint16]counter
 	seen       map[uint16]bool
 	packet     [tsPacketSize]byte
 	rest       []byte
@@ -37,7 +40,7 @@ type aligner struct {
 func newAligner(packetSize int, wanted map[uint16]bool, limit int64) *aligner {
 	return &aligner{
 		packetSize: packetSize, wanted: wanted, limit: limit,
-		counters: map[uint16]uint8{}, seen: map[uint16]bool{},
+		counters: map[uint16]counter{}, seen: map[uint16]bool{},
 	}
 }
 
@@ -111,17 +114,26 @@ func (a *aligner) accept(p *[tsPacketSize]byte) bool {
 	if !a.wanted[pid] {
 		return false
 	}
-	if p[3]&0x10 != 0 {
-		last, ok := a.counters[pid]
-		counter := p[3] & 0x0F
-		// A repeated packet keeps its counter, so go-astits drops it. A jump becomes the expected counter, so
-		// go-astits keeps the data across it.
-		if ok && counter != last {
-			counter = (last + 1) & 0x0F
-			p[3] = p[3]&0xF0 | counter
-		}
-		a.counters[pid] = counter
+	return p[3]&0x10 == 0 || a.fixCounter(pid, p)
+}
+
+// fixCounter reports whether go-astits gets a packet with a payload.
+func (a *aligner) fixCounter(pid uint16, p *[tsPacketSize]byte) bool {
+	c, seen := a.counters[pid]
+	raw := p[3] & 0x0F
+	// go-astits checks the counter gap before the repeat, so a repeated packet inside a PES would empty it.
+	// The aligner drops the repeat. A jump becomes the expected counter, so go-astits keeps the data across it.
+	if seen && raw == c.raw {
+		return false
 	}
+	c.raw = raw
+	if seen {
+		c.fixed = (c.fixed + 1) & 0x0F
+	} else {
+		c.fixed = raw
+	}
+	a.counters[pid] = c
+	p[3] = p[3]&0xF0 | c.fixed
 	return true
 }
 

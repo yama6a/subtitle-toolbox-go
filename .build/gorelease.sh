@@ -48,6 +48,9 @@ case "$label" in
 esac
 
 echo "gorelease: label $label, base $base, proposed $proposed"
+# The proxy and the checksum database often lack a new tag for about 30 minutes after a release.
+# GOPRIVATE makes Go fetch this module from GitHub and skip the checksum database. Other modules still use the proxy.
+export GOPRIVATE="github.com/yama6a/subtitle-toolbox-go${GOPRIVATE:+,$GOPRIVATE}"
 rc=0
 report="$(go run "$gorelease" -base="$base" -version="$proposed" 2>&1)" || rc=$?
 echo "$report"

@@ -49,7 +49,7 @@ type File struct {
 
 // Open reads the PAT and the PMTs within the first 32 MiB of r and lists the tracks.
 func Open(r io.ReaderAt, size int64) (*File, error) {
-	head := make([]byte, min(size, headSize))
+	head := make([]byte, max(0, min(size, headSize)))
 	if n, err := r.ReadAt(head, 0); err != nil && n < len(head) {
 		return nil, fmt.Errorf("read mpegts: %w", err)
 	}

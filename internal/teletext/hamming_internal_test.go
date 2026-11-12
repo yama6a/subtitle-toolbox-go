@@ -76,7 +76,7 @@ func FuzzDecoder(f *testing.F) {
 		out := make([]byte, 0, 4+len(packet))
 		out = append(out, 0x03, 0x2C, 0xE7, 0xE4)
 		for _, b := range packet {
-			out = append(out, reversed[b])
+			out = append(out, bits.Reverse8(b))
 		}
 		return out
 	}

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReplaceList>
+  <WholeWords>
+    <Word from="celd" to="cold" />
+    <Word from="oD" to="on" />
+    <Word from="trom" to="from" />
+    <Word from="keep" to="keep" />
+  </WholeWords>
+  <PartialWordsAlways>
+    <WordPart from="iD" to="in" />
+  </PartialWordsAlways>
+  <PartialWords>
+    <WordPart from="*" to="a" />
+  </PartialWords>
+  <WholeLines>
+    <Line from="Ple*se kee* you* *icket." to="Please keep your ticket." />
+  </WholeLines>
+  <BeginLines>
+    <Beginning from="T*e " to="The " />
+  </BeginLines>
+  <EndLines>
+    <Ending from=" deck'" to=" deck." />
+  </EndLines>
+  <PartialLines>
+    <LinePart from="*'*." to="p.m." />
+  </PartialLines>
+  <PartialLinesAlways>
+    <LinePart from="Pe* hou*" to="per hour" />
+  </PartialLinesAlways>
+  <RegularExpressions>
+    <RegEx find="(\p{L})'$" replaceWith="$1." />
+    <RegEx find="\b(\d+) k\*" replaceWith="$1 km" />
+    <RegEx find="(?&lt;=a)(" replaceWith="b" />
+    <RegEx find="x" replaceWith="${name}" />
+  </RegularExpressions>
+  <RegularExpressionsIfSpelledCorrectly>
+    <RegEx find="\*" replaceWith="a" suggestOnly="false" />
+  </RegularExpressionsIfSpelledCorrectly>
+  <RemovedWholeWords>
+    <Word from="Teh" to="" />
+  </RemovedWholeWords>
+</ReplaceList>

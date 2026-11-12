@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -184,9 +186,18 @@ func TestLeniency(t *testing.T) {
 		}
 		return join(out)
 	}
-	repeated := func() []byte {
+	strayVideo := func() []byte {
 		out := split(clean)
-		return join(append(out[:continuation+1], out[continuation:]...))
+		var video int
+		for i, p := range out {
+			if pid(p) == videoPID {
+				video = i
+				break
+			}
+		}
+		stray := bytes.Clone(out[video])
+		stray[1] &^= 0x40
+		return join(slices.Insert(out, video, stray))
 	}
 	want := extract(t, clean, 888, model.CommonReadOptions{})
 	require.Len(t, want, 4)
@@ -196,10 +207,10 @@ func TestLeniency(t *testing.T) {
 		file []byte
 	}{
 		{"7 junk bytes between packets", insert(3, []byte("\x00\x01\x02\x03\x04\x05\x06"))},
-		{"a packet with a wrong sync byte", insert(5, make([]byte, 188))},
+		{"188 junk bytes between packets", insert(5, make([]byte, 188))},
 		{"M2TS packets", m2ts(clean)},
 		{"a continuity counter jump in a PES that lost no data", jump()},
-		{"a repeated packet", repeated()},
+		{"a video packet that does not start a PES before the video PES", strayVideo()},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -208,6 +219,68 @@ func TestLeniency(t *testing.T) {
 			assert.Equal(t, want, extract(t, tt.file, 888, model.CommonReadOptions{}))
 		})
 	}
+}
+
+// pes3 returns a writer with a teletext PES packet of 3 packets between two one-packet pages.
+func pes3() (w *tsWriter, first, last int) {
+	w = single(eng888())
+	w.teletextPES(teletextPID, 90000*11, pageHeader(888), row(888, 22, startBox+"One"), fillingHeader(8))
+	first = w.buf.Len() / 188
+	rows := [][]byte{pageHeader(888)}
+	for r := 1; r <= 10; r++ {
+		rows = append(rows, row(888, r, startBox+"Row"+strconv.Itoa(r)))
+	}
+	w.teletextPES(teletextPID, 90000*12, rows...)
+	last = w.buf.Len()/188 - 1
+	w.teletextPES(teletextPID, 90000*13, pageHeader(888), fillingHeader(8))
+	return w, first, last
+}
+
+func TestRepeatedPacket(t *testing.T) {
+	t.Parallel()
+
+	w, first, last := pes3()
+	require.Equal(t, 2, last-first)
+	clean := extract(t, w.bytes(), 888, model.CommonReadOptions{})
+	require.Len(t, clean, 2)
+	assert.Len(t, clean[1].Lines, 10)
+
+	tests := []struct {
+		name  string
+		index int
+	}{
+		{"the first packet of a PES of 3 packets", first},
+		{"the middle packet", first + 1},
+		{"the last packet", last},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			packets := split(w.bytes())
+			file := join(slices.Insert(packets, tt.index, bytes.Clone(packets[tt.index])))
+			assert.Equal(t, clean, extract(t, file, 888, model.CommonReadOptions{}))
+		})
+	}
+}
+
+func TestDamagedSyncByte(t *testing.T) {
+	t.Parallel()
+
+	clean := fixture(t, "teletext.ts")
+	want := extract(t, clean, 888, model.CommonReadOptions{})
+	packets := split(clean)
+	var first int
+	for i, p := range packets {
+		if pid(p) == teletextPID {
+			first = i
+			break
+		}
+	}
+	packets[first][0] = 0x00
+
+	// The first PES of the teletext stream loses its first packet, so the page of 0.5 s is lost and the rest stays.
+	assert.Equal(t, want[1:], extract(t, join(packets), 888, model.CommonReadOptions{}))
 }
 
 func TestTransportErrorFlag(t *testing.T) {
@@ -258,7 +331,9 @@ func TestWrongPATChecksum(t *testing.T) {
 	damaged[187] ^= 0xFF
 
 	assert.Empty(t, open(t, damaged).Tracks())
-	assert.Len(t, open(t, append(bytes.Clone(damaged[:188]), good...)).Tracks(), 5)
+	bad := bytes.Clone(damaged[:188])
+	bad[3] |= 0x0F // another counter than the valid PAT, which the reader would drop as a repeat
+	assert.Len(t, open(t, append(bad, good...)).Tracks(), 5)
 }
 
 // nullReaderAt serves a PAT, null packets and the other packets of a file without holding the null packets.
@@ -299,8 +374,8 @@ func TestTableScanLimit(t *testing.T) {
 		nulls  int
 		tracks int
 	}{
-		{"the PMT starts at byte 33,464,188", 178000, 1},
-		{"the PMT starts at byte 33,554,804", 178482, 0},
+		{"the PMT starts at byte 33,554,428, before the limit", 178480, 1},
+		{"the PMT starts at byte 33,554,616, after the limit", 178481, 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -314,9 +389,7 @@ func TestTableScanLimit(t *testing.T) {
 	}
 }
 
-func TestTimeLimit(t *testing.T) {
-	t.Parallel()
-
+func timeLimitFile() []byte {
 	w := single(eng888())
 	pts := int64(0)
 	w.teletextPES(teletextPID, pts, pageHeader(888), row(888, 22, startBox+"Start."))
@@ -326,13 +399,7 @@ func TestTimeLimit(t *testing.T) {
 	}
 	pts = (pts + 1<<32 - 1) % (1 << 33)
 	w.teletextPES(teletextPID, pts, pageHeader(888), row(888, 22, startBox+"End."))
-
-	_, _, err := open(t, w.bytes()).Extract(888, model.CommonReadOptions{})
-	var pe *model.ParseError
-	require.ErrorAs(t, err, &pe)
-	assert.Regexp(t, `^The cue times of track 888 reach [\d.]+ s\. Times must be below 100000 hours\.$`, pe.Msg)
-	assert.Empty(t, pe.Format)
-	assert.Zero(t, pe.Line)
+	return w.bytes()
 }
 
 type failingReaderAt struct {
@@ -381,6 +448,14 @@ func TestErrors(t *testing.T) {
 			_, _, err := open(t, arabic.bytes()).Extract(888, model.CommonReadOptions{})
 			return err
 		}, "Teletext page 888 uses the Arabic or Hebrew character set. The reader reads Latin, Cyrillic and Greek pages.", isParseError},
+		{"the time limit", func() error {
+			_, _, err := open(t, timeLimitFile()).Extract(888, model.CommonReadOptions{})
+			return err
+		}, "The cue times of track 888 reach 367506034.876 s. Times must be below 100000 hours.", isParseError},
+		{"a negative size", func() error {
+			_, err := mpegts.Open(bytes.NewReader(ts), -1)
+			return err
+		}, "The file is not an MPEG-TS file.", isParseError},
 		{"a ReadAt error in Open", func() error {
 			_, err := mpegts.Open(&failingReaderAt{data: ts, from: 1}, int64(len(ts)))
 			return err
