@@ -26,7 +26,7 @@
 | QuickTime text | `stbox.QuickTimeText` | `qttext` | `.txt` | [QuickTime text](#quicktime-text) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
 
-- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub and SubViewer files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`. Spruce STL uses `.stl`, which EBU STL uses too. The first format in the registry owns it, so the Spruce STL row owns `.stl` until EBU STL ships. Content detection tells the two apart.
+- **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub and SubViewer files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`. Spruce STL uses `.stl`, which EBU STL uses too. The first format in the registry owns it, so the EBU STL row owns `.stl`. Content detection tells the two apart.
 - **Time limit**: every time in every format is below 100000 hours. A reader rejects a time at or above it. A retime that moves a cue past it returns an error that matches `ErrInvalidArgument`. Writers clamp a negative time to 0, except the JSON writer.
 - **Options**: each section lists the fields of the format in `ReadOptions` and `WriteOptions`. The fields that every format shares are in [reading-writing.md](reading-writing.md). A reader ignores the fields of other formats.
 - **Sections**: each section has what the reader accepts, what the writer writes, the options and the limits. The godoc of the format package holds the reference of each function.
@@ -1333,11 +1333,11 @@ The root `ReadOptions.CSV` holds a `csv.ReadOptions` and `WriteOptions.CSV` a `c
 
 ## EBU STL
 
-EBU STL is the binary subtitle exchange format of European broadcasters, defined in [EBU Tech 3264](https://tech.ebu.ch/docs/tech/tech3264.pdf). Package `format/ebustl` reads it. The format name is `stl`, the extension `.stl`. EBU STL comes before Spruce STL in the registry, so it owns `.stl` in `FormatFromPath`. The package has no writer yet.
+EBU STL is the binary subtitle exchange format of European broadcasters, defined in [EBU Tech 3264](https://tech.ebu.ch/docs/tech/tech3264.pdf). Package `format/ebustl` reads and writes it. The format name is `stl`, the extension `.stl`. EBU STL comes before Spruce STL in the registry, so it owns `.stl` in `FormatFromPath`.
 
 A file starts with one GSI block (General Subtitle Information) of 1024 bytes. Each subtitle then takes one or more TTI blocks (Text and Timing Information) of 128 bytes. Example: a TTI block has time code in `00 00 01 05`, time code out `00 00 02 0A` and the text field `80 43 61 66 65 81 8A`. At 25 fps it reads as a cue from 1.2 s to 2.4 s with the line `<i>Cafe</i>`.
 
-**Binary format**: the reader gets the raw bytes of the input. It does no BOM removal, no UTF-8 check and no code page detection. `ReadOptions.Encoding` has no effect, `ReadInfo.SourceEncoding` is empty and the read has no decode warning. `Load` and `Parse` find the format by its signature on the raw bytes. `Load` also finds it by the extension `.stl`, as [detection.md](detection.md) says.
+**Binary format**: the reader gets the raw bytes of the input, and the writer writes bytes that no line ending or BOM rule changes. It does no BOM removal, no UTF-8 check and no code page detection. `ReadOptions.Encoding` has no effect, `ReadInfo.SourceEncoding` is empty and the read has no decode warning. `Load` and `Parse` find the format by its signature on the raw bytes. `Load` also finds it by the extension `.stl`, as [detection.md](detection.md) says.
 
 ### Read
 
@@ -1385,6 +1385,26 @@ The reader writes each row as core markup and escapes its text. Example: `01 red
 - `counts`: `TNB` is the TTI block count after a cut. `TNS` is the cue count. `TNG` is the count of distinct group numbers of cues. `TCF` is the 8 TCI digits of the first cue before any subtraction, or `00000000`.
 
 The cue key `stl` holds `subtitleGroupNumber`, `cumulativeStatus`, `verticalPosition` and `justificationCode` of the first block. It also holds `text`, the cue text at read time. And it holds `blocks`, the hex of every block of the set, 256 hex digits each.
+
+### Write
+
+`ebustl.Write` writes the GSI block, then the TTI blocks of each comment and cue. `WriteOptions.EBUSTL.FrameRate` is 25 or 30 fps. The zero value takes the stored DFC, else 25. Another rate fails `Validate` with `The EBU STL formatter writes 25 or 30 fps, got 24.`. The writer reads `StripTags` and ignores `LineEnding` and `BOM`.
+
+**Byte for byte**: a file that the reader read comes back with the same bytes, also after a retiming. A cue whose text did not change keeps its stored blocks, and the writer patches only the changed header fields (SGN, CS, TCI, TCO, VP, JC). When the text changed, the writer keeps the stored user data blocks and encodes the text again. A subtitle from another format gets a new GSI block. The writer writes the sets in cue order, with the comments before the cue they sit in front of. So a file with sets out of time order comes back reordered and renumbered.
+
+**New GSI values**: CPN `850`, DSC `1`, RN `00`, MNC `40`, MNR `23`, TCS `1`, TCP `00000000`, TND `1` and DSN `1` fill a missing field. CD and RD hold today in UTC as `yymmdd`. OPT is the metadata `title`, LC is the code of the metadata `language` (`en-GB` gives `09` through the primary subtag `en`, no language gives `00`), TNB, TNS, TNG and TCF are the counts of the written blocks. A stored count stays when it still equals the count that the reader stored, so a count padded with spaces keeps its bytes. MNC grows to the longest row in displayable bytes, up to 99. Rows never wrap. A field is encoded with the code page of CPN, padded with spaces and cut to its length.
+
+**Character code table**: the stored CCT stays. Without one, the writer picks the table that writes the fewest `?` for the cue and comment text. It tries 00, 01, 02, 03 and 04 in this order, and table 00 wins a tie. The count is the number of `?` bytes in the encoded text, so a `?` in the text counts too. A stored CCT outside `00` to `04` fails with `The character code table "05" is not 00, 01, 02, 03 or 04.`.
+
+**Text**: each cue line is one row, and rows join with `8Ah`. `<i>` and `<u>` write `80h` to `83h`, and only the first open and the last close of nested tags write. A `<font>` or WebVTT color class with one of the 8 teletext colors writes `00h` to `07h`, and its end tag writes the color below it, white when none. Another color writes nothing. A color code replaces one space next to it. A color code at the row end goes. Italics or underline still open at the row end get `81h` or `83h`. A style open at a row end starts again on the next row. Bold, strike, voice, ruby annotation tags and positions of WebVTT write nothing, and ruby writes as `base (annotation)`. Double height, boxing and backgrounds that the reader dropped are lost when a cue text changes. They survive only through reused blocks. A text field has 112 bytes padded with `8Fh`. The last field always holds one `8Fh`, so 112 bytes of text give a second, empty block. In table 00 a field that would end with a diacritic ends one byte early. A cue that needs more than 241 blocks fails with `The cue text needs more than 241 TTI blocks.`.
+
+**Subtitle numbers**: the first set takes `firstSubtitleNumber`, else 1, and each later set, comment sets too, takes the next number. A number above 65535 fails with `EBU STL allows subtitle numbers up to 65535.`.
+
+**Times**: the writer takes the frame nearest to the time, at 25 or 30 fps, and caps hours at 255. With `startOfProgrammeSubtracted` in the file data, the stored TCP is added back. The writer reads TCP at the rate of the stored DFC. PHP reads it at the output rate, so a file read at 25 fps and written at 30 fps differs.
+
+**Position**: the stored VP and JC stay when they still give the alignment and the row of the cue. Else the writer calls `Position.RowOn` on the grid of the file, 23 rows for teletext, else the maximum row plus 1, and writes that row as VP when it falls in the band of the alignment. Else the first row goes at the top, in the middle or at the bottom of the rows. Example: a one-line `BottomCenter` cue without a row writes VP 23 and JC 2. `RowOn` drops the row of 2 cues that the reader gives a row: teletext VP 8 read as `MiddleCenter`, and SCC row 5 with `BottomCenter`. After a conversion from SCC, or after a change of `Position.Row`, these 2 fall back to the alignment. A rewritten EBU STL file keeps VP 8, because the stored VP and JC stay.
+
+**Report**: `WriteReport.EBUSTL` is non-nil after every write. `CharacterCodeTable` is the table, `TableChosen` is true when the writer picked it, and `Replaced` lists each character written as `?` in output order. A GSI field has its name in `Field`, a cue its index in `CueIndex`, and a comment or a GSI field has `CueIndex` -1. Example: an em dash and the guillemets in cue 0 give 3 entries.
 
 ## SubViewer
 

@@ -195,11 +195,11 @@ var writesBOM = map[Format]bool{
 	stubFormat: true, ASS: true, CSV: true, TSV: true, LRC: true, MPSub: true, SubRip: true, WebVTT: true,
 }
 
-// textWriters returns the stub row and every registry row with a writer. 1.x has text formats only.
+// textWriters returns the stub row and every registry row with a writer. A binary format ignores the line ending and the BOM.
 func textWriters() []formatFuncs {
 	rows := []formatFuncs{stubRow}
 	for _, row := range registry {
-		if row.write != nil {
+		if row.write != nil && !row.format.IsBinary() {
 			rows = append(rows, row)
 		}
 	}

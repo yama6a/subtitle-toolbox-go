@@ -88,7 +88,15 @@ func DecodeISO6937(b []byte) string {
 
 // EncodeISO6937 returns the bytes of s and writes Replacement for each code point outside the table.
 func EncodeISO6937(s string) []byte {
+	out, _ := EncodeISO6937Replaced(s)
+	return out
+}
+
+// EncodeISO6937Replaced is EncodeISO6937 that also returns the code points that it wrote as Replacement, in order.
+// A Replacement that s holds itself is not in the list.
+func EncodeISO6937Replaced(s string) ([]byte, []rune) {
 	out := make([]byte, 0, len(s))
+	var replaced []rune
 	letter := false
 	for _, r := range s {
 		wasLetter := letter
@@ -110,9 +118,10 @@ func EncodeISO6937(s string) []byte {
 			out = append(out, last)
 		default:
 			out = append(out, Replacement)
+			replaced = append(replaced, r)
 		}
 	}
-	return out
+	return out, replaced
 }
 
 // EncodableISO6937 reports whether EncodeISO6937 writes r without Replacement when r stands alone.

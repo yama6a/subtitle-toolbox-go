@@ -224,3 +224,21 @@ func ExampleFormats() {
 	// qttext [txt]
 	// vtt [vtt]
 }
+
+func TestBinaryWriteIgnoresLineEndingAndBOM(t *testing.T) {
+	t.Parallel()
+
+	s := &stbox.Subtitle{}
+	c := stbox.Cue{Start: time.Second, End: 2 * time.Second}
+	c.AddLine("Hello")
+	s.AddCue(c)
+	gsi := model.NewData(model.Field{Key: "CD", Value: "261012"}, model.Field{Key: "RD", Value: "261012"})
+	require.NoError(t, s.SetFormatData("stl", model.NewData(model.Field{Key: "gsi", Value: gsi})))
+	write := func(opts stbox.WriteOptions) []byte {
+		var out bytes.Buffer
+		_, err := stbox.Write(&out, s, stbox.EBUSTL, opts)
+		require.NoError(t, err)
+		return out.Bytes()
+	}
+	assert.Equal(t, write(stbox.WriteOptions{}), write(stbox.WriteOptions{LineEnding: stbox.CRLF, BOM: stbox.BOMAdd}))
+}
