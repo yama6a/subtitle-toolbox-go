@@ -227,8 +227,8 @@ func TestReadCueTimesAndTextOfADocument(t *testing.T) {
 		{
 			"a declared encoding is ignored",
 			"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +
-				"<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div><p begin=\"0s\" end=\"1s\">café</p></div></body></tt>",
-			[]cueRow{{0, sec(1), "café"}},
+				"<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div><p begin=\"0s\" end=\"1s\">caf\u00e9</p></div></body></tt>",
+			[]cueRow{{0, sec(1), "caf\u00e9"}},
 		},
 	}
 	for _, tt := range tests {

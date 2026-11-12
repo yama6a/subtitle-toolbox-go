@@ -48,7 +48,7 @@ func TestLenientReadRepairsAndWarns(t *testing.T) {
 			"HTML entities and malformed XML give two warnings",
 			bare + "\n" + `<body><div><p begin="1s" end="2s">Caf&eacute;&nbsp;ok</p>` + "\n" +
 				`<p begin="3s" end="4s">A & B</p></div></body></tt>`,
-			[]cueRow{{sec(1), sec(2), "Café ok"}, {sec(3), sec(4), "A &amp; B"}},
+			[]cueRow{{sec(1), sec(2), "Caf\u00e9\u00a0ok"}, {sec(3), sec(4), "A &amp; B"}},
 			[]warningRow{
 				{2, model.NoBlock, model.Repaired, `The file has HTML entities that XML does not define, such as "&eacute;". The parser read them as characters.`},
 				{3, model.NoBlock, model.Repaired, "The file is not well-formed XML. Invalid character entity & (no semicolon). The parser repaired it."},
