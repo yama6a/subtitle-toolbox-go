@@ -14,6 +14,7 @@ const (
 	LRC           Format = "lrc"
 	MicroDVD      Format = "microdvd"
 	MPSub         Format = "mpsub"
+	PAC           Format = "pac"
 	SAMI          Format = "sami"
 	SBV           Format = "sbv"
 	SCC           Format = "scc"
@@ -49,6 +50,7 @@ var formatFacts = []formatFact{
 	{format: LRC, extensions: []string{"lrc"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MicroDVD, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MPSub, extensions: []string{"mpsub"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: PAC, extensions: []string{"pac", "fpc"}, canRead: true, canWrite: true, autoDetected: true, binary: true},
 	{format: SAMI, extensions: []string{"smi", "sami"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SBV, extensions: []string{"sbv"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SCC, extensions: []string{"scc"}, canRead: true, canWrite: true, autoDetected: true},

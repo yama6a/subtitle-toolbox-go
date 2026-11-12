@@ -1,0 +1,168 @@
+[
+  {
+    "name": "English",
+    "codePage": "latin",
+    "lines": [
+      "Hello there.",
+      "We open the shop at nine.",
+      "Is the bread ready yet?"
+    ]
+  },
+  {
+    "name": "English, short",
+    "codePage": "latin",
+    "lines": [
+      "OK."
+    ]
+  },
+  {
+    "name": "German",
+    "codePage": "latin",
+    "lines": [
+      "Die Bäckerei öffnet um sieben Uhr.",
+      "Möchten Sie Brötchen?"
+    ]
+  },
+  {
+    "name": "French",
+    "codePage": "latin",
+    "lines": [
+      "Le pain est prêt à huit heures.",
+      "Ça coûte deux euros."
+    ]
+  },
+  {
+    "name": "Spanish",
+    "codePage": "latin",
+    "lines": [
+      "El panadero abre la tienda a las siete.",
+      "¿Quieres pan con mantequilla?"
+    ]
+  },
+  {
+    "name": "Danish",
+    "codePage": "latin",
+    "lines": [
+      "Bageriet åbner klokken syv.",
+      "Vil du have rugbrød?"
+    ]
+  },
+  {
+    "name": "Polish",
+    "codePage": "latin",
+    "lines": [
+      "Piekarnia jest otwarta od siódmej.",
+      "Ile kosztuje bułka?"
+    ]
+  },
+  {
+    "name": "Czech",
+    "codePage": "latin",
+    "lines": [
+      "Pekárna otevírá v sedm hodin.",
+      "Chléb je ještě teplý."
+    ]
+  },
+  {
+    "name": "Italian",
+    "codePage": "latin",
+    "lines": [
+      "Il fornaio apre alle sette.",
+      "Quanto costa il cornetto?"
+    ]
+  },
+  {
+    "name": "Turkish",
+    "codePage": "latin-turkish",
+    "lines": [
+      "Fırın saat yedide açılıyor.",
+      "Bir simit kaç lira? Ağaç dağ."
+    ]
+  },
+  {
+    "name": "Greek",
+    "codePage": "greek",
+    "lines": [
+      "Ο φούρνος ανοίγει στις επτά.",
+      "Πόσο κοστίζει το κουλούρι;"
+    ]
+  },
+  {
+    "name": "Greek, one word",
+    "codePage": "greek",
+    "lines": [
+      "Καλημέρα."
+    ]
+  },
+  {
+    "name": "Russian",
+    "codePage": "cyrillic",
+    "lines": [
+      "Пекарня открывается в семь.",
+      "Сколько стоит булочка?"
+    ]
+  },
+  {
+    "name": "Russian, one word",
+    "codePage": "cyrillic",
+    "lines": [
+      "Да."
+    ]
+  },
+  {
+    "name": "Hebrew",
+    "codePage": "hebrew",
+    "lines": [
+      "המאפייה נפתחת בשבע.",
+      "הלחם עדיין חם."
+    ]
+  },
+  {
+    "name": "Arabic",
+    "codePage": "arabic",
+    "lines": [
+      "المخبز يفتح في السابعة.",
+      "الخبز ما زال ساخنا."
+    ]
+  },
+  {
+    "name": "Thai",
+    "codePage": "thai",
+    "lines": [
+      "ร้านขนมปังเปิดเจ็ดโมง",
+      "ขนมปังยังอุ่นอยู่"
+    ]
+  },
+  {
+    "name": "Korean",
+    "codePage": "korean",
+    "lines": [
+      "빵집은 일곱 시에 문을 엽니다.",
+      "빵이 아직 따뜻해요."
+    ]
+  },
+  {
+    "name": "Japanese",
+    "codePage": "japanese",
+    "lines": [
+      "パン屋は七時に開きます。",
+      "パンはまだ温かいです。"
+    ]
+  },
+  {
+    "name": "Chinese simplified",
+    "codePage": "chinese-simplified",
+    "lines": [
+      "面包店七点开门。",
+      "面包还是热的。"
+    ]
+  },
+  {
+    "name": "Chinese traditional",
+    "codePage": "chinese-traditional",
+    "lines": [
+      "麵包店七點開門。",
+      "麵包還是熱的。"
+    ]
+  }
+]

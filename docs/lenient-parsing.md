@@ -268,6 +268,21 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Line numbers**: none. Every binary format has `NoLine` in its warnings and errors.
 - **Undefined bytes**: a byte without an entry in a code table is dropped and never warns.
 
+## PAC
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| the content does not start with `01h` and 19 zero bytes | `A PAC file starts with the byte 01h and 19 zero bytes.` | the same error |
+| a record whose mark is outside `60h` to `67h`, or whose end runs past the file or is below the first text byte | `The PAC record at byte N is not complete.` | `Skipped`, no line, block = the count of records read, lines = the hex of the rest. The rest becomes the footer and reading stops |
+| bytes after the records that do not start with `FFh` | `The byte at N is neither a PAC record nor the end block.` | `Skipped`, no line, block = the count of records read, lines = the hex of the rest. The cues and the footer stay |
+| minutes above 59, seconds above 59, or frames at or above the frame rate | `Subtitle number N has a time code that is not valid.` | skips the record. `Skipped`, no line, block = the index of the record after the story record, lines = the hex of the record |
+| a code page that the detector cannot pick | `The code page of the PAC file is not clear. REASON Set the code page of the file, for example ISO-8859-7 for Greek.` | reads the text with the first candidate. `Repaired`, no line, no block, with the same text and ` The parser read it as VALUE.` |
+
+- **Order**: the header check comes first, then the records, the end block, the code page and the time codes.
+- **Offsets**: N in a message is the decimal byte offset in the file, except in the time code message, where N is the subtitle number.
+- **Line numbers**: none. Every binary format has `NoLine` in its warnings and errors.
+- **Undefined bytes**: a byte without an entry in a code table is dropped and never warns.
+
 ## CSV and TSV
 
 | Damage | Strict | Lenient |
