@@ -305,6 +305,27 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Line numbers**: none. Every binary format has `NoLine` in its warnings and errors.
 - **Undefined bytes**: a byte without an entry in a code table is dropped and never warns.
 
+## PGS
+
+All errors are `*ParseError` values with the format `pgs` and line 0. T is the time of the PCS in whole milliseconds, written in seconds such as `1 s`, I is the index of the composition object in its PCS, ID is the object id. Each warning is `Skipped` with no line and no lines. Its block is the count of segments read up to the damage, with the damaged segment for damage inside a segment.
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| a segment that does not start with `PG`. A single byte `P` left counts | `The segment at byte N does not start with the PG magic bytes.` | `Skipped`. Reading stops. The pending display set shows nothing and ends the shown cue. The cues before stay |
+| fewer than 13 bytes left | `The segment header at byte N is cut off.` | the same as above |
+| a segment with fewer bytes of data than its size field says | `The segment at byte N has S bytes of data, but the file ends before.` | the same as above |
+| a PCS with less than 11 bytes | `The presentation composition segment at T s is cut off.` | `Skipped`. The display set shows nothing, the shown cue ends at T and reading goes on |
+| a composition object that is cut off | `The composition object I at T s is cut off.` | the same as above |
+| a cropping rectangle that is cut off | `The cropping of composition object I at T s is cut off.` | the same as above |
+| a first ODS fragment with less than 11 bytes | `The first definition segment of object ID is cut off.` | the same as above, at the time of the PCS that is open |
+| an object over the size limit | `Cannot read object ID: an image of WxH pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total.` | the same as above |
+| an object with fewer pixels of run-length data than its size needs | `Object ID at T s has N pixels of run-length data, but its size of WxH needs M.` | the same as above, when the display set ends |
+| the parts of one display set that join to an image over the size limit | `Cannot join the parts of one display set: an image of WxH pixels is larger than the limit of ...` | the same as above |
+| a PCS with a screen width or height of 0 | `Cannot create a cue image of WxH pixels on a screen of SWxSH pixels: every size must be at least 1.` | the same as above |
+
+- **Order of the framing checks**: the magic bytes, then the 13 header bytes, then the data size.
+- **PHP**: PHP turns only the 3 framing errors into warnings. The other 8 rows fail the read there too, see [php-differences.md](php-differences.md).
+
 ## CSV and TSV
 
 | Damage | Strict | Lenient |

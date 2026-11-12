@@ -15,7 +15,7 @@ func TestFormatsFollowTheRowOrder(t *testing.T) {
 	t.Parallel()
 
 	want := []Format{
-		ASS, Cavena890, CSV, ITT, JSON, LRC, MCC, MicroDVD, MPSub, PAC, SAMI, SBV, SCC, SubRip, EBUSTL,
+		ASS, Cavena890, CSV, ITT, JSON, LRC, MCC, MicroDVD, MPSub, PAC, PGS, SAMI, SBV, SCC, SubRip, EBUSTL,
 		SpruceSTL, SubViewer, TTML, DCP, TSV, PlainText, MPL2, TMPlayer, QuickTimeText, WebVTT,
 	}
 	assert.Equal(t, want, Formats())
@@ -61,6 +61,7 @@ func TestFactsMatchTheFunctions(t *testing.T) {
 
 func detected(f Format) bool {
 	return slices.ContainsFunc(jsonChecks, func(c jsonCheck) bool { return c.format == f }) ||
+		slices.ContainsFunc(rawSignatures, func(s signature) bool { return s.format == f }) ||
 		slices.ContainsFunc(signatures, func(s signature) bool { return s.format == f })
 }
 

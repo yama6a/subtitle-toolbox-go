@@ -90,6 +90,7 @@ const (
 	MicroDVD      = model.MicroDVD
 	MPSub         = model.MPSub
 	PAC           = model.PAC
+	PGS           = model.PGS
 	SAMI          = model.SAMI
 	SBV           = model.SBV
 	SCC           = model.SCC

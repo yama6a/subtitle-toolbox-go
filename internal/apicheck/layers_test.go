@@ -64,6 +64,7 @@ var layers = map[string]layer{
 	"internal/ttmlwrite":   layerModelUser,
 	"internal/wordgroup":   layerModelUser,
 	"internal/bitmap":      layerModelUser,
+	"internal/displayset":  layerModelUser,
 	"format/*":             layerFormat,
 	"container/*":          layerContainer,
 	".":                    layerFacade,

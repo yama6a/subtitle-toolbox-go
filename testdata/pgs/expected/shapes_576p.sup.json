@@ -1,0 +1,28 @@
+[
+    {
+        "start": 0.5,
+        "end": 3.0,
+        "x": 160,
+        "y": 480,
+        "width": 400,
+        "height": 60,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "37faa3428611d266633c6a77163556219d2e0976ed7f3b5ce49b224eeaf2c17d"
+    },
+    {
+        "start": 4.0,
+        "end": 9.0,
+        "x": 160,
+        "y": 480,
+        "width": 400,
+        "height": 60,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "37faa3428611d266633c6a77163556219d2e0976ed7f3b5ce49b224eeaf2c17d"
+    }
+]
