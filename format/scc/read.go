@@ -97,7 +97,8 @@ func readCodeLines(st *parsing.State, content string) ([]cea608.CodeLine, *bool,
 	return codeLines, dropFrame, nil
 }
 
-// matchCodeLine returns the fields and the start frame of a code line. The fields are nil when lenient mode skips the line.
+// matchCodeLine returns the fields and the start frame of a code line. Each byte pair takes one frame, so the last pair must stay below 100000 hours too.
+// The fields are nil when lenient mode skips the line.
 func matchCodeLine(st *parsing.State, raw string, line, block int) (m []string, start int64, err error) {
 	m = codeLineRegexp.FindStringSubmatch(raw)
 	if m == nil {
@@ -106,7 +107,8 @@ func matchCodeLine(st *parsing.State, raw string, line, block int) (m []string, 
 	}
 	dropFrame := m[4] == ";"
 	start = startFrame(m, dropFrame)
-	if start >= parsing.FrameLimit(frameRate(dropFrame)) {
+	pairs := len(strings.FieldsFunc(m[6], isSpace))
+	if start+int64(max(pairs-1, 0)) >= parsing.FrameLimit(frameRate(dropFrame)) {
 		err = st.Fail(parsing.OverLimit(m[1]+":"+m[2]+":"+m[3]+m[4]+m[5], line), line, block, []string{raw})
 		return nil, 0, err
 	}
