@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/phpkey"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/phpkey"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 const maxSeconds = timecode.MaxHours * 3600
@@ -695,12 +695,71 @@ func cueFormatData(c *model.Cue, d *model.Data, i int) string {
 		if !ok {
 			return "The field " + cuePath(i) + ".formatData." + key + " must be an object."
 		}
+		if key == imageKey {
+			if msg := cueImage(c, obj, cuePath(i)+".formatData.image"); msg != "" {
+				return "The field " + msg
+			}
+			continue
+		}
 		data := toModelData(obj)
 		addAlignment(data, key, c.Position.Alignment)
 		if msg := formatDataMessage(c.SetFormatData(key, data), cuePath(i)); msg != "" {
 			return msg
 		}
 	}
+	return ""
+}
+
+// cueImage sets c.Image from the object d of the key image, and sets c.Forced when image.forced is true.
+// An empty object is no image. The returned message starts with the path.
+func cueImage(c *model.Cue, d *model.Data, path string) string {
+	if d.Len() == 0 {
+		return ""
+	}
+	var im model.Image
+	if msg := imageFields(&im, d, path); msg != "" {
+		return msg
+	}
+	switch forced, _ := d.Get("forced"); forced := forced.(type) {
+	case nil:
+	case bool:
+		c.Forced = c.Forced || forced
+	default:
+		return path + ".forced must be a boolean."
+	}
+	if err := im.Validate(); err != nil {
+		var iae *model.InvalidArgumentError
+		_ = errors.As(err, &iae)
+		return path + " is invalid. " + iae.Msg
+	}
+	c.Image = &im
+	return ""
+}
+
+func imageFields(im *model.Image, d *model.Data, path string) string {
+	for _, f := range []struct {
+		key string
+		to  *int
+	}{
+		{"x", &im.X},
+		{"y", &im.Y},
+		{"width", &im.Width},
+		{"height", &im.Height},
+		{"screenWidth", &im.ScreenWidth},
+		{"screenHeight", &im.ScreenHeight},
+	} {
+		v, _ := d.Get(f.key)
+		n, ok := integer(v)
+		if !ok || n < math.MinInt32 || n > math.MaxInt32 {
+			return path + "." + f.key + " must be an integer."
+		}
+		*f.to = int(n)
+	}
+	png, ok := d.String("png")
+	if !ok {
+		return path + ".png must be a string."
+	}
+	im.PNG = []byte(png)
 	return ""
 }
 

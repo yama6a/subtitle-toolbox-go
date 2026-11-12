@@ -1,13 +1,14 @@
 # Statistics
 
-A QC script wants numbers about a subtitle file. `stats.Of(s)` returns them in one value and never changes `s`. Example: for a 3-cue SubRip file, `stbox info trip.srt` prints `Characters per second: min 12.5, average 27.533, max 42.5` and `Most used words: the (3), train (1), ...`.
+A QC script wants numbers about a subtitle file. `stats.Of(s)` returns them in one value and never changes `s`. It skips image cues without lines. Example: for a 3-cue SubRip file, `stbox info trip.srt` prints `Characters per second: min 12.5, average 27.533, max 42.5` and `Most used words: the (3), train (1), ...`.
 
 <!-- example: ExampleOf -->
 ```go
 const content = "1\n00:00:01,000 --> 00:00:03,000\n<i>The train leaves at noon.</i>\n\n" +
 	"2\n00:00:02,500 --> 00:00:05,000\n[BELL RINGS]\nANNA: We need two tickets for the long ride to the coast.\n\n" +
 	"3\n00:00:06,000 --> 00:00:06,400\n(sighs) Too late.\n"
-s, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+r := strings.NewReader(content)
+s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return

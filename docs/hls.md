@@ -75,6 +75,7 @@ fmt.Print(string(r.Playlist()))
 | `Map` | MPEGTS 900000, LOCAL 0 | the map of each header. It is a pointer, because MPEGTS 0 is legal |
 | `FileNamePattern` | `sub%d.vtt` | file name of segment n, with n from 0. It holds exactly one verb such as `%d` or `%03d` |
 | `MediaDuration` | the end of the last cue | duration of the video, so the playlist covers all of it |
+| `SkipImageCues` | false | drops the image cues without lines. When false, `Segment` returns a `*model.UnwritableError` for the first one, as the WebVTT writer does |
 
 - **Cues**: segment i covers the milliseconds from `i x d` to `(i+1) x d`, and the last segment stops at the total duration. A segment holds every cue that overlaps it, with its full times, so a cue that crosses a boundary is in both segments. A cue of zero length goes into the segment where it starts.
 - **Identifiers**: a cue without an identifier gets its 1-based index in the subtitle, so it has the same identifier in every segment.

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 const (
@@ -369,15 +369,6 @@ func TestCueSchemaFields(t *testing.T) {
 		{"region", c, "vtt", data("region", []any{}), "The field formatData.vtt.region must be a string."},
 		{"alignment is unchecked", c, "vtt", data("alignment", "7"), ""},
 
-		{"png", c, model.ImageKey, data("png", int64(1)), "The field formatData.image.png must be a string."},
-		{"x", c, model.ImageKey, data("x", 1.0), "The field formatData.image.x must be an integer."},
-		{"y", c, model.ImageKey, data("y", "1"), "The field formatData.image.y must be an integer."},
-		{"width", c, model.ImageKey, data("width", nil), "The field formatData.image.width must be an integer."},
-		{"height", c, model.ImageKey, data("height", true), "The field formatData.image.height must be an integer."},
-		{"screenWidth", c, model.ImageKey, data("screenWidth", "720"), "The field formatData.image.screenWidth must be an integer."},
-		{"screenHeight", c, model.ImageKey, data("screenHeight", "576"), "The field formatData.image.screenHeight must be an integer."},
-		{"forced", c, model.ImageKey, data("forced", int64(1)), "The field formatData.image.forced must be a boolean."},
-
 		{"subtitle", c, "dcp", data("subtitle", data("SpotNumber", int64(1))), "The field formatData.dcp.subtitle.SpotNumber must be a string."},
 		{"texts", c, "dcp", data("texts", []any{data("VPosition", int64(10))}), "The field formatData.dcp.texts[0].VPosition must be a string."},
 
@@ -389,6 +380,8 @@ func TestCueSchemaFields(t *testing.T) {
 		{"blocks", c, "stl", data("blocks", "x"), "The field formatData.stl.blocks must be a list or an object."},
 
 		{"tags", c, "ffmeta-chapters", data("tags", []any{nil}), "The field formatData.ffmeta-chapters.tags[0] must be a string."},
+
+		{"image is a field", c, "image", data("x", int64(1)), "The field formatData.image is the cue image. Set Cue.Image in place of it."},
 	})
 }
 
@@ -399,7 +392,7 @@ func TestSchemaLevelsAreApart(t *testing.T) {
 		{"file field at cue level", cueLevel, "scc", data("dropFrame", "yes"), ""},
 		{"cue field at file level", fileLevel, "srt", data("coordinates", "x"), ""},
 		{"cue mpsub is free", cueLevel, "mpsub", data("x", int64(1)), ""},
-		{"file image is free", fileLevel, model.ImageKey, data("png", int64(1)), ""},
+		{"file image is free", fileLevel, "image", data("png", int64(1)), ""},
 	})
 }
 

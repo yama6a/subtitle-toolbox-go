@@ -9,11 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
-	"github.com/yama6a/subtitle-toolbox-go/v2/timing"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/timing"
 )
 
 func snapDir(t *testing.T) string {
@@ -159,7 +159,8 @@ func TestConvertSnapTakesTheVideoAndInputRatesApart(t *testing.T) {
 	shots, err := timing.ShotChangesFromFFmpegLog(testfiles.Read(t, "shot-changes/own_ffmpeg_showinfo.log"))
 	require.NoError(t, err)
 	want := func(inputFPS int64) string {
-		s, _, err := stbox.Parse(bytes.NewReader(sub.Bytes()), stbox.ReadOptions{
+		r := bytes.NewReader(sub.Bytes())
+		s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{
 			Format: stbox.MicroDVD, MicroDVD: microdvd.ReadOptions{FrameRate: model.FrameRate{Num: inputFPS, Den: 1}},
 		})
 		require.NoError(t, err)

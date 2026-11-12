@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 const styleOption = "WriteOptions.ASS.Style"

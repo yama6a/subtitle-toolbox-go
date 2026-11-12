@@ -10,9 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // DefaultSegmentDuration is the segment duration that Segment uses when SegmentOptions.SegmentDuration is 0.
@@ -37,6 +38,9 @@ type SegmentOptions struct {
 	// MediaDuration is the duration of the video, so that the playlist covers all of it, rounded to whole
 	// milliseconds. 0 means the end of the last cue.
 	MediaDuration time.Duration
+	// SkipImageCues drops the image cues without lines. False makes Segment return an *model.UnwritableError for the
+	// first one, as the WebVTT writer does.
+	SkipImageCues bool
 }
 
 // Validate returns an error that matches model.ErrInvalidArgument when a field of o is out of range.
@@ -75,11 +79,15 @@ type Rendition struct {
 }
 
 // Segment cuts s into WebVTT segments of the duration of opts. A segment holds every cue that overlaps it, with
-// its full times. A cue without an identifier gets its 1-based index in s, so it has the same identifier in every
+// its full times. An image cue without lines fails the call, or is dropped with SkipImageCues. A cue without an identifier gets its 1-based index in s after that, so it has the same identifier in every
 // segment. The header text, the STYLE blocks and the REGION blocks of s go into each segment, and its comments do
 // not. Segment writes no segment until the caller asks for it.
 func Segment(s *model.Subtitle, opts SegmentOptions) (*Rendition, error) {
 	if err := opts.Validate(); err != nil {
+		return nil, err
+	}
+	s, err := writing.SkipImageCues(s, model.WebVTT, model.CommonWriteOptions{SkipImageCues: opts.SkipImageCues})
+	if err != nil {
 		return nil, err
 	}
 	m := TimestampMap{MPEGTS: DefaultMPEGTS}

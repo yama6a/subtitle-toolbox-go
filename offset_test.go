@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
 )
 
 func TestOffsetRoundTrip(t *testing.T) {
@@ -46,7 +46,7 @@ func TestOffsetRoundTrip(t *testing.T) {
 			var out bytes.Buffer
 			_, err := stbox.Write(&out, s, tt.format, stbox.WriteOptions{})
 			require.NoError(t, err)
-			back, _, err := stbox.Parse(&out, stbox.ReadOptions{Format: tt.format})
+			back, _, err := parseBytes(out.Bytes(), stbox.ReadOptions{Format: tt.format})
 			require.NoError(t, err)
 			got, ok := back.Cue(0)
 			require.True(t, ok)
@@ -60,14 +60,14 @@ func TestWebVTTHeightConvertsToDCPAndBack(t *testing.T) {
 	t.Parallel()
 
 	vtt := "WEBVTT\n\n00:00:01.000 --> 00:00:02.000 line:80%,end\nOne\n"
-	s, _, err := stbox.Parse(bytes.NewReader([]byte(vtt)), stbox.ReadOptions{})
+	s, _, err := parseBytes([]byte(vtt), stbox.ReadOptions{})
 	require.NoError(t, err)
 	var out bytes.Buffer
 	_, err = stbox.Write(&out, s, stbox.DCP, stbox.WriteOptions{})
 	require.NoError(t, err)
 	assert.Contains(t, out.String(), `<Text Valign="bottom" Vposition="20">One</Text>`)
 
-	back, _, err := stbox.Parse(&out, stbox.ReadOptions{})
+	back, _, err := parseBytes(out.Bytes(), stbox.ReadOptions{})
 	require.NoError(t, err)
 	got, _ := back.Cue(0)
 	assert.Equal(t, stbox.BottomCenter, got.Position.Alignment)

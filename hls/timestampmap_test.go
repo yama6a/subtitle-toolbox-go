@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/hls"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/hls"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 func TestParseTimestampMap(t *testing.T) {

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // LineReader reads the lines of a stream. The text pre-pass of Prepare runs on the bytes before the

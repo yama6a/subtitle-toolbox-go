@@ -5,11 +5,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/ttmlwrite"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/ttmlwrite"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 //nolint:gochecknoglobals // the fixed Apple head
@@ -32,6 +32,10 @@ var fontRegexp = regexp.MustCompile(`(?i)<font\b([^>]*)>`)
 // The writer drops the stored head, styles and regions, keeps the top row or else the bottom region of a cue,
 // keeps only <b>, <i>, <u> and <font color>, and writes at least 1 frame for every cue.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	s, err := writing.SkipImageCues(s, model.ITT, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	if err := opts.Validate(); err != nil {
 		return WriteReport{}, err
 	}

@@ -4,7 +4,7 @@
 // cue settings, so the writer can write them back. A chapters file is a WebVTT file with one cue per chapter.
 package webvtt
 
-import "github.com/yama6a/subtitle-toolbox-go/v2/internal/vtt"
+import "github.com/yama6a/subtitle-toolbox-go/v3/internal/vtt"
 
 // ReadOptions holds the settings of the WebVTT reader. It has no fields yet.
 type ReadOptions struct{}

@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 const (
@@ -67,7 +67,7 @@ func FuzzSubtitleOps(f *testing.F) {
 var (
 	fuzzKeys = []string{
 		"ass", "csv", "lrc", "microdvd", "mpsub", "qttext", "sami", "subviewer", "ttml", "vtt", "dcp", "itt",
-		"mcc", "scc", "spruce-stl", "stl", "ffmeta-chapters", "srt", model.ImageKey, "whisper",
+		"mcc", "scc", "spruce-stl", "stl", "ffmeta-chapters", "srt", "image", "whisper",
 	}
 	fuzzFields = []string{
 		"header", "roles", "width", "delimiter", "timeFormat", "frameRate", "quotedColumns", "identifier", "text",

@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // fromTexts builds a subtitle with one cue per text, cue i from i s to i+1 s, as TestSubtitles::fromTexts of
@@ -537,6 +537,22 @@ func TestEditLines(t *testing.T) {
 			{Text: "before drop too", BeforeCue: 2},
 			{Text: "at the end", BeforeCue: 3},
 		}, s.Comments())
+	})
+
+	t.Run("keeps an image cue that lost its lines", func(t *testing.T) {
+		t.Parallel()
+
+		s := fromTexts("drop", "drop too")
+		setCue(t, s, 0, func(c *model.Cue) { c.Image = testImage() })
+
+		removed := s.EditLines(func(int, model.Cue) ([]string, bool) { return nil, true }, nil)
+
+		assert.Equal(t, []int{1}, removed)
+		c, ok := s.Cue(0)
+		require.True(t, ok)
+		assert.Empty(t, c.Lines)
+		assert.NotNil(t, c.Image)
+		assert.Equal(t, 1, s.Len())
 	})
 
 	t.Run("false keeps the cue", func(t *testing.T) {

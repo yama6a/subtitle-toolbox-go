@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // Rule names one fix. The value is the CLI name.
@@ -16,7 +16,7 @@ type Rule string
 
 // The rules, in run order.
 const (
-	// RuleAdCues removes a cue whose visible text names a subtitle download site. Off by default.
+	// RuleAdCues removes a cue whose visible text names a subtitle download site. An image cue stays, with no lines. Off by default.
 	RuleAdCues Rule = "adCues"
 	// RuleUnbalancedTags removes closing style tags without an opening tag, and closes style tags still open at
 	// the end of the cue.

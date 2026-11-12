@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/hls"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/golden"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/hls"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/golden"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 func TestSegment(t *testing.T) {
@@ -288,4 +288,41 @@ func TestSegmentGoldens(t *testing.T) {
 			assert.Len(t, entries, len(names)+1)
 		})
 	}
+}
+
+func TestSegmentImageCues(t *testing.T) {
+	t.Parallel()
+
+	image := &model.Image{Width: 2, Height: 2, ScreenWidth: 10, ScreenHeight: 10}
+	build := func(lines ...string) *model.Subtitle {
+		var s model.Subtitle
+		s.AddCue(model.Cue{Start: ms(1000), End: ms(2000), Lines: []string{"One"}})
+		s.AddCue(model.Cue{Start: ms(3000), End: ms(4000), Lines: lines, Image: image})
+		return &s
+	}
+	t.Run("an image cue without lines fails", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := hls.Segment(build(), hls.SegmentOptions{})
+		var uerr *model.UnwritableError
+		require.ErrorAs(t, err, &uerr)
+		assert.Equal(t, 1, uerr.CueIndex)
+	})
+	t.Run("SkipImageCues drops it", func(t *testing.T) {
+		t.Parallel()
+
+		r, err := hls.Segment(build(), hls.SegmentOptions{SkipImageCues: true})
+		require.NoError(t, err)
+		_, contents := segments(t, r)
+		require.Len(t, contents, 1)
+		assert.NotContains(t, contents[0], "00:00:03.000")
+	})
+	t.Run("an image cue with lines is a text cue", func(t *testing.T) {
+		t.Parallel()
+
+		r, err := hls.Segment(build("Two"), hls.SegmentOptions{})
+		require.NoError(t, err)
+		_, contents := segments(t, r)
+		assert.Contains(t, contents[0], "00:00:03.000 --> 00:00:04.000\nTwo")
+	})
 }

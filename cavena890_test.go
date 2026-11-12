@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
 )
 
 // TestCavena890Files loads each real file by its extension, because Cavena 890 has no signature. Each file writes back
@@ -46,7 +46,7 @@ func TestCavena890Files(t *testing.T) {
 				assert.True(t, bytes.Equal(raw, writeAs(t, s, stbox.Cavena890)), "round trip with encoded text")
 			}
 
-			_, _, err = stbox.Parse(bytes.NewReader(raw), stbox.ReadOptions{})
+			_, _, err = parseBytes(raw, stbox.ReadOptions{})
 			assert.ErrorIs(t, err, stbox.ErrUnknownFormat)
 		})
 	}

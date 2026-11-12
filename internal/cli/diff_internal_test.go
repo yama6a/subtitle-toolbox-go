@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
 )
 
 // diffDir returns a directory with the CLI fixtures and the two versions of the diff fixtures as v1.srt and v2.srt.

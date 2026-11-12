@@ -9,31 +9,32 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/cavena890"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/dcp"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/lrc"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpl2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/pac"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/qttext"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/sbv"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/sprucestl"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/tmplayer"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/cavena890"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/dcp"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/lrc"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/mpl2"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/qttext"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/sbv"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/tmplayer"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // The shapes of the Read, Write and Detect functions of a format package.
@@ -463,7 +464,11 @@ func writeTSV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts Wr
 	if opts.CSV.Delimiter == csv.DelimiterDefault {
 		opts.CSV.Delimiter = csv.Tab
 	}
-	_, err := csv.Write(w, s, common, opts.CSV)
+	s, err := writing.SkipImageCues(s, model.TSV, common)
+	if err != nil {
+		return WriteReport{}, err
+	}
+	_, err = csv.Write(w, s, common, opts.CSV)
 	return WriteReport{}, err
 }
 

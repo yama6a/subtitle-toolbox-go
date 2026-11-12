@@ -8,7 +8,7 @@ package stream
 import (
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // ReadOptions holds the settings of a stream reader.

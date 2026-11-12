@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
 )
 
 // hlsDir returns a directory with the CLI fixtures and the node-webvtt file as talk.vtt, plus the files in extra.

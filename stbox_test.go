@@ -5,17 +5,16 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 func TestParseUnsupportedFormat(t *testing.T) {
@@ -31,7 +30,7 @@ func TestParseUnsupportedFormat(t *testing.T) {
 		t.Run(string(f), func(t *testing.T) {
 			t.Parallel()
 
-			s, info, err := stbox.Parse(strings.NewReader("1\nHello\n"), stbox.ReadOptions{Format: f})
+			s, info, err := parseBytes([]byte("1\nHello\n"), stbox.ReadOptions{Format: f})
 			require.ErrorIs(t, err, stbox.ErrUnsupportedFormat)
 			require.NotErrorIs(t, err, stbox.ErrUnknownFormat)
 			assert.Nil(t, s)
@@ -55,7 +54,7 @@ func TestParseNoFormatFound(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, info, err := stbox.Parse(strings.NewReader(tt.content), stbox.ReadOptions{})
+			s, info, err := parseBytes([]byte(tt.content), stbox.ReadOptions{})
 			require.ErrorIs(t, err, stbox.ErrUnknownFormat)
 			require.ErrorIs(t, err, stbox.ErrUnsupportedFormat)
 			assert.Nil(t, s)
@@ -150,7 +149,7 @@ func TestWritePlainText(t *testing.T) {
 func TestParsePlainTextIsUnsupported(t *testing.T) {
 	t.Parallel()
 
-	_, _, err := stbox.Parse(strings.NewReader("Hello\n"), stbox.ReadOptions{Format: stbox.PlainText})
+	_, _, err := parseBytes([]byte("Hello\n"), stbox.ReadOptions{Format: stbox.PlainText})
 	require.ErrorIs(t, err, stbox.ErrUnsupportedFormat)
 	require.EqualError(t, err, "stbox: unsupported format: The format txt can be written but not read.")
 }

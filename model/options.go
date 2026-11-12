@@ -22,6 +22,8 @@ type CommonWriteOptions struct {
 	BOM BOM
 	// StripTags writes the text without markup. False keeps the markup that the format can hold.
 	StripTags bool
+	// SkipImageCues drops the image cues without lines. False makes a text writer return an *UnwritableError for the first one.
+	SkipImageCues bool
 }
 
 // LineEnding is the line ending that a writer uses.

@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
 )
 
 // helpWidth is the line width of the help in bytes, as PHP strlen counts. All help text is ASCII.

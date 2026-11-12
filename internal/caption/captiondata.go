@@ -3,10 +3,10 @@ package caption
 import (
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/cea608"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/cea708"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/cea708"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // CaptionDataCues returns the cues of a CEA-708 service. When service is 0, or the service gives no cue,

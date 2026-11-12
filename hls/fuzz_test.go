@@ -4,9 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/hls"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/hls"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 func FuzzParseTimestampMap(f *testing.F) {

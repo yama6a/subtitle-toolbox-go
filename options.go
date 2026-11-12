@@ -5,23 +5,23 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/pac"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/sprucestl"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v2/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v2/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
 // ReadOptions holds the settings of a read. The zero value reads with the defaults.
@@ -58,6 +58,9 @@ type ReadOptions struct {
 	EBUSTL ebustl.ReadOptions
 	// SpruceSTL holds the settings of the Spruce STL reader. The zero value guesses 25 or 30 fps from the frame numbers.
 	SpruceSTL sprucestl.ReadOptions
+	// Track is the number of the subtitle track to read from a video container. Zero reads the only subtitle track.
+	// Matroska and MP4 count from 1. MPEG-TS uses teletext page numbers from 100, or PIDs. A subtitle file needs 0.
+	Track int
 }
 
 // WriteOptions holds the settings of a write. The zero value writes with the defaults.
@@ -68,6 +71,8 @@ type WriteOptions struct {
 	BOM BOM
 	// StripTags writes the text without markup. False keeps the markup that the format can hold.
 	StripTags bool
+	// SkipImageCues drops the image cues without lines. False makes a text writer return an *UnwritableError for the first one.
+	SkipImageCues bool
 	// JSON holds the settings of the library JSON writer. The zero value writes compact JSON with format data.
 	JSON stboxjson.WriteOptions
 	// ASS holds the settings of the ASS and SSA writer. The zero value writes \k karaoke tags and keeps the styles.
@@ -115,11 +120,16 @@ type ReadInfo struct {
 	// Format is the format that the read used.
 	Format Format
 	// SourceEncoding is the encoding of the input: ReadOptions.Encoding as written, or the canonical name of the
-	// encoding that the read picked, for example "UTF-8" or "Windows-1252". It is "" for a binary format.
+	// encoding that the read picked, for example "UTF-8" or "Windows-1252". It is "" for a binary format and for a
+	// container track.
 	SourceEncoding string
 	// Warnings holds every warning of the read, in read order. A strict read can hold warnings too,
 	// for repairs that a reader makes in both modes.
 	Warnings []ParseWarning
+	// Container is the video container of the input, "" for a subtitle file.
+	Container Container
+	// Track is the number of the track that the read extracted, 0 for a subtitle file.
+	Track int
 }
 
 // Validate checks every field of o, also the fields of formats that a read does not use.
@@ -136,6 +146,12 @@ func (o ReadOptions) Validate() error {
 		return &InvalidArgumentError{
 			Option: "ReadOptions.LastCueDuration",
 			Msg:    fmt.Sprintf("The last cue duration must be 0 or more, got %s.", *o.LastCueDuration),
+		}
+	}
+	if o.Track < 0 {
+		return &InvalidArgumentError{
+			Option: "ReadOptions.Track",
+			Msg:    fmt.Sprintf("The track number must be 0 or more, got %d.", o.Track),
 		}
 	}
 	for _, check := range []func() error{o.SAMI.Validate, o.MicroDVD.Validate, o.CSV.Validate, o.SCC.Validate, o.MCC.Validate} {
@@ -179,7 +195,7 @@ func (o ReadOptions) common() model.CommonReadOptions {
 }
 
 func (o WriteOptions) common() model.CommonWriteOptions {
-	return model.CommonWriteOptions{LineEnding: o.LineEnding, BOM: o.BOM, StripTags: o.StripTags}
+	return model.CommonWriteOptions{LineEnding: o.LineEnding, BOM: o.BOM, StripTags: o.StripTags, SkipImageCues: o.SkipImageCues}
 }
 
 // Encodings returns the canonical names that ReadOptions.Encoding accepts, without the aliases of docs/encodings.md.

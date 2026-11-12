@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
 )
 
 // lenientRow is the expected result of a lenient and of a strict read of one fixture in testdata/lenient.
@@ -74,7 +74,7 @@ func TestLenientFixtures(t *testing.T) {
 			t.Run("lenient", func(t *testing.T) {
 				t.Parallel()
 
-				s, info, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: row.Format, Lenient: true})
+				s, info, err := parseBytes(content, stbox.ReadOptions{Format: row.Format, Lenient: true})
 				require.NoError(t, err)
 				assert.Equal(t, row.wantCues(), cueRows(s))
 				assert.Equal(t, row.wantWarnings(), row.matchEnds(warningRows(info.Warnings)))
@@ -82,7 +82,7 @@ func TestLenientFixtures(t *testing.T) {
 			t.Run("strict", func(t *testing.T) {
 				t.Parallel()
 
-				s, info, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: row.Format})
+				s, info, err := parseBytes(content, stbox.ReadOptions{Format: row.Format})
 				if row.Strict.Cues != nil {
 					require.NoError(t, err)
 					assert.Equal(t, *row.Strict.Cues, s.Len())

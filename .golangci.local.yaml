@@ -13,19 +13,19 @@ linters:
       # The CLI passes the errors of hls on unchanged, because its messages read their types.
       # The CLI passes the *InvalidArgumentError of timing and validation on unchanged, because its messages print it.
       ignore-package-globs:
-        - github.com/yama6a/subtitle-toolbox-go/v2/internal/*
-        - github.com/yama6a/subtitle-toolbox-go/v2/format/*
-        - github.com/yama6a/subtitle-toolbox-go/v2
-        - github.com/yama6a/subtitle-toolbox-go/v2/model
-        - github.com/yama6a/subtitle-toolbox-go/v2/refsync
-        - github.com/yama6a/subtitle-toolbox-go/v2/dual
-        - github.com/yama6a/subtitle-toolbox-go/v2/profanity
-        - github.com/yama6a/subtitle-toolbox-go/v2/diff
-        - github.com/yama6a/subtitle-toolbox-go/v2/fixing
-        - github.com/yama6a/subtitle-toolbox-go/v2/hearingimpaired
-        - github.com/yama6a/subtitle-toolbox-go/v2/timing
-        - github.com/yama6a/subtitle-toolbox-go/v2/hls
-        - github.com/yama6a/subtitle-toolbox-go/v2/validation
+        - github.com/yama6a/subtitle-toolbox-go/v3/internal/*
+        - github.com/yama6a/subtitle-toolbox-go/v3/format/*
+        - github.com/yama6a/subtitle-toolbox-go/v3
+        - github.com/yama6a/subtitle-toolbox-go/v3/model
+        - github.com/yama6a/subtitle-toolbox-go/v3/refsync
+        - github.com/yama6a/subtitle-toolbox-go/v3/dual
+        - github.com/yama6a/subtitle-toolbox-go/v3/profanity
+        - github.com/yama6a/subtitle-toolbox-go/v3/diff
+        - github.com/yama6a/subtitle-toolbox-go/v3/fixing
+        - github.com/yama6a/subtitle-toolbox-go/v3/hearingimpaired
+        - github.com/yama6a/subtitle-toolbox-go/v3/timing
+        - github.com/yama6a/subtitle-toolbox-go/v3/hls
+        - github.com/yama6a/subtitle-toolbox-go/v3/validation
   exclusions:
     rules:
       # Test helpers and test doubles pass errors on unchanged, such as io.EOF and the fs.PathError that names a file.

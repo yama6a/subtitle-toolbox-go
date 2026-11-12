@@ -29,7 +29,7 @@ fmt.Println(s.FormatDataKeys())
 - **Order**: an object keeps its key order, because writers depend on it. The ASS writer writes the `[Script Info]` keys in stored order.
 - **Integers**: always `int64`, so a 32-bit build reads the same values.
 - **Copies**: `SetFormatData` stores a deep copy, and `FormatData` returns one. A change to a returned `*Data` changes nothing until you pass it back.
-- **Keys**: the `Format` value of the format that owns the data, such as `ass`, `vtt` or `microdvd`. CSV and TSV share `csv`. The cue key `image` (`model.ImageKey`) holds image cue data. `FormatDataKeys` returns the keys sorted.
+- **Keys**: the `Format` value of the format that owns the data, such as `ass`, `vtt` or `microdvd`. CSV and TSV share `csv`. The cue key `image` is not format data. The image of a cue lives in `Cue.Image`, and `Cue.SetFormatData` rejects the key `image`. `FormatDataKeys` returns the keys sorted.
 - **Why one ordered type**: it keeps unknown fields and key order without a codec per format, and the PHP read goldens match it as they are. A typed struct per format would need a codec per format and lose unknown fields.
 
 ## Type checks
@@ -96,7 +96,6 @@ Data enters only through `SetFormatData`, which checks the fields that writers r
 | `srt` | `coordinates` object(!x1 int, !x2 int, !y1 int, !y2 int) |
 | `ttml` | `attributes` names(string), `div` names(string) |
 | `vtt` | `vertical`, `line`, `position`, `size`, `align`, `region`, each string |
-| `image` | `png` string of raw PNG bytes, `x`, `y`, `width`, `height`, `screenWidth`, `screenHeight` int, `forced` bool |
 | `dcp` | `subtitle` names(string), `texts` list(names(string)) |
 | `spruce-stl` | `commands` strings |
 | `stl` | `subtitleGroupNumber`, `cumulativeStatus`, `verticalPosition`, `justificationCode` int, `blocks` list(ttiBlock) |

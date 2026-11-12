@@ -33,7 +33,7 @@ Library JSON is also the conformance format of the port. Each PHP read golden ho
 | `cues[].position.row`, `.column` | integer or null | optional. 1-based, 0 or missing means none | `row`, `column` and `grid` together, when `Row` or `Column` is set |
 | `cues[].position.grid` | object `{rows, columns}` or null | optional. Each value is an integer | as above |
 | `cues[].position.offset` | object `{x, y}` or null | optional. Both are numbers from 0 to 100, in percent of the video | only when set |
-| `cues[].forced` | boolean | optional | only when true |
+| `cues[].forced` | boolean | optional | only when true, and never for an image cue, which holds the flag in `formatData.image.forced` |
 | `cues[].formatData` | object of objects | optional | always. Left out with `OmitFormatData` |
 
 - **Key order**: the writer uses the order of the table. The fields inside one format's data keep their stored order, because writers such as ASS depend on it.
@@ -59,6 +59,8 @@ A lenient read gives one warning per skipped or repaired entry.
 ## Binary values
 
 The writer writes each format data string that is not valid UTF-8 as `{"base64": "..."}`, at any depth. It uses the standard alphabet with padding. The PNG bytes of an image cue are the main case.
+
+The key `formatData.image` of a cue maps to `Cue.Image`. It holds `png`, `x`, `y`, `width`, `height`, `screenWidth`, `screenHeight` and `forced`. The reader sets `Cue.Forced` when `cues[].forced` or `image.forced` is true. The reader checks the image with `Image.Validate`, and an error names the field, for example `The field cues[3].formatData.image.width must be an integer.` An empty `image` object is no image, and the reader ignores keys of `image` that it does not know. With `OmitFormatData`, the image is not written.
 
 The reader decodes each object whose only key is `base64` with a string value. It decodes as PHP `base64_decode` in strict mode does. So it accepts missing padding and skips spaces, tabs, CR and LF.
 

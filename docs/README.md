@@ -25,7 +25,8 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [text.md](text.md) | case, replace, strip tags, right-to-left fixes, dialogue dashes, `hearingimpaired`: the removal of hearing-impaired annotations, `fixing`: the fixes of common text and OCR errors, and `profanity`: masked words and mute ranges |
 | [hls.md](hls.md) | package `hls` and `stbox hls`: the WebVTT segments, the playlist, the timestamp map and the joiner |
 | [cli.md](cli.md) | the `stbox` command: install, arguments, input and output files, `info`, `validate`, `sync`, `diff`, `dual`, `hls`, `formats` and exit codes |
-| [compatibility.md](compatibility.md) | what a release may change, and what stays the same for the whole 2.x line |
+| [compatibility.md](compatibility.md) | what a release may change, and what stays the same for the whole 3.x line |
 | [upgrade-2.0.md](upgrade-2.0.md) | the breaks of 2.0 with the old call and the new call, the new types, and the conversions that change output |
+| [upgrade-3.0.md](upgrade-3.0.md) | the breaks of 3.0 with the old call and the new call |
 | [runbooks/release.md](runbooks/release.md) | the release steps, the checks before a major release, and the checks after each release |
 | [php-differences.md](php-differences.md) | each behaviour that differs from PHP 5.x on purpose |

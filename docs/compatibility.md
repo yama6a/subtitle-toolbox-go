@@ -1,10 +1,10 @@
 # Backward compatibility
 
-The module follows semantic versioning. A 2.x minor or patch release does not break code that uses the parts below as this page describes. A break waits for 3.0, which has the module path `github.com/yama6a/subtitle-toolbox-go/v3`. [upgrade-2.0.md](upgrade-2.0.md) lists the breaks of 2.0.
+The module follows semantic versioning. A 3.x minor or patch release does not break code that uses the parts below as this page describes. A break waits for 4.0, which has the module path `github.com/yama6a/subtitle-toolbox-go/v4`. [upgrade-3.0.md](upgrade-3.0.md) lists the breaks of 3.0.
 
 ## Covered
 
-| Part | What stays stable in 2.x |
+| Part | What stays stable in 3.x |
 |:--- |:--- |
 | Go API | every exported identifier outside `internal/`: packages, types, functions, methods, constants, variables and struct fields. The compiler keeps callers out of `internal/`, so the module has no exported names for internal use |
 | Behaviour | the behaviour that these pages and the godoc describe, the default of each option, and the output of a conversion. Only a major release changes them, except for the changes that the sections below list |
@@ -12,7 +12,7 @@ The module follows semantic versioning. A 2.x minor or patch release does not br
 | CLI | the commands, the flags, the meaning of each exit code and the `--json` shapes of `stbox`. The CLI never overwrites a file. See [cli.md](cli.md) |
 | Library JSON | version 1 of the library JSON, its keys and its value types. See [json.md](json.md) |
 | Format data | the keys and the value types of the format data that `Subtitle.FormatData` and `Cue.FormatData` return. See [format-data.md](format-data.md) |
-| Module path | `github.com/yama6a/subtitle-toolbox-go/v2`, with the major suffix |
+| Module path | `github.com/yama6a/subtitle-toolbox-go/v3`, with the major suffix |
 
 ## Changes a minor or patch release can make
 
