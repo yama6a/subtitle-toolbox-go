@@ -60,6 +60,7 @@ var layers = map[string]layer{
 	"internal/caption":     layerModelUser,
 	"internal/ttmlwrite":   layerModelUser,
 	"internal/wordgroup":   layerModelUser,
+	"internal/bitmap":      layerModelUser,
 	"format/*":             layerFormat,
 	"container/*":          layerContainer,
 	".":                    layerFacade,
@@ -73,6 +74,7 @@ var layers = map[string]layer{
 	"dual":                 layerFacade,
 	"validation":           layerFacade,
 	"timing":               layerFacade,
+	"imaging":              layerFacade,
 	"internal/cli":         layerCLI,
 	"cmd/stbox":            layerCLI,
 }
