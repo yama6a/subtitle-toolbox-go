@@ -23,7 +23,8 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [statistics.md](statistics.md) | `stats` and the statistics of `stbox info`: counts, display time, reading speed, gaps and the most used words |
 | [validation.md](validation.md) | `validation` and `stbox validate`: the 19 rules, their units, the order of the violations and the command options |
 | [text.md](text.md) | case, replace, strip tags, right-to-left fixes, dialogue dashes, `hearingimpaired`: the removal of hearing-impaired annotations, `fixing`: the fixes of common text and OCR errors, and `profanity`: masked words and mute ranges |
-| [cli.md](cli.md) | the `stbox` command: install, arguments, input and output files, `info`, `validate`, `sync`, `diff`, `dual`, `formats` and exit codes |
+| [hls.md](hls.md) | package `hls` and `stbox hls`: the WebVTT segments, the playlist, the timestamp map and the joiner |
+| [cli.md](cli.md) | the `stbox` command: install, arguments, input and output files, `info`, `validate`, `sync`, `diff`, `dual`, `hls`, `formats` and exit codes |
 | [compatibility.md](compatibility.md) | what a release may change, and what stays the same for the whole 2.x line |
 | [upgrade-2.0.md](upgrade-2.0.md) | the breaks of 2.0 with the old call and the new call, the new types, and the conversions that change output |
 | [runbooks/release.md](runbooks/release.md) | the release steps, the checks before a major release, and the checks after each release |

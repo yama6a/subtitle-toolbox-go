@@ -423,6 +423,37 @@ stbox dual --primary movie.en.srt --secondary movie.de.srt --mode top-bottom --t
 - **Options**: `--mode` is `stack` or `top-bottom`. `--secondary-alignment` is a numpad value from 1 to 9, `--snap-tolerance` a time of 0 or more, and `--secondary-style` a core tag such as `i` or `font color="#ffff00"`.
 - **No `--keep-going`**: the command has one pair of files.
 
+## hls
+
+`stbox hls INPUT --output-dir DIR` cuts a subtitle into WebVTT segments with `hls.Segment` of [hls.md](hls.md) and writes a VOD media playlist for them. The output is always WebVTT, so the command has no `--to`, `-o`, `--line-ending`, `--bom` or `--no-bom` option.
+
+```
+stbox hls film.srt --output-dir subs --segment 6
+stbox hls film.srt --output-dir subs --segment 00:10 --mpegts 126000 --local 10 --pattern part%03d.vtt --playlist index.m3u8 --media-duration 00:02:30
+```
+
+| Option | Value | Default | Library |
+|:--- |:--- |:--- |:--- |
+| `--output-dir DIR` | a path. Required | | the directory of the segments and the playlist |
+| `--segment SECONDS` | a time above 0 | 6 | `SegmentDuration` |
+| `--playlist NAME` | a file name, may hold `../` | `subs.m3u8` | |
+| `--pattern PATTERN` | a printf pattern with one `%d` | `sub%d.vtt` | `FileNamePattern` |
+| `--mpegts TICKS` | a whole number of 0 or more | 900000 | `Map.MPEGTS` |
+| `--local SECONDS` | a time of 0 or more | 0 | `Map.Local` |
+| `--media-duration SECONDS` | a time above 0 | the end of the last cue | `MediaDuration` |
+
+- **Input options**: `--from`, `--encoding`, `--lenient`, `--input-fps`, `--fps` and `--scc-roll-up` work as for `diff`. There is no `--keep-going`, because the command has one input.
+- **Checks before the read**: each failure exits 2 and writes nothing.
+  - 2 or more inputs: `The hls command takes one input file, got N.`
+  - The playlist has the name of a segment, for example `--playlist sub0.vtt`.
+  - The input is the playlist or a segment, so the run would overwrite it.
+  - The playlist exists, or a file of the segment folder matches the pattern for any number. The run does not know the segment count before the read.
+- **Segment folder**: `--output-dir` plus the part of `--pattern` up to the last `/` before the first `%` that is not `%%`. So `--pattern ../seg%d.vtt` puts the segments in `DIR/..`.
+- **Pattern match**: a file name matches when the pattern reads a number of 0 or more from it, and printing that number with the pattern gives the same name. So `sub01.vtt` does not match `sub%d.vtt`.
+- **Writing**: each segment, then the playlist. A failed write removes the files and the directories of the run, and the command exits 3.
+- **Output**: `film.srt -> subs/subs.m3u8, 4 segments` on stdout. The directory has no trailing slash.
+- **Failure**: a read error or a subtitle without a cue and without `--media-duration` exits 3.
+
 ## formats
 
 `stbox formats` lists the formats that can be read or written, in registry order. The names are the values of `--from` and `--to`. It takes no argument and no option except `-h`.

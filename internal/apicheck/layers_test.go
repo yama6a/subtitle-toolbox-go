@@ -73,6 +73,7 @@ var layers = map[string]layer{
 	"dual":                 layerFacade,
 	"validation":           layerFacade,
 	"timing":               layerFacade,
+	"hls":                  layerFacade,
 	"internal/cli":         layerCLI,
 	"cmd/stbox":            layerCLI,
 }

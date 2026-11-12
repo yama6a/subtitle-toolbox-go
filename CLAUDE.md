@@ -25,6 +25,7 @@ stats/ stream/ hearingimpaired/ fixing/ profanity/ refsync/ diff/ dual/
                The 1.x services. A service never imports the root package
 validation/    The 2.x service that checks a subtitle against rules. It follows the same layer rule
 timing/        The 2.x service that moves cue times to shot changes and frames. Same layer rule
+hls/           The service that cuts a subtitle into HLS WebVTT segments and joins segments. Same layer rule
 internal/      Helpers: markupcore, linewrap, timecode, textenc, extfallback, grapheme, ssatag, phpkey, stringlist, xmlraw, paragraphs, blocks, subrip,
                vtt, position, parsing, writing, ttmlwrite, cli, and the test helpers testfiles and golden
 cmd/stbox/     The CLI main. Wiring, no business logic
