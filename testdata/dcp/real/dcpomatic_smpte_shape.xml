@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SubtitleReel xmlns="http://www.smpte-ra.org/schemas/428-7/2010/DCST" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Id>urn:uuid:5d7f9b1c-3e5a-4c7e-8f1a-3b5d7f9a1c3e</Id>
+  <ContentTitleText>Harbour Lights</ContentTitleText>
+  <IssueDate>2026-04-01T09:30:00</IssueDate>
+  <ReelNumber>1</ReelNumber>
+  <Language>de</Language>
+  <EditRate>24 1</EditRate>
+  <TimeCodeRate>24</TimeCodeRate>
+  <StartTime>00:00:00:00</StartTime>
+  <LoadFont ID="font">urn:uuid:7e9a1c3e-5f7b-4d9f-a1c3-5e7a9c1e3f5a</LoadFont>
+  <SubtitleList>
+    <Font AspectAdjust="1.0" Color="FFFFFFFF" Effect="none" EffectColor="FF000000" ID="font" Italic="no" Script="normal" Size="48" Underline="no" Weight="normal">
+      <Subtitle SpotNumber="1" TimeIn="00:00:05:00" TimeOut="00:00:07:03" FadeUpTime="00:00:00:00" FadeDownTime="00:00:00:00">
+        <Text Valign="bottom" Vposition="15">Die Fähre fährt um neun,</Text>
+        <Text Valign="bottom" Vposition="8">vom Nordkai.</Text>
+      </Subtitle>
+      <Subtitle SpotNumber="2" TimeIn="00:00:08:12" TimeOut="00:00:10:18" FadeUpTime="00:00:00:00" FadeDownTime="00:00:00:00">
+        <Text Valign="bottom" Vposition="8">Karten <Font Weight="bold">nur</Font> am Kiosk.</Text>
+      </Subtitle>
+    </Font>
+  </SubtitleList>
+</SubtitleReel>

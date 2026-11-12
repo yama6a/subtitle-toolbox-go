@@ -21,7 +21,7 @@ var update = flag.Bool("update", false, "rewrite the write golden files")
 
 // roundTripFolders holds the folders whose every real file is a round trip case.
 func roundTripFolders() []string {
-	return []string{"ass", "lrc", "microdvd", "mpl2", "mpsub", "qttext", "sami", "sbv", "spruce-stl", "srt", "subviewer", "tmplayer", "vtt"}
+	return []string{"ass", "dcp", "lrc", "microdvd", "mpl2", "mpsub", "qttext", "sami", "sbv", "spruce-stl", "srt", "subviewer", "tmplayer", "vtt"}
 }
 
 // roundTripFile is a round trip case in a folder that roundTripFolders does not hold. Its golden is
@@ -59,6 +59,12 @@ func conversions() []conversion {
 		{"csv", "mantas_done_shape.csv", stbox.ASS, ""},
 		{"csv", "own_openai_whisper.tsv", stbox.SubRip, ""},
 		{"csv", "own_whisper_cpp.csv", stbox.SubRip, ""},
+		{"dcp", "monal_interop_shape.xml", stbox.SubRip, ""},
+		{"dcp", "monal_interop_shape.xml", stbox.WebVTT, ""},
+		{"dcp", "monal_interop_shape.xml", stbox.ASS, ""},
+		{"dcp", "subtitle_edit_smpte2014_shape.xml", stbox.SubRip, ""},
+		{"dcp", "subtitle_edit_smpte2014_shape.xml", stbox.WebVTT, ""},
+		{"dcp", "subtitle_edit_smpte2014_shape.xml", stbox.ASS, ""},
 		{"itt", "fcp_23976_styles.itt", stbox.SubRip, ""},
 		{"itt", "fcp_23976_styles.itt", stbox.WebVTT, ""},
 		{"itt", "fcp_23976_styles.itt", stbox.ASS, ""},

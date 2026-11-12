@@ -1,0 +1,132 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Harbour Lights"
+        },
+        "comments": [],
+        "formatData": {
+            "dcp": {
+                "dialect": "interop",
+                "attributes": {
+                    "Version": "1.0"
+                },
+                "header": {
+                    "SubtitleID": "3b5a8c1e-2f4d-4e6a-9b7c-0d1e2f3a4b5c",
+                    "MovieTitle": "Harbour Lights",
+                    "ReelNumber": "1",
+                    "Language": "English"
+                },
+                "loadFonts": [
+                    {
+                        "attributes": {
+                            "Id": "font",
+                            "URI": "font.ttf"
+                        },
+                        "text": ""
+                    }
+                ],
+                "font": {
+                    "AspectAdjust": "1.0",
+                    "Color": "FFFFFFFF",
+                    "Effect": "border",
+                    "EffectColor": "FF000000",
+                    "Id": "font",
+                    "Italic": "no",
+                    "Script": "normal",
+                    "Size": "42",
+                    "Underlined": "no",
+                    "Weight": "normal"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 5.0,
+                "end": 7.5,
+                "lines": [
+                    "The ferry leaves at nine,",
+                    "from the north pier."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "dcp": {
+                        "subtitle": {
+                            "SpotNumber": "1",
+                            "TimeIn": "00:00:05:000",
+                            "TimeOut": "00:00:07:125",
+                            "FadeUpTime": "20",
+                            "FadeDownTime": "20"
+                        },
+                        "texts": [
+                            {
+                                "VAlign": "bottom",
+                                "VPosition": "15"
+                            },
+                            {
+                                "VAlign": "bottom",
+                                "VPosition": "8"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 8.2,
+                "end": 10.8,
+                "lines": [
+                    "Tickets at the <i>kiosk</i>, please."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "dcp": {
+                        "subtitle": {
+                            "SpotNumber": "2",
+                            "TimeIn": "00:00:08:050",
+                            "TimeOut": "00:00:10:200",
+                            "FadeUpTime": "20",
+                            "FadeDownTime": "20"
+                        },
+                        "texts": [
+                            {
+                                "VAlign": "bottom",
+                                "VPosition": "8"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 11.0,
+                "end": 13.0,
+                "lines": [
+                    "HARBOUR MASTER"
+                ],
+                "identifier": null,
+                "alignment": 7,
+                "formatData": {
+                    "dcp": {
+                        "subtitle": {
+                            "SpotNumber": "3",
+                            "TimeIn": "00:00:11:000",
+                            "TimeOut": "00:00:13:000",
+                            "FadeUpTime": "20",
+                            "FadeDownTime": "20"
+                        },
+                        "texts": [
+                            {
+                                "HAlign": "left",
+                                "HPosition": "10",
+                                "VAlign": "top",
+                                "VPosition": "10"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

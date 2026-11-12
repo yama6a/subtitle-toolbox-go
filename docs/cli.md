@@ -430,6 +430,7 @@ stl         .stl              yes   yes
 spruce-stl  .stl              yes   yes
 subviewer   .sub              yes   yes
 ttml        .ttml .dfxp .xml  yes   yes
+dcp         .xml              yes   yes
 tsv         .tsv              yes   yes
 txt         .txt              no    yes
 mpl2        .txt              yes   yes

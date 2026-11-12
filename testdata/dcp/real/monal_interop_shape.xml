@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Monal 2008 - v6.1.1.1-->
+<!--Sync - "FFP" - 00:00:00:00-->
+<!--Running Speed - 24fps-->
+<DCSubtitle Version="1.0">
+   <SubtitleID>8f2e4a6c-1b3d-4f5e-a7c9-2d4f6b8a0c1e</SubtitleID>
+   <MovieTitle>THE LIGHTHOUSE</MovieTitle>
+   <ReelNumber>2</ReelNumber>
+   <Language>English</Language>
+   <LoadFont Id="Font1" URI="2-dci.ttf" />
+   <Font Effect="border" Size="42" Id="Font1">
+      <Subtitle SpotNumber="1" TimeIn="00:00:51:000" TimeOut="00:00:52:125">
+         <Text HAlign="center" HPosition="0.0" VAlign="bottom" VPosition="7">
+            <Font>Over here.</Font>
+         </Text>
+      </Subtitle>
+      <Font Italic="yes">
+         <Subtitle SpotNumber="2" TimeIn="00:01:30:020" TimeOut="00:01:33:031">
+            <Text HAlign="center" HPosition="0.0" VAlign="bottom" VPosition="7">
+               <Font>the lamp still turns.</Font>
+            </Text>
+            <Text HAlign="center" HPosition="0.0" VAlign="bottom" VPosition="14">
+               <Font>Every night at dusk</Font>
+            </Text>
+         </Subtitle>
+      </Font>
+      <Subtitle SpotNumber="3" TimeIn="00:01:34:000" TimeOut="00:01:36:000">
+         <Text HAlign="center" HPosition="0.0" VAlign="bottom" VPosition="7">
+            <Font Color="FFFFFF00">Keep the door shut.</Font>
+         </Text>
+      </Subtitle>
+   </Font>
+</DCSubtitle>

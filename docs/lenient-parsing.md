@@ -128,6 +128,22 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Time limit**: the limit applies to the expression and to its sum with the times of the parents, after the rounding to whole milliseconds. So `99999999999999999999:00:04.000` fails in both modes.
 - **Order**: the text warning, the entity warning and the repair warning come first, then the frame rate warning, then the warnings of the containers and paragraphs in document order.
 
+## DCP subtitles
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| text before the XML, such as a credit line | `The file has text before the XML: "L".` on the line of the text | skips it. The message plus ` The parser skipped it.` `Repaired`, the skipped lines |
+| a `<Subtitle>` that holds an `Image` and no `Text` | `The subtitle at T is an image. The parser reads only text subtitles.` T is the `TimeIn` as written | skips the subtitle. `Skipped`, on the line of the `<Subtitle>` |
+| a time that is no DCP time code, or an EE at or above the rate | `The time "T" is not a DCP time code at R units per second.` | skips the subtitle |
+| a time of 100000 hours or more | `The time "T" is not below 100000 hours.` | skips the subtitle |
+| a subtitle that ends before it starts | `The cue ends at E s, before it starts at S s.` | swaps the times when the cue then lasts 30 s or less. `Repaired`. Else skips the subtitle |
+| XML that is not well-formed, also text that is not valid UTF-8 | `The content is not well-formed XML.` | the same error. The reader does no repair |
+| a root that is not `<DCSubtitle>` or `<SubtitleReel>` | `The root element must be <DCSubtitle> or <SubtitleReel>, not <NAME>.` | the same error |
+
+- **Block numbers**: none. A warning of DCP subtitles has `NoBlock` and no lines, except the text before the XML.
+- **Line numbers**: the line of the `<Subtitle>` element, which is the line of the `>` that ends its start tag.
+- **R**: the rate prints as PHP prints a float: `250`, `25`.
+
 ## SAMI
 
 | Damage | Strict | Lenient |
