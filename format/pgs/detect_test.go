@@ -25,6 +25,7 @@ func TestDetect(t *testing.T) {
 		{name: "palette segment", content: header(0x14), want: true},
 		{name: "object segment", content: header(0x15), want: true},
 		{name: "composition segment, PTS with CR LF", content: header(0x16), want: true},
+		{name: "PTS 0x000D0A00 that PHP does not detect", content: []byte("PG\x00\x0D\x0A\x00\x00\x00\x00\x00\x16"), want: true},
 		{name: "window segment", content: header(0x17), want: true},
 		{name: "end segment", content: header(0x80), want: true},
 		{name: "unknown segment type", content: header(0x13)},

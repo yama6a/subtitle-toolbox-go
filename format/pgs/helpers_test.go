@@ -26,7 +26,7 @@ const (
 // yccEntry is the Y, Cr, Cb code and the alpha of a palette entry.
 type yccEntry [4]byte
 
-// testPalette holds the palette of the PHP fixtures, plus a half transparent white. Yellow is 255, 255, 0 in BT.709.
+// testPalette holds the palette of the PHP fixtures, plus a half transparent white. Yellow is 254, 255, 0 in BT.709.
 var testPalette = map[byte]yccEntry{
 	transparent: {16, 128, 128, 0},
 	white:       {235, 128, 128, 255},

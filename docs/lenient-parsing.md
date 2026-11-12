@@ -307,7 +307,7 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 
 ## PGS
 
-All errors are `*ParseError` values with the format `pgs` and line 0. T is the time of the PCS in seconds, I is the index of the composition object in its PCS, ID is the object id. Each warning is `Skipped` with no line and no lines. Its block is the count of segments read up to the damage, with the damaged segment for damage inside a segment.
+All errors are `*ParseError` values with the format `pgs` and line 0. T is the time of the PCS in whole milliseconds, written in seconds such as `1 s`, I is the index of the composition object in its PCS, ID is the object id. Each warning is `Skipped` with no line and no lines. Its block is the count of segments read up to the damage, with the damaged segment for damage inside a segment.
 
 | Damage | Strict | Lenient |
 |:--- |:--- |:--- |

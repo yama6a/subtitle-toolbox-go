@@ -161,6 +161,13 @@ func TestReadDisplaySets(t *testing.T) {
 			want: []wantCue{{start: seconds(1), end: seconds(2), rect: [4]int{0, 0, 2, 1}, top: true, indexed: true}},
 		},
 		{
+			name: "a display set before the start of the shown cue gives a cue of length 0",
+			build: func() *builder {
+				return new(builder).shows(ticks(2), w, h, line(0, 0, 900, "\x01")).clears(ticks(1), w, h)
+			},
+			want: []wantCue{{start: seconds(2), end: seconds(2), rect: [4]int{0, 900, 1, 1}, indexed: true}},
+		},
+		{
 			name: "a reference to an unknown object is skipped",
 			build: func() *builder {
 				return new(builder).presentation(ticks(1), w, h, stateEpochStart, 0, line(0, 0, 900, ""), line(9, 0, 0, "")).

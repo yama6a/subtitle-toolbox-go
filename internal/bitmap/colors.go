@@ -37,9 +37,9 @@ func ToRGB(y, cr, cb byte, m Matrix) (r, g, b byte) {
 	luma := float64((int(y)-lumaMin)*255) / lumaRange
 	red := float64((int(cr)-chromaZero)*255) / chromaRange
 	blue := float64((int(cb)-chromaZero)*255) / chromaRange
-	return clamp(luma + float64(2*(1-m.Kr))*red),
+	return clamp(luma + float64(float64(2*(1-m.Kr))*red)),
 		clamp(luma - float64(float64(2*m.Kb*(1-m.Kb))/kg*blue) - float64(float64(2*m.Kr*(1-m.Kr))/kg*red)),
-		clamp(luma + float64(2*(1-m.Kb))*blue)
+		clamp(luma + float64(float64(2*(1-m.Kb))*blue))
 }
 
 func clamp(v float64) byte {

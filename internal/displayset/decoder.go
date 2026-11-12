@@ -170,8 +170,6 @@ func timeOf(pts int64) time.Duration {
 	return time.Duration((pts+ticksPerMilli/2)/ticksPerMilli) * time.Millisecond
 }
 
-func seconds(t time.Duration) string { return timecode.Seconds(t) }
-
 // errorMessage returns the message of an error of package bitmap or model.
 func errorMessage(err error) string {
 	var perr *model.ParseError
@@ -206,7 +204,7 @@ func (d *Decoder) readComposition(pts int64, data []byte) error {
 // state clears the palettes, objects and windows first.
 func (d *Decoder) parseComposition(t time.Duration, data []byte) (*composition, string) {
 	if len(data) < compositionHeader {
-		return nil, "The presentation composition segment at " + seconds(t) + " s is cut off."
+		return nil, "The presentation composition segment at " + timecode.Seconds(t) + " s is cut off."
 	}
 	if data[7]&stateEpochStart != 0 {
 		clear(d.palettes)
@@ -223,7 +221,7 @@ func (d *Decoder) parseComposition(t time.Duration, data []byte) (*composition, 
 	pos := compositionHeader
 	for i := range int(data[10]) {
 		if len(data) < pos+compositionObject {
-			return nil, "The composition object " + strconv.Itoa(i) + " at " + seconds(t) + " s is cut off."
+			return nil, "The composition object " + strconv.Itoa(i) + " at " + timecode.Seconds(t) + " s is cut off."
 		}
 		ref := reference{
 			id:       binary.BigEndian.Uint16(data[pos:]),
@@ -236,7 +234,7 @@ func (d *Decoder) parseComposition(t time.Duration, data []byte) (*composition, 
 		pos += compositionObject
 		if ref.cropped {
 			if len(data) < pos+cropping {
-				return nil, "The cropping of composition object " + strconv.Itoa(i) + " at " + seconds(t) + " s is cut off."
+				return nil, "The cropping of composition object " + strconv.Itoa(i) + " at " + timecode.Seconds(t) + " s is cut off."
 			}
 			ref.crop = window{
 				int(binary.BigEndian.Uint16(data[pos:])), int(binary.BigEndian.Uint16(data[pos+2:])),
@@ -287,6 +285,7 @@ func (d *Decoder) readObject(data []byte) error {
 		}
 		return nil
 	}
+	delete(d.objects, id)
 	var damage string
 	switch {
 	case len(data) < firstObjectHeader:
@@ -394,7 +393,7 @@ func (d *Decoder) part(c *composition, ref reference, colors *[256]uint32) (part
 	size := obj.width * obj.height
 	indexes, got := decodeRLE(obj.rle, size)
 	if got < size {
-		return bitmap.Part{}, false, "Object " + strconv.Itoa(int(ref.id)) + " at " + seconds(c.time) + " s has " + strconv.Itoa(got) +
+		return bitmap.Part{}, false, "Object " + strconv.Itoa(int(ref.id)) + " at " + timecode.Seconds(c.time) + " s has " + strconv.Itoa(got) +
 			" pixels of run-length data, but its size of " + strconv.Itoa(obj.width) + "x" + strconv.Itoa(obj.height) +
 			" needs " + strconv.Itoa(size) + "."
 	}
