@@ -39,10 +39,7 @@ func LineEnding(body []byte, common model.CommonWriteOptions) []byte {
 
 // Write finishes body and writes it to w in one call. The output on w is incomplete after an error.
 func Write(w io.Writer, f model.Format, body []byte, common model.CommonWriteOptions, formatBOM bool) error {
-	if _, err := w.Write(Finish(body, common, formatBOM)); err != nil {
-		return fmt.Errorf("write %s: %w", f, err)
-	}
-	return nil
+	return WriteBytes(w, f, Finish(body, common, formatBOM))
 }
 
 // WordJoiner is U+2060 WORD JOINER. A writer puts it into cue text that its reader would read as structure, such as a

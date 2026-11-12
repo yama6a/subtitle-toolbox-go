@@ -3,6 +3,7 @@ package ebustl_test
 import (
 	"bytes"
 	"encoding/hex"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -345,26 +346,40 @@ func TestWriteComments(t *testing.T) {
 func TestWriteInvalidInput(t *testing.T) {
 	t.Parallel()
 
-	storedTable := func(cct string) *model.Subtitle {
-		s := newSubtitle("a")
-		require.NoError(t, s.SetFormatData("stl", model.NewData(model.Field{Key: "gsi", Value: model.NewData(model.Field{Key: "CCT", Value: cct})})))
+	withData := func(s *model.Subtitle, fields ...model.Field) *model.Subtitle {
+		require.NoError(t, s.SetFormatData("stl", model.NewData(fields...)))
 		return s
 	}
-	first := newSubtitle("a")
-	require.NoError(t, first.SetFormatData("stl", model.NewData(model.Field{Key: "firstSubtitleNumber", Value: int64(65535)})))
-	two := newSubtitle("a", "b")
-	require.NoError(t, two.SetFormatData("stl", model.NewData(model.Field{Key: "firstSubtitleNumber", Value: int64(65535)})))
+	table := func(cct string) model.Field {
+		return model.Field{Key: "gsi", Value: model.NewData(model.Field{Key: "CCT", Value: cct})}
+	}
+	first := model.Field{Key: "firstSubtitleNumber", Value: int64(65535)}
 
 	tests := []struct {
-		name string
-		s    *model.Subtitle
-		opts ebustl.WriteOptions
-		want string
+		name     string
+		s        *model.Subtitle
+		opts     ebustl.WriteOptions
+		want     string
+		option   string
+		cueIndex int
 	}{
-		{"frame rate 24", newSubtitle("a"), ebustl.WriteOptions{FrameRate: model.FrameRate{Num: 24, Den: 1}}, "The EBU STL formatter writes 25 or 30 fps, got 24."},
-		{"stored table 05", storedTable("05"), ebustl.WriteOptions{}, `The character code table "05" is not 00, 01, 02, 03 or 04.`},
-		{"too many blocks", newSubtitle(strings.Repeat("a", 112*242)), ebustl.WriteOptions{}, "The cue text needs more than 241 TTI blocks."},
-		{"subtitle number 65536", two, ebustl.WriteOptions{}, "EBU STL allows subtitle numbers up to 65535."},
+		{
+			name: "frame rate 24", s: newSubtitle("a"), opts: ebustl.WriteOptions{FrameRate: model.FrameRate{Num: 24, Den: 1}},
+			want: "The EBU STL formatter writes 25 or 30 fps, got 24.", option: "WriteOptions.EBUSTL.FrameRate",
+		},
+		{
+			name: "stored table 05", s: withData(newSubtitle("a"), table("05")),
+			want: `The character code table "05" is not 00, 01, 02, 03 or 04.`,
+		},
+		{
+			name: "too many blocks in cue 1", s: newSubtitle("a", strings.Repeat("a", 112*242)),
+			want: "The cue text needs more than 241 TTI blocks.", cueIndex: 1,
+		},
+		{
+			name: "subtitle number 65536", s: withData(newSubtitle("a", "b"), first),
+			want: "EBU STL allows subtitle numbers up to 65535.", cueIndex: -1,
+		},
+		{name: "subtitle number 65535 is the last one", s: withData(newSubtitle("a"), first)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -372,11 +387,85 @@ func TestWriteInvalidInput(t *testing.T) {
 
 			var out bytes.Buffer
 			_, err := ebustl.Write(&out, tt.s, model.CommonWriteOptions{}, tt.opts)
+			if tt.want == "" {
+				require.NoError(t, err)
+				return
+			}
 			require.Error(t, err)
-			assert.Contains(t, err.Error(), tt.want)
 			assert.Empty(t, out.Bytes())
+			var invalid *model.InvalidArgumentError
+			var unwritable *model.UnwritableError
+			switch {
+			case errors.As(err, &unwritable):
+				assert.Equal(t, tt.cueIndex, unwritable.CueIndex)
+				assert.Equal(t, tt.want, unwritable.Reason)
+				assert.Equal(t, model.EBUSTL, unwritable.Format)
+			case errors.As(err, &invalid):
+				assert.Equal(t, tt.option, invalid.Option)
+				assert.Equal(t, tt.want, invalid.Msg)
+			default:
+				t.Fatalf("Write returned %v, which is neither an *InvalidArgumentError nor an *UnwritableError", err)
+			}
 		})
 	}
-	_, err := ebustl.Write(&bytes.Buffer{}, first, model.CommonWriteOptions{}, ebustl.WriteOptions{})
-	assert.NoError(t, err, "65535 is the last subtitle number")
+}
+
+func TestWriteRetimeAndMetadataKeepTheStoredText(t *testing.T) {
+	t.Parallel()
+
+	t.Run("a shift patches every block and TCF", func(t *testing.T) {
+		t.Parallel()
+
+		content := testfiles.Read(t, "stl/real/bakery_teletext_25fps.stl")
+		s, _ := readBytes(t, content, ebustl.ReadOptions{})
+		for i, c := range s.All() {
+			c.Start += time.Second
+			c.End += time.Second
+			require.NoError(t, s.SetCue(i, c))
+		}
+		out, _ := writeSubtitle(t, s, model.CommonWriteOptions{}, ebustl.WriteOptions{})
+		require.Len(t, out, len(content))
+		assert.Equal(t, "10000200", string(out[264:272]))
+		assert.Equal(t, []byte{0x0A, 0, 2, 0, 0x0A, 0, 4, 0x0C}, out[1024+5:1024+13])
+		multi := 0
+		for i := 1024; i < len(out); i += 128 {
+			assert.Equal(t, content[i+16:i+128], out[i+16:i+128], "block at %d keeps its text", i)
+			for j := 1024; j < len(out); j += 128 {
+				if out[j+1] == out[i+1] && out[j+2] == out[i+2] {
+					assert.Equal(t, out[i+5:i+13], out[j+5:j+13], "blocks of one set share the time codes")
+					if i != j {
+						multi++
+					}
+				}
+			}
+		}
+		assert.Positive(t, multi, "the file has a set of several blocks")
+	})
+
+	t.Run("new metadata changes OPT and LC", func(t *testing.T) {
+		t.Parallel()
+
+		content := testfiles.Read(t, "stl/real/harbour_open_30fps.stl")
+		s, _ := readBytes(t, content, ebustl.ReadOptions{})
+		s.SetMetadata(model.MetadataTitle, "Port de p\u00eache")
+		s.SetMetadata(model.MetadataLanguage, "nl-BE")
+		out, _ := writeSubtitle(t, s, model.CommonWriteOptions{}, ebustl.WriteOptions{})
+		assert.Equal(t, "STL30.01", string(out[3:11]))
+		assert.Equal(t, "2A", string(out[14:16]))
+		assert.Equal(t, "Port de p\x88che"+strings.Repeat(" ", 32-13), string(out[16:48]))
+		assert.Equal(t, content[1024:], out[1024:])
+	})
+}
+
+func TestWriteStoredCommentWithoutBlocksIsWrittenAgain(t *testing.T) {
+	t.Parallel()
+
+	s := newSubtitle("One")
+	require.NoError(t, s.AddComment("Note", 0))
+	comment := model.NewData(model.Field{Key: "text", Value: "Note"}, model.Field{Key: "blocks", Value: []any{}})
+	require.NoError(t, s.SetFormatData("stl", model.NewData(model.Field{Key: "comments", Value: []any{comment}})))
+	out, _ := writeSubtitle(t, s, model.CommonWriteOptions{}, ebustl.WriteOptions{})
+	require.Len(t, out, 1024+2*128)
+	assert.Equal(t, byte(1), out[1024+15], "the comment is written")
+	assert.Equal(t, byte(2), out[1024+128+1], "the cue takes the next subtitle number")
 }

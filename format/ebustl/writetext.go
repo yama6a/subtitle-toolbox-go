@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v2/internal/codepage"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
@@ -237,7 +238,7 @@ func encodeGSI(gsi map[string]string) ([]byte, []Replacement) {
 			}
 			c, ok := table.EncodeRune(r)
 			if !ok {
-				c = '?'
+				c = codepage.Replacement
 				replaced = append(replaced, Replacement{CueIndex: -1, Field: f.name, Character: r})
 			}
 			field = append(field, c)

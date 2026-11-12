@@ -257,7 +257,7 @@ func (wr *writer) sets(s *model.Subtitle, stored []storedComment) ([]set, error)
 // commentBlocks returns the stored blocks of the first unused comment with the same text, else new blocks.
 func (wr *writer) commentBlocks(text string, stored *[]storedComment, tc [4]byte) ([][]byte, error) {
 	for i, c := range *stored {
-		if c.text == text && c.blocks != nil {
+		if c.text == text && len(c.blocks) > 0 {
 			*stored = slices.Delete(*stored, i, i+1)
 			return c.blocks, nil
 		}
