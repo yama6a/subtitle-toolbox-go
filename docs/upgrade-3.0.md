@@ -45,4 +45,4 @@ The size is the number of bytes to read. A negative size returns an `*InvalidArg
 | `ReadInfo.Container` and `ReadInfo.Track` | the container and the track number of a container read. They are empty for a subtitle file |
 | `ContainerHeadSize` | the 389 bytes at the start of a file that `Detect` needs to find a container |
 
-v3.0.0 has no container reader yet. A read or `Tracks` call on a video file returns an error that matches `ErrUnsupportedFormat`. The 3.x minor releases add Matroska, MP4 and MPEG-TS.
+v3.0.0 has no container reader. A read or `Tracks` call on a video file returns an error that matches `ErrUnsupportedFormat`. The 3.x minor releases add the readers. Matroska and WebM come first, see [containers.md](containers.md). MP4 and MPEG-TS follow.

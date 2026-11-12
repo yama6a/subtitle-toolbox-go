@@ -1,6 +1,7 @@
 package stbox_test
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -85,4 +86,23 @@ func ExampleDetect() {
 	// "srt" true
 	// "json" true
 	// "" false
+}
+
+func ExampleTracks() {
+	b, err := os.ReadFile("testdata/mkv/mkvmerge.mkv")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	tracks, err := stbox.Tracks(bytes.NewReader(b), int64(len(b)))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for _, t := range tracks {
+		fmt.Println(t.Container, t.Number, t.CodecID, t.Format)
+	}
+	// Output:
+	// matroska 2 S_TEXT/UTF8 srt
+	// matroska 3 S_TEXT/ASS ass
 }
