@@ -78,6 +78,7 @@ const (
 	LRC           = model.LRC
 	MicroDVD      = model.MicroDVD
 	MPSub         = model.MPSub
+	PAC           = model.PAC
 	SAMI          = model.SAMI
 	SBV           = model.SBV
 	SCC           = model.SCC

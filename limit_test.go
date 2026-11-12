@@ -71,7 +71,8 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 				c, _ := back.Cue(0)
 				assert.Less(t, c.End, timecode.MaxTime, f)
 				// SubRip and LRC clamp at the largest time their readers take, 999:59:59.999 and 999:59.99.
-				if f != stbox.SubRip && f != stbox.LRC {
+				// PAC clamps at 654 hours, because its time code holds hours * 100 + minutes in 2 bytes.
+				if f != stbox.SubRip && f != stbox.LRC && f != stbox.PAC {
 					assert.GreaterOrEqual(t, c.End, timecode.MaxValidTime-time.Second, f)
 				}
 			}

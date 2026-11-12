@@ -1,0 +1,53 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "pac": {
+                "codePage": "chinese-traditional",
+                "frameRate": 25,
+                "firstNumber": 0,
+                "header": "0100000000000000000000000000000000000000",
+                "footer": "ff0000000000000000000000110064756d6d7920656e64206f662066696c65"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "麵包店七點開門。"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "麵包店七點開門。",
+                        "bytes": "fe02031f5731362ec4d1a55da9b1a443c249b67daaf9a143"
+                    }
+                }
+            },
+            {
+                "start": 4.0,
+                "end": 6.0,
+                "lines": [
+                    "麵包還是熱的。"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "麵包還是熱的。",
+                        "bytes": "fe02031f5731362ec4d1a55dc1d9ac4fbcf6aabaa143"
+                    }
+                }
+            }
+        ]
+    }
+}

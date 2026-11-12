@@ -1,0 +1,54 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "pac": {
+                "codePage": "thai",
+                "frameRate": 25,
+                "firstNumber": 0,
+                "header": "0100000000000000000000000000000000000000",
+                "footer": "ff0000000000000000000000110064756d6d7920656e64206f662066696c65"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "วัดเปิดตอนเจ็ดโมง"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "วัดเปิดตอนเจ็ดโมง",
+                        "bytes": "fe0203c7d1b480bbd4b4b5cdb980a887b482c1a7"
+                    }
+                }
+            },
+            {
+                "start": 4.0,
+                "end": 6.0,
+                "lines": [
+                    "ขอบคุณครับ",
+                    "ห้องสมุดปิดแล้ว"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 10,
+                        "alignment": 2,
+                        "text": "ขอบคุณครับ\nห้องสมุดปิดแล้ว",
+                        "bytes": "fe0203a2cdbaa4d8b3a4c3d1bafe0203cb89cda7cac1d8b4bbd4b481c589c7"
+                    }
+                }
+            }
+        ]
+    }
+}

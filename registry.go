@@ -6,6 +6,7 @@ import (
 	"io"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
@@ -16,6 +17,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpl2"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/pac"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/qttext"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
@@ -74,6 +76,9 @@ var (
 	_ readFunc[mpsub.ReadOptions]                              = mpsub.Read
 	_ writeFunc[mpsub.WriteOptions, mpsub.WriteReport]         = mpsub.Write
 	_ detectFunc                                               = mpsub.Detect
+	_ readFunc[pac.ReadOptions]                                = pac.Read
+	_ writeFunc[pac.WriteOptions, pac.WriteReport]             = pac.Write
+	_ detectFunc                                               = pac.Detect
 	_ readFunc[lrc.ReadOptions]                                = lrc.Read
 	_ writeFunc[lrc.WriteOptions, lrc.WriteReport]             = lrc.Write
 	_ detectFunc                                               = lrc.Detect
@@ -115,6 +120,7 @@ var registry = []formatFuncs{
 	{format: LRC, read: readLRC, write: writeLRC},
 	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
 	{format: MPSub, read: readMPSub, write: writeMPSub},
+	{format: PAC, read: readPAC, write: writePAC},
 	{format: SAMI, read: readSAMI, write: writeSAMI},
 	{format: SBV, read: readSBV, write: writeSBV},
 	{format: SCC, read: readSCC, write: writeSCC},
@@ -159,6 +165,7 @@ var (
 		{format: SubViewer, match: subviewer.Detect},
 		{format: LRC, match: lrc.Detect},
 		{format: EBUSTL, match: ebustl.Detect},
+		{format: PAC, match: pac.Detect},
 		{format: SpruceSTL, match: sprucestl.Detect},
 		{format: SCC, match: scc.Detect},
 		{format: MPL2, match: mpl2.Detect},
@@ -206,6 +213,26 @@ func readITT(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subti
 
 func writeITT(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	_, err := itt.Write(w, s, common, opts.ITT)
+	return WriteReport{}, err
+}
+
+func readPAC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	pacOpts := opts.PAC
+	if pacOpts.CodePage == pac.CodePageAuto && opts.Encoding != "" {
+		codePage, ok := pac.CodePageFromEncoding(opts.Encoding)
+		if !ok {
+			return nil, nil, &InvalidArgumentError{
+				Option: "ReadOptions.Encoding",
+				Msg:    "PAC files have no code page for the encoding " + strconv.Quote(opts.Encoding) + ".",
+			}
+		}
+		pacOpts.CodePage = codePage
+	}
+	return pac.Read(r, common, pacOpts)
+}
+
+func writePAC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := pac.Write(w, s, common, pac.WriteOptions{})
 	return WriteReport{}, err
 }
 

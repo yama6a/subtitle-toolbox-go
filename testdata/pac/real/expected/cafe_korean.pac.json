@@ -1,0 +1,53 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "pac": {
+                "codePage": "korean",
+                "frameRate": 25,
+                "firstNumber": 0,
+                "header": "0100000000000000000000000000000000000000",
+                "footer": "ff0000000000000000000000110064756d6d7920656e64206f662066696c65"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "빵집은 일곱 시에 문을 엽니다."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "빵집은 일곱 시에 문을 엽니다.",
+                        "bytes": "fe02031f5731362ebba7c1fdc0ba0020c0cfb0f60020bdc3bfa10020b9aec0bb0020bfb1b4cfb4d9002e"
+                    }
+                }
+            },
+            {
+                "start": 4.0,
+                "end": 6.0,
+                "lines": [
+                    "빵이 아직 따뜻해요."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "빵이 아직 따뜻해요.",
+                        "bytes": "fe02031f5731362ebba7c0cc0020bec6c1f70020b5fbb6e6c7d8bfe4002e"
+                    }
+                }
+            }
+        ]
+    }
+}

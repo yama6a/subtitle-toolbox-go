@@ -43,6 +43,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 		"lrc         .lrc              yes   yes",
 		"microdvd    .sub              yes   yes",
 		"mpsub       .mpsub            yes   yes",
+		"pac         .pac .fpc         yes   yes",
 		"sami        .smi .sami        yes   yes",
 		"sbv         .sbv              yes   yes",
 		"scc         .scc              yes   yes",

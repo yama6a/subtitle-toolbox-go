@@ -1,0 +1,54 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "pac": {
+                "codePage": "unicode",
+                "frameRate": 25,
+                "firstNumber": 0,
+                "header": "0100000000000000000000000000000000000000",
+                "footer": "ff0000000000000000000000110064756d6d7920656e64206f662066696c65"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "Grüße aus Køge.",
+                    "東京 – Αθήνα"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 10,
+                        "alignment": 2,
+                        "text": "Grüße aus Køge.\n東京 – Αθήνα",
+                        "bytes": "808080fe02031fefbbbf4772c3bcc39f6520617573204bc3b86765ff2efe02031fefbbbfe69db1e4baac20e2809320ce91ceb8ceaecebdceb12e"
+                    }
+                }
+            },
+            {
+                "start": 4.0,
+                "end": 6.0,
+                "lines": [
+                    "<i>Fresh bread.</i>"
+                ],
+                "identifier": null,
+                "alignment": 1,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 1,
+                        "text": "<i>Fresh bread.</i>",
+                        "bytes": "808080fe01031fefbbbf3c4672657368206272656164ff2e"
+                    }
+                }
+            }
+        ]
+    }
+}

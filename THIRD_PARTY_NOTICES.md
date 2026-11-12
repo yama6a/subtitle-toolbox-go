@@ -728,10 +728,26 @@ SOFTWARE.
 
 - Project: <https://github.com/SubtitleEdit/subtitleedit>
 - Licence: MIT
-- Checked at: `5b9ee8baf08c472c7a74fbc337446b656dedabb4`, and `58fad713d9c2b322784bc2fa52148e078dbc8759` with the same licence text
+- Checked at: `5b9ee8baf08c472c7a74fbc337446b656dedabb4`, and `58fad713d9c2b322784bc2fa52148e078dbc8759` and `a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c` with the same licence text. The `LICENSE` file at each commit is MIT
 - Code adapted from it:
   - `hearingimpaired`, the hearing-impaired rules, from `src/libse/Forms/RemoveTextForHI.cs` at `5b9ee8baf08c472c7a74fbc337446b656dedabb4`
   - `internal/cea708`, the G2 table, from `src/libse/Cea708/Cea708.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`
+  - `format/pac`, the reader, the writer, the line splitter and the code page detector, from `src/libse/SubtitleFormats/Pac.cs` at `a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c`
+  - `format/pac/tables.go`, the 7 character tables and the Arabic marks, copied from the same file at the same commit
+- Files written for this repository in the shape of its fixtures, with the character bytes of the code tables of `Pac.cs`:
+  - `testdata/pac/real/bakery_latin.pac`
+  - `testdata/pac/real/bakery_unicode.fpc`
+  - `testdata/pac/real/bazaar_turkish.pac`
+  - `testdata/pac/real/cafe_korean.pac`
+  - `testdata/pac/real/harbour_30fps.pac`
+  - `testdata/pac/real/library_hebrew.pac`
+  - `testdata/pac/real/market_arabic.pac`
+  - `testdata/pac/real/noodle_chinese_simplified.pac`
+  - `testdata/pac/real/noodle_chinese_traditional.pac`
+  - `testdata/pac/real/station_japanese.pac`
+  - `testdata/pac/real/temple_thai.pac`
+  - `testdata/pac/real/train_cyrillic.pac`
+  - `testdata/pac/real/weather_greek.pac`
 
 ```text
 MIT License
