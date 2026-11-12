@@ -265,3 +265,16 @@ func cellWords(cells []Cell) []uint16 {
 	}
 	return words
 }
+
+// The commands that load and show a pop-on caption on data channel 1.
+const (
+	CommandRCL = cmdRCL
+	CommandEDM = cmdEDM
+	CommandENM = cmdENM
+	CommandEOC = cmdEOC
+)
+
+// ControlWord returns the control word of a command on data channel 1.
+func ControlWord(command byte) uint16 {
+	return Word(firstControl, command)
+}

@@ -76,6 +76,9 @@ type WriteOptions struct {
 	SubViewer subviewer.WriteOptions
 	// SpruceSTL holds the settings of the Spruce STL writer. The zero value takes the frame rate that the reader stored, else 25.
 	SpruceSTL sprucestl.WriteOptions
+	// SCC holds the settings of the SCC writer. The zero value keeps the stored drop-frame mode, else writes
+	// drop-frame labels, and fails for a cue that SCC cannot hold.
+	SCC scc.WriteOptions
 	// EBUSTL holds the settings of the EBU STL writer. The zero value takes the frame rate of the stored DFC, else 25.
 	EBUSTL ebustl.WriteOptions
 }
@@ -84,6 +87,8 @@ type WriteOptions struct {
 type WriteReport struct {
 	// WebVTT is non-nil after a WebVTT write, also when it holds no dropped color.
 	WebVTT *webvtt.WriteReport
+	// SCC is non-nil after an SCC write, also when Fit made no change.
+	SCC *scc.WriteReport
 	// EBUSTL is non-nil after an EBU STL write. It holds the character code table and the characters written as "?".
 	EBUSTL *ebustl.WriteReport
 }
@@ -145,6 +150,11 @@ func (o WriteOptions) Validate() error {
 			Msg:    "The BOM rule " + strconv.Itoa(int(o.BOM)) + " is unknown.",
 		}
 	}
+	return o.validateFormats()
+}
+
+// validateFormats checks the settings of each format writer.
+func (o WriteOptions) validateFormats() error {
 	if err := o.ASS.Validate(); err != nil {
 		return err
 	}
@@ -161,6 +171,9 @@ func (o WriteOptions) Validate() error {
 		return err
 	}
 	if err := o.SubViewer.Validate(); err != nil {
+		return err
+	}
+	if err := o.SCC.Validate(); err != nil {
 		return err
 	}
 	if err := o.SpruceSTL.Validate(); err != nil {
