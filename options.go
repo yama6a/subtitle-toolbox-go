@@ -76,12 +76,16 @@ type WriteOptions struct {
 	SubViewer subviewer.WriteOptions
 	// SpruceSTL holds the settings of the Spruce STL writer. The zero value takes the frame rate that the reader stored, else 25.
 	SpruceSTL sprucestl.WriteOptions
+	// EBUSTL holds the settings of the EBU STL writer. The zero value takes the frame rate of the stored DFC, else 25.
+	EBUSTL ebustl.WriteOptions
 }
 
 // WriteReport holds the changes that a writer made to fit the subtitle into its format.
 type WriteReport struct {
 	// WebVTT is non-nil after a WebVTT write, also when it holds no dropped color.
 	WebVTT *webvtt.WriteReport
+	// EBUSTL is non-nil after an EBU STL write. It holds the character code table and the characters written as "?".
+	EBUSTL *ebustl.WriteReport
 }
 
 // ReadInfo holds the facts of a read that are not subtitle content.
@@ -159,7 +163,10 @@ func (o WriteOptions) Validate() error {
 	if err := o.SubViewer.Validate(); err != nil {
 		return err
 	}
-	return o.SpruceSTL.Validate()
+	if err := o.SpruceSTL.Validate(); err != nil {
+		return err
+	}
+	return o.EBUSTL.Validate()
 }
 
 func (o ReadOptions) common() model.CommonReadOptions {

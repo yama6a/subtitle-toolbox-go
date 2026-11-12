@@ -69,3 +69,11 @@ func toCRLF(body []byte) []byte {
 	}
 	return out
 }
+
+// WriteBytes writes the body of a binary format to w in one call. It applies no line ending and no BOM rule.
+func WriteBytes(w io.Writer, f model.Format, body []byte) error {
+	if _, err := w.Write(body); err != nil {
+		return fmt.Errorf("write %s: %w", f, err)
+	}
+	return nil
+}
