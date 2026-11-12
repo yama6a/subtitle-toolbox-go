@@ -21,6 +21,7 @@ const (
 	SpruceSTL     Format = "spruce-stl"
 	SubViewer     Format = "subviewer"
 	TTML          Format = "ttml"
+	DCP           Format = "dcp"
 	TSV           Format = "tsv"
 	PlainText     Format = "txt"
 	MPL2          Format = "mpl2"
@@ -54,6 +55,7 @@ var formatFacts = []formatFact{
 	{format: SpruceSTL, extensions: []string{"stl"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubViewer, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: DCP, extensions: []string{"xml"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TSV, extensions: []string{"tsv"}, canRead: true, canWrite: true},
 	{format: PlainText, extensions: []string{"txt"}, canWrite: true, autoDetected: true},
 	{format: MPL2, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},

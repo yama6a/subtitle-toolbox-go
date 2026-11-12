@@ -10,6 +10,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/dcp"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/lrc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
@@ -89,6 +90,9 @@ var (
 	_ readFunc[sprucestl.ReadOptions]                          = sprucestl.Read
 	_ writeFunc[sprucestl.WriteOptions, sprucestl.WriteReport] = sprucestl.Write
 	_ detectFunc                                               = sprucestl.Detect
+	_ readFunc[dcp.ReadOptions]                                = dcp.Read
+	_ writeFunc[dcp.WriteOptions, dcp.WriteReport]             = dcp.Write
+	_ detectFunc                                               = dcp.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -118,6 +122,7 @@ var registry = []formatFuncs{
 	{format: SpruceSTL, read: readSpruceSTL, write: writeSpruceSTL},
 	{format: SubViewer, read: readSubViewer, write: writeSubViewer},
 	{format: TTML, read: readTTML, write: writeTTML},
+	{format: DCP, read: readDCP, write: writeDCP},
 	{format: TSV, read: readTSV, write: writeTSV},
 	{format: PlainText, write: writePlainText},
 	{format: MPL2, read: readMPL2, write: writeMPL2},
@@ -144,6 +149,7 @@ var (
 	signatures = []signature{
 		{format: WebVTT, match: webvtt.Detect},
 		{format: TTML, match: ttml.Detect},
+		{format: DCP, match: dcp.Detect},
 		{format: SAMI, match: sami.Detect},
 		{format: ASS, match: ass.Detect},
 		{format: MPSub, match: mpsub.Detect},
@@ -263,6 +269,15 @@ func writeMicroDVD(w io.Writer, s *Subtitle, common model.CommonWriteOptions, op
 
 func readSCC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return scc.Read(r, common, opts.SCC)
+}
+
+func readDCP(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return dcp.Read(r, common, dcp.ReadOptions{})
+}
+
+func writeDCP(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := dcp.Write(w, s, common, dcp.WriteOptions{})
+	return WriteReport{}, err
 }
 
 func readSpruceSTL(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {

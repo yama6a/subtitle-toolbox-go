@@ -63,6 +63,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 |:--- |:--- |
 | SubRip, WebVTT | the line of the error. A message about a missing cue number or timing line quotes the line, cut to 60 characters with `...` |
 | TTML | the line of the element, the line of the `>` that ends its start tag. The first line of the skipped text for text before the XML. 0 for a time expression that is not valid or that alone reaches 100000 hours, for a file that is not well-formed XML and for a root that is not `<tt>` |
+| DCP subtitles | the line of the `<Subtitle>` element for a time or image error, as for TTML. The first line of the skipped text for text before the XML. 0 for XML that is not well-formed and for a wrong root |
 | SBV | the line of the error, which is the timing line. A message about a missing timing line quotes the line, cut to 60 characters with `...` |
 | library JSON | 0 |
 | ASS and SSA | the line of the error: the event line, or the `Format:` line for a field name that is a number. A file without `[Events]` and `[Script Info]` gives 0 |

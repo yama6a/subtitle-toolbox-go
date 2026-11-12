@@ -25,6 +25,9 @@ func TestOffsetRoundTrip(t *testing.T) {
 		{"TTML default anchor reads back as none", stbox.TTML, stbox.BottomCenter, stbox.Offset{X: 50, Y: 90}, nil},
 		{"TTML top left", stbox.TTML, stbox.TopLeft, stbox.Offset{X: 10, Y: 5}, &stbox.Offset{X: 10, Y: 5}},
 		{"TTML middle right", stbox.TTML, stbox.MiddleRight, stbox.Offset{X: 80, Y: 40}, &stbox.Offset{X: 80, Y: 40}},
+		{"DCP bottom center", stbox.DCP, stbox.BottomCenter, stbox.Offset{X: 50, Y: 95}, &stbox.Offset{X: 50, Y: 95}},
+		{"DCP top left keeps the column edge", stbox.DCP, stbox.TopLeft, stbox.Offset{X: 10, Y: 5}, &stbox.Offset{X: 0, Y: 5}},
+		{"DCP middle right keeps the column edge", stbox.DCP, stbox.MiddleRight, stbox.Offset{X: 80, Y: 40}, &stbox.Offset{X: 100, Y: 40}},
 		{"WebVTT bottom center", stbox.WebVTT, stbox.BottomCenter, stbox.Offset{X: 50, Y: 95}, &stbox.Offset{X: 50, Y: 95}},
 		{"WebVTT top left keeps the column, not the height", stbox.WebVTT, stbox.TopLeft, stbox.Offset{X: 20, Y: 5}, &stbox.Offset{X: 20, Y: 0}},
 		{"WebVTT top center keeps no offset", stbox.WebVTT, stbox.TopCenter, stbox.Offset{X: 50, Y: 10}, nil},
@@ -49,4 +52,22 @@ func TestOffsetRoundTrip(t *testing.T) {
 			assert.Equal(t, tt.wantOffset, got.Position.Offset)
 		})
 	}
+}
+
+func TestWebVTTHeightConvertsToDCPAndBack(t *testing.T) {
+	t.Parallel()
+
+	vtt := "WEBVTT\n\n00:00:01.000 --> 00:00:02.000 line:80%,end\nOne\n"
+	s, _, err := stbox.Parse(bytes.NewReader([]byte(vtt)), stbox.ReadOptions{})
+	require.NoError(t, err)
+	var out bytes.Buffer
+	_, err = stbox.Write(&out, s, stbox.DCP, stbox.WriteOptions{})
+	require.NoError(t, err)
+	assert.Contains(t, out.String(), `<Text Valign="top" Vposition="80">One</Text>`)
+
+	back, _, err := stbox.Parse(&out, stbox.ReadOptions{})
+	require.NoError(t, err)
+	got, _ := back.Cue(0)
+	assert.Equal(t, stbox.BottomCenter, got.Position.Alignment)
+	assert.Equal(t, &stbox.Offset{X: 50, Y: 80}, got.Position.Offset)
 }
