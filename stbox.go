@@ -73,6 +73,7 @@ type (
 const (
 	ASS           = model.ASS
 	CSV           = model.CSV
+	ITT           = model.ITT
 	JSON          = model.JSON
 	LRC           = model.LRC
 	MicroDVD      = model.MicroDVD

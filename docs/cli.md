@@ -416,6 +416,7 @@ stbox dual --primary movie.en.srt --secondary movie.de.srt --mode top-bottom --t
 Name        Extensions        Read  Write
 ass         .ass .ssa         yes   yes
 csv         .csv              yes   yes
+itt         .itt              yes   yes
 json        .json             yes   yes
 lrc         .lrc              yes   yes
 microdvd    .sub              yes   yes

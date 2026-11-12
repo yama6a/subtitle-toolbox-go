@@ -81,8 +81,8 @@ func TestRead(t *testing.T) {
 				`<Subtitle TimeIn="00:00:13:000" TimeOut="00:00:14:000"><Text HAlign="left" HPosition="20" VAlign="bottom" VPosition="30">g</Text></Subtitle>` +
 				`<Subtitle TimeIn="00:00:15:000" TimeOut="00:00:16:000"><Text VAlign="bottom" VPosition="25">h2</Text><Text VAlign="bottom" VPosition="32">h1</Text></Subtitle>`),
 			want: []cueRow{
-				{Start: 1000 * ms, End: 2000 * ms, Lines: []string{"a"}, Alignment: model.TopLeft, Offset: &model.Offset{X: 0, Y: 10}},
-				{Start: 3000 * ms, End: 4000 * ms, Lines: []string{"b"}, Alignment: model.MiddleRight, Offset: &model.Offset{X: 100, Y: 60}},
+				{Start: 1000 * ms, End: 2000 * ms, Lines: []string{"a"}, Alignment: model.TopLeft},
+				{Start: 3000 * ms, End: 4000 * ms, Lines: []string{"b"}, Alignment: model.MiddleRight, Offset: &model.Offset{X: 90, Y: 60}},
 				{Start: 5000 * ms, End: 6000 * ms, Lines: []string{"c"}, Alignment: model.MiddleCenter, Offset: &model.Offset{X: 50, Y: 45}},
 				{Start: 7000 * ms, End: 8000 * ms, Lines: []string{"d"}, Alignment: model.BottomCenter},
 				{Start: 9000 * ms, End: 10000 * ms, Lines: []string{"e"}, Alignment: model.MiddleCenter},

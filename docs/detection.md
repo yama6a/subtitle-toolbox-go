@@ -66,10 +66,11 @@
 | 2 | **Binary by content**: `Detect` on the raw bytes. A binary format reads the raw bytes. `Encoding` is ignored and `SourceEncoding` is empty |
 | 3 | **Binary by extension**: only `Load`. When every format that lists the extension is binary, the extension decides before any decoding. `.890` is such an extension. `.stl` is not, because Spruce STL lists it too. Blank content gives an empty subtitle, as in step 5 |
 | 4 | **Decode** the content to UTF-8, as [encodings.md](encodings.md) says |
-| 5 | **Empty content**: nothing is left after the BOMs and the bytes of step 1 of `Detect` go, at both ends. `Load` returns an empty subtitle in the format of the extension, under the fallback rule of step 7 |
+| 5 | **Empty content**: nothing is left after the BOMs and the bytes of step 1 of `Detect` go, at both ends. `Load` returns an empty subtitle in the format of the extension, under the fallback rule of step 8 |
 | 6 | **Detect** the format of the decoded content |
-| 7 | **Extension fallback**: without a detection result, `Load` uses `FormatFromPath`, when the library can read that format and the extension is not `json`, `txt` or `ffmeta`. CSV and TSV have no signature, so `.csv` and `.tsv` files load only by this step. A binary format from this step reads the raw bytes, not the decoded text |
-| 8 | **No format**: an error that matches `ErrUnknownFormat`, with `Format detection found no subtitle format.` `Parse` has no path, so it skips steps 3, 5 and 7 |
+| 7 | **Profile by extension**: when `Detect` gives TTML and the extension is `.itt`, `Load` reads the file as iTT |
+| 8 | **Extension fallback**: without a detection result, `Load` uses `FormatFromPath`, when the library can read that format and the extension is not `json`, `txt` or `ffmeta`. CSV and TSV have no signature, so `.csv` and `.tsv` files load only by this step. A binary format from this step reads the raw bytes, not the decoded text |
+| 9 | **No format**: an error that matches `ErrUnknownFormat`, with `Format detection found no subtitle format.` `Parse` has no path, so it skips steps 3, 5, 7 and 8 |
 
 | Head | Bytes |
 |:--- |:--- |

@@ -218,3 +218,13 @@ func TestWriteErrors(t *testing.T) {
 	require.ErrorAs(t, err, &uerr)
 	assert.Equal(t, "The formatter wrote XML that is not well-formed.", uerr.Reason)
 }
+
+func TestAlignedCueWithoutOffsetReadsBackWithoutOffset(t *testing.T) {
+	t.Parallel()
+
+	for _, a := range []model.Alignment{model.TopLeft, model.BottomRight, model.MiddleLeft, model.TopCenter} {
+		s := subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"x"}, Position: model.Position{Alignment: a}})
+		got := cueRows(mustRead(t, write(t, s)))
+		assert.Equal(t, []cueRow{{Start: time.Second, End: 2 * time.Second, Lines: []string{"x"}, Alignment: a}}, got, a.String())
+	}
+}

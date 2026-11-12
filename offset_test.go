@@ -28,6 +28,7 @@ func TestOffsetRoundTrip(t *testing.T) {
 		{"DCP bottom center", stbox.DCP, stbox.BottomCenter, stbox.Offset{X: 50, Y: 80}, &stbox.Offset{X: 50, Y: 80}},
 		{"DCP bottom center in the usual place reads back as none", stbox.DCP, stbox.BottomCenter, stbox.Offset{X: 50, Y: 95}, nil},
 		{"DCP top left", stbox.DCP, stbox.TopLeft, stbox.Offset{X: 20, Y: 25}, &stbox.Offset{X: 20, Y: 25}},
+		{"DCP top left at the default anchor reads back as none", stbox.DCP, stbox.TopLeft, stbox.Offset{X: 10, Y: 8}, nil},
 		{"DCP middle right", stbox.DCP, stbox.MiddleRight, stbox.Offset{X: 80, Y: 40}, &stbox.Offset{X: 80, Y: 40}},
 		{"WebVTT bottom center", stbox.WebVTT, stbox.BottomCenter, stbox.Offset{X: 50, Y: 95}, &stbox.Offset{X: 50, Y: 95}},
 		{"WebVTT top left keeps the column, not the height", stbox.WebVTT, stbox.TopLeft, stbox.Offset{X: 20, Y: 5}, &stbox.Offset{X: 20, Y: 0}},

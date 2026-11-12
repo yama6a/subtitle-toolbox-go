@@ -566,9 +566,13 @@ func anchorY(a model.Alignment, texts [][]attr) float64 {
 	}
 }
 
-// anchorX returns the horizontal anchor of the top line: HPosition counts from the edge that HAlign names.
+// anchorX returns the horizontal anchor of the top line: HPosition counts from the edge that HAlign names. A line
+// without HPosition has the default anchor of the column.
 func anchorX(a model.Alignment, top []attr) float64 {
-	hp, _ := textAttr(top, "hposition")
+	hp, ok := textAttr(top, "hposition")
+	if !ok {
+		return position.DefaultAnchor(a).X
+	}
 	x := phpFloat(hp)
 	switch a.Column() {
 	case 1:

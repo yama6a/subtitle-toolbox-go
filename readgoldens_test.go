@@ -50,6 +50,7 @@ func goldenFolders() []goldenFolder {
 			}},
 		}},
 		{name: "dcp", format: stbox.DCP, files: 4},
+		{name: "itt", format: stbox.ITT, files: 3},
 		{name: "json", format: stbox.JSON, files: 6},
 		{name: "lrc", format: stbox.LRC, files: 9},
 		{name: "microdvd", format: stbox.MicroDVD, files: 4, options: map[string]stbox.ReadOptions{
