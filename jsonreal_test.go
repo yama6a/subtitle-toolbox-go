@@ -16,10 +16,10 @@ import (
 func TestAegisubJSONEqualsTheASSFile(t *testing.T) {
 	t.Parallel()
 
-	fromJSON, info, err := stbox.Parse(bytes.NewReader(testfiles.Read(t, "json/real/own_aegisub.json")), stbox.ReadOptions{})
+	fromJSON, info, err := parseBytes(testfiles.Read(t, "json/real/own_aegisub.json"), stbox.ReadOptions{})
 	require.NoError(t, err)
 	require.Equal(t, stbox.JSON, info.Format)
-	original, info, err := stbox.Parse(bytes.NewReader(testfiles.Read(t, "ass/real/own_aegisub.ass")), stbox.ReadOptions{})
+	original, info, err := parseBytes(testfiles.Read(t, "ass/real/own_aegisub.ass"), stbox.ReadOptions{})
 	require.NoError(t, err)
 	require.Equal(t, stbox.ASS, info.Format)
 

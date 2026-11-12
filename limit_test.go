@@ -3,7 +3,6 @@ package stbox_test
 import (
 	"bytes"
 	"errors"
-	"strings"
 	"testing"
 	"time"
 
@@ -40,7 +39,7 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 			t.Parallel()
 
 			opts := stbox.ReadOptions{Format: in.format, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}}
-			s, _, err := stbox.Parse(strings.NewReader(in.content), opts)
+			s, _, err := parseBytes([]byte(in.content), opts)
 			require.NoError(t, err)
 			require.Equal(t, 1, s.Len())
 			if in.format != stbox.MPL2 && in.format != stbox.MPSub {
@@ -65,7 +64,7 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 				written++
 
 				text := out.String()
-				back, _, err := stbox.Parse(&out, stbox.ReadOptions{Format: f, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
+				back, _, err := parseBytes(out.Bytes(), stbox.ReadOptions{Format: f, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
 				require.NoError(t, err, "%s: %q", f, text)
 				require.Equal(t, 1, back.Len(), f)
 				c, _ := back.Cue(0)

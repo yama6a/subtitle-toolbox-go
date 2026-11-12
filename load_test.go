@@ -76,7 +76,7 @@ func TestLoadWithoutFormat(t *testing.T) {
 			case tt.wantErr == nil:
 				require.NoError(t, err)
 				assert.Equal(t, tt.want, info.Format)
-				explicit, _, err := stbox.Parse(bytes.NewReader(tt.content), stbox.ReadOptions{Format: tt.want})
+				explicit, _, err := parseBytes(tt.content, stbox.ReadOptions{Format: tt.want})
 				require.NoError(t, err)
 				assert.Equal(t, explicit, s)
 			case errors.Is(tt.wantErr, stbox.ErrParse):
@@ -96,7 +96,7 @@ func TestLoadWithoutFormat(t *testing.T) {
 func TestParseReadsITTContentAsTTML(t *testing.T) {
 	t.Parallel()
 
-	_, info, err := stbox.Parse(bytes.NewReader(testfiles.Read(t, "itt/real/fcp_23976_styles.itt")), stbox.ReadOptions{})
+	_, info, err := parseBytes(testfiles.Read(t, "itt/real/fcp_23976_styles.itt"), stbox.ReadOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, stbox.TTML, info.Format)
 }
@@ -155,51 +155,11 @@ func TestReadEmptyContent(t *testing.T) {
 	assert.Zero(t, s.Len())
 
 	for _, content := range []string{"", " \n", "\xEF\xBB\xBF"} {
-		s, info, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{})
+		s, info, err := parseBytes([]byte(content), stbox.ReadOptions{})
 		require.ErrorIs(t, err, stbox.ErrUnknownFormat, "%q", content)
 		require.EqualError(t, err, unknownFormatMessage)
 		assert.Nil(t, s)
 		assert.Zero(t, info)
-	}
-}
-
-func TestReadContainer(t *testing.T) {
-	t.Parallel()
-
-	ts := make([]byte, 377)
-	ts[0], ts[188], ts[376] = 0x47, 0x47, 0x47
-	m2ts := make([]byte, 389)
-	m2ts[4], m2ts[196], m2ts[388] = 0x47, 0x47, 0x47
-	tests := []struct {
-		name   string
-		file   string
-		head   []byte
-		format stbox.Format
-		label  string
-	}{
-		{"Matroska", "movie.mkv", []byte("\x1A\x45\xDF\xA3\x01\x00\x00\x00"), "", "a Matroska"},
-		{"WebM with a format", "movie.webm", []byte("\x1A\x45\xDF\xA3\x01\x00\x00\x00"), stbox.SubRip, "a Matroska"},
-		{"MP4", "movie.mp4", []byte("\x00\x00\x00\x20ftypisom\x00\x00\x02\x00"), "", "an MP4"},
-		{"MPEG-TS", "movie.ts", ts, "", "an MPEG-TS"},
-		{"MPEG-TS with a .srt extension", "movie.srt", ts, "", "an MPEG-TS"},
-		{"M2TS", "movie.m2ts", m2ts, "", "an MPEG-TS"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			p := writeTemp(t, tt.file, tt.head)
-			opts := stbox.ReadOptions{Format: tt.format}
-			s, info, err := stbox.Load(p, opts)
-			require.ErrorIs(t, err, stbox.ErrUnsupportedFormat)
-			require.NotErrorIs(t, err, stbox.ErrUnknownFormat)
-			require.EqualError(t, err, "stbox: unsupported format: "+p+" is "+tt.label+" file. This version reads no video files.")
-			assert.Nil(t, s)
-			assert.Zero(t, info)
-
-			_, _, err = stbox.Parse(bytes.NewReader(tt.head), opts)
-			require.EqualError(t, err, "stbox: unsupported format: The content is "+tt.label+" file. This version reads no video files.")
-		})
 	}
 }
 
@@ -287,7 +247,7 @@ func TestBinaryFormatRead(t *testing.T) {
 
 	stl := testfiles.Read(t, "stl/real/bakery_teletext_25fps.stl")
 	spaced := append([]byte("   "), stl[3:]...)
-	want, _, err := stbox.Parse(bytes.NewReader(stl), stbox.ReadOptions{Format: stbox.EBUSTL})
+	want, _, err := parseBytes(stl, stbox.ReadOptions{Format: stbox.EBUSTL})
 	require.NoError(t, err)
 	require.Positive(t, want.Len())
 
@@ -316,7 +276,7 @@ func TestBinaryFormatRead(t *testing.T) {
 			var info stbox.ReadInfo
 			var err error
 			if tt.file == "" {
-				s, info, err = stbox.Parse(bytes.NewReader(tt.content), tt.opts)
+				s, info, err = parseBytes(tt.content, tt.opts)
 			} else {
 				s, info, err = stbox.Load(writeTemp(t, tt.file, tt.content), tt.opts)
 			}

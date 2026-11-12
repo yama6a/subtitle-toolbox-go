@@ -8,7 +8,8 @@ Example: block 1 of a SubRip file has `00:00:05,000 => 00:00:07,000` on line 6, 
 ```go
 content := "1\n00:00:01,000 --> 00:00:04,000\nHello\n\n2\n00:00:05,000 => 00:00:07,000\nWorld\n"
 
-_, _, err := stbox.Parse(strings.NewReader(content), stbox.ReadOptions{Format: stbox.SubRip})
+r := strings.NewReader(content)
+_, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{Format: stbox.SubRip})
 var perr *stbox.ParseError
 if errors.As(err, &perr) {
 	fmt.Println(perr.Format, perr.Line)
@@ -26,9 +27,9 @@ fmt.Println(err)
 | Go | Returned for | PHP class and code |
 |:--- |:--- |:--- |
 | `ErrParse`, `*ParseError` | content that a reader cannot read. A byte that is not valid in the source encoding, in both modes. Invalid UTF-8 in strict mode, for the formats of [Invalid UTF-8](encodings.md#invalid-utf-8). A library JSON document with a wrong shape | `ParsingException` 100 |
-| `ErrUnsupportedFormat` | a read of a format without a reader, such as `txt`. A write of a format without a writer. A `Format` value that no registry row lists, such as `Format("foo")`. A read of a Matroska, MP4 or MPEG-TS video file | `UnsupportedFormatException` 102 |
+| `ErrUnsupportedFormat` | a read of a format without a reader, such as `txt`. A write of a format without a writer. A `Format` value that no registry row lists, such as `Format("foo")`. A read of a video file whose container this version cannot read. A read of a video file with a `Format` set, which says to read it by track. A read of a video file with no subtitle track or with 2 or more, as a `*TrackError`. `Tracks` on content that is no video file | `UnsupportedFormatException` 102 |
 | `ErrUnknownFormat` | detection found no format, see [detection.md](detection.md). Also matches `ErrUnsupportedFormat` | `UnknownFormatException` 106, a subclass of 102 |
-| `ErrInvalidArgument`, `*InvalidArgumentError` | an invalid option or argument, for example frame rate 0 or NaN. An unknown `ReadOptions.Encoding`. A retime or `Append` that moves a cue time to 100000 h or more, for example `Scale(1e300)`. MicroDVD output without a frame rate. CSV output with frame times and no frame rate. Format data that fails its type check in a setter | `InvalidArgumentException` 104 |
+| `ErrInvalidArgument`, `*InvalidArgumentError` | an invalid option or argument, for example frame rate 0 or NaN. An unknown `ReadOptions.Encoding`. A negative `ReadOptions.Track` or `size`. A `Track` on a subtitle file, or a `Track` that no track of the video file has. A retime or `Append` that moves a cue time to 100000 h or more, for example `Scale(1e300)`. MicroDVD output without a frame rate. CSV output with frame times and no frame rate. Format data that fails its type check in a setter | `InvalidArgumentException` 104 |
 | `ErrCueNotFound` | `RemoveCue`, `SplitCue` and `JoinCues` with an index that has no cue | `CueNotFoundException` 105 |
 | `ErrUnwritable`, `*UnwritableError` | the output format cannot hold the subtitle. Text that is not valid UTF-8 in a JSON format, TTML or SAMI output, which also matches `ErrInvalidUTF8`. An image cue without lines in a text format, such as `Cue #3 holds an image but no text, and srt needs text.` A stored TTML head that is not valid XML. An `ass.WriteOptions.Style` that the `Format:` line of the stored styles lacks | `UnwritableContentException` 108 |
 | `ErrInvalidUTF8` | text that an output format cannot hold because it is not valid UTF-8. It is the `Err` of the `*UnwritableError`. Read the input again with its source encoding | none, part of `UnwritableContentException` 108 |
@@ -42,12 +43,13 @@ fmt.Println(err)
 
 ## Error types
 
-All 3 types live in package `model`. Package `stbox` aliases them under the same names.
+All 4 types live in package `model`. Package `stbox` aliases them under the same names.
 
 | Type | Fields | `Error()` |
 |:--- |:--- |:--- |
 | `*ParseError` | `Format`, `Line`, `Msg`, `Option`, `Err` | `srt: line 6: Msg`. No `line N: ` when `Line` is 0. `stbox` in place of the format when `Format` is "" |
 | `*UnwritableError` | `Format`, `CueIndex`, `Reason`, `Err` | `sami: Reason` |
+| `*TrackError` | `Container`, `Tracks` | `stbox: unsupported format: The MKV or WebM file has 6 subtitle tracks.` Matches `ErrUnsupportedFormat`, not `ErrUnknownFormat`. `Tracks` is empty when the file has no subtitle track |
 | `*InvalidArgumentError` | `Option`, `Msg` | `stbox: invalid argument: WriteOptions.MicroDVD.FrameRate: Msg`. No option part when `Option` is "" |
 
 - **Cause**: `Unwrap` of `*ParseError` and `*UnwritableError` returns `Err`, for example a `*json.SyntaxError`. `Error()` shows `Err` only when the message field is empty, because the message quotes the cause where it matters.

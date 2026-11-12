@@ -23,6 +23,7 @@ var (
 	_ error = (*ParseError)(nil)
 	_ error = (*UnwritableError)(nil)
 	_ error = (*InvalidArgumentError)(nil)
+	_ error = (*TrackError)(nil)
 )
 
 // ParseError is an error of a reader that cannot read its input.

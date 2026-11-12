@@ -2,6 +2,7 @@ package stbox
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -15,42 +16,90 @@ import (
 // Load reads the subtitle file at path. On error the subtitle is nil and ReadInfo is the zero value.
 // Without ReadOptions.Format, Load detects the format and falls back to the file extension, as docs/detection.md says.
 // A file that does not exist or cannot be read returns the *fs.PathError of package os, wrapped.
+// Load reads a regular file through its handle, so a video file is not read whole. A pipe is read whole first.
 func Load(path string, opts ReadOptions) (*Subtitle, ReadInfo, error) {
 	if err := opts.Validate(); err != nil {
 		return nil, ReadInfo{}, err
 	}
-	content, err := os.ReadFile(path)
+	f, err := os.Open(path)
 	if err != nil {
 		return nil, ReadInfo{}, fmt.Errorf("load subtitle: %w", err)
 	}
-	return parse(content, path, opts)
+	defer f.Close()
+	st, err := f.Stat()
+	if err != nil {
+		return nil, ReadInfo{}, fmt.Errorf("load subtitle: %w", err)
+	}
+	if st.Mode().IsRegular() {
+		return parse(f, st.Size(), path, opts)
+	}
+	content, err := io.ReadAll(f)
+	if err != nil {
+		return nil, ReadInfo{}, fmt.Errorf("load subtitle: %w", err)
+	}
+	return parse(bytes.NewReader(content), int64(len(content)), path, opts)
 }
 
-// Parse reads a subtitle from r. On error the subtitle is nil and ReadInfo is the zero value.
+// Parse reads a subtitle from the first size bytes of r. On error the subtitle is nil and ReadInfo is the zero value.
 // Parse has no file name, so CSV and TSV input needs ReadOptions.Format.
-func Parse(r io.Reader, opts ReadOptions) (*Subtitle, ReadInfo, error) {
+// A video container reads only the bytes that its track needs. Every other format reads the whole input.
+func Parse(r io.ReaderAt, size int64, opts ReadOptions) (*Subtitle, ReadInfo, error) {
 	if err := opts.Validate(); err != nil {
 		return nil, ReadInfo{}, err
 	}
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, ReadInfo{}, fmt.Errorf("read subtitle: %w", err)
-	}
-	return parse(content, "", opts)
+	return parse(r, size, "", opts)
 }
 
 // noFormat is the PHP message of a read whose format detection found nothing.
 const noFormat = "Format detection found no subtitle format."
 
-// parse reads content. path is "" for Parse, which has no extension to fall back to.
-func parse(content []byte, path string, opts ReadOptions) (*Subtitle, ReadInfo, error) {
-	if c, ok := container(content); ok {
+// parse reads the input. path is "" for Parse, which has no extension to fall back to.
+func parse(r io.ReaderAt, size int64, path string, opts ReadOptions) (*Subtitle, ReadInfo, error) {
+	head, err := readHead(r, size)
+	if err != nil {
+		return nil, ReadInfo{}, err
+	}
+	if c, ok := containerOf(head); ok {
 		subject := "The content"
 		if path != "" {
 			subject = path
 		}
-		return nil, ReadInfo{}, unsupported(subject + " is " + c + " file. This version reads no video files.")
+		return readContainer(c, r, size, subject, opts)
 	}
+	if opts.Track != 0 {
+		return nil, ReadInfo{}, &InvalidArgumentError{
+			Option: "ReadOptions.Track",
+			Msg:    "Only MKV, WebM, MP4 and MPEG-TS files have tracks.",
+		}
+	}
+	content := head
+	if size > ContainerHeadSize {
+		if content, err = io.ReadAll(io.NewSectionReader(r, 0, size)); err != nil {
+			return nil, ReadInfo{}, fmt.Errorf("read subtitle: %w", err)
+		}
+	}
+	return parseContent(content, path, opts)
+}
+
+// readHead returns the first ContainerHeadSize bytes of the input, or all of it when it is shorter. It returns fewer
+// bytes than size when r holds less data than size says.
+func readHead(r io.ReaderAt, size int64) ([]byte, error) {
+	if size < 0 {
+		return nil, &InvalidArgumentError{Msg: fmt.Sprintf("The size must be 0 or more, got %d.", size)}
+	}
+	head := make([]byte, min(size, ContainerHeadSize))
+	if len(head) == 0 {
+		return head, nil
+	}
+	n, err := r.ReadAt(head, 0)
+	if err != nil && !errors.Is(err, io.EOF) {
+		return nil, fmt.Errorf("read subtitle: %w", err)
+	}
+	return head[:n], nil
+}
+
+// parseContent reads the whole content of a subtitle file.
+func parseContent(content []byte, path string, opts ReadOptions) (*Subtitle, ReadInfo, error) {
 	if opts.Format == "" {
 		return parseDetected(content, path, opts)
 	}
@@ -111,7 +160,7 @@ func parseDetected(content []byte, path string, opts ReadOptions) (*Subtitle, Re
 // the format that Detect finds in the raw bytes when it is binary. When Detect finds no format, the format of an
 // extension that only binary formats list. A text format that Detect finds wins over the extension.
 func binaryFormat(content []byte, path string) (Format, bool) {
-	if f, ok := Detect(content); ok {
+	if f, ok := detectFormat(content); ok {
 		return f, f.IsBinary()
 	}
 	if !binaryExtension(path) {
@@ -143,7 +192,7 @@ func formatOf(text []byte, path string) (f Format, empty bool, err error) {
 	if ok && isBlank(text) {
 		return f, true, nil
 	}
-	if detected, found := Detect(text); found {
+	if detected, found := detectFormat(text); found {
 		return Format(extfallback.Profile(string(detected), path)), false, nil
 	}
 	if !ok {
@@ -152,15 +201,16 @@ func formatOf(text []byte, path string) (f Format, empty bool, err error) {
 	return f, false, nil
 }
 
-// container returns the article and name of the video container that the head of content shows.
-func container(content []byte) (string, bool) {
+// containerOf returns the video container that the head of a file shows. The head is the raw bytes, before any
+// BOM trim.
+func containerOf(head []byte) (Container, bool) {
 	switch {
-	case bytes.HasPrefix(content, []byte("\x1A\x45\xDF\xA3")):
-		return "a Matroska", true
-	case len(content) >= 8 && string(content[4:8]) == "ftyp":
-		return "an MP4", true
-	case transportStream(content, 188) || transportStream(content, 192):
-		return "an MPEG-TS", true
+	case bytes.HasPrefix(head, []byte("\x1A\x45\xDF\xA3")):
+		return Matroska, true
+	case len(head) >= 8 && string(head[4:8]) == "ftyp":
+		return MP4, true
+	case transportStream(head, 188) || transportStream(head, 192):
+		return MPEGTS, true
 	default:
 		return "", false
 	}

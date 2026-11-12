@@ -1,6 +1,6 @@
 # Reading and writing
 
-`stbox.Load` reads a file, `stbox.Parse` reads an `io.Reader`, and `stbox.Write` writes one format and returns a `WriteReport`. One `ReadOptions` and one `WriteOptions` value serve every format. Each reader and writer ignores the fields of other formats, so one value serves a batch of mixed files.
+`stbox.Load` reads a file, `stbox.Parse` reads an `io.ReaderAt` and its size, and `stbox.Write` writes one format and returns a `WriteReport`. One `ReadOptions` and one `WriteOptions` value serve every format. Each reader and writer ignores the fields of other formats, so one value serves a batch of mixed files.
 
 The `WriteReport` lists the changes a writer made to fit the subtitle into its format. It has one pointer field per format that reports. The field `WebVTT` is non-nil after a WebVTT write and holds one `DroppedColor` per dropped text color. All other fields stay nil, and a format with no report leaves the whole value empty. Use `_, err :=` to ignore it.
 
@@ -8,7 +8,8 @@ The `WriteReport` lists the changes a writer made to fit the subtitle into its f
 ```go
 srt := "1\n00:00:01,000 --> 00:00:02,000\nHello\n"
 
-s, _, err := stbox.Parse(strings.NewReader(srt), stbox.ReadOptions{})
+r := strings.NewReader(srt)
+s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -32,17 +33,18 @@ fmt.Printf("%q\n", out.String())
 | `Encoding` | detect the encoding | a name of [encodings.md](encodings.md), compared without case |
 | `Lenient` | strict mode: the first broken block returns the error. See [lenient-parsing.md](lenient-parsing.md) | |
 | `LastCueDuration` | 5 s | 0 or more. 0 gives a cue that ends where it starts |
+| `Track` | 0: read the only subtitle track of a video container. A subtitle file needs 0 | 0 or more. Matroska and MP4 count from 1. MPEG-TS uses teletext page numbers from 100, or PIDs |
 
 - **Pointer**: `LastCueDuration` is a pointer, because 0 s is legal and differs from the default. `new(2 * time.Second)` sets it in one expression.
 - **Validate first**: `Load`, `Parse` and `Write` call `Validate` before they read or write. A failed check is an `*InvalidArgumentError` whose `Option` is the Go path of the field, for example `ReadOptions.LastCueDuration`.
 
 ## Read steps
 
-1. Read the whole input into memory. For a SubRip or WebVTT file too large for that, see [streaming.md](streaming.md).
+1. Read the first 389 bytes. A video container is not read whole: its reader takes only the bytes of its track. Any other input is read whole into memory. For a SubRip or WebVTT file too large for that, see [streaming.md](streaming.md).
 2. Decode the text to UTF-8, as [encodings.md](encodings.md) says. `ReadInfo.SourceEncoding` holds the encoding.
 3. Detect the format, unless `Format` is set. [detection.md](detection.md) holds the rules, also for empty content, video files and the extension fallback of `Load`.
 4. Run the reader of the format.
-5. Return the subtitle and a `ReadInfo` with the format, the source encoding and the warnings. On error, the subtitle is nil and `ReadInfo` is the zero value.
+5. Return the subtitle and a `ReadInfo` with the format, the source encoding, the warnings, and for a container read, the `Container` and the `Track` number. On error, the subtitle is nil and `ReadInfo` is the zero value.
 
 ## Text pre-pass
 

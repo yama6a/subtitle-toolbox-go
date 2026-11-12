@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -171,7 +170,7 @@ func TestEntryPointsValidateBeforeTheyRead(t *testing.T) {
 
 	read := stbox.ReadOptions{Format: "foo", LastCueDuration: new(-time.Second)}
 	_, _, loadErr := stbox.Load(filepath.Join(t.TempDir(), "missing.srt"), read)
-	_, _, parseErr := stbox.Parse(strings.NewReader(""), read)
+	_, _, parseErr := parseBytes([]byte(""), read)
 	_, writeErr := stbox.Write(&bytes.Buffer{}, &stbox.Subtitle{}, "foo", stbox.WriteOptions{BOM: stbox.BOM(3)})
 	for _, err := range []error{loadErr, parseErr, writeErr} {
 		require.ErrorIs(t, err, stbox.ErrInvalidArgument)
@@ -185,13 +184,13 @@ func TestOtherFormatsIgnoreTheMicroDVDOptions(t *testing.T) {
 	t.Parallel()
 
 	content := testfiles.Read(t, "srt/real/own_styled.srt")
-	plain, _, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: stbox.SubRip})
+	plain, _, err := parseBytes(content, stbox.ReadOptions{Format: stbox.SubRip})
 	require.NoError(t, err)
-	with, _, err := stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: stbox.SubRip, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
+	with, _, err := parseBytes(content, stbox.ReadOptions{Format: stbox.SubRip, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
 	require.NoError(t, err)
 	assert.Equal(t, plain, with)
 
-	_, _, err = stbox.Parse(bytes.NewReader(content), stbox.ReadOptions{Format: stbox.SubRip, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25}}})
+	_, _, err = parseBytes(content, stbox.ReadOptions{Format: stbox.SubRip, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25}}})
 	require.ErrorIs(t, err, stbox.ErrInvalidArgument, "Validate checks the options of every format")
 
 	var a, b bytes.Buffer
