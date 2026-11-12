@@ -64,6 +64,8 @@ func detectTests() []detectTest {
 			want:    stbox.JSON,
 		},
 
+		{name: "DCP Interop", content: "<?xml version=\"1.0\"?>\n<DCSubtitle Version=\"1.1\"></DCSubtitle>", want: stbox.DCP},
+		{name: "DCP SMPTE with prefix", content: "<dcst:SubtitleReel xmlns:dcst=\"http://www.smpte-ra.org/schemas/428-7/2007/DCST\"/>", want: stbox.DCP},
 		{name: "SAMI in lower case", content: "<sami><body></body></sami>", want: stbox.SAMI},
 		{name: "SAMI after a line end", content: "<SAMI>\n<HEAD>\n", want: stbox.SAMI},
 		{name: "SAMI after the XML prolog", content: "<?xml version=\"1.0\"?>\n<!-- made by hand -->\n<!DOCTYPE sami>\n<Sami>", want: stbox.SAMI},
@@ -246,7 +248,7 @@ type fixture struct {
 func fixtures(t *testing.T) []fixture {
 	t.Helper()
 
-	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "lrc": stbox.LRC, "microdvd": stbox.MicroDVD, "mpl2": stbox.MPL2, "mpsub": stbox.MPSub, "qttext": stbox.QuickTimeText, "sami": stbox.SAMI, "sbv": stbox.SBV, "spruce-stl": stbox.SpruceSTL, "srt": stbox.SubRip, "stl": stbox.EBUSTL, "subviewer": stbox.SubViewer, "tmplayer": stbox.TMPlayer, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
+	folders := map[string]stbox.Format{"ass": stbox.ASS, "dcp": stbox.DCP, "json": stbox.JSON, "lrc": stbox.LRC, "microdvd": stbox.MicroDVD, "mpl2": stbox.MPL2, "mpsub": stbox.MPSub, "pac": stbox.PAC, "qttext": stbox.QuickTimeText, "sami": stbox.SAMI, "sbv": stbox.SBV, "spruce-stl": stbox.SpruceSTL, "srt": stbox.SubRip, "stl": stbox.EBUSTL, "subviewer": stbox.SubViewer, "tmplayer": stbox.TMPlayer, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
 	var list []fixture
 	for dir, f := range folders {
 		for _, sub := range []string{dir, dir + "/real"} {
@@ -557,7 +559,7 @@ func FuzzDetect(f *testing.F) {
 		f.Add([]byte(tt.content))
 	}
 	root := testfiles.Root(f)
-	for _, dir := range []string{"ass", "json", "lrc", "lrc/real", "microdvd", "microdvd/real", "mpl2/real", "mpsub", "mpsub/real", "qttext", "qttext/real", "sami/real", "sbv", "spruce-stl/real", "srt", "stl", "stl/real", "subviewer", "subviewer/real", "tmplayer/real", "ttml/real", "forced", "vtt", "lenient"} {
+	for _, dir := range []string{"ass", "dcp/real", "json", "lrc", "lrc/real", "microdvd", "microdvd/real", "mpl2/real", "mpsub", "mpsub/real", "pac/real", "qttext", "qttext/real", "sami/real", "sbv", "spruce-stl/real", "srt", "stl", "stl/real", "subviewer", "subviewer/real", "tmplayer/real", "ttml/real", "forced", "vtt", "lenient"} {
 		entries, err := os.ReadDir(filepath.Join(root, dir))
 		if err != nil {
 			f.Fatal(err)

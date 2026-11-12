@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dcst:SubtitleReel xmlns:dcst="http://www.smpte-ra.org/schemas/428-7/2014/DCST" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <dcst:Id>urn:uuid:9a1c3e5f-7b9d-4f1a-b3c5-7e9a1c3e5f7b</dcst:Id>
+  <dcst:ContentTitleText>Le Phare</dcst:ContentTitleText>
+  <dcst:AnnotationText>Sous-titres</dcst:AnnotationText>
+  <dcst:IssueDate>2026-02-04T20:17:48.000-00:00</dcst:IssueDate>
+  <dcst:ReelNumber>1</dcst:ReelNumber>
+  <dcst:Language>fr</dcst:Language>
+  <dcst:EditRate>25 1</dcst:EditRate>
+  <dcst:TimeCodeRate>25</dcst:TimeCodeRate>
+  <dcst:StartTime>00:00:00:00</dcst:StartTime>
+  <dcst:LoadFont ID="theFontId">urn:uuid:3c5e7a9c-1e3f-4a5c-8e7a-9c1e3f5a7c9e</dcst:LoadFont>
+  <dcst:SubtitleList>
+    <dcst:Font ID="theFontId" Size="42" Weight="normal" Color="FFFFFFFF" Effect="border" EffectColor="FF000000">
+      <dcst:Subtitle SpotNumber="1" FadeUpTime="00:00:00:00" FadeDownTime="00:00:00:00" TimeIn="00:00:30:04" TimeOut="00:00:33:21">
+        <dcst:Text Vposition="8" Valign="bottom" Halign="center" Direction="ltr">La lampe tourne encore.</dcst:Text>
+      </dcst:Subtitle>
+      <dcst:Subtitle SpotNumber="2" FadeUpTime="00:00:00:00" FadeDownTime="00:00:00:00" TimeIn="00:00:34:00" TimeOut="00:00:36:12">
+        <dcst:Text Vposition="10" Valign="top" Halign="center" Direction="ltr"><dcst:Font Italic="yes" Underline="yes">Radio</dcst:Font></dcst:Text>
+      </dcst:Subtitle>
+    </dcst:Font>
+  </dcst:SubtitleList>
+</dcst:SubtitleReel>

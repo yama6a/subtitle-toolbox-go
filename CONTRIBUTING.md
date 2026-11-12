@@ -170,7 +170,7 @@ Its exception table names the rule and the reason for each exception.
 
 | # | Rule | Example |
 |---:|:--- |:--- |
-| N1 | A `Format` value is the CLI format name. Format data keys use the same value. No aliases | `"srt"`, `"vtt"`, `"ass"`, `"ttml"`, `"sami"`, `"sbv"`, `"microdvd"`, `"mpl2"`, `"tmplayer"`, `"mpsub"`, `"subviewer"`, `"qttext"`, `"spruce-stl"`, `"lrc"`, `"csv"`, `"tsv"`, `"json"`, `"txt"`. `sub`, `smi` and `ssa` are extensions, never format names |
+| N1 | A `Format` value is the CLI format name. Format data keys use the same value. No aliases | `"srt"`, `"vtt"`, `"ass"`, `"ttml"`, `"dcp"`, `"sami"`, `"sbv"`, `"microdvd"`, `"mpl2"`, `"tmplayer"`, `"mpsub"`, `"subviewer"`, `"qttext"`, `"spruce-stl"`, `"lrc"`, `"csv"`, `"tsv"`, `"json"`, `"txt"`. `sub`, `smi` and `ssa` are extensions, never format names |
 | N2 | A format constant carries the format's own name. A format package has the lower-case name from the package map | `SubRip`, `WebVTT`, `ASS`, `TTML`, `SAMI`, `SBV`, `MicroDVD`, `MPL2`, `TMPlayer`, `MPSub`, `SubViewer`, `QuickTimeText`, `LRC`, `CSV`, `TSV`, `JSON`, `PlainText`. Packages `srt`, `webvtt`, `ass` |
 | N3 | Initialisms are all capitals, as Go style and the `revive` linter want. Brand names keep their own capitals | `ID`, `URL`, `BOM`, `CRLF`, `PNG`, `OCR`. `SubRip`, `WebVTT`, `MicroDVD` |
 | N4 | Full words and US spelling | `FrameRate`, not `FPS`. `MaxLinesPerCue`, not `MaxLines`. `Color`, not `Colour` |

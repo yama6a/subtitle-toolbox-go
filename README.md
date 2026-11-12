@@ -63,6 +63,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | Format | Go constant | Name | Extensions | Read | Write | Notes |
 |:--- |:--- |:--- |:--- |:--- |:--- |:--- |
 | [ASS and SSA](https://en.wikipedia.org/wiki/SubStation_Alpha) | `stbox.ASS` | `ass` | `.ass`, `.ssa` | yes | yes | |
+| Cavena 890 | `stbox.Cavena890` | `cavena890` | `.890` | yes | yes | binary, Scandinavian broadcasters, found by the extension |
 | [CSV](https://www.rfc-editor.org/rfc/rfc4180) | `stbox.CSV` | `csv` | `.csv` | yes | yes | not detected from the content |
 | [iTunes Timed Text](docs/formats.md#itt) | `stbox.ITT` | `itt` | `.itt` | yes | yes | needs the frame rate of the video. A TTML file named `.itt` loads as iTT |
 | [JSON of this library](docs/json.md) | `stbox.JSON` | `json` | `.json` | yes | yes | |
@@ -70,6 +71,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [MCC](https://www.telestream.net/pdfs/user-guides/MacCaption-UserGuide.pdf) | `stbox.MCC` | `mcc` | `.mcc` | yes | yes | MacCaption, CEA-608 and CEA-708 broadcast captions |
 | [MicroDVD](https://en.wikipedia.org/wiki/MicroDVD) | `stbox.MicroDVD` | `microdvd` | `.sub` | yes | yes | needs the frame rate of the video |
 | [MPSub](https://github.com/pigoz/mplayer-svn/blob/7f6453553628729b151490144f13eae290a0fd67/DOCS/tech/mpsub.sub) | `stbox.MPSub` | `mpsub` | `.mpsub` | yes | yes | MPlayer, often named `.sub`, found by content |
+| PAC | `stbox.PAC` | `pac` | `.pac`, `.fpc` | yes | yes | binary, Screen Electronics subtitles, also PAC Unicode |
 | [SAMI](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/dnacc/understanding-sami-1.0) | `stbox.SAMI` | `sami` | `.smi`, `.sami` | yes | yes | one language class per read |
 | [SBV](https://support.google.com/youtube/answer/2734698) | `stbox.SBV` | `sbv` | `.sbv` | yes | yes | YouTube Studio captions |
 | [SCC](https://en.wikipedia.org/wiki/EIA-608) | `stbox.SCC` | `scc` | `.scc` | yes | yes | CEA-608 broadcast captions |
@@ -78,6 +80,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [Spruce STL](https://www.spectacle.co.uk/uploads/other%20media/Manual_DVD_Studio_Pro_4.pdf) | `stbox.SpruceSTL` | `spruce-stl` | `.stl` | yes | yes | DVD Studio Pro text subtitles, time codes in frames |
 | [SubViewer 1 and 2](https://man.archlinux.org/man/mplayer.1.en) | `stbox.SubViewer` | `subviewer` | `.sub` | yes | yes | old DivX releases, found by content |
 | [TTML, IMSC, DFXP](https://www.w3.org/TR/ttml2/) | `stbox.TTML` | `ttml` | `.ttml`, `.dfxp`, `.xml` | yes | yes | an iTT file detects as TTML |
+| [DCP subtitles](https://pub.smpte.org/doc/st428-7/20140211-pub/st0428-7-2014.pdf) | `stbox.DCP` | `dcp` | `.xml` | yes | yes | digital cinema, Interop and SMPTE ST 428-7, found by content |
 | [TSV](https://www.iana.org/assignments/media-types/text/tab-separated-values) | `stbox.TSV` | `tsv` | `.tsv` | yes | yes | not detected from the content |
 | [Plain text](docs/formats.md#plain-text) | `stbox.PlainText` | `txt` | `.txt` | no | yes | a transcript of the words, owns `.txt` |
 | [MPL2](https://pysubs2.readthedocs.io/en/latest/supported-formats.html) | `stbox.MPL2` | `mpl2` | `.txt` | yes | yes | found by content |

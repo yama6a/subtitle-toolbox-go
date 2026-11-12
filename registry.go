@@ -6,10 +6,13 @@ import (
 	"io"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/cavena890"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/dcp"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/lrc"
@@ -17,6 +20,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpl2"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/pac"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/qttext"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
@@ -51,6 +55,8 @@ var (
 	_ readFunc[ass.ReadOptions]                                = ass.Read
 	_ writeFunc[ass.WriteOptions, ass.WriteReport]             = ass.Write
 	_ detectFunc                                               = ass.Detect
+	_ readFunc[cavena890.ReadOptions]                          = cavena890.Read
+	_ writeFunc[cavena890.WriteOptions, cavena890.WriteReport] = cavena890.Write
 	_ readFunc[ttml.ReadOptions]                               = ttml.Read
 	_ writeFunc[ttml.WriteOptions, ttml.WriteReport]           = ttml.Write
 	_ readFunc[microdvd.ReadOptions]                           = microdvd.Read
@@ -75,6 +81,9 @@ var (
 	_ readFunc[mpsub.ReadOptions]                              = mpsub.Read
 	_ writeFunc[mpsub.WriteOptions, mpsub.WriteReport]         = mpsub.Write
 	_ detectFunc                                               = mpsub.Detect
+	_ readFunc[pac.ReadOptions]                                = pac.Read
+	_ writeFunc[pac.WriteOptions, pac.WriteReport]             = pac.Write
+	_ detectFunc                                               = pac.Detect
 	_ readFunc[lrc.ReadOptions]                                = lrc.Read
 	_ writeFunc[lrc.WriteOptions, lrc.WriteReport]             = lrc.Write
 	_ detectFunc                                               = lrc.Detect
@@ -98,6 +107,9 @@ var (
 	_ readFunc[sprucestl.ReadOptions]                          = sprucestl.Read
 	_ writeFunc[sprucestl.WriteOptions, sprucestl.WriteReport] = sprucestl.Write
 	_ detectFunc                                               = sprucestl.Detect
+	_ readFunc[dcp.ReadOptions]                                = dcp.Read
+	_ writeFunc[dcp.WriteOptions, dcp.WriteReport]             = dcp.Write
+	_ detectFunc                                               = dcp.Detect
 )
 
 // formatFuncs holds the read and write functions of one format. A nil function means
@@ -114,6 +126,7 @@ type formatFuncs struct {
 //nolint:gochecknoglobals // lookup table of the format functions
 var registry = []formatFuncs{
 	{format: ASS, read: readASS, write: writeASS},
+	{format: Cavena890, read: readCavena890, write: writeCavena890},
 	{format: CSV, read: readCSV, write: writeCSV},
 	{format: ITT, read: readITT, write: writeITT},
 	{format: JSON, read: readJSON, write: writeJSON},
@@ -121,6 +134,7 @@ var registry = []formatFuncs{
 	{format: MCC, read: readMCC, write: writeMCC},
 	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
 	{format: MPSub, read: readMPSub, write: writeMPSub},
+	{format: PAC, read: readPAC, write: writePAC},
 	{format: SAMI, read: readSAMI, write: writeSAMI},
 	{format: SBV, read: readSBV, write: writeSBV},
 	{format: SCC, read: readSCC, write: writeSCC},
@@ -129,6 +143,7 @@ var registry = []formatFuncs{
 	{format: SpruceSTL, read: readSpruceSTL, write: writeSpruceSTL},
 	{format: SubViewer, read: readSubViewer, write: writeSubViewer},
 	{format: TTML, read: readTTML, write: writeTTML},
+	{format: DCP, read: readDCP, write: writeDCP},
 	{format: TSV, read: readTSV, write: writeTSV},
 	{format: PlainText, write: writePlainText},
 	{format: MPL2, read: readMPL2, write: writeMPL2},
@@ -155,6 +170,7 @@ var (
 	signatures = []signature{
 		{format: WebVTT, match: webvtt.Detect},
 		{format: TTML, match: ttml.Detect},
+		{format: DCP, match: dcp.Detect},
 		{format: SAMI, match: sami.Detect},
 		{format: ASS, match: ass.Detect},
 		{format: MPSub, match: mpsub.Detect},
@@ -165,6 +181,7 @@ var (
 		{format: SubViewer, match: subviewer.Detect},
 		{format: LRC, match: lrc.Detect},
 		{format: EBUSTL, match: ebustl.Detect},
+		{format: PAC, match: pac.Detect},
 		{format: SpruceSTL, match: sprucestl.Detect},
 		{format: SCC, match: scc.Detect},
 		{format: MCC, match: mcc.Detect},
@@ -203,6 +220,15 @@ func extension(path string) string {
 	return strings.ToLower(strings.TrimPrefix(filepath.Ext(path), "."))
 }
 
+func readCavena890(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return cavena890.Read(r, common, cavena890.ReadOptions{})
+}
+
+func writeCavena890(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := cavena890.Write(w, s, common, cavena890.WriteOptions{})
+	return WriteReport{}, err
+}
+
 func readEBUSTL(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return ebustl.Read(r, common, opts.EBUSTL)
 }
@@ -213,6 +239,26 @@ func readITT(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subti
 
 func writeITT(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	_, err := itt.Write(w, s, common, opts.ITT)
+	return WriteReport{}, err
+}
+
+func readPAC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	pacOpts := opts.PAC
+	if pacOpts.CodePage == pac.CodePageAuto && opts.Encoding != "" {
+		codePage, ok := pac.CodePageFromEncoding(opts.Encoding)
+		if !ok {
+			return nil, nil, &InvalidArgumentError{
+				Option: "ReadOptions.Encoding",
+				Msg:    "PAC files have no code page for the encoding " + strconv.Quote(opts.Encoding) + ".",
+			}
+		}
+		pacOpts.CodePage = codePage
+	}
+	return pac.Read(r, common, pacOpts)
+}
+
+func writePAC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := pac.Write(w, s, common, pac.WriteOptions{})
 	return WriteReport{}, err
 }
 
@@ -312,6 +358,15 @@ func writeMCC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts Wr
 		return WriteReport{}, err
 	}
 	return WriteReport{MCC: &report}, nil
+}
+
+func readDCP(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return dcp.Read(r, common, dcp.ReadOptions{})
+}
+
+func writeDCP(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := dcp.Write(w, s, common, dcp.WriteOptions{})
+	return WriteReport{}, err
 }
 
 func readSpruceSTL(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {

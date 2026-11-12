@@ -1,0 +1,53 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "pac": {
+                "codePage": "japanese",
+                "frameRate": 25,
+                "firstNumber": 0,
+                "header": "0100000000000000000000000000000000000000",
+                "footer": "ff0000000000000000000000110064756d6d7920656e64206f662066696c65"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "パン屋は七時に開きます。"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "パン屋は七時に開きます。",
+                        "bytes": "fe02031f5731362e8370839389ae82cd8eb58e9e82c98a4a82ab82dc82b78142"
+                    }
+                }
+            },
+            {
+                "start": 4.0,
+                "end": 6.0,
+                "lines": [
+                    "パンはまだ温かいです。"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "パンはまだ温かいです。",
+                        "bytes": "fe02031f5731362e8370839382cd82dc82be89b782a982a282c582b78142"
+                    }
+                }
+            }
+        ]
+    }
+}

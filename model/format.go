@@ -8,6 +8,7 @@ type Format string
 // The formats of the registry, in registry order.
 const (
 	ASS           Format = "ass"
+	Cavena890     Format = "cavena890"
 	CSV           Format = "csv"
 	ITT           Format = "itt"
 	JSON          Format = "json"
@@ -15,6 +16,7 @@ const (
 	MCC           Format = "mcc"
 	MicroDVD      Format = "microdvd"
 	MPSub         Format = "mpsub"
+	PAC           Format = "pac"
 	SAMI          Format = "sami"
 	SBV           Format = "sbv"
 	SCC           Format = "scc"
@@ -23,6 +25,7 @@ const (
 	SpruceSTL     Format = "spruce-stl"
 	SubViewer     Format = "subviewer"
 	TTML          Format = "ttml"
+	DCP           Format = "dcp"
 	TSV           Format = "tsv"
 	PlainText     Format = "txt"
 	MPL2          Format = "mpl2"
@@ -43,6 +46,7 @@ type formatFact struct {
 //nolint:gochecknoglobals // lookup table of the format facts
 var formatFacts = []formatFact{
 	{format: ASS, extensions: []string{"ass", "ssa"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: Cavena890, extensions: []string{"890"}, canRead: true, canWrite: true, binary: true},
 	{format: CSV, extensions: []string{"csv"}, canRead: true, canWrite: true},
 	{format: ITT, extensions: []string{"itt"}, canRead: true, canWrite: true},
 	{format: JSON, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
@@ -50,6 +54,7 @@ var formatFacts = []formatFact{
 	{format: MCC, extensions: []string{"mcc"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MicroDVD, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MPSub, extensions: []string{"mpsub"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: PAC, extensions: []string{"pac", "fpc"}, canRead: true, canWrite: true, autoDetected: true, binary: true},
 	{format: SAMI, extensions: []string{"smi", "sami"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SBV, extensions: []string{"sbv"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SCC, extensions: []string{"scc"}, canRead: true, canWrite: true, autoDetected: true},
@@ -58,6 +63,7 @@ var formatFacts = []formatFact{
 	{format: SpruceSTL, extensions: []string{"stl"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: SubViewer, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: DCP, extensions: []string{"xml"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: TSV, extensions: []string{"tsv"}, canRead: true, canWrite: true},
 	{format: PlainText, extensions: []string{"txt"}, canWrite: true, autoDetected: true},
 	{format: MPL2, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},

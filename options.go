@@ -12,6 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mcc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/pac"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
@@ -50,6 +51,9 @@ type ReadOptions struct {
 	// MCC holds the settings of the MCC reader. The zero value reads the captions of CEA-708 service 1, else the
 	// CEA-608 captions of channel 1 with one cue per screen of roll-up captions.
 	MCC mcc.ReadOptions
+	// PAC holds the settings of the PAC reader. The zero value takes the code page from the story record or detects it.
+	// A binary format ignores Encoding, but PAC maps it to a code page when PAC.CodePage is empty.
+	PAC pac.ReadOptions
 	// EBUSTL holds the settings of the EBU STL reader. The zero value keeps the times of the file.
 	EBUSTL ebustl.ReadOptions
 	// SpruceSTL holds the settings of the Spruce STL reader. The zero value guesses 25 or 30 fps from the frame numbers.
@@ -138,6 +142,9 @@ func (o ReadOptions) Validate() error {
 		if err := check(); err != nil {
 			return err
 		}
+	}
+	if err := o.PAC.Validate(); err != nil {
+		return err
 	}
 	return o.SpruceSTL.Validate()
 }

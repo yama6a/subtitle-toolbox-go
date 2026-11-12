@@ -49,23 +49,19 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if err != nil {
 		return nil, nil, err
 	}
-	header, packets, rateCode, err := readLines(st, lines)
-	if err != nil {
+	lr := &lineReader{st: st, lines: lines, header: readHeader(lines), rateCode: -1}
+	if err := lr.read(); err != nil {
 		return nil, nil, err
 	}
-	row, dropFrame, err := frameRate(st, header, rateCode)
-	if err != nil {
+	if err := lr.resolve(); err != nil {
 		return nil, nil, err
 	}
-	header.Delete(timeCodeRate)
-	if err := s.SetFormatData(formatDataKey, fileData(version, row, dropFrame, header)); err != nil {
+	lr.header.Delete(timeCodeRate)
+	if err := s.SetFormatData(formatDataKey, fileData(version, lr.row, lr.dropFrame, lr.header)); err != nil {
 		return nil, nil, fmt.Errorf("%s file data: %w", model.MCC, err)
 	}
 
-	timeline, err := frames(st, lines, packets, row, dropFrame)
-	if err != nil {
-		return nil, nil, err
-	}
+	timeline := lr.timeline()
 	cues := caption.CaptionDataCues(timeline, opts.cea708Service(),
 		caption.CEA608Options{Channel: max(opts.Channel, 1), RollUp: opts.RollUp}, st.LastCueDuration())
 	s.AddCues(cues...)
@@ -97,32 +93,129 @@ func fileData(version string, row rate, dropFrame bool, header *model.Data) *mod
 	)
 }
 
-// readLines returns the header fields, the packets that hold triplets and the rate code of the first packet that
-// holds a CDP, or -1.
-func readLines(st *parsing.State, lines []string) (*model.Data, []rawPacket, int, error) {
-	header := &model.Data{}
-	packets := make([]rawPacket, 0, len(lines)/2)
-	rateCode := -1
-	for i, line := range lines {
-		if isIgnored(line) || readField(header, line) {
+// lineReader reads the data lines. The header fields come first, so the frame rate is known at the first line that
+// holds a CDP, and each line can check its time against the limit.
+type lineReader struct {
+	st       *parsing.State
+	lines    []string
+	header   *model.Data
+	rateCode int // of the first packet that holds a CDP, or -1
+	packets  []framePacket
+
+	resolved  bool
+	row       rate
+	dropFrame bool
+	fps       model.FrameRate
+	limit     int64 // the first frame at 100000 hours or later
+}
+
+// framePacket is the triplets of one data line, with the frame of its time code.
+type framePacket struct {
+	frame    int64
+	triplets []cea708.Triplet
+}
+
+// read reads every data line. A bad line fails or is skipped, in file order.
+func (lr *lineReader) read() error {
+	lr.packets = make([]framePacket, 0, len(lr.lines)/2)
+	for i, line := range lr.lines {
+		if isIgnored(line) {
 			continue
 		}
-		n := i + 1
-		code, tc, triplets, msg := readLine(line)
-		if msg != "" {
-			if err := st.Fail(&model.ParseError{Line: n, Msg: msg}, n, model.NoBlock, []string{line}); err != nil {
-				return nil, nil, 0, err
-			}
+		if _, _, ok := splitField(line); ok {
 			continue
 		}
-		if code >= 0 && rateCode < 0 {
-			rateCode = code
-		}
-		if len(triplets) > 0 {
-			packets = append(packets, rawPacket{int32(tc.Hours), int32(n), uint8(tc.Minutes), uint8(tc.Seconds), uint8(tc.Frames), triplets})
+		if err := lr.readData(i+1, line); err != nil {
+			return err
 		}
 	}
-	return header, packets, rateCode, nil
+	return nil
+}
+
+// readData reads the data line n. It fails the line, or adds its packet.
+func (lr *lineReader) readData(n int, line string) error {
+	code, tc, triplets, msg := readLine(line)
+	if msg == "" && code >= 0 && lr.rateCode < 0 {
+		lr.rateCode = code
+		if err := lr.resolve(); err != nil {
+			return err
+		}
+	}
+	if msg == "" && len(triplets) > 0 {
+		msg = lr.check(tc)
+	}
+	if msg != "" {
+		return lr.st.Fail(&model.ParseError{Line: n, Msg: msg}, n, model.NoBlock, []string{line})
+	}
+	if len(triplets) > 0 {
+		lr.packets = append(lr.packets, framePacket{lr.fps.FrameOf(tc), triplets})
+	}
+	return nil
+}
+
+// resolve finds the frame rate once, from the header and the first rate code.
+func (lr *lineReader) resolve() error {
+	if lr.resolved {
+		return nil
+	}
+	row, dropFrame, err := frameRate(lr.st, lr.header, lr.rateCode)
+	if err != nil {
+		return err
+	}
+	lr.resolved, lr.row, lr.dropFrame = true, row, dropFrame
+	lr.fps = row.fps
+	lr.fps.DropFrame = dropFrame
+	limit := lr.fps.Frames(timecode.MaxTime)
+	for lr.fps.Duration(limit) >= timecode.MaxTime {
+		limit--
+	}
+	for lr.fps.Duration(limit+1) < timecode.MaxTime {
+		limit++
+	}
+	lr.limit = limit + 1
+	return nil
+}
+
+// check returns the error message for a time code at 100000 hours or later.
+func (lr *lineReader) check(tc model.Timecode) string {
+	if lr.fps.FrameOf(tc) < lr.limit {
+		return ""
+	}
+	_, err := parsing.BoundedTime(timecode.MaxTime, tc.String(), 0)
+	var perr *model.ParseError
+	if errors.As(err, &perr) {
+		return perr.Msg
+	}
+	return ""
+}
+
+// timeline joins the packets of one time code in file order and returns them in time order.
+func (lr *lineReader) timeline() []cea708.Frame {
+	slices.SortStableFunc(lr.packets, func(a, b framePacket) int { return cmp.Compare(a.frame, b.frame) })
+	out := make([]cea708.Frame, 0, len(lr.packets))
+	for i := 0; i < len(lr.packets); {
+		triplets := lr.packets[i].triplets
+		j := i + 1
+		for ; j < len(lr.packets) && lr.packets[j].frame == lr.packets[i].frame; j++ {
+			triplets = append(triplets[:len(triplets):len(triplets)], lr.packets[j].triplets...)
+		}
+		out = append(out, cea708.Frame{Time: lr.fps.Duration(lr.packets[i].frame), Triplets: triplets})
+		i = j
+	}
+	return out
+}
+
+// readHeader returns the header fields of every line, in file order. A later field of the same name replaces the value.
+func readHeader(lines []string) *model.Data {
+	header := &model.Data{}
+	for _, line := range lines {
+		if !isIgnored(line) {
+			if name, value, ok := splitField(line); ok {
+				header.Set(name, value)
+			}
+		}
+	}
+	return header
 }
 
 // isIgnored reports whether the line is blank, a comment or a version line.
@@ -130,31 +223,17 @@ func isIgnored(line string) bool {
 	return line == "" || strings.HasPrefix(line, "//") || strings.HasPrefix(line, versionPrefix)
 }
 
-// readField stores the line as a header field when it is one. Data lines start with a digit, so only a letter can start a field.
-func readField(header *model.Data, line string) bool {
+// splitField returns the name and the value of a header field line. Data lines start with a digit, so only a letter
+// can start a field.
+func splitField(line string) (name, value string, ok bool) {
 	if c := line[0]; c < 'A' || c > 'z' {
-		return false
+		return "", "", false
 	}
 	m := fieldRegexp.FindStringSubmatch(line)
 	if m == nil {
-		return false
+		return "", "", false
 	}
-	header.Set(strings.Trim(m[1], markupcore.PHPTrimSet), strings.Trim(m[2], markupcore.PHPTrimSet))
-	return true
-}
-
-// rawPacket is the triplets of one data line, with its time code packed to keep a large file small.
-type rawPacket struct {
-	hours    int32
-	line     int32
-	minutes  uint8
-	seconds  uint8
-	frames   uint8
-	triplets []cea708.Triplet
-}
-
-func (p rawPacket) timeCode() model.Timecode {
-	return model.Timecode{Hours: int(p.hours), Minutes: int(p.minutes), Seconds: int(p.seconds), Frames: int(p.frames)}
+	return strings.Trim(m[1], markupcore.PHPTrimSet), strings.Trim(m[2], markupcore.PHPTrimSet), true
 }
 
 func readVersion(lines []string) (string, error) {
@@ -300,52 +379,4 @@ func frameRate(st *parsing.State, header *model.Data, code int) (rate, bool, err
 	}
 	row, _ := rateNamed(name)
 	return row, dropFrame, nil
-}
-
-// frames joins the packets of one time code in file order and returns them in time order. A packet at 100000
-// hours or later fails its line.
-func frames(st *parsing.State, lines []string, packets []rawPacket, row rate, dropFrame bool) ([]cea708.Frame, error) {
-	fps := row.fps
-	fps.DropFrame = dropFrame
-	limit := fps.Frames(timecode.MaxTime)
-	for fps.Duration(limit) >= timecode.MaxTime {
-		limit--
-	}
-	for fps.Duration(limit+1) < timecode.MaxTime {
-		limit++
-	}
-	limit++
-
-	type placed struct {
-		frame  int64
-		packet int
-	}
-	order := make([]placed, 0, len(packets))
-	for i, p := range packets {
-		n := fps.FrameOf(p.timeCode())
-		if n >= limit {
-			_, err := parsing.BoundedTime(timecode.MaxTime, p.timeCode().String(), int(p.line))
-			var perr *model.ParseError
-			if errors.As(err, &perr) {
-				if err := st.Fail(perr, int(p.line), model.NoBlock, []string{lines[p.line-1]}); err != nil {
-					return nil, err
-				}
-			}
-			continue
-		}
-		order = append(order, placed{n, i})
-	}
-	slices.SortStableFunc(order, func(a, b placed) int { return cmp.Compare(a.frame, b.frame) })
-
-	out := make([]cea708.Frame, 0, len(order))
-	for i := 0; i < len(order); {
-		triplets := packets[order[i].packet].triplets
-		j := i + 1
-		for ; j < len(order) && order[j].frame == order[i].frame; j++ {
-			triplets = append(triplets[:len(triplets):len(triplets)], packets[order[j].packet].triplets...)
-		}
-		out = append(out, cea708.Frame{Time: fps.Duration(order[i].frame), Triplets: triplets})
-		i = j
-	}
-	return out, nil
 }

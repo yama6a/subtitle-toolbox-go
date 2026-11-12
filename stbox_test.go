@@ -203,6 +203,7 @@ func ExampleFormats() {
 	}
 	// Output:
 	// ass [ass ssa]
+	// cavena890 [890]
 	// csv [csv]
 	// itt [itt]
 	// json [json]
@@ -210,6 +211,7 @@ func ExampleFormats() {
 	// mcc [mcc]
 	// microdvd [sub]
 	// mpsub [mpsub]
+	// pac [pac fpc]
 	// sami [smi sami]
 	// sbv [sbv]
 	// scc [scc]
@@ -218,6 +220,7 @@ func ExampleFormats() {
 	// spruce-stl [stl]
 	// subviewer [sub]
 	// ttml [ttml dfxp xml]
+	// dcp [xml]
 	// tsv [tsv]
 	// txt [txt]
 	// mpl2 [txt]

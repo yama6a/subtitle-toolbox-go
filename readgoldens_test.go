@@ -39,6 +39,7 @@ var dubbingScript = csv.ReadOptions{
 func goldenFolders() []goldenFolder {
 	return []goldenFolder{
 		{name: "ass", format: stbox.ASS, files: 7},
+		{name: "cavena890", format: stbox.Cavena890, files: 7},
 		{name: "csv", format: stbox.CSV, files: 7, options: map[string]stbox.ReadOptions{
 			"dubbing_script.csv": {CSV: dubbingScript},
 			"headerless_frame_times.csv": {CSV: csv.ReadOptions{
@@ -49,6 +50,7 @@ func goldenFolders() []goldenFolder {
 				Columns: csv.Columns{End: csv.ColumnNamed("Ende"), Speaker: csv.ColumnNamed("Sprecher")},
 			}},
 		}},
+		{name: "dcp", format: stbox.DCP, files: 4},
 		{name: "itt", format: stbox.ITT, files: 3},
 		{name: "json", format: stbox.JSON, files: 6},
 		{name: "lrc", format: stbox.LRC, files: 9},
@@ -61,6 +63,7 @@ func goldenFolders() []goldenFolder {
 		}},
 		{name: "mpl2", format: stbox.MPL2, files: 2},
 		{name: "mpsub", format: stbox.MPSub, files: 2},
+		{name: "pac", format: stbox.PAC, files: 13},
 		{name: "qttext", format: stbox.QuickTimeText, files: 2},
 		{
 			name: "sami", format: stbox.SAMI, files: 11,

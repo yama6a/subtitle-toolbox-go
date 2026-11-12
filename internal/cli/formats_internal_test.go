@@ -37,6 +37,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 	want := strings.Join([]string{
 		"Name        Extensions        Read  Write",
 		"ass         .ass .ssa         yes   yes",
+		"cavena890   .890              yes   yes",
 		"csv         .csv              yes   yes",
 		"itt         .itt              yes   yes",
 		"json        .json             yes   yes",
@@ -44,6 +45,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 		"mcc         .mcc              yes   yes",
 		"microdvd    .sub              yes   yes",
 		"mpsub       .mpsub            yes   yes",
+		"pac         .pac .fpc         yes   yes",
 		"sami        .smi .sami        yes   yes",
 		"sbv         .sbv              yes   yes",
 		"scc         .scc              yes   yes",
@@ -52,6 +54,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 		"spruce-stl  .stl              yes   yes",
 		"subviewer   .sub              yes   yes",
 		"ttml        .ttml .dfxp .xml  yes   yes",
+		"dcp         .xml              yes   yes",
 		"tsv         .tsv              yes   yes",
 		"txt         .txt              no    yes",
 		"mpl2        .txt              yes   yes",

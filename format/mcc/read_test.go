@@ -226,3 +226,16 @@ func TestReadErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestReadWarningsKeepFileOrder(t *testing.T) {
+	t.Parallel()
+
+	content := header2 + "100001:00:00:00\t" + packet(edm) + "\n" + "00:00:00:00\tT4\n" + "100002:00:00:00\t" + packet(edm) + "\n"
+	_, warnings, err := mcc.Read(strings.NewReader(content), model.CommonReadOptions{Lenient: true}, mcc.ReadOptions{})
+	require.NoError(t, err)
+	lines := make([]int, len(warnings))
+	for i, w := range warnings {
+		lines[i] = w.Line
+	}
+	assert.Equal(t, []int{4, 5, 6}, lines)
+}

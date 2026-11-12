@@ -63,6 +63,7 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 |:--- |:--- |
 | SubRip, WebVTT | the line of the error. A message about a missing cue number or timing line quotes the line, cut to 60 characters with `...` |
 | TTML | the line of the element, the line of the `>` that ends its start tag. The first line of the skipped text for text before the XML. 0 for a time expression that is not valid or that alone reaches 100000 hours, for a file that is not well-formed XML and for a root that is not `<tt>` |
+| DCP subtitles | the line of the `<Subtitle>` element for a time or image error, as for TTML. The first line of the skipped text for text before the XML. 0 for XML that is not well-formed and for a wrong root |
 | SBV | the line of the error, which is the timing line. A message about a missing timing line quotes the line, cut to 60 characters with `...` |
 | library JSON | 0 |
 | ASS and SSA | the line of the error: the event line, or the `Format:` line for a field name that is a number. A file without `[Events]` and `[Script Info]` gives 0 |
@@ -77,6 +78,8 @@ All 3 types live in package `model`. Package `stbox` aliases them under the same
 | QuickTime text | the line of the error. A missing `{QTtext}` reports line 1, and a swapped cue reports the line of its timestamp |
 | SCC | the line of the error: the header line, the code line or the line with the bad byte pair. A file with no header gives the first non-empty line |
 | EBU STL | 0. A binary format has no lines |
+| Cavena 890 | 0. A binary format has no lines |
+| PAC | 0. A binary format has no lines |
 
 Each format adds its row here when its reader ships.
 

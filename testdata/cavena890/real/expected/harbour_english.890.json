@@ -1,0 +1,89 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "cavena890": {
+                "variant": "latin",
+                "header": "0000000000000000000000000000000000000000000000000000000000000000000000000000000046697874757265000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a005040306060890000000000909000000000000000000000000000000000000000000000000089000000000000500000000000000484c5632334e2e56000000000000000000000000000500050000000000000000000000000000000000000000000000000000000000000000000000484c5632334e2e563d8d31303a30303a30303a303000000000000000000000000000000000000000000000000000004254440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                "shortEnd": true
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 4.0,
+                "lines": [
+                    "The ferry leaves at nine.",
+                    "Tickets are at the north gate."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "cavena890": {
+                        "text": "The ferry leaves at nine.\nTickets are at the north gate.",
+                        "blocks": [
+                            "00100000190000645400000000000000546865206665727279206c6561766573206174206e696e652e7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f0000000000005469636b6574732061726520617420746865206e6f72746820676174652e7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f00000000"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 5.0,
+                "end": 8.0,
+                "lines": [
+                    "<i>Café crème, Grüße aus Köln.</i>"
+                ],
+                "identifier": null,
+                "alignment": 1,
+                "formatData": {
+                    "cavena890": {
+                        "text": "<i>Café crème, Grüße aus Köln.</i>",
+                        "blocks": [
+                            "002000007d0000c850000000000000007f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f00000000000088436166826520637281656d652c2047728675df6520617573204b866f6c6e2e987f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f00000000"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 10.0,
+                "end": 12.0,
+                "lines": [
+                    "Mind the step, <i>señor</i>."
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "cavena890": {
+                        "text": "Mind the step, <i>señor</i>.",
+                        "blocks": [
+                            "00300000fa00012c52000000000000007f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f0000000000004d696e642074686520737465702c20887365856e6f72982e7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f00000000"
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 13.0,
+                "end": 16.0,
+                "lines": [
+                    "Hold on, it is cold.",
+                    "Wait for the signal.",
+                    "Ready?"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "cavena890": {
+                        "text": "Hold on, it is cold.\nWait for the signal.\nReady?",
+                        "blocks": [
+                            "00400001450001905400000000000000486f6c64206f6e2c20697420697320636f6c642e7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f0000000000005761697420666f7220746865207369676e616c2e7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f00000000",
+                            "004000014500019054000000000000007f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f00000000000052656164793f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f00000000"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

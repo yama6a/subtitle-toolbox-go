@@ -72,6 +72,7 @@ type (
 // The formats of the registry, in registry order.
 const (
 	ASS           = model.ASS
+	Cavena890     = model.Cavena890
 	CSV           = model.CSV
 	ITT           = model.ITT
 	JSON          = model.JSON
@@ -79,6 +80,7 @@ const (
 	MCC           = model.MCC
 	MicroDVD      = model.MicroDVD
 	MPSub         = model.MPSub
+	PAC           = model.PAC
 	SAMI          = model.SAMI
 	SBV           = model.SBV
 	SCC           = model.SCC
@@ -86,6 +88,7 @@ const (
 	EBUSTL        = model.EBUSTL
 	SubViewer     = model.SubViewer
 	TTML          = model.TTML
+	DCP           = model.DCP
 	TSV           = model.TSV
 	PlainText     = model.PlainText
 	MPL2          = model.MPL2

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DCSubtitle Version="1.0">
+  <SubtitleID>8f2e4a6c-1b3d-4f5e-a7c9-2d4f6b8a0c1e</SubtitleID>
+  <MovieTitle>THE LIGHTHOUSE</MovieTitle>
+  <ReelNumber>2</ReelNumber>
+  <Language>English</Language>
+  <LoadFont Id="Font1" URI="2-dci.ttf"/>
+  <Font Effect="border" Size="42" Id="Font1">
+    <Subtitle SpotNumber="1" TimeIn="00:00:51:000" TimeOut="00:00:52:125" FadeUpTime="20" FadeDownTime="20">
+      <Text HAlign="center" HPosition="0.0" VAlign="bottom" VPosition="7">Over here.</Text>
+    </Subtitle>
+    <Subtitle SpotNumber="2" TimeIn="00:01:30:020" TimeOut="00:01:33:031" FadeUpTime="20" FadeDownTime="20">
+      <Text HAlign="center" HPosition="0.0" VAlign="bottom" VPosition="14"><Font Italic="yes">Every night at dusk</Font></Text>
+      <Text HAlign="center" HPosition="0.0" VAlign="bottom" VPosition="7"><Font Italic="yes">the lamp still turns.</Font></Text>
+    </Subtitle>
+    <Subtitle SpotNumber="3" TimeIn="00:01:34:000" TimeOut="00:01:36:000" FadeUpTime="20" FadeDownTime="20">
+      <Text HAlign="center" HPosition="0.0" VAlign="bottom" VPosition="7"><Font Color="FFFFFF00">Keep the door shut.</Font></Text>
+    </Subtitle>
+  </Font>
+</DCSubtitle>

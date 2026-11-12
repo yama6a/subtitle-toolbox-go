@@ -1,0 +1,125 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "THE LIGHTHOUSE"
+        },
+        "comments": [],
+        "formatData": {
+            "dcp": {
+                "dialect": "interop",
+                "attributes": {
+                    "Version": "1.0"
+                },
+                "header": {
+                    "SubtitleID": "8f2e4a6c-1b3d-4f5e-a7c9-2d4f6b8a0c1e",
+                    "MovieTitle": "THE LIGHTHOUSE",
+                    "ReelNumber": "2",
+                    "Language": "English"
+                },
+                "loadFonts": [
+                    {
+                        "attributes": {
+                            "Id": "Font1",
+                            "URI": "2-dci.ttf"
+                        },
+                        "text": ""
+                    }
+                ],
+                "font": {
+                    "Effect": "border",
+                    "Size": "42",
+                    "Id": "Font1"
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 51.0,
+                "end": 52.5,
+                "lines": [
+                    "Over here."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "dcp": {
+                        "subtitle": {
+                            "SpotNumber": "1",
+                            "TimeIn": "00:00:51:000",
+                            "TimeOut": "00:00:52:125"
+                        },
+                        "texts": [
+                            {
+                                "HAlign": "center",
+                                "HPosition": "0.0",
+                                "VAlign": "bottom",
+                                "VPosition": "7"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 90.08,
+                "end": 93.124,
+                "lines": [
+                    "<i>Every night at dusk</i>",
+                    "<i>the lamp still turns.</i>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "dcp": {
+                        "subtitle": {
+                            "SpotNumber": "2",
+                            "TimeIn": "00:01:30:020",
+                            "TimeOut": "00:01:33:031"
+                        },
+                        "texts": [
+                            {
+                                "HAlign": "center",
+                                "HPosition": "0.0",
+                                "VAlign": "bottom",
+                                "VPosition": "14"
+                            },
+                            {
+                                "HAlign": "center",
+                                "HPosition": "0.0",
+                                "VAlign": "bottom",
+                                "VPosition": "7"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 94.0,
+                "end": 96.0,
+                "lines": [
+                    "<font color=\"#ffff00\">Keep the door shut.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "dcp": {
+                        "subtitle": {
+                            "SpotNumber": "3",
+                            "TimeIn": "00:01:34:000",
+                            "TimeOut": "00:01:36:000"
+                        },
+                        "texts": [
+                            {
+                                "HAlign": "center",
+                                "HPosition": "0.0",
+                                "VAlign": "bottom",
+                                "VPosition": "7"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}
