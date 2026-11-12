@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/yama6a/subtitle-toolbox-go/v3/container/mkv"
+	"github.com/yama6a/subtitle-toolbox-go/v3/container/mpegts"
 )
 
 // containerFile is an open container file. Each table row has an adapter type for the file type of its package.
@@ -24,6 +25,7 @@ type containerFuncs struct {
 //nolint:gochecknoglobals // lookup table of the container readers
 var containers = []containerFuncs{
 	{container: Matroska, open: openMatroska},
+	{container: MPEGTS, open: openMPEGTS},
 }
 
 type matroskaFile struct{ *mkv.File }
@@ -38,6 +40,20 @@ func openMatroska(r io.ReaderAt, size int64) (containerFile, error) { //nolint:i
 		return nil, err
 	}
 	return matroskaFile{f}, nil
+}
+
+type mpegtsFile struct{ *mpegts.File }
+
+func (f mpegtsFile) Extract(number int, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return f.File.Extract(number, opts.common())
+}
+
+func openMPEGTS(r io.ReaderAt, size int64) (containerFile, error) { //nolint:ireturn // the row type of the container table returns the interface
+	f, err := mpegts.Open(r, size)
+	if err != nil {
+		return nil, err
+	}
+	return mpegtsFile{f}, nil
 }
 
 // Tracks returns the subtitle tracks of the video container in the first size bytes of r, in file order.
