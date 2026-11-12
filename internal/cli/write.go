@@ -2,10 +2,10 @@ package cli
 
 import (
 	"bytes"
-	"io"
 	"strconv"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/ebustl"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 )
@@ -48,11 +48,9 @@ type writeOutput struct {
 	opts stbox.WriteOptions
 	// outputFPS is the rate of --output-fps or --fps, the zero value when the call gives neither.
 	outputFPS stbox.FrameRate
-	// sccFit is the value of --scc-fit.
-	sccFit bool
-	// encode writes s in format f to out. nil means stbox.Write with opts. A command sets it for a writer with a
-	// report, such as the dropped colours of WebVTT, and prints the report with the label of in.
-	encode func(in *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error
+	sccFit    bool
+	// ass holds the write options of the ass group, nil without them.
+	ass *ass.WriteOptions
 }
 
 // prepare reads --to, --output-fps, -o, --output-dir, --bom, --no-bom, --line-ending and --scc-fit. With --to, it
@@ -136,19 +134,11 @@ func (w *writeOutput) write(r *runner, in *input, edit func(*stbox.Subtitle) (*s
 		}
 	}
 	var buf bytes.Buffer
-	encode := w.encode
-	if encode == nil {
-		encode = func(in *input, out io.Writer, s *stbox.Subtitle, f stbox.Format) error {
-			report, err := stbox.Write(out, s, f, w.optionsFor(f))
-			if err == nil {
-				printWriteReport(r.c, in.label(), report)
-			}
-			return err
-		}
-	}
-	if err := encode(in, &buf, s, f); err != nil {
+	report, err := stbox.Write(&buf, s, f, w.optionsFor(f))
+	if err != nil {
 		return err
 	}
+	printWriteReport(r.c, in.label(), report)
 	if target == stdinArg {
 		r.c.out(buf.String())
 		return nil
@@ -164,6 +154,9 @@ func (w *writeOutput) write(r *runner, in *input, edit func(*stbox.Subtitle) (*s
 // as docs/cli.md says.
 func (w *writeOutput) optionsFor(f stbox.Format) stbox.WriteOptions {
 	opts := w.opts
+	if w.ass != nil {
+		opts.ASS = *w.ass
+	}
 	switch f {
 	case stbox.MicroDVD:
 		opts.MicroDVD.FrameRate = w.outputFPS

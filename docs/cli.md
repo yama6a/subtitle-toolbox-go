@@ -88,7 +88,7 @@ MicroDVD counts time in video frames, so a MicroDVD read and a MicroDVD write ne
 
 - **Order**: `--scc-roll-up` comes after `--fps` and is checked after `--input-fps`, before `--from`. `--scc-fit` comes after `--no-bom`.
 - **Write reports**: after a write, the CLI prints each change on stderr. SCC and MCC changes read `ferry.srt: Cue #3 at 5 s is left out. Its caption data needs the frames up to 5.839 s, but the cue ends at 5.4 s. (dropped)`. The action is `transliterated`, `wrapped`, `delayed` or `dropped`. The SCC changes need `--scc-fit`, and the MCC writer always fits.
-- **EBU STL report**: a character that the character code table lacks becomes `?` in the file. The CLI prints one line for each, such as `show.srt: Cue 1: the character table has no "C", so the file holds "?".`. A character of a GSI field gives `GSI field OPT: ...`, and a character of a comment gives `Comment: ...`. PHP prints nothing.
+- **EBU STL report**: a character that the character code table lacks becomes `?` in the file. The CLI prints one line for each, where C stands for the character, such as an em dash in cue 1: `show.srt: Cue 1: the character table has no "C", so the file holds "?".`. A character of a GSI field gives `GSI field OPT: ...`, and a character of a comment gives `Comment: ...`. PHP prints nothing.
 - **SCC advice**: a cue that fits 4 lines of 32 characters after a wrap fails with `Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.`. A cue that needs a split fails without advice.
 - **Binary output**: EBU STL, PAC and Cavena 890 output goes to stdout or to a file as raw bytes. `info` shows no `Encoding:` row for them, and `--json` gives `"encoding": null`.
 

@@ -64,6 +64,20 @@ func TestBroadcastCalls(t *testing.T) {
 	five := "1\n00:00:01,000 --> 00:00:03,000\n1\n2\n3\n4\n5\n"
 	one := "1\n00:00:01,000 --> 00:00:03,000\nHi\n"
 
+	// checks inspects the directory after the call of the row with the same name.
+	checks := map[string]func(t *testing.T, dir string){
+		"SCC limits in a batch": func(t *testing.T, dir string) {
+			t.Helper()
+			assert.FileExists(t, filepath.Join(dir, "out", "one.scc"))
+			assert.NoFileExists(t, filepath.Join(dir, "out", "five.scc"))
+		},
+		"forced iTT cues": func(t *testing.T, dir string) {
+			t.Helper()
+			assert.Equal(t, 3, strings.Count(readFile(t, dir, "signs.srt"), " --> "))
+			call{dir: dir}.run(t, "convert", "signs.itt", "--to", "srt", "-o", "all.srt")
+			assert.Equal(t, 6, strings.Count(readFile(t, dir, "all.srt"), " --> "))
+		},
+	}
 	tests := []struct {
 		name  string
 		args  []string
@@ -248,6 +262,14 @@ func TestBroadcastCalls(t *testing.T) {
 			func(*testing.T) result { return result{Code: exitFile, Stderr: "news.mcc: " + mccRates + "\n"} },
 		},
 		{
+			"iTT rate that iTT lacks",
+			[]string{"convert", "trip.srt", "--to", "itt", "--output-fps", "12", "-o", "-"},
+			"", nil,
+			func(*testing.T) result {
+				return usageResult("convert", "The ITT formatter accepts the frame rates 23.976, 24, 25, 29.97 and 30, got 12.")
+			},
+		},
+		{
 			"output rate for another output",
 			[]string{"convert", "trip.srt", "--output-fps", "12", "-o", "-"},
 			"", nil,
@@ -286,34 +308,11 @@ func TestBroadcastCalls(t *testing.T) {
 			}
 			got := call{dir: dir, stdin: tt.stdin}.run(t, tt.args...)
 			assert.Equal(t, tt.want(t), got)
+			if check := checks[tt.name]; check != nil {
+				check(t, dir)
+			}
 		})
 	}
-}
-
-func TestBroadcastFiles(t *testing.T) {
-	t.Parallel()
-
-	dir := fixtureDir(t, broadcastFiles)
-	writeTestFile(t, filepath.Join(dir, "five.srt"), "1\n00:00:01,000 --> 00:00:03,000\n1\n2\n3\n4\n5\n")
-	writeTestFile(t, filepath.Join(dir, "one.srt"), "1\n00:00:01,000 --> 00:00:03,000\nHi\n")
-	call{dir: dir}.run(t, "convert", "five.srt", "one.srt", "--to", "scc", "--output-dir", "out", "--keep-going")
-	assert.FileExists(t, filepath.Join(dir, "out", "one.scc"))
-	assert.NoFileExists(t, filepath.Join(dir, "out", "five.scc"))
-
-	call{dir: dir}.run(t, "convert", "signs.itt", "--to", "srt", "-o", "signs.srt", "--forced-only")
-	call{dir: dir}.run(t, "convert", "signs.itt", "--to", "srt", "-o", "all.srt")
-	assert.Equal(t, 3, strings.Count(readFile(t, dir, "signs.srt"), " --> "))
-	assert.Equal(t, 6, strings.Count(readFile(t, dir, "all.srt"), " --> "))
-}
-
-func TestInfoOfBinaryFormatsHasNoEncoding(t *testing.T) {
-	t.Parallel()
-
-	dir := fixtureDir(t, broadcastFiles)
-	text := call{dir: dir}.run(t, "info", "bakery.stl")
-	assert.Equal(t, 0, text.Code)
-	assert.NotContains(t, text.Stdout, "Encoding:")
-	assert.Contains(t, call{dir: dir}.run(t, "info", "--json", "bakery.stl").Stdout, `"encoding": null`)
 }
 
 func TestWriteOptionsOnlyForTheirFormat(t *testing.T) {

@@ -2,6 +2,7 @@ package itt_test
 
 import (
 	"bytes"
+	"errors"
 	"regexp"
 	"slices"
 	"strings"
@@ -132,6 +133,8 @@ func TestWriteOptions(t *testing.T) {
 			out, err := write(t, subtitle(t, tt.stored, tt.cues...), tt.common, itt.WriteOptions{FrameRate: tt.rate})
 			if tt.wantErr != "" {
 				require.EqualError(t, err, tt.wantErr)
+				assert.Equal(t, tt.wantErr == noRateError, errors.Is(err, itt.ErrNeedsFrameRate))
+				require.ErrorIs(t, err, model.ErrInvalidArgument)
 				assert.Empty(t, out)
 				var perr *model.InvalidArgumentError
 				require.ErrorAs(t, err, &perr)

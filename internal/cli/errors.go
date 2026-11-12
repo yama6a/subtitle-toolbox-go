@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v2/internal/textenc"
 )
@@ -133,7 +134,7 @@ func typedMessage(err error) (string, bool) {
 		return withAdvice(msg, e.Option, e.Err), true
 	}
 	if e, ok := errors.AsType[*stbox.InvalidArgumentError](err); ok {
-		return withAdvice(e.Msg, e.Option, nil), true
+		return withAdvice(e.Msg, e.Option, err), true
 	}
 	if e, ok := errors.AsType[*stbox.UnwritableError](err); ok {
 		return withAdvice(withCause(e.Reason, e.Err), "", e.Err), true
@@ -161,7 +162,7 @@ func withAdvice(msg, option string, cause error) string {
 		return msg + " Pass --fps or --input-fps."
 	case option == "WriteOptions.MicroDVD.FrameRate":
 		return msg + " Pass --fps or --output-fps."
-	case option == "WriteOptions.ITT.FrameRate":
+	case errors.Is(cause, itt.ErrNeedsFrameRate):
 		return msg + " Pass --fps or --output-fps."
 	case errors.Is(cause, scc.ErrWrapFirst):
 		return strings.TrimSuffix(msg, " Wrap the lines to 4 lines of 32 characters first.") +
