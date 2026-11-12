@@ -9,6 +9,14 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
+// CEA708Service returns the CEA-708 service to read: 0 when cea608Only is set, else service, where 0 means 1.
+func CEA708Service(service int, cea608Only bool) int {
+	if cea608Only {
+		return 0
+	}
+	return max(service, 1)
+}
+
 // CaptionDataCues returns the cues of a CEA-708 service. When service is 0, or the service gives no cue,
 // it returns the cues of the CEA-608 field 1 pairs, read with opts.
 // The CEA-708 cues hold only the alignment of the window anchor, and no offset.

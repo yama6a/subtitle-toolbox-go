@@ -23,7 +23,7 @@ const (
 
 // CEA608Options holds the read settings of CEA-608 data.
 type CEA608Options struct {
-	Channel int    // 1 or 2, checked by the format options
+	Channel int    // 1 or 2, 0 means 1. The format options check it.
 	RollUp  RollUp // RollUpScreen or RollUpLines
 }
 
@@ -31,7 +31,7 @@ type CEA608Options struct {
 // The scc format data of a cue holds its mode, and the row and column of each line.
 // The last cue lasts lastCueDuration, up to the time limit.
 func CEA608Cues(lines []cea608.CodeLine, opts CEA608Options, lastCueDuration time.Duration) []model.Cue {
-	d := cea608.NewDecoder(opts.Channel)
+	d := cea608.NewDecoder(max(opts.Channel, 1))
 	states := d.Decode(lines)
 	byLine := opts.RollUp == RollUpLines
 
