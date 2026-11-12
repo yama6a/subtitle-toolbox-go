@@ -205,6 +205,7 @@ func ExampleFormats() {
 	// lrc [lrc]
 	// microdvd [sub]
 	// mpsub [mpsub]
+	// pac [pac fpc]
 	// sami [smi sami]
 	// sbv [sbv]
 	// scc [scc]

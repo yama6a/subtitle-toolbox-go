@@ -1,0 +1,54 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "pac": {
+                "codePage": "latin-turkish",
+                "frameRate": 25,
+                "firstNumber": 0,
+                "header": "0100000000000000000000000000000000000000",
+                "footer": "ff0000000000000000000000110064756d6d7920656e64206f662066696c65"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "Çarşı saat dokuzda açılıyor."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "Çarşı saat dokuzda açılıyor.",
+                        "bytes": "fe0203e6436172e6737b207361617420646f6b757a64612061e6637b6c7b796f722e"
+                    }
+                }
+            },
+            {
+                "start": 4.0,
+                "end": 6.0,
+                "lines": [
+                    "Ağaç gölgesinde çay içelim.",
+                    "Iğdır, İzmir ve Muğla"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 10,
+                        "alignment": 2,
+                        "text": "Ağaç gölgesinde çay içelim.\nIğdır, İzmir ve Muğla",
+                        "bytes": "fe020341ea6761e6632067e56f6c676573696e646520e66361792069e663656c696d2efe020349ea67647b722c20e8497a6d6972207665204d75ea676c61"
+                    }
+                }
+            }
+        ]
+    }
+}

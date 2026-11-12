@@ -1,0 +1,54 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "pac": {
+                "codePage": "arabic",
+                "frameRate": 25,
+                "firstNumber": 0,
+                "header": "0100000000000000000000000000000000000000",
+                "footer": "ff0000000000000000000000110064756d6d7920656e64206f662066696c65"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "السوق مفتوح اليوم.",
+                    "الخبز طازج؟"
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 10,
+                        "alignment": 0,
+                        "text": "السوق مفتوح اليوم.\nالخبز طازج؟",
+                        "bytes": "fe000381978c9b95209894839b862081979f9b982efe0003819787828b2091818b853f"
+                    }
+                }
+            },
+            {
+                "start": 3.4,
+                "end": 6.0,
+                "lines": [
+                    "نعم، من الفرن 24 ساعة."
+                ],
+                "identifier": null,
+                "alignment": 3,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 0,
+                        "text": "نعم، من الفرن 24 ساعة.",
+                        "bytes": "fe00039992982c209899208197948a99203432208c81929d2e"
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,53 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "pac": {
+                "codePage": "latin",
+                "frameRate": 30,
+                "firstNumber": 0,
+                "header": "0100000000000000000000000000000000000000",
+                "footer": "ff0000000000000000000000110064756d6d7920656e64206f662066696c65"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.9,
+                "end": 3.967,
+                "lines": [
+                    "Ships leave at dawn."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "Ships leave at dawn.",
+                        "bytes": "fe02035368697073206c65617665206174206461776e2e"
+                    }
+                }
+            },
+            {
+                "start": 5.5,
+                "end": 7.0,
+                "lines": [
+                    "The harbour closes at ten."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "The harbour closes at ten.",
+                        "bytes": "fe020354686520686172626f757220636c6f7365732061742074656e2e"
+                    }
+                }
+            }
+        ]
+    }
+}

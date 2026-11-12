@@ -59,6 +59,7 @@ func goldenFolders() []goldenFolder {
 		}},
 		{name: "mpl2", format: stbox.MPL2, files: 2},
 		{name: "mpsub", format: stbox.MPSub, files: 2},
+		{name: "pac", format: stbox.PAC, files: 13},
 		{name: "qttext", format: stbox.QuickTimeText, files: 2},
 		{
 			name: "sami", format: stbox.SAMI, files: 11,

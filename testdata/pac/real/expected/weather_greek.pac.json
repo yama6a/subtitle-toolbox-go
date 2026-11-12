@@ -1,0 +1,71 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "pac": {
+                "codePage": "greek",
+                "frameRate": 25,
+                "firstNumber": 0,
+                "header": "0100000000000000000000000000000000000000",
+                "footer": "ff0000000000000000000000110064756d6d7920656e64206f662066696c65"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "Αύριο θα βρέξει."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "Αύριο θα βρέξει.",
+                        "bytes": "fe020341e27571696f206861206271e2656e65692e"
+                    }
+                }
+            },
+            {
+                "start": 3.4,
+                "end": 6.0,
+                "lines": [
+                    "Ο άνεμος είναι ασθενής."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "Ο άνεμος είναι ασθενής.",
+                        "bytes": "fe02034f20e2616d656c6f722065e2696d616920617368656de267722e"
+                    }
+                }
+            },
+            {
+                "start": 6.4,
+                "end": 9.0,
+                "lines": [
+                    "Η θερμοκρασία πέφτει",
+                    "στους 12 βαθμούς."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 10,
+                        "alignment": 2,
+                        "text": "Η θερμοκρασία πέφτει\nστους 12 βαθμούς.",
+                        "bytes": "fe020347206865716c6f6a716173e269612070e26576746569fe020373746f7572203132206261686c6fe275722e"
+                    }
+                }
+            }
+        ]
+    }
+}

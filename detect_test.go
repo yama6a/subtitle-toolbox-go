@@ -246,7 +246,7 @@ type fixture struct {
 func fixtures(t *testing.T) []fixture {
 	t.Helper()
 
-	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "lrc": stbox.LRC, "microdvd": stbox.MicroDVD, "mpl2": stbox.MPL2, "mpsub": stbox.MPSub, "qttext": stbox.QuickTimeText, "sami": stbox.SAMI, "sbv": stbox.SBV, "spruce-stl": stbox.SpruceSTL, "srt": stbox.SubRip, "stl": stbox.EBUSTL, "subviewer": stbox.SubViewer, "tmplayer": stbox.TMPlayer, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
+	folders := map[string]stbox.Format{"ass": stbox.ASS, "json": stbox.JSON, "lrc": stbox.LRC, "microdvd": stbox.MicroDVD, "mpl2": stbox.MPL2, "mpsub": stbox.MPSub, "pac": stbox.PAC, "qttext": stbox.QuickTimeText, "sami": stbox.SAMI, "sbv": stbox.SBV, "spruce-stl": stbox.SpruceSTL, "srt": stbox.SubRip, "stl": stbox.EBUSTL, "subviewer": stbox.SubViewer, "tmplayer": stbox.TMPlayer, "ttml": stbox.TTML, "vtt": stbox.WebVTT}
 	var list []fixture
 	for dir, f := range folders {
 		for _, sub := range []string{dir, dir + "/real"} {
@@ -557,7 +557,7 @@ func FuzzDetect(f *testing.F) {
 		f.Add([]byte(tt.content))
 	}
 	root := testfiles.Root(f)
-	for _, dir := range []string{"ass", "json", "lrc", "lrc/real", "microdvd", "microdvd/real", "mpl2/real", "mpsub", "mpsub/real", "qttext", "qttext/real", "sami/real", "sbv", "spruce-stl/real", "srt", "stl", "stl/real", "subviewer", "subviewer/real", "tmplayer/real", "ttml/real", "forced", "vtt", "lenient"} {
+	for _, dir := range []string{"ass", "json", "lrc", "lrc/real", "microdvd", "microdvd/real", "mpl2/real", "mpsub", "mpsub/real", "pac/real", "qttext", "qttext/real", "sami/real", "sbv", "spruce-stl/real", "srt", "stl", "stl/real", "subviewer", "subviewer/real", "tmplayer/real", "ttml/real", "forced", "vtt", "lenient"} {
 		entries, err := os.ReadDir(filepath.Join(root, dir))
 		if err != nil {
 			f.Fatal(err)

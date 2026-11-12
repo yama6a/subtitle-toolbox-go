@@ -1,0 +1,71 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "pac": {
+                "codePage": "cyrillic",
+                "frameRate": 25,
+                "firstNumber": 0,
+                "header": "0100000000000000000000000000000000000000",
+                "footer": "ff0000000000000000000000110064756d6d7920656e64206f662066696c65"
+            }
+        },
+        "cues": [
+            {
+                "start": 2.0,
+                "end": 4.0,
+                "lines": [
+                    "Поезд отправляется в семь часов."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "Поезд отправляется в семь часов.",
+                        "bytes": "fe0203476a74706c206a6e676866646b7a746e637a2064206374766d207866636a6426"
+                    }
+                }
+            },
+            {
+                "start": 5.0,
+                "end": 8.0,
+                "lines": [
+                    "Следующая станция:",
+                    "Северный вокзал."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 10,
+                        "alignment": 2,
+                        "text": "Следующая станция:\nСеверный вокзал.",
+                        "bytes": "fe0203436b746c652e6f667a20636e667977627a25fe020343746474687973e06220646a7270666b26"
+                    }
+                }
+            },
+            {
+                "start": 9.0,
+                "end": 11.0,
+                "lines": [
+                    "Ещё чай, пожалуйста?"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "pac": {
+                        "verticalPosition": 11,
+                        "alignment": 2,
+                        "text": "Ещё чай, пожалуйста?",
+                        "bytes": "fe0203546fb8207866e0625e20676a3b666b65e062636e6624"
+                    }
+                }
+            }
+        ]
+    }
+}
