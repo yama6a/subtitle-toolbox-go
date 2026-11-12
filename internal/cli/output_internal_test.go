@@ -586,3 +586,12 @@ func TestWriteRunsTheEncodeStepOfTheCommand(t *testing.T) {
 		cl.run(t, "convert", "trip.srt", "--to", "vtt", "-o", "out.vtt"))
 	assert.Equal(t, convertAs(t, "trip.srt", stbox.WebVTT), readFile(t, dir, "out.vtt"))
 }
+
+func TestConvertWritesITTIntoAnITTFile(t *testing.T) {
+	t.Parallel()
+
+	dir := fixtureDir(t, map[string]string{"in.itt": "itt/real/fcp_23976_styles.itt"})
+	got := call{dir: dir}.run(t, "convert", "in.itt", "-o", "out.itt")
+	assert.Equal(t, 0, got.Code, got.Stderr)
+	assert.Contains(t, readFile(t, dir, "out.itt"), `ttp:frameRate="24" ttp:frameRateMultiplier="999 1000"`)
+}

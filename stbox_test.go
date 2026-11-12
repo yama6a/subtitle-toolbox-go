@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v2"
+	"github.com/yama6a/subtitle-toolbox-go/v2/format/itt"
 	"github.com/yama6a/subtitle-toolbox-go/v2/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/v2/model"
 )
@@ -106,7 +107,7 @@ func TestWriteReportIsSetForWebVTTAndSCCOnly(t *testing.T) {
 			t.Parallel()
 
 			var out bytes.Buffer
-			report, err := stbox.Write(&out, s, f, stbox.WriteOptions{})
+			report, err := stbox.Write(&out, s, f, stbox.WriteOptions{ITT: itt.WriteOptions{FrameRate: stbox.FrameRate25}})
 			require.NoError(t, err)
 			assert.Equal(t, f == stbox.SCC, report.SCC != nil)
 			if f != stbox.WebVTT {
@@ -202,6 +203,7 @@ func ExampleFormats() {
 	// Output:
 	// ass [ass ssa]
 	// csv [csv]
+	// itt [itt]
 	// json [json]
 	// lrc [lrc]
 	// microdvd [sub]

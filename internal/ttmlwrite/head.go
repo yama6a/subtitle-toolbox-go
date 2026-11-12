@@ -53,7 +53,7 @@ func (w *writer) bindPrefixes(stored []Attr) {
 	case NSDFXP200604:
 		styling, metadata = 3, 2
 	}
-	w.tts = w.bindPrefix("tts", StylingNamespaces, styling)
+	w.tts = w.bindPrefix("tts", stylingNamespaces, styling)
 	w.ttm = w.bindPrefix("ttm", MetadataNamespaces, metadata)
 	slices.Sort(w.prefixes)
 }

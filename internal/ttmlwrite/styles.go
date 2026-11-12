@@ -17,7 +17,6 @@ import (
 const MaxStyleDepth = 20
 
 var (
-	spaceRegexp    = regexp.MustCompile(`[\t\n\v\f\r ]+`)
 	hexColorRegexp = regexp.MustCompile(`^#([0-9a-f]{6})([0-9a-f]{2})?$`)
 	rgbColorRegexp = regexp.MustCompile(`^rgba?\([\t\n\v\f\r ]*(\d{1,3})[\t\n\v\f\r ]*,[\t\n\v\f\r ]*(\d{1,3})[\t\n\v\f\r ]*,` +
 		`[\t\n\v\f\r ]*(\d{1,3})[\t\n\v\f\r ]*(?:,[\t\n\v\f\r ]*\d{1,3}[\t\n\v\f\r ]*)?\)$`)
@@ -110,7 +109,7 @@ func StyleIDs(n *xmlraw.Node) []string {
 func StylingAttributes(n *xmlraw.Node) Properties {
 	out := Properties{}
 	for _, a := range Attributes(n) {
-		if slices.Contains(StylingNamespaces, n.AttrNamespaceURI(a)) {
+		if slices.Contains(stylingNamespaces, n.AttrNamespaceURI(a)) {
 			out[a.Name.Local] = a.Value
 		} else if name := UndeclaredName(n, a); strings.HasPrefix(name, "tts:") {
 			out[name[len("tts:"):]] = a.Value
@@ -129,7 +128,7 @@ func (s Style) Apply(props Properties) Style {
 		case "fontStyle":
 			s.italic = value == "italic" || value == "oblique"
 		case "textDecoration":
-			s = s.decorate(spaceRegexp.Split(value, -1))
+			s = s.decorate(value)
 		case "color":
 			// White is the default text color of every player, so it adds no markup.
 			if s.color = normalizeColor(value); s.color == "#ffffff" {
@@ -168,8 +167,9 @@ func SplitSpace(s string) []string {
 	return strings.FieldsFunc(s, func(r rune) bool { return strings.ContainsRune("\t\n\v\f\r ", r) })
 }
 
-// decorate applies the tokens of tts:textDecoration. none turns underline and line-through off first.
-func (s Style) decorate(tokens []string) Style {
+// decorate applies the tokens of the tts:textDecoration value. none turns underline and line-through off first.
+func (s Style) decorate(value string) Style {
+	tokens := SplitSpace(value)
 	if slices.Contains(tokens, "none") {
 		s.underline, s.strike = false, false
 	}

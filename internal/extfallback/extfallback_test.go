@@ -32,3 +32,24 @@ func TestAllowed(t *testing.T) {
 		})
 	}
 }
+
+func TestProfile(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		detected, path, want string
+	}{
+		{"ttml", "film.itt", "itt"},
+		{"ttml", "FILM.ITT", "itt"},
+		{"ttml", "film.ttml", "ttml"},
+		{"ttml", "", "ttml"},
+		{"srt", "film.itt", "srt"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.detected+" "+tt.path, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, extfallback.Profile(tt.detected, tt.path))
+		})
+	}
+}

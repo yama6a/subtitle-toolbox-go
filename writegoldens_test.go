@@ -34,6 +34,7 @@ func roundTripFiles() []roundTripFile {
 		{"ttml", "mantas_netflix_ticks.dfxp"},
 		{"ttml", "w3c_imsc11_regions.ttml"},
 		{"scc", "popon_broadcast_df.scc"},
+		{"itt", "fcp_23976_styles.itt"},
 	}
 }
 
@@ -56,6 +57,9 @@ func conversions() []conversion {
 		{"csv", "mantas_done_shape.csv", stbox.ASS, ""},
 		{"csv", "own_openai_whisper.tsv", stbox.SubRip, ""},
 		{"csv", "own_whisper_cpp.csv", stbox.SubRip, ""},
+		{"itt", "fcp_23976_styles.itt", stbox.SubRip, ""},
+		{"itt", "fcp_23976_styles.itt", stbox.WebVTT, ""},
+		{"itt", "fcp_23976_styles.itt", stbox.ASS, ""},
 		{"lrc", "handwritten-enhanced.lrc", stbox.SubRip, ""},
 		{"lrc", "handwritten-enhanced.lrc", stbox.WebVTT, ""},
 		{"lrc", "handwritten-enhanced.lrc", stbox.ASS, ""},

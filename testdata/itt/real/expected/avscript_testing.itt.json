@@ -1,0 +1,147 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "ebutts": "urn:ebu:tt:style",
+                    "ittp": "http://www.w3.org/ns/ttml/profile/imsc1#parameter",
+                    "itts": "http://www.w3.org/ns/ttml/profile/imsc1#styling",
+                    "ry": "http://namespace.itunes.apple.com/itt/ttml-extension#ruby",
+                    "tt": "http://www.w3.org/ns/ttml",
+                    "tt_extension": "http://www.w3.org/ns/ttml/extension/",
+                    "tt_feature": "http://www.w3.org/ns/ttml/feature/",
+                    "tt_profile": "http://www.w3.org/ns/ttml/profile/",
+                    "ttm": "http://www.w3.org/ns/ttml#metadata",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter",
+                    "tts": "http://www.w3.org/ns/ttml#styling",
+                    "vt": "http://namespace.itunes.apple.com/itt/ttml-extension#vertical",
+                    "xsi": "http://www.w3.org/2001/XMLSchema-instance"
+                },
+                "attributes": {
+                    "ttp:dropMode": "nonDrop",
+                    "ttp:frameRate": "24",
+                    "ttp:frameRateMultiplier": "1000 1001",
+                    "ttp:timeBase": "smpte"
+                },
+                "head": "<head>\n    <styling>\n      <style xml:id=\"normal\" tts:color=\"white\" tts:fontFamily=\"sansSerif\" tts:fontSize=\"100%\" tts:fontStyle=\"normal\" tts:fontWeight=\"normal\"/>\n    </styling>\n    <layout>\n      <region xml:id=\"bottom\" tts:displayAlign=\"after\" tts:extent=\"100% 15%\" tts:origin=\"0% 85%\" tts:writingMode=\"lrtb\"/>\n    </layout>\n  </head>",
+                "body": {
+                    "tts:color": "white",
+                    "region": "bottom",
+                    "style": "normal"
+                }
+            },
+            "itt": {
+                "timeBase": "smpte",
+                "frameRate": "24",
+                "frameRateMultiplier": "1000 1001",
+                "dropMode": "nonDrop"
+            }
+        },
+        "cues": [
+            {
+                "start": 3.003,
+                "end": 123.123,
+                "lines": [
+                    "Testing testing"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 126.126,
+                "end": 246.246,
+                "lines": [
+                    "Testing testing"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 246.246,
+                "end": 371.371,
+                "lines": [
+                    "Testing testing"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 371.371,
+                "end": 491.491,
+                "lines": [
+                    "Testing testing"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 491.491,
+                "end": 616.616,
+                "lines": [
+                    "Testing testing"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 616.616,
+                "end": 741.741,
+                "lines": [
+                    "Testing testing"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -26,7 +26,6 @@ var timingAttributes = []string{"begin", "end", "dur"}
 
 var (
 	spaceRegexp      = regexp.MustCompile(`[\t\n\v\f\r ]+`)
-	multiplierRegexp = regexp.MustCompile(`[\t\n\v\f\r :]+`)
 	frameLabelRegexp = regexp.MustCompile(`^\d{2,}:\d{2}:\d{2}:(\d{2})(?:\.\d+)?$`)
 	collapseRegexp   = regexp.MustCompile(`[ \t\n]+`)
 	lengthRegexp     = regexp.MustCompile(`^([+-]?\d+(?:\.\d+)?)(%|px|c)$`)
@@ -149,7 +148,7 @@ func (r *reader) readClock() (clock, error) {
 	}
 	smpteFrameRate := guess
 	if hasFrameRate {
-		smpteFrameRate = phpFloat(frameRate)
+		smpteFrameRate = ttmlwrite.PHPFloat(frameRate)
 	}
 	if smpteFrameRate == 0 {
 		smpteFrameRate = 30
@@ -166,11 +165,11 @@ func (r *reader) readClock() (clock, error) {
 	if hasFrameRate {
 		c.tickRate = c.frameRate
 	}
-	if v, ok := r.parameter("tickRate"); ok && phpFloat(v) > 0 {
-		c.tickRate = phpFloat(v)
+	if v, ok := r.parameter("tickRate"); ok && ttmlwrite.PHPFloat(v) > 0 {
+		c.tickRate = ttmlwrite.PHPFloat(v)
 	}
-	if v, ok := r.parameter("subFrameRate"); ok && phpFloat(v) != 0 {
-		c.subFrameRate = phpFloat(v)
+	if v, ok := r.parameter("subFrameRate"); ok && ttmlwrite.PHPFloat(v) != 0 {
+		c.subFrameRate = ttmlwrite.PHPFloat(v)
 	}
 	return c, nil
 }
@@ -181,11 +180,8 @@ func (r *reader) frameRateMultiplier() float64 {
 	if !ok {
 		return 1
 	}
-	parts := multiplierRegexp.Split(strings.Trim(v, markupcore.PHPTrimSet), -1)
-	if len(parts) != 2 || phpFloat(parts[0]) <= 0 || phpFloat(parts[1]) <= 0 {
-		return 1
-	}
-	return phpFloat(parts[0]) / phpFloat(parts[1])
+	a, b := ttmlwrite.Multiplier(v)
+	return a / b
 }
 
 func (r *reader) parameter(local string) (string, bool) {
@@ -905,7 +901,7 @@ func (r *reader) axisLength(value string, axis int, auto float64) (float64, bool
 	if m == nil {
 		return 0, false
 	}
-	length := phpFloat(m[1])
+	length := ttmlwrite.PHPFloat(m[1])
 	switch m[2] {
 	case "%":
 		return length / 100, true
@@ -936,10 +932,10 @@ func (r *reader) pixelLength(length float64, axis int) (float64, bool) {
 		extent, ok = ttmlwrite.StylingAttributes(r.body)["extent"]
 	}
 	m := rootExtentRegexp.FindStringSubmatch(extent)
-	if !ok || m == nil || phpFloat(m[1+axis]) <= 0 {
+	if !ok || m == nil || ttmlwrite.PHPFloat(m[1+axis]) <= 0 {
 		return 0, false
 	}
-	return length / phpFloat(m[1+axis]), true
+	return length / ttmlwrite.PHPFloat(m[1+axis]), true
 }
 
 func propOr(props ttmlwrite.Properties, name, fallback string) string {
