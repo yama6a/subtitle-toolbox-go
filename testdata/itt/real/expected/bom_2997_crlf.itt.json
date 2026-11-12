@@ -1,0 +1,144 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "de-DE",
+            "title": "Wetterbericht"
+        },
+        "comments": [],
+        "formatData": {
+            "ttml": {
+                "namespace": "http://www.w3.org/ns/ttml",
+                "namespaces": {
+                    "": "http://www.w3.org/ns/ttml",
+                    "ttm": "http://www.w3.org/ns/ttml#metadata",
+                    "ttp": "http://www.w3.org/ns/ttml#parameter",
+                    "tts": "http://www.w3.org/ns/ttml#styling"
+                },
+                "attributes": {
+                    "ttp:timeBase": "smpte",
+                    "ttp:frameRate": "30",
+                    "ttp:frameRateMultiplier": "999 1000",
+                    "ttp:dropMode": "nonDrop"
+                },
+                "head": "<head>\n    <metadata>\n    </metadata>\n    <styling>\n      <style xml:id=\"normal\" tts:fontFamily=\"sansSerif\" tts:fontWeight=\"normal\" tts:fontStyle=\"normal\" tts:color=\"white\" tts:fontSize=\"100%\"/>\n    </styling>\n    <layout>\n      <region xml:id=\"top\" tts:origin=\"0% 0%\" tts:extent=\"100% 15%\" tts:textAlign=\"center\" tts:displayAlign=\"before\"/>\n      <region xml:id=\"bottom\" tts:origin=\"0% 85%\" tts:extent=\"100% 15%\" tts:textAlign=\"center\" tts:displayAlign=\"after\"/>\n    </layout>\n  </head>",
+                "body": {
+                    "style": "normal"
+                }
+            },
+            "itt": {
+                "timeBase": "smpte",
+                "frameRate": "30",
+                "frameRateMultiplier": "999 1000",
+                "dropMode": "nonDrop"
+            }
+        },
+        "cues": [
+            {
+                "start": 3601.602,
+                "end": 3604.104,
+                "lines": [
+                    "Guten Abend, hier ist das Wetter."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 3604.137,
+                "end": 3607.574,
+                "lines": [
+                    "Im Norden bleibt es kühl,",
+                    "im Süden scheint die Sonne."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 3607.608,
+                "end": 3609.943,
+                "lines": [
+                    "<i>Grafik: Temperaturen</i>"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "top"
+                        },
+                        "alignment": 8
+                    }
+                }
+            },
+            {
+                "start": 3609.977,
+                "end": 3612.613,
+                "lines": [
+                    "Morgen früh gibt es Nebel",
+                    "über den Flüssen."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 3612.779,
+                "end": 3615.282,
+                "lines": [
+                    "Am Wochenende wird es <b>wärmer</b>."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            },
+            {
+                "start": 3615.616,
+                "end": 3618.585,
+                "lines": [
+                    "Das war das Wetter. Gute Nacht."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ttml": {
+                        "attributes": {
+                            "region": "bottom"
+                        },
+                        "alignment": 2
+                    }
+                }
+            }
+        ]
+    }
+}

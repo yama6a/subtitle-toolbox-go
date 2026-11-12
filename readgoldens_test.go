@@ -49,6 +49,7 @@ func goldenFolders() []goldenFolder {
 				Columns: csv.Columns{End: csv.ColumnNamed("Ende"), Speaker: csv.ColumnNamed("Sprecher")},
 			}},
 		}},
+		{name: "itt", format: stbox.ITT, files: 3},
 		{name: "json", format: stbox.JSON, files: 6},
 		{name: "lrc", format: stbox.LRC, files: 9},
 		{name: "microdvd", format: stbox.MicroDVD, files: 4, options: map[string]stbox.ReadOptions{

@@ -35,6 +35,7 @@ func TestLoadWithoutFormat(t *testing.T) {
 
 	srt := testfiles.Read(t, "srt/real/own_styled.srt")
 	vtt := testfiles.Read(t, "vtt/real/w3c_identifiers.vtt")
+	itt := testfiles.Read(t, "itt/real/fcp_23976_styles.itt")
 	tests := []struct {
 		name    string
 		file    string
@@ -60,6 +61,9 @@ func TestLoadWithoutFormat(t *testing.T) {
 		{name: "extension fallback for CSV", file: "film.csv", content: []byte("plain words"), want: stbox.CSV, wantErr: stbox.ErrParse},
 		{name: "extension fallback for TSV", file: "film.tsv", content: []byte("plain words"), want: stbox.TSV, wantErr: stbox.ErrParse},
 		{name: "CSV by extension", file: "film.csv", content: []byte("start,end,text\n1,2,Hello\n"), want: stbox.CSV},
+		{name: "TTML content in a .itt file is iTT", file: "film.itt", content: itt, want: stbox.ITT},
+		{name: "TTML content in a .ttml file", file: "film.ttml", content: itt, want: stbox.TTML},
+		{name: "blank .itt file", file: "film.itt", content: []byte("\n"), want: stbox.ITT},
 		{name: "unknown extension", file: "film.xyz", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
 		{name: "no extension", file: "film", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
 	}
@@ -87,6 +91,14 @@ func TestLoadWithoutFormat(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestParseReadsITTContentAsTTML(t *testing.T) {
+	t.Parallel()
+
+	_, info, err := stbox.Parse(bytes.NewReader(testfiles.Read(t, "itt/real/fcp_23976_styles.itt")), stbox.ReadOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, stbox.TTML, info.Format)
 }
 
 // Ports testLoadWithoutFormatReadsAnEmptyFileInTheFormatOfItsExtension of tests/LoadSaveTest.php and the empty file

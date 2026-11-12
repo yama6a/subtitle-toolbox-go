@@ -1,0 +1,33 @@
+﻿1
+00:00:01,502 --> 00:00:04,004
+The bakery opens at six.
+
+2
+00:00:04,254 --> 00:00:06,757
+The first bread comes out
+of the oven at seven.
+
+3
+00:00:07,007 --> 00:00:09,968
+{\an8}<i>[oven door creaks]</i>
+
+4
+00:00:10,052 --> 00:00:12,513
+Rye bread takes <b>four</b> hours.
+
+5
+00:00:12,554 --> 00:00:15,015
+Wheat bread takes <u>two</u>.
+
+6
+00:00:15,349 --> 00:00:17,851
+<font color="#ffff00">BAKER:</font> Mind the hot tray.
+
+7
+00:00:18,018 --> 00:00:20,479
+{\an8}Sign: Fresh rolls
+every morning
+
+8
+00:00:21,104 --> 00:00:23,941
+<i>The shop closes at noon.</i>
