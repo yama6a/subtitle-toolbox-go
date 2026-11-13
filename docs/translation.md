@@ -230,6 +230,106 @@ You translate subtitle text from {source} to {target}. The user sends a JSON arr
 - **Fallback**: an answer without such an array makes the engine send each text in a request of its own. Each of these answers must be an array of 1 string. Else the engine returns a `*ServiceError` with `The model "M" did not answer with a JSON array that holds 1 string for 1 text.`
 - **Status**: a status other than 200 returns a `*ServiceError` with the status, and no fallback follows. 401 gives `The OpenAI-compatible service rejected the API key (HTTP 401).`, 429 after the retries gives `The OpenAI-compatible service got too many requests (HTTP 429). Wait and try again.`, and any other status gives `The OpenAI-compatible service answered with HTTP N.` The message adds the `error.message` of the answer, or its `error` when that is a string.
 
+## DeepL engine
+
+Package `translation/deepl` is a client of the DeepL API v2 on `net/http`. It has no vendor SDK. Example: `deepl.New(deepl.Options{APIKey: key})` gives an engine for `translation.Translate`. The runner sends `The train to Basel leaves from platform 4 at <x1>10:15</x1>.` and DeepL answers with the German sentence and `<x1>10:15</x1>` in place.
+
+<!-- example: translation/deepl/ExampleNew -->
+```go
+srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprint(w, `{"translations": [{"text": "Hallo <x1>Welt</x1>"}]}`)
+}))
+defer srv.Close()
+
+engine, err := deepl.New(deepl.Options{APIKey: "secret:fx", BaseURL: srv.URL})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+got, err := engine.Translate(context.Background(), []string{"Hello <x1>world</x1>"}, "en", "de")
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+fmt.Println(got[0])
+// Output:
+// Hallo <x1>Welt</x1>
+```
+
+| Field of `deepl.Options` | Meaning |
+|:--- |:--- |
+| `APIKey` | The DeepL API key. Required. A key that ends in `:fx` belongs to the free plan. |
+| `BaseURL` | The scheme and host of the service, for example a proxy. It must start with `http://` or `https://`. Empty picks `https://api-free.deepl.com` for a key that ends in `:fx`, else `https://api.deepl.com`. A base URL wins over the key rule. |
+| `HTTPClient` | The client that sends the requests. nil means `translation.DefaultHTTPClient()`. |
+
+`New` checks the options. It fails with `*model.InvalidArgumentError` when the key is empty after trimming, when the key has a control character or a space at the start or end, and when the base URL has no scheme. `Options` prints the key as `***` with `%v`, `%+v` and `%#v`.
+
+- **Request**: `POST {base}/v2/translate` with the header `Authorization: DeepL-Auth-Key KEY` and a JSON body. The body holds `text`, `target_lang`, `tag_handling` `xml`, `split_sentences` `nonewlines` and, with a source, `source_lang`. `nonewlines` keeps the 2 lines of a cue in one sentence.
+- **Language codes**: `target_lang` is the target in ASCII upper case, so `en-US` becomes `EN-US`. `source_lang` is the source up to its first `-`, in ASCII upper case, so `en-US` becomes `EN`. An empty source leaves `source_lang` out, and DeepL detects the language. The engine does not check the codes. DeepL rejects an unknown code.
+- **Chunks**: one request holds at most `deepl.MaxTextsPerRequest` texts, which is 50. 120 texts give 3 requests of 50, 50 and 20. No text gives no request.
+- **Retries**: see [HTTP](#http).
+- **Entities**: the engine passes the texts and the answers as they are. The runner decodes the entities once.
+
+| Status | Error message of the `*translation.ServiceError` |
+|:--- |:--- |
+| 403 | `DeepL rejected the API key (HTTP 403). Check the key and its plan.` |
+| 429, after the retries | `DeepL got too many requests (HTTP 429). Wait and try again.` |
+| 456 | `The DeepL character quota is used up (HTTP 456).` |
+| other, not 200 | `DeepL answered with HTTP N.` and a space and the `message` of the JSON body, when it is a string |
+| 200 with a wrong count, or a `text` that is no string | `DeepL returned N translations for M texts, or an answer that is not the JSON of /v2/translate.` |
+
+Every message replaces the key with `***`. Example: status 500 with the body `{"message": "Unknown key KEY"}` gives `DeepL answered with HTTP 500. Unknown key ***`.
+
+## Google Cloud Translation
+
+The package `translation/google` is a client of Cloud Translation Basic (v2) with an API key. It uses `net/http` only.
+
+<!-- example: translation/google/ExampleNew -->
+```go
+server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprint(w, `{"data": {"translations": [{"translatedText": "Le train part &agrave; <x1>10:15</x1>."}]}}`)
+}))
+defer server.Close()
+engine, err := google.New(google.Options{APIKey: "my-key", BaseURL: server.URL})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+s := &model.Subtitle{}
+c := model.Cue{Start: time.Second, End: 2 * time.Second}
+c.SetText("The train leaves at <b>10:15</b>.")
+s.AddCue(c)
+if _, err := translation.Translate(context.Background(), s, engine, "en", "fr", translation.Options{}); err != nil {
+	fmt.Println(err)
+	return
+}
+
+fmt.Println(s.Cues()[0].Lines)
+// Output: [Le train part à <b>10:15</b>.]
+```
+
+| Option | Default | Meaning |
+|:--- |:--- |:--- |
+| `APIKey` | required | an API key of a Google Cloud project with the Cloud Translation API |
+| `BaseURL` | `https://translation.googleapis.com` | the scheme and host of the service, for example a proxy |
+| `HTTPClient` | `translation.DefaultHTTPClient()` | the client that sends the requests |
+
+`New` rejects an empty key, a key with a control character or a space at the start or end, and a base URL that does not start with `http://` or `https://`. Each error matches `model.ErrInvalidArgument`. `fmt` prints the key as `***`.
+
+- **Request**: `POST {base}/language/translate/v2` with the header `X-goog-api-key` and a JSON body `{"q": [...], "target": "fr", "format": "html", "source": "en"}`. The key never goes into the URL. An empty source leaves `source` out, so Google detects the language.
+- **Chunks**: the engine sends at most `google.MaxTextsPerRequest` (128) texts per request. 300 texts give requests of 128, 128 and 44 texts.
+- **Answer**: the engine returns each `translatedText` as received. The runner decodes entities such as `&#39;`. A wrong number of translations, or a translation that is not a string, gives a `*translation.ServiceError`.
+- **Errors**: every `*translation.ServiceError` has the HTTP status and a message without the key.
+
+| Status | Message |
+|:--- |:--- |
+| 403 | `Google Cloud Translation refused the request (HTTP 403). Check the key and that the API is enabled.` and the `error.message` of the answer |
+| 429, after 4 attempts | `Google Cloud Translation got too many requests (HTTP 429). Wait and try again.` |
+| other | `Google Cloud Translation answered with HTTP N.` and the `error.message` of the answer |
+
 ## Differences from PHP
 
 - An engine that returns a wrong number of strings gives a `*ServiceError`. PHP throws `InvalidArgumentException`.
