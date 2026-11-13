@@ -28,22 +28,22 @@ func ReadAssemblyAI(r io.Reader, common model.CommonReadOptions, opts ReadOption
 	if !hasUtterances && words.Kind() != orderedjson.Array {
 		return nil, nil, &model.ParseError{Format: model.AssemblyAI, Msg: `The JSON has no "words" or "utterances" list.`}
 	}
-	cues := wordgroup.NewReader(st, wordgroup.Options{WordTimestamps: opts.WordTimestamps, SpeakerVoices: opts.SpeakerVoices}, assemblyAIKey)
-	var list []*model.Cue
+	reader := wordgroup.NewReader(st, wordgroup.Options{WordTimestamps: opts.WordTimestamps, SpeakerVoices: opts.SpeakerVoices}, assemblyAIKey)
+	var cues []*model.Cue
 	if hasUtterances {
-		list, err = cues.Utterances(utterances.Items(), "utterances", "text", time.Millisecond, func(items []orderedjson.Value, path string) ([]wordgroup.Word, error) {
-			return cues.WordList(items, path, assemblyAIWord)
+		cues, err = reader.Utterances(utterances.Items(), "utterances", "text", time.Millisecond, func(items []orderedjson.Value, path string) ([]wordgroup.Word, error) {
+			return reader.WordList(items, path, assemblyAIWord)
 		})
 	} else {
-		var list2 []wordgroup.Word
-		if list2, err = cues.WordList(words.Items(), "words", assemblyAIWord); err == nil {
-			list, err = cues.CuesFromWords(list2, "words", nil)
+		var list []wordgroup.Word
+		if list, err = reader.WordList(words.Items(), "words", assemblyAIWord); err == nil {
+			cues, err = reader.CuesFromWords(list, "words", nil)
 		}
 	}
 	if err != nil {
 		return nil, nil, err
 	}
-	s, err := cues.Transcript(list, assemblyAILanguage(root), cloudData(root.Without("text", "words", "utterances")))
+	s, err := reader.Transcript(cues, assemblyAILanguage(root), cloudData(root.Without("text", "words", "utterances")))
 	if err != nil {
 		return nil, nil, err
 	}

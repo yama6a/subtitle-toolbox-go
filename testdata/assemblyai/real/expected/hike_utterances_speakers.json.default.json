@@ -41,13 +41,13 @@
                 "content_safety_labels": {
                     "status": "unavailable",
                     "results": [],
-                    "summary": {},
-                    "severity_score_summary": {}
+                    "summary": [],
+                    "severity_score_summary": []
                 },
                 "iab_categories_result": {
                     "status": "unavailable",
                     "results": [],
-                    "summary": {}
+                    "summary": []
                 },
                 "custom_spelling": null,
                 "throttled": null,

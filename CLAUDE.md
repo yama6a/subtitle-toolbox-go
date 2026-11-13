@@ -20,7 +20,7 @@ The package map of #8. A package appears when its issue lands.
 model/         Subtitle, Cue, format facts table, common options, shared errors
 markup/        Inline tag model and its helpers
 format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microdvd, mpl2,
-               tmplayer, mpsub, subviewer, qttext, sprucestl, dcp, lrc, csv, itt, stboxjson, plaintext, pgs, chapters, transcript
+               tmplayer, mpsub, subviewer, qttext, sprucestl, dcp, lrc, csv, itt, stboxjson, plaintext, pgs, chapters, transcript, youtube
 stats/ stream/ hearingimpaired/ speakers/ fixing/ profanity/ refsync/ diff/ dual/ karaoke/
                The 1.x services. A service never imports the root package
 container/<name>/ The 3.x readers of video containers, layer 4b: mkv, mp4, mpegts. They call the format readers

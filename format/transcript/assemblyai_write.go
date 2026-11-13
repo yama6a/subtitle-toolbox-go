@@ -69,16 +69,16 @@ func assemblyAIDocument(s *model.Subtitle) (orderedjson.Value, error) {
 func assemblyAIUtterance(c *model.Cue, data orderedjson.Value) orderedjson.Value {
 	stored := cloudGet(data, "words").Items()
 	grouped := cloudGet(data, "text").Kind() == orderedjson.Null
-	startV, endV, textV := assemblyAISources(data, stored, grouped)
-	sameStart := wordgroup.SameTime(assemblyAINumber(startV), time.Millisecond, c.Start)
-	sameEnd := wordgroup.SameTime(assemblyAINumber(endV), time.Millisecond, c.End)
+	startV, endV, textV := cloudSources(data, "text", stored, grouped, assemblyAIWordText)
+	sameStart := wordgroup.SameTime(cloudNumber(startV), time.Millisecond, c.Start)
+	sameEnd := wordgroup.SameTime(cloudNumber(endV), time.Millisecond, c.End)
 	sameText := wordgroup.SameText(c, textV)
 	speaker := wordgroup.CueSpeaker(c)
 
 	words := assemblyAIWords(c, stored, sameStart && sameEnd, sameText, speaker)
 	storedSpeaker := cloudGet(data, "speaker")
 	if name, isString := storedSpeaker.AsString(); speaker != "" && (!isString || name != speaker) {
-		words = assemblyAIWithSpeaker(words, speaker)
+		words = cloudWithSpeaker(words, orderedjson.StringValue(speaker))
 	}
 	base := data
 	if grouped {
@@ -101,15 +101,6 @@ func assemblyAIUtterance(c *model.Cue, data orderedjson.Value) orderedjson.Value
 	))
 }
 
-func assemblyAIWithSpeaker(words []orderedjson.Value, speaker string) []orderedjson.Value {
-	for i, w := range words {
-		if w.Kind() == orderedjson.Object {
-			words[i] = w.With("speaker", orderedjson.StringValue(speaker))
-		}
-	}
-	return words
-}
-
 // assemblyAISpeaker returns the cue speaker, else the stored speaker of an utterance cue, else null.
 func assemblyAISpeaker(stored orderedjson.Value, speaker string, grouped bool) orderedjson.Value {
 	switch {
@@ -121,33 +112,9 @@ func assemblyAISpeaker(stored orderedjson.Value, speaker string, grouped bool) o
 	return stored
 }
 
-// assemblyAISources returns the stored start, end and text of the cue. A grouped cue has no stored text, so the values
-// come from its words.
-func assemblyAISources(data orderedjson.Value, stored []orderedjson.Value, grouped bool) (start, end, text orderedjson.Value) {
-	if !grouped {
-		return cloudGet(data, "start"), cloudGet(data, "end"), cloudGet(data, "text")
-	}
-	if len(stored) > 0 {
-		start, end = cloudGet(stored[0], "start"), cloudGet(stored[len(stored)-1], "end")
-	}
-	texts := make([]string, len(stored))
-	for i, w := range stored {
-		texts[i] = assemblyAIWordText(w)
-	}
-	return start, end, orderedjson.StringValue(strings.Join(texts, " "))
-}
-
 func assemblyAIWordText(w orderedjson.Value) string {
 	s, _ := cloudGet(w, "text").AsString()
 	return strings.Trim(s, markupcore.PHPTrimSet)
-}
-
-// assemblyAINumber returns v when it is a number, else null.
-func assemblyAINumber(v orderedjson.Value) orderedjson.Value {
-	if v.Kind() == orderedjson.Number {
-		return v
-	}
-	return orderedjson.Value{}
 }
 
 func assemblyAIMillis(d time.Duration) orderedjson.Value {
@@ -182,7 +149,7 @@ func assemblyAIWords(c *model.Cue, stored []orderedjson.Value, sameTimes, sameTe
 		for _, i := range ch.Source {
 			item := stored[i]
 			if ch.Word != nil {
-				item = assemblyAITyped(item, ch.Word)
+				item = cloudTyped(item, ch.Word, time.Millisecond, assemblyAIMillis)
 			}
 			words = append(words, item)
 		}
@@ -199,21 +166,4 @@ func assemblyAIStoredTime(v orderedjson.Value) *time.Duration {
 		return nil
 	}
 	return &d
-}
-
-// assemblyAITyped gives a reused word the End and the Confidence of its entry in Cue.Words, for each member that the
-// word has and that differs.
-func assemblyAITyped(item orderedjson.Value, w *model.Word) orderedjson.Value {
-	if item.Kind() != orderedjson.Object {
-		return item
-	}
-	if v, ok := item.Get("end"); ok && !wordgroup.SameTime(assemblyAINumber(v), time.Millisecond, w.End) {
-		item = item.With("end", assemblyAIMillis(w.End))
-	}
-	if v, ok := item.Get("confidence"); ok && w.Confidence != nil {
-		if f, isNumber := v.AsFloat64(); !isNumber || f != *w.Confidence {
-			item = item.With("confidence", orderedjson.Float(*w.Confidence))
-		}
-	}
-	return item
 }

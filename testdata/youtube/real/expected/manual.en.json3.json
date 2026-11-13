@@ -1,0 +1,126 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "youtube": {
+                "format": "json3",
+                "wireMagic": "pb3",
+                "pens": [
+                    []
+                ],
+                "wsWinStyles": [
+                    []
+                ],
+                "wpWinPositions": [
+                    []
+                ]
+            }
+        },
+        "cues": [
+            {
+                "start": 1.2,
+                "end": 3.5,
+                "lines": [
+                    "Welcome to the bakery tour."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "tStartMs": 1200,
+                        "dDurationMs": 2300,
+                        "segments": [
+                            {
+                                "utf8": "Welcome to the bakery tour."
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3.5,
+                "end": 6.34,
+                "lines": [
+                    "First we mix flour, water",
+                    "and a pinch of salt."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "tStartMs": 3500,
+                        "dDurationMs": 2840,
+                        "segments": [
+                            {
+                                "utf8": "First we mix flour, water\nand a pinch of salt."
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 6.34,
+                "end": 8.5,
+                "lines": [
+                    "The dough rests for an hour."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "tStartMs": 6340,
+                        "dDurationMs": 2160,
+                        "segments": [
+                            {
+                                "utf8": "The dough rests for an hour."
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 8.5,
+                "end": 11.5,
+                "lines": [
+                    "Bread &amp; rolls bake at &lt;220&gt; degrees."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "tStartMs": 8500,
+                        "dDurationMs": 3000,
+                        "segments": [
+                            {
+                                "utf8": "Bread & rolls bake at <220> degrees."
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 11.5,
+                "end": 14.0,
+                "lines": [
+                    "That's all for today."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "tStartMs": 11500,
+                        "dDurationMs": 2500,
+                        "segments": [
+                            {
+                                "utf8": "That's all for today."
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

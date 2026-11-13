@@ -1,0 +1,55 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "youtube": {
+                "format": "srv3"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "The market opens at eight."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "t": "1000",
+                        "d": "2000",
+                        "segments": [
+                            {
+                                "text": "The market opens at eight."
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3.5,
+                "end": 6.0,
+                "lines": [
+                    "Fresh bread is sold first."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "t": "3500",
+                        "d": "2500",
+                        "segments": [
+                            {
+                                "text": "Fresh bread is sold first."
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}
