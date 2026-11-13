@@ -197,6 +197,7 @@ func TestConvertWritesTheFormatOfTo(t *testing.T) {
 		{"scc/real/popon_broadcast_df.scc", stbox.SubRip},
 		{"stl/real/bakery_teletext_25fps.stl", stbox.SubRip},
 		{"whisper/real/whisperx_diarize.json", stbox.SubRip},
+		{"youtube/real/auto.en.json3", stbox.WebVTT},
 	}
 	for _, tt := range tests {
 		t.Run(tt.path, func(t *testing.T) {

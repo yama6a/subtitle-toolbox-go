@@ -13,6 +13,7 @@ import (
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/karaoke"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -85,6 +86,16 @@ func TestConvertTranscriptOptions(t *testing.T) {
 	}{
 		{"words in WebVTT", long, stbox.WebVTT, []string{"--word-timestamps"}, libraryCall{read: withWords()}},
 		{"words with --from", long, stbox.WebVTT, []string{"--word-timestamps", "--from", "whisper"}, libraryCall{read: withWords()}},
+		{
+			"YouTube words", "youtube/real/auto.en.json3", stbox.WebVTT,
+			[]string{"--word-timestamps"},
+			libraryCall{read: stbox.ReadOptions{YouTube: youtube.ReadOptions{WordTimestamps: true}}},
+		},
+		{
+			"YouTube karaoke", "youtube/real/auto.en.json3", stbox.SubRip,
+			[]string{"--karaoke"},
+			libraryCall{read: stbox.ReadOptions{YouTube: youtube.ReadOptions{WordTimestamps: true}}, edit: highlight(karaoke.Options{})},
+		},
 		{"no words without the flag", long, stbox.WebVTT, nil, libraryCall{}},
 		{"flag on a format without words", "cli/trip.srt", stbox.WebVTT, []string{"--word-timestamps"}, libraryCall{}},
 		{"resegment", long, stbox.SubRip, []string{"--structure-resegment"}, libraryCall{read: withWords(), edit: byWords(resegment.Options{})}},

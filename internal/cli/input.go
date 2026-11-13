@@ -149,7 +149,9 @@ func (r *runner) prepareRead(a *args) error {
 		}
 		r.readOptions.Format = f
 	}
-	r.readOptions.Transcript.WordTimestamps = a.Has("word-timestamps") || slices.ContainsFunc(r.wordTriggers, a.Has)
+	words := a.Has("word-timestamps") || slices.ContainsFunc(r.wordTriggers, a.Has)
+	r.readOptions.Transcript.WordTimestamps = words
+	r.readOptions.YouTube.WordTimestamps = words
 	r.readOptions.Encoding, _ = a.Value("encoding")
 	r.readOptions.Lenient = a.Has("lenient")
 	return r.readOptions.Validate()
