@@ -58,9 +58,7 @@ type textMarkup struct {
 // next karaoke tag.
 type syllable struct {
 	start, end time.Duration
-	// tag is the karaoke tag as written, without the backslash, such as kf25.
-	tag     string
-	hasText bool
+	hasText    bool
 }
 
 // convert returns the core markup lines of text and the numpad value of its first \an or \a tag, or 0.
@@ -131,7 +129,7 @@ func (m *textMarkup) tag(tag string) error {
 	if g := karaokeRegexp.FindStringSubmatch(tag); g != nil {
 		m.b.WriteString("<" + markupcore.CoreTimestamp(m.karaoke) + ">")
 		d, err := parsing.BoundedTime(m.karaoke+karaokeDuration(g[2], g[3]), tag, m.line)
-		m.syllables = append(m.syllables, syllable{start: m.karaoke, end: d, tag: tag[1:]})
+		m.syllables = append(m.syllables, syllable{start: m.karaoke, end: d})
 		m.karaoke = d
 		return err
 	}

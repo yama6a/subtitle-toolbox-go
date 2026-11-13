@@ -637,3 +637,64 @@ func TestKaraokeFileWritesBackByteForByte(t *testing.T) {
 	setCue(t, s, 0, func(c *model.Cue) { c.Speaker = "Bo" })
 	assert.Contains(t, write(t, s, model.CommonWriteOptions{}, ass.WriteOptions{}), `Default,Bo,0,0,0,,{\k50}Hi {\k20\k30}there`+"\n")
 }
+
+func TestEditedKaraokeCueWritesGapsAndTheOptionTag(t *testing.T) {
+	t.Parallel()
+
+	const in = `Dialogue: 0,0:00:01.00,0:00:02.00,Default,,0,0,0,,{\kf50}Hi {\k20}{\ko30}there`
+	tests := []struct {
+		name  string
+		shift time.Duration
+		grow  time.Duration
+		opts  ass.WriteOptions
+		want  string
+	}{
+		{
+			"a shift writes k and keeps the gap", time.Second, 0,
+			ass.WriteOptions{},
+			`0:00:02.00,0:00:03.00,Default,,0,0,0,,{\k50}Hi {\k20\k30}there`,
+		},
+		{
+			"the option sets the tag", time.Second, 0,
+			ass.WriteOptions{KaraokeTag: ass.KaraokeFill},
+			`0:00:02.00,0:00:03.00,Default,,0,0,0,,{\kf50}Hi {\kf20\kf30}there`,
+		},
+		{
+			"a changed word end counts as a change", 0, 100 * ms,
+			ass.WriteOptions{},
+			`0:00:01.00,0:00:02.00,Default,,0,0,0,,{\k60}Hi {\k10\k30}there`,
+		},
+		{
+			"an unchanged cue keeps its text", 0, 0,
+			ass.WriteOptions{KaraokeTag: ass.KaraokeInstant},
+			`0:00:01.00,0:00:02.00,Default,,0,0,0,,{\kf50}Hi {\k20}{\ko30}there`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s, _ := mustRead(t, eventsHeader+in+"\n", false)
+			require.NoError(t, s.Shift(tt.shift))
+			setCue(t, s, 0, func(c *model.Cue) { c.Words[0].End += tt.grow })
+			assert.Contains(t, write(t, s, model.CommonWriteOptions{}, tt.opts), tt.want+"\n")
+		})
+	}
+}
+
+func TestCueWithoutTaggedSourceKeepsItsStoredText(t *testing.T) {
+	t.Parallel()
+
+	const line = `Dialogue: 0,0:00:13.50,0:00:16.00,Default,Conductor,0,0,0,,{\k40}The {\kf35}train {\ko45}leaves`
+	s, _ := mustRead(t, "[V4+ Styles]\nFormat: Name, Bold\nStyle: Default,-1\n\n"+eventsHeader+line+"\n", false)
+	read := cueAt(t, s, 0)
+	data := cueData(t, read)
+
+	// A cue read from library JSON version 2 has plain lines, words and the stored cue data, but no tagged source.
+	rebuilt := model.Cue{Start: read.Start, End: read.End, Lines: read.Lines, Speaker: read.Speaker, Words: read.Words}
+	require.NoError(t, rebuilt.SetFormatData("ass", data))
+	out := subtitle(t, rebuilt)
+	require.NoError(t, out.SetFormatData("ass", fileData(t, s)))
+
+	assert.Contains(t, write(t, out, model.CommonWriteOptions{}, ass.WriteOptions{}), line+"\n")
+}

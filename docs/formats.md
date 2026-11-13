@@ -309,7 +309,7 @@ This file reads as one cue from 1.5 s to 4 s with the alignment `TopCenter` and 
 | `\an1` to `\an9`, SSA `\a1` to `\a11` | the cue alignment. The first tag of the event wins, else the style alignment, else `BottomCenter` |
 | `\b1`, `\i1`, `\u1`, `\s1`, and `0` or no value | `<b>`, `<i>`, `<u>`, `<s>` and their end tags. `\b700` is dropped |
 | `\c&HBBGGRR&` or `\1c&HBBGGRR&` with 1 to 8 hex digits, and `\c` alone | `<font color="#rrggbb">` and `</font>` |
-| `\k`, `\K`, `\kf`, `\ko` in centiseconds | a word in `Cue.Words`. The first syllable starts at the event start, and the word ends at its start plus the syllable length. A syllable without text is no word. The cue data `ass.karaoke` holds the tag of each word as written, such as `kf25`. The writer uses it for a changed cue, unless `KaraokeTag` is set |
+| `\k`, `\K`, `\kf`, `\ko` in centiseconds | a word in `Cue.Words`. The first syllable starts at the event start, and the word ends at its start plus the syllable length. A syllable without text is no word. |
 | `\r` and `\rName` | all tags close, then the flags of the event style or of style `Name` open |
 | `\p1` to `\p0` | a drawing: its text is dropped |
 | other tags such as `\pos`, `\fad`, `\t`, `\fs`, and `{note}` blocks | dropped |

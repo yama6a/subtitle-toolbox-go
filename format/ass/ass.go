@@ -16,9 +16,6 @@ import (
 
 const formatDataKey = string(model.ASS)
 
-// karaokeKey is the key of the ass cue data that holds the karaoke tag of each word as written, such as kf25.
-const karaokeKey = "karaoke"
-
 // ReadOptions holds the settings of the ASS reader. It has no fields yet.
 type ReadOptions struct{}
 
