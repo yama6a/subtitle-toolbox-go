@@ -17,6 +17,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v3/hls"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v3/ocr"
 	"github.com/yama6a/subtitle-toolbox-go/v3/profanity"
 	"github.com/yama6a/subtitle-toolbox-go/v3/refsync"
 	"github.com/yama6a/subtitle-toolbox-go/v3/timing"
@@ -353,13 +354,14 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 	codeDefaults["snap-tolerance"] = formatNumber(dual.DefaultTimeTolerance.Seconds())
 	codeDefaults["segment"] = formatNumber(hls.DefaultSegmentDuration.Seconds())
 	codeDefaults["playlist"] = defaultPlaylist
+	codeDefaults["ocr-language"] = string(ocr.English)
 	codeDefaults["pattern"] = hls.DefaultFileNamePattern
 	codeDefaults["mpegts"] = strconv.Itoa(hls.DefaultMPEGTS)
 	described := []string{
 		"the format detected from the content", "stop at the first failure", "the input format",
 		"the BOM rule of the output format", "as for --from", "the frame rate of a MicroDVD, Spruce STL, iTT or MCC input",
 		"none", "the format of the primary file", "half the --video-fps, rounded to the nearest frame",
-		"0", "the end of the last cue",
+		"0", "the end of the last cue", "tesseract when it is installed", "the subtitle fonts database of go-glyph-ocr",
 	}
 	unwrap := regexp.MustCompile(`\n {3,}(\S)`)
 	defaultText := regexp.MustCompile(`(?m)^  (?:-\w, )?--([\w-]+).*? Default: (.+?)\.(?: |$)`)

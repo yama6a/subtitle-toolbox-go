@@ -362,7 +362,7 @@ func TestTesseractAccuracy(t *testing.T) {
 			for i := range s.Len() {
 				cue, _ := s.Cue(i)
 				want := []rune(plain(drawn[i]))
-				errs += editDistance(want, []rune(plain(cue.Lines)))
+				errs += testfiles.EditDistance(want, []rune(plain(cue.Lines)))
 				length += len(want)
 			}
 			accuracy := 1 - float64(errs)/float64(length)
@@ -377,24 +377,4 @@ func plain(lines []string) string {
 		out[i] = markup.PlainText(l)
 	}
 	return strings.Join(out, "\n")
-}
-
-func editDistance(a, b []rune) int {
-	prev := make([]int, len(b)+1)
-	for j := range prev {
-		prev[j] = j
-	}
-	for i, ra := range a {
-		cur := make([]int, len(b)+1)
-		cur[0] = i + 1
-		for j, rb := range b {
-			cost := 1
-			if ra == rb {
-				cost = 0
-			}
-			cur[j+1] = min(prev[j+1]+1, cur[j]+1, prev[j]+cost)
-		}
-		prev = cur
-	}
-	return prev[len(b)]
 }

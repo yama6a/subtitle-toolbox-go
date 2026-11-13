@@ -62,7 +62,7 @@ func Installed(ctx context.Context, program string) bool {
 
 func installed(ctx context.Context, program string) (bool, error) {
 	stdout, stderr, exit, err := run(ctx, program, "--version")
-	if ctx.Err() != nil {
+	if err != nil && ctx.Err() != nil {
 		return false, err
 	}
 	return err == nil && exit == 0 && strings.HasPrefix(strings.TrimLeft(stdout+stderr, " \t\r\n"), "tesseract"), nil
@@ -72,6 +72,22 @@ const missingProgram = "Cannot run OCR with Tesseract: the program \"%s\" is mis
 	"apt install tesseract-ocr (Debian, Ubuntu), apk add tesseract-ocr tesseract-ocr-data-eng (Alpine), " +
 	"dnf install tesseract (Fedora), brew install tesseract (macOS), " +
 	"or the installer from https://github.com/UB-Mannheim/tesseract/wiki (Windows)."
+
+// RequireInstalled returns an *model.InvalidArgumentError with an install hint when program does not run as Tesseract.
+// An empty program means "tesseract". A cancelled ctx returns its error.
+func RequireInstalled(ctx context.Context, program string) error {
+	if program == "" {
+		program = "tesseract"
+	}
+	ok, err := installed(ctx, program)
+	switch {
+	case err != nil:
+		return err
+	case !ok:
+		return &model.InvalidArgumentError{Msg: fmt.Sprintf(missingProgram, program)}
+	}
+	return nil
+}
 
 // RequireLanguages returns an error when the program or the data of a part of language is missing.
 // An empty language checks Options.Language. The error is a *model.InvalidArgumentError.
@@ -111,12 +127,8 @@ func (e *Engine) installedLanguages(ctx context.Context) ([]string, error) {
 	if entry.read {
 		return entry.list, nil
 	}
-	ok, err := installed(ctx, e.program)
-	if err != nil {
+	if err := RequireInstalled(ctx, e.program); err != nil {
 		return nil, err
-	}
-	if !ok {
-		return nil, &model.InvalidArgumentError{Msg: fmt.Sprintf(missingProgram, e.program)}
 	}
 	stdout, stderr, _, err := run(ctx, e.program, "--list-langs")
 	if err != nil {

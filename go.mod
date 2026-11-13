@@ -8,6 +8,7 @@ require (
 	github.com/dlclark/regexp2/v2 v2.13.0
 	github.com/rivo/uniseg v0.4.7
 	github.com/stretchr/testify v1.12.1
+	github.com/yama6a/go-glyph-ocr v1.0.0
 	golang.org/x/text v0.44.0
 )
 

@@ -16,6 +16,8 @@ type convertCommand struct {
 	// masking is the edit of the masking group, nil without --mask-words.
 	masking *maskingEdit
 	errors  *errorsEdit
+	// ocr is the edit of the ocr group, nil without --ocr.
+	ocr *ocrEdit
 	// snap is the edit of the snap group, nil without a trigger option.
 	snap *snapEdit
 }
@@ -131,6 +133,8 @@ func (cc *convertCommand) prepare(a *args, r *runner) error {
 func (cc *convertCommand) prepareGroups(a *args) error {
 	add := func(e edit) {
 		switch e := e.(type) {
+		case *ocrEdit:
+			cc.ocr = e
 		case *errorsEdit:
 			cc.errors = e
 		case *maskingEdit:
@@ -180,7 +184,12 @@ func (cc *convertCommand) checkInputs(r *runner, inputs []string) error {
 	return cc.out.checkInputs(r, inputs, append(readPaths, m.wordsPath), side)
 }
 
-func (cc *convertCommand) loadSideFiles(_ context.Context, r *runner) error {
+func (cc *convertCommand) loadSideFiles(ctx context.Context, r *runner) error {
+	if cc.ocr != nil {
+		if err := cc.ocr.load(ctx, r.c); err != nil {
+			return err
+		}
+	}
 	if cc.errors != nil && cc.errors.listPath != "" {
 		if err := cc.errors.loadReplaceList(r.c); err != nil {
 			return err

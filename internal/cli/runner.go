@@ -70,8 +70,14 @@ func (r *runner) loop(ctx context.Context, fc fileCommand, inputs []string, keep
 			return true, nil //nolint:nilerr // an interrupt is exit code 130, not an error of the run
 		}
 		ok, err := r.processInput(ctx, fc, arg)
-		if err != nil || !ok && !keepGoing {
+		if err != nil {
 			return false, err
+		}
+		if !ok && ctx.Err() != nil {
+			return true, nil //nolint:nilerr // an interrupt is exit code 130, not an error of the run
+		}
+		if !ok && !keepGoing {
+			return false, nil
 		}
 	}
 	return false, nil
@@ -145,6 +151,9 @@ func (r *runner) processInput(ctx context.Context, fc fileCommand, arg string) (
 		return false, err
 	}
 	if err != nil {
+		if ctx.Err() != nil && errors.Is(err, ctx.Err()) {
+			return false, nil
+		}
 		r.failed++
 		name := label(arg)
 		if l, ok := errors.AsType[*labeledError](err); ok {
