@@ -1,6 +1,7 @@
 package youtube
 
 import (
+	"errors"
 	"io"
 	"math"
 	"regexp"
@@ -44,7 +45,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 	case variantSrv2:
 		body = xw.srv2(cues, stored)
 	case variantJSON3:
-		return &model.UnwritableError{Format: model.YouTubeTimedText, CueIndex: -1, Reason: "not yet"}
+		return writeJSON3(w, json3Document(cues, stored, file), common)
 	default:
 		body = xw.srv3(cues, stored, file)
 	}
@@ -169,4 +170,23 @@ func (xw *xmlWriter) text(fields orderedjson.Value, c model.Cue) string {
 		}
 	}
 	return "<text" + xw.attributes(fields, "text", "appends", "segments") + ">" + xw.escape(text) + "</text>"
+}
+
+const (
+	malformedUTF8 = "JSON cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. " +
+		"Read a file in another encoding with its source encoding."
+	infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
+)
+
+func writeJSON3(w io.Writer, doc orderedjson.Value, common model.CommonWriteOptions) error {
+	body, err := orderedjson.Encode(doc, false)
+	if err != nil {
+		reason := infOrNaN
+		var cause error
+		if errors.Is(err, orderedjson.ErrInvalidUTF8) {
+			reason, cause = malformedUTF8, model.ErrInvalidUTF8
+		}
+		return &model.UnwritableError{Format: model.YouTubeTimedText, CueIndex: -1, Reason: reason, Err: cause}
+	}
+	return writing.Write(w, model.YouTubeTimedText, body, common, false)
 }

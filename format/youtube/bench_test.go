@@ -44,11 +44,39 @@ func srv3OneParagraph() string {
 	return b.String() + "</p></body></timedtext>"
 }
 
+// json3Windows has benchCaptions events in 50 windows, each with its own start and no duration.
+func json3Windows() string {
+	var b strings.Builder
+	b.WriteString(`{"events": [`)
+	for i := range benchCaptions {
+		if i > 0 {
+			b.WriteString(",")
+		}
+		fmt.Fprintf(&b, `{"tStartMs": %d, "wWinId": %d, "segs": [{"utf8": "caption number %d with some words"}]}`, i*10, i%50, i)
+	}
+	return b.String() + "]}"
+}
+
+// json3OneEvent is one event with benchCaptions timed segments of one word each.
+func json3OneEvent() string {
+	var b strings.Builder
+	b.WriteString(`{"events": [{"tStartMs": 0, "dDurationMs": 999999, "segs": [`)
+	for i := range benchCaptions {
+		if i > 0 {
+			b.WriteString(",")
+		}
+		fmt.Fprintf(&b, `{"utf8": " word%d", "tOffsetMs": %d, "acAsrConf": 0}`, i, i*10)
+	}
+	return b.String() + "]}]}"
+}
+
 func BenchmarkRead(b *testing.B) {
 	for _, bm := range []struct{ name, content string }{
 		{fmt.Sprintf("srv1 captions=%d", benchCaptions), srv1Without()},
 		{fmt.Sprintf("srv3 windows captions=%d", benchCaptions), srv3Windows()},
 		{fmt.Sprintf("srv3 segments=%d", benchCaptions), srv3OneParagraph()},
+		{fmt.Sprintf("json3 windows events=%d", benchCaptions), json3Windows()},
+		{fmt.Sprintf("json3 segments=%d", benchCaptions), json3OneEvent()},
 	} {
 		b.Run(bm.name, func(b *testing.B) {
 			b.ReportAllocs()
@@ -67,6 +95,8 @@ func BenchmarkWrite(b *testing.B) {
 		{fmt.Sprintf("srv1 captions=%d", benchCaptions), srv1Without()},
 		{fmt.Sprintf("srv3 windows captions=%d", benchCaptions), srv3Windows()},
 		{fmt.Sprintf("srv3 segments=%d", benchCaptions), srv3OneParagraph()},
+		{fmt.Sprintf("json3 windows events=%d", benchCaptions), json3Windows()},
+		{fmt.Sprintf("json3 segments=%d", benchCaptions), json3OneEvent()},
 	} {
 		s, _, err := youtube.Read(strings.NewReader(bm.content), model.CommonReadOptions{}, withWords)
 		if err != nil {
