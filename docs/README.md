@@ -19,12 +19,12 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [lenient-parsing.md](lenient-parsing.md) | strict and lenient mode, and the warnings of a read |
 | [frame-rates.md](frame-rates.md) | the named frame rates, frames and durations, the frame-count and clock time models, drop-frame labels and `ParseTime` |
 | [errors.md](errors.md) | the sentinel errors, the error types, line numbers and the CLI exit codes |
-| [editing.md](editing.md) | retiming, timing fixes, shot changes and gaps, cue structure, line wrapping and dual subtitles |
+| [editing.md](editing.md) | retiming, timing fixes, shot changes and gaps, cue structure, line wrapping, resegmenting and dual subtitles |
 | [compare.md](compare.md) | `diff` and `stbox diff`: the added, removed and changed cues between two subtitles, and how cues pair |
 | [sync.md](sync.md) | `refsync` and `stbox sync`: the offset and frame-rate scale against a reference subtitle, splits at ad breaks, and sync to the speech of a silencedetect log |
 | [statistics.md](statistics.md) | `stats` and the statistics of `stbox info`: counts, display time, reading speed, gaps and the most used words |
 | [validation.md](validation.md) | `validation` and `stbox validate`: the 19 rules, their units, the order of the violations and the command options |
-| [text.md](text.md) | case, replace, strip tags, right-to-left fixes, dialogue dashes, `hearingimpaired`: the removal of hearing-impaired annotations, `fixing`: the fixes of common text and OCR errors, and `profanity`: masked words and mute ranges |
+| [text.md](text.md) | case, replace, strip tags, right-to-left fixes, dialogue dashes, `hearingimpaired`: the removal of hearing-impaired annotations, `speakers`: labels, renames and prefix, dash or color styles, `fixing`: the fixes of common text and OCR errors, and `profanity`: masked words and mute ranges |
 | [transcripts.md](transcripts.md) | `format/transcript`: the read options, how words group into cues, how `Cue.Words` is filled, and how writers reuse source words |
 | [ocr.md](ocr.md) | package `ocr`: the engine interface, `Run`, the report, the language constants and an engine for an OCR web service |
 | [translation.md](translation.md) | package translation: the engine interface, Translate, the placeholders, the sentence splitter, the warnings and how to write an engine |
