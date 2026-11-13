@@ -34,6 +34,7 @@ const (
 	QuickTimeText Format = "qttext"
 	VobSub        Format = "vobsub"
 	WebVTT        Format = "vtt"
+	Whisper       Format = "whisper"
 )
 
 type formatFact struct {
@@ -74,6 +75,7 @@ var formatFacts = []formatFact{
 	{format: QuickTimeText, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: VobSub, extensions: []string{"idx"}, canRead: true, binary: true},
 	{format: WebVTT, extensions: []string{"vtt"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: Whisper, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
 }
 
 func (f Format) fact() formatFact {

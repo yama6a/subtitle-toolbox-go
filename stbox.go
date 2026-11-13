@@ -109,6 +109,7 @@ const (
 	SpruceSTL     = model.SpruceSTL
 	VobSub        = model.VobSub
 	WebVTT        = model.WebVTT
+	Whisper       = model.Whisper
 )
 
 // The containers that a read can name.
