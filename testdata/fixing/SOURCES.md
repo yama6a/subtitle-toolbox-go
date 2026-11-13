@@ -6,6 +6,7 @@ All files here are written for this repository. They hold no third-party text.
 
 | File | Source | License |
 |:--- |:--- |:--- |
+| `ocr-en.sup`, `ocr-de.sup`, `ocr-fr.sup`, `ocr-es.sup` | Written for this repository by `generate.php`. 1920x1080, white Liberation Sans at 52 px, 2 to 6 cues in English, German, French and Spanish. 3 to 12 words per language start with a capital I | MIT |
 | `ocr-en.ocr.srt`, `ocr-de.ocr.srt`, `ocr-fr.ocr.srt`, `ocr-es.ocr.srt` | The text that `generate.php` reads from the `.sup` file of the same name, OCR errors included | MIT |
 | `text_1080p.ocr.srt` | The text that `generate.php` reads from `../pgs/text_1080p.sup`, OCR errors included | MIT |
 | `text-pal.ocr.srt` | The text that `generate.php` reads from `../vobsub/text-pal.sub`, OCR errors included | MIT |
