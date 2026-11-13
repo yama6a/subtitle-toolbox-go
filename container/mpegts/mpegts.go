@@ -20,6 +20,7 @@ import (
 
 const (
 	codecTeletext = "dvb_teletext"
+	codecARIB     = "arib_caption"
 	codecDVB      = "dvb_subtitle"
 	// tableScanBytes is the file offset at which the table scan ends. A PAT or a PMT further in is not part of a
 	// recording that starts at a packet.
@@ -30,6 +31,12 @@ const (
 	hearingImpairedPage = 0x05
 	maxPage             = 99
 	readBufferSize      = 256 << 10
+
+	// Caption streams of ARIB TR-B14 profile A carry a component tag from 0x30 to 0x37 and the data component 0x0008.
+	dataComponentTag     = 0xFD
+	firstCaptionTag      = 0x30
+	lastCaptionTag       = 0x37
+	captionDataComponent = 0x0008
 )
 
 // stream is the place of a track in the file.
@@ -81,7 +88,7 @@ func packetSize(head []byte) int {
 	return 0
 }
 
-// Tracks returns the subtitle tracks in the order of the PMTs.
+// Tracks returns the teletext pages of all programs in the order of the PMTs, then the ARIB caption streams.
 func (f *File) Tracks() []model.Track {
 	return slices.Clone(f.tracks)
 }
@@ -143,13 +150,15 @@ func (f *File) scanTables() error {
 	if err != nil {
 		return err
 	}
+	var captions []stream
 	for _, pid := range scan.programs {
 		f.addTeletext(scan.pmts[pid])
+		captions = addCaptionStreams(captions, scan.pmts[pid])
 	}
 	for _, pid := range scan.programs {
 		f.addDVB(scan.pmts[pid])
 	}
-	return nil
+	return f.addARIB(captions)
 }
 
 // addTeletext lists the teletext subtitle pages of the elementary streams of one program.
@@ -214,9 +223,13 @@ func (f *File) hasNumber(n int) bool {
 
 // language returns the 3 letters of a descriptor lower-cased, or "und".
 func language(b []byte) string {
-	s := strings.ToLower(string(b))
-	if len(s) != 3 || strings.Trim(s, "abcdefghijklmnopqrstuvwxyz") != "" {
-		return "und"
+	if s := strings.ToLower(string(b)); isLanguage(s) {
+		return s
 	}
-	return s
+	return "und"
+}
+
+// isLanguage reports whether s is 3 letters of a to z.
+func isLanguage(s string) bool {
+	return len(s) == 3 && strings.Trim(s, "abcdefghijklmnopqrstuvwxyz") == ""
 }
