@@ -1,7 +1,6 @@
 package mpegts
 
 import (
-	"regexp"
 	"slices"
 
 	"github.com/asticode/go-astits"
@@ -9,8 +8,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/arib"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
-
-var languageCode = regexp.MustCompile(`^[a-z]{3}$`)
 
 // addCaptionStreams adds the ARIB caption streams of one program. A PID that two programs share keeps its last
 // program and its first place.
@@ -85,18 +82,16 @@ func (f *File) captionLanguages(captions []stream) (map[uint16]string, error) {
 		wanted[s.pid] = true
 		languages[s.pid] = "und"
 	}
-	remaining := len(wanted)
 	a := newAligner(f.packetSize, wanted, tableScanBytes)
 	err := f.pass(a, func(d *astits.DemuxerData) bool {
 		if d.PES == nil || !wanted[d.PID] {
 			return true
 		}
-		if code := arib.Language(d.PES.Data); languageCode.MatchString(code) {
+		if code := arib.Language(d.PES.Data); isLanguage(code) {
 			languages[d.PID] = code
 			delete(wanted, d.PID)
-			remaining--
 		}
-		return remaining > 0
+		return len(wanted) > 0
 	})
 	return languages, err
 }

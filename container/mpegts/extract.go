@@ -18,7 +18,7 @@ const ptsRange = 1 << 33
 // pesSink gets the data of each PES packet of a track. The teletext and ARIB decoders are sinks.
 type pesSink interface{ Add(data []byte, pts int64) }
 
-// Extract reads the track that has the given number from the start of the file. Lenient mode has no effect. The warnings are those of the ARIB decoder.
+// Extract reads the track that has the given number from the start of the file. Lenient mode matters only for an ARIB screen of more than 4096 characters. The warnings are those of the ARIB decoder.
 func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
 	i := slices.IndexFunc(f.tracks, func(t model.Track) bool { return t.Number == number })
 	if i < 0 {
@@ -36,7 +36,7 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 		err      error
 	)
 	if track.CodecID == codecARIB {
-		states, warnings, zero, last, err = f.readARIB(track, s)
+		states, warnings, zero, last, err = f.readARIB(track, s, common.Lenient)
 	} else {
 		states, zero, last, err = f.readTeletext(track, s)
 	}
@@ -70,7 +70,7 @@ func (f *File) readTeletext(track model.Track, s stream) (states []textState, ze
 	return states, zero, last, nil
 }
 
-func (f *File) readARIB(track model.Track, s stream) (states []textState, warnings []model.ParseWarning, zero, last int64, err error) {
+func (f *File) readARIB(track model.Track, s stream, lenient bool) (states []textState, warnings []model.ParseWarning, zero, last int64, err error) {
 	dec := arib.NewDecoder(track.Language)
 	zero, last, err = f.readPES(s, dec)
 	if err != nil {
@@ -81,12 +81,15 @@ func (f *File) readARIB(track model.Track, s stream) (states []textState, warnin
 	}
 	for _, w := range dec.Warnings() {
 		ms := (max(0, w.Time-zero) + 45) / 90
-		warnings = append(warnings, model.ParseWarning{
-			Message: fmt.Sprintf("At %d.%03d s: %s", ms/1000, ms%1000, w.Message),
-			Line:    model.NoLine,
-			Block:   model.NoBlock,
-			Action:  model.Repaired,
-		})
+		message := fmt.Sprintf("At %d.%03d s: %s", ms/1000, ms%1000, w.Message)
+		if w.Skipped && !lenient {
+			return nil, nil, 0, 0, &model.ParseError{Msg: message}
+		}
+		action := model.Repaired
+		if w.Skipped {
+			action = model.Skipped
+		}
+		warnings = append(warnings, model.ParseWarning{Message: message, Line: model.NoLine, Block: model.NoBlock, Action: action})
 	}
 	return states, warnings, zero, last, nil
 }

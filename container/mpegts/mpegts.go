@@ -32,7 +32,6 @@ const (
 	readBufferSize      = 256 << 10
 
 	// Caption streams of ARIB TR-B14 profile A carry a component tag from 0x30 to 0x37 and the data component 0x0008.
-	streamIdentifierTag  = 0x52
 	dataComponentTag     = 0xFD
 	firstCaptionTag      = 0x30
 	lastCaptionTag       = 0x37
@@ -87,7 +86,7 @@ func packetSize(head []byte) int {
 	return 0
 }
 
-// Tracks returns the subtitle tracks in the order of the PMTs.
+// Tracks returns the teletext pages of all programs in the order of the PMTs, then the ARIB caption streams.
 func (f *File) Tracks() []model.Track {
 	return slices.Clone(f.tracks)
 }
@@ -219,9 +218,13 @@ func (f *File) hasNumber(n int) bool {
 
 // language returns the 3 letters of a descriptor lower-cased, or "und".
 func language(b []byte) string {
-	s := strings.ToLower(string(b))
-	if len(s) != 3 || strings.Trim(s, "abcdefghijklmnopqrstuvwxyz") != "" {
-		return "und"
+	if s := strings.ToLower(string(b)); isLanguage(s) {
+		return s
 	}
-	return s
+	return "und"
+}
+
+// isLanguage reports whether s is 3 letters of a to z.
+func isLanguage(s string) bool {
+	return len(s) == 3 && strings.Trim(s, "abcdefghijklmnopqrstuvwxyz") == ""
 }

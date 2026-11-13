@@ -74,7 +74,7 @@ func join(packets [][]byte) []byte { return bytes.Join(packets, nil) }
 // single returns a writer with the tables of a program that has a teletext stream with the pages.
 func single(pages ...ttPage) *tsWriter {
 	w := newWriter()
-	w.tables(teletextPID, teletextStream(teletextPID, pages...))
+	w.tables(1, pmtPID, teletextPID, teletextStream(teletextPID, pages...))
 	return w
 }
 

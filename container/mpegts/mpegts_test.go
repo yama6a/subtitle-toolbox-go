@@ -144,7 +144,7 @@ func TestNumberClash(t *testing.T) {
 	t.Parallel()
 
 	w := newWriter()
-	w.tables(teletextPID,
+	w.tables(1, pmtPID, teletextPID,
 		teletextStream(teletextPID, ttPage{"deu", subtitlePageType, 150}),
 		teletextStream(0x0201, ttPage{"fra", subtitlePageType, 150}, ttPage{"Fra", subtitlePageType, 150}, ttPage{"f1a", hearingImpairedPageType, 151}))
 	w.teletextPES(0x0201, 90000, pageHeader(150), row(150, 22, startBox+"Bonjour."))

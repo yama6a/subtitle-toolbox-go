@@ -207,6 +207,12 @@ func TestDecoderText(t *testing.T) {
 			[]string{"The glyph of the character 0x21 of the set DRCS-1 (16x18 dots, MD5 " + hashOf(t, strings.Repeat("00", 36)) + ") has no known character. The reader wrote U+3013 for it."},
 		},
 		{
+			"a known glyph moved 2 dots", "jpn",
+			[]packet{{0, statement(drcs([5]any{0x4121, 4, 18, 36, shiftLeft(glyphFF5F, 9)}) + text("\x1B\x29\x20\x41\x0E\x21"))}},
+			[]stateRow{{0, []string{string(rune(0xFF5F))}, model.TopLeft}},
+			nil,
+		},
+		{
 			"rows 85 to 94", "jpn",
 			[]packet{{0, statement(text(base + position(6, 3) + "\x75\x21\x7A\x21\x7C\x21\x7E\x21"))}},
 			[]stateRow{{0, []string{"\u3402\u26cc\u27a1\u2160"}, model.BottomCenter}},
@@ -349,4 +355,28 @@ func hashOf(tb testing.TB, pattern string) string {
 	tb.Helper()
 
 	return fmt.Sprintf("%x", md5.Sum(mustHex(tb, pattern))) //nolint:gosec // see the import
+}
+
+// shiftLeft drops the first nibble of each row of a pattern in hexadecimal and ends the row with a 0 nibble.
+// A nibble holds 2 dots.
+func shiftLeft(pattern string, nibbles int) string {
+	var sb strings.Builder
+	for row := 0; row+nibbles <= len(pattern); row += nibbles {
+		sb.WriteString(pattern[row+1 : row+nibbles])
+		sb.WriteByte('0')
+	}
+	return sb.String()
+}
+
+// TestDecoderCellLimit feeds 600 rows and 200 more of 960 cells of 1 by 1 dot, which would need 518,000 cells.
+func TestDecoderCellLimit(t *testing.T) {
+	t.Parallel()
+
+	codes := cs + "\x9B1;1 \x57\x9B0 \x58\x9B0 \x59" + ls1 + strings.Repeat("\x98\x40A", 600) + strings.Repeat("\x98\x40B", 200) + wait(0)
+	got, warnings := decode("jpn", packet{0, statement(text(codes))})
+	require.Len(t, got, 1)
+	assert.NotEmpty(t, got[0].Lines)
+	require.Len(t, warnings, 1)
+	assert.True(t, warnings[0].Skipped)
+	assert.Equal(t, "The caption screen holds more than 4096 characters. The reader dropped the characters past that.", warnings[0].Message)
 }

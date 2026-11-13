@@ -61,7 +61,7 @@ func TestARIBTracks(t *testing.T) {
 		return pmtStream{pid: pid, streamType: 0x06, descriptors: []byte(descriptors)}
 	}
 	clash := newWriter()
-	clash.tables(videoPID,
+	clash.tables(1, pmtPID, videoPID,
 		teletextStream(teletextPID, ttPage{"jpn", subtitlePageType, 304}),
 		caption(304, "\x52\x01\x30\xFD\x03\x00\x08\x3D"))
 	clash.packets(304, pes(0xBD, 90000, aribStatement(aribText), 5))
@@ -83,7 +83,7 @@ func TestARIBTracks(t *testing.T) {
 		}},
 		{"only profile A", func() []byte {
 			w := newWriter()
-			w.tables(videoPID,
+			w.tables(2, pmtPID+1, videoPID,
 				caption(0x131, "\x52\x01\x38\xFD\x03\x00\x08\x3D"),
 				caption(0x132, "\x52\x01\x30\xFD\x03\x00\x12\x3D"),
 				caption(0x133, "\x52\x01\x30"))
@@ -101,7 +101,7 @@ func TestARIBTracks(t *testing.T) {
 
 	s, _, err := open(t, clash.bytes()).Extract(304000, model.CommonReadOptions{})
 	require.NoError(t, err)
-	assert.Equal(t, []cueRow{cue(0, 5, "Ａ")}, cuesOf(s))
+	assert.Equal(t, []cueRow{cue(0, 5, "\uFF21")}, cuesOf(s))
 }
 
 func TestARIBWarningsAndJunk(t *testing.T) {
@@ -116,4 +116,25 @@ func TestARIBWarningsAndJunk(t *testing.T) {
 	clean := fixture(t, "arib_brazilian.m2ts")
 	junk := append(append(bytes.Clone(clean[:3*192]), 0, 1, 2), clean[3*192:]...)
 	assert.Equal(t, extract(t, clean, 304, model.CommonReadOptions{}), extract(t, junk, 304, model.CommonReadOptions{}))
+}
+
+func TestARIBScreenLimit(t *testing.T) {
+	t.Parallel()
+
+	codes := "\x0C\x9B1;1 \x57\x9B0 \x58\x9B0 \x59\x0E" + strings.Repeat("\x98\x40A", 600) + strings.Repeat("\x98\x40B", 200)
+	w := newWriter()
+	w.tables(1, pmtPID, videoPID, pmtStream{pid: 304, streamType: 0x06, descriptors: []byte("\x52\x01\x30\xFD\x03\x00\x08\x3D")})
+	w.packets(304, pes(0xBD, 90000, aribStatement(codes), 5))
+	f := open(t, w.bytes())
+
+	_, _, err := f.Extract(304, model.CommonReadOptions{})
+	var pe *model.ParseError
+	require.ErrorAs(t, err, &pe)
+	assert.Equal(t, "At 0.000 s: The caption screen holds more than 4096 characters. The reader dropped the characters past that.", pe.Msg)
+
+	s, warnings, err := f.Extract(304, model.CommonReadOptions{Lenient: true})
+	require.NoError(t, err)
+	assert.Len(t, s.Cues(), 1)
+	require.Len(t, warnings, 1)
+	assert.Equal(t, model.Skipped, warnings[0].Action)
 }

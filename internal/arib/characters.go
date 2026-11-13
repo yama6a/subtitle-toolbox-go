@@ -3,6 +3,7 @@ package arib
 import (
 	"fmt"
 	"slices"
+	"sync"
 	"unicode/utf8"
 
 	"golang.org/x/text/encoding/japanese"
@@ -11,7 +12,7 @@ import (
 // Adapted from xqq/libaribcaption, src/decoder/b24_conv_tables.hpp, b24_gaiji_table.hpp, b24_macros.hpp and b24_colors.cpp
 // (https://github.com/xqq/libaribcaption/blob/37dde0f32652c32aa98bf92278944d1cfb2e7354/src/decoder/), MIT.
 
-// The final bytes of the graphic sets. A DRCS set is drcs plus its final byte.
+// The final bytes of the graphic sets. A DRCS set is setDRCS plus its final byte.
 const (
 	setKanji            = 0x42
 	setAlphanumeric     = 0x4A
@@ -32,19 +33,20 @@ const (
 )
 
 const (
-	hiraganaIterationMarks = "ゝゞ"
-	katakanaIterationMarks = "ヽヾ"
-	kanaSymbols            = "ー。「」、・"
+	hiraganaIterationMarks = "\u309D\u309E"
+	katakanaIterationMarks = "\u30FD\u30FE"
+	kanaSymbols            = "\u30FC\u3002\u300C\u300D\u3001\u30FB"
+	replacement            = "\uFFFD"
 )
 
 // halfWidthForms are the Japanese symbols that have a half width form at middle size, as libaribcaption writes them.
 //
 //nolint:gochecknoglobals // lookup table
 var halfWidthForms = map[rune]string{
-	0x30FC: "ｰ", 0x3002: "｡", 0x300C: "｢", 0x300D: "｣", 0x3001: "､",
-	0x30FB: "･", 0x309B: "ﾞ", 0x309C: "ﾟ", 0xFFE3: "¯", 0x301C: "~",
-	0xFFE5: "¥", 0x25CB: "￮", 0x25A0: "￭", 0x2192: "￫", 0x2190: "￩",
-	0x2191: "￪", 0x2193: "￬",
+	0x30FC: "\uFF70", 0x3002: "\uFF61", 0x300C: "\uFF62", 0x300D: "\uFF63", 0x3001: "\uFF64",
+	0x30FB: "\uFF65", 0x309B: "\uFF9E", 0x309C: "\uFF9F", 0xFFE3: "\u00AF", 0x301C: "~",
+	0xFFE5: "\u00A5", 0x25CB: "\uFFEE", 0x25A0: "\uFFED", 0x2192: "\uFFEB", 0x2190: "\uFFE9",
+	0x2191: "\uFFEA", 0x2193: "\uFFEC",
 }
 
 // twoByteSet reports whether the set has 2-byte codes.
@@ -59,35 +61,39 @@ func twoByteSet(set int) bool {
 
 // character returns the character of the codes first and second, from 0x21 to 0x7E, in set. It returns "" for a
 // mosaic set. halfWidth is true for middle size text.
-func character(set, first, second int, halfWidth, latin bool) string { //nolint:cyclop // one case for each graphic set
-	var c string
-	switch set {
-	case setKanji, setJISX0213Plane1, setAdditional:
-		c = kanji(first, second, false)
-	case setJISX0213Plane2:
-		c = kanji(first, second, true)
-	case setAlphanumeric, setPropAlphanumeric:
-		c = alphanumeric(first, halfWidth || latin)
-	case setHiragana, setPropHiragana:
-		c = kana(first, 0x3041, 0x73, hiraganaIterationMarks)
-	case setKatakana, setPropKatakana:
-		c = kana(first, 0x30A1, 0x76, katakanaIterationMarks)
-	case setJISX0201Kana:
-		c = jisX0201(first, halfWidth)
-	case setLatinExtension:
-		c = "ÿ"
-		if first != 0x2D {
-			c = string(latinExtension[first|0x80-0xA0])
-		}
-	case setLatinSpecial:
-		c = "�"
-		if r, ok := latinSpecial[first]; ok {
-			c = string(r)
-		}
-	}
+func character(set, first, second int, halfWidth, latin bool) string {
+	c := setCharacter(set, first, second, halfWidth || latin)
 	if !halfWidth || latin {
 		return c
 	}
+	return toHalfWidth(c)
+}
+
+func setCharacter(set, first, second int, halfWidth bool) string {
+	switch set {
+	case setKanji, setJISX0213Plane1, setAdditional:
+		return kanji(first, second, false)
+	case setJISX0213Plane2:
+		return kanji(first, second, true)
+	case setAlphanumeric, setPropAlphanumeric:
+		return alphanumeric(first, halfWidth)
+	case setHiragana, setPropHiragana:
+		return kana(first, 0x3041, 0x73, hiraganaIterationMarks)
+	case setKatakana, setPropKatakana:
+		return kana(first, 0x30A1, 0x76, katakanaIterationMarks)
+	case setJISX0201Kana:
+		return jisX0201(first, halfWidth)
+	case setLatinExtension:
+		return latinExtensionCharacter(first)
+	case setLatinSpecial:
+		return latinSpecialCharacter(first)
+	default:
+		return ""
+	}
+}
+
+// toHalfWidth turns the full width forms of middle size text into their half width forms.
+func toHalfWidth(c string) string {
 	r, _ := utf8.DecodeRuneInString(c + " ")
 	switch {
 	case r >= 0xFF01 && r <= 0xFF5E:
@@ -101,10 +107,24 @@ func character(set, first, second int, halfWidth, latin bool) string { //nolint:
 	return c
 }
 
+func latinExtensionCharacter(code int) string {
+	if code == 0x2D {
+		return "\u00FF"
+	}
+	return string(latinExtension[code|0x80-0xA0])
+}
+
+func latinSpecialCharacter(code int) string {
+	if r, ok := latinSpecial[code]; ok {
+		return string(r)
+	}
+	return replacement
+}
+
 func jisX0201(code int, halfWidth bool) string {
 	switch {
 	case code > 0x5F:
-		return "�"
+		return replacement
 	case halfWidth:
 		return string(rune(0xFF61 + code - 0x21))
 	default:
@@ -122,38 +142,55 @@ var jisX0208Exceptions = map[int]rune{
 	0x2D77: 0xFFFD, 0x2D7A: 0xFFFD, 0x2D7B: 0xFFFD, 0x2D7C: 0xFFFD,
 }
 
-// kanji returns a character of JIS X 0208 from x/text, or of the additional table in the rows 85 to 94. x/text has
-// no JIS X 0213, so every other cell, and all of plane 2, gives U+FFFD.
-func kanji(first, second int, plane2 bool) string {
-	if row := first - 0x20; row >= 85 {
-		if r := additional[row-85][second-0x21]; r != 0 {
-			return string(r)
+const jisX0208Rows = 84
+
+// jisX0208 holds the characters of the rows 1 to 84 of JIS X 0208 from column 1. 0 marks an empty cell.
+//
+//nolint:gochecknoglobals // lookup table that is built on first use
+var jisX0208 = sync.OnceValue(func() *[jisX0208Rows][94]rune {
+	var table [jisX0208Rows][94]rune
+	dec := japanese.EUCJP.NewDecoder()
+	for row := range jisX0208Rows {
+		for column := range 94 {
+			out, err := dec.Bytes([]byte{byte(0xA1 + row), byte(0xA1 + column)})
+			if r, size := utf8.DecodeRune(out); err == nil && size == len(out) && r != utf8.RuneError {
+				table[row][column] = r
+			}
+			if r, ok := jisX0208Exceptions[(0x21+row)<<8|0x21+column]; ok {
+				table[row][column] = r
+			}
 		}
-		return "�"
 	}
-	if plane2 {
-		return "�"
+	return &table
+})
+
+// kanji returns a character of JIS X 0208, or of the additional table in the rows 85 to 94. x/text has no
+// JIS X 0213, so every other cell below row 85, and all of plane 2 there, gives U+FFFD.
+func kanji(first, second int, plane2 bool) string {
+	row := first - 0x20
+	var r rune
+	switch {
+	case row >= 85:
+		r = additional[row-85][second-0x21]
+	case !plane2:
+		r = jisX0208()[row-1][second-0x21]
 	}
-	if r, ok := jisX0208Exceptions[first<<8|second]; ok {
-		return string(r)
+	if r == 0 || r == 0xFFFD {
+		return replacement
 	}
-	out, err := japanese.EUCJP.NewDecoder().Bytes([]byte{byte(first | 0x80), byte(second | 0x80)})
-	if err != nil || !utf8.Valid(out) || utf8.RuneCount(out) != 1 || string(out) == "�" {
-		return "�"
-	}
-	return string(out)
+	return string(r)
 }
 
 func alphanumeric(code int, halfWidth bool) string {
 	switch {
 	case code == 0x5C && halfWidth:
-		return "¥"
+		return "\u00A5"
 	case code == 0x5C:
-		return "￥"
+		return "\uFFE5"
 	case code == 0x7E && halfWidth:
-		return "‾"
+		return "\u203E"
 	case code == 0x7E:
-		return "￣"
+		return "\uFFE3"
 	case halfWidth:
 		return string(rune(code))
 	default:
@@ -166,7 +203,7 @@ func kana(code, start, last int, iterationMarks string) string {
 	case code <= last:
 		return string(rune(start + code - 0x21))
 	case code <= 0x76:
-		return "　"
+		return "\u3000"
 	case code <= 0x78:
 		return string([]rune(iterationMarks)[code-0x77])
 	default:
@@ -184,37 +221,21 @@ func color(palette, index int) string {
 	return colors[palette*16+index]
 }
 
+type rgb struct {
+	r, g, b int
+	ok      bool
+}
+
 // buildColors lists the 8 full and 7 half intensity colors with transparent between them, then the other mixes of
 // the levels 0, 85, 170 and 255. Indexes 65 to 127 repeat the colors without transparent. They have half opacity,
 // which a font tag cannot show.
-func buildColors() []string { //nolint:cyclop // builds the 128 entry table of STD-B24 in one pass
-	type rgb struct {
-		r, g, b int
-		ok      bool
-	}
-	var levels []rgb
-	for _, level := range []int{255, 170} {
-		for bits := range 8 {
-			c := rgb{ok: true}
-			if bits&1 != 0 {
-				c.r = level
-			}
-			if bits&2 != 0 {
-				c.g = level
-			}
-			if bits&4 != 0 {
-				c.b = level
-			}
-			levels = append(levels, c)
-		}
-	}
-	levels[8] = rgb{}
+func buildColors() []string {
+	levels := intensityColors()
 	steps := []int{0, 85, 170, 255}
 	for _, r := range steps {
 		for _, g := range steps {
 			for _, b := range steps {
-				c := rgb{r, g, b, true}
-				if !slices.Contains(levels, c) {
+				if c := (rgb{r, g, b, true}); !slices.Contains(levels, c) {
 					levels = append(levels, c)
 				}
 			}
@@ -232,4 +253,22 @@ func buildColors() []string { //nolint:cyclop // builds the 128 entry table of S
 		}
 	}
 	return out
+}
+
+// intensityColors returns the 8 colors at full intensity and the 8 at half intensity, with transparent at index 8.
+func intensityColors() []rgb {
+	levels := make([]rgb, 0, 16)
+	for _, level := range []int{255, 170} {
+		for bits := range 8 {
+			c := rgb{ok: true}
+			for i, p := range []*int{&c.r, &c.g, &c.b} {
+				if bits>>i&1 != 0 {
+					*p = level
+				}
+			}
+			levels = append(levels, c)
+		}
+	}
+	levels[8] = rgb{}
+	return levels
 }

@@ -21,46 +21,57 @@ type keyedGlyph struct {
 }
 
 // parseDRCS reads a DRCS data unit. The key of a glyph is the DRCS set times 0x10000 plus the character code.
-func parseDRCS(unit []byte, twoByte bool) []keyedGlyph { //nolint:cyclop // the length checks of one DRCS unit
+func parseDRCS(unit []byte, twoByte bool) []keyedGlyph {
 	var glyphs []keyedGlyph
 	offset := 1
-	count := 0
-	if len(unit) > 0 {
-		count = int(unit[0])
-	}
-	for code := 0; code < count && offset+3 <= len(unit); code++ {
+	for range at(unit, 0) {
+		if offset+3 > len(unit) {
+			break
+		}
 		characterCode := int(unit[offset])<<8 | int(unit[offset+1])
 		fonts := int(unit[offset+2])
 		offset += 3
-		for font := 0; font < fonts && offset+4 <= len(unit); font++ {
-			if unit[offset]&0x0F > 1 {
-				offset += 5
-				if offset <= len(unit) {
-					offset += int(unit[offset-2])<<8 | int(unit[offset-1])
-				}
-				continue
+		for range fonts {
+			if offset+4 > len(unit) {
+				break
 			}
-			depth, width, height := int(unit[offset+1])+2, int(unit[offset+2]), int(unit[offset+3])
-			size := (width*height*bits.Len(uint(depth-1)) + 7) / 8
-			pixels := unit[offset+4 : min(len(unit), offset+4+size)]
-			offset += 4 + len(pixels)
-			var key int
-			switch {
-			case twoByte && characterCode >= 0xEC00 && characterCode <= 0xF8FF:
-				key = setDRCS0<<16 | characterCode
-			case twoByte:
-				key = setDRCS0<<16 | characterCode&0x7F7F
-			default:
-				key = (setDRCS|0x40|characterCode>>8&0x0F)<<16 | characterCode&0x7F
-			}
-			glyphs = append(glyphs, keyedGlyph{key, glyph{
-				hash:      hashOf(pixels),
-				size:      fmt.Sprintf("%dx%d", width, height),
-				character: knownCharacter(pixels, width, height, depth),
-			}})
+			var g []keyedGlyph
+			g, offset = parseFont(unit, offset, glyphKey(characterCode, twoByte))
+			glyphs = append(glyphs, g...)
 		}
 	}
 	return glyphs
+}
+
+// glyphKey returns the key of the character code of a DRCS unit.
+func glyphKey(characterCode int, twoByte bool) int {
+	switch {
+	case twoByte && characterCode >= 0xEC00 && characterCode <= 0xF8FF:
+		return setDRCS0<<16 | characterCode
+	case twoByte:
+		return setDRCS0<<16 | characterCode&0x7F7F
+	default:
+		return (setDRCS|0x40|characterCode>>8&0x0F)<<16 | characterCode&0x7F
+	}
+}
+
+// parseFont reads the font at offset and returns its glyph and the offset after it. A compressed font gives none.
+func parseFont(unit []byte, offset, key int) ([]keyedGlyph, int) {
+	if unit[offset]&0x0F > 1 {
+		offset += 5
+		if offset <= len(unit) {
+			offset += int(unit[offset-2])<<8 | int(unit[offset-1])
+		}
+		return nil, offset
+	}
+	depth, width, height := int(unit[offset+1])+2, int(unit[offset+2]), int(unit[offset+3])
+	size := (width*height*bits.Len(uint(depth-1)) + 7) / 8
+	pixels := unit[offset+4 : min(len(unit), offset+4+size)]
+	return []keyedGlyph{{key, glyph{
+		hash:      hashOf(pixels),
+		size:      fmt.Sprintf("%dx%d", width, height),
+		character: knownCharacter(pixels, width, height, depth),
+	}}}, offset + 4 + len(pixels)
 }
 
 func hashOf(b []byte) string {
@@ -85,16 +96,21 @@ func knownCharacter(pixels []byte, width, height, depth int) string {
 // levels, the variations 1 to 3 draw it twice as large on the left, in the middle and on the right of a 36 by 36
 // glyph with 4 levels, as ARIB TR-B14 profile C does. For a glyph with 4 levels, variation 1 moves it 2 dots to
 // the right and variation 2 moves it 2 dots to the left. The result false ends the variations.
-func digest(pixels []byte, width, height, depth, variation int) (string, bool) { //nolint:cyclop // the 4 cases of the variations
+func digest(pixels []byte, width, height, depth, variation int) (string, bool) {
 	switch {
 	case variation == 0:
 		return hashOf(pixels), true
 	case variation <= 3 && depth == 2 && width == 16 && height == 18:
 		return hashOf(scaled(pixels, variation)), true
-	case variation > 2 || depth != 4 || width < 4 || width > 36 || width%2 != 0 || height < 1 || height > 36:
+	case variation <= 2 && shiftable(width, height, depth):
+		return shifted(pixels, width, height, variation)
+	default:
 		return "", false
 	}
-	return shifted(pixels, width, height, variation)
+}
+
+func shiftable(width, height, depth int) bool {
+	return depth == 4 && width >= 4 && width <= 36 && width%2 == 0 && height >= 1 && height <= 36
 }
 
 // shifted moves a glyph with 4 levels by 2 dots. Each 4 bits hold 2 dots, so a move of 2 dots is a move of 4 bits.

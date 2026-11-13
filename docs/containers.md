@@ -154,13 +154,14 @@ s, info, err := stbox.Load("news.ts", stbox.ReadOptions{Track: 304})
 | `Language` | the first language of the first caption management data of the PID within the first 32 MiB, when it has 3 letters of a to z. Else `und` |
 | `Name` | `""` |
 
-The tracks come after the teletext pages. `ReadOptions.Lenient` has no effect.
+The tracks come after the teletext pages. `ReadOptions.Lenient` matters only for a screen of more than 4096 characters, see below.
 
+- **Screen limit**: the screen holds at most 4096 characters. A stream that writes more, such as 1 by 1 dot cells that fill rows of 960 cells, returns an error such as `At 0.000 s: The caption screen holds more than 4096 characters. The reader dropped the characters past that.` With `ReadOptions.Lenient` the reader drops the characters past the limit and adds a `Skipped` warning with that message. A large profile A screen holds a few hundred characters.
 - **Not read**: superimposed text (component tags `0x38` to `0x3F`), one-seg captions (profile C streams), caption languages 2 to 8, and captions in video user data.
 - **Encodings**: the language of the stream picks the encoding until the caption management data does. A language with TCS 1 (UCS) is UTF-8. `jpn` is the 8-unit code. `por` and `spa` are the Latin sets of ABNT NBR 15606-1. `eng` and `tgl` are UTF-8. Anything else is the 8-unit code.
 - **Text**: each state of the caption screen that shows text is one cue. The reader writes colors other than white as `<font color="#rrggbb">`. Small text above a row (furigana) becomes `<ruby>base<rt>reading</rt></ruby>` on the characters that it covers. Small text without a row below it is a line of its own. Known gaiji glyphs become their Unicode characters. The reader escapes `&`, `<` and `>`.
 - **Alignment**: the middle of the text on the caption plane picks the left, middle or right third and the top, middle or bottom third, as the numpad alignment of the cue.
 - **Ignored**: underline, bold, italic, flashing, background colors, outlines, built-in sounds and mosaics. Vertical writing reads as rows.
-- **Kanji outside JIS X 0208**: `golang.org/x/text` has no JIS X 0213. A cell that only JIS X 0213 fills, and every cell of JIS X 0213 plane 2, becomes U+FFFD. The rows 85 to 94 come from the additional table of libaribcaption. JIS X 0208 cells follow the glibc table that the PHP reader uses, so `0x2141` is U+301C.
+- **Kanji outside JIS X 0208**: `golang.org/x/text` has no JIS X 0213. A cell that only JIS X 0213 fills, and every cell of JIS X 0213 plane 2 in the rows 1 to 84, becomes U+FFFD. The rows 85 to 94 of every kanji set come from the additional table of libaribcaption. JIS X 0208 cells follow the glibc table that the PHP reader uses, so `0x2141` is U+301C.
 - **DRCS**: a DRCS glyph is a character that the stream sends as a bitmap. The reader knows 326 glyphs by the MD5 hash of the bitmap, also at twice the size (profile C) and moved by 2 dots. An unknown glyph becomes U+3013 and adds one warning for each glyph. The warning is a `Repaired` entry in `ReadInfo.Warnings`, such as `At 4.500 s: The glyph of the character 0x24 of the set DRCS-1 (16x18 dots, MD5 f64e457dc1977177e8feb98f9944313e) has no known character. The reader wrote U+3013 for it.` Strict and lenient mode both add them.
 - **Spec**: ARIB STD-B24, ARIB TR-B14, ARIB STD-B10 and ABNT NBR 15606-1.

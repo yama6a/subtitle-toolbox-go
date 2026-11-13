@@ -17,7 +17,7 @@ type run struct {
 
 // render returns the lines of the screen from top to bottom and its alignment. Small characters above a row are
 // furigana. They become ruby markup on the characters of the row below that they cover.
-func (d *Decoder) render() ([]string, model.Alignment) { //nolint:cyclop // groups the cells and places the readings
+func (d *Decoder) render() ([]string, model.Alignment) {
 	if len(d.cells) == 0 {
 		return nil, model.BottomCenter
 	}
@@ -30,28 +30,12 @@ func (d *Decoder) render() ([]string, model.Alignment) { //nolint:cyclop // grou
 			rows[c.y] = append(rows[c.y], c)
 		}
 	}
-	rowYs := sortedKeys(rows)
-	runs := buildRuns(rubies)
 	for _, cells := range rows {
 		slices.SortStableFunc(cells, func(a, b cell) int { return cmp.Compare(a.x, b.x) })
 	}
-
-	readings := map[int]map[int]int{}
-	lines := map[int][]string{}
-	for i, r := range runs {
-		var base int
-		found := false
-		for _, y := range rowYs {
-			if y > r.y {
-				base, found = y, true
-				break
-			}
-		}
-		if !found || !attach(rows[base], readings, base, r, i) {
-			lines[r.y] = append(lines[r.y], markupcore.EscapeText(strings.Trim(r.text, " \t\n\r\x00\x0b")))
-		}
-	}
-	for _, y := range rowYs {
+	runs := buildRuns(rubies)
+	readings, lines := placeRuns(rows, runs)
+	for _, y := range sortedKeys(rows) {
 		if line := renderRow(rows[y], readings[y], runs); line != "" {
 			lines[y] = append(lines[y], line)
 		}
@@ -61,6 +45,21 @@ func (d *Decoder) render() ([]string, model.Alignment) { //nolint:cyclop // grou
 		out = append(out, lines[y]...)
 	}
 	return out, d.alignment()
+}
+
+// placeRuns attaches each run to the next row below it. It returns the reading of each character by row and
+// position, and the lines of the runs that have no row below.
+func placeRuns(rows map[int][]cell, runs []run) (readings map[int]map[int]int, lines map[int][]string) {
+	readings = map[int]map[int]int{}
+	lines = map[int][]string{}
+	rowYs := sortedKeys(rows)
+	for i, r := range runs {
+		below := slices.IndexFunc(rowYs, func(y int) bool { return y > r.y })
+		if below < 0 || !attach(rows[rowYs[below]], readings, rowYs[below], r, i) {
+			lines[r.y] = append(lines[r.y], markupcore.EscapeText(strings.Trim(r.text, " \t\n\r\x00\x0b")))
+		}
+	}
+	return readings, lines
 }
 
 // buildRuns joins the ruby characters that touch on one y into runs, from top to bottom and from left to right.
@@ -117,65 +116,89 @@ func attach(row []cell, readings map[int]map[int]int, y int, r run, i int) bool 
 	return false
 }
 
-func isSpace(text string) bool { return text == " " || text == "　" }
+func isSpace(text string) bool { return text == " " || text == "\u3000" }
 
-// renderRow returns the text of a row with font tags for colors other than white and ruby tags for furigana. A gap
-// of at least half a cell between characters becomes a space. Spaces at the ends of the row drop.
-func renderRow(row []cell, readings map[int]int, runs []run) string { //nolint:cyclop // the gap, color and ruby rules of one row
-	first, last := 0, len(row)-1
+// rowText builds the text of a row with font tags for colors other than white.
+type rowText struct {
+	text    strings.Builder
+	open    string
+	end     int
+	haveEnd bool
+}
+
+// add writes markup for the character c. A gap of at least half a cell before c becomes a space.
+func (w *rowText) add(c cell, right int, markup string) {
+	gap := ""
+	if w.haveEnd && 2*(c.x-w.end) >= c.width {
+		gap = " "
+	}
+	if col := cmp.Or(c.color, white); col != w.open {
+		if w.open != white {
+			w.text.WriteString("</font>")
+		}
+		w.text.WriteString(gap)
+		if col != white {
+			w.text.WriteString(`<font color="` + col + `">`)
+		}
+		gap = ""
+		w.open = col
+	}
+	w.text.WriteString(gap + markup)
+	w.end, w.haveEnd = right, true
+}
+
+func (w *rowText) String() string {
+	if w.text.Len() == 0 || w.open == white {
+		return w.text.String()
+	}
+	return w.text.String() + "</font>"
+}
+
+// renderRow returns the text of a row with font tags for colors other than white and ruby tags for furigana.
+// Spaces at the ends of the row drop.
+func renderRow(row []cell, readings map[int]int, runs []run) string {
+	first, last := trimRow(row, readings)
+	w := rowText{open: white}
+	for position := first; position <= last; {
+		c := row[position]
+		reading, hasRun := readings[position]
+		base, right, next := baseOfReading(row, readings, position, last)
+		markup := markupcore.EscapeText(base)
+		if hasRun {
+			markup = "<ruby>" + markup + "<rt>" + markupcore.EscapeText(runs[reading].text) + "</rt></ruby>"
+		}
+		w.add(c, right, markup)
+		position = next
+	}
+	return w.String()
+}
+
+// trimRow returns the first and the last position of the row without the spaces at its ends. A space with a
+// reading stays.
+func trimRow(row []cell, readings map[int]int) (first, last int) {
+	first, last = 0, len(row)-1
 	for first <= last && !hasReading(readings, first) && isSpace(row[first].text) {
 		first++
 	}
 	for last >= first && !hasReading(readings, last) && isSpace(row[last].text) {
 		last--
 	}
+	return first, last
+}
 
-	var text strings.Builder
-	open := white
-	end, haveEnd := 0, false
-	for position := first; position <= last; {
-		c := row[position]
-		reading, hasRun := readings[position]
-		var base strings.Builder
-		var right int
-		for {
-			base.WriteString(row[position].text)
-			right = row[position].x + row[position].width
-			position++
-			next, ok := readings[position]
-			if !hasRun || position > last || !ok || next != reading {
-				break
-			}
+// baseOfReading returns the text and the right edge of the characters from position that share a reading, and the
+// position after them. A character without a reading stands alone.
+func baseOfReading(row []cell, readings map[int]int, position, last int) (base string, right, next int) {
+	reading, hasRun := readings[position]
+	var sb strings.Builder
+	for next = position; ; {
+		sb.WriteString(row[next].text)
+		right = row[next].x + row[next].width
+		next++
+		if r, ok := readings[next]; !hasRun || next > last || !ok || r != reading {
+			return sb.String(), right, next
 		}
-
-		gap := ""
-		if haveEnd && 2*(c.x-end) >= c.width {
-			gap = " "
-		}
-		col := cmp.Or(c.color, white)
-		if col != open {
-			if open != white {
-				text.WriteString("</font>")
-			}
-			text.WriteString(gap)
-			if col != white {
-				text.WriteString(`<font color="` + col + `">`)
-			}
-			gap = ""
-			open = col
-		}
-		text.WriteString(gap)
-		if hasRun {
-			text.WriteString("<ruby>" + markupcore.EscapeText(base.String()) + "<rt>" + markupcore.EscapeText(runs[reading].text) + "</rt></ruby>")
-		} else {
-			text.WriteString(markupcore.EscapeText(base.String()))
-		}
-		end, haveEnd = right, true
 	}
-	if text.Len() == 0 || open == white {
-		return text.String()
-	}
-	return text.String() + "</font>"
 }
 
 func hasReading(readings map[int]int, position int) bool {
