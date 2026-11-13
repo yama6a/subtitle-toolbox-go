@@ -26,7 +26,7 @@ Library JSON is also the conformance format of the port. Each PHP read golden ho
 | `formatData` | object of objects, by format key | optional | keys sorted. Left out with `OmitFormatData` |
 | `cues` | list | required | in start order |
 | `cues[].start`, `.end` | number | required. The decimal value rounds to whole milliseconds, half away from zero: `1.0005` gives 1001 ms | seconds with at least 1 fraction digit: `4.0`, `1.001` |
-| `cues[].lines` | list of strings | required. The reader cleans each line as `Cue.AddLine` does | core markup |
+| `cues[].lines` | list of strings | required. The reader cleans each line as `Cue.AddLine` does, then moves word timestamps and a whole-cue voice into `Words` and `Speaker` with `ExtractWordTags` | core markup. The lines are `Cue.TaggedLines()`, so word timestamp tags and the voice tag are in them. The vtt cue data leaves out `voiceClass` and `voiceEnd`, because the tags hold them |
 | `cues[].identifier` | string or null | optional | always. `null` for no identifier |
 | `cues[].alignment` | integer 1 to 9, or null | optional. Missing and `null` mean 2 | `null` for bottom center, else the numpad value. `alignment` stays the only place of the alignment |
 | `cues[].position` | object or null | optional. A bad value fails with its path, such as `The field cues[3].position.row is out of range.` The checks are those of `Position.Validate` | only when the cue has a row, a column or an offset, and the position is valid |

@@ -30,5 +30,6 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [compatibility.md](compatibility.md) | what a release may change, and what stays the same for the whole 3.x line |
 | [upgrade-2.0.md](upgrade-2.0.md) | the breaks of 2.0 with the old call and the new call, the new types, and the conversions that change output |
 | [upgrade-3.0.md](upgrade-3.0.md) | the breaks of 3.0 with the old call and the new call |
+| [upgrade-4.0.md](upgrade-4.0.md) | the breaks of 4.0 with the old call and the new call |
 | [runbooks/release.md](runbooks/release.md) | the release steps, the checks before a major release, and the checks after each release |
 | [php-differences.md](php-differences.md) | each behaviour that differs from PHP 5.x on purpose |
