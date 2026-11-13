@@ -380,6 +380,30 @@ All errors are `*ParseError` values with the format `pgs` and line 0. T is the t
 
 - **Block numbers**: the position of the timestamp line among the timestamp lines of its track, counted from 0. A warning has no line number and no lines.
 
+## Whisper JSON
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| a segment, or a whisper.cpp item, with a bad `start`, `end`, `offsets` or `text` | `The field segments[1].end must be a number.` and the other messages of [transcripts.md](transcripts.md#read) | skips the segment. `Skipped`, no line, `Block` the index in the list, the segment as block text |
+| a word, or a token, with a start of 100000 hours or more | `The field segments[0].words[1].start is not below 100000 hours.` | skips the whole segment |
+| a segment that ends before it starts | `The cue ends at E s, before it starts at S s.` | swaps the times when the cue then lasts 30 s or less. `Repaired`. Else skips the segment |
+| no `segments` or `transcription` list, a root that is no object, invalid JSON | the error | the same error |
+
+- **Top-level words**: a segment that fails takes none of the top-level words, so the next segment takes them. A segment that fails because of one of its words has taken its words already, so they are lost with it.
+- **Block text**: the compact JSON of the segment. With top-level words, it holds them in `words`. A number keeps its source text, so `1e400` stays `1e400`.
+
+## Podcasting 2.0 transcript JSON
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| a segment that is no object, or has a bad `startTime`, `endTime`, `speaker` or `body` | `The field segments[1].body must be a string.` and the other messages of [transcripts.md](transcripts.md#podcast-read) | skips the segment. `Skipped`, no line, `Block` the index in the list, the segment as block text |
+| a time of 100000 hours or more | `The field segments[0].startTime is not below 100000 hours.` | skips the segment |
+| a segment that ends before it starts | `The cue ends at E s, before it starts at S s.` | swaps the times when the segment then lasts 30 s or less. `Repaired`. Else skips the segment |
+| a joined group that ends before it starts, such as one-word segments `a` from 5 to 6 s and `b` from 1 to 2 s | sets the end of the cue to its start. `Repaired` in both modes | the same |
+| no `segments` list, a root that is no object, invalid JSON | the error | the same error |
+
+- **Block text**: the compact JSON of the segment. A group warning has the first and the last segment of the group as block text. A number keeps its source text.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

@@ -1,0 +1,80 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "fr"
+        },
+        "comments": [],
+        "formatData": {
+            "whisper": {
+                "format": "openai-api",
+                "task": "transcribe",
+                "language": "french",
+                "duration": 6.0,
+                "usage": {
+                    "type": "duration",
+                    "seconds": 6
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 2.84,
+                "lines": [
+                    "La boulangerie ouvre à sept heures."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "whisper": {
+                        "id": 0,
+                        "seek": 0,
+                        "start": 0.0,
+                        "end": 2.8399999141693115,
+                        "text": " La boulangerie ouvre à sept heures.",
+                        "tokens": [
+                            50364,
+                            2369,
+                            13,
+                            50506
+                        ],
+                        "temperature": 0.0,
+                        "avg_logprob": -0.3123456835746765,
+                        "compression_ratio": 0.9672131538391113,
+                        "no_speech_prob": 0.012345678173005581
+                    }
+                }
+            },
+            {
+                "start": 2.84,
+                "end": 5.52,
+                "lines": [
+                    "Le pain est prêt à huit heures."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "whisper": {
+                        "id": 1,
+                        "seek": 0,
+                        "start": 2.8399999141693115,
+                        "end": 5.519999980926514,
+                        "text": " Le pain est prêt à huit heures.",
+                        "tokens": [
+                            50364,
+                            2369,
+                            13,
+                            50506
+                        ],
+                        "temperature": 0.0,
+                        "avg_logprob": -0.3123456835746765,
+                        "compression_ratio": 0.9672131538391113,
+                        "no_speech_prob": 0.012345678173005581
+                    }
+                }
+            }
+        ]
+    }
+}

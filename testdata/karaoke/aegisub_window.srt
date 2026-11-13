@@ -1,0 +1,44 @@
+﻿1
+00:00:01,000 --> 00:00:03,500
+Good morning, everyone.
+
+2
+00:00:03,600 --> 00:00:06,200
+The train to the coast
+leaves from platform four.
+
+3
+00:00:06,300 --> 00:00:08,000
+<i>Is it on time</i> today?
+
+4
+00:00:08,100 --> 00:00:10,900
+{\an8}Platform 4: <font color="#ffd700">Coast Express</font>
+
+5
+00:00:11,000 --> 00:00:13,400
+Yes. <b>Seven minutes</b> to departure.
+
+6
+00:00:13,500 --> 00:00:13,900
+{\an8}<b><u>The</u> train leaves</b>
+
+7
+00:00:13,900 --> 00:00:14,250
+{\an8}<b>The <u>train</u> leaves</b>
+
+8
+00:00:14,250 --> 00:00:14,750
+{\an8}<b>train <u>leaves</u> at</b>
+
+9
+00:00:14,750 --> 00:00:15,350
+{\an8}<b>leaves <u>at</u> noon</b>
+
+10
+00:00:15,350 --> 00:00:16,000
+{\an8}<b>leaves at <u>noon</u></b>
+
+11
+00:00:16,100 --> 00:00:18,000
+<u>Thank you</u>, and <s>good night</s> good day.

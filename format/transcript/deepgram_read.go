@@ -2,7 +2,6 @@ package transcript
 
 import (
 	"io"
-	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -102,19 +101,10 @@ func deepgramWord(item orderedjson.Value, path string) (wordgroup.Word, error) {
 	}
 	w := wordgroup.Word{
 		Text: strings.Trim(text, markupcore.PHPTrimSet), Start: start, Timed: true, End: end, HasEnd: true,
-		Confidence: deepgramConfidence(cloudGet(item, "confidence")),
+		Confidence: cloudConfidence(cloudGet(item, "confidence")),
 	}
 	w.Speaker, w.HasSpeaker = wordgroup.Speaker(cloudGet(item, "speaker"))
 	return w, nil
-}
-
-// deepgramConfidence returns a number from 0 to 1.
-func deepgramConfidence(v orderedjson.Value) *float64 {
-	f, ok := v.AsFloat64()
-	if !ok || math.IsNaN(f) || f < 0 || f > 1 {
-		return nil
-	}
-	return &f
 }
 
 func (rd *deepgramReader) channels(channels []orderedjson.Value) ([]*model.Cue, error) {

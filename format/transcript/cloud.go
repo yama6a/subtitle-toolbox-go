@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
@@ -69,6 +70,15 @@ func cloudStoredTime(v orderedjson.Value) *time.Duration {
 		return nil
 	}
 	return &d
+}
+
+// cloudConfidence returns a number from 0 to 1, else nil.
+func cloudConfidence(v orderedjson.Value) *float64 {
+	f, ok := v.AsFloat64()
+	if !ok || math.IsNaN(f) || f < 0 || f > 1 {
+		return nil
+	}
+	return &f
 }
 
 func cloudMember(key string, v orderedjson.Value) orderedjson.Member {

@@ -218,7 +218,7 @@ func deepgramWordText(w orderedjson.Value) string {
 func deepgramWords(c *model.Cue, stored []orderedjson.Value, sameTimes, sameText bool, speaker orderedjson.Value) []orderedjson.Value {
 	source := make([]wordgroup.SourceWord, len(stored))
 	for i, w := range stored {
-		source[i] = wordgroup.SourceWord{Text: deepgramWordText(w), Confidence: deepgramConfidence(cloudGet(w, "confidence"))}
+		source[i] = wordgroup.SourceWord{Text: deepgramWordText(w), Confidence: cloudConfidence(cloudGet(w, "confidence"))}
 		source[i].Start = cloudStoredTime(deepgramNumber(cloudGet(w, "start")))
 		source[i].End = cloudStoredTime(deepgramNumber(cloudGet(w, "end")))
 	}

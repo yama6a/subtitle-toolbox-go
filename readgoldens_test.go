@@ -90,6 +90,8 @@ func goldenFolders() []goldenFolder {
 		{name: "tmplayer", format: stbox.TMPlayer, files: 4},
 		{name: "ttml", format: stbox.TTML, files: 29},
 		{name: "vtt", format: stbox.WebVTT, files: 30},
+		{name: "podcast", format: stbox.PodcastTranscript, files: 3, transcript: true},
+		{name: "whisper", format: stbox.Whisper, files: 10, transcript: true, defaults: true},
 	}
 }
 

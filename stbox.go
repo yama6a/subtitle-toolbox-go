@@ -110,6 +110,9 @@ const (
 	SpruceSTL     = model.SpruceSTL
 	VobSub        = model.VobSub
 	WebVTT        = model.WebVTT
+	Whisper       = model.Whisper
+	// PodcastTranscript is the format of the Podcasting 2.0 JSON transcript.
+	PodcastTranscript = model.PodcastTranscript
 	// YouTubeChapters is the format of the chapter lines of a YouTube description.
 	YouTubeChapters = model.YouTubeChapters
 )
