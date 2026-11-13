@@ -102,7 +102,7 @@ The reader does not read fragmented MP4 files, such as CMAF, DASH and HLS segmen
 
 ## MPEG-TS and M2TS
 
-The package `container/mpegts` reads DVB recordings as MPEG transport streams (`.ts`) and M2TS files from Blu-ray discs and Japanese recorders. It lists the teletext subtitle pages and reads one page as SubRip cues. It also lists DVB bitmap subtitle services and reads them as image cues, see [DVB subtitles](#dvb-subtitles). ARIB captions come with their own reader.
+The package `container/mpegts` reads DVB recordings as MPEG transport streams (`.ts`) and M2TS files from Blu-ray discs and Japanese recorders. It lists the teletext subtitle pages and reads one page as SubRip cues. It also lists DVB bitmap subtitle services and reads them as image cues, see [DVB subtitles](#dvb-subtitles). It lists the ARIB caption streams and reads them as SubRip cues, see [ARIB captions](#arib-captions).
 
 ```text
 tracks, err := stbox.Tracks(f, size)          // 888 dvb_teletext deu, 777 dvb_teletext deu "hearing impaired"
@@ -173,3 +173,33 @@ s, info, err := stbox.Load("news.ts", stbox.ReadOptions{Track: 257})
 - **Limits**: the regions of a stream hold at most 8294400 pixels in total. A region that goes over returns `Cannot read region 1: the regions hold more than 8294400 pixels in total.`, and lenient mode skips it with a `Skipped` warning. A page that lists a region id twice draws it once. A region larger than 7680 pixels per side or 8294400 pixels in total returns `Cannot read region 1: an image of 8000x10 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total.` Joining the parts of one display set returns `Cannot join the parts of one display set:` and the reason.
 - **Not here**: a DVB writer.
 - **Spec**: [ETSI EN 300 743](https://www.etsi.org/deliver/etsi_en/300700_300799/300743/01.06.01_60/en_300743v010601p.pdf), [ETSI EN 300 468](https://www.etsi.org/deliver/etsi_en/300400_300499/300468/01.17.01_60/en_300468v011701p.pdf), [Matroska subtitles](https://www.matroska.org/technical/subtitles.html).
+
+## ARIB captions
+
+ARIB STD-B24 is the caption standard of Japanese digital TV (ISDB). Brazil and most of Latin America use its ABNT NBR 15606-1 variant with Latin character sets. The package `internal/arib` decodes the caption data groups. The reader of `container/mpegts` lists and extracts the streams.
+
+```text
+tracks, err := stbox.Tracks(f, size)          // 304 arib_caption jpn
+s, info, err := stbox.Load("news.ts", stbox.ReadOptions{Track: 304})
+```
+
+| `Track` field | Value |
+|:--- |:--- |
+| stream | a stream of type `0x06` with a stream identifier descriptor (`0x52`) whose component tag is `0x30` to `0x37` (ARIB TR-B14 profile A), and a data component descriptor (`0xFD`) whose first 2 bytes are `0x0008` (captions) |
+| `Number` | the PID. It is the PID times 1000 when a teletext page or a DVB service has that number |
+| `CodecID` | `arib_caption` |
+| `Format` | `srt` |
+| `Language` | the first language of the first caption management data of the PID within the first 32 MiB, when it has 3 letters of a to z. Else `und` |
+| `Name` | `""` |
+
+The tracks come after the teletext pages and the DVB services. `ReadOptions.Lenient` matters only for a screen of more than 4096 characters, see below.
+
+- **Limits**: the screen holds at most 4096 characters. The 1920 by 1080 format of profile A holds 864 characters at normal size and 3,456 at small size. A stream that writes more, such as 1 by 1 dot cells that fill rows of 960 cells, returns an error such as `At 0.000 s: The caption screen holds more than 4096 characters. The reader dropped the characters past that.` One PES packet may also add states with text of up to 32 KiB plus 32 times its size, so a packet that repeats TIME over a full screen stops. Its error starts with `The caption states of one PES packet are longer than 32 KiB plus 32 times the packet.` With `ReadOptions.Lenient` the reader drops the characters or states past the limit and adds a `Skipped` warning with that message.
+- **Not read**: superimposed text (component tags `0x38` to `0x3F`), one-seg captions (profile C streams), caption languages 2 to 8, and captions in video user data.
+- **Encodings**: the language of the stream picks the encoding until the caption management data does. A language with TCS 1 (UCS) is UTF-8. `jpn` is the 8-unit code. `por` and `spa` are the Latin sets of ABNT NBR 15606-1. `eng` and `tgl` are UTF-8. Anything else is the 8-unit code.
+- **Text**: each state of the caption screen that shows text is one cue. The reader writes colors other than white as `<font color="#rrggbb">`. Small text above a row (furigana) becomes `<ruby>base<rt>reading</rt></ruby>` on the characters that it covers. Small text without a row below it is a line of its own. Known gaiji glyphs become their Unicode characters. The reader escapes `&`, `<` and `>`.
+- **Alignment**: the middle of the text on the caption plane picks the left, middle or right third and the top, middle or bottom third, as the numpad alignment of the cue.
+- **Ignored**: underline, bold, italic, flashing, background colors, outlines, built-in sounds and mosaics. Vertical writing reads as rows.
+- **Kanji outside JIS X 0208**: `golang.org/x/text` has no JIS X 0213. A cell that only JIS X 0213 fills, and every cell of JIS X 0213 plane 2 in the rows 1 to 84, becomes U+FFFD. The rows 85 to 94 of every kanji set come from the additional table of libaribcaption. JIS X 0208 cells follow the glibc table that the PHP reader uses, so `0x2141` is U+301C.
+- **DRCS**: a DRCS glyph is a character that the stream sends as a bitmap. The reader knows 326 glyphs by the MD5 hash of the bitmap, also at twice the size (profile C) and moved by 2 dots. An unknown glyph becomes U+3013 and adds one warning for each glyph. The warning is a `Repaired` entry in `ReadInfo.Warnings`, such as `At 4.500 s: The glyph of the character 0x24 of the set DRCS-1 (16x18 dots, MD5 f64e457dc1977177e8feb98f9944313e) has no known character. The reader wrote U+3013 for it.` Strict and lenient mode both add them.
+- **Spec**: ARIB STD-B24, ARIB TR-B14, ARIB STD-B10 and ABNT NBR 15606-1.

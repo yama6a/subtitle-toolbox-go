@@ -7,6 +7,7 @@ import (
 
 	"github.com/asticode/go-astits"
 
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/arib"
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/teletext"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
@@ -14,10 +15,10 @@ import (
 
 const ptsRange = 1 << 33
 
-// pesSink gets the data of each PES packet of a track. The teletext decoder is one, the ARIB decoder comes later.
+// pesSink gets the data of each PES packet of a track. The teletext and ARIB decoders are sinks.
 type pesSink interface{ Add(data []byte, pts int64) }
 
-// Extract reads the track that has the given number from the start of the file. Lenient mode has no effect.
+// Extract reads the track that has the given number from the start of the file. Lenient mode matters only for an ARIB screen of more than 4096 characters. The warnings are those of the ARIB decoder.
 func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
 	i := slices.IndexFunc(f.tracks, func(t model.Track) bool { return t.Number == number })
 	if i < 0 {
@@ -33,6 +34,8 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 	switch track.CodecID {
 	case codecDVB:
 		cues, warnings, err = f.dvbCues(s, number, common)
+	case codecARIB:
+		cues, warnings, err = f.aribCues(track, s, number, common)
 	default:
 		cues, err = f.teletextCues(track, s, number, common)
 	}
@@ -61,6 +64,34 @@ func (f *File) teletextCues(track model.Track, s stream, number int, common mode
 	}
 	lastCue := parsing.NewState(model.SubRip, common).LastCueDuration()
 	return textCues(number, states, zero, last, lastCue)
+}
+
+func (f *File) aribCues(track model.Track, s stream, number int, common model.CommonReadOptions) ([]model.Cue, []model.ParseWarning, error) {
+	dec := arib.NewDecoder(track.Language)
+	zero, last, err := f.readPES(s, dec)
+	if err != nil {
+		return nil, nil, err
+	}
+	var states []textState
+	for _, st := range dec.Finish() {
+		states = append(states, textState{start: st.Start, lines: st.Lines, alignment: st.Alignment})
+	}
+	var warnings []model.ParseWarning
+	for _, w := range dec.Warnings() {
+		ms := (max(0, w.Time-zero) + 45) / 90
+		message := fmt.Sprintf("At %d.%03d s: %s", ms/1000, ms%1000, w.Message)
+		if w.Skipped && !common.Lenient {
+			return nil, nil, &model.ParseError{Msg: message}
+		}
+		action := model.Repaired
+		if w.Skipped {
+			action = model.Skipped
+		}
+		warnings = append(warnings, model.ParseWarning{Message: message, Line: model.NoLine, Block: model.NoBlock, Action: action})
+	}
+	lastCue := parsing.NewState(model.SubRip, common).LastCueDuration()
+	cues, err := textCues(number, states, zero, last, lastCue)
+	return cues, warnings, err
 }
 
 // readPES passes each PES of s.pid to sink. It returns the zero point, which is the smallest first PTS of the
