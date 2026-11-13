@@ -2,7 +2,6 @@ package transcript
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"math"
 	"slices"
@@ -21,22 +20,12 @@ import (
 // whisper.cpp from r. It makes one cue per segment. A field error names the path of the field, such as
 // segments[3].start.
 func ReadWhisper(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.Whisper, err)
-	}
-	st := parsing.NewState(model.Whisper, common)
-	// The JSON decoder reads each bad byte as U+FFFD in both modes, so the UTF-8 check only warns.
-	content, ok, err := st.Prepare(content, false)
+	st, root, ok, err := readRoot(r, model.Whisper, common)
 	if err != nil {
 		return nil, nil, err
 	}
 	if !ok {
 		return &model.Subtitle{}, st.Warnings(), nil
-	}
-	root, err := decodeObject(content, model.Whisper)
-	if err != nil {
-		return nil, nil, err
 	}
 	rd := &whisperReader{
 		st: st,
@@ -49,18 +38,6 @@ func ReadWhisper(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 		return nil, nil, err
 	}
 	return s, st.Warnings(), nil
-}
-
-func decodeObject(content []byte, f model.Format) (orderedjson.Value, error) {
-	v, err := orderedjson.Decode(content)
-	if err != nil {
-		msg := "The content is not valid JSON: " + err.Error() + "."
-		return v, &model.ParseError{Format: f, Msg: msg, Err: err}
-	}
-	if v.Kind() != orderedjson.Object {
-		return v, &model.ParseError{Format: f, Msg: "The JSON root must be an object."}
-	}
-	return v, nil
 }
 
 type whisperReader struct {

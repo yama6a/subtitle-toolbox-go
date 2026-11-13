@@ -32,21 +32,12 @@ type podcastItem struct {
 // one-word segments of a speaker into cues that end at a sentence end or at a pause of 1 s or more.
 // A field error names the path of the field, such as segments[3].startTime.
 func ReadPodcast(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.PodcastTranscript, err)
-	}
-	st := parsing.NewState(model.PodcastTranscript, common)
-	content, ok, err := st.Prepare(content, false)
+	st, root, ok, err := readRoot(r, model.PodcastTranscript, common)
 	if err != nil {
 		return nil, nil, err
 	}
 	if !ok {
 		return &model.Subtitle{}, st.Warnings(), nil
-	}
-	root, err := decodeObject(content, model.PodcastTranscript)
-	if err != nil {
-		return nil, nil, err
 	}
 	list, _ := root.Get("segments")
 	if list.Kind() != orderedjson.Array {

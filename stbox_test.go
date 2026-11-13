@@ -208,6 +208,7 @@ func ExampleFormats() {
 	// html [html htm]
 	// itt [itt]
 	// json [json]
+	// aws-transcribe [json]
 	// lrc [lrc]
 	// mcc [mcc]
 	// microdvd [sub]
