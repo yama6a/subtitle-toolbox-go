@@ -21,7 +21,7 @@ model/         Subtitle, Cue, format facts table, common options, shared errors
 markup/        Inline tag model and its helpers
 format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microdvd, mpl2,
                tmplayer, mpsub, subviewer, qttext, sprucestl, dcp, lrc, csv, itt, stboxjson, plaintext, pgs
-stats/ stream/ hearingimpaired/ fixing/ profanity/ refsync/ diff/ dual/
+stats/ stream/ hearingimpaired/ fixing/ profanity/ refsync/ diff/ dual/ karaoke/
                The 1.x services. A service never imports the root package
 container/<name>/ The 3.x readers of video containers, layer 4b: mkv, mp4, mpegts. They call the format readers
 ocr/           The 3.x service that reads the text of image cues with an OCR engine, and ocr/ocrtest, a fake engine for tests.
