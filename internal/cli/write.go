@@ -197,7 +197,7 @@ func (w *writeOutput) optionsFor(f stbox.Format) stbox.WriteOptions {
 	case stbox.SCC:
 		opts.SCC.Fit = w.sccFit
 	case stbox.ASS, stbox.Cavena890, stbox.CSV, stbox.DCP, stbox.EBUSTL, stbox.JSON, stbox.LRC, stbox.MPL2, stbox.MPSub,
-		stbox.PAC, stbox.PGS, stbox.PlainText, stbox.QuickTimeText, stbox.SAMI, stbox.SBV, stbox.SubRip, stbox.SubViewer,
+		stbox.PAC, stbox.PGS, stbox.PlainText, stbox.PodcastTranscript, stbox.QuickTimeText, stbox.SAMI, stbox.SBV, stbox.SubRip, stbox.SubViewer,
 		stbox.TMPlayer, stbox.TSV, stbox.TTML, stbox.VobSub, stbox.WebVTT, stbox.Whisper, stbox.YouTubeChapters:
 	}
 	return opts

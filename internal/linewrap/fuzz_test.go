@@ -43,10 +43,14 @@ func FuzzWrap(f *testing.F) {
 	})
 }
 
-// visibleWithoutSpace returns the plain text of the lines joined with spaces, without white space. It keeps the
+// visibleWithoutSpace returns the plain text of each line, joined with spaces, without white space. It keeps the
 // bytes of invalid UTF-8.
 func visibleWithoutSpace(lines []string) string {
-	text := markupcore.PlainText(strings.Join(lines, " "))
+	plain := make([]string, len(lines))
+	for i, line := range lines {
+		plain[i] = markupcore.PlainText(line)
+	}
+	text := strings.Join(plain, " ")
 	var b strings.Builder
 	for text != "" {
 		r, size := utf8.DecodeRuneInString(text)

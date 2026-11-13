@@ -1,0 +1,47 @@
+﻿1
+00:00:00,000 --> 00:00:02,100
+Welcome to the city library
+
+2
+00:00:02,100 --> 00:00:02,550
+tour.
+
+3
+00:00:02,550 --> 00:00:04,660
+The reading room is on the
+
+4
+00:00:04,660 --> 00:00:06,950
+left, and the study rooms are
+
+5
+00:00:06,950 --> 00:00:08,550
+on the second floor.
+
+6
+00:00:08,550 --> 00:00:10,910
+Please keep your voice down in
+
+7
+00:00:10,910 --> 00:00:11,800
+both rooms.
+
+8
+00:00:12,400 --> 00:00:14,340
+The cafe on the ground floor
+
+9
+00:00:14,340 --> 00:00:16,420
+opens at nine and closes at
+
+10
+00:00:16,420 --> 00:00:18,200
+six every weekday.
+
+11
+00:00:20,200 --> 00:00:22,520
+Any questions before we start?
+
+12
+00:00:22,520 --> 00:00:24,000
+Then let us begin.
