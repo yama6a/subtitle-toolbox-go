@@ -61,6 +61,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 		"mpl2        .txt              yes   yes",
 		"tmplayer    .txt              yes   yes",
 		"qttext      .txt              yes   yes",
+		"vobsub      .idx              yes   no",
 		"vtt         .vtt              yes   yes",
 	}, "\n") + "\n"
 	assert.Equal(t, result{Stdout: want}, call{}.run(t, "formats"))

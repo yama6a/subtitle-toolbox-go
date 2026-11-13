@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"errors"
+	"slices"
 	"strconv"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
@@ -102,6 +103,9 @@ func (r *runner) prepare(a *args, fc fileCommand) ([]string, error) {
 	}
 	if len(inputs) == 0 {
 		return nil, usage("Pass at least one input file, or - for standard input.")
+	}
+	if r.readOptions.Format == stbox.VobSub && slices.Contains(inputs, stdinArg) {
+		return nil, usage(vobSubStdinMessage)
 	}
 	return inputs, fc.checkInputs(r, inputs)
 }

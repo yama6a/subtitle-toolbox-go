@@ -19,6 +19,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/sprucestl"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
@@ -58,6 +59,9 @@ type ReadOptions struct {
 	EBUSTL ebustl.ReadOptions
 	// SpruceSTL holds the settings of the Spruce STL reader. The zero value guesses 25 or 30 fps from the frame numbers.
 	SpruceSTL sprucestl.ReadOptions
+	// VobSub holds the settings of the VobSub reader. The zero value reads the first track. Load and LoadFS fill IDX
+	// from the file next to the .sub file. Parse needs it.
+	VobSub vobsub.ReadOptions
 	// Track is the number of the subtitle track to read from a video container. Zero reads the only subtitle track.
 	// Matroska and MP4 count from 1. MPEG-TS uses teletext page numbers from 100, or PIDs. A subtitle file needs 0.
 	Track int
@@ -160,6 +164,9 @@ func (o ReadOptions) Validate() error {
 		}
 	}
 	if err := o.PAC.Validate(); err != nil {
+		return err
+	}
+	if err := o.VobSub.Validate(); err != nil {
 		return err
 	}
 	return o.SpruceSTL.Validate()

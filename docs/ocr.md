@@ -83,6 +83,10 @@ func (e webEngine) Recognize(ctx context.Context, im model.Image, language ocr.L
 
 `stbox.Load` reads a Blu-ray `.sup` file as image cues without lines, see [formats.md](formats.md#pgs). `Run` then fills their lines. Each display set that shows objects is one cue, with its bitmap as a PNG in `Cue.Image`. A display set that shows 2 objects gives one cue with one image, so the engine reads both lines together. The forced flag of the objects is `Cue.Forced`, so a caller can pick the forced cues of a track before it runs OCR.
 
+## VobSub input
+
+A VobSub read gives image cues, so OCR can read DVD subtitles. See [VobSub in formats.md](formats.md#vobsub). Example: `stbox.Load("movie.idx", stbox.ReadOptions{})` reads `movie.idx` and `movie.sub` into image cues without lines.
+
 ## Tests
 
 Package `ocr/ocrtest` holds `Engine`, a fake that returns the same `Text` for every image and records each call with its image and language.

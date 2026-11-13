@@ -1,0 +1,67 @@
+[
+    {
+        "start": 1.5,
+        "end": 4.003,
+        "x": 210,
+        "y": 500,
+        "width": 300,
+        "height": 40,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "34274c959a57ebde6c83755a89c581f1e38b3f2b3cee8d8ea140a82cf9c577e2"
+    },
+    {
+        "start": 5.762,
+        "end": 8.254,
+        "x": 260,
+        "y": 40,
+        "width": 200,
+        "height": 24,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": true,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "604a74902710bc5e3916955c1ae356cebde1b7cd96badab2236a357bb3975938"
+    },
+    {
+        "start": 9.0,
+        "end": 11.0,
+        "x": 300,
+        "y": 520,
+        "width": 120,
+        "height": 30,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "f4eab13951560e95fad158904c0569c95b58c15ab28514087da148ae1d4da5c9"
+    },
+    {
+        "start": 11.0,
+        "end": 13.002,
+        "x": 0,
+        "y": 544,
+        "width": 720,
+        "height": 32,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "797f28d998d559e06c922a739819cbf4943c0048b0c04bbf85146aa1cdcb7415"
+    },
+    {
+        "start": 20.0,
+        "end": 25.0,
+        "x": 10,
+        "y": 10,
+        "width": 64,
+        "height": 16,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "5c1e1a712d8d89a580b2d161980de5a5d06eeb46d145db75a1d48614c421417d"
+    }
+]

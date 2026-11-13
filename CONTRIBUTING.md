@@ -16,7 +16,7 @@ A package imports only packages of a lower layer. Every layer may also import th
 | 0 | leaf helpers in `internal/`: `markupcore`, `linewrap`, `paragraphs`, `timecode`, `grapheme`, `ssatag`, `phpkey`, `stringlist`, `textenc`, `xmlraw`, `extfallback`, `codepage`, the test helpers `testfiles` and `golden`, `cea608`, `cea708`, `ebml`, `orderedjson`, `teletext` | other layer 0 packages |
 | 1 | `markup` | layer 0 |
 | 2 | `model` | layers 0 and 1 |
-| 3 | `internal/` helpers that work on model types: `blocks`, `subrip`, `vtt`, `position`, `parsing`, `writing`, `caption`, `ttmlwrite`, `bitmap`, `displayset`, `arib`, later `wordgroup` | layers 0 to 2, and other layer 3 packages. Go rejects an import cycle |
+| 3 | `internal/` helpers that work on model types: `blocks`, `subrip`, `vtt`, `position`, `parsing`, `writing`, `caption`, `ttmlwrite`, `bitmap`, `displayset`, `dvdsub`, `arib`, later `wordgroup` | layers 0 to 2, and other layer 3 packages. Go rejects an import cycle |
 | 4 | `format/<name>` | layers 0 to 3. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML. Other shared code goes to `internal/` |
 | 4b | `container/<name>`, from 3.x | layers 0 to 4. A container returns cues, so it calls the format readers |
 | 5 | root `stbox` and the service packages, such as `stats`, `diff`, `validation`, `timing`, `hls` and `imaging` | layers 0 to 4b. A service never imports the root. The root never imports a service |
@@ -121,6 +121,7 @@ Every 1.x row and `Format` constant exists from 1.0.0, so `FormatFromPath` gives
 | MKVToolNix | GPL-2.0 | behaviour only |
 | FFmpeg | LGPL-2.1 or later, some parts GPL | behaviour only |
 | libbluray | LGPL-2.1 | behaviour only |
+| VSFilter, MPC-HC | GPL-3.0 | behaviour only |
 | libass | ISC | adapt with credit |
 | CCExtractor | GPL-2.0 | behaviour only |
 | subparse, Rust | MPL-2.0, copyleft per file | behaviour only |
