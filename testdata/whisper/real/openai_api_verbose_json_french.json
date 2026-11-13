@@ -1,0 +1,63 @@
+{
+  "task": "transcribe",
+  "language": "french",
+  "duration": 6.0,
+  "text": "La boulangerie ouvre à sept heures. Le pain est prêt à huit heures.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 2.8399999141693115,
+      "text": " La boulangerie ouvre à sept heures.",
+      "tokens": [
+        50364,
+        2369,
+        13,
+        50506
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.3123456835746765,
+      "compression_ratio": 0.9672131538391113,
+      "no_speech_prob": 0.012345678173005581
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 2.8399999141693115,
+      "end": 5.519999980926514,
+      "text": " Le pain est prêt à huit heures.",
+      "tokens": [
+        50364,
+        2369,
+        13,
+        50506
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.3123456835746765,
+      "compression_ratio": 0.9672131538391113,
+      "no_speech_prob": 0.012345678173005581
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 5.519999980926514,
+      "end": 6.0,
+      "text": " ",
+      "tokens": [
+        50364,
+        2369,
+        13,
+        50506
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.3123456835746765,
+      "compression_ratio": 0.9672131538391113,
+      "no_speech_prob": 0.012345678173005581
+    }
+  ],
+  "usage": {
+    "type": "duration",
+    "seconds": 6
+  }
+}

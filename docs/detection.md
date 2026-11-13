@@ -23,8 +23,12 @@ Before step 1, `Detect` looks for a video container in the raw bytes. A containe
 | # | Format | Rule |
 |---:|:--- |:--- |
 | 1 | library JSON | `version` is a JSON number and `cues` is a JSON array |
+| 3 | Whisper JSON | `segments` is a JSON array, or `transcription` is a JSON array |
 
-`{"version": "1", "cues": []}` and `{"version": 1, "cues": {}}` match no check. `stboxjson.DetectJSON` holds rule 1.
+`{"version": "1", "cues": []}` and `{"version": 1, "cues": {}}` match no check. `stboxjson.DetectJSON` holds rule 1 and `transcript.DetectWhisperJSON` holds rule 3.
+
+- **Rule 2**: the Podcasting 2.0 transcript takes rule 2, because it also has a `segments` list. Its check comes before rule 3. Until the reader exists, a Podcasting 2.0 JSON file detects as Whisper JSON.
+- **Library JSON first**: a file with `version` as a number and `cues` as an array is library JSON, also when it has `segments`. `{"segments": {}}` and `{"words": []}` match no check. See [transcripts.md](transcripts.md#whisper-json).
 
 ## Signatures
 

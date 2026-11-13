@@ -206,6 +206,30 @@ func (e webEngine) Translate(ctx context.Context, texts []string, source, target
 
 The service must return the placeholders of each text, such as `<x1>` and `<x2/>`, and the entities `&lt;`, `&gt;` and `&amp;`. A service with an XML tag handling does this. A service that rewrites a placeholder makes the runner drop the tags of that text and add a warning.
 
+## OpenAI-compatible services
+
+`openai.New(openai.Options{BaseURL: "http://localhost:11434/v1", Model: "llama3"})` gives an engine for a service with the OpenAI chat completions API. Examples are OpenAI, Ollama, LM Studio, the llama.cpp server and vLLM. The engine posts to `BASE/chat/completions` and needs no key for a local server.
+
+| Field | Meaning |
+|:--- |:--- |
+| `BaseURL` | the URL in front of `/chat/completions`. It must start with `http://` or `https://`. A `/` at the end is dropped |
+| `Model` | the model name that the service knows. Required |
+| `APIKey` | sent as `Authorization: Bearer KEY`. Empty sends no header. A message of the engine shows the key as `***`, and so do `%v` and `%#v` of the options |
+| `Prompt` | the system prompt. Empty means `openai.DefaultPrompt` |
+| `HTTPClient` | nil means `translation.DefaultHTTPClient()` |
+
+The built-in prompt is:
+
+```text
+You translate subtitle text from {source} to {target}. The user sends a JSON array of strings. Translate each string on its own. Keep the tags such as <x1>, </x1> and <x2/> around the words that they mark, and keep the entities &lt;, &gt; and &amp;. Keep the line breaks. Answer only with a JSON array of strings that has as many strings as the input, in the same order, and no other text.
+```
+
+- **Prompt**: `{source}` and `{target}` in it become the language codes in one pass. An empty source becomes `the language of the text`. Example: `Translate {source} into {target} for children.` with source empty and target `de-CH` gives `Translate the language of the text into de-CH for children.`
+- **Request**: the user message holds all texts of one call as a JSON array. No text sends no request.
+- **Answer**: the engine reads the first of `content`, `reasoning` and `reasoning_content` of `choices[0].message` that has text. A thinking model on Ollama can leave `content` empty. It removes each `<think>...</think>` block, and reads the text from the first `[` to the last `]`. That text must be a JSON array of as many strings as the call has texts. Text around the array and a code block do not matter. The HTTP size bound limits the answer.
+- **Fallback**: an answer without such an array makes the engine send each text in a request of its own. Each of these answers must be an array of 1 string. Else the engine returns a `*ServiceError` with `The model "M" did not answer with a JSON array that holds 1 string for 1 text.`
+- **Status**: a status other than 200 returns a `*ServiceError` with the status, and no fallback follows. 401 gives `The OpenAI-compatible service rejected the API key (HTTP 401).`, 429 after the retries gives `The OpenAI-compatible service got too many requests (HTTP 429). Wait and try again.`, and any other status gives `The OpenAI-compatible service answered with HTTP N.` The message adds the `error.message` of the answer, or its `error` when that is a string.
+
 ## DeepL engine
 
 Package `translation/deepl` is a client of the DeepL API v2 on `net/http`. It has no vendor SDK. Example: `deepl.New(deepl.Options{APIKey: key})` gives an engine for `translation.Translate`. The runner sends `The train to Basel leaves from platform 4 at <x1>10:15</x1>.` and DeepL answers with the German sentence and `<x1>10:15</x1>` in place.
@@ -257,6 +281,54 @@ fmt.Println(got[0])
 | 200 with a wrong count, or a `text` that is no string | `DeepL returned N translations for M texts, or an answer that is not the JSON of /v2/translate.` |
 
 Every message replaces the key with `***`. Example: status 500 with the body `{"message": "Unknown key KEY"}` gives `DeepL answered with HTTP 500. Unknown key ***`.
+
+## Google Cloud Translation
+
+The package `translation/google` is a client of Cloud Translation Basic (v2) with an API key. It uses `net/http` only.
+
+<!-- example: translation/google/ExampleNew -->
+```go
+server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprint(w, `{"data": {"translations": [{"translatedText": "Le train part &agrave; <x1>10:15</x1>."}]}}`)
+}))
+defer server.Close()
+engine, err := google.New(google.Options{APIKey: "my-key", BaseURL: server.URL})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+s := &model.Subtitle{}
+c := model.Cue{Start: time.Second, End: 2 * time.Second}
+c.SetText("The train leaves at <b>10:15</b>.")
+s.AddCue(c)
+if _, err := translation.Translate(context.Background(), s, engine, "en", "fr", translation.Options{}); err != nil {
+	fmt.Println(err)
+	return
+}
+
+fmt.Println(s.Cues()[0].Lines)
+// Output: [Le train part à <b>10:15</b>.]
+```
+
+| Option | Default | Meaning |
+|:--- |:--- |:--- |
+| `APIKey` | required | an API key of a Google Cloud project with the Cloud Translation API |
+| `BaseURL` | `https://translation.googleapis.com` | the scheme and host of the service, for example a proxy |
+| `HTTPClient` | `translation.DefaultHTTPClient()` | the client that sends the requests |
+
+`New` rejects an empty key, a key with a control character or a space at the start or end, and a base URL that does not start with `http://` or `https://`. Each error matches `model.ErrInvalidArgument`. `fmt` prints the key as `***`.
+
+- **Request**: `POST {base}/language/translate/v2` with the header `X-goog-api-key` and a JSON body `{"q": [...], "target": "fr", "format": "html", "source": "en"}`. The key never goes into the URL. An empty source leaves `source` out, so Google detects the language.
+- **Chunks**: the engine sends at most `google.MaxTextsPerRequest` (128) texts per request. 300 texts give requests of 128, 128 and 44 texts.
+- **Answer**: the engine returns each `translatedText` as received. The runner decodes entities such as `&#39;`. A wrong number of translations, or a translation that is not a string, gives a `*translation.ServiceError`.
+- **Errors**: every `*translation.ServiceError` has the HTTP status and a message without the key.
+
+| Status | Message |
+|:--- |:--- |
+| 403 | `Google Cloud Translation refused the request (HTTP 403). Check the key and that the API is enabled.` and the `error.message` of the answer |
+| 429, after 4 attempts | `Google Cloud Translation got too many requests (HTTP 429). Wait and try again.` |
+| other | `Google Cloud Translation answered with HTTP N.` and the `error.message` of the answer |
 
 ## Differences from PHP
 

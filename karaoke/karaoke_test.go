@@ -289,6 +289,8 @@ func TestGoldens(t *testing.T) {
 		opts        karaoke.Options
 	}{
 		{"karaoke/hebrew.lrc", "karaoke/hebrew_word.srt", karaoke.Options{}},
+		{"whisper/real/openai_whisper_word_timestamps.json", "karaoke/whisper_word.srt", karaoke.Options{}},
+		{"whisper/real/openai_whisper_word_timestamps.json", "karaoke/whisper_one_word.vtt", karaoke.Options{Style: "b", MaxWordsPerCue: 1}},
 		{"lrc/real/handwritten-enhanced.lrc", "karaoke/lrc_cumulative.srt", karaoke.Options{Style: yellow, Mode: karaoke.ModeCumulative}},
 		{"ass/real/own_aegisub.ass", "karaoke/aegisub_window.srt", karaoke.Options{MaxWordsPerCue: 3}},
 	}

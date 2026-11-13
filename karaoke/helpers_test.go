@@ -3,6 +3,7 @@ package karaoke_test
 import (
 	"bytes"
 	"math"
+	"path"
 	"testing"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/lrc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -67,15 +69,17 @@ func readFile(tb testing.TB, name string) *model.Subtitle {
 		s   *model.Subtitle
 		err error
 	)
-	switch name[len(name)-4:] {
-	case ".srt":
+	switch path.Ext(name)[1:] {
+	case "srt":
 		s, _, err = srt.Read(bytes.NewReader(data), model.CommonReadOptions{}, srt.ReadOptions{})
-	case ".vtt":
+	case "vtt":
 		s, _, err = webvtt.Read(bytes.NewReader(data), model.CommonReadOptions{}, webvtt.ReadOptions{})
-	case ".lrc":
+	case "lrc":
 		s, _, err = lrc.Read(bytes.NewReader(data), model.CommonReadOptions{}, lrc.ReadOptions{})
-	case ".ass":
+	case "ass":
 		s, _, err = ass.Read(bytes.NewReader(data), model.CommonReadOptions{}, ass.ReadOptions{})
+	case "json":
+		s, _, err = transcript.ReadWhisper(bytes.NewReader(data), model.CommonReadOptions{}, transcript.ReadOptions{WordTimestamps: true})
 	default:
 		tb.Fatalf("no reader for %s", name)
 	}

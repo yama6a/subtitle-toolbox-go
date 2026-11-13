@@ -12,3 +12,5 @@ The JSON files hold the cues that PHP 1.x read from a real file, as `[start, end
 | `microdvd_subsrt_sample.json` | Cues of `../microdvd/real/subsrt_sample.sub`, read by `new MicroDvdParser(23.976)` | MIT |
 | `last_caption_without_erase.scc` | Written for this repository. The first two captions of `../scc/real/popon_broadcast_df.scc`, without the erase command after the second | MIT |
 | `scc_rollup_news_ndf.json` | Cues of `../scc/real/rollup_news_ndf.scc`, read by `new SccParser(1)` | MIT |
+| `whisper_word_timestamps.json` | Cues of `../whisper/real/openai_whisper_word_timestamps.json`, read with `transcript.ReadOptions.WordTimestamps` | MIT |
+| `whisperx_speaker_voices.json` | Cues of `../whisper/real/whisperx_diarize.json`, read with `transcript.ReadOptions.SpeakerVoices` | MIT |
