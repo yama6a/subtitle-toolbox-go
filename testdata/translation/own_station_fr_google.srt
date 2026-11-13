@@ -1,0 +1,33 @@
+﻿1
+00:00:01,000 --> 00:00:03,500
+Le train pour Bâle part
+
+2
+00:00:03,600 --> 00:00:06,000
+du quai 4 à <b>10:15</b>.
+
+3
+00:00:07,000 --> 00:00:09,000
+♪ ♪
+
+4
+00:00:09,500 --> 00:00:12,000
+<i>Les billets & les réservations
+de places</i> sont vendus ici.
+
+5
+00:00:12,500 --> 00:00:14,000
+2024
+
+6
+00:00:14,500 --> 00:00:17,000
+- Cette place est-elle libre ?
+- Oui, c'est libre.
+
+7
+00:00:17,500 --> 00:00:19,000
+<i>Le prochain arrêt est</i>
+
+8
+00:00:19,100 --> 00:00:21,000
+<i>la gare centrale de Zurich.</i>

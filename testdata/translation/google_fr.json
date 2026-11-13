@@ -1,0 +1,22 @@
+{
+  "data": {
+    "translations": [
+      {
+        "translatedText": "Le train pour Bâle part du quai 4 à <x1>10:15</x1>.",
+        "detectedSourceLanguage": "en"
+      },
+      {
+        "translatedText": "<x1>Les billets &amp; les réservations\nde places</x1> sont vendus ici.",
+        "detectedSourceLanguage": "en"
+      },
+      {
+        "translatedText": "- Cette place est-elle libre ?\n- Oui, c&#39;est libre.",
+        "detectedSourceLanguage": "en"
+      },
+      {
+        "translatedText": "<x1>Le prochain arrêt est la gare centrale de Zurich.</x1>",
+        "detectedSourceLanguage": "en"
+      }
+    ]
+  }
+}

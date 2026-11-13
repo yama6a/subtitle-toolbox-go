@@ -1,0 +1,20 @@
+{
+  "translations": [
+    {
+      "detected_source_language": "EN",
+      "text": "Der Zug nach Basel fährt um <x1>10:15</x1> von Gleis 4 ab."
+    },
+    {
+      "detected_source_language": "EN",
+      "text": "<x1>Fahrkarten &amp; Platz-\nreservierungen</x1> gibt es hier."
+    },
+    {
+      "detected_source_language": "EN",
+      "text": "- Ist dieser Platz frei?\n- Ja, ist er."
+    },
+    {
+      "detected_source_language": "EN",
+      "text": "<x1>Der nächste Halt ist Zürich Hauptbahnhof.</x1>"
+    }
+  ]
+}
