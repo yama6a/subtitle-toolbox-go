@@ -9,8 +9,10 @@
 | archive on the GitHub release | nothing | `curl -fsSLO https://github.com/yama6a/subtitle-toolbox-go/releases/download/v1.0.0/stbox_1.0.0_linux_amd64.tar.gz` |
 | `go install` | Go of the `go` line in `go.mod` | `go install github.com/yama6a/subtitle-toolbox-go/v3/cmd/stbox@latest` |
 | image `ghcr.io/yama6a/subtitle-toolbox-go` | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:1.0.0 convert in.srt --to vtt -o out.vtt` |
+| image `ghcr.io/yama6a/subtitle-toolbox-go` with Tesseract | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:1.0.0-tesseract convert film.sup --ocr --ocr-language rus --to srt -o film.srt` |
 
 - **Version**: the archive names, the image tag and `stbox --version` show `1.0.0`. The git tag is `v1.0.0`. The image also has the tags `1.0`, `1` and `latest`.
+- **Tesseract image**: the tags are `1.0.0-tesseract`, `1.0-tesseract`, `1-tesseract` and `tesseract`. It runs the same `stbox` and adds the `tesseract` program with the fast models of every language. It is about 340 MB larger. See [ocr.md](ocr.md#tesseract).
 - **Archives**: `stbox_1.0.0_OS_ARCH.tar.gz` for linux and darwin, `stbox_1.0.0_windows_ARCH.zip` for windows. Each holds `stbox`, `LICENSE`, `README.md` and `THIRD_PARTY_NOTICES.md`.
 - **Checksums**: `sha256sum --ignore-missing -c stbox_1.0.0_checksums.txt`.
 - **macOS**: the binaries are not notarized. macOS blocks a downloaded binary until the user runs `xattr -d com.apple.quarantine stbox`.

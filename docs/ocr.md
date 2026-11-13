@@ -100,6 +100,7 @@ engine, err := tesseract.New(tesseract.Options{Language: ocr.German})
 | `NoInvert` | false | Keep the grey levels. By default light text becomes dark on white |
 | `Threshold` | 0: keep grey levels | From 1 to 255. Grey levels below it become black, the others white |
 
+- **Container image**: `ghcr.io/yama6a/subtitle-toolbox-go:<version>-tesseract` holds `tesseract` and the fast models of every language. It reads every language with no install step. See [cli.md](cli.md#install).
 - **Checks**: `Recognize` and `RequireLanguages` first check that the program runs and that the data of every part of the language is installed. A failure is an `*InvalidArgumentError` with an install hint, for example `apt install tesseract-ocr` for Debian and Ubuntu, `apk add tesseract-ocr tesseract-ocr-data-eng` for Alpine, `dnf install tesseract` for Fedora and `brew install tesseract` for macOS. `Installed(ctx, program)` reports whether the program runs.
 - **Text**: the words of one TSV line become one line, escaped as core markup. Tesseract reports no italic, so the lines hold no `<i>` tags. The confidence is the mean word confidence from 0 to 1.
 - **Errors**: a program that exits with a code other than 0, or that cannot start, gives an error that matches `ErrRecognize`.

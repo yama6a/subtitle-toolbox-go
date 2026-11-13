@@ -187,6 +187,7 @@ Every merge to `main` publishes a release. The label of the pull request sets th
 - The bump comes from every PR merged since the last release. The strongest label wins.
 - A release builds archives for linux, darwin and windows on amd64 and arm64, and a checksum file.
 - It builds the image `ghcr.io/yama6a/subtitle-toolbox-go` for linux/amd64 and linux/arm64, with the tags `1.2.3`, `1.2`, `1` and `latest`.
+- It builds the same image with Tesseract for both platforms, with the tags `1.2.3-tesseract`, `1.2-tesseract`, `1-tesseract` and `tesseract`.
 - It creates the git tag last, so every tag has its archives and its image.
 
 ## Contributing
