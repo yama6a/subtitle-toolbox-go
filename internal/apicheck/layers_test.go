@@ -291,6 +291,11 @@ func TestCheckImports(t *testing.T) {
 			imports: []string{modulePath + "/translation", modulePath + "/translation/internal/httppost", modulePath + "/model"},
 		},
 		{
+			name:    "google engine imports the service, its HTTP helper and model",
+			rel:     "translation/google",
+			imports: []string{modulePath + "/translation", modulePath + "/translation/internal/httppost", modulePath + "/model"},
+		},
+		{
 			name:    "HTTP helper imports an engine",
 			rel:     "translation/internal/httppost",
 			imports: []string{modulePath + "/translation/deepl"},
