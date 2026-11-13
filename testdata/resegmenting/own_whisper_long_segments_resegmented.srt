@@ -1,0 +1,25 @@
+﻿1
+00:00:00,000 --> 00:00:02,550
+Welcome to the city library tour.
+
+2
+00:00:02,550 --> 00:00:08,550
+The reading room is on the left, and
+the study rooms are on the second floor.
+
+3
+00:00:08,550 --> 00:00:11,800
+Please keep your voice down in both rooms.
+
+4
+00:00:12,400 --> 00:00:18,200
+The cafe on the ground floor opens at
+nine and closes at six every weekday.
+
+5
+00:00:20,200 --> 00:00:22,520
+Any questions before we start?
+
+6
+00:00:22,520 --> 00:00:24,000
+Then let us begin.
