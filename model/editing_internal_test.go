@@ -52,7 +52,7 @@ func TestCanJoin(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, canJoin(tt.a, tt.b))
+			assert.Equal(t, tt.want, tt.a.CanJoin(tt.b))
 		})
 	}
 }
