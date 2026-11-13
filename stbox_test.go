@@ -232,6 +232,7 @@ func ExampleFormats() {
 	// vobsub [idx]
 	// vtt [vtt]
 	// whisper [json]
+	// youtube [srv3 json3 srv1 ytt]
 	// ogm-chapters [txt]
 	// podcast-chapters [json]
 	// podcast-transcript [json]

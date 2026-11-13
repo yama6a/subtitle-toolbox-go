@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?><timedtext format="3">
+<body>
+<p t="0" d="8000">No match (no timestamps)</p>
+<p t="8000" d="8000">No match<s t="4000"> (no elements)</s></p>
+<p t="16000" d="8000">This<s t="2000">
+can</s><s t="4000">
+match</s><s t="6000">
+:past/:future</s></p>
+</body>
+</timedtext>

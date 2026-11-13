@@ -220,5 +220,5 @@ type countingReader struct {
 func (c *countingReader) Read(p []byte) (int, error) {
 	n, err := c.r.Read(p)
 	c.n += n
-	return n, err
+	return n, err //nolint:wrapcheck // the error of the wrapped reader passes through
 }

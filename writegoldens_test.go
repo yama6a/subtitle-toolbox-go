@@ -60,6 +60,9 @@ func roundTripFiles() []roundTripFile {
 		{"whisper", "whisper_cpp_ojf.json"},
 		{"whisper", "whisper_cpp_ojf_split_utf8.json"},
 		{"whisper", "whisperx_diarize.json"},
+		{"youtube", "auto.en.json3"},
+		{"youtube", "manual.en.json3"},
+		{"youtube", "blank-lines.en.srv3"},
 	}
 }
 
@@ -177,6 +180,14 @@ func conversions() []conversion {
 		{"whisper", "openai_whisper_word_timestamps.json", stbox.WebVTT, ""},
 		{"whisper", "whisperx_diarize.json", stbox.SubRip, ""},
 		{"whisper", "whisperx_diarize.json", stbox.WebVTT, ""},
+		{"youtube", "auto.en.json3", stbox.SubRip, ""},
+		{"youtube", "auto.en.json3", stbox.WebVTT, ""},
+		{"youtube", "styled.en.srv3", stbox.SubRip, ""},
+		{"youtube", "styled.en.srv3", stbox.WebVTT, ""},
+		{"youtube", "transcript.en.srv1", stbox.SubRip, ""},
+		{"youtube", "transcript.en.srv1", stbox.WebVTT, ""},
+		{"srt", "own_styled.srt", stbox.YouTubeTimedText, ""},
+		{"vtt", "w3c_timestamps.vtt", stbox.YouTubeTimedText, ""},
 		{"srt", "own_styled.srt", stbox.Deepgram, ""},
 		{"srt", "own_styled.srt", stbox.Whisper, ""},
 		{"vtt", "w3c_timestamps.vtt", stbox.Deepgram, ""},

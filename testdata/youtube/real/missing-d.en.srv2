@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<timedtext>
+<text t="1000" d="2000">the market opens at eight</text>
+<text t="4000">bring a basket</text>
+<text t="6500" d="0">and some coins</text>
+<text t="8000">we close at noon</text>
+</timedtext>
