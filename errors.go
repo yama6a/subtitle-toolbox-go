@@ -1,6 +1,6 @@
 package stbox
 
-import "github.com/yama6a/subtitle-toolbox-go/v3/model"
+import "github.com/yama6a/subtitle-toolbox-go/v4/model"
 
 // The sentinel errors of package model. errors.Is matches both names.
 var (

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 )
 
 // sideFileUnknownFormat replaces the --from advice of unknownFormatMessage, because --from does not apply to a side file.

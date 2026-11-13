@@ -12,7 +12,7 @@ package stbox
 import (
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // Aliases of the model types. Package model documents their methods.

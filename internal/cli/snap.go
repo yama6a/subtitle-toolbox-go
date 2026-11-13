@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/timing"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/timing"
 )
 
 // snapTriggers lists the options that turn the snap group on, in the order that the rate message names them.

@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/hls"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/hls"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
 
 const defaultPlaylist = "subs.m3u8"

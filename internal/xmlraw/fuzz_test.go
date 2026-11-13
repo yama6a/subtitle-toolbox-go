@@ -8,8 +8,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/xmlraw"
 )
 
 func FuzzParse(f *testing.F) {

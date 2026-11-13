@@ -1,4 +1,4 @@
-module github.com/yama6a/subtitle-toolbox-go/v3
+module github.com/yama6a/subtitle-toolbox-go/v4
 
 go 1.27.4
 

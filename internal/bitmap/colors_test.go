@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
 )
 
 func TestToRGB(t *testing.T) {

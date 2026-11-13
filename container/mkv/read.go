@@ -3,7 +3,7 @@ package mkv
 import (
 	"errors"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/ebml"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/ebml"
 )
 
 // errStop ends an each loop without an error.
