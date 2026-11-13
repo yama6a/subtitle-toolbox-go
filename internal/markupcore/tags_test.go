@@ -295,3 +295,36 @@ func TestCarryOpenTags(t *testing.T) {
 		})
 	}
 }
+
+func TestStyleTag(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		tag     string
+		name    string
+		closing bool
+		ok      bool
+	}{
+		{"<i>", "i", false, true},
+		{`<font color="red">`, "font", false, true},
+		{"<u.cls>", "u", false, true},
+		{"</font>", "font", true, true},
+		{"</font >", "font ", true, false},
+		{"<I>", "", false, false},
+		{"<c>", "", false, false},
+		{"</c>", "c", true, false},
+		{"<>", "", false, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.tag, func(t *testing.T) {
+			t.Parallel()
+
+			name, closing, ok := markupcore.StyleTag(tt.tag)
+			assert.Equal(t, tt.ok, ok)
+			if ok {
+				assert.Equal(t, tt.name, name)
+				assert.Equal(t, tt.closing, closing)
+			}
+		})
+	}
+}

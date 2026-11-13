@@ -13,20 +13,13 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-// MaxLineBytes is the most line text that the new cues of Apply may hold together.
-const MaxLineBytes = 64 << 20
+// maxLineBytes is the most line text that the new cues of Apply may hold together.
+const maxLineBytes = 64 << 20
 
 // Report counts the cues before and after.
 type Report struct {
 	CuesBefore int
 	CuesAfter  int
-}
-
-// line is the items of a line, with the indexes of its tags and of its text runs.
-type line struct {
-	items []item
-	tags  []int
-	texts []int
 }
 
 // item is a tag or a text run of a line, with the number of its word. Word -1 is the text before the first word.
@@ -36,69 +29,142 @@ type item struct {
 	word int
 }
 
+// node is an element of a list of tags that no empty tag pair removes. A list shares its tail with the lists of the
+// tags before it, so each position of a line costs one node.
+type node struct {
+	tag     string
+	name    string
+	closing bool
+	style   bool
+	next    *node
+}
+
+// line is the items of a line, with the indexes of its tags and of its text runs. before[k] is the tags before
+// tags[k] and after[k] the tags from tags[k] on, each with its empty pairs removed. Both are nil without a window.
+type line struct {
+	items         []item
+	tags          []int
+	texts         []int
+	before, after []*node
+	firstWord     int
+	lastWord      int
+}
+
+// cuePlan is a cue with words, split into items and ready to write as word cues.
+type cuePlan struct {
+	cue       model.Cue
+	lines     []line
+	textLines []int
+	n         int
+	bounds    []time.Duration
+	produced  int
+}
+
 // Apply replaces each cue that has words with one cue per word, in which the style marks the active word.
 // A cue without words stays as it is. The word cues hold no Words.
-// Apply fails with a *model.InvalidArgumentError when the new cues would hold more than MaxLineBytes of line text.
+// Apply fails with a *model.InvalidArgumentError when the new cues would hold more than 64 MiB of line text.
 // On an error nothing changes.
 func Apply(s *model.Subtitle, opts Options) (Report, error) {
 	if err := opts.Validate(); err != nil {
 		return Report{}, err
 	}
 	old := s.Cues()
+	plans := make([]cuePlan, len(old))
+	least := 0
+	for i, c := range old {
+		plans[i] = plan(c, opts)
+		if opts.MaxWordsPerCue == 0 {
+			least += plans[i].leastBytes()
+			if least > maxLineBytes {
+				return Report{}, tooLarge(i, c)
+			}
+		}
+	}
 	var (
 		out   []model.Cue
 		first = make([]int, len(old))
 		bytes int
 	)
-	for i, c := range old {
+	for i := range plans {
 		first[i] = len(out)
 		start := len(out)
-		out = expand(out, c, opts)
+		out = plans[i].expand(out, opts)
 		for _, w := range out[start:] {
 			for _, l := range w.Lines {
 				bytes += len(l)
 			}
 		}
-		if bytes > MaxLineBytes {
-			return Report{}, &model.InvalidArgumentError{Option: "karaoke.Apply", Msg: "The word cues of cue " + strconv.Itoa(i+1) +
-				" at " + timecode.Seconds(c.Start) + " s would bring the line text of the new cues above " + strconv.Itoa(MaxLineBytes>>20) +
-				" MiB. Split the cue first with resegment.SplitLong, or set MaxWordsPerCue."}
+		if bytes > maxLineBytes {
+			return Report{}, tooLarge(i, old[i])
 		}
 	}
 	s.ReplaceCues(out, func(i int) int { return first[i] })
 	return Report{CuesBefore: len(old), CuesAfter: len(out)}, nil
 }
 
-func expand(out []model.Cue, c model.Cue, opts Options) []model.Cue {
+func tooLarge(i int, c model.Cue) error {
+	return &model.InvalidArgumentError{Msg: "The word cues of cue " + strconv.Itoa(i+1) +
+		" at " + timecode.Seconds(c.Start) + " s would bring the line text of the new cues above " + strconv.Itoa(maxLineBytes>>20) +
+		" MiB. Split the cue first with resegment.SplitLong, or set MaxWordsPerCue."}
+}
+
+func plan(c model.Cue, opts Options) cuePlan {
 	texts := make([]string, len(c.Words))
 	for i, w := range c.Words {
 		texts[i] = w.Text
 	}
 	marks := markupcore.WordMarks(c.Lines, texts)
-	n := len(marks)
-	if n == 0 {
-		return append(out, c.Clone())
+	p := cuePlan{n: len(marks)}
+	if p.n == 0 {
+		p.cue = c
+		return p
 	}
-	lines := splitWords(c.Lines, marks)
-	words := c.Words[:n]
+	words := c.Words[:p.n]
 	c.Words = nil
+	p.cue = c
+	p.lines = splitWords(c.Lines, marks, opts.MaxWordsPerCue > 0)
+	for l, ln := range p.lines {
+		if len(ln.texts) > 0 {
+			p.textLines = append(p.textLines, l)
+		}
+	}
 
 	end := max(c.Start, c.End)
-	bounds := make([]time.Duration, 0, n+2)
-	bounds = append(bounds, c.Start)
-	for k := range n {
-		bounds = append(bounds, max(bounds[k], min(end, words[k].Start)))
+	p.bounds = make([]time.Duration, 0, p.n+2)
+	p.bounds = append(p.bounds, c.Start)
+	for k := range p.n {
+		p.bounds = append(p.bounds, max(p.bounds[k], min(end, words[k].Start)))
 	}
-	bounds = append(bounds, end)
+	p.bounds = append(p.bounds, end)
+	for w := -1; w < p.n; w++ {
+		if p.bounds[w+2] > p.bounds[w+1] {
+			p.produced++
+		}
+	}
+	return p
+}
 
+// leastBytes returns fewer bytes than the cues of p hold. Without a window each word cue holds all the line text.
+func (p cuePlan) leastBytes() int {
+	size := 0
+	for _, l := range p.cue.Lines {
+		size += len(l)
+	}
+	return size * max(p.produced, 1)
+}
+
+func (p cuePlan) expand(out []model.Cue, opts Options) []model.Cue {
+	if p.n == 0 {
+		return append(out, p.cue.Clone())
+	}
 	produced := false
-	for w := -1; w < n; w++ {
-		if bounds[w+2] <= bounds[w+1] {
+	for w := -1; w < p.n; w++ {
+		if p.bounds[w+2] <= p.bounds[w+1] {
 			continue
 		}
-		cue := c.Clone()
-		cue.Start, cue.End = bounds[w+1], bounds[w+2]
-		cue.Lines = highlight(lines, w, n, opts)
+		cue := p.cue.Clone()
+		cue.Start, cue.End = p.bounds[w+1], p.bounds[w+2]
+		cue.Lines = p.highlight(w, opts)
 		if produced {
 			cue.ID = ""
 		}
@@ -106,8 +172,8 @@ func expand(out []model.Cue, c model.Cue, opts Options) []model.Cue {
 		out = append(out, cue)
 	}
 	if !produced {
-		cue := c.Clone()
-		cue.Lines = highlight(lines, -1, n, opts)
+		cue := p.cue.Clone()
+		cue.Lines = p.highlight(-1, opts)
 		out = append(out, cue)
 	}
 	return out
@@ -136,7 +202,7 @@ func (n *numberer) cut(l, end int) int {
 }
 
 // splitWords splits each line into tags and text runs and numbers each item by the marks at or before its start.
-func splitWords(lines []string, marks []markupcore.Mark) []line {
+func splitWords(lines []string, marks []markupcore.Mark, reduce bool) []line {
 	result := make([]line, len(lines))
 	num := numberer{marks: marks}
 	for l, text := range lines {
@@ -156,6 +222,13 @@ func splitWords(lines []string, marks []markupcore.Mark) []line {
 				cur.items = append(cur.items, item{text[at:to], false, w})
 				at = to
 			}
+		}
+		if len(cur.texts) > 0 {
+			cur.firstWord = cur.items[cur.texts[0]].word
+			cur.lastWord = cur.items[cur.texts[len(cur.texts)-1]].word
+		}
+		if reduce {
+			cur.reduceTags()
 		}
 		result[l] = cur
 	}
@@ -224,24 +297,34 @@ func (w *writer) finish() string {
 	return w.b.String()
 }
 
-func highlight(lines []line, active, n int, opts Options) []string {
-	first, last := window(active, n, opts.MaxWordsPerCue)
+func (p cuePlan) highlight(active int, opts Options) []string {
+	first, last := window(active, p.n, opts.MaxWordsPerCue)
 	style := strings.Trim(opts.style(), markupcore.PHPTrimSet)
 
-	result := make([]string, 0, len(lines))
-	for _, ln := range lines {
+	write := func(ln *line) string {
 		w := writer{openTag: "<" + style + ">", closeTag: "</" + markupcore.TagName(style) + ">"}
-		for _, it := range ln.visible(first, last) {
+		for _, it := range ln.view(first, last) {
 			if !it.tag && opts.marks(it.word, active) {
 				w.styled(it.text)
 			} else {
 				w.other(it.text)
 			}
 		}
-		result = append(result, w.finish())
+		return w.finish()
 	}
 	if opts.MaxWordsPerCue == 0 {
+		result := make([]string, len(p.lines))
+		for i := range p.lines {
+			result[i] = write(&p.lines[i])
+		}
 		return result
+	}
+	from := max(first, -1)
+	lo := sort.Search(len(p.textLines), func(i int) bool { return p.lines[p.textLines[i]].lastWord >= from })
+	hi := sort.Search(len(p.textLines), func(i int) bool { return p.lines[p.textLines[i]].firstWord > last })
+	result := make([]string, 0, max(hi-lo, 0))
+	for i := lo; i < hi; i++ {
+		result = append(result, write(&p.lines[p.textLines[i]]))
 	}
 	return cleanWindow(result)
 }
@@ -259,9 +342,9 @@ func cleanWindow(lines []string) []string {
 	return slices.Clip(kept)
 }
 
-// visible returns the tags and the text runs of words first to last, in order. Text runs of word -1 show when first
-// is -1 or 0.
-func (ln line) visible(first, last int) []item {
+// view returns the items of words first to last in order, with the tags before and after them reduced. Text runs of
+// word -1 show when first is -1 or 0.
+func (ln *line) view(first, last int) []item {
 	lo := 0
 	if first > 0 {
 		lo = sort.Search(len(ln.texts), func(i int) bool { return ln.items[ln.texts[i]].word >= first })
@@ -270,18 +353,46 @@ func (ln line) visible(first, last int) []item {
 	if lo == 0 && hi == len(ln.texts) {
 		return ln.items
 	}
-	texts := ln.texts[lo:hi]
-	res := make([]item, 0, len(ln.tags)+len(texts))
-	for i, j := 0, 0; i < len(ln.tags) || j < len(texts); {
-		if j == len(texts) || i < len(ln.tags) && ln.tags[i] < texts[j] {
-			res = append(res, ln.items[ln.tags[i]])
-			i++
-		} else {
-			res = append(res, ln.items[texts[j]])
-			j++
-		}
+	if lo >= hi {
+		return nil
+	}
+	from, to := ln.texts[lo], ln.texts[hi-1]
+	before := ln.before[sort.SearchInts(ln.tags, from)]
+	after := ln.after[sort.SearchInts(ln.tags, to)]
+	res := before.appendReversed(nil)
+	slices.Reverse(res)
+	res = append(res, ln.items[from:to+1]...)
+	return after.appendReversed(res)
+}
+
+// appendReversed appends the tags of the list, from its head to its end.
+func (n *node) appendReversed(res []item) []item {
+	for ; n != nil; n = n.next {
+		res = append(res, item{n.tag, true, -1})
 	}
 	return res
+}
+
+// reduceTags fills before and after. An empty pair is an opening style tag directly followed by its closing tag.
+func (ln *line) reduceTags() {
+	ln.before = make([]*node, len(ln.tags)+1)
+	ln.after = make([]*node, len(ln.tags)+1)
+	for k, idx := range ln.tags {
+		ln.before[k+1] = push(ln.before[k], ln.items[idx].text, false)
+	}
+	for k := len(ln.tags) - 1; k >= 0; k-- {
+		ln.after[k] = push(ln.after[k+1], ln.items[ln.tags[k]].text, true)
+	}
+}
+
+// push adds tag to the list. Going forward, a closing tag removes the opening tag of its name at the head. Going
+// backward, an opening tag removes the closing tag of its name at the head.
+func push(head *node, tag string, backward bool) *node {
+	name, closing, style := markupcore.StyleTag(tag)
+	if style && head != nil && head.style && head.name == name && head.closing != closing && closing != backward {
+		return head.next
+	}
+	return &node{tag, name, closing, style, head}
 }
 
 func splitSpace(s string) (lead, core, trail string) {

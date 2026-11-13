@@ -1,6 +1,7 @@
 package karaoke_test
 
 import (
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -105,6 +106,8 @@ func TestApplyCueData(t *testing.T) {
 	wantData, _ := in.FormatData("ass")
 	plain := model.Cue{Start: seconds(5), End: seconds(6), ID: "p", Lines: []string{"<i>Plain</i> text"}}
 	plain.Position.Alignment = model.TopCenter
+	require.NoError(t, plain.SetFormatData("vtt", model.NewData(model.Field{Key: "region", Value: "r1"})))
+	wantVTT, _ := plain.FormatData("vtt")
 
 	s := subtitle(in, plain)
 	_, err := karaoke.Apply(s, karaoke.Options{})
@@ -126,12 +129,16 @@ func TestApplyCueData(t *testing.T) {
 		assert.Equal(t, wantData, data)
 	}
 	assert.Equal(t, plain, cues[4])
+	data, ok := cues[4].FormatData("vtt")
+	require.True(t, ok)
+	assert.Equal(t, wantVTT, data)
 }
 
 func TestApplyComments(t *testing.T) {
 	t.Parallel()
 
 	s := subtitle(beach, cue(2, 3, []string{"Next line"}, word{"Next", 2}, word{"line", 2.5}))
+	s.SetMetadata(model.MetadataTitle, "Beach")
 	require.NoError(t, s.AddComment("before", 1))
 	require.NoError(t, s.AddComment("end", 2))
 	_, err := karaoke.Apply(s, karaoke.Options{})
@@ -141,6 +148,9 @@ func TestApplyComments(t *testing.T) {
 		at = append(at, c.BeforeCue)
 	}
 	assert.Equal(t, []int{4, 6}, at)
+	title, ok := s.Metadata(model.MetadataTitle)
+	assert.True(t, ok)
+	assert.Equal(t, "Beach", title)
 }
 
 func TestApplyClone(t *testing.T) {
@@ -152,6 +162,27 @@ func TestApplyClone(t *testing.T) {
 	assert.Equal(t, 1, s.Len())
 	first, _ := s.Cue(0)
 	assert.Len(t, first.Words, 4)
+}
+
+// TestApplyTooLargeBeforeBuilding checks that Apply fails before it builds a cue. A cue of 256 KB with 1,000 words
+// would make 306 MiB of word cues.
+func TestApplyTooLargeBeforeBuilding(t *testing.T) { //nolint:paralleltest // it reads the allocation counter of the process
+	words := make([]word, 0, 1000)
+	var text strings.Builder
+	for i := range 1000 {
+		words = append(words, word{strings.Repeat("a", 255), float64(i)})
+		text.WriteString(words[i].text + " ")
+	}
+	s := subtitle(cue(0, 2000, []string{strings.TrimSpace(text.String())}, words...))
+
+	var before, after runtime.MemStats
+	runtime.ReadMemStats(&before)
+	_, err := karaoke.Apply(s, karaoke.Options{})
+	runtime.ReadMemStats(&after)
+	var invalid *model.InvalidArgumentError
+	require.ErrorAs(t, err, &invalid)
+	assert.Contains(t, invalid.Msg, "cue 1")
+	assert.Less(t, after.TotalAlloc-before.TotalAlloc, uint64(64<<20))
 }
 
 func TestApplyTooLarge(t *testing.T) {
