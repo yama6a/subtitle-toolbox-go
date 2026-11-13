@@ -32,6 +32,7 @@ Every file except `mantas_utf16.srt` and `mantas_multiple_new_lines.vtt` is writ
 | `mantas_multiple_divs.ttml` | a `p` with absolute times in a timed `div`, so it begins after the `div` ends. In the shape of https://github.com/mantas-done/subtitles/blob/959d1705b1ed12cbb9ddba517f8bcb814e1919a8/tests/files/ttml_with_multiple_divs.ttml, LF | MIT |
 | `bare_seconds.ttml` | times as bare seconds with a fraction, such as `19.764`, and as `m:ss.fff`, in the shape of an Apple Music lyrics file with own text, LF | MIT |
 | `credit_before_xml.ttml` | a credit line before the XML declaration, a letter in a `begin` time, CR LF | MIT |
+| `credit_before_xml.srv3` | YouTube srv3 XML with a credit line before the XML declaration, LF | MIT |
 | `html_entities.ttml` | the HTML entities `&eacute;`, `&nbsp;`, `&agrave;`, `&ndash;`, `&euro;`, `&laquo;` and `&raquo;`, which XML does not define, LF | MIT |
 | `malformed.ttml` | a bare `&`, a `<br>` without `/`, the unknown entity `&cur;`, a `span` without its end tag, LF | MIT |
 | `open_paragraphs.ttml` | three `p` elements without `end`, one of them with an empty `dur`, and a last `p` without `end`, LF | MIT |

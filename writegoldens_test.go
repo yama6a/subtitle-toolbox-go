@@ -41,6 +41,9 @@ func roundTripFiles() []roundTripFile {
 		{"mcc", "captionmaker_608_708.mcc"},
 		{"mcc", "captionmaker_popon_df.mcc"},
 		{"mcc", "v1_23976_timecode.mcc"},
+		{"youtube", "auto.en.json3"},
+		{"youtube", "manual.en.json3"},
+		{"youtube", "blank-lines.en.srv3"},
 	}
 }
 
@@ -148,6 +151,12 @@ func conversions() []conversion {
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.SubRip, ""},
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.WebVTT, ""},
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.ASS, ""},
+		{"youtube", "auto.en.json3", stbox.SubRip, ""},
+		{"youtube", "auto.en.json3", stbox.WebVTT, ""},
+		{"youtube", "styled.en.srv3", stbox.SubRip, ""},
+		{"youtube", "styled.en.srv3", stbox.WebVTT, ""},
+		{"youtube", "transcript.en.srv1", stbox.SubRip, ""},
+		{"youtube", "transcript.en.srv1", stbox.WebVTT, ""},
 	}
 }
 
@@ -213,6 +222,22 @@ func TestWriteGoldens(t *testing.T) {
 			}
 			s, _ := g.readWith(t, c.file, opts)
 			golden.Equal(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(c.to))), writeAs(t, s, c.to), *update)
+		})
+	}
+}
+
+// TestWriteGoldenYouTubeConversions writes subtitles of other formats as srv3. The files read with the transcript
+// options, which the YouTube reader shares.
+func TestWriteGoldenYouTubeConversions(t *testing.T) {
+	t.Parallel()
+
+	for _, c := range []struct{ folder, file string }{{"srt", "own_styled.srt"}, {"vtt", "w3c_timestamps.vtt"}} {
+		t.Run(c.folder+"/"+c.file, func(t *testing.T) {
+			t.Parallel()
+
+			g := folder(t, c.folder)
+			s, _ := g.readWith(t, c.file, transcriptGolden)
+			golden.Equal(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(stbox.YouTubeTimedText))), writeAs(t, s, stbox.YouTubeTimedText), *update)
 		})
 	}
 }

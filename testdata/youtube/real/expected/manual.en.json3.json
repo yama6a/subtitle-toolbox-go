@@ -9,13 +9,13 @@
                 "format": "json3",
                 "wireMagic": "pb3",
                 "pens": [
-                    []
+                    {}
                 ],
                 "wsWinStyles": [
-                    []
+                    {}
                 ],
                 "wpWinPositions": [
-                    []
+                    {}
                 ]
             }
         },

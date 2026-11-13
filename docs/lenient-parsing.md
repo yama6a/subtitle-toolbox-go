@@ -380,6 +380,19 @@ All errors are `*ParseError` values with the format `pgs` and line 0. T is the t
 
 - **Block numbers**: the position of the timestamp line among the timestamp lines of its track, counted from 0. A warning has no line number and no lines.
 
+## YouTube timed text
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| a caption with a bad time, such as `<p t="soon">` or `"tStartMs": "0"` | `The <p> element has no valid "t" attribute.` with its line, or `The field events[0].tStartMs must be a number.` and the other messages of [transcripts.md](transcripts.md#youtube-read-rules) | skips the caption. `Skipped`, with the line of the element for XML and no line for json3, `Block` the index of the element or event, the element or the event as block text |
+| a time of 100000 hours or more | `The time "360000000" is not below 100000 hours.` or `The field events[0].tStartMs is not below 100000 hours.` | skips the caption |
+| text before the XML, such as a credit line | `The file has text before the XML: "LINE".` with its line | skips the text. `Repaired`, with its line |
+| XML that is not well-formed, a root other than `<timedtext>` and `<transcript>`, json3 without an `events` list, invalid JSON | the error | the same error |
+| a bad byte in XML | the error of [encodings.md](encodings.md) | reads it as U+FFFD. `Repaired` |
+| a bad byte in json3 | reads it as U+FFFD | the same, with the `Repaired` warning of [encodings.md](encodings.md) |
+
+An append caption and a window event give no cue and no warning. A caption without text lines gives no cue and no warning.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

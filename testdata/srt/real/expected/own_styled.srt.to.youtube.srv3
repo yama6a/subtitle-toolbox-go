@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?><timedtext format="3">
+<head>
+<pen id="1" b="1" fc="#00FF00"/>
+<pen id="2" fc="#FF00FF"/>
+<pen id="3" fc="#00FF00"/>
+<pen id="4" b="1" u="1"/>
+<pen id="5" i="1"/>
+</head>
+<body>
+<p t="17985" d="2536" p="1">[train horn]</p>
+<p t="47115" d="1167" p="2">[rain]</p>
+<p t="58192" d="1535" p="3">[train horn]</p>
+<p t="61662" d="1401" p="4">[oven door opens]</p>
+<p t="86787" d="2736">[whistle]</p>
+<p t="89590" d="2402">[station speaker]
+<s p="5">Thebakeryopensat7:35.</s></p>
+<p t="480000" d="60000" p="5">Italics over two lines
+that close on the second line</p>
+<p t="540000" d="60000" p="5">Italics that never close</p>
+<p t="600000" d="60000">The next cue is not italic</p>
+<p t="720000" d="60000"><s p="5">x</s>^3 * <s p="5">x</s> = 100</p>
+</body>
+</timedtext>

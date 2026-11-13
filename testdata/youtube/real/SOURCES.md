@@ -1,5 +1,7 @@
 # Sources
 
+Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5313f1583fc7e67942d514600/tests/files/youtube/real, MIT. In the rows below, "this repository" means subtitle-toolbox-php.
+
 The captions of real videos belong to their authors. So every file here is written for this repository in the exact shape that YouTube returns and yt-dlp saves with `--sub-format json3`, `srv3` or `srv1`. The text is new neutral sample text.
 
 | File | Source | License |
@@ -13,7 +15,5 @@ The captions of real videos belong to their authors. So every file here is writt
 | `missing-dur.en.srv1` | Written for this repository in the shape of the `<transcript>` XML of issue #393: a middle and a last `<text>` without `dur`, and one with `dur="0"` | MIT |
 | `missing-d.en.srv2` | Written for this repository in the shape of srv2 `<timedtext>` XML with `t` and `d` in milliseconds: a middle and a last `<text>` without `d`, and one with `d="0"` | MIT |
 | `missing-d.en.srv3` | Written for this repository in the shape of srv3 `<timedtext format="3">` XML with `t` and `d` in milliseconds: a middle and a last `<p>` without `d`, and one with `d="0"` | MIT |
-| `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name, written by `tests/files/generate-read-goldens.php` | MIT |
-| `expected/*.to.*` | Generated for this repository. Expected output of the file with the same name in another format, written by `tests/files/generate-write-goldens.php` | MIT |
-| `expected/auto.en.json3.out.json3`, `expected/manual.en.json3.out.json3` | Generated for this repository. Expected `YouTubeTimedTextFormatter` output for the file with the same name: the same JSON data and key order, without the indents of YouTube | MIT |
-| `expected/blank-lines.en.srv3.out.srv3` | Generated for this repository. Expected `YouTubeTimedTextFormatter` output for `blank-lines.en.srv3`: the same XML without the empty lines and the indent before the XML declaration | MIT |
+| `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name, written by `tests/files/generate-read-goldens.php`. Changed in `auto.en.json3.json` and `manual.en.json3.json`: each empty `pens`, `wsWinStyles` and `wpWinPositions` entry is `{}`, as in the source file. PHP writes `[]`, see [php-differences.md](../../../docs/php-differences.md) | MIT |
+| `expected/*.out.*`, `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand. Each file equals the PHP write golden of the same name at the pinned commit | MIT |

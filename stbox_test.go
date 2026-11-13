@@ -228,6 +228,7 @@ func ExampleFormats() {
 	// qttext [txt]
 	// vobsub [idx]
 	// vtt [vtt]
+	// youtube [srv3 json3 srv1 ytt]
 	// youtube-chapters [txt]
 }
 

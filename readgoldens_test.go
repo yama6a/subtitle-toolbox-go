@@ -17,6 +17,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
@@ -43,8 +44,11 @@ var dubbingScript = csv.ReadOptions{
 }
 
 // transcriptGolden holds the read options of the transcript read goldens, as tests/Support/ReadGoldens.php of
-// subtitle-toolbox-php sets them. #102 adds YouTube.
-var transcriptGolden = stbox.ReadOptions{Transcript: transcript.ReadOptions{WordTimestamps: true, SpeakerVoices: true}}
+// subtitle-toolbox-php sets them.
+var transcriptGolden = stbox.ReadOptions{
+	Transcript: transcript.ReadOptions{WordTimestamps: true, SpeakerVoices: true},
+	YouTube:    youtube.ReadOptions{WordTimestamps: true},
+}
 
 func goldenFolders() []goldenFolder {
 	return []goldenFolder{
@@ -89,6 +93,7 @@ func goldenFolders() []goldenFolder {
 		{name: "tmplayer", format: stbox.TMPlayer, files: 4},
 		{name: "ttml", format: stbox.TTML, files: 29},
 		{name: "vtt", format: stbox.WebVTT, files: 30},
+		{name: "youtube", format: stbox.YouTubeTimedText, files: 9, transcript: true},
 	}
 }
 

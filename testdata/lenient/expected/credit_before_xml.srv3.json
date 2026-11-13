@@ -1,0 +1,28 @@
+{
+    "name": "YouTube srv3 with a credit line before the XML declaration",
+    "format": "youtube",
+    "strict": {
+        "error": "The file has text before the XML: \"Captions by the harbour film club\".",
+        "line": 1
+    },
+    "cues": [
+        {
+            "start": 1,
+            "end": 3,
+            "text": "The boat leaves at noon."
+        },
+        {
+            "start": 4,
+            "end": 6,
+            "text": "Enjoy the trip."
+        }
+    ],
+    "warnings": [
+        {
+            "line": 1,
+            "block": null,
+            "action": "repaired",
+            "message": "The file has text before the XML: \"Captions by the harbour film club\". The parser skipped it."
+        }
+    ]
+}
