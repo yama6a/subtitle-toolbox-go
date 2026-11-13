@@ -11,6 +11,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation"
 )
 
 // The exit codes of docs/errors.md.
@@ -123,6 +124,9 @@ func message(err error) string {
 func typedMessage(err error) (string, bool) {
 	if e, ok := errors.AsType[*ocr.CueError](err); ok {
 		return "cue " + strconv.Itoa(e.CueIndex+1) + ": " + message(e.Err), true
+	}
+	if e, ok := errors.AsType[*translation.ServiceError](err); ok {
+		return e.Msg, true
 	}
 	if e, ok := errors.AsType[*usageError](err); ok {
 		return e.msg, true

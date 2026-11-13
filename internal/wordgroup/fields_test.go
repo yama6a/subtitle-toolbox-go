@@ -85,22 +85,20 @@ func TestBetween(t *testing.T) {
 	words := []wordgroup.Word{word("a", 100, 700), word("b", 700, 1100), word("c", 1100, 1500), word("d", 1900, 2500)}
 	tests := []struct {
 		name       string
+		from       int // the index to start at
 		start, end int
 		want       []string
 		next       int
 	}{
-		{"float middle 0.1 and 0.7 on boundary 0.4", 0, 400, []string{"a"}, 1},
-		{"middle on the end boundary", 500, 900, []string{"b"}, 2},
-		{"skips words before the start", 1000, 1300, []string{"c"}, 3},
-		{"nothing", 1600, 1700, nil, 3},
+		{"float middle 0.1 and 0.7 on boundary 0.4", 0, 0, 400, []string{"a"}, 1},
+		{"middle on the end boundary", 0, 500, 900, []string{"b"}, 2},
+		{"skips words before the start", 0, 1000, 1300, []string{"c"}, 3},
+		{"nothing", 2, 1600, 1700, nil, 3},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			i := 0
-			if tt.name == "nothing" {
-				i = 2
-			}
+			i := tt.from
 			var got []string
 			for _, w := range wordgroup.Between(words, &i, ms(tt.start), ms(tt.end)) {
 				got = append(got, w.Text)
@@ -162,8 +160,10 @@ func TestCueWords(t *testing.T) {
 			t.Parallel()
 			got := wordgroup.CueWords(tt.text, tt.words, ms(4000))
 			assert.Equal(t, tt.want, got)
-			if tt.name == "confidence is copied" {
-				assert.NotSame(t, &half, got[0].Confidence)
+			for _, w := range got {
+				if w.Confidence != nil {
+					assert.NotSame(t, &half, w.Confidence)
+				}
 			}
 		})
 	}
