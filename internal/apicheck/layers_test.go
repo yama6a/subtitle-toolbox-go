@@ -19,77 +19,81 @@ type layer int
 
 // The layers of the table in CONTRIBUTING.md. A package imports only packages of a lower layer.
 const (
-	layerLeaf      layer = iota // 0
-	layerMarkup                 // 1
-	layerModel                  // 2
-	layerModelUser              // 3
-	layerFormat                 // 4
-	layerContainer              // 4b
-	layerFacade                 // 5
-	layerOCREngine              // 5b
-	layerOCRAuto                // 5c
-	layerCLI                    // 6
+	layerLeaf       layer = iota // 0
+	layerMarkup                  // 1
+	layerModel                   // 2
+	layerModelUser               // 3
+	layerFormat                  // 4
+	layerContainer               // 4b
+	layerFacade                  // 5
+	layerPlugin                  // 5b: packages that build on one service, such as an OCR engine
+	layerPluginUser              // 5c: packages that build on a 5b package
+	layerCLI                     // 6
 )
 
 // layers holds the layer of each package. A key that ends in "/*" covers each package one folder below it.
 var layers = map[string]layer{
-	"internal/timecode":    layerLeaf,
-	"internal/phpkey":      layerLeaf,
-	"internal/stringlist":  layerLeaf,
-	"internal/grapheme":    layerLeaf,
-	"internal/ssatag":      layerLeaf,
-	"internal/textenc":     layerLeaf,
-	"internal/xmlraw":      layerLeaf,
-	"internal/codepage":    layerLeaf,
-	"internal/cea608":      layerLeaf,
-	"internal/cea708":      layerLeaf,
-	"internal/ebml":        layerLeaf,
-	"internal/orderedjson": layerLeaf,
-	"internal/markupcore":  layerLeaf,
-	"internal/teletext":    layerLeaf,
-	"internal/linewrap":    layerLeaf,
-	"internal/testfiles":   layerLeaf,
-	"internal/golden":      layerLeaf,
-	"internal/extfallback": layerLeaf,
-	"internal/paragraphs":  layerLeaf,
-	"markup":               layerMarkup,
-	"model":                layerModel,
-	"internal/blocks":      layerModelUser,
-	"internal/subrip":      layerModelUser,
-	"internal/vtt":         layerModelUser,
-	"internal/position":    layerModelUser,
-	"internal/parsing":     layerModelUser,
-	"internal/writing":     layerModelUser,
-	"internal/caption":     layerModelUser,
-	"internal/ttmlwrite":   layerModelUser,
-	"internal/wordgroup":   layerModelUser,
-	"internal/bitmap":      layerModelUser,
-	"internal/dvdsub":      layerModelUser,
-	"internal/displayset":  layerModelUser,
-	"internal/arib":        layerModelUser,
-	"internal/dvbsub":      layerModelUser,
-	"internal/jsondata":    layerModelUser,
-	"format/*":             layerFormat,
-	"container/*":          layerContainer,
-	".":                    layerFacade,
-	"stats":                layerFacade,
-	"stream":               layerFacade,
-	"hearingimpaired":      layerFacade,
-	"fixing":               layerFacade,
-	"profanity":            layerFacade,
-	"refsync":              layerFacade,
-	"diff":                 layerFacade,
-	"dual":                 layerFacade,
-	"validation":           layerFacade,
-	"timing":               layerFacade,
-	"imaging":              layerFacade,
-	"ocr":                  layerFacade,
-	"ocr/*":                layerOCREngine,
-	"ocr/auto":             layerOCRAuto,
-	"hls":                  layerFacade,
-	"resegment":            layerFacade,
-	"internal/cli":         layerCLI,
-	"cmd/stbox":            layerCLI,
+	"internal/timecode":             layerLeaf,
+	"internal/phpkey":               layerLeaf,
+	"internal/stringlist":           layerLeaf,
+	"internal/grapheme":             layerLeaf,
+	"internal/ssatag":               layerLeaf,
+	"internal/textenc":              layerLeaf,
+	"internal/xmlraw":               layerLeaf,
+	"internal/codepage":             layerLeaf,
+	"internal/cea608":               layerLeaf,
+	"internal/cea708":               layerLeaf,
+	"internal/ebml":                 layerLeaf,
+	"internal/orderedjson":          layerLeaf,
+	"internal/markupcore":           layerLeaf,
+	"internal/teletext":             layerLeaf,
+	"internal/linewrap":             layerLeaf,
+	"internal/testfiles":            layerLeaf,
+	"internal/golden":               layerLeaf,
+	"internal/translationtest":      layerLeaf,
+	"internal/extfallback":          layerLeaf,
+	"internal/paragraphs":           layerLeaf,
+	"markup":                        layerMarkup,
+	"model":                         layerModel,
+	"internal/blocks":               layerModelUser,
+	"internal/subrip":               layerModelUser,
+	"internal/vtt":                  layerModelUser,
+	"internal/position":             layerModelUser,
+	"internal/parsing":              layerModelUser,
+	"internal/writing":              layerModelUser,
+	"internal/caption":              layerModelUser,
+	"internal/ttmlwrite":            layerModelUser,
+	"internal/wordgroup":            layerModelUser,
+	"internal/bitmap":               layerModelUser,
+	"internal/dvdsub":               layerModelUser,
+	"internal/displayset":           layerModelUser,
+	"internal/arib":                 layerModelUser,
+	"internal/dvbsub":               layerModelUser,
+	"internal/jsondata":             layerModelUser,
+	"format/*":                      layerFormat,
+	"container/*":                   layerContainer,
+	".":                             layerFacade,
+	"stats":                         layerFacade,
+	"stream":                        layerFacade,
+	"hearingimpaired":               layerFacade,
+	"fixing":                        layerFacade,
+	"profanity":                     layerFacade,
+	"refsync":                       layerFacade,
+	"diff":                          layerFacade,
+	"dual":                          layerFacade,
+	"validation":                    layerFacade,
+	"timing":                        layerFacade,
+	"imaging":                       layerFacade,
+	"ocr":                           layerFacade,
+	"ocr/*":                         layerPlugin,
+	"ocr/auto":                      layerPluginUser,
+	"translation":                   layerFacade,
+	"translation/internal/httppost": layerPlugin,
+	"translation/*":                 layerPluginUser,
+	"hls":                           layerFacade,
+	"resegment":                     layerFacade,
+	"internal/cli":                  layerCLI,
+	"cmd/stbox":                     layerCLI,
 }
 
 // profiles lists the format packages that may import another format package, because their format is a profile of it.
@@ -282,6 +286,35 @@ func TestCheckImports(t *testing.T) {
 			rel:     "ocr/glyph",
 			imports: []string{modulePath + "/ocr/tesseract"},
 			want:    []string{"ocr/glyph imports ocr/tesseract, which is not in a lower layer"},
+		},
+		{
+			name:    "engine imports the service, its HTTP helper and model",
+			rel:     "translation/deepl",
+			imports: []string{modulePath + "/translation", modulePath + "/translation/internal/httppost", modulePath + "/model"},
+		},
+		{
+			name:    "HTTP helper imports an engine",
+			rel:     "translation/internal/httppost",
+			imports: []string{modulePath + "/translation/deepl"},
+			want:    []string{"translation/internal/httppost imports translation/deepl, which is not in a lower layer"},
+		},
+		{
+			name:    "engine imports another engine of translation",
+			rel:     "translation/deepl",
+			imports: []string{modulePath + "/translation/google"},
+			want:    []string{"translation/deepl imports translation/google, which is not in a lower layer"},
+		},
+		{
+			name:    "translation imports ocr",
+			rel:     "translation",
+			imports: []string{modulePath + "/ocr"},
+			want:    []string{"translation imports ocr, which is not in a lower layer"},
+		},
+		{
+			name:    "test helper imports translation",
+			rel:     "internal/translationtest",
+			imports: []string{modulePath + "/translation"},
+			want:    []string{"internal/translationtest imports translation, which is not in a lower layer"},
 		},
 		{
 			name:    "root imports a service",

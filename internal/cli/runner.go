@@ -173,7 +173,7 @@ func (r *runner) processInput(ctx context.Context, fc fileCommand, arg string) (
 			name, err, readFailed = l.label, l.err, true
 		}
 		r.c.err(name + ": " + r.message(err) + "\n")
-		if _, ok := errors.AsType[*stbox.ParseError](err); ok && readFailed && !r.readOptions.Lenient {
+		if readFailed && !r.readOptions.Lenient && wantsLenientHint(err) {
 			r.c.err(lenientHint + "\n")
 		}
 		return false, nil
