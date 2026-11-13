@@ -30,6 +30,7 @@
 | QuickTime text | `stbox.QuickTimeText` | `qttext` | `.txt` | [QuickTime text](#quicktime-text) |
 | VobSub | `stbox.VobSub` | `vobsub` | `.idx` | [VobSub](#vobsub) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
+| YouTube chapters | `stbox.YouTubeChapters` | `youtube-chapters` | `.txt` | [Chapters](chapters.md) |
 
 - **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub and SubViewer files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`. Spruce STL uses `.stl`, which EBU STL uses too. The first format in the registry owns it, so the EBU STL row owns `.stl`. Content detection tells the two apart.
 - **Time limit**: every time in every format is below 100000 hours. A reader rejects a time at or above it. A retime that moves a cue past it returns an error that matches `ErrInvalidArgument`. Writers clamp a negative time to 0, except the JSON writer.

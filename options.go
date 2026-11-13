@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/chapters"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/ebustl"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/itt"
@@ -62,6 +63,8 @@ type ReadOptions struct {
 	// VobSub holds the settings of the VobSub reader. The zero value reads the first track. Load and LoadFS fill IDX
 	// from the file next to the .sub file. Parse needs it.
 	VobSub vobsub.ReadOptions
+	// Chapters holds the settings of the chapter readers. The zero value ends a last chapter at its own start.
+	Chapters chapters.ReadOptions
 	// Track is the number of the subtitle track to read from a video container. Zero reads the only subtitle track.
 	// Matroska and MP4 count from 1. MPEG-TS uses teletext page numbers from 100, or PIDs. A subtitle file needs 0.
 	Track int
@@ -158,7 +161,7 @@ func (o ReadOptions) Validate() error {
 			Msg:    fmt.Sprintf("The track number must be 0 or more, got %d.", o.Track),
 		}
 	}
-	for _, check := range []func() error{o.SAMI.Validate, o.MicroDVD.Validate, o.CSV.Validate, o.SCC.Validate, o.MCC.Validate} {
+	for _, check := range []func() error{o.SAMI.Validate, o.MicroDVD.Validate, o.CSV.Validate, o.SCC.Validate, o.MCC.Validate, o.Chapters.Validate} {
 		if err := check(); err != nil {
 			return err
 		}

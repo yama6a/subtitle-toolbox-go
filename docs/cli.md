@@ -568,34 +568,35 @@ stbox hls film.srt --output-dir subs --segment 00:10 --mpegts 126000 --local 10 
 `stbox formats` lists the formats that can be read or written, in registry order. The names are the values of `--from` and `--to`. It takes no argument and no option except `-h`.
 
 ```
-Name        Extensions        Read  Write
-ass         .ass .ssa         yes   yes
-cavena890   .890              yes   yes
-csv         .csv              yes   yes
-itt         .itt              yes   yes
-json        .json             yes   yes
-lrc         .lrc              yes   yes
-mcc         .mcc              yes   yes
-microdvd    .sub              yes   yes
-mpsub       .mpsub            yes   yes
-pac         .pac .fpc         yes   yes
-pgs         .sup              yes   no
-sami        .smi .sami        yes   yes
-sbv         .sbv              yes   yes
-scc         .scc              yes   yes
-srt         .srt              yes   yes
-stl         .stl              yes   yes
-spruce-stl  .stl              yes   yes
-subviewer   .sub              yes   yes
-ttml        .ttml .dfxp .xml  yes   yes
-dcp         .xml              yes   yes
-tsv         .tsv              yes   yes
-txt         .txt              no    yes
-mpl2        .txt              yes   yes
-tmplayer    .txt              yes   yes
-qttext      .txt              yes   yes
-vobsub      .idx              yes   no
-vtt         .vtt              yes   yes
+Name              Extensions        Read  Write
+ass               .ass .ssa         yes   yes
+cavena890         .890              yes   yes
+csv               .csv              yes   yes
+itt               .itt              yes   yes
+json              .json             yes   yes
+lrc               .lrc              yes   yes
+mcc               .mcc              yes   yes
+microdvd          .sub              yes   yes
+mpsub             .mpsub            yes   yes
+pac               .pac .fpc         yes   yes
+pgs               .sup              yes   no
+sami              .smi .sami        yes   yes
+sbv               .sbv              yes   yes
+scc               .scc              yes   yes
+srt               .srt              yes   yes
+stl               .stl              yes   yes
+spruce-stl        .stl              yes   yes
+subviewer         .sub              yes   yes
+ttml              .ttml .dfxp .xml  yes   yes
+dcp               .xml              yes   yes
+tsv               .tsv              yes   yes
+txt               .txt              no    yes
+mpl2              .txt              yes   yes
+tmplayer          .txt              yes   yes
+qttext            .txt              yes   yes
+vobsub            .idx              yes   no
+vtt               .vtt              yes   yes
+youtube-chapters  .txt              yes   yes
 ```
 
 - **Shared extensions**: the first format in the list owns an extension, so `.sub` is MicroDVD and `.txt` is plain text. `--from` reads a file as another format. A `.sub` file with MPSub or SubViewer content is found by its content. Plain text has no reader, so `--from txt` fails with `The format txt can be written but not read.` Pass `--from mpl2`, `--from tmplayer` or `--from qttext`. `--to txt` writes plain text with the default options.

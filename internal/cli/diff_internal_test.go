@@ -335,7 +335,7 @@ Options:
                             Windows-1252. It replaces code page detection. A
                             BOM, valid UTF-8 and UTF-16 input win over it.
   --lenient                 Skip or repair broken cues and print a warning for
-                            each.
+                            each. Chapter input ignores it.
   --input-fps RATE          Frame rate of a MicroDVD input without a {1}{1}<fps>
                             first line, of Spruce STL timecodes, and of CSV or
                             TSV times in hh:mm:ss:ff.

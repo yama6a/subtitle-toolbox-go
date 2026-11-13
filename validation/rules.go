@@ -16,7 +16,7 @@ import (
 // Rule names one check. The value is the name in the CLI output and the JSON output.
 type Rule string
 
-// The 19 rules. The comment of each constant names the unit of the value and the limit of its violations.
+// The 19 rules of Check and the 2 chapter rules of CheckYouTubeChapters. The comment of each constant names the unit of the value and the limit of its violations.
 const (
 	// RuleMaxCharactersPerSecond reports a cue that reads faster than the limit, in characters per second.
 	RuleMaxCharactersPerSecond Rule = "maxCharactersPerSecond"
@@ -56,6 +56,12 @@ const (
 	RuleRequireCues Rule = "requireCues"
 	// RuleNoNegativeDuration reports a cue that ends before it starts. The value is the negative duration in seconds.
 	RuleNoNegativeDuration Rule = "noNegativeDuration"
+	// RuleMinChapters reports a chapter list with fewer chapters than the limit. CheckYouTubeChapters reports it.
+	// Rules has no field for it.
+	RuleMinChapters Rule = "minChapters"
+	// RuleFirstChapterAtZero reports a chapter list whose first chapter starts after 0 s. CheckYouTubeChapters
+	// reports it. Rules has no field for it.
+	RuleFirstChapterAtZero Rule = "firstChapterAtZero"
 )
 
 // String returns the name of the rule.
