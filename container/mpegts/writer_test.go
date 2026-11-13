@@ -38,8 +38,8 @@ type pmtStream struct {
 }
 
 // tables adds the PAT of one program and its PMT.
-func (w *tsWriter) tables(programNumber, pmt, pcrPID int, streams ...pmtStream) {
-	w.section(0, 0x00, 1, binary.BigEndian.AppendUint16(binary.BigEndian.AppendUint16(nil, uint16(programNumber)), uint16(0xE000|pmt)))
+func (w *tsWriter) tables(pcrPID int, streams ...pmtStream) {
+	w.section(0, 0x00, 1, binary.BigEndian.AppendUint16(binary.BigEndian.AppendUint16(nil, 1), uint16(0xE000|pmtPID)))
 	body := binary.BigEndian.AppendUint16(binary.BigEndian.AppendUint16(nil, uint16(0xE000|pcrPID)), 0xF000)
 	for _, s := range streams {
 		body = append(body, s.streamType)
@@ -47,7 +47,7 @@ func (w *tsWriter) tables(programNumber, pmt, pcrPID int, streams ...pmtStream) 
 		body = binary.BigEndian.AppendUint16(body, uint16(0xF000|len(s.descriptors)))
 		body = append(body, s.descriptors...)
 	}
-	w.section(pmt, 0x02, programNumber, body)
+	w.section(pmtPID, 0x02, 1, body)
 }
 
 type ttPage struct {

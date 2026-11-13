@@ -29,6 +29,7 @@ const (
 
 // block is one block of a track. Times are in ticks of the TimestampScale.
 type block struct {
+	offset     int64 // the file position of the block element
 	start      int64
 	duration   int64 // noDuration without a BlockDuration
 	data       []byte
@@ -112,6 +113,7 @@ func (f *File) readBlockElement(h ebml.Header, number int) (b block, found bool,
 
 // finishBlock adds the cluster time to the block time, checks the time limit and decodes the block data.
 func (f *File) finishBlock(t *trackEntry, offset int64, b *block, clusterTime int64, budget *int64) error {
+	b.offset = offset
 	if b.start > 0 && clusterTime > math.MaxInt64-b.start {
 		b.start = math.MaxInt64
 	} else {

@@ -15,8 +15,7 @@ import (
 const (
 	codecDVB           = "S_DVBSUB"
 	unreadCodecMessage = "Track %d has the codec %s. The reader extracts only S_TEXT/UTF8, S_TEXT/ASS, S_TEXT/SSA, " +
-		"S_TEXT/WEBVTT, S_DVBSUB, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."
-	laterCodecMessage = "Track %d has the codec %s. The reader does not extract this codec yet. A later release adds it."
+		"S_TEXT/WEBVTT, S_HDMV/PGS, S_VOBSUB, S_DVBSUB, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."
 )
 
 // timedBlock is a block with its times in whole milliseconds.
@@ -38,7 +37,7 @@ func (f *File) extract(number int, common model.CommonReadOptions) (*model.Subti
 		return nil, nil, &model.InvalidArgumentError{Msg: fmt.Sprintf("The file has no subtitle track with the number %d.", number)}
 	}
 	if t.Format == "" {
-		return nil, nil, damaged(unreadMessage(t.CodecID), number, t.CodecID)
+		return nil, nil, damaged(unreadCodecMessage, number, t.CodecID)
 	}
 	privateBudget := f.inflateCap
 	private, err := f.decode(t, t.codecPrivate, scopeCodecPriv, &privateBudget)
@@ -49,10 +48,7 @@ func (f *File) extract(number int, common model.CommonReadOptions) (*model.Subti
 	if err != nil {
 		return nil, nil, err
 	}
-	if t.CodecID == codecDVB {
-		return f.dvbSubtitle(t, private, blocks, common)
-	}
-	s, warnings, err := parseRebuilt(t, string(private), f.timedBlocks(blocks, t, common), common)
+	s, warnings, err := f.decodeTrack(t, private, blocks, common)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -61,6 +57,19 @@ func (f *File) extract(number int, common model.CommonReadOptions) (*model.Subti
 		err = markForced(s)
 	}
 	return s, warnings, err
+}
+
+// decodeTrack reads the blocks of a track with the reader of its codec.
+func (f *File) decodeTrack(t *trackEntry, private []byte, blocks []block, common model.CommonReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
+	switch t.CodecID {
+	case "S_HDMV/PGS":
+		return f.readPGS(t, blocks, common)
+	case "S_VOBSUB":
+		return f.readVobSub(t, private, blocks, common)
+	case codecDVB:
+		return f.dvbSubtitle(t, private, blocks, common)
+	}
+	return parseRebuilt(t, string(private), f.timedBlocks(blocks, t, common), common)
 }
 
 // parseRebuilt rebuilds the file of the track from its blocks and reads it with the parser of its format.
@@ -115,13 +124,4 @@ func (f *File) endMs(blocks []block, i int, t *trackEntry, common model.CommonRe
 
 func milliseconds(ns int64) int64 {
 	return (ns + 500_000) / 1_000_000
-}
-
-// unreadMessage returns the message for a codec without a reader. PGS and VobSub readers come in later releases.
-func unreadMessage(codecID string) string {
-	switch codecID {
-	case "S_HDMV/PGS", "S_VOBSUB":
-		return laterCodecMessage
-	}
-	return unreadCodecMessage
 }

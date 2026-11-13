@@ -217,19 +217,21 @@ func TestTimeLimit(t *testing.T) {
 
 	tests := []struct {
 		name    string
+		codec   string
 		scale   uint64
 		cluster []byte
 		time    string
 	}{
-		{"cluster timestamp", 1000000, cluster(1<<40, simpleBlock(2, 0, "x", 0)), "1099511627776"},
-		{"block duration", 1000000, cluster(0, blockGroup(2, 0, "x", 1<<40)), "0"},
-		{"start of -2^63 ns", 1 << 48, cluster(0, simpleBlock(2, -32768, "x", 0)), "-32768"},
+		{"cluster timestamp", "S_TEXT/UTF8", 1000000, cluster(1<<40, simpleBlock(2, 0, "x", 0)), "1099511627776"},
+		{"block duration", "S_TEXT/UTF8", 1000000, cluster(0, blockGroup(2, 0, "x", 1<<40)), "0"},
+		{"PGS block", "S_HDMV/PGS", 1000000, cluster(1<<40, simpleBlock(2, 0, "x", 0)), "1099511627776"},
+		{"start of -2^63 ns", "S_TEXT/UTF8", 1 << 48, cluster(0, simpleBlock(2, -32768, "x", 0)), "-32768"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			f := openFile(t, segmentFile("matroska", info(tt.scale, "x"), tracks(subTrack(2, "S_TEXT/UTF8")), tt.cluster))
+			f := openFile(t, segmentFile("matroska", info(tt.scale, "x"), tracks(subTrack(2, tt.codec)), tt.cluster))
 			_, _, err := f.Extract(2, model.CommonReadOptions{})
 			var pe *model.ParseError
 			require.ErrorAs(t, err, &pe)

@@ -29,9 +29,5 @@ func (f *File) dvbSubtitle(t *trackEntry, private []byte, blocks []block, common
 	}
 	s := &model.Subtitle{}
 	s.AddCues(dec.Finish(parsing.NewState(t.Format, common).LastCueDuration())...)
-	s.SetMetadata(model.MetadataLanguage, t.Language)
-	if t.Forced {
-		return s, dec.Warnings(), markForced(s)
-	}
 	return s, dec.Warnings(), nil
 }
