@@ -22,7 +22,7 @@ func TestTracks(t *testing.T) {
 		{Container: model.Matroska, Number: 4, CodecID: "S_TEXT/ASS", Format: model.ASS, Language: "eng", Name: "English", Default: true},
 		{Container: model.Matroska, Number: 5, CodecID: "S_TEXT/WEBVTT", Format: model.WebVTT, Language: "fre", Name: "Français"},
 		{Container: model.Matroska, Number: 6, CodecID: "S_TEXT/SSA", Format: model.ASS, Language: "spa"},
-		{Container: model.Matroska, Number: 7, CodecID: "S_DVBSUB", Language: "ita"},
+		{Container: model.Matroska, Number: 7, CodecID: "S_DVBSUB", Format: model.PGS, Language: "ita"},
 		{Container: model.Matroska, Number: 8, CodecID: "S_TEXT/UTF8", Format: model.SubRip, Language: "eng"},
 	}
 	assert.Equal(t, want, openTestdata(t, "text_tracks.mkv").Tracks())

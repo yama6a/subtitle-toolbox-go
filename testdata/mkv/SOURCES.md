@@ -16,3 +16,5 @@ The files `muxed/harbour.srt`, `muxed/harbour.ass` and `muxed/harbour.vtt` went 
 | `huge_timestamp.mkv` | Written for this repository. A copy of `text_tracks.mkv` with byte 1560 changed from `0xA3` (SimpleBlock) to `0xE7` (Timestamp). The cluster `Timestamp` then has 68 bytes of data, more than an unsigned integer may have | MIT |
 | `muxed/harbour.srt`, `muxed/harbour.ass`, `muxed/harbour.vtt` | Written for this repository. The input of the mkvmerge and ffmpeg runs | MIT |
 | `expected/*` | Written by the library from the files above, and checked against the `muxed/` input | MIT |
+| `dvbsub.mkv` | Copied from the PHP repository. Remuxed with mkvmerge from `mpegts/dvb_subtitles.ts`. The H.264 track and two S_DVBSUB tracks with zlib compression and the composition and ancillary page in `CodecPrivate` | MIT |
+| `expected/dvbsub.mkv.*` | Copied from the PHP repository, unchanged. The pixel goldens of the two S_DVBSUB tracks | MIT |
