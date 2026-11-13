@@ -23,8 +23,13 @@ Before step 1, `Detect` looks for a video container in the raw bytes. A containe
 | # | Format | Rule |
 |---:|:--- |:--- |
 | 1 | library JSON | `version` is a JSON number and `cues` is a JSON array |
+| 2 | Podcasting 2.0 transcript | `segments` is a JSON array whose first item is an object with the keys `startTime` and `body`, with any value, null too |
+| 3 | Whisper JSON | `segments` is a JSON array, or `transcription` is a JSON array |
 
-`{"version": "1", "cues": []}` and `{"version": 1, "cues": {}}` match no check. `stboxjson.DetectJSON` holds rule 1.
+`{"version": "1", "cues": []}` and `{"version": 1, "cues": {}}` match no check. `stboxjson.DetectJSON` holds rule 1, `transcript.DetectPodcastJSON` holds rule 2 and `transcript.DetectWhisperJSON` holds rule 3.
+
+- **Rule 2**: the Podcasting 2.0 transcript takes rule 2, because it also has a `segments` list. Its check comes before rule 3. See [transcripts.md](transcripts.md#podcasting-20-transcript-json).
+- **Library JSON first**: a file with `version` as a number and `cues` as an array is library JSON, also when it has `segments`. `{"segments": {}}` and `{"words": []}` match no check. See [transcripts.md](transcripts.md#whisper-json).
 
 - **No check for Amazon Transcribe JSON**: a file with `results.items` matches no rule, so `Detect` finds no format. Name it with `ReadOptions.Format` or `--from aws-transcribe`. See [transcripts.md](transcripts.md#amazon-transcribe-json).
 

@@ -1,0 +1,15 @@
+﻿[Script Info]
+ScriptType: v4.00+
+PlayResX: 384
+PlayResY: 288
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,16,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,10,10,10,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:02.20,Default,,0,0,0,,{\kf24}The {\kf46}bakery {\kf40}opens {\kf22}at {\kf88}seven.
+Dialogue: 0,0:00:02.20,0:00:04.60,Default,,0,0,0,,{\kf22}The {\kf44}café {\kf44}sells {\kf44}rolls {\kf16}& {\kf70}buns.
+Dialogue: 0,0:00:04.62,0:00:07.36,Default,,0,0,0,,{\kf48}Fresh {\kf38}bread {\kf26}is {\kf46}ready {\kf30}by {\kf86}eight.

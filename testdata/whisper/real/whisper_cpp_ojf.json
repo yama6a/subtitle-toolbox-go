@@ -1,0 +1,282 @@
+{
+	"systeminfo": "WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | ",
+	"model": {
+		"type": "base",
+		"multilingual": true,
+		"vocab": 51865,
+		"audio": {
+			"ctx": 1500,
+			"state": 512,
+			"head": 8,
+			"layer": 6
+		},
+		"text": {
+			"ctx": 448,
+			"state": 512,
+			"head": 8,
+			"layer": 6
+		},
+		"mels": 80,
+		"ftype": 1
+	},
+	"params": {
+		"model": "models/ggml-base.bin",
+		"language": "auto",
+		"translate": false
+	},
+	"result": {
+		"language": "en"
+	},
+	"transcription": [
+		{
+			"timestamps": {
+				"from": "00:00:00,000",
+				"to": "00:00:02,120"
+			},
+			"offsets": {
+				"from": 0,
+				"to": 2120
+			},
+			"text": " The museum opens at ten.",
+			"tokens": [
+				{
+					"text": "[_BEG_]",
+					"timestamps": {
+						"from": "00:00:00,000",
+						"to": "00:00:00,000"
+					},
+					"offsets": {
+						"from": 0,
+						"to": 0
+					},
+					"id": 50364,
+					"p": 0.512345,
+					"t_dtw": -1
+				},
+				{
+					"text": " The",
+					"timestamps": {
+						"from": "00:00:00,000",
+						"to": "00:00:00,320"
+					},
+					"offsets": {
+						"from": 0,
+						"to": 320
+					},
+					"id": 440,
+					"p": 0.987654,
+					"t_dtw": -1
+				},
+				{
+					"text": " museum",
+					"timestamps": {
+						"from": "00:00:00,320",
+						"to": "00:00:00,900"
+					},
+					"offsets": {
+						"from": 320,
+						"to": 900
+					},
+					"id": 8441,
+					"p": 0.954321,
+					"t_dtw": -1
+				},
+				{
+					"text": " opens",
+					"timestamps": {
+						"from": "00:00:00,900",
+						"to": "00:00:01,320"
+					},
+					"offsets": {
+						"from": 900,
+						"to": 1320
+					},
+					"id": 9870,
+					"p": 0.991234,
+					"t_dtw": -1
+				},
+				{
+					"text": " at",
+					"timestamps": {
+						"from": "00:00:01,320",
+						"to": "00:00:01,500"
+					},
+					"offsets": {
+						"from": 1320,
+						"to": 1500
+					},
+					"id": 412,
+					"p": 0.998765,
+					"t_dtw": -1
+				},
+				{
+					"text": " ten",
+					"timestamps": {
+						"from": "00:00:01,500",
+						"to": "00:00:01,960"
+					},
+					"offsets": {
+						"from": 1500,
+						"to": 1960
+					},
+					"id": 2064,
+					"p": 0.923456,
+					"t_dtw": -1
+				},
+				{
+					"text": ".",
+					"timestamps": {
+						"from": "00:00:01,960",
+						"to": "00:00:02,120"
+					},
+					"offsets": {
+						"from": 1960,
+						"to": 2120
+					},
+					"id": 13,
+					"p": 0.876543,
+					"t_dtw": -1
+				},
+				{
+					"text": "[_TT_212]",
+					"timestamps": {
+						"from": "00:00:02,120",
+						"to": "00:00:02,120"
+					},
+					"offsets": {
+						"from": 2120,
+						"to": 2120
+					},
+					"id": 50576,
+					"p": 0.287654,
+					"t_dtw": -1
+				}
+			]
+		},
+		{
+			"timestamps": {
+				"from": "00:00:02,120",
+				"to": "00:00:04,600"
+			},
+			"offsets": {
+				"from": 2120,
+				"to": 4600
+			},
+			"text": " Children enter for free.",
+			"tokens": [
+				{
+					"text": "[_BEG_]",
+					"timestamps": {
+						"from": "00:00:02,120",
+						"to": "00:00:02,120"
+					},
+					"offsets": {
+						"from": 2120,
+						"to": 2120
+					},
+					"id": 50364,
+					"p": 0.512345,
+					"t_dtw": -1
+				},
+				{
+					"text": " Child",
+					"timestamps": {
+						"from": "00:00:02,120",
+						"to": "00:00:02,620"
+					},
+					"offsets": {
+						"from": 2120,
+						"to": 2620
+					},
+					"id": 10517,
+					"p": 0.912345,
+					"t_dtw": -1
+				},
+				{
+					"text": "ren",
+					"timestamps": {
+						"from": "00:00:02,620",
+						"to": "00:00:02,900"
+					},
+					"offsets": {
+						"from": 2620,
+						"to": 2900
+					},
+					"id": 1095,
+					"p": 0.998123,
+					"t_dtw": -1
+				},
+				{
+					"text": " enter",
+					"timestamps": {
+						"from": "00:00:02,900",
+						"to": "00:00:03,440"
+					},
+					"offsets": {
+						"from": 2900,
+						"to": 3440
+					},
+					"id": 3242,
+					"p": 0.965432,
+					"t_dtw": -1
+				},
+				{
+					"text": " for",
+					"timestamps": {
+						"from": "00:00:03,440",
+						"to": "00:00:03,700"
+					},
+					"offsets": {
+						"from": 3440,
+						"to": 3700
+					},
+					"id": 337,
+					"p": 0.997654,
+					"t_dtw": -1
+				},
+				{
+					"text": " free",
+					"timestamps": {
+						"from": "00:00:03,700",
+						"to": "00:00:04,400"
+					},
+					"offsets": {
+						"from": 3700,
+						"to": 4400
+					},
+					"id": 1737,
+					"p": 0.981234,
+					"t_dtw": -1
+				},
+				{
+					"text": ".",
+					"timestamps": {
+						"from": "00:00:04,400",
+						"to": "00:00:04,600"
+					},
+					"offsets": {
+						"from": 4400,
+						"to": 4600
+					},
+					"id": 13,
+					"p": 0.901234,
+					"t_dtw": -1
+				},
+				{
+					"text": "[_TT_248]",
+					"timestamps": {
+						"from": "00:00:04,600",
+						"to": "00:00:04,600"
+					},
+					"offsets": {
+						"from": 4600,
+						"to": 4600
+					},
+					"id": 50612,
+					"p": 0.287654,
+					"t_dtw": -1
+				}
+			]
+		}
+	]
+}

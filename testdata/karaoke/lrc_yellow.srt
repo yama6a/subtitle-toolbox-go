@@ -1,0 +1,39 @@
+﻿1
+00:00:03,000 --> 00:00:03,550
+<font color="#ffff00">Slow</font> river runs
+
+2
+00:00:03,550 --> 00:00:04,400
+Slow <font color="#ffff00">river</font> runs
+
+3
+00:00:04,400 --> 00:00:05,900
+Slow river <font color="#ffff00">runs</font>
+
+4
+00:00:05,900 --> 00:00:06,350
+<font color="#ffff00">Past</font> the old mill
+
+5
+00:00:06,350 --> 00:00:06,700
+Past <font color="#ffff00">the</font> old mill
+
+6
+00:00:06,700 --> 00:00:07,200
+Past the <font color="#ffff00">old</font> mill
+
+7
+00:00:07,200 --> 00:00:09,600
+Past the old <font color="#ffff00">mill</font>
+
+8
+00:00:09,600 --> 00:00:10,100
+<font color="#ffff00">Into</font> the sea
+
+9
+00:00:10,100 --> 00:00:10,650
+Into <font color="#ffff00">the</font> sea
+
+10
+00:00:10,650 --> 00:00:14,600
+Into the <font color="#ffff00">sea</font>

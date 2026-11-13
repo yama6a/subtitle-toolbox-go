@@ -503,7 +503,7 @@ A rule option sets its field on the preset result. A flag can only turn a check 
 
 ## sync
 
-`stbox sync <input>... --reference FILE [options]` retimes each input to the cue times of a reference subtitle. It finds the offset and the frame-rate scale. [sync.md](sync.md#command-line) lists its options and output.
+`stbox sync <input>... --reference FILE [options]` retimes each input to the cue times of a reference subtitle. `--silence-log FILE --media-duration SECONDS` takes the speech of an FFmpeg `silencedetect` log as the reference instead. It finds the offset and the frame-rate scale. [sync.md](sync.md#command-line) lists its options and output.
 
 `--reference-track NUMBER` picks the track when the reference is a video file. A video file with 2 or more subtitle tracks and no `--reference-track` fails with `Error: movie.mkv: The MKV or WebM file has 6 subtitle tracks. Pass --reference-track N with one of them:` and the track lines, exit 3. A PGS or VobSub reference track works without OCR, because only the cue times count.
 
@@ -593,36 +593,38 @@ stbox hls film.srt --output-dir subs --segment 00:10 --mpegts 126000 --local 10 
 `stbox formats` lists the formats that can be read or written, in registry order. The names are the values of `--from` and `--to`. It takes no argument and no option except `-h`.
 
 ```
-Name              Extensions        Read  Write
-ass               .ass .ssa         yes   yes
-cavena890         .890              yes   yes
-csv               .csv              yes   yes
-itt               .itt              yes   yes
-json              .json             yes   yes
-aws-transcribe    .json             yes   yes
-lrc               .lrc              yes   yes
-mcc               .mcc              yes   yes
-microdvd          .sub              yes   yes
-mpsub             .mpsub            yes   yes
-pac               .pac .fpc         yes   yes
-pgs               .sup              yes   yes
-sami              .smi .sami        yes   yes
-sbv               .sbv              yes   yes
-scc               .scc              yes   yes
-srt               .srt              yes   yes
-stl               .stl              yes   yes
-spruce-stl        .stl              yes   yes
-subviewer         .sub              yes   yes
-ttml              .ttml .dfxp .xml  yes   yes
-dcp               .xml              yes   yes
-tsv               .tsv              yes   yes
-txt               .txt              no    yes
-mpl2              .txt              yes   yes
-tmplayer          .txt              yes   yes
-qttext            .txt              yes   yes
-vobsub            .idx              yes   no
-vtt               .vtt              yes   yes
-youtube-chapters  .txt              yes   yes
+Name                Extensions        Read  Write
+ass                 .ass .ssa         yes   yes
+cavena890           .890              yes   yes
+csv                 .csv              yes   yes
+itt                 .itt              yes   yes
+json                .json             yes   yes
+aws-transcribe      .json             yes   yes
+lrc                 .lrc              yes   yes
+mcc                 .mcc              yes   yes
+microdvd            .sub              yes   yes
+mpsub               .mpsub            yes   yes
+pac                 .pac .fpc         yes   yes
+pgs                 .sup              yes   yes
+sami                .smi .sami        yes   yes
+sbv                 .sbv              yes   yes
+scc                 .scc              yes   yes
+srt                 .srt              yes   yes
+stl                 .stl              yes   yes
+spruce-stl          .stl              yes   yes
+subviewer           .sub              yes   yes
+ttml                .ttml .dfxp .xml  yes   yes
+dcp                 .xml              yes   yes
+tsv                 .tsv              yes   yes
+txt                 .txt              no    yes
+mpl2                .txt              yes   yes
+tmplayer            .txt              yes   yes
+qttext              .txt              yes   yes
+vobsub              .idx              yes   no
+vtt                 .vtt              yes   yes
+whisper             .json             yes   yes
+podcast-transcript  .json             yes   yes
+youtube-chapters    .txt              yes   yes
 ```
 
 - **Shared extensions**: the first format in the list owns an extension, so `.sub` is MicroDVD and `.txt` is plain text. `--from` reads a file as another format. A `.sub` file with MPSub or SubViewer content is found by its content. Plain text has no reader, so `--from txt` fails with `The format txt can be written but not read.` Pass `--from mpl2`, `--from tmplayer` or `--from qttext`. `--to txt` writes plain text with the default options.

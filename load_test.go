@@ -52,7 +52,7 @@ func TestLoadWithoutFormat(t *testing.T) {
 		{name: "extension fallback", file: "film.srt", content: []byte("plain words"), want: stbox.SubRip, wantErr: stbox.ErrParse},
 		{name: "extension fallback in upper case", file: "film.VTT", content: []byte("plain words"), want: stbox.WebVTT, wantErr: stbox.ErrParse},
 		{name: "no fallback for .json", file: "film.json", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
-		{name: "JSON of no format in a .json file", file: "speech.json", content: []byte(`{"segments": []}`), wantErr: stbox.ErrUnknownFormat},
+		{name: "JSON of no format in a .json file", file: "speech.json", content: []byte(`{"words": []}`), wantErr: stbox.ErrUnknownFormat},
 		{name: "no fallback for .txt", file: "film.txt", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
 		{name: "no fallback for .ffmeta", file: "film.ffmeta", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
 		{name: "extension fallback for ASS", file: "film.ass", content: []byte("plain words"), want: stbox.ASS, wantErr: stbox.ErrParse},
