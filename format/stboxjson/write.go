@@ -2,6 +2,7 @@ package stboxjson
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -13,7 +14,8 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/vtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const (
@@ -22,19 +24,25 @@ const (
 	infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
 )
 
-const imageKey = "image"
+const (
+	imageKey = "image"
+
+	vttKey = "vtt"
+)
 
 var errInfOrNaN = errors.New("inf or NaN")
 
 // document returns the library JSON of s. A string outside format data that is not valid UTF-8 fails first,
 // because encoding/json would replace its bad bytes without an error.
 func document(s *model.Subtitle, opts WriteOptions) ([]byte, error) {
-	if i, ok := validText(s, !opts.OmitFormatData); !ok {
+	version := cmp.Or(opts.Version, Version)
+	if i, ok := validText(s, !opts.OmitFormatData, version); !ok {
 		return nil, &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: malformedUTF8, Err: model.ErrInvalidUTF8}
 	}
 
 	e := newEncoder()
-	e.raw(`{"version":` + strconv.Itoa(Version) + `,"metadata":`)
+	e.version = version
+	e.raw(`{"version":` + strconv.Itoa(version) + `,"metadata":`)
 	e.metadata(s.AllMetadata())
 	e.raw(`,"comments":`)
 	e.comments(s.Comments())
@@ -44,19 +52,9 @@ func document(s *model.Subtitle, opts WriteOptions) ([]byte, error) {
 			return nil, &model.UnwritableError{Format: model.JSON, CueIndex: -1, Reason: infOrNaN}
 		}
 	}
-	e.raw(`,"cues":[`)
-	for i, c := range s.All() {
-		e.comma(i)
-		e.cue(c, !opts.OmitFormatData)
-		if !opts.OmitFormatData {
-			e.raw(`,"formatData":`)
-			if err := e.cueFormatData(c); err != nil {
-				return nil, &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: infOrNaN}
-			}
-		}
-		e.raw("}")
+	if err := e.cues(s, !opts.OmitFormatData); err != nil {
+		return nil, err
 	}
-	e.raw("]}")
 
 	if !opts.PrettyPrint {
 		return e.out, nil
@@ -69,8 +67,27 @@ func document(s *model.Subtitle, opts WriteOptions) ([]byte, error) {
 	return out.Bytes(), nil
 }
 
+func (e *encoder) cues(s *model.Subtitle, withFormatData bool) error {
+	e.raw(`,"cues":[`)
+	for i, c := range s.All() {
+		e.comma(i)
+		if err := e.cue(c, withFormatData); err != nil {
+			return &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: infOrNaN}
+		}
+		if withFormatData {
+			e.raw(`,"formatData":`)
+			if err := e.cueFormatData(c); err != nil {
+				return &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: infOrNaN}
+			}
+		}
+		e.raw("}")
+	}
+	e.raw("]}")
+	return nil
+}
+
 // validText returns false and the index of the first cue with text that is not valid UTF-8, or -1 for other text.
-func validText(s *model.Subtitle, withFormatData bool) (int, bool) {
+func validText(s *model.Subtitle, withFormatData bool, version int) (int, bool) {
 	for key, value := range s.AllMetadata() {
 		if !utf8.ValidString(key) || !utf8.ValidString(value) {
 			return -1, false
@@ -81,15 +98,21 @@ func validText(s *model.Subtitle, withFormatData bool) (int, bool) {
 		return -1, false
 	}
 	for i, c := range s.All() {
-		if !validCueText(c, withFormatData) {
+		if !validCueText(c, withFormatData, version) {
 			return i, false
 		}
 	}
 	return 0, true
 }
 
-func validCueText(c model.Cue, withFormatData bool) bool {
-	return utf8.ValidString(c.ID) && !slices.ContainsFunc(c.Lines, func(l string) bool { return !utf8.ValidString(l) }) &&
+func validCueText(c model.Cue, withFormatData bool, version int) bool {
+	lines := c.Lines
+	if version == 1 {
+		lines = c.TaggedLines()
+	}
+	return utf8.ValidString(c.ID) && utf8.ValidString(c.Speaker) &&
+		!slices.ContainsFunc(lines, func(l string) bool { return !utf8.ValidString(l) }) &&
+		!slices.ContainsFunc(c.Words, func(w model.Word) bool { return !utf8.ValidString(w.Text) }) &&
 		(!withFormatData || validKeys(c.FormatDataKeys(), c.FormatData))
 }
 
@@ -124,6 +147,8 @@ type encoder struct {
 	out []byte
 	str bytes.Buffer
 	enc *json.Encoder
+	// version is the document version to write, 1 or 2. It is 0 for the encoder of warning lines.
+	version int
 }
 
 func newEncoder() *encoder {
@@ -180,13 +205,17 @@ func (e *encoder) comments(comments []model.Comment) {
 
 // cue writes the cue without its formatData. The forced flag of an image cue goes into image.forced, so it
 // goes into the cue only when the image is not written.
-func (e *encoder) cue(c model.Cue, withFormatData bool) {
+func (e *encoder) cue(c model.Cue, withFormatData bool) error {
+	lines := c.Lines
+	if e.version == 1 {
+		lines = c.TaggedLines()
+	}
 	e.raw(`{"start":`)
 	e.seconds(c.Start)
 	e.raw(`,"end":`)
 	e.seconds(c.End)
 	e.raw(`,"lines":[`)
-	for i, line := range c.Lines {
+	for i, line := range lines {
 		e.comma(i)
 		e.string(line)
 	}
@@ -206,6 +235,39 @@ func (e *encoder) cue(c model.Cue, withFormatData bool) {
 	if c.Forced && (c.Image == nil || !withFormatData) {
 		e.raw(`,"forced":true`)
 	}
+	if e.version == 1 {
+		return nil
+	}
+	if c.Speaker != "" {
+		e.raw(`,"speaker":`)
+		e.string(c.Speaker)
+	}
+	return e.words(c.Words)
+}
+
+func (e *encoder) words(words []model.Word) error {
+	if len(words) == 0 {
+		return nil
+	}
+	e.raw(`,"words":[`)
+	for i, w := range words {
+		e.comma(i)
+		e.raw(`{"text":`)
+		e.string(w.Text)
+		e.raw(`,"start":`)
+		e.seconds(w.Start)
+		e.raw(`,"end":`)
+		e.seconds(w.End)
+		if w.Confidence != nil {
+			e.raw(`,"confidence":`)
+			if err := e.float(*w.Confidence); err != nil {
+				return err
+			}
+		}
+		e.raw("}")
+	}
+	e.raw("]")
+	return nil
 }
 
 // position writes the key position when the cue has a row, a column or an offset, and Validate accepts them.
@@ -254,18 +316,52 @@ func (e *encoder) formatData(keys []string, get func(string) (*model.Data, bool)
 // cueFormatData writes the format data of the cue. The image of the cue is the key image, between the other keys in
 // sorted order.
 func (e *encoder) cueFormatData(c model.Cue) error {
-	keys := c.FormatDataKeys()
-	if c.Image == nil {
-		return e.formatData(keys, c.FormatData)
+	data := func(key string) (*model.Data, bool) { return cueData(c, key, e.version) }
+	keys := slices.DeleteFunc(c.FormatDataKeys(), func(key string) bool {
+		d, _ := data(key)
+		return key == vttKey && d.Len() == 0
+	})
+	if c.Image != nil {
+		keys = append(keys, imageKey)
+		slices.Sort(keys)
 	}
-	keys = append(keys, imageKey)
-	slices.Sort(keys)
 	return e.formatData(keys, func(key string) (*model.Data, bool) {
 		if key == imageKey {
 			return imageData(c), true
 		}
-		return c.FormatData(key)
+		return data(key)
 	})
+}
+
+// cueData returns the format data of key as the version writes it. The tagged lines of version 1 carry what
+// voiceClass, voiceEnd and taggedLines of the vtt data hold. Version 2 keeps them, except taggedLines of a cue that
+// an edit changed after the read, because those lines no longer match the cue.
+func cueData(c model.Cue, key string, version int) (*model.Data, bool) {
+	d, ok := c.FormatData(key)
+	if !ok || key != vttKey {
+		return d, ok
+	}
+	if version == 1 {
+		d.Delete("voiceClass")
+		d.Delete("voiceEnd")
+		d.Delete(vtt.TaggedLinesKey)
+		return d, true
+	}
+	if !slices.Equal(taggedLines(d), c.TaggedLines()) {
+		d.Delete(vtt.TaggedLinesKey)
+	}
+	return d, true
+}
+
+// taggedLines returns the strings of the list taggedLines of the vtt data, nil when it has none.
+func taggedLines(d *model.Data) []string {
+	list, _ := d.List(vtt.TaggedLinesKey)
+	lines := make([]string, 0, len(list))
+	for _, item := range list {
+		s, _ := item.(string)
+		lines = append(lines, s)
+	}
+	return lines
 }
 
 // imageData returns the image of c in the shape of the key image. The PNG is a string, so the encoder writes

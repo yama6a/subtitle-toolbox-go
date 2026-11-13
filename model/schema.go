@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/phpkey"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/phpkey"
 )
 
 // valueType is one type of the type language of the format data schema.
@@ -439,5 +439,8 @@ var cueSchema = map[string]valueType{
 		optional("size", str()),
 		optional("align", str()),
 		optional("region", str()),
+		optional("voiceClass", str()),
+		optional("voiceEnd", boolean()),
+		optional("taggedLines", listOf(str())),
 	),
 }

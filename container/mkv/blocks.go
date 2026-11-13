@@ -8,7 +8,7 @@ import (
 	"math"
 	"slices"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/ebml"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/ebml"
 )
 
 const (

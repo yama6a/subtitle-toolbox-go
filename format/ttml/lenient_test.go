@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // The tests in this file port tests/Parsers/LenientTtmlTest.php of subtitle-toolbox-php, then add rows of their own.
@@ -107,7 +107,7 @@ func TestHTMLEntities(t *testing.T) {
 
 			s, _ := mustRead(t, bare+`<body><div><p end="1s">`+tt.text+`</p></div></body></tt>`, true)
 			c, _ := s.Cue(0)
-			assert.Equal(t, tt.want, c.Text())
+			assert.Equal(t, tt.want, taggedText(c))
 		})
 	}
 }
@@ -128,7 +128,7 @@ func TestRecoverRepairs(t *testing.T) {
 
 			s, _ := mustRead(t, bare+`<body><div>`+tt.p+`</div></body></tt>`, true)
 			c, _ := s.Cue(0)
-			assert.Equal(t, tt.want, c.Text())
+			assert.Equal(t, tt.want, taggedText(c))
 		})
 	}
 }

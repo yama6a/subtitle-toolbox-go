@@ -14,12 +14,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/translationtest"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
-	"github.com/yama6a/subtitle-toolbox-go/v3/translation"
-	"github.com/yama6a/subtitle-toolbox-go/v3/translation/internal/httppost"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/translationtest"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation/internal/httppost"
 )
 
 const key = "AIzaSyD-example+key/42"
@@ -171,7 +171,7 @@ func TestTranslateChunks(t *testing.T) {
 			for _, r := range reqs {
 				sizes = append(sizes, len(sentTexts(t, r.Body)))
 			}
-			assert.Equal(t, tt.want, nilIfEmpty(sizes))
+			assert.Equal(t, tt.want, append([]int(nil), sizes...))
 			if tt.count > 0 {
 				assert.Equal(t, strings.ToUpper(in[tt.count-1]), got[tt.count-1])
 			}
@@ -268,7 +268,7 @@ func TestTranslateDecodesEntitiesOnce(t *testing.T) {
 	t.Parallel()
 
 	sent := []string{"Write &amp;lt;i&amp;gt;Run&amp;lt;/i&amp;gt; for italics.", "Tom &amp;amp; Jerry is a cat and mouse act."}
-	client := &translationtest.Client{Answers: []translationtest.Answer{{Status: 200, Body: translatedAsIs(sent)}}}
+	client := &translationtest.Client{Answers: []translationtest.Answer{{Status: 200, Body: answerBody(sent)}}}
 	e, err := New(Options{APIKey: key, HTTPClient: client})
 	require.NoError(t, err)
 	s := readSRT(t, "translation/own_entities.srt")
@@ -305,13 +305,6 @@ func TestTranslateRetries(t *testing.T) {
 	assert.Equal(t, []time.Duration{time.Second, 2 * time.Second}, waits)
 }
 
-func nilIfEmpty(s []int) []int {
-	if len(s) == 0 {
-		return nil
-	}
-	return s
-}
-
 func noWait(context.Context, time.Duration) error { return nil }
 
 type translationItem struct {
@@ -342,9 +335,6 @@ func translated(texts []string) []byte {
 	}
 	return answerBody(up)
 }
-
-// translatedAsIs returns an answer that holds each text unchanged.
-func translatedAsIs(texts []string) []byte { return answerBody(texts) }
 
 func sentTexts(t *testing.T, body []byte) []string {
 	t.Helper()

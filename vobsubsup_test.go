@@ -7,10 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/imaging"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/golden"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/imaging"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/golden"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
 // TestVobSubToPGS writes each VobSub track as PGS and compares the file with its golden.

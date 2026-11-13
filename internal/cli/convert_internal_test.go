@@ -13,14 +13,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/hearingimpaired"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
-	"github.com/yama6a/subtitle-toolbox-go/v3/profanity"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/profanity"
 )
 
 // fixtureDir returns a new directory with the CLI fixtures and copies of the testdata files in files, which maps a
@@ -894,4 +894,11 @@ func TestConvertMergeSameTimeASSEvents(t *testing.T) {
 	got := call{dir: dir}.run(t, "convert", "speakers.ass", "--to", "srt", "-o", "-", "--structure-merge-same-time", "--no-bom")
 	assert.Equal(t, result{Stdout: want}, got)
 	assertCuesOf(t, "editing/own_same_time_speakers_merged.srt", got.Stdout, stbox.SubRip)
+}
+
+func TestConvertChapterInputGetsNoLenientHint(t *testing.T) {
+	t.Parallel()
+
+	got := call{stdin: "0:00 Intro\x00\n"}.run(t, "convert", "-", "--from", "youtube-chapters", "--to", "srt")
+	assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 1: Line 1 has a NUL character. Check the encoding of the file.\n"}, got)
 }

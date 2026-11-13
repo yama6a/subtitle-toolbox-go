@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 )
 
 // sideFileUnknownFormat replaces the --from advice of unknownFormatMessage, because --from does not apply to a side file.
@@ -28,7 +28,7 @@ func (r *runner) readSideFile(path string, track int, trackOption string) (*stbo
 		if errors.Is(err, stbox.ErrUnknownFormat) {
 			msg = path + ": " + sideFileUnknownFormat
 		}
-		if _, ok := errors.AsType[*stbox.ParseError](err); ok && !opts.Lenient {
+		if !opts.Lenient && wantsLenientHint(err) {
 			msg += "\n" + lenientHint
 		}
 		return nil, &fileError{msg: msg}

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
 )
 
 func FuzzDecode(f *testing.F) {

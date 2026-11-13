@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 )
 
 // InvalidUTF8Reason is the reason of the error that a writer returns for text that is not valid UTF-8.

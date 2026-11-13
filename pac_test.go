@@ -6,9 +6,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/pac"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
 // TestPACEncodingNamesTheCodePage covers decision D1: Encoding picks the PAC code page, and PAC.CodePage wins.

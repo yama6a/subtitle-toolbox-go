@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func ExampleSubtitle() {
@@ -96,14 +96,6 @@ func ExampleCue_SetText() {
 
 	fmt.Printf("%q\n", c.Lines)
 	// Output: ["Hello" "world"]
-}
-
-func ExampleCue_MapWordTimestamps() {
-	c := model.Cue{Lines: []string{"<00:00:01.000>Hi <00:00:01.400>there"}}
-	c.MapWordTimestamps(func(d time.Duration) time.Duration { return d + 2*time.Second })
-
-	fmt.Println(c.Text())
-	// Output: <00:00:03.000>Hi <00:00:03.400>there
 }
 
 func ExampleAlignmentFromNumpad() {

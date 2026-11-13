@@ -3,7 +3,7 @@ package model
 import (
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
 
 // Position is where a cue shows on the screen.

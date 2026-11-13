@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const (
@@ -190,9 +190,9 @@ func TestOutputParsesBackToTheSameCues(t *testing.T) {
 	back, _ := mustRead(t, writeDefault(t, s), false)
 	cues := back.Cues()
 	require.Len(t, cues, 2)
-	assert.Equal(t, "<v Ann>one </v><v Ben>two\n<b>bold <i>open</i></b>", cues[0].Text())
+	assert.Equal(t, "<v Ann>one</v> <v Ben>two\n<b>bold <i>open</i></b></v>", taggedText(cues[0]))
 	assert.Equal(t, model.MiddleLeft, cues[0].Position.Alignment)
-	assert.Equal(t, "<i>mis</i><b><i>nested</i>tags</b> &lt;3 <font color=\"#ffff00\">class</font> word", cues[1].Text())
+	assert.Equal(t, "<i>mis</i><b><i>nested</i>tags</b> &lt;3 <font color=\"#ffff00\">class</font> word", taggedText(cues[1]))
 	assert.Equal(t, model.BottomCenter, cues[1].Position.Alignment)
 }
 
@@ -331,7 +331,7 @@ func TestCharactersThatXMLForbidsAreRemoved(t *testing.T) {
 	assert.Contains(t, out, `xml:lang="en"`)
 	back, _ := mustRead(t, out, false)
 	c, _ := back.Cue(0)
-	assert.Equal(t, "Welcome tothe bakery tour.", c.Text())
+	assert.Equal(t, "Welcome tothe bakery tour.", taggedText(c))
 }
 
 // Ports testTextThatIsNotUtf8Throws and testTextReadWithItsEncodingIsWritten of tests/Formatters/XmlOutputTest.php
@@ -459,10 +459,10 @@ func TestForcedRealFileRoundTripKeepsTheFlags(t *testing.T) {
 			assert.Equal(t, forcedFlags(s), forcedFlags(back))
 			var texts, backTexts []string
 			for _, c := range s.All() {
-				texts = append(texts, c.Text())
+				texts = append(texts, taggedText(c))
 			}
 			for _, c := range back.All() {
-				backTexts = append(backTexts, c.Text())
+				backTexts = append(backTexts, taggedText(c))
 			}
 			assert.Equal(t, texts, backTexts)
 			assert.Equal(t, out, writeDefault(t, back))
@@ -517,9 +517,11 @@ func TestCDATASections(t *testing.T) {
 			head, _ := fileData(t, s).String("head")
 			assert.Equal(t, tt.storedHead, head)
 			c, _ := s.Cue(0)
-			assert.Equal(t, tt.text, c.Text())
+			assert.Equal(t, tt.text, taggedText(c))
 
-			setCue(t, s, 0, func(c *model.Cue) { c.Lines, c.Position.Alignment = []string{"<v Ann>" + c.Text()}, model.TopCenter })
+			setCue(t, s, 0, func(c *model.Cue) {
+				c.Lines, c.Position.Alignment = []string{"<v Ann>" + taggedText(*c)}, model.TopCenter
+			})
 			assert.Contains(t, writeDefault(t, s), "\n"+tt.written)
 		})
 	}
@@ -613,4 +615,39 @@ func TestWriteOffsetKeepsStoredRegion(t *testing.T) {
 	require.NoError(t, s.SetCue(0, c))
 	out = writeDefault(t, s)
 	assert.Contains(t, out, `region="topLeft"`)
+}
+
+func TestWriteAgents(t *testing.T) {
+	t.Parallel()
+
+	one := cue(time.Second, 2*time.Second, "Hi", "there")
+	one.Speaker = "Ann"
+	two := cue(time.Second, 2*time.Second, "<v Ann>Hi</v> <v Bo>Yo")
+	mixed := cue(time.Second, 2*time.Second, "Hi <v Bo>Yo</v> end")
+	mixed.Speaker = "Ann"
+	timed := cue(7*time.Second, 8*time.Second, "<00:00:07.200><v Anna>Hi <00:00:07.500>there")
+	timed.ExtractWordTags()
+	tests := []struct {
+		name string
+		cue  model.Cue
+		want string
+	}{
+		{"one agent on the paragraph", one, `<p begin="00:00:01.000" end="00:00:02.000" region="bottomCenter" ttm:agent="agent1">Hi<br/>there</p>`},
+		{
+			"one agent and another voice", mixed,
+			`<p begin="00:00:01.000" end="00:00:02.000" region="bottomCenter" ttm:agent="agent2">Hi <span ttm:agent="agent1">Yo</span> end</p>`,
+		},
+		{"one agent after a word timestamp", timed, `<p begin="00:00:07.000" end="00:00:08.000" region="bottomCenter" ttm:agent="agent1">Hi there</p>`},
+		{
+			"two agents on spans", two,
+			`<p begin="00:00:01.000" end="00:00:02.000" region="bottomCenter"><span ttm:agent="agent1">Hi</span> <span ttm:agent="agent2">Yo</span></p>`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Contains(t, writeDefault(t, subtitleOf(tt.cue)), tt.want)
+		})
+	}
 }

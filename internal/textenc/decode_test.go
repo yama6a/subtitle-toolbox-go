@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/text/encoding/charmap"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
 )
 
 func readFixture(t *testing.T, name string) []byte {
