@@ -146,7 +146,7 @@ The format name is `ffmeta-chapters` (`stbox.FFMetadataChapters`). It is the `;F
 - **Header**: `;FFMETADATA1` and LF.
 - **Global tags**: the stored tags in stored order, then those of the 5 metadata keys that the stored tags lack. A metadata key takes the current metadata value, and a removed key drops its tag. A tag with a null value is not written.
 - **Streams**: `[STREAM]` and the stored tags of each stored stream.
-- **Chapters**: `[CHAPTER]`, `TIMEBASE=`, `START=`, `END=`, then `title` (the plain lines joined with LF, when not empty) and the stored chapter tags without `title`. The time base is the stored one, else `1/1000`. The ticks are the time, 0 or more, times D / N, rounded half away from zero.
+- **Chapters**: `[CHAPTER]`, `TIMEBASE=`, `START=`, `END=`, then `title` (the plain lines joined with LF, when not empty) and the stored chapter tags without `title`. The time base is the stored one, else `1/1000`. A stored time base with a number beyond 64 bits fails the write with an error that names it. The ticks are the time, 0 or more, times D / N, rounded half away from zero.
 - **Escapes**: key and value get a backslash before `#`, `;`, `=`, `\` and LF.
 
 ```text

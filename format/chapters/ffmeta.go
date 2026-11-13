@@ -363,13 +363,18 @@ func WriteFFMetadata(w io.Writer, s *model.Subtitle, common model.CommonWriteOpt
 		b.WriteString("[STREAM]\n")
 		writeTags(&b, storedTags(tags))
 	}
-	for _, c := range s.All() {
+	for i, c := range s.All() {
 		cueData, _ := c.FormatData(ffmetaKey)
-		timeBase, _ := cueData.String("timeBase")
+		timeBase, stored := cueData.String("timeBase")
+		if !stored {
+			timeBase = writeTimeBase
+		}
 		num, den, ok := splitTimeBase(timeBase)
 		if !ok {
-			timeBase = writeTimeBase
-			num, den, _ = splitTimeBase(timeBase)
+			return &model.UnwritableError{
+				Format: model.FFMetadataChapters, CueIndex: i,
+				Reason: "The stored time base " + timeBase + " has a number beyond 9223372036854775807.",
+			}
 		}
 		fmt.Fprintf(&b, "[CHAPTER]\nTIMEBASE=%s\nSTART=%d\nEND=%d\n", timeBase, timeTicks(c.Start, num, den), timeTicks(c.End, num, den))
 		var tags []tag

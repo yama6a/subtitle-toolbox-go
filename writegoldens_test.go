@@ -41,6 +41,16 @@ func roundTripFiles() []roundTripFile {
 		{"mcc", "captionmaker_608_708.mcc"},
 		{"mcc", "captionmaker_popon_df.mcc"},
 		{"mcc", "v1_23976_timecode.mcc"},
+		{"whisper", "faster_whisper_ctranslate2_segments.json"},
+		{"whisper", "faster_whisper_ctranslate2_words.json"},
+		{"whisper", "openai_api_verbose_json_french.json"},
+		{"whisper", "openai_api_verbose_json_words.json"},
+		{"whisper", "openai_whisper_german.json"},
+		{"whisper", "openai_whisper_word_timestamps.json"},
+		{"whisper", "whisper_cpp_oj.json"},
+		{"whisper", "whisper_cpp_ojf.json"},
+		{"whisper", "whisper_cpp_ojf_split_utf8.json"},
+		{"whisper", "whisperx_diarize.json"},
 	}
 }
 
@@ -148,6 +158,12 @@ func conversions() []conversion {
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.SubRip, ""},
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.WebVTT, ""},
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.ASS, ""},
+		{"whisper", "openai_whisper_word_timestamps.json", stbox.SubRip, ""},
+		{"whisper", "openai_whisper_word_timestamps.json", stbox.WebVTT, ""},
+		{"whisper", "whisperx_diarize.json", stbox.SubRip, ""},
+		{"whisper", "whisperx_diarize.json", stbox.WebVTT, ""},
+		{"srt", "own_styled.srt", stbox.Whisper, ""},
+		{"vtt", "w3c_timestamps.vtt", stbox.Whisper, ""},
 	}
 }
 

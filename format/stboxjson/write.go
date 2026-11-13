@@ -20,11 +20,6 @@ import (
 )
 
 const (
-	malformedUTF8 = orderedjson.MalformedUTF8Reason
-	infOrNaN      = orderedjson.NotFiniteReason
-)
-
-const (
 	imageKey = "image"
 
 	vttKey = "vtt"
@@ -37,7 +32,7 @@ var errInfOrNaN = errors.New("inf or NaN")
 func document(s *model.Subtitle, opts WriteOptions) ([]byte, error) {
 	version := cmp.Or(opts.Version, Version)
 	if i, ok := validText(s, !opts.OmitFormatData, version); !ok {
-		return nil, &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: malformedUTF8, Err: model.ErrInvalidUTF8}
+		return nil, &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: orderedjson.MalformedUTF8Reason, Err: model.ErrInvalidUTF8}
 	}
 
 	e := newEncoder()
@@ -49,7 +44,7 @@ func document(s *model.Subtitle, opts WriteOptions) ([]byte, error) {
 	if !opts.OmitFormatData {
 		e.raw(`,"formatData":`)
 		if err := e.formatData(s.FormatDataKeys(), s.FormatData); err != nil {
-			return nil, &model.UnwritableError{Format: model.JSON, CueIndex: -1, Reason: infOrNaN}
+			return nil, &model.UnwritableError{Format: model.JSON, CueIndex: -1, Reason: orderedjson.NotFiniteReason}
 		}
 	}
 	if err := e.cues(s, !opts.OmitFormatData); err != nil {
@@ -72,12 +67,12 @@ func (e *encoder) cues(s *model.Subtitle, withFormatData bool) error {
 	for i, c := range s.All() {
 		e.comma(i)
 		if err := e.cue(c, withFormatData); err != nil {
-			return &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: infOrNaN}
+			return &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: orderedjson.NotFiniteReason}
 		}
 		if withFormatData {
 			e.raw(`,"formatData":`)
 			if err := e.cueFormatData(c); err != nil {
-				return &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: infOrNaN}
+				return &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: orderedjson.NotFiniteReason}
 			}
 		}
 		e.raw("}")

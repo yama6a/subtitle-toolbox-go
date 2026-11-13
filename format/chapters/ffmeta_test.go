@@ -137,12 +137,10 @@ func TestWriteFFMetadata(t *testing.T) {
 		assert.Equal(t, ";FFMETADATA1\nmajor_brand=isom\ntitle=New\nalbum=Notes\n", writeString(t, chapters.WriteFFMetadata, s, model.CommonWriteOptions{}))
 	})
 
-	t.Run("streams and a time base beyond int64", func(t *testing.T) {
+	t.Run("streams and stored tags that are no strings", func(t *testing.T) {
 		t.Parallel()
 
-		c := model.Cue{Start: time.Second, End: 2 * time.Second}
-		require.NoError(t, c.SetFormatData("ffmeta-chapters", model.NewData(model.Field{Key: "timeBase", Value: "1/99999999999999999999"})))
-		s := chaptersOf(c)
+		s := chaptersOf(model.Cue{Start: time.Second, End: 2 * time.Second})
 		require.NoError(t, s.SetFormatData("ffmeta-chapters", model.NewData(
 			model.Field{Key: "tags", Value: []any{nil, "x"}},
 			model.Field{Key: "streams", Value: []any{model.NewData(model.Field{Key: "a", Value: "b"})}},
@@ -150,6 +148,19 @@ func TestWriteFFMetadata(t *testing.T) {
 
 		assert.Equal(t, ";FFMETADATA1\n[STREAM]\na=b\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=1000\nEND=2000\n",
 			writeString(t, chapters.WriteFFMetadata, s, model.CommonWriteOptions{}))
+	})
+
+	t.Run("a stored time base beyond int64 fails", func(t *testing.T) {
+		t.Parallel()
+
+		c := model.Cue{Start: time.Second, End: 2 * time.Second}
+		require.NoError(t, c.SetFormatData("ffmeta-chapters", model.NewData(model.Field{Key: "timeBase", Value: "1/99999999999999999999"})))
+		err := chapters.WriteFFMetadata(&strings.Builder{}, chaptersOf(c), model.CommonWriteOptions{}, chapters.WriteOptions{})
+
+		var uerr *model.UnwritableError
+		require.ErrorAs(t, err, &uerr)
+		assert.Equal(t, 0, uerr.CueIndex)
+		assert.Equal(t, "The stored time base 1/99999999999999999999 has a number beyond 9223372036854775807.", uerr.Reason)
 	})
 }
 

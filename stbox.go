@@ -109,6 +109,7 @@ const (
 	SpruceSTL     = model.SpruceSTL
 	VobSub        = model.VobSub
 	WebVTT        = model.WebVTT
+	Whisper       = model.Whisper
 	// YouTubeChapters is the format of the chapter lines of a YouTube description.
 	YouTubeChapters = model.YouTubeChapters
 	// FFMetadataChapters is the format of the chapters in FFmpeg metadata text.

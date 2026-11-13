@@ -503,7 +503,7 @@ A rule option sets its field on the preset result. A flag can only turn a check 
 
 ## sync
 
-`stbox sync <input>... --reference FILE [options]` retimes each input to the cue times of a reference subtitle. It finds the offset and the frame-rate scale. [sync.md](sync.md#command-line) lists its options and output.
+`stbox sync <input>... --reference FILE [options]` retimes each input to the cue times of a reference subtitle. `--silence-log FILE --media-duration SECONDS` takes the speech of an FFmpeg `silencedetect` log as the reference instead. It finds the offset and the frame-rate scale. [sync.md](sync.md#command-line) lists its options and output.
 
 `--reference-track NUMBER` picks the track when the reference is a video file. A video file with 2 or more subtitle tracks and no `--reference-track` fails with `Error: movie.mkv: The MKV or WebM file has 6 subtitle tracks. Pass --reference-track N with one of them:` and the track lines, exit 3. A PGS or VobSub reference track works without OCR, because only the cue times count.
 
@@ -622,6 +622,7 @@ tmplayer          .txt              yes   yes
 qttext            .txt              yes   yes
 vobsub            .idx              yes   no
 vtt               .vtt              yes   yes
+whisper           .json             yes   yes
 ogm-chapters      .txt              yes   yes
 podcast-chapters  .json             yes   yes
 youtube-chapters  .txt              yes   yes

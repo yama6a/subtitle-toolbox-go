@@ -1,0 +1,171 @@
+{
+	"systeminfo": "WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | ",
+	"model": {
+		"type": "small",
+		"multilingual": true,
+		"vocab": 51865,
+		"audio": {
+			"ctx": 1500,
+			"state": 512,
+			"head": 8,
+			"layer": 6
+		},
+		"text": {
+			"ctx": 448,
+			"state": 512,
+			"head": 8,
+			"layer": 6
+		},
+		"mels": 80,
+		"ftype": 1
+	},
+	"params": {
+		"model": "models/ggml-small.bin",
+		"language": "auto",
+		"translate": false
+	},
+	"result": {
+		"language": "ja"
+	},
+	"transcription": [
+		{
+			"timestamps": {
+				"from": "00:00:00,000",
+				"to": "00:00:01,800"
+			},
+			"offsets": {
+				"from": 0,
+				"to": 1800
+			},
+			"text": "電車が来ます。",
+			"tokens": [
+				{
+					"text": "[_BEG_]",
+					"timestamps": {
+						"from": "00:00:00,000",
+						"to": "00:00:00,000"
+					},
+					"offsets": {
+						"from": 0,
+						"to": 0
+					},
+					"id": 50364,
+					"p": 0.512345,
+					"t_dtw": -1
+				},
+				{
+					"text": "�",
+					"timestamps": {
+						"from": "00:00:00,000",
+						"to": "00:00:00,400"
+					},
+					"offsets": {
+						"from": 0,
+						"to": 400
+					},
+					"id": 23756,
+					"p": 0.612345,
+					"t_dtw": -1
+				},
+				{
+					"text": "�",
+					"timestamps": {
+						"from": "00:00:00,400",
+						"to": "00:00:00,520"
+					},
+					"offsets": {
+						"from": 400,
+						"to": 520
+					},
+					"id": 249,
+					"p": 0.998765,
+					"t_dtw": -1
+				},
+				{
+					"text": "車",
+					"timestamps": {
+						"from": "00:00:00,520",
+						"to": "00:00:00,900"
+					},
+					"offsets": {
+						"from": 520,
+						"to": 900
+					},
+					"id": 16760,
+					"p": 0.954321,
+					"t_dtw": -1
+				},
+				{
+					"text": "が",
+					"timestamps": {
+						"from": "00:00:00,900",
+						"to": "00:00:01,040"
+					},
+					"offsets": {
+						"from": 900,
+						"to": 1040
+					},
+					"id": 5142,
+					"p": 0.991234,
+					"t_dtw": -1
+				},
+				{
+					"text": "来",
+					"timestamps": {
+						"from": "00:00:01,040",
+						"to": "00:00:01,300"
+					},
+					"offsets": {
+						"from": 1040,
+						"to": 1300
+					},
+					"id": 37541,
+					"p": 0.923456,
+					"t_dtw": -1
+				},
+				{
+					"text": "ます",
+					"timestamps": {
+						"from": "00:00:01,300",
+						"to": "00:00:01,680"
+					},
+					"offsets": {
+						"from": 1300,
+						"to": 1680
+					},
+					"id": 9455,
+					"p": 0.987654,
+					"t_dtw": -1
+				},
+				{
+					"text": "。",
+					"timestamps": {
+						"from": "00:00:01,680",
+						"to": "00:00:01,800"
+					},
+					"offsets": {
+						"from": 1680,
+						"to": 1800
+					},
+					"id": 1543,
+					"p": 0.876543,
+					"t_dtw": -1
+				},
+				{
+					"text": "[_TT_180]",
+					"timestamps": {
+						"from": "00:00:01,800",
+						"to": "00:00:01,800"
+					},
+					"offsets": {
+						"from": 1800,
+						"to": 1800
+					},
+					"id": 50544,
+					"p": 0.287654,
+					"t_dtw": -1
+				}
+			]
+		}
+	]
+}

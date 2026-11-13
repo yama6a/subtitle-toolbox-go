@@ -95,7 +95,7 @@ A word that the text does not hold gets no tag, and neither do the words after i
 3. A tag whose time is before the last kept tag is dropped. Its text belongs to the word before it.
 4. Each kept tag starts a word. Its text runs to the next kept tag or to the end of the cue. The text has no tags, with entities decoded and white space collapsed and trimmed. A word without text is dropped.
 5. The end of a word is the time of the next tag in the cue, also of a dropped tag. The last word ends at the end of the cue. An end is never before its start.
-6. The word timestamp tags leave the lines.
+6. The word timestamp tags leave the lines. When the removal joins text into a new word timestamp tag, such as `<<00:00:01.000>00:00:02.000>`, that tag leaves too.
 7. The cue has a whole-cue voice when the first line with visible text starts with a `<v>` tag with a name, every `<v>` tag has the same classes and name, no `</v>` is followed by visible text, and the classes are empty or the cue has vtt cue data.
 8. With a whole-cue voice, every `<v>` tag and every `</v>` tag leaves the lines. `Speaker` gets the name.
 9. The lines are cleaned again.
