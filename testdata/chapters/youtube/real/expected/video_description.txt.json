@@ -1,0 +1,81 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 45.0,
+                "lines": [
+                    "Intro"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 45.0,
+                "end": 192.0,
+                "lines": [
+                    "Tools you need"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 192.0,
+                "end": 478.0,
+                "lines": [
+                    "Removing the old spokes"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 478.0,
+                "end": 930.0,
+                "lines": [
+                    "Lacing the new wheel"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 930.0,
+                "end": 1264.0,
+                "lines": [
+                    "Tensioning"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1264.0,
+                "end": 1660.0,
+                "lines": [
+                    "Truing on the stand"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1660.0,
+                "end": 1660.0,
+                "lines": [
+                    "Final check and test ride"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

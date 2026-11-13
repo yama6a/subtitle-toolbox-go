@@ -1,0 +1,81 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 312.0,
+                "lines": [
+                    "Stream starts"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 312.0,
+                "end": 2910.0,
+                "lines": [
+                    "Project overview"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 2910.0,
+                "end": 4502.0,
+                "lines": [
+                    "Writing the parser"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4502.0,
+                "end": 6120.0,
+                "lines": [
+                    "Lunch break"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 6120.0,
+                "end": 10725.0,
+                "lines": [
+                    "Tests and fixes"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 10725.0,
+                "end": 13870.0,
+                "lines": [
+                    "Questions from chat"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 13870.0,
+                "end": 13870.0,
+                "lines": [
+                    "Goodbye"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}
