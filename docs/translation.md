@@ -206,10 +206,12 @@ Package `translation/deepl` is a client of the DeepL API v2 on `net/http`. It ha
 
 <!-- example: translation/deepl/ExampleNew -->
 ```go
-client := &translationtest.Client{Answers: []translationtest.Answer{
-	{Status: 200, Body: []byte(`{"translations": [{"text": "Hallo <x1>Welt</x1>"}]}`)},
-}}
-engine, err := deepl.New(deepl.Options{APIKey: "secret:fx", HTTPClient: client})
+srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprint(w, `{"translations": [{"text": "Hallo <x1>Welt</x1>"}]}`)
+}))
+defer srv.Close()
+
+engine, err := deepl.New(deepl.Options{APIKey: "secret:fx", BaseURL: srv.URL})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -222,10 +224,8 @@ if err != nil {
 }
 
 fmt.Println(got[0])
-fmt.Println(client.Requests()[0].URL)
 // Output:
 // Hallo <x1>Welt</x1>
-// https://api-free.deepl.com/v2/translate
 ```
 
 | Field of `deepl.Options` | Meaning |

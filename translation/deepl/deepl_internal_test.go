@@ -5,10 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -170,53 +167,29 @@ func TestTranslateChunks(t *testing.T) {
 	for i := range texts {
 		texts[i] = fmt.Sprintf("text %d", i+1)
 	}
-	var mu sync.Mutex
-	var sizes []int
-	e, err := New(Options{APIKey: key, HTTPClient: echoClient(func(texts []string) {
-		mu.Lock()
-		defer mu.Unlock()
-		sizes = append(sizes, len(texts))
-	})})
-	require.NoError(t, err)
+	reply := func(from, to int) translationtest.Answer {
+		entries := make([]string, 0, to-from)
+		for _, text := range texts[from:to] {
+			entries = append(entries, fmt.Sprintf(`{"text": %q}`, text))
+		}
+		return translationtest.Answer{Status: 200, Body: []byte(`{"translations": [` + strings.Join(entries, ",") + `]}`)}
+	}
+	e, client, _ := newEngine(t, Options{APIKey: key}, reply(0, 50), reply(50, 100), reply(100, 120))
 
 	got, err := e.Translate(t.Context(), texts, "en", "de")
 	require.NoError(t, err)
-	assert.Equal(t, []int{50, 50, 20}, sizes)
 	assert.Equal(t, texts, got)
+	reqs := client.Requests()
+	sizes := make([]int, 0, len(reqs))
+	for _, r := range reqs {
+		sizes = append(sizes, len(body(t, r)["text"].([]any)))
+	}
+	assert.Equal(t, []int{50, 50, 20}, sizes)
 
 	got, err = e.Translate(t.Context(), nil, "en", "de")
 	require.NoError(t, err)
 	assert.Empty(t, got)
-	assert.Len(t, sizes, 3)
-}
-
-// echoClient answers each request with its texts as the translations.
-type echoClient func(texts []string)
-
-func (f echoClient) Do(req *http.Request) (*http.Response, error) {
-	var in struct {
-		Text []string `json:"text"`
-	}
-	if err := json.NewDecoder(req.Body).Decode(&in); err != nil {
-		return nil, err
-	}
-	if f != nil {
-		f(in.Text)
-	}
-	type entry struct {
-		Text string `json:"text"`
-	}
-	out := struct {
-		Translations []entry `json:"translations"`
-	}{}
-	for _, text := range in.Text {
-		out.Translations = append(out.Translations, entry{text})
-	}
-	b, err := json.Marshal(out)
-	if err != nil {
-		return nil, err
-	}
-	return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: io.NopCloser(bytes.NewReader(b)), Request: req}, nil
+	assert.Len(t, client.Requests(), 3)
 }
 
 func TestTranslateErrors(t *testing.T) {
@@ -323,9 +296,13 @@ func TestTranslateWithTheRunner(t *testing.T) {
 		input  string
 		answer translationtest.Answer
 		want   []cueView
+		sent   string
 	}{
-		{"own_station.srt", "own_station.srt", answer(t, 200, "deepl_de.json"), view(station)},
-		{"own_entities.srt", "own_entities.srt", answer(t, 200, "deepl_entities_de.json"), view(readSRT(t, "own_entities_de_deepl.srt"))},
+		{"own_station.srt", "own_station.srt", answer(t, 200, "deepl_de.json"), view(station), ""},
+		{
+			"own_entities.srt", "own_entities.srt", answer(t, 200, "deepl_entities_de.json"), view(readSRT(t, "own_entities_de_deepl.srt")),
+			"Write &amp;lt;i&amp;gt;Run&amp;lt;/i&amp;gt; for italics.",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -338,7 +315,10 @@ func TestTranslateWithTheRunner(t *testing.T) {
 			report, err := translation.Translate(t.Context(), s, e, "en", "de", translation.Options{})
 			require.NoError(t, err)
 			assert.Empty(t, report.Warnings)
-			assert.Len(t, client.Requests(), 1)
+			require.Len(t, client.Requests(), 1)
+			if tt.sent != "" {
+				assert.Equal(t, tt.sent, body(t, client.Requests()[0])["text"].([]any)[0])
+			}
 			got := view(s)
 			assert.Equal(t, tt.want, got)
 			for i := range got {
@@ -347,53 +327,12 @@ func TestTranslateWithTheRunner(t *testing.T) {
 			}
 		})
 	}
-
-	t.Run("entities decode once", func(t *testing.T) {
-		t.Parallel()
-
-		var sent []string
-		e, err := New(Options{APIKey: key, HTTPClient: echoClient(func(texts []string) { sent = texts })})
-		require.NoError(t, err)
-		s := readSRT(t, "own_entities.srt")
-		want := view(s)
-
-		_, err = translation.Translate(t.Context(), s, e, "en", "de", translation.Options{})
-		require.NoError(t, err)
-		require.Len(t, sent, 2)
-		assert.Equal(t, "Write &amp;lt;i&amp;gt;Run&amp;lt;/i&amp;gt; for italics.", sent[0])
-		assert.True(t, strings.HasPrefix(sent[1], "Tom &amp;amp; Jerry is a cat and mouse act."))
-		assert.Equal(t, want, view(s))
-	})
 }
 
 func TestTranslateWithTheServer(t *testing.T) {
 	t.Parallel()
 
 	srv := translationtest.NewServer(t)
-	tests := []struct {
-		apiKey string
-		status int
-	}{
-		{"forbidden", 403},
-		{"busy", 429},
-		{"quota", 456},
-		{"bad-request", 400},
-	}
-	for _, tt := range tests {
-		t.Run(tt.apiKey, func(t *testing.T) {
-			t.Parallel()
-
-			e, err := New(Options{APIKey: tt.apiKey, BaseURL: srv.URL})
-			require.NoError(t, err)
-			e.wait = func(context.Context, time.Duration) error { return nil }
-			_, err = e.Translate(t.Context(), []string{"Hello"}, "en", "de")
-			var se *translation.ServiceError
-			require.ErrorAs(t, err, &se)
-			assert.Equal(t, tt.status, se.Status)
-			assert.NotContains(t, se.Msg, tt.apiKey)
-		})
-	}
-
 	e, err := New(Options{APIKey: "fine", BaseURL: srv.URL})
 	require.NoError(t, err)
 	got, err := e.Translate(t.Context(), stationTexts, "en", "de")

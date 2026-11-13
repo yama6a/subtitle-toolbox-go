@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -102,7 +103,7 @@ type request struct {
 // A region in source, such as "-US" in "en-US", does not go to DeepL.
 func (e *Engine) Translate(ctx context.Context, texts []string, source, target string) ([]string, error) {
 	out := make([]string, 0, len(texts))
-	for chunk := range chunks(texts, MaxTextsPerRequest) {
+	for chunk := range slices.Chunk(texts, MaxTextsPerRequest) {
 		got, err := e.request(ctx, chunk, source, target)
 		if err != nil {
 			return nil, err
@@ -110,18 +111,6 @@ func (e *Engine) Translate(ctx context.Context, texts []string, source, target s
 		out = append(out, got...)
 	}
 	return out, nil
-}
-
-func chunks(texts []string, size int) func(yield func([]string) bool) {
-	return func(yield func([]string) bool) {
-		for len(texts) > 0 {
-			n := min(size, len(texts))
-			if !yield(texts[:n]) {
-				return
-			}
-			texts = texts[n:]
-		}
-	}
 }
 
 func (e *Engine) request(ctx context.Context, texts []string, source, target string) ([]string, error) {
