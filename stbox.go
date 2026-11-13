@@ -87,6 +87,7 @@ const (
 	CSV           = model.CSV
 	ITT           = model.ITT
 	JSON          = model.JSON
+	AWSTranscribe = model.AWSTranscribe
 	LRC           = model.LRC
 	MCC           = model.MCC
 	MicroDVD      = model.MicroDVD

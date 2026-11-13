@@ -26,6 +26,8 @@ Before step 1, `Detect` looks for a video container in the raw bytes. A containe
 
 `{"version": "1", "cues": []}` and `{"version": 1, "cues": {}}` match no check. `stboxjson.DetectJSON` holds rule 1.
 
+- **No check for Amazon Transcribe JSON**: a file with `results.items` matches no rule, so `Detect` finds no format. Name it with `ReadOptions.Format` or `--from aws-transcribe`. See [transcripts.md](transcripts.md#amazon-transcribe-json).
+
 ## Signatures
 
 | # | Format | Rule |

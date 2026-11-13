@@ -9,6 +9,7 @@
 | CSV and TSV | `stbox.CSV`, `stbox.TSV` | `csv`, `tsv` | `.csv`, `.tsv` | [CSV and TSV](#csv-and-tsv) |
 | iTunes Timed Text | `stbox.ITT` | `itt` | `.itt` | [iTT](#itt) |
 | library JSON | `stbox.JSON` | `json` | `.json` | [JSON](#json) |
+| Amazon Transcribe JSON | `stbox.AWSTranscribe` | `aws-transcribe` | `.json` | [Amazon Transcribe JSON](transcripts.md#amazon-transcribe-json) |
 | LRC | `stbox.LRC` | `lrc` | `.lrc` | [LRC](#lrc) |
 | MicroDVD | `stbox.MicroDVD` | `microdvd` | `.sub` | [MicroDVD](#microdvd) |
 | MPSub | `stbox.MPSub` | `mpsub` | `.mpsub` | [MPSub](#mpsub) |

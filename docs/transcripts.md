@@ -8,6 +8,7 @@ Package `format/transcript` reads and writes the JSON and HTML transcripts of sp
 
 | Field | Zero value | Meaning | Read by |
 |:--- |:--- |:--- |:--- |
+| Amazon Transcribe JSON | `ReadAWSTranscribe` | `WriteAWSTranscribe` | [Amazon Transcribe JSON](#amazon-transcribe-json) |
 | `WordTimestamps` | false: cues have no `Words` | fill `Cue.Words` from the word times of the source | the formats with word times, and joined Podcasting 2.0 cues |
 | `SpeakerVoices` | false: `Cue.Speaker` stays empty | set `Cue.Speaker` from the speaker of the source | the formats with speakers. The Podcasting 2.0 and HTML transcripts always set it |
 | `KeepSegments` | false: join one-word segments | one cue per segment | the Podcasting 2.0 transcript only |
@@ -75,3 +76,74 @@ A writer rebuilds the word list of a cue from `Cue.Words`. It keeps each source 
 
 | Format | Read | Write | Page section |
 |:--- |:--- |:--- |:--- |
+| Amazon Transcribe JSON | `ReadAWSTranscribe` | `WriteAWSTranscribe` | [Amazon Transcribe JSON](#amazon-transcribe-json) |
+
+## Amazon Transcribe JSON
+
+Amazon Transcribe returns a batch transcript as JSON with one item for each word and each punctuation mark. Times and confidences are strings. Example: `{"type": "pronunciation", "start_time": "0.52", "end_time": "0.94", "speaker_label": "spk_0", "alternatives": [{"confidence": "0.91", "content": "The"}]}` and then `{"type": "punctuation", "alternatives": [{"confidence": "0.0", "content": "."}]}`. Newer transcripts add `audio_segments`, one for each spoken phrase. The reader makes one cue for each audio segment, else it groups the words into cues. The writer writes the transcript back with renumbered item ids and new speaker segments.
+
+| Item | Value |
+|:--- |:--- |
+| Format | `stbox.AWSTranscribe`, name `aws-transcribe`, extension `.json` |
+| Functions | `transcript.ReadAWSTranscribe` and `WriteAWSTranscribe` |
+| Read options | `WordTimestamps` and `SpeakerVoices`. `KeepSegments` has no effect |
+| Write options | none |
+| Detection | none. `.json` belongs to the library JSON, so name the format with `--from aws-transcribe` or `ReadOptions.Format` |
+| Not read | `results.channel_labels`. The writer does not write it |
+
+### Read
+
+- **Lists**: `results` must be an object and `results.items` a JSON array. Else the read fails with `The JSON has no "results.items" list.` in both modes. `audio_segments` counts when it is an array with items. An object with the keys `"0"` and `"1"` is no list ([subtitle-toolbox-php#1208](https://github.com/yama6a/subtitle-toolbox-php/issues/1208)).
+- **Words**: a pronunciation item makes a word. A punctuation item joins the word before it without a space. Punctuation before the first word waits and joins the first word in front. So the item U+00BF, the word `Vienes` and the item `?` give the word U+00BF followed by `Vienes?`.
+- **Cues with audio segments**: one cue for each segment. Its words are the words of the item ids in the segment `items` list. The integer 5 and the string `"5"` name the same item, and `"05"` is another id. An id that names no word is ignored. A word that the list names twice in a row counts once.
+- **Cues without audio segments**: the words group into cues by the [grouping rules](#grouping-words-into-cues).
+- **Language**: `results.language_code`.
+- **Speaker**: with `SpeakerVoices`, the `speaker_label` of the segment, or of the first item of a grouped cue. A string or an integer.
+- **File data**: the top-level members except `results`, then `results` without `transcripts`, `items`, `audio_segments` and `channel_labels`. `results.speaker_labels` loses its `segments`.
+- **Cue data**: for a segment, the segment object with `items` replaced by the raw items of its words. Else `{"items": [...]}` with the raw items of the group.
+
+A field error fails the item or the segment. Strict mode returns the error. Lenient mode skips it with a `Skipped` warning without a line, with the item as block text.
+
+| Field | Error |
+|:--- |:--- |
+| an item without a string `alternatives[0].content`, also an item that is no object | `The field results.items[0].alternatives[0].content must be a string.` |
+| a pronunciation item with a `start_time` or `end_time` that is no number or numeric string of 0 or more | `The field results.items[0].start_time must be a time.` |
+| a time of 100000 hours or more | `The field results.items[0].start_time is not below 100000 hours.` |
+| a segment with a bad `start_time`, `end_time` or `transcript` | `The field results.audio_segments[0].transcript must be a string.` |
+
+**Words.** Each word gives one entry of `Cue.Words`. `Text` is the content of its items joined. `Start` and `End` come from the pronunciation item. `Confidence` is `alternatives[0].confidence` of the pronunciation item, when it is a number or numeric string from 0 to 1.
+
+### Write
+
+The output is compact JSON without a BOM, in this order.
+
+| Member | Content |
+|:--- |:--- |
+| `results.transcripts` | one entry with the segment texts joined with one space |
+| `results.speaker_labels` | only when an item has a start, an end and a speaker label. `speakers` is the number of distinct labels. `segments` are the runs of items with the same label, each with its `items` |
+| `results.items` | one item for each word and punctuation mark, with the ids 0, 1 and so on |
+| `results.audio_segments` | one for each cue, written when a cue has a stored `transcript`, or when a cue has no items. The items alone cannot hold a cue without words |
+| `results` | then the stored members, and `language_code` from the subtitle language when the file has none |
+| top level | then the stored members such as `jobName` |
+
+- **Words**: the writer applies the rules of [reuse of source words](#reuse-of-source-words). A source word is a pronunciation item with the punctuation items after it. No result gives no items for the cue.
+- **New word**: a pronunciation item with the text before the trailing punctuation, and a punctuation item with the confidence `"0.0"` for the punctuation. The confidence follows the rule for new words in reuse of source words. `speaker_label` is set only when the cue has a speaker.
+- **Typed values**: a reused word gets `Word.End` in the `end_time` of its pronunciation item and `Word.Confidence` in `alternatives[0].confidence`, when they differ from the stored values.
+- **Speaker**: a cue with a speaker gives each item that speaker as `speaker_label`, when it differs from the stored segment label or the item has none.
+- **Ids**: each item gets the next id as its first member. The segment `items` list holds the new ids. Each segment gets its index as `id`.
+- **Numbers**: a time is a string with at most 3 decimals and at least 1, such as `"2.0"` and `"0.52"`. A confidence is the shortest decimal with at least 1 decimal, such as `"1.0"` and `"0.9989"`.
+
+A cue from another format, `<v Ben>` with the words `See` (4 to 4.5 s) and `you.` (4.5 to 5 s), writes the items:
+
+```json
+{"id":0,"start_time":"4.0","speaker_label":"Ben","end_time":"4.5","alternatives":[{"confidence":"1.0","content":"See"}],"type":"pronunciation"},
+{"id":1,"start_time":"4.5","speaker_label":"Ben","end_time":"5.0","alternatives":[{"confidence":"1.0","content":"you"}],"type":"pronunciation"},
+{"id":2,"speaker_label":"Ben","alternatives":[{"confidence":"0.0","content":"."}],"type":"punctuation"}
+```
+
+### Cost
+
+| Operation | Cost | Benchmark |
+|:--- |:--- |:--- |
+| read Amazon Transcribe JSON | linear in the file. A segment looks up each item id once. A word with many punctuation items joins their texts once | `BenchmarkAWSTranscribe`: 10,000 items, 10,000 items in one segment, 20,000 punctuation items on one word. Each input is about 1 MB |
+| write Amazon Transcribe JSON | linear in the cues, the items and the stored items | the same inputs |
