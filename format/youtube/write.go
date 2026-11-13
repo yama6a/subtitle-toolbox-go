@@ -43,8 +43,10 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 		body = xw.srv1(cues, stored)
 	case variantSrv2:
 		body = xw.srv2(cues, stored)
-	default:
+	case variantJSON3:
 		return &model.UnwritableError{Format: model.YouTubeTimedText, CueIndex: -1, Reason: "not yet"}
+	default:
+		body = xw.srv3(cues, stored, file)
 	}
 	if xw.invalid {
 		return &model.UnwritableError{

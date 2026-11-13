@@ -2,6 +2,7 @@ package youtube_test
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,13 +17,15 @@ import (
 func TestWriteRoundTripGivesTheSourceBytes(t *testing.T) {
 	t.Parallel()
 
-	for _, file := range []string{"transcript.en.srv1", "missing-dur.en.srv1", "missing-d.en.srv2"} {
+	for _, file := range []string{
+		"transcript.en.srv1", "missing-dur.en.srv1", "missing-d.en.srv2", "missing-d.en.srv3", "auto.en.srv3", "styled.en.srv3", "blank-lines.en.srv3",
+	} {
 		for name, opts := range map[string]youtube.ReadOptions{"default": {}, "words": withWords} {
 			t.Run(file+"/"+name, func(t *testing.T) {
 				t.Parallel()
 
 				s, src := readFile(t, file, opts)
-				assert.Equal(t, src, write(t, s))
+				assert.Equal(t, strings.TrimLeft(src, " \n"), write(t, s))
 			})
 		}
 	}

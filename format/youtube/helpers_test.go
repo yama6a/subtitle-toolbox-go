@@ -58,3 +58,9 @@ func times(s *model.Subtitle) [][2]int {
 	}
 	return out
 }
+
+func readTestdata(t *testing.T, name string) []byte {
+	t.Helper()
+
+	return testfiles.Read(t, name)
+}
