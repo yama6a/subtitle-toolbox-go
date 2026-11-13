@@ -51,7 +51,7 @@ func parseError(t *testing.T, content string, lenient bool) *model.ParseError {
 func cueTexts(s *model.Subtitle) []string {
 	out := []string{}
 	for _, c := range s.All() {
-		out = append(out, c.Text())
+		out = append(out, taggedText(c))
 	}
 	return out
 }
@@ -586,7 +586,7 @@ func TestReadText(t *testing.T) {
 
 			for _, lenient := range []bool{false, true} {
 				s, _ := parse(t, "WEBVTT\n\n00:01.000 --> 00:04.000\n"+tt.lines+"\n", lenient)
-				assert.Equal(t, tt.want, firstCue(t, s).Lines)
+				assert.Equal(t, tt.want, firstCue(t, s).TaggedLines())
 			}
 		})
 	}
@@ -597,9 +597,9 @@ func TestShortInlineTimestampMovesWithItsCue(t *testing.T) {
 	t.Parallel()
 
 	s, _ := parse(t, "WEBVTT\n\n00:00.000 --> 00:04.000\n<00:03.000>Hi\n", false)
-	assert.Equal(t, []string{"<00:00:03.000>Hi"}, firstCue(t, s).Lines)
+	assert.Equal(t, []string{"<00:00:03.000>Hi"}, firstCue(t, s).TaggedLines())
 	require.NoError(t, s.Shift(10*time.Second))
-	assert.Equal(t, []string{"<00:00:13.000>Hi"}, firstCue(t, s).Lines)
+	assert.Equal(t, []string{"<00:00:13.000>Hi"}, firstCue(t, s).TaggedLines())
 }
 
 func TestReadNoteBeforeAnEarlierCue(t *testing.T) {
@@ -649,12 +649,12 @@ func TestReadInvalidUTF8StaysAsBytes(t *testing.T) {
 
 	const content = "WEBVTT\n\n00:01.000 --> 00:02.000\nA\xffB\n"
 	s, warnings := parse(t, content, false)
-	assert.Equal(t, []string{"A\xffB"}, firstCue(t, s).Lines)
+	assert.Equal(t, []string{"A\xffB"}, firstCue(t, s).TaggedLines())
 	assert.Empty(t, warnings)
 	assert.Equal(t, bom+"WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.000\nA\xffB\n", write(t, s, model.CommonWriteOptions{}))
 
 	s, warnings = parse(t, content, true)
-	assert.Equal(t, []string{"A\xffB"}, firstCue(t, s).Lines)
+	assert.Equal(t, []string{"A\xffB"}, firstCue(t, s).TaggedLines())
 	assert.Equal(t, []model.ParseWarning{{
 		Message: "The content is not valid UTF-8. The first bad byte is at offset 33. Set the source encoding of the file.",
 		Line:    model.NoLine, Block: model.NoBlock, Action: model.Repaired,

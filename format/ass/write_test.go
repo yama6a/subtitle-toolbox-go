@@ -331,7 +331,7 @@ func TestChangedCueIsWrittenFromItsLines(t *testing.T) {
 	t.Parallel()
 
 	s := readFile(t, realDir+"/own_aegisub.ass")
-	setCue(t, s, 2, func(c *model.Cue) { c.Lines = []string{"<v Guard>Is it <i>late</i> today?"} })
+	setCue(t, s, 2, func(c *model.Cue) { c.Lines, c.Speaker = []string{"Is it <i>late</i> today?"}, "Guard" })
 	setCue(t, s, 3, func(c *model.Cue) { c.Position.Alignment = model.TopLeft })
 
 	got := writeDefault(t, s)
@@ -359,7 +359,7 @@ func TestChangedCueOmitsTheTagsThatItsStyleImplies(t *testing.T) {
 	back, _ := mustRead(t, got, false)
 	lines := make([][]string, 0, 4)
 	for _, i := range []int{1, 2, 3, 5} {
-		lines = append(lines, cueAt(t, back, i).Lines)
+		lines = append(lines, cueAt(t, back, i).TaggedLines())
 	}
 	assert.Equal(t, [][]string{{"<i>I should have taken the night bus.</i>"}, {"Upright now"}, {"<b><u><s>Depot closed for repairs</s></u></b>"}, {"<i>Left</i> again"}}, lines)
 }

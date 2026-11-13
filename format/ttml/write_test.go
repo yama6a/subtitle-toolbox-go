@@ -190,9 +190,9 @@ func TestOutputParsesBackToTheSameCues(t *testing.T) {
 	back, _ := mustRead(t, writeDefault(t, s), false)
 	cues := back.Cues()
 	require.Len(t, cues, 2)
-	assert.Equal(t, "<v Ann>one </v><v Ben>two\n<b>bold <i>open</i></b>", cues[0].Text())
+	assert.Equal(t, "<v Ann>one </v><v Ben>two\n<b>bold <i>open</i></b>", taggedText(cues[0]))
 	assert.Equal(t, model.MiddleLeft, cues[0].Position.Alignment)
-	assert.Equal(t, "<i>mis</i><b><i>nested</i>tags</b> &lt;3 <font color=\"#ffff00\">class</font> word", cues[1].Text())
+	assert.Equal(t, "<i>mis</i><b><i>nested</i>tags</b> &lt;3 <font color=\"#ffff00\">class</font> word", taggedText(cues[1]))
 	assert.Equal(t, model.BottomCenter, cues[1].Position.Alignment)
 }
 
@@ -331,7 +331,7 @@ func TestCharactersThatXMLForbidsAreRemoved(t *testing.T) {
 	assert.Contains(t, out, `xml:lang="en"`)
 	back, _ := mustRead(t, out, false)
 	c, _ := back.Cue(0)
-	assert.Equal(t, "Welcome tothe bakery tour.", c.Text())
+	assert.Equal(t, "Welcome tothe bakery tour.", taggedText(c))
 }
 
 // Ports testTextThatIsNotUtf8Throws and testTextReadWithItsEncodingIsWritten of tests/Formatters/XmlOutputTest.php
@@ -459,10 +459,10 @@ func TestForcedRealFileRoundTripKeepsTheFlags(t *testing.T) {
 			assert.Equal(t, forcedFlags(s), forcedFlags(back))
 			var texts, backTexts []string
 			for _, c := range s.All() {
-				texts = append(texts, c.Text())
+				texts = append(texts, taggedText(c))
 			}
 			for _, c := range back.All() {
-				backTexts = append(backTexts, c.Text())
+				backTexts = append(backTexts, taggedText(c))
 			}
 			assert.Equal(t, texts, backTexts)
 			assert.Equal(t, out, writeDefault(t, back))
@@ -517,9 +517,11 @@ func TestCDATASections(t *testing.T) {
 			head, _ := fileData(t, s).String("head")
 			assert.Equal(t, tt.storedHead, head)
 			c, _ := s.Cue(0)
-			assert.Equal(t, tt.text, c.Text())
+			assert.Equal(t, tt.text, taggedText(c))
 
-			setCue(t, s, 0, func(c *model.Cue) { c.Lines, c.Position.Alignment = []string{"<v Ann>" + c.Text()}, model.TopCenter })
+			setCue(t, s, 0, func(c *model.Cue) {
+				c.Lines, c.Position.Alignment = []string{"<v Ann>" + taggedText(*c)}, model.TopCenter
+			})
 			assert.Contains(t, writeDefault(t, s), "\n"+tt.written)
 		})
 	}

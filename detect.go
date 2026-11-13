@@ -93,12 +93,21 @@ func isBlank(content []byte) bool {
 	return len(bytes.Trim(textenc.TrimUTF8BOMs(content), markupcore.PHPTrimSet)) == 0
 }
 
-// jsonKeys returns the top-level keys of a JSON object. PHP json_decode fails on what orderedjson rejects,
-// such as a lone surrogate escape, so such a document goes on to the text signatures.
+// jsonKeys returns the top-level keys of a JSON object, each with its compact JSON. PHP json_decode fails on
+// what orderedjson rejects, such as a lone surrogate escape or 512 nested levels, so such a document goes on
+// to the text signatures.
 func jsonKeys(content []byte) (map[string]json.RawMessage, bool) {
-	if _, err := orderedjson.Decode(content); err != nil {
+	v, err := orderedjson.Decode(content)
+	if err != nil || v.Kind() != orderedjson.Object {
 		return nil, false
 	}
-	var keys map[string]json.RawMessage
-	return keys, json.Unmarshal(content, &keys) == nil
+	keys := make(map[string]json.RawMessage, len(v.Members()))
+	for _, m := range v.Members() {
+		raw, err := orderedjson.Encode(m.Value, false)
+		if err != nil {
+			return nil, false
+		}
+		keys[m.Key] = raw
+	}
+	return keys, true
 }

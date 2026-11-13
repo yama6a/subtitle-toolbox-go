@@ -178,6 +178,12 @@ func TestCountRules(t *testing.T) {
 			[]string{"0 maxSpeakersPerCue 2, limit 1"},
 		},
 		{
+			"the speaker and a voice tag",
+			[]model.Cue{{Start: 0, End: time.Second, Lines: []string{"<v Tom>Hi", "Bye"}, Speaker: "Anna"}},
+			validation.Rules{MaxSpeakersPerCue: 1},
+			[]string{"0 maxSpeakersPerCue 2, limit 1"},
+		},
+		{
 			"speakers from dashes",
 			[]model.Cue{cue(0, 1000, "- Hi", "- Hello", "- Bye"), cue(1000, 2000, "-20 degrees", "text"), cue(2000, 3000)},
 			validation.Rules{MaxSpeakersPerCue: 2},

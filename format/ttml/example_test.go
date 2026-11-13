@@ -21,7 +21,7 @@ func ExampleRead() {
 		return
 	}
 	for _, c := range s.All() {
-		fmt.Println(c.Start, c.End, c.Lines, c.Position.Alignment)
+		fmt.Println(c.Start, c.End, c.TaggedLines(), c.Position.Alignment)
 	}
 	lang, _ := s.Metadata(model.MetadataLanguage)
 	data, _ := s.FormatData("ttml")

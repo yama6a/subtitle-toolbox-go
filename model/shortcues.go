@@ -250,7 +250,7 @@ func (m shortCueMerge) isShort(c Cue) bool {
 		(m.opts.MinCharacters > 0 && linewrap.VisibleCharacters(c.Lines) < m.opts.MinCharacters)
 }
 
-// join returns first with the later end and the lines of both cues, or false when the joined cue breaks a limit.
+// join returns first with the later end and the lines, the words and the speaker of both cues, or false when the joined cue breaks a limit.
 func (m shortCueMerge) join(first, second Cue) (Cue, bool) {
 	names := speakers(first)
 	if !m.mayJoin(first, second, names) {
@@ -261,17 +261,19 @@ func (m shortCueMerge) join(first, second Cue) (Cue, bool) {
 		return Cue{}, false
 	}
 
+	joined := joinParts(first, []Cue{first, second})
 	lines, ok := oneVoiceTag(first, second, names)
 	if !ok {
-		lines = slices.Concat(first.Lines, second.Lines)
+		lines = joined.Lines
 	}
 	lines, ok = linewrap.WrapToFit(lines, m.limits.maxCharactersPerLine, m.limits.maxLinesPerCue)
 	if !ok || !linewrap.FitsCharactersPerSecond(lines, duration, m.limits.maxCharactersPerSecond) {
 		return Cue{}, false
 	}
-	first.End = max(first.End, second.End)
-	first.Lines = cleanLines(lines)
-	return first, true
+	joined.End = max(first.End, second.End)
+	joined.Lines = markupcore.CleanLines(lines)
+	joined.SyncWords()
+	return joined, true
 }
 
 // mayJoin applies the join check of JoinCues, the speaker rule and the sentence end rule.

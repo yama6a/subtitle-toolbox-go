@@ -110,6 +110,7 @@ func (r *WebVTTReader) run(emit func(model.Cue) bool) error {
 	)
 	pass := func() bool {
 		for _, k := range kept {
+			vtt.ExtractWords(&k.Cue)
 			if !emit(k.Cue) {
 				return false
 			}

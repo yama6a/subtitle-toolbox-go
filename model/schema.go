@@ -439,5 +439,7 @@ var cueSchema = map[string]valueType{
 		optional("size", str()),
 		optional("align", str()),
 		optional("region", str()),
+		optional("voiceClass", str()),
+		optional("voiceEnd", boolean()),
 	),
 }

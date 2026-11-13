@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
@@ -65,7 +66,7 @@ func Join(segments [][]byte, opts JoinOptions) (*model.Subtitle, error) {
 			return nil, err
 		}
 		for _, c := range segment.All() {
-			if key := (cueKey{c.Start, c.End, c.Text()}); !seen[key] {
+			if key := (cueKey{c.Start, c.End, strings.Join(c.TaggedLines(), "\n")}); !seen[key] {
 				seen[key] = true
 				cues = append(cues, c)
 			}

@@ -2,10 +2,10 @@ package refsync_test
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"math/rand/v2"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -14,7 +14,6 @@ import (
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 	"github.com/yama6a/subtitle-toolbox-go/v4/refsync"
 )
@@ -398,8 +397,8 @@ func TestApplyTwoThousandCues(t *testing.T) {
 	})
 }
 
-// Adapted from WordTimestampRetimingTest::testReferenceSyncWithSplitsMovesWordTimestampsWithTheirPart.
-func TestApplyMovesWordTimestampsWithTheirSegment(t *testing.T) {
+// Adapted from WordTimestampRetimingTest::testReferenceSyncWithSplitsMovesWordTimestampsWithTheirPart, with words in place of tags.
+func TestApplyMovesWordsWithTheirSegment(t *testing.T) {
 	t.Parallel()
 
 	target := load(t, "own_target_de_25fps.srt")
@@ -408,8 +407,7 @@ func TestApplyMovesWordTimestampsWithTheirSegment(t *testing.T) {
 		c, ok := target.Cue(i)
 		require.True(t, ok)
 		ts := c.Start + 500*time.Millisecond
-		c.Lines[0] = fmt.Sprintf("<%02d:%02d:%02d.%03d>", int(ts.Hours()), int(ts.Minutes())%60, int(ts.Seconds())%60,
-			ts.Milliseconds()%1000) + c.Lines[0]
+		c.Words = []model.Word{{Text: strings.Fields(c.PlainText())[0], Start: ts, End: ts + 100*time.Millisecond}}
 		require.NoError(t, target.SetCue(i, c))
 	}
 
@@ -422,14 +420,8 @@ func TestApplyMovesWordTimestampsWithTheirSegment(t *testing.T) {
 	for _, i := range []int{0, last} {
 		c, ok := target.Cue(i)
 		require.True(t, ok)
-		var stamps []time.Duration
-		markup.MapWordTimestamps(c.Lines[0], func(d time.Duration) time.Duration {
-			stamps = append(stamps, d)
-			return d
-		})
-		require.Len(t, stamps, 1)
-		ts := stamps[0]
-		assert.InDelta(t, (c.Start + time.Duration(0.5*r.Scale*float64(time.Second))).Seconds(), ts.Seconds(), 0.0015)
+		require.Len(t, c.Words, 1)
+		assert.InDelta(t, (c.Start + time.Duration(0.5*r.Scale*float64(time.Second))).Seconds(), c.Words[0].Start.Seconds(), 0.0015)
 	}
 }
 

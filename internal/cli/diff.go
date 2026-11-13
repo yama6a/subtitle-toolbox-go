@@ -182,7 +182,7 @@ func cueToJSON(c *model.Cue) *cueJSON {
 	if c == nil {
 		return nil
 	}
-	lines := c.Lines
+	lines := c.TaggedLines()
 	if lines == nil {
 		lines = []string{}
 	}

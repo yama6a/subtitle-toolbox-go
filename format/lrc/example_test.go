@@ -21,7 +21,7 @@ func ExampleRead() {
 	title, _ := s.Metadata(model.MetadataTitle)
 	fmt.Println(title)
 	for _, c := range s.All() {
-		fmt.Println(c.Start, c.End, c.Text())
+		fmt.Println(c.Start, c.End, taggedText(c))
 	}
 	// Output:
 	// Morning Train

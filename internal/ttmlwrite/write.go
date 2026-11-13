@@ -219,7 +219,7 @@ func (w *writer) paragraph(containers []Properties, c model.Cue, cueData *model.
 	}
 	out += forced
 
-	text := markupcore.RubyAsText(strings.Join(c.Lines, "\n"))
+	text := markupcore.RubyAsText(strings.Join(c.TaggedLines(), "\n"))
 	if w.stripTags {
 		return out + ">" + w.text(markupcore.StripAllTags(text)) + "</p>"
 	}

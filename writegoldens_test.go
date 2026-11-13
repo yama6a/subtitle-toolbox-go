@@ -275,7 +275,7 @@ func TestLRCWordTimesWriteAsWordsInSubRip(t *testing.T) {
 	s, _ := folder(t, "lrc").read(t, "handwritten-enhanced.lrc")
 	first, ok := s.Cue(0)
 	require.True(t, ok)
-	assert.Equal(t, "<00:00:03.000>Slow <00:00:03.550>river <00:00:04.400>runs", first.Text())
+	assert.Equal(t, []string{"<00:00:03.000>Slow <00:00:03.550>river <00:00:04.400>runs"}, first.TaggedLines())
 	assert.Contains(t, string(writeAs(t, s, stbox.SubRip)), "\nSlow river runs\n")
 }
 

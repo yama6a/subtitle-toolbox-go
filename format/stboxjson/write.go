@@ -22,7 +22,10 @@ const (
 	infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
 )
 
-const imageKey = "image"
+const (
+	imageKey = "image"
+	vttKey   = "vtt"
+)
 
 var errInfOrNaN = errors.New("inf or NaN")
 
@@ -89,7 +92,7 @@ func validText(s *model.Subtitle, withFormatData bool) (int, bool) {
 }
 
 func validCueText(c model.Cue, withFormatData bool) bool {
-	return utf8.ValidString(c.ID) && !slices.ContainsFunc(c.Lines, func(l string) bool { return !utf8.ValidString(l) }) &&
+	return utf8.ValidString(c.ID) && !slices.ContainsFunc(c.TaggedLines(), func(l string) bool { return !utf8.ValidString(l) }) &&
 		(!withFormatData || validKeys(c.FormatDataKeys(), c.FormatData))
 }
 
@@ -186,7 +189,7 @@ func (e *encoder) cue(c model.Cue, withFormatData bool) {
 	e.raw(`,"end":`)
 	e.seconds(c.End)
 	e.raw(`,"lines":[`)
-	for i, line := range c.Lines {
+	for i, line := range c.TaggedLines() {
 		e.comma(i)
 		e.string(line)
 	}
@@ -254,18 +257,31 @@ func (e *encoder) formatData(keys []string, get func(string) (*model.Data, bool)
 // cueFormatData writes the format data of the cue. The image of the cue is the key image, between the other keys in
 // sorted order.
 func (e *encoder) cueFormatData(c model.Cue) error {
-	keys := c.FormatDataKeys()
-	if c.Image == nil {
-		return e.formatData(keys, c.FormatData)
+	keys := slices.DeleteFunc(c.FormatDataKeys(), func(key string) bool {
+		d, _ := withoutVoiceForm(c, key)
+		return key == vttKey && d.Len() == 0
+	})
+	if c.Image != nil {
+		keys = append(keys, imageKey)
+		slices.Sort(keys)
 	}
-	keys = append(keys, imageKey)
-	slices.Sort(keys)
 	return e.formatData(keys, func(key string) (*model.Data, bool) {
 		if key == imageKey {
 			return imageData(c), true
 		}
-		return c.FormatData(key)
+		return withoutVoiceForm(c, key)
 	})
+}
+
+// withoutVoiceForm returns the format data of key without voiceClass and voiceEnd of the vtt data. The tagged lines
+// carry both.
+func withoutVoiceForm(c model.Cue, key string) (*model.Data, bool) {
+	d, ok := c.FormatData(key)
+	if ok && key == vttKey {
+		d.Delete("voiceClass")
+		d.Delete("voiceEnd")
+	}
+	return d, ok
 }
 
 // imageData returns the image of c in the shape of the key image. The PNG is a string, so the encoder writes

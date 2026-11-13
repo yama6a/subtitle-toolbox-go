@@ -66,7 +66,7 @@ var noBOM = model.CommonWriteOptions{BOM: model.BOMRemove}
 func cueRows(s *model.Subtitle) []cueRow {
 	var rows []cueRow
 	for _, c := range s.All() {
-		rows = append(rows, cueRow{c.Start, c.End, c.Lines})
+		rows = append(rows, cueRow{c.Start, c.End, c.TaggedLines()})
 	}
 	return rows
 }

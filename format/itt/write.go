@@ -128,8 +128,9 @@ func copyOf(s *model.Subtitle) *model.Subtitle {
 		if c.Position.Alignment.Row() == 2 {
 			region = "top"
 		}
-		lines := make([]string, len(c.Lines))
-		for i, line := range c.Lines {
+		tagged := c.TaggedLines()
+		lines := make([]string, len(tagged))
+		for i, line := range tagged {
 			lines[i] = supportedMarkup(line)
 		}
 		cue := model.Cue{Start: c.Start, End: c.End, Lines: lines, ID: c.ID, Forced: c.Forced}

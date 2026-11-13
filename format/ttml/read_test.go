@@ -27,9 +27,9 @@ func TestReadsBeginEndDurItalicSpanAndLanguage(t *testing.T) {
 	assert.Empty(t, warnings)
 	c0, _ := s.Cue(0)
 	c1, _ := s.Cue(1)
-	assert.Equal(t, []string{"Hello", "<i>world</i>"}, c0.Lines)
+	assert.Equal(t, []string{"Hello", "<i>world</i>"}, c0.TaggedLines())
 	assert.Equal(t, []cueRow{{sec(1.5), sec(4), "Hello\n<i>world</i>"}, {sec(5), sec(7.5), "Second cue"}}, cueRows(s))
-	assert.Equal(t, []string{"Second cue"}, c1.Lines)
+	assert.Equal(t, []string{"Second cue"}, c1.TaggedLines())
 }
 
 func TestTimeExpressions(t *testing.T) {
@@ -116,7 +116,7 @@ func TestInvalidSpanTimeKeepsTheText(t *testing.T) {
 	t.Parallel()
 
 	c := paragraphCue(t, `<p begin="1s" end="2s">A <span begin="x">B</span></p>`, "", "")
-	assert.Equal(t, cueRow{sec(1), sec(2), "A B"}, cueRow{c.Start, c.End, c.Text()})
+	assert.Equal(t, cueRow{sec(1), sec(2), "A B"}, cueRow{c.Start, c.End, taggedText(c)})
 }
 
 func TestInvalidTimeExpression(t *testing.T) {
@@ -359,7 +359,7 @@ func TestParagraphText(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, paragraphCue(t, tt.p, "", tt.head).Text())
+			assert.Equal(t, tt.want, taggedText(paragraphCue(t, tt.p, "", tt.head)))
 		})
 	}
 }
@@ -391,7 +391,7 @@ func TestStyleProperties(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, paragraphCue(t, `<p end="1s"><span `+tt.span+`>x</span></p>`, "", "").Text())
+			assert.Equal(t, tt.want, taggedText(paragraphCue(t, `<p end="1s"><span `+tt.span+`>x</span></p>`, "", "")))
 		})
 	}
 }
@@ -401,7 +401,7 @@ func TestStylingAttributeWithUndeclaredPrefix(t *testing.T) {
 
 	s, _ := mustRead(t, `<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p end="1s" tts:fontStyle="italic">x</p></div></body></tt>`, false)
 	c, _ := s.Cue(0)
-	assert.Equal(t, "<i>x</i>", c.Text())
+	assert.Equal(t, "<i>x</i>", taggedText(c))
 }
 
 func TestDFXPStylingNamespaces(t *testing.T) {
@@ -417,7 +417,7 @@ func TestDFXPStylingNamespaces(t *testing.T) {
 		if ns == "urn:other" {
 			want = "x"
 		}
-		assert.Equal(t, want, c.Text(), ns)
+		assert.Equal(t, want, taggedText(c), ns)
 	}
 }
 
@@ -428,7 +428,7 @@ func TestStyleInheritanceOrder(t *testing.T) {
 	s, _ := mustRead(t, document(`<div tts:color="yellow"><p end="1s" tts:fontWeight="normal">a<span tts:color="white">b</span></p></div>`,
 		"", head), false)
 	c, _ := s.Cue(0)
-	assert.Equal(t, `<font color="#ffff00">a</font>b`, c.Text())
+	assert.Equal(t, `<font color="#ffff00">a</font>b`, taggedText(c))
 }
 
 func TestAgentAttributeIsNotStored(t *testing.T) {
@@ -628,7 +628,7 @@ func TestDFXPNamespacesAreRead(t *testing.T) {
 		`<body><div><p begin="00:00:01:05" end="2s"><span tts:fontWeight="bold">x</span></p></div></body></tt>`, false)
 	c, _ := s.Cue(0)
 	assert.Equal(t, sec(1.2), c.Start)
-	assert.Equal(t, "<b>x</b>", c.Text())
+	assert.Equal(t, "<b>x</b>", taggedText(c))
 }
 
 func TestExternalEntityIsNotLoaded(t *testing.T) {

@@ -274,6 +274,7 @@ func commentLine(text string, format []string, stored []record, used []bool, at 
 }
 
 func (wr *writer) dialogueLine(c model.Cue, format []string) string {
+	c.Lines = c.TaggedLines()
 	data, _ := c.FormatData(formatDataKey)
 	fieldsValue, _ := data.Get("fields")
 	fields := recordOf(fieldsValue)
