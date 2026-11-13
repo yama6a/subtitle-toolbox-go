@@ -40,6 +40,12 @@ const (
 	PodcastTranscript Format = "podcast-transcript"
 	// YouTubeChapters is a list of lines such as "0:00 Intro". Detection never finds it.
 	YouTubeChapters Format = "youtube-chapters"
+	// FFMetadataChapters is the ;FFMETADATA1 text of FFmpeg. Detection never finds it.
+	FFMetadataChapters Format = "ffmeta-chapters"
+	// OGMChapters is the simple chapter format of mkvmerge. Detection never finds it.
+	OGMChapters Format = "ogm-chapters"
+	// PodcastChapters is the JSON chapters file of Podcasting 2.0. Detection never finds it.
+	PodcastChapters Format = "podcast-chapters"
 )
 
 type formatFact struct {
@@ -56,6 +62,7 @@ var formatFacts = []formatFact{
 	{format: ASS, extensions: []string{"ass", "ssa"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: Cavena890, extensions: []string{"890"}, canRead: true, canWrite: true, binary: true},
 	{format: CSV, extensions: []string{"csv"}, canRead: true, canWrite: true},
+	{format: FFMetadataChapters, extensions: []string{"ffmeta"}, canRead: true, canWrite: true},
 	{format: ITT, extensions: []string{"itt"}, canRead: true, canWrite: true},
 	{format: JSON, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: GoogleSpeech, extensions: []string{"json"}, canRead: true, canWrite: true},
@@ -82,6 +89,8 @@ var formatFacts = []formatFact{
 	{format: VobSub, extensions: []string{"idx"}, canRead: true, binary: true},
 	{format: WebVTT, extensions: []string{"vtt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: Whisper, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: OGMChapters, extensions: []string{"txt"}, canRead: true, canWrite: true},
+	{format: PodcastChapters, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: PodcastTranscript, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: YouTubeChapters, extensions: []string{"txt"}, canRead: true, canWrite: true},
 }
