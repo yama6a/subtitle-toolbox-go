@@ -16,15 +16,18 @@ s, info, err := stbox.Load("movie.mkv", stbox.ReadOptions{Track: 2})
 | `S_TEXT/UTF8` | `srt` | SubRip cues |
 | `S_TEXT/ASS`, `S_TEXT/SSA` | `ass` | an ASS or SSA subtitle, as `mkvextract` writes it |
 | `S_TEXT/WEBVTT` | `vtt` | a WebVTT subtitle with its header, cue settings, identifiers and comments |
+| `S_HDMV/PGS` | `pgs` | image cues, as the PGS reader reads a `.sup` file. A block holds one or more segments. The time of a block is its start, so PGS times work up to the limit below |
+| `S_VOBSUB` | `vobsub` | image cues, one for each block. `CodecPrivate` holds the `.idx` header with the `size` and `palette` lines. The reader adds the first line `# VobSub index file` when it is missing |
 | `D_WEBVTT/SUBTITLES`, `D_WEBVTT/CAPTIONS`, `D_WEBVTT/DESCRIPTIONS` | `vtt` | a WebVTT subtitle with cue settings and identifiers, as ffmpeg writes WebVTT into WebM. `D_WEBVTT/METADATA` holds no text to display |
 
-Any other codec has the format "". `Load` and `Extract` return a `*model.ParseError` for it. PGS (`S_HDMV/PGS`), VobSub (`S_VOBSUB`) and DVB (`S_DVBSUB`) tracks are listed with the format "" until their readers land.
+Any other codec has the format "". `Load` and `Extract` return a `*model.ParseError` for it. DVB (`S_DVBSUB`) tracks are listed with the format "" until their reader lands.
 
 - **Tracks**: `Tracks` lists only tracks of type subtitle. The fields are `Number` (`TrackNumber`), `CodecID`, `Format`, `Language`, `Name` ("" without one), `Default` and `Forced`.
 - **Track numbers**: the reader skips a subtitle track whose `TrackNumber` is above 2147483647, because `Track.Number` is an `int` that every platform holds.
 - **Detection**: `Load` and `Parse` know an MKV or WebM file by its first 4 bytes `1A 45 DF A3`, not by its extension.
 - **Language**: the reader takes `LanguageBCP47`. Without it, the reader takes `Language`. Without either, the language is `eng`, as the Matroska specification defines. The read puts it into the `language` metadata.
 - **Forced**: on a track with the forced flag, the read sets `Cue.Forced` on every cue.
+- **Image tracks**: a PGS or VobSub track has no rebuilt file. The reader passes the segments of each block to the PGS decoder and each block to the VobSub unit decoder. A VobSub unit with a stop command ends at the block start plus its stop delay. A unit without one ends at the end of its block, which is the block duration, the `DefaultDuration` or the start of the next block. In lenient mode, a VobSub block that does not decode gets a `Skipped` warning with the index of the block in the track. A PGS block that ends inside a segment adds a `Skipped` warning and ends the track. Strict mode fails in both cases.
 - **Rebuilt files**: the reader rebuilds a SubRip, ASS or WebVTT file from the blocks and reads it with the parser of that format. So the options `Lenient` and `LastCueDuration` apply as they do for a file, and a damaged rebuilt file returns the error of its format.
 - **End times**: a text block without `BlockDuration` ends after `DefaultDuration` when the track has one. Else it ends at the start of the next block of the track. The last such block lasts `ReadOptions.LastCueDuration`.
 - **Compression**: the reader reads zlib compression and header stripping. It returns an error for bzlib, LZO and encrypted tracks. One block may inflate to 64 MB, and one track to 1 GiB in total.
@@ -32,7 +35,7 @@ Any other codec has the format "". `Load` and `Extract` return a `*model.ParseEr
 - **Memory**: the reader skips video and audio data. A block of another track costs at most 11 bytes of reads. Memory grows with the subtitle track, not with the file.
 - **Speed**: in a file from mkvmerge, the reader reads only the blocks that the `Cues` element lists for the track. It does so only when their number equals the `NUMBER_OF_FRAMES` tag that mkvmerge writes for the track. For a 2-hour, 1.3 GB film with 2,000 cues, this takes 0.24 s in place of 1.1 s. In other files, and when the numbers differ, the reader walks the whole file.
 - **Time limit**: a block that starts or ends at 100,000 hours or more returns an error. This is the [time limit](formats.md) of the format readers.
-- **Errors**: a damaged container returns a `*model.ParseError` with an empty `Format`. The CLI prints it as `stbox: <message>`. Lenient mode does not change container errors. It only applies to the rebuilt text file. Damage in these cases returns an error:
+- **Errors**: a damaged container returns a `*model.ParseError` with an empty `Format`. The CLI prints it as `stbox: <message>`. Lenient mode does not change container errors. It only applies to the rebuilt text file, the PGS segments and the VobSub units. Damage in these cases returns an error:
   - A codec without a reader.
   - Laced subtitle blocks.
   - An unsigned integer element, such as a cluster `Timestamp`, of more than 8 bytes or of 2^63 or more.
