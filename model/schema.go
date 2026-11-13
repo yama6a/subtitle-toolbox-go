@@ -441,5 +441,6 @@ var cueSchema = map[string]valueType{
 		optional("region", str()),
 		optional("voiceClass", str()),
 		optional("voiceEnd", boolean()),
+		optional("taggedLines", listOf(str())),
 	),
 }

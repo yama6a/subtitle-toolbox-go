@@ -523,14 +523,15 @@ func (r *reader) cue(entry any, i int) (model.Cue, string) {
 			return model.Cue{}, msg
 		}
 	}
-	if msg := cueFormatData(&c, d, i, r.version); msg != "" {
+	if msg := cueFormatData(&c, d, i); msg != "" {
 		return model.Cue{}, msg
 	}
 	if r.version == Version {
 		if msg := validateWords(&c, path); msg != "" {
 			return c, msg
 		}
-		return c, cueTagLayout(&c, d, i)
+		r.restoreTaggedLines(&c, i, entry)
+		return c, ""
 	}
 	c.ExtractWordTags()
 	return c, ""
@@ -688,7 +689,7 @@ func cueForced(c *model.Cue, d *model.Data, path string) string {
 	return ""
 }
 
-func cueFormatData(c *model.Cue, d *model.Data, i int, version int64) string {
+func cueFormatData(c *model.Cue, d *model.Data, i int) string {
 	fd, ok := object(d, "formatData")
 	if !ok {
 		return "The field " + cuePath(i) + ".formatData must be an object."
@@ -698,9 +699,6 @@ func cueFormatData(c *model.Cue, d *model.Data, i int, version int64) string {
 		obj, ok := v.(*model.Data)
 		if !ok {
 			return "The field " + cuePath(i) + ".formatData." + key + " must be an object."
-		}
-		if key == taggedKey && version == Version {
-			continue
 		}
 		if key == imageKey {
 			if msg := cueImage(c, obj, cuePath(i)+".formatData.image"); msg != "" {

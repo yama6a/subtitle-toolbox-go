@@ -14,6 +14,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/vtt"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -25,10 +26,8 @@ const (
 
 const (
 	imageKey = "image"
-	// taggedKey holds the lines with their tags in the cue format data of version 2, for a cue whose tags the
-	// placement rule would write elsewhere.
-	taggedKey = "tagged"
-	vttKey    = "vtt"
+
+	vttKey = "vtt"
 )
 
 var errInfOrNaN = errors.New("inf or NaN")
@@ -317,60 +316,52 @@ func (e *encoder) formatData(keys []string, get func(string) (*model.Data, bool)
 // cueFormatData writes the format data of the cue. The image of the cue is the key image, between the other keys in
 // sorted order.
 func (e *encoder) cueFormatData(c model.Cue) error {
-	data := c.FormatData
-	var layout []string
-	if e.version == 1 {
-		data = func(key string) (*model.Data, bool) { return withoutVoiceForm(c, key) }
-	} else {
-		layout, _ = c.TagLayout()
-	}
+	data := func(key string) (*model.Data, bool) { return cueData(c, key, e.version) }
 	keys := slices.DeleteFunc(c.FormatDataKeys(), func(key string) bool {
 		d, _ := data(key)
 		return key == vttKey && d.Len() == 0
 	})
-	keys = addKeys(keys, len(layout) > 0, c.Image != nil)
+	if c.Image != nil {
+		keys = append(keys, imageKey)
+		slices.Sort(keys)
+	}
 	return e.formatData(keys, func(key string) (*model.Data, bool) {
-		switch key {
-		case imageKey:
+		if key == imageKey {
 			return imageData(c), true
-		case taggedKey:
-			return taggedData(layout), true
 		}
 		return data(key)
 	})
 }
 
-// addKeys adds the keys tagged and image when asked, and sorts the result.
-func addKeys(keys []string, tagged, image bool) []string {
-	if tagged {
-		keys = append(keys, taggedKey)
-	}
-	if image {
-		keys = append(keys, imageKey)
-	}
-	if tagged || image {
-		slices.Sort(keys)
-	}
-	return keys
-}
-
-func taggedData(lines []string) *model.Data {
-	items := make([]any, len(lines))
-	for i, l := range lines {
-		items[i] = l
-	}
-	return model.NewData(model.Field{Key: "lines", Value: items})
-}
-
-// withoutVoiceForm returns the format data of key without voiceClass and voiceEnd of the vtt data. In version 1 the
-// tagged lines carry both. Version 2 stores them in the format data.
-func withoutVoiceForm(c model.Cue, key string) (*model.Data, bool) {
+// cueData returns the format data of key as the version writes it. The tagged lines of version 1 carry what
+// voiceClass, voiceEnd and taggedLines of the vtt data hold. Version 2 keeps them, except taggedLines of a cue that
+// an edit changed after the read, because those lines no longer match the cue.
+func cueData(c model.Cue, key string, version int) (*model.Data, bool) {
 	d, ok := c.FormatData(key)
-	if ok && key == vttKey {
+	if !ok || key != vttKey {
+		return d, ok
+	}
+	if version == 1 {
 		d.Delete("voiceClass")
 		d.Delete("voiceEnd")
+		d.Delete(vtt.TaggedLinesKey)
+		return d, true
 	}
-	return d, ok
+	if !slices.Equal(taggedLines(d), c.TaggedLines()) {
+		d.Delete(vtt.TaggedLinesKey)
+	}
+	return d, true
+}
+
+// taggedLines returns the strings of the list taggedLines of the vtt data, nil when it has none.
+func taggedLines(d *model.Data) []string {
+	list, _ := d.List(vtt.TaggedLinesKey)
+	lines := make([]string, 0, len(list))
+	for _, item := range list {
+		s, _ := item.(string)
+		lines = append(lines, s)
+	}
+	return lines
 }
 
 // imageData returns the image of c in the shape of the key image. The PNG is a string, so the encoder writes

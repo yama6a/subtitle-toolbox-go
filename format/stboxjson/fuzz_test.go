@@ -45,6 +45,7 @@ func FuzzRead(f *testing.F) {
 		`{"version": 2, "cues": [{"start": 1, "end": 2, "lines": ["a"], "words": [{"text": "b", "start": 1, "end": 2}]}, {"start": 1, "end": 2, "lines": ["a"], "speaker": 7, "words": {}}]}`,
 		`{"version": 2, "cues": [{"start": 1, "end": 2, "lines": ["a a"], "words": [{"text": "a", "start": 2, "end": 1}, {"text": "", "start": 1, "end": 1}, {"text": "a", "start": 0, "end": 1, "confidence": 2}]}]}`,
 		`{"version": 2, "formatData": {"x": {"a": 1}}, "cues": [{"start": 1, "end": 2, "lines": ["a"], "formatData": {"vtt": {"voiceClass": "loud", "voiceEnd": true}}}]}`,
+		`{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["a b"], "words": [{"text": "a", "start": 1, "end": 2}, {"text": "b", "start": 2, "end": 3}], "formatData": {"vtt": {"taggedLines": ["<00:00:01.000>a<00:00:02.000> b"]}}}]}`,
 		`{"version": 3, "cues": []}`,
 	} {
 		f.Add([]byte(seed))

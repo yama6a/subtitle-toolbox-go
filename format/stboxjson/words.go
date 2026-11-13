@@ -2,11 +2,13 @@ package stboxjson
 
 import (
 	"errors"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/vtt"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -88,40 +90,82 @@ func wordConfidence(w *model.Word, d *model.Data, path string) string {
 	return ""
 }
 
-// validateWords returns the message for the first word of c that breaks a rule of ValidateWords.
+// validateWords returns the message for the first word of c that breaks a rule of ValidateWords. A cue whose text is
+// just its word texts shows which rules the words break on their own. When they break none, the order rule fails.
 func validateWords(c *model.Cue, path string) string {
+	texts := make([]string, len(c.Words))
+	for i, w := range c.Words {
+		texts[i] = w.Text
+	}
+	own := model.Cue{Lines: []string{strings.Join(texts, " ")}, Words: c.Words}
+	if err := own.ValidateWords(); err != nil {
+		return wordMessage(err, path)
+	}
 	err := c.ValidateWords()
 	var iae *model.InvalidArgumentError
 	if !errors.As(err, &iae) {
 		return ""
 	}
-	field := strings.TrimPrefix(iae.Option, "Words")
-	i, name, _ := strings.Cut(field, "].")
-	field = path + ".words" + i + "]"
-	if strings.HasSuffix(iae.Msg, "after the word before it.") {
-		return field + " is not in the text of the cue after the word before it."
-	}
-	return field + "." + strings.ToLower(name[:1]) + name[1:] + " is invalid. " + iae.Msg
+	i, _, _ := strings.Cut(strings.TrimPrefix(iae.Option, "Words"), "].")
+	return path + ".words" + i + "] is not in the text of the cue after the word before it."
 }
 
-// cueTagLayout restores the tags that formatData.tagged.lines holds, when they match the lines and the words of c.
-func cueTagLayout(c *model.Cue, d *model.Data, i int) string {
-	fd, _ := d.Object("formatData")
-	tagged, ok := fd.Object(taggedKey)
-	if !ok {
+func wordMessage(err error, path string) string {
+	var iae *model.InvalidArgumentError
+	if !errors.As(err, &iae) {
 		return ""
 	}
-	path := "The field " + cuePath(i) + ".formatData." + taggedKey + ".lines must be a list of strings."
-	list, ok := tagged.List("lines")
-	if !ok {
-		return path
+	i, name, _ := strings.Cut(strings.TrimPrefix(iae.Option, "Words"), "].")
+	return path + ".words" + i + "]." + strings.ToLower(name[:1]) + name[1:] + " is invalid. " + iae.Msg
+}
+
+// restoreTaggedLines gives c the tag layout that formatData.vtt.taggedLines holds. It works on a copy of c that reads
+// the lines as the WebVTT reader does. The layout stays when the copy has the Lines, Speaker, voice form and word
+// texts and starts of c. Else the key goes and the read adds a warning. Word ends and confidences are not in tags,
+// so they stay as the document gives them.
+func (r *reader) restoreTaggedLines(c *model.Cue, i int, entry any) {
+	stored, ok := c.FormatData(vttKey)
+	if _, has := stored.Get(vtt.TaggedLinesKey); !ok || !has {
+		return
 	}
-	lines := make([]string, len(list))
-	for j, item := range list {
-		if lines[j], ok = item.(string); !ok {
-			return path
+	probe := c.Clone()
+	probe.Lines, probe.Speaker, probe.Words = taggedLines(stored), "", nil
+	rest := stored.Clone()
+	rest.Delete(vtt.TaggedLinesKey)
+	_ = probe.SetFormatData(vttKey, rest)
+	vtt.ExtractWords(&probe)
+	if sameLayout(*c, probe) {
+		probe.Words = c.Words
+		_ = probe.SetFormatData(vttKey, stored)
+		*c = probe
+		return
+	}
+	stored.Delete(vtt.TaggedLinesKey)
+	_ = c.SetFormatData(vttKey, stored)
+	r.st.Warn("The field "+cuePath(i)+".formatData.vtt.taggedLines does not match the lines, the speaker, the voice form and "+
+		"the words of the cue. The parser dropped it.", model.NoLine, i, []string{encodeEntry(entry)}, model.Repaired)
+}
+
+func sameLayout(c, probe model.Cue) bool {
+	if !slices.Equal(c.Lines, probe.Lines) || c.Speaker != probe.Speaker || len(c.Words) != len(probe.Words) {
+		return false
+	}
+	for i, w := range c.Words {
+		if w.Text != probe.Words[i].Text || w.Start != probe.Words[i].Start {
+			return false
 		}
 	}
-	c.SetTagLayout(lines)
-	return ""
+	return voiceForm(c) == voiceForm(probe)
+}
+
+type voiceFormat struct {
+	class string
+	end   bool
+}
+
+func voiceForm(c model.Cue) voiceFormat {
+	d, _ := c.FormatData(vttKey)
+	class, _ := d.String("voiceClass")
+	end, _ := d.Bool("voiceEnd")
+	return voiceFormat{class, end}
 }

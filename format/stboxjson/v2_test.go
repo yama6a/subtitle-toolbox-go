@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/vtt"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -95,22 +96,65 @@ func TestWriteVersionErrors(t *testing.T) {
 	}
 }
 
-// A cue whose tags the placement rule would write elsewhere keeps its tagged lines in formatData.tagged.
-func TestVersion2KeepsTheTagLayout(t *testing.T) {
+const youtubeLine = "the<00:00:01.000><c> train</c><c.red><00:00:02.000><c> leaves</c></c>"
+
+// A WebVTT cue whose tags the placement rule would write elsewhere keeps its tagged lines in the vtt cue data.
+func TestVersion2KeepsTheTaggedLinesOfWebVTT(t *testing.T) {
 	t.Parallel()
 
-	c := model.Cue{End: 5 * time.Second, Lines: []string{"the<00:00:01.000><c> train</c><c.red><00:00:02.000><c> leaves</c></c>"}}
-	c.ExtractWordTags()
+	c := model.Cue{End: 5 * time.Second, Lines: []string{youtubeLine}}
+	require.NoError(t, c.SetFormatData("vtt", model.NewData(model.Field{Key: "align", Value: "start"})))
+	vtt.ExtractWords(&c)
 	s := &model.Subtitle{}
 	s.AddCue(c)
 	out := writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
-	assert.Contains(t, out, `"formatData":{"tagged":{"lines":["the<00:00:01.000><c> train</c><c.red><00:00:02.000><c> leaves</c></c>"]}}`)
-	assert.NotContains(t, writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{Version: 1}), "tagged")
+	assert.Contains(t, out, `"formatData":{"vtt":{"align":"start","taggedLines":["`+youtubeLine+`"]}}`)
+	assert.NotContains(t, writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{Version: 1}), "taggedLines")
 
 	got, ok := mustRead(t, out, false).Cue(0)
 	require.True(t, ok)
-	assert.Equal(t, c.TaggedLines(), got.TaggedLines())
-	assert.Empty(t, got.FormatDataKeys())
+	assert.Equal(t, []string{youtubeLine}, got.TaggedLines())
+
+	edited, _ := s.Cue(0)
+	edited.Words[1].Start += time.Second
+	s2 := &model.Subtitle{}
+	s2.AddCue(edited)
+	assert.NotContains(t, writeString(t, s2, model.CommonWriteOptions{}, stboxjson.WriteOptions{}), "taggedLines")
+}
+
+// A stored layout that no longer matches the cue is dropped with a warning, also in strict mode.
+func TestReadDropsATaggedLinesKeyThatDoesNotMatch(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name, lines, speaker string
+	}{
+		{"another word start", `<00:00:01.500>a <00:00:02.000>b`, ""},
+		{"another speaker", `<v Ben><00:00:01.000>a <00:00:02.000>b`, "Anna"},
+		{"another text", `<00:00:01.000>a <00:00:02.000>c`, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			speaker := ""
+			if tt.speaker != "" {
+				speaker = `"speaker": "` + tt.speaker + `", `
+			}
+			doc := `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["a b"], ` + speaker +
+				`"words": [{"text": "a", "start": 1, "end": 2}, {"text": "b", "start": 2, "end": 3}], ` +
+				`"formatData": {"vtt": {"taggedLines": ["` + tt.lines + `"]}}}]}`
+			for _, lenient := range []bool{false, true} {
+				s, warnings, err := read(t, doc, lenient)
+				require.NoError(t, err)
+				require.Len(t, warnings, 1)
+				assert.Equal(t, model.Repaired, warnings[0].Action)
+				assert.Contains(t, warnings[0].Message, "The field cues[0].formatData.vtt.taggedLines does not match")
+				c, _ := s.Cue(0)
+				assert.Empty(t, c.FormatDataKeys())
+			}
+		})
+	}
 }
 
 func TestVersion2RoundTrip(t *testing.T) {

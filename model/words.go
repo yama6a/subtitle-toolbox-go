@@ -202,30 +202,6 @@ func (c Cue) TaggedLines() []string {
 	return markupcore.TagWords(c.Lines, timedTexts(c.Words), c.voice())
 }
 
-// TagLayout returns the lines of TaggedLines when they differ from the lines that a cue with the same Lines, Speaker,
-// Words and voice form gets without a source. A cue read from a file differs when the file puts its tags in a
-// place that the placement rule does not choose. Library JSON version 2 stores the result, and SetTagLayout restores it.
-func (c Cue) TagLayout() (lines []string, ok bool) {
-	got := c.TaggedLines()
-	if slices.Equal(got, markupcore.TagWords(c.Lines, timedTexts(c.Words), c.voice())) {
-		return nil, false
-	}
-	return got, true
-}
-
-// SetTagLayout makes TaggedLines return lines again, as ExtractWordTags did when it read them. It does nothing when
-// lines do not hold the Lines, the Speaker and the word texts and starts of c.
-func (c *Cue) SetTagLayout(lines []string) {
-	probe := Cue{End: c.End, Lines: lines, formatData: c.formatData}
-	probe.ExtractWordTags()
-	t := probe.tagged
-	if t == nil || !slices.Equal(probe.Lines, c.Lines) || probe.Speaker != c.Speaker || probe.voice() != c.voice() ||
-		!slices.Equal(timedTexts(probe.Words), timedTexts(c.Words)) {
-		return
-	}
-	c.tagged = t
-}
-
 func cloneWords(words []Word) []Word {
 	if words == nil {
 		return nil
