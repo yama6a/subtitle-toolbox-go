@@ -46,3 +46,31 @@ func TestMatrixFor(t *testing.T) {
 	assert.Equal(t, bitmap.BT601, bitmap.MatrixFor(576))
 	assert.Equal(t, bitmap.BT709, bitmap.MatrixFor(577))
 }
+
+func TestToYCrCb(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		rgb    uint32
+		matrix bitmap.Matrix
+		code   [3]byte
+	}{
+		{name: "white 576", rgb: 0xFFFFFF, matrix: bitmap.MatrixFor(576), code: [3]byte{235, 128, 128}},
+		{name: "black 1080", rgb: 0x000000, matrix: bitmap.MatrixFor(1080), code: [3]byte{16, 128, 128}},
+		{name: "gray 1080", rgb: 0x808080, matrix: bitmap.MatrixFor(1080), code: [3]byte{126, 128, 128}},
+		{name: "yellow 576", rgb: 0xFCFF0A, matrix: bitmap.MatrixFor(576), code: [3]byte{212, 143, 20}},
+		{name: "yellow 1080", rgb: 0xFEFF00, matrix: bitmap.MatrixFor(1080), code: [3]byte{219, 138, 16}},
+		{name: "step of 2 in BT.601", rgb: 0xFFFF40, matrix: bitmap.MatrixFor(576), code: [3]byte{218, 142, 43}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			y, cr, cb := bitmap.ToYCrCb(tt.rgb, tt.matrix)
+			assert.Equal(t, [3]byte{y, cr, cb}, tt.code)
+			r, g, b := bitmap.ToRGB(y, cr, cb, tt.matrix)
+			assert.Equal(t, tt.rgb, uint32(r)<<16|uint32(g)<<8|uint32(b))
+		})
+	}
+}

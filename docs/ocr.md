@@ -83,6 +83,10 @@ func (e webEngine) Recognize(ctx context.Context, im model.Image, language ocr.L
 
 `stbox.Load` reads a Blu-ray `.sup` file as image cues without lines, see [formats.md](formats.md#pgs). `Run` then fills their lines. Each display set that shows objects is one cue, with its bitmap as a PNG in `Cue.Image`. A display set that shows 2 objects gives one cue with one image, so the engine reads both lines together. The forced flag of the objects is `Cue.Forced`, so a caller can pick the forced cues of a track before it runs OCR.
 
+## PGS colour reduction
+
+`stbox.Write` with `stbox.PGS` writes image cues as a `.sup` file, see [formats.md](formats.md#pgs). All images that show at the same time share one palette of at most 256 colours. The writer reduces the colours only when the shown images together hold more than 256 colours. Then a median cut gives 255 opaque colours and entry 0 as transparent. One image with 256 colours stays as it is. Two images with 200 different colours each are reduced.
+
 ## Tesseract
 
 Package `ocr/tesseract` reads cue images with the `tesseract` program. It runs one process per image through `os/exec`, so the library needs no cgo. Example: for a 1920x1080 cue the engine draws the image as dark text on white with a 10-pixel border, writes it as a PGM file and runs `tesseract <file> stdout -l deu --psm 6 -c tessedit_create_tsv=1`. It builds the lines from the TSV word rows.
@@ -119,3 +123,5 @@ Package `ocr/ocrtest` holds `Engine`, a fake that returns the same `Text` for ev
 - The cue gets the cleaned lines. The report holds the raw result of the engine. PHP `docs/ocr.md` says the library drops empty lines, which only the cue setter does.
 - A `Text` with a confidence of NaN fails `Validate`. See [php-differences.md](php-differences.md).
 - PHP `docs/ocr.md` says lenient mode keeps the cues before framing damage of a PGS file and is silent on other damage. Go skips only the display set with damage inside a segment, see [lenient-parsing.md](lenient-parsing.md#pgs).
+- PHP `docs/ocr.md` says the PGS writer reduces "an image with more than 255 colors". The rule is the one above: the shown images together, above 256 colours.
+- The PGS writer returns an `*UnwritableError` for a PNG that does not decode. PHP lets the decoder exception escape.

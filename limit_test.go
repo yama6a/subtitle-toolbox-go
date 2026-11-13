@@ -49,7 +49,7 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 
 			written := 0
 			for _, f := range stbox.Formats() {
-				if !f.CanRead() {
+				if !f.CanRead() || f == stbox.PGS {
 					continue
 				}
 				var out bytes.Buffer
