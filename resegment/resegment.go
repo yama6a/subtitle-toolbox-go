@@ -3,6 +3,7 @@ package resegment
 
 import (
 	"cmp"
+	"errors"
 	"slices"
 	"strings"
 	"time"
@@ -46,8 +47,8 @@ type settings struct {
 
 func (o Options) resolve() (settings, error) {
 	if err := o.Limits.Validate(); err != nil {
-		if e, ok := err.(*model.InvalidArgumentError); ok { //nolint:errorlint // Validate returns the type itself
-			e.Option = "Options.Limits." + strings.TrimPrefix(e.Option, "CueLimits.")
+		if e, ok := errors.AsType[*model.InvalidArgumentError](err); ok {
+			e.Option = "resegment.Options.Limits." + strings.TrimPrefix(e.Option, "CueLimits.")
 		}
 		return settings{}, err
 	}
@@ -68,7 +69,7 @@ func (o Options) resolve() (settings, error) {
 	}
 	if s.maxGap < 0 {
 		return s, &model.InvalidArgumentError{
-			Option: "Options.MaxWordGap",
+			Option: "resegment.Options.MaxWordGap",
 			Msg:    "The maximum word gap must not be negative, got " + timecode.Seconds(s.maxGap) + ".",
 		}
 	}
@@ -94,8 +95,9 @@ func (s settings) tooLong(n int) bool {
 	return n > s.lines*s.cpl+s.lines
 }
 
-// wrap cleans the lines as ReplaceCues does, so that SyncWords sees the final text. It wraps them as model.MergeShortCues does, or as WrapLines does when they do not fit. A source cue with the
-// right-to-left embedding gives each new line its own embedding.
+// wrap wraps lines as model.MergeShortCues does, or as WrapLines does when they do not fit.
+// A source cue with the right-to-left embedding gives each new line its own embedding.
+// The result is cleaned as ReplaceCues cleans it, so that SyncWords sees the final text.
 func (s settings) wrap(lines, source []string) []string {
 	wrapped, ok := linewrap.WrapToFit(lines, s.cpl, s.lines)
 	if !ok {
@@ -135,6 +137,8 @@ func (s settings) splitCue(c model.Cue) []model.Cue {
 		return []model.Cue{c}
 	}
 	ps := newCuePieces(c)
+	source := c
+	source.Words, source.Lines = nil, nil
 	n := len(ps.pieces)
 	if n == 0 {
 		return []model.Cue{c}
@@ -148,7 +152,7 @@ func (s settings) splitCue(c model.Cue) []model.Cue {
 	parts := make([]model.Cue, 0, len(bounds)-1)
 	for k := 1; k < len(bounds); k++ {
 		a, b := bounds[k-1], bounds[k]
-		part := c.Clone()
+		part := source.Clone()
 		if k > 1 {
 			part.ID = ""
 		}
@@ -332,8 +336,9 @@ func (b *wordBuilder) close() {
 	}
 	first := g[0]
 	source := b.cues[first.cue]
+	sourceLines := source.Lines
+	source.Words, source.Lines = nil, nil
 	c := source.Clone()
-	c.Words = nil
 	for _, p := range g {
 		for _, w := range b.pieces[p.cue].pieces[p.index].words {
 			c.Words = append(c.Words, b.cues[p.cue].Words[w])
@@ -346,7 +351,7 @@ func (b *wordBuilder) close() {
 		c.ID = ""
 	}
 	c.Start, c.End = first.start, g[len(g)-1].end
-	c.Lines = b.set.wrap(b.lines(g), source.Lines)
+	c.Lines = b.set.wrap(b.lines(g), sourceLines)
 	c.SyncWords()
 	b.out = append(b.out, c)
 }

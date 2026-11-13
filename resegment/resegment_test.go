@@ -8,9 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 	"github.com/yama6a/subtitle-toolbox-go/v4/resegment"
 )
+
+var emDash = string(rune(0x2014))
 
 const tensor = "The tensor operators are optimized heavily for Apple silicon CPUs. Depending on the computation " +
 	"size, Arm Neon SIMD instrisics or CBLAS Accelerate framework routines are used."
@@ -47,6 +50,12 @@ func TestSplitLong(t *testing.T) {
 		}},
 		{"semicolon", newCue(0, 10, "Aaaa bbbb cccc dddd one; eeee ffff gggg hhhh iiii jjjj"), limits(30, 1, 0), []part{
 			{0, 4.63, "Aaaa bbbb cccc dddd one;"}, {4.63, 10, "eeee ffff gggg hhhh iiii jjjj"},
+		}},
+		{"colon", newCue(0, 10, "Aaaa bbbb cccc dddd one: eeee ffff gggg hhhh iiii jjjj"), limits(30, 1, 0), []part{
+			{0, 4.63, "Aaaa bbbb cccc dddd one:"}, {4.63, 10, "eeee ffff gggg hhhh iiii jjjj"},
+		}},
+		{"em dash", newCue(0, 10, "Aaaa bbbb cccc dddd one"+emDash+" eeee ffff gggg hhhh iiii jjjj"), limits(30, 1, 0), []part{
+			{0, 4.63, "Aaaa bbbb cccc dddd one" + emDash}, {4.63, 10, "eeee ffff gggg hhhh iiii jjjj"},
 		}},
 		{"lone dash", newCue(0, 10, "Aaaa bbbb cccc dddd one - eeee ffff gggg hhhh iiii jjjj"), limits(30, 1, 0), []part{
 			{0, 4.727, "Aaaa bbbb cccc dddd one -"}, {4.727, 10, "eeee ffff gggg hhhh iiii jjjj"},
@@ -165,15 +174,14 @@ func TestSplitLongRightToLeft(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Greater(t, s.Len(), before)
+	want := strings.Split(strings.TrimSpace(string(testfiles.Read(t, "resegmenting/rtl_split_texts.txt"))), "\n")
+	var got []string
 	for i, c := range s.All() {
-		if i < 2 || i > 4 {
-			continue
-		}
-		for _, line := range c.Lines {
-			assert.Equal(t, 1, strings.Count(line, string(rune(0x202b))), "cue %d line %q", i, line)
-			assert.Equal(t, 1, strings.Count(line, string(rune(0x202c))), "cue %d line %q", i, line)
+		if i >= 2 && i <= 4 {
+			got = append(got, c.Text())
 		}
 	}
+	assert.Equal(t, want, got)
 }
 
 func TestSplitLongKeepsIdentityAndComments(t *testing.T) {

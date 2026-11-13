@@ -53,6 +53,9 @@ func BenchmarkSplitLong(b *testing.B) {
 			require.NoError(b, err)
 		}
 	})
+	b.Run("cueBytes=1000000/words", func(b *testing.B) {
+		benchWords(b, resegment.SplitLong)
+	})
 	b.Run("cueBytes=1000000", func(b *testing.B) {
 		words := strings.Repeat("alpha beta gamma delta. ", 1_000_000/24)
 		b.ReportAllocs()
@@ -65,4 +68,30 @@ func BenchmarkSplitLong(b *testing.B) {
 			require.NoError(b, err)
 		}
 	})
+}
+
+func BenchmarkByWords(b *testing.B) {
+	b.Run("cueBytes=1000000/words", func(b *testing.B) {
+		benchWords(b, resegment.ByWords)
+	})
+}
+
+func benchWords(b *testing.B, run func(*model.Subtitle, resegment.Options) (resegment.Report, error)) {
+	b.Helper()
+
+	text := strings.Repeat("alpha beta gamma delta. ", 1_000_000/24)
+	fields := strings.Fields(text)
+	words := make([]model.Word, len(fields))
+	for i, f := range fields {
+		words[i] = model.Word{Text: f, Start: time.Duration(i) * 250 * time.Millisecond, End: time.Duration(i+1) * 250 * time.Millisecond}
+	}
+	b.ReportAllocs()
+	for b.Loop() {
+		b.StopTimer()
+		var s model.Subtitle
+		s.AddCue(model.Cue{End: words[len(words)-1].End, Lines: []string{text}, Words: words})
+		b.StartTimer()
+		_, err := run(&s, resegment.Options{})
+		require.NoError(b, err)
+	}
 }
