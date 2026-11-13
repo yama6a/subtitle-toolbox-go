@@ -45,6 +45,8 @@ type call struct {
 	// beforeCreate gets the path of each output file as given, right before its create.
 	beforeCreate func(path string)
 	commands     []command
+	// env holds the environment variables of the call.
+	env map[string]string
 }
 
 func (cl call) run(t *testing.T, words ...string) result {
@@ -62,7 +64,7 @@ func (cl call) run(t *testing.T, words ...string) result {
 	var stdout, stderr bytes.Buffer
 	env := Env{
 		Stdin: strings.NewReader(cl.stdin), Stdout: &stdout, Stderr: &stderr, Dir: cl.dir,
-		Getenv: func(string) string { return "" }, Version: testVersion,
+		Getenv: func(k string) string { return cl.env[k] }, Version: testVersion,
 	}
 	err := (&app{commands: cmds, beforeCreate: cl.beforeCreate}).run(ctx, words, env)
 	return result{Code: ExitCode(err), Stdout: stdout.String(), Stderr: stderr.String()}
