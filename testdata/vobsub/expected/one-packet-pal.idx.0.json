@@ -1,0 +1,41 @@
+[
+    {
+        "start": 1.0,
+        "end": 3.002,
+        "x": 197,
+        "y": 489,
+        "width": 326,
+        "height": 47,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "876ae3a1e20d51b06d82ea274afe1c2919264cc4185ccfc035175a3d75881240"
+    },
+    {
+        "start": 3.5,
+        "end": 6.003,
+        "x": 245,
+        "y": 454,
+        "width": 230,
+        "height": 82,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "cf5e0fdbde66d684ad1468404670b75159c19719e2b76fd3fd4cebf387279653"
+    },
+    {
+        "start": 6.5,
+        "end": 9.003,
+        "x": 176,
+        "y": 491,
+        "width": 367,
+        "height": 45,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "f3a32fc4e6fea113d0e0b22dace15f7ebf039b6bd1166d6151c78a0676115c42"
+    }
+]
