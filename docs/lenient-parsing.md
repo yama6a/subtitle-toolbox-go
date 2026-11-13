@@ -404,6 +404,16 @@ All errors are `*ParseError` values with the format `pgs` and line 0. T is the t
 
 - **Block text**: the compact JSON of the segment. A group warning has the first and the last segment of the group as block text. A number keeps its source text.
 
+## HTML transcript
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| a paragraph with lines and no `<time>` | `The paragraph has no <time>.` on the paragraph line | skips the paragraph. `Skipped`, `Block` the paragraph index, the first line as block text |
+| a `<time>` that does not match the time pattern | `The time "0:61" is not valid.` on the line of the `<time>` | skips the paragraph. The time text is the block text |
+| a time of 100000 hours or more | `The time "99999999999999999999:00:04" is not below 100000 hours.` | skips the paragraph |
+
+- **No cues**: a file without any `<cite>`, `<time>` or `<p>` gives an empty subtitle in both modes.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

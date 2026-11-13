@@ -67,6 +67,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | Cavena 890 | `stbox.Cavena890` | `cavena890` | `.890` | yes | yes | binary, Scandinavian broadcasters, found by the extension |
 | [CSV](https://www.rfc-editor.org/rfc/rfc4180) | `stbox.CSV` | `csv` | `.csv` | yes | yes | not detected from the content |
 | [FFmpeg metadata](docs/chapters.md#ffmpeg-metadata-chapters) | `stbox.FFMetadataChapters` | `ffmeta-chapters` | `.ffmeta` | yes | yes | `;FFMETADATA1` text with chapters. `Load` needs the format, not detected from the content |
+| [HTML transcript](docs/transcripts.md#html-transcript) | `stbox.HTMLTranscript` | `html` | `.html`, `.htm` | yes | yes | the `cite`, `time` and `p` elements of a podcast transcript. Found by content only with a `cite` and a `time`, else by the extension |
 | [iTunes Timed Text](docs/formats.md#itt) | `stbox.ITT` | `itt` | `.itt` | yes | yes | needs the frame rate of the video. A TTML file named `.itt` loads as iTT |
 | [JSON of this library](docs/json.md) | `stbox.JSON` | `json` | `.json` | yes | yes | |
 | [Deepgram JSON](docs/transcripts.md#deepgram-json) | `stbox.Deepgram` | `deepgram` | `.json` | yes | yes | `.json` is the library JSON, so pass `--from deepgram`. The content is never detected |
