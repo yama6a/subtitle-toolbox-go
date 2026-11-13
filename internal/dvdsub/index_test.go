@@ -90,6 +90,40 @@ func TestParseIndex(t *testing.T) {
 	}, got.Tracks)
 }
 
+func TestParseHeader(t *testing.T) {
+	t.Parallel()
+
+	body := "size: 720x576\n" + palette
+	tests := []struct {
+		name    string
+		private string
+		wantErr string
+	}{
+		{"without the first line", body, ""},
+		{"with the first line", first + body, ""},
+		{"with a BOM and a comment before the size", "\ufeff# written by a muxer\n" + body, ""},
+		{"no palette", "size: 720x576\n", "The .idx content has no palette line."},
+		{"no size", palette, "The .idx content has no size line."},
+		{"empty", "", "The .idx content has no size line."},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := dvdsub.ParseHeader([]byte(tt.private))
+			if tt.wantErr != "" {
+				var perr *model.ParseError
+				require.ErrorAs(t, err, &perr)
+				assert.Equal(t, model.ParseError{Format: model.VobSub, Msg: tt.wantErr}, *perr)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, [2]int{720, 576}, [2]int{got.Width, got.Height})
+			assert.Equal(t, uint32(0xF00000), got.Palette[15])
+		})
+	}
+}
+
 func TestParseIndexKeepsASumOfDelaysThatPassesTheLimit(t *testing.T) {
 	t.Parallel()
 

@@ -458,6 +458,10 @@ func codecFormat(codecID string) model.Format {
 		return model.ASS
 	case "S_TEXT/WEBVTT", "D_WEBVTT/SUBTITLES", "D_WEBVTT/CAPTIONS", "D_WEBVTT/DESCRIPTIONS":
 		return model.WebVTT
+	case "S_HDMV/PGS":
+		return model.PGS
+	case "S_VOBSUB":
+		return model.VobSub
 	default:
 		return ""
 	}

@@ -14,7 +14,7 @@ import (
 
 const (
 	unreadCodecMessage = "Track %d has the codec %s. The reader extracts only S_TEXT/UTF8, S_TEXT/ASS, S_TEXT/SSA, " +
-		"S_TEXT/WEBVTT, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."
+		"S_TEXT/WEBVTT, S_HDMV/PGS, S_VOBSUB, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."
 	laterCodecMessage = "Track %d has the codec %s. The reader does not extract this codec yet. A later release adds it."
 )
 
@@ -48,7 +48,16 @@ func (f *File) extract(number int, common model.CommonReadOptions) (*model.Subti
 	if err != nil {
 		return nil, nil, err
 	}
-	s, warnings, err := parseRebuilt(t, string(private), f.timedBlocks(blocks, t, common), common)
+	var s *model.Subtitle
+	var warnings []model.ParseWarning
+	switch t.Format { //nolint:exhaustive // the other formats are text
+	case model.PGS:
+		s, warnings, err = f.readPGS(t, blocks, common)
+	case model.VobSub:
+		s, warnings, err = f.readVobSub(t, private, blocks, common)
+	default:
+		s, warnings, err = parseRebuilt(t, string(private), f.timedBlocks(blocks, t, common), common)
+	}
 	if err != nil {
 		return nil, nil, err
 	}
@@ -113,10 +122,9 @@ func milliseconds(ns int64) int64 {
 	return (ns + 500_000) / 1_000_000
 }
 
-// unreadMessage returns the message for a codec without a reader. PGS, VobSub and DVB readers come in later releases.
+// unreadMessage returns the message for a codec without a reader. The DVB reader comes in a later release.
 func unreadMessage(codecID string) string {
-	switch codecID {
-	case "S_HDMV/PGS", "S_VOBSUB", "S_DVBSUB":
+	if codecID == "S_DVBSUB" {
 		return laterCodecMessage
 	}
 	return unreadCodecMessage

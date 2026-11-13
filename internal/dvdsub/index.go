@@ -7,6 +7,7 @@
 package dvdsub
 
 import (
+	"bytes"
 	"cmp"
 	"regexp"
 	"slices"
@@ -93,6 +94,20 @@ func ParseIndex(idx []byte) (Index, error) {
 		}
 	}
 	return p.finish()
+}
+
+const indexFirstLine = "# VobSub index file, v7 (do not modify this line!)\n"
+
+// ParseHeader reads the .idx header that a Matroska file holds in the CodecPrivate of an S_VOBSUB track. The header
+// may lack the first line, so ParseHeader adds the line "# VobSub index file" before it when the first line has no
+// "VobSub index file". Every error is a *model.ParseError of the format vobsub.
+func ParseHeader(private []byte) (Index, error) {
+	private = textenc.TrimUTF8BOMs(private)
+	first, _, _ := bytes.Cut(private, []byte("\n"))
+	if !bytes.Contains(first, []byte("VobSub index file")) {
+		private = append([]byte(indexFirstLine), private...)
+	}
+	return ParseIndex(private)
 }
 
 // finish checks that the file gave a size and colours, and puts the entries of each track in time order.

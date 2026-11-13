@@ -101,10 +101,10 @@ func TestExtractErrors(t *testing.T) {
 		want  string
 	}{
 		{"codec without a reader", aribFile, 2, "Track 2 has the codec S_ARIBSUB. The reader extracts only S_TEXT/UTF8, S_TEXT/ASS, S_TEXT/SSA, " +
-			"S_TEXT/WEBVTT, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."},
+			"S_TEXT/WEBVTT, S_HDMV/PGS, S_VOBSUB, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."},
 		{
-			"codec for a later release", segmentFile("matroska", tracks(subTrack(2, "S_HDMV/PGS"))), 2,
-			"Track 2 has the codec S_HDMV/PGS. The reader does not extract this codec yet. A later release adds it.",
+			"codec for a later release", segmentFile("matroska", tracks(subTrack(2, "S_DVBSUB"))), 2,
+			"Track 2 has the codec S_DVBSUB. The reader does not extract this codec yet. A later release adds it.",
 		},
 	}
 	for _, tt := range tests {
