@@ -13,8 +13,8 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-// Version is the library JSON version that this package reads and writes.
-const Version = 1
+// Version is the newest library JSON version. The reader reads versions 1 and 2. The writer writes it by default.
+const Version = 2
 
 // ReadOptions holds the library JSON read settings. Library JSON has none.
 type ReadOptions struct{}
@@ -28,9 +28,12 @@ type WriteOptions struct {
 	PrettyPrint bool
 	// OmitFormatData leaves out formatData on the subtitle and on every cue. False writes it at both levels.
 	OmitFormatData bool
+	// Version is the library JSON version to write. 0 and 2 write version 2. 1 writes version 1, with the word
+	// timestamps and the speaker as tags in the lines. Another value fails the write.
+	Version int
 }
 
-// Read reads a library JSON document of version 1 from r. A field error names the path of the field, such as cues[3].start.
+// Read reads a library JSON document of version 1 or 2 from r. A field error names the path of the field, such as cues[3].start.
 func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
 	content, err := io.ReadAll(r)
 	if err != nil {
@@ -53,7 +56,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 	return s, sortWarnings(st.Warnings()), nil
 }
 
-// Write writes s to w as a library JSON document of version 1. Negative times stay as they are, and StripTags has no effect.
+// Write writes s to w as a library JSON document of version 2, or of version 1 when opts.Version is 1. Negative times stay as they are, and StripTags has no effect.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	body, err := document(s, opts)
 	if err != nil {

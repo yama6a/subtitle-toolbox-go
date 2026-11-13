@@ -23,6 +23,8 @@ const maxSeconds = timecode.MaxHours * 3600
 
 type reader struct {
 	st *parsing.State
+	// version is the version field of the document, 0 when it is missing or not an integer.
+	version int64
 }
 
 type number struct {
@@ -51,6 +53,8 @@ func (r *reader) read(content []byte) (*model.Subtitle, error) {
 		return nil, err
 	}
 	normalize(root)
+	v, _ := root.Get("version")
+	r.version, _ = integer(v)
 	if err := r.decodeFileBinary(root); err != nil {
 		return nil, err
 	}
@@ -258,8 +262,10 @@ func (r *reader) checkTimes(cue *model.Data, i int) string {
 	if msg := checkBound(i, "end", end, endOK); msg != "" {
 		return msg
 	}
-	if msg := message(parsing.CheckWordTimestamps(stringLines(cue), model.NoLine)); msg != "" {
-		return msg
+	if r.version == 1 {
+		if msg := message(parsing.CheckWordTimestamps(stringLines(cue), model.NoLine)); msg != "" {
+			return msg
+		}
 	}
 	if !startOK || !endOK || end.f >= start.f {
 		return ""
@@ -427,7 +433,7 @@ func (r *reader) cues(list []any, skipped map[int]bool) ([]model.Cue, error) {
 		if skipped[i] {
 			continue
 		}
-		c, msg := cue(entry, i)
+		c, msg := r.cue(entry, i)
 		if msg == "" {
 			cues = append(cues, c)
 			continue
@@ -445,8 +451,8 @@ func checkVersion(root *model.Data) error {
 	if !ok {
 		return parseError("The field version is missing.")
 	}
-	if n, ok := integer(version); !ok || n != Version {
-		return parseError("The field version must be " + strconv.Itoa(Version) + ".")
+	if n, ok := integer(version); !ok || n != 1 && n != Version {
+		return parseError("The field version must be 1 or 2.")
 	}
 	return nil
 }
@@ -514,20 +520,27 @@ func formatDataMessage(err error, prefix string) string {
 	return iae.Msg
 }
 
-func cue(entry any, i int) (model.Cue, string) {
+func (r *reader) cue(entry any, i int) (model.Cue, string) {
 	path := "The field " + cuePath(i)
 	d, ok := asObject(entry).(*model.Data)
 	if !ok {
 		return model.Cue{}, path + " must be an object."
 	}
 	var c model.Cue
-	for _, check := range []func(*model.Cue, *model.Data, string) string{cueTimes, cueLines, cueSettings, cuePosition, cueForced} {
+	checks := []func(*model.Cue, *model.Data, string) string{cueTimes, cueLines, cueSettings, cuePosition, cueForced}
+	if r.version == Version {
+		checks = append(checks, cueSpeaker, cueWords)
+	}
+	for _, check := range checks {
 		if msg := check(&c, d, path); msg != "" {
 			return model.Cue{}, msg
 		}
 	}
 	if msg := cueFormatData(&c, d, i); msg != "" {
 		return model.Cue{}, msg
+	}
+	if r.version == Version {
+		return c, validateWords(&c, path)
 	}
 	c.ExtractWordTags()
 	return c, ""

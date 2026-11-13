@@ -69,10 +69,10 @@ func TestWriteGoldens(t *testing.T) {
 	cases := make([]goldenCase, 0, 2*len(names)+1)
 	for _, name := range names {
 		cases = append(cases,
-			goldenCase{name, ".out.json", stboxjson.WriteOptions{}, false},
-			goldenCase{name, ".pretty.out.json", stboxjson.WriteOptions{PrettyPrint: true}, true})
+			goldenCase{name, ".out.json", stboxjson.WriteOptions{Version: 1}, false},
+			goldenCase{name, ".pretty.out.json", stboxjson.WriteOptions{PrettyPrint: true, Version: 1}, true})
 	}
-	cases = append(cases, goldenCase{"own_aegisub.json", ".omit-format-data.out.json", stboxjson.WriteOptions{PrettyPrint: true, OmitFormatData: true}, false})
+	cases = append(cases, goldenCase{"own_aegisub.json", ".omit-format-data.out.json", stboxjson.WriteOptions{PrettyPrint: true, OmitFormatData: true, Version: 1}, false})
 
 	for _, c := range cases {
 		t.Run(c.file+c.suffix, func(t *testing.T) {
@@ -96,7 +96,7 @@ func TestRealFilesSurviveTheRoundTrip(t *testing.T) {
 	t.Parallel()
 
 	for _, name := range realFiles(t) {
-		for _, opts := range []stboxjson.WriteOptions{{}, {PrettyPrint: true}} {
+		for _, opts := range []stboxjson.WriteOptions{{Version: 1}, {PrettyPrint: true, Version: 1}} {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
