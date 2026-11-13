@@ -111,12 +111,12 @@ func detectTests() []detectTest {
 		{name: "Whisper JSON with a cues key", content: `{"version": "1", "cues": [], "segments": []}`, want: stbox.Whisper},
 		{name: "Whisper JSON with a body", content: `{"segments": [{"start": 0.0, "end": 2.0, "text": " Hello", "body": 1}]}`, want: stbox.Whisper},
 		{name: "YouTube json3", content: `{"wireMagic": "pb3", "events": [ {"tStartMs": 0, "id": 1}, {"tStartMs": 0, "segs": []} ]}`, later: "YouTube, 4.x"},
-		{name: "Podcasting 2.0 JSON until #100", content: `{"version": "1.0.0", "segments": [{"speaker": "Anna", "startTime": 0.5, "body": "I"}]}`, want: stbox.Whisper},
-		{name: "Podcasting 2.0 JSON body first until #100", content: `{"segments":[{"body":"Hi","endTime":1,"startTime":0}]}`, want: stbox.Whisper},
+		{name: "Podcasting 2.0 JSON", content: `{"version": "1.0.0", "segments": [{"speaker": "Anna", "startTime": 0.5, "body": "I"}]}`, want: stbox.PodcastTranscript},
+		{name: "Podcasting 2.0 JSON body first", content: `{"segments":[{"body":"Hi","endTime":1,"startTime":0}]}`, want: stbox.PodcastTranscript},
 		{
-			name:    "Podcast transcript, not chapters until #100",
+			name:    "Podcast transcript, not chapters",
 			content: `{"version": "1.0.0", "chapters": [], "segments": [{"startTime": 0, "body": "Hi"}]}`,
-			want:    stbox.Whisper,
+			want:    stbox.PodcastTranscript,
 		},
 
 		{name: "UTF-8 BOM", content: "\xEF\xBB\xBFWEBVTT\n", want: stbox.WebVTT},
