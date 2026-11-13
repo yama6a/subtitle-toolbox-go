@@ -1,0 +1,15 @@
+[
+    {
+        "start": 0.5,
+        "end": 1.501,
+        "x": 280,
+        "y": 440,
+        "width": 160,
+        "height": 20,
+        "screenWidth": 720,
+        "screenHeight": 480,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "b57ab807fb3c5cd63fe870e2c521bb842f285c25419085911439acd43f0fc817"
+    }
+]

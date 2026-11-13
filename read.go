@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"slices"
 	"strconv"
@@ -17,11 +18,29 @@ import (
 // Without ReadOptions.Format, Load detects the format and falls back to the file extension, as docs/detection.md says.
 // A file that does not exist or cannot be read returns the *fs.PathError of package os, wrapped.
 // Load reads a regular file through its handle, so a video file is not read whole. A pipe is read whole first.
+// A VobSub read needs 2 files. Load finds the other one next to path, as LoadFS says.
 func Load(path string, opts ReadOptions) (*Subtitle, ReadInfo, error) {
+	return load(path, func(name string) (fs.File, error) { return os.Open(name) }, opts)
+}
+
+// LoadFS reads the subtitle file name from fsys, like Load. The name is an fs.ValidPath path.
+// A VobSub read, with ReadOptions.Format VobSub or an .idx name, finds the other file of the pair in the same
+// folder: an .idx name looks for .sub, then .SUB. Any other name looks for .idx, then .IDX. A name without an
+// extension gets a dot first. A missing file returns an error that matches fs.ErrNotExist and names both files.
+// LoadFS fills ReadOptions.VobSub.IDX with the .idx file, decoded with ReadOptions.Encoding. A MicroDVD .sub file
+// never looks for an .idx file.
+func LoadFS(fsys fs.FS, name string, opts ReadOptions) (*Subtitle, ReadInfo, error) {
+	return load(name, fsys.Open, opts)
+}
+
+// openFunc opens a file by name, as os.Open or fs.FS.Open do.
+type openFunc func(name string) (fs.File, error)
+
+func load(path string, open openFunc, opts ReadOptions) (*Subtitle, ReadInfo, error) {
 	if err := opts.Validate(); err != nil {
 		return nil, ReadInfo{}, err
 	}
-	f, err := os.Open(path)
+	f, err := open(path)
 	if err != nil {
 		return nil, ReadInfo{}, fmt.Errorf("load subtitle: %w", err)
 	}
@@ -30,14 +49,14 @@ func Load(path string, opts ReadOptions) (*Subtitle, ReadInfo, error) {
 	if err != nil {
 		return nil, ReadInfo{}, fmt.Errorf("load subtitle: %w", err)
 	}
-	if st.Mode().IsRegular() {
-		return parse(f, st.Size(), path, opts)
+	if ra, ok := f.(io.ReaderAt); ok && st.Mode().IsRegular() {
+		return parse(ra, st.Size(), path, open, opts)
 	}
 	content, err := io.ReadAll(f)
 	if err != nil {
 		return nil, ReadInfo{}, fmt.Errorf("load subtitle: %w", err)
 	}
-	return parse(bytes.NewReader(content), int64(len(content)), path, opts)
+	return parse(bytes.NewReader(content), int64(len(content)), path, open, opts)
 }
 
 // Parse reads a subtitle from the first size bytes of r. On error the subtitle is nil and ReadInfo is the zero value.
@@ -47,14 +66,15 @@ func Parse(r io.ReaderAt, size int64, opts ReadOptions) (*Subtitle, ReadInfo, er
 	if err := opts.Validate(); err != nil {
 		return nil, ReadInfo{}, err
 	}
-	return parse(r, size, "", opts)
+	return parse(r, size, "", nil, opts)
 }
 
 // noFormat is the PHP message of a read whose format detection found nothing.
 const noFormat = "Format detection found no subtitle format."
 
-// parse reads the input. path is "" for Parse, which has no extension to fall back to.
-func parse(r io.ReaderAt, size int64, path string, opts ReadOptions) (*Subtitle, ReadInfo, error) {
+// parse reads the input. path is "" for Parse, which has no extension to fall back to. open is nil for Parse, which
+// finds no second file of a VobSub pair.
+func parse(r io.ReaderAt, size int64, path string, open openFunc, opts ReadOptions) (*Subtitle, ReadInfo, error) {
 	head, err := readHead(r, size)
 	if err != nil {
 		return nil, ReadInfo{}, err
@@ -80,7 +100,7 @@ func parse(r io.ReaderAt, size int64, path string, opts ReadOptions) (*Subtitle,
 			return nil, ReadInfo{}, fmt.Errorf("read subtitle: %w", err)
 		}
 	}
-	return parseContent(content, path, opts)
+	return parseContent(content, path, open, opts)
 }
 
 // readHead returns the first ContainerHeadSize bytes of the input, or all of it when it is shorter. It returns fewer
@@ -101,16 +121,16 @@ func readHead(r io.ReaderAt, size int64) ([]byte, error) {
 }
 
 // parseContent reads the whole content of a subtitle file.
-func parseContent(content []byte, path string, opts ReadOptions) (*Subtitle, ReadInfo, error) {
+func parseContent(content []byte, path string, open openFunc, opts ReadOptions) (*Subtitle, ReadInfo, error) {
 	if opts.Format == "" {
-		return parseDetected(content, path, opts)
+		return parseDetected(content, path, open, opts)
 	}
 	row, err := readable(opts.Format)
 	if err != nil {
 		return nil, ReadInfo{}, err
 	}
 	if opts.Format.IsBinary() {
-		return read(row, textenc.Decoded{Text: content}, opts)
+		return readBinary(row, content, path, open, opts)
 	}
 	text, err := decode(content, opts)
 	if err != nil {
@@ -129,7 +149,7 @@ func decode(content []byte, opts ReadOptions) (textenc.Decoded, error) {
 
 // parseDetected reads content of an unknown format: a binary format by content or extension first, else the
 // decoded text by detection and extension, as docs/detection.md says.
-func parseDetected(content []byte, path string, opts ReadOptions) (*Subtitle, ReadInfo, error) {
+func parseDetected(content []byte, path string, open openFunc, opts ReadOptions) (*Subtitle, ReadInfo, error) {
 	raw := textenc.Decoded{Text: content}
 	f, binary := binaryFormat(content, path)
 	var text textenc.Decoded
@@ -155,7 +175,82 @@ func parseDetected(content []byte, path string, opts ReadOptions) (*Subtitle, Re
 	if err != nil {
 		return nil, ReadInfo{}, err
 	}
+	if f.IsBinary() {
+		return readBinary(row, content, path, open, opts)
+	}
 	return read(row, text, opts)
+}
+
+// readBinary reads the raw bytes of a binary format. VobSub reads 2 files, so it first finds the other one.
+func readBinary(row formatFuncs, content []byte, path string, open openFunc, opts ReadOptions) (*Subtitle, ReadInfo, error) {
+	text := textenc.Decoded{Text: content}
+	if row.format == VobSub && open != nil {
+		var err error
+		if text, opts, err = pairedVobSub(content, path, open, opts); err != nil {
+			return nil, ReadInfo{}, err
+		}
+	}
+	return read(row, text, opts)
+}
+
+// pairedVobSub returns the .sub content, and opts with the .idx content, of the VobSub pair of path. content is the
+// content of path. The .idx decodes as text with opts.Encoding. The decode warning of a guess goes to the read as
+// the decode warning of a text format does.
+func pairedVobSub(content []byte, path string, open openFunc, opts ReadOptions) (textenc.Decoded, ReadOptions, error) {
+	candidates, isIndex := extfallback.Partners(path)
+	partner, err := readPartner(candidates, path, open)
+	if err != nil {
+		return textenc.Decoded{}, opts, err
+	}
+	idx, sub := partner, content
+	if isIndex {
+		idx, sub = content, partner
+	}
+	text, err := textenc.Decode(idx, opts.Encoding)
+	if err != nil {
+		return textenc.Decoded{}, opts, &ParseError{Format: VobSub, Msg: err.Error(), Err: err}
+	}
+	opts.VobSub.IDX = string(text.Text)
+	return textenc.Decoded{Text: sub, Warning: text.Warning}, opts, nil
+}
+
+// readPartner reads the first candidate that is a file. Without one, it returns an error that matches fs.ErrNotExist
+// and names path and the first candidate.
+func readPartner(candidates []string, path string, open openFunc) ([]byte, error) {
+	for _, name := range candidates {
+		f, err := open(name)
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				continue
+			}
+			return nil, fmt.Errorf("load subtitle: %w", err)
+		}
+		content, isDir, err := readFile(f)
+		if err != nil {
+			return nil, err
+		}
+		if !isDir {
+			return content, nil
+		}
+	}
+	return nil, fmt.Errorf("load subtitle: VobSub needs the file %s next to %s: %w", candidates[0], path, fs.ErrNotExist)
+}
+
+// readFile reads and closes f. It reads nothing from a directory.
+func readFile(f fs.File) (content []byte, isDir bool, err error) {
+	defer f.Close()
+	st, err := f.Stat()
+	if err != nil {
+		return nil, false, fmt.Errorf("load subtitle: %w", err)
+	}
+	if st.IsDir() {
+		return nil, true, nil
+	}
+	content, err = io.ReadAll(f)
+	if err != nil {
+		return nil, false, fmt.Errorf("load subtitle: %w", err)
+	}
+	return content, false, nil
 }
 
 // binaryFormat returns the binary format of content that a read without a format picks before any decoding:

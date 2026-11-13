@@ -8,6 +8,7 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,6 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v3/imaging"
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
@@ -47,7 +49,24 @@ var pgsImageGoldens = []imageGolden{
 }
 
 // vobsubImageGoldens lists one row for each VobSub track.
-var vobsubImageGoldens = []imageGolden{}
+var vobsubImageGoldens = []imageGolden{
+	vobsubGolden("two-tracks-pal", 0),
+	vobsubGolden("two-tracks-pal", 1),
+	vobsubGolden("custom-colors-ntsc", 0),
+	vobsubGolden("custom-colors-ntsc", 2),
+	vobsubGolden("text-pal", 0),
+	vobsubGolden("one-packet-pal", 0),
+}
+
+// vobsubGolden returns the row of the track with the index: value index of the pair name. Load reads the .sub file
+// next to the .idx file.
+func vobsubGolden(name string, index int) imageGolden {
+	return imageGolden{
+		fixture: "vobsub/" + name + ".idx",
+		options: stbox.ReadOptions{VobSub: vobsub.ReadOptions{Index: &index}},
+		golden:  "vobsub/expected/" + name + ".idx." + strconv.Itoa(index),
+	}
+}
 
 // dvbImageGoldens lists one row for each DVB subtitle track of a transport stream or an MKV file.
 var dvbImageGoldens = []imageGolden{
