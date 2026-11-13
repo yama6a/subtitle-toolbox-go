@@ -67,6 +67,7 @@ var layers = map[string]layer{
 	"internal/dvdsub":      layerModelUser,
 	"internal/displayset":  layerModelUser,
 	"internal/arib":        layerModelUser,
+	"internal/dvbsub":      layerModelUser,
 	"format/*":             layerFormat,
 	"container/*":          layerContainer,
 	".":                    layerFacade,

@@ -28,23 +28,17 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 		}
 	}
 	track, s := f.tracks[i], f.streams[i]
-	var (
-		states   []textState
-		warnings []model.ParseWarning
-		zero     int64
-		last     int64
-		err      error
-	)
-	if track.CodecID == codecARIB {
-		states, warnings, zero, last, err = f.readARIB(track, s, common.Lenient)
-	} else {
-		states, zero, last, err = f.readTeletext(track, s)
+	var cues []model.Cue
+	var warnings []model.ParseWarning
+	var err error
+	switch track.CodecID {
+	case codecDVB:
+		cues, warnings, err = f.dvbCues(s, number, common)
+	case codecARIB:
+		cues, warnings, err = f.aribCues(track, s, number, common)
+	default:
+		cues, err = f.teletextCues(track, s, number, common)
 	}
-	if err != nil {
-		return nil, nil, err
-	}
-	lastCue := parsing.NewState(model.SubRip, common).LastCueDuration()
-	cues, err := textCues(number, states, zero, last, lastCue)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -54,36 +48,40 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 	return sub, warnings, nil
 }
 
-func (f *File) readTeletext(track model.Track, s stream) (states []textState, zero, last int64, err error) {
-	dec := teletext.NewDecoder(s.page, track.Number%1000, teletext.LanguageGroup(track.Language))
-	zero, last, err = f.readPES(s, dec)
+func (f *File) teletextCues(track model.Track, s stream, number int, common model.CommonReadOptions) ([]model.Cue, error) {
+	dec := teletext.NewDecoder(s.page, number%1000, teletext.LanguageGroup(track.Language))
+	zero, last, err := f.readPES(s, dec)
 	if err != nil {
-		return nil, 0, 0, err
+		return nil, err
 	}
 	pages, err := dec.Finish()
 	if err != nil {
-		return nil, 0, 0, &model.ParseError{Msg: err.Error(), Err: err}
+		return nil, &model.ParseError{Msg: err.Error(), Err: err}
 	}
-	for _, p := range pages {
-		states = append(states, textState{start: p.Start, lines: p.Lines})
+	states := make([]textState, len(pages))
+	for i, p := range pages {
+		states[i] = textState{start: p.Start, lines: p.Lines}
 	}
-	return states, zero, last, nil
+	lastCue := parsing.NewState(model.SubRip, common).LastCueDuration()
+	return textCues(number, states, zero, last, lastCue)
 }
 
-func (f *File) readARIB(track model.Track, s stream, lenient bool) (states []textState, warnings []model.ParseWarning, zero, last int64, err error) {
+func (f *File) aribCues(track model.Track, s stream, number int, common model.CommonReadOptions) ([]model.Cue, []model.ParseWarning, error) {
 	dec := arib.NewDecoder(track.Language)
-	zero, last, err = f.readPES(s, dec)
+	zero, last, err := f.readPES(s, dec)
 	if err != nil {
-		return nil, nil, 0, 0, err
+		return nil, nil, err
 	}
+	var states []textState
 	for _, st := range dec.Finish() {
 		states = append(states, textState{start: st.Start, lines: st.Lines, alignment: st.Alignment})
 	}
+	var warnings []model.ParseWarning
 	for _, w := range dec.Warnings() {
 		ms := (max(0, w.Time-zero) + 45) / 90
 		message := fmt.Sprintf("At %d.%03d s: %s", ms/1000, ms%1000, w.Message)
-		if w.Skipped && !lenient {
-			return nil, nil, 0, 0, &model.ParseError{Msg: message}
+		if w.Skipped && !common.Lenient {
+			return nil, nil, &model.ParseError{Msg: message}
 		}
 		action := model.Repaired
 		if w.Skipped {
@@ -91,7 +89,9 @@ func (f *File) readARIB(track model.Track, s stream, lenient bool) (states []tex
 		}
 		warnings = append(warnings, model.ParseWarning{Message: message, Line: model.NoLine, Block: model.NoBlock, Action: action})
 	}
-	return states, warnings, zero, last, nil
+	lastCue := parsing.NewState(model.SubRip, common).LastCueDuration()
+	cues, err := textCues(number, states, zero, last, lastCue)
+	return cues, warnings, err
 }
 
 // readPES passes each PES of s.pid to sink. It returns the zero point, which is the smallest first PTS of the

@@ -1,0 +1,54 @@
+[
+    {
+        "start": 1.5,
+        "end": 4.003,
+        "x": 212,
+        "y": 502,
+        "width": 296,
+        "height": 36,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "eb6baaed633e7157a2d2c315951610d03a1ef30ed3be8eab4febeb48d0e0b6ff"
+    },
+    {
+        "start": 5.25,
+        "end": 8.253,
+        "x": 260,
+        "y": 40,
+        "width": 200,
+        "height": 24,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "TopCenter",
+        "rgbaSha256": "1bbff1311ce9a327d3c43ae2d97973f5cf6c53ed2c4f6ab17c9ab2fefa35e3f1"
+    },
+    {
+        "start": 9.0,
+        "end": 9.0,
+        "x": 302,
+        "y": 522,
+        "width": 116,
+        "height": 26,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "fc254834735ba0819a0139d906b79b32d11ad7ada32a052c4e58fed4460f29a3"
+    },
+    {
+        "start": 11.0,
+        "end": 13.002,
+        "x": 0,
+        "y": 544,
+        "width": 720,
+        "height": 32,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "cb53a48a15adfad9d1c18cd4798e4d5a8672443a52b40e536a8d9b70510cc02e"
+    }
+]
