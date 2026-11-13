@@ -37,6 +37,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -164,6 +165,7 @@ var registry = []formatFuncs{
 	{format: VobSub, read: readVobSub},
 	{format: WebVTT, read: readWebVTT, write: writeWebVTT},
 	{format: Whisper, read: readWhisper, write: writeWhisper},
+	{format: YouTubeTimedText, read: readYouTube, write: writeYouTube},
 	{format: OGMChapters, read: readOGMChapters, write: writeOGMChapters},
 	{format: PodcastChapters, read: readPodcastChapters, write: writePodcastChapters},
 	{format: PodcastTranscript, read: readPodcastTranscript, write: writePodcastTranscript},
@@ -186,6 +188,7 @@ var (
 		{format: JSON, match: stboxjson.DetectJSON},
 		{format: PodcastTranscript, match: transcript.DetectPodcastJSON},
 		{format: Whisper, match: transcript.DetectWhisperJSON},
+		{format: YouTubeTimedText, match: youtube.DetectJSON},
 	}
 	rawSignatures = []signature{
 		{format: PGS, match: pgs.Detect},
@@ -208,6 +211,7 @@ var (
 		{format: SpruceSTL, match: sprucestl.Detect},
 		{format: SCC, match: scc.Detect},
 		{format: MCC, match: mcc.Detect},
+		{format: YouTubeTimedText, match: youtube.Detect},
 		{format: MPL2, match: mpl2.Detect},
 		{format: TMPlayer, match: tmplayer.Detect},
 		{format: HTMLTranscript, match: transcript.DetectHTML},
@@ -556,6 +560,14 @@ func lookup(f Format) (formatFuncs, bool) {
 		return formatFuncs{}, false
 	}
 	return registry[i], true
+}
+
+func readYouTube(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return youtube.Read(r, common, opts.YouTube)
+}
+
+func writeYouTube(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	return WriteReport{}, youtube.Write(w, s, common, youtube.WriteOptions{})
 }
 
 func readYouTubeChapters(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {

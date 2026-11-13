@@ -17,6 +17,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
@@ -43,8 +44,11 @@ var dubbingScript = csv.ReadOptions{
 }
 
 // transcriptGolden holds the read options of the transcript read goldens, as tests/Support/ReadGoldens.php of
-// subtitle-toolbox-php sets them. #102 adds YouTube.
-var transcriptGolden = stbox.ReadOptions{Transcript: transcript.ReadOptions{WordTimestamps: true, SpeakerVoices: true}}
+// subtitle-toolbox-php sets them.
+var transcriptGolden = stbox.ReadOptions{
+	Transcript: transcript.ReadOptions{WordTimestamps: true, SpeakerVoices: true},
+	YouTube:    youtube.ReadOptions{WordTimestamps: true},
+}
 
 func goldenFolders() []goldenFolder {
 	return []goldenFolder{
@@ -95,6 +99,7 @@ func goldenFolders() []goldenFolder {
 		{name: "vtt", format: stbox.WebVTT, files: 30},
 		{name: "podcast", format: stbox.PodcastTranscript, files: 3, transcript: true},
 		{name: "whisper", format: stbox.Whisper, files: 10, transcript: true, defaults: true},
+		{name: "youtube", format: stbox.YouTubeTimedText, files: 9, transcript: true},
 	}
 }
 
@@ -170,7 +175,33 @@ func compareGolden(t *testing.T, s *stbox.Subtitle, info stbox.ReadInfo, golden 
 
 	var want any
 	require.NoError(t, json.Unmarshal(testfiles.Read(t, golden), &want))
-	assert.Equal(t, canonicalJSON(t, want), canonicalJSON(t, got))
+	assert.Equal(t, canonicalJSON(t, emptyValuesAsEmptyList(want)), canonicalJSON(t, emptyValuesAsEmptyList(got)))
+}
+
+// emptyValuesAsEmptyList turns every empty object and every empty array into one empty list, and leaves null as it is. PHP decodes `{}` to an empty array, so a PHP
+// golden writes `[]` where Go keeps the type and writes `{}`, see the row of #19 in docs/php-differences.md.
+func emptyValuesAsEmptyList(v any) any {
+	switch v := v.(type) {
+	case map[string]any:
+		if len(v) == 0 {
+			return []any{}
+		}
+		out := make(map[string]any, len(v))
+		for k, item := range v {
+			out[k] = emptyValuesAsEmptyList(item)
+		}
+		return out
+	case []any:
+		if len(v) == 0 {
+			return []any{}
+		}
+		out := make([]any, len(v))
+		for i, item := range v {
+			out[i] = emptyValuesAsEmptyList(item)
+		}
+		return out
+	}
+	return v
 }
 
 // dropPositions removes the key position from each cue, because the PHP goldens never hold it.

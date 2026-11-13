@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?><timedtext format="3">
+<head>
+<pen id="1" fc="#FEFEFE" fo="254" bo="0"/>
+<pen id="2" b="1" fc="#FFFF00" fo="254" bc="#080808" bo="191" et="3" ec="#000000"/>
+<pen id="3" i="1" fc="#00FFFF" fo="254" bo="0" sz="80"/>
+<ws id="0"/>
+<ws id="1" ju="2" pd="0" sd="0"/>
+<wp id="0"/>
+<wp id="1" ap="1" ah="50" av="0"/>
+<wp id="2" ap="7" ah="50" av="100"/>
+<wp id="3" ap="0" ah="0" av="0"/>
+</head>
+<body>
+<p t="0" d="2500" wp="1" ws="1"><s p="2">Chapter one</s></p>
+<p t="2500" d="3000" p="1" wp="2" ws="1">The ferry leaves at noon.</p>
+<p t="5500" d="3200" wp="2" ws="1"><s p="1">Tickets cost </s><s p="2">four euros</s><s p="1">.</s></p>
+<p t="8700" d="2800" wp="3" ws="1"><s p="3">Pier 3 &amp;#39;North&amp;#39;</s></p>
+<p t="11500" d="3000">Please keep
+your ticket.</p>
+</body>
+</timedtext>
