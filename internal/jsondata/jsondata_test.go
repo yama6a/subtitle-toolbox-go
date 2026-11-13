@@ -4,6 +4,8 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -109,5 +111,26 @@ func TestFixtureRoundTrip(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, !knownDataExceptions[rel], orderedjson.Equal(first, back))
 		})
+	}
+}
+
+// BenchmarkNestedJSON decodes 1000 lists nested 500 deep (1 MB), converts them to model.Data and back,
+// and stores them as the format data of a subtitle.
+func BenchmarkNestedJSON(b *testing.B) {
+	chain := strings.Repeat("[", 500) + strings.Repeat("]", 500)
+	members := make([]string, 1000)
+	for i := range members {
+		members[i] = `"k` + strconv.Itoa(i) + `":` + chain
+	}
+	doc := []byte("{" + strings.Join(members, ",") + "}")
+	b.ReportAllocs()
+	for b.Loop() {
+		v, err := orderedjson.Decode(doc)
+		require.NoError(b, err)
+		d, _ := jsondata.ToData(v).(*model.Data)
+		var s model.Subtitle
+		require.NoError(b, s.SetFormatData("json", d))
+		_, err = jsondata.FromData(d)
+		require.NoError(b, err)
 	}
 }
