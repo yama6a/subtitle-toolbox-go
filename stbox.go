@@ -112,8 +112,16 @@ const (
 	Whisper       = model.Whisper
 	// YouTubeTimedText is the format of the timed text that YouTube serves: json3, srv3, srv2 and srv1.
 	YouTubeTimedText = model.YouTubeTimedText
+	// PodcastTranscript is the format of the Podcasting 2.0 JSON transcript.
+	PodcastTranscript = model.PodcastTranscript
 	// YouTubeChapters is the format of the chapter lines of a YouTube description.
 	YouTubeChapters = model.YouTubeChapters
+	// FFMetadataChapters is the format of the chapters in FFmpeg metadata text.
+	FFMetadataChapters = model.FFMetadataChapters
+	// OGMChapters is the format of the simple chapter files of mkvmerge.
+	OGMChapters = model.OGMChapters
+	// PodcastChapters is the format of the Podcasting 2.0 JSON chapters file.
+	PodcastChapters = model.PodcastChapters
 )
 
 // The containers that a read can name.

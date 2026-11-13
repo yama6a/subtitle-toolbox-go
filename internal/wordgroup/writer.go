@@ -85,7 +85,7 @@ func Spans(c *model.Cue) []Span {
 	text := CueText(c)
 	texts := make([]string, len(c.Words))
 	for i, w := range c.Words {
-		texts[i] = w.Text
+		texts[i] = foldSpaces(w.Text)
 	}
 	matches := markupcore.SearchWords(text, texts, false)
 	var found []int

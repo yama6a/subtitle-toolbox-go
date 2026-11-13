@@ -15,9 +15,9 @@ func TestFormatsFollowTheRowOrder(t *testing.T) {
 	t.Parallel()
 
 	want := []Format{
-		ASS, Cavena890, CSV, ITT, JSON, LRC, MCC, MicroDVD, MPSub, PAC, PGS, SAMI, SBV, SCC, SubRip, EBUSTL,
+		ASS, Cavena890, CSV, FFMetadataChapters, ITT, JSON, LRC, MCC, MicroDVD, MPSub, PAC, PGS, SAMI, SBV, SCC, SubRip, EBUSTL,
 		SpruceSTL, SubViewer, TTML, DCP, TSV, PlainText, MPL2, TMPlayer, QuickTimeText, VobSub, WebVTT, Whisper, YouTubeTimedText,
-		YouTubeChapters,
+		OGMChapters, PodcastChapters, PodcastTranscript, YouTubeChapters,
 	}
 	assert.Equal(t, want, Formats())
 }
@@ -77,7 +77,7 @@ func TestPlainTextIsWriteOnly(t *testing.T) {
 func TestDetectionListsFollowTheOrder(t *testing.T) {
 	t.Parallel()
 
-	jsonOrder := []Format{JSON, Whisper, YouTubeTimedText}
+	jsonOrder := []Format{JSON, PodcastTranscript, Whisper, YouTubeTimedText}
 	signatureOrder := []Format{
 		WebVTT, TTML, DCP, SAMI, ASS, MPSub, MicroDVD, QuickTimeText, SubRip, SBV, SubViewer, LRC, EBUSTL, PAC, SpruceSTL, SCC, MCC, YouTubeTimedText, MPL2, TMPlayer,
 	}

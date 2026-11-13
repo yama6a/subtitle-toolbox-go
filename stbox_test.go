@@ -204,6 +204,7 @@ func ExampleFormats() {
 	// ass [ass ssa]
 	// cavena890 [890]
 	// csv [csv]
+	// ffmeta-chapters [ffmeta]
 	// itt [itt]
 	// json [json]
 	// lrc [lrc]
@@ -230,6 +231,9 @@ func ExampleFormats() {
 	// vtt [vtt]
 	// whisper [json]
 	// youtube [srv3 json3 srv1 ytt]
+	// ogm-chapters [txt]
+	// podcast-chapters [json]
+	// podcast-transcript [json]
 	// youtube-chapters [txt]
 }
 

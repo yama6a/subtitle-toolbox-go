@@ -1,0 +1,75 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "podcast-transcript": {
+                "version": "1.0.0"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 2.76,
+                "lines": [
+                    "<v Marta>This week we look at how to keep"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 2.76,
+                "end": 6.09,
+                "lines": [
+                    "bread fresh for a week. And if not,"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 6.09,
+                "end": 11.61,
+                "lines": [
+                    "what to do with the old loaf. Let's start with a question."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 19.08,
+                "end": 21.45,
+                "lines": [
+                    "<v Jonas>Hi Marta, Jonas here from the café by"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 21.45,
+                "end": 25.35,
+                "lines": [
+                    "the river. My question is, should bread go in the fridge?"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 25.8,
+                "end": 28.125,
+                "lines": [
+                    "<v Marta>No. The fridge makes it stale faster – use a bread box."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

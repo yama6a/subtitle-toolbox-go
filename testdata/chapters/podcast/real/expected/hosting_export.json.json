@@ -1,0 +1,88 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Episode 12: Winter repairs"
+        },
+        "comments": [],
+        "formatData": {
+            "podcast-chapters": {
+                "version": "1.2.0",
+                "podcastName": "Harbour Notes",
+                "fileName": "https://media.example.com/harbour-notes/ep12.mp3",
+                "waypoints": true
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 95.5,
+                "lines": [
+                    "Welcome"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "podcast-chapters": {
+                        "img": "https://media.example.com/harbour-notes/ep12/cover.jpg"
+                    }
+                }
+            },
+            {
+                "start": 95.5,
+                "end": 612.25,
+                "lines": [
+                    "Hauling out the boat"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "podcast-chapters": {
+                        "location": {
+                            "name": "Slipway, North Pier",
+                            "geo": "geo:57.1497,-2.0943"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 612.25,
+                "end": 1490.0,
+                "lines": [
+                    "Sanding &amp; painting the hull"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "podcast-chapters": {
+                        "url": "https://example.com/notes/hull-paint"
+                    }
+                }
+            },
+            {
+                "start": 1490.0,
+                "end": 1530.0,
+                "lines": [],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "podcast-chapters": {
+                        "toc": false,
+                        "img": "https://media.example.com/harbour-notes/ep12/sponsor.png"
+                    }
+                }
+            },
+            {
+                "start": 1530.0,
+                "end": 1804.8,
+                "lines": [
+                    "Listener questions"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

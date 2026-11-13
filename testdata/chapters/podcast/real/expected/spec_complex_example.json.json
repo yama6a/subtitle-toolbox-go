@@ -1,0 +1,126 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Episode 7 - Making Progress",
+            "author": "John Doe"
+        },
+        "comments": [],
+        "formatData": {
+            "podcast-chapters": {
+                "version": "1.2.0",
+                "podcastName": "John's Awesome Podcast"
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 168.0,
+                "lines": [
+                    "Intro"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 168.0,
+                "end": 260.0,
+                "lines": [
+                    "Hearing Aids"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 260.0,
+                "end": 410.0,
+                "lines": [
+                    "Progress Report"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 410.0,
+                "end": 3990.0,
+                "lines": [
+                    "Namespace"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "podcast-chapters": {
+                        "img": "https://example.com/images/namepsace_example.jpg",
+                        "url": "https://github.com/Podcastindex-org/podcast-namespace"
+                    }
+                }
+            },
+            {
+                "start": 3990.0,
+                "end": 4826.0,
+                "lines": [
+                    "Just Break Up"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "podcast-chapters": {
+                        "img": "https://example.com/images/justbreakuppod.png",
+                        "url": "https://twitter.com/justbreakuppod"
+                    }
+                }
+            },
+            {
+                "start": 4826.0,
+                "end": 5510.0,
+                "lines": [],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "podcast-chapters": {
+                        "img": "https://example.com/images/parisfrance.jpg",
+                        "toc": false,
+                        "location": {
+                            "name": "Eiffel Tower, Paris",
+                            "geo": "geo:42.3417649,-70.9661596"
+                        }
+                    }
+                }
+            },
+            {
+                "start": 5510.0,
+                "end": 5854.0,
+                "lines": [
+                    "The Big Players"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 5854.0,
+                "end": 6089.0,
+                "lines": [
+                    "Spread the Word"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 6089.0,
+                "end": 6089.0,
+                "lines": [
+                    "Outro"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

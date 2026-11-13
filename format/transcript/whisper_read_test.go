@@ -1,6 +1,7 @@
 package transcript_test
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strings"
@@ -363,6 +364,28 @@ func TestReadWhisperWordFields(t *testing.T) {
 			s := readWhisper(t, `{"segments": [{"start": 0, "end": 3, "text": "a", "words": [`+tt.word+`]}]}`, transcript.ReadOptions{WordTimestamps: true})
 			c, _ := s.Cue(0)
 			assert.Equal(t, []model.Word{tt.want}, c.Words)
+		})
+	}
+}
+
+func TestReadWhisperWordWithOddSpaceRoundTrips(t *testing.T) {
+	t.Parallel()
+
+	for _, space := range []string{"\u00a0", "\u2003"} {
+		t.Run(fmt.Sprintf("%U", []rune(space)[0]), func(t *testing.T) {
+			t.Parallel()
+
+			content := `{"segments": [{"start": 0, "end": 3, "text": " a` + space + `b c", "words": [` +
+				`{"word": " a` + space + `b", "start": 0, "end": 1}, {"word": " c", "start": 1, "end": 2}]}]}`
+			c, _ := readWhisper(t, content, withWords).Cue(0)
+			want := []model.Word{{Text: "a" + space + "b", Start: 0, End: ms(1000)}, {Text: "c", Start: ms(1000), End: ms(2000)}}
+			assert.Equal(t, want, c.Words)
+
+			var out bytes.Buffer
+			s := readWhisper(t, content, withWords)
+			require.NoError(t, transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}))
+			again, _ := readWhisper(t, out.String(), withWords).Cue(0)
+			assert.Equal(t, want, again.Words)
 		})
 	}
 }

@@ -7,8 +7,10 @@ import (
 	"cmp"
 	"fmt"
 	"slices"
+	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -57,4 +59,26 @@ func endChapters(cues []model.Cue, ends []*time.Duration, media time.Duration) [
 		out[i] = c
 	}
 	return out
+}
+
+// parseError returns a read error of format f. The chapter readers ignore Lenient for their own lines, so
+// they always return it.
+func parseError(f model.Format, line int, msg string) *model.ParseError {
+	return &model.ParseError{Format: f, Line: line, Msg: msg}
+}
+
+// physicalLines splits content at LF, CR LF and CR. It returns one empty line for empty content.
+func physicalLines(content string) []string {
+	return strings.Split(lineEnds.Replace(content), "\n")
+}
+
+var lineEnds = strings.NewReplacer("\r\n", "\n", "\r", "\n") //nolint:gochecknoglobals // a replacer holds no state
+
+// escapedCue returns a chapter cue at start with the title as escaped lines. A title with LF gives several lines.
+func escapedCue(start time.Duration, title string) model.Cue {
+	c := model.Cue{Start: start}
+	if title != "" {
+		c.Lines = strings.Split(markupcore.EscapeText(title), "\n")
+	}
+	return c
 }

@@ -138,6 +138,7 @@ var registry = []formatFuncs{
 	{format: ASS, read: readASS, write: writeASS},
 	{format: Cavena890, read: readCavena890, write: writeCavena890},
 	{format: CSV, read: readCSV, write: writeCSV},
+	{format: FFMetadataChapters, read: readFFMetadataChapters, write: writeFFMetadataChapters},
 	{format: ITT, read: readITT, write: writeITT},
 	{format: JSON, read: readJSON, write: writeJSON},
 	{format: LRC, read: readLRC, write: writeLRC},
@@ -164,6 +165,9 @@ var registry = []formatFuncs{
 	{format: WebVTT, read: readWebVTT, write: writeWebVTT},
 	{format: Whisper, read: readWhisper, write: writeWhisper},
 	{format: YouTubeTimedText, read: readYouTube, write: writeYouTube},
+	{format: OGMChapters, read: readOGMChapters, write: writeOGMChapters},
+	{format: PodcastChapters, read: readPodcastChapters, write: writePodcastChapters},
+	{format: PodcastTranscript, read: readPodcastTranscript, write: writePodcastTranscript},
 	{format: YouTubeChapters, read: readYouTubeChapters, write: writeYouTubeChapters},
 }
 
@@ -181,6 +185,7 @@ type signature struct {
 var (
 	jsonChecks = []jsonCheck{
 		{format: JSON, match: stboxjson.DetectJSON},
+		{format: PodcastTranscript, match: transcript.DetectPodcastJSON},
 		{format: Whisper, match: transcript.DetectWhisperJSON},
 		{format: YouTubeTimedText, match: youtube.DetectJSON},
 	}
@@ -311,6 +316,14 @@ func readWhisper(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 
 func writeWhisper(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	return WriteReport{}, transcript.WriteWhisper(w, s, common, opts.Transcript)
+}
+
+func readPodcastTranscript(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return transcript.ReadPodcast(r, common, opts.Transcript)
+}
+
+func writePodcastTranscript(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	return WriteReport{}, transcript.WritePodcast(w, s, common, opts.Transcript)
 }
 
 func readWebVTT(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
@@ -553,4 +566,28 @@ func readYouTubeChapters(r io.Reader, common model.CommonReadOptions, opts ReadO
 
 func writeYouTubeChapters(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	return WriteReport{}, chapters.WriteYouTube(w, s, common, chapters.WriteOptions{})
+}
+
+func readFFMetadataChapters(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return chapters.ReadFFMetadata(r, common, opts.Chapters)
+}
+
+func writeFFMetadataChapters(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	return WriteReport{}, chapters.WriteFFMetadata(w, s, common, chapters.WriteOptions{})
+}
+
+func readOGMChapters(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return chapters.ReadOGM(r, common, opts.Chapters)
+}
+
+func writeOGMChapters(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	return WriteReport{}, chapters.WriteOGM(w, s, common, chapters.WriteOptions{})
+}
+
+func readPodcastChapters(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return chapters.ReadPodcast(r, common, opts.Chapters)
+}
+
+func writePodcastChapters(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	return WriteReport{}, chapters.WritePodcast(w, s, common, chapters.WriteOptions{})
 }
