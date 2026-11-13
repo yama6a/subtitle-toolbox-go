@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -76,7 +76,7 @@ func readFixture(tb testing.TB, name string) *model.Subtitle {
 func fixtureTime(tb testing.TB, field string) time.Duration {
 	tb.Helper()
 
-	d, ok := markup.WordTimestamp("<" + strings.Replace(field, ",", ".", 1) + ">")
+	d, ok := markupcore.WordTimestamp("<" + strings.Replace(field, ",", ".", 1) + ">")
 	require.True(tb, ok, field)
 	return d
 }
