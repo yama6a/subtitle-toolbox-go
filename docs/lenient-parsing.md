@@ -380,6 +380,18 @@ All errors are `*ParseError` values with the format `pgs` and line 0. T is the t
 
 - **Block numbers**: the position of the timestamp line among the timestamp lines of its track, counted from 0. A warning has no line number and no lines.
 
+## Whisper JSON
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| a segment, or a whisper.cpp item, with a bad `start`, `end`, `offsets` or `text` | `The field segments[1].end must be a number.` and the other messages of [transcripts.md](transcripts.md#read) | skips the segment. `Skipped`, no line, `Block` the index in the list, the segment as block text |
+| a word, or a token, with a start of 100000 hours or more | `The field segments[0].words[1].start is not below 100000 hours.` | skips the whole segment |
+| a segment that ends before it starts | `The cue ends at E s, before it starts at S s.` | swaps the times when the cue then lasts 30 s or less. `Repaired`. Else skips the segment |
+| no `segments` or `transcription` list, a root that is no object, invalid JSON | the error | the same error |
+
+- **Top-level words**: a segment that fails takes none of the top-level words, so the next segment takes them. A segment that fails because of one of its words has taken its words already, so they are lost with it.
+- **Block text**: the compact JSON of the segment. With top-level words, it holds them in `words`. A number keeps its source text, so `1e400` stays `1e400`.
+
 ## YouTube timed text
 
 | Damage | Strict | Lenient |

@@ -33,6 +33,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/tmplayer"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
@@ -161,6 +162,7 @@ var registry = []formatFuncs{
 	{format: QuickTimeText, read: readQuickTimeText, write: writeQuickTimeText},
 	{format: VobSub, read: readVobSub},
 	{format: WebVTT, read: readWebVTT, write: writeWebVTT},
+	{format: Whisper, read: readWhisper, write: writeWhisper},
 	{format: YouTubeTimedText, read: readYouTube, write: writeYouTube},
 	{format: YouTubeChapters, read: readYouTubeChapters, write: writeYouTubeChapters},
 }
@@ -179,6 +181,7 @@ type signature struct {
 var (
 	jsonChecks = []jsonCheck{
 		{format: JSON, match: stboxjson.DetectJSON},
+		{format: Whisper, match: transcript.DetectWhisperJSON},
 		{format: YouTubeTimedText, match: youtube.DetectJSON},
 	}
 	rawSignatures = []signature{
@@ -300,6 +303,14 @@ func writeJSON(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts W
 
 func readVobSub(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return vobsub.Read(r, common, opts.VobSub)
+}
+
+func readWhisper(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return transcript.ReadWhisper(r, common, opts.Transcript)
+}
+
+func writeWhisper(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	return WriteReport{}, transcript.WriteWhisper(w, s, common, opts.Transcript)
 }
 
 func readWebVTT(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {

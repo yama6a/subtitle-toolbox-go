@@ -41,6 +41,7 @@ Every file except `mantas_utf16.srt` and `mantas_multiple_new_lines.vtt` is writ
 | `absurd_hours.vtt` | a cue with 20 hour digits between two good cues, LF | MIT |
 | `absurd_hours.ttml` | a `p` with 20 hour digits and a `p` with an `end` of 20 digits in hours, LF | MIT |
 | `absurd_seconds.json` | the library JSON. A cue with a start of `1e20` seconds between two good cues, LF | MIT |
+| `missing_segment_end.whisper.json` | the OpenAI API shape, a segment without `end`, LF | MIT |
 | `absurd_word_timestamp.vtt` | a cue with a word timestamp of 20 hour digits between two good cues, LF | MIT |
 | `broken_events.ass` | no `Format:` line in `[Events]`, an event with 4 fields, a letter in an end time, UTF-8 BOM, CR LF | MIT |
 | `absurd_hours.ass` | a `Dialogue` line with 20 hour digits between two good lines, LF | MIT |

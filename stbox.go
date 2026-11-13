@@ -109,6 +109,7 @@ const (
 	SpruceSTL     = model.SpruceSTL
 	VobSub        = model.VobSub
 	WebVTT        = model.WebVTT
+	Whisper       = model.Whisper
 	// YouTubeTimedText is the format of the timed text that YouTube serves: json3, srv3, srv2 and srv1.
 	YouTubeTimedText = model.YouTubeTimedText
 	// YouTubeChapters is the format of the chapter lines of a YouTube description.
