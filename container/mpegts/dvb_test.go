@@ -60,4 +60,14 @@ func TestDVBTracks(t *testing.T) {
 		w.packets(videoPID, make([]byte, 400))
 		assert.Equal(t, []model.Track{dvbTrack(300, "eng", "")}, open(t, w.bytes()).Tracks())
 	})
+
+	t.Run("a short entry in a descriptor does not change the services of the next descriptor", func(t *testing.T) {
+		t.Parallel()
+
+		short := append([]byte{0x59, 6}, "eng\x20\x00\x01"...)
+		w := newWriter()
+		w.tables(videoPID, pmtStream{pid: 300, streamType: 0x06, descriptors: append(short, subtitling([4]any{"fra", 0x10, 2, 2})...)})
+		w.packets(videoPID, make([]byte, 400))
+		assert.Equal(t, []model.Track{dvbTrack(300, "fra", "")}, open(t, w.bytes()).Tracks())
+	})
 }

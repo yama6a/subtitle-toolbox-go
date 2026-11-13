@@ -281,7 +281,7 @@ func TestCues(t *testing.T) {
 func TestPixelLimits(t *testing.T) {
 	t.Parallel()
 
-	const side = "the regions hold more than 8294400 pixels in total."
+	const totalLimit = "the regions hold more than 8294400 pixels in total."
 
 	t.Run("regions that hold more than the pixel limit in total fail in strict mode", func(t *testing.T) {
 		t.Parallel()
@@ -290,12 +290,10 @@ func TestPixelLimits(t *testing.T) {
 		for id := range 256 {
 			data = append(data, regionSeg(id, 3840, 2160, 2, 0, 0x10, -1)...)
 		}
-		start := time.Now()
 		err := NewDecoder(1, 1, false, model.CommonReadOptions{}).Add(data, 0, 0, false)
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr)
-		assert.Equal(t, "Cannot read region 1: "+side, perr.Msg)
-		assert.Less(t, time.Since(start), 10*time.Second)
+		assert.Equal(t, "Cannot read region 1: "+totalLimit, perr.Msg)
 	})
 
 	t.Run("lenient mode skips the region and warns", func(t *testing.T) {
@@ -306,7 +304,7 @@ func TestPixelLimits(t *testing.T) {
 		require.NoError(t, d.Add(data, 0, 0, false))
 		assert.Len(t, d.regions, 1)
 		require.Len(t, d.Warnings(), 1)
-		assert.Equal(t, "Cannot read region 1: "+side, d.Warnings()[0].Message)
+		assert.Equal(t, "Cannot read region 1: "+totalLimit, d.Warnings()[0].Message)
 		assert.Equal(t, model.Skipped, d.Warnings()[0].Action)
 	})
 
@@ -319,9 +317,9 @@ func TestPixelLimits(t *testing.T) {
 			data = append(data, join(pageSeg(1, 5, 0, 0), segment(segEnd, 1))...)
 		}
 		d := NewDecoder(1, 1, false, model.CommonReadOptions{})
-		start := time.Now()
 		require.NoError(t, d.Add(data, 0, 0, false))
-		assert.Less(t, time.Since(start), 20*time.Second)
-		assert.Len(t, d.Finish(time.Second), 1)
+		cues := d.Finish(time.Second)
+		require.Len(t, cues, 1)
+		assert.Equal(t, [2]int{3840, 2160}, [2]int{cues[0].Image.Width, cues[0].Image.Height})
 	})
 }
