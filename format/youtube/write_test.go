@@ -104,6 +104,10 @@ func TestWriteKeepsTheSourceOfOddFiles(t *testing.T) {
 			source: `{"wireMagic":"pb3","pens":[{}],"wsWinStyles":[{}],"wpWinPositions":[{}],"events":[{"tStartMs":0,"segs":[{"utf8":"a"}]}]}`,
 		},
 		{
+			name:   "json3 with a null duration",
+			source: `{"wireMagic":"pb3","pens":[{}],"wsWinStyles":[{}],"wpWinPositions":[{}],"events":[{"tStartMs":0,"dDurationMs":null,"segs":[{"utf8":"a"}]}]}`,
+		},
+		{
 			name: "a span with the pen 0 takes the pen of its paragraph",
 			source: decl + "<timedtext format=\"3\">\n<head>\n<pen id=\"1\" b=\"1\"/>\n</head>\n<body>\n" +
 				"<p t=\"0\" d=\"1000\" p=\"1\"><s p=\"0\">Hi</s></p>\n</body>\n</timedtext>\n",
@@ -123,11 +127,4 @@ func TestWriteKeepsTheSourceOfOddFiles(t *testing.T) {
 			assert.Equal(t, tt.source, write(t, s))
 		})
 	}
-}
-
-func TestReadSrv3SkipsCommentsAndInstructions(t *testing.T) {
-	t.Parallel()
-
-	c, _ := read(t, `<timedtext format="3"><body><p t="0" d="1000">hi<!-- secret --><?x data?></p></body></timedtext>`, youtube.ReadOptions{}).Cue(0)
-	assert.Equal(t, []string{"hi"}, c.Lines)
 }

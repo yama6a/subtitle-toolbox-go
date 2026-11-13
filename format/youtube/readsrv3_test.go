@@ -134,3 +134,10 @@ func TestReadSrv3LenientReadsTextBeforeTheXML(t *testing.T) {
 	assert.Equal(t, model.Repaired, warnings[0].Action)
 	assert.Equal(t, 1, warnings[0].Line)
 }
+
+func TestReadSrv3SkipsCommentsAndInstructions(t *testing.T) {
+	t.Parallel()
+
+	c, _ := read(t, `<timedtext format="3"><body><p t="0" d="1000">hi<!-- secret --><?x data?></p></body></timedtext>`, youtube.ReadOptions{}).Cue(0)
+	assert.Equal(t, []string{"hi"}, c.Lines)
+}

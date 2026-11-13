@@ -47,9 +47,9 @@ func (k timeKeys) captions(cues []model.Cue, stored []orderedjson.Value) []timed
 		if v, _ := data.Get(k.start); !wordgroup.SameTime(v, k.unit, start) {
 			fields = fields.With(k.start, k.value(start))
 		}
-		if v, _ := data.Get(k.duration); !hasSource[i] || ends[i] != end {
+		if !hasSource[i] || ends[i] != end {
 			fields = fields.With(k.duration, k.value(end-start))
-		} else if v.Kind() == orderedjson.Null {
+		} else if !data.Has(k.duration) {
 			fields = fields.Without(k.duration)
 		}
 		var shift time.Duration

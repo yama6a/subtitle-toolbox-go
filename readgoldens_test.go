@@ -175,29 +175,29 @@ func compareGolden(t *testing.T, s *stbox.Subtitle, info stbox.ReadInfo, golden 
 
 	var want any
 	require.NoError(t, json.Unmarshal(testfiles.Read(t, golden), &want))
-	assert.Equal(t, canonicalJSON(t, emptyAsNull(want)), canonicalJSON(t, emptyAsNull(got)))
+	assert.Equal(t, canonicalJSON(t, emptyValuesAsEmptyList(want)), canonicalJSON(t, emptyValuesAsEmptyList(got)))
 }
 
-// emptyAsNull turns every empty object and every empty array into nil. PHP decodes `{}` to an empty array, so a PHP
+// emptyValuesAsEmptyList turns every empty object and every empty array into one empty list, and leaves null as it is. PHP decodes `{}` to an empty array, so a PHP
 // golden writes `[]` where Go keeps the type and writes `{}`, see the row of #19 in docs/php-differences.md.
-func emptyAsNull(v any) any {
+func emptyValuesAsEmptyList(v any) any {
 	switch v := v.(type) {
 	case map[string]any:
 		if len(v) == 0 {
-			return nil
+			return []any{}
 		}
 		out := make(map[string]any, len(v))
 		for k, item := range v {
-			out[k] = emptyAsNull(item)
+			out[k] = emptyValuesAsEmptyList(item)
 		}
 		return out
 	case []any:
 		if len(v) == 0 {
-			return nil
+			return []any{}
 		}
 		out := make([]any, len(v))
 		for i, item := range v {
-			out[i] = emptyAsNull(item)
+			out[i] = emptyValuesAsEmptyList(item)
 		}
 		return out
 	}
