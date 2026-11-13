@@ -163,18 +163,51 @@ func bigCue(n int) (model.Cue, []wordgroup.SourceWord) {
 	return model.Cue{Lines: []string{b.String()}, End: ms(n), Words: words}, source
 }
 
+// sharedStartCue has n source words at 0 s whose spans match none of them.
+func sharedStartCue(n int) (model.Cue, []wordgroup.SourceWord) {
+	words := make([]model.Word, n)
+	source := make([]wordgroup.SourceWord, n)
+	for i := range n {
+		words[i] = model.Word{Text: "a", End: ms(1)}
+		source[i] = src("a", 0)
+	}
+	return model.Cue{Lines: []string{strings.Repeat("a Z ", n)}, End: ms(n), Words: words}, source
+}
+
+// untimedLeadCue has n source words without a start and a leading span that none of their runs matches.
+func untimedLeadCue(n int) (model.Cue, []wordgroup.SourceWord) {
+	source := make([]wordgroup.SourceWord, n)
+	for i := range n {
+		source[i] = untimedSrc("a")
+	}
+	words := []model.Word{{Text: "Y", Start: ms(5), End: ms(6)}}
+	return model.Cue{Lines: []string{strings.Repeat("a ", n) + "X Y"}, End: ms(n), Words: words}, source
+}
+
+var reuseShapes = []struct {
+	name  string
+	build func(n int) (model.Cue, []wordgroup.SourceWord)
+	words int // the word count that makes the text about 1 MB
+}{
+	{"distinct starts", bigCue, 160000},
+	{"one shared start", sharedStartCue, 250000},
+	{"untimed leading span", untimedLeadCue, 500000},
+}
+
 func BenchmarkReuse(b *testing.B) {
-	for _, n := range []int{10000, 160000} {
-		cue, source := bigCue(n)
-		b.Run(fmt.Sprintf("words=%d", n), func(b *testing.B) {
-			b.ReportAllocs()
-			b.SetBytes(int64(len(cue.Lines[0])))
-			for b.Loop() {
-				if got, _ := wordgroup.Reuse(&cue, source, true, true); len(got) != n {
-					b.Fatal("not every word reused")
+	for _, shape := range reuseShapes {
+		for _, n := range []int{10000, shape.words} {
+			cue, source := shape.build(n)
+			b.Run(fmt.Sprintf("%s/words=%d", shape.name, n), func(b *testing.B) {
+				b.ReportAllocs()
+				b.SetBytes(int64(len(cue.Lines[0])))
+				for b.Loop() {
+					if got, _ := wordgroup.Reuse(&cue, source, true, true); len(got) == 0 {
+						b.Fatal("no words")
+					}
 				}
-			}
-		})
+			})
+		}
 	}
 }
 
@@ -199,11 +232,15 @@ func TestWordgroupGrowth(t *testing.T) {
 			words[i] = word(cue.Words[i].Text, i, i+1)
 		}
 		text := cue.Lines[0]
+		shared, sharedSource := sharedStartCue(n)
+		lead, leadSource := untimedLeadCue(n)
 		return map[string]time.Duration{
-			"Reuse":    best(func() { wordgroup.Reuse(&cue, source, true, true) }),
-			"Spans":    best(func() { wordgroup.Spans(&cue) }),
-			"CueWords": best(func() { wordgroup.CueWords(text, words, ms(n)) }),
-			"Group":    best(func() { wordgroup.Group(words) }),
+			"Reuse":                best(func() { wordgroup.Reuse(&cue, source, true, true) }),
+			"Reuse shared start":   best(func() { wordgroup.Reuse(&shared, sharedSource, true, true) }),
+			"Reuse untimed leader": best(func() { wordgroup.Reuse(&lead, leadSource, true, true) }),
+			"Spans":                best(func() { wordgroup.Spans(&cue) }),
+			"CueWords":             best(func() { wordgroup.CueWords(text, words, ms(n)) }),
+			"Group":                best(func() { wordgroup.Group(words) }),
 		}
 	}
 	small, large := run(10000), run(100000)
