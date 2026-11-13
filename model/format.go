@@ -17,6 +17,7 @@ const (
 	AssemblyAI     Format = "assemblyai"
 	AWSTranscribe  Format = "aws-transcribe"
 	Deepgram       Format = "deepgram"
+	GoogleSpeech   Format = "google-speech"
 	LRC            Format = "lrc"
 	MCC            Format = "mcc"
 	MicroDVD       Format = "microdvd"
@@ -75,6 +76,7 @@ var formatFacts = []formatFact{
 	{format: AssemblyAI, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: AWSTranscribe, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: Deepgram, extensions: []string{"json"}, canRead: true, canWrite: true},
+	{format: GoogleSpeech, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: LRC, extensions: []string{"lrc"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MCC, extensions: []string{"mcc"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MicroDVD, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},

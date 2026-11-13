@@ -55,6 +55,7 @@ func goldenFolders() []goldenFolder {
 		{name: "ass", format: stbox.ASS, files: 7},
 		{name: "assemblyai", format: stbox.AssemblyAI, files: 2, transcript: true, defaults: true},
 		{name: "aws-transcribe", format: stbox.AWSTranscribe, files: 2, transcript: true, defaults: true},
+		{name: "google-speech", format: stbox.GoogleSpeech, files: 2, transcript: true, defaults: true},
 		{name: "cavena890", format: stbox.Cavena890, files: 7},
 		{name: "chapters/ffmetadata", format: stbox.FFMetadataChapters, files: 3},
 		{name: "chapters/ogm", format: stbox.OGMChapters, files: 2},

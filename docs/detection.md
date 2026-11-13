@@ -35,6 +35,7 @@ Before step 1, `Detect` looks for a video container in the raw bytes. A containe
 - **No check for AssemblyAI JSON**: a file with `words` or `utterances` matches no rule, so `Detect` finds no format. Name it with `ReadOptions.Format` or `--from assemblyai`. See [transcripts.md](transcripts.md#assemblyai-json).
 - **No check for Amazon Transcribe JSON**: a file with `results.items` matches no rule, so `Detect` finds no format. Name it with `ReadOptions.Format` or `--from aws-transcribe`. See [transcripts.md](transcripts.md#amazon-transcribe-json).
 - **No check for Deepgram JSON**: a file with `results.channels` matches no rule, so `Detect` finds no format. Name it with `ReadOptions.Format` or `--from deepgram`. See [transcripts.md](transcripts.md#deepgram-json).
+- **No check for Google Speech-to-Text JSON**: a file with `results` and `alternatives` matches no rule, so `Detect` finds no format. Name it with `ReadOptions.Format` or `--from google-speech`. See [transcripts.md](transcripts.md#google-speech-to-text-json).
 
 ## Signatures
 
