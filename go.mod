@@ -12,6 +12,6 @@ require (
 )
 
 require (
-	github.com/asticode/go-astikit v0.30.0 // indirect
+	github.com/asticode/go-astikit v0.59.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.6 // indirect
 )

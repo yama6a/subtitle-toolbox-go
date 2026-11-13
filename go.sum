@@ -1,7 +1,7 @@
 github.com/Eyevinn/mp4ff v0.62.1 h1:EMuNIrmTCm5acOCVENca5Fzk+Mdek/l4bQZdk2EfReo=
 github.com/Eyevinn/mp4ff v0.62.1/go.mod h1:97zsDIJUiDTYqKpqq/b1K9foamxXmvsgE4GdPrPK3ks=
-github.com/asticode/go-astikit v0.30.0 h1:DkBkRQRIxYcknlaU7W7ksNfn4gMFsB0tqMJflxkRsZA=
-github.com/asticode/go-astikit v0.30.0/go.mod h1:h4ly7idim1tNhaVkdVBeXQZEE3L0xblP7fCWbgwipF0=
+github.com/asticode/go-astikit v0.59.0 h1:tjbwDym+MTSxqkAhJoHRZmHMXK6Jv4vGx+97FptKH6k=
+github.com/asticode/go-astikit v0.59.0/go.mod h1:fV43j20UZYfXzP9oBn33udkvCvDvCDhzjVqoLFuuYZE=
 github.com/asticode/go-astits v1.17.0 h1:KrDxalNhZ/GJkbgVweD5xxCA9XoaW7tHuFiJB/sAZxs=
 github.com/asticode/go-astits v1.17.0/go.mod h1:psImoC1BhcAWIsyM/RnbO1OgUW+XSf8fZpFvF5McDyo=
 github.com/dlclark/regexp2/v2 v2.13.0 h1:sGPfGE1Bx7H3F9vcCdLrKUFvnau7DGiQZxHPQ6rMMs4=
