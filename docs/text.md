@@ -217,6 +217,46 @@ for _, c := range s.All() {
 - **Invalid UTF-8**: a cue whose visible text is not valid UTF-8 stays as it is.
 - **One line**: `hearingimpaired.IsAnnotation(line, opts)` reports whether `Apply` would change or remove `line`. `JOHN: Hi.` is an annotation, `Note: this stays.` is not.
 
+## Speakers
+
+Most subtitle formats have no speaker field, so a speaker shows as a text label such as `ANNA: `, as a dialogue dash or as a color. `speakers.Apply(s, opts)` converts between these forms and `Cue.Speaker`. `speakers.List(s)` counts the cues of each speaker, in order of first appearance. A cue with 2 or more voices keeps `<v Name>` spans in its lines and has no `Speaker`. Both steps read both forms.
+
+With `Options{Style: StylePrefix}`, a WebVTT cue with `Speaker` `Anna` and the line `Is the ferry on time today?` becomes the SubRip line `ANNA: Is the ferry on time today?`.
+
+`Apply` runs these steps in order, each only when `Options` asks for it.
+
+| Step | Option | Example |
+|:--- |:--- |:--- |
+| 1. labels to speakers | `FromLabels`, `AnyCaseLabels` | `JOHN: Hi.` gives `Speaker` `John` and the line `Hi.`. `DR. O'NEIL:` gives `Dr. O'Neil`, `MAN 2:` gives `Man 2` |
+| 2. rename | `Rename` | `{"SPEAKER_00": "Anna"}` renames each speaker `SPEAKER_00`. The voice class stays |
+| 3. style | `Style` | see below. Each style removes the speakers |
+
+| `Style` | Result for `<v Anna>Where?` and `<v Ben>Home.` | Options |
+|:--- |:--- |:--- |
+| `StylePrefix` | `ANNA: Where?` and `BEN: Home.` | `KeepNameCase` writes `Anna`. `Separator` replaces `": "`, and `""` is legal |
+| `StyleDialogueDashes` | `- Where?` and `- Home.`. A cue with 1 speaker gets no dash | `DialogueDashStyle` |
+| `StyleColors` | `<font color="#ffffff">Where?</font>` and `<font color="#ffff00">Home.</font>` | `Colors` as `#rrggbb`. Empty means `BBCColors()`: white, yellow, cyan, green |
+
+- **Label rule**: a label is 1 to 4 words of upper case letters, digits, `.`, `'`, `&` and `-`, then `:` and a space, at the start of a line or after its dash. It is the speaker label rule of [hearing-impaired annotations](#hearing-impaired-annotations). With `AnyCaseLabels`, `Baker:` is a label too. `JOHN:Hi.`, `Then JOHN: Hi.` and `At 10:30 we go.` are not.
+- **Names**: an upper case label becomes title case, so `DR. O'NEIL` gives `Dr. O'Neil`. A label with a lower case letter stays as it is.
+- **Several speakers in one cue**: a speaker that changes in the middle of a line starts a new line, and the open style tags close and open again. `<v Anna><i>Where? <v Ben>Home.</i>` with `StylePrefix` gives `ANNA: <i>Where?</i>` and `BEN: <i>Home.</i>`.
+- **Colors**: the speakers of `List` get the colors in turn, from the first color again after the last.
+- **Word timing**: `Words` stay. `ANNA: ` is new text, so the words keep their timing.
+- **Report**: `ChangedCues` counts the cues whose lines or `Speaker` differ after `Apply`.
+- **Errors**: `Validate` fails for a color that is not `#rrggbb`, for a `DialogueDashStyle` outside the 8 constants and for a `Style` outside the constants. `Apply` then changes nothing.
+- **Names are strings**: `List` returns `[]SpeakerCount`, so the Whisper speaker `0` is `"0"`.
+
+How each format shows a speaker:
+
+| Format | Speaker |
+|:--- |:--- |
+| WebVTT | `<v Name>` or `<v.class Name>`, read as `Cue.Speaker` |
+| TTML, iTT | `ttm:agent` on the `<p>`, read as `Cue.Speaker` |
+| ASS, SSA | the `Name` field |
+| CSV | the speaker column |
+| library JSON version 2 | the `speaker` field |
+| SubRip and other formats | none. Use `StylePrefix`, `StyleDialogueDashes` or `StyleColors` |
+
 ## Common errors
 
 OCR of PGS and VobSub cues reads `It's` as `lt's`. Files from the web have spaces before `?`, tags that never close and `-Hi.` without a space. `fixing.Apply(s, opts)` fixes such errors in one call and returns each change for review. `fixing.Preview(s, opts)` returns the same report and changes nothing.
