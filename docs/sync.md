@@ -92,8 +92,8 @@ for _, c := range speech.All() {
 ```
 
 - **Log reader**: a line counts when it holds `silence_start:` or `silence_end:` with a number. Other lines, such as the banner and the progress lines, do not matter. The `silence_start` and `silence_end` lines must alternate. A log without such lines gives one cue from 0 to the media duration.
-- **Times**: each time is clamped to 0 up to the media duration and rounded to whole milliseconds. A time that is below the time before it counts as that one.
-- **Errors**: a media duration of 0 or less, or of 100000 hours or more, and a bad interval return an error that matches `ErrInvalidArgument`. A log with a line per channel (`silencedetect=mono=1`) or with lines out of order returns a `*ParseError` with an empty `Format` and the 1-based `Line`.
+- **Times**: each time is clamped to 0 up to the media duration and rounded to whole milliseconds. A time that is below the time before it counts as that one, so one damaged high time drops the speech before it.
+- **Errors**: a media duration of 0 or less, or of 100000 hours or more after the rounding to whole milliseconds, and a bad interval return an error that matches `ErrInvalidArgument`. A log with a line per channel (`silencedetect=mono=1`) or with lines out of order returns a `*ParseError` with an empty `Format` and the 1-based `Line`.
 - **Intervals**: `SpeechFromIntervals` needs a start of 0 or more and an end at or after its start and below 100000 hours. It sorts the cues by start. An interval of length 0 gives a cue of 0 ms, which `Apply` skips.
 - **Score**: speech starts later and ends earlier than its cue. So the score is lower than against a subtitle. The German example scores 0.78 against the speech and 0.89 against the English subtitle. The low score line below 0.5 still applies.
 - **Bound**: the log reader scans each byte once. Its time and memory grow with the size of the log. `BenchmarkSpeechFromSilenceLog` runs a log of 1 MB.

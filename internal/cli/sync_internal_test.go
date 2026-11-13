@@ -250,19 +250,18 @@ func TestSyncToTheSpeech(t *testing.T) {
 	tests := []struct {
 		name string
 		log  string
-		args []string
 		want string
 	}{
-		{"a mono log", logLine + "channel: 0 | silence_start: 1.5\n", []string{"840"}, "Error: mono.log: line 1: Cannot read a silencedetect log with one line per channel. Run silencedetect without mono.\n"},
-		{"a log out of order", logLine + "silence_end: 1.5\n", []string{"840"}, "Error: mono.log: line 1: The line silence_end is out of order. The silence_start and silence_end lines must alternate.\n"},
+		{"a mono log", logLine + "channel: 0 | silence_start: 1.5\n", "Error: bad.log: line 1: Cannot read a silencedetect log with one line per channel. Run silencedetect without mono.\n"},
+		{"a log out of order", logLine + "silence_end: 1.5\n", "Error: bad.log: line 1: The line silence_end is out of order. The silence_start and silence_end lines must alternate.\n"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			dir := syncDir(t)
-			require.NoError(t, os.WriteFile(filepath.Join(dir, "mono.log"), []byte(tt.log), 0o600))
-			got := call{dir: dir}.run(t, "sync", "de.srt", "--silence-log", "mono.log", "--media-duration", tt.args[0])
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "bad.log"), []byte(tt.log), 0o600))
+			got := call{dir: dir}.run(t, "sync", "de.srt", "--silence-log", "bad.log", "--media-duration", "840")
 			assert.Equal(t, result{Code: exitFile, Stderr: tt.want}, got)
 		})
 	}

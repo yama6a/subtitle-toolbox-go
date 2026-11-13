@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"cmp"
 	"context"
 	"slices"
 	"strconv"
@@ -22,7 +21,8 @@ const (
 type syncCommand struct {
 	out       writeOutput
 	reference string
-	// silenceLog is --silence-log, "" without it. Then reference is set.
+	// speech is true with --silence-log. Then reference is empty.
+	speech        bool
 	silenceLog    string
 	mediaDuration time.Duration
 	// referenceTrack is --reference-track, 0 without it.
@@ -82,6 +82,7 @@ func (s *syncCommand) prepare(a *args, r *runner) error {
 	}
 	s.reference, _ = a.Value("reference")
 	s.silenceLog, _ = a.Value("silence-log")
+	s.speech = a.Has("silence-log")
 	switch {
 	case a.Has("reference") == a.Has("silence-log"):
 		return usage("Pass one of --reference FILE and --silence-log FILE.")
@@ -132,11 +133,15 @@ func (s *syncCommand) prepareSearch(a *args) error {
 }
 
 func (s *syncCommand) checkInputs(r *runner, inputs []string) error {
-	return s.out.checkInputs(r, inputs, append(slices.Clone(inputs), cmp.Or(s.reference, s.silenceLog)), nil)
+	side := s.reference
+	if s.speech {
+		side = s.silenceLog
+	}
+	return s.out.checkInputs(r, inputs, append(slices.Clone(inputs), side), nil)
 }
 
 func (s *syncCommand) loadSideFiles(_ context.Context, r *runner) error {
-	if s.silenceLog != "" {
+	if s.speech {
 		return s.loadSpeech(r)
 	}
 	ref, err := r.readSideFile(s.reference, s.referenceTrack, "--reference-track")
