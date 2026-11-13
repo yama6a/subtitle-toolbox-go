@@ -100,7 +100,7 @@ func FuzzGroup(f *testing.F) {
 			}
 			words = append(words, w)
 		}
-		flat := []wordgroup.Word{}
+		var flat []wordgroup.Word
 		for _, g := range wordgroup.Group(words) {
 			require.NotEmpty(t, g)
 			flat = append(flat, g...)
