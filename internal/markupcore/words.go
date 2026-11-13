@@ -8,7 +8,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
 
 var exactVoiceTagRegexp = regexp.MustCompile(`^` + VoiceTagPattern + `$`)
