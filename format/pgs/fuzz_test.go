@@ -3,6 +3,7 @@ package pgs_test
 import (
 	"bytes"
 	"errors"
+	"io"
 	"path/filepath"
 	"testing"
 	"time"
@@ -51,6 +52,9 @@ func FuzzRead(f *testing.F) {
 					t.Fatalf("cue %d has the times %v to %v", i, c.Start, c.End)
 				}
 				previous = c.Start
+			}
+			if _, err := pgs.Write(io.Discard, s, model.CommonWriteOptions{}, pgs.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
+				t.Fatalf("Write returned %v, which is no ErrUnwritable", err)
 			}
 		}
 	})

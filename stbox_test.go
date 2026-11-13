@@ -99,7 +99,7 @@ func TestWriteReportIsSetForWebVTTSCCAndMCCOnly(t *testing.T) {
 	s := &stbox.Subtitle{}
 	s.AddCue(stbox.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{`<font color="#123456">dark</font>`}})
 	for _, f := range stbox.Formats() {
-		if !f.CanWrite() || f == stbox.MicroDVD {
+		if !f.CanWrite() || f == stbox.MicroDVD || f == stbox.PGS {
 			continue
 		}
 		t.Run(string(f), func(t *testing.T) {

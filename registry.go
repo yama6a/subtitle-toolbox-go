@@ -88,6 +88,7 @@ var (
 	_ writeFunc[pac.WriteOptions, pac.WriteReport]             = pac.Write
 	_ detectFunc                                               = pac.Detect
 	_ readFunc[pgs.ReadOptions]                                = pgs.Read
+	_ writeFunc[pgs.WriteOptions, pgs.WriteReport]             = pgs.Write
 	_ detectFunc                                               = pgs.Detect
 	_ readFunc[lrc.ReadOptions]                                = lrc.Read
 	_ writeFunc[lrc.WriteOptions, lrc.WriteReport]             = lrc.Write
@@ -141,7 +142,7 @@ var registry = []formatFuncs{
 	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
 	{format: MPSub, read: readMPSub, write: writeMPSub},
 	{format: PAC, read: readPAC, write: writePAC},
-	{format: PGS, read: readPGS},
+	{format: PGS, read: readPGS, write: writePGS},
 	{format: SAMI, read: readSAMI, write: writeSAMI},
 	{format: SBV, read: readSBV, write: writeSBV},
 	{format: SCC, read: readSCC, write: writeSCC},
@@ -255,6 +256,11 @@ func writeITT(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts Wr
 
 func readPGS(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
 	return pgs.Read(r, common, pgs.ReadOptions{})
+}
+
+func writePGS(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	_, err := pgs.Write(w, s, common, pgs.WriteOptions{})
+	return WriteReport{}, err
 }
 
 func readPAC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {

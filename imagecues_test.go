@@ -46,7 +46,7 @@ func TestWritersHandleImageCues(t *testing.T) {
 	skipped := subtitleOfCues(t, 1, one, two, three)
 
 	for _, f := range stbox.Formats() {
-		if !f.CanWrite() {
+		if !f.CanWrite() || f == stbox.PGS {
 			continue
 		}
 		t.Run(string(f), func(t *testing.T) {
