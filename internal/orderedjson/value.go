@@ -2,7 +2,6 @@
 package orderedjson
 
 import (
-	"errors"
 	"math"
 	"slices"
 	"strconv"
@@ -22,9 +21,6 @@ const (
 	Array
 	Object
 )
-
-// ErrInvalidNumber means that a text is not a JSON number literal.
-var ErrInvalidNumber = errors.New("not a JSON number literal")
 
 // Value is a JSON value. Its zero value is null.
 type Value struct {
@@ -59,7 +55,7 @@ func Float(f float64) Value {
 	return Value{kind: Number, text: formatFloat(f)}
 }
 
-// Seconds returns d, rounded down to whole milliseconds, as float seconds such as 4.0, 2.34 or 0.001.
+// Seconds returns d in whole milliseconds as float seconds such as 4.0, 2.34 or 0.001. A part of a millisecond is cut off.
 func Seconds(d time.Duration) Value {
 	return Float(float64(d.Milliseconds()) / 1000)
 }

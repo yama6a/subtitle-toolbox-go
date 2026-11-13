@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/hls"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/hls"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // BenchmarkSegment cuts the 30 cues of node-webvtt-subs1.vtt, repeated every 132 s to 51000 cues, and writes every

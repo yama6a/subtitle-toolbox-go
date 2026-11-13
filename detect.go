@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
 )
 
 // ContainerHeadSize is the number of bytes at the start of a file that Detect needs to find a container: 2*192+5.
@@ -43,8 +44,7 @@ func detectFormat(content []byte) (Format, bool) {
 	}
 	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.PHPTrimSet)
 	if len(content) > 0 && content[0] == '{' {
-		var keys map[string]json.RawMessage
-		if json.Unmarshal(content, &keys) == nil {
+		if keys, ok := jsonKeys(content); ok {
 			for _, c := range jsonChecks {
 				if c.match(keys) {
 					return c.format, true
@@ -91,4 +91,14 @@ func lfLineEnds(content []byte) []byte {
 // isBlank reports whether content holds nothing but UTF-8 BOMs and the bytes of PHP trim.
 func isBlank(content []byte) bool {
 	return len(bytes.Trim(textenc.TrimUTF8BOMs(content), markupcore.PHPTrimSet)) == 0
+}
+
+// jsonKeys returns the top-level keys of a JSON object. PHP json_decode fails on what orderedjson rejects,
+// such as a lone surrogate escape, so such a document goes on to the text signatures.
+func jsonKeys(content []byte) (map[string]json.RawMessage, bool) {
+	if _, err := orderedjson.Decode(content); err != nil {
+		return nil, false
+	}
+	var keys map[string]json.RawMessage
+	return keys, json.Unmarshal(content, &keys) == nil
 }

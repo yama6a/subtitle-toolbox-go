@@ -1,16 +1,9 @@
 package orderedjson
 
 import (
-	"errors"
 	"strconv"
 	"strings"
 	"unicode/utf8"
-)
-
-// Errors of Encode.
-var (
-	ErrNotFinite   = errors.New("not finite")
-	ErrInvalidUTF8 = errors.New("invalid UTF-8")
 )
 
 // Encode writes v in the form of PHP json_encode with JSON_UNESCAPED_SLASHES and JSON_UNESCAPED_UNICODE.

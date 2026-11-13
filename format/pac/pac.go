@@ -11,8 +11,8 @@ package pac
 import (
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const formatDataKey = string(model.PAC)

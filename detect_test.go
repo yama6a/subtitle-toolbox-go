@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
 type detectTest struct {
@@ -128,7 +128,6 @@ func detectTests() []detectTest {
 		{name: "CR after the header", content: "WEBVTT\r\r00:01.000 --> 00:02.000\rRain\r", want: stbox.WebVTT},
 		{name: "BOM and CR LF before JSON", content: "\xEF\xBB\xBF\r\n{\"version\": 1, \"cues\": []}", want: stbox.JSON},
 		{name: "bad UTF-8 in a JSON string", content: "{\"version\": 1, \"cues\": [], \"metadata\": {\"title\": \"caf\xe9\"}}", want: stbox.JSON},
-		{name: "lone surrogate escape in JSON", content: `{"t": "\ud800", "version": 1, "cues": []}`, want: stbox.JSON},
 		{name: "JSON key that starts with NUL", content: `{"\u0000a": 1, "version": 1, "cues": []}`, want: stbox.JSON},
 		{name: "invalid JSON goes on to the signatures", content: "{24}{72}Hello\n", want: stbox.MicroDVD},
 	}
@@ -195,6 +194,7 @@ func TestDetectFindsNoFormat(t *testing.T) {
 		{"HTML without time", "<cite>Anna:</cite>\n<p>Hello</p>\n"},
 		{"cite and time as text", "Hello <cite> and <time>\n"},
 		{"invalid JSON", `{"segments": [{"start": 0,`},
+		{"JSON with a lone surrogate escape", `{"t": "\ud800", "version": 1, "cues": []}`},
 		{"JSON with a bad escape", `{"text": "\x", "segments": []}`},
 		{"JSON list", `[{"tStartMs": 0}]`},
 		{"segments as an object", `{"segments": {"0": {"start": 0}}}`},

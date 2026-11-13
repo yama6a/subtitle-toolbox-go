@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/jsondata"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func TestToData(t *testing.T) {
@@ -100,20 +100,14 @@ func TestFixtureRoundTrip(t *testing.T) {
 			first, err := orderedjson.Decode(testfiles.Read(t, rel))
 			require.NoError(t, err)
 			compact, err := orderedjson.Encode(first, false)
-			if knownDataExceptions[rel] && err != nil {
-				return
-			}
 			require.NoError(t, err)
 			again, err := orderedjson.Decode(compact)
 			require.NoError(t, err)
 			assert.True(t, orderedjson.Equal(first, again))
 
-			if knownDataExceptions[rel] {
-				return
-			}
 			back, err := jsondata.FromData(jsondata.ToData(first))
 			require.NoError(t, err)
-			assert.True(t, orderedjson.Equal(first, back))
+			assert.Equal(t, !knownDataExceptions[rel], orderedjson.Equal(first, back))
 		})
 	}
 }

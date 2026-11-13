@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 )
 
 func TestNumberAccessors(t *testing.T) {
@@ -83,6 +83,10 @@ func TestDuration(t *testing.T) {
 		{"long mantissa", num("0." + strings.Repeat("0", 100) + "5"), time.Second, 0, true},
 		{"long mantissa above a tie", num("0.0005" + strings.Repeat("0", 100) + "1"), time.Second, time.Millisecond, true},
 		{"long mantissa at a tie", num("0.0005" + strings.Repeat("0", 100)), time.Second, time.Millisecond, true},
+		{"minute unit", num("1.5"), time.Minute, 90 * time.Second, true},
+		{"minute unit below a tie", num("0.00000" + "8" + strings.Repeat("3", 44)), time.Minute, 0, true},
+		{"minute unit above a tie", num("0.00000" + "8" + strings.Repeat("3", 43) + "4"), time.Minute, time.Millisecond, true},
+		{"hour unit at 100000 hours", num("100000"), time.Hour, 0, false},
 		{"string that is not numeric", orderedjson.StringValue("0x1A"), time.Second, 0, false},
 		{"not a number", orderedjson.BoolValue(true), time.Second, 0, false},
 	}

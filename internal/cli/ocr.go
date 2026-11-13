@@ -7,11 +7,11 @@ import (
 
 	glyphocr "github.com/yama6a/go-glyph-ocr"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr/auto"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr/glyph"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr/tesseract"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/auto"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/glyph"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/tesseract"
 )
 
 // progressStep is the number of images between 2 progress lines.

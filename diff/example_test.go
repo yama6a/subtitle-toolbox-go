@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/diff"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/diff"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func cue(start, end time.Duration, lines ...string) model.Cue {

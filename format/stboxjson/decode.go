@@ -3,8 +3,8 @@ package stboxjson
 import (
 	"encoding/json"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // decodeRoot decodes content into a tree of nil, bool, string, json.Number, []any and *model.Data values, and returns

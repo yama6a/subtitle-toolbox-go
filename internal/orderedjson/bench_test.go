@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 )
 
 const benchBytes = 1 << 20

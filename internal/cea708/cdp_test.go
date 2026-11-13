@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/cea708"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cea708"
 )
 
 func TestReadCDP(t *testing.T) {

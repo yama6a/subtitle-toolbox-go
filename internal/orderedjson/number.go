@@ -2,7 +2,6 @@ package orderedjson
 
 import (
 	"fmt"
-	"math/big"
 	"strconv"
 	"strings"
 	"time"
@@ -10,10 +9,6 @@ import (
 
 // maxDuration is the limit of a time: 100,000 hours. A value at or beyond it, in either sign, has no Duration.
 const maxDuration = 100000 * time.Hour
-
-// keptDigits is the number of significant digits of a decimal that Duration reads exactly. It must exceed the
-// digits of maxDuration in milliseconds plus the digits of the largest unit in nanoseconds.
-const keptDigits = 40
 
 func validNumber(s string) bool {
 	d := &decoder{data: []byte(s)}
@@ -135,58 +130,84 @@ func (d decimal) milliseconds(unit time.Duration) (time.Duration, bool) {
 	if d.digits == "" {
 		return 0, true
 	}
-	unitDigits := len(strconv.FormatInt(int64(unit), 10))
-	// The result lies in [10^(n+unitDigits+exp-8), 10^(n+unitDigits+exp-6)) milliseconds.
-	order := len(d.digits) + unitDigits + d.exp
-	if order-8 >= 12 {
+	// value in milliseconds = digits * mult * 10^shift, where unit = mult * 10^zeros nanoseconds.
+	mult, zeros := int64(unit), 0
+	for mult%10 == 0 {
+		mult /= 10
+		zeros++
+	}
+	if mult > maxMultiplier {
 		return 0, false
 	}
-	if order-6 < 0 {
+	shift := d.exp + zeros - 6
+	switch {
+	case shift >= 0 && len(d.digits)+shift > maxDigits:
+		return 0, false
+	case -shift > len(d.digits)+len(strconv.FormatInt(mult, 10)):
 		return 0, true
 	}
-	n := d.truncated().scaled(unit)
-	if !n.IsInt64() || n.Int64() >= int64(maxDuration/time.Millisecond) {
+	ms, ok := roundedMillis(mulDigits(d.digits, mult), shift)
+	if !ok {
 		return 0, false
 	}
-	ms := time.Duration(n.Int64()) * time.Millisecond
+	if ms >= int64(maxDuration/time.Millisecond) {
+		return 0, false
+	}
 	if d.neg {
 		ms = -ms
+	}
+	return time.Duration(ms) * time.Millisecond, true
+}
+
+// roundedMillis returns digits * 10^shift rounded half up, or false when it has more than maxDigits digits.
+func roundedMillis(digits string, shift int) (int64, bool) {
+	if shift >= 0 {
+		if len(digits)+shift > maxDigits {
+			return 0, false
+		}
+		return atoi64(digits + strings.Repeat("0", shift)), true
+	}
+	cut := len(digits) + shift
+	switch {
+	case cut < 0:
+		return 0, true
+	case cut > maxDigits:
+		return 0, false
+	}
+	ms := atoi64("0" + digits[:cut])
+	if digits[cut] >= '5' {
+		ms++
 	}
 	return ms, true
 }
 
-// truncated returns d with at most keptDigits digits. A nonzero tail only matters as "above the kept digits",
-// so one digit 1 stands for it.
-func (d decimal) truncated() decimal {
-	if len(d.digits) <= keptDigits {
-		return d
+// maxDigits is the most digits of a result in milliseconds that can stay below maxDuration.
+const maxDigits = 12
+
+// maxMultiplier is the largest unit, after its trailing zeros are cut, that mulDigits multiplies without overflow.
+const maxMultiplier = 1_000_000_000_000_000
+
+// mulDigits returns the decimal digits times m, as digits without leading zeros. m must be positive.
+func mulDigits(digits string, m int64) string {
+	out := make([]byte, len(digits)+len(strconv.FormatInt(m, 10)))
+	var carry uint64
+	for i, j := len(digits)-1, len(out)-1; j >= 0; i, j = i-1, j-1 {
+		if i >= 0 {
+			carry += uint64(digits[i]-'0') * uint64(m)
+		}
+		out[j] = byte('0' + carry%10)
+		carry /= 10
 	}
-	tail := d.digits[keptDigits:]
-	out := decimal{neg: d.neg, digits: d.digits[:keptDigits], exp: d.exp + len(tail)}
-	if strings.Trim(tail, "0") != "" {
-		out.digits += "1"
-		out.exp--
-	}
-	return out
+	return strings.TrimLeft(string(out), "0")
 }
 
-// scaled returns the value in milliseconds as an integer, rounded half up. d must have at most keptDigits+1 digits.
-func (d decimal) scaled(unit time.Duration) *big.Int {
-	num, _ := new(big.Int).SetString(d.digits, 10)
-	num.Mul(num, big.NewInt(int64(unit)))
-	shift := d.exp - 6
-	if shift >= 0 {
-		return num.Mul(num, pow10(shift))
+func atoi64(digits string) int64 {
+	var n int64
+	for _, c := range digits {
+		n = n*10 + int64(c-'0')
 	}
-	div := pow10(-shift)
-	q, r := new(big.Int).QuoRem(num, div, new(big.Int))
-	if r.Lsh(r, 1).Cmp(div) >= 0 {
-		q.Add(q, big.NewInt(1))
-	}
-	return q
+	return n
 }
-
-func pow10(n int) *big.Int { return new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(n)), nil) }
 
 // formatFloat prints f in the layout of Python's json module.
 func formatFloat(f float64) string {
