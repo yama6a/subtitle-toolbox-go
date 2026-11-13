@@ -16,7 +16,8 @@ go get github.com/yama6a/subtitle-toolbox-go/v3@latest
 | the `image` format data of a cue, set with `SetFormatData("image", ...)` and `model.ImageKey` | `cue.Image`, a `*stbox.Image`. `SetFormatData("image", ...)` on a cue returns an `*InvalidArgumentError`, and `model.ImageKey` is gone |
 | a write of a subtitle with image cues without text to a text format, which wrote cues without text | an `*UnwritableError`. Pass `stbox.WriteOptions{SkipImageCues: true}` to drop those cues, or run OCR first |
 | `JoinCues`, `MergeSameTimeCues`, `MergeShortCues` and `RemoveDuplicateCues` joined cues with image data | they never join an image cue, and `JoinCues` returns an `*InvalidArgumentError` for a range that holds one |
-| `stats.Of` and `validation.Check` counted cues with image data like other cues | they skip image cues without lines |
+| `validation.Check` counted cues with image data like other cues | it skips image cues without lines |
+| `stats.Of` counted cues with image data like other cues | 3.0 to 3.16 skipped image cues without lines. Since 3.17 `stats.Of` counts them again as cues with a time and no text, as 2.x and PHP do |
 | `EditLines` and the text edits built on it removed a cue when all its lines went | a cue that holds an image stays, with no lines, because its removal would drop the image |
 | `stbox.Parse(r, opts)` with an `io.Reader` | `b, err := io.ReadAll(r)`, then `stbox.Parse(bytes.NewReader(b), int64(len(b)), opts)` |
 | `stbox.Parse(strings.NewReader(s), opts)` | `r := strings.NewReader(s)`, then `stbox.Parse(r, r.Size(), opts)`. A `*bytes.Reader` works the same way |
