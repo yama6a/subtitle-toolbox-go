@@ -4,7 +4,7 @@
 set -euo pipefail
 
 # Renovate updates this pin through the custom manager in renovate.json5.
-gorelease=golang.org/x/exp/cmd/gorelease@v0.0.0-20261109185158-a52e3aef5920
+gorelease=golang.org/x/exp/cmd/gorelease@v0.0.0-20261112173441-d10d3b464990
 
 # A missing or double release label is the job of the release label check, so it counts as none here.
 label="$(jq -r '[.[] | select(IN("major", "minor", "patch", "skip-release"))]
