@@ -1,0 +1,26 @@
+;FFMETADATA1
+title=Notes on Bread Baking
+artist=Jane Doe
+album=Notes on Bread Baking
+genre=Audiobook
+comment=Read by the author\
+Recorded in 2023
+encoder=Lavf59.27.100
+[STREAM]
+handler_name=SoundHandler
+vendor_id=[0][0][0][0]
+[CHAPTER]
+TIMEBASE=1/44100
+START=0
+END=1323000
+title=Opening credits
+[CHAPTER]
+TIMEBASE=1/44100
+START=1323000
+END=41454000
+title=Chapter 1\=Flour and water
+[CHAPTER]
+TIMEBASE=1/44100
+START=41454000
+END=98607600
+title=Chapter 2\=Starters
