@@ -90,6 +90,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [QuickTime text](https://developer.apple.com/library/archive/documentation/QuickTime/Conceptual/QTScripting_HTML/QTScripting_HTML_Document/ScriptingHTML.html) | `stbox.QuickTimeText` | `qttext` | `.txt` | yes | yes | `{QTtext}` text tracks, found by content |
 | [VobSub](http://sam.zoy.org/writings/dvd/subtitles/) | `stbox.VobSub` | `vobsub` | `.idx` | yes | no | DVD bitmap subtitles, an `.idx` and a `.sub` file, not detected from the content |
 | [WebVTT](https://www.w3.org/TR/webvtt1/) | `stbox.WebVTT` | `vtt` | `.vtt` | yes | yes | also chapters |
+| [Whisper JSON](docs/transcripts.md) | `stbox.Whisper` | `whisper` | `.json` | yes | yes | OpenAI API, openai-whisper, faster-whisper, WhisperX and whisper.cpp. `.json` is the library JSON, so pass `--from whisper` or let the content decide |
 | [YouTube chapters](docs/chapters.md) | `stbox.YouTubeChapters` | `youtube-chapters` | `.txt` | yes | yes | lines such as `0:00 Intro`, not detected from the content |
 
 The name is the value of `--from` and `--to`. [docs/formats.md](docs/formats.md) has one section for each format.

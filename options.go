@@ -20,6 +20,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/sprucestl"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
@@ -65,6 +66,8 @@ type ReadOptions struct {
 	VobSub vobsub.ReadOptions
 	// Chapters holds the settings of the chapter readers. The zero value ends a last chapter at its own start.
 	Chapters chapters.ReadOptions
+	// Transcript holds the settings of the transcript readers. The zero value reads no word times and no speakers.
+	Transcript transcript.ReadOptions
 	// Track is the number of the subtitle track to read from a video container. Zero reads the only subtitle track.
 	// Matroska and MP4 count from 1. MPEG-TS uses teletext page numbers from 100, or PIDs. A subtitle file needs 0.
 	Track int
@@ -108,6 +111,8 @@ type WriteOptions struct {
 	MCC mcc.WriteOptions
 	// EBUSTL holds the settings of the EBU STL writer. The zero value takes the frame rate of the stored DFC, else 25.
 	EBUSTL ebustl.WriteOptions
+	// Transcript holds the settings of the transcript writers. It has no fields yet.
+	Transcript transcript.WriteOptions
 }
 
 // WriteReport holds the changes that a writer made to fit the subtitle into its format.
