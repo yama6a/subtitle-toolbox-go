@@ -219,6 +219,20 @@ func sameName(a, b string, ignoreCase bool) bool {
 	return a == b
 }
 
+// StyleTag reads a tag as RemoveEmptyTagPairs does. It returns the name as written and whether the tag closes. ok is
+// false for a tag that is not a style tag, such as <c>, <I> or </font >.
+func StyleTag(tag string) (name string, closing, ok bool) {
+	if len(tag) < 3 || tag[0] != '<' || tag[len(tag)-1] != '>' {
+		return "", false, false
+	}
+	if tag[1] == '/' {
+		inner := tag[2 : len(tag)-1]
+		return inner, true, IsStyleTag(inner)
+	}
+	name, after, ok := styleTagAt(tag[1:], false)
+	return name, false, ok && after == ""
+}
+
 // TagSpan is the place of a tag in the lines of a cue: the line index, the byte offset and the byte length.
 type TagSpan struct {
 	Line, Offset, Length int
