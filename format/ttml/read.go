@@ -765,7 +765,10 @@ func markAgentEnds(runs []run) []run {
 			visible = append(visible, &runs[i])
 		}
 	}
-	if len(visible) == 0 || !slices.ContainsFunc(visible, func(rn *run) bool { return rn.agent != visible[0].agent }) && visible[0].agent != "" {
+	if len(visible) == 0 {
+		return runs
+	}
+	if visible[0].agent != "" && !slices.ContainsFunc(visible, func(rn *run) bool { return rn.agent != visible[0].agent }) {
 		return runs
 	}
 	for i, rn := range visible {

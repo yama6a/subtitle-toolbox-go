@@ -623,12 +623,21 @@ func TestWriteAgents(t *testing.T) {
 	one := cue(time.Second, 2*time.Second, "Hi", "there")
 	one.Speaker = "Ann"
 	two := cue(time.Second, 2*time.Second, "<v Ann>Hi</v> <v Bo>Yo")
+	mixed := cue(time.Second, 2*time.Second, "Hi <v Bo>Yo</v> end")
+	mixed.Speaker = "Ann"
+	timed := cue(7*time.Second, 8*time.Second, "<00:00:07.200><v Anna>Hi <00:00:07.500>there")
+	timed.ExtractWordTags()
 	tests := []struct {
 		name string
 		cue  model.Cue
 		want string
 	}{
 		{"one agent on the paragraph", one, `<p begin="00:00:01.000" end="00:00:02.000" region="bottomCenter" ttm:agent="agent1">Hi<br/>there</p>`},
+		{
+			"one agent and another voice", mixed,
+			`<p begin="00:00:01.000" end="00:00:02.000" region="bottomCenter" ttm:agent="agent2">Hi <span ttm:agent="agent1">Yo</span> end</p>`,
+		},
+		{"one agent after a word timestamp", timed, `<p begin="00:00:07.000" end="00:00:08.000" region="bottomCenter" ttm:agent="agent1">Hi there</p>`},
 		{
 			"two agents on spans", two,
 			`<p begin="00:00:01.000" end="00:00:02.000" region="bottomCenter"><span ttm:agent="agent1">Hi</span> <span ttm:agent="agent2">Yo</span></p>`,
