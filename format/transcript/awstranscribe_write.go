@@ -277,8 +277,8 @@ func awsPronunciation(group []orderedjson.Value) int {
 
 func awsSourceWord(group []orderedjson.Value) wordgroup.SourceWord {
 	w := wordgroup.SourceWord{Text: strings.Trim(awsWordText(group), markupcore.PHPTrimSet)}
-	w.Start = awsStoredTime(awsFirstMember(group, "start_time"))
-	w.End = awsStoredTime(awsLastMember(group, "end_time"))
+	w.Start = cloudStoredTime(awsFirstMember(group, "start_time"))
+	w.End = cloudStoredTime(awsLastMember(group, "end_time"))
 	if i := awsPronunciation(group); i >= 0 {
 		alt, _ := group[i].Get("alternatives")
 		if len(alt.Items()) > 0 {
@@ -287,18 +287,6 @@ func awsSourceWord(group []orderedjson.Value) wordgroup.SourceWord {
 		}
 	}
 	return w
-}
-
-// awsStoredTime returns a number or a numeric string as whole milliseconds, or nil.
-func awsStoredTime(v orderedjson.Value) *time.Duration {
-	if k := v.Kind(); k != orderedjson.Number && k != orderedjson.String {
-		return nil
-	}
-	d, ok := v.Duration(time.Second)
-	if !ok {
-		return nil
-	}
-	return &d
 }
 
 // awsTyped returns the items of a reused word with the End and the Confidence of its entry in Cue.Words, for each

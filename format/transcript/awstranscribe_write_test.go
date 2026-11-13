@@ -1,6 +1,7 @@
 package transcript_test
 
 import (
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -147,28 +148,10 @@ func TestWriteAWSTranscribeEdits(t *testing.T) {
 				assert.Equal(t, c.want, cloudAt(t, doc, c.path...), c.path)
 			}
 			for _, path := range tt.absent {
-				assert.False(t, hasPath(doc, path...), path)
+				assert.False(t, cloudHasPath(doc, path...), path)
 			}
 		})
 	}
-}
-
-func hasPath(v orderedjson.Value, path ...any) bool {
-	for _, p := range path {
-		switch p := p.(type) {
-		case string:
-			var ok bool
-			if v, ok = v.Get(p); !ok {
-				return false
-			}
-		case int:
-			if p >= len(v.Items()) {
-				return false
-			}
-			v = v.Items()[p]
-		}
-	}
-	return true
 }
 
 func TestWriteAWSTranscribeAnItemsOnlyFileReadsBack(t *testing.T) {
@@ -213,11 +196,7 @@ func TestWriteAWSTranscribeErrors(t *testing.T) {
 
 	s := &model.Subtitle{}
 	s.AddCue(model.Cue{End: cloudMS(1000), Lines: []string{"text"}, Speaker: "bad \xff"})
-	err := transcript.WriteAWSTranscribe(discard{}, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
+	err := transcript.WriteAWSTranscribe(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
 	require.ErrorIs(t, err, model.ErrUnwritable)
 	require.ErrorIs(t, err, model.ErrInvalidUTF8)
 }
-
-type discard struct{}
-
-func (discard) Write(p []byte) (int, error) { return len(p), nil }

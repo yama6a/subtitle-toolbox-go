@@ -95,12 +95,12 @@ func TestReadAWSTranscribeData(t *testing.T) {
 
 	s := awsFormat.parse(t, awsHelloWorld, transcript.ReadOptions{})
 	file, _ := s.FormatData("aws-transcribe")
-	assert.JSONEq(t, `{"jobName":"lecture-12"}`, jsonOfData(file))
+	assert.JSONEq(t, `{"jobName":"lecture-12"}`, awsJSONOf(file))
 	c, _ := s.Cue(0)
 	cue, _ := c.FormatData("aws-transcribe")
 	assert.JSONEq(t, `{"items":[{"type":"pronunciation","start_time":"0.04","end_time":"0.51","alternatives":[{"confidence":"0.99","content":"Hello"}]},`+
 		`{"type":"pronunciation","start_time":"0.51","end_time":"0.98","alternatives":[{"confidence":"0.98","content":"world"}]},`+
-		`{"type":"punctuation","alternatives":[{"confidence":"0.0","content":"."}]}]}`, jsonOfData(cue))
+		`{"type":"punctuation","alternatives":[{"confidence":"0.0","content":"."}]}]}`, awsJSONOf(cue))
 
 	s = awsFormat.parseFile(t, "library_speakers_language_id.json", transcript.ReadOptions{})
 	file, _ = s.FormatData("aws-transcribe")
@@ -108,12 +108,12 @@ func TestReadAWSTranscribeData(t *testing.T) {
 	results, _ := file.Get("results")
 	assert.JSONEq(t, `{"speaker_labels":{"channel_label":"ch_0","speakers":2},"language_code":"en-GB",`+
 		`"language_identification":[{"score":"0.9871","code":"en-GB"},{"score":"0.0102","code":"en-AU"},{"score":"0.0027","code":"en-US"}]}`,
-		jsonOfData(results))
+		awsJSONOf(results))
 	language, _ := s.Metadata(model.MetadataLanguage)
 	assert.Equal(t, "en-GB", language)
 }
 
-func jsonOfData(v any) string {
+func awsJSONOf(v any) string {
 	out, err := jsondata.FromData(v)
 	if err != nil {
 		return err.Error()

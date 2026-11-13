@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
@@ -56,6 +57,18 @@ func cloudData(v orderedjson.Value) *model.Data {
 func cloudGet(v orderedjson.Value, key string) orderedjson.Value {
 	x, _ := v.Get(key)
 	return x
+}
+
+// cloudStoredTime returns a number or a numeric string of seconds as whole milliseconds, or nil.
+func cloudStoredTime(v orderedjson.Value) *time.Duration {
+	if k := v.Kind(); k != orderedjson.Number && k != orderedjson.String {
+		return nil
+	}
+	d, ok := v.Duration(time.Second)
+	if !ok {
+		return nil
+	}
+	return &d
 }
 
 func cloudMember(key string, v orderedjson.Value) orderedjson.Member {

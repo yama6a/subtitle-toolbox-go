@@ -257,3 +257,22 @@ func cloudBench(b *testing.B, f cloudFormat, name, content string) {
 		}
 	})
 }
+
+// cloudHasPath reports whether the path exists in v. A string in path is a key and an int is an index.
+func cloudHasPath(v orderedjson.Value, path ...any) bool {
+	for _, p := range path {
+		switch p := p.(type) {
+		case string:
+			var ok bool
+			if v, ok = v.Get(p); !ok {
+				return false
+			}
+		case int:
+			if p >= len(v.Items()) {
+				return false
+			}
+			v = v.Items()[p]
+		}
+	}
+	return true
+}
