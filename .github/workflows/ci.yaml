@@ -120,6 +120,7 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false # one shared key would hand darwin, windows or fuzz builds to the other jobs
+      - run: sudo apt-get update
       - run: sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-rus
       - run: go test -run Tesseract ./...
         env:

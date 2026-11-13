@@ -15,6 +15,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -31,9 +32,9 @@ import (
 // scripts holds the programs that TestMain writes before any test runs. A script that a parallel test writes
 // can fail to start with "text file busy" while another test forks.
 var scripts struct {
-	dir                                              string
-	fake, logged, loggedFail                         string
-	versionOnStderr, otherProgram, versionThenFailed string
+	dir                                                                   string
+	fake, logged, loggedFail                                              string
+	hangs, flaky, fresh, versionOnStderr, otherProgram, versionThenFailed string
 }
 
 func TestMain(m *testing.M) {
@@ -64,6 +65,11 @@ func run(m *testing.M) int {
 	scripts.fake = fake
 	scripts.logged = write("logged", `FAKE_TESSERACT_LOG="`+dir+`/logged.path" exec "`+fake+`" "$@"`)
 	scripts.loggedFail = write("logged-fail", `case "$1" in --*) exec "`+fake+`" "$@";; esac; echo "$1" > "`+dir+`/logged-fail.path"; echo "Error during processing." >&2; exit 1`)
+	// The sleep is a child that keeps standard output open after the kill, as a shell wrapper would.
+	const versions = `case "$1" in --version) echo "tesseract 5"; exit 0;; esac; `
+	scripts.hangs = write("hangs", versions+`case "$1" in --list-langs) printf 'List\neng\n'; exit 0;; esac; sleep 5`)
+	scripts.flaky = write("flaky", versions+`[ -e "`+dir+`/flaky.ready" ] || sleep 5; printf 'List\neng\n'`)
+	scripts.fresh = write("fresh", `exec "`+fake+`" "$@"`)
 	scripts.versionOnStderr = write("stderr", `echo "tesseract 4.0.0" >&2`)
 	scripts.otherProgram = write("other", `echo "ImageMagick 7"`)
 	scripts.versionThenFailed = write("exit1", `echo "tesseract 5"; exit 1`)
@@ -249,6 +255,52 @@ func TestTesseractRecognizeErrors(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestTesseractCancel(t *testing.T) {
+	t.Parallel()
+	skipOnWindows(t)
+
+	deadline := func() (context.Context, context.CancelFunc) {
+		return context.WithTimeout(context.Background(), 300*time.Millisecond)
+	}
+	t.Run("deadline during the run returns the context error", func(t *testing.T) {
+		t.Parallel()
+
+		e, err := tesseract.New(tesseract.Options{Program: scripts.hangs})
+		require.NoError(t, err)
+		ctx, cancel := deadline()
+		defer cancel()
+		start := time.Now()
+		_, err = e.Recognize(ctx, testImage(t, 1080), "")
+		require.ErrorIs(t, err, context.DeadlineExceeded)
+		require.NotErrorIs(t, err, ocr.ErrRecognize)
+		assert.Less(t, time.Since(start), 4*time.Second, "WaitDelay must stop the wait for the child")
+	})
+	t.Run("deadline during the language list is not cached", func(t *testing.T) {
+		t.Parallel()
+
+		e, err := tesseract.New(tesseract.Options{Program: scripts.flaky})
+		require.NoError(t, err)
+		ctx, cancel := deadline()
+		defer cancel()
+		require.ErrorIs(t, e.RequireLanguages(ctx, ""), context.DeadlineExceeded)
+
+		require.NoError(t, os.WriteFile(filepath.Join(scripts.dir, "flaky.ready"), nil, 0o600))
+		require.NoError(t, e.RequireLanguages(context.Background(), ""))
+	})
+	t.Run("cancelled context is no missing program", func(t *testing.T) {
+		t.Parallel()
+
+		e, err := tesseract.New(tesseract.Options{Program: scripts.fresh})
+		require.NoError(t, err)
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		err = e.RequireLanguages(ctx, "")
+		require.ErrorIs(t, err, context.Canceled)
+		require.NotErrorIs(t, err, model.ErrInvalidArgument)
+		assert.False(t, tesseract.Installed(ctx, scripts.fresh))
+	})
 }
 
 func TestTesseractRequireLanguages(t *testing.T) {
