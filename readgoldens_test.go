@@ -16,6 +16,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
@@ -26,6 +27,10 @@ type goldenFolder struct {
 	files  int
 	// options holds the read options of single files by file name. Every other file reads with the zero options.
 	options map[string]stbox.ReadOptions
+	// transcript reads every file with transcriptGolden.
+	transcript bool
+	// defaults gives each file a second golden <file>.default.json, read with the zero options.
+	defaults bool
 }
 
 // microDVDAt25 is the read option of the MicroDVD read goldens, as tests/files/generate-read-goldens.php sets it.
@@ -36,6 +41,10 @@ var dubbingScript = csv.ReadOptions{
 	Columns:   csv.Columns{Start: csv.ColumnNamed("Start TC"), Speaker: csv.ColumnNamed("Character")},
 	FrameRate: stbox.FrameRate{Num: 25, Den: 1},
 }
+
+// transcriptGolden holds the read options of the transcript read goldens, as tests/Support/ReadGoldens.php of
+// subtitle-toolbox-php sets them. #102 adds YouTube.
+var transcriptGolden = stbox.ReadOptions{Transcript: transcript.ReadOptions{WordTimestamps: true, SpeakerVoices: true}}
 
 func goldenFolders() []goldenFolder {
 	return []goldenFolder{
@@ -102,6 +111,9 @@ func (g goldenFolder) realFiles(t *testing.T) []string {
 func (g goldenFolder) read(t *testing.T, file string) (*stbox.Subtitle, stbox.ReadInfo) {
 	t.Helper()
 
+	if g.transcript {
+		return g.readWith(t, file, transcriptGolden)
+	}
 	return g.readWith(t, file, g.options[file])
 }
 
@@ -125,20 +137,34 @@ func TestReadGoldens(t *testing.T) {
 				t.Parallel()
 
 				s, info := g.read(t, file)
-				var library bytes.Buffer
-				_, err := stbox.Write(&library, s, stbox.JSON, stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: 1}})
-				require.NoError(t, err)
-				var subtitle any
-				require.NoError(t, json.Unmarshal(library.Bytes(), &subtitle))
-				dropPositions(subtitle)
-				got := map[string]any{"warnings": goldenWarnings(info.Warnings), "subtitle": subtitle}
-
-				var want any
-				require.NoError(t, json.Unmarshal(testfiles.Read(t, g.name+"/real/expected/"+file+".json"), &want))
-				assert.Equal(t, canonicalJSON(t, want), canonicalJSON(t, got))
+				compareGolden(t, s, info, g.name+"/real/expected/"+file+".json")
 			})
+			if g.defaults {
+				t.Run(g.name+"/"+file+".default", func(t *testing.T) {
+					t.Parallel()
+
+					s, info := g.readWith(t, file, stbox.ReadOptions{})
+					compareGolden(t, s, info, g.name+"/real/expected/"+file+".default.json")
+				})
+			}
 		}
 	}
+}
+
+func compareGolden(t *testing.T, s *stbox.Subtitle, info stbox.ReadInfo, golden string) {
+	t.Helper()
+
+	var library bytes.Buffer
+	_, err := stbox.Write(&library, s, stbox.JSON, stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: 1}})
+	require.NoError(t, err)
+	var subtitle any
+	require.NoError(t, json.Unmarshal(library.Bytes(), &subtitle))
+	dropPositions(subtitle)
+	got := map[string]any{"warnings": goldenWarnings(info.Warnings), "subtitle": subtitle}
+
+	var want any
+	require.NoError(t, json.Unmarshal(testfiles.Read(t, golden), &want))
+	assert.Equal(t, canonicalJSON(t, want), canonicalJSON(t, got))
 }
 
 // dropPositions removes the key position from each cue, because the PHP goldens never hold it.
@@ -169,9 +195,12 @@ func TestEveryReadGoldenHasARealFile(t *testing.T) {
 				}
 			}
 			files := g.realFiles(t)
-			want := make([]string, len(files))
-			for i, file := range files {
-				want[i] = file + ".json"
+			var want []string
+			for _, file := range files {
+				want = append(want, file+".json")
+				if g.defaults {
+					want = append(want, file+".default.json")
+				}
 			}
 			assert.ElementsMatch(t, want, got)
 		})
