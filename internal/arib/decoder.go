@@ -99,7 +99,7 @@ func NewDecoder(language string) *Decoder {
 }
 
 // Add reads the data of a PES packet with its time in 90 kHz clock ticks.
-func (d *Decoder) Add(data []byte, pts int64) {
+func (d *Decoder) Add(data []byte, pts int64) { //nolint:cyclop // the checks of one data group header
 	if len(data) < 3 || data[0] != 0x80 || data[1] != 0xFF {
 		return
 	}
@@ -254,7 +254,7 @@ func (d *Decoder) dataUnits(units []byte) {
 	}
 }
 
-func (d *Decoder) text(b []byte) {
+func (d *Decoder) text(b []byte) { //nolint:cyclop // one case for each byte range of the 2 codings
 	for offset := 0; offset < len(b); {
 		c := b[offset]
 		if d.encoding == encUTF8 {
@@ -286,7 +286,7 @@ func (d *Decoder) text(b []byte) {
 }
 
 // c0 runs a C0 control function and returns the number of bytes it takes, at least 1.
-func (d *Decoder) c0(b []byte, i int) int {
+func (d *Decoder) c0(b []byte, i int) int { //nolint:cyclop // one case for each C0 control function
 	switch b[i] {
 	case 0x08:
 		d.move(-1, 0)
@@ -326,7 +326,7 @@ func (d *Decoder) c0(b []byte, i int) int {
 	return 1
 }
 
-func (d *Decoder) escape(b []byte, i int) int {
+func (d *Decoder) escape(b []byte, i int) int { //nolint:cyclop // one case for each ESC sequence
 	first := at(b, i)
 	index := first - 0x28
 	switch {
@@ -359,7 +359,7 @@ func (d *Decoder) escape(b []byte, i int) int {
 }
 
 // c1 runs a C1 control function and returns the number of bytes it takes, at least 1.
-func (d *Decoder) c1(b []byte, i int) int {
+func (d *Decoder) c1(b []byte, i int) int { //nolint:cyclop,gocyclo // one case for each C1 control function
 	code := b[i]
 	parameter := at(b, i+1)
 	switch {
@@ -434,7 +434,7 @@ func indexOf(b []byte, x, y byte) int {
 }
 
 // csi reads a control sequence: decimal parameters split by 0x3B, then 0x20 and the final byte.
-func (d *Decoder) csi(b []byte, i int) int {
+func (d *Decoder) csi(b []byte, i int) int { //nolint:cyclop // one case for each CSI final byte
 	var parameters []int
 	value := 0
 	end := i
@@ -483,7 +483,7 @@ func (d *Decoder) csi(b []byte, i int) int {
 	return end + 2 - i
 }
 
-func (d *Decoder) graphic(b []byte, i, set int) int {
+func (d *Decoder) graphic(b []byte, i, set int) int { //nolint:cyclop // one case for each kind of set
 	count := 1
 	if twoByteSet(set) {
 		count = 2
@@ -551,7 +551,7 @@ func (d *Decoder) drcs(key int) string {
 	return "〓"
 }
 
-func (d *Decoder) put(text string) {
+func (d *Decoder) put(text string) { //nolint:cyclop // the repeat count and the ruby test of one character
 	if text == "" {
 		return
 	}

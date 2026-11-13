@@ -10,7 +10,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
-var languageCode = regexp.MustCompile(`^[a-z]{3}$`) //nolint:gochecknoglobals // compiled once
+var languageCode = regexp.MustCompile(`^[a-z]{3}$`)
 
 // addCaptionStreams adds the ARIB caption streams of one program. A PID that two programs share keeps its last
 // program and its first place.

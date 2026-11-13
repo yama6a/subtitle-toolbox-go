@@ -21,7 +21,7 @@ type keyedGlyph struct {
 }
 
 // parseDRCS reads a DRCS data unit. The key of a glyph is the DRCS set times 0x10000 plus the character code.
-func parseDRCS(unit []byte, twoByte bool) []keyedGlyph {
+func parseDRCS(unit []byte, twoByte bool) []keyedGlyph { //nolint:cyclop // the length checks of one DRCS unit
 	var glyphs []keyedGlyph
 	offset := 1
 	count := 0
@@ -85,7 +85,7 @@ func knownCharacter(pixels []byte, width, height, depth int) string {
 // levels, the variations 1 to 3 draw it twice as large on the left, in the middle and on the right of a 36 by 36
 // glyph with 4 levels, as ARIB TR-B14 profile C does. For a glyph with 4 levels, variation 1 moves it 2 dots to
 // the right and variation 2 moves it 2 dots to the left. The result false ends the variations.
-func digest(pixels []byte, width, height, depth, variation int) (string, bool) {
+func digest(pixels []byte, width, height, depth, variation int) (string, bool) { //nolint:cyclop // the 4 cases of the variations
 	switch {
 	case variation == 0:
 		return hashOf(pixels), true
@@ -94,13 +94,18 @@ func digest(pixels []byte, width, height, depth, variation int) (string, bool) {
 	case variation > 2 || depth != 4 || width < 4 || width > 36 || width%2 != 0 || height < 1 || height > 36:
 		return "", false
 	}
-	// Each 4 bits hold 2 dots, so a move of 2 dots is a move of 4 bits.
+	return shifted(pixels, width, height, variation)
+}
+
+// shifted moves a glyph with 4 levels by 2 dots. Each 4 bits hold 2 dots, so a move of 2 dots is a move of 4 bits.
+// A dot that would leave its row ends the variation.
+func shifted(pixels []byte, width, height, variation int) (string, bool) {
 	nibbles := width / 2
 	count := nibbles * height
 	buffer := make([]byte, (count+1)/2)
-	target := -1
+	target, last := -1, 0
 	if variation == 1 {
-		target = 1
+		target, last = 1, count
 	}
 	for index := range count {
 		twoDots := byte(at(pixels, index>>1) >> (4 - (index&1)*4) & 0x0F)
@@ -108,26 +113,15 @@ func digest(pixels []byte, width, height, depth, variation int) (string, bool) {
 		if variation == 1 {
 			edge = target
 		}
-		if edge%nibbles == 0 {
-			if twoDots != 0 {
-				if variation == 1 {
-					return hashOf(pixels), true
-				}
-				return "", false
-			}
-			last := 0
-			if variation == 1 {
-				last = count
-			}
-			if edge == last {
-				target++
-				continue
-			}
+		if edge%nibbles == 0 && twoDots != 0 {
+			return hashOf(pixels), variation == 1
 		}
-		if target&1 == 0 {
-			buffer[target>>1] = twoDots << 4
-		} else {
-			buffer[target>>1] |= twoDots
+		if edge%nibbles != 0 || edge != last {
+			if target&1 == 0 {
+				buffer[target>>1] = twoDots << 4
+			} else {
+				buffer[target>>1] |= twoDots
+			}
 		}
 		target++
 	}

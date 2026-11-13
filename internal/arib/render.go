@@ -17,7 +17,7 @@ type run struct {
 
 // render returns the lines of the screen from top to bottom and its alignment. Small characters above a row are
 // furigana. They become ruby markup on the characters of the row below that they cover.
-func (d *Decoder) render() ([]string, model.Alignment) {
+func (d *Decoder) render() ([]string, model.Alignment) { //nolint:cyclop // groups the cells and places the readings
 	if len(d.cells) == 0 {
 		return nil, model.BottomCenter
 	}
@@ -31,19 +31,7 @@ func (d *Decoder) render() ([]string, model.Alignment) {
 		}
 	}
 	rowYs := sortedKeys(rows)
-	var runs []run
-	for _, y := range sortedKeys(rubies) {
-		cells := rubies[y]
-		slices.SortStableFunc(cells, func(a, b cell) int { return cmp.Compare(a.x, b.x) })
-		for _, c := range cells {
-			if n := len(runs); n > 0 && runs[n-1].y == y && runs[n-1].end == c.x {
-				runs[n-1].end += c.width
-				runs[n-1].text += c.text
-			} else {
-				runs = append(runs, run{y, c.x, c.x + c.width, c.text})
-			}
-		}
-	}
+	runs := buildRuns(rubies)
 	for _, cells := range rows {
 		slices.SortStableFunc(cells, func(a, b cell) int { return cmp.Compare(a.x, b.x) })
 	}
@@ -73,6 +61,24 @@ func (d *Decoder) render() ([]string, model.Alignment) {
 		out = append(out, lines[y]...)
 	}
 	return out, d.alignment()
+}
+
+// buildRuns joins the ruby characters that touch on one y into runs, from top to bottom and from left to right.
+func buildRuns(rubies map[int][]cell) []run {
+	var runs []run
+	for _, y := range sortedKeys(rubies) {
+		cells := rubies[y]
+		slices.SortStableFunc(cells, func(a, b cell) int { return cmp.Compare(a.x, b.x) })
+		for _, c := range cells {
+			if n := len(runs); n > 0 && runs[n-1].y == y && runs[n-1].end == c.x {
+				runs[n-1].end += c.width
+				runs[n-1].text += c.text
+			} else {
+				runs = append(runs, run{y, c.x, c.x + c.width, c.text})
+			}
+		}
+	}
+	return runs
 }
 
 func sortedKeys[V any](m map[int]V) []int {
@@ -115,7 +121,7 @@ func isSpace(text string) bool { return text == " " || text == "　" }
 
 // renderRow returns the text of a row with font tags for colors other than white and ruby tags for furigana. A gap
 // of at least half a cell between characters becomes a space. Spaces at the ends of the row drop.
-func renderRow(row []cell, readings map[int]int, runs []run) string {
+func renderRow(row []cell, readings map[int]int, runs []run) string { //nolint:cyclop // the gap, color and ruby rules of one row
 	first, last := 0, len(row)-1
 	for first <= last && !hasReading(readings, first) && isSpace(row[first].text) {
 		first++
@@ -131,7 +137,7 @@ func renderRow(row []cell, readings map[int]int, runs []run) string {
 		c := row[position]
 		reading, hasRun := readings[position]
 		var base strings.Builder
-		right := 0
+		var right int
 		for {
 			base.WriteString(row[position].text)
 			right = row[position].x + row[position].width

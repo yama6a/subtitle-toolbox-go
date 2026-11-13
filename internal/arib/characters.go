@@ -59,7 +59,7 @@ func twoByteSet(set int) bool {
 
 // character returns the character of the codes first and second, from 0x21 to 0x7E, in set. It returns "" for a
 // mosaic set. halfWidth is true for middle size text.
-func character(set, first, second int, halfWidth, latin bool) string {
+func character(set, first, second int, halfWidth, latin bool) string { //nolint:cyclop // one case for each graphic set
 	var c string
 	switch set {
 	case setKanji, setJISX0213Plane1, setAdditional:
@@ -112,6 +112,16 @@ func jisX0201(code int, halfWidth bool) string {
 	}
 }
 
+// jisX0208Exceptions are the cells where x/text and the glibc EUC-JP table of the PHP reader differ. x/text follows
+// the Encoding Standard, glibc follows JIS X 0208. The value 0xFFFD marks a NEC row 13 cell that glibc lacks.
+//
+//nolint:gochecknoglobals // lookup table
+var jisX0208Exceptions = map[int]rune{
+	0x2141: 0x301C, 0x2142: 0x2016, 0x215D: 0x2212, 0x2171: 0x00A2, 0x2172: 0x00A3, 0x224C: 0x00AC,
+	0x2D70: 0xFFFD, 0x2D71: 0xFFFD, 0x2D72: 0xFFFD, 0x2D74: 0xFFFD, 0x2D75: 0xFFFD, 0x2D76: 0xFFFD,
+	0x2D77: 0xFFFD, 0x2D7A: 0xFFFD, 0x2D7B: 0xFFFD, 0x2D7C: 0xFFFD,
+}
+
 // kanji returns a character of JIS X 0208 from x/text, or of the additional table in the rows 85 to 94. x/text has
 // no JIS X 0213, so every other cell, and all of plane 2, gives U+FFFD.
 func kanji(first, second int, plane2 bool) string {
@@ -123,6 +133,9 @@ func kanji(first, second int, plane2 bool) string {
 	}
 	if plane2 {
 		return "�"
+	}
+	if r, ok := jisX0208Exceptions[first<<8|second]; ok {
+		return string(r)
 	}
 	out, err := japanese.EUCJP.NewDecoder().Bytes([]byte{byte(first | 0x80), byte(second | 0x80)})
 	if err != nil || !utf8.Valid(out) || utf8.RuneCount(out) != 1 || string(out) == "�" {
@@ -174,7 +187,7 @@ func color(palette, index int) string {
 // buildColors lists the 8 full and 7 half intensity colors with transparent between them, then the other mixes of
 // the levels 0, 85, 170 and 255. Indexes 65 to 127 repeat the colors without transparent. They have half opacity,
 // which a font tag cannot show.
-func buildColors() []string {
+func buildColors() []string { //nolint:cyclop // builds the 128 entry table of STD-B24 in one pass
 	type rgb struct {
 		r, g, b int
 		ok      bool
