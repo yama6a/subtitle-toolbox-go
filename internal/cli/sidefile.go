@@ -8,7 +8,8 @@ import (
 )
 
 // sideFileUnknownFormat replaces the --from advice of unknownFormatMessage, because --from does not apply to a side file.
-const sideFileUnknownFormat = "Format detection found no subtitle format. Write it to a subtitle file with convert --from FORMAT first."
+const sideFileUnknownFormat = "Format detection found no subtitle format. Write it to a subtitle file with convert --from FORMAT first. " +
+	"Chapters and cloud speech-to-text JSON always need --from, for example --from deepgram."
 
 // readSideFile reads a subtitle that an option names, such as the reference of sync. Content detection picks the
 // format, so --from does not apply, and the other read options of the call do. It prints the warnings with the path

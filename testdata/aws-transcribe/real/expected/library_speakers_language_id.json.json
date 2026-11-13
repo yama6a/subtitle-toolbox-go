@@ -1,0 +1,378 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "en-GB"
+        },
+        "comments": [],
+        "formatData": {
+            "aws-transcribe": {
+                "jobName": "library-hours",
+                "accountId": "111122223333",
+                "status": "COMPLETED",
+                "results": {
+                    "speaker_labels": {
+                        "channel_label": "ch_0",
+                        "speakers": 2
+                    },
+                    "language_code": "en-GB",
+                    "language_identification": [
+                        {
+                            "score": "0.9871",
+                            "code": "en-GB"
+                        },
+                        {
+                            "score": "0.0102",
+                            "code": "en-AU"
+                        },
+                        {
+                            "score": "0.0027",
+                            "code": "en-US"
+                        }
+                    ]
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 0.52,
+                "end": 2.3,
+                "lines": [
+                    "<v spk_0><00:00:00.520>The <00:00:00.940>library <00:00:01.320>opens <00:00:01.620>at <00:00:02.000>nine."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "aws-transcribe": {
+                        "id": 0,
+                        "transcript": "The library opens at nine.",
+                        "start_time": "0.52",
+                        "end_time": "2.3",
+                        "speaker_label": "spk_0",
+                        "items": [
+                            {
+                                "id": 0,
+                                "start_time": "0.52",
+                                "speaker_label": "spk_0",
+                                "end_time": "0.94",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.91",
+                                        "content": "The"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 1,
+                                "start_time": "0.94",
+                                "speaker_label": "spk_0",
+                                "end_time": "1.32",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.99",
+                                        "content": "library"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 2,
+                                "start_time": "1.32",
+                                "speaker_label": "spk_0",
+                                "end_time": "1.62",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.95",
+                                        "content": "opens"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 3,
+                                "start_time": "1.62",
+                                "speaker_label": "spk_0",
+                                "end_time": "2.0",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.94",
+                                        "content": "at"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 4,
+                                "start_time": "2.0",
+                                "speaker_label": "spk_0",
+                                "end_time": "2.3",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.95",
+                                        "content": "nine"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 5,
+                                "speaker_label": "spk_0",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.0",
+                                        "content": "."
+                                    }
+                                ],
+                                "type": "punctuation"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 3.04,
+                "end": 5.2,
+                "lines": [
+                    "<v spk_1><00:00:03.040>Can <00:00:03.460>I <00:00:03.800>return <00:00:04.140>books <00:00:04.440>on <00:00:04.820>Sunday?"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "aws-transcribe": {
+                        "id": 1,
+                        "transcript": "Can I return books on Sunday?",
+                        "start_time": "3.04",
+                        "end_time": "5.2",
+                        "speaker_label": "spk_1",
+                        "items": [
+                            {
+                                "id": 6,
+                                "start_time": "3.04",
+                                "speaker_label": "spk_1",
+                                "end_time": "3.46",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.91",
+                                        "content": "Can"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 7,
+                                "start_time": "3.46",
+                                "speaker_label": "spk_1",
+                                "end_time": "3.8",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.97",
+                                        "content": "I"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 8,
+                                "start_time": "3.8",
+                                "speaker_label": "spk_1",
+                                "end_time": "4.14",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.92",
+                                        "content": "return"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 9,
+                                "start_time": "4.14",
+                                "speaker_label": "spk_1",
+                                "end_time": "4.44",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.95",
+                                        "content": "books"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 10,
+                                "start_time": "4.44",
+                                "speaker_label": "spk_1",
+                                "end_time": "4.82",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.94",
+                                        "content": "on"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 11,
+                                "start_time": "4.82",
+                                "speaker_label": "spk_1",
+                                "end_time": "5.2",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.99",
+                                        "content": "Sunday"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 12,
+                                "speaker_label": "spk_1",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.0",
+                                        "content": "?"
+                                    }
+                                ],
+                                "type": "punctuation"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 5.78,
+                "end": 8.6,
+                "lines": [
+                    "<v spk_0><00:00:05.780>Yes, <00:00:06.240>use <00:00:06.660>the <00:00:07.080>box <00:00:07.500>by <00:00:07.880>the <00:00:08.300>door."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "aws-transcribe": {
+                        "id": 2,
+                        "transcript": "Yes, use the box by the door.",
+                        "start_time": "5.78",
+                        "end_time": "8.6",
+                        "speaker_label": "spk_0",
+                        "items": [
+                            {
+                                "id": 13,
+                                "start_time": "5.78",
+                                "speaker_label": "spk_0",
+                                "end_time": "6.24",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.98",
+                                        "content": "Yes"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 14,
+                                "speaker_label": "spk_0",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.0",
+                                        "content": ","
+                                    }
+                                ],
+                                "type": "punctuation"
+                            },
+                            {
+                                "id": 15,
+                                "start_time": "6.24",
+                                "speaker_label": "spk_0",
+                                "end_time": "6.66",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.91",
+                                        "content": "use"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 16,
+                                "start_time": "6.66",
+                                "speaker_label": "spk_0",
+                                "end_time": "7.08",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.91",
+                                        "content": "the"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 17,
+                                "start_time": "7.08",
+                                "speaker_label": "spk_0",
+                                "end_time": "7.5",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.91",
+                                        "content": "box"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 18,
+                                "start_time": "7.5",
+                                "speaker_label": "spk_0",
+                                "end_time": "7.88",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.94",
+                                        "content": "by"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 19,
+                                "start_time": "7.88",
+                                "speaker_label": "spk_0",
+                                "end_time": "8.3",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.91",
+                                        "content": "the"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 20,
+                                "start_time": "8.3",
+                                "speaker_label": "spk_0",
+                                "end_time": "8.6",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.95",
+                                        "content": "door"
+                                    }
+                                ],
+                                "type": "pronunciation"
+                            },
+                            {
+                                "id": 21,
+                                "speaker_label": "spk_0",
+                                "alternatives": [
+                                    {
+                                        "confidence": "0.0",
+                                        "content": "."
+                                    }
+                                ],
+                                "type": "punctuation"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

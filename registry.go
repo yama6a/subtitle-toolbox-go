@@ -142,6 +142,7 @@ var registry = []formatFuncs{
 	{format: HTMLTranscript, read: readHTMLTranscript, write: writeHTMLTranscript},
 	{format: ITT, read: readITT, write: writeITT},
 	{format: JSON, read: readJSON, write: writeJSON},
+	{format: AWSTranscribe, read: readAWSTranscribe, write: writeAWSTranscribe},
 	{format: Deepgram, read: readDeepgram, write: writeDeepgram},
 	{format: LRC, read: readLRC, write: writeLRC},
 	{format: MCC, read: readMCC, write: writeMCC},
@@ -307,6 +308,14 @@ func readJSON(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subt
 func writeJSON(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	_, err := stboxjson.Write(w, s, common, opts.JSON)
 	return WriteReport{}, err
+}
+
+func readAWSTranscribe(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return transcript.ReadAWSTranscribe(r, common, opts.Transcript)
+}
+
+func writeAWSTranscribe(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	return WriteReport{}, transcript.WriteAWSTranscribe(w, s, common, opts.Transcript)
 }
 
 func readDeepgram(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
