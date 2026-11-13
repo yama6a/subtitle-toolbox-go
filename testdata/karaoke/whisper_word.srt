@@ -1,0 +1,67 @@
+﻿1
+00:00:00,000 --> 00:00:00,240
+<u>The</u> bakery opens at seven.
+
+2
+00:00:00,240 --> 00:00:00,700
+The <u>bakery</u> opens at seven.
+
+3
+00:00:00,700 --> 00:00:01,100
+The bakery <u>opens</u> at seven.
+
+4
+00:00:01,100 --> 00:00:01,320
+The bakery opens <u>at</u> seven.
+
+5
+00:00:01,320 --> 00:00:02,200
+The bakery opens at <u>seven.</u>
+
+6
+00:00:02,200 --> 00:00:02,420
+<u>The</u> café sells rolls & buns.
+
+7
+00:00:02,420 --> 00:00:02,860
+The <u>café</u> sells rolls & buns.
+
+8
+00:00:02,860 --> 00:00:03,300
+The café <u>sells</u> rolls & buns.
+
+9
+00:00:03,300 --> 00:00:03,740
+The café sells <u>rolls</u> & buns.
+
+10
+00:00:03,740 --> 00:00:03,900
+The café sells rolls <u>&</u> buns.
+
+11
+00:00:03,900 --> 00:00:04,600
+The café sells rolls & <u>buns.</u>
+
+12
+00:00:04,620 --> 00:00:05,100
+<u>Fresh</u> bread is ready by eight.
+
+13
+00:00:05,100 --> 00:00:05,480
+Fresh <u>bread</u> is ready by eight.
+
+14
+00:00:05,480 --> 00:00:05,740
+Fresh bread <u>is</u> ready by eight.
+
+15
+00:00:05,740 --> 00:00:06,200
+Fresh bread is <u>ready</u> by eight.
+
+16
+00:00:06,200 --> 00:00:06,500
+Fresh bread is ready <u>by</u> eight.
+
+17
+00:00:06,500 --> 00:00:07,360
+Fresh bread is ready by <u>eight.</u>
