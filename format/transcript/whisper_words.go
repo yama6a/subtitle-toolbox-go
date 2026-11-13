@@ -32,8 +32,10 @@ func timeOf(v orderedjson.Value, unit time.Duration) (time.Duration, timeState) 
 // wordText returns the trimmed string under "word", or "" for another value.
 func wordText(item orderedjson.Value) string {
 	v, _ := item.Get("word")
-	s, _ := v.AsString()
-	return strings.Trim(s, markupcore.PHPTrimSet)
+	if s, ok := v.AsString(); ok {
+		return strings.Trim(s, markupcore.PHPTrimSet)
+	}
+	return ""
 }
 
 // wordConfidence returns "probability", else "score", when it is a number from 0 to 1.

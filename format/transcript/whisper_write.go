@@ -82,8 +82,7 @@ func whisperDocument(s *model.Subtitle) (orderedjson.Value, error) {
 // writtenShape returns the shape that the format field of the file data names, else openai-whisper.
 func writtenShape(file orderedjson.Value) string {
 	v, _ := file.Get("format")
-	switch name, _ := v.AsString(); name {
-	case shapeOpenAIAPI, shapeWhisperX, shapeWhisperCPP:
+	if name, ok := v.AsString(); ok && (name == shapeOpenAIAPI || name == shapeWhisperX || name == shapeWhisperCPP) {
 		return name
 	}
 	return shapeOpenAIWhisper

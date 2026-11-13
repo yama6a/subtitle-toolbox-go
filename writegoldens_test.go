@@ -41,6 +41,16 @@ func roundTripFiles() []roundTripFile {
 		{"mcc", "captionmaker_608_708.mcc"},
 		{"mcc", "captionmaker_popon_df.mcc"},
 		{"mcc", "v1_23976_timecode.mcc"},
+		{"whisper", "faster_whisper_ctranslate2_segments.json"},
+		{"whisper", "faster_whisper_ctranslate2_words.json"},
+		{"whisper", "openai_api_verbose_json_french.json"},
+		{"whisper", "openai_api_verbose_json_words.json"},
+		{"whisper", "openai_whisper_german.json"},
+		{"whisper", "openai_whisper_word_timestamps.json"},
+		{"whisper", "whisper_cpp_oj.json"},
+		{"whisper", "whisper_cpp_ojf.json"},
+		{"whisper", "whisper_cpp_ojf_split_utf8.json"},
+		{"whisper", "whisperx_diarize.json"},
 	}
 }
 
@@ -148,6 +158,10 @@ func conversions() []conversion {
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.SubRip, ""},
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.WebVTT, ""},
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.ASS, ""},
+		{"whisper", "openai_whisper_word_timestamps.json", stbox.SubRip, ""},
+		{"whisper", "openai_whisper_word_timestamps.json", stbox.WebVTT, ""},
+		{"whisper", "whisperx_diarize.json", stbox.SubRip, ""},
+		{"whisper", "whisperx_diarize.json", stbox.WebVTT, ""},
 	}
 }
 
@@ -213,6 +227,22 @@ func TestWriteGoldens(t *testing.T) {
 			}
 			s, _ := g.readWith(t, c.file, opts)
 			golden.Equal(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(c.to))), writeAs(t, s, c.to), *update)
+		})
+	}
+}
+
+// TestWriteGoldenWhisperConversions writes subtitles of other formats as Whisper JSON. The files read with the
+// transcript options, which only the Whisper reader uses.
+func TestWriteGoldenWhisperConversions(t *testing.T) {
+	t.Parallel()
+
+	for _, c := range []struct{ folder, file string }{{"srt", "own_styled.srt"}, {"vtt", "w3c_timestamps.vtt"}} {
+		t.Run(c.folder+"/"+c.file, func(t *testing.T) {
+			t.Parallel()
+
+			g := folder(t, c.folder)
+			s, _ := g.readWith(t, c.file, transcriptGolden)
+			golden.Equal(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(stbox.Whisper))), writeAs(t, s, stbox.Whisper), *update)
 		})
 	}
 }

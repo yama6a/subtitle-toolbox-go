@@ -214,9 +214,10 @@ func segmentFields(seg orderedjson.Value, path string, unit time.Duration) (star
 }
 
 func (rd *whisperReader) cue(start, end time.Duration, text string, words []wordgroup.Word, item orderedjson.Value, block int) (*model.Cue, error) {
+	v, _ := item.Get("speaker")
 	var speaker string
-	if v, ok := item.Get("speaker"); ok {
-		speaker, _ = v.AsString()
+	if name, ok := v.AsString(); ok {
+		speaker = name
 	}
 	data, _ := jsondata.ToData(item).(*model.Data)
 	return rd.cues.Cue(start, end, text, words, speaker, data, block, item)
