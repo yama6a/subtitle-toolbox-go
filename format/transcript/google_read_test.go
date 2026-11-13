@@ -169,6 +169,7 @@ func TestReadGoogleSpeechDurations(t *testing.T) {
 		{"an empty object", `{}`, ""},
 		{"an object with a word", `{"seconds": "x"}`, ""},
 		{"an exponent is no duration", `"1e3s"`, ""},
+		{"a trailing line break", `"1s\n"`, ""},
 		{"a huge value", `"99999999999999999999s"`, ""},
 	}
 	for _, tt := range tests {

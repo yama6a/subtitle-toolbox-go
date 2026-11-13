@@ -23,6 +23,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -66,6 +67,8 @@ type ReadOptions struct {
 	VobSub vobsub.ReadOptions
 	// Chapters holds the settings of the chapter readers. The zero value ends a last chapter at its own start.
 	Chapters chapters.ReadOptions
+	// YouTube holds the settings of the YouTube timed text reader. The zero value reads no word times.
+	YouTube youtube.ReadOptions
 	// Transcript holds the settings of the transcript readers. The zero value reads no word times and no speakers.
 	Transcript transcript.ReadOptions
 	// Track is the number of the subtitle track to read from a video container. Zero reads the only subtitle track.

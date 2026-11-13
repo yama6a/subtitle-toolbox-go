@@ -199,7 +199,7 @@ func TestBroadcastCalls(t *testing.T) {
 			"", nil,
 			func(*testing.T) result {
 				return result{Code: exitFile, Stderr: "bakery.stl: Cue #4 at 36014 s has a line with 38 characters, but SCC allows 32. " +
-					"Split the cue into cues of 4 lines of 32 characters, then wrap the lines.\n"}
+					"Pass --structure-split-long --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.\n"}
 			},
 		},
 		{

@@ -38,6 +38,8 @@ const (
 	VobSub         Format = "vobsub"
 	WebVTT         Format = "vtt"
 	Whisper        Format = "whisper"
+	// YouTubeTimedText is the timed text that YouTube serves: json3, srv3, srv2 and srv1.
+	YouTubeTimedText Format = "youtube"
 	// PodcastTranscript is the JSON transcript of a podcast feed. Detection finds it before Whisper JSON.
 	PodcastTranscript Format = "podcast-transcript"
 	// YouTubeChapters is a list of lines such as "0:00 Intro". Detection never finds it.
@@ -92,6 +94,7 @@ var formatFacts = []formatFact{
 	{format: VobSub, extensions: []string{"idx"}, canRead: true, binary: true},
 	{format: WebVTT, extensions: []string{"vtt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: Whisper, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: YouTubeTimedText, extensions: []string{"srv3", "json3", "srv1", "ytt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: OGMChapters, extensions: []string{"txt"}, canRead: true, canWrite: true},
 	{format: PodcastChapters, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: PodcastTranscript, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},

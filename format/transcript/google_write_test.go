@@ -159,3 +159,30 @@ func TestWriteGoogleSpeechFromAnotherFormat(t *testing.T) {
 		assert.Equal(t, want, orderedjson.Block(googleFormat.output(t, s)))
 	})
 }
+
+// A stored time that is no protobuf Duration for the writer, such as a numeric string or a plain number, is written
+// again as a Duration string.
+func TestWriteGoogleSpeechStoredTimesThatAreNoDuration(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name, start, end, resultEnd string
+		wantStart, wantResultEnd    string
+	}{
+		{"a numeric string", `"0.66"`, `"1.5"`, `"1.5"`, `"0.660s"`, `"1.500s"`},
+		{"a plain number", `0.66`, `1.5`, `1.5`, `"0.660s"`, `"1.500s"`},
+		{"an exponent", `"1e0"`, `"2e0"`, `"2e0"`, `"1s"`, `"2s"`},
+		{"a duration string", `"0.660s"`, `"1.500s"`, `"1.500s"`, `"0.660s"`, `"1.500s"`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			content := `{"results": [{"alternatives": [{"transcript": "hi", "words": [{"startTime": ` + tt.start + `, "endTime": ` + tt.end +
+				`, "word": "hi"}]}], "resultEndTime": ` + tt.resultEnd + `}]}`
+			doc := googleFormat.output(t, googleFormat.parse(t, content, withWords))
+			assert.Equal(t, tt.wantStart, compact(t, doc, "results", 0, "alternatives", 0, "words", 0, "startTime"))
+			assert.Equal(t, tt.wantResultEnd, compact(t, doc, "results", 0, "resultEndTime"))
+		})
+	}
+}

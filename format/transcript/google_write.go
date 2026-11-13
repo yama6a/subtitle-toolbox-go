@@ -253,7 +253,10 @@ func googleEndValue(data orderedjson.Value) orderedjson.Value {
 	if v.Kind() == orderedjson.Null {
 		v = cloudGet(data, "resultEndOffset")
 	}
-	d, _ := googleStoredDuration(v)
+	d, ok := googleStoredDuration(v)
+	if !ok {
+		return orderedjson.Value{}
+	}
 	return d
 }
 
@@ -351,7 +354,10 @@ func googleWordTime(w orderedjson.Value, edge string) orderedjson.Value {
 	if v.Kind() == orderedjson.Null {
 		v = cloudGet(w, edge+"Offset")
 	}
-	d, _ := googleStoredDuration(v)
+	d, ok := googleStoredDuration(v)
+	if !ok {
+		return orderedjson.Value{}
+	}
 	return d
 }
 

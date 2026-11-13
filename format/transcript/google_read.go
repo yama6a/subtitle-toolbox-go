@@ -1,8 +1,8 @@
 package transcript
 
 import (
-	"errors"
 	"io"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -247,17 +247,31 @@ func (rd *googleReader) fields(path string, result orderedjson.Value, previousEn
 	return
 }
 
-// googleResultEnd returns the end of the result when it is a time, else the end of the cue.
+// googleResultEnd returns the end of the result when it is a time, else the end of the cue. A time is a finite number
+// or numeric string of 0 or more.
 func googleResultEnd(v orderedjson.Value, path string, end time.Duration) (time.Duration, error) {
-	d, err := wordgroup.Seconds(v, path+".resultEndTime", time.Second)
-	if err == nil {
-		return d, nil
-	}
-	var perr *model.ParseError
-	if errors.As(err, &perr) && strings.HasSuffix(perr.Msg, "must be a time.") {
+	if !googleIsTime(v) {
 		return end, nil
 	}
-	return 0, err
+	return wordgroup.Seconds(v, path+".resultEndTime", time.Second)
+}
+
+func googleIsTime(v orderedjson.Value) bool {
+	var f float64
+	switch v.Kind() {
+	case orderedjson.Number:
+		f, _ = v.AsFloat64()
+	case orderedjson.String:
+		s, _ := v.AsString()
+		text, ok := orderedjson.NumericString(s)
+		if !ok {
+			return false
+		}
+		f, _ = strconv.ParseFloat(text, 64)
+	case orderedjson.Null, orderedjson.Bool, orderedjson.Array, orderedjson.Object:
+		return false
+	}
+	return !math.IsInf(f, 0) && !math.IsNaN(f) && f >= 0
 }
 
 // googleFirstAlternative returns the first alternative of a result, or null for a result without alternatives.

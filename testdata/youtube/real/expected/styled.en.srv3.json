@@ -1,0 +1,196 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "youtube": {
+                "format": "srv3",
+                "pen": [
+                    {
+                        "id": "1",
+                        "fc": "#FEFEFE",
+                        "fo": "254",
+                        "bo": "0"
+                    },
+                    {
+                        "id": "2",
+                        "b": "1",
+                        "fc": "#FFFF00",
+                        "fo": "254",
+                        "bc": "#080808",
+                        "bo": "191",
+                        "et": "3",
+                        "ec": "#000000"
+                    },
+                    {
+                        "id": "3",
+                        "i": "1",
+                        "fc": "#00FFFF",
+                        "fo": "254",
+                        "bo": "0",
+                        "sz": "80"
+                    }
+                ],
+                "ws": [
+                    {
+                        "id": "0"
+                    },
+                    {
+                        "id": "1",
+                        "ju": "2",
+                        "pd": "0",
+                        "sd": "0"
+                    }
+                ],
+                "wp": [
+                    {
+                        "id": "0"
+                    },
+                    {
+                        "id": "1",
+                        "ap": "1",
+                        "ah": "50",
+                        "av": "0"
+                    },
+                    {
+                        "id": "2",
+                        "ap": "7",
+                        "ah": "50",
+                        "av": "100"
+                    },
+                    {
+                        "id": "3",
+                        "ap": "0",
+                        "ah": "0",
+                        "av": "0"
+                    }
+                ]
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 2.5,
+                "lines": [
+                    "<font color=\"#ffff00\"><b>Chapter one</b></font>"
+                ],
+                "identifier": null,
+                "alignment": 8,
+                "formatData": {
+                    "youtube": {
+                        "t": "0",
+                        "d": "2500",
+                        "wp": "1",
+                        "ws": "1",
+                        "segments": [
+                            {
+                                "p": "2",
+                                "text": "Chapter one"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 2.5,
+                "end": 5.5,
+                "lines": [
+                    "<font color=\"#fefefe\">The ferry leaves at noon.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "t": "2500",
+                        "d": "3000",
+                        "p": "1",
+                        "wp": "2",
+                        "ws": "1",
+                        "segments": [
+                            {
+                                "text": "The ferry leaves at noon."
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 5.5,
+                "end": 8.7,
+                "lines": [
+                    "<font color=\"#fefefe\">Tickets cost</font> <font color=\"#ffff00\"><b>four euros</b></font><font color=\"#fefefe\">.</font>"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "t": "5500",
+                        "d": "3200",
+                        "wp": "2",
+                        "ws": "1",
+                        "segments": [
+                            {
+                                "p": "1",
+                                "text": "Tickets cost "
+                            },
+                            {
+                                "p": "2",
+                                "text": "four euros"
+                            },
+                            {
+                                "p": "1",
+                                "text": "."
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 8.7,
+                "end": 11.5,
+                "lines": [
+                    "<font color=\"#00ffff\"><i>Pier 3 'North'</i></font>"
+                ],
+                "identifier": null,
+                "alignment": 7,
+                "formatData": {
+                    "youtube": {
+                        "t": "8700",
+                        "d": "2800",
+                        "wp": "3",
+                        "ws": "1",
+                        "segments": [
+                            {
+                                "p": "3",
+                                "text": "Pier 3 &#39;North&#39;"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 11.5,
+                "end": 14.5,
+                "lines": [
+                    "Please keep",
+                    "your ticket."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "t": "11500",
+                        "d": "3000",
+                        "segments": [
+                            {
+                                "text": "Please keep\nyour ticket."
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}
