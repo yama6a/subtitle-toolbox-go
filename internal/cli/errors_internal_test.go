@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	"github.com/yama6a/subtitle-toolbox-go/v3/ocr"
 )
 
 func TestMessage(t *testing.T) {
@@ -42,6 +43,11 @@ func TestMessage(t *testing.T) {
 		{"wrapped sentinel", fmt.Errorf("%w: %s", stbox.ErrUnsupportedFormat, "The format txt can be written but not read."), "The format txt can be written but not read."},
 		{"twice wrapped sentinel", fmt.Errorf("load: %w", fmt.Errorf("%w: index 4, the subtitle has 2 cues", stbox.ErrCueNotFound)), "index 4, the subtitle has 2 cues"},
 		{"bare sentinel", stbox.ErrParse, stbox.ErrParse.Error()},
+		{
+			"OCR error that wraps an invalid argument keeps the cue number",
+			&ocr.CueError{CueIndex: 2, Err: &stbox.InvalidArgumentError{Msg: "The confidence must be from 0 to 1, got 1.5."}},
+			"cue 3: The confidence must be from 0 to 1, got 1.5.",
+		},
 		{"usage error", usage("The option --to is given twice."), "The option --to is given twice."},
 		{"file failure", &fileError{msg: "Cannot create x."}, "Cannot create x."},
 		{"other error", errors.New("write /dev/full: no space left on device"), "write /dev/full: no space left on device"},
