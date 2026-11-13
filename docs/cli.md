@@ -634,6 +634,7 @@ ffmeta-chapters     .ffmeta                  yes   yes
 html                .html .htm               yes   yes
 itt                 .itt                     yes   yes
 json                .json                    yes   yes
+assemblyai          .json                    yes   yes
 aws-transcribe      .json                    yes   yes
 deepgram            .json                    yes   yes
 google-speech       .json                    yes   yes

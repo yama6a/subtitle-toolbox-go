@@ -87,6 +87,7 @@ const (
 	CSV           = model.CSV
 	ITT           = model.ITT
 	JSON          = model.JSON
+	AssemblyAI    = model.AssemblyAI
 	AWSTranscribe = model.AWSTranscribe
 	Deepgram      = model.Deepgram
 	GoogleSpeech  = model.GoogleSpeech

@@ -208,6 +208,7 @@ func ExampleFormats() {
 	// html [html htm]
 	// itt [itt]
 	// json [json]
+	// assemblyai [json]
 	// aws-transcribe [json]
 	// deepgram [json]
 	// google-speech [json]

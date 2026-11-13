@@ -70,6 +70,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [HTML transcript](docs/transcripts.md#html-transcript) | `stbox.HTMLTranscript` | `html` | `.html`, `.htm` | yes | yes | the `cite`, `time` and `p` elements of a podcast transcript. Found by content only with a `cite` and a `time`, else by the extension |
 | [iTunes Timed Text](docs/formats.md#itt) | `stbox.ITT` | `itt` | `.itt` | yes | yes | needs the frame rate of the video. A TTML file named `.itt` loads as iTT |
 | [JSON of this library](docs/json.md) | `stbox.JSON` | `json` | `.json` | yes | yes | |
+| [AssemblyAI JSON](docs/transcripts.md#assemblyai-json) | `stbox.AssemblyAI` | `assemblyai` | `.json` | yes | yes | `.json` is the library JSON, so pass `--from assemblyai`. The content is never detected |
 | [Amazon Transcribe JSON](docs/transcripts.md#amazon-transcribe-json) | `stbox.AWSTranscribe` | `aws-transcribe` | `.json` | yes | yes | `.json` is the library JSON, so pass `--from aws-transcribe`. The content is never detected |
 | [Deepgram JSON](docs/transcripts.md#deepgram-json) | `stbox.Deepgram` | `deepgram` | `.json` | yes | yes | `.json` is the library JSON, so pass `--from deepgram`. The content is never detected |
 | [Google Speech-to-Text JSON](docs/transcripts.md#google-speech-to-text-json) | `stbox.GoogleSpeech` | `google-speech` | `.json` | yes | yes | `.json` is the library JSON, so pass `--from google-speech`. The content is never detected |

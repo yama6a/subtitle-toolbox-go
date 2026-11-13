@@ -14,6 +14,7 @@ const (
 	HTMLTranscript Format = "html"
 	ITT            Format = "itt"
 	JSON           Format = "json"
+	AssemblyAI     Format = "assemblyai"
 	AWSTranscribe  Format = "aws-transcribe"
 	Deepgram       Format = "deepgram"
 	GoogleSpeech   Format = "google-speech"
@@ -72,6 +73,7 @@ var formatFacts = []formatFact{
 	{format: HTMLTranscript, extensions: []string{"html", "htm"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: ITT, extensions: []string{"itt"}, canRead: true, canWrite: true},
 	{format: JSON, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: AssemblyAI, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: AWSTranscribe, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: Deepgram, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: GoogleSpeech, extensions: []string{"json"}, canRead: true, canWrite: true},
