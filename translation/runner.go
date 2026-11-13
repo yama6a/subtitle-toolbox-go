@@ -14,9 +14,12 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 )
 
-const sentenceEnds = ".?!…。．？！"
+const sentenceEnds = ".?!\u2026\u3002\uff0e\uff1f\uff01"
 
-const sentenceEndClosers = "\"'”’»)]"
+const sentenceEndClosers = "\"'\u201d\u2019\u00bb)]"
+
+// mongolianVowelSeparator is white space for PCRE2 10.44, which holds Unicode 6.3 White_Space.
+const mongolianVowelSeparator = '\u180e'
 
 // request is the text of one cue or of a sentence over several cues.
 type request struct {
@@ -106,7 +109,7 @@ func needsTranslation(c model.Cue) bool {
 		return true
 	}
 	for _, r := range text {
-		if !unicode.IsNumber(r) && !unicode.IsPunct(r) && !unicode.IsSymbol(r) && !unicode.IsSpace(r) {
+		if !unicode.IsNumber(r) && !unicode.IsPunct(r) && !unicode.IsSymbol(r) && !unicode.IsSpace(r) && r != mongolianVowelSeparator {
 			return true
 		}
 	}
@@ -177,14 +180,16 @@ func batches(requests []request, maxCharacters int) [][]request {
 func fill(cues []model.Cue, r request, translation string) []Warning {
 	var warnings []Warning
 	tags := r.tags
-	if !keepsPlaceholders(translation, tags) {
-		translation = removePlaceholders(translation)
+	var tokens []token
+	if keepsPlaceholders(translation, tags) {
+		tokens = tokenize(translation)
+	} else {
+		tokens = plainTokens(removePlaceholders(translation))
 		tags = nil
 		for _, i := range r.cues {
 			warnings = append(warnings, Warning{Cue: i, Message: "The engine dropped or changed a placeholder tag. The cue has no tags."})
 		}
 	}
-	tokens := tokenize(translation)
 	if len(r.cues) == 1 {
 		cues[r.cues[0]].SetText(restore(tokens, tags))
 		return warnings
