@@ -48,7 +48,7 @@ func TestParseNoFormatFound(t *testing.T) {
 	}{
 		{"empty", ""},
 		{"cue number and text only", "1\nHello\n"},
-		{"JSON object of no format", `{"segments": []}`},
+		{"JSON object of no format", `{"words": []}`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -229,6 +229,8 @@ func ExampleFormats() {
 	// qttext [txt]
 	// vobsub [idx]
 	// vtt [vtt]
+	// whisper [json]
+	// podcast-transcript [json]
 	// youtube-chapters [txt]
 }
 

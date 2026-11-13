@@ -194,7 +194,7 @@ func (t valueType) check(v any, path string) string {
 // reader puts "cues[N]." after "The field " for cue data.
 func checkFormatData(schema map[string]valueType, key string, d *Data) error {
 	path := "formatData." + key
-	if msg := checkGoTypes(d, path, nil); msg != "" {
+	if msg := checkGoTypes(d, path); msg != "" {
 		return invalidArgument(msg)
 	}
 	t, ok := schema[key]
@@ -208,9 +208,30 @@ func checkFormatData(schema map[string]valueType, key string, d *Data) error {
 }
 
 // checkGoTypes returns a message for the first value outside the closed value set of Data, or for a list
-// or object that contains itself, which would make Clone run without end. Open holds the lists and objects
-// on the way to v.
-func checkGoTypes(v any, path string, open []any) string {
+// or object that contains itself, which would make Clone run without end.
+func checkGoTypes(v any, path string) string {
+	var steps []childStep
+	problem := findBadValue(v, &steps, map[any]struct{}{})
+	if problem == "" {
+		return ""
+	}
+	for i := len(steps) - 1; i >= 0; i-- {
+		path = steps[i].appendTo(path)
+	}
+	return "The field " + path + problem
+}
+
+// childStep is the step from a list or object to its item i. The path text of the step is built only for a message.
+type childStep struct {
+	parent any
+	i      int
+}
+
+func (s childStep) appendTo(path string) string { return childPath(s.parent, path, s.i) }
+
+// findBadValue returns the end of the message about the bad value, after its path. It leaves the steps
+// from v to that value in steps, last step first. Open holds the lists and objects on the way to v.
+func findBadValue(v any, steps *[]childStep, open map[any]struct{}) string {
 	var vals []any
 	switch v := v.(type) {
 	case nil, bool, int64, float64, string:
@@ -226,16 +247,18 @@ func checkGoTypes(v any, path string, open []any) string {
 		}
 		vals, _ = items(v)
 	default:
-		return fmt.Sprintf("The field %s has the unsupported Go type %T.", path, v)
+		return fmt.Sprintf(" has the unsupported Go type %T.", v)
 	}
 
 	id := identity(v)
-	if slices.Contains(open, id) {
-		return "The field " + path + " holds itself."
+	if _, ok := open[id]; ok {
+		return " holds itself."
 	}
-	open = append(open, id)
+	open[id] = struct{}{}
+	defer delete(open, id)
 	for i, item := range vals {
-		if msg := checkGoTypes(item, childPath(v, path, i), open); msg != "" {
+		if msg := findBadValue(item, steps, open); msg != "" {
+			*steps = append(*steps, childStep{v, i})
 			return msg
 		}
 	}

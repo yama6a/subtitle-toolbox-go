@@ -111,7 +111,7 @@ type WriteOptions struct {
 	MCC mcc.WriteOptions
 	// EBUSTL holds the settings of the EBU STL writer. The zero value takes the frame rate of the stored DFC, else 25.
 	EBUSTL ebustl.WriteOptions
-	// Transcript holds the settings of the transcript writers. It has no fields yet.
+	// Transcript holds the settings of the transcript writers. The zero value writes one segment per cue and compact JSON.
 	Transcript transcript.WriteOptions
 }
 
