@@ -136,9 +136,9 @@ func deepgramCue(c *model.Cue, data orderedjson.Value) deepgramEntry {
 		textKey = "transcript"
 	}
 	grouped := cloudGet(data, textKey).Kind() == orderedjson.Null
-	startV, endV, textV := deepgramSources(data, textKey, stored, grouped)
-	sameStart := wordgroup.SameTime(deepgramNumber(startV), time.Second, c.Start)
-	sameEnd := wordgroup.SameTime(deepgramNumber(endV), time.Second, c.End)
+	startV, endV, textV := cloudSources(data, textKey, stored, grouped, deepgramWordText)
+	sameStart := wordgroup.SameTime(cloudNumber(startV), time.Second, c.Start)
+	sameEnd := wordgroup.SameTime(cloudNumber(endV), time.Second, c.End)
 	sameText := wordgroup.SameText(c, textV)
 	speaker := deepgramSpeaker(wordgroup.CueSpeaker(c))
 
@@ -156,7 +156,7 @@ func deepgramCue(c *model.Cue, data orderedjson.Value) deepgramEntry {
 		e.text = wordgroup.CueText(c)
 	}
 	if storedSpeaker := cloudGet(data, "speaker"); speaker.Kind() != orderedjson.Null && !orderedjson.Equal(speaker, storedSpeaker) {
-		e.words = deepgramWithSpeaker(e.words, speaker)
+		e.words = cloudWithSpeaker(e.words, speaker)
 	}
 	e.sentence, e.paragraph = deepgramShape(data, textKey == "text" && !grouped)
 	return e
@@ -175,31 +175,6 @@ func deepgramShape(data orderedjson.Value, sentenceCue bool) (sentence, paragrap
 	return sentence, paragraph
 }
 
-// deepgramSources returns the stored start, end and text of the cue. A grouped cue has no stored text, so the values
-// come from its words.
-func deepgramSources(data orderedjson.Value, textKey string, stored []orderedjson.Value, grouped bool) (start, end, text orderedjson.Value) {
-	if !grouped {
-		return cloudGet(data, "start"), cloudGet(data, "end"), cloudGet(data, textKey)
-	}
-	if len(stored) > 0 {
-		start, end = cloudGet(stored[0], "start"), cloudGet(stored[len(stored)-1], "end")
-	}
-	texts := make([]string, len(stored))
-	for i, w := range stored {
-		texts[i] = deepgramWordText(w)
-	}
-	return start, end, orderedjson.StringValue(strings.Join(texts, " "))
-}
-
-func deepgramWithSpeaker(words []orderedjson.Value, speaker orderedjson.Value) []orderedjson.Value {
-	for i, w := range words {
-		if w.Kind() == orderedjson.Object {
-			words[i] = w.With("speaker", speaker)
-		}
-	}
-	return words
-}
-
 // deepgramSpeaker returns the voice name as an integer when it has only the digits 0 to 9, else as a string.
 func deepgramSpeaker(name string) orderedjson.Value {
 	if name == "" {
@@ -209,14 +184,6 @@ func deepgramSpeaker(name string) orderedjson.Value {
 		return orderedjson.Int(n)
 	}
 	return orderedjson.StringValue(name)
-}
-
-// deepgramNumber returns v when it is a number, else null.
-func deepgramNumber(v orderedjson.Value) orderedjson.Value {
-	if v.Kind() == orderedjson.Number {
-		return v
-	}
-	return orderedjson.Value{}
 }
 
 func deepgramWordText(w orderedjson.Value) string {
@@ -232,8 +199,8 @@ func deepgramWords(c *model.Cue, stored []orderedjson.Value, sameTimes, sameText
 	source := make([]wordgroup.SourceWord, len(stored))
 	for i, w := range stored {
 		source[i] = wordgroup.SourceWord{Text: deepgramWordText(w), Confidence: cloudConfidence(cloudGet(w, "confidence"))}
-		source[i].Start = cloudStoredTime(deepgramNumber(cloudGet(w, "start")))
-		source[i].End = cloudStoredTime(deepgramNumber(cloudGet(w, "end")))
+		source[i].Start = cloudStoredTime(cloudNumber(cloudGet(w, "start")))
+		source[i].End = cloudStoredTime(cloudNumber(cloudGet(w, "end")))
 	}
 	choices, ok := wordgroup.Reuse(c, source, sameTimes, sameText)
 	if !ok {
@@ -248,29 +215,12 @@ func deepgramWords(c *model.Cue, stored []orderedjson.Value, sameTimes, sameText
 		for _, i := range ch.Source {
 			item := stored[i]
 			if ch.Word != nil {
-				item = deepgramTyped(item, ch.Word)
+				item = cloudTyped(item, ch.Word, time.Second, orderedjson.Seconds)
 			}
 			words = append(words, item)
 		}
 	}
 	return words
-}
-
-// deepgramTyped gives a reused word the End and the Confidence of its entry in Cue.Words, for each member that the
-// word has and that differs.
-func deepgramTyped(item orderedjson.Value, w *model.Word) orderedjson.Value {
-	if item.Kind() != orderedjson.Object {
-		return item
-	}
-	if v, ok := item.Get("end"); ok && !wordgroup.SameTime(deepgramNumber(v), time.Second, w.End) {
-		item = item.With("end", orderedjson.Seconds(w.End))
-	}
-	if v, ok := item.Get("confidence"); ok && w.Confidence != nil {
-		if f, isNumber := v.AsFloat64(); !isNumber || f != *w.Confidence {
-			item = item.With("confidence", orderedjson.Float(*w.Confidence))
-		}
-	}
-	return item
 }
 
 func deepgramNewWord(n wordgroup.NewWord, speaker orderedjson.Value) orderedjson.Value {
