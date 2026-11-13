@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/linewrap"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
@@ -516,6 +517,32 @@ func TestRows(t *testing.T) {
 				assert.Equal(t, r.WantCount, linewrap.FewestLines(r.Lines, r.CPL))
 			default:
 				t.Fatalf("unknown call %q", r.Call)
+			}
+		})
+	}
+}
+
+// Regression for subtitle-toolbox-php#1255.
+func TestJoinMakesNoTagFromText(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		lines []string
+		cpl   int
+	}{
+		{"a bracket pair across 2 lines", []string{"aa <b", "cc> dd."}, 20},
+		{"a bracket pair with a space after the open bracket", []string{"5 <", "y> 2"}, 20},
+		{"2 open brackets before the close bracket", []string{"a <b c <d", "e> f"}, 20},
+		{"a real tag stays a tag", []string{"aa <b>cc", "dd</b> ee"}, 20},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			want := markupcore.VisibleText(tt.lines[0]) + " " + markupcore.VisibleText(tt.lines[1])
+			for _, got := range [][]string{linewrap.Wrap(tt.lines, tt.cpl, 1, false), linewrap.UnwrapTurns(tt.lines)} {
+				assert.Equal(t, want, markupcore.VisibleText(strings.Join(got, " ")))
 			}
 		})
 	}

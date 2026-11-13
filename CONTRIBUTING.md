@@ -14,7 +14,7 @@ A package imports only packages of a lower layer. Every layer may also import th
 | Layer | Packages | May import |
 |---:|:--- |:--- |
 | 0 | leaf helpers in `internal/`: `markupcore`, `linewrap`, `paragraphs`, `timecode`, `grapheme`, `ssatag`, `phpkey`, `stringlist`, `textenc`, `xmlraw`, `extfallback`, `codepage`, the test helpers `testfiles`, `golden` and `translationtest`, `cea608`, `cea708`, `ebml`, `orderedjson`, `teletext` | other layer 0 packages |
-| 1 | `markup` | layer 0 |
+| 1 | `markup`, `internal/hilabels` | layer 0 |
 | 2 | `model` | layers 0 and 1 |
 | 3 | `internal/` helpers that work on model types: `blocks`, `subrip`, `vtt`, `position`, `parsing`, `writing`, `caption`, `ttmlwrite`, `bitmap`, `displayset`, `dvbsub`, `arib`, `dvdsub`, `jsondata`, `wordgroup` | layers 0 to 2, and other layer 3 packages. Go rejects an import cycle |
 | 4 | `format/<name>` | layers 0 to 3. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML. Other shared code goes to `internal/` |
