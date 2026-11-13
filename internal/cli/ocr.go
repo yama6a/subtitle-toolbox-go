@@ -3,7 +3,6 @@ package cli
 import (
 	"bytes"
 	"context"
-	"errors"
 	"strconv"
 
 	glyphocr "github.com/yama6a/go-glyph-ocr"
@@ -110,7 +109,7 @@ func (e *ocrEdit) load(ctx context.Context, c *console) error {
 
 // checkError returns the error of ctx unchanged, so an interrupt gives exit code 130. Any other error is a usage error.
 func checkError(ctx context.Context, err error) error {
-	if ctx.Err() != nil && errors.Is(err, ctx.Err()) {
+	if isInterrupt(ctx, err) {
 		return err
 	}
 	return usage(message(err))

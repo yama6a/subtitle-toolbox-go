@@ -9,6 +9,11 @@ import (
 	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
 )
 
+// isInterrupt reports whether err is the error of the cancelled ctx, so the run stops with exit code 130.
+func isInterrupt(ctx context.Context, err error) bool {
+	return ctx.Err() != nil && errors.Is(err, ctx.Err())
+}
+
 // fileCommand holds the hooks of a command that reads input files. Its run method calls runFiles, which drives
 // the loop of docs/cli.md.
 type fileCommand interface {
@@ -50,7 +55,7 @@ func runFiles(ctx context.Context, a *args, c *console, fc fileCommand) error {
 		return asUsage(err)
 	}
 	if err := fc.loadSideFiles(ctx, r); err != nil {
-		if ctx.Err() != nil && errors.Is(err, ctx.Err()) {
+		if isInterrupt(ctx, err) {
 			c.err("Stopped by a signal.\n")
 			return &ExitError{Code: exitInterrupt}
 		}
@@ -155,7 +160,7 @@ func (r *runner) processInput(ctx context.Context, fc fileCommand, arg string) (
 		return false, err
 	}
 	if err != nil {
-		if ctx.Err() != nil && errors.Is(err, ctx.Err()) {
+		if isInterrupt(ctx, err) {
 			return false, nil
 		}
 		r.failed++
