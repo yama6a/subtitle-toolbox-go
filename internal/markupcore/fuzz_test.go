@@ -2,8 +2,10 @@ package markupcore_test
 
 import (
 	"encoding/json"
+	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
@@ -49,5 +51,45 @@ func FuzzEmbedRightToLeft(f *testing.F) {
 		}
 		markupcore.HasRightToLeftLetter(s)
 		markupcore.HoldsRightToLeftEmbedding([]string{s, once})
+	})
+}
+
+func FuzzWordTags(f *testing.F) {
+	for _, s := range []string{
+		"<00:00:01.000>Hi there",
+		"Hi <00:00:02.000>there",
+		"<00:00:01.000><c> beach</c>",
+		"<00:00:01.000>Hel<00:00:01.400>lo",
+		"Well, <00:00:02.000>yes",
+		"<v Anna>Good <00:00:01.000>morning.",
+		"<v Anna>Hi.</v>\n<v Ben>Hello.</v>",
+		"<00:00:01.000>Hi\n<00:00:04.000>",
+		"<00:00:03.000>a <00:00:02.000>b <00:00:04.000>c",
+		"<v.loud Anna>Hi</v>",
+		"<v Guide>Please keep your hands\n<v Guide>inside the boat.",
+		"<v Anna>Hi</v> there",
+		"the<00:05:04.199><c> train</c><c.colorE5E5E5><00:05:04.379><c> leaves</c></c>",
+	} {
+		f.Add(s)
+	}
+
+	f.Fuzz(func(t *testing.T, s string) {
+		const cueEnd = 5 * time.Second
+		got := markupcore.ExtractWordTags(strings.Split(s, "\n"), cueEnd, true)
+		texts := make([]string, len(got.Words))
+		for i, w := range got.Words {
+			texts[i] = w.Text
+			if w.Text == "" || strings.TrimFunc(w.Text, markupcore.IsSpace) != w.Text || got.Ends[i] < w.Start {
+				t.Fatalf("word %d of %q is %+v with end %v", i, s, w, got.Ends[i])
+			}
+		}
+		plain := markupcore.CuePlainText(got.Lines)
+		if n := len(markupcore.FindWords(plain, texts)); n != len(texts) {
+			t.Fatalf("%q: %d of %d words occur in %q", s, n, len(texts), plain)
+		}
+		again := markupcore.ExtractWordTags(markupcore.TagWords(got.Lines, got.Words, got.Voice), cueEnd, true)
+		if !slices.Equal(again.Lines, got.Lines) || again.Voice != got.Voice {
+			t.Fatalf("%q: lines %q voice %+v, then lines %q voice %+v", s, got.Lines, got.Voice, again.Lines, again.Voice)
+		}
 	})
 }
