@@ -190,7 +190,7 @@ func TestOutputParsesBackToTheSameCues(t *testing.T) {
 	back, _ := mustRead(t, writeDefault(t, s), false)
 	cues := back.Cues()
 	require.Len(t, cues, 2)
-	assert.Equal(t, "<v Ann>one </v><v Ben>two\n<b>bold <i>open</i></b>", taggedText(cues[0]))
+	assert.Equal(t, "<v Ann>one</v> <v Ben>two\n<b>bold <i>open</i></b></v>", taggedText(cues[0]))
 	assert.Equal(t, model.MiddleLeft, cues[0].Position.Alignment)
 	assert.Equal(t, "<i>mis</i><b><i>nested</i>tags</b> &lt;3 <font color=\"#ffff00\">class</font> word", taggedText(cues[1]))
 	assert.Equal(t, model.BottomCenter, cues[1].Position.Alignment)
@@ -615,4 +615,39 @@ func TestWriteOffsetKeepsStoredRegion(t *testing.T) {
 	require.NoError(t, s.SetCue(0, c))
 	out = writeDefault(t, s)
 	assert.Contains(t, out, `region="topLeft"`)
+}
+
+func TestWriteAgents(t *testing.T) {
+	t.Parallel()
+
+	one := cue(time.Second, 2*time.Second, "Hi", "there")
+	one.Speaker = "Ann"
+	two := cue(time.Second, 2*time.Second, "<v Ann>Hi</v> <v Bo>Yo")
+	mixed := cue(time.Second, 2*time.Second, "Hi <v Bo>Yo</v> end")
+	mixed.Speaker = "Ann"
+	timed := cue(7*time.Second, 8*time.Second, "<00:00:07.200><v Anna>Hi <00:00:07.500>there")
+	timed.ExtractWordTags()
+	tests := []struct {
+		name string
+		cue  model.Cue
+		want string
+	}{
+		{"one agent on the paragraph", one, `<p begin="00:00:01.000" end="00:00:02.000" region="bottomCenter" ttm:agent="agent1">Hi<br/>there</p>`},
+		{
+			"one agent and another voice", mixed,
+			`<p begin="00:00:01.000" end="00:00:02.000" region="bottomCenter" ttm:agent="agent2">Hi <span ttm:agent="agent1">Yo</span> end</p>`,
+		},
+		{"one agent after a word timestamp", timed, `<p begin="00:00:07.000" end="00:00:08.000" region="bottomCenter" ttm:agent="agent1">Hi there</p>`},
+		{
+			"two agents on spans", two,
+			`<p begin="00:00:01.000" end="00:00:02.000" region="bottomCenter"><span ttm:agent="agent1">Hi</span> <span ttm:agent="agent2">Yo</span></p>`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Contains(t, writeDefault(t, subtitleOf(tt.cue)), tt.want)
+		})
+	}
 }

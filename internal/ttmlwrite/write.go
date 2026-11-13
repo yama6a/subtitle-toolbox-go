@@ -42,16 +42,19 @@ type writer struct {
 	stripTags bool
 	ns        string
 	// prefixes holds the bound prefixes, "" for the default namespace, and uris their namespaces.
-	prefixes      []string
-	uris          map[string]string
-	tts, ttm      string
-	head          *xmlraw.Node
-	styles        Sheet
-	usedIDs       map[string]bool
-	nextSuffix    map[string]int
-	agentIDs      map[string]string
-	regionIDs     map[string]string
-	forcedRegions map[string]bool
+	prefixes   []string
+	uris       map[string]string
+	tts, ttm   string
+	head       *xmlraw.Node
+	styles     Sheet
+	usedIDs    map[string]bool
+	nextSuffix map[string]int
+	agentIDs   map[string]string
+	// agentBefore is the head child that new agents go before, nil for the end. It is valid once agentBeforeKnown is set.
+	agentBefore      *xmlraw.Node
+	agentBeforeKnown bool
+	regionIDs        map[string]string
+	forcedRegions    map[string]bool
 	// cue is the index of the cue that the writer writes, -1 outside the cues.
 	cue int
 	err *model.UnwritableError
@@ -228,7 +231,7 @@ func (w *writer) paragraph(containers []Properties, c model.Cue, cueData *model.
 		inherited = inherited.Apply(props)
 	}
 	inherited = inherited.Apply(w.styleProperties(stored))
-	agent, hasAgent, content := w.content(text, inherited)
+	agent, hasAgent, content := w.content(text, c.Speaker, inherited)
 	if hasAgent {
 		out += w.attribute(w.ttm+":agent", w.agentID(agent))
 	}

@@ -24,6 +24,7 @@ go get github.com/yama6a/subtitle-toolbox-go/v4@latest
 | `RemoveDuplicateCues` compared `<v>` tags in the text | it compares `Speaker` and the words too |
 | a WebVTT cue kept `<v.loud Anna>Hi</v>` in its lines | `Speaker` is `Anna`, and the `vtt` cue format data holds `voiceClass` `.loud` and `voiceEnd` true. Deleting that data writes `<v Anna>` |
 | a text edit kept the tags in place | it searches the words again with `SyncWords`. A word that the edit changed beyond case loses its timing |
+| the TTML and iTT readers wrote `<v Anna>` for every `ttm:agent`, and closed it when the next agent started, as in `<v Anna>Hi </v><v b2>Bye`. Only the last voice stayed open | an agent that covers all the text is `cue.Speaker`. An agent on a span becomes a `<v>` span that closes after its text, also the last one. The TTML writer writes `ttm:agent` on the `<p>` for `cue.Speaker` and on a `<span>` for other `<v>` spans |
 | `errors.As(err, &serr)` with a `*json.SyntaxError` matched the cause of a library JSON parse error | it no longer matches. The cause is an internal type. Read the message of the `*ParseError` instead, which holds the PHP text such as `The content is not valid JSON: Syntax error.` |
 
 ## Typed words

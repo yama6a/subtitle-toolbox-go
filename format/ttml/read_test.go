@@ -332,7 +332,7 @@ func TestParagraphText(t *testing.T) {
 			"agents become speaker tags",
 			`<p end="1s" ttm:agent="a1">Hi<br/>there <span ttm:agent="b2">Bye</span></p>`,
 			`<metadata><ttm:agent xml:id="a1" type="person"><ttm:name type="full">Anna</ttm:name></ttm:agent></metadata>`,
-			"<v Anna>Hi\nthere </v><v b2>Bye",
+			"<v Anna>Hi\nthere </v><v b2>Bye</v>",
 		},
 		{
 			"an agent name is the first name with text, trimmed",
@@ -347,6 +347,8 @@ func TestParagraphText(t *testing.T) {
 			"<v Ben>Hi",
 		},
 		{"the first of several agent IDs is the speaker", `<p end="1s" ttm:agent=" b  c ">Hi</p>`, "", "<v b>Hi"},
+		{"one agent over 2 lines has no end", `<p end="1s" ttm:agent="a">Hi<br/>there</p>`, "", "<v a>Hi\nthere"},
+		{"an agent span before plain text ends with its text", `<p end="1s"><span ttm:agent="a">Hi</span> there</p>`, "", "<v a>Hi</v> there"},
 		{"no voice for white space", `<p end="1s"> <span ttm:agent="a">Hi</span></p>`, "", "<v a>Hi"},
 		{
 			"an agent name is escaped",
