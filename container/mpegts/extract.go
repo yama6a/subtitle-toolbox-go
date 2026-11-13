@@ -7,6 +7,7 @@ import (
 
 	"github.com/asticode/go-astits"
 
+	"github.com/yama6a/subtitle-toolbox-go/v3/internal/arib"
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/teletext"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
@@ -14,10 +15,10 @@ import (
 
 const ptsRange = 1 << 33
 
-// pesSink gets the data of each PES packet of a track. The teletext decoder is one, the DVB and ARIB decoders come later.
+// pesSink gets the data of each PES packet of a track. The teletext and ARIB decoders are sinks.
 type pesSink interface{ Add(data []byte, pts int64) }
 
-// Extract reads the track that has the given number from the start of the file. Lenient mode has no effect.
+// Extract reads the track that has the given number from the start of the file. Lenient mode has no effect. The warnings are those of the ARIB decoder.
 func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
 	i := slices.IndexFunc(f.tracks, func(t model.Track) bool { return t.Number == number })
 	if i < 0 {
@@ -27,18 +28,20 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 		}
 	}
 	track, s := f.tracks[i], f.streams[i]
-	dec := teletext.NewDecoder(s.page, number%1000, teletext.LanguageGroup(track.Language))
-	zero, last, err := f.readPES(s, dec)
+	var (
+		states   []textState
+		warnings []model.ParseWarning
+		zero     int64
+		last     int64
+		err      error
+	)
+	if track.CodecID == codecARIB {
+		states, warnings, zero, last, err = f.readARIB(track, s)
+	} else {
+		states, zero, last, err = f.readTeletext(track, s)
+	}
 	if err != nil {
 		return nil, nil, err
-	}
-	pages, err := dec.Finish()
-	if err != nil {
-		return nil, nil, &model.ParseError{Msg: err.Error(), Err: err}
-	}
-	states := make([]textState, len(pages))
-	for i, p := range pages {
-		states[i] = textState{start: p.Start, lines: p.Lines}
 	}
 	lastCue := parsing.NewState(model.SubRip, common).LastCueDuration()
 	cues, err := textCues(number, states, zero, last, lastCue)
@@ -48,7 +51,44 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 	sub := &model.Subtitle{}
 	sub.AddCues(cues...)
 	sub.SetMetadata(model.MetadataLanguage, track.Language)
-	return sub, nil, nil
+	return sub, warnings, nil
+}
+
+func (f *File) readTeletext(track model.Track, s stream) (states []textState, zero, last int64, err error) {
+	dec := teletext.NewDecoder(s.page, track.Number%1000, teletext.LanguageGroup(track.Language))
+	zero, last, err = f.readPES(s, dec)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+	pages, err := dec.Finish()
+	if err != nil {
+		return nil, 0, 0, &model.ParseError{Msg: err.Error(), Err: err}
+	}
+	for _, p := range pages {
+		states = append(states, textState{start: p.Start, lines: p.Lines})
+	}
+	return states, zero, last, nil
+}
+
+func (f *File) readARIB(track model.Track, s stream) (states []textState, warnings []model.ParseWarning, zero, last int64, err error) {
+	dec := arib.NewDecoder(track.Language)
+	zero, last, err = f.readPES(s, dec)
+	if err != nil {
+		return nil, nil, 0, 0, err
+	}
+	for _, st := range dec.Finish() {
+		states = append(states, textState{start: st.Start, lines: st.Lines, alignment: st.Alignment})
+	}
+	for _, w := range dec.Warnings() {
+		ms := (max(0, w.Time-zero) + 45) / 90
+		warnings = append(warnings, model.ParseWarning{
+			Message: fmt.Sprintf("At %d.%03d s: %s", ms/1000, ms%1000, w.Message),
+			Line:    model.NoLine,
+			Block:   model.NoBlock,
+			Action:  model.Repaired,
+		})
+	}
+	return states, warnings, zero, last, nil
 }
 
 // readPES passes each PES of s.pid to sink. It returns the zero point, which is the smallest first PTS of the

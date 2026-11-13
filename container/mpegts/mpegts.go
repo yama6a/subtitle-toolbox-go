@@ -20,6 +20,7 @@ import (
 
 const (
 	codecTeletext = "dvb_teletext"
+	codecARIB     = "arib_caption"
 	// tableScanBytes is the file offset at which the table scan ends. A PAT or a PMT further in is not part of a
 	// recording that starts at a packet.
 	tableScanBytes = 32 << 20
@@ -29,6 +30,13 @@ const (
 	hearingImpairedPage = 0x05
 	maxPage             = 99
 	readBufferSize      = 256 << 10
+
+	// Caption streams of ARIB TR-B14 profile A carry a component tag from 0x30 to 0x37 and the data component 0x0008.
+	streamIdentifierTag  = 0x52
+	dataComponentTag     = 0xFD
+	firstCaptionTag      = 0x30
+	lastCaptionTag       = 0x37
+	captionDataComponent = 0x0008
 )
 
 // stream is the place of a track in the file.
@@ -141,10 +149,12 @@ func (f *File) scanTables() error {
 	if err != nil {
 		return err
 	}
+	var captions []stream
 	for _, pid := range scan.programs {
 		f.addTeletext(scan.pmts[pid])
+		captions = addCaptionStreams(captions, scan.pmts[pid])
 	}
-	return nil
+	return f.addARIB(captions)
 }
 
 // addTeletext lists the teletext subtitle pages of the elementary streams of one program.
