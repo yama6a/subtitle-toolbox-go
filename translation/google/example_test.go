@@ -3,20 +3,21 @@ package google_test
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/translationtest"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 	"github.com/yama6a/subtitle-toolbox-go/v3/translation"
 	"github.com/yama6a/subtitle-toolbox-go/v3/translation/google"
 )
 
 func ExampleNew() {
-	client := &translationtest.Client{Answers: []translationtest.Answer{{
-		Status: 200,
-		Body:   []byte(`{"data": {"translations": [{"translatedText": "Le train part &agrave; <x1>10:15</x1>."}]}}`),
-	}}}
-	engine, err := google.New(google.Options{APIKey: "my-key", HTTPClient: client})
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, `{"data": {"translations": [{"translatedText": "Le train part &agrave; <x1>10:15</x1>."}]}}`)
+	}))
+	defer server.Close()
+	engine, err := google.New(google.Options{APIKey: "my-key", BaseURL: server.URL})
 	if err != nil {
 		fmt.Println(err)
 		return

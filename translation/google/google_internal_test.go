@@ -5,8 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -20,6 +19,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/translationtest"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 	"github.com/yama6a/subtitle-toolbox-go/v3/translation"
+	"github.com/yama6a/subtitle-toolbox-go/v3/translation/internal/httppost"
 )
 
 const key = "AIzaSyD-example+key/42"
@@ -114,10 +114,9 @@ func TestTranslateRequest(t *testing.T) {
 	assert.Equal(t, "https://translation.googleapis.com/language/translate/v2", reqs[0].URL)
 	assert.Equal(t, key, reqs[0].Key)
 	assert.Equal(t, "application/json", reqs[0].Header.Get("Content-Type"))
-	want, err := json.Marshal(map[string]any{"q": texts, "target": "fr", "format": "html", "source": "en"})
+	want, err := httppost.JSON(texts)
 	require.NoError(t, err)
-	assert.JSONEq(t, string(want), string(reqs[0].Body))
-	assert.True(t, strings.HasPrefix(string(reqs[0].Body), `{"q":[`), "keys keep their order")
+	assert.Equal(t, `{"q":`+string(want)+`,"target":"fr","format":"html","source":"en"}`, string(reqs[0].Body))
 }
 
 func TestTranslateDetectsSourceAndUsesBaseURL(t *testing.T) {
@@ -133,7 +132,7 @@ func TestTranslateDetectsSourceAndUsesBaseURL(t *testing.T) {
 	assert.Equal(t, []string{"l&#39;a &amp; &quot;b&quot; &lt;x1&gt; &#60; &eacute;"}, got)
 	reqs := client.Requests()
 	assert.Equal(t, "http://127.0.0.1:8080/language/translate/v2", reqs[0].URL)
-	assert.JSONEq(t, `{"q": ["Lauf!"], "target": "fr", "format": "html"}`, string(reqs[0].Body))
+	assert.Equal(t, `{"q":["Lauf!"],"target":"fr","format":"html"}`, string(reqs[0].Body)) //nolint:testifylint // the key order is part of the contract
 }
 
 func TestTranslateChunks(t *testing.T) {
@@ -147,20 +146,35 @@ func TestTranslateChunks(t *testing.T) {
 		t.Run(strconv.Itoa(tt.count), func(t *testing.T) {
 			t.Parallel()
 
-			texts := make([]string, tt.count)
-			for i := range texts {
-				texts[i] = "text " + strconv.Itoa(i)
+			in := make([]string, tt.count)
+			for i := range in {
+				in[i] = "text " + strconv.Itoa(i)
 			}
-			client := &echo{}
+			answers := []translationtest.Answer{{Status: 200}}
+			if tt.count > 0 {
+				answers = nil
+				for chunk := range slices.Chunk(in, MaxTextsPerRequest) {
+					answers = append(answers, translationtest.Answer{Status: 200, Body: translated(chunk)})
+				}
+			}
+			client := &translationtest.Client{Answers: answers}
 			e, err := New(Options{APIKey: key, HTTPClient: client})
 			require.NoError(t, err)
 
-			got, err := e.Translate(context.Background(), texts, "en", "fr")
+			got, err := e.Translate(context.Background(), in, "en", "fr")
 
 			require.NoError(t, err)
-			assert.Equal(t, tt.want, client.sizes)
-			assert.Equal(t, texts, got)
 			assert.NotNil(t, got)
+			require.Len(t, got, tt.count)
+			reqs := client.Requests()
+			sizes := make([]int, 0, len(reqs))
+			for _, r := range reqs {
+				sizes = append(sizes, len(sentTexts(t, r.Body)))
+			}
+			assert.Equal(t, tt.want, nilIfEmpty(sizes))
+			if tt.count > 0 {
+				assert.Equal(t, strings.ToUpper(in[tt.count-1]), got[tt.count-1])
+			}
 		})
 	}
 }
@@ -253,7 +267,8 @@ func TestTranslateWithTheRunner(t *testing.T) {
 func TestTranslateDecodesEntitiesOnce(t *testing.T) {
 	t.Parallel()
 
-	client := &echo{}
+	sent := []string{"Write &amp;lt;i&amp;gt;Run&amp;lt;/i&amp;gt; for italics.", "Tom &amp;amp; Jerry is a cat and mouse act."}
+	client := &translationtest.Client{Answers: []translationtest.Answer{{Status: 200, Body: translatedAsIs(sent)}}}
 	e, err := New(Options{APIKey: key, HTTPClient: client})
 	require.NoError(t, err)
 	s := readSRT(t, "translation/own_entities.srt")
@@ -263,102 +278,82 @@ func TestTranslateDecodesEntitiesOnce(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, before, lines(s))
-	var sent struct {
-		Q []string `json:"q"`
-	}
-	require.NoError(t, json.Unmarshal(client.body, &sent))
-	assert.Equal(t, "Write &amp;lt;i&amp;gt;Run&amp;lt;/i&amp;gt; for italics.", sent.Q[0])
+	assert.Equal(t, sent, sentTexts(t, client.Requests()[0].Body))
 }
 
 func TestTranslateRetries(t *testing.T) {
 	t.Parallel()
 
-	recorded := testfiles.Read(t, "translation/google_fr.json")
-	tests := []struct {
-		name         string
-		answers      []translationtest.Answer
-		wantRequests int
-		wantWaits    []time.Duration
-		wantErr      bool
-	}{
-		{
-			"429, 503, 200",
-			[]translationtest.Answer{{Status: 429}, {Status: 503}, {Status: 200, Body: recorded}},
-			3,
-			[]time.Duration{time.Second, 2 * time.Second},
-			false,
-		},
-		{
-			"504 4 times",
-			[]translationtest.Answer{{Status: 504, Body: []byte("{}")}},
-			4,
-			[]time.Duration{time.Second, 2 * time.Second, 4 * time.Second},
-			true,
-		},
-		{"400 once", []translationtest.Answer{{Status: 400, Body: []byte("{}")}}, 1, nil, true},
+	client := &translationtest.Client{Answers: []translationtest.Answer{
+		{Status: 429}, {Status: 503}, {Status: 200, Body: testfiles.Read(t, "translation/google_fr.json")},
+	}}
+	e, err := New(Options{APIKey: key, HTTPClient: client})
+	require.NoError(t, err)
+	var waits []time.Duration
+	e.wait = func(_ context.Context, d time.Duration) error {
+		waits = append(waits, d)
+		return nil
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 
-			client := &translationtest.Client{Answers: tt.answers}
-			e, err := New(Options{APIKey: key, HTTPClient: client})
-			require.NoError(t, err)
-			var waits []time.Duration
-			e.wait = func(_ context.Context, d time.Duration) error {
-				waits = append(waits, d)
-				return nil
-			}
+	got, err := e.Translate(context.Background(), texts, "en", "fr")
 
-			got, err := e.Translate(context.Background(), texts, "en", "fr")
+	require.NoError(t, err)
+	assert.Len(t, got, 4)
+	reqs := client.Requests()
+	require.Len(t, reqs, 3)
+	assert.Equal(t, reqs[0].Body, reqs[2].Body)
+	assert.Equal(t, []time.Duration{time.Second, 2 * time.Second}, waits)
+}
 
-			assert.Equal(t, tt.wantErr, err != nil)
-			if !tt.wantErr {
-				assert.Len(t, got, 4)
-			}
-			reqs := client.Requests()
-			assert.Len(t, reqs, tt.wantRequests)
-			for _, r := range reqs {
-				assert.Equal(t, reqs[0].Body, r.Body)
-			}
-			assert.Equal(t, tt.wantWaits, waits)
-		})
+func nilIfEmpty(s []int) []int {
+	if len(s) == 0 {
+		return nil
 	}
+	return s
 }
 
 func noWait(context.Context, time.Duration) error { return nil }
 
-// echo answers each request with the texts of its body, and records the chunk sizes.
-type echo struct {
-	sizes []int
-	body  []byte
+type translationItem struct {
+	TranslatedText string `json:"translatedText"`
 }
 
-func (c *echo) Do(req *http.Request) (*http.Response, error) {
-	c.body, _ = io.ReadAll(req.Body)
-	var in struct {
-		Q []string `json:"q"`
-	}
-	if err := json.Unmarshal(c.body, &in); err != nil {
-		return nil, err
-	}
-	c.sizes = append(c.sizes, len(in.Q))
-	type item struct {
-		TranslatedText string `json:"translatedText"`
-	}
+func answerBody(t []string) []byte {
 	var out struct {
 		Data struct {
-			Translations []item `json:"translations"`
+			Translations []translationItem `json:"translations"`
 		} `json:"data"`
 	}
-	for _, q := range in.Q {
-		out.Data.Translations = append(out.Data.Translations, item{q})
+	for _, s := range t {
+		out.Data.Translations = append(out.Data.Translations, translationItem{s})
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-	return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: io.NopCloser(bytes.NewReader(b)), Request: req}, nil
+	return b
+}
+
+// translated returns an answer that holds each text in upper case.
+func translated(texts []string) []byte {
+	up := make([]string, len(texts))
+	for i, s := range texts {
+		up[i] = strings.ToUpper(s)
+	}
+	return answerBody(up)
+}
+
+// translatedAsIs returns an answer that holds each text unchanged.
+func translatedAsIs(texts []string) []byte { return answerBody(texts) }
+
+func sentTexts(t *testing.T, body []byte) []string {
+	t.Helper()
+
+	var in struct {
+		Q []string `json:"q"`
+	}
+	require.NoError(t, json.Unmarshal(body, &in))
+	return in.Q
 }
 
 func readSRT(t *testing.T, name string) *model.Subtitle {

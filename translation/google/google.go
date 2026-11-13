@@ -58,7 +58,7 @@ func (o Options) Validate() error {
 
 // String prints the options with the key as ***.
 func (o Options) String() string {
-	return fmt.Sprintf("{APIKey:*** BaseURL:%s HTTPClient:%T}", o.BaseURL, o.HTTPClient)
+	return fmt.Sprintf("{APIKey:*** BaseURL:%q HTTPClient:%T}", o.BaseURL, o.HTTPClient)
 }
 
 // GoString prints the options as Go syntax with the key as ***.

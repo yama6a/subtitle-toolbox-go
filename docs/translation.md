@@ -158,34 +158,6 @@ The engines send JSON requests through `translation.HTTPClient`, an interface wi
 - **Size bound**: an answer may hold 1 MiB plus 16 bytes for each byte of the request, because it holds the texts of the request. A larger answer returns a `*ServiceError` and is not retried.
 - **Key**: a message of an engine never holds its key.
 
-## Google Cloud Translation
-
-The package `translation/google` is a client of Cloud Translation Basic (v2) with an API key. It uses `net/http` only.
-
-```go
-engine, err := google.New(google.Options{APIKey: key})
-report, err := translation.Translate(ctx, s, engine, "", "fr", translation.Options{})
-```
-
-| Option | Default | Meaning |
-|:--- |:--- |:--- |
-| `APIKey` | required | an API key of a Google Cloud project with the Cloud Translation API |
-| `BaseURL` | `https://translation.googleapis.com` | the scheme and host of the service, for example a proxy |
-| `HTTPClient` | `translation.DefaultHTTPClient()` | the client that sends the requests |
-
-`New` rejects an empty key, a key with a control character or a space at the start or end, and a base URL that does not start with `http://` or `https://`. Each error matches `model.ErrInvalidArgument`. `fmt` prints the key as `***`.
-
-- **Request**: `POST {base}/language/translate/v2` with the header `X-goog-api-key` and a JSON body `{"q": [...], "target": "fr", "format": "html", "source": "en"}`. The key never goes into the URL. An empty source leaves `source` out, so Google detects the language.
-- **Chunks**: the engine sends at most `google.MaxTextsPerRequest` (128) texts per request. 300 texts give requests of 128, 128 and 44 texts.
-- **Answer**: the engine returns each `translatedText` as received. The runner decodes entities such as `&#39;`. A wrong number of translations, or a translation that is not a string, gives a `*translation.ServiceError`.
-- **Errors**: every `*translation.ServiceError` has the HTTP status and a message without the key.
-
-| Status | Message |
-|:--- |:--- |
-| 403 | `Google Cloud Translation refused the request (HTTP 403). Check the key and that the API is enabled.` and the `error.message` of the answer |
-| 429, after 4 attempts | `Google Cloud Translation got too many requests (HTTP 429). Wait and try again.` |
-| other | `Google Cloud Translation answered with HTTP N.` and the `error.message` of the answer |
-
 ## Write an engine
 
 This engine posts the texts as JSON and reads `{"translations": [...]}`. It takes the client from its field, and uses `DefaultHTTPClient` when the field is nil.
@@ -227,6 +199,54 @@ func (e webEngine) Translate(ctx context.Context, texts []string, source, target
 ```
 
 The service must return the placeholders of each text, such as `<x1>` and `<x2/>`, and the entities `&lt;`, `&gt;` and `&amp;`. A service with an XML tag handling does this. A service that rewrites a placeholder makes the runner drop the tags of that text and add a warning.
+
+## Google Cloud Translation
+
+The package `translation/google` is a client of Cloud Translation Basic (v2) with an API key. It uses `net/http` only.
+
+<!-- example: translation/google/ExampleNew -->
+```go
+server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprint(w, `{"data": {"translations": [{"translatedText": "Le train part &agrave; <x1>10:15</x1>."}]}}`)
+}))
+defer server.Close()
+engine, err := google.New(google.Options{APIKey: "my-key", BaseURL: server.URL})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+s := &model.Subtitle{}
+c := model.Cue{Start: time.Second, End: 2 * time.Second}
+c.SetText("The train leaves at <b>10:15</b>.")
+s.AddCue(c)
+if _, err := translation.Translate(context.Background(), s, engine, "en", "fr", translation.Options{}); err != nil {
+	fmt.Println(err)
+	return
+}
+
+fmt.Println(s.Cues()[0].Lines)
+// Output: [Le train part à <b>10:15</b>.]
+```
+
+| Option | Default | Meaning |
+|:--- |:--- |:--- |
+| `APIKey` | required | an API key of a Google Cloud project with the Cloud Translation API |
+| `BaseURL` | `https://translation.googleapis.com` | the scheme and host of the service, for example a proxy |
+| `HTTPClient` | `translation.DefaultHTTPClient()` | the client that sends the requests |
+
+`New` rejects an empty key, a key with a control character or a space at the start or end, and a base URL that does not start with `http://` or `https://`. Each error matches `model.ErrInvalidArgument`. `fmt` prints the key as `***`.
+
+- **Request**: `POST {base}/language/translate/v2` with the header `X-goog-api-key` and a JSON body `{"q": [...], "target": "fr", "format": "html", "source": "en"}`. The key never goes into the URL. An empty source leaves `source` out, so Google detects the language.
+- **Chunks**: the engine sends at most `google.MaxTextsPerRequest` (128) texts per request. 300 texts give requests of 128, 128 and 44 texts.
+- **Answer**: the engine returns each `translatedText` as received. The runner decodes entities such as `&#39;`. A wrong number of translations, or a translation that is not a string, gives a `*translation.ServiceError`.
+- **Errors**: every `*translation.ServiceError` has the HTTP status and a message without the key.
+
+| Status | Message |
+|:--- |:--- |
+| 403 | `Google Cloud Translation refused the request (HTTP 403). Check the key and that the API is enabled.` and the `error.message` of the answer |
+| 429, after 4 attempts | `Google Cloud Translation got too many requests (HTTP 429). Wait and try again.` |
+| other | `Google Cloud Translation answered with HTTP N.` and the `error.message` of the answer |
 
 ## Differences from PHP
 
