@@ -16,7 +16,7 @@ const assemblyAIKey = string(model.AssemblyAI)
 // ReadAssemblyAI reads the JSON of an AssemblyAI transcript from r. Its times are milliseconds. It makes one cue per
 // utterance, else cues grouped from the words. A field error names the path of the field, such as words[3].start.
 func ReadAssemblyAI(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	st, root, ok, err := cloudRead(r, model.AssemblyAI, common)
+	st, root, ok, err := readRoot(r, model.AssemblyAI, common)
 	if err != nil {
 		return nil, nil, err
 	}

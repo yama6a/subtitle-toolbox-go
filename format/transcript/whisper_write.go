@@ -131,18 +131,6 @@ type whisperWriter struct {
 	previous orderedjson.Value
 }
 
-func storedObject(c *model.Cue) orderedjson.Value {
-	d, ok := c.FormatData(whisperKey)
-	if !ok {
-		return orderedjson.ObjectOf()
-	}
-	v, err := jsondata.FromData(d)
-	if err != nil {
-		return orderedjson.ObjectOf()
-	}
-	return v
-}
-
 // sameTime reports whether the member key of stored is a number that rounds to t.
 func sameTime(stored orderedjson.Value, key string, unit, t time.Duration) bool {
 	v, _ := stored.Get(key)
@@ -150,7 +138,7 @@ func sameTime(stored orderedjson.Value, key string, unit, t time.Duration) bool 
 }
 
 func (ww *whisperWriter) segment(c *model.Cue) orderedjson.Value {
-	stored := storedObject(c)
+	stored := storedObject(c, whisperKey)
 	sameStart := sameTime(stored, "start", time.Second, c.Start)
 	sameEnd := sameTime(stored, "end", time.Second, c.End)
 	storedText, _ := stored.Get("text")
@@ -339,7 +327,7 @@ func withSpeaker(words []orderedjson.Value, speaker string) []orderedjson.Value 
 // cppEntry returns the transcription entry of a cue. Its tokens stay when the cue has the times, the text and the
 // words of the stored entry. Else the entry has no tokens, because the writer cannot make token ids.
 func (ww *whisperWriter) cppEntry(c *model.Cue) orderedjson.Value {
-	stored := storedObject(c)
+	stored := storedObject(c, whisperKey)
 	from, to := max(0, c.Start).Round(time.Millisecond).Milliseconds(), max(0, c.End).Round(time.Millisecond).Milliseconds()
 	offsets := orderedjson.ObjectOf(member("from", orderedjson.Int(from)), member("to", orderedjson.Int(to)))
 	storedOffsets, _ := stored.Get("offsets")

@@ -82,7 +82,7 @@ func TestReadAssemblyAICues(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, cloudDescribe(assemblyAIFormat.parse(t, assemblyAIWords(tt.words...), tt.opts)))
+			assert.Equal(t, tt.want, describe(assemblyAIFormat.parse(t, assemblyAIWords(tt.words...), tt.opts)))
 		})
 	}
 }
@@ -94,7 +94,7 @@ func TestReadAssemblyAIUtterancesAndLanguage(t *testing.T) {
 		`{"start": 0, "end": 2000, "text": "Hi there.", "speaker": "A", "words": [`+
 		`{"text": "Hi", "start": 0, "end": 1000, "speaker": "A"}, {"text": "there.", "start": 1000, "end": 2000, "speaker": "A"}]}]}`,
 		transcript.ReadOptions{WordTimestamps: true, SpeakerVoices: true})
-	assert.Equal(t, []string{"0-2 <v A><00:00:00.000>Hi <00:00:01.000>there."}, cloudDescribe(s))
+	assert.Equal(t, []string{"0-2 <v A><00:00:00.000>Hi <00:00:01.000>there."}, describe(s))
 	file, _ := s.FormatData("assemblyai")
 	assert.Equal(t, []string{"language_code", "audio_url"}, file.Keys())
 

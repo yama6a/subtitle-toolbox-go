@@ -8,6 +8,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -16,7 +17,19 @@ import (
 // speaker, or when a cue has no words, because the words alone cannot hold such a cue. Else "utterances" is null, as
 // AssemblyAI writes it. A value that a cue did not change stays as the reader stored it.
 func WriteAssemblyAI(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
-	return cloudWrite(w, s, model.AssemblyAI, "AssemblyAI JSON", common, assemblyAIDocument)
+	s, err := writing.SkipImageCues(s, model.AssemblyAI, common)
+	if err != nil {
+		return err
+	}
+	doc, err := assemblyAIDocument(s)
+	if err != nil {
+		return err
+	}
+	body, err := encodeDocument(model.AssemblyAI, "AssemblyAI JSON", doc, false)
+	if err != nil {
+		return err
+	}
+	return writing.Write(w, model.AssemblyAI, body, common, false)
 }
 
 func assemblyAIDocument(s *model.Subtitle) (orderedjson.Value, error) {
@@ -33,7 +46,7 @@ func assemblyAIDocument(s *model.Subtitle) (orderedjson.Value, error) {
 	var texts []string
 	hasUtterances := false
 	for _, c := range s.All() {
-		data := cloudCueData(&c, model.AssemblyAI)
+		data := storedObject(&c, assemblyAIKey)
 		u := assemblyAIUtterance(&c, data)
 		text, _ := cloudGet(u, "text").AsString()
 		texts = append(texts, text)
@@ -47,9 +60,9 @@ func assemblyAIDocument(s *model.Subtitle) (orderedjson.Value, error) {
 		list = orderedjson.ArrayOf(utterances...)
 	}
 	return orderedjson.Replace(file, orderedjson.ObjectOf(
-		cloudMember("text", orderedjson.StringValue(strings.Join(texts, " "))),
-		cloudMember("words", orderedjson.ArrayOf(words...)),
-		cloudMember("utterances", list),
+		member("text", orderedjson.StringValue(strings.Join(texts, " "))),
+		member("words", orderedjson.ArrayOf(words...)),
+		member("utterances", list),
 	)), nil
 }
 
@@ -69,7 +82,7 @@ func assemblyAIUtterance(c *model.Cue, data orderedjson.Value) orderedjson.Value
 	}
 	base := data
 	if grouped {
-		base = orderedjson.ObjectOf(cloudMember("confidence", orderedjson.Float(1)))
+		base = orderedjson.ObjectOf(member("confidence", orderedjson.Float(1)))
 	}
 	if !sameStart {
 		startV = assemblyAIMillis(c.Start)
@@ -83,8 +96,8 @@ func assemblyAIUtterance(c *model.Cue, data orderedjson.Value) orderedjson.Value
 	}
 	outSpeaker := assemblyAISpeaker(storedSpeaker, speaker, grouped)
 	return orderedjson.Replace(base, orderedjson.ObjectOf(
-		cloudMember("end", endV), cloudMember("speaker", outSpeaker), cloudMember("start", startV),
-		cloudMember("text", text), cloudMember("words", orderedjson.ArrayOf(words...)),
+		member("end", endV), member("speaker", outSpeaker), member("start", startV),
+		member("text", text), member("words", orderedjson.ArrayOf(words...)),
 	))
 }
 
@@ -160,9 +173,9 @@ func assemblyAIWords(c *model.Cue, stored []orderedjson.Value, sameTimes, sameTe
 	for _, ch := range choices {
 		if ch.New != nil {
 			words = append(words, orderedjson.ObjectOf(
-				cloudMember("text", orderedjson.StringValue(ch.New.Text)), cloudMember("start", assemblyAIMillis(ch.New.Start)),
-				cloudMember("end", assemblyAIMillis(ch.New.End)), cloudMember("confidence", orderedjson.Float(ch.New.Confidence)),
-				cloudMember("speaker", label),
+				member("text", orderedjson.StringValue(ch.New.Text)), member("start", assemblyAIMillis(ch.New.Start)),
+				member("end", assemblyAIMillis(ch.New.End)), member("confidence", orderedjson.Float(ch.New.Confidence)),
+				member("speaker", label),
 			))
 			continue
 		}
