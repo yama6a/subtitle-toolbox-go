@@ -120,3 +120,46 @@ func ExampleDetectPodcastJSON() {
 	// true
 	// false
 }
+
+func ExampleReadHTML() {
+	content := `<cite>Anna:</cite>
+<time>0:05</time>
+<p>Hello<br>there.</p>
+<time>1:02</time>
+<p>Bye.</p>`
+	s, _, err := transcript.ReadHTML(strings.NewReader(content), model.CommonReadOptions{}, transcript.ReadOptions{})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for _, c := range s.Cues() {
+		fmt.Printf("%v %v %q %v\n", c.Start, c.End, c.Speaker, c.Lines)
+	}
+	// Output:
+	// 5s 1m2s "Anna" [Hello there.]
+	// 1m2s 1m7s "" [Bye.]
+}
+
+func ExampleWriteHTML() {
+	s := &model.Subtitle{}
+	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Hello", "there."}, Speaker: "Anna"})
+	s.AddCue(model.Cue{Start: 2500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"Where are you going?"}, Speaker: "Anna"})
+	s.AddCue(model.Cue{Start: 3725 * time.Second, End: 3727 * time.Second, Lines: []string{"Fish & chips."}})
+	if err := transcript.WriteHTML(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+		fmt.Println(err)
+	}
+	// Output:
+	// <cite>Anna:</cite>
+	// <time>0:01</time>
+	// <p>Hello there. Where are you going?</p>
+	// <time>1:02:05</time>
+	// <p>Fish &amp; chips.</p>
+}
+
+func ExampleDetectHTML() {
+	fmt.Println(transcript.DetectHTML([]byte("<cite>Anna:</cite>\n<time>0:05</time>\n<p>Hi</p>")))
+	fmt.Println(transcript.DetectHTML([]byte("<time>0:05</time>\n<p>Hi</p>")))
+	// Output:
+	// true
+	// false
+}

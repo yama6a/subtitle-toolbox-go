@@ -111,7 +111,7 @@ type WriteOptions struct {
 	MCC mcc.WriteOptions
 	// EBUSTL holds the settings of the EBU STL writer. The zero value takes the frame rate of the stored DFC, else 25.
 	EBUSTL ebustl.WriteOptions
-	// Transcript holds the settings of the transcript writers. The zero value writes one segment per cue and compact JSON.
+	// Transcript holds the settings of the transcript writers. The zero value writes one segment per cue and compact JSON, and an HTML paragraph break at a pause of 2 s.
 	Transcript transcript.WriteOptions
 }
 
@@ -196,7 +196,7 @@ func (o WriteOptions) Validate() error {
 	}
 	for _, check := range []func() error{
 		o.ASS.Validate, o.MicroDVD.Validate, o.MPSub.Validate, o.PlainText.Validate, o.CSV.Validate, o.ITT.Validate,
-		o.SubViewer.Validate, o.SCC.Validate, o.MCC.Validate, o.SpruceSTL.Validate, o.EBUSTL.Validate, o.JSON.Validate,
+		o.SubViewer.Validate, o.SCC.Validate, o.MCC.Validate, o.SpruceSTL.Validate, o.EBUSTL.Validate, o.JSON.Validate, o.Transcript.HTML.Validate,
 	} {
 		if err := check(); err != nil {
 			return err
