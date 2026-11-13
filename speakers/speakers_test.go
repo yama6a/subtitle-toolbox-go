@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 	"github.com/yama6a/subtitle-toolbox-go/v4/speakers"
@@ -89,6 +90,25 @@ func TestApplyFixtures(t *testing.T) {
 			assert.Equal(t, viewsOf(load(t, tt.want)), viewsOf(s))
 		})
 	}
+}
+
+// Adapted from SpeakerLabelsTest::testWhisperXDiarizeFileWithRenameAndPrefix.
+func TestWhisperXRenameThenPrefix(t *testing.T) {
+	t.Parallel()
+
+	s, _, err := stbox.Load(testfiles.Path(t, "whisper/real/whisperx_diarize.json"),
+		stbox.ReadOptions{Transcript: transcript.ReadOptions{SpeakerVoices: true}})
+	require.NoError(t, err)
+	first, _ := s.Cue(0)
+	require.Equal(t, "SPEAKER_00", first.Speaker)
+
+	_, err = speakers.Apply(s, speakers.Options{Rename: map[string]string{"SPEAKER_00": "Anna", "SPEAKER_01": "Ben"}})
+	require.NoError(t, err)
+	assert.Equal(t, []speakers.SpeakerCount{{"Anna", 1}, {"Ben", 2}}, speakers.List(s))
+
+	_, err = speakers.Apply(s, speakers.Options{Style: speakers.StylePrefix})
+	require.NoError(t, err)
+	assert.Equal(t, viewsOf(load(t, "speakers/whisperx_diarize_prefix.srt")), viewsOf(s))
 }
 
 // Adapted from SpeakerLabelsTest::testVoicesFileParsesAndRoundTrips.

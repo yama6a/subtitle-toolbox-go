@@ -1,0 +1,23 @@
+[
+    [
+        0.031,
+        2.412,
+        [
+            "<v SPEAKER_00>The market opens on Saturday."
+        ]
+    ],
+    [
+        2.733,
+        4.937,
+        [
+            "<v SPEAKER_01>Apples cost less this week."
+        ]
+    ],
+    [
+        5.338,
+        6.12,
+        [
+            "<v SPEAKER_01>15."
+        ]
+    ]
+]

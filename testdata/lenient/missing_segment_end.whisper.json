@@ -1,0 +1,9 @@
+{
+  "text": " The meeting starts at ten. Please bring the report. Coffee is in the kitchen.",
+  "language": "english",
+  "segments": [
+    {"id": 0, "seek": 0, "start": 0.0, "end": 2.5, "text": " The meeting starts at ten."},
+    {"id": 1, "seek": 0, "start": 2.5, "text": " Please bring the report."},
+    {"id": 2, "seek": 0, "start": 5.0, "end": 7.5, "text": " Coffee is in the kitchen."}
+  ]
+}
