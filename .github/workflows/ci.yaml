@@ -111,6 +111,21 @@ jobs:
       - run: make dist VERSION=0.0.0-ci
       - run: make smoke VERSION=0.0.0-ci
 
+  tesseract:
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false # one shared key would hand darwin, windows or fuzz builds to the other jobs
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-rus
+      - run: go test -run Tesseract ./...
+        env:
+          STBOX_REQUIRE_TESSERACT: '1'
+
   docker:
     uses: yama6a/gha/.github/workflows/docker-build-check.yaml@v2
     with:
