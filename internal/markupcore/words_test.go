@@ -138,3 +138,27 @@ func TestFindWordsStopsAtTheFirstMiss(t *testing.T) {
 
 	assert.Equal(t, []markupcore.Match{{0, 2}}, markupcore.FindWords("Hi there", []string{"Hi", "xyz", "there"}))
 }
+
+func TestExtractWordTagsJoinedTags(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		line      string
+		wantLines []string
+		wantWords int
+	}{
+		{"removal joins a tag with no other text", "<<00:00:00.000>00:00:00.000>", nil, 0},
+		{"removal joins a tag after a word", "Hi <<00:00:01.000>00:00:02.000>", []string{"Hi"}, 0},
+		{"removal joins a tag with more hours digits", "000000<000000<00:00:00.000>:00:00.000>0", []string{"0000000"}, 0},
+		{"removal joins a non-word tag", "<a<00:00:01.000>>", []string{"<a>"}, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := markupcore.ExtractWordTags([]string{tt.line}, 5*time.Second, true)
+			assert.ElementsMatch(t, tt.wantLines, got.Lines)
+			assert.Len(t, got.Words, tt.wantWords)
+		})
+	}
+}

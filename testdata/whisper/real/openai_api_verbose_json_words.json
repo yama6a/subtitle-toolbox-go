@@ -1,0 +1,152 @@
+{
+  "task": "transcribe",
+  "language": "english",
+  "duration": 8.470000267028809,
+  "text": "The beach was quiet in the morning. Nobody came. The tide was low at noon.",
+  "words": [
+    {
+      "word": "The",
+      "start": 0.0,
+      "end": 0.23999999463558197
+    },
+    {
+      "word": "beach",
+      "start": 0.23999999463558197,
+      "end": 0.7099999785423279
+    },
+    {
+      "word": "was",
+      "start": 0.7099999785423279,
+      "end": 0.9800000190734863
+    },
+    {
+      "word": "quiet",
+      "start": 0.9800000190734863,
+      "end": 1.600000023841858
+    },
+    {
+      "word": "in",
+      "start": 1.600000023841858,
+      "end": 1.7400000095367432
+    },
+    {
+      "word": "the",
+      "start": 1.7400000095367432,
+      "end": 1.8600000143051147
+    },
+    {
+      "word": "morning",
+      "start": 1.8600000143051147,
+      "end": 2.5
+    },
+    {
+      "word": "Nobody",
+      "start": 3.9000000953674316,
+      "end": 4.320000171661377
+    },
+    {
+      "word": "came",
+      "start": 4.320000171661377,
+      "end": 5.099999904632568
+    },
+    {
+      "word": "The",
+      "start": 5.619999885559082,
+      "end": 5.800000190734863
+    },
+    {
+      "word": "tide",
+      "start": 5.800000190734863,
+      "end": 6.119999885559082
+    },
+    {
+      "word": "was",
+      "start": 6.119999885559082,
+      "end": 6.360000133514404
+    },
+    {
+      "word": "low",
+      "start": 6.360000133514404,
+      "end": 6.900000095367432
+    },
+    {
+      "word": "at",
+      "start": 6.900000095367432,
+      "end": 7.039999961853027
+    },
+    {
+      "word": "noon",
+      "start": 7.039999961853027,
+      "end": 8.119999885559082
+    }
+  ],
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 3.319999933242798,
+      "text": " The beach was quiet in the morning.",
+      "tokens": [
+        50364,
+        440,
+        7534,
+        390,
+        5677,
+        294,
+        264,
+        2446,
+        13,
+        50530
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2543213963508606,
+      "compression_ratio": 1.0285714864730835,
+      "no_speech_prob": 0.009433425031602383
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 3.9000000953674316,
+      "end": 5.099999904632568,
+      "text": " Nobody came.",
+      "tokens": [
+        50559,
+        9297,
+        1361,
+        13,
+        50619
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2543213963508606,
+      "compression_ratio": 1.0285714864730835,
+      "no_speech_prob": 0.009433425031602383
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 5.619999885559082,
+      "end": 8.470000267028809,
+      "text": " The tide was low at noon.",
+      "tokens": [
+        50645,
+        440,
+        24438,
+        390,
+        2295,
+        412,
+        24040,
+        13,
+        50788
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.2543213963508606,
+      "compression_ratio": 1.0285714864730835,
+      "no_speech_prob": 0.009433425031602383
+    }
+  ],
+  "usage": {
+    "type": "duration",
+    "seconds": 9
+  }
+}

@@ -36,7 +36,7 @@ The writer writes version 2 and the reader reads versions 1 and 2. Version 2 hol
 | `cues[].position.grid` | object `{rows, columns}` or null | optional. Each value is an integer | as above |
 | `cues[].position.offset` | object `{x, y}` or null | optional. Both are numbers from 0 to 100, in percent of the video | only when set |
 | `cues[].forced` | boolean | optional | only when true, and never for an image cue, which holds the flag in `formatData.image.forced` |
-| `cues[].speaker` | string | version 2, optional. A missing key and `null` mean no speaker | version 2, only when not empty |
+| `cues[].speaker` | string | version 2, optional. A missing key and `null` mean no speaker. The reader cleans the name as it cleans a line, so `" "` is no speaker, because version 1 could not read that tag back | version 2, only when not empty |
 | `cues[].words` | list of objects | version 2, optional. A missing key and `null` mean no words | version 2, only when not empty |
 | `cues[].words[].text` | string | required, not empty, no white space at either end | the word text |
 | `cues[].words[].start`, `.end` | number | required, from 0 to below 100000 hours, `end` not before `start`. Rounded as `cues[].start` | seconds, as `cues[].start` |

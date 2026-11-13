@@ -1,0 +1,29 @@
+{
+    "version": "1.0.0",
+    "segments": [
+        {
+            "speaker": "Speaker 1",
+            "startTime": 0.0,
+            "body": "The library opens a new reading room on Friday."
+        },
+        {
+            "speaker": "Speaker 2",
+            "startTime": 7.0,
+            "body": "Can children use it too?"
+        },
+        {
+            "speaker": "Speaker 1",
+            "startTime": 11.0,
+            "body": "Yes. There is a corner with picture books and small chairs."
+        },
+        {
+            "speaker": "Speaker 2",
+            "startTime": 19.0,
+            "body": "That sounds good. Thank you."
+        }
+    ],
+    "metadata": {
+        "title": "Library news",
+        "episode": 4
+    }
+}
