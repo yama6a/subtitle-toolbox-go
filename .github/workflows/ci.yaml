@@ -2,7 +2,7 @@ name: ci
 
 on:
   pull_request:
-    branches: [main, 4.x]
+    branches: [main]
     types: [opened, synchronize, reopened]
   push:
     branches: [main]  # go-ci saves its caches only from non-PR runs

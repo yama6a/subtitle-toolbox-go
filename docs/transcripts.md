@@ -57,9 +57,9 @@ A writer rebuilds the word list of a cue from `Cue.Words`. It keeps each source 
 
 **Without words.** The writer keeps the source words when the stored times equal the cue times. When the stored text equals the cue text, it writes them unchanged. When the text changed but has as many words, each changed word gets the times of its source word and confidence 1.0. Else the cue gets no words.
 
-**Decision D1: the typed values win.** A reused source word is written with the `End` and `Confidence` of its entry in `Cue.Words`, when they differ from the stored values. Equal values keep the stored text, so an unedited round trip stays the same. A run of 2 or more source words stays unchanged.
+**The typed values win.** A reused source word is written with the `End` and `Confidence` of its entry in `Cue.Words`, when they differ from the stored values. Equal values keep the stored text, so an unedited round trip stays the same. A run of 2 or more source words stays unchanged.
 
-**Decision D2: a moved word keeps its confidence.** A new word whose start equals the start of a source word of the cue counts as edited and gets confidence 1.0. Any other new word gets the confidence of its entry in `Cue.Words`, and 1.0 when that is nil. A shifted file keeps its confidences, and a corrected word does not keep the confidence of the wrong word.
+**A moved word keeps its confidence.** A new word whose start equals the start of a source word of the cue counts as edited and gets confidence 1.0. Any other new word gets the confidence of its entry in `Cue.Words`, and 1.0 when that is nil. A shifted file keeps its confidences, and a corrected word does not keep the confidence of the wrong word.
 
 ## Cost
 
@@ -67,7 +67,7 @@ A writer rebuilds the word list of a cue from `Cue.Words`. It keeps each source 
 |:--- |:--- |:--- |
 | group words into cues | linear in the number of words | `TestWordgroupGrowth` |
 | fill `Cue.Words` of a cue | one text search per word, plus one more for each distinct word that the text lacks | `TestWordgroupGrowth` |
-| reuse source words | linear in the text and the source words, plus one try for each source word that shares a start | `BenchmarkReuse`, 1 MB of text in one cue |
+| reuse source words | linear in the text and the source words, also when many source words share one start or have no start | `TestWordgroupGrowth`, and `BenchmarkReuse` with 1 MB of text in one cue, with distinct starts, one shared start and an untimed leading span |
 | read Whisper JSON | linear in the file. A segment takes the top-level words with one pass over them. A word of whisper.cpp tokens joins its token texts once | `BenchmarkReadWhisper`: 12,000 words in one segment, 12,000 top-level words in 2,000 segments, 24,000 tokens in one word. Each input is about 1 MB |
 | write Whisper JSON | linear in the cues, the words and the stored words | `BenchmarkWriteWhisper`: the first 2 inputs above |
 | read Podcasting 2.0 JSON | linear in the file. One pass from the back finds the first later start of all segments that have no end | `BenchmarkReadPodcast`: 16,000 one-word segments joined and kept, and 16,000 segments without an end whose starts fall. Each input is about 1 MB |
@@ -126,7 +126,7 @@ A field error fails the segment. Strict mode returns the error. Lenient mode ski
 | a word `start` of 100000 hours or more | `The field segments[0].words[1].start is not below 100000 hours.`, or `The field words[3].start ...` for a top-level word. It fails the whole segment |
 | a token start of 100000 hours or more | `The field transcription[0].tokens[4].offsets.from is not below 100000 hours.` |
 
-**Top-level words.** The OpenAI API lists the words of all segments in `words`. A segment takes the next words while it is the last segment, or while the middle of the next word, `(start + end) / 2` in seconds, is at most the end of the segment. A word without times has the middle minus infinity, so it goes to the current segment. A segment that fails before this step takes no words, so the next segment gets them.
+**Top-level words.** The OpenAI API lists the words of all segments in `words`. The last segment takes all the words that are left. Any other segment takes the next words while their middle is at most its end. The middle of a word is `(start + end) / 2` in seconds. A word without times has the middle minus infinity, so it goes to the current segment. A segment that fails before this step takes no words, so the next segment gets them.
 
 **Words.** Each item of `words` gives one word for `Cue.Words`.
 
@@ -151,7 +151,7 @@ The shape is the `format` member of the file data when it names one of the 4 sha
 | `whisper.cpp` | the stored file members, `transcription` |
 
 - **Language**: the subtitle language becomes `language`, unless the file data has a `language` that is not null. Not in the whisper.cpp shape.
-- **Segment**: the stored segment keeps its members in order. A segment without `id` gets the `id` of the segment before it plus 1, else 0. WhisperX segments get none. `start`, `end` and `text` keep the stored value when it equals the cue. Else the writer writes the cue value, with a space before the text unless the stored text is a string without one. A changed text removes `tokens`, because the writer cannot make token ids.
+- **Segment**: the stored segment keeps its members in order. A segment without `id` gets the `id` of the segment before it plus 1, else 0. The id after 9223372036854775807 is the float `9.223372036854776e+18`, as in PHP. WhisperX segments get none. `start`, `end` and `text` keep the stored value when it equals the cue. Else the writer writes the cue value, with a space before the text unless the stored text is a string without one. A changed text removes `tokens`, because the writer cannot make token ids.
 - **Words**: the writer applies the rules of [reuse of source words](#reuse-of-source-words). No result removes a stored `words` array. A stored `"words": null` stays. A new word is `{"word": " text", "start", "end", "probability"}` in openai-whisper, `{"word": "text", "start", "end"}` in openai-api and `{"word", "start", "end", "score", "speaker"}` in WhisperX, with `speaker` only when the cue has one.
 - **Speaker**: a cue speaker that differs from the stored `speaker` sets `speaker`, and each word with a `speaker` that is not null gets the new name. A cue without a speaker keeps the stored speaker, so the writer cannot write the removal of a speaker.
 - **whisper.cpp entry**: `offsets` is always `{"from": MS, "to": MS}` in whole milliseconds. `timestamps` keeps the stored value when the offsets are the same, else it is `{"from": "00:01:02,500", "to": ...}`. `text` follows the segment rule. `tokens` stay only when the offsets, the text and the words of the cue equal the stored ones. `speaker` follows the segment rule.
