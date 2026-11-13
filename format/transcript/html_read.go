@@ -49,7 +49,7 @@ func ReadHTML(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*mode
 	if !ok {
 		return s, st.Warnings(), nil
 	}
-	text := strings.ReplaceAll(strings.ReplaceAll(string(content), "\r\n", "\n"), "\r", "\n")
+	text := markupcore.NormalizeLineEnds(string(content))
 
 	cues, err := htmlCues(st, htmlParagraphs(text))
 	if err != nil {
@@ -68,24 +68,6 @@ func ReadHTML(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*mode
 	}
 	s.AddCues(cues...)
 	return s, st.Warnings(), nil
-}
-
-// laterStarts returns, for each start, the index of the first start after it in the list that is later than it, or
-// -1 for none. One pass from the back finds every index.
-func laterStarts(starts []time.Duration) []int {
-	next := make([]int, len(starts))
-	var stack []int // indexes after i, whose starts rise from the top of the stack to the bottom
-	for i := len(starts) - 1; i >= 0; i-- {
-		for len(stack) > 0 && starts[stack[len(stack)-1]] <= starts[i] {
-			stack = stack[:len(stack)-1]
-		}
-		next[i] = -1
-		if len(stack) > 0 {
-			next[i] = stack[len(stack)-1]
-		}
-		stack = append(stack, i)
-	}
-	return next
 }
 
 // htmlCues returns a cue without an end for each paragraph that has lines. A paragraph with a bad time goes to Fail.
@@ -183,24 +165,9 @@ func (p htmlParagraph) start() (time.Duration, *model.ParseError) {
 	h, _ := strconv.ParseInt("0"+hours, 10, 64)
 	mi, _ := strconv.ParseInt("0"+minutes, 10, 64)
 	sec, _ := strconv.ParseInt(m[3], 10, 64)
-	millis := ((h*60+mi)*60+sec)*1000 + fractionMillis(m[4])
+	millis := ((h*60+mi)*60+sec)*1000 + timecode.FractionMillis(m[4])
 	if millis >= int64(timecode.MaxTime/time.Millisecond) {
 		return 0, parsing.OverLimit(p.timeText, p.timeLine)
 	}
 	return time.Duration(millis) * time.Millisecond, nil
-}
-
-// fractionMillis returns the milliseconds of the decimal fraction digits, rounded half up.
-func fractionMillis(digits string) int64 {
-	var n int64
-	for i := range 3 {
-		n *= 10
-		if i < len(digits) {
-			n += int64(digits[i] - '0')
-		}
-	}
-	if len(digits) > 3 && digits[3] >= '5' {
-		n++
-	}
-	return n
 }

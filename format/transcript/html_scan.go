@@ -1,6 +1,9 @@
 package transcript
 
-import "strings"
+import (
+	"bytes"
+	"strings"
+)
 
 // htmlNames are the elements that the HTML transcript reads.
 var htmlNames = [...]string{"cite", "time", "p"} //nolint:gochecknoglobals // lookup table
@@ -22,8 +25,14 @@ func isHTMLSpace(c byte) bool {
 	return c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r'
 }
 
-func indexByteFrom(s string, c byte, from int) int {
-	i := strings.IndexByte(s[from:], c)
+func indexByteFrom[T string | []byte](s T, c byte, from int) int {
+	var i int
+	switch v := any(s[from:]).(type) {
+	case string:
+		i = strings.IndexByte(v, c)
+	case []byte:
+		i = bytes.IndexByte(v, c)
+	}
 	if i < 0 {
 		return -1
 	}
@@ -31,7 +40,7 @@ func indexByteFrom(s string, c byte, from int) int {
 }
 
 // hasFoldedAt reports whether s holds name at i, compared in ASCII lower case. name is lower case.
-func hasFoldedAt(s string, i int, name string) bool {
+func hasFoldedAt[T string | []byte](s T, i int, name string) bool {
 	if i+len(name) > len(s) {
 		return false
 	}
@@ -44,7 +53,7 @@ func hasFoldedAt(s string, i int, name string) bool {
 }
 
 // startTagAt reports whether s[i] is "<", then name, then white space or ">".
-func startTagAt(s string, i int, name string) bool {
+func startTagAt[T string | []byte](s T, i int, name string) bool {
 	j := i + 1 + len(name)
 	return hasFoldedAt(s, i+1, name) && j < len(s) && (s[j] == '>' || isHTMLSpace(s[j]))
 }

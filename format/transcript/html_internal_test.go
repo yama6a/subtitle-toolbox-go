@@ -3,6 +3,7 @@ package transcript
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -55,20 +56,21 @@ func TestScanElementsOfUnclosedTagsFinishes(t *testing.T) {
 	}
 }
 
-func TestHTMLClock(t *testing.T) {
+func TestShortClock(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		in, want string
+		in   time.Duration
+		want string
 	}{
-		{"0:09", "0:09"},
-		{"12:05", "12:05"},
-		{"1:02:03.5", "1:02:03"},
+		{-5 * time.Second, "0:00"},
+		{999 * time.Millisecond, "0:00"},
+		{59*time.Minute + 59999*time.Millisecond, "59:59"},
+		{time.Hour, "1:00:00"},
+		{3725 * time.Second, "1:02:05"},
+		{99999*time.Hour + 59*time.Minute + 59*time.Second, "99999:59:59"},
 	}
 	for _, tt := range tests {
-		p := htmlParagraph{hasTime: true, timeText: tt.in}
-		d, err := p.start()
-		assert.Nil(t, err)
-		assert.Equal(t, tt.want, shortClock(d), tt.in)
+		assert.Equal(t, tt.want, shortClock(tt.in), tt.in.String())
 	}
 }

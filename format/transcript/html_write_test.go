@@ -41,28 +41,36 @@ func TestWriteHTML(t *testing.T) {
 		name string
 		opts transcript.HTMLWriteOptions
 		want string
+		full bool // want is the whole output, not its start
 	}{
 		{"default gap", transcript.HTMLWriteOptions{}, "<cite>Anna:</cite>\n<time>0:01</time>\n<p>Hello there. Where are you going?</p>\n" +
 			"<cite>Ben:</cite>\n<time>0:04</time>\n<p>Home &amp; bed.</p>\n" +
 			"<cite>Anna:</cite>\n<time>0:04</time>\n<p>Why?</p>\n" +
 			"<cite>Anna:</cite>\n<time>0:09</time>\n<p>Fish &lt;3</p>\n" +
-			"<time>1:02:05</time>\n<p>No speaker.</p>\n"},
+			"<time>1:02:05</time>\n<p>No speaker.</p>\n", true},
 		{
 			"gap of 0.5 s",
 			transcript.HTMLWriteOptions{ParagraphGap: new(500 * time.Millisecond)},
 			"<cite>Anna:</cite>\n<time>0:01</time>\n<p>Hello there.</p>\n<cite>Anna:</cite>\n<time>0:02</time>\n<p>Where are you going?</p>\n",
+			false,
 		},
 		{
 			"no paragraph breaks",
 			transcript.HTMLWriteOptions{ParagraphGap: new(transcript.NoParagraphBreaks)},
 			"<cite>Anna:</cite>\n<time>0:01</time>\n<p>Hello there. Where are you going?</p>\n",
+			false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.True(t, strings.HasPrefix(writeHTML(t, htmlDialogue(), tt.opts), tt.want), tt.name)
+			got := writeHTML(t, htmlDialogue(), tt.opts)
+			if tt.full {
+				assert.Equal(t, tt.want, got)
+			} else {
+				assert.True(t, strings.HasPrefix(got, tt.want), got)
+			}
 		})
 	}
 }
@@ -71,7 +79,7 @@ func TestWriteHTMLEscapesAndClamps(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: 0, End: time.Second, Lines: []string{"<v Tom &amp; Jerry>Hi"}})
+	s.AddCue(model.Cue{Start: -2 * time.Second, End: time.Second, Lines: []string{"<v Tom &amp; Jerry>Hi"}})
 	assert.Equal(t, "<cite>Tom &amp; Jerry:</cite>\n<time>0:00</time>\n<p>Hi</p>\n", writeHTML(t, s, transcript.HTMLWriteOptions{}))
 }
 

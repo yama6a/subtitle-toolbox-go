@@ -49,11 +49,10 @@ func DetectHTML(content []byte) bool {
 	if i == len(content) || content[i] != '<' {
 		return false
 	}
-	text := string(content[i:])
-	return hasStartTag(text, "cite") && hasStartTag(text, "time")
+	return hasStartTag(content[i:], "cite") && hasStartTag(content[i:], "time")
 }
 
-func hasStartTag(s, name string) bool {
+func hasStartTag[T string | []byte](s T, name string) bool {
 	for i := 0; i < len(s); {
 		j := indexByteFrom(s, '<', i)
 		if j < 0 {

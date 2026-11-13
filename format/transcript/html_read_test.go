@@ -87,6 +87,7 @@ func TestReadHTMLErrors(t *testing.T) {
 		{"no time", "<time>0:00</time><p>Hi.</p>\n<cite>Ben:</cite>\n<p>Bye.</p>", "The paragraph has no <time>.", 2, nil},
 		{"bad time", "<cite>Ben:</cite>\n\n<time>soon</time>\n<p>Bye.</p>", `The time "soon" is not valid.`, 3, nil},
 		{"61 seconds", "<time>0:00</time><p>Hi.</p>\n<time>0:61</time><p>Oops.</p>", `The time "0:61" is not valid.`, 2, nil},
+		{"two CRs before an LF count as one line break", "<time>0:01</time>\r\r\n<time>x</time><p>a</p>", `The time "x" is not valid.`, 2, nil},
 		{"20 hour digits", "<time>99999999999999999999:00:04</time><p>x</p>", `The time "99999999999999999999:00:04" is not below 100000 hours.`, 1, nil},
 		{"100000 hours", "<time>100000:00:00</time><p>x</p>", `The time "100000:00:00" is not below 100000 hours.`, 1, nil},
 		{"rounds to 100000 hours", "<time>99999:59:59.9996</time><p>x</p>", `The time "99999:59:59.9996" is not below 100000 hours.`, 1, nil},
