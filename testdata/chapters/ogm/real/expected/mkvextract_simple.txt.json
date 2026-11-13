@@ -1,0 +1,61 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 92.48,
+                "lines": [
+                    "Opening"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 92.48,
+                "end": 845.0,
+                "lines": [
+                    "The market at dawn"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 845.0,
+                "end": 1907.92,
+                "lines": [
+                    "Fishing boats return"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1907.92,
+                "end": 3130.04,
+                "lines": [
+                    "Evening in the old town"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3130.04,
+                "end": 3130.04,
+                "lines": [
+                    "End credits"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

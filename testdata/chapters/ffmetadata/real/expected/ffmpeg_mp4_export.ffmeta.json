@@ -1,0 +1,87 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Workshop recording, day 2",
+            "artist": "Town Library"
+        },
+        "comments": [],
+        "formatData": {
+            "ffmeta-chapters": {
+                "tags": {
+                    "major_brand": "isom",
+                    "minor_version": "512",
+                    "compatible_brands": "isomiso2avc1mp41",
+                    "title": "Workshop recording, day 2",
+                    "artist": "Town Library",
+                    "date": "2024",
+                    "encoder": "Lavf60.16.100"
+                },
+                "streams": []
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 184.52,
+                "lines": [
+                    "Welcome and agenda"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ffmeta-chapters": {
+                        "timeBase": "1/1000",
+                        "tags": []
+                    }
+                }
+            },
+            {
+                "start": 184.52,
+                "end": 1021.0,
+                "lines": [
+                    "Setting up the soldering station"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ffmeta-chapters": {
+                        "timeBase": "1/1000",
+                        "tags": []
+                    }
+                }
+            },
+            {
+                "start": 1021.0,
+                "end": 2210.48,
+                "lines": [
+                    "Q&amp;A; flux, tips and safety"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ffmeta-chapters": {
+                        "timeBase": "1/1000",
+                        "tags": []
+                    }
+                }
+            },
+            {
+                "start": 2210.48,
+                "end": 2405.007,
+                "lines": [
+                    "Wrap-up"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ffmeta-chapters": {
+                        "timeBase": "1/1000",
+                        "tags": []
+                    }
+                }
+            }
+        ]
+    }
+}

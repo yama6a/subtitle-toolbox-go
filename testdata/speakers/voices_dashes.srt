@@ -1,0 +1,30 @@
+1
+00:00:01,000 --> 00:00:03,200
+Is the ferry on time today?
+
+2
+00:00:03,400 --> 00:00:05,000
+It left ten minutes early.
+
+3
+00:00:05,200 --> 00:00:08,000
+- Early? Then we take the bus.
+- The bus is faster anyway.
+
+4
+00:00:08,200 --> 00:00:10,500
+- Welcome back to the show.
+- Thank you, Clara.
+
+5
+00:00:10,700 --> 00:00:13,000
+<i>The harbour is closed</i>
+<i>until Monday.</i>
+
+6
+00:00:13,200 --> 00:00:15,000
+The announcement ends here.
+
+7
+00:00:15,200 --> 00:00:17,400
+We meet again next week.

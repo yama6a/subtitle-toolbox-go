@@ -1,0 +1,28 @@
+;FFMETADATA1
+major_brand=isom
+minor_version=512
+compatible_brands=isomiso2avc1mp41
+title=Workshop recording, day 2
+artist=Town Library
+date=2024
+encoder=Lavf60.16.100
+[CHAPTER]
+TIMEBASE=1/1000
+START=0
+END=184520
+title=Welcome and agenda
+[CHAPTER]
+TIMEBASE=1/1000
+START=184520
+END=1021000
+title=Setting up the soldering station
+[CHAPTER]
+TIMEBASE=1/1000
+START=1021000
+END=2210480
+title=Q&A\; flux, tips and safety
+[CHAPTER]
+TIMEBASE=1/1000
+START=2210480
+END=2405007
+title=Wrap-up

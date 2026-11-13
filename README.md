@@ -66,6 +66,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [ASS and SSA](https://en.wikipedia.org/wiki/SubStation_Alpha) | `stbox.ASS` | `ass` | `.ass`, `.ssa` | yes | yes | |
 | Cavena 890 | `stbox.Cavena890` | `cavena890` | `.890` | yes | yes | binary, Scandinavian broadcasters, found by the extension |
 | [CSV](https://www.rfc-editor.org/rfc/rfc4180) | `stbox.CSV` | `csv` | `.csv` | yes | yes | not detected from the content |
+| [FFmpeg metadata](docs/chapters.md#ffmpeg-metadata-chapters) | `stbox.FFMetadataChapters` | `ffmeta-chapters` | `.ffmeta` | yes | yes | `;FFMETADATA1` text with chapters. `Load` needs the format, not detected from the content |
 | [HTML transcript](docs/transcripts.md#html-transcript) | `stbox.HTMLTranscript` | `html` | `.html`, `.htm` | yes | yes | the `cite`, `time` and `p` elements of a podcast transcript. Found by content only with a `cite` and a `time`, else by the extension |
 | [iTunes Timed Text](docs/formats.md#itt) | `stbox.ITT` | `itt` | `.itt` | yes | yes | needs the frame rate of the video. A TTML file named `.itt` loads as iTT |
 | [JSON of this library](docs/json.md) | `stbox.JSON` | `json` | `.json` | yes | yes | |
@@ -92,8 +93,10 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [VobSub](http://sam.zoy.org/writings/dvd/subtitles/) | `stbox.VobSub` | `vobsub` | `.idx` | yes | no | DVD bitmap subtitles, an `.idx` and a `.sub` file, not detected from the content |
 | [WebVTT](https://www.w3.org/TR/webvtt1/) | `stbox.WebVTT` | `vtt` | `.vtt` | yes | yes | also chapters |
 | [Whisper JSON](docs/transcripts.md) | `stbox.Whisper` | `whisper` | `.json` | yes | yes | OpenAI API, openai-whisper, faster-whisper, WhisperX and whisper.cpp. `.json` is the library JSON, so pass `--from whisper` or let the content decide |
+| [OGM chapters](docs/chapters.md#ogm-chapters) | `stbox.OGMChapters` | `ogm-chapters` | `.txt` | yes | yes | `CHAPTER01=00:00:00.000` lines of mkvmerge, not detected from the content |
+| [Podcasting 2.0 chapters](docs/chapters.md#podcasting-20-chapters) | `stbox.PodcastChapters` | `podcast-chapters` | `.json` | yes | yes | the JSON chapters file of a podcast feed, not detected from the content |
 | [Podcasting 2.0 transcript](docs/transcripts.md#podcasting-20-transcript-json) | `stbox.PodcastTranscript` | `podcast-transcript` | `.json` | yes | yes | the JSON transcript of a podcast feed, found by content. `.json` is the library JSON, so pass `--to podcast-transcript` for output |
-| [YouTube chapters](docs/chapters.md) | `stbox.YouTubeChapters` | `youtube-chapters` | `.txt` | yes | yes | lines such as `0:00 Intro`, not detected from the content |
+| [YouTube chapters](docs/chapters.md#youtube-chapters) | `stbox.YouTubeChapters` | `youtube-chapters` | `.txt` | yes | yes | lines such as `0:00 Intro`, not detected from the content |
 
 The name is the value of `--from` and `--to`. [docs/formats.md](docs/formats.md) has one section for each format.
 
