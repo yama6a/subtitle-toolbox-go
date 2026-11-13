@@ -149,7 +149,8 @@ func (p *parser) parsePalette(value, line string) error {
 func (p *parser) parseDelay(value, line string) error {
 	d, err := parseTime(value, line)
 	if err == nil {
-		p.delay += d
+		// The clamp keeps a sum of many delay lines from wrapping. It never changes a time that passes the limit check.
+		p.delay = max(min(p.delay+d, 2*timecode.MaxTime), -2*timecode.MaxTime)
 	}
 	return err
 }

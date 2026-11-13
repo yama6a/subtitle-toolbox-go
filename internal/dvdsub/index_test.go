@@ -2,6 +2,7 @@ package dvdsub_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -46,6 +47,7 @@ func TestParseIndexErrors(t *testing.T) {
 		{"time that only the minutes push over", first + "size: 720x576\n" + palette + "id: en, index: 0\ntimestamp: 99999:99:99:999, filepos: 0\n", `The time "timestamp: 99999:99:99:999, filepos: 0" is not below 100000 hours.`},
 		{"sum with the delay over the limit", first + "size: 720x576\n" + palette + "id: en, index: 0\ndelay: 00:00:10:500\ntimestamp: 99999:59:55:000, filepos: 0\n", `The time "timestamp: 99999:59:55:000, filepos: 0 with delay 10.5s" is not below 100000 hours.`},
 		{"sum with the delay below the negative limit", first + "size: 720x576\n" + palette + "id: en, index: 0\ndelay: -99999:00:00:000\ntimestamp: -99999:00:00:000, filepos: 0\n", `The time "timestamp: -99999:00:00:000, filepos: 0 with delay -359996400s" is not below 100000 hours.`},
+		{"51 delay lines that overflow a duration", first + "size: 720x576\n" + palette + "id: en, index: 0\n" + strings.Repeat("delay: 99999:59:59:999\n", 51) + "timestamp: 00:00:01:000, filepos: 0\n", `The time "timestamp: 00:00:01:000, filepos: 0 with delay 720000000s" is not below 100000 hours.`},
 		{"bad delay", first + "size: 720x576\n" + palette + "id: en, index: 0\ndelay: soon\n", `The .idx time "delay: soon" is not valid.`},
 	}
 	for _, tt := range tests {
