@@ -210,6 +210,7 @@ func ExampleFormats() {
 	// json [json]
 	// aws-transcribe [json]
 	// deepgram [json]
+	// google-speech [json]
 	// lrc [lrc]
 	// mcc [mcc]
 	// microdvd [sub]

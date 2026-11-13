@@ -89,6 +89,7 @@ const (
 	JSON          = model.JSON
 	AWSTranscribe = model.AWSTranscribe
 	Deepgram      = model.Deepgram
+	GoogleSpeech  = model.GoogleSpeech
 	LRC           = model.LRC
 	MCC           = model.MCC
 	MicroDVD      = model.MicroDVD

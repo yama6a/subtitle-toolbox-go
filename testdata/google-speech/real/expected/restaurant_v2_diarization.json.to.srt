@@ -1,0 +1,15 @@
+﻿1
+00:00:00,300 --> 00:00:04,480
+hi I would like to book a table for two tonight
+
+2
+00:00:05,080 --> 00:00:07,640
+certainly what time would you like
+
+3
+00:00:08,240 --> 00:00:09,220
+around seven please
+
+4
+00:00:09,820 --> 00:00:12,260
+seven is fine see you then

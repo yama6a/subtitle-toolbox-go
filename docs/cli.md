@@ -636,6 +636,7 @@ itt                 .itt                     yes   yes
 json                .json                    yes   yes
 aws-transcribe      .json                    yes   yes
 deepgram            .json                    yes   yes
+google-speech       .json                    yes   yes
 lrc                 .lrc                     yes   yes
 mcc                 .mcc                     yes   yes
 microdvd            .sub                     yes   yes

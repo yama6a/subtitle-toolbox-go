@@ -1,0 +1,176 @@
+{
+  "results": [
+    {
+      "alternatives": [
+        {
+          "transcript": "hi I would like to book a table for two tonight certainly what time would you like around seven please seven is fine see you then",
+          "confidence": 0.92142606,
+          "words": [
+            {
+              "startOffset": "0.300s",
+              "endOffset": "0.680s",
+              "word": "hi",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "0.680s",
+              "endOffset": "1.020s",
+              "word": "I",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "1.020s",
+              "endOffset": "1.320s",
+              "word": "would",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "1.320s",
+              "endOffset": "1.780s",
+              "word": "like",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "1.780s",
+              "endOffset": "2.160s",
+              "word": "to",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "2.160s",
+              "endOffset": "2.620s",
+              "word": "book",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "2.620s",
+              "endOffset": "2.960s",
+              "word": "a",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "2.960s",
+              "endOffset": "3.260s",
+              "word": "table",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "3.260s",
+              "endOffset": "3.680s",
+              "word": "for",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "3.680s",
+              "endOffset": "4.100s",
+              "word": "two",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "4.100s",
+              "endOffset": "4.480s",
+              "word": "tonight",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "5.080s",
+              "endOffset": "5.540s",
+              "word": "certainly",
+              "speakerLabel": "2"
+            },
+            {
+              "startOffset": "5.540s",
+              "endOffset": "6s",
+              "word": "what",
+              "speakerLabel": "2"
+            },
+            {
+              "startOffset": "6s",
+              "endOffset": "6.460s",
+              "word": "time",
+              "speakerLabel": "2"
+            },
+            {
+              "startOffset": "6.460s",
+              "endOffset": "6.760s",
+              "word": "would",
+              "speakerLabel": "2"
+            },
+            {
+              "startOffset": "6.760s",
+              "endOffset": "7.180s",
+              "word": "you",
+              "speakerLabel": "2"
+            },
+            {
+              "startOffset": "7.180s",
+              "endOffset": "7.640s",
+              "word": "like",
+              "speakerLabel": "2"
+            },
+            {
+              "startOffset": "8.240s",
+              "endOffset": "8.580s",
+              "word": "around",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "8.580s",
+              "endOffset": "8.880s",
+              "word": "seven",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "8.880s",
+              "endOffset": "9.220s",
+              "word": "please",
+              "speakerLabel": "1"
+            },
+            {
+              "startOffset": "9.820s",
+              "endOffset": "10.120s",
+              "word": "seven",
+              "speakerLabel": "2"
+            },
+            {
+              "startOffset": "10.120s",
+              "endOffset": "10.500s",
+              "word": "is",
+              "speakerLabel": "2"
+            },
+            {
+              "startOffset": "10.500s",
+              "endOffset": "10.960s",
+              "word": "fine",
+              "speakerLabel": "2"
+            },
+            {
+              "startOffset": "10.960s",
+              "endOffset": "11.380s",
+              "word": "see",
+              "speakerLabel": "2"
+            },
+            {
+              "startOffset": "11.380s",
+              "endOffset": "11.800s",
+              "word": "you",
+              "speakerLabel": "2"
+            },
+            {
+              "startOffset": "11.800s",
+              "endOffset": "12.260s",
+              "word": "then",
+              "speakerLabel": "2"
+            }
+          ]
+        }
+      ],
+      "resultEndOffset": "12.260s",
+      "languageCode": "en-us"
+    }
+  ],
+  "metadata": {
+    "totalBilledDuration": "11s",
+    "requestId": "3f2e1d0c-9b8a-4766-8554-43322110ffee"
+  }
+}

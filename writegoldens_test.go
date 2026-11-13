@@ -49,6 +49,8 @@ func roundTripFiles() []roundTripFile {
 		{"deepgram", "museum_words_punctuate.json"},
 		{"deepgram", "pool_utterances_diarize.json"},
 		{"deepgram", "train_paragraphs_german.json"},
+		{"google-speech", "bus_v1_long_running_operation.json"},
+		{"google-speech", "restaurant_v2_diarization.json"},
 		{"podcast", "podcast_transcript_convert_from_html.json"},
 		{"podcast", "podcast_transcript_convert_from_srt.json"},
 		{"podcast", "spec_word_segments.json"},
@@ -178,6 +180,8 @@ func conversions() []conversion {
 		{"aws-transcribe", "library_speakers_language_id.json", stbox.WebVTT, ""},
 		{"deepgram", "pool_utterances_diarize.json", stbox.SubRip, ""},
 		{"deepgram", "pool_utterances_diarize.json", stbox.WebVTT, ""},
+		{"google-speech", "restaurant_v2_diarization.json", stbox.SubRip, ""},
+		{"google-speech", "restaurant_v2_diarization.json", stbox.WebVTT, ""},
 		{"podcast", "spec_word_segments.json", stbox.SubRip, ""},
 		{"podcast", "spec_word_segments.json", stbox.WebVTT, ""},
 		{"whisper", "openai_whisper_word_timestamps.json", stbox.SubRip, ""},
@@ -196,6 +200,8 @@ func conversions() []conversion {
 		{"vtt", "w3c_timestamps.vtt", stbox.AWSTranscribe, ""},
 		{"srt", "own_styled.srt", stbox.Deepgram, ""},
 		{"vtt", "w3c_timestamps.vtt", stbox.Deepgram, ""},
+		{"srt", "own_styled.srt", stbox.GoogleSpeech, ""},
+		{"vtt", "w3c_timestamps.vtt", stbox.GoogleSpeech, ""},
 		{"vtt", "w3c_timestamps.vtt", stbox.Whisper, ""},
 	}
 }

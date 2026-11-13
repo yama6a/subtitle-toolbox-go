@@ -12,6 +12,7 @@
 | library JSON | `stbox.JSON` | `json` | `.json` | [JSON](#json) |
 | Amazon Transcribe JSON | `stbox.AWSTranscribe` | `aws-transcribe` | `.json` | [Amazon Transcribe JSON](transcripts.md#amazon-transcribe-json) |
 | Deepgram JSON | `stbox.Deepgram` | `deepgram` | `.json` | [Deepgram JSON](transcripts.md#deepgram-json) |
+| Google Speech-to-Text JSON | `stbox.GoogleSpeech` | `google-speech` | `.json` | [Google Speech-to-Text JSON](transcripts.md#google-speech-to-text-json) |
 | LRC | `stbox.LRC` | `lrc` | `.lrc` | [LRC](#lrc) |
 | MicroDVD | `stbox.MicroDVD` | `microdvd` | `.sub` | [MicroDVD](#microdvd) |
 | MPSub | `stbox.MPSub` | `mpsub` | `.mpsub` | [MPSub](#mpsub) |

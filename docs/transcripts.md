@@ -79,6 +79,7 @@ A writer rebuilds the word list of a cue from `Cue.Words`. It keeps each source 
 
 | Format | Read | Write | Page section |
 |:--- |:--- |:--- |:--- |
+| Google Speech-to-Text JSON | `ReadGoogleSpeech` | `WriteGoogleSpeech` | [Google Speech-to-Text JSON](#google-speech-to-text-json) |
 | Deepgram JSON | `ReadDeepgram` | `WriteDeepgram` | [Deepgram JSON](#deepgram-json) |
 | Amazon Transcribe JSON | `ReadAWSTranscribe` | `WriteAWSTranscribe` | [Amazon Transcribe JSON](#amazon-transcribe-json) |
 | Whisper JSON | `ReadWhisper` | `WriteWhisper` | [Whisper JSON](#whisper-json) |
@@ -480,3 +481,78 @@ A subtitle with the language `de` and the cue `<v 1>Guten` / `Morgen.` from 1.5 
 |:--- |:--- |:--- |
 | read Deepgram JSON | linear in the file, plus the copies of each paragraph that its sentence cues hold. The sentences of a channel take their words with one pass over the words. The copies together may not pass 4 times the file plus 1 MiB, else the read fails | `BenchmarkDeepgram`: 9,000 words in one channel, 9,000 words in one utterance, 9,000 sentences in one paragraph. `BenchmarkDeepgramParagraphCopies`: 1,000 sentences of a paragraph of 190 members, with copies near the limit. Each input is about 1 MB, the last about 0.7 MB |
 | write Deepgram JSON | linear in the cues, the words and the stored words | the same inputs |
+
+## Google Speech-to-Text JSON
+
+Google Cloud Speech-to-Text returns a list of `results`. Each result has alternatives with a transcript and timed words. Times are protobuf durations such as `"1.300s"`. V1 and V2 of the API name the time fields differently, and a long-running operation wraps the response. The reader makes one cue for each result, or, with speaker diarization, groups the words of the last result into cues. The writer writes the field names of the source and keeps the operation around the response.
+
+| Item | Value |
+|:--- |:--- |
+| Format | `stbox.GoogleSpeech`, name `google-speech`, extension `.json` |
+| Functions | `transcript.ReadGoogleSpeech` and `WriteGoogleSpeech` |
+| Read options | `WordTimestamps` and `SpeakerVoices`. `KeepSegments` has no effect |
+| Write options | none |
+| Detection | none. `.json` belongs to the library JSON, so name the format with `--from google-speech` or `ReadOptions.Format` |
+| Limit | a diarized result holds its cues only through their words. The writer fails for a cue without words |
+
+### Durations
+
+| Input | Reader | Writer, for a stored value |
+|:--- |:--- |:--- |
+| a string `-?D(.D)?s`, such as `"1.300s"` | the decimal seconds, exact. A negative value is no time | the same, but a minus sign makes it no duration |
+| an object with `seconds` or `nanos`, numbers or numeric strings, a missing one counting 0 | `seconds` plus `nanos` divided by 1e9, in whole milliseconds | the same |
+| a plain number | seconds | no duration |
+| any other value | no time | no duration |
+
+A plain number is a time for the reader and no duration for the writer, as in PHP. So a result end that is a plain number never counts as the same time, and the writer writes it again as a string. The writer prints a duration from whole milliseconds: `"6s"` when the milliseconds are a multiple of 1000, else `"1.500s"`.
+
+### Read
+
+- **Operation**: a top-level `response` that is an object is unwrapped. The other top-level members, such as `name`, `metadata` and `done`, go first into the file data.
+- **Lists**: `results` must be a JSON array. Else the read fails with `The JSON has no "results" list.` in both modes. An object with the keys `"0"` and `"1"` is no list ([subtitle-toolbox-php#1208](https://github.com/yama6a/subtitle-toolbox-php/issues/1208)).
+- **Diarized**: the last result is diarized when a word of its first alternative has a `speakerLabel` that is not null, or a `speakerTag` that is not 0, `""`, `"0"`, false or null. Each diarized result repeats the words of the results before it, so the last one holds all words. The words group into cues by the [grouping rules](#grouping-words-into-cues). The file data then holds `results` with the last result without its transcript and words.
+- **Other files**: one cue for each result. A result without words starts where the result before it ended, and ends at its result end. A result with words runs from its first word to its last word. The cue data is the result without `alternatives`, then the members of the first alternative.
+- **Language**: the first `languageCode` of the results that is a string and not empty.
+- **File data**: the operation members, then `results` for a diarized file, then the response members except `results`, such as `totalBilledTime`, `requestId` or `@type`.
+
+| Word field | Source |
+|:--- |:--- |
+| `Text` | `word`, a string. Trimmed |
+| `Start` and `End` | `startTime`, else `startOffset`, and `endTime`, else `endOffset`, as durations |
+| `Speaker` | `speakerLabel`, else `speakerTag` when it is not the integer 0 |
+| `Confidence` | `confidence`, a number from 0 to 1 |
+
+A field error fails the word or the result. Strict mode returns the error. Lenient mode skips it with a `Skipped` warning. A skipped word leaves the rest of its result. The path of a V2 word time still ends in `.startTime` and `.endTime`.
+
+| Field | Error |
+|:--- |:--- |
+| a word time that is no duration or no time | `The field results[0].alternatives[0].words[0].startTime must be a time.` |
+| a time of 100000 hours or more | `The field results[0].alternatives[0].words[0].startTime is not below 100000 hours.` |
+| a result end that is no time, for a result without words | `The field results[0].resultEndTime must be a time.` |
+| a first alternative that is no object | `The field results[0].alternatives must be a list of objects.` |
+| a transcript that is no string | `The field results[0].alternatives[0].transcript must be a string.` |
+
+### Write
+
+The writer uses V2 names when a stored result or a cue has a `resultEndOffset`, or a first word with a `startOffset`. Else it uses V1 names, also without any stored data. The output is compact JSON without a BOM.
+
+- **Operation**: when the file data has `done` or `name`, the document is the stored `name`, `metadata`, `done` and `error` members in stored order, then `response`. The response leaves out those 4 members.
+- **Result for each cue**: `alternatives` with the stored transcript, confidence and words, the transcript set to the cue text, and `words` when the cue has words or the stored data had a `words` member. Then the stored result members, then the result end. A cue without stored data also gets `languageCode` from the subtitle language.
+- **Result end**: the stored value when the times are the same and the data has the end key. Else the larger of the end of the result before it and the cue end, because results follow each other. So 2 cues `Long cue` from 1 to 6 s and `Short cue` from 2 to 4 s both write `"resultEndTime":"6s"`, and the file reads back as 2 cues.
+- **Text**: the stored transcript when it equals the cue text. A leading space of the stored transcript stays.
+- **Words**: the writer applies the rules of [reuse of source words](#reuse-of-source-words). No result gives `[]`. A new word is `{"startTime", "endTime", "word"}`, with `startOffset` and `endOffset` in V2, and `confidence` when a stored word of the cue has one.
+- **Typed values**: a reused word gets `Word.End` in its end member and `Word.Confidence` in `confidence`, when it has the member and the value differs.
+- **Diarized source**: one result with all words of all cues. Each word gets `speakerLabel` with the cue speaker in V2, or `speakerTag` in V1. A V1 speaker of the digits 0 to 9 only is an integer, unless it is too large for one ([subtitle-toolbox-php#1274](https://github.com/yama6a/subtitle-toolbox-php/issues/1274)). A cue without words fails with an `UnwritableError` that names the cue, such as `Cue #2 at 8.24 s has no words.`
+
+2 cues from another format with the language `en-US`, `<v Anna>Good` / `morning.` from 1.5 to 3 s, and `See you.` from 4 to 5 s with 2 words, write:
+
+```json
+{"results":[{"alternatives":[{"transcript":"Good morning."}],"resultEndTime":"3s","languageCode":"en-US"},{"alternatives":[{"transcript":"See you.","words":[{"startTime":"4s","endTime":"4.500s","word":"See"},{"startTime":"4.500s","endTime":"5s","word":"you."}]}],"resultEndTime":"5s","languageCode":"en-US"}]}
+```
+
+### Cost
+
+| Operation | Cost | Benchmark |
+|:--- |:--- |:--- |
+| read Google Speech-to-Text JSON | linear in the file. A duration string is read once with the bounded decimal parser, so `"1e1000000000s"` is rejected without work | `BenchmarkGoogleSpeech`: 12,000 words in results of 10 words, and 12,000 words in one diarized result. Each input is about 1 MB |
+| write Google Speech-to-Text JSON | linear in the cues, the words and the stored words | the same inputs |
