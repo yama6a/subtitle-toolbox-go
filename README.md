@@ -94,6 +94,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [Whisper JSON](docs/transcripts.md) | `stbox.Whisper` | `whisper` | `.json` | yes | yes | OpenAI API, openai-whisper, faster-whisper, WhisperX and whisper.cpp. `.json` is the library JSON, so pass `--from whisper` or let the content decide |
 | [OGM chapters](docs/chapters.md#ogm-chapters) | `stbox.OGMChapters` | `ogm-chapters` | `.txt` | yes | yes | `CHAPTER01=00:00:00.000` lines of mkvmerge, not detected from the content |
 | [Podcasting 2.0 chapters](docs/chapters.md#podcasting-20-chapters) | `stbox.PodcastChapters` | `podcast-chapters` | `.json` | yes | yes | the JSON chapters file of a podcast feed, not detected from the content |
+| [Podcasting 2.0 transcript](docs/transcripts.md#podcasting-20-transcript-json) | `stbox.PodcastTranscript` | `podcast-transcript` | `.json` | yes | yes | the JSON transcript of a podcast feed, found by content. `.json` is the library JSON, so pass `--to podcast-transcript` for output |
 | [YouTube chapters](docs/chapters.md#youtube-chapters) | `stbox.YouTubeChapters` | `youtube-chapters` | `.txt` | yes | yes | lines such as `0:00 Intro`, not detected from the content |
 
 The name is the value of `--from` and `--to`. [docs/formats.md](docs/formats.md) has one section for each format.

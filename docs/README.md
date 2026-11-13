@@ -19,7 +19,7 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [lenient-parsing.md](lenient-parsing.md) | strict and lenient mode, and the warnings of a read |
 | [frame-rates.md](frame-rates.md) | the named frame rates, frames and durations, the frame-count and clock time models, drop-frame labels and `ParseTime` |
 | [errors.md](errors.md) | the sentinel errors, the error types, line numbers and the CLI exit codes |
-| [editing.md](editing.md) | retiming, timing fixes, shot changes and gaps, cue structure, line wrapping and dual subtitles |
+| [editing.md](editing.md) | retiming, timing fixes, shot changes and gaps, cue structure, line wrapping, resegmenting and dual subtitles |
 | [compare.md](compare.md) | `diff` and `stbox diff`: the added, removed and changed cues between two subtitles, and how cues pair |
 | [sync.md](sync.md) | `refsync` and `stbox sync`: the offset and frame-rate scale against a reference subtitle, splits at ad breaks, and sync to the speech of a silencedetect log |
 | [statistics.md](statistics.md) | `stats` and the statistics of `stbox info`: counts, display time, reading speed, gaps and the most used words |

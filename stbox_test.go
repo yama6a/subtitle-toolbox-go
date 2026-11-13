@@ -232,6 +232,7 @@ func ExampleFormats() {
 	// whisper [json]
 	// ogm-chapters [txt]
 	// podcast-chapters [json]
+	// podcast-transcript [json]
 	// youtube-chapters [txt]
 }
 

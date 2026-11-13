@@ -31,6 +31,7 @@ validation/    The 2.x service that checks a subtitle against rules. It follows 
 timing/        The 2.x service that moves cue times to shot changes and frames. Same layer rule
 imaging/       The 3.x public helpers that decode and build the PNG bitmaps of image cues. Same layer rule
 hls/           The service that cuts a subtitle into HLS WebVTT segments and joins segments. Same layer rule
+resegment/     The 4.x service that splits long cues and builds cues from word timings. Same layer rule
 internal/      Helpers: markupcore, teletext, linewrap, timecode, textenc, extfallback, grapheme, ssatag, phpkey, stringlist, xmlraw, ebml, orderedjson, jsondata, wordgroup, paragraphs, blocks, subrip,
                vtt, position, parsing, writing, ttmlwrite, bitmap, displayset, dvbsub, arib, dvdsub, cli, and the test helpers testfiles, golden and translationtest
 cmd/stbox/     The CLI main. Wiring, no business logic

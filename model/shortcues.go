@@ -278,7 +278,7 @@ func (m shortCueMerge) join(first, second Cue) (Cue, bool) {
 
 // mayJoin applies the join check of JoinCues, the speaker rule and the sentence end rule.
 func (m shortCueMerge) mayJoin(first, second Cue, names []string) bool {
-	return canJoin(first, second) &&
+	return first.CanJoin(second) &&
 		(!m.opts.MergeSameSpeakerAnyDuration || len(names) > 0) &&
 		(!m.opts.KeepSentenceEnds || !endsWithStop(first))
 }

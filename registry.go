@@ -165,6 +165,7 @@ var registry = []formatFuncs{
 	{format: Whisper, read: readWhisper, write: writeWhisper},
 	{format: OGMChapters, read: readOGMChapters, write: writeOGMChapters},
 	{format: PodcastChapters, read: readPodcastChapters, write: writePodcastChapters},
+	{format: PodcastTranscript, read: readPodcastTranscript, write: writePodcastTranscript},
 	{format: YouTubeChapters, read: readYouTubeChapters, write: writeYouTubeChapters},
 }
 
@@ -182,6 +183,7 @@ type signature struct {
 var (
 	jsonChecks = []jsonCheck{
 		{format: JSON, match: stboxjson.DetectJSON},
+		{format: PodcastTranscript, match: transcript.DetectPodcastJSON},
 		{format: Whisper, match: transcript.DetectWhisperJSON},
 	}
 	rawSignatures = []signature{
@@ -310,6 +312,14 @@ func readWhisper(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 
 func writeWhisper(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	return WriteReport{}, transcript.WriteWhisper(w, s, common, opts.Transcript)
+}
+
+func readPodcastTranscript(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return transcript.ReadPodcast(r, common, opts.Transcript)
+}
+
+func writePodcastTranscript(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	return WriteReport{}, transcript.WritePodcast(w, s, common, opts.Transcript)
 }
 
 func readWebVTT(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
