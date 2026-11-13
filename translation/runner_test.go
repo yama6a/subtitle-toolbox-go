@@ -510,14 +510,16 @@ func BenchmarkTranslate(b *testing.B) {
 }
 
 func BenchmarkRestoreEmptyPairs(b *testing.B) {
-	for _, pairs := range []int{10000, 100000} {
-		text := strings.Repeat("a<i></i>", pairs)
-		b.Run("pairs="+strconv.Itoa(pairs), func(b *testing.B) {
-			b.ReportAllocs()
-			for b.Loop() {
-				_, err := translation.Translate(b.Context(), fromTexts(text), &upperEngine{}, "en", "de", translation.Options{})
-				require.NoError(b, err)
-			}
-		})
+	for _, unit := range []string{"a<i></i>", " <i></i>"} {
+		for _, pairs := range []int{10000, 100000} {
+			text := strings.Repeat(unit, pairs)
+			b.Run("unit="+strconv.Quote(unit)+"/pairs="+strconv.Itoa(pairs), func(b *testing.B) {
+				b.ReportAllocs()
+				for b.Loop() {
+					_, err := translation.Translate(b.Context(), fromTexts(text), &upperEngine{}, "en", "de", translation.Options{})
+					require.NoError(b, err)
+				}
+			})
+		}
 	}
 }

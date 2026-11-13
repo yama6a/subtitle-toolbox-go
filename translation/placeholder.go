@@ -192,29 +192,35 @@ func appendText(out []token, s string) []token {
 	return append(out, token{kind: textToken, text: s})
 }
 
+// closesOpenOn reports whether t is the close token of the open token at the top of stack.
+func closesOpenOn(tokens []token, stack []int, t token) bool {
+	if t.kind != closeToken || len(stack) == 0 {
+		return false
+	}
+	top := tokens[stack[len(stack)-1]]
+	return top.kind == openToken && top.number == t.number
+}
+
 // dropEmptyPairs removes each open token that its close token follows with only white space between them.
-// The white space stays. It never joins text tokens, so its cost is linear in the tokens.
+// The white space stays. One pass keeps the indexes of the tokens that are no white space, so each removal costs O(1).
 func dropEmptyPairs(tokens []token) []token {
-	out := make([]token, 0, len(tokens))
-	blank := make([]bool, 0, len(tokens))
-	// blankStart is the index of the first token of the white space text tokens at the end of out.
-	blankStart := 0
-	for _, t := range tokens {
-		isBlank := t.kind == textToken && strings.Trim(t.text, placeholderSpace) == ""
-		if t.kind == closeToken && blankStart > 0 && out[blankStart-1].kind == openToken && out[blankStart-1].number == t.number {
-			p := blankStart - 1
-			out = append(out[:p], out[p+1:]...)
-			blank = append(blank[:p], blank[p+1:]...)
-			blankStart = p
-			for blankStart > 0 && blank[blankStart-1] {
-				blankStart--
-			}
-			continue
+	removed := make([]bool, len(tokens))
+	var stack []int
+	for i, t := range tokens {
+		switch {
+		case t.kind == textToken && strings.Trim(t.text, placeholderSpace) == "":
+		case closesOpenOn(tokens, stack, t):
+			removed[stack[len(stack)-1]] = true
+			removed[i] = true
+			stack = stack[:len(stack)-1]
+		default:
+			stack = append(stack, i)
 		}
-		out = append(out, t)
-		blank = append(blank, isBlank)
-		if !isBlank {
-			blankStart = len(out)
+	}
+	out := make([]token, 0, len(tokens))
+	for i, t := range tokens {
+		if !removed[i] {
+			out = append(out, t)
 		}
 	}
 	return out

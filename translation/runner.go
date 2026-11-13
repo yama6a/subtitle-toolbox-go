@@ -18,7 +18,7 @@ const sentenceEnds = ".?!\u2026\u3002\uff0e\uff1f\uff01"
 
 const sentenceEndClosers = "\"'\u201d\u2019\u00bb)]"
 
-// mongolianVowelSeparator is white space for PCRE2 10.44, which holds Unicode 6.3 White_Space.
+// mongolianVowelSeparator is U+180E. Unicode 6.3 removed it from White_Space, and PCRE2 10.44 still counts it as \s.
 const mongolianVowelSeparator = '\u180e'
 
 // request is the text of one cue or of a sentence over several cues.
