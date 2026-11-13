@@ -1,0 +1,16 @@
+;FFMETADATA1
+# Chapters for the conference video, written by hand
+title=Spring meetup
+
+[CHAPTER]
+START=0
+END=90000000000
+title=Doors open
+
+[CHAPTER]
+START=90000000000
+title=Talk 1
+
+[CHAPTER]
+START=1950500000000
+title=Talk 2

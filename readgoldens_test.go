@@ -41,6 +41,9 @@ func goldenFolders() []goldenFolder {
 	return []goldenFolder{
 		{name: "ass", format: stbox.ASS, files: 7},
 		{name: "cavena890", format: stbox.Cavena890, files: 7},
+		{name: "chapters/ffmetadata", format: stbox.FFMetadataChapters, files: 3},
+		{name: "chapters/ogm", format: stbox.OGMChapters, files: 2},
+		{name: "chapters/podcast", format: stbox.PodcastChapters, files: 3},
 		{name: "chapters/youtube", format: stbox.YouTubeChapters, files: 2},
 		{name: "csv", format: stbox.CSV, files: 7, options: map[string]stbox.ReadOptions{
 			"dubbing_script.csv": {CSV: dubbingScript},

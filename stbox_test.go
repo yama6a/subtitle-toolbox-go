@@ -204,6 +204,7 @@ func ExampleFormats() {
 	// ass [ass ssa]
 	// cavena890 [890]
 	// csv [csv]
+	// ffmeta-chapters [ffmeta]
 	// itt [itt]
 	// json [json]
 	// lrc [lrc]
@@ -229,6 +230,8 @@ func ExampleFormats() {
 	// vobsub [idx]
 	// vtt [vtt]
 	// youtube-chapters [txt]
+	// ogm-chapters [txt]
+	// podcast-chapters [json]
 }
 
 func TestBinaryWriteIgnoresLineEndingAndBOM(t *testing.T) {

@@ -39,6 +39,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 		"ass               .ass .ssa         yes   yes",
 		"cavena890         .890              yes   yes",
 		"csv               .csv              yes   yes",
+		"ffmeta-chapters   .ffmeta           yes   yes",
 		"itt               .itt              yes   yes",
 		"json              .json             yes   yes",
 		"lrc               .lrc              yes   yes",
@@ -64,6 +65,8 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 		"vobsub            .idx              yes   no",
 		"vtt               .vtt              yes   yes",
 		"youtube-chapters  .txt              yes   yes",
+		"ogm-chapters      .txt              yes   yes",
+		"podcast-chapters  .json             yes   yes",
 	}, "\n") + "\n"
 	assert.Equal(t, result{Stdout: want}, call{}.run(t, "formats"))
 }
