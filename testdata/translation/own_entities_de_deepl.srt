@@ -1,0 +1,7 @@
+﻿1
+00:00:01,000 --> 00:00:02,500
+Schreiben Sie &lt;i&gt;Run&lt;/i&gt; für Kursivschrift.
+
+2
+00:00:03,000 --> 00:00:04,500
+Tom &amp; Jerry ist eine Nummer mit Katze und Maus.
