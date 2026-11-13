@@ -3,10 +3,10 @@ package caption
 import (
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/cea608"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/cea708"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cea708"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // CEA708Service returns the CEA-708 service to read: 0 when cea608Only is set, else service, where 0 means 1.

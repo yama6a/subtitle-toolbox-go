@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // repeatHarbourTour repeats the cues and comments of harbourTour every 30 s up to n cues,
@@ -238,6 +239,100 @@ func BenchmarkFindCuesAt(b *testing.B) {
 					_ = s.CuesAt(at)
 				}
 			}
+		})
+	}
+}
+
+// letterWords returns n distinct words of 5 letters, or of 5 digits for digits true.
+func letterWords(n int, digits bool) []string {
+	base, first := 26, byte('a')
+	if digits {
+		base, first = 10, '0'
+	}
+	words := make([]string, n)
+	for i := range n {
+		w := []byte("00000")
+		for j, v := 4, i; j >= 0; j, v = j-1, v/base {
+			w[j] = first + byte(v%base)
+		}
+		words[i] = string(w)
+	}
+	return words
+}
+
+// wordCue returns a cue whose line holds n words, each timed 1 s from its own number.
+func wordCue(n int, tagged bool) model.Cue {
+	texts := letterWords(n, false)
+	words := make([]model.Word, n)
+	var line strings.Builder
+	for i, w := range texts {
+		words[i] = model.Word{Text: w, Start: time.Duration(i) * time.Second, End: time.Duration(i+1) * time.Second}
+		if tagged {
+			line.WriteString("<" + fmt.Sprintf("%02d:%02d:%02d.000", i/3600, i/60%60, i%60) + ">")
+		}
+		line.WriteString(w + " ")
+	}
+	return model.Cue{End: time.Duration(n) * time.Second, Lines: []string{strings.TrimSpace(line.String())}, Words: words}
+}
+
+func syncCase(n int, missing bool) model.Cue {
+	c := wordCue(n, false)
+	if missing {
+		c.Lines = []string{strings.Join(letterWords(n, true), " ")}
+		return c
+	}
+	c.Lines = []string{strings.ToUpper(c.Lines[0])}
+	return c
+}
+
+func BenchmarkSyncWords(b *testing.B) {
+	for _, name := range []string{"found", "missing"} {
+		b.Run(name, func(b *testing.B) {
+			base := syncCase(10_000, name == "missing")
+			for b.Loop() {
+				c := base.Clone()
+				c.SyncWords()
+			}
+		})
+	}
+}
+
+func TestWordsGrowth(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		run  func(n int) func()
+	}{
+		{"ExtractWordTags", func(n int) func() {
+			c := wordCue(n, true)
+			return func() { c.ExtractWordTags() }
+		}},
+		{"TaggedLines", func(n int) func() {
+			c := wordCue(n, false)
+			return func() { c.TaggedLines() }
+		}},
+		{"ValidateWords", func(n int) func() {
+			c := wordCue(n, false)
+			return func() { _ = c.ValidateWords() }
+		}},
+		{"SyncWords found", func(n int) func() {
+			c := syncCase(n, false)
+			return func() { c.SyncWords() }
+		}},
+		{"SyncWords repeated missing text", func(n int) func() {
+			c := syncCase(n, true)
+			for i := range c.Words {
+				c.Words[i].Text = "zzzzz"
+			}
+			return func() { c.SyncWords() }
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assertGrowth(t, 1000, tt.run)
 		})
 	}
 }

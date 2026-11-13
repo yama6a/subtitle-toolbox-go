@@ -31,7 +31,7 @@ validation/    The 2.x service that checks a subtitle against rules. It follows 
 timing/        The 2.x service that moves cue times to shot changes and frames. Same layer rule
 imaging/       The 3.x public helpers that decode and build the PNG bitmaps of image cues. Same layer rule
 hls/           The service that cuts a subtitle into HLS WebVTT segments and joins segments. Same layer rule
-internal/      Helpers: markupcore, teletext, linewrap, timecode, textenc, extfallback, grapheme, ssatag, phpkey, stringlist, xmlraw, ebml, paragraphs, blocks, subrip,
+internal/      Helpers: markupcore, teletext, linewrap, timecode, textenc, extfallback, grapheme, ssatag, phpkey, stringlist, xmlraw, ebml, orderedjson, jsondata, paragraphs, blocks, subrip,
                vtt, position, parsing, writing, ttmlwrite, bitmap, displayset, dvbsub, arib, dvdsub, cli, and the test helpers testfiles, golden and translationtest
 cmd/stbox/     The CLI main. Wiring, no business logic
 testdata/      All fixtures and goldens, one folder per topic, PHP folder names for PHP data. Packages read
@@ -47,7 +47,7 @@ make test    # go test -race ./...
 make build   # write bin/stbox, VERSION=1.2.3 stamps the version
 make golden  # rewrite the Go write goldens, then review each diff by hand
 make cross   # build and vet for darwin and windows
-make fuzz    # run each fuzz target for 30 s, FUZZTIME=10s shortens it, FUZZSHARD=0 FUZZSHARDS=5 runs a fifth
+make fuzz    # run each fuzz target for 30 s, FUZZTIME=10s shortens it, FUZZSHARD=0 FUZZSHARDS=7 runs a seventh
 make bench   # run the benchmarks, BENCHTIME=1x runs each once
 make image   # build the container image from .build/Dockerfile
 make dist    # write the 6 release archives and the checksum file to an empty dist/

@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 )
 
 // lenientRow is the expected result of a lenient and of a strict read of one fixture in testdata/lenient.
@@ -160,7 +160,7 @@ func seconds(s float64) time.Duration {
 func cueRows(s *stbox.Subtitle) []cueRow {
 	out := make([]cueRow, 0, s.Len())
 	for _, c := range s.All() {
-		out = append(out, cueRow{Start: c.Start, End: c.End, Text: c.Text()})
+		out = append(out, cueRow{Start: c.Start, End: c.End, Text: strings.Join(c.TaggedLines(), "\n")})
 	}
 	return out
 }

@@ -36,7 +36,7 @@ type ParseError struct {
 	Msg string
 	// Option is the Go path of a missing or bad read option, for example "ReadOptions.MicroDVD.FrameRate", else "".
 	Option string
-	// Err is the cause, for example a *json.SyntaxError, or nil.
+	// Err is the cause, for example an error of the standard library, or nil.
 	Err error
 }
 

@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
-	"github.com/yama6a/subtitle-toolbox-go/v3/translation"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation"
 )
 
 type call struct {
@@ -198,7 +198,7 @@ func TestTranslateSends(t *testing.T) {
 	}{
 		{
 			name:  "cues without text to translate are not sent",
-			cues:  []string{"\u266a\u266b", "1984", "...", "<i>\u266a</i>", "Hello."},
+			cues:  []string{"\u266a\u266b", "1984", "<00:00:01.000>1984", "...", "<i>\u266a</i>", "Hello."},
 			image: true,
 			want:  [][]string{{"Hello."}},
 		},
@@ -278,6 +278,27 @@ func TestTranslateSends(t *testing.T) {
 			assert.Equal(t, "de", language)
 		})
 	}
+}
+
+func TestTranslateWords(t *testing.T) {
+	t.Parallel()
+
+	words := []model.Word{{Text: "Hi", Start: time.Second, End: 1500 * time.Millisecond}, {Text: "there.", Start: 1500 * time.Millisecond, End: 2 * time.Second}}
+	s := &model.Subtitle{}
+	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"Hi there."}, Speaker: "Fred", Words: words})
+	s.AddCue(model.Cue{Start: 4 * time.Second, End: 5 * time.Second, Lines: []string{"\u266a"}, Words: words[:1]})
+	engine := &upperEngine{}
+
+	_, err := translation.Translate(t.Context(), s, engine, "en", "de", translation.Options{})
+
+	require.NoError(t, err)
+	require.Len(t, engine.calls, 1)
+	assert.Equal(t, []string{"Hi there."}, engine.calls[0].texts)
+	cues := s.Cues()
+	assert.Equal(t, "Fred", cues[0].Speaker)
+	assert.Equal(t, []string{"HI THERE."}, cues[0].Lines)
+	assert.Nil(t, cues[0].Words)
+	assert.Equal(t, words[:1], cues[1].Words)
 }
 
 func TestTranslateFills(t *testing.T) {

@@ -10,21 +10,23 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/markup"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 type cueTimes struct {
 	Start, End time.Duration
 	Lines      []string
+	Speaker    string
+	Words      []model.Word
 }
 
 func timesAndLines(s *model.Subtitle) []cueTimes {
 	var out []cueTimes
 	for _, c := range s.All() {
-		out = append(out, cueTimes{Start: c.Start, End: c.End, Lines: c.Lines})
+		out = append(out, cueTimes{Start: c.Start, End: c.End, Lines: c.Lines, Speaker: c.Speaker, Words: c.Words})
 	}
 	return out
 }
@@ -74,7 +76,7 @@ func readFixture(tb testing.TB, name string) *model.Subtitle {
 func fixtureTime(tb testing.TB, field string) time.Duration {
 	tb.Helper()
 
-	d, ok := markup.WordTimestamp("<" + strings.Replace(field, ",", ".", 1) + ">")
+	d, ok := markupcore.WordTimestamp("<" + strings.Replace(field, ",", ".", 1) + ">")
 	require.True(tb, ok, field)
 	return d
 }
@@ -335,93 +337,67 @@ func TestRetimeUpdatesTheLookups(t *testing.T) {
 	assert.Equal(t, []int{1}, s.CuesAt(sec(13.5)))
 }
 
-func TestRetimeWordTimestamps(t *testing.T) {
+func TestEditsMoveWords(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name   string
-		retime func(*model.Subtitle) error
-		cue    int
-		want   []string
+		name string
+		edit func(s *model.Subtitle) (*model.Subtitle, error)
+		want model.Word
 	}{
+		{"shift forward", func(s *model.Subtitle) (*model.Subtitle, error) { return s, s.Shift(time.Second) }, word("one", 2, 3)},
+		{"shift below 0", func(s *model.Subtitle) (*model.Subtitle, error) { return s, s.Shift(-2 * time.Second) }, word("one", 0, 0)},
+		{"scale", func(s *model.Subtitle) (*model.Subtitle, error) { return s, s.Scale(2) }, word("one", 2, 4)},
 		{
-			name:   "shift moves the word timestamps of the first cue",
-			retime: func(s *model.Subtitle) error { return s.Shift(10 * time.Second) },
-			cue:    0,
-			want:   []string{"<00:00:11.000>Turn <00:00:11.400>the <00:00:11.600>damn <00:00:12.000>radio <00:00:12.500>off."},
-		},
-		{
-			name:   "shift moves the word timestamps of each line",
-			retime: func(s *model.Subtitle) error { return s.Shift(10 * time.Second) },
-			cue:    2,
-			want:   []string{"<00:00:15.500>It <00:00:15.700>sounds <00:00:16.100>like", "<00:00:16.300>hell <00:00:16.700>to <00:00:16.800>me."},
-		},
-		{
-			name:   "shift range keeps the word timestamps of earlier cues",
-			retime: func(s *model.Subtitle) error { return s.ShiftRange(-time.Second, new(5*time.Second), nil) },
-			cue:    0,
-			want:   []string{"<00:00:01.000>Turn <00:00:01.400>the <00:00:01.600>damn <00:00:02.000>radio <00:00:02.500>off."},
-		},
-		{
-			name:   "shift range moves the word timestamps of later cues",
-			retime: func(s *model.Subtitle) error { return s.ShiftRange(-time.Second, new(5*time.Second), nil) },
-			cue:    3,
-			want:   []string{"<00:00:06.500>Fine, <00:00:07.000>damnit."},
-		},
-		{
-			name:   "shift clamps word timestamps at 0",
-			retime: func(s *model.Subtitle) error { return s.Shift(-1500 * time.Millisecond) },
-			cue:    0,
-			want:   []string{"<00:00:00.000>Turn <00:00:00.000>the <00:00:00.100>damn <00:00:00.500>radio <00:00:01.000>off."},
-		},
-		{
-			name: "sync by points moves word timestamps",
-			retime: func(s *model.Subtitle) error {
-				return s.SyncByPoints([]model.SyncPoint{{Old: sec(1), New: sec(2)}, {Old: sec(7.5), New: sec(15)}})
+			"sync by points",
+			func(s *model.Subtitle) (*model.Subtitle, error) {
+				return s, s.SyncByPoints([]model.SyncPoint{{Old: sec(1), New: sec(2)}, {Old: sec(7.5), New: sec(15)}})
 			},
-			cue:  0,
-			want: []string{"<00:00:02.000>Turn <00:00:02.800>the <00:00:03.200>damn <00:00:04.000>radio <00:00:05.000>off."},
+			word("one", 2, 4),
 		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			s := readFixture(t, "profanity/radio.vtt")
-			require.NoError(t, tt.retime(s))
-			c, ok := s.Cue(tt.cue)
-			require.True(t, ok)
-			assert.Equal(t, tt.want, c.Lines)
-		})
-	}
-}
-
-func TestRetimeSaturatesAWordTimestampAtTheLargestReadableTime(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name   string
-		line   string
-		retime func(*model.Subtitle) error
-	}{
-		{"scale", "<2000000:00:00.000>far", func(s *model.Subtitle) error { return s.Scale(10) }},
-		{"shift", "<2562000:00:00.000>far", func(s *model.Subtitle) error { return s.Shift(99000 * time.Hour) }},
+		{
+			"frame rate",
+			func(s *model.Subtitle) (*model.Subtitle, error) {
+				return s, s.ConvertFrameRate(model.FrameRate{Num: 25, Den: 1}, model.FrameRate{Num: 50, Den: 1})
+			},
+			word("one", 0.5, 1),
+		},
+		{
+			"slice to zero",
+			func(s *model.Subtitle) (*model.Subtitle, error) { return s.Slice(time.Second, 4*time.Second, true) },
+			word("one", 0, 1),
+		},
+		{
+			"append with an offset",
+			func(s *model.Subtitle) (*model.Subtitle, error) {
+				out := &model.Subtitle{}
+				return out, out.Append(s, 10*time.Second)
+			},
+			word("one", 11, 12),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCue(model.Cue{Start: sec(1), End: sec(2), Lines: []string{tt.line}})
-			require.NoError(t, tt.retime(s))
-			c, _ := s.Cue(0)
-			require.Equal(t, []string{"<2562046:59:59.999>far"}, c.Lines)
-
-			require.NoError(t, s.Scale(0.5))
-			c, _ = s.Cue(0)
-			assert.Equal(t, []string{"<1281023:30:00.000>far"}, c.Lines)
+			s.AddCue(model.Cue{Start: 0, End: 5 * time.Second, Lines: []string{"one two"}, Words: []model.Word{word("one", 1, 2)}})
+			got, err := tt.edit(s)
+			require.NoError(t, err)
+			c, _ := got.Cue(0)
+			assert.Equal(t, []model.Word{tt.want}, c.Words)
 		})
 	}
+}
+
+func TestScaleStopsAtAWordThatReachesTheTimeLimit(t *testing.T) {
+	t.Parallel()
+
+	s := &model.Subtitle{}
+	s.AddCue(model.Cue{Start: 0, End: sec(1), Lines: []string{"far"}, Words: []model.Word{word("far", 0, 99999*3600)}})
+	require.ErrorIs(t, s.Scale(2), model.ErrInvalidArgument)
+	c, _ := s.Cue(0)
+	assert.Equal(t, sec(99999*3600), c.Words[0].End)
 }
 
 func TestRetimeErrors(t *testing.T) {

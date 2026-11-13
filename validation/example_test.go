@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/validation"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/validation"
 )
 
 func ExampleCheck() {

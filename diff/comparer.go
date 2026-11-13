@@ -4,9 +4,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/markup"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const (
@@ -38,7 +38,7 @@ func describe(cues []model.Cue, opts Options) (texts []string, starts, ends []fl
 	starts = make([]float64, len(cues))
 	ends = make([]float64, len(cues))
 	for i, cue := range cues {
-		texts[i] = comparedText(cue.Text(), opts)
+		texts[i] = comparedText(strings.Join(cue.TaggedLines(), "\n"), opts)
 		starts[i] = timecode.FloatSeconds(cue.Start)
 		ends[i] = timecode.FloatSeconds(cue.End)
 	}

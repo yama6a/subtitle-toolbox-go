@@ -8,8 +8,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 var (
@@ -44,7 +44,7 @@ func (c *checker) tagAndSpeakerRules(i int, m measures) {
 		c.count(i, RuleDialogueDashStyle, wrongDashes(m.text, *r.DialogueDashStyle))
 	}
 	if r.MaxSpeakersPerCue > 0 {
-		if n := speakers(m.raw, m.text); n > r.MaxSpeakersPerCue {
+		if n := speakers(m.raw, m.speaker, m.text); n > r.MaxSpeakersPerCue {
 			c.add(i, RuleMaxSpeakersPerCue, float64(n), limitOf(float64(r.MaxSpeakersPerCue)))
 		}
 	}
@@ -240,8 +240,8 @@ func wrongDashes(text []string, style model.DialogueDashStyle) int {
 	return n
 }
 
-// speakers returns the largest of the dash lines, the distinct <v> names and 1 for a cue with text.
-func speakers(raw string, text []string) int {
+// speakers returns the largest of the dash lines, the distinct names of Speaker and the <v> tags, and 1 for a cue with text.
+func speakers(raw, speaker string, text []string) int {
 	dashes := 0
 	for _, line := range text {
 		if markupcore.StartsDialogueTurn(dashStart(line)) {
@@ -249,6 +249,9 @@ func speakers(raw string, text []string) int {
 		}
 	}
 	names := make(map[string]bool)
+	if speaker != "" {
+		names[speaker] = true
+	}
 	for _, m := range voiceRegexp.FindAllStringSubmatch(raw, -1) {
 		names[strings.Trim(m[2], markupcore.PHPTrimSet)] = true
 	}

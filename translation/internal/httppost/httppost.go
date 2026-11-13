@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/translation"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation"
 )
 
 const (

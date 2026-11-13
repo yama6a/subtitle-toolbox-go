@@ -9,10 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func writeDefault(t *testing.T, s *model.Subtitle) string {
@@ -331,7 +332,7 @@ func TestChangedCueIsWrittenFromItsLines(t *testing.T) {
 	t.Parallel()
 
 	s := readFile(t, realDir+"/own_aegisub.ass")
-	setCue(t, s, 2, func(c *model.Cue) { c.Lines = []string{"<v Guard>Is it <i>late</i> today?"} })
+	setCue(t, s, 2, func(c *model.Cue) { c.Lines, c.Speaker = []string{"Is it <i>late</i> today?"}, "Guard" })
 	setCue(t, s, 3, func(c *model.Cue) { c.Position.Alignment = model.TopLeft })
 
 	got := writeDefault(t, s)
@@ -359,7 +360,7 @@ func TestChangedCueOmitsTheTagsThatItsStyleImplies(t *testing.T) {
 	back, _ := mustRead(t, got, false)
 	lines := make([][]string, 0, 4)
 	for _, i := range []int{1, 2, 3, 5} {
-		lines = append(lines, cueAt(t, back, i).Lines)
+		lines = append(lines, cueAt(t, back, i).TaggedLines())
 	}
 	assert.Equal(t, [][]string{{"<i>I should have taken the night bus.</i>"}, {"Upright now"}, {"<b><u><s>Depot closed for repairs</s></u></b>"}, {"<i>Left</i> again"}}, lines)
 }
@@ -625,4 +626,92 @@ func TestKaraokeStaysBelowTheTimeLimit(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
+}
+
+func TestKaraokeFileWritesBackByteForByte(t *testing.T) {
+	t.Parallel()
+
+	in := eventsHeader + `Dialogue: 0,0:00:01.00,0:00:02.00,Default,Anna,0,0,0,,{\k50}Hi {\k20}{\k30}there` + "\n"
+	s, _ := mustRead(t, in, false)
+	assert.Contains(t, write(t, s, model.CommonWriteOptions{}, ass.WriteOptions{}), `Dialogue: 0,0:00:01.00,0:00:02.00,Default,Anna,0,0,0,,{\k50}Hi {\k20}{\k30}there`+"\n")
+
+	setCue(t, s, 0, func(c *model.Cue) { c.Speaker = "Bo" })
+	assert.Contains(t, write(t, s, model.CommonWriteOptions{}, ass.WriteOptions{}), `Default,Bo,0,0,0,,{\k50}Hi {\k20\k30}there`+"\n")
+}
+
+func TestEditedKaraokeCueWritesGapsAndTheOptionTag(t *testing.T) {
+	t.Parallel()
+
+	const in = `Dialogue: 0,0:00:01.00,0:00:02.00,Default,,0,0,0,,{\kf50}Hi {\k20}{\ko30}there`
+	tests := []struct {
+		name  string
+		shift time.Duration
+		grow  time.Duration
+		opts  ass.WriteOptions
+		want  string
+	}{
+		{
+			"a shift writes k and keeps the gap", time.Second, 0,
+			ass.WriteOptions{},
+			`0:00:02.00,0:00:03.00,Default,,0,0,0,,{\k50}Hi {\k20\k30}there`,
+		},
+		{
+			"the option sets the tag", time.Second, 0,
+			ass.WriteOptions{KaraokeTag: ass.KaraokeFill},
+			`0:00:02.00,0:00:03.00,Default,,0,0,0,,{\kf50}Hi {\kf20\kf30}there`,
+		},
+		{
+			"a changed word end counts as a change", 0, 100 * ms,
+			ass.WriteOptions{},
+			`0:00:01.00,0:00:02.00,Default,,0,0,0,,{\k60}Hi {\k10\k30}there`,
+		},
+		{
+			"an unchanged cue keeps its text", 0, 0,
+			ass.WriteOptions{KaraokeTag: ass.KaraokeInstant},
+			`0:00:01.00,0:00:02.00,Default,,0,0,0,,{\kf50}Hi {\k20}{\ko30}there`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s, _ := mustRead(t, eventsHeader+in+"\n", false)
+			require.NoError(t, s.Shift(tt.shift))
+			setCue(t, s, 0, func(c *model.Cue) { c.Words[0].End += tt.grow })
+			assert.Contains(t, write(t, s, model.CommonWriteOptions{}, tt.opts), tt.want+"\n")
+		})
+	}
+}
+
+func TestCueWithoutTaggedSourceKeepsItsStoredText(t *testing.T) {
+	t.Parallel()
+
+	const line = `Dialogue: 0,0:00:13.50,0:00:16.00,Default,Conductor,0,0,0,,{\k40}The {\kf35}train {\ko45}leaves`
+	s, _ := mustRead(t, "[V4+ Styles]\nFormat: Name, Bold\nStyle: Default,-1\n\n"+eventsHeader+line+"\n", false)
+	read := cueAt(t, s, 0)
+	data := cueData(t, read)
+
+	// A cue read from library JSON version 2 has plain lines, words and the stored cue data, but no tagged source.
+	rebuilt := model.Cue{Start: read.Start, End: read.End, Lines: read.Lines, Speaker: read.Speaker, Words: read.Words}
+	require.NoError(t, rebuilt.SetFormatData("ass", data))
+	out := subtitle(t, rebuilt)
+	require.NoError(t, out.SetFormatData("ass", fileData(t, s)))
+
+	assert.Contains(t, write(t, out, model.CommonWriteOptions{}, ass.WriteOptions{}), line+"\n")
+}
+
+func TestAegisubFileSurvivesLibraryJSONVersion1(t *testing.T) {
+	t.Parallel()
+
+	in := testfiles.Read(t, realDir+"/own_aegisub.ass")
+	s := readFile(t, realDir+"/own_aegisub.ass")
+	var js bytes.Buffer
+	_, err := stboxjson.Write(&js, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
+	require.NoError(t, err)
+	back, _, err := stboxjson.Read(&js, model.CommonReadOptions{}, stboxjson.ReadOptions{})
+	require.NoError(t, err)
+
+	got := write(t, back, model.CommonWriteOptions{}, ass.WriteOptions{})
+	assert.Contains(t, got, `{\k40}The {\k35}train {\k50}leaves {\kf60}at {\ko45}noon`)
+	assert.Equal(t, strings.TrimPrefix(string(in), "\xEF\xBB\xBF"), strings.TrimPrefix(got, "\xEF\xBB\xBF"))
 }

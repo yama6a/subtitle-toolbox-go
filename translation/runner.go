@@ -9,9 +9,9 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/grapheme"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/grapheme"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const sentenceEnds = ".?!\u2026\u3002\uff0e\uff1f\uff01"
@@ -179,6 +179,9 @@ func batches(requests []request, maxCharacters int) [][]request {
 // fill writes the translation of r into the cues of r and returns the warnings.
 func fill(cues []model.Cue, r request, translation string) []Warning {
 	var warnings []Warning
+	for _, i := range r.cues {
+		cues[i].Words = nil
+	}
 	tags := r.tags
 	var tokens []token
 	if keepsPlaceholders(translation, tags) {
