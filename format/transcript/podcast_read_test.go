@@ -110,6 +110,20 @@ func TestReadPodcastCues(t *testing.T) {
 	}
 }
 
+func TestReadPodcastWarnsWhenAGroupEndsBeforeItStarts(t *testing.T) {
+	t.Parallel()
+
+	content := `{"segments": [{"startTime": 5, "endTime": 6, "body": "a"}, {"startTime": 1, "endTime": 2, "body": "b"}]}`
+	s, warnings, err := transcript.ReadPodcast(strings.NewReader(content), model.CommonReadOptions{}, transcript.ReadOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, []string{"5-5 a b"}, describe(s))
+	require.Len(t, warnings, 1)
+	assert.Equal(t, "The cue ends at 2 s, before it starts at 5 s. The parser set the end to the start.", warnings[0].Message)
+	assert.Equal(t, model.Repaired, warnings[0].Action)
+	assert.Equal(t, 0, warnings[0].Block)
+	assert.Equal(t, []string{`{"startTime":5,"endTime":6,"body":"a"}`, `{"startTime":1,"endTime":2,"body":"b"}`}, warnings[0].Lines)
+}
+
 func TestReadPodcastData(t *testing.T) {
 	t.Parallel()
 

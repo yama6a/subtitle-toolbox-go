@@ -42,6 +42,9 @@ func roundTripFiles() []roundTripFile {
 		{"mcc", "captionmaker_608_708.mcc"},
 		{"mcc", "captionmaker_popon_df.mcc"},
 		{"mcc", "v1_23976_timecode.mcc"},
+		{"podcast", "podcast_transcript_convert_from_html.json"},
+		{"podcast", "podcast_transcript_convert_from_srt.json"},
+		{"podcast", "spec_word_segments.json"},
 		{"whisper", "faster_whisper_ctranslate2_segments.json"},
 		{"whisper", "faster_whisper_ctranslate2_words.json"},
 		{"whisper", "openai_api_verbose_json_french.json"},
@@ -52,9 +55,6 @@ func roundTripFiles() []roundTripFile {
 		{"whisper", "whisper_cpp_ojf.json"},
 		{"whisper", "whisper_cpp_ojf_split_utf8.json"},
 		{"whisper", "whisperx_diarize.json"},
-		{"podcast", "podcast_transcript_convert_from_html.json"},
-		{"podcast", "podcast_transcript_convert_from_srt.json"},
-		{"podcast", "spec_word_segments.json"},
 	}
 }
 
@@ -162,14 +162,14 @@ func conversions() []conversion {
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.SubRip, ""},
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.WebVTT, ""},
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.ASS, ""},
+		{"podcast", "spec_word_segments.json", stbox.SubRip, ""},
+		{"podcast", "spec_word_segments.json", stbox.WebVTT, ""},
 		{"whisper", "openai_whisper_word_timestamps.json", stbox.SubRip, ""},
 		{"whisper", "openai_whisper_word_timestamps.json", stbox.WebVTT, ""},
 		{"whisper", "whisperx_diarize.json", stbox.SubRip, ""},
 		{"whisper", "whisperx_diarize.json", stbox.WebVTT, ""},
 		{"srt", "own_styled.srt", stbox.Whisper, ""},
 		{"vtt", "w3c_timestamps.vtt", stbox.Whisper, ""},
-		{"podcast", "spec_word_segments.json", stbox.SubRip, ""},
-		{"podcast", "spec_word_segments.json", stbox.WebVTT, ""},
 	}
 }
 

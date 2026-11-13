@@ -399,9 +399,10 @@ All errors are `*ParseError` values with the format `pgs` and line 0. T is the t
 | a segment that is no object, or has a bad `startTime`, `endTime`, `speaker` or `body` | `The field segments[1].body must be a string.` and the other messages of [transcripts.md](transcripts.md#podcast-read) | skips the segment. `Skipped`, no line, `Block` the index in the list, the segment as block text |
 | a time of 100000 hours or more | `The field segments[0].startTime is not below 100000 hours.` | skips the segment |
 | a segment that ends before it starts | `The cue ends at E s, before it starts at S s.` | swaps the times when the segment then lasts 30 s or less. `Repaired`. Else skips the segment |
+| a joined group that ends before it starts, such as one-word segments `a` from 5 to 6 s and `b` from 1 to 2 s | sets the end of the cue to its start. `Repaired` in both modes | the same |
 | no `segments` list, a root that is no object, invalid JSON | the error | the same error |
 
-- **Block text**: the compact JSON of the segment. A number keeps its source text.
+- **Block text**: the compact JSON of the segment. A group warning has the first and the last segment of the group as block text. A number keeps its source text.
 
 ## Tests
 

@@ -153,19 +153,21 @@ func TestWritePodcastRoundTrips(t *testing.T) {
 		require.Len(t, got.Items(), len(want.Items()))
 		for i, w := range want.Items() {
 			g := got.Items()[i]
-			for _, key := range []string{"speaker", "startTime", "endTime"} {
+			for _, key := range []string{"startTime", "endTime"} {
 				wv, _ := w.Get(key)
 				gv, _ := g.Get(key)
 				wf, _ := wv.AsFloat64()
 				gf, _ := gv.AsFloat64()
 				assert.InDelta(t, wf, gf, 0, "segment %d %s", i, key)
 			}
+			ws, _ := w.Get("speaker")
+			gs, _ := g.Get("speaker")
+			wspeaker, _ := ws.AsString()
+			gspeaker, _ := gs.AsString()
+			assert.Equal(t, wspeaker, gspeaker)
 			wb, _ := w.Get("body")
 			gb, _ := g.Get("body")
 			assert.Equal(t, trimmed(wb), trimmed(gb))
-			ws, _ := w.Get("speaker")
-			gs, _ := g.Get("speaker")
-			assert.Equal(t, orderedjson.Block(ws), orderedjson.Block(gs))
 		}
 	})
 }

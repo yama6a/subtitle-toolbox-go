@@ -200,7 +200,7 @@ Example: the words `Hello` (Anna, 0 to 0.4 s), `there.` (Anna, 0.5 to 0.9 s), `C
 
 | Part | Value |
 |:--- |:--- |
-| Times | the start of the first segment and the end of the last segment |
+| Times | the start of the first segment and the end of the last segment. A group that ends before it starts, because the file lists segments out of order, ends at its start and gets a `Repaired` warning |
 | Lines | the bodies, escaped, joined with one space |
 | Speaker | the speaker of the first segment, when it is not empty |
 | Words | with `WordTimestamps` and a group of 2 or more segments, one `Word` for each segment: the body, the segment start and the segment end. No confidence |
