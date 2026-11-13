@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -226,17 +226,7 @@ func TestWriteWhisperShapeAndLanguage(t *testing.T) {
 			if tt.language != "" {
 				s.SetMetadata(model.MetadataLanguage, tt.language)
 			}
-			data := model.NewData()
-			v := parseJSON(t, tt.data)
-			for _, m := range v.Members() {
-				if str, ok := m.Value.AsString(); ok && m.Value.Kind() == orderedjson.String {
-					data.Set(m.Key, str)
-				} else if n, ok := m.Value.AsInt64(); ok {
-					data.Set(m.Key, n)
-				} else {
-					data.Set(m.Key, nil)
-				}
-			}
+			data, _ := jsondata.ToData(parseJSON(t, tt.data)).(*model.Data)
 			require.NoError(t, s.SetFormatData("whisper", data))
 			var out bytes.Buffer
 			require.NoError(t, transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}))
@@ -273,4 +263,40 @@ func TestWriteWhisperErrors(t *testing.T) {
 		require.NoError(t, transcript.WriteWhisper(&out, &model.Subtitle{}, model.CommonWriteOptions{}, transcript.WriteOptions{}))
 		assert.JSONEq(t, `{"text":"","segments":[]}`, out.String())
 	})
+}
+
+func TestWriteWhisperKeepsStoredOddValues(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name, content string
+		path          []any
+		want          string
+	}{
+		{
+			"a word end that is null", `{"segments": [{"start": 0, "end": 1, "text": "a b", "words": [` +
+				`{"word": " a", "start": 0, "end": null, "probability": 0.5}, {"word": " b", "start": 0.5, "end": 1, "probability": 0.5}]}]}`,
+			[]any{"segments", 0, "words", 0},
+			`{"word":" a","start":0,"end":null,"probability":0.5}`,
+		},
+		{
+			"a word end that is a string", `{"segments": [{"start": 0, "end": 1, "text": "a b", "words": [` +
+				`{"word": " a", "start": 0, "end": "x"}, {"word": " b", "start": 0.5, "end": 1}]}]}`,
+			[]any{"segments", 0, "words", 0},
+			`{"word":" a","start":0,"end":"x"}`,
+		},
+		{
+			"an id past the int64 range", `{"segments": [{"id": 9223372036854775807, "start": 0, "end": 1, "text": "a"}, {"start": 1, "end": 2, "text": "b"}]}`,
+			[]any{"segments", 1, "id"},
+			`9.223372036854776e+18`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s := readWhisper(t, tt.content, withWords)
+			assert.Equal(t, tt.want, compact(t, writeWhisper(t, s), tt.path...))
+		})
+	}
 }

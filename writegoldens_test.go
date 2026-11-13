@@ -162,6 +162,8 @@ func conversions() []conversion {
 		{"whisper", "openai_whisper_word_timestamps.json", stbox.WebVTT, ""},
 		{"whisper", "whisperx_diarize.json", stbox.SubRip, ""},
 		{"whisper", "whisperx_diarize.json", stbox.WebVTT, ""},
+		{"srt", "own_styled.srt", stbox.Whisper, ""},
+		{"vtt", "w3c_timestamps.vtt", stbox.Whisper, ""},
 	}
 }
 
@@ -227,22 +229,6 @@ func TestWriteGoldens(t *testing.T) {
 			}
 			s, _ := g.readWith(t, c.file, opts)
 			golden.Equal(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(c.to))), writeAs(t, s, c.to), *update)
-		})
-	}
-}
-
-// TestWriteGoldenWhisperConversions writes subtitles of other formats as Whisper JSON. The files read with the
-// transcript options, which only the Whisper reader uses.
-func TestWriteGoldenWhisperConversions(t *testing.T) {
-	t.Parallel()
-
-	for _, c := range []struct{ folder, file string }{{"srt", "own_styled.srt"}, {"vtt", "w3c_timestamps.vtt"}} {
-		t.Run(c.folder+"/"+c.file, func(t *testing.T) {
-			t.Parallel()
-
-			g := folder(t, c.folder)
-			s, _ := g.readWith(t, c.file, transcriptGolden)
-			golden.Equal(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(stbox.Whisper))), writeAs(t, s, stbox.Whisper), *update)
 		})
 	}
 }
