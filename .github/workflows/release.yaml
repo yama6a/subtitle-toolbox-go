@@ -66,8 +66,25 @@ jobs:
       moving-tags: true
       create-release: false
 
+  image-tesseract:
+    needs: [version, archives]
+    uses: yama6a/gha/.github/workflows/docker-build-release.yaml@v2
+    permissions:
+      contents: write # requested by the reusable job, which creates no release here
+      packages: write # or the image push fails with permission_denied
+      id-token: write # mints the OIDC token the attestation is signed with
+      attestations: write # stores the attestation
+    with:
+      dockerfile: .build/tesseract.Dockerfile
+      version: ${{ needs.version.outputs.version }}
+      build-args: |
+        VERSION=${{ needs.version.outputs.version }}
+      moving-tags: true
+      tag-suffix: -tesseract
+      create-release: false
+
   release:
-    needs: [version, archives, image]
+    needs: [version, archives, image, image-tesseract]
     runs-on: ubuntu-26.04-arm
     timeout-minutes: 15
     permissions:
@@ -89,7 +106,7 @@ jobs:
           tag: ${{ needs.version.outputs.tag }}
           target: ${{ github.sha }}
           generate-notes: "true"
-          notes: "Image: `ghcr.io/${{ github.repository }}:${{ needs.version.outputs.version }}`"
+          notes: "Images: `ghcr.io/${{ github.repository }}:${{ needs.version.outputs.version }}`, with Tesseract `ghcr.io/${{ github.repository }}:${{ needs.version.outputs.version }}-tesseract`"
           files: |
             dist/stbox_${{ needs.version.outputs.version }}_linux_amd64.tar.gz
             dist/stbox_${{ needs.version.outputs.version }}_linux_arm64.tar.gz
