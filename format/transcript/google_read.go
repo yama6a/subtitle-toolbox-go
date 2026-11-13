@@ -20,7 +20,7 @@ const googleKey = string(model.GoogleSpeech)
 // operation. It makes one cue per result. With speaker diarization it groups the words of the last result into cues.
 // A field error names the path of the field, such as results[0].alternatives[0].words[3].startTime.
 func ReadGoogleSpeech(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	st, root, ok, err := cloudRead(r, model.GoogleSpeech, common)
+	st, root, ok, err := readRoot(r, model.GoogleSpeech, common)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -64,7 +64,7 @@ func (rd *googleReader) cuesOf(results []orderedjson.Value, operation orderedjso
 		return nil, operation, err
 	}
 	cues, err := rd.cues.CuesFromWords(words, "words", nil)
-	kept := orderedjson.ObjectOf(cloudMember("results", orderedjson.ArrayOf(googleWithoutWords(results[last]))))
+	kept := orderedjson.ObjectOf(member("results", orderedjson.ArrayOf(googleWithoutWords(results[last]))))
 	return cues, orderedjson.Union(operation, kept), err
 }
 
@@ -121,7 +121,7 @@ func googleWithoutWords(result orderedjson.Value) orderedjson.Value {
 	if result.Kind() != orderedjson.Object || len(alt) == 0 || alt[0].Kind() != orderedjson.Object {
 		return result
 	}
-	first := orderedjson.ObjectOf(cloudMember("alternatives", orderedjson.ArrayOf(alt[0].Without("transcript", "words"))))
+	first := orderedjson.ObjectOf(member("alternatives", orderedjson.ArrayOf(alt[0].Without("transcript", "words"))))
 	return orderedjson.Union(first, result)
 }
 

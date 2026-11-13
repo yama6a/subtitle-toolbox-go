@@ -30,16 +30,16 @@ func TestWriteGoogleSpeechEdits(t *testing.T) {
 		opts   transcript.ReadOptions
 		index  int
 		edit   func(c *model.Cue)
-		checks []cloudCheck
+		checks []check
 	}{
 		{
 			name: "an edited word keeps the V1 fields and the operation",
-			file: "bus_v1_long_running_operation.json", opts: cloudWords, index: 1,
+			file: "bus_v1_long_running_operation.json", opts: withWords, index: 1,
 			edit: func(c *model.Cue) {
 				c.Lines = []string{"the first one is at six thirty in the morning"}
 				c.Words[5].Text = "six"
 			},
-			checks: []cloudCheck{
+			checks: []check{
 				{[]any{"response", "results", 1, "alternatives", 0, "transcript"}, `" the first one is at six thirty in the morning"`},
 				{[]any{"response", "results", 1, "alternatives", 0, "words", 5}, `{"startTime":"6.840s","endTime":"7.300s","word":"six"}`},
 				{[]any{"response", "results", 1, "resultEndTime"}, `"9.170s"`},
@@ -51,21 +51,21 @@ func TestWriteGoogleSpeechEdits(t *testing.T) {
 		{
 			name: "a moved cue gets a new result end and loses its words without word times",
 			file: "bus_v1_long_running_operation.json", index: 0,
-			edit: func(c *model.Cue) { c.End = cloudMS(4500) },
-			checks: []cloudCheck{
+			edit: func(c *model.Cue) { c.End = ms(4500) },
+			checks: []check{
 				{[]any{"response", "results", 0, "resultEndTime"}, `"4.500s"`},
 				{[]any{"response", "results", 0, "alternatives", 0, "words"}, `[]`},
 			},
 		},
 		{
 			name: "a typed end and confidence of a reused word reach the word",
-			file: "bus_v1_long_running_operation.json", opts: cloudWords, index: 0,
+			file: "bus_v1_long_running_operation.json", opts: withWords, index: 0,
 			edit: func(c *model.Cue) {
-				c.Words[0].End = cloudMS(700)
+				c.Words[0].End = ms(700)
 				conf := 0.5
 				c.Words[0].Confidence = &conf
 			},
-			checks: []cloudCheck{
+			checks: []check{
 				{[]any{"response", "results", 0, "alternatives", 0, "words", 0, "endTime"}, `"0.700s"`},
 				{[]any{"response", "results", 0, "alternatives", 0, "words", 1, "endTime"}, `"1.080s"`},
 			},
@@ -76,10 +76,10 @@ func TestWriteGoogleSpeechEdits(t *testing.T) {
 			t.Parallel()
 
 			s := googleFormat.parseFile(t, tt.file, tt.opts)
-			cloudEdit(t, s, tt.index, tt.edit)
+			editCue(t, s, tt.index, tt.edit)
 			doc := googleFormat.output(t, s)
 			for _, c := range tt.checks {
-				assert.Equal(t, c.want, cloudAt(t, doc, c.path...), c.path)
+				assert.Equal(t, c.want, compact(t, doc, c.path...), c.path)
 			}
 		})
 	}
@@ -91,14 +91,14 @@ func TestWriteGoogleSpeechDiarized(t *testing.T) {
 	t.Run("a new speaker changes the words of the one result", func(t *testing.T) {
 		t.Parallel()
 
-		s := googleFormat.parseFile(t, "restaurant_v2_diarization.json", cloudWords)
-		cloudEdit(t, s, 1, func(c *model.Cue) { c.Speaker = "3" })
+		s := googleFormat.parseFile(t, "restaurant_v2_diarization.json", withWords)
+		editCue(t, s, 1, func(c *model.Cue) { c.Speaker = "3" })
 		doc := googleFormat.output(t, s)
 		results, _ := doc.Get("results")
 		require.Len(t, results.Items(), 1)
 		var runs []string
-		for _, w := range cloudWordsOf(results.Items()[0]) {
-			label := cloudAt(t, w, "speakerLabel")
+		for _, w := range withWordsOf(results.Items()[0]) {
+			label := compact(t, w, "speakerLabel")
 			if len(runs) == 0 || runs[len(runs)-1] != label {
 				runs = append(runs, label)
 			}
@@ -110,7 +110,7 @@ func TestWriteGoogleSpeechDiarized(t *testing.T) {
 		t.Parallel()
 
 		s := googleFormat.parseFile(t, "restaurant_v2_diarization.json", transcript.ReadOptions{})
-		cloudEdit(t, s, 2, func(c *model.Cue) { c.Lines = []string{"Around seven o'clock please"} })
+		editCue(t, s, 2, func(c *model.Cue) { c.Lines = []string{"Around seven o'clock please"} })
 		err := transcript.WriteGoogleSpeech(&bytes.Buffer{}, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
 		var uerr *model.UnwritableError
 		require.ErrorAs(t, err, &uerr)
@@ -120,7 +120,7 @@ func TestWriteGoogleSpeechDiarized(t *testing.T) {
 	})
 }
 
-func cloudWordsOf(result orderedjson.Value) []orderedjson.Value {
+func withWordsOf(result orderedjson.Value) []orderedjson.Value {
 	alt, _ := result.Get("alternatives")
 	words, _ := alt.Items()[0].Get("words")
 	return words.Items()
@@ -134,11 +134,11 @@ func TestWriteGoogleSpeechFromAnotherFormat(t *testing.T) {
 		t.Parallel()
 
 		s := &model.Subtitle{}
-		s.AddCue(model.Cue{Start: cloudMS(1000), End: cloudMS(6000), Lines: []string{"Long cue"}})
-		s.AddCue(model.Cue{Start: cloudMS(2000), End: cloudMS(4000), Lines: []string{"Short cue"}})
+		s.AddCue(model.Cue{Start: ms(1000), End: ms(6000), Lines: []string{"Long cue"}})
+		s.AddCue(model.Cue{Start: ms(2000), End: ms(4000), Lines: []string{"Short cue"}})
 		doc := googleFormat.output(t, s)
-		assert.Equal(t, `"6s"`, cloudAt(t, doc, "results", 0, "resultEndTime"))
-		assert.Equal(t, `"6s"`, cloudAt(t, doc, "results", 1, "resultEndTime"))
+		assert.Equal(t, `"6s"`, compact(t, doc, "results", 0, "resultEndTime"))
+		assert.Equal(t, `"6s"`, compact(t, doc, "results", 1, "resultEndTime"))
 		back := googleFormat.parse(t, orderedjson.Block(doc), transcript.ReadOptions{})
 		assert.Equal(t, 2, back.Len())
 	})
@@ -148,10 +148,10 @@ func TestWriteGoogleSpeechFromAnotherFormat(t *testing.T) {
 
 		s := &model.Subtitle{}
 		s.SetMetadata(model.MetadataLanguage, "en-US")
-		s.AddCue(model.Cue{Start: cloudMS(1500), End: cloudMS(3000), Lines: []string{"Good", "morning."}, Speaker: "Anna"})
+		s.AddCue(model.Cue{Start: ms(1500), End: ms(3000), Lines: []string{"Good", "morning."}, Speaker: "Anna"})
 		s.AddCue(model.Cue{
-			Start: cloudMS(4000), End: cloudMS(5000), Lines: []string{"See you."},
-			Words: []model.Word{{Text: "See", Start: cloudMS(4000), End: cloudMS(4500)}, {Text: "you.", Start: cloudMS(4500), End: cloudMS(5000)}},
+			Start: ms(4000), End: ms(5000), Lines: []string{"See you."},
+			Words: []model.Word{{Text: "See", Start: ms(4000), End: ms(4500)}, {Text: "you.", Start: ms(4500), End: ms(5000)}},
 		})
 		want := `{"results":[{"alternatives":[{"transcript":"Good morning."}],"resultEndTime":"3s","languageCode":"en-US"},` +
 			`{"alternatives":[{"transcript":"See you.","words":[{"startTime":"4s","endTime":"4.500s","word":"See"},` +

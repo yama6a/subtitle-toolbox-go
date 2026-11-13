@@ -11,6 +11,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -22,7 +23,19 @@ var googleOperationFields = []string{"name", "metadata", "done", "error"} //noli
 // one result with all words and their speakers. A long-running operation of the source stays around the response.
 // A value that a cue did not change stays as the reader stored it.
 func WriteGoogleSpeech(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
-	return cloudWrite(w, s, model.GoogleSpeech, "Google Speech-to-Text JSON", common, googleDocument)
+	s, err := writing.SkipImageCues(s, model.GoogleSpeech, common)
+	if err != nil {
+		return err
+	}
+	doc, err := googleDocument(s)
+	if err != nil {
+		return err
+	}
+	body, err := encodeDocument(model.GoogleSpeech, "Google Speech-to-Text JSON", doc, false)
+	if err != nil {
+		return err
+	}
+	return writing.Write(w, model.GoogleSpeech, body, common, false)
 }
 
 func googleDocument(s *model.Subtitle) (orderedjson.Value, error) {
@@ -34,7 +47,7 @@ func googleDocument(s *model.Subtitle) (orderedjson.Value, error) {
 	var data []orderedjson.Value
 	for _, c := range s.All() {
 		cues = append(cues, &c)
-		data = append(data, cloudCueData(&c, model.GoogleSpeech))
+		data = append(data, storedObject(&c, googleKey))
 	}
 	g := &googleWriter{v2: googleIsV2(file, data)}
 	var results []orderedjson.Value
@@ -60,7 +73,7 @@ func googleEnvelope(file orderedjson.Value, results []orderedjson.Value) ordered
 	if isOperation {
 		response = response.Without(googleOperationFields...)
 	}
-	response = orderedjson.Union(orderedjson.ObjectOf(cloudMember("results", orderedjson.ArrayOf(results...))), response)
+	response = orderedjson.Union(orderedjson.ObjectOf(member("results", orderedjson.ArrayOf(results...))), response)
 	if !isOperation {
 		return response
 	}
@@ -70,7 +83,7 @@ func googleEnvelope(file orderedjson.Value, results []orderedjson.Value) ordered
 			operation = append(operation, m)
 		}
 	}
-	return orderedjson.Union(orderedjson.ObjectOf(operation...), orderedjson.ObjectOf(cloudMember("response", response)))
+	return orderedjson.Union(orderedjson.ObjectOf(operation...), orderedjson.ObjectOf(member("response", response)))
 }
 
 func googleFirstResult(stored orderedjson.Value) orderedjson.Value {
@@ -117,9 +130,9 @@ func (g *googleWriter) result(c *model.Cue, data orderedjson.Value, language str
 	if cloudGet(data, "resultEndTime").Kind() != orderedjson.Null || (!g.v2 && cloudGet(data, "resultEndOffset").Kind() == orderedjson.Null) {
 		endKey = "resultEndTime"
 	}
-	fields := orderedjson.Union(data.Without("transcript", "confidence", "words"), orderedjson.ObjectOf(cloudMember(endKey, orderedjson.Value{})))
+	fields := orderedjson.Union(data.Without("transcript", "confidence", "words"), orderedjson.ObjectOf(member(endKey, orderedjson.Value{})))
 	if len(data.Members()) == 0 && hasLanguage {
-		fields = orderedjson.Union(fields, orderedjson.ObjectOf(cloudMember("languageCode", orderedjson.StringValue(language))))
+		fields = orderedjson.Union(fields, orderedjson.ObjectOf(member("languageCode", orderedjson.StringValue(language))))
 	}
 	end := max(g.previousEnd, c.End)
 	written := orderedjson.StringValue(googleDurationText(end))
@@ -130,7 +143,7 @@ func (g *googleWriter) result(c *model.Cue, data orderedjson.Value, language str
 	if d, ok := googleStoredDuration(written); ok && googleStoredTime(d) != nil {
 		g.previousEnd = *googleStoredTime(d)
 	}
-	return orderedjson.Union(orderedjson.ObjectOf(cloudMember("alternatives", orderedjson.ArrayOf(googleAlternative(data, e)))), fields.With(endKey, written))
+	return orderedjson.Union(orderedjson.ObjectOf(member("alternatives", orderedjson.ArrayOf(googleAlternative(data, e)))), fields.With(endKey, written))
 }
 
 // googleAlternative returns the first alternative of a result: the stored transcript, confidence and words in their
@@ -138,12 +151,12 @@ func (g *googleWriter) result(c *model.Cue, data orderedjson.Value, language str
 func googleAlternative(data orderedjson.Value, e googleEntry) orderedjson.Value {
 	with := []orderedjson.Value{
 		googleKeep(data, "transcript", "confidence", "words"),
-		orderedjson.ObjectOf(cloudMember("transcript", orderedjson.StringValue(e.text))),
+		orderedjson.ObjectOf(member("transcript", orderedjson.StringValue(e.text))),
 	}
 	if len(e.words) > 0 || cloudGet(data, "words").Kind() != orderedjson.Null {
-		with = append(with, orderedjson.ObjectOf(cloudMember("words", orderedjson.ArrayOf(e.words...))))
+		with = append(with, orderedjson.ObjectOf(member("words", orderedjson.ArrayOf(e.words...))))
 	}
-	return orderedjson.Replace(orderedjson.ObjectOf(cloudMember("transcript", orderedjson.Value{})), with...)
+	return orderedjson.Replace(orderedjson.ObjectOf(member("transcript", orderedjson.Value{})), with...)
 }
 
 // googleKeep returns the members of data under keys, in the order of data.
@@ -180,9 +193,9 @@ func (g *googleWriter) diarized(cues []*model.Cue, data []orderedjson.Value, sou
 	if first := cloudGet(source, "alternatives").Items(); len(first) > 0 && first[0].Kind() == orderedjson.Object {
 		alt = first[0]
 	}
-	alt = orderedjson.Union(orderedjson.ObjectOf(cloudMember("transcript", orderedjson.StringValue(strings.Join(texts, " ")))), alt)
-	alt = orderedjson.Union(alt, orderedjson.ObjectOf(cloudMember("words", orderedjson.ArrayOf(words...))))
-	return orderedjson.Union(orderedjson.ObjectOf(cloudMember("alternatives", orderedjson.ArrayOf(alt))), source), nil
+	alt = orderedjson.Union(orderedjson.ObjectOf(member("transcript", orderedjson.StringValue(strings.Join(texts, " ")))), alt)
+	alt = orderedjson.Union(alt, orderedjson.ObjectOf(member("words", orderedjson.ArrayOf(words...))))
+	return orderedjson.Union(orderedjson.ObjectOf(member("alternatives", orderedjson.ArrayOf(alt))), source), nil
 }
 
 // entry returns the text and the words of the cue, and whether the cue has the times of its source.
@@ -251,12 +264,12 @@ func (g *googleWriter) speaker(name string) orderedjson.Value {
 	case name == "":
 		return orderedjson.Value{}
 	case g.v2:
-		return orderedjson.ObjectOf(cloudMember("speakerLabel", orderedjson.StringValue(name)))
+		return orderedjson.ObjectOf(member("speakerLabel", orderedjson.StringValue(name)))
 	}
 	if n, err := strconv.ParseInt(name, 10, 64); err == nil && strings.Trim(name, "0123456789") == "" {
-		return orderedjson.ObjectOf(cloudMember("speakerTag", orderedjson.Int(n)))
+		return orderedjson.ObjectOf(member("speakerTag", orderedjson.Int(n)))
 	}
-	return orderedjson.ObjectOf(cloudMember("speakerTag", orderedjson.StringValue(name)))
+	return orderedjson.ObjectOf(member("speakerTag", orderedjson.StringValue(name)))
 }
 
 func (g *googleWriter) words(c *model.Cue, stored []orderedjson.Value, sameTimes, sameText bool, speaker orderedjson.Value) []orderedjson.Value {
@@ -295,12 +308,12 @@ func (g *googleWriter) newWord(n wordgroup.NewWord, confident bool, speaker orde
 		startKey, endKey = "startOffset", "endOffset"
 	}
 	m := []orderedjson.Member{
-		cloudMember(startKey, orderedjson.StringValue(googleDurationText(n.Start))),
-		cloudMember(endKey, orderedjson.StringValue(googleDurationText(n.End))),
-		cloudMember("word", orderedjson.StringValue(n.Text)),
+		member(startKey, orderedjson.StringValue(googleDurationText(n.Start))),
+		member(endKey, orderedjson.StringValue(googleDurationText(n.End))),
+		member("word", orderedjson.StringValue(n.Text)),
 	}
 	if confident {
-		m = append(m, cloudMember("confidence", orderedjson.Float(n.Confidence)))
+		m = append(m, member("confidence", orderedjson.Float(n.Confidence)))
 	}
 	return orderedjson.Union(orderedjson.ObjectOf(m...), speaker)
 }

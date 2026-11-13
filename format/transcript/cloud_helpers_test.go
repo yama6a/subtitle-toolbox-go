@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,12 +16,8 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
-
-// cloudWords reads word times and speakers, as the read goldens do.
-var cloudWords = transcript.ReadOptions{WordTimestamps: true, SpeakerVoices: true}
 
 // cloudFormat is one of the cloud speech-to-text formats with its testdata folder.
 type cloudFormat struct {
@@ -76,7 +71,7 @@ func (f cloudFormat) testRoundTrip(t *testing.T) {
 	t.Helper()
 
 	for _, file := range f.realFiles(t) {
-		for name, opts := range map[string]transcript.ReadOptions{"default": {}, "words": cloudWords} {
+		for name, opts := range map[string]transcript.ReadOptions{"default": {}, "words": withWords} {
 			t.Run(file+"/"+name, func(t *testing.T) {
 				t.Parallel()
 
@@ -88,50 +83,6 @@ func (f cloudFormat) testRoundTrip(t *testing.T) {
 		}
 	}
 }
-
-func cloudDescribe(s *model.Subtitle) []string {
-	var out []string
-	for _, c := range s.All() {
-		out = append(out, fmt.Sprintf("%g-%g %s", c.Start.Seconds(), c.End.Seconds(), strings.Join(c.TaggedLines(), "|")))
-	}
-	return out
-}
-
-// cloudEdit applies edit to cue i of s.
-func cloudEdit(t *testing.T, s *model.Subtitle, i int, edit func(c *model.Cue)) {
-	t.Helper()
-
-	c, ok := s.Cue(i)
-	require.True(t, ok)
-	edit(&c)
-	require.NoError(t, s.SetCue(i, c))
-}
-
-// cloudAt returns the JSON text of the value at path. A string in path is a key and an int is an index.
-func cloudAt(t *testing.T, v orderedjson.Value, path ...any) string {
-	t.Helper()
-
-	for _, p := range path {
-		switch p := p.(type) {
-		case string:
-			var ok bool
-			v, ok = v.Get(p)
-			require.True(t, ok, "no key %q", p)
-		case int:
-			require.Less(t, p, len(v.Items()))
-			v = v.Items()[p]
-		}
-	}
-	return orderedjson.Block(v)
-}
-
-// cloudCheck is one expectation: the JSON text at a path of the written document.
-type cloudCheck struct {
-	path []any
-	want string
-}
-
-func cloudMS(n int) time.Duration { return time.Duration(n) * time.Millisecond }
 
 // cloudWarnings returns the message and the block index of each warning.
 func cloudWarnings(w []model.ParseWarning) []string {
@@ -166,7 +117,7 @@ func (f cloudFormat) testBroken(t *testing.T, tests []cloudBroken) {
 
 			s, warnings, err := f.read(strings.NewReader(tt.content), model.CommonReadOptions{Lenient: true}, transcript.ReadOptions{})
 			require.NoError(t, err)
-			assert.Equal(t, tt.cues, cloudDescribe(s))
+			assert.Equal(t, tt.cues, describe(s))
 			assert.Equal(t, []string{fmt.Sprintf("%s|%d|%s", tt.message, tt.block, model.Skipped)}, cloudWarnings(warnings))
 		})
 	}
@@ -185,7 +136,7 @@ func cloudFuzz(f *testing.F, cf cloudFormat, seeds ...string) {
 	f.Fuzz(func(t *testing.T, content []byte) {
 		for _, lenient := range []bool{false, true} {
 			common := model.CommonReadOptions{Lenient: lenient}
-			for _, opts := range []transcript.ReadOptions{{}, cloudWords} {
+			for _, opts := range []transcript.ReadOptions{{}, withWords} {
 				s, warnings, err := cf.read(bytes.NewReader(content), common, opts)
 				if err != nil {
 					var perr *model.ParseError
@@ -194,7 +145,7 @@ func cloudFuzz(f *testing.F, cf cloudFormat, seeds ...string) {
 					}
 					continue
 				}
-				cloudCheckCues(t, s)
+				checkCues(t, s)
 				for _, w := range warnings {
 					if w.Action != model.Skipped && w.Action != model.Repaired {
 						t.Fatalf("the warning %q has no action", w.Message)
@@ -209,26 +160,6 @@ func cloudFuzz(f *testing.F, cf cloudFormat, seeds ...string) {
 	})
 }
 
-func cloudCheckCues(t *testing.T, s *model.Subtitle) {
-	t.Helper()
-
-	var previous time.Duration
-	for i, c := range s.Cues() {
-		if i > 0 && c.Start < previous {
-			t.Fatalf("cue %d starts before cue %d", i, i-1)
-		}
-		previous = c.Start
-		for _, d := range []time.Duration{c.Start, c.End} {
-			if d%time.Millisecond != 0 || d < 0 || d >= timecode.MaxTime {
-				t.Fatalf("cue %d has the time %v", i, d)
-			}
-		}
-		if err := c.ValidateWords(); err != nil {
-			t.Fatalf("cue %d has invalid words: %v", i, err)
-		}
-	}
-}
-
 // cloudBench reads and writes content, which holds about 1 MB. The benchmarks have no time limit, so a rise from
 // linear to quadratic cost shows in the numbers of the bench run.
 func cloudBench(b *testing.B, f cloudFormat, name, content string) {
@@ -238,12 +169,12 @@ func cloudBench(b *testing.B, f cloudFormat, name, content string) {
 		b.ReportAllocs()
 		b.SetBytes(int64(len(content)))
 		for b.Loop() {
-			if _, _, err := f.read(strings.NewReader(content), model.CommonReadOptions{}, cloudWords); err != nil {
+			if _, _, err := f.read(strings.NewReader(content), model.CommonReadOptions{}, withWords); err != nil {
 				b.Fatal(err)
 			}
 		}
 	})
-	s, _, err := f.read(strings.NewReader(content), model.CommonReadOptions{}, cloudWords)
+	s, _, err := f.read(strings.NewReader(content), model.CommonReadOptions{}, withWords)
 	if err != nil {
 		b.Fatal(err)
 	}

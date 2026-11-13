@@ -66,7 +66,7 @@ func TestReadGoogleSpeechCues(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, cloudDescribe(googleFormat.parse(t, tt.content, tt.opts)))
+			assert.Equal(t, tt.want, describe(googleFormat.parse(t, tt.content, tt.opts)))
 		})
 	}
 }
@@ -182,7 +182,7 @@ func TestReadGoogleSpeechDurations(t *testing.T) {
 				assert.Equal(t, 0, s.Len())
 				return
 			}
-			assert.Equal(t, []string{tt.want}, cloudDescribe(s))
+			assert.Equal(t, []string{tt.want}, describe(s))
 		})
 	}
 }
