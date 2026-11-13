@@ -110,6 +110,9 @@ const (
 	VobSub        = model.VobSub
 	WebVTT        = model.WebVTT
 	Whisper       = model.Whisper
+	// YouTubeTimedText is the format of the timed text that YouTube serves: json3, srv3, srv2 and srv1.
+	YouTubeTimedText = model.YouTubeTimedText
+
 	// HTMLTranscript is the format of the Podcasting 2.0 HTML transcript.
 	HTMLTranscript = model.HTMLTranscript
 	// PodcastTranscript is the format of the Podcasting 2.0 JSON transcript.

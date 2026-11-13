@@ -1,0 +1,210 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "youtube": {
+                "format": "srv3",
+                "ws": [
+                    {
+                        "id": "0"
+                    },
+                    {
+                        "id": "1",
+                        "mh": "2",
+                        "ju": "0",
+                        "sd": "3"
+                    }
+                ],
+                "wp": [
+                    {
+                        "id": "0"
+                    },
+                    {
+                        "id": "1",
+                        "ap": "6",
+                        "ah": "20",
+                        "av": "100",
+                        "rc": "2",
+                        "cc": "40"
+                    }
+                ],
+                "w": [
+                    {
+                        "t": "0",
+                        "id": "1",
+                        "wp": "1",
+                        "ws": "1"
+                    }
+                ]
+            }
+        },
+        "cues": [
+            {
+                "start": 0.16,
+                "end": 2.96,
+                "lines": [
+                    "<00:00:00.160>hello <00:00:00.560>everyone <00:00:01.120>and <00:00:01.360>welcome <00:00:01.840>back"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "t": "160",
+                        "d": "4400",
+                        "w": "1",
+                        "segments": [
+                            {
+                                "ac": "0",
+                                "text": "hello"
+                            },
+                            {
+                                "t": "400",
+                                "ac": "0",
+                                "text": " everyone"
+                            },
+                            {
+                                "t": "960",
+                                "ac": "0",
+                                "text": " and"
+                            },
+                            {
+                                "t": "1200",
+                                "ac": "0",
+                                "text": " welcome"
+                            },
+                            {
+                                "t": "1680",
+                                "ac": "0",
+                                "text": " back"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 2.96,
+                "end": 4.56,
+                "lines": [
+                    "<00:00:02.960>today <00:00:03.280>we <00:00:03.440>plant <00:00:03.760>tomatoes"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "t": "2960",
+                        "d": "4480",
+                        "w": "1",
+                        "segments": [
+                            {
+                                "ac": "0",
+                                "text": "today"
+                            },
+                            {
+                                "t": "320",
+                                "ac": "0",
+                                "text": " we"
+                            },
+                            {
+                                "t": "480",
+                                "ac": "0",
+                                "text": " plant"
+                            },
+                            {
+                                "t": "800",
+                                "ac": "0",
+                                "text": " tomatoes"
+                            }
+                        ],
+                        "appends": [
+                            {
+                                "t": "2950",
+                                "d": "1610",
+                                "w": "1",
+                                "a": "1",
+                                "text": "\n"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 4.56,
+                "end": 7.44,
+                "lines": [
+                    "<00:00:04.560>in <00:00:04.720>the <00:00:04.840>garden <00:00:05.280>bed"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "t": "4560",
+                        "d": "5120",
+                        "w": "1",
+                        "segments": [
+                            {
+                                "ac": "0",
+                                "text": "in"
+                            },
+                            {
+                                "t": "160",
+                                "ac": "0",
+                                "text": " the"
+                            },
+                            {
+                                "t": "280",
+                                "ac": "0",
+                                "text": " garden"
+                            },
+                            {
+                                "t": "720",
+                                "ac": "0",
+                                "text": " bed"
+                            }
+                        ],
+                        "appends": [
+                            {
+                                "t": "4550",
+                                "d": "2890",
+                                "w": "1",
+                                "a": "1",
+                                "text": "\n"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 7.44,
+                "end": 10.44,
+                "lines": [
+                    "[Music]"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "t": "7440",
+                        "d": "3000",
+                        "w": "1",
+                        "segments": [
+                            {
+                                "text": "[Music]"
+                            }
+                        ],
+                        "appends": [
+                            {
+                                "t": "7430",
+                                "w": "1",
+                                "a": "1",
+                                "text": "\n"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

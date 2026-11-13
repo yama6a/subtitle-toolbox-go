@@ -60,6 +60,12 @@ func TestLoadWithoutFormat(t *testing.T) {
 		{name: "extension fallback for SAMI", file: "film.smi", content: []byte("plain words"), want: stbox.SAMI, wantErr: stbox.ErrParse},
 		{name: "extension fallback for CSV", file: "film.csv", content: []byte("plain words"), want: stbox.CSV, wantErr: stbox.ErrParse},
 		{name: "extension fallback for TSV", file: "film.tsv", content: []byte("plain words"), want: stbox.TSV, wantErr: stbox.ErrParse},
+		{name: "extension fallback for srv3", file: "film.srv3", content: []byte("plain words"), want: stbox.YouTubeTimedText, wantErr: stbox.ErrParse},
+		{name: "extension fallback for json3", file: "film.json3", content: []byte("plain words"), want: stbox.YouTubeTimedText, wantErr: stbox.ErrParse},
+		{name: "extension fallback for srv1", file: "film.srv1", content: []byte("plain words"), want: stbox.YouTubeTimedText, wantErr: stbox.ErrParse},
+		{name: "extension fallback for ytt", file: "film.ytt", content: []byte("plain words"), want: stbox.YouTubeTimedText, wantErr: stbox.ErrParse},
+		{name: "json3 by content in a .json file", file: "captions.json", content: []byte(`{"events": [{"tStartMs": 0, "segs": [{"utf8": "Hi"}]}]}`), want: stbox.YouTubeTimedText},
+
 		{name: "HTML transcript without speakers by .html", file: "talk.html", content: []byte("<time>0:01</time>\n<p>Hello</p>\n"), want: stbox.HTMLTranscript},
 		{name: "HTML transcript without speakers by .htm", file: "TALK.HTM", content: []byte("<time>0:01</time>\n<p>Hello</p>\n"), want: stbox.HTMLTranscript},
 		{name: "CSV by extension", file: "film.csv", content: []byte("start,end,text\n1,2,Hello\n"), want: stbox.CSV},
@@ -116,6 +122,8 @@ func TestLoadEmptyFile(t *testing.T) {
 		wantEncoding string
 	}{
 		{"0 bytes, .vtt", "empty.vtt", "", stbox.WebVTT, "UTF-8"},
+		{"0 bytes, .srv3", "empty.srv3", "", stbox.YouTubeTimedText, "UTF-8"},
+		{"0 bytes, .ytt", "empty.ytt", "", stbox.YouTubeTimedText, "UTF-8"},
 		{"BOM and whitespace, .srt", "blank.srt", "\xEF\xBB\xBF \r\n\t\n", stbox.SubRip, "UTF-8"},
 		{"space and LF, .srt", "empty.srt", " \n", stbox.SubRip, "UTF-8"},
 		{"2 BOMs, NUL and VT, .vtt", "blank.vtt", "\xEF\xBB\xBF\xEF\xBB\xBF\x00\v\n", stbox.WebVTT, "UTF-8"},
