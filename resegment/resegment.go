@@ -94,7 +94,7 @@ func (s settings) tooLong(n int) bool {
 	return n > s.lines*s.cpl+s.lines
 }
 
-// wrap wraps lines as model.MergeShortCues does, or as WrapLines does when they do not fit. A source cue with the
+// wrap cleans the lines as ReplaceCues does, so that SyncWords sees the final text. It wraps them as model.MergeShortCues does, or as WrapLines does when they do not fit. A source cue with the
 // right-to-left embedding gives each new line its own embedding.
 func (s settings) wrap(lines, source []string) []string {
 	wrapped, ok := linewrap.WrapToFit(lines, s.cpl, s.lines)
@@ -106,7 +106,7 @@ func (s settings) wrap(lines, source []string) []string {
 			wrapped[i] = markupcore.EmbedRightToLeft(line)
 		}
 	}
-	return wrapped
+	return markupcore.CleanLines(wrapped)
 }
 
 // SplitLong splits each cue that breaks the limits at its best break points, until each part fits. The first part

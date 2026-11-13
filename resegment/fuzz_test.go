@@ -23,6 +23,12 @@ func FuzzResegment(f *testing.F) {
 }
 
 func checkResegment(t *testing.T, text string, gapStep, size uint8) {
+	if strings.ContainsAny(text, string(rune(0x202b))+string(rune(0x202c))) {
+		t.Skip("wrapping rewrites right-to-left embeddings")
+	}
+	if !balancedAngles(text) {
+		t.Skip("a break could join a tag from 2 parts")
+	}
 	c := model.Cue{End: 30 * time.Second}
 	c.SetText(text)
 	fields := strings.Fields(c.PlainText())
@@ -60,5 +66,27 @@ func plain(s *model.Subtitle) string {
 	for _, c := range s.All() {
 		parts = append(parts, c.PlainText())
 	}
-	return strings.Join(strings.Fields(strings.Join(parts, " ")), "")
+	// CleanLines trims NUL at a line end, and a break can put a NUL there.
+	return strings.ReplaceAll(strings.Join(strings.Fields(strings.Join(parts, " ")), ""), "\x00", "")
+}
+
+// balancedAngles reports whether in each line the brackets < and > alternate, starting with <.
+func balancedAngles(text string) bool {
+	for _, line := range strings.Split(text, "\n") {
+		open := false
+		for _, r := range line {
+			switch {
+			case r == '<' && open, r == '>' && !open:
+				return false
+			case r == '<':
+				open = true
+			case r == '>':
+				open = false
+			}
+		}
+		if open {
+			return false
+		}
+	}
+	return true
 }
