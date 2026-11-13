@@ -151,6 +151,8 @@ func readErrorCases() []readErrorCase {
 		{name: "word confidence as string", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "beach", "start": 1, "end": 2, "confidence": "1"}]}]}`, msg: `The field cues[0].words[0].confidence must be a number from 0 to 1.`},
 		{name: "word not in the text", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "beach", "start": 1, "end": 2}, {"text": "sea", "start": 2, "end": 3}]}]}`, msg: `The field cues[0].words[1] is not in the text of the cue after the word before it.`},
 		{name: "word before the word before it", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "was", "start": 1, "end": 2}, {"text": "beach", "start": 2, "end": 3}]}]}`, msg: `The field cues[0].words[1] is not in the text of the cue after the word before it.`},
+		{name: "tagged lines as string", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["a"], "formatData": {"tagged": {"lines": "a"}}}]}`, msg: "The field cues[0].formatData.tagged.lines must be a list of strings."},
+		{name: "tagged line as number", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["a"], "formatData": {"tagged": {"lines": [1]}}}]}`, msg: "The field cues[0].formatData.tagged.lines must be a list of strings."},
 	}
 }
 

@@ -95,6 +95,24 @@ func TestWriteVersionErrors(t *testing.T) {
 	}
 }
 
+// A cue whose tags the placement rule would write elsewhere keeps its tagged lines in formatData.tagged.
+func TestVersion2KeepsTheTagLayout(t *testing.T) {
+	t.Parallel()
+
+	c := model.Cue{End: 5 * time.Second, Lines: []string{"the<00:00:01.000><c> train</c><c.red><00:00:02.000><c> leaves</c></c>"}}
+	c.ExtractWordTags()
+	s := &model.Subtitle{}
+	s.AddCue(c)
+	out := writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
+	assert.Contains(t, out, `"formatData":{"tagged":{"lines":["the<00:00:01.000><c> train</c><c.red><00:00:02.000><c> leaves</c></c>"]}}`)
+	assert.NotContains(t, writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{Version: 1}), "tagged")
+
+	got, ok := mustRead(t, out, false).Cue(0)
+	require.True(t, ok)
+	assert.Equal(t, c.TaggedLines(), got.TaggedLines())
+	assert.Empty(t, got.FormatDataKeys())
+}
+
 func TestVersion2RoundTrip(t *testing.T) {
 	t.Parallel()
 

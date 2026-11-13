@@ -103,3 +103,25 @@ func validateWords(c *model.Cue, path string) string {
 	}
 	return field + "." + strings.ToLower(name[:1]) + name[1:] + " is invalid. " + iae.Msg
 }
+
+// cueTagLayout restores the tags that formatData.tagged.lines holds, when they match the lines and the words of c.
+func cueTagLayout(c *model.Cue, d *model.Data, i int) string {
+	fd, _ := d.Object("formatData")
+	tagged, ok := fd.Object(taggedKey)
+	if !ok {
+		return ""
+	}
+	path := "The field " + cuePath(i) + ".formatData." + taggedKey + ".lines must be a list of strings."
+	list, ok := tagged.List("lines")
+	if !ok {
+		return path
+	}
+	lines := make([]string, len(list))
+	for j, item := range list {
+		if lines[j], ok = item.(string); !ok {
+			return path
+		}
+	}
+	c.SetTagLayout(lines)
+	return ""
+}

@@ -25,7 +25,10 @@ const (
 
 const (
 	imageKey = "image"
-	vttKey   = "vtt"
+	// taggedKey holds the lines with their tags in the cue format data of version 2, for a cue whose tags the
+	// placement rule would write elsewhere.
+	taggedKey = "tagged"
+	vttKey    = "vtt"
 )
 
 var errInfOrNaN = errors.New("inf or NaN")
@@ -315,23 +318,48 @@ func (e *encoder) formatData(keys []string, get func(string) (*model.Data, bool)
 // sorted order.
 func (e *encoder) cueFormatData(c model.Cue) error {
 	data := c.FormatData
+	var layout []string
 	if e.version == 1 {
 		data = func(key string) (*model.Data, bool) { return withoutVoiceForm(c, key) }
+	} else {
+		layout, _ = c.TagLayout()
 	}
 	keys := slices.DeleteFunc(c.FormatDataKeys(), func(key string) bool {
 		d, _ := data(key)
 		return key == vttKey && d.Len() == 0
 	})
-	if c.Image != nil {
-		keys = append(keys, imageKey)
-		slices.Sort(keys)
-	}
+	keys = addKeys(keys, len(layout) > 0, c.Image != nil)
 	return e.formatData(keys, func(key string) (*model.Data, bool) {
-		if key == imageKey {
+		switch key {
+		case imageKey:
 			return imageData(c), true
+		case taggedKey:
+			return taggedData(layout), true
 		}
 		return data(key)
 	})
+}
+
+// addKeys adds the keys tagged and image when asked, and sorts the result.
+func addKeys(keys []string, tagged, image bool) []string {
+	if tagged {
+		keys = append(keys, taggedKey)
+	}
+	if image {
+		keys = append(keys, imageKey)
+	}
+	if tagged || image {
+		slices.Sort(keys)
+	}
+	return keys
+}
+
+func taggedData(lines []string) *model.Data {
+	items := make([]any, len(lines))
+	for i, l := range lines {
+		items[i] = l
+	}
+	return model.NewData(model.Field{Key: "lines", Value: items})
 }
 
 // withoutVoiceForm returns the format data of key without voiceClass and voiceEnd of the vtt data. In version 1 the
