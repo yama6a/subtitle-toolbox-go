@@ -25,6 +25,10 @@ type part struct {
 
 type openTag struct{ name, tag string }
 
+// maxOpenTags is the number of open style tags that a speaker change closes and opens again. Without a limit, a cue
+// whose tags never close writes every open tag again at each change, and the output grows with the square of its size.
+const maxOpenTags = 4
+
 // splitter holds the speaker and the open style tags while it splits the lines of one cue.
 type splitter struct {
 	speaker string
@@ -54,10 +58,14 @@ func speakerParts(lines []string) []part {
 func (st *splitter) splitLine(line string) {
 	var cur strings.Builder
 	hasText, split := false, false
-	for i, tok := range markupcore.SplitTags(line) {
+	tokens := markupcore.SplitTags(line)
+	for i, tok := range tokens {
 		if i%2 == 0 {
 			if split && !hasText {
 				tok = strings.TrimLeft(tok, markupcore.PHPTrimSet)
+			}
+			if nextToVoiceTag(tokens, i) {
+				tok = strings.ReplaceAll(tok, "<", "&lt;")
 			}
 			cur.WriteString(tok)
 			hasText = hasText || markupcore.VisibleText(tok) != ""
@@ -73,11 +81,7 @@ func (st *splitter) splitLine(line string) {
 			continue
 		}
 		if hasText {
-			st.parts = append(st.parts, part{speaker: st.speaker, text: strings.TrimRight(cur.String(), markupcore.PHPTrimSet) + st.closing()})
-			cur.Reset()
-			for _, o := range st.open {
-				cur.WriteString(o.tag)
-			}
+			st.endPart(&cur)
 			hasText, split = false, true
 		}
 		st.speaker = name
@@ -85,8 +89,33 @@ func (st *splitter) splitLine(line string) {
 	st.parts = append(st.parts, part{speaker: st.speaker, text: cur.String()})
 }
 
+// nextToVoiceTag reports whether the token before or after the text token i is a voice tag or a closing voice tag.
+// A voice tag goes away, so the "<" of the text next to it could join with the text on the other side into a new tag.
+func nextToVoiceTag(tokens []string, i int) bool {
+	for _, k := range []int{i - 1, i + 1} {
+		if k >= 0 && k < len(tokens) {
+			if _, ok := voiceName(tokens[k]); ok {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// endPart closes the text of cur as a part of the current speaker, and starts the next part with the open style tags.
+func (st *splitter) endPart(cur *strings.Builder) {
+	st.parts = append(st.parts, part{speaker: st.speaker, text: strings.TrimRight(cur.String(), markupcore.PHPTrimSet) + st.closing()})
+	cur.Reset()
+	for _, o := range st.open {
+		cur.WriteString(o.tag)
+	}
+}
+
 // voiceName reports whether tok is a voice tag or a closing voice tag. The name is "" for no speaker.
 func voiceName(tok string) (name string, ok bool) {
+	if !strings.HasPrefix(tok, "<v") && !strings.HasPrefix(tok, "</v") {
+		return "", false
+	}
 	if m := voiceTagExact.FindStringSubmatch(tok); m != nil {
 		return markupcore.DecodeEntities(strings.Trim(m[2], markupcore.PHPTrimSet)), true
 	}
@@ -94,9 +123,18 @@ func voiceName(tok string) (name string, ok bool) {
 }
 
 func (st *splitter) track(tok string) {
-	if m := openStyleTag.FindStringSubmatch(tok); m != nil {
+	if strings.HasPrefix(tok, "</") {
+		st.untrack(tok)
+	} else if m := openStyleTag.FindStringSubmatch(tok); m != nil {
+		if len(st.open) == maxOpenTags {
+			st.open = append(st.open[:0], st.open[1:]...)
+		}
 		st.open = append(st.open, openTag{m[1], tok})
-	} else if m := closeStyleTag.FindStringSubmatch(tok); m != nil {
+	}
+}
+
+func (st *splitter) untrack(tok string) {
+	if m := closeStyleTag.FindStringSubmatch(tok); m != nil {
 		for i := len(st.open) - 1; i >= 0; i-- {
 			if st.open[i].name == m[1] {
 				st.open = append(st.open[:i], st.open[i+1:]...)

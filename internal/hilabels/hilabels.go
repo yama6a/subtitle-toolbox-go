@@ -86,8 +86,8 @@ func decodeAt(s string) (byte, int) {
 	return s[0], 1
 }
 
-// VisibleLine returns the visible text of one line.
-func VisibleLine(line string) string {
+// visibleLine returns the visible text of one line.
+func visibleLine(line string) string {
 	return VisibleOf([]string{line}).Text
 }
 
@@ -143,7 +143,7 @@ func Remove(lines []string, anyCase bool) []string {
 // removal does. The result is cleaned like a cue line. It is the line itself, cleaned, when the line has no label.
 // A line of invalid UTF-8 has no label.
 func RemoveLabel(line string, anyCase bool) string {
-	if !utf8.ValidString(VisibleLine(line)) {
+	if !utf8.ValidString(visibleLine(line)) {
 		return markupcore.CleanLine(line)
 	}
 	lines := []string{markupcore.CleanLine(line)}
@@ -184,7 +184,7 @@ func RemoveEmptied(original, lines []string) []string {
 	dashLines := 0
 	anyRemoved := false
 	for i, line := range lines {
-		was := VisibleLine(original[i]) //nolint:gosec // the caller passes slices of the same length
+		was := visibleLine(original[i]) //nolint:gosec // the caller passes slices of the same length
 		if isDashLine(was) {
 			dashLines++
 		}
@@ -193,7 +193,7 @@ func RemoveEmptied(original, lines []string) []string {
 			pending = ""
 			continue
 		}
-		line = RemoveBlankTagPairs(line)
+		line = removeBlankTagPairs(line)
 		if emptied(was, line) {
 			pending += tagsOf(line)
 			anyRemoved = true
@@ -212,7 +212,7 @@ func RemoveEmptied(original, lines []string) []string {
 }
 
 func emptied(was, line string) bool {
-	t := strings.Trim(VisibleLine(line), markupcore.PHPTrimSet)
+	t := strings.Trim(visibleLine(line), markupcore.PHPTrimSet)
 	return strings.Trim(was, markupcore.PHPTrimSet) != "" && (t == "" || t == "-")
 }
 
@@ -234,7 +234,7 @@ func isDashLine(text string) bool {
 func removeLastDash(lines []string) []string {
 	dash := -1
 	for i, line := range lines {
-		if isDashLine(VisibleLine(line)) {
+		if isDashLine(visibleLine(line)) {
 			if dash >= 0 {
 				return lines
 			}
@@ -251,9 +251,9 @@ func removeLastDash(lines []string) []string {
 	return out
 }
 
-// RemoveBlankTagPairs removes each pair such as <c.loud> </c> that holds only horizontal space, until none is left.
+// removeBlankTagPairs removes each pair such as <c.loud> </c> that holds only horizontal space, until none is left.
 // The names compare with case. markupcore.RemoveEmptyTagPairs knows the style tags only.
-func RemoveBlankTagPairs(line string) string {
+func removeBlankTagPairs(line string) string {
 	for {
 		var b strings.Builder
 		copied := 0

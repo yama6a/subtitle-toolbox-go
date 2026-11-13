@@ -18,27 +18,26 @@ import (
 // on a line gives its tag to the next line.
 func fromLabels(lines []string, anyCase bool) []string {
 	out := make([]string, 0, len(lines))
-	pending := ""
+	var pendingTag, pendingTags string
 	for i, line := range lines {
 		name, rest, ok := splitLabel(line, anyCase)
 		if !ok {
-			out = append(out, pending+line)
-			pending = ""
+			out = append(out, pendingTag+pendingTags+line)
+			pendingTag, pendingTags = "", ""
 			continue
 		}
 		tag := markupcore.VoiceTag(name, "")
-		if markupcore.VisibleText(rest) != "" {
-			out = append(out, tag+rest)
-			pending = ""
-			continue
-		}
-		if i == len(lines)-1 {
+		switch {
+		case markupcore.VisibleText(rest) != "":
+			out = append(out, tag+pendingTags+rest)
+			pendingTag, pendingTags = "", ""
+		case i == len(lines)-1:
 			out = append(out, line)
-			pending = ""
-			continue
+			pendingTag, pendingTags = "", ""
+		default:
+			out = append(out, "")
+			pendingTag, pendingTags = tag, pendingTags+styleTags(line)
 		}
-		out = append(out, "")
-		pending = tag + rest
 	}
 	if slices.Equal(out, lines) {
 		return lines
@@ -46,10 +45,21 @@ func fromLabels(lines []string, anyCase bool) []string {
 	return markupcore.CleanLines(out)
 }
 
+// styleTags returns the tags of line that are not voice tags, in order.
+func styleTags(line string) string {
+	var b strings.Builder
+	for i, tok := range markupcore.SplitTags(line) {
+		if _, voice := voiceName(tok); i%2 == 1 && !voice {
+			b.WriteString(tok)
+		}
+	}
+	return b.String()
+}
+
 // splitLabel returns the speaker name of the label of line and the line without the dash and the label.
 func splitLabel(line string, anyCase bool) (name, rest string, ok bool) {
 	rest = hilabels.RemoveLabel(line, anyCase)
-	if rest == line {
+	if rest == markupcore.CleanLine(line) {
 		return "", line, false
 	}
 	visible := markupcore.VisibleText(line)
@@ -207,7 +217,13 @@ func startsWithDash(text string) bool {
 
 func upperCase(s string) string {
 	if !utf8.ValidString(s) {
-		return s
+		b := []byte(s)
+		for i, c := range b {
+			if 'a' <= c && c <= 'z' {
+				b[i] = c - 'a' + 'A'
+			}
+		}
+		return string(b)
 	}
 	return cases.Upper(language.Und).String(s)
 }

@@ -41,6 +41,13 @@ func oneLongCue(n int) *model.Subtitle {
 	return &s
 }
 
+// unclosedCue returns one cue of about n bytes whose style tags never close, with a change of speaker every 15 bytes.
+func unclosedCue(n int) *model.Subtitle {
+	var s model.Subtitle
+	s.AddCue(model.Cue{End: time.Second, Lines: []string{strings.Repeat("<i>x<v A>y<v B>", n/15+1)}})
+	return &s
+}
+
 var applyRows = []struct {
 	name string
 	opts speakers.Options
@@ -76,6 +83,23 @@ func BenchmarkApply(b *testing.B) {
 			require.NoError(b, err)
 		}
 	})
+	b.Run("one cue of 1 MB with unclosed tags/prefix", func(b *testing.B) {
+		b.ReportAllocs()
+		for b.Loop() {
+			b.StopTimer()
+			s := unclosedCue(1 << 20)
+			b.StartTimer()
+			_, err := speakers.Apply(s, speakers.Options{Style: speakers.StylePrefix})
+			require.NoError(b, err)
+		}
+	})
+	b.Run("one cue of 1 MB with unclosed tags/list", func(b *testing.B) {
+		b.ReportAllocs()
+		s := unclosedCue(1 << 20)
+		for b.Loop() {
+			speakers.List(s)
+		}
+	})
 	b.Run("many cues/list", func(b *testing.B) {
 		b.ReportAllocs()
 		s := manyCues(10000)
@@ -108,10 +132,15 @@ func TestApplyGrowth(t *testing.T) {
 		small, large int
 		run          func(*model.Subtitle)
 	}
-	rows := make([]growthRow, 0, 2+2*len(applyRows))
+	rows := make([]growthRow, 0, 4+2*len(applyRows))
 	rows = append(rows,
 		growthRow{"list", manyCues, 2000, 20000, func(s *model.Subtitle) { speakers.List(s) }},
-		growthRow{"list of one long cue", oneLongCue, 20000, 200000, func(s *model.Subtitle) { speakers.List(s) }})
+		growthRow{"list of one long cue", oneLongCue, 20000, 200000, func(s *model.Subtitle) { speakers.List(s) }},
+		growthRow{"list of one cue with unclosed tags", unclosedCue, 20000, 200000, func(s *model.Subtitle) { speakers.List(s) }},
+		growthRow{"prefix of one cue with unclosed tags", unclosedCue, 20000, 200000, func(s *model.Subtitle) {
+			_, err := speakers.Apply(s, speakers.Options{Style: speakers.StylePrefix})
+			require.NoError(t, err)
+		}})
 	for _, row := range applyRows {
 		run := func(s *model.Subtitle) {
 			_, err := speakers.Apply(s, row.opts)

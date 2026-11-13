@@ -125,6 +125,8 @@ func TestFromLabels(t *testing.T) {
 		{"dialogue dashes", "- JOHN: Hi.\n- MARY: Bye.", false, want{"", []string{"<v John>Hi.", "<v Mary>Bye."}}},
 		{"inside italics", "<i>JOHN: Hi.</i>", false, want{"John", []string{"<i>Hi.</i>"}}},
 		{"label on its own line", "JOHN:\nHi there.", false, want{"John", []string{"Hi there."}}},
+		{"label on its own line keeps its style tags", "<i>JOHN:\nMARY: Hi.</i>", false, want{"Mary", []string{"<i>Hi.</i>"}}},
+		{"no-break space before the dash", "\u00a0- JOHN: Hi.", false, want{"John", []string{"Hi."}}},
 		{"label is the whole cue", "JOHN:", false, want{"", []string{"JOHN:"}}},
 		{"no space after colon", "JOHN:Hi.", false, want{"", []string{"JOHN:Hi."}}},
 		{"label later in the line", "Then JOHN: Hi.", false, want{"", []string{"Then JOHN: Hi."}}},
@@ -174,7 +176,9 @@ func TestStyles(t *testing.T) {
 		{"dashes dash already there", "<v Anna>- Where?\n<v Ben>Home.", dashes, []string{"- Where?", "- Home."}},
 		{"dashes own dash", "<v Anna>Where?\n<v Ben>Home.", speakers.Options{Style: speakers.StyleDialogueDashes, DialogueDashStyle: model.DialogueDashHyphen}, []string{"-Where?", "-Home."}},
 		{"dashes three speakers", "<v Anna>One.\n<v Ben>Two.\n<v Clara>Three.", dashes, []string{"- One.", "- Two.", "- Three."}},
-		{"colors own colors", "<v A>Hi.\nthere", speakers.Options{Style: speakers.StyleColors, Colors: []string{"#FF0000", "#00ff00"}}, []string{`<font color="#ff0000">Hi.</font>`, `<font color="#ff0000">there</font>`}},
+		{"prefix invalid UTF-8 name", "<v anna\xff>Hi.", prefix, []string{"ANNA\xff: Hi."}},
+		{"prefix voice tag joins text", "<v </v>Anna>Hi", prefix, []string{"&lt;v Anna>Hi"}},
+		{"dashes voice tag joins text", "<v </v>Anna>Hi\nthere", dashes, []string{"&lt;v Anna>Hi", "there"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -187,6 +191,25 @@ func TestStyles(t *testing.T) {
 			assert.Equal(t, want{"", tt.want}, want{c.Speaker, c.Lines})
 		})
 	}
+}
+
+// Adapted from SpeakerLabelsTest::testToColoursWithOwnColours.
+func TestColorsWithOwnColors(t *testing.T) {
+	t.Parallel()
+
+	s := subtitleOf("<v A>Hi.\nthere", "No speaker.", "<v B>Bye.")
+	_, err := speakers.Apply(s, speakers.Options{Style: speakers.StyleColors, Colors: []string{"#FF0000", "#00ff00"}})
+	require.NoError(t, err)
+
+	got := make([][]string, 0, s.Len())
+	for _, v := range viewsOf(s) {
+		got = append(got, v.Lines)
+	}
+	assert.Equal(t, [][]string{
+		{`<font color="#ff0000">Hi.</font>`, `<font color="#ff0000">there</font>`},
+		{"No speaker."},
+		{`<font color="#00ff00">Bye.</font>`},
+	}, got)
 }
 
 // Adapted from SpeakerLabelsTest::testToColoursUsesTheBbcOrderAndStartsAgainAfterTheLastColour.
@@ -228,40 +251,38 @@ func TestRename(t *testing.T) {
 	assert.Equal(t, []speakers.SpeakerCount{{"Anna", 1}, {"O'Neil & Son", 1}, {`Sam "Ace" Reed`, 1}, {"SPEAKER_04", 1}}, speakers.List(s))
 }
 
-func TestRenameKeepsTheVoiceClass(t *testing.T) {
+func TestVoiceClassSurvivesRenameAndStyle(t *testing.T) {
 	t.Parallel()
 
-	var s model.Subtitle
-	c := model.Cue{End: time.Second, Lines: []string{"<v.loud SPEAKER_01>Home.</v>"}}
-	require.NoError(t, c.SetFormatData("vtt", vttData()))
-	c.ExtractWordTags()
-	require.Equal(t, "SPEAKER_01", c.Speaker)
-	s.AddCue(c)
+	tests := []struct {
+		name      string
+		opts      speakers.Options
+		speaker   string
+		lines     []string
+		taggedOut []string
+	}{
+		{"rename", speakers.Options{Rename: map[string]string{"SPEAKER_01": "O'Neil & Son"}}, "O'Neil & Son", []string{"Home."}, []string{"<v.loud O'Neil &amp; Son>Home.</v>"}},
+		{"prefix", speakers.Options{Style: speakers.StylePrefix}, "", []string{"SPEAKER_01: Home."}, []string{"SPEAKER_01: Home."}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	_, err := speakers.Apply(&s, speakers.Options{Rename: map[string]string{"SPEAKER_01": "O'Neil & Son"}})
-	require.NoError(t, err)
+			var s model.Subtitle
+			c := model.Cue{End: time.Second, Lines: []string{"<v.loud SPEAKER_01>Home.</v>"}}
+			require.NoError(t, c.SetFormatData("vtt", vttData()))
+			c.ExtractWordTags()
+			require.Equal(t, "SPEAKER_01", c.Speaker)
+			s.AddCue(c)
 
-	got, _ := s.Cue(0)
-	assert.Equal(t, "O'Neil & Son", got.Speaker)
-	assert.Equal(t, []string{"<v.loud O'Neil &amp; Son>Home.</v>"}, got.TaggedLines())
-}
+			_, err := speakers.Apply(&s, tt.opts)
+			require.NoError(t, err)
 
-func TestStyleOfCueWithVoiceClass(t *testing.T) {
-	t.Parallel()
-
-	var s model.Subtitle
-	c := model.Cue{End: time.Second, Lines: []string{"<v.loud Anna>Home.</v>"}}
-	require.NoError(t, c.SetFormatData("vtt", vttData()))
-	c.ExtractWordTags()
-	require.Equal(t, "Anna", c.Speaker)
-	s.AddCue(c)
-
-	_, err := speakers.Apply(&s, speakers.Options{Style: speakers.StylePrefix})
-	require.NoError(t, err)
-
-	got, _ := s.Cue(0)
-	assert.Equal(t, want{"", []string{"ANNA: Home."}}, want{got.Speaker, got.Lines})
-	assert.Equal(t, []string{"ANNA: Home."}, got.TaggedLines())
+			got, _ := s.Cue(0)
+			assert.Equal(t, want{tt.speaker, tt.lines}, want{got.Speaker, got.Lines})
+			assert.Equal(t, tt.taggedOut, got.TaggedLines())
+		})
+	}
 }
 
 func TestStyleKeepsWordTiming(t *testing.T) {
@@ -408,10 +429,4 @@ func TestValidate(t *testing.T) {
 			assert.Equal(t, "Anna", c.Speaker)
 		})
 	}
-}
-
-func TestBBCColors(t *testing.T) {
-	t.Parallel()
-
-	assert.Equal(t, []string{"#ffffff", "#ffff00", "#00ffff", "#00ff00"}, speakers.BBCColors())
 }
