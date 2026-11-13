@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build,id=go-build-$TARGETARCH \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
     go build -trimpath -ldflags="-s -w -X main.version=${VERSION}" -o /stbox ./cmd/stbox
 
-# Alpine packages the standard models of 67 languages only. The fast models of all languages take 338 MB,
+# Alpine packages the standard models of 67 languages only. The fast models of all languages take 355 MB,
 # the standard models 1,014 MB. The commit pins the content.
 FROM --platform=$BUILDPLATFORM alpine:3@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf AS tessdata
 ARG TESSDATA_COMMIT=87416418657359cb625c412a48b6e1d6d41c29bd
