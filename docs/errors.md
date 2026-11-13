@@ -102,5 +102,5 @@ The CLI maps an error to an exit code by the phase in which it occurs, not by it
 
 - **Precedence**: 130 wins over 3, and 3 wins over 1. A run where one input failed and another gave a result exits 3.
 - **Message**: for a failed input the CLI prints `LABEL: MESSAGE` on stderr. LABEL is the input path as given, or `stdin`.
-- **Lenient hint**: after an input fails in strict mode with a `*ParseError`, the CLI prints `Pass --lenient to skip or repair broken cues.` on stderr. It skips the hint for a format that ignores lenient mode. That is the YouTube chapter format, see [chapters.md](chapters.md).
+- **Lenient hint**: after an input fails in strict mode with a `*ParseError`, the CLI prints `Pass --lenient to skip or repair broken cues.` on stderr. It skips the hint for a format that ignores lenient mode. That is the 4 chapter formats, see [chapters.md](chapters.md).
 - **Advice**: the CLI maps the `Option` field of an error to its own flag text. Example: `WriteOptions.MicroDVD.FrameRate` becomes `Pass --fps or --output-fps.`. It maps a sentinel in `Err` the same way.

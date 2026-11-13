@@ -1,0 +1,65 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "title": "Spring meetup"
+        },
+        "comments": [],
+        "formatData": {
+            "ffmeta-chapters": {
+                "tags": {
+                    "title": "Spring meetup"
+                },
+                "streams": []
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 90.0,
+                "lines": [
+                    "Doors open"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ffmeta-chapters": {
+                        "timeBase": "1/1000000000",
+                        "tags": []
+                    }
+                }
+            },
+            {
+                "start": 90.0,
+                "end": 1950.5,
+                "lines": [
+                    "Talk 1"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ffmeta-chapters": {
+                        "timeBase": "1/1000000000",
+                        "tags": []
+                    }
+                }
+            },
+            {
+                "start": 1950.5,
+                "end": 1950.5,
+                "lines": [
+                    "Talk 2"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "ffmeta-chapters": {
+                        "timeBase": "1/1000000000",
+                        "tags": []
+                    }
+                }
+            }
+        ]
+    }
+}

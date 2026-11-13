@@ -1,0 +1,71 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 300.0,
+                "lines": [
+                    "Chapter 01"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 300.0,
+                "end": 600.0,
+                "lines": [
+                    "Chapter 02"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 600.0,
+                "end": 900.0,
+                "lines": [
+                    "Chapter 03"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 900.0,
+                "end": 1200.0,
+                "lines": [
+                    "Chapter 04"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1200.0,
+                "end": 1500.0,
+                "lines": [
+                    "Chapter 05"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 1500.0,
+                "end": 1500.0,
+                "lines": [
+                    "Chapter 06"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}
