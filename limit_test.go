@@ -71,8 +71,8 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 				assert.Less(t, c.End, timecode.MaxTime, f)
 				// SubRip, LRC and EBU STL clamp at the largest time they hold: 999:59:59.999, 999:59.99 and 255 hours.
 				// Cavena 890 caps a frame number at FFFFFFh, which is 186 hours at 25 fps.
-				// YouTube chapters have no end time, so the last chapter ends at its own start.
 				// PAC clamps at 654 hours, because its time code holds hours * 100 + minutes in 2 bytes.
+				// YouTube chapters have no end time, so the last chapter ends at its own start.
 				if f != stbox.SubRip && f != stbox.LRC && f != stbox.EBUSTL && f != stbox.PAC && f != stbox.Cavena890 && f != stbox.YouTubeChapters {
 					assert.GreaterOrEqual(t, c.End, timecode.MaxValidTime-time.Second, f)
 				}

@@ -895,3 +895,10 @@ func TestConvertMergeSameTimeASSEvents(t *testing.T) {
 	assert.Equal(t, result{Stdout: want}, got)
 	assertCuesOf(t, "editing/own_same_time_speakers_merged.srt", got.Stdout, stbox.SubRip)
 }
+
+func TestConvertChapterInputGetsNoLenientHint(t *testing.T) {
+	t.Parallel()
+
+	got := call{stdin: "0:00 Intro\x00\n"}.run(t, "convert", "-", "--from", "youtube-chapters", "--to", "srt")
+	assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 1: Line 1 has a NUL character. Check the encoding of the file.\n"}, got)
+}

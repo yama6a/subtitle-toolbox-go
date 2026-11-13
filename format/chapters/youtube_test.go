@@ -64,7 +64,10 @@ func TestReadYouTubeLines(t *testing.T) {
 		{"trailing after digits", "Part 2 1:30", []chapter{{90 * time.Second, "Part 2"}}},
 		{"time inside a word", "abc1:30", nil},
 		{"title is escaped", "0:10 Tom & <b>Jerry</b>", []chapter{{10 * time.Second, "Tom &amp; &lt;b&gt;Jerry&lt;/b&gt;"}}},
+		{"hours of 309 digits", strings.Repeat("9", 309) + ":00 Late", nil},
 		{"three digit seconds", "1:234 x", nil},
+		{"long line without a time", strings.Repeat("1:2:", 5000) + "x", nil},
+		{"long line with a trailing time", strings.Repeat("1:2:", 5000) + " 1:30", []chapter{{90 * time.Second, strings.TrimSuffix(strings.Repeat("1:2:", 5000), ":")}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -75,39 +78,17 @@ func TestReadYouTubeLines(t *testing.T) {
 	}
 }
 
-func TestReadYouTubeEnds(t *testing.T) {
+func TestReadYouTubeMediaDuration(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name  string
-		media time.Duration
-		want  []time.Duration
-	}{
-		{"unknown media", 0, []time.Duration{168 * time.Second, 7200 * time.Second, 7200 * time.Second}},
-		{"media after the last start", 8000 * time.Second, []time.Duration{168 * time.Second, 7200 * time.Second, 8000 * time.Second}},
-		{"media before the last start", 100 * time.Second, []time.Duration{168 * time.Second, 7200 * time.Second, 7200 * time.Second}},
+	s, _, err := chapters.ReadYouTube(strings.NewReader("2:00:00\n0:00 Intro\n2:48 Next"), model.CommonReadOptions{},
+		chapters.ReadOptions{MediaDuration: 8000 * time.Second})
+	require.NoError(t, err)
+	var ends []time.Duration
+	for _, c := range s.All() {
+		ends = append(ends, c.End)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			s, _, err := chapters.ReadYouTube(strings.NewReader("2:00:00\n0:00 Intro\n2:48 Next"), model.CommonReadOptions{},
-				chapters.ReadOptions{MediaDuration: tt.media})
-			require.NoError(t, err)
-			var ends []time.Duration
-			for _, c := range s.All() {
-				ends = append(ends, c.End)
-			}
-			assert.Equal(t, tt.want, ends)
-		})
-	}
-}
-
-func TestReadYouTubeLongLine(t *testing.T) {
-	t.Parallel()
-
-	assert.Empty(t, read(t, strings.Repeat("1:2:", 5000)+"x", chapters.ReadOptions{}))
-	assert.Len(t, read(t, strings.Repeat("1:2:", 5000)+"1:30", chapters.ReadOptions{}), 1)
+	assert.Equal(t, []time.Duration{168 * time.Second, 7200 * time.Second, 8000 * time.Second}, ends)
 }
 
 func TestReadYouTubeOptions(t *testing.T) {

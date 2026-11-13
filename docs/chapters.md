@@ -25,7 +25,7 @@ Example: chapters at 0 s, 168 s and 7200 s end at 168 s, 7200 s and 7200 s. With
 | `ReadOptions.Chapters.MediaDuration` | `time.Duration` | 0, unknown | where a last chapter without its own end ends |
 
 - **Validate**: a negative `MediaDuration` fails with `The media duration must be 0 or more seconds, got -1.` and the option name `ReadOptions.Chapters.MediaDuration`.
-- **Lenient mode**: the chapter readers ignore `ReadOptions.Lenient`. The CLI prints no `--lenient` hint after a failed chapter read.
+- **Lenient mode**: the chapter readers ignore `ReadOptions.Lenient` for their own lines. The text pre-pass still honours it, so a NUL byte fails a strict read and reads with `Lenient`. The CLI prints no `--lenient` hint after a failed chapter read.
 - **Write**: `chapters.WriteOptions` has no fields.
 
 ## YouTube chapters
