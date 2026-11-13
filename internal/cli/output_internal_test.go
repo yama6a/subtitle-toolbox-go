@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -401,6 +403,34 @@ func TestInterruptKeepsTheFinishedOutputs(t *testing.T) {
 		call{dir: dir, ctx: ctx, beforeCreate: stop}.run(t, "convert", "trip.srt", "shop.vtt", "--to", "vtt", "--output-dir", "out"))
 	assert.Equal(t, convertAs(t, "trip.srt", stbox.WebVTT), readFile(t, dir, "out/trip.vtt"))
 	assert.NoFileExists(t, filepath.Join(dir, "out", "shop.vtt"))
+}
+
+func TestAnInterruptDuringAnInputIsNotAFailure(t *testing.T) {
+	t.Parallel()
+
+	dir := newDir(t)
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	r := &runner{c: &console{dir: dir, stderr: &bytes.Buffer{}}, files: &outputFiles{}}
+	fc := &cancelingCommand{cancel: cancel}
+	interrupted, err := r.loop(ctx, fc, []string{"trip.srt", "shop.vtt"}, false)
+	require.NoError(t, err)
+	assert.True(t, interrupted)
+	assert.Zero(t, r.failed)
+	assert.Equal(t, 1, fc.calls)
+}
+
+// cancelingCommand is a fileCommand whose process cancels the run and returns the context error, as OCR does.
+type cancelingCommand struct {
+	fileCommand
+	cancel func()
+	calls  int
+}
+
+func (c *cancelingCommand) process(ctx context.Context, _ *runner, _ *input) error {
+	c.calls++
+	c.cancel()
+	return fmt.Errorf("ocr: %w", ctx.Err())
 }
 
 func TestOutputFilesRace(t *testing.T) {

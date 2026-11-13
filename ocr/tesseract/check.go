@@ -54,8 +54,11 @@ func run(ctx context.Context, program string, args ...string) (stdout, stderr st
 }
 
 // Installed reports whether program runs and prints a Tesseract version.
-// Tesseract 4.0 and older print the version to standard error.
+// An empty program means "tesseract". Tesseract 4.0 and older print the version to standard error.
 func Installed(ctx context.Context, program string) bool {
+	if program == "" {
+		program = "tesseract"
+	}
 	ok, _ := installed(ctx, program)
 	return ok
 }

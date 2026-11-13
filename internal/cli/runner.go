@@ -50,6 +50,10 @@ func runFiles(ctx context.Context, a *args, c *console, fc fileCommand) error {
 		return asUsage(err)
 	}
 	if err := fc.loadSideFiles(ctx, r); err != nil {
+		if ctx.Err() != nil && errors.Is(err, ctx.Err()) {
+			c.err("Stopped by a signal.\n")
+			return &ExitError{Code: exitInterrupt}
+		}
 		return err
 	}
 	interrupted, err := r.loop(ctx, fc, inputs, a.Has("keep-going"))

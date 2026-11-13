@@ -4,7 +4,6 @@ package glyph
 import (
 	"context"
 	"fmt"
-	"image"
 	"strconv"
 	"strings"
 
@@ -73,15 +72,7 @@ func (e *Engine) Recognize(ctx context.Context, im model.Image, _ ocr.Language) 
 			err: err,
 		}
 	}
-	return text(e.recognizer.Recognize(nrgba(pixels))), nil
-}
-
-func nrgba(p bitmap.Pixels) *image.NRGBA {
-	img := image.NewNRGBA(image.Rect(0, 0, p.Width, p.Height))
-	for i, c := range p.RGBA {
-		img.Pix[4*i], img.Pix[4*i+1], img.Pix[4*i+2], img.Pix[4*i+3] = byte(c>>24), byte(c>>16), byte(c>>8), byte(c)
-	}
-	return img
+	return text(e.recognizer.Recognize(pixels.NRGBA())), nil
 }
 
 func text(r glyphocr.Result) ocr.Text {
@@ -97,41 +88,51 @@ func text(r glyphocr.Result) ocr.Text {
 // A word is italic when more than half of its characters are.
 func line(l glyphocr.Line) string {
 	var b strings.Builder
-	var word strings.Builder
-	var chars, italic, words int
 	open := false
-	flush := func() {
-		isItalic := 2*italic > chars
-		if open && !isItalic {
+	for i, w := range words(l) {
+		italic := 2*italicCount(w) > len(w)
+		if open && !italic {
 			b.WriteString("</i>")
 			open = false
 		}
-		if words > 0 {
+		if i > 0 {
 			b.WriteByte(' ')
 		}
-		if isItalic && !open {
+		if italic && !open {
 			b.WriteString("<i>")
 			open = true
 		}
-		b.WriteString(markup.EscapeText(word.String()))
-		word.Reset()
-		chars, italic = 0, 0
-		words++
-	}
-	for _, c := range l.Chars {
-		if c.Space {
-			flush()
-			continue
-		}
-		word.WriteString(c.Text)
-		chars++
-		if c.Italic {
-			italic++
+		for _, c := range w {
+			b.WriteString(markup.EscapeText(c.Text))
 		}
 	}
-	flush()
 	if open {
 		b.WriteString("</i>")
 	}
 	return b.String()
+}
+
+// words splits the characters of l at the spaces. 2 spaces in a row give an empty word.
+func words(l glyphocr.Line) [][]glyphocr.Char {
+	var out [][]glyphocr.Char
+	var word []glyphocr.Char
+	for _, c := range l.Chars {
+		if c.Space {
+			out = append(out, word)
+			word = nil
+			continue
+		}
+		word = append(word, c)
+	}
+	return append(out, word)
+}
+
+func italicCount(word []glyphocr.Char) int {
+	n := 0
+	for _, c := range word {
+		if c.Italic {
+			n++
+		}
+	}
+	return n
 }

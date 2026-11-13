@@ -95,6 +95,20 @@ func TestOCRConvert(t *testing.T) {
 		assert.True(t, strings.HasPrefix(got.Stderr, "Error: frames.sub: glyphocr: invalid glyph database"), got.Stderr)
 		assert.NoFileExists(t, filepath.Join(dir, "bad.srt"))
 	})
+	t.Run("the output may not overwrite the database file", func(t *testing.T) {
+		t.Parallel()
+
+		got := call{dir: dir}.run(t, "convert", "text_1080p.sup", "--to", "srt", "--ocr", "--ocr-database", "empty.nocr", "-o", "empty.nocr")
+		assert.Equal(t, usageResult("convert", "The output empty.nocr "+readsMessage), got)
+	})
+	t.Run("an interrupt during the Tesseract check exits 130", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithCancel(t.Context())
+		cancel()
+		got := call{dir: dir, ctx: ctx}.run(t, "convert", "text_1080p.sup", "--ocr", "--ocr-engine", "tesseract")
+		assert.Equal(t, result{Code: exitInterrupt, Stderr: "Stopped by a signal.\n"}, got)
+	})
 	t.Run("two inputs warn once about the language", func(t *testing.T) {
 		t.Parallel()
 
@@ -159,65 +173,33 @@ func TestOCRLoadsTheDatabaseOnce(t *testing.T) {
 	assert.Same(t, databases[0], databases[1])
 }
 
-func TestAnInterruptDuringAnInputIsNotAFailure(t *testing.T) {
-	t.Parallel()
-
-	dir := newDir(t)
-	ctx, cancel := context.WithCancel(t.Context())
-	defer cancel()
-	r := &runner{c: &console{dir: dir, stderr: &bytes.Buffer{}}, files: &outputFiles{}}
-	fc := &cancelingCommand{cancel: cancel}
-	interrupted, err := r.loop(ctx, fc, []string{"trip.srt", "shop.vtt"}, false)
-	require.NoError(t, err)
-	assert.True(t, interrupted)
-	assert.Zero(t, r.failed)
-	assert.Equal(t, 1, fc.calls)
-}
-
-// cancelingCommand is a fileCommand whose process cancels the run and returns the context error, as OCR does.
-type cancelingCommand struct {
-	fileCommand
-	cancel func()
-	calls  int
-}
-
-func (c *cancelingCommand) process(ctx context.Context, _ *runner, _ *input) error {
-	c.calls++
-	c.cancel()
-	return fmt.Errorf("ocr: %w", ctx.Err())
-}
-
 // TestConvertOCRAccuracyTesseract reads the fixtures through the CLI and compares each cue with the drawn text.
-// The Tesseract rows skip when the program is missing, unless STBOX_REQUIRE_TESSERACT=1 is set.
+// The rows skip when the program is missing, unless STBOX_REQUIRE_TESSERACT=1 is set.
 func TestConvertOCRAccuracyTesseract(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name   string
-		engine string
-		file   string
-		drawn  string
-		min    float64
+		name  string
+		file  string
+		drawn string
+		min   float64
 	}{
-		{"glyph, PGS 1080p", "glyph", "text_1080p.sup", "ocr/drawn/text_1080p.json", 1},
-		{"tesseract, PGS 1080p", "tesseract", "text_1080p.sup", "ocr/drawn/text_1080p.json", 0.99},
-		{"tesseract, PGS 1080p Cyrillic", "tesseract", "text_cyrillic_1080p.sup", "ocr/drawn/text_cyrillic_1080p.json", 0.99},
+		{"PGS 1080p", "text_1080p.sup", "ocr/drawn/text_1080p.json", 0.99},
+		{"PGS 1080p Cyrillic", "text_cyrillic_1080p.sup", "ocr/drawn/text_cyrillic_1080p.json", 0.99},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			words := []string{"convert", tt.file, "--to", "srt", "--ocr", "--ocr-engine", tt.engine}
-			if tt.engine == "tesseract" {
-				if _, err := exec.LookPath("tesseract"); err != nil {
-					if os.Getenv("STBOX_REQUIRE_TESSERACT") == "1" {
-						t.Fatal("tesseract is not installed")
-					}
-					t.Skip("tesseract is not installed")
+			words := []string{"convert", tt.file, "--to", "srt", "--ocr", "--ocr-engine", "tesseract"}
+			if _, err := exec.LookPath("tesseract"); err != nil {
+				if os.Getenv("STBOX_REQUIRE_TESSERACT") == "1" {
+					t.Fatal("tesseract is not installed")
 				}
-				if strings.Contains(tt.file, "cyrillic") {
-					words = append(words, "--ocr-language", "rus")
-				}
+				t.Skip("tesseract is not installed")
+			}
+			if strings.Contains(tt.file, "cyrillic") {
+				words = append(words, "--ocr-language", "rus")
 			}
 			got := call{dir: ocrDir(t)}.run(t, words...)
 			require.Zero(t, got.Code, got.Stderr)

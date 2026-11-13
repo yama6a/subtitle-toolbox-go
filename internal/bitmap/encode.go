@@ -14,12 +14,17 @@ func nrgba(c uint32) color.NRGBA {
 // EncodeRGBA returns p as an 8-bit RGBA PNG. image/png writes RGB when every pixel is opaque.
 // Equal pixels give equal bytes. A bitmap of size 0 gives nil.
 func EncodeRGBA(p Pixels) []byte {
+	return encode(p.NRGBA())
+}
+
+// NRGBA returns p as an image with straight alpha.
+func (p Pixels) NRGBA() *image.NRGBA {
 	img := image.NewNRGBA(image.Rect(0, 0, p.Width, p.Height))
 	for i, c := range p.RGBA {
 		n := nrgba(c)
 		img.Pix[4*i], img.Pix[4*i+1], img.Pix[4*i+2], img.Pix[4*i+3] = n.R, n.G, n.B, n.A
 	}
-	return encode(img)
+	return img
 }
 
 // EncodeIndexed returns ix as a palette PNG. An index past the palette reads as 0x00000000 in the result too.

@@ -3,6 +3,7 @@ package auto
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
 	"github.com/yama6a/subtitle-toolbox-go/v3/ocr"
@@ -31,8 +32,11 @@ func Choose(ctx context.Context, opts Options) (ocr.EngineName, error) {
 		}
 		return ocr.EngineTesseract, nil
 	case "":
-		if tesseract.RequireInstalled(ctx, opts.TesseractProgram) == nil {
+		if tesseract.Installed(ctx, opts.TesseractProgram) {
 			return ocr.EngineTesseract, nil
+		}
+		if err := ctx.Err(); err != nil {
+			return "", fmt.Errorf("auto: %w", err)
 		}
 		return ocr.EngineGlyph, nil
 	default:

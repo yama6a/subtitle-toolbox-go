@@ -62,13 +62,15 @@ The library never writes to stdout, stderr or a logger. It returns warnings and 
 
 ## Third-party modules
 
-The library imports 4 modules, and the tests also use testify. The `go` line and the versions are in `go.mod`. Everything else is written in this repository.
+The library imports 6 modules, and the tests also use testify. The `go` line and the versions are in `go.mod`. Everything else is written in this repository.
 
 | Module | Used for |
 |:--- |:--- |
 | `golang.org/x/text` | the code pages of [encodings.md](encodings.md), and case mapping |
 | `github.com/rivo/uniseg` | grapheme clusters for character counts |
 | `github.com/dlclark/regexp2/v2` | patterns with lookaround or back references, and patterns that users supply |
+| `github.com/Eyevinn/mp4ff` | the `moov` box of MP4 and MOV files, see [containers.md](containers.md) |
+| `github.com/asticode/go-astits` | the packets and PES data of MPEG-TS and M2TS files, see [containers.md](containers.md) |
 | `github.com/yama6a/go-glyph-ocr` | the glyph OCR engine of [ocr.md](ocr.md#glyph-engine), pure Go with its glyph databases embedded |
 
 - **Why x/text and uniseg**: `golang.org/x/text` holds the code page tables of 37 encodings. `github.com/rivo/uniseg` holds the Unicode grapheme break tables. Both follow new Unicode versions. Writing and updating these tables in this repository would cost more than the import.

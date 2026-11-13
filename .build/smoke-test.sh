@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs stbox once per feature that depends on how it was built: the version stamp and the code page tables and the glyph OCR engine.
+# Runs stbox once per feature that depends on how it was built: the version stamp, the code page tables and the glyph OCR engine.
 # Usage: .build/smoke-test.sh <expected version> <testdata dir as stbox sees it> <stbox command...>
 set -euo pipefail
 

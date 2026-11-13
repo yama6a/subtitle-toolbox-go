@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"context"
+	"errors"
 	"strconv"
 
 	glyphocr "github.com/yama6a/go-glyph-ocr"
@@ -69,8 +70,7 @@ type ocrEdit struct {
 	databasePath string
 	hasDatabase  bool
 
-	// chosen is the engine that runs, set by load.
-	chosen    ocr.EngineName
+	// load sets tesseract for the Tesseract engine, and database for the glyph engine.
 	tesseract *tesseract.Engine
 	database  *glyphocr.Database
 	warned    bool
@@ -83,15 +83,14 @@ var _ edit = &ocrEdit{}
 func (e *ocrEdit) load(ctx context.Context, c *console) error {
 	chosen, err := auto.Choose(ctx, auto.Options{Engine: e.engine})
 	if err != nil {
-		return usage(message(err))
+		return checkError(ctx, err)
 	}
-	e.chosen = chosen
 	if chosen == ocr.EngineTesseract {
 		if e.tesseract, err = tesseract.New(tesseract.Options{Language: e.language}); err != nil {
 			return usage(message(err))
 		}
 		if err := e.tesseract.RequireLanguages(ctx, ""); err != nil {
-			return usage(message(err))
+			return checkError(ctx, err)
 		}
 		return nil
 	}
@@ -109,6 +108,14 @@ func (e *ocrEdit) load(ctx context.Context, c *console) error {
 	return nil
 }
 
+// checkError returns the error of ctx unchanged, so an interrupt gives exit code 130. Any other error is a usage error.
+func checkError(ctx context.Context, err error) error {
+	if ctx.Err() != nil && errors.Is(err, ctx.Err()) {
+		return err
+	}
+	return usage(message(err))
+}
+
 func (e *ocrEdit) apply(ctx context.Context, s *stbox.Subtitle, c *console, label string) (*stbox.Subtitle, error) {
 	var total int
 	for i := range s.Len() {
@@ -120,7 +127,7 @@ func (e *ocrEdit) apply(ctx context.Context, s *stbox.Subtitle, c *console, labe
 		return s, nil
 	}
 	var engine ocr.Engine = e.tesseract
-	if e.chosen == ocr.EngineGlyph {
+	if e.database != nil {
 		var err error
 		if engine, err = e.newGlyph(c); err != nil {
 			return nil, err

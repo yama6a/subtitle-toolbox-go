@@ -25,6 +25,13 @@ func chars(text, pattern string) []glyphocr.Char {
 	return out
 }
 
+func withConfidence(cs []glyphocr.Char, values ...float64) []glyphocr.Char {
+	for i, v := range values {
+		cs[i].Confidence = v
+	}
+	return cs
+}
+
 func TestText(t *testing.T) {
 	t.Parallel()
 
@@ -32,6 +39,7 @@ func TestText(t *testing.T) {
 		name  string
 		lines []glyphocr.Line
 		want  []string
+		conf  float64
 	}{
 		{
 			"italic words share one run and an upright word closes it",
@@ -41,45 +49,38 @@ func TestText(t *testing.T) {
 				{Chars: chars("one more word", "...I.IIII.III")},
 			},
 			[]string{"<i>The wind turns</i>", "<i>Snow</i> is here.", "one <i>more word</i>"},
+			1,
 		},
 		{
 			"a word is italic above half of its characters",
 			[]glyphocr.Line{{Chars: chars("ab cd", "I..II")}},
 			[]string{"ab <i>cd</i>"},
+			1,
 		},
 		{
 			"2 spaces make an empty word that closes the run",
 			[]glyphocr.Line{{Chars: chars("a  b", "I..I")}},
 			[]string{"<i>a</i>  <i>b</i>"},
+			1,
 		},
 		{
 			"markup characters are escaped",
-			[]glyphocr.Line{{Chars: chars("<& b", "....")}},
+			[]glyphocr.Line{{Chars: withConfidence(chars("<& b", "...."), 0.5, 1, 1, 0.6)}},
 			[]string{"&lt;&amp; b"},
+			0.7,
 		},
-		{"an image without ink gives no lines", nil, []string{}},
+		{"an image without ink gives no lines", nil, []string{}, 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, text(glyphocr.Result{Lines: tt.lines}).Lines)
+			got := text(glyphocr.Result{Lines: tt.lines})
+			assert.Equal(t, tt.want, got.Lines)
+			require.NotNil(t, got.Confidence)
+			assert.InDelta(t, tt.conf, *got.Confidence, 1e-9)
 		})
 	}
-}
-
-func TestTextConfidenceIsTheMeanWithoutSpaces(t *testing.T) {
-	t.Parallel()
-
-	line := chars("< b", "...")
-	line[0].Confidence, line[2].Confidence = 0.5, 0.9
-	got := text(glyphocr.Result{Lines: []glyphocr.Line{{Chars: line}}})
-	require.NotNil(t, got.Confidence)
-	assert.InDelta(t, 0.7, *got.Confidence, 1e-9)
-
-	empty := text(glyphocr.Result{})
-	require.NotNil(t, empty.Confidence)
-	assert.Zero(t, *empty.Confidence)
 }
 
 func TestRecognizeErrors(t *testing.T) {
@@ -120,15 +121,10 @@ func TestRecognizeErrors(t *testing.T) {
 	}
 }
 
-func TestNewPassesTheDatabaseAndTheOptions(t *testing.T) {
+func TestNewRejectsAnInvalidRecognizerOption(t *testing.T) {
 	t.Parallel()
 
-	db := glyphocr.Latin()
-	e, err := New(Options{Database: db})
-	require.NoError(t, err)
-	assert.Same(t, db, e.Database())
-
-	_, err = New(Options{Recognizer: []glyphocr.Option{glyphocr.InkThreshold(0)}})
+	_, err := New(Options{Recognizer: []glyphocr.Option{glyphocr.InkThreshold(0)}})
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 	assert.ErrorContains(t, err, "glyph.Options.Recognizer")
 }

@@ -162,14 +162,23 @@ func (cc *convertCommand) prepareGroups(a *args) error {
 	return needsASSOutput(a, cc.out.to)
 }
 
-func (cc *convertCommand) checkInputs(r *runner, inputs []string) error {
-	readPaths := slices.Clone(inputs)
+// sideFilePaths returns the files that the options of the groups read, without the masking words.
+func (cc *convertCommand) sideFilePaths() []string {
+	var paths []string
 	if cc.snap != nil && cc.snap.path != "" {
-		readPaths = append(readPaths, cc.snap.path)
+		paths = append(paths, cc.snap.path)
 	}
 	if cc.errors != nil && cc.errors.listPath != "" {
-		readPaths = append(readPaths, cc.errors.listPath)
+		paths = append(paths, cc.errors.listPath)
 	}
+	if cc.ocr != nil && cc.ocr.hasDatabase {
+		paths = append(paths, cc.ocr.databasePath)
+	}
+	return paths
+}
+
+func (cc *convertCommand) checkInputs(r *runner, inputs []string) error {
+	readPaths := append(slices.Clone(inputs), cc.sideFilePaths()...)
 	m := cc.masking
 	if m == nil {
 		return cc.out.checkInputs(r, inputs, readPaths, nil)
