@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -697,4 +698,20 @@ func TestCueWithoutTaggedSourceKeepsItsStoredText(t *testing.T) {
 	require.NoError(t, out.SetFormatData("ass", fileData(t, s)))
 
 	assert.Contains(t, write(t, out, model.CommonWriteOptions{}, ass.WriteOptions{}), line+"\n")
+}
+
+func TestAegisubFileSurvivesLibraryJSONVersion1(t *testing.T) {
+	t.Parallel()
+
+	in := testfiles.Read(t, realDir+"/own_aegisub.ass")
+	s := readFile(t, realDir+"/own_aegisub.ass")
+	var js bytes.Buffer
+	_, err := stboxjson.Write(&js, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
+	require.NoError(t, err)
+	back, _, err := stboxjson.Read(&js, model.CommonReadOptions{}, stboxjson.ReadOptions{})
+	require.NoError(t, err)
+
+	got := write(t, back, model.CommonWriteOptions{}, ass.WriteOptions{})
+	assert.Contains(t, got, `{\k40}The {\k35}train {\k50}leaves {\kf60}at {\ko45}noon`)
+	assert.Equal(t, strings.TrimPrefix(string(in), "\xEF\xBB\xBF"), strings.TrimPrefix(got, "\xEF\xBB\xBF"))
 }

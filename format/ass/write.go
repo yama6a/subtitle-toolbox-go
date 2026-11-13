@@ -331,7 +331,7 @@ func (wr *writer) unchanged(c model.Cue, data *model.Data, fields record) bool {
 	if !slices.Equal(stored.Lines, c.Lines) || !sameSpeaker(stored, c) || !sameWords(stored.Words, c.Words) {
 		return false
 	}
-	return wr.lengthsUnchanged(c.Words, text, fields) && position.AlignmentUnchanged(data, c.Position.Alignment)
+	return wr.lengthsUnchanged(c, text, fields) && position.AlignmentUnchanged(data, c.Position.Alignment)
 }
 
 // sameSpeaker reports whether both cues have the same speaker. A cue without visible text has no voice tag in its
@@ -345,9 +345,11 @@ func sameWords(a, b []model.Word) bool {
 	return slices.EqualFunc(a, b, func(x, y model.Word) bool { return x.Text == y.Text && x.Start == y.Start })
 }
 
-// lengthsUnchanged reports whether each word still has the length of its karaoke syllable in text. It returns
+// lengthsUnchanged reports whether each word still has the length of its karaoke syllable in text, or ends where
+// the next word starts, or at the cue end for the last word, as the words of library JSON version 1 do. It returns
 // true when text has no karaoke tags or a number of syllables other than the number of words.
-func (wr *writer) lengthsUnchanged(words []model.Word, text string, fields record) bool {
+func (wr *writer) lengthsUnchanged(c model.Cue, text string, fields record) bool {
+	words := c.Words
 	styleName, _ := fields.field("Style")
 	m := textMarkup{styles: wr.styles, style: eventStyle(wr.styles, styleName)}
 	if _, _, err := m.convert(text, 0, false); err != nil {
@@ -363,7 +365,11 @@ func (wr *writer) lengthsUnchanged(words []model.Word, text string, fields recor
 		return true
 	}
 	for i, w := range words {
-		if (w.End - w.Start - lengths[i]).Abs() > time.Millisecond {
+		next := c.End
+		if i+1 < len(words) {
+			next = words[i+1].Start
+		}
+		if (w.End-w.Start-lengths[i]).Abs() > time.Millisecond && w.End != next {
 			return false
 		}
 	}
