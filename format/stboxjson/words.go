@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/vtt"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -16,7 +17,7 @@ func cueSpeaker(c *model.Cue, d *model.Data, path string) string {
 	switch speaker, _ := d.Get("speaker"); speaker := speaker.(type) {
 	case nil:
 	case string:
-		c.Speaker = speaker
+		c.Speaker = markupcore.CleanLine(speaker)
 	default:
 		return path + ".speaker must be a string."
 	}

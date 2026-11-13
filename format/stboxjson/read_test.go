@@ -397,6 +397,24 @@ func TestReadCleansLines(t *testing.T) {
 	assert.Equal(t, []string{"Two spaces", "Tab"}, c.Lines)
 }
 
+func TestReadCleansTheSpeaker(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct{ name, speaker, want string }{
+		{"blank", " ", ""},
+		{"padded and doubled spaces", "  Anna   Lee ", "Anna Lee"},
+		{"clean", "Anna", "Anna"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			s := mustRead(t, `{"version": 2, "cues": [{"start": 0, "end": 1, "lines": ["a"], "speaker": "`+tt.speaker+`"}]}`, false)
+			c, _ := s.Cue(0)
+			assert.Equal(t, tt.want, c.Speaker)
+		})
+	}
+}
+
 func TestReadSwapsShortReversedTimesInLenientMode(t *testing.T) {
 	t.Parallel()
 
