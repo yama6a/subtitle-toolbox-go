@@ -28,6 +28,7 @@
 | MPL2 | `stbox.MPL2` | `mpl2` | `.txt` | [MPL2](#mpl2) |
 | TMPlayer, TMPlayer+ | `stbox.TMPlayer` | `tmplayer` | `.txt` | [TMPlayer](#tmplayer) |
 | QuickTime text | `stbox.QuickTimeText` | `qttext` | `.txt` | [QuickTime text](#quicktime-text) |
+| VobSub | `stbox.VobSub` | `vobsub` | `.idx` | [VobSub](#vobsub) |
 | WebVTT | `stbox.WebVTT` | `vtt` | `.vtt` | [WebVTT](#webvtt) |
 
 - **Shared extensions**: some formats use the same extension, such as `.sub` for MicroDVD and SubViewer. The first format in the registry owns the extension for `FormatFromPath` and for the extension fallback of `Load`. MicroDVD owns `.sub`, so `Load` finds MPSub and SubViewer files named `.sub` only by their content. Plain text owns `.txt`, so `Load` finds MPL2 and TMPlayer files only by their content. To read a file as another format, pass `ReadOptions.Format`. Spruce STL uses `.stl`, which EBU STL uses too. The first format in the registry owns it, so the EBU STL row owns `.stl`. Content detection tells the two apart.
@@ -1841,3 +1842,40 @@ Each line is trimmed first. A line that equals `******** START SCRIPT ********` 
 | `Version` | `Version` | `VersionDefault`: the stored version, else SubViewer 2 | `V1` writes SubViewer 1, `V2` writes SubViewer 2 |
 
 - **Check**: `Validate` rejects a version above `V2`, for example `The SubViewer version must be 1 or 2, got 3.`, with an error that matches `ErrInvalidArgument`.
+
+## VobSub
+
+VobSub is the bitmap subtitle format of DVD rips. It has 2 files: a text index `movie.idx` and a binary MPEG-2 program stream `movie.sub`. Package `format/vobsub` reads it. The format name is `vobsub`, the extension `.idx`. The format has no writer and no detection rule, so `Load` finds it only by the `.idx` extension, or when `ReadOptions.Format` is `vobsub`.
+
+A **subpicture unit** (SPU) is one DVD subtitle bitmap with its control commands. Example: `two-tracks-pal.idx` has the lines `size: 720x576`, a 16-colour `palette:` line, `id: en, index: 0` and `timestamp: 00:00:01:000, filepos: 000000000`. The reader seeks to byte 0 of `two-tracks-pal.sub` and joins the private stream 1 packets of the sub-stream `0x20` into one unit. It decodes the 2-bit interlaced bitmap into an image cue at 1 s. [ocr.md](ocr.md) turns such cues into text.
+
+### Loading the pair
+
+- **Pair rule**: `Load` and `LoadFS` read both files. An `.idx` path looks for the `.sub` file next to it, first `.sub`, then `.SUB`. Any other path looks for `.idx`, then `.IDX`. A path without an extension gets a dot first. The rule applies only when the format is VobSub, from `ReadOptions.Format` or from an `.idx` path. A MicroDVD `.sub` file never looks for an `.idx` file.
+- **Missing file**: the error matches `ErrNotExist` of package `io/fs` and names both files.
+- **Encoding**: the `.idx` file decodes as text with `ReadOptions.Encoding`. The `.sub` file stays binary, so `ReadInfo.SourceEncoding` is empty. `Load` and `LoadFS` replace `ReadOptions.VobSub.IDX` with the `.idx` file.
+- **Parse**: `Parse` has no second file. It needs the `.idx` content in `ReadOptions.VobSub.IDX` and the `.sub` content as input, and `ReadOptions.Format` set to `vobsub`. Without `IDX`, the error is an `*InvalidArgumentError` with `Option` `ReadOptions.VobSub.IDX`.
+
+### Read
+
+- **Tracks**: each `id: en, index: 0` line starts a track. The sub-stream of a track is `0x20` plus its `index:` value, at most 31. The `delay:` lines add up within a track, and each `id:` line resets the sum.
+- **Cue times**: the start is the time of the `timestamp:` line plus the start delay of the unit. The end is the time of the `timestamp:` line plus the stop delay of the unit. A unit without a stop command ends at the start of the next unit, or after `LastCueDuration`, whichever is first. A cue never ends before it starts, so its end becomes its start. The time of a `timestamp:` line with its `delay:` lines must be above -100000 hours and below 100000 hours. The PES time stamps are not read.
+- **Colours**: the `palette:` colours and the contrast of the unit, or the 4 colours of an enabled `custom colors:` line. The image has the size of the display area of the unit, on the screen size of the `size:` line.
+- **Position**: every cue keeps the alignment bottom center. `Cue.Forced` is true for a unit that starts with the forced start command.
+- **No picture**: a unit with no display area adds no cue. It still ends the cue before it.
+- **Animation**: colour or area changes in a control sequence after the start command are ignored, because one image cannot hold them.
+- **Ignored `.idx` settings**: `org`, `scale`, `alpha`, `smooth`, `fadein/out`, `align`, `time offset`, `forced subs` and `langidx`.
+- **Language**: the `language` metadata is the `id:` value of the track, also when it is empty.
+- **Errors**: an error in the `.idx` content fails both modes with a `*ParseError` of line 0. An error in the `.sub` content or in one unit fails a strict read. A lenient read adds a `Skipped` warning with the position of the timestamp line in its track as `Block`, and goes on with the next one.
+
+### Options
+
+| Field | Type | Default | Meaning |
+|:--- |:--- |:--- |:--- |
+| `IDX` | `string` | `""` | the `.idx` content as UTF-8. `Load` and `LoadFS` fill it |
+| `Index` | `*int` | nil: no filter | the track whose `id:` line has this `index:` value. A pointer, because 0 is a valid index |
+| `Language` | `string` | `""`: no filter | the track whose `id:` value equals this, without case |
+
+- **Selection**: the first track that matches every set filter. With no filter, the first track. `Index` names the `index:` field of the `.idx` file. It is not `ReadOptions.Track`.
+- **Check**: `Validate` rejects an `Index` below 0, for example `The track index must be 0 or more, got -1.`, and a `Language` of only white space, with an error that matches `ErrInvalidArgument`.
+- **CLI**: the input must be the path of the `.idx` file or of the `.sub` file with `--from vobsub`. Standard input with `--from vobsub` is a usage error. A directory input reads the `.idx` file and skips a `.sub` file that has an `.idx` file of the same name. No output may overwrite either file of the pair.

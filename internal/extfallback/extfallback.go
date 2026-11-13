@@ -28,3 +28,17 @@ func Profile(detected, path string) string {
 	}
 	return detected
 }
+
+// Partners returns the paths that may hold the other file of the VobSub pair of path, in the order to try them, and
+// whether path is the .idx file. An .idx path looks for .sub, then .SUB. Any other path looks for .idx, then .IDX.
+// A path without an extension gets a dot first.
+func Partners(path string) (candidates []string, isIndex bool) {
+	ext := filepath.Ext(path)
+	stem := path[:len(path)-len(ext)] + "."
+	isIndex = strings.EqualFold(ext, ".idx")
+	want := "idx"
+	if isIndex {
+		want = "sub"
+	}
+	return []string{stem + want, stem + strings.ToUpper(want)}, isIndex
+}

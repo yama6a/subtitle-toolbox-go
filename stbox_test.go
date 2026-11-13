@@ -226,6 +226,7 @@ func ExampleFormats() {
 	// mpl2 [txt]
 	// tmplayer [txt]
 	// qttext [txt]
+	// vobsub [idx]
 	// vtt [vtt]
 }
 

@@ -87,6 +87,10 @@ func (e webEngine) Recognize(ctx context.Context, im model.Image, language ocr.L
 
 `stbox.Write` with `stbox.PGS` writes image cues as a `.sup` file, see [formats.md](formats.md#pgs). All images that show at the same time share one palette of at most 256 colours. The writer reduces the colours only when the shown images together hold more than 256 colours. Then a median cut gives 255 opaque colours and entry 0 as transparent. One image with 256 colours stays as it is. Two images with 200 different colours each are reduced.
 
+## VobSub input
+
+A VobSub read gives image cues, so OCR can read DVD subtitles. See [VobSub in formats.md](formats.md#vobsub). Example: `stbox.Load("movie.idx", stbox.ReadOptions{})` reads `movie.idx` and `movie.sub` into image cues without lines.
+
 ## Tests
 
 Package `ocr/ocrtest` holds `Engine`, a fake that returns the same `Text` for every image and records each call with its image and language.

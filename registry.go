@@ -33,6 +33,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/subviewer"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/tmplayer"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
@@ -95,6 +96,7 @@ var (
 	_ readFunc[mcc.ReadOptions]                                = mcc.Read
 	_ writeFunc[mcc.WriteOptions, mcc.WriteReport]             = mcc.Write
 	_ detectFunc                                               = mcc.Detect
+	_ readFunc[vobsub.ReadOptions]                             = vobsub.Read
 	_ readFunc[qttext.ReadOptions]                             = qttext.Read
 	_ writeFunc[qttext.WriteOptions, qttext.WriteReport]       = qttext.Write
 	_ detectFunc                                               = qttext.Detect
@@ -155,6 +157,7 @@ var registry = []formatFuncs{
 	{format: MPL2, read: readMPL2, write: writeMPL2},
 	{format: TMPlayer, read: readTMPlayer, write: writeTMPlayer},
 	{format: QuickTimeText, read: readQuickTimeText, write: writeQuickTimeText},
+	{format: VobSub, read: readVobSub},
 	{format: WebVTT, read: readWebVTT, write: writeWebVTT},
 }
 
@@ -287,6 +290,10 @@ func readJSON(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subt
 func writeJSON(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	_, err := stboxjson.Write(w, s, common, opts.JSON)
 	return WriteReport{}, err
+}
+
+func readVobSub(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return vobsub.Read(r, common, opts.VobSub)
 }
 
 func readWebVTT(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {

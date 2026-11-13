@@ -1,0 +1,80 @@
+[
+    {
+        "start": 1.0,
+        "end": 3.503,
+        "x": 176,
+        "y": 487,
+        "width": 367,
+        "height": 49,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "7526c345332d5c1ce17cc4459d5e04b5174c13623521e0427a93de24a22a363d"
+    },
+    {
+        "start": 4.0,
+        "end": 7.004,
+        "x": 227,
+        "y": 454,
+        "width": 266,
+        "height": 82,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "7b061ba0f3b50b90c69423074487e8adb521e63f3f9b221e27dac11736b43403"
+    },
+    {
+        "start": 7.5,
+        "end": 10.003,
+        "x": 152,
+        "y": 489,
+        "width": 415,
+        "height": 47,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "49166f709b3a23669fde8058c8d26cb9ac582d156073852ae01e74233bce9cbc"
+    },
+    {
+        "start": 10.5,
+        "end": 13.003,
+        "x": 186,
+        "y": 491,
+        "width": 347,
+        "height": 45,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "0e2d3aa6f8ad9e805cbe502602275e2ae1c844212afa542ec4394a24cd1ba729"
+    },
+    {
+        "start": 13.5,
+        "end": 16.504,
+        "x": 205,
+        "y": 448,
+        "width": 310,
+        "height": 88,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "9aa1e0af5f08179c4a7b5e83f4d4b3c6046c778c8f74217d11b6c1159ed989da"
+    },
+    {
+        "start": 17.0,
+        "end": 19.503,
+        "x": 213,
+        "y": 489,
+        "width": 293,
+        "height": 47,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "d997f65eb4cafcb26f438f0d3163edbe8cde36ca85a179f84c0fb1a9398bfe56"
+    }
+]

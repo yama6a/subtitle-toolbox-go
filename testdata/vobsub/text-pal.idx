@@ -1,0 +1,51 @@
+# VobSub index file, v7 (do not modify this line!)
+#
+# Written by generate.php in this folder for the subtitle-toolbox tests.
+#
+
+# Settings
+
+# Original frame size
+size: 720x576
+
+# Origin, relative to the upper-left corner, can be overloaded by alignment
+org: 0, 0
+
+# Image scaling (hor,ver), origin is at the upper-left corner or at the alignment coord (x, y)
+scale: 100%, 100%
+
+# Alpha blending
+alpha: 100%
+
+# Smoothing for very blocky images (use OLD for no filtering)
+smooth: OFF
+
+# In millisecs
+fadein/out: 50, 50
+
+# Force subpicture placement and/or justification
+align: OFF at LEFT TOP
+
+# For correcting non-progressive desync. (in millisecs or hh:mm:ss:ms)
+time offset: 0
+
+# ON: displays only forced subtitles, OFF: shows everything
+forced subs: OFF
+
+# The original palette of the DVD
+palette: 000000, f0f0f0, cccccc, 999999, 3333fa, 1111bb, fa3333, bb1111, 33fa33, 11bb11, fafa33, bbbb11, fa33fa, bb11bb, 33fafa, 11bbbb
+
+# Custom colors (transp idxs and the four colors)
+custom colors: OFF, tridx: 0000, colors: 000000, 000000, 000000, 000000
+
+# Language index in use
+langidx: 0
+
+# English
+id: en, index: 0
+timestamp: 00:00:01:000, filepos: 000000000
+timestamp: 00:00:04:000, filepos: 000000800
+timestamp: 00:00:07:500, filepos: 000001800
+timestamp: 00:00:10:500, filepos: 000002000
+timestamp: 00:00:13:500, filepos: 000002800
+timestamp: 00:00:17:000, filepos: 000003800
