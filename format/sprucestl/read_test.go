@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/sprucestl"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // Ports the toggle, frame rate and tab tests of tests/Parsers/SpruceStlParserTest.php of subtitle-toolbox-php.

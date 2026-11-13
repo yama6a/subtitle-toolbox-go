@@ -14,9 +14,9 @@ import (
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/encoding/japanese"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/arib"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/arib"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const (

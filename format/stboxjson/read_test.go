@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const oneCue = `{"start": 1, "end": 2, "lines": ["Hello"]}`
@@ -72,18 +72,19 @@ type readErrorCase struct {
 func readErrorCases() []readErrorCase {
 	deep := func(n int) string { return strings.Repeat("[", n) + strings.Repeat("]", n) }
 	return []readErrorCase{
-		{name: "not JSON", content: `{"version": 1,`, msg: "The content is not valid JSON: unexpected end of JSON input.", wholeFile: true},
-		{name: "text after the root", content: `{"version": 1, "cues": []} x`, msg: "The content is not valid JSON: invalid character 'x' after top-level value.", wholeFile: true},
+		{name: "not JSON", content: `{"version": 1,`, msg: "The content is not valid JSON: Syntax error.", wholeFile: true},
+		{name: "text after the root", content: `{"version": 1, "cues": []} x`, msg: "The content is not valid JSON: Syntax error.", wholeFile: true},
+		{name: "lone surrogate", content: `{"version": 1, "cues": [], "t": "\ud800"}`, msg: "The content is not valid JSON: Single unpaired UTF-16 surrogate in unicode escape.", wholeFile: true},
 		{name: "512 levels", content: `{"version": 1, "cues": [], "x": ` + deep(511) + `}`, msg: "The content is not valid JSON: Maximum stack depth exceeded.", wholeFile: true},
 		{name: "list root", content: `[1, 2]`, msg: "The JSON root must be an object.", wholeFile: true},
 		{name: "string root", content: `"cues"`, msg: "The JSON root must be an object.", wholeFile: true},
 		{name: "number root", content: `1`, msg: "The JSON root must be an object.", wholeFile: true},
 		{name: "empty list root", content: `[]`, msg: "The field version is missing.", wholeFile: true},
 		{name: "no version", content: `{"cues": []}`, msg: "The field version is missing.", wholeFile: true},
-		{name: "version 2", content: `{"version": 2, "cues": []}`, msg: "The field version must be 1.", wholeFile: true},
-		{name: "version as string", content: `{"version": "1", "cues": []}`, msg: "The field version must be 1.", wholeFile: true},
-		{name: "version as float", content: `{"version": 1.0, "cues": []}`, msg: "The field version must be 1.", wholeFile: true},
-		{name: "version null", content: `{"version": null, "cues": []}`, msg: "The field version must be 1.", wholeFile: true},
+		{name: "version 3", content: `{"version": 3, "cues": []}`, msg: "The field version must be 1 or 2.", wholeFile: true},
+		{name: "version as string", content: `{"version": "1", "cues": []}`, msg: "The field version must be 1 or 2.", wholeFile: true},
+		{name: "version as float", content: `{"version": 1.0, "cues": []}`, msg: "The field version must be 1 or 2.", wholeFile: true},
+		{name: "version null", content: `{"version": null, "cues": []}`, msg: "The field version must be 1 or 2.", wholeFile: true},
 		{name: "metadata as string", content: `{"version": 1, "metadata": "Bakery", "cues": []}`, msg: "The field metadata must be an object.", wholeFile: true},
 		{name: "metadata value number", content: `{"version": 1, "metadata": {"title": 7}, "cues": [` + oneCue + `]}`, msg: "The field metadata.title must be a string.", lenientCues: 1},
 		{name: "format data as string", content: `{"version": 1, "formatData": "x", "cues": []}`, msg: "The field formatData must be an object.", wholeFile: true},
@@ -134,6 +135,24 @@ func readErrorCases() []readErrorCase {
 		{name: "bad base64 padding", content: `{"version": 1, "formatData": {"x": {"a": {"base64": "AB="}}}, "cues": []}`, msg: "The field formatData.x.a.base64 must be valid base64."},
 		{name: "bad base64 under a number key", content: `{"version": 1, "formatData": {"x": {"7": {"base64": "A"}}}, "cues": []}`, msg: "The field formatData.x[7].base64 must be valid base64."},
 		{name: "base64 as the whole format data", content: `{"version": 1, "formatData": {"x": {"base64": "AAE="}}, "cues": []}`, msg: "The field formatData.x must be an object."},
+		{name: "speaker as number", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "speaker": 7}]}`, msg: `The field cues[0].speaker must be a string.`},
+		{name: "words as object", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": {}}]}`, msg: `The field cues[0].words must be a list.`},
+		{name: "word as string", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": ["The"]}]}`, msg: `The field cues[0].words[0] must be an object.`},
+		{name: "word text empty", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "", "start": 1, "end": 2}]}]}`, msg: `The field cues[0].words[0].text must be a string that is not empty.`},
+		{name: "word text as number", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": 7, "start": 1, "end": 2}]}]}`, msg: `The field cues[0].words[0].text must be a string that is not empty.`},
+		{name: "word text with white space", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": " beach", "start": 1, "end": 2}]}]}`, msg: `The field cues[0].words[0].text is invalid. The word text must not start or end with white space, got " beach".`},
+		{name: "word start as string", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "beach", "start": "1", "end": 2}]}]}`, msg: `The field cues[0].words[0].start must be a time of 0 or more.`},
+		{name: "word start negative", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "beach", "start": -1, "end": 2}]}]}`, msg: `The field cues[0].words[0].start must be a time of 0 or more.`},
+		{name: "word end missing", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "beach", "start": 1}]}]}`, msg: `The field cues[0].words[0].end must be a time of 0 or more.`},
+		{name: "word end at 100000 hours", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "beach", "start": 1, "end": 360000000}]}]}`, msg: `The field cues[0].words[0].end is not below 100000 hours.`},
+		{name: "word end before start", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "beach", "start": 2, "end": 1}]}]}`, msg: `The field cues[0].words[0].end is invalid. The word end 1 s must not be before the word start 2 s.`},
+		{name: "word start goes back", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "beach", "start": 2, "end": 3}, {"text": "was", "start": 1, "end": 3}]}]}`, msg: `The field cues[0].words[1].start is invalid. The word start 1 s must not be before the start 2 s of the word before it.`},
+		{name: "word confidence 2", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "beach", "start": 1, "end": 2, "confidence": 2}]}]}`, msg: `The field cues[0].words[0].confidence must be a number from 0 to 1.`},
+		{name: "word confidence as string", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "beach", "start": 1, "end": 2, "confidence": "1"}]}]}`, msg: `The field cues[0].words[0].confidence must be a number from 0 to 1.`},
+		{name: "word not in the text", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "beach", "start": 1, "end": 2}, {"text": "sea", "start": 2, "end": 3}]}]}`, msg: `The field cues[0].words[1] is not in the text of the cue after the word before it.`},
+		{name: "word before the word before it", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["The beach was empty."], "words": [{"text": "was", "start": 1, "end": 2}, {"text": "beach", "start": 2, "end": 3}]}]}`, msg: `The field cues[0].words[1] is not in the text of the cue after the word before it.`},
+		{name: "tagged lines as string", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["a"], "formatData": {"vtt": {"taggedLines": "a"}}}]}`, msg: "The field cues[0].formatData.vtt.taggedLines must be a list or an object."},
+		{name: "tagged line as number", content: `{"version": 2, "cues": [{"start": 1, "end": 5, "lines": ["a"], "formatData": {"vtt": {"taggedLines": [1]}}}]}`, msg: "The field cues[0].formatData.vtt.taggedLines[0] must be a string."},
 	}
 }
 

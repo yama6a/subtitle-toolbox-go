@@ -13,9 +13,9 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // Adapted from Subtitle Edit, src/libse/SubtitleFormats/Pac.cs

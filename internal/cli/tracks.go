@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 )
 
 // describeTrack returns the text of a track in info and in track errors, for example `S_HDMV/PGS, eng, default, forced`.

@@ -15,10 +15,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // MaxTrackIndex is the largest index: value of an id line. The sub-stream of a track is 0x20 plus its index.

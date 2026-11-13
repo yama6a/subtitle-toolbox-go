@@ -10,14 +10,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/sprucestl"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const (

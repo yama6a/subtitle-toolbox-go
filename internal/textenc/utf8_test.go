@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
 )
 
 func TestInvalidUTF8(t *testing.T) {

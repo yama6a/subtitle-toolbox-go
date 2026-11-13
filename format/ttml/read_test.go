@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // The tests in this file port tests/Parsers/TtmlParserTest.php of subtitle-toolbox-php, then add rows of their own.
@@ -27,9 +27,9 @@ func TestReadsBeginEndDurItalicSpanAndLanguage(t *testing.T) {
 	assert.Empty(t, warnings)
 	c0, _ := s.Cue(0)
 	c1, _ := s.Cue(1)
-	assert.Equal(t, []string{"Hello", "<i>world</i>"}, c0.Lines)
+	assert.Equal(t, []string{"Hello", "<i>world</i>"}, c0.TaggedLines())
 	assert.Equal(t, []cueRow{{sec(1.5), sec(4), "Hello\n<i>world</i>"}, {sec(5), sec(7.5), "Second cue"}}, cueRows(s))
-	assert.Equal(t, []string{"Second cue"}, c1.Lines)
+	assert.Equal(t, []string{"Second cue"}, c1.TaggedLines())
 }
 
 func TestTimeExpressions(t *testing.T) {
@@ -116,7 +116,7 @@ func TestInvalidSpanTimeKeepsTheText(t *testing.T) {
 	t.Parallel()
 
 	c := paragraphCue(t, `<p begin="1s" end="2s">A <span begin="x">B</span></p>`, "", "")
-	assert.Equal(t, cueRow{sec(1), sec(2), "A B"}, cueRow{c.Start, c.End, c.Text()})
+	assert.Equal(t, cueRow{sec(1), sec(2), "A B"}, cueRow{c.Start, c.End, taggedText(c)})
 }
 
 func TestInvalidTimeExpression(t *testing.T) {
@@ -332,7 +332,7 @@ func TestParagraphText(t *testing.T) {
 			"agents become speaker tags",
 			`<p end="1s" ttm:agent="a1">Hi<br/>there <span ttm:agent="b2">Bye</span></p>`,
 			`<metadata><ttm:agent xml:id="a1" type="person"><ttm:name type="full">Anna</ttm:name></ttm:agent></metadata>`,
-			"<v Anna>Hi\nthere </v><v b2>Bye",
+			"<v Anna>Hi\nthere </v><v b2>Bye</v>",
 		},
 		{
 			"an agent name is the first name with text, trimmed",
@@ -347,6 +347,8 @@ func TestParagraphText(t *testing.T) {
 			"<v Ben>Hi",
 		},
 		{"the first of several agent IDs is the speaker", `<p end="1s" ttm:agent=" b  c ">Hi</p>`, "", "<v b>Hi"},
+		{"one agent over 2 lines has no end", `<p end="1s" ttm:agent="a">Hi<br/>there</p>`, "", "<v a>Hi\nthere"},
+		{"an agent span before plain text ends with its text", `<p end="1s"><span ttm:agent="a">Hi</span> there</p>`, "", "<v a>Hi</v> there"},
 		{"no voice for white space", `<p end="1s"> <span ttm:agent="a">Hi</span></p>`, "", "<v a>Hi"},
 		{
 			"an agent name is escaped",
@@ -359,7 +361,7 @@ func TestParagraphText(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, paragraphCue(t, tt.p, "", tt.head).Text())
+			assert.Equal(t, tt.want, taggedText(paragraphCue(t, tt.p, "", tt.head)))
 		})
 	}
 }
@@ -391,7 +393,7 @@ func TestStyleProperties(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, paragraphCue(t, `<p end="1s"><span `+tt.span+`>x</span></p>`, "", "").Text())
+			assert.Equal(t, tt.want, taggedText(paragraphCue(t, `<p end="1s"><span `+tt.span+`>x</span></p>`, "", "")))
 		})
 	}
 }
@@ -401,7 +403,7 @@ func TestStylingAttributeWithUndeclaredPrefix(t *testing.T) {
 
 	s, _ := mustRead(t, `<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p end="1s" tts:fontStyle="italic">x</p></div></body></tt>`, false)
 	c, _ := s.Cue(0)
-	assert.Equal(t, "<i>x</i>", c.Text())
+	assert.Equal(t, "<i>x</i>", taggedText(c))
 }
 
 func TestDFXPStylingNamespaces(t *testing.T) {
@@ -417,7 +419,7 @@ func TestDFXPStylingNamespaces(t *testing.T) {
 		if ns == "urn:other" {
 			want = "x"
 		}
-		assert.Equal(t, want, c.Text(), ns)
+		assert.Equal(t, want, taggedText(c), ns)
 	}
 }
 
@@ -428,7 +430,7 @@ func TestStyleInheritanceOrder(t *testing.T) {
 	s, _ := mustRead(t, document(`<div tts:color="yellow"><p end="1s" tts:fontWeight="normal">a<span tts:color="white">b</span></p></div>`,
 		"", head), false)
 	c, _ := s.Cue(0)
-	assert.Equal(t, `<font color="#ffff00">a</font>b`, c.Text())
+	assert.Equal(t, `<font color="#ffff00">a</font>b`, taggedText(c))
 }
 
 func TestAgentAttributeIsNotStored(t *testing.T) {
@@ -628,7 +630,7 @@ func TestDFXPNamespacesAreRead(t *testing.T) {
 		`<body><div><p begin="00:00:01:05" end="2s"><span tts:fontWeight="bold">x</span></p></div></body></tt>`, false)
 	c, _ := s.Cue(0)
 	assert.Equal(t, sec(1.2), c.Start)
-	assert.Equal(t, "<b>x</b>", c.Text())
+	assert.Equal(t, "<b>x</b>", taggedText(c))
 }
 
 func TestExternalEntityIsNotLoaded(t *testing.T) {

@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // capDigits stops digit counting above the 100000 hours limit, so long digit runs cannot overflow.

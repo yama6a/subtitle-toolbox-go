@@ -9,8 +9,8 @@ import (
 	"net/http/httptest"
 	"net/url"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
 )
 
 // webEngine sends the PNG of a cue to an OCR web service and reads {"lines": [...]} from the answer.

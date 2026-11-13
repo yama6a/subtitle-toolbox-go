@@ -9,13 +9,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ebustl"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/golden"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/golden"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 var update = flag.Bool("update", false, "rewrite the write golden files")
@@ -275,7 +275,7 @@ func TestLRCWordTimesWriteAsWordsInSubRip(t *testing.T) {
 	s, _ := folder(t, "lrc").read(t, "handwritten-enhanced.lrc")
 	first, ok := s.Cue(0)
 	require.True(t, ok)
-	assert.Equal(t, "<00:00:03.000>Slow <00:00:03.550>river <00:00:04.400>runs", first.Text())
+	assert.Equal(t, []string{"<00:00:03.000>Slow <00:00:03.550>river <00:00:04.400>runs"}, first.TaggedLines())
 	assert.Contains(t, string(writeAs(t, s, stbox.SubRip)), "\nSlow river runs\n")
 }
 

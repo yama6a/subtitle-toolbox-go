@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cea608"
 )
 
 // words reads tokens of 4 hex digits as words and "t:text" as characters two to a word with parity.

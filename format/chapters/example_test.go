@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/chapters"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/chapters"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func ExampleReadYouTube() {

@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/cea608"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/linewrap"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/linewrap"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 )
 
 const (

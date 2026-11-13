@@ -5,25 +5,25 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/chapters"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ebustl"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/pac"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/sprucestl"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/vobsub"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/chapters"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // ReadOptions holds the settings of a read. The zero value reads with the defaults.
@@ -191,7 +191,7 @@ func (o WriteOptions) Validate() error {
 	}
 	for _, check := range []func() error{
 		o.ASS.Validate, o.MicroDVD.Validate, o.MPSub.Validate, o.PlainText.Validate, o.CSV.Validate, o.ITT.Validate,
-		o.SubViewer.Validate, o.SCC.Validate, o.MCC.Validate, o.SpruceSTL.Validate, o.EBUSTL.Validate,
+		o.SubViewer.Validate, o.SCC.Validate, o.MCC.Validate, o.SpruceSTL.Validate, o.EBUSTL.Validate, o.JSON.Validate,
 	} {
 		if err := check(); err != nil {
 			return err

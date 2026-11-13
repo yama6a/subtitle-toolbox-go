@@ -5,7 +5,7 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
 )
 
 // border is the number of white pixels on each side, because Tesseract finds no text at the image edge.

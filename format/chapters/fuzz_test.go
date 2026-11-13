@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/chapters"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/chapters"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func FuzzReadYouTube(f *testing.F) {

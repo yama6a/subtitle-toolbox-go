@@ -303,14 +303,14 @@ This file reads as one cue from 1.5 s to 4 s with the alignment `TopCenter` and 
 | a `Comment:` event | a comment before the next `Dialogue:` event, with the raw `Text`, and file data `ass.commentEvents` |
 | every other section, such as `[Fonts]` or `[Aegisub Project Garbage]` | file data `ass.sections`, its trimmed lines by section name |
 | the section order | file data `ass.sectionOrder` |
-| the `Name` field | the speaker: a `<v Name>` tag before the first line |
+| the `Name` field | `Cue.Speaker`, trimmed |
 
 | Override tag | Core markup |
 |:--- |:--- |
 | `\an1` to `\an9`, SSA `\a1` to `\a11` | the cue alignment. The first tag of the event wins, else the style alignment, else `BottomCenter` |
 | `\b1`, `\i1`, `\u1`, `\s1`, and `0` or no value | `<b>`, `<i>`, `<u>`, `<s>` and their end tags. `\b700` is dropped |
 | `\c&HBBGGRR&` or `\1c&HBBGGRR&` with 1 to 8 hex digits, and `\c` alone | `<font color="#rrggbb">` and `</font>` |
-| `\k`, `\K`, `\kf`, `\ko` in centiseconds | a word timestamp at the karaoke time. The first syllable starts at the event start |
+| `\k`, `\K`, `\kf`, `\ko` in centiseconds | a word in `Cue.Words`. The first syllable starts at the event start, and the word ends at its start plus the syllable length. A syllable without text is no word. |
 | `\r` and `\rName` | all tags close, then the flags of the event style or of style `Name` open |
 | `\p1` to `\p0` | a drawing: its text is dropped |
 | other tags such as `\pos`, `\fad`, `\t`, `\fs`, and `{note}` blocks | dropped |
@@ -340,7 +340,7 @@ This file reads as one cue from 1.5 s to 4 s with the alignment `TopCenter` and 
 - **Events**: in time order, so an unsorted input changes order. Each comment writes its stored `Comment:` event, or a new one at the start of the next cue.
 - **Times**: `h:mm:ss.cc`, centiseconds rounded half away from zero. A negative time writes as 0.
 - **Unchanged cue**: a cue whose lines and alignment equal the stored `ass.lines` and `ass.alignment` writes its stored `Text` and `Name` fields. `StripTags` converts every cue.
-- **Changed cue**: the writer converts the core markup to override tags: `\an` (or the SSA `\a` code) for an alignment other than that of the event style, `\b1` and `\b0` and the other toggles, `\c&HBBGGRR&` for a `<font>` color or a WebVTT color class, and karaoke tags for word timestamps. A pair such as `<i>` around all text whose flag the style sets is left out. The speaker of the first `<v>` tag goes to the `Name` field.
+- **Changed cue**: the writer converts the core markup to override tags: `\an` (or the SSA `\a` code) for an alignment other than that of the event style, `\b1` and `\b0` and the other toggles, `\c&HBBGGRR&` for a `<font>` color or a WebVTT color class, and karaoke tags for words, with a gap syllable where a word ends before the next one starts. A pair such as `<i>` around all text whose flag the style sets is left out. `Cue.Speaker` goes to the `Name` field. A cue without `Speaker` takes the name of its first `<v>` tag.
 - **BOM**: the output starts with a UTF-8 BOM by default.
 - **Lost on write**: in changed cues every override tag outside `\b \i \u \s \c \an \a \k`, `<v>` beyond the first speaker, `<c>` classes other than the 8 colors, `<lang>`, ruby structure. The event order. The place of `[Script Info]` comments. Empty lines and leading white space in other sections. Text with `{`, `}` or `\` is written raw, because ASS has no escape for them, so it reads back as override tags. Only `\N`, `\n` and `\h` get U+2060 after the backslash, as [Cue text that reads as structure](reading-writing.md#cue-text-that-reads-as-structure) says.
 
@@ -386,7 +386,7 @@ This file reads as one cue from 1 s to 3 s with the alignment `TopCenter` and th
 | the attributes of the `<div>` elements around the `<p>` | cue data `ttml.div`, without the times, `xml:id` and `region`. An inner value replaces an outer one |
 | `<br/>`, and LF with `xml:space="preserve"` | a line break. Other runs of white space become 1 space |
 | `tts:fontWeight`, `tts:fontStyle`, `tts:textDecoration`, `tts:color` of the region, `<body>`, `<div>`, `<p>` and `<span>`, and of the styles they reference | `<b>`, `<i>`, `<u>`, `<s>` and `<font color>`. White and the alpha channel give no markup |
-| `ttm:agent` | `<v Name>`, with the name of the agent element in `<head>`, else the agent ID |
+| `ttm:agent` | one agent over all the text gives `Speaker`. Other agents give `<v Name>` spans that close after their text. The name is the one of the agent element in `<head>`, else the agent ID |
 | a `<span>` with `begin`, `end` or `dur` | a word timestamp before its text, when it lies inside the cue |
 | `itts:forcedDisplay="true"` on the `<p>`, its container or its region, or on one `<span>` | `Cue.Forced` |
 | other elements, such as `<set>` and `<metadata>` | skipped with their text |
@@ -429,7 +429,7 @@ The writer keeps what the reader stored, so a DFXP file stays DFXP after a retim
 | the attributes of `<tt>`, `<body>` and `<div>` | `ttml.attributes`, `ttml.body` and the cue data `ttml.div`. Consecutive cues with the same `div` attributes share one `<div>` |
 | `<head>` | `ttml.head`, else `<head/>`, with the title metadata as a new first `ttm:title` |
 | each `<p>` | a cue: `xml:id` from `Cue.ID`, media clock times such as `00:00:01.500`, then the stored attributes of the cue data `ttml.attributes` |
-| `<span>` with inline `tts:` styles | the core markup: `<b>`, `<i>`, `<u>`, `<s>`, `<font color>`, the 8 WebVTT color classes. A `<v Name>` before all text gives `ttm:agent` on the `<p>`, other `<v>` tags give a `<span ttm:agent>` |
+| `<span>` with inline `tts:` styles | the core markup: `<b>`, `<i>`, `<u>`, `<s>`, `<font color>`, the 8 WebVTT color classes. `Speaker` gives `ttm:agent` on the `<p>`, and so does a lone `<v Name>` before all text of a cue without `Speaker`. Other `<v>` tags give a `<span ttm:agent>` |
 | `ttm:agent` elements in the head | each new speaker name, with the ID `agent1`, `agent2` and so on. An agent of the head with the same name keeps its ID |
 
 - **Attributes that are lost**: an attribute whose prefix the output does not declare, such as a prefix that the input declared on the `<p>` itself. On `<tt>`, `ttp:timeBase`, `ttp:clockMode`, `ttp:dropMode` and `ttp:markerMode` whatever their value, because the output holds media times. `ttp:frameRate` and `ttp:tickRate` stay.
