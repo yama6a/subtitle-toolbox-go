@@ -137,6 +137,7 @@ var registry = []formatFuncs{
 	{format: ASS, read: readASS, write: writeASS},
 	{format: Cavena890, read: readCavena890, write: writeCavena890},
 	{format: CSV, read: readCSV, write: writeCSV},
+	{format: HTMLTranscript, read: readHTMLTranscript, write: writeHTMLTranscript},
 	{format: ITT, read: readITT, write: writeITT},
 	{format: JSON, read: readJSON, write: writeJSON},
 	{format: LRC, read: readLRC, write: writeLRC},
@@ -206,6 +207,7 @@ var (
 		{format: MCC, match: mcc.Detect},
 		{format: MPL2, match: mpl2.Detect},
 		{format: TMPlayer, match: tmplayer.Detect},
+		{format: HTMLTranscript, match: transcript.DetectHTML},
 	}
 )
 
@@ -309,6 +311,14 @@ func readWhisper(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 
 func writeWhisper(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	return WriteReport{}, transcript.WriteWhisper(w, s, common, opts.Transcript)
+}
+
+func readHTMLTranscript(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return transcript.ReadHTML(r, common, opts.Transcript)
+}
+
+func writeHTMLTranscript(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	return WriteReport{}, transcript.WriteHTML(w, s, common, opts.Transcript)
 }
 
 func readPodcastTranscript(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {

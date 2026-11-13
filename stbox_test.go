@@ -204,6 +204,7 @@ func ExampleFormats() {
 	// ass [ass ssa]
 	// cavena890 [890]
 	// csv [csv]
+	// html [html htm]
 	// itt [itt]
 	// json [json]
 	// lrc [lrc]

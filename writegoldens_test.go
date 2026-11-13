@@ -52,6 +52,8 @@ func roundTripFiles() []roundTripFile {
 		{"whisper", "whisper_cpp_ojf.json"},
 		{"whisper", "whisper_cpp_ojf_split_utf8.json"},
 		{"whisper", "whisperx_diarize.json"},
+		{"html", "hhmmss_empty_paragraphs.html"},
+		{"html", "spec_example_shape.html"},
 		{"podcast", "podcast_transcript_convert_from_html.json"},
 		{"podcast", "podcast_transcript_convert_from_srt.json"},
 		{"podcast", "spec_word_segments.json"},
@@ -166,6 +168,8 @@ func conversions() []conversion {
 		{"whisper", "openai_whisper_word_timestamps.json", stbox.WebVTT, ""},
 		{"whisper", "whisperx_diarize.json", stbox.SubRip, ""},
 		{"whisper", "whisperx_diarize.json", stbox.WebVTT, ""},
+		{"html", "spec_example_shape.html", stbox.SubRip, ""},
+		{"html", "spec_example_shape.html", stbox.WebVTT, ""},
 		{"podcast", "spec_word_segments.json", stbox.SubRip, ""},
 		{"podcast", "spec_word_segments.json", stbox.WebVTT, ""},
 	}
