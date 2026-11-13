@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -126,7 +127,23 @@ func TestTranslateWritesWhatTheLibraryWrites(t *testing.T) {
 			assert.Equal(t, tt.path, requests[0].Path)
 			assert.Equal(t, tt.key, requests[0].Key)
 			for _, part := range tt.body {
-				assert.Contains(t, strings.ReplaceAll(string(requests[0].Body), `": "`, `":"`), part)
+				assert.Contains(t, string(requests[0].Body), part)
+			}
+
+			if tt.path == "/v1/chat/completions" {
+				var chat struct {
+					Messages []struct {
+						Role    string `json:"role"`
+						Content string `json:"content"`
+					} `json:"messages"`
+				}
+				require.NoError(t, json.Unmarshal(requests[0].Body, &chat))
+				require.Len(t, chat.Messages, 2)
+				assert.Equal(t, "system", chat.Messages[0].Role)
+				assert.Equal(t, "user", chat.Messages[1].Role)
+				var texts []string
+				require.NoError(t, json.Unmarshal([]byte(chat.Messages[1].Content), &texts))
+				assert.Len(t, texts, 4)
 			}
 
 			want := translatedByLibrary(t, tt.engine(srv.URL), tt.source, tt.target, tt.format)
@@ -154,12 +171,14 @@ func TestTranslateServiceFailures(t *testing.T) {
 		stderr   string
 		contains []string
 		noKey    string
+		wantKey  string
 	}{
 		{
-			name:   "an openai HTTP error",
-			env:    map[string]string{"OPENAI_MODEL": "gpt-9", "OPENAI_API_KEY": "bad-request"},
-			words:  []string{"-", "--engine", "openai", "--target-language", "de"},
-			openAI: true,
+			name:    "an openai HTTP error",
+			env:     map[string]string{"OPENAI_MODEL": "gpt-9", "OPENAI_API_KEY": "bad-request"},
+			words:   []string{"-", "--engine", "openai", "--target-language", "de"},
+			openAI:  true,
+			wantKey: "bad-request",
 			contains: []string{
 				"stdin: The OpenAI-compatible service answered with HTTP 400.", "gpt-9",
 			},
@@ -168,7 +187,7 @@ func TestTranslateServiceFailures(t *testing.T) {
 			name:   "deepl rejects the key",
 			words:  []string{"-", "--engine", "deepl", "--api-key", "forbidden", "--target-language", "de"},
 			stderr: "stdin: DeepL rejected the API key (HTTP 403). Check the key and its plan.\n",
-			noKey:  "forbidden",
+			noKey:  "forbidden", wantKey: "forbidden",
 		},
 	}
 	for _, tt := range tests {
@@ -193,6 +212,7 @@ func TestTranslateServiceFailures(t *testing.T) {
 				assert.NotContains(t, got.Stderr, tt.noKey)
 			}
 			require.Len(t, srv.Requests(), 1)
+			assert.Equal(t, tt.wantKey, srv.Requests()[0].Key)
 		})
 	}
 }
@@ -289,6 +309,9 @@ func TestTranslateUsageErrors(t *testing.T) {
 			map[string]string{"OPENAI_MODEL": "m", "OPENAI_BASE_URL": "localhost:11434/v1"},
 			engine("openai"),
 			`The environment variable OPENAI_BASE_URL must start with http:// or https://, got "localhost:11434/v1".`,
+		},
+		{
+			"2 inputs without a key come first", nil, []string{"a.srt", "b.srt", "--engine", "deepl", "--target-language", "fr"}, noKey,
 		},
 		{
 			"2 inputs without --output-dir", deepl,
