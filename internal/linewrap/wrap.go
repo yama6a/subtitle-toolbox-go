@@ -197,8 +197,9 @@ func joinLine(text, line string) string {
 	return escapeJoinedTag(text, sep, line) + sep + line
 }
 
-// escapeJoinedTag writes the last < of text as &lt; when the join with line would make it the start of a tag. Then the
-// visible text of the join is the visible text of both parts.
+// escapeJoinedTag writes each < of text after its last > as &lt; when the join with line would make the last of them
+// the start of a tag. Escaping only the last one would let the one before it start a tag. Then the visible text of
+// the join is the visible text of both parts.
 func escapeJoinedTag(text, sep, line string) string {
 	lt, gt := strings.LastIndexByte(text, '<'), strings.IndexByte(line, '>')
 	if lt < 0 || gt < 0 || strings.LastIndexByte(text, '>') > lt {
@@ -207,7 +208,8 @@ func escapeJoinedTag(text, sep, line string) string {
 	if !leadingTagRegexp.MatchString(text[lt:] + sep + line[:gt+1]) {
 		return text
 	}
-	return text[:lt] + "&lt;" + text[lt+1:]
+	dangling := strings.LastIndexByte(text, '>') + 1
+	return text[:dangling] + strings.ReplaceAll(text[dangling:], "<", "&lt;")
 }
 
 // ending is the best way to end a line after a number of parts: the sum of the overflow beyond cpl, the count

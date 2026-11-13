@@ -310,17 +310,17 @@ func (b *wordBuilder) last() *timedPiece {
 	return &b.group[len(b.group)-1]
 }
 
-// lines returns the text of the group. The pieces of one source cue are consecutive.
+// lines returns the lines of the group. The pieces of one source cue are consecutive.
 func (b *wordBuilder) lines(group []timedPiece) []string {
-	var texts []string
+	var lines []string
 	first := 0
 	for i, p := range group {
 		if i+1 == len(group) || group[i+1].cue != p.cue {
-			texts = append(texts, b.pieces[p.cue].text(group[first].index, p.index+1))
+			lines = append(lines, b.pieces[p.cue].lines(group[first].index, p.index+1)...)
 			first = i + 1
 		}
 	}
-	return strings.Split(strings.Join(texts, "\n"), "\n")
+	return lines
 }
 
 func (b *wordBuilder) fits(group []timedPiece) bool {

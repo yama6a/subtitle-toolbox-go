@@ -49,6 +49,7 @@ type piece struct {
 	separator  string
 	startWord  int
 	words      []int
+	breaks     []int // offsets in text of the line feeds that start a new line
 	plain      string
 	openBefore []markupcore.OpenTag
 	openAfter  []markupcore.OpenTag
@@ -153,27 +154,41 @@ func (ps *cuePieces) rank(i int) int {
 	return -1
 }
 
-// text joins pieces first to after-1. It opens the core tags that are open before them and closes the tags that
-// are open after them, unless after is the end.
-func (ps *cuePieces) text(first, after int) string {
+// lines returns the lines of pieces first to after-1. It opens the core tags that are open before them and closes
+// the tags that are open after them, unless after is the end. A line feed inside a tag is no line break.
+func (ps *cuePieces) lines(first, after int) []string {
+	var lines []string
 	var b strings.Builder
 	for _, t := range ps.pieces[first].openBefore {
 		b.WriteString(t.Tag)
 	}
 	for i := first; i < after; i++ {
+		p := ps.pieces[i]
 		if i > first {
-			b.WriteString(ps.pieces[i].separator)
+			if p.separator == "\n" {
+				lines = append(lines, b.String())
+				b.Reset()
+			} else {
+				b.WriteString(p.separator)
+			}
 		}
-		b.WriteString(ps.pieces[i].text)
+		at := 0
+		for _, off := range p.breaks {
+			b.WriteString(p.text[at:off])
+			lines = append(lines, b.String())
+			b.Reset()
+			at = off + 1
+		}
+		b.WriteString(p.text[at:])
 	}
 	if after < len(ps.pieces) {
 		b.WriteString(markupcore.CloseCoreTags(ps.pieces[after-1].openAfter))
 	}
-	return b.String()
+	return append(lines, b.String())
 }
 
-func (ps *cuePieces) lines(first, after int) []string {
-	return strings.Split(ps.text(first, after), "\n")
+func (ps *cuePieces) text(first, after int) string {
+	return strings.Join(ps.lines(first, after), "\n")
 }
 
 // wordIndexes returns the indexes of the words whose markers lie in pieces first to after-1.
@@ -331,6 +346,9 @@ func addWordPieces(raw []piece, prefix []token, word []token, separator string) 
 		switch {
 		case length == 0 && len(raw) > 0:
 			last := &raw[len(raw)-1]
+			if sep == "\n" {
+				last.breaks = append(last.breaks, len(last.text))
+			}
 			last.text += sep + text
 			last.words = append(last.words, markerWords(tokens)...)
 		case length == 0:

@@ -28,9 +28,6 @@ func checkResegment(t *testing.T, text string, gapStep, size uint8) {
 	}
 	c := model.Cue{End: 30 * time.Second}
 	c.SetText(text)
-	if slices.ContainsFunc(c.Lines, func(l string) bool { return strings.Contains(l, "\n") }) {
-		t.Skip("CleanLine turned a CR into an LF inside a line")
-	}
 	fields := strings.Fields(c.PlainText())
 	words := make([]model.Word, 0, len(fields))
 	at := time.Duration(0)

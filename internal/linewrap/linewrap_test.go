@@ -533,6 +533,7 @@ func TestJoinMakesNoTagFromText(t *testing.T) {
 	}{
 		{"a bracket pair across 2 lines", []string{"aa <b", "cc> dd."}, 20},
 		{"a bracket pair with a space after the open bracket", []string{"5 <", "y> 2"}, 20},
+		{"2 open brackets before the close bracket", []string{"a <b c <d", "e> f"}, 20},
 		{"a real tag stays a tag", []string{"aa <b>cc", "dd</b> ee"}, 20},
 	}
 	for _, tt := range tests {
