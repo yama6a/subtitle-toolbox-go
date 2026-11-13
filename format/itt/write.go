@@ -5,11 +5,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/ttmlwrite"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/ttmlwrite"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 //nolint:gochecknoglobals // the fixed Apple head
@@ -128,8 +128,9 @@ func copyOf(s *model.Subtitle) *model.Subtitle {
 		if c.Position.Alignment.Row() == 2 {
 			region = "top"
 		}
-		lines := make([]string, len(c.Lines))
-		for i, line := range c.Lines {
+		tagged := c.TaggedLines()
+		lines := make([]string, len(tagged))
+		for i, line := range tagged {
 			lines[i] = supportedMarkup(line)
 		}
 		cue := model.Cue{Start: c.Start, End: c.End, Lines: lines, ID: c.ID, Forced: c.Forced}

@@ -3,8 +3,8 @@ package ttml
 import (
 	"slices"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/ttmlwrite"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/ttmlwrite"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/xmlraw"
 )
 
 // isMetadataElement reports whether n is ttm:local in a metadata namespace, or has the literal name ttm:local with

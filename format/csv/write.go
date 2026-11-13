@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const defaultSecondTextHeader = "text2"
@@ -56,7 +56,7 @@ func write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	speakers := make([]string, len(cues))
 	texts := make([]string, len(cues))
 	for i, c := range cues {
-		speakers[i], texts[i] = splitSpeaker(c.Lines)
+		speakers[i], texts[i] = splitSpeaker(c.TaggedLines())
 	}
 	columns, header, quoted := layoutOf(file, hasFile, cues, speakers)
 	var seconds []string

@@ -5,8 +5,8 @@ A Go library and command line tool that reads, edits and writes subtitle files.
 ## Install
 
 ```sh
-go get github.com/yama6a/subtitle-toolbox-go/v3
-go install github.com/yama6a/subtitle-toolbox-go/v3/cmd/stbox@latest
+go get github.com/yama6a/subtitle-toolbox-go/v4
+go install github.com/yama6a/subtitle-toolbox-go/v4/cmd/stbox@latest
 ```
 
 [docs/cli.md](docs/cli.md#install) shows how to install the command from a release archive or from the container image.

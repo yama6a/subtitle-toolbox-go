@@ -3,14 +3,15 @@ package ttml_test
 import (
 	"bytes"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // TestDuplicateCueIDsGrowth writes cues that all have the ID c1, which come out as c1, c1_2, c1_3 and so on.
@@ -37,4 +38,17 @@ func TestDuplicateCueIDsGrowth(t *testing.T) {
 	small, large := best(2000), best(20000)
 	ratio := float64(large) / float64(max(small, time.Nanosecond))
 	assert.LessOrEqual(t, ratio, 30.0, "n=2000 took %v, 10n took %v", small, large)
+}
+
+func BenchmarkWriteSpeakers(b *testing.B) {
+	s := &model.Subtitle{}
+	for i := range 16000 {
+		at := time.Duration(i) * time.Second
+		s.AddCue(model.Cue{Start: at, End: at + time.Second, Lines: []string{"x"}, Speaker: "Speaker " + strconv.Itoa(i)})
+	}
+	b.ResetTimer()
+	for range b.N {
+		_, err := ttml.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, ttml.WriteOptions{})
+		require.NoError(b, err)
+	}
 }

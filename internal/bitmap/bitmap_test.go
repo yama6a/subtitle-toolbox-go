@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/bitmap"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func TestEncodeThenDecodeGivesTheExactPixels(t *testing.T) {

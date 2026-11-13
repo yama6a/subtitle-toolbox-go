@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
 
 // maxDecimalDigits is the most digits that FrameRateFromFloat accepts, so that the numerator and the denominator fit in an int64.

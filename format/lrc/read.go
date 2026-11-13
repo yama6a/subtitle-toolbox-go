@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/blocks"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/blocks"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const wordTimePattern = `<` + timestampPattern + `>`
@@ -78,6 +78,9 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 	}
 	if err := rd.assignEnds(); err != nil {
 		return nil, nil, err
+	}
+	for i := range rd.cues {
+		rd.cues[i].ExtractWordTags()
 	}
 	parsing.AddParsed(s, rd.cues, rd.comments)
 	if err := st.NoCues(s.Len(), func() (int, bool) { return textLineWithoutCues(text) }); err != nil {

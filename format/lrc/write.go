@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 var (
@@ -46,7 +46,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 		body = append(body, '[')
 		body = appendStamp(body, c.Start)
 		body = append(body, "] "...)
-		body = appendText(body, c.Lines, spaced)
+		body = appendText(body, c.TaggedLines(), spaced)
 		body = append(body, '\n')
 		data, _ := c.FormatData(formatDataKey)
 		if endLine, _ := data.Bool("endLine"); endLine {
