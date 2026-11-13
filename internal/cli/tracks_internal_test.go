@@ -19,7 +19,7 @@ import (
 var videoFiles = []string{
 	"mkv/text_tracks.mkv", "mkv/seek_head.mkv", "mkv/pgs.mkv", "mkv/mkvmerge.mkv", "mkv/ffmpeg_webvtt.webm",
 	"mp4/text_tracks.mp4", "mp4/one_track.mp4", "mp4/ffmpeg_mov_text.mp4", "mp4/ffmpeg_c608.mov",
-	"mpegts/teletext.ts", "pgs/text_1080p.sup", "vobsub/text-pal.idx", "vobsub/text-pal.sub",
+	"mpegts/teletext.ts", "mpegts/arib_brazilian.m2ts", "pgs/text_1080p.sup", "vobsub/text-pal.idx", "vobsub/text-pal.sub",
 }
 
 func videoDir(t *testing.T) string {
@@ -115,6 +115,7 @@ func TestConvertReadsATrack(t *testing.T) {
 		{"ffmpeg_mov_text.mp4", "mp4/ffmpeg_mov_text.mp4", 2, stbox.SubRip},
 		{"ffmpeg_c608.mov", "mp4/ffmpeg_c608.mov", 1, stbox.SubRip},
 		{"teletext.ts", "mpegts/teletext.ts", 888, stbox.SubRip},
+		{"arib_brazilian.m2ts", "mpegts/arib_brazilian.m2ts", 304, stbox.SubRip},
 		{"pgs.mkv", "mkv/pgs.mkv", 4, stbox.PGS},
 	}
 	dir := videoDir(t)
