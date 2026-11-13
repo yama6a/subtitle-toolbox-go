@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
-	"github.com/yama6a/subtitle-toolbox-go/v3/profanity"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/profanity"
 )
 
 func ExampleApply() {
@@ -31,7 +31,7 @@ func ExampleApply() {
 		return
 	}
 	for _, c := range s.All() {
-		fmt.Println(c.Text())
+		fmt.Println(strings.Join(c.TaggedLines(), "\n"))
 	}
 	fmt.Print(profanity.EDL(report.MuteRanges))
 	fmt.Println(profanity.FFmpegVolumeFilter(report.MuteRanges))

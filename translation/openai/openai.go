@@ -11,10 +11,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
-	"github.com/yama6a/subtitle-toolbox-go/v3/translation"
-	"github.com/yama6a/subtitle-toolbox-go/v3/translation/internal/httppost"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation/internal/httppost"
 )
 
 // DefaultPrompt is the built-in system prompt.

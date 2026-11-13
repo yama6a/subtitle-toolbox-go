@@ -3,8 +3,8 @@ package arib_test
 import (
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/arib"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/arib"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
 // pesPayloads returns the PES data of the PID 304 of a transport stream with packets of size bytes.

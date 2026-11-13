@@ -8,9 +8,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/lrc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/lrc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const (
@@ -64,7 +64,7 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions) str
 func cueRows(s *model.Subtitle) []cueRow {
 	var rows []cueRow
 	for _, c := range s.All() {
-		rows = append(rows, cueRow{c.Start, c.End, c.Text()})
+		rows = append(rows, cueRow{c.Start, c.End, taggedText(c)})
 	}
 	return rows
 }

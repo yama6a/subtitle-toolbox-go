@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/translation/deepl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation/deepl"
 )
 
 func ExampleNew() {

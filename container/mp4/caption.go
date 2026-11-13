@@ -8,12 +8,12 @@ import (
 	"github.com/Eyevinn/mp4ff/bits"
 	"github.com/Eyevinn/mp4ff/mp4"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/caption"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/cea608"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/cea708"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cea708"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // c608Cues decodes the CEA-608 pairs of field 1 as an SCC file with one code line per sample.

@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 type realCue struct {
@@ -18,7 +18,7 @@ type realCue struct {
 }
 
 func describe(c model.Cue) realCue {
-	return realCue{c.Start.Seconds(), c.End.Seconds(), c.Text(), c.Position.Alignment}
+	return realCue{c.Start.Seconds(), c.End.Seconds(), taggedText(c), c.Position.Alignment}
 }
 
 // Ports testRealFileTakesTheCueTimesFromTimedSpansInStrictAndLenientMode of tests/Parsers/TtmlRealFileTest.php of
@@ -58,8 +58,8 @@ func TestRealFileForcedCues(t *testing.T) {
 			s, _ := readFile(t, "forced/"+tt.file, false)
 			first, _ := s.Cue(0)
 			last, _ := s.Cue(s.Len() - 1)
-			assert.Equal(t, tt.first, first.Start.String()+" "+first.End.String()+" "+first.Text())
-			assert.Equal(t, tt.last, last.Start.String()+" "+last.End.String()+" "+last.Text())
+			assert.Equal(t, tt.first, first.Start.String()+" "+first.End.String()+" "+taggedText(first))
+			assert.Equal(t, tt.last, last.Start.String()+" "+last.End.String()+" "+taggedText(last))
 			assert.Equal(t, tt.flags, forcedFlags(s))
 		})
 	}

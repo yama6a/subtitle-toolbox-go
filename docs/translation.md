@@ -148,6 +148,12 @@ Each piece reopens the tags that are open at its start. The output is at most `M
 
 Every `*ServiceError` matches `translation.ErrService` with `errors.Is`. A `ctx` error is no `*ServiceError`, so a caller can tell an interrupt from a service failure. `Report` is empty on every error, and `s` does not change.
 
+## Words and speakers
+
+The runner sets `Words` to nil on each cue that it translated. A source-language word time has no meaning for a target-language word, so karaoke output and resegmenting by words do not work on a translation. A cue that the runner does not send keeps its words. `Speaker` is a name. The runner does not send it, and it stays. The tags of a cue with 2 voices are in the lines, so they become placeholders.
+
+Example: a cue with `Speaker` `Fred`, the line `Hi there.` and 2 words sends `Hi there.`. The result keeps `Fred`, has the line `HI THERE.` and no words.
+
 ## HTTP
 
 The engines send JSON requests through `translation.HTTPClient`, an interface with the method `Do`. `*http.Client` implements it. A test points an engine at an `httptest.Server`.
@@ -199,6 +205,30 @@ func (e webEngine) Translate(ctx context.Context, texts []string, source, target
 ```
 
 The service must return the placeholders of each text, such as `<x1>` and `<x2/>`, and the entities `&lt;`, `&gt;` and `&amp;`. A service with an XML tag handling does this. A service that rewrites a placeholder makes the runner drop the tags of that text and add a warning.
+
+## OpenAI-compatible services
+
+`openai.New(openai.Options{BaseURL: "http://localhost:11434/v1", Model: "llama3"})` gives an engine for a service with the OpenAI chat completions API. Examples are OpenAI, Ollama, LM Studio, the llama.cpp server and vLLM. The engine posts to `BASE/chat/completions` and needs no key for a local server.
+
+| Field | Meaning |
+|:--- |:--- |
+| `BaseURL` | the URL in front of `/chat/completions`. It must start with `http://` or `https://`. A `/` at the end is dropped |
+| `Model` | the model name that the service knows. Required |
+| `APIKey` | sent as `Authorization: Bearer KEY`. Empty sends no header. A message of the engine shows the key as `***`, and so do `%v` and `%#v` of the options |
+| `Prompt` | the system prompt. Empty means `openai.DefaultPrompt` |
+| `HTTPClient` | nil means `translation.DefaultHTTPClient()` |
+
+The built-in prompt is:
+
+```text
+You translate subtitle text from {source} to {target}. The user sends a JSON array of strings. Translate each string on its own. Keep the tags such as <x1>, </x1> and <x2/> around the words that they mark, and keep the entities &lt;, &gt; and &amp;. Keep the line breaks. Answer only with a JSON array of strings that has as many strings as the input, in the same order, and no other text.
+```
+
+- **Prompt**: `{source}` and `{target}` in it become the language codes in one pass. An empty source becomes `the language of the text`. Example: `Translate {source} into {target} for children.` with source empty and target `de-CH` gives `Translate the language of the text into de-CH for children.`
+- **Request**: the user message holds all texts of one call as a JSON array. No text sends no request.
+- **Answer**: the engine reads the first of `content`, `reasoning` and `reasoning_content` of `choices[0].message` that has text. A thinking model on Ollama can leave `content` empty. It removes each `<think>...</think>` block, and reads the text from the first `[` to the last `]`. That text must be a JSON array of as many strings as the call has texts. Text around the array and a code block do not matter. The HTTP size bound limits the answer.
+- **Fallback**: an answer without such an array makes the engine send each text in a request of its own. Each of these answers must be an array of 1 string. Else the engine returns a `*ServiceError` with `The model "M" did not answer with a JSON array that holds 1 string for 1 text.`
+- **Status**: a status other than 200 returns a `*ServiceError` with the status, and no fallback follows. 401 gives `The OpenAI-compatible service rejected the API key (HTTP 401).`, 429 after the retries gives `The OpenAI-compatible service got too many requests (HTTP 429). Wait and try again.`, and any other status gives `The OpenAI-compatible service answered with HTTP N.` The message adds the `error.message` of the answer, or its `error` when that is a string.
 
 ## DeepL engine
 
@@ -300,30 +330,6 @@ fmt.Println(s.Cues()[0].Lines)
 | 429, after 4 attempts | `Google Cloud Translation got too many requests (HTTP 429). Wait and try again.` |
 | other | `Google Cloud Translation answered with HTTP N.` and the `error.message` of the answer |
 
-## OpenAI-compatible services
-
-`openai.New(openai.Options{BaseURL: "http://localhost:11434/v1", Model: "llama3"})` gives an engine for a service with the OpenAI chat completions API. Examples are OpenAI, Ollama, LM Studio, the llama.cpp server and vLLM. The engine posts to `BASE/chat/completions` and needs no key for a local server.
-
-| Field | Meaning |
-|:--- |:--- |
-| `BaseURL` | the URL in front of `/chat/completions`. It must start with `http://` or `https://`. A `/` at the end is dropped |
-| `Model` | the model name that the service knows. Required |
-| `APIKey` | sent as `Authorization: Bearer KEY`. Empty sends no header. A message of the engine shows the key as `***`, and so do `%v` and `%#v` of the options |
-| `Prompt` | the system prompt. Empty means `openai.DefaultPrompt` |
-| `HTTPClient` | nil means `translation.DefaultHTTPClient()` |
-
-The built-in prompt is:
-
-```text
-You translate subtitle text from {source} to {target}. The user sends a JSON array of strings. Translate each string on its own. Keep the tags such as <x1>, </x1> and <x2/> around the words that they mark, and keep the entities &lt;, &gt; and &amp;. Keep the line breaks. Answer only with a JSON array of strings that has as many strings as the input, in the same order, and no other text.
-```
-
-- **Prompt**: `{source}` and `{target}` in it become the language codes in one pass. An empty source becomes `the language of the text`. Example: `Translate {source} into {target} for children.` with source empty and target `de-CH` gives `Translate the language of the text into de-CH for children.`
-- **Request**: the user message holds all texts of one call as a JSON array. No text sends no request.
-- **Answer**: the engine reads the first of `content`, `reasoning` and `reasoning_content` of `choices[0].message` that has text. A thinking model on Ollama can leave `content` empty. It removes each `<think>...</think>` block, and reads the text from the first `[` to the last `]`. That text must be a JSON array of as many strings as the call has texts. Text around the array and a code block do not matter. The HTTP size bound limits the answer.
-- **Fallback**: an answer without such an array makes the engine send each text in a request of its own. Each of these answers must be an array of 1 string. Else the engine returns a `*ServiceError` with `The model "M" did not answer with a JSON array that holds 1 string for 1 text.`
-- **Status**: a status other than 200 returns a `*ServiceError` with the status, and no fallback follows. 401 gives `The OpenAI-compatible service rejected the API key (HTTP 401).`, 429 after the retries gives `The OpenAI-compatible service got too many requests (HTTP 429). Wait and try again.`, and any other status gives `The OpenAI-compatible service answered with HTTP N.` The message adds the `error.message` of the answer, or its `error` when that is a string.
-
 ## Differences from PHP
 
 - An engine that returns a wrong number of strings gives a `*ServiceError`. PHP throws `InvalidArgumentException`.
@@ -331,6 +337,7 @@ You translate subtitle text from {source} to {target}. The user sends a JSON arr
 - An empty target language fails before any request. PHP sends it to the service.
 - An answer larger than 1 MiB plus 16 bytes for each request byte fails. PHP reads any size.
 - An answer such as `<x<x1/>1>Hallo` gives plain text and a warning. PHP throws a `TypeError`.
+- The runner sets `Words` to nil on a translated cue. PHP puts the source word timestamps back in the text.
 - Go needs no ext-curl, because it uses `net/http`.
 - A character of a script without spaces that is new after Unicode 15.0, such as U+2EBF0, is a cut candidate in Go only.
 

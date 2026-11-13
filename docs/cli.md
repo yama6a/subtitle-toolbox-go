@@ -7,7 +7,7 @@
 | Form | Needs | Example |
 |:--- |:--- |:--- |
 | archive on the GitHub release | nothing | `curl -fsSLO https://github.com/yama6a/subtitle-toolbox-go/releases/download/v1.0.0/stbox_1.0.0_linux_amd64.tar.gz` |
-| `go install` | Go of the `go` line in `go.mod` | `go install github.com/yama6a/subtitle-toolbox-go/v3/cmd/stbox@latest` |
+| `go install` | Go of the `go` line in `go.mod` | `go install github.com/yama6a/subtitle-toolbox-go/v4/cmd/stbox@latest` |
 | image `ghcr.io/yama6a/subtitle-toolbox-go` | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:1.0.0 convert in.srt --to vtt -o out.vtt` |
 | image `ghcr.io/yama6a/subtitle-toolbox-go` with Tesseract | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:1.0.0-tesseract convert film.sup --ocr --ocr-engine tesseract --ocr-language rus --to srt -o film.srt` |
 
@@ -593,34 +593,35 @@ stbox hls film.srt --output-dir subs --segment 00:10 --mpegts 126000 --local 10 
 `stbox formats` lists the formats that can be read or written, in registry order. The names are the values of `--from` and `--to`. It takes no argument and no option except `-h`.
 
 ```
-Name        Extensions        Read  Write
-ass         .ass .ssa         yes   yes
-cavena890   .890              yes   yes
-csv         .csv              yes   yes
-itt         .itt              yes   yes
-json        .json             yes   yes
-lrc         .lrc              yes   yes
-mcc         .mcc              yes   yes
-microdvd    .sub              yes   yes
-mpsub       .mpsub            yes   yes
-pac         .pac .fpc         yes   yes
-pgs         .sup              yes   no
-sami        .smi .sami        yes   yes
-sbv         .sbv              yes   yes
-scc         .scc              yes   yes
-srt         .srt              yes   yes
-stl         .stl              yes   yes
-spruce-stl  .stl              yes   yes
-subviewer   .sub              yes   yes
-ttml        .ttml .dfxp .xml  yes   yes
-dcp         .xml              yes   yes
-tsv         .tsv              yes   yes
-txt         .txt              no    yes
-mpl2        .txt              yes   yes
-tmplayer    .txt              yes   yes
-qttext      .txt              yes   yes
-vobsub      .idx              yes   no
-vtt         .vtt              yes   yes
+Name              Extensions        Read  Write
+ass               .ass .ssa         yes   yes
+cavena890         .890              yes   yes
+csv               .csv              yes   yes
+itt               .itt              yes   yes
+json              .json             yes   yes
+lrc               .lrc              yes   yes
+mcc               .mcc              yes   yes
+microdvd          .sub              yes   yes
+mpsub             .mpsub            yes   yes
+pac               .pac .fpc         yes   yes
+pgs               .sup              yes   yes
+sami              .smi .sami        yes   yes
+sbv               .sbv              yes   yes
+scc               .scc              yes   yes
+srt               .srt              yes   yes
+stl               .stl              yes   yes
+spruce-stl        .stl              yes   yes
+subviewer         .sub              yes   yes
+ttml              .ttml .dfxp .xml  yes   yes
+dcp               .xml              yes   yes
+tsv               .tsv              yes   yes
+txt               .txt              no    yes
+mpl2              .txt              yes   yes
+tmplayer          .txt              yes   yes
+qttext            .txt              yes   yes
+vobsub            .idx              yes   no
+vtt               .vtt              yes   yes
+youtube-chapters  .txt              yes   yes
 ```
 
 - **Shared extensions**: the first format in the list owns an extension, so `.sub` is MicroDVD and `.txt` is plain text. `--from` reads a file as another format. A `.sub` file with MPSub or SubViewer content is found by its content. Plain text has no reader, so `--from txt` fails with `The format txt can be written but not read.` Pass `--from mpl2`, `--from tmplayer` or `--from qttext`. `--to txt` writes plain text with the default options.

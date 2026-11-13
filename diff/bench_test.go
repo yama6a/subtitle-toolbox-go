@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/diff"
+	"github.com/yama6a/subtitle-toolbox-go/v4/diff"
 )
 
 func BenchmarkCompare(b *testing.B) {

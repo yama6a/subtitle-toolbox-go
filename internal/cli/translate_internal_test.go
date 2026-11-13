@@ -14,13 +14,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/translationtest"
-	"github.com/yama6a/subtitle-toolbox-go/v3/translation"
-	"github.com/yama6a/subtitle-toolbox-go/v3/translation/deepl"
-	"github.com/yama6a/subtitle-toolbox-go/v3/translation/google"
-	"github.com/yama6a/subtitle-toolbox-go/v3/translation/openai"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/translationtest"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation/deepl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation/google"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation/openai"
 )
 
 // translateDir returns a directory with own_station.srt, and latin1.srt as latin1.srt and second.srt.

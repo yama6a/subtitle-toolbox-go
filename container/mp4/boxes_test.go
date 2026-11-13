@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/container/mp4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/container/mp4"
 )
 
 // moovHeader rewrites the header of the moov box, which must be the last box of the file.

@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
 
 // TestCappedLastCueEndReadsBack reads a file whose last cue end the reader caps at 99999:59:59.999, writes it in
@@ -72,7 +72,8 @@ func TestCappedLastCueEndReadsBack(t *testing.T) {
 				// SubRip, LRC and EBU STL clamp at the largest time they hold: 999:59:59.999, 999:59.99 and 255 hours.
 				// Cavena 890 caps a frame number at FFFFFFh, which is 186 hours at 25 fps.
 				// PAC clamps at 654 hours, because its time code holds hours * 100 + minutes in 2 bytes.
-				if f != stbox.SubRip && f != stbox.LRC && f != stbox.EBUSTL && f != stbox.PAC && f != stbox.Cavena890 {
+				// YouTube chapters have no end time, so the last chapter ends at its own start.
+				if f != stbox.SubRip && f != stbox.LRC && f != stbox.EBUSTL && f != stbox.PAC && f != stbox.Cavena890 && f != stbox.YouTubeChapters {
 					assert.GreaterOrEqual(t, c.End, timecode.MaxValidTime-time.Second, f)
 				}
 			}

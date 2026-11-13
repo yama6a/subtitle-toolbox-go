@@ -10,17 +10,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/diff"
-	"github.com/yama6a/subtitle-toolbox-go/v3/dual"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/hls"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr"
-	"github.com/yama6a/subtitle-toolbox-go/v3/profanity"
-	"github.com/yama6a/subtitle-toolbox-go/v3/refsync"
-	"github.com/yama6a/subtitle-toolbox-go/v3/timing"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/diff"
+	"github.com/yama6a/subtitle-toolbox-go/v4/dual"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/hls"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v4/profanity"
+	"github.com/yama6a/subtitle-toolbox-go/v4/refsync"
+	"github.com/yama6a/subtitle-toolbox-go/v4/timing"
 )
 
 // summaryCommand is a command with a name and a summary only, for the layout of the global help.
@@ -226,7 +226,7 @@ Options:
                          Windows-1252. It replaces code page detection. A BOM,
                          valid UTF-8 and UTF-16 input win over it.
   --lenient              Skip or repair broken cues and print a warning for
-                         each.
+                         each. Chapter input ignores it.
   --input-fps RATE       Frame rate of a MicroDVD input without a {1}{1}<fps>
                          first line, of Spruce STL timecodes, and of CSV or TSV
                          times in hh:mm:ss:ff.

@@ -123,12 +123,20 @@ for _, c := range s.All() {
 - **Errors**: an empty search, an invalid pattern and an invalid replacement return an error that matches `ErrInvalidArgument`.
 - **Invalid UTF-8**: a regex keeps such a run unchanged, because regexp2 reads runes and would write U+FFFD for a bad byte. A plain search that ignores case matches the case of ASCII letters only in such a run.
 
+## Words after a text edit
+
+Each text edit of this page searches the words of a changed cue again with `Cue.SyncWords`. The edits are `MapText`, `MapLines`, `ReplaceText`, `ChangeCase`, the wrap and unwrap, the hearing-impaired removal, the common error fixes and the OCR replace lists.
+
+- **Search**: each word is searched in the plain text of the cue, in order, each search from the end of the match before. Letters compare with simple case folding. A word takes the text it matched, so `damn` becomes `DAMN` after an upper case edit.
+- **Lost words**: a word that the edit changed beyond case is not found and loses its timing. `damn` to `d***` and `New York` to `NYC` drop their words. The remaining words keep their times.
+- **Fixes**: no fix looks inside a word to keep its timing. A fix that changes letters inside a word drops that word, unless it only changes case. Only the profanity filter masks the words too.
+
 ## Strip tags
 
 `StripFormatting` removes the tags of each line. `<b>Run</b>, <font color="#ff0000">now</font>!` becomes `Run, now!`.
 
 - **Keep list**: `StripOptions.KeepTags` names the tags to keep, compared in lower case. With `KeepTags: []string{"i"}`, `<b><i>Run</i></b> &amp; <v Fred>hide` becomes `<i>Run</i> &amp; hide`.
-- **Word timestamps**: `<00:00:01.500>` tags stay unless `RemoveWordTimestamps` is set.
+- **Words and speaker**: `Words` stay. `Speaker` goes unless `KeepTags` holds `v`. To drop the word timing, set `Words` to nil.
 - **ASS override blocks**: `{\an8}` is no tag and stays.
 
 ## Right-to-left text
@@ -397,7 +405,7 @@ if err != nil {
 	return
 }
 for _, c := range s.All() {
-	fmt.Println(c.Text())
+	fmt.Println(strings.Join(c.TaggedLines(), "\n"))
 }
 fmt.Print(profanity.EDL(report.MuteRanges))
 fmt.Println(profanity.FFmpegVolumeFilter(report.MuteRanges))
@@ -420,7 +428,8 @@ fmt.Println(profanity.FFmpegVolumeFilter(report.MuteRanges))
 - **Match**: a whole word in any case, by the simple case folding of Unicode, so U+01C5 matches U+01C4, and U+24B6 matches U+24D0. Letters, marks, digits and `_` continue a word. So `hell` matches `Hell` and `hell's`, but neither `hello` nor `shell`. The longest word wins: `son of a` before `son`.
 - **Stars**: one star per character as a reader sees it, a grapheme cluster: `cafe` + U+0301 gives `****`.
 - **Text runs**: the filter reads the text between tags, with `&lt;`, `&gt;` and `&amp;` decoded. It does not find a word that a tag splits, such as `h<i>ell</i>`, or a word across 2 lines. A run of invalid UTF-8 is skipped.
-- **Time of a match**: a text run starts at the last word timestamp before it in the cue and ends at the first one after it. Without word timestamps, the cue times count. Each run with a match gives one range, with the 2 times in order. So a word timestamp at 13.5 s after the cue end at 13.2 s gives 13.2 to 13.5 s.
+- **Time of a match**: a text run starts at the start of the last word whose tag position is at or before the run, and ends at the start of the next word. Without words, the cue times count. Each run with a match gives one range, with the 2 times in order. So a word start at 13.5 s after the cue end at 13.2 s gives 13.2 to 13.5 s.
+- **Words**: the filter masks the text of each word with the same mask, so `damn` becomes `d***` in the line and in the word.
 - **Joining**: `Padding` widens each range on both sides, down to 0 s. Ranges that touch or overlap after the padding become one. `MuteRanges` is sorted by time.
 - **Removed cues**: `MaskRemove` can leave a cue without visible text. The cue goes, as the [cue removal rule](#cue-removal-rule) says.
 - **Timeout**: the words are user input, so each match may take at most 1 s. A timeout returns an error that matches `ErrInvalidArgument`, and the subtitle stays unchanged.

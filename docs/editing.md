@@ -12,7 +12,7 @@ A SubRip file made for a 25 fps release plays 4.3 % too fast on a 23.976 fps cop
 | `ConvertFrameRate(from, to)` | every time by `Scale(from.Float64() / to.Float64())`, with 2 `FrameRate` values |
 | `SyncByPoints(points)` | every time onto the line through the sync points |
 
-- **Word timestamps**: every `<hh:mm:ss.mmm>` tag in the cue lines moves with the same map as the cue times.
+- **Words**: `Start` and `End` of each word of `Cue.Words` move with the same map as the cue times. The time limit check counts the end of each word too.
 - **Clamp**: a time that becomes negative becomes 0. The cue stays, also when it becomes 0 s long.
 - **Rounding**: each new time is rounded to whole milliseconds, half away from zero. Scale and sync compute in `float64` milliseconds.
 - **Order**: a cue that moves before earlier cues takes its place in start order. Its comments move with it.
@@ -79,7 +79,7 @@ for _, c := range s.All() {
 ```
 
 - **Segments**: the cue at 300 s uses the segment from 10 s to 600 s with the factor 598/590. The cue at 1202 s is past the last point and uses the segment from 600 s to 1200 s with the factor 595/600.
-- **Cue across a point**: start, end and each word timestamp map on their own, so such a cue gets times from 2 segments.
+- **Cue across a point**: start, end and each word map on their own, so such a cue gets times from 2 segments.
 - **Points**: the list must not be empty, and the old and the new times must both increase strictly.
 
 ## Timing fixes
@@ -94,7 +94,7 @@ Speech-to-text tools and old editors write cues that overlap, flash for 0.3 s, o
 | `LimitLongCues(maxDuration)` | ends | ends each cue at most `maxDuration` after its start |
 | `MergeShortCues(opts)` | cues | joins each short cue with the next or the previous cue when the result fits the limits |
 
-- **Word timestamps**: no fix moves them, so the speech keeps its times.
+- **Words**: no fix moves them, so the speech keeps its times. `MergeShortCues` joins the words of both cues in order.
 - **Rounding**: the 4 fixes other than `MergeShortCues` take the options as given and round only the new time to whole milliseconds. 5.1 s minus 2/24 s is 5.016666667 s, which rounds to 5.017 s.
 - **Limits of each fix**: no end moves before its start. `ExtendShortCues` never shortens a cue and never adds an overlap. `LimitLongCues` never lengthens a cue.
 - **Same start**: cues with the same start, such as a sign and a dialogue line, all end before the next later start. They can still overlap each other.
@@ -137,7 +137,8 @@ Speech-to-text output often splits a sentence into cues of less than 1 s. Take `
 - **Join check**: both cues have the same alignment, forced flag and `<v>` speakers. The gap between them is at most `MaxGap`, and the joined cue lasts at most `Limits.MaxDuration`. The lines must wrap into `Limits.MaxCharactersPerLine` and `Limits.MaxLinesPerCue`, with each dialogue turn on lines of its own. A `Limits.MaxCharactersPerSecond` above 0 limits the reading speed too.
 - **Defaults**: the limits default to the Netflix limits for English: 42 characters per line, 2 lines and 7 s. `MinDuration` defaults to 1 s and `MaxGap` to 250 ms.
 - **Why pointers**: 0 is a legal `MinDuration` and `MaxGap` and differs from the default. `new(500 * time.Millisecond)` sets one in one expression.
-- **One speaker**: when both cues start with a `<v>` tag of one speaker, the result gets one tag. `<v.loud Anna>Hi.</v>` and `<v Anna>Hello.</v>` become `<v.loud Anna>Hi. Hello.</v>`.
+- **Speakers**: cues with the same `Speaker` join into a cue with that speaker. `JoinCues` of cues with different speakers writes each speaker into a `<v>` tag of its own lines.
+- **One speaker in tags**: when both cues start with a `<v>` tag of one speaker, the result gets one tag. `<v.loud Anna>Hi.</v>` and `<v Anna>Hello.</v>` become `<v.loud Anna>Hi. Hello.</v>`.
 - **Options**: `KeepSentenceEnds` stops a join after a cue that ends with `.`, `?` or `!`. `MergeSameSpeakerAnyDuration` makes every cue a candidate, joins only cues of one `<v>` speaker, and has no duration limit.
 - **Result**: the joined cue keeps the start, the ID, the alignment, the forced flag and the format data of the first cue. A comment before a joined cue moves before the result.
 - **Rounding**: the checks round `MinDuration`, `MaxDuration` and `MaxGap` to whole milliseconds, as PHP does.
@@ -203,7 +204,7 @@ A shot change is the frame where the picture cuts to a new shot. The snap window
 
 - **Inside a cue**: a shot change shortly before an end does not pull the end back. A shot change shortly after a start does not push the start forward.
 - **On a shot change**: an end on a shot change frame moves `MinGapFrames` earlier.
-- **Word timestamps**: the timestamp tags in the lines do not move.
+- **Words**: the words do not move.
 - **Order**: the cues go through `(*Subtitle).ReplaceCues`, so they stay in start order and each comment keeps its cue.
 
 ### Shot change lists
@@ -264,7 +265,7 @@ fmt.Println(part1.Comments())
 // [{End of part one 1}]
 ```
 
-- **Times**: the start, the end and each word timestamp of a copied cue move by `offset`, as `Shift` does. The time limit of retiming applies.
+- **Times**: the start, the end and each word of a copied cue move by `offset`, as `Shift` does. The time limit of retiming applies.
 - **Part boundary**: a comment of `s` after its last cue comes before the first copied cue, so it stays between the 2 parts.
 - **Conflicts**: per metadata key and per file format data key, the value of `s` wins.
 - **Order**: all cues take their place in start order. At the same place, the comments of `s` come before the comments of `other`.
@@ -275,13 +276,13 @@ Cues from 1 s to 3 s, 4 s to 6 s and 7 s to 9 s give 2 s to 3 s, 4 s to 6 s and 
 
 - **Touching cues**: a cue drops when `End <= from` or `Start >= to`.
 - **Empty range**: `from == to` is legal. Only a cue across `from` stays, with a length of 0.
-- **moveToZero**: subtracts `from` from the times and the word timestamps, then rounds once to whole milliseconds, as PHP does. A time below 0 becomes 0. Without it, word timestamps stay, also when they fall outside the cut cue.
+- **moveToZero**: subtracts `from` from the times and the words, then rounds once to whole milliseconds, as PHP does. A time below 0 becomes 0. Without it, words stay, also when they fall outside the cut cue.
 - **moveToZero and Shift**: for a `from` of whole milliseconds, `Slice(from, to, true)` equals `Slice(from, to, false)` followed by `Shift(-from)`. Otherwise the 2 differ, because the second way rounds twice. Example: a cue from 1 s to 5 s with `from` 2.0005 s starts at 0 with `moveToZero` and at 0.001 s after the shift.
 
 ### Split and join
 
 - **Split**: `SplitCue(2, 9500*time.Millisecond, 1)` of a cue from 6.5 s to 12.5 s with 2 lines gives one cue from 6.5 s to 9.5 s with line 1 and one from 9.5 s to 12.5 s with line 2. `splitAfterLine` counts from 1, so a cue of 1 line cannot split.
-- **Second part**: copies the alignment, the forced flag and the format data, and has no ID. It takes its place in start order after the first part. Word timestamps do not move.
+- **Second part**: copies the alignment, the forced flag and the format data, and has no ID. It takes its place in start order after the first part. A word goes to the first part when its text starts in one of the first lines, else to the second part. Both parts keep the speaker. A word that a part no longer holds in full loses its timing.
 - **Join**: the joined cue holds the lines of all cues in order and ends at the latest end. The start, the ID, the alignment, the forced flag and the format data come from cue `first`. Join checks no speaker, alignment or forced flag.
 - **Join example**: cues `zero` 0 s to 1 s, `one` 1 s to 2 s, `two` 2 s to 4 s, `three` 5 s to 6 s and `four` 7 s to 8 s, with a comment before each cue from `one` on. `JoinCues(1, 3)` gives `zero`, then `one\ntwo\nthree` from 1 s to 6 s, then `four`. The comments of `one`, `two` and `three` sit before the joined cue.
 
@@ -400,7 +401,7 @@ The primary subtitle sets the times. The secondary subtitle is the second langua
 
 ### Top-bottom
 
-- **Snap**: each secondary start and each secondary end moves on its own to the closest start or end of a primary cue, when that time is at most `TimeTolerance` away. The earlier time wins a tie. The word timestamps in the lines do not move.
+- **Snap**: each secondary start and each secondary end moves on its own to the closest start or end of a primary cue, when that time is at most `TimeTolerance` away. The earlier time wins a tie. The words do not move.
 - **Short cue**: the old times stay when the snapped end is not after the snapped start. The primary cue `first` from 1 s to 4 s and the secondary cue `kurz` from 3.9 s to 4.1 s would both snap to 4 s, so `kurz` keeps 3.9 s to 4.1 s.
 - **Alignment**: the secondary cues get the secondary alignment. The primary cues keep their own, which is bottom center in most formats.
 

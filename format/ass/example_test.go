@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func ExampleRead() {
@@ -25,7 +25,7 @@ Dialogue: 0,0:00:01.50,0:00:04.00,Thoughts,Anna,0,0,0,,{\an8}Not {\b1}again{\b0}
 		return
 	}
 	for _, c := range s.All() {
-		fmt.Println(c.Start, c.End, c.Position.Alignment, c.Lines)
+		fmt.Println(c.Start, c.End, c.Position.Alignment, c.TaggedLines())
 	}
 	// Output:
 	// 1.5s 4s TopCenter [<v Anna><i>Not <b>again</b></i>]

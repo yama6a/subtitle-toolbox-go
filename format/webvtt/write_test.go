@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const bom = "\ufeff"
@@ -444,7 +444,7 @@ func TestWriteArrowInText(t *testing.T) {
 	out := write(t, s, model.CommonWriteOptions{BOM: model.BOMRemove})
 	assert.Equal(t, fixture(t, filepath.Join(realDir, "own_arrow_in_text.vtt")), out)
 	again, _ := parse(t, out, false)
-	assert.Equal(t, []string{"a --&gt; b", "c"}, firstCue(t, again).Lines)
+	assert.Equal(t, []string{"a --&gt; b", "c"}, firstCue(t, again).TaggedLines())
 }
 
 func TestWriteReport(t *testing.T) {

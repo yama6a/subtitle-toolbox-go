@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr"
-	"github.com/yama6a/subtitle-toolbox-go/v3/translation"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation"
 )
 
 // The exit codes of docs/errors.md.
@@ -191,4 +191,10 @@ func warningMessage(w stbox.ParseWarning) string {
 		return w.Message + " " + encodingAdvice
 	}
 	return w.Message
+}
+
+// wantsLenientHint reports whether err is a parse error of a format that honours --lenient.
+func wantsLenientHint(err error) bool {
+	perr, ok := errors.AsType[*stbox.ParseError](err)
+	return ok && perr.Format != stbox.YouTubeChapters
 }

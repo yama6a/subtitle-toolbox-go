@@ -11,14 +11,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
 // Ports testANegativeLastCueDurationThrows of tests/ReadOptionsTest.php of subtitle-toolbox-php.
@@ -135,6 +136,17 @@ func TestWriteOptionsValidate(t *testing.T) {
 			name:    "plain text paragraph gap -1 s",
 			opts:    stbox.WriteOptions{PlainText: plaintext.WriteOptions{ParagraphGap: new(-time.Second)}},
 			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "The paragraph gap must be 0 or more seconds, got -1."},
+		},
+		{name: "JSON version 1", opts: stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: 1}}},
+		{
+			name:    "JSON version 3",
+			opts:    stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: 3}},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.JSON.Version", Msg: "The library JSON version must be 0, 1 or 2, got 3."},
+		},
+		{
+			name:    "JSON version -1",
+			opts:    stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: -1}},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.JSON.Version", Msg: "The library JSON version must be 0, 1 or 2, got -1."},
 		},
 		{name: "SubViewer 1", opts: stbox.WriteOptions{SubViewer: subviewer.WriteOptions{Version: subviewer.V1}}},
 		{

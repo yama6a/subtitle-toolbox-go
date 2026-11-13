@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // Ports testEndTimeIsNextCueStartIncludingCentiseconds, testOffsetMakesLyricsShowEarlier,
@@ -202,7 +202,7 @@ func TestReadComments(t *testing.T) {
 	s = readFile(t, realDir+"/own-comment-before-earlier-line.lrc")
 	var texts []string
 	for _, c := range s.All() {
-		texts = append(texts, c.Text())
+		texts = append(texts, taggedText(c))
 	}
 	assert.Equal(t, []string{"The door opens", "The shop is open", "The shop closes"}, texts)
 	assert.Equal(t, []model.Comment{
@@ -317,7 +317,7 @@ func TestReadSpacedWordTimes(t *testing.T) {
 			s, _ := mustRead(t, tt.content, false)
 			c, ok := s.Cue(0)
 			require.True(t, ok)
-			assert.Equal(t, tt.text, c.Text())
+			assert.Equal(t, tt.text, taggedText(c))
 			var want map[string]any
 			if tt.spaced {
 				want = map[string]any{"spacedWordTimes": true}
