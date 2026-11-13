@@ -181,6 +181,18 @@ func TestTaggedLinesAfterAnEdit(t *testing.T) {
 	assert.Equal(t, []string{"<00:00:01.000>Hi <00:00:03.000>there"}, c.TaggedLines())
 }
 
+func TestTaggedLinesAfterDeletingTheVTTData(t *testing.T) {
+	t.Parallel()
+
+	c := model.Cue{End: 5 * time.Second, Lines: []string{"<v.loud Anna>Hi</v>"}}
+	require.NoError(t, c.SetFormatData("vtt", model.NewData(model.Field{Key: "align", Value: "start"})))
+	c.ExtractWordTags()
+	assert.Equal(t, []string{"<v.loud Anna>Hi</v>"}, c.TaggedLines())
+
+	c.DeleteFormatData("vtt")
+	assert.Equal(t, []string{"<v Anna>Hi"}, c.TaggedLines())
+}
+
 func TestPlainText(t *testing.T) {
 	t.Parallel()
 
