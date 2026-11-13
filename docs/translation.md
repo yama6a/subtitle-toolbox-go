@@ -200,6 +200,58 @@ func (e webEngine) Translate(ctx context.Context, texts []string, source, target
 
 The service must return the placeholders of each text, such as `<x1>` and `<x2/>`, and the entities `&lt;`, `&gt;` and `&amp;`. A service with an XML tag handling does this. A service that rewrites a placeholder makes the runner drop the tags of that text and add a warning.
 
+## DeepL engine
+
+Package `translation/deepl` is a client of the DeepL API v2 on `net/http`. It has no vendor SDK. Example: `deepl.New(deepl.Options{APIKey: key})` gives an engine for `translation.Translate`. The runner sends `The train to Basel leaves from platform 4 at <x1>10:15</x1>.` and DeepL answers with the German sentence and `<x1>10:15</x1>` in place.
+
+<!-- example: translation/deepl/ExampleNew -->
+```go
+client := &translationtest.Client{Answers: []translationtest.Answer{
+	{Status: 200, Body: []byte(`{"translations": [{"text": "Hallo <x1>Welt</x1>"}]}`)},
+}}
+engine, err := deepl.New(deepl.Options{APIKey: "secret:fx", HTTPClient: client})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+got, err := engine.Translate(context.Background(), []string{"Hello <x1>world</x1>"}, "en", "de")
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+fmt.Println(got[0])
+fmt.Println(client.Requests()[0].URL)
+// Output:
+// Hallo <x1>Welt</x1>
+// https://api-free.deepl.com/v2/translate
+```
+
+| Field of `deepl.Options` | Meaning |
+|:--- |:--- |
+| `APIKey` | The DeepL API key. Required. A key that ends in `:fx` belongs to the free plan. |
+| `BaseURL` | The scheme and host of the service, for example a proxy. It must start with `http://` or `https://`. Empty picks `https://api-free.deepl.com` for a key that ends in `:fx`, else `https://api.deepl.com`. A base URL wins over the key rule. |
+| `HTTPClient` | The client that sends the requests. nil means `translation.DefaultHTTPClient()`. |
+
+`New` checks the options. It fails with `*model.InvalidArgumentError` when the key is empty after trimming, when the key has a control character or a space at the start or end, and when the base URL has no scheme. `Options` prints the key as `***` with `%v`, `%+v` and `%#v`.
+
+- **Request**: `POST {base}/v2/translate` with the header `Authorization: DeepL-Auth-Key KEY` and a JSON body. The body holds `text`, `target_lang`, `tag_handling` `xml`, `split_sentences` `nonewlines` and, with a source, `source_lang`. `nonewlines` keeps the 2 lines of a cue in one sentence.
+- **Language codes**: `target_lang` is the target in ASCII upper case, so `en-US` becomes `EN-US`. `source_lang` is the source up to its first `-`, in ASCII upper case, so `en-US` becomes `EN`. An empty source leaves `source_lang` out, and DeepL detects the language. The engine does not check the codes. DeepL rejects an unknown code.
+- **Chunks**: one request holds at most `deepl.MaxTextsPerRequest` texts, which is 50. 120 texts give 3 requests of 50, 50 and 20. No text gives no request.
+- **Retries**: see [HTTP](#http).
+- **Entities**: the engine passes the texts and the answers as they are. The runner decodes the entities once.
+
+| Status | Error message of the `*translation.ServiceError` |
+|:--- |:--- |
+| 403 | `DeepL rejected the API key (HTTP 403). Check the key and its plan.` |
+| 429, after the retries | `DeepL got too many requests (HTTP 429). Wait and try again.` |
+| 456 | `The DeepL character quota is used up (HTTP 456).` |
+| other, not 200 | `DeepL answered with HTTP N.` and a space and the `message` of the JSON body, when it is a string |
+| 200 with a wrong count, or a `text` that is no string | `DeepL returned N translations for M texts, or an answer that is not the JSON of /v2/translate.` |
+
+Every message replaces the key with `***`. Example: status 500 with the body `{"message": "Unknown key KEY"}` gives `DeepL answered with HTTP 500. Unknown key ***`.
+
 ## Differences from PHP
 
 - An engine that returns a wrong number of strings gives a `*ServiceError`. PHP throws `InvalidArgumentException`.
