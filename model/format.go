@@ -14,6 +14,8 @@ const (
 	HTMLTranscript Format = "html"
 	ITT            Format = "itt"
 	JSON           Format = "json"
+	AWSTranscribe  Format = "aws-transcribe"
+	Deepgram       Format = "deepgram"
 	GoogleSpeech   Format = "google-speech"
 	LRC            Format = "lrc"
 	MCC            Format = "mcc"
@@ -70,6 +72,8 @@ var formatFacts = []formatFact{
 	{format: HTMLTranscript, extensions: []string{"html", "htm"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: ITT, extensions: []string{"itt"}, canRead: true, canWrite: true},
 	{format: JSON, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: AWSTranscribe, extensions: []string{"json"}, canRead: true, canWrite: true},
+	{format: Deepgram, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: GoogleSpeech, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: LRC, extensions: []string{"lrc"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MCC, extensions: []string{"mcc"}, canRead: true, canWrite: true, autoDetected: true},

@@ -43,6 +43,8 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 		"html                .html .htm               yes   yes",
 		"itt                 .itt                     yes   yes",
 		"json                .json                    yes   yes",
+		"aws-transcribe      .json                    yes   yes",
+		"deepgram            .json                    yes   yes",
 		"google-speech       .json                    yes   yes",
 		"lrc                 .lrc                     yes   yes",
 		"mcc                 .mcc                     yes   yes",

@@ -208,6 +208,8 @@ func ExampleFormats() {
 	// html [html htm]
 	// itt [itt]
 	// json [json]
+	// aws-transcribe [json]
+	// deepgram [json]
 	// google-speech [json]
 	// lrc [lrc]
 	// mcc [mcc]

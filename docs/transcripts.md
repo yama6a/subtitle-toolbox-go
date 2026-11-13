@@ -80,6 +80,8 @@ A writer rebuilds the word list of a cue from `Cue.Words`. It keeps each source 
 | Format | Read | Write | Page section |
 |:--- |:--- |:--- |:--- |
 | Google Speech-to-Text JSON | `ReadGoogleSpeech` | `WriteGoogleSpeech` | [Google Speech-to-Text JSON](#google-speech-to-text-json) |
+| Deepgram JSON | `ReadDeepgram` | `WriteDeepgram` | [Deepgram JSON](#deepgram-json) |
+| Amazon Transcribe JSON | `ReadAWSTranscribe` | `WriteAWSTranscribe` | [Amazon Transcribe JSON](#amazon-transcribe-json) |
 | Whisper JSON | `ReadWhisper` | `WriteWhisper` | [Whisper JSON](#whisper-json) |
 | YouTube timed text | `youtube.Read` | `youtube.Write` | [YouTube timed text](#youtube-timed-text) |
 | Podcasting 2.0 transcript JSON | `ReadPodcast` | `WritePodcast` | [Podcasting 2.0 transcript JSON](#podcasting-20-transcript-json) |
@@ -345,6 +347,140 @@ The cues `<v Anna><b>Hello</b>` and `there.` (1 to 2 s), `<v Anna>Where are you 
 With a gap of 0.5 s, `Hello there.` and `Where are you going?` become 2 paragraphs, at `0:01` and `0:02`.
 
 **Round trip.** Fractions of seconds, line breaks, styles and end times are lost. Writer output read again and written again gives the same bytes. A transcript without speakers writes no `<cite>`, so `Detect` does not find it. `Load` falls back to the extension `.html` or `.htm`. `Parse` needs `ReadOptions.Format` set to `html`.
+
+## Amazon Transcribe JSON
+
+Amazon Transcribe returns a batch transcript as JSON with one item for each word and each punctuation mark. Times and confidences are strings. Example: `{"type": "pronunciation", "start_time": "0.52", "end_time": "0.94", "speaker_label": "spk_0", "alternatives": [{"confidence": "0.91", "content": "The"}]}` and then `{"type": "punctuation", "alternatives": [{"confidence": "0.0", "content": "."}]}`. Newer transcripts add `audio_segments`, one for each spoken phrase. The reader makes one cue for each audio segment, else it groups the words into cues. The writer writes the transcript back with renumbered item ids and new speaker segments.
+
+| Item | Value |
+|:--- |:--- |
+| Format | `stbox.AWSTranscribe`, name `aws-transcribe`, extension `.json` |
+| Functions | `transcript.ReadAWSTranscribe` and `WriteAWSTranscribe` |
+| Read options | `WordTimestamps` and `SpeakerVoices`. `KeepSegments` has no effect |
+| Write options | none |
+| Detection | none. `.json` belongs to the library JSON, so name the format with `--from aws-transcribe` or `ReadOptions.Format` |
+| Not read | `results.channel_labels`. The writer does not write it |
+
+### Read
+
+- **Lists**: `results` must be an object and `results.items` a JSON array. Else the read fails with `The JSON has no "results.items" list.` in both modes. `audio_segments` counts when it is an array with items. An object with the keys `"0"` and `"1"` is no list ([subtitle-toolbox-php#1208](https://github.com/yama6a/subtitle-toolbox-php/issues/1208)).
+- **Words**: a pronunciation item makes a word. A punctuation item joins the word before it without a space. Punctuation before the first word waits and joins the first word in front. So the item U+00BF, the word `Vienes` and the item `?` give the word U+00BF followed by `Vienes?`.
+- **Cues with audio segments**: one cue for each segment. Its words are the words of the item ids in the segment `items` list. The integer 5 and the string `"5"` name the same item, and `"05"` is another id. An id that names no word is ignored. A word that an earlier segment, or the same segment, already named belongs to that segment, so each word is copied into the cue data once ([subtitle-toolbox-php#1279](https://github.com/yama6a/subtitle-toolbox-php/issues/1279)).
+- **Cues without audio segments**: the words group into cues by the [grouping rules](#grouping-words-into-cues).
+- **Language**: `results.language_code`.
+- **Speaker**: with `SpeakerVoices`, the `speaker_label` of the segment, or of the first item of a grouped cue. A string or an integer.
+- **File data**: the top-level members except `results`, then `results` without `transcripts`, `items`, `audio_segments` and `channel_labels`. `results.speaker_labels` loses its `segments`.
+- **Cue data**: for a segment, the segment object with `items` replaced by the raw items of its words. Else `{"items": [...]}` with the raw items of the group.
+
+A field error fails the item or the segment. Strict mode returns the error. Lenient mode skips it with a `Skipped` warning without a line, with the item as block text.
+
+| Field | Error |
+|:--- |:--- |
+| an item without a string `alternatives[0].content`, also an item that is no object | `The field results.items[0].alternatives[0].content must be a string.` |
+| a pronunciation item with a `start_time` or `end_time` that is no number or numeric string of 0 or more | `The field results.items[0].start_time must be a time.` |
+| a time of 100000 hours or more | `The field results.items[0].start_time is not below 100000 hours.` |
+| a segment with a bad `start_time`, `end_time` or `transcript` | `The field results.audio_segments[0].transcript must be a string.` |
+
+**Words.** Each word gives one entry of `Cue.Words`. `Text` is the content of its items joined. `Start` and `End` come from the pronunciation item. `Confidence` is `alternatives[0].confidence` of the pronunciation item, when it is a number or numeric string from 0 to 1.
+
+### Write
+
+The output is compact JSON without a BOM, in this order.
+
+| Member | Content |
+|:--- |:--- |
+| `results.transcripts` | one entry with the segment texts joined with one space |
+| `results.speaker_labels` | only when an item has a start, an end and a speaker label. `speakers` is the number of distinct labels. `segments` are the runs of items with the same label, each with its `items` |
+| `results.items` | one item for each word and punctuation mark, with the ids 0, 1 and so on |
+| `results.audio_segments` | one for each cue, written when a cue has a stored `transcript`, or when a cue has no items. The items alone cannot hold a cue without words |
+| `results` | then the stored members, and `language_code` from the subtitle language when the file has none |
+| top level | then the stored members such as `jobName` |
+
+- **Words**: the writer applies the rules of [reuse of source words](#reuse-of-source-words). A source word is a pronunciation item with the punctuation items after it. No result gives no items for the cue.
+- **New word**: a pronunciation item with the text before the trailing punctuation, and a punctuation item with the confidence `"0.0"` for the punctuation. The confidence follows the rule for new words in reuse of source words. `speaker_label` is set only when the cue has a speaker.
+- **Typed values**: a reused word gets `Word.End` in the `end_time` of its pronunciation item and `Word.Confidence` in `alternatives[0].confidence`, when they differ from the stored values.
+- **Speaker**: a cue with a speaker gives each item that speaker as `speaker_label`, when it differs from the stored segment label or the item has none.
+- **Ids**: each item gets the next id as its first member. The segment `items` list holds the new ids. Each segment gets its index as `id`.
+- **Numbers**: a time is a string with at most 3 decimals and at least 1, such as `"2.0"` and `"0.52"`. A confidence is the shortest decimal with at least 1 decimal, such as `"1.0"` and `"0.9989"`.
+
+A cue from another format, `<v Ben>` with the words `See` (4 to 4.5 s) and `you.` (4.5 to 5 s), writes the items:
+
+```json
+{"id":0,"start_time":"4.0","speaker_label":"Ben","end_time":"4.5","alternatives":[{"confidence":"1.0","content":"See"}],"type":"pronunciation"},
+{"id":1,"start_time":"4.5","speaker_label":"Ben","end_time":"5.0","alternatives":[{"confidence":"1.0","content":"you"}],"type":"pronunciation"},
+{"id":2,"speaker_label":"Ben","alternatives":[{"confidence":"0.0","content":"."}],"type":"punctuation"}
+```
+
+### Cost
+
+| Operation | Cost | Benchmark |
+|:--- |:--- |:--- |
+| read Amazon Transcribe JSON | linear in the file. A segment looks up each item id once, and a word goes to the first segment that names it. A word with many punctuation items joins their texts once | `BenchmarkAWSTranscribe`: 10,000 items, 10,000 items in one segment, 20,000 punctuation items on one word, 5,000 segments that name one word with 5,000 punctuation items. Each input is about 1 MB |
+| write Amazon Transcribe JSON | linear in the cues, the items and the stored items | the same inputs |
+
+## Deepgram JSON
+
+Deepgram returns the transcript of a recording as JSON. Each audio channel has a list of words. On request the response also has utterances, paragraphs with sentences, speakers and a detected language. Example: `{"word": "der", "start": 0.4, "end": 0.82, "confidence": 0.9087655, "punctuated_word": "Der"}`. The reader makes one cue for each utterance, else one for each paragraph sentence, else it groups the words into cues. The writer writes the response back for each channel, with words, paragraphs and utterances in the shape of the source.
+
+| Item | Value |
+|:--- |:--- |
+| Format | `stbox.Deepgram`, name `deepgram`, extension `.json` |
+| Functions | `transcript.ReadDeepgram` and `WriteDeepgram` |
+| Read options | `WordTimestamps` and `SpeakerVoices`. `KeepSegments` has no effect |
+| Write options | none |
+| Detection | none. `.json` belongs to the library JSON, so name the format with `--from deepgram` or `ReadOptions.Format` |
+| Known loss | the paragraphs of a file with utterances. The reader reads only the utterances, so the writer cannot rebuild the paragraphs |
+
+### Read
+
+- **Lists**: `results` must be an object and `results.channels` a JSON array. Else the read fails with `The JSON has no "results.channels" list.` in both modes. An object with the keys `"0"` and `"1"` is no list ([subtitle-toolbox-php#1208](https://github.com/yama6a/subtitle-toolbox-php/issues/1208)).
+- **Utterances**: when `results.utterances` is an array with items, each utterance gives one cue. The channels are not read. The cue data is the whole utterance.
+- **Paragraphs**: a channel whose first alternative has `paragraphs.paragraphs` gives one cue for each sentence. The cue data of each sentence holds a copy of its paragraph. The copies of a file together may not pass 4 times the size of the file plus 1 MiB. Past that, the read fails in both modes with `The sentences copy more than N bytes of paragraph data into the cues.` ([subtitle-toolbox-php#1280](https://github.com/yama6a/subtitle-toolbox-php/issues/1280)). The speaker is the `speaker` of the paragraph. The words of a cue are the words whose middle lies between the start and the end of the sentence. The cue data is the sentence members, then `channel`, `speaker`, `paragraph` without `sentences`, and `words`.
+- **Words only**: the words of a channel group into cues by the [grouping rules](#grouping-words-into-cues). The cue data is `{"channel": N, "words": [...]}`.
+- **Channels**: only a channel whose `alternatives[0]` is an object gives cues. The cues of all channels are sorted by start, so channel 1 can come before channel 0.
+- **Language**: `results.channels[0].detected_language`.
+- **File data**: the members outside `results`, then `results` with the other members except `utterances`. Each channel keeps its members and the members of its first alternative except `transcript`, `words` and `paragraphs`. So `detected_language`, `language_confidence` and the alternative `confidence` stay.
+
+| Word field | Source |
+|:--- |:--- |
+| `Text` | `punctuated_word` when it is not null, else `word`. It must be a string. Trimmed |
+| `Start` and `End` | `start` and `end`, numbers or numeric strings of 0 or more |
+| `Speaker` | `speaker`, a string or an integer |
+| `Confidence` | `confidence`, a number from 0 to 1 |
+
+A field error fails the word, the utterance or the sentence. Strict mode returns the error. Lenient mode skips it with a `Skipped` warning and keeps the rest of the cue. The block index of a word is its index in its list. The block index of a sentence is its index inside its paragraph, so 2 warnings can both have block 0.
+
+| Field | Error |
+|:--- |:--- |
+| a word `start` or `end` that is no time | `The field results.channels[0].alternatives[0].words[0].end must be a time.` |
+| a word text that is no string | `The field results.channels[0].alternatives[0].words[0].punctuated_word must be a string.` |
+| an utterance or sentence with a bad `start`, `end` or text | `The field results.utterances[0].end must be a time.` |
+
+### Write
+
+The output is compact JSON without a BOM. `results` has `channels`, then `utterances` when they are written, then the stored members. Then the other stored top-level members such as `metadata`.
+
+- **Channels**: a cue goes to the channel in its stored data, when that is an integer below the number of stored channels plus the number of cues. Else it goes to channel 0 ([subtitle-toolbox-php#1274](https://github.com/yama6a/subtitle-toolbox-php/issues/1274)). The count is the larger of the stored channels and the highest cue channel plus 1, at least 1. The first channel gets `detected_language` from the subtitle language when it has none.
+- **Alternative**: `transcript` is the cue texts of the channel joined with one space. Then the stored members, then `words` with the words of all its cues. `paragraphs` follows when a cue has a stored paragraph.
+- **Cue values**: `start`, `end` and the text keep the stored value when it equals the cue. Else the writer writes the cue value.
+- **Words**: the writer applies the rules of [reuse of source words](#reuse-of-source-words). No result gives no words. A new word is `{"word", "start", "end", "confidence", "speaker"?, "punctuated_word"}`. `word` is the text in lower case without the characters `.,?!;:"'()[]` and white space at both ends, or the text when nothing is left.
+- **Typed values**: a reused word gets `Word.End` in `end` and `Word.Confidence` in `confidence`, when it has the member and the value differs.
+- **Speaker**: the name of the cue. A name of the digits 0 to 9 only becomes an integer, so `<v 0>` writes `0`. A name too large for an integer stays a string ([subtitle-toolbox-php#1274](https://github.com/yama6a/subtitle-toolbox-php/issues/1274)). When it differs from the stored `speaker`, each word gets it.
+- **Utterance**: written when a cue has a stored `transcript`, or when a cue has no words and no paragraph. It is `{"start": null, "end": null, "confidence": 1.0}` replaced by the stored utterance, then `start`, `end`, `channel`, `transcript`, `words` and `speaker`.
+- **Paragraphs**: a cue with a stored paragraph joins the paragraph before it when the stored paragraphs are equal. A cue without one joins it when the speaker is equal. Each sentence is the stored sentence members with `text`, `start` and `end`. A paragraph gets `num_words`, `start` and `end`. `transcript` is one line for each paragraph with `Speaker N: ` before it when it has a speaker, and starts with a line break as Deepgram writes it.
+
+A subtitle with the language `de` and the cue `<v 1>Guten` / `Morgen.` from 1.5 to 3 s writes:
+
+```json
+{"results":{"channels":[{"alternatives":[{"transcript":"Guten Morgen.","words":[]}],"detected_language":"de"}],"utterances":[{"start":1.5,"end":3.0,"confidence":1.0,"channel":0,"transcript":"Guten Morgen.","words":[],"speaker":1}]}}
+```
+
+### Cost
+
+| Operation | Cost | Benchmark |
+|:--- |:--- |:--- |
+| read Deepgram JSON | linear in the file, plus the copies of each paragraph that its sentence cues hold. The sentences of a channel take their words with one pass over the words. The copies together may not pass 4 times the file plus 1 MiB, else the read fails | `BenchmarkDeepgram`: 9,000 words in one channel, 9,000 words in one utterance, 9,000 sentences in one paragraph. `BenchmarkDeepgramParagraphCopies`: 1,000 sentences of a paragraph of 190 members, with copies near the limit. Each input is about 1 MB, the last about 0.7 MB |
+| write Deepgram JSON | linear in the cues, the words and the stored words | the same inputs |
 
 ## Google Speech-to-Text JSON
 
