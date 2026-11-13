@@ -48,7 +48,7 @@ func (o Options) Validate() error {
 		return invalid("BaseURL", fmt.Sprintf("The base URL must start with http:// or https://, got %q.", o.BaseURL))
 	case strings.Trim(o.Model, markupcore.PHPTrimSet) == "":
 		return invalid("Model", "The model must not be empty. Pass a model name such as gpt-4o-mini or llama3.")
-	case o.APIKey != "" && (strings.Trim(o.APIKey, markupcore.PHPTrimSet) == "" || !httppost.CleanKey(o.APIKey)):
+	case o.APIKey != "" && !httppost.CleanKey(o.APIKey):
 		return invalid("APIKey", "The API key must not be empty, have a control character, or a space at the start or end. Leave it empty for a service without a key.")
 	case o.Prompt != "" && strings.Trim(o.Prompt, markupcore.PHPTrimSet) == "":
 		return invalid("Prompt", "The prompt must not be empty. Leave it empty for the built-in prompt.")
@@ -62,7 +62,7 @@ func invalid(field, msg string) error {
 
 // String prints the options with the key as ***.
 func (o Options) String() string {
-	return fmt.Sprintf("{BaseURL:%s Model:%s APIKey:%s Prompt:%s}", o.BaseURL, o.Model, maskKey(o.APIKey), o.Prompt)
+	return fmt.Sprintf("{BaseURL:%s Model:%s APIKey:%s Prompt:%s HTTPClient:%T}", o.BaseURL, o.Model, maskKey(o.APIKey), o.Prompt, o.HTTPClient)
 }
 
 // GoString prints the options as Go syntax with the key as ***.
@@ -152,14 +152,14 @@ func (e *Engine) Translate(ctx context.Context, texts []string, source, target s
 func (e *Engine) request(ctx context.Context, texts []string, prompt string) ([]string, error) {
 	list, err := httppost.JSON(texts)
 	if err != nil {
-		return nil, fmt.Errorf("translation: %w", err)
+		return nil, err
 	}
 	body, err := httppost.JSON(requestBody{Model: e.options.Model, Messages: []message{
 		{Role: "system", Content: prompt},
 		{Role: "user", Content: string(list)},
 	}})
 	if err != nil {
-		return nil, fmt.Errorf("translation: %w", err)
+		return nil, err
 	}
 	header := http.Header{}
 	if e.options.APIKey != "" {
@@ -205,15 +205,19 @@ func (e *Engine) fail(status int, msg string) error {
 // answerText returns the first of content, reasoning and reasoning_content that holds text, else "".
 func answerText(answer []byte) string {
 	var data struct {
-		Choices []struct {
-			Message map[string]any `json:"message"`
-		} `json:"choices"`
+		Choices []json.RawMessage `json:"choices"`
 	}
 	if json.Unmarshal(answer, &data) != nil || len(data.Choices) == 0 {
 		return ""
 	}
+	var first struct {
+		Message map[string]any `json:"message"`
+	}
+	if json.Unmarshal(data.Choices[0], &first) != nil {
+		return ""
+	}
 	for _, field := range []string{"content", "reasoning", "reasoning_content"} {
-		if s, ok := data.Choices[0].Message[field].(string); ok && strings.Trim(s, markupcore.PHPTrimSet) != "" {
+		if s, ok := first.Message[field].(string); ok && strings.Trim(s, markupcore.PHPTrimSet) != "" {
 			return s
 		}
 	}

@@ -212,6 +212,12 @@ The service must return the placeholders of each text, such as `<x1>` and `<x2/>
 | `Prompt` | the system prompt. Empty means `openai.DefaultPrompt` |
 | `HTTPClient` | nil means `translation.DefaultHTTPClient()` |
 
+The built-in prompt is:
+
+```text
+You translate subtitle text from {source} to {target}. The user sends a JSON array of strings. Translate each string on its own. Keep the tags such as <x1>, </x1> and <x2/> around the words that they mark, and keep the entities &lt;, &gt; and &amp;. Keep the line breaks. Answer only with a JSON array of strings that has as many strings as the input, in the same order, and no other text.
+```
+
 - **Prompt**: `{source}` and `{target}` in it become the language codes in one pass. An empty source becomes `the language of the text`. Example: `Translate {source} into {target} for children.` with source empty and target `de-CH` gives `Translate the language of the text into de-CH for children.`
 - **Request**: the user message holds all texts of one call as a JSON array. No text sends no request.
 - **Answer**: the engine reads the first of `content`, `reasoning` and `reasoning_content` of `choices[0].message` that has text. A thinking model on Ollama can leave `content` empty. It removes each `<think>...</think>` block, and reads the text from the first `[` to the last `]`. That text must be a JSON array of as many strings as the call has texts. Text around the array and a code block do not matter. The HTTP size bound limits the answer.

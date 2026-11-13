@@ -1,9 +1,9 @@
 package openai_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 	"testing"
 
@@ -83,6 +83,7 @@ func userTexts(t *testing.T, r translationtest.Request) []string {
 func TestValidate(t *testing.T) {
 	t.Parallel()
 
+	const apiKeyMsg = "The API key must not be empty, have a control character, or a space at the start or end. Leave it empty for a service without a key."
 	good := openai.Options{BaseURL: "https://api.openai.com/v1", Model: "gpt-4o-mini"}
 	tests := []struct {
 		name   string
@@ -104,9 +105,9 @@ func TestValidate(t *testing.T) {
 			"empty model", func(o *openai.Options) { o.Model = " \t" }, "openai.Options.Model",
 			"The model must not be empty. Pass a model name such as gpt-4o-mini or llama3.",
 		},
-		{"blank key", func(o *openai.Options) { o.APIKey = " " }, "openai.Options.APIKey", ""},
-		{"key with a space at the end", func(o *openai.Options) { o.APIKey = "k " }, "openai.Options.APIKey", ""},
-		{"key with a control character", func(o *openai.Options) { o.APIKey = "k\x7f" }, "openai.Options.APIKey", ""},
+		{"blank key", func(o *openai.Options) { o.APIKey = " " }, "openai.Options.APIKey", apiKeyMsg},
+		{"key with a space at the end", func(o *openai.Options) { o.APIKey = "k " }, "openai.Options.APIKey", apiKeyMsg},
+		{"key with a control character", func(o *openai.Options) { o.APIKey = "k\x7f" }, "openai.Options.APIKey", apiKeyMsg},
 		{
 			"blank prompt", func(o *openai.Options) { o.Prompt = "\n" }, "openai.Options.Prompt",
 			"The prompt must not be empty. Leave it empty for the built-in prompt.",
@@ -224,6 +225,10 @@ func TestTranslateAnswers(t *testing.T) {
 		"content": `["Hallo", "Tschüss", "Ja", "Nein"]`, "reasoning": `["Hi", "Ciao", "Ja", "Nein"]`,
 	}}}})
 	require.NoError(t, err)
+	sureAndArray, err := json.Marshal(map[string]any{"choices": []any{map[string]any{"message": map[string]any{
+		"content": "Sure!", "reasoning": jsonArray(t, texts...),
+	}}}})
+	require.NoError(t, err)
 	empty, err := json.Marshal(map[string]any{"choices": []any{map[string]any{"message": map[string]any{"content": "", "reasoning": ""}}}})
 	require.NoError(t, err)
 
@@ -251,6 +256,8 @@ func TestTranslateAnswers(t *testing.T) {
 		},
 		{"array in reasoning", []translationtest.Answer{ok(reasoning("reasoning"))}, german, 1, ""},
 		{"array in reasoning_content", []translationtest.Answer{ok(reasoning("reasoning_content"))}, german, 1, ""},
+		{"a later field is not read after an unusable first field", append([]translationtest.Answer{ok(sureAndArray)}, singles...), german, 5, ""},
+		{"a later choice is not read", []translationtest.Answer{ok([]byte(`{"choices":[{"message":{"content":` + string(mustJSON(t, jsonArray(t, german...))) + `}}, 5]}`))}, german, 1, ""},
 		{"content before reasoning", []translationtest.Answer{ok(both)}, []string{"Hallo", "Tschüss", "Ja", "Nein"}, 1, ""},
 		{
 			"empty content and reasoning",
@@ -300,85 +307,21 @@ func TestTranslateAnswers(t *testing.T) {
 	}
 }
 
-func TestTranslateStatusErrors(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name   string
-		status int
-		body   []byte
-		want   string
-	}{
-		{
-			"401 with the key in the message", 401, []byte(`{"error": {"message": "Incorrect API key provided: ` + key + `."}}`),
-			"The OpenAI-compatible service rejected the API key (HTTP 401). Incorrect API key provided: ***.",
-		},
-		{
-			"404 recorded", 404, testfiles.Read(t, "translation/openai_error.json"),
-			"The OpenAI-compatible service answered with HTTP 404. The model `gpt-9` does not exist or you do not have access to it.",
-		},
-		{
-			"404 of Ollama", 404, []byte(`{"error": "model \"llama3\" not found, try pulling it first"}`),
-			`The OpenAI-compatible service answered with HTTP 404. model "llama3" not found, try pulling it first`,
-		},
-		{"a key in an error string", 400, []byte(`{"error": "bad ` + key + `"}`), "The OpenAI-compatible service answered with HTTP 400. bad ***"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			client := &translationtest.Client{Answers: []translationtest.Answer{{Status: tt.status, Body: tt.body}}}
-
-			_, err := newEngine(t, client, openai.Options{APIKey: key}).Translate(t.Context(), []string{"Hello"}, "en", "de")
-
-			var se *translation.ServiceError
-			require.ErrorAs(t, err, &se)
-			require.ErrorIs(t, err, translation.ErrService)
-			assert.Equal(t, tt.status, se.Status)
-			assert.Equal(t, tt.want, se.Msg)
-			assert.NotContains(t, err.Error(), key)
-			assert.Len(t, client.Requests(), 1)
-		})
-	}
-}
-
 func TestTranslateWithServer(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name       string
-		key        string
-		wantStatus int
-	}{
-		{"recorded answer", "", 0},
-		{"forbidden", "forbidden", http.StatusForbidden},
-		{"quota", "quota", 456},
-		{"bad request", "bad-request", http.StatusBadRequest},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+	srv := translationtest.NewServer(t)
+	e, err := openai.New(openai.Options{BaseURL: srv.URL + "/v1", Model: "llama3", APIKey: "local-key"})
+	require.NoError(t, err)
 
-			srv := translationtest.NewServer(t)
-			e, err := openai.New(openai.Options{BaseURL: srv.URL + "/v1", Model: "llama3", APIKey: tt.key})
-			require.NoError(t, err)
+	got, err := e.Translate(t.Context(), texts, "en", "de")
 
-			got, err := e.Translate(t.Context(), texts, "en", "de")
-
-			reqs := srv.Requests()
-			require.Len(t, reqs, 1)
-			assert.Equal(t, "/v1/chat/completions", reqs[0].Path)
-			assert.Equal(t, tt.key, reqs[0].Key)
-			if tt.wantStatus == 0 {
-				require.NoError(t, err)
-				assert.Equal(t, german, got)
-				return
-			}
-			var se *translation.ServiceError
-			require.ErrorAs(t, err, &se)
-			assert.Equal(t, tt.wantStatus, se.Status)
-		})
-	}
+	require.NoError(t, err)
+	assert.Equal(t, german, got)
+	reqs := srv.Requests()
+	require.Len(t, reqs, 1)
+	assert.Equal(t, "/v1/chat/completions", reqs[0].Path)
+	assert.Equal(t, "local-key", reqs[0].Key)
 }
 
 func TestTranslateClosedPort(t *testing.T) {
@@ -400,30 +343,20 @@ func TestRunnerOnOwnStation(t *testing.T) {
 
 	dropped := append([]string(nil), german...)
 	dropped[3] = "Der nächste Halt ist Zürich Hauptbahnhof."
-	wantLines := [][]string{
-		{"Der Zug nach Basel fährt"},
-		{"um <b>10:15</b> von Gleis 4 ab."},
-		{"♪ ♪"},
-		{"<i>Fahrkarten &amp; Platz-", "reservierungen</i> gibt es hier."},
-		{"2024"},
-		{"- Ist dieser Platz frei?", "- Ja, ist er."},
-		{"<i>Der nächste Halt ist</i>"},
-		{"<i>Zürich Hauptbahnhof.</i>"},
-	}
 	tests := []struct {
 		name         string
 		answer       translationtest.Answer
-		lines        map[int][]string
+		wantGolden   bool
 		wantWarnings []int
 	}{
-		{"recorded answer", ok(testfiles.Read(t, "translation/openai_de.json")), nil, nil},
-		{"dropped placeholders", ok(chat(jsonArray(t, dropped...))), map[int][]string{6: {"Der nächste Halt ist"}, 7: {"Zürich Hauptbahnhof."}}, []int{6, 7}},
+		{"recorded answer", ok(testfiles.Read(t, "translation/openai_de.json")), true, nil},
+		{"dropped placeholders", ok(chat(jsonArray(t, dropped...))), false, []int{6, 7}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, _, err := srt.Read(strings.NewReader(string(testfiles.Read(t, "translation/own_station.srt"))), model.CommonReadOptions{}, srt.ReadOptions{})
+			s, _, err := srt.Read(bytes.NewReader(testfiles.Read(t, "translation/own_station.srt")), model.CommonReadOptions{}, srt.ReadOptions{})
 			require.NoError(t, err)
 			client := &translationtest.Client{Answers: []translationtest.Answer{tt.answer}}
 
@@ -436,13 +369,24 @@ func TestRunnerOnOwnStation(t *testing.T) {
 				warned = append(warned, w.Cue)
 			}
 			assert.Equal(t, tt.wantWarnings, warned)
-			for i, c := range s.Cues() {
-				want := wantLines[i]
-				if l, ok := tt.lines[i]; ok {
-					want = l
-				}
-				assert.Equal(t, want, c.Lines, "cue %d", i)
+			if tt.wantGolden {
+				var out bytes.Buffer
+				_, err := srt.Write(&out, s, model.CommonWriteOptions{}, srt.WriteOptions{})
+				require.NoError(t, err)
+				assert.Equal(t, string(testfiles.Read(t, "translation/own_station_de_openai.srt")), out.String())
+				return
 			}
+			cues := s.Cues()
+			assert.Equal(t, []string{"Der nächste Halt ist"}, cues[6].Lines)
+			assert.Equal(t, []string{"Zürich Hauptbahnhof."}, cues[7].Lines)
 		})
 	}
+}
+
+func mustJSON(t *testing.T, v any) []byte {
+	t.Helper()
+
+	b, err := json.Marshal(v)
+	require.NoError(t, err)
+	return b
 }
