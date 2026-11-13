@@ -54,6 +54,7 @@ func goldenFolders() []goldenFolder {
 	return []goldenFolder{
 		{name: "ass", format: stbox.ASS, files: 7},
 		{name: "assemblyai", format: stbox.AssemblyAI, files: 2, transcript: true, defaults: true},
+		{name: "aws-transcribe", format: stbox.AWSTranscribe, files: 2, transcript: true, defaults: true},
 		{name: "cavena890", format: stbox.Cavena890, files: 7},
 		{name: "chapters/ffmetadata", format: stbox.FFMetadataChapters, files: 3},
 		{name: "chapters/ogm", format: stbox.OGMChapters, files: 2},
@@ -70,6 +71,7 @@ func goldenFolders() []goldenFolder {
 			}},
 		}},
 		{name: "dcp", format: stbox.DCP, files: 4},
+		{name: "deepgram", format: stbox.Deepgram, files: 3, transcript: true, defaults: true},
 		{name: "html", format: stbox.HTMLTranscript, files: 2, transcript: true},
 		{name: "itt", format: stbox.ITT, files: 3},
 		{name: "json", format: stbox.JSON, files: 6},

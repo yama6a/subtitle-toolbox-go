@@ -260,7 +260,7 @@ func TestDualFailures(t *testing.T) {
 		{
 			"a primary file that is no subtitle",
 			[]string{"dual", "--primary", "notes.txt", "--secondary", "de.srt"},
-			result{Code: exitFile, Stderr: "notes.txt: Format detection found no subtitle format. Pass --primary-from FORMAT.\n"},
+			result{Code: exitFile, Stderr: "notes.txt: Format detection found no subtitle format. Pass --primary-from FORMAT. Chapters and cloud speech-to-text JSON always need it, for example --primary-from deepgram.\n"},
 		},
 	}
 	for _, tt := range tests {

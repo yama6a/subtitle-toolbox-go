@@ -42,13 +42,14 @@ const (
 func inputOptions(manyInputs bool, fpsHelp string) []option {
 	opts := []option{
 		valueOption("from", "FORMAT", "Input format. Default: the format detected from the content. "+
-			"When detection finds no format, the file extension sets it."),
+			"When detection finds no format, the file extension sets it. Chapters and cloud speech-to-text JSON need --from."),
 		valueOption("encoding", "NAME", "Encoding of input that is not UTF-8, for example Windows-1252. "+
 			"It replaces code page detection. A BOM, valid UTF-8 and UTF-16 input win over it."),
 		flagOption("lenient", "Skip or repair broken cues and print a warning for each. Chapter input ignores it."),
 		valueOption("input-fps", "RATE", "Frame rate of a MicroDVD input without a {1}{1}<fps> first line, "+
 			"of Spruce STL timecodes, and of CSV or TSV times in hh:mm:ss:ff."),
 		valueOption("fps", "RATE", fpsHelp),
+		flagOption("word-timestamps", "Keep the word times of speech-to-text JSON, YouTube timed text and Podcasting 2.0 transcript input."),
 		valueOption("scc-roll-up", "MODE", "How SCC, MCC and MP4 c608 input reads roll-up captions: screen gives one cue per "+
 			"screen, lines gives one cue per row. Default: "+rollUps[0]+"."),
 		valueOption("track", "NUMBER", "Subtitle track of an MKV, WebM, MP4 or MPEG-TS input. "+
@@ -118,7 +119,7 @@ func label(arg string) string {
 	return arg
 }
 
-// prepareRead builds the read options of --input-fps, --scc-roll-up, --track, --from, --encoding and --lenient and
+// prepareRead builds the read options of --input-fps, --word-timestamps, --scc-roll-up, --track, --from, --encoding and --lenient and
 // checks them. A command that renames --from or --track sets fromOption or trackOption first.
 func (r *runner) prepareRead(a *args) error {
 	fps, ok, err := a.Rate("input-fps")
@@ -148,6 +149,9 @@ func (r *runner) prepareRead(a *args) error {
 		}
 		r.readOptions.Format = f
 	}
+	words := a.Has("word-timestamps") || slices.ContainsFunc(r.wordTriggers, a.Has)
+	r.readOptions.Transcript.WordTimestamps = words
+	r.readOptions.YouTube.WordTimestamps = words
 	r.readOptions.Encoding, _ = a.Value("encoding")
 	r.readOptions.Lenient = a.Has("lenient")
 	return r.readOptions.Validate()

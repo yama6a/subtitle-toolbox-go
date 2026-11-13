@@ -71,6 +71,8 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 | [iTunes Timed Text](docs/formats.md#itt) | `stbox.ITT` | `itt` | `.itt` | yes | yes | needs the frame rate of the video. A TTML file named `.itt` loads as iTT |
 | [JSON of this library](docs/json.md) | `stbox.JSON` | `json` | `.json` | yes | yes | |
 | [AssemblyAI JSON](docs/transcripts.md#assemblyai-json) | `stbox.AssemblyAI` | `assemblyai` | `.json` | yes | yes | `.json` is the library JSON, so pass `--from assemblyai`. The content is never detected |
+| [Amazon Transcribe JSON](docs/transcripts.md#amazon-transcribe-json) | `stbox.AWSTranscribe` | `aws-transcribe` | `.json` | yes | yes | `.json` is the library JSON, so pass `--from aws-transcribe`. The content is never detected |
+| [Deepgram JSON](docs/transcripts.md#deepgram-json) | `stbox.Deepgram` | `deepgram` | `.json` | yes | yes | `.json` is the library JSON, so pass `--from deepgram`. The content is never detected |
 | [LRC](https://en.wikipedia.org/wiki/LRC_(file_format)) | `stbox.LRC` | `lrc` | `.lrc` | yes | yes | with enhanced LRC word times |
 | [MCC](https://www.telestream.net/pdfs/user-guides/MacCaption-UserGuide.pdf) | `stbox.MCC` | `mcc` | `.mcc` | yes | yes | MacCaption, CEA-608 and CEA-708 broadcast captions |
 | [MicroDVD](https://en.wikipedia.org/wiki/MicroDVD) | `stbox.MicroDVD` | `microdvd` | `.sub` | yes | yes | needs the frame rate of the video |

@@ -1,0 +1,11 @@
+﻿1
+00:00:00,520 --> 00:00:02,300
+The library opens at nine.
+
+2
+00:00:03,040 --> 00:00:05,200
+Can I return books on Sunday?
+
+3
+00:00:05,780 --> 00:00:08,600
+Yes, use the box by the door.

@@ -1,18 +1,29 @@
 package transcript
 
 import (
+	"errors"
 	"math"
 	"strings"
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // The helpers below are the same for the formats of the cloud speech-to-text services: Amazon Transcribe,
 // Deepgram, AssemblyAI and Google Speech-to-Text.
+
+// cloudFail passes a field error to State.Fail. Strict mode returns it, lenient mode skips the item with a warning.
+func cloudFail(st *parsing.State, err error, block int, item orderedjson.Value) error {
+	var perr *model.ParseError
+	if !errors.As(err, &perr) {
+		return err
+	}
+	return st.Fail(perr, model.NoLine, block, []string{orderedjson.Block(item)})
+}
 
 func cloudData(v orderedjson.Value) *model.Data {
 	d, _ := jsondata.ToData(v).(*model.Data)
@@ -22,6 +33,18 @@ func cloudData(v orderedjson.Value) *model.Data {
 func cloudGet(v orderedjson.Value, key string) orderedjson.Value {
 	x, _ := v.Get(key)
 	return x
+}
+
+// cloudStoredTime returns a number or a numeric string of seconds as whole milliseconds, or nil.
+func cloudStoredTime(v orderedjson.Value) *time.Duration {
+	if k := v.Kind(); k != orderedjson.Number && k != orderedjson.String {
+		return nil
+	}
+	d, ok := v.Duration(time.Second)
+	if !ok {
+		return nil
+	}
+	return &d
 }
 
 // cloudConfidence returns a number from 0 to 1, else nil.

@@ -60,6 +60,7 @@ The words after the command name follow the PHP 5.x CLI. The standard `flag` pac
 
 - **Duplicates**: an input whose real path came before is left out. `"dir/*.srt" dir/b.srt` reads `dir/b.srt` once.
 - **Format**: without `--from`, the content decides, then the extension, as [detection.md](detection.md) says. `--from` and `--to` take a format name or an extension: `srt`, `.SRT`, `vtt`, `ssa`, the extension of `ass`, and `sub`, the extension of `microdvd`, work.
+- **Formats that need `--from`**: detection never finds the cloud speech-to-text JSON formats (`assemblyai`, `aws-transcribe`, `deepgram`, `google-speech`) and the chapter formats. A file with no detectable format fails with `Format detection found no subtitle format. Pass --from FORMAT. Chapters and cloud speech-to-text JSON always need it, for example --from deepgram.`. `diff` and `dual` name `--new-from`, `--primary-from` or `--secondary-from` in both places. `sync` has no format option for its reference, so it advises `Write it to a subtitle file with convert --from FORMAT first.`.
 - **Encoding**: `--encoding NAME` sets the source encoding of input that is not UTF-8. An unknown name fails before the first read, and the message lists every name. [encodings.md](encodings.md#supported-names) holds the list.
 - **Lenient mode**: `--lenient` skips or repairs broken cues and prints each warning on stderr as `LABEL: line N: MESSAGE (skipped)`. A strict read that fails on a broken cue prints `Pass --lenient to skip or repair broken cues.`.
 - **Batches**: the run stops at the first input that fails. `--keep-going` goes on with the next one.
@@ -81,6 +82,17 @@ MicroDVD counts time in video frames, so a MicroDVD read and a MicroDVD write ne
 - **TSV to CSV**: `convert trip.tsv --to csv` writes commas, and `--to tsv` writes tabs, as [formats.md](formats.md#csv-and-tsv) says.
 - **Frame rate change**: `--from-fps` and `--to-fps` of the `retime` group retime the cues. They do not take `--fps`.
 
+### Transcript options
+
+| Option | Commands | Sets | Without it |
+|:--- |:--- |:--- |:--- |
+| `--word-timestamps` | every command that reads subtitle files | `ReadOptions.Transcript.WordTimestamps` | the cues of a Whisper or Podcasting 2.0 transcript hold no `Cue.Words`, so a WebVTT output has no `<00:...>` timestamps |
+
+- **Order**: `--word-timestamps` comes after `--fps` and before `--scc-roll-up`.
+- **Turned on by other options**: in `convert`, `--structure-resegment`, `--karaoke` and `--ass-karaoke-tag` set the field as if `--word-timestamps` were passed. `--structure-split-long` does not.
+- **Other formats**: the flag changes nothing for formats that always keep their word times, such as enhanced LRC, ASS karaoke and WebVTT, and for formats without words, such as SubRip.
+- **Speakers**: the CLI does not set `SpeakerVoices`. A Whisper or cloud speech-to-text input gives cues without speakers.
+
 ### Broadcast options
 
 | Option | Commands | Sets | Without it |
@@ -91,7 +103,7 @@ MicroDVD counts time in video frames, so a MicroDVD read and a MicroDVD write ne
 - **Order**: `--scc-roll-up` comes after `--fps` and is checked after `--input-fps`, before `--track` and `--from`. `--scc-fit` comes after `--no-bom`.
 - **Write reports**: after a write, the CLI prints each change on stderr. SCC and MCC changes read `ferry.srt: Cue #3 at 5 s is left out. Its caption data needs the frames up to 5.839 s, but the cue ends at 5.4 s. (dropped)`. The action is `transliterated`, `wrapped`, `delayed` or `dropped`. The SCC changes need `--scc-fit`, and the MCC writer always fits.
 - **EBU STL report**: a character that the character code table lacks becomes `?` in the file. The CLI prints one line for each, where C stands for the character, such as an em dash in cue 1: `show.srt: Cue 1: the character table has no "C", so the file holds "?".`. A character of a GSI field gives `GSI field OPT: ...`, and a character of a comment gives `Comment: ...`. PHP prints nothing.
-- **SCC advice**: a cue that fits 4 lines of 32 characters after a wrap fails with `Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.`. A cue that needs a split fails without advice.
+- **SCC advice**: a cue that fits 4 lines of 32 characters after a wrap fails with `Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.`. A cue that needs a split fails with `Pass --structure-split-long --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.`.
 - **Binary output**: EBU STL, PAC and Cavena 890 output goes to stdout or to a file as raw bytes. `info` shows no `Encoding:` row for them, and `--json` gives `"encoding": null`.
 
 ### Video files and tracks
@@ -179,12 +191,31 @@ The edits run in this order, whatever the order of the flags. A group runs only 
 | 3 | `errors` | `--errors-fix`, `--errors-*` | the annotation removal and the replacements see fixed words such as `It's` for `lt's` |
 | 4 | `sdh` | `--sdh`, `--sdh-*` | the replacements and the text edits see the text without annotations |
 | 5 | `replace` | `--replace FROM=TO`, `--replace-regex`, `--replace-ignore-case` | |
-| 6 | `text` | `--case`, `--strip-tags`, `--rtl` | text edits change the line lengths, so they run before `structure` |
+| 6 | `text` | `--speakers`, `--case`, `--strip-tags`, `--rtl`, in this order | text edits change the line lengths, so they run before `structure`. Speaker labels come first, so `--case` and `--strip-tags` see them |
 | 7 | `structure` | `--structure-*` | joins and splits change the cues, so the timing edits run after it |
 | 8 | `retime` | `--sync`, `--shift`, `--scale`, `--from-fps` with `--to-fps`, in this order | |
 | 9 | `snap` | `--snap-*`, `--video-fps`, `--no-snap-chain` | the shot changes need the final times of the retime group, and the timing fixes in seconds come after the frames |
 | 10 | `timing` | `--timing-*` | |
 | 11 | `masking` | `--mask-words FILE`, `--mask`, `--mute-*` | the mute ranges of `--mute-edl` and `--mute-filter` need the final times |
+| 12 | `karaoke` | `--karaoke`, `--karaoke-style` | it writes one cue per word, so it multiplies the cues and runs last |
+
+### Speakers, structure and karaoke
+
+`--speakers MODE` calls `speakers.Apply`. `prefix` writes `ANNA: Hi`, `dashes` writes dialogue dashes, `colors` writes a font colour per speaker, and `from-prefix` reads `ANNA:` labels into speakers. The check order of the `text` group is `--case`, `--speakers`, `--rtl`. A wrong value fails with `The option --speakers must be prefix, dashes, colors or from-prefix, got "names".`.
+
+| Option | Value | Default | Check |
+|:--- |:--- |:--- |:--- |
+| `--structure-resegment` | flag | | turns on word timestamps. Calls `resegment.ByWords` with the limits and the word gap |
+| `--structure-max-word-gap SECONDS` | positive time | 0.6 | needs `--structure-resegment`: `Pass --structure-resegment with --structure-max-word-gap.` |
+| `--structure-split-long` | flag | | calls `resegment.SplitLong` with the limits. It does not turn on word timestamps |
+| `--karaoke` | flag | | turns on word timestamps. Calls `karaoke.Apply` |
+| `--karaoke-style TAG` | `b`, `i`, `u`, `s` or `font color="#rrggbb"` | `u` | needs `--karaoke`: `Pass --karaoke with --karaoke-style.`. A wrong tag fails with the library message, for example `The style em must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00".` |
+
+- **Limits**: `--structure-max-cpl` and `--structure-max-lines` need one of `--structure-wrap`, `--structure-resegment`, `--structure-merge-short` or `--structure-split-long`.
+- **Check order** of `structure`: the `--structure-max-word-gap` rule, the `--structure-max-cpl` rule, the `--structure-max-lines` rule, the value of `--structure-max-word-gap`, then the values of `--structure-max-cpl` and `--structure-max-lines`.
+- **ASS conflict**: `--karaoke` with `--ass-karaoke-tag` fails with `Pass only one of --karaoke and --ass-karaoke-tag.`.
+- **Not exposed**: the cumulative mode and the word limit per cue of `karaoke.Options` have no flag.
+- **Example**: `stbox convert lecture.json --structure-resegment --to srt -o lecture.srt` reads a Whisper JSON file with its word times and writes one cue per sentence that fits 42 characters and 2 lines. `stbox convert song.json --karaoke --to srt` writes one cue per word with the active word underlined.
 
 The `ass` group comes last in the help. It runs no edit: it sets how the ASS writer writes the output.
 
@@ -200,11 +231,13 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 
 | Step | Option | Library call |
 |---:|:--- |:--- |
-| 1 | `--structure-unwrap` | `UnwrapLines()` |
-| 2 | `--structure-merge-same-time` | `MergeSameTimeCues(0)` |
-| 3 | `--structure-merge-short` | `MergeShortCues` with `--structure-max-cpl` and `--structure-max-lines` |
-| 4 | `--structure-wrap` | `WrapLines(cpl, lines)`, 42 and 2 by default |
-| 5 | `--structure-merge-duplicates` | `RemoveDuplicateCues(0)` |
+| 1 | `--structure-resegment` | `resegment.ByWords` with the limits and the word gap |
+| 2 | `--structure-unwrap` | `UnwrapLines()` |
+| 3 | `--structure-merge-same-time` | `MergeSameTimeCues(0)` |
+| 4 | `--structure-merge-short` | `MergeShortCues` with `--structure-max-cpl` and `--structure-max-lines` |
+| 5 | `--structure-split-long` | `resegment.SplitLong` with the limits |
+| 6 | `--structure-wrap` | `WrapLines(cpl, lines)`, 42 and 2 by default |
+| 7 | `--structure-merge-duplicates` | `RemoveDuplicateCues(0)` |
 
 `--structure-merge-same-time` comes last in the help but runs second. So its joined cues take part in the merge of short cues and in the wrap.
 
@@ -576,7 +609,7 @@ stbox hls film.srt --output-dir subs --segment 00:10 --mpegts 126000 --local 10 
 | `--local SECONDS` | a time of 0 or more | 0 | `Map.Local` |
 | `--media-duration SECONDS` | a time above 0 | the end of the last cue | `MediaDuration` |
 
-- **Input options**: `--from`, `--encoding`, `--lenient`, `--input-fps`, `--fps` and `--scc-roll-up` work as for `diff`. There is no `--keep-going`, because the command has one input.
+- **Input options**: `--from`, `--encoding`, `--lenient`, `--input-fps`, `--fps`, `--word-timestamps` and `--scc-roll-up` work as for `diff`. There is no `--keep-going`, because the command has one input.
 - **Checks before the read**: each failure exits 2 and writes nothing.
   - 2 or more inputs: `The hls command takes one input file, got N.`
   - The playlist has the name of a segment, for example `--playlist sub0.vtt`.
@@ -602,6 +635,8 @@ html                .html .htm               yes   yes
 itt                 .itt                     yes   yes
 json                .json                    yes   yes
 assemblyai          .json                    yes   yes
+aws-transcribe      .json                    yes   yes
+deepgram            .json                    yes   yes
 lrc                 .lrc                     yes   yes
 mcc                 .mcc                     yes   yes
 microdvd            .sub                     yes   yes
