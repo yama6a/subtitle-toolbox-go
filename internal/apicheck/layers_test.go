@@ -100,6 +100,7 @@ var allowedModules = []string{
 	"github.com/Eyevinn/mp4ff",
 	"github.com/asticode/go-astits",
 	"github.com/dlclark/regexp2/v2",
+	"github.com/yama6a/go-glyph-ocr",
 }
 
 func TestPackageLayers(t *testing.T) {

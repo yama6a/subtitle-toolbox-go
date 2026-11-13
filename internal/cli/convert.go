@@ -16,6 +16,8 @@ type convertCommand struct {
 	// masking is the edit of the masking group, nil without --mask-words.
 	masking *maskingEdit
 	errors  *errorsEdit
+	// ocr is the edit of the ocr group, nil without --ocr.
+	ocr *ocrEdit
 	// snap is the edit of the snap group, nil without a trigger option.
 	snap *snapEdit
 }
@@ -131,6 +133,8 @@ func (cc *convertCommand) prepare(a *args, r *runner) error {
 func (cc *convertCommand) prepareGroups(a *args) error {
 	add := func(e edit) {
 		switch e := e.(type) {
+		case *ocrEdit:
+			cc.ocr = e
 		case *errorsEdit:
 			cc.errors = e
 		case *maskingEdit:
@@ -158,14 +162,23 @@ func (cc *convertCommand) prepareGroups(a *args) error {
 	return needsASSOutput(a, cc.out.to)
 }
 
-func (cc *convertCommand) checkInputs(r *runner, inputs []string) error {
-	readPaths := slices.Clone(inputs)
+// sideFilePaths returns the files that the options of the groups read, without the masking words.
+func (cc *convertCommand) sideFilePaths() []string {
+	var paths []string
 	if cc.snap != nil && cc.snap.path != "" {
-		readPaths = append(readPaths, cc.snap.path)
+		paths = append(paths, cc.snap.path)
 	}
 	if cc.errors != nil && cc.errors.listPath != "" {
-		readPaths = append(readPaths, cc.errors.listPath)
+		paths = append(paths, cc.errors.listPath)
 	}
+	if cc.ocr != nil && cc.ocr.hasDatabase {
+		paths = append(paths, cc.ocr.databasePath)
+	}
+	return paths
+}
+
+func (cc *convertCommand) checkInputs(r *runner, inputs []string) error {
+	readPaths := append(slices.Clone(inputs), cc.sideFilePaths()...)
 	m := cc.masking
 	if m == nil {
 		return cc.out.checkInputs(r, inputs, readPaths, nil)
@@ -180,7 +193,12 @@ func (cc *convertCommand) checkInputs(r *runner, inputs []string) error {
 	return cc.out.checkInputs(r, inputs, append(readPaths, m.wordsPath), side)
 }
 
-func (cc *convertCommand) loadSideFiles(_ context.Context, r *runner) error {
+func (cc *convertCommand) loadSideFiles(ctx context.Context, r *runner) error {
+	if cc.ocr != nil {
+		if err := cc.ocr.load(ctx, r.c); err != nil {
+			return err
+		}
+	}
 	if cc.errors != nil && cc.errors.listPath != "" {
 		if err := cc.errors.loadReplaceList(r.c); err != nil {
 			return err

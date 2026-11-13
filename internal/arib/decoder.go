@@ -32,7 +32,7 @@ const (
 	// more than 500,000. The largest screen of ARIB TR-B14 profile A, 1920 by 1080, holds 864 at normal size and
 	// 3,456 at small size.
 	maxCells = 4096
-	// A data group may add states with text of up to stateTextBase plus stateTextPerByte times its size.
+	// The states that one PES packet adds may hold text of up to stateTextBase plus stateTextPerByte times its size.
 	// One state is as long as the screen, so a group that repeats TIME would else grow without a limit.
 	stateTextBase    = 32 << 10
 	stateTextPerByte = 32
@@ -824,7 +824,7 @@ func (d *Decoder) snapshot() {
 		d.groupText += len(l)
 	}
 	if d.groupText > d.groupBudget {
-		d.skip("states", "The caption states of one data group are longer than 32 KiB plus 32 times the data group. The reader dropped the states past that.")
+		d.skip("states", "The caption states of one PES packet are longer than 32 KiB plus 32 times the packet. The reader dropped the states past that.")
 		return
 	}
 	d.addState(State{d.time, lines, alignment})

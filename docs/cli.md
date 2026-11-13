@@ -122,7 +122,7 @@ A `.txt` file in a directory is an input only when content detection finds a for
 - **Never overwrite**: every output is checked before the first read, also the files of `--mute-edl` and `--mute-filter`. An output that exists, also as a directory or a symbolic link, fails with exit 2, and so does an output that is a file the command reads, or the output of 2 inputs. The create is exclusive, so a file that appears during the run fails too.
 - **Rollback**: when an output cannot be created or written, the run removes every file and directory that it created, also the outputs of earlier inputs, and exits 3.
 - **Extension rule**: the extension of `-o` never picks the format. `--to srt -o film.vtt` fails. Without `--to`, an `-o` extension of another writable format fails too, so SubRip never lands in a `.vtt` file by mistake. An extension of no format, such as `.bak`, always works.
-- **Interrupt**: Ctrl-C or SIGTERM stops the run before the next input. The finished outputs stay, because each is a complete file. A second Ctrl-C ends the process at once. An output that is being written then can stay incomplete, and the run removes nothing.
+- **Interrupt**: Ctrl-C or SIGTERM stops the run before the next input. The finished outputs stay, because each is a complete file. With `--ocr`, the run stops within one image, and the input that OCR was reading writes no output. A second Ctrl-C ends the process at once. An output that is being written then can stay incomplete, and the run removes nothing.
 
 ## convert
 
@@ -140,15 +140,16 @@ The edits run in this order, whatever the order of the flags. A group runs only 
 | # | Group | Options | Why at this place |
 |---:|:--- |:--- |:--- |
 | 1 | `forced` | `--forced-only` | later steps see only the cues that stay |
-| 2 | `errors` | `--errors-fix`, `--errors-*` | the annotation removal and the replacements see fixed words such as `It's` for `lt's` |
-| 3 | `sdh` | `--sdh`, `--sdh-*` | the replacements and the text edits see the text without annotations |
-| 4 | `replace` | `--replace FROM=TO`, `--replace-regex`, `--replace-ignore-case` | |
-| 5 | `text` | `--case`, `--strip-tags`, `--rtl` | text edits change the line lengths, so they run before `structure` |
-| 6 | `structure` | `--structure-*` | joins and splits change the cues, so the timing edits run after it |
-| 7 | `retime` | `--sync`, `--shift`, `--scale`, `--from-fps` with `--to-fps`, in this order | |
-| 8 | `snap` | `--snap-*`, `--video-fps`, `--no-snap-chain` | the shot changes need the final times of the retime group, and the timing fixes in seconds come after the frames |
-| 9 | `timing` | `--timing-*` | |
-| 10 | `masking` | `--mask-words FILE`, `--mask`, `--mute-*` | the mute ranges of `--mute-edl` and `--mute-filter` need the final times |
+| 2 | `ocr` | `--ocr`, `--ocr-*` | OCR reads only the forced cues that stay, and the `errors` group then fixes the OCR text |
+| 3 | `errors` | `--errors-fix`, `--errors-*` | the annotation removal and the replacements see fixed words such as `It's` for `lt's` |
+| 4 | `sdh` | `--sdh`, `--sdh-*` | the replacements and the text edits see the text without annotations |
+| 5 | `replace` | `--replace FROM=TO`, `--replace-regex`, `--replace-ignore-case` | |
+| 6 | `text` | `--case`, `--strip-tags`, `--rtl` | text edits change the line lengths, so they run before `structure` |
+| 7 | `structure` | `--structure-*` | joins and splits change the cues, so the timing edits run after it |
+| 8 | `retime` | `--sync`, `--shift`, `--scale`, `--from-fps` with `--to-fps`, in this order | |
+| 9 | `snap` | `--snap-*`, `--video-fps`, `--no-snap-chain` | the shot changes need the final times of the retime group, and the timing fixes in seconds come after the frames |
+| 10 | `timing` | `--timing-*` | |
+| 11 | `masking` | `--mask-words FILE`, `--mask`, `--mute-*` | the mute ranges of `--mute-edl` and `--mute-filter` need the final times |
 
 The `ass` group comes last in the help. It runs no edit: it sets how the ASS writer writes the output.
 
@@ -171,6 +172,25 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 | 5 | `--structure-merge-duplicates` | `RemoveDuplicateCues(0)` |
 
 `--structure-merge-same-time` comes last in the help but runs second. So its joined cues take part in the merge of short cues and in the wrap.
+
+### OCR
+
+`--ocr` reads the text of image cues, for example from PGS or VobSub, with `ocr.Run`. `stbox convert text_1080p.sup --ocr --to srt` on a machine without Tesseract picks the glyph engine. The first cue reads `The train to Bergen leaves at 7:45.`.
+
+| Option | Value | Default | Effect |
+|:--- |:--- |:--- |:--- |
+| `--ocr` | flag, turns the group on | off | |
+| `--ocr-engine ENGINE` | `tesseract` or `glyph` | Tesseract when it is installed, else glyph | `auto.Options.Engine` |
+| `--ocr-language CODE` | a Tesseract model name, `deu` or `deu+eng` | `eng` | `tesseract.Options.Language`. The glyph engine ignores it |
+| `--ocr-database FILE` | a glyph database in `.nocr` format | the subtitle fonts database | `glyph.Options.Database`. It selects the glyph engine |
+
+- **Checks**: the options `--ocr-engine`, `--ocr-language` and `--ocr-database` need `--ocr`: `Pass --ocr with --ocr-engine.` An engine other than `tesseract` or `glyph` fails: `The option --ocr-engine must be tesseract or glyph, got "easyocr".` `--ocr-database` with `--ocr-engine tesseract` fails: `Pass --ocr-engine glyph with --ocr-database.` All three exit 2.
+- **Before the first read**: the command chooses the engine. An explicit `--ocr-engine tesseract` without the program, or a language without its data, exits 2 with the install hint of [ocr.md](ocr.md#tesseract). No output file exists then.
+- **Database file**: the command loads it once per run, as a side file. A file that go-glyph-ocr rejects, for example a text file, prints `Error: FILE: MESSAGE` and exits 3.
+- **Per input**: an input without image cues without lines runs no engine. The glyph engine is new for each input, because it learns the glyph heights of one stream. All glyph engines share one database.
+- **Language**: with the glyph engine, `--ocr-language` prints `Warning: the glyph engine ignores --ocr-language.` once per run.
+- **Progress**: the command prints `LABEL: OCR DONE/TOTAL` to standard error after every 100 images and after the last one, for example `film.sup: OCR 200/250`.
+- **Failure**: an engine error fails the input with exit 3. The message names the cue, counted from 1: `film.sup: cue 3: MESSAGE`.
 
 ### Common errors
 

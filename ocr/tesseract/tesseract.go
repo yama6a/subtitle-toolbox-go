@@ -91,10 +91,10 @@ func (e *Engine) Recognize(ctx context.Context, im model.Image, language ocr.Lan
 	defer os.Remove(file)
 
 	stdout, stderr, exit, err := run(ctx, e.program, file, "stdout", "-l", string(language), "--psm", e.mode, "-c", "tessedit_create_tsv=1")
-	if ctx.Err() != nil {
-		return ocr.Text{}, err
-	}
 	if err != nil {
+		if ctx.Err() != nil {
+			return ocr.Text{}, err
+		}
 		return ocr.Text{}, &recognizeError{msg: "Cannot start Tesseract for the cue image at " + at + ": " + err.Error(), err: err}
 	}
 	if exit != 0 {

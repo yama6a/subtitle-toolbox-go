@@ -386,5 +386,5 @@ func TestDecoderStateLimit(t *testing.T) {
 	require.Len(t, d.Warnings(), 2)
 	assert.True(t, d.Warnings()[0].Skipped)
 	assert.Equal(t, "The caption screen holds more than 4096 characters. The reader dropped the characters past that.", d.Warnings()[0].Message)
-	assert.Equal(t, "The caption states of one data group are longer than 32 KiB plus 32 times the data group. The reader dropped the states past that.", d.Warnings()[1].Message)
+	assert.Equal(t, "The caption states of one PES packet are longer than 32 KiB plus 32 times the packet. The reader dropped the states past that.", d.Warnings()[1].Message)
 }

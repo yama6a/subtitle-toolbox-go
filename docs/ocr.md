@@ -109,6 +109,52 @@ engine, err := tesseract.New(tesseract.Options{Language: ocr.German})
 - **Errors**: a program that exits with a code other than 0, or that cannot start, gives an error that matches `ErrRecognize`.
 - **Tests**: tests with a fake program run everywhere. `TestTesseractAccuracy` needs a real Tesseract with `eng` and `rus` data. It skips without one, unless `STBOX_REQUIRE_TESSERACT=1` is set. The CI job `tesseract` sets it.
 
+## Glyph engine
+
+Package `ocr/glyph` reads cue images with [go-glyph-ocr](https://github.com/yama6a/go-glyph-ocr), a pure Go engine. It needs no Tesseract and no cgo, so it works in the distroless image. Example: `glyph.New(glyph.Options{})` reads the first cue of `text_1080p.sup` as `The train to Bergen leaves at 7:45.`.
+
+<!-- example: ocr/glyph/ExampleNew -->
+```go
+s, _, err := stbox.Load("../../testdata/pgs/text_1080p.sup", stbox.ReadOptions{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+engine, err := glyph.New(glyph.Options{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+if _, err := ocr.Run(context.Background(), s, engine, ""); err != nil {
+	fmt.Println(err)
+	return
+}
+
+cue, _ := s.Cue(0)
+fmt.Println(cue.Lines)
+// Output:
+// [The train to Bergen leaves at 7:45.]
+```
+
+| Field | Default | Meaning |
+|:--- |:--- |:--- |
+| `Database` | nil: `glyphocr.SubtitleFonts()` | The glyphs to match. `glyphocr.Latin()` or a `.nocr` file from `glyphocr.LoadDatabase` also work |
+| `Recognizer` | none | The options of go-glyph-ocr, passed to `glyphocr.NewRecognizer` unchanged, for example `glyphocr.ItalicSlant(0.2)` or `glyphocr.NoLineContext()` |
+
+- **Databases**: the subtitle fonts database holds 2,007 glyphs of DejaVu Sans, Liberation Sans and Noto Sans, then the Latin glyphs. It reads 98.3% of the characters of the test sets right. The Latin database alone reads 85.0%. The [go-glyph-ocr README](https://github.com/yama6a/go-glyph-ocr#readme) lists every option.
+- **One stream per engine**: the recognizer learns the glyph heights of the images it reads. Use one engine for each subtitle stream. An engine is not safe for concurrent use. Engines can share one `*glyphocr.Database`, because matching only reads it. `Engine.Database` returns it.
+- **Text**: the engine splits each line into words at the space characters of go-glyph-ocr. A word is italic when more than half of its characters are. Italic words in a row become one run: `<i>The wind turns north tonight.</i>`. A run ends before the first upright word: `<i>Snow</i> is expected on Friday.` Markup characters are escaped. The confidence is the mean of all characters, unknown characters counting 0. An image without ink gives no lines and a confidence of 0.
+- **Language**: ignored.
+- **Errors**: `New` returns a `*model.InvalidArgumentError` for an invalid recognizer option. `Recognize` returns the context error before it starts, and an error that matches `ErrRecognize` for an image that is no PNG.
+
+## Choosing an engine
+
+Package `ocr/auto` picks an engine. `auto.Choose(ctx, auto.Options{})` returns `ocr.EngineTesseract` when the `tesseract` program runs, else `ocr.EngineGlyph`. An explicit `Options.Engine` wins. An explicit Tesseract that is missing returns the `*InvalidArgumentError` with the install hint of `tesseract.RequireInstalled`. `auto.New` builds the chosen engine with its default options. `Options.TesseractProgram` sets the program.
+
+## The convert command
+
+`stbox convert film.sup --ocr --to srt` runs `Run` with the chosen engine. The `ocr` option group is described in [cli.md](cli.md#ocr). `--ocr-database FILE` loads a `.nocr` file once per run and selects the glyph engine.
+
 ## VobSub input
 
 A VobSub read gives image cues, so OCR can read DVD subtitles. See [VobSub in formats.md](formats.md#vobsub). Example: `stbox.Load("movie.idx", stbox.ReadOptions{})` reads `movie.idx` and `movie.sub` into image cues without lines.
@@ -116,6 +162,8 @@ A VobSub read gives image cues, so OCR can read DVD subtitles. See [VobSub in fo
 ## Tests
 
 Package `ocr/ocrtest` holds `Engine`, a fake that returns the same `Text` for every image and records each call with its image and language.
+
+`ocr/glyph` reads the PGS and VobSub fixtures and compares the SubRip output with `pgs/text_1080p.ocr.srt` and `vobsub/text-pal.ocr.srt`. With the Latin database and no line context it reads the I and l errors that `fixing` repairs, as `fixing/text_1080p.ocr.srt` and `fixing/text-pal.ocr.srt` keep them.
 
 ## Differences from PHP
 

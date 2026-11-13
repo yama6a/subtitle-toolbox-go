@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs stbox once per feature that depends on how it was built: the version stamp, the code page tables and the ARIB tables.
+# Runs stbox once per feature that depends on how it was built: the version stamp, the code page tables, the ARIB tables and the glyph OCR engine.
 # Usage: .build/smoke-test.sh <expected version> <testdata dir as stbox sees it> <stbox command...>
 set -euo pipefail
 
@@ -22,6 +22,12 @@ fi
 srt=$("$@" convert "$files/mpegts/arib_japanese.ts" --to srt --output -)
 if ! grep -q "$(printf '\xe5\xa4\xa9\xe6\xb0\x97')" <<< "$srt"; then
   printf 'convert printed:\n%s\n' "$srt" >&2
+  exit 1
+fi
+
+srt=$("$@" convert "$files/pgs/text_1080p.sup" --ocr --to srt --output -)
+if ! grep -q 'Bergen' <<< "$srt"; then
+  printf 'convert --ocr printed:\n%s\n' "$srt" >&2
   exit 1
 fi
 
