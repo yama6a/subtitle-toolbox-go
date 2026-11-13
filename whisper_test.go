@@ -81,3 +81,26 @@ func TestWhisperCppDiarizeWritesWebVTT(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, string(testfiles.Read(t, "speakers/whisper_cpp_diarize.vtt")), out.String())
 }
+
+// Ports testDetectionDoesNotTakeWhisperJson of tests/Parsers/CloudSpeechParsersTest.php of subtitle-toolbox-php.
+func TestDetectFindsEveryWhisperFile(t *testing.T) {
+	t.Parallel()
+
+	for _, file := range folder(t, "whisper").realFiles(t) {
+		t.Run(file, func(t *testing.T) {
+			t.Parallel()
+
+			d, ok := stbox.Detect(testfiles.Read(t, "whisper/real/"+file))
+			require.True(t, ok)
+			assert.Equal(t, stbox.Whisper, d.Format)
+		})
+	}
+}
+
+func TestLibraryJSONWinsOverWhisper(t *testing.T) {
+	t.Parallel()
+
+	d, ok := stbox.Detect([]byte(`{"version": 1, "cues": [], "segments": []}`))
+	require.True(t, ok)
+	assert.Equal(t, stbox.JSON, d.Format)
+}
