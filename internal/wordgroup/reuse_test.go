@@ -233,7 +233,7 @@ func TestWordgroupGrowth(t *testing.T) {
 		}
 		text := cue.Lines[0]
 		shared, sharedSource := sharedStartCue(n)
-		lead, leadSource := untimedLeadCue(n)
+		lead, leadSource := untimedLeadCue(5 * n) // this shape is fast, so a larger base keeps the ratio steady
 		return map[string]time.Duration{
 			"Reuse":                best(func() { wordgroup.Reuse(&cue, source, true, true) }),
 			"Reuse shared start":   best(func() { wordgroup.Reuse(&shared, sharedSource, true, true) }),
