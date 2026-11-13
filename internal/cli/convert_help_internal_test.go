@@ -64,6 +64,7 @@ Options:
 const convertGroupList = `
 Option groups, in the order that convert runs their edits:
   forced     Keep only the forced cues.
+  ocr        Read the text of image cues with OCR.
   errors     Fix spacing, punctuation and OCR errors.
   sdh        Remove hearing-impaired annotations.
   replace    Replace words or patterns in the text.
@@ -85,6 +86,18 @@ var convertGroupHelp = []string{
 	`forced: Keep only the forced cues.
   --forced-only  Keep only the forced cues, for example the translations of
                  signs.
+`,
+	`ocr: Read the text of image cues with OCR.
+  --ocr                Read the text of image cues, for example from PGS or
+                       VobSub. Use Tesseract when it is installed, and the
+                       built-in glyph engine when it is not.
+  --ocr-engine ENGINE  OCR engine for --ocr: tesseract or glyph. Default:
+                       tesseract when it is installed.
+  --ocr-language CODE  Tesseract language for --ocr, for example deu or deu+eng.
+                       Default: eng. The glyph engine ignores it.
+  --ocr-database FILE  Glyph database in .nocr format for --ocr. It selects the
+                       glyph engine. Default: the subtitle fonts database of
+                       go-glyph-ocr.
 `,
 	`errors: Fix spacing, punctuation and OCR errors.
   --errors-fix                 Fix spacing, punctuation, dash, tag and OCR
@@ -227,7 +240,7 @@ func TestConvertHelp(t *testing.T) {
 	all := result{Stdout: convertCommonHelp + "\n" + strings.Join(convertGroupHelp, "\n")}
 	unknown := func(topic string) result {
 		return usageResult("convert", "Unknown option group "+quote(topic)+
-			". The groups are forced, errors, sdh, replace, text, structure, retime, snap, timing, masking, ass, and all for every option.")
+			". The groups are forced, ocr, errors, sdh, replace, text, structure, retime, snap, timing, masking, ass, and all for every option.")
 	}
 	tests := []struct {
 		name  string

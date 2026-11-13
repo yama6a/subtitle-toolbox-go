@@ -93,7 +93,7 @@ func flagSteps(a *args, flags []flagStep) steps {
 
 // convertGroups lists the groups in pipeline order.
 func convertGroups() []group {
-	return []group{forcedGroup(), errorsGroup(), sdhGroup(), replaceGroup(), textGroup(), structureGroup(), retimeGroup(), snapGroup(), timingGroup(), maskingGroup(), assGroup()}
+	return []group{forcedGroup(), ocrGroup(), errorsGroup(), sdhGroup(), replaceGroup(), textGroup(), structureGroup(), retimeGroup(), snapGroup(), timingGroup(), maskingGroup(), assGroup()}
 }
 
 func needs(a *args, needed string, opts ...string) error {

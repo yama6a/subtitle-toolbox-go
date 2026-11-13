@@ -14,7 +14,7 @@ import (
 
 const ptsRange = 1 << 33
 
-// pesSink gets the data of each PES packet of a track. The teletext decoder is one, the DVB and ARIB decoders come later.
+// pesSink gets the data of each PES packet of a track. The teletext decoder is one, the ARIB decoder comes later.
 type pesSink interface{ Add(data []byte, pts int64) }
 
 // Extract reads the track that has the given number from the start of the file. Lenient mode has no effect.
@@ -27,28 +27,40 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 		}
 	}
 	track, s := f.tracks[i], f.streams[i]
-	dec := teletext.NewDecoder(s.page, number%1000, teletext.LanguageGroup(track.Language))
-	zero, last, err := f.readPES(s, dec)
-	if err != nil {
-		return nil, nil, err
+	var cues []model.Cue
+	var warnings []model.ParseWarning
+	var err error
+	switch track.CodecID {
+	case codecDVB:
+		cues, warnings, err = f.dvbCues(s, number, common)
+	default:
+		cues, err = f.teletextCues(track, s, number, common)
 	}
-	pages, err := dec.Finish()
-	if err != nil {
-		return nil, nil, &model.ParseError{Msg: err.Error(), Err: err}
-	}
-	states := make([]textState, len(pages))
-	for i, p := range pages {
-		states[i] = textState{start: p.Start, lines: p.Lines}
-	}
-	lastCue := parsing.NewState(model.SubRip, common).LastCueDuration()
-	cues, err := textCues(number, states, zero, last, lastCue)
 	if err != nil {
 		return nil, nil, err
 	}
 	sub := &model.Subtitle{}
 	sub.AddCues(cues...)
 	sub.SetMetadata(model.MetadataLanguage, track.Language)
-	return sub, nil, nil
+	return sub, warnings, nil
+}
+
+func (f *File) teletextCues(track model.Track, s stream, number int, common model.CommonReadOptions) ([]model.Cue, error) {
+	dec := teletext.NewDecoder(s.page, number%1000, teletext.LanguageGroup(track.Language))
+	zero, last, err := f.readPES(s, dec)
+	if err != nil {
+		return nil, err
+	}
+	pages, err := dec.Finish()
+	if err != nil {
+		return nil, &model.ParseError{Msg: err.Error(), Err: err}
+	}
+	states := make([]textState, len(pages))
+	for i, p := range pages {
+		states[i] = textState{start: p.Start, lines: p.Lines}
+	}
+	lastCue := parsing.NewState(model.SubRip, common).LastCueDuration()
+	return textCues(number, states, zero, last, lastCue)
 }
 
 // readPES passes each PES of s.pid to sink. It returns the zero point, which is the smallest first PTS of the

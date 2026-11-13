@@ -7,7 +7,7 @@ The Go port follows the PHP project yama6a/subtitle-toolbox-php.
 
 - **Language**: Go 1.27, one module, root package `stbox`, binary `stbox`. `CGO_ENABLED=0` must build.
 - **Linting**: golangci-lint v2 with the shared config of yama6a/gha. `.golangci.local.yaml` merges over it.
-- **Allowed modules**: `golang.org/x/text`, `github.com/rivo/uniseg`, `github.com/Eyevinn/mp4ff`, `github.com/asticode/go-astits`, `github.com/dlclark/regexp2/v2`.
+- **Allowed modules**: `golang.org/x/text`, `github.com/rivo/uniseg`, `github.com/Eyevinn/mp4ff`, `github.com/asticode/go-astits`, `github.com/dlclark/regexp2/v2`, `github.com/yama6a/go-glyph-ocr`.
 - **Test module**: `github.com/stretchr/testify`.
 - **Written here**: everything else. EBML is written by hand. Tesseract runs through `os/exec`. PNG uses `image/png`.
 
@@ -31,7 +31,7 @@ timing/        The 2.x service that moves cue times to shot changes and frames. 
 imaging/       The 3.x public helpers that decode and build the PNG bitmaps of image cues. Same layer rule
 hls/           The service that cuts a subtitle into HLS WebVTT segments and joins segments. Same layer rule
 internal/      Helpers: markupcore, teletext, linewrap, timecode, textenc, extfallback, grapheme, ssatag, phpkey, stringlist, xmlraw, ebml, paragraphs, blocks, subrip,
-               vtt, position, parsing, writing, ttmlwrite, bitmap, displayset, dvdsub, cli, and the test helpers testfiles and golden
+               vtt, position, parsing, writing, ttmlwrite, bitmap, displayset, dvbsub, dvdsub, cli, and the test helpers testfiles and golden
 cmd/stbox/     The CLI main. Wiring, no business logic
 testdata/      All fixtures and goldens, one folder per topic, PHP folder names for PHP data. Packages read
                them through internal/testfiles. Only fuzz corpora stay in <package>/testdata/fuzz/

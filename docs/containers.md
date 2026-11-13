@@ -16,15 +16,19 @@ s, info, err := stbox.Load("movie.mkv", stbox.ReadOptions{Track: 2})
 | `S_TEXT/UTF8` | `srt` | SubRip cues |
 | `S_TEXT/ASS`, `S_TEXT/SSA` | `ass` | an ASS or SSA subtitle, as `mkvextract` writes it |
 | `S_TEXT/WEBVTT` | `vtt` | a WebVTT subtitle with its header, cue settings, identifiers and comments |
+| `S_HDMV/PGS` | `pgs` | image cues, as the PGS reader reads a `.sup` file. A block holds one or more segments. The time of a block is its start, so PGS times work up to the limit below |
+| `S_VOBSUB` | `vobsub` | image cues, one for each block. `CodecPrivate` holds the `.idx` header with the `size` and `palette` lines. The reader adds the first line `# VobSub index file` when it is missing |
+| `S_DVBSUB` | `pgs` | image cues, see [DVB subtitles](#dvb-subtitles) |
 | `D_WEBVTT/SUBTITLES`, `D_WEBVTT/CAPTIONS`, `D_WEBVTT/DESCRIPTIONS` | `vtt` | a WebVTT subtitle with cue settings and identifiers, as ffmpeg writes WebVTT into WebM. `D_WEBVTT/METADATA` holds no text to display |
 
-Any other codec has the format "". `Load` and `Extract` return a `*model.ParseError` for it. PGS (`S_HDMV/PGS`), VobSub (`S_VOBSUB`) and DVB (`S_DVBSUB`) tracks are listed with the format "" until their readers land.
+Any other codec has the format "". `Load` and `Extract` return a `*model.ParseError` for it.
 
 - **Tracks**: `Tracks` lists only tracks of type subtitle. The fields are `Number` (`TrackNumber`), `CodecID`, `Format`, `Language`, `Name` ("" without one), `Default` and `Forced`.
 - **Track numbers**: the reader skips a subtitle track whose `TrackNumber` is above 2147483647, because `Track.Number` is an `int` that every platform holds.
 - **Detection**: `Load` and `Parse` know an MKV or WebM file by its first 4 bytes `1A 45 DF A3`, not by its extension.
 - **Language**: the reader takes `LanguageBCP47`. Without it, the reader takes `Language`. Without either, the language is `eng`, as the Matroska specification defines. The read puts it into the `language` metadata.
 - **Forced**: on a track with the forced flag, the read sets `Cue.Forced` on every cue.
+- **Image tracks**: a PGS or VobSub track has no rebuilt file. The reader passes the segments of each block to the PGS decoder and each block to the VobSub unit decoder. A VobSub unit with a stop command ends at the block start plus its stop delay. A unit without one ends at the end of its block, which is the block duration, the `DefaultDuration` or the start of the next block. In lenient mode, a VobSub block that does not decode gets a `Skipped` warning with the index of the block in the track. A PGS block that ends inside a segment adds a `Skipped` warning and ends the track. Strict mode fails in both cases.
 - **Rebuilt files**: the reader rebuilds a SubRip, ASS or WebVTT file from the blocks and reads it with the parser of that format. So the options `Lenient` and `LastCueDuration` apply as they do for a file, and a damaged rebuilt file returns the error of its format.
 - **End times**: a text block without `BlockDuration` ends after `DefaultDuration` when the track has one. Else it ends at the start of the next block of the track. The last such block lasts `ReadOptions.LastCueDuration`.
 - **Compression**: the reader reads zlib compression and header stripping. It returns an error for bzlib, LZO and encrypted tracks. One block may inflate to 64 MB, and one track to 1 GiB in total.
@@ -32,7 +36,7 @@ Any other codec has the format "". `Load` and `Extract` return a `*model.ParseEr
 - **Memory**: the reader skips video and audio data. A block of another track costs at most 11 bytes of reads. Memory grows with the subtitle track, not with the file.
 - **Speed**: in a file from mkvmerge, the reader reads only the blocks that the `Cues` element lists for the track. It does so only when their number equals the `NUMBER_OF_FRAMES` tag that mkvmerge writes for the track. For a 2-hour, 1.3 GB film with 2,000 cues, this takes 0.24 s in place of 1.1 s. In other files, and when the numbers differ, the reader walks the whole file.
 - **Time limit**: a block that starts or ends at 100,000 hours or more returns an error. This is the [time limit](formats.md) of the format readers.
-- **Errors**: a damaged container returns a `*model.ParseError` with an empty `Format`. The CLI prints it as `stbox: <message>`. Lenient mode does not change container errors. It only applies to the rebuilt text file. Damage in these cases returns an error:
+- **Errors**: a damaged container returns a `*model.ParseError` with an empty `Format`. The CLI prints it as `stbox: <message>`. Lenient mode does not change container errors. It only applies to the rebuilt text file, the PGS segments and the VobSub units. Damage in these cases returns an error:
   - A codec without a reader.
   - Laced subtitle blocks.
   - An unsigned integer element, such as a cluster `Timestamp`, of more than 8 bytes or of 2^63 or more.
@@ -98,7 +102,7 @@ The reader does not read fragmented MP4 files, such as CMAF, DASH and HLS segmen
 
 ## MPEG-TS and M2TS
 
-The package `container/mpegts` reads DVB recordings as MPEG transport streams (`.ts`) and M2TS files from Blu-ray discs and Japanese recorders. It lists the teletext subtitle pages and reads one page as SubRip cues. DVB bitmap subtitles and ARIB captions come with their own readers.
+The package `container/mpegts` reads DVB recordings as MPEG transport streams (`.ts`) and M2TS files from Blu-ray discs and Japanese recorders. It lists the teletext subtitle pages and reads one page as SubRip cues. It also lists DVB bitmap subtitle services and reads them as image cues, see [DVB subtitles](#dvb-subtitles). ARIB captions come with their own reader.
 
 ```text
 tracks, err := stbox.Tracks(f, size)          // 888 dvb_teletext deu, 777 dvb_teletext deu "hearing impaired"
@@ -135,3 +139,37 @@ The reader skips damage without a message. The result depends on the damage.
 | a PES packet that does not start with `00 00 01` | the reader ignores it |
 
 - **Spec**: ISO/IEC 13818-1 (packets, PAT, PMT, PES), [ETSI EN 300 468](https://www.etsi.org/deliver/etsi_en/300400_300499/300468/01.17.01_60/en_300468v011701p.pdf) (descriptors), [ETSI EN 300 472](https://www.etsi.org/deliver/etsi_en/300400_300499/300472/01.04.01_60/en_300472v010401p.pdf) (teletext in PES packets), [ETS 300 706](https://www.etsi.org/deliver/etsi_i_ets/300700_300799/300706/01_60/ets_300706e01p.pdf) (teletext).
+
+## DVB subtitles
+
+DVB subtitles (ETSI EN 300 743) are the bitmap subtitles of European digital TV. They come as subtitle segments in MPEG-TS PES packets, and as `S_DVBSUB` blocks in Matroska. The package `internal/dvbsub` decodes the segments. Each display set that shows a pixel becomes an image cue with the format `pgs`, so OCR, the PGS writer and the text formats work on it. Lenient mode matters only for the region pixel limit below. The decoder skips damaged and unknown segments without a message.
+
+```text
+tracks, err := stbox.Tracks(f, size)          // 257 dvb_subtitle deu, 258 dvb_subtitle eng "hearing impaired"
+s, info, err := stbox.Load("news.ts", stbox.ReadOptions{Track: 257})
+```
+
+### Tracks in MPEG-TS
+
+- **Services**: a stream of type `0x06` with subtitling descriptors (tag `0x59`) lists one service for each 8-byte entry. The entries of all descriptors of a stream join into one list. An entry holds a language (3 bytes), a subtitling type, a composition page and an ancillary page.
+- **Order**: the DVB services come after all teletext pages of all programs, program by program.
+- **Numbers**: the first entry of a stream has the PID as its number, unless a track has that number. A PID from 100 to 899 can equal the number of a teletext page, which keeps its number. A later entry, or a clash, has `PID * 1000 + index`. When that number is taken too, the entry is skipped. Example: a service on PID 888 next to teletext page 888 has the number 888000.
+- **Fields**: `CodecID` is `dvb_subtitle` and `Format` is `pgs`. `Language` is the 3 letters in lower case, or `und`. `Name` is `hearing impaired` for the subtitling types `0x20` to `0x25`.
+- **Descriptor limits**: of each subtitling descriptor, the reader takes the first `length / 8` entries and ignores a short last entry. go-astits reads such an entry from the bytes after it.
+- **Times**: a cue time is the PTS minus the zero point of [MPEG-TS](#mpeg-ts-and-m2ts). The reader holds the PES packets of the track until the zero point is known. A time of 100,000 hours or more returns an error, as for teletext.
+
+### Tracks in Matroska
+
+`S_DVBSUB` tracks have the format `pgs`. CodecPrivate of 4 bytes or more holds the composition page and the ancillary page as 2 big-endian numbers. Without it the decoder reads every page. A block start and a `BlockDuration` give the times in nanoseconds. `DefaultDuration` does not apply. The reader decodes the block with the content encodings first.
+
+### Decoder rules
+
+- **Segments**: a payload that starts with `20 00` skips those 2 bytes. Segments start with the sync byte `0x0F`. Another byte, such as the end marker `0xFF`, ends the payload. The decoder skips segments of other pages. Without a page filter it reads every page. A display set that has no end segment shows at the end of its packet.
+- **Epochs**: a new page version with a page state other than 0 clears all regions and CLUTs. The states are 1 (acquisition point), 2 (mode change) and 3 (reserved).
+- **Cue times**: a cue starts at the time of the packet. It ends at the page time-out, at the end of a Matroska block with a duration, or at the start of the next display set that shows another image. A display set that shows the same image continues the cue. The last cue ends at its expiry, or after `ReadOptions.LastCueDuration` without one. Times round to whole milliseconds, half up.
+- **Pictures**: only objects coded as pixels are read. Character-coded objects show nothing. A region that uses no colour with an alpha above 0 is dropped. One region gives a palette PNG, several give an RGBA PNG. `Forced` is always false.
+- **CLUTs**: a CLUT without a definition uses the default CLUT of the specification. A CLUT definition sets the entries of the 2-bit, 4-bit and 8-bit tables that its flags name. Y 0 is fully transparent. The colours use the BT.601 matrix.
+- **Pixel code strings**: the decoder reads the 2-bit, 4-bit and 8-bit strings of a field, the map tables and the non-modifying colour flag. A string also ends at the end of the region row, because ffmpeg 7.0 ends 8-bit strings with 1 zero byte in place of 2.
+- **Limits**: the regions of a stream hold at most 8294400 pixels in total. A region that goes over returns `Cannot read region 1: the regions hold more than 8294400 pixels in total.`, and lenient mode skips it with a `Skipped` warning. A page that lists a region id twice draws it once. A region larger than 7680 pixels per side or 8294400 pixels in total returns `Cannot read region 1: an image of 8000x10 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total.` Joining the parts of one display set returns `Cannot join the parts of one display set:` and the reason.
+- **Not here**: a DVB writer.
+- **Spec**: [ETSI EN 300 743](https://www.etsi.org/deliver/etsi_en/300700_300799/300743/01.06.01_60/en_300743v010601p.pdf), [ETSI EN 300 468](https://www.etsi.org/deliver/etsi_en/300400_300499/300468/01.17.01_60/en_300468v011701p.pdf), [Matroska subtitles](https://www.matroska.org/technical/subtitles.html).
