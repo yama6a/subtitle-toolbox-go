@@ -5,9 +5,9 @@ import (
 	"slices"
 	"strconv"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/dual"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/dual"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // dualCommand merges the primary file and the secondary file into one subtitle and writes it as convert does.

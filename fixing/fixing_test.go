@@ -11,10 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // only turns every rule off but r.

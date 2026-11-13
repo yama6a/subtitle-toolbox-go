@@ -12,11 +12,11 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/extfallback"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/extfallback"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
 )
 
 const stdinArg = "-"

@@ -9,10 +9,10 @@ import (
 
 	glyphocr "github.com/yama6a/go-glyph-ocr"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/bitmap"
-	"github.com/yama6a/subtitle-toolbox-go/v3/markup"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
 )
 
 // Options holds the settings of the glyph engine. The zero value matches with the subtitle fonts database.

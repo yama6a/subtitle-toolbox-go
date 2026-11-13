@@ -5,7 +5,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // FromPair returns a new subtitle with the cues of primary and secondary. Neither input changes.

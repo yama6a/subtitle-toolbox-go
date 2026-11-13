@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/paragraphs"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/paragraphs"
 )
 
 func item(start, end time.Duration, value string) paragraphs.Item[string] {

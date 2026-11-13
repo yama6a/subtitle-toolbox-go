@@ -8,10 +8,10 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/position"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/xmlraw"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/position"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const formatDataKey = string(model.TTML)

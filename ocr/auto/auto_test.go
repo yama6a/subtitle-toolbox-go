@@ -9,12 +9,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr/auto"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr/glyph"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr/tesseract"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/auto"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/glyph"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/tesseract"
 )
 
 func TestChoose(t *testing.T) {

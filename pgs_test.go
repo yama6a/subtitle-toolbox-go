@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
 // A PGS header holds a 32-bit PTS and DTS, so byte 10 moves when Detect trims white space or changes CR LF to LF.

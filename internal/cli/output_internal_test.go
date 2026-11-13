@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 )
 
 const (

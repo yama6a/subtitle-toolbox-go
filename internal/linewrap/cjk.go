@@ -6,8 +6,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/grapheme"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/grapheme"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 )
 
 // cjkOther holds the CJK punctuation and the full-width and half-width forms without half-width Hangul. From U+3099

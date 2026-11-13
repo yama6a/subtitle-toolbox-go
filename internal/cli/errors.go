@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
 )
 
 // The exit codes of docs/errors.md.
