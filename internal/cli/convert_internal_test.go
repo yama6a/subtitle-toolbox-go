@@ -735,7 +735,7 @@ func TestConvertUsageErrors(t *testing.T) {
 
 	trip := []string{"convert", "trip.srt", "--to", "srt", "-o", "-"}
 	timeMsg := "needs seconds or a timecode such as 00:01:02.500, got"
-	wrapLimits := "Pass --structure-wrap or --structure-merge-short with"
+	wrapLimits := "Pass --structure-wrap, --structure-resegment, --structure-merge-short or --structure-split-long with"
 	minGap := "Pass --timing-fix-overlaps, --timing-min-duration, --timing-lead-in or --timing-lead-out with --timing-min-gap."
 	tests := []struct {
 		name  string

@@ -33,7 +33,8 @@ Options:
   --json              Print JSON: a list with one object for each input file.
   --from FORMAT       Input format. Default: the format detected from the
                       content. When detection finds no format, the file
-                      extension sets it.
+                      extension sets it. Chapters and cloud speech-to-text JSON
+                      need --from.
   --encoding NAME     Encoding of input that is not UTF-8, for example
                       Windows-1252. It replaces code page detection. A BOM,
                       valid UTF-8 and UTF-16 input win over it.
@@ -43,6 +44,8 @@ Options:
                       line, of Spruce STL timecodes, and of CSV or TSV times in
                       hh:mm:ss:ff.
   --fps RATE          Same as --input-fps.
+  --word-timestamps   Keep the word times of speech-to-text JSON, YouTube timed
+                      text and Podcasting 2.0 transcript input.
   --scc-roll-up MODE  How SCC, MCC and MP4 c608 input reads roll-up captions:
                       screen gives one cue per screen, lines gives one cue per
                       row. Default: screen.

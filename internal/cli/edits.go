@@ -22,8 +22,11 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/karaoke"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 	"github.com/yama6a/subtitle-toolbox-go/v4/profanity"
+	"github.com/yama6a/subtitle-toolbox-go/v4/resegment"
+	"github.com/yama6a/subtitle-toolbox-go/v4/speakers"
 )
 
 // group is one option group of convert.
@@ -37,6 +40,8 @@ type group struct {
 	// writeOptions replaces build for a group that sets ASS write options and runs no edit. It returns false
 	// without its options.
 	writeOptions func(a *args) (ass.WriteOptions, bool, error)
+	// wordTrigger names the option that turns on word timestamps, "" for none.
+	wordTrigger string
 }
 
 // edit is the work of one group on one input.
@@ -93,7 +98,7 @@ func flagSteps(a *args, flags []flagStep) steps {
 
 // convertGroups lists the groups in pipeline order.
 func convertGroups() []group {
-	return []group{forcedGroup(), ocrGroup(), errorsGroup(), sdhGroup(), replaceGroup(), textGroup(), structureGroup(), retimeGroup(), snapGroup(), timingGroup(), maskingGroup(), assGroup()}
+	return []group{forcedGroup(), ocrGroup(), errorsGroup(), sdhGroup(), replaceGroup(), textGroup(), structureGroup(), retimeGroup(), snapGroup(), timingGroup(), maskingGroup(), karaokeGroup(), assGroup()}
 }
 
 func needs(a *args, needed string, opts ...string) error {
@@ -356,8 +361,9 @@ func regexReplacement(from string) (p pcrePattern, hasGroup func(n int) bool, er
 func textGroup() group {
 	return group{
 		name:    "text",
-		summary: "Change the case, remove tags, fix right-to-left text.",
+		summary: "Convert speaker labels, change the case, remove tags, fix right-to-left text.",
 		options: []option{
+			valueOption("speakers", "MODE", "Convert <v> speaker tags: prefix (ANNA: Hi), dashes, colors, or from-prefix (ANNA: to <v Anna>)."),
 			valueOption("case", "MODE", "Change the case of the text between tags: upper, lower or sentence."),
 			flagOption("strip-tags", "Remove all formatting tags, such as <i> and <font>, from the cue text."),
 			valueOption("rtl", "MODE", "Right-to-left text: fix wraps each Arabic or Hebrew line in Unicode embedding "+
@@ -367,8 +373,20 @@ func textGroup() group {
 	}
 }
 
+//nolint:gochecknoglobals // lookup table of the --speakers values
+var speakerOptions = map[string]speakers.Options{
+	"prefix":      {Style: speakers.StylePrefix},
+	"dashes":      {Style: speakers.StyleDialogueDashes},
+	"colors":      {Style: speakers.StyleColors},
+	"from-prefix": {FromLabels: true},
+}
+
 func buildText(a *args, add func(edit)) error {
 	mode, hasCase, err := a.Choice("case", string(model.CaseUpper), string(model.CaseLower), string(model.CaseSentence))
+	if err != nil {
+		return err
+	}
+	speakerMode, hasSpeakers, err := a.Choice("speakers", "prefix", "dashes", "colors", "from-prefix")
 	if err != nil {
 		return err
 	}
@@ -377,6 +395,13 @@ func buildText(a *args, add func(edit)) error {
 		return err
 	}
 	var st steps
+	if hasSpeakers {
+		opts := speakerOptions[speakerMode]
+		st = append(st, func(s *stbox.Subtitle) (*stbox.Subtitle, error) {
+			_, err := speakers.Apply(s, opts)
+			return s, err
+		})
+	}
 	if hasCase {
 		language, _ := a.Value("language")
 		st = append(st, inPlace(func(s *stbox.Subtitle) error { return s.ChangeCase(model.CaseMode(mode), language) }))
@@ -396,19 +421,27 @@ func buildText(a *args, add func(edit)) error {
 
 func structureGroup() group {
 	return group{
-		name:    "structure",
-		summary: "Join, wrap and unwrap cues.",
+		name:        "structure",
+		summary:     "Rebuild, join, split and wrap cues.",
+		wordTrigger: "structure-resegment",
 		options: []option{
+			flagOption("structure-resegment", "Build new cues from the word timestamps. Each cue holds one sentence, or what fits "+
+				"--structure-max-cpl and --structure-max-lines."),
+			valueOption("structure-max-word-gap", "SECONDS", "--structure-resegment ends a cue at a pause of this length. Default: "+
+				timecode.Seconds(resegment.DefaultMaxWordGap)+"."),
 			flagOption("structure-unwrap",
 				"Join the lines of each cue with a space. Each dialogue dash line starts a line of its own."),
 			flagOption("structure-merge-short", "Join cues shorter than "+timecode.Seconds(model.DefaultMinDuration)+
 				" s with a neighbor at most "+timecode.Seconds(model.DefaultMergeMaxGap)+" s away. The joined cue must fit "+
 				timecode.Seconds(model.DefaultMaxDuration)+" s, --structure-max-cpl and --structure-max-lines."),
+			flagOption("structure-split-long", "Split cues longer than "+timecode.Seconds(model.DefaultMaxDuration)+
+				" s, or longer than --structure-max-lines lines of --structure-max-cpl characters. "+
+				"Split at sentence ends, clause ends or spaces."),
 			flagOption("structure-wrap", "Break lines longer than --structure-max-cpl characters."),
-			valueOption("structure-max-cpl", "CHARS", "Maximum characters per line for --structure-wrap and "+
-				"--structure-merge-short. Default: "+strconv.Itoa(model.DefaultMaxCharactersPerLine)+"."),
-			valueOption("structure-max-lines", "LINES", "Maximum number of lines per cue for --structure-wrap and "+
-				"--structure-merge-short. Default: "+strconv.Itoa(model.DefaultMaxLinesPerCue)+"."),
+			valueOption("structure-max-cpl", "CHARS", "Maximum characters per line for --structure-wrap, "+
+				"--structure-resegment, --structure-merge-short and --structure-split-long. Default: "+strconv.Itoa(model.DefaultMaxCharactersPerLine)+"."),
+			valueOption("structure-max-lines", "LINES", "Maximum number of lines per cue for --structure-wrap, "+
+				"--structure-resegment, --structure-merge-short and --structure-split-long. Default: "+strconv.Itoa(model.DefaultMaxLinesPerCue)+"."),
 			flagOption("structure-merge-duplicates", "Join same-text cues that overlap or touch."),
 			flagOption("structure-merge-same-time",
 				"Join cues with the same start and end into one cue with the lines of all of them."),
@@ -418,11 +451,18 @@ func structureGroup() group {
 }
 
 func buildStructure(a *args, add func(edit)) error {
-	limited := []string{"structure-wrap", "structure-merge-short"}
+	if err := needs(a, "structure-resegment", "structure-max-word-gap"); err != nil {
+		return err
+	}
+	limited := []string{"structure-wrap", "structure-resegment", "structure-merge-short", "structure-split-long"}
 	for _, opt := range []string{"structure-max-cpl", "structure-max-lines"} {
 		if err := needsOneOf(a, limited, opt); err != nil {
 			return err
 		}
+	}
+	gap, hasGap, err := a.PositiveTime("structure-max-word-gap")
+	if err != nil {
+		return err
 	}
 	cpl, _, err := a.PositiveInt("structure-max-cpl")
 	if err != nil {
@@ -437,11 +477,23 @@ func buildStructure(a *args, add func(edit)) error {
 	wrapCPL := cmp.Or(int(cpl), model.DefaultMaxCharactersPerLine)
 	wrapLines := cmp.Or(int(lines), model.DefaultMaxLinesPerCue)
 	// The run order of docs/cli.md, which is not the order of the help.
+	var wordGap *time.Duration
+	if hasGap {
+		wordGap = &gap
+	}
 	addSteps(add, flagSteps(a, []flagStep{
+		{"structure-resegment", func(s *stbox.Subtitle) error {
+			_, err := resegment.ByWords(s, resegment.Options{Limits: limits, MaxWordGap: wordGap})
+			return err
+		}},
 		{"structure-unwrap", func(s *stbox.Subtitle) error { s.UnwrapLines(); return nil }},
 		{"structure-merge-same-time", func(s *stbox.Subtitle) error { return s.MergeSameTimeCues(0) }},
 		{"structure-merge-short", func(s *stbox.Subtitle) error {
 			return s.MergeShortCues(model.MergeShortCuesOptions{Limits: limits})
+		}},
+		{"structure-split-long", func(s *stbox.Subtitle) error {
+			_, err := resegment.SplitLong(s, resegment.Options{Limits: limits})
+			return err
 		}},
 		{"structure-wrap", func(s *stbox.Subtitle) error { return s.WrapLines(wrapCPL, wrapLines) }},
 		{"structure-merge-duplicates", func(s *stbox.Subtitle) error { return s.RemoveDuplicateCues(0) }},
@@ -839,13 +891,50 @@ func (m *maskingEdit) writeMuteFiles(r *runner, label string) error {
 	return nil
 }
 
+func karaokeGroup() group {
+	return group{
+		name:        "karaoke",
+		summary:     "Write one cue per word timestamp.",
+		wordTrigger: "karaoke",
+		options: []option{
+			flagOption("karaoke", "Write one cue per word timestamp, with the active word styled, for players without karaoke."),
+			valueOption("karaoke-style", "TAG", "Style of the active word for --karaoke: b, i, u, s or 'font color=\"#ffff00\"'. Default: u."),
+		},
+		build: buildKaraoke,
+	}
+}
+
+func buildKaraoke(a *args, add func(edit)) error {
+	if err := needs(a, "karaoke", "karaoke-style"); err != nil {
+		return err
+	}
+	if !a.Has("karaoke") {
+		return nil
+	}
+	style, hasStyle := a.Value("karaoke-style")
+	if hasStyle && style == "" {
+		// The library reads an empty Style as u, but PHP rejects an empty --karaoke-style.
+		return usage("The style  must be one of the core markup tags b, i, u, s or font, for example u or font color=\"#ffff00\".")
+	}
+	opts := karaoke.Options{Style: style}
+	if err := opts.Validate(); err != nil {
+		return usage(message(err))
+	}
+	add(steps{inPlace(func(s *stbox.Subtitle) error {
+		_, err := karaoke.Apply(s, opts)
+		return err
+	})})
+	return nil
+}
+
 //nolint:gochecknoglobals // the option names of the ass group, in the order of the --to ass message
 var assOptions = []string{"ass-karaoke-tag", "ass-style"}
 
 func assGroup() group {
 	return group{
-		name:    "ass",
-		summary: "Set how ASS output writes word timestamps and the Default style.",
+		name:        "ass",
+		summary:     "Set how ASS output writes word timestamps and the Default style.",
+		wordTrigger: "ass-karaoke-tag",
 		options: []option{
 			valueOption("ass-karaoke-tag", "TAG", "ASS karaoke tag for word timestamps: k, kf or ko. Default: k."),
 			valueOption("ass-style", "STYLE", "Change the Default style, for example 'Fontname=Roboto,Fontsize=48,Outline=2'."),
@@ -858,6 +947,9 @@ func assWriteOptions(a *args) (ass.WriteOptions, bool, error) {
 	tag, hasTag, err := a.Choice("ass-karaoke-tag", string(ass.KaraokeInstant), string(ass.KaraokeFill), string(ass.KaraokeOutline))
 	if err != nil {
 		return ass.WriteOptions{}, false, err
+	}
+	if hasTag && a.Has("karaoke") {
+		return ass.WriteOptions{}, false, usage("Pass only one of --karaoke and --ass-karaoke-tag.")
 	}
 	style, hasStyle := a.Value("ass-style")
 	if hasStyle && style == "" {

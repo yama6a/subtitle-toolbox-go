@@ -41,7 +41,8 @@ Options:
                          Prints each change.
   --from FORMAT          Input format. Default: the format detected from the
                          content. When detection finds no format, the file
-                         extension sets it.
+                         extension sets it. Chapters and cloud speech-to-text
+                         JSON need --from.
   --encoding NAME        Encoding of input that is not UTF-8, for example
                          Windows-1252. It replaces code page detection. A BOM,
                          valid UTF-8 and UTF-16 input win over it.
@@ -52,6 +53,8 @@ Options:
                          times in hh:mm:ss:ff.
   --fps RATE             Sets --input-fps, --output-fps and --video-fps. A
                          specific option wins over --fps.
+  --word-timestamps      Keep the word times of speech-to-text JSON, YouTube
+                         timed text and Podcasting 2.0 transcript input.
   --scc-roll-up MODE     How SCC, MCC and MP4 c608 input reads roll-up captions:
                          screen gives one cue per screen, lines gives one cue
                          per row. Default: screen.
@@ -73,14 +76,16 @@ Option groups, in the order that convert runs their edits:
   errors     Fix spacing, punctuation and OCR errors.
   sdh        Remove hearing-impaired annotations.
   replace    Replace words or patterns in the text.
-  text       Change the case, remove tags, fix right-to-left text.
-  structure  Join, wrap and unwrap cues.
+  text       Convert speaker labels, change the case, remove tags, fix
+             right-to-left text.
+  structure  Rebuild, join, split and wrap cues.
   retime     Shift and scale the times, or change the frame rate.
   snap       Time cues to shot changes and close gaps shorter than
              --snap-window-frames.
   timing     Fix overlaps, short cues and long cues, and add lead-in and
              lead-out.
   masking    Mask words and write the mute times for players.
+  karaoke    Write one cue per word timestamp.
   ass        Set how ASS output writes word timestamps and the Default style.
 
 Run "stbox convert --help GROUP" for the options of a group,
@@ -138,30 +143,48 @@ var convertGroupHelp = []string{
                          with delimiters, such as /\.{4,}/. TO can use $1.
   --replace-ignore-case  Match FROM of --replace in any case.
 `,
-	`text: Change the case, remove tags, fix right-to-left text.
-  --case MODE   Change the case of the text between tags: upper, lower or
-                sentence.
-  --strip-tags  Remove all formatting tags, such as <i> and <font>, from the cue
-                text.
-  --rtl MODE    Right-to-left text: fix wraps each Arabic or Hebrew line in
-                Unicode embedding marks, clean removes all bidi controls.
+	`text: Convert speaker labels, change the case, remove tags, fix right-to-left
+text.
+  --speakers MODE  Convert <v> speaker tags: prefix (ANNA: Hi), dashes, colors,
+                   or from-prefix (ANNA: to <v Anna>).
+  --case MODE      Change the case of the text between tags: upper, lower or
+                   sentence.
+  --strip-tags     Remove all formatting tags, such as <i> and <font>, from the
+                   cue text.
+  --rtl MODE       Right-to-left text: fix wraps each Arabic or Hebrew line in
+                   Unicode embedding marks, clean removes all bidi controls.
 `,
-	`structure: Join, wrap and unwrap cues.
-  --structure-unwrap            Join the lines of each cue with a space. Each
-                                dialogue dash line starts a line of its own.
-  --structure-merge-short       Join cues shorter than 1 s with a neighbor at
-                                most 0.25 s away. The joined cue must fit 7 s,
-                                --structure-max-cpl and --structure-max-lines.
-  --structure-wrap              Break lines longer than --structure-max-cpl
-                                characters.
-  --structure-max-cpl CHARS     Maximum characters per line for --structure-wrap
-                                and --structure-merge-short. Default: 42.
-  --structure-max-lines LINES   Maximum number of lines per cue for
-                                --structure-wrap and --structure-merge-short.
-                                Default: 2.
-  --structure-merge-duplicates  Join same-text cues that overlap or touch.
-  --structure-merge-same-time   Join cues with the same start and end into one
-                                cue with the lines of all of them.
+	`structure: Rebuild, join, split and wrap cues.
+  --structure-resegment             Build new cues from the word timestamps.
+                                    Each cue holds one sentence, or what fits
+                                    --structure-max-cpl and
+                                    --structure-max-lines.
+  --structure-max-word-gap SECONDS  --structure-resegment ends a cue at a pause
+                                    of this length. Default: 0.6.
+  --structure-unwrap                Join the lines of each cue with a space.
+                                    Each dialogue dash line starts a line of its
+                                    own.
+  --structure-merge-short           Join cues shorter than 1 s with a neighbor
+                                    at most 0.25 s away. The joined cue must fit
+                                    7 s, --structure-max-cpl and
+                                    --structure-max-lines.
+  --structure-split-long            Split cues longer than 7 s, or longer than
+                                    --structure-max-lines lines of
+                                    --structure-max-cpl characters. Split at
+                                    sentence ends, clause ends or spaces.
+  --structure-wrap                  Break lines longer than --structure-max-cpl
+                                    characters.
+  --structure-max-cpl CHARS         Maximum characters per line for
+                                    --structure-wrap, --structure-resegment,
+                                    --structure-merge-short and
+                                    --structure-split-long. Default: 42.
+  --structure-max-lines LINES       Maximum number of lines per cue for
+                                    --structure-wrap, --structure-resegment,
+                                    --structure-merge-short and
+                                    --structure-split-long. Default: 2.
+  --structure-merge-duplicates      Join same-text cues that overlap or touch.
+  --structure-merge-same-time       Join cues with the same start and end into
+                                    one cue with the lines of all of them.
 `,
 	`retime: Shift and scale the times, or change the frame rate.
   --shift SECONDS         Time to add to every time, for example 2.5 or
@@ -228,6 +251,12 @@ var convertGroupHelp = []string{
   --mute-padding SECONDS  Widen each mute range by this time on both sides.
                           Default: 0.
 `,
+	`karaoke: Write one cue per word timestamp.
+  --karaoke            Write one cue per word timestamp, with the active word
+                       styled, for players without karaoke.
+  --karaoke-style TAG  Style of the active word for --karaoke: b, i, u, s or
+                       'font color="#ffff00"'. Default: u.
+`,
 	`ass: Set how ASS output writes word timestamps and the Default style.
   --ass-karaoke-tag TAG  ASS karaoke tag for word timestamps: k, kf or ko.
                          Default: k.
@@ -245,7 +274,7 @@ func TestConvertHelp(t *testing.T) {
 	all := result{Stdout: convertCommonHelp + "\n" + strings.Join(convertGroupHelp, "\n")}
 	unknown := func(topic string) result {
 		return usageResult("convert", "Unknown option group "+quote(topic)+
-			". The groups are forced, ocr, errors, sdh, replace, text, structure, retime, snap, timing, masking, ass, and all for every option.")
+			". The groups are forced, ocr, errors, sdh, replace, text, structure, retime, snap, timing, masking, karaoke, ass, and all for every option.")
 	}
 	tests := []struct {
 		name  string

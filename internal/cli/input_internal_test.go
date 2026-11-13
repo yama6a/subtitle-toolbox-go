@@ -247,7 +247,7 @@ func TestTheContentSetsTheInputFormatBeforeTheExtension(t *testing.T) {
 	require.NoError(t, os.Rename(filepath.Join(dir, "trip.srt"), filepath.Join(dir, "trip.txt")))
 	assert.Equal(t, result{Stdout: convertAs(t, "trip.srt", stbox.WebVTT)},
 		call{dir: dir}.run(t, "convert", "trip.txt", "--to", "vtt", "-o", "-"))
-	assert.Equal(t, result{Code: exitFile, Stderr: "notes.txt: Format detection found no subtitle format. Pass --from FORMAT.\n"},
+	assert.Equal(t, result{Code: exitFile, Stderr: "notes.txt: Format detection found no subtitle format. Pass --from FORMAT. Chapters and cloud speech-to-text JSON always need it, for example --from deepgram.\n"},
 		call{dir: dir}.run(t, "convert", "notes.txt", "--to", "vtt"))
 	assert.Equal(t, result{Code: exitFile, Stderr: "missing.srt: The file does not exist.\n"},
 		call{dir: dir}.run(t, "convert", "missing.srt", "--to", "vtt"))

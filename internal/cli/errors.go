@@ -80,8 +80,8 @@ func asUsage(err error) error {
 }
 
 const (
-	noFormatFound        = "Format detection found no subtitle format. Pass --"
-	unknownFormatMessage = noFormatFound + "from FORMAT."
+	needsFromText        = "Chapters and cloud speech-to-text JSON always need it, "
+	unknownFormatMessage = "Format detection found no subtitle format. Pass --from FORMAT. " + needsFromText + "for example --from deepgram."
 	missingFileMessage   = "The file does not exist."
 	lenientHint          = "Pass --lenient to skip or repair broken cues."
 	encodingHint         = "Pass --encoding to set the source encoding."
@@ -90,7 +90,7 @@ const (
 
 // unknownFormatAdvice is the message for a file with no detectable format, with the option that sets its format.
 func unknownFormatAdvice(option string) string {
-	return noFormatFound + option + " FORMAT."
+	return "Format detection found no subtitle format. Pass --" + option + " FORMAT. " + needsFromText + "for example --" + option + " deepgram."
 }
 
 // message returns the CLI text of err, without a label. It names no Go type and no Go option path.
@@ -174,14 +174,22 @@ func withAdvice(msg, option string, cause error) string {
 		return strings.Replace(msg, "Set the mediaDuration option to segment it.", "Pass --media-duration to segment it.", 1)
 	case errors.Is(cause, itt.ErrNeedsFrameRate):
 		return msg + " Pass --fps or --output-fps."
-	case errors.Is(cause, scc.ErrWrapFirst):
-		return strings.TrimSuffix(msg, " Wrap the lines to 4 lines of 32 characters first.") +
-			" Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4."
+	case errors.Is(cause, scc.ErrWrapFirst), errors.Is(cause, scc.ErrSplitFirst):
+		return sccAdvice(msg)
 	case errors.Is(cause, stbox.ErrInvalidUTF8):
 		return msg + " " + encodingAdvice
 	default:
 		return msg
 	}
+}
+
+// sccAdvice replaces the library sentence of an SCC limit error with the CLI options that fix it.
+func sccAdvice(msg string) string {
+	if msg, ok := strings.CutSuffix(msg, " Wrap the lines to 4 lines of 32 characters first."); ok {
+		return msg + " Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4."
+	}
+	return strings.TrimSuffix(msg, " Split the cue into cues of 4 lines of 32 characters, then wrap the lines.") +
+		" Pass --structure-split-long --structure-wrap --structure-max-cpl 32 --structure-max-lines 4."
 }
 
 // warningMessage returns the CLI text of a parse warning. The warning about invalid UTF-8 gets the same advice as

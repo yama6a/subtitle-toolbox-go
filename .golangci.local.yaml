@@ -13,6 +13,7 @@ linters:
       # The CLI passes the errors of diff, fixing and hearingimpaired on unchanged, because its messages read their types.
       # The CLI passes the errors of hls on unchanged, because its messages read their types.
       # The CLI passes the *InvalidArgumentError of timing and validation on unchanged, because its messages print it.
+      # The CLI passes the errors of resegment, speakers and karaoke on unchanged, because its messages read their types.
       # The translation runner passes the errors of the engines on unchanged, because the CLI messages read their types.
       # The OCR packages pass the errors of the engines on unchanged, because the CLI messages read their types.
       ignore-package-globs:
@@ -32,6 +33,9 @@ linters:
         - github.com/yama6a/subtitle-toolbox-go/v4/validation
         - github.com/yama6a/subtitle-toolbox-go/v4/ocr
         - github.com/yama6a/subtitle-toolbox-go/v4/ocr/*
+        - github.com/yama6a/subtitle-toolbox-go/v4/resegment
+        - github.com/yama6a/subtitle-toolbox-go/v4/speakers
+        - github.com/yama6a/subtitle-toolbox-go/v4/karaoke
         - github.com/yama6a/subtitle-toolbox-go/v4/translation
         - github.com/yama6a/subtitle-toolbox-go/v4/translation/*
   exclusions:
