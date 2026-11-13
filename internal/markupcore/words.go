@@ -444,7 +444,20 @@ func stampWords(plain string, stamps []timestamp, cueEnd time.Duration) ([]Timed
 	return words, ends
 }
 
+// removeWordTags removes the word timestamp tags again until none is left, because a removal can join text into
+// a new one, as in "<<00:00:01.000>00:00:02.000>".
 func removeWordTags(lines []string) []string {
+	for {
+		out, removed := removeWordTagsOnce(lines)
+		if !removed {
+			return out
+		}
+		lines = out
+	}
+}
+
+func removeWordTagsOnce(lines []string) ([]string, bool) {
+	removed := false
 	out := make([]string, len(lines))
 	for i, line := range lines {
 		parts := SplitTags(line)
@@ -452,6 +465,7 @@ func removeWordTags(lines []string) []string {
 		for j, part := range parts {
 			if j%2 == 1 {
 				if d, ok := WordTimestamp(part); ok && d < timecode.MaxTime {
+					removed = true
 					continue
 				}
 			}
@@ -459,7 +473,7 @@ func removeWordTags(lines []string) []string {
 		}
 		out[i] = b.String()
 	}
-	return CleanLines(out)
+	return CleanLines(out), removed
 }
 
 // extractVoice applies steps 7 to 9 of the rules in docs/markup.md to lines without word timestamp tags.
