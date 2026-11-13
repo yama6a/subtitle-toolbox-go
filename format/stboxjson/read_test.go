@@ -125,6 +125,7 @@ func readErrorCases() []readErrorCase {
 		{name: "start of -1e20", content: `{"version": 1, "cues": [{"start": -1e20, "end": 1, "lines": []}]}`, msg: "The field cues[0].start is not above -100000 hours."},
 		{name: "end at -100000 hours", content: `{"version": 1, "cues": [{"start": -1, "end": -360000000, "lines": []}]}`, msg: "The field cues[0].end is not above -100000 hours."},
 		{name: "word timestamp at 100000 hours", content: `{"version": 1, "cues": [{"start": 1, "end": 2, "lines": ["One <100000:00:00.000>two"]}]}`, msg: `The time "100000:00:00.000" is not below 100000 hours.`},
+		{name: "word timestamp at 100000 hours in version 2 lines", content: `{"version": 2, "cues": [{"start": 1, "end": 2, "lines": ["One <100000:00:00.000>two"]}]}`, msg: `The time "100000:00:00.000" is not below 100000 hours.`},
 		{name: "end rounds to 100000 hours", content: `{"version": 1, "cues": [{"start": 1, "end": 359999999.9996, "lines": []}]}`, msg: "The field cues[0].end is not below 100000 hours."},
 		{name: "start rounds to -100000 hours", content: `{"version": 1, "cues": [{"start": -359999999.9996, "end": 1, "lines": []}]}`, msg: "The field cues[0].start is not above -100000 hours."},
 		{name: "negative end before start", content: `{"version": 1, "cues": [{"start": 5, "end": -1, "lines": ["Negative end"]}]}`, msg: "The cue ends at -1 s, before it starts at 5 s.", lenientCues: 1},

@@ -260,10 +260,8 @@ func (r *reader) checkTimes(cue *model.Data, i int) string {
 	if msg := checkBound(i, "end", end, endOK); msg != "" {
 		return msg
 	}
-	if r.version == 1 {
-		if msg := message(parsing.CheckWordTimestamps(stringLines(cue), model.NoLine)); msg != "" {
-			return msg
-		}
+	if msg := message(parsing.CheckWordTimestamps(stringLines(cue), model.NoLine)); msg != "" {
+		return msg
 	}
 	if !startOK || !endOK || end.f >= start.f {
 		return ""
