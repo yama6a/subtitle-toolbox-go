@@ -150,6 +150,7 @@ func TestExtractWordTagsJoinedTags(t *testing.T) {
 	}{
 		{"removal joins a tag with no other text", "<<00:00:00.000>00:00:00.000>", nil, 0},
 		{"removal joins a tag after a word", "Hi <<00:00:01.000>00:00:02.000>", []string{"Hi"}, 0},
+		{"removal joins a tag with more hours digits", "000000<000000<00:00:00.000>:00:00.000>0", []string{"0000000"}, 0},
 		{"removal joins a non-word tag", "<a<00:00:01.000>>", []string{"<a>"}, 0},
 	}
 	for _, tt := range tests {
