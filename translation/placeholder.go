@@ -173,6 +173,9 @@ func tokenize(translation string) []token {
 const placeholderSpace = " \t\n\v\f\r"
 
 func appendText(out []token, s string) []token {
+	if s == "" {
+		return out
+	}
 	if n := len(out); n > 0 && out[n-1].kind == textToken {
 		out[n-1].text += s
 		return out
@@ -214,10 +217,7 @@ func dropEmptyPairs(tokens []token) []token {
 			if start+1 < len(out) {
 				space = out[start+1].text
 			}
-			out = out[:start]
-			if space != "" {
-				out = appendText(out, space)
-			}
+			out = appendText(out[:start], space)
 		}
 	}
 	return out
