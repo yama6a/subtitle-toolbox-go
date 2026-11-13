@@ -15,6 +15,8 @@ type timeKeys struct {
 	start, duration, window string
 	unit                    time.Duration
 	asString                bool
+	// zeroWhenMissing is true for json3, where a reader reads an event without dDurationMs as 0 s.
+	zeroWhenMissing bool
 }
 
 // timedCaption is the stored fields of a cue with the start and the duration set, and the append captions before it.
@@ -66,6 +68,9 @@ func (k timeKeys) timing(c model.Cue, data orderedjson.Value, hasSource bool) ti
 	t := timing{start: start, end: max(start, c.End), hasEnd: true}
 	if hasSource {
 		dur, ok := k.seconds(data, k.duration)
+		if v, _ := data.Get(k.duration); !ok && k.zeroWhenMissing && v.Kind() == orderedjson.Null {
+			dur, ok = 0, true
+		}
 		t.end, t.hasEnd = start+dur, ok
 	}
 	if k.window != "" {

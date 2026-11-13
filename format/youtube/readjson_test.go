@@ -57,6 +57,13 @@ func TestReadJSON3WindowsAndAppends(t *testing.T) {
 	assert.Len(t, appends, 1)
 }
 
+func TestReadJSON3ReadsATextThatIsNoStringAsEmpty(t *testing.T) {
+	t.Parallel()
+
+	c, _ := read(t, `{"events": [{"tStartMs": 0, "dDurationMs": 1, "segs": [{"utf8": 5}, {"utf8": "a"}]}]}`, youtube.ReadOptions{}).Cue(0)
+	assert.Equal(t, []string{"a"}, c.Lines)
+}
+
 func TestReadJSON3TextIsNotDecoded(t *testing.T) {
 	t.Parallel()
 

@@ -5,8 +5,10 @@ import (
 	"io"
 	"math"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
@@ -35,7 +37,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 	}
 	file := storedObject(s.FormatData(key))
 	variant, _ := file.Get("format")
-	name, _ := variant.AsString()
+	name := stringOf(variant)
 
 	xw := &xmlWriter{}
 	var body string
@@ -95,7 +97,7 @@ func (xw *xmlWriter) escape(s string) string { return textEscaper.Replace(xw.cle
 func (xw *xmlWriter) attributes(object orderedjson.Value, skip ...string) string {
 	var b strings.Builder
 	for _, m := range object.Members() {
-		if !attrNameRegexp.MatchString(m.Key) || containsString(skip, m.Key) {
+		if !attrNameRegexp.MatchString(m.Key) || slices.Contains(skip, m.Key) {
 			continue
 		}
 		var text string
@@ -114,15 +116,6 @@ func (xw *xmlWriter) attributes(object orderedjson.Value, skip ...string) string
 		b.WriteString(" " + m.Key + `="` + attrEscaper.Replace(xw.clean(text)) + `"`)
 	}
 	return b.String()
-}
-
-func containsString(list []string, s string) bool {
-	for _, v := range list {
-		if v == s {
-			return true
-		}
-	}
-	return false
 }
 
 // numberText writes a number as PHP casts it to a string: an integer in decimal, a float in its shortest form
@@ -145,7 +138,7 @@ func numberText(v orderedjson.Value) string {
 func (xw *xmlWriter) srv1(cues []model.Cue, stored []orderedjson.Value) string {
 	var b strings.Builder
 	b.WriteString(xmlDeclaration + "<transcript>")
-	for i, t := range (timeKeys{start: "start", duration: "dur", unit: 1000 * 1000 * 1000, asString: true}).captions(cues, stored) {
+	for i, t := range (timeKeys{start: "start", duration: "dur", unit: time.Second, asString: true}).captions(cues, stored) {
 		b.WriteString(xw.text(t.fields, cues[i]))
 	}
 	return b.String() + "</transcript>"
@@ -155,7 +148,7 @@ func (xw *xmlWriter) srv1(cues []model.Cue, stored []orderedjson.Value) string {
 func (xw *xmlWriter) srv2(cues []model.Cue, stored []orderedjson.Value) string {
 	var b strings.Builder
 	b.WriteString(xmlDeclaration + "\n<timedtext>\n")
-	for i, t := range (timeKeys{start: "t", duration: "d", unit: 1000 * 1000, asString: true}).captions(cues, stored) {
+	for i, t := range (timeKeys{start: "t", duration: "d", unit: time.Millisecond, asString: true}).captions(cues, stored) {
 		b.WriteString(xw.text(t.fields, cues[i]) + "\n")
 	}
 	return b.String() + "</timedtext>\n"

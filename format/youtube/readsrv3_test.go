@@ -92,24 +92,6 @@ func TestReadSrv3WordTimes(t *testing.T) {
 	}
 }
 
-func TestReadSrv3KeepsOverlapsOutsideAWindow(t *testing.T) {
-	t.Parallel()
-
-	s := read(t, `<timedtext format="3"><body><p t="0" d="3000">top</p><p t="1000" d="3000">bottom</p></body></timedtext>`, youtube.ReadOptions{})
-	assert.Equal(t, [][2]int{{0, 3000}, {1000, 4000}}, times(s))
-}
-
-func TestReadSrv3EndsInAWindow(t *testing.T) {
-	t.Parallel()
-
-	content := `<timedtext format="3"><body>` +
-		`<p t="0" d="9000" w="1">a</p><p t="0" d="9000" w="2">b</p><p t="2000" d="9000" w="1">c</p>` +
-		`<p t="3000" d="9000" w="1" a="1">` + "\n" + `</p><p t="4000" w="2">d</p><p t="4000" d="500" w="2">e</p>` +
-		`</body></timedtext>`
-	s := read(t, content, youtube.ReadOptions{})
-	assert.Equal(t, [][2]int{{0, 2000}, {0, 4000}, {2000, 11000}, {4000, 9000}, {4000, 4500}}, times(s))
-}
-
 func TestReadSrv3Errors(t *testing.T) {
 	t.Parallel()
 

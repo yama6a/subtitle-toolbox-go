@@ -9,10 +9,10 @@
                 "format": "json3",
                 "wireMagic": "pb3",
                 "pens": [
-                    {}
+                    []
                 ],
                 "wsWinStyles": [
-                    {},
+                    [],
                     {
                         "mhModeHint": 2,
                         "juJustifCode": 0,
@@ -20,7 +20,7 @@
                     }
                 ],
                 "wpWinPositions": [
-                    {},
+                    [],
                     {
                         "apPoint": 6,
                         "ahHorPos": 20,

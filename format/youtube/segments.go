@@ -57,7 +57,9 @@ func isUnchanged(c model.Cue, source []stored, start time.Duration) bool {
 
 // markupWalker builds segments from the tokens of tagged lines.
 type markupWalker struct {
-	out       []stored
+	out []stored
+	// texts holds the text of each segment of out, joined once at the end.
+	texts     []*strings.Builder
 	open      []openTag
 	offset    time.Duration
 	hasOffset bool
@@ -74,12 +76,14 @@ func (w *markupWalker) text(token string) {
 	switch {
 	case last >= 0 && !w.timed && w.out[last].style == st,
 		last >= 0 && !w.timed && st == (style{}) && trimSpace(token) == "":
-		w.out[last].text += decoded
+		w.texts[last].WriteString(decoded)
 	default:
 		w.out = append(w.out, stored{
-			segment: segment{text: decoded, offset: w.offset, hasOffset: w.hasOffset, style: st},
+			segment: segment{offset: w.offset, hasOffset: w.hasOffset, style: st},
 			fields:  orderedjson.ObjectOf(),
 		})
+		w.texts = append(w.texts, &strings.Builder{})
+		w.texts[last+1].WriteString(decoded)
 	}
 	w.timed = false
 }
@@ -100,6 +104,9 @@ func fromMarkup(c model.Cue, start time.Duration) []stored {
 		default:
 			w.open = applyTag(w.open, token)
 		}
+	}
+	for i, b := range w.texts {
+		w.out[i].text = b.String()
 	}
 	return moveSpacesAfterTimes(w.out)
 }

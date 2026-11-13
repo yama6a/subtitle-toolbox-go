@@ -134,7 +134,7 @@ func json3Document(cues []model.Cue, stored []orderedjson.Value, file orderedjso
 	lists := newJSONLists(list(file, "pens"), list(file, "wpWinPositions"))
 	windows, _ := file.Get("windows")
 	events := append([]orderedjson.Value(nil), windows.Items()...)
-	keys := timeKeys{start: "tStartMs", duration: "dDurationMs", window: "wWinId", unit: time.Millisecond}
+	keys := timeKeys{start: "tStartMs", duration: "dDurationMs", window: "wWinId", unit: time.Millisecond, zeroWhenMissing: true}
 	for i, t := range keys.captions(cues, stored) {
 		events = append(events, t.appends...)
 		events = append(events, lists.event(cues[i], t.fields))
@@ -142,16 +142,15 @@ func json3Document(cues []model.Cue, stored []orderedjson.Value, file orderedjso
 	trailing, _ := file.Get("appends")
 	events = append(events, trailing.Items()...)
 
-	object := func(items []orderedjson.Value) orderedjson.Value { return orderedjson.ArrayOf(items...) }
 	return orderedjson.Replace(
 		orderedjson.ObjectOf(orderedjson.Member{Key: "wireMagic", Value: orderedjson.StringValue("pb3")}),
 		file.Without("format", "windows", "appends"),
 		orderedjson.ObjectOf(
-			orderedjson.Member{Key: "pens", Value: object(lists.pens)},
-			orderedjson.Member{Key: "wsWinStyles", Value: object(list(file, "wsWinStyles"))},
-			orderedjson.Member{Key: "wpWinPositions", Value: object(lists.positions)},
+			orderedjson.Member{Key: "pens", Value: orderedjson.ArrayOf(lists.pens...)},
+			orderedjson.Member{Key: "wsWinStyles", Value: orderedjson.ArrayOf(list(file, "wsWinStyles")...)},
+			orderedjson.Member{Key: "wpWinPositions", Value: orderedjson.ArrayOf(lists.positions...)},
 		),
-		orderedjson.ObjectOf(orderedjson.Member{Key: "events", Value: object(events)}),
+		orderedjson.ObjectOf(orderedjson.Member{Key: "events", Value: orderedjson.ArrayOf(events...)}),
 	)
 }
 
@@ -165,7 +164,7 @@ func (l *jsonLists) storedSegments(fields orderedjson.Value) []stored {
 			item = orderedjson.ObjectOf()
 		}
 		s := stored{fields: item}
-		s.text, _ = valueOf(item, "utf8").AsString()
+		s.text = stringOf(valueOf(item, "utf8"))
 		if v := valueOf(item, "tOffsetMs"); v.Kind() == orderedjson.Number {
 			s.offset, s.hasOffset = v.Duration(time.Millisecond)
 		}

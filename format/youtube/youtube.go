@@ -43,7 +43,7 @@ type WriteOptions struct{}
 var signatureRegexp = regexp.MustCompile(xmlraw.Prolog + `<(?:timedtext|transcript)[\t\n\v\f\r />]`)
 
 // Detect reports whether content is YouTube XML: the XML prolog, then <timedtext or <transcript, then white space,
-// ">" or "/". stbox.Detect runs the same check after the SAMI check.
+// ">" or "/". stbox.Detect runs the same check after the MCC check.
 func Detect(content []byte) bool {
 	return signatureRegexp.Match(content)
 }
@@ -77,6 +77,16 @@ type segment struct {
 	offset    time.Duration
 	hasOffset bool
 	style     style
+}
+
+// stringOf returns the text of a string value, "" for a value of another kind. AsString alone returns the literal of
+// a number too.
+func stringOf(v orderedjson.Value) string {
+	s, ok := v.AsString()
+	if !ok {
+		return ""
+	}
+	return s
 }
 
 func trimSpace(s string) string { return strings.Trim(s, markupcore.PHPTrimSet) }

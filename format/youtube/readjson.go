@@ -215,7 +215,7 @@ func readJSONSegments(event orderedjson.Value, path string, start time.Duration,
 			}
 			seg.offset, seg.hasOffset = d, true
 		}
-		seg.text, _ = valueOf(item, "utf8").AsString()
+		seg.text = stringOf(valueOf(item, "utf8"))
 		penID := valueOf(item, "pPenId")
 		if penID.Kind() == orderedjson.Null {
 			penID = valueOf(event, "pPenId")

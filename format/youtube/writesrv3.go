@@ -97,8 +97,7 @@ func (t *penTable) idOf(e orderedjson.Value) string {
 // stringMember returns the member name when it is a string, else "".
 func stringMember(object orderedjson.Value, name string) string {
 	v, _ := object.Get(name)
-	s, _ := v.AsString()
-	return s
+	return stringOf(v)
 }
 
 // styleOfPen returns the style of the pen with the id, plain for a missing pen.
@@ -165,8 +164,8 @@ func newPositionTable(elements []orderedjson.Value) *positionTable {
 			order = append(order, id)
 		}
 		t.alignments[id] = model.BottomCenter
-		if ap, _ := e.Get("ap"); isNumeric(ap) {
-			if a, valid := alignmentOf(truncated(scalarText(ap))); valid {
+		if ap, _ := e.Get("ap"); digitsRegexp.MatchString(scalarText(ap)) {
+			if a, valid := alignmentOf(intOf(scalarText(ap))); valid {
 				t.alignments[id] = a
 			}
 		}
@@ -178,15 +177,6 @@ func newPositionTable(elements []orderedjson.Value) *positionTable {
 		t.maxID = max(t.maxID, leadingInt(id))
 	}
 	return t
-}
-
-// truncated returns the integer part of a numeric text, as a PHP int cast does. A value out of range is -1.
-func truncated(text string) int {
-	f, _ := strconv.ParseFloat(strings.TrimSpace(text), 64)
-	if f < 0 || f >= 1<<30 {
-		return -1
-	}
-	return int(f)
 }
 
 func isNumeric(v orderedjson.Value) bool {
@@ -312,7 +302,7 @@ func storedSegments(fields orderedjson.Value, pens *penTable, paragraphPen strin
 			s.offset, s.hasOffset = v.Duration(time.Millisecond)
 		}
 		pen, has := paragraphPen, hasParagraphPen
-		if v, _ := item.Get("p"); v.Kind() != orderedjson.Null {
+		if v, _ := item.Get("p"); isScalar(v) && scalarText(v) != "" && scalarText(v) != "0" {
 			pen, has = scalarText(v), true
 		}
 		if has {

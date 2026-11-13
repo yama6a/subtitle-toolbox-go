@@ -137,3 +137,19 @@ func BenchmarkWriteChanged(b *testing.B) {
 		}
 	})
 }
+
+// BenchmarkWriteJoinedTokens writes a changed cue of about 2 MB where each text token joins the segment before it.
+func BenchmarkWriteJoinedTokens(b *testing.B) {
+	line := strings.Repeat(`a<font face="x">b</font>`, 80000)
+	s := &model.Subtitle{}
+	s.AddCue(model.Cue{Start: 0, End: ms(5000), Lines: []string{line}})
+	b.Run("tokens=160000", func(b *testing.B) {
+		b.ReportAllocs()
+		b.SetBytes(int64(len(line)))
+		for b.Loop() {
+			if err := youtube.Write(io.Discard, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+}

@@ -46,6 +46,24 @@ func TestReadEnds(t *testing.T) {
 			want:    [][2]int{{1000, 6000}},
 		},
 		{
+			name:    "srv3 keeps overlaps outside a window",
+			content: `<timedtext format="3"><body><p t="0" d="3000">top</p><p t="1000" d="3000">bottom</p></body></timedtext>`,
+			want:    [][2]int{{0, 3000}, {1000, 4000}},
+		},
+		{
+			name: "srv3 ends in a window, an append is no later start",
+			content: `<timedtext format="3"><body>` +
+				`<p t="0" d="9000" w="1">a</p><p t="0" d="9000" w="2">b</p><p t="2000" d="9000" w="1">c</p>` +
+				`<p t="3000" d="9000" w="1" a="1">` + "\n" + `</p><p t="4000" w="2">d</p><p t="4000" d="500" w="2">e</p>` +
+				`</body></timedtext>`,
+			want: [][2]int{{0, 2000}, {0, 4000}, {2000, 11000}, {4000, 9000}, {4000, 4500}},
+		},
+		{
+			name:    "json3 without a duration lasts 0 s",
+			content: `{"events": [{"tStartMs": 1000, "segs": [{"utf8": "a"}]}, {"tStartMs": 2000, "dDurationMs": 500, "segs": [{"utf8": "b"}]}]}`,
+			want:    [][2]int{{1000, 1000}, {2000, 2500}},
+		},
+		{
 			name:    "any element name counts",
 			content: `<transcript><line start="1" dur="1">a</line></transcript>`,
 			want:    [][2]int{{1000, 2000}},

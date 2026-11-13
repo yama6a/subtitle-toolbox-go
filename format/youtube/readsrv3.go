@@ -161,9 +161,9 @@ func readSegments(p *xmlraw.Node, pens map[string]style, start time.Duration) ([
 		switch node.Kind {
 		case xmlraw.ElementNode:
 			span, raw = node, node.Text()
-		case xmlraw.TextNode, xmlraw.CDATANode, xmlraw.CommentNode, xmlraw.ProcInstNode:
+		case xmlraw.TextNode, xmlraw.CDATANode:
 			raw = node.Data
-		case xmlraw.DocumentNode, xmlraw.DirectiveNode:
+		case xmlraw.DocumentNode, xmlraw.DirectiveNode, xmlraw.CommentNode, xmlraw.ProcInstNode:
 			continue
 		}
 		seg := segment{text: markupcore.DecodeEntities(raw)}
