@@ -22,6 +22,7 @@ go get github.com/yama6a/subtitle-toolbox-go/v4@latest
 | `StripOptions{RemoveWordTimestamps: true}` | `StripOptions{}`, then `cue.Words = nil` on each cue |
 | a reader of WebVTT, ASS, TTML, iTT, LRC, CSV or library JSON left the tags in `cue.Lines` | `cue.Lines` holds no word timestamps and no whole-cue voice tag. `cue.TaggedLines()` gives the 3.x lines |
 | `RemoveDuplicateCues` compared `<v>` tags in the text | it compares `Speaker` and the words too |
+| a WebVTT cue kept `<v.loud Anna>Hi</v>` in its lines | `Speaker` is `Anna`, and the `vtt` cue format data holds `voiceClass` `.loud` and `voiceEnd` true. Deleting that data writes `<v Anna>` |
 | a text edit kept the tags in place | it searches the words again with `SyncWords`. A word that the edit changed beyond case loses its timing |
 
 ## Typed words
