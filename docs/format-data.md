@@ -95,7 +95,7 @@ Data enters only through `SetFormatData`, which checks the fields that writers r
 | `sami` | `paragraphs` list(object(!attributes names(string), !html string)) |
 | `srt` | `coordinates` object(!x1 int, !x2 int, !y1 int, !y2 int) |
 | `ttml` | `attributes` names(string), `div` names(string) |
-| `vtt` | `vertical`, `line`, `position`, `size`, `align`, `region`, each string |
+| `vtt` | `vertical`, `line`, `position`, `size`, `align`, `region`, `voiceClass`, each string, and `voiceEnd`, a bool |
 | `dcp` | `subtitle` names(string), `texts` list(names(string)) |
 | `spruce-stl` | `commands` strings |
 | `stl` | `subtitleGroupNumber`, `cumulativeStatus`, `verticalPosition`, `justificationCode` int, `blocks` list(ttiBlock) |

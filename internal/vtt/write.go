@@ -119,6 +119,7 @@ func NoteBlock(text string) string {
 
 // CueBlock writes cue c, the cue number i counting from 0, as a block without a line end at the end.
 func (w *Writer) CueBlock(c model.Cue, i int) string {
+	c.Lines = c.TaggedLines()
 	id := c.ID
 	if phpTrim(id) == "" || strings.Contains(id, arrow) || strings.ContainsAny(id, "\r\n") {
 		id = strconv.Itoa(i + 1)

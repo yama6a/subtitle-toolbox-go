@@ -31,7 +31,7 @@ func ExampleApply() {
 		return
 	}
 	for _, c := range s.All() {
-		fmt.Println(c.Text())
+		fmt.Println(strings.Join(c.TaggedLines(), "\n"))
 	}
 	fmt.Print(profanity.EDL(report.MuteRanges))
 	fmt.Println(profanity.FFmpegVolumeFilter(report.MuteRanges))

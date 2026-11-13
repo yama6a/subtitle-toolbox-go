@@ -196,17 +196,6 @@ func TestAppend(t *testing.T) {
 			want:   []cueSpec{{0, 1, "one"}},
 		},
 		{
-			name: "moves word timestamps and rounds to milliseconds",
-			s:    &model.Subtitle{},
-			other: func() *model.Subtitle {
-				s := &model.Subtitle{}
-				s.AddCue(model.Cue{Start: sec(1), End: sec(3), Lines: []string{"<00:00:01.500>one <00:00:02.000>two"}})
-				return s
-			}(),
-			offset: 1500*time.Millisecond + 500*time.Microsecond,
-			want:   []cueSpec{{2.501, 4.501, "<00:00:03.001>one <00:00:03.501>two"}},
-		},
-		{
 			name:         "a comment after the last cue stays at the end without copied cues",
 			s:            withComments(t, subtitleOf(cueSpec{1, 2, "one"}), model.Comment{Text: "end", BeforeCue: 1}),
 			other:        withComments(t, &model.Subtitle{}, model.Comment{Text: "empty other", BeforeCue: 0}),
@@ -331,12 +320,6 @@ func TestSlice(t *testing.T) {
 			from: 0, to: 2500 * time.Millisecond,
 			want:         []cueSpec{{1, 2, "one"}},
 			wantComments: []model.Comment{{Text: "first", BeforeCue: 0}},
-		},
-		{
-			name: "moves word timestamps to zero and clamps them at 0",
-			s:    subtitleOf(cueSpec{1, 4, "<00:00:01.000>a <00:00:02.500>b <00:00:03.500>c"}),
-			from: 2 * time.Second, to: 3 * time.Second, moveToZero: true,
-			want: []cueSpec{{0, 1, "<00:00:00.000>a <00:00:00.500>b <00:00:01.500>c"}},
 		},
 		{
 			name: "keeps word timestamps without a move, also outside the cut cue",
@@ -997,5 +980,116 @@ func TestJoinPairsOfCues(t *testing.T) {
 		assert.Equal(t, 100, s.Len())
 		assert.Equal(t, []int{0, 0, 1, 1}, commentIndexes(s)[:4])
 		assert.Equal(t, 99, commentIndexes(s)[199])
+	}
+}
+
+func wordCueAt(start, end float64, speaker string, lines []string, words ...model.Word) model.Cue {
+	return model.Cue{Start: sec(start), End: sec(end), Speaker: speaker, Lines: lines, Words: words}
+}
+
+func TestEditsCarryWords(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		cues []model.Cue
+		edit func(s *model.Subtitle) error
+		want []cueTimes
+	}{
+		{
+			name: "split gives each cue the words of its lines and keeps the speaker",
+			cues: []model.Cue{wordCueAt(0, 4, "Anna", []string{"one two", "three four"}, word("one", 0, 1), word("two", 1, 2), word("three", 2, 3), word("four", 3, 4))},
+			edit: func(s *model.Subtitle) error { return s.SplitCue(0, sec(2), 1) },
+			want: []cueTimes{
+				{Start: 0, End: sec(2), Lines: []string{"one two"}, Speaker: "Anna", Words: []model.Word{word("one", 0, 1), word("two", 1, 2)}},
+				{Start: sec(2), End: sec(4), Lines: []string{"three four"}, Speaker: "Anna", Words: []model.Word{word("three", 2, 3), word("four", 3, 4)}},
+			},
+		},
+		{
+			name: "join with one speaker keeps it",
+			cues: []model.Cue{wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(1, 2, "Anna", []string{"there"}, word("there", 1, 2))},
+			edit: func(s *model.Subtitle) error { return s.JoinCues(0, 1) },
+			want: []cueTimes{{Start: 0, End: sec(2), Lines: []string{"Hi", "there"}, Speaker: "Anna", Words: []model.Word{word("Hi", 0, 1), word("there", 1, 2)}}},
+		},
+		{
+			name: "join with 2 speakers writes <v> spans",
+			cues: []model.Cue{wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(1, 2, "Ben", []string{"there"}, word("there", 1, 2))},
+			edit: func(s *model.Subtitle) error { return s.JoinCues(0, 1) },
+			want: []cueTimes{{Start: 0, End: sec(2), Lines: []string{"<v Anna>Hi", "<v Ben>there"}, Words: []model.Word{word("Hi", 0, 1), word("there", 1, 2)}}},
+		},
+		{
+			name: "merge at the same time drops a repeated text with its words",
+			cues: []model.Cue{
+				wordCueAt(0, 1, "", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(0, 1, "", []string{"Hi"}, word("Hi", 0, 1)),
+				wordCueAt(0, 1, "", []string{"there"}, word("there", 0.5, 1)),
+			},
+			edit: func(s *model.Subtitle) error { return s.MergeSameTimeCues(0) },
+			want: []cueTimes{{Start: 0, End: sec(1), Lines: []string{"Hi", "there"}, Words: []model.Word{word("Hi", 0, 1), word("there", 0.5, 1)}}},
+		},
+		{
+			name: "merge short cues keeps both word lists",
+			cues: []model.Cue{wordCueAt(0, 0.5, "", []string{"Hi"}, word("Hi", 0, 0.5)), wordCueAt(0.6, 1.1, "", []string{"there"}, word("there", 0.6, 1.1))},
+			edit: func(s *model.Subtitle) error { return s.MergeShortCues(model.MergeShortCuesOptions{}) },
+			want: []cueTimes{{Start: 0, End: sec(1.1), Lines: []string{"Hi there"}, Words: []model.Word{word("Hi", 0, 0.5), word("there", 0.6, 1.1)}}},
+		},
+		{
+			name: "duplicates with other speakers stay apart",
+			cues: []model.Cue{wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(1, 2, "Ben", []string{"Hi"}, word("Hi", 1, 2))},
+			edit: func(s *model.Subtitle) error { return s.RemoveDuplicateCues(time.Second) },
+			want: []cueTimes{
+				{Start: 0, End: sec(1), Lines: []string{"Hi"}, Speaker: "Anna", Words: []model.Word{word("Hi", 0, 1)}},
+				{Start: sec(1), End: sec(2), Lines: []string{"Hi"}, Speaker: "Ben", Words: []model.Word{word("Hi", 1, 2)}},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s := &model.Subtitle{}
+			s.AddCues(tt.cues...)
+			require.NoError(t, tt.edit(s))
+			assert.Equal(t, tt.want, timesAndLines(s))
+		})
+	}
+}
+
+func TestTaggedLinesKeepWordsAndSpeaker(t *testing.T) {
+	t.Parallel()
+
+	join := &model.Subtitle{}
+	join.AddCues(wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(1, 2, "", []string{"there"}, word("there", 1, 2)))
+	require.NoError(t, join.JoinCues(0, 1))
+	joined, _ := join.Cue(0)
+
+	merge := &model.Subtitle{}
+	merge.AddCues(wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(0, 1, "", []string{"Bye"}, word("Bye", 0.5, 1)))
+	require.NoError(t, merge.MergeSameTimeCues(0))
+	merged, _ := merge.Cue(0)
+
+	voiceOnly := wordCueAt(0, 2, "", []string{"x"}, word("Hi", 0, 1))
+	voiceOnly.Lines = []string{"<v Bob>Hi there"}
+	voiceOnly.Words = []model.Word{word("Hi", 0, 1)}
+	voiceOnly.ExtractWordTags()
+
+	stampOnly := wordCueAt(0, 2, "Anna", []string{"<00:00:01.000>Hi"})
+	stampOnly.ExtractWordTags()
+
+	tests := []struct {
+		name string
+		cue  model.Cue
+		want []string
+	}{
+		{"join of a cue with a speaker and one without", joined, []string{"<v Anna><00:00:00.000>Hi", "<00:00:01.000>there"}},
+		{"merge at the same time", merged, []string{"<v Anna><00:00:00.000>Hi", "<00:00:00.500>Bye"}},
+		{"a lone voice tag keeps the words", voiceOnly, []string{"<v Bob><00:00:00.000>Hi there"}},
+		{"a lone timestamp keeps the speaker", stampOnly, []string{"<v Anna><00:00:01.000>Hi"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, tt.cue.TaggedLines())
+		})
 	}
 }

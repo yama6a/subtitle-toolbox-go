@@ -516,7 +516,7 @@ func TestReadSynonyms(t *testing.T) {
 	s, warnings = mustRead(t, string(testfiles.Read(t, "csv/real/dubbing_script.csv")), strict, at25)
 	c, _ := s.Cue(0)
 	assert.Equal(t, 36001480*ms, c.Start)
-	assert.Equal(t, []string{"<v NARRATOR>The weather turns cold tonight."}, c.Lines)
+	assert.Equal(t, []string{"<v NARRATOR>The weather turns cold tonight."}, c.TaggedLines())
 	roles, _ := fileData(t, s).Object("roles")
 	assert.Equal(t, []string{"start", "speaker", "text"}, roles.Keys())
 	assert.Equal(t, []string{`The parser reads the columns "Start TC" as start and "Character" as speaker.`}, messages(warnings))
@@ -553,7 +553,7 @@ func TestReadRoleNameColumns(t *testing.T) {
 	// testAStartAndTextTableReadsNoSpeakerFromANameColumn
 	s, warnings = mustRead(t, string(testfiles.Read(t, "csv/own_role_names_name_column.csv")), strict, csv.ReadOptions{})
 	c, _ := s.Cue(0)
-	assert.Equal(t, []string{"Hello"}, c.Lines)
+	assert.Equal(t, []string{"Hello"}, c.TaggedLines())
 	roles, _ := fileData(t, s).Object("roles")
 	assert.Equal(t, []string{"start", "end", "text"}, roles.Keys())
 	assert.Empty(t, warnings)
@@ -642,6 +642,6 @@ func TestReadInvalidUTF8StaysAsItIs(t *testing.T) {
 
 	s, warnings := mustRead(t, "start,end,text\n1,2,caf\xe9\n", lenient, csv.ReadOptions{})
 	c, _ := s.Cue(0)
-	assert.Equal(t, []string{"caf\xe9"}, c.Lines)
+	assert.Equal(t, []string{"caf\xe9"}, c.TaggedLines())
 	assert.Len(t, warnings, 1)
 }

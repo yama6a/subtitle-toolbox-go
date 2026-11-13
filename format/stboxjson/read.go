@@ -529,6 +529,7 @@ func cue(entry any, i int) (model.Cue, string) {
 	if msg := cueFormatData(&c, d, i); msg != "" {
 		return model.Cue{}, msg
 	}
+	c.ExtractWordTags()
 	return c, ""
 }
 

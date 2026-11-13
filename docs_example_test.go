@@ -100,3 +100,16 @@ func ExampleWrite_lineEnding() {
 	// Output:
 	// "\ufeffWEBVTT\r\n\r\n1\r\n00:00:01.000 --> 00:00:02.000\r\nHello\r\n"
 }
+
+func ExampleWord() {
+	c := stbox.Cue{
+		End:   5 * time.Second,
+		Lines: []string{"The beach"},
+		Words: []stbox.Word{
+			{Text: "The", Start: 0, End: 240 * time.Millisecond},
+			{Text: "beach", Start: 240 * time.Millisecond, End: time.Second},
+		},
+	}
+	fmt.Println(c.TaggedLines())
+	// Output: [<00:00:00.000>The <00:00:00.240>beach]
+}

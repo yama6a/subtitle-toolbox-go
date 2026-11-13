@@ -98,14 +98,6 @@ func ExampleCue_SetText() {
 	// Output: ["Hello" "world"]
 }
 
-func ExampleCue_MapWordTimestamps() {
-	c := model.Cue{Lines: []string{"<00:00:01.000>Hi <00:00:01.400>there"}}
-	c.MapWordTimestamps(func(d time.Duration) time.Duration { return d + 2*time.Second })
-
-	fmt.Println(c.Text())
-	// Output: <00:00:03.000>Hi <00:00:03.400>there
-}
-
 func ExampleAlignmentFromNumpad() {
 	a, ok := model.AlignmentFromNumpad(8)
 	fmt.Println(a, ok, a.Row(), a.Column())

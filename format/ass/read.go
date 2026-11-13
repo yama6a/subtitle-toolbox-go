@@ -119,6 +119,9 @@ func (rd *reader) read(content string) (*model.Subtitle, error) {
 	if err := s.SetFormatData(formatDataKey, rd.f.data()); err != nil {
 		return nil, fmt.Errorf("%s file data: %w", model.ASS, err)
 	}
+	for i := range rd.cues {
+		rd.cues[i].ExtractWordTags()
+	}
 	parsing.AddParsed(s, rd.cues, rd.comments)
 	return s, nil
 }

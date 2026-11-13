@@ -46,7 +46,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 		body = append(body, '[')
 		body = appendStamp(body, c.Start)
 		body = append(body, "] "...)
-		body = appendText(body, c.Lines, spaced)
+		body = appendText(body, c.TaggedLines(), spaced)
 		body = append(body, '\n')
 		data, _ := c.FormatData(formatDataKey)
 		if endLine, _ := data.Bool("endLine"); endLine {

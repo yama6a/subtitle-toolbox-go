@@ -118,6 +118,9 @@ func (rd *reader) read(content string) (*model.Subtitle, error) {
 		return nil, err
 	}
 	s := &model.Subtitle{}
+	for i := range cues {
+		cues[i].ExtractWordTags()
+	}
 	s.AddCues(cues...)
 	_ = s.SetFormatData(formatDataKey, rd.fileData(header, recs, roles, timeFormat)) // the data has the shape of the schema
 	return s, nil

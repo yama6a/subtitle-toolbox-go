@@ -160,7 +160,7 @@ func seconds(s float64) time.Duration {
 func cueRows(s *stbox.Subtitle) []cueRow {
 	out := make([]cueRow, 0, s.Len())
 	for _, c := range s.All() {
-		out = append(out, cueRow{Start: c.Start, End: c.End, Text: c.Text()})
+		out = append(out, cueRow{Start: c.Start, End: c.End, Text: strings.Join(c.TaggedLines(), "\n")})
 	}
 	return out
 }

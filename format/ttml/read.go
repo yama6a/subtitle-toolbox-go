@@ -1048,6 +1048,9 @@ func (r *reader) addCues(s *model.Subtitle) error {
 			cues = append(cues, c)
 		}
 	}
+	for i := range cues {
+		cues[i].ExtractWordTags()
+	}
 	s.AddCues(cues...)
 	return nil
 }
