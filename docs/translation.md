@@ -103,7 +103,7 @@ A placeholder is a numbered stand-in for a tag. The texts are then valid XML con
 | `<x1>Run!</x1><x2/>` | no, an extra placeholder |
 | `<x1>Run!</x1></x1>` | no, a doubled placeholder |
 
-When a translation does not keep the placeholders, the runner removes every loose placeholder, uses no tags for the cues of that text, and adds a warning for each cue.
+When a translation does not keep the placeholders, the runner removes every loose placeholder, uses no tags for the cues of that text, and adds a warning for each cue. The rest is plain text, so the answer `<x<x1/>1>Hallo` gives the line `&lt;x1&gt;Hallo`.
 
 **Restore**: the runner decodes the entities of the answer once, escapes the text again, and writes the tags back. A pair with only white space between its placeholders disappears, and the white space stays. So `<x1> </x1>` becomes a space. A bare `&`, `<` or `>` in the answer becomes an entity.
 
@@ -152,7 +152,7 @@ Every `*ServiceError` matches `translation.ErrService` with `errors.Is`. A `ctx`
 
 The engines send JSON requests through `translation.HTTPClient`, an interface with the method `Do`. `*http.Client` implements it. A test points an engine at an `httptest.Server`.
 
-- **Default client**: `translation.DefaultHTTPClient()` returns a new client with a connect timeout of 10 s and a total timeout of 120 s. It uses the proxy of the environment.
+- **Default client**: `translation.DefaultHTTPClient()` returns a new client with a connect timeout of 10 s and a total timeout of 120 s. It uses the proxy of the environment. It follows no redirect, so a 3xx answer reaches the engine as it is and no key goes to another host.
 - **Retries**: after HTTP 429, 500, 502, 503 and 504 the request goes out again, up to 3 times, so up to 4 requests. The fourth answer returns as it is, and the engine turns its status into an error. No other status is retried. A request without a response is not retried.
 - **Waits**: before retry 1, 2 and 3 the engine waits for the `Retry-After` header when it is valid, else 1, 2 and 4 s. `Retry-After` holds digits for seconds, or an HTTP date. A date counts from the `Date` header of the same answer, else from the clock. The wait is at most 60 s, so one batch can wait up to 3 minutes. Any other value gives the fixed wait.
 - **Size bound**: an answer may hold 1 MiB plus 16 bytes for each byte of the request, because it holds the texts of the request. A larger answer returns a `*ServiceError` and is not retried.
@@ -234,6 +234,7 @@ The service must return the placeholders of each text, such as `<x1>` and `<x2/>
 - The engines read `Retry-After`. PHP always waits 1, 2 and 4 s.
 - An empty target language fails before any request. PHP sends it to the service.
 - An answer larger than 1 MiB plus 16 bytes for each request byte fails. PHP reads any size.
+- An answer such as `<x<x1/>1>Hallo` gives plain text and a warning. PHP throws a `TypeError`.
 - Go needs no ext-curl, because it uses `net/http`.
 - A character of a script without spaces that is new after Unicode 15.0, such as U+2EBF0, is a cut candidate in Go only.
 

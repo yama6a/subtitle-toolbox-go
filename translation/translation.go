@@ -93,8 +93,13 @@ func (e *ServiceError) Is(target error) bool { return target == ErrService }
 var _ error = (*ServiceError)(nil)
 
 // DefaultHTTPClient returns a new client with a connect timeout of 10 s and a total timeout of 120 s.
+// It follows no redirect, so a 3xx answer reaches the engine as it is and no key goes to another host.
 func DefaultHTTPClient() *http.Client {
 	t := http.DefaultTransport.(*http.Transport).Clone() //nolint:forcetypeassert // the standard library sets a *http.Transport
 	t.DialContext = (&net.Dialer{Timeout: 10 * time.Second, KeepAlive: 30 * time.Second}).DialContext
-	return &http.Client{Transport: t, Timeout: 120 * time.Second}
+	return &http.Client{
+		Transport:     t,
+		Timeout:       120 * time.Second,
+		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+	}
 }
