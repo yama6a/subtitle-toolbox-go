@@ -42,7 +42,7 @@ func read(st *parsing.State, content string) (*model.Subtitle, error) {
 	)
 	keep := func() {
 		for _, k := range out {
-			k.Cue.ExtractWordTags()
+			vtt.ExtractWords(&k.Cue)
 			kept = append(kept, k.Index)
 			cues = append(cues, k.Cue)
 		}

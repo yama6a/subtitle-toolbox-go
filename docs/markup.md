@@ -9,7 +9,7 @@ A SubRip line `<i>Fish & Chips</i>` reads as `<i>Fish &amp; Chips</i>`. An ASS l
 
 - **Tag**: `<` not followed by white space (space, tab, LF, CR, FF, VT), then any characters except `<` and `>`, then `>`. So `< b>` and `a < b > c` are text, `<>` is a tag, and a quote does not hide the `>`: `<v O'Neil>` is one tag.
 - **Tag name**: the text after `<` or `</` up to white space, `/` or `>`. The name of `<c.yellow>` is `c.yellow`.
-- **Word timestamp**: `<hh:mm:ss.mmm>` with 2 or more hour digits, such as `<00:01:02.500>` or `<100:59:59.999>`. `<01:02.500>` and `<00:00:01.50>` are tags, but not word timestamps. The lines of a cue hold no word timestamps, because `Cue.Words` holds them. See the section on word timestamps and voices below.
+- **Word timestamp**: `<hh:mm:ss.mmm>` with 2 or more hour digits, such as `<00:01:02.500>` or `<100:59:59.999>`. `<00:00:01.50>` is a tag, but not a word timestamp. The WebVTT reader writes `<01:02.500>` as `<00:01:02.500>`, so it is a word timestamp there. The lines of a cue hold no word timestamps, because `Cue.Words` holds them. See the section on word timestamps and voices below.
 - **Entity**: `&name;`, `&#digits;` or `&#xhex;`.
 - **Text run**: the text between 2 tags of one line.
 
