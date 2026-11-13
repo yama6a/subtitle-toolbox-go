@@ -226,6 +226,11 @@ func TestTranslateSends(t *testing.T) {
 			want: [][]string{{"First sentence.", "Second sentence."}, {"Third one is split over cues."}, {strings.TrimSpace(strings.Repeat("Long. ", 10))}},
 		},
 		{
+			name: "a number followed by U+180E is white space for PCRE2",
+			cues: []string{"1984\u180e", "Hello."},
+			want: [][]string{{"Hello."}},
+		},
+		{
 			name: "no cue, no call",
 			want: [][]string{},
 		},
@@ -290,6 +295,13 @@ func TestTranslateFills(t *testing.T) {
 		{name: "swapped placeholders", cues: []string{"<i>Lauf!</i>"}, answers: []string{"Run!</x1><x1>"}, want: [][]string{{"Run!"}}, wantWarnings: []int{0}},
 		{name: "extra placeholder", cues: []string{"<i>Lauf!</i>"}, answers: []string{"<x1>Run!</x1><x2/>"}, want: [][]string{{"Run!"}}, wantWarnings: []int{0}},
 		{name: "doubled placeholder", cues: []string{"<i>Lauf!</i>"}, answers: []string{"<x1>Run!</x1></x1>"}, want: [][]string{{"Run!"}}, wantWarnings: []int{0}},
+		{
+			name:         "a removed placeholder that joins a new one stays text",
+			cues:         []string{"Hi there."},
+			answers:      []string{"<x<x1/>1>Hallo"},
+			want:         [][]string{{"&lt;x1&gt;Hallo"}},
+			wantWarnings: []int{0},
+		},
 		{
 			name:    "entities of the answer become core text",
 			cues:    []string{"<b>Tom &amp; Jerry</b> sagen a &lt; b"},
@@ -494,5 +506,18 @@ func BenchmarkTranslate(b *testing.B) {
 				}
 			})
 		}
+	}
+}
+
+func BenchmarkRestoreEmptyPairs(b *testing.B) {
+	for _, pairs := range []int{10000, 100000} {
+		text := strings.Repeat("a<i></i>", pairs)
+		b.Run("pairs="+strconv.Itoa(pairs), func(b *testing.B) {
+			b.ReportAllocs()
+			for b.Loop() {
+				_, err := translation.Translate(b.Context(), fromTexts(text), &upperEngine{}, "en", "de", translation.Options{})
+				require.NoError(b, err)
+			}
+		})
 	}
 }

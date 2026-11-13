@@ -18,6 +18,7 @@ func FuzzPlaceholders(f *testing.F) {
 		"<v Fred>Hi",
 		"&lt;x1&gt;",
 		"<x1>",
+		"<x<x1/>1>Hallo",
 		"<i> </i>a<b><i></i></b>",
 		"a b c d e f g",
 		"\xff<i>\xfe</i>",
@@ -60,6 +61,7 @@ func checkPlaceholders(t *testing.T, text string, seed uint64) {
 	if keepsPlaceholders(text, tags) {
 		restore(tokenize(text), tags)
 	}
+	restore(plainTokens(removePlaceholders(text)), nil)
 }
 
 // hasEmptyPair reports whether an open token is followed by its close token, with only white space between them.
