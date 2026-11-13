@@ -28,9 +28,13 @@ type HTTPClient interface {
 // Options holds the settings of Translate. The zero value joins sentences of up to 3 cues
 // and sends up to 5000 characters per engine call.
 type Options struct {
-	NoJoinSentences         bool // send each cue as its own text
-	MaxCuesPerSentence      int  // 0 means DefaultMaxCuesPerSentence
-	MaxCharactersPerRequest int  // grapheme clusters of the encoded texts. 0 means DefaultMaxCharactersPerRequest
+	// NoJoinSentences sends each cue as its own text.
+	NoJoinSentences bool
+	// MaxCuesPerSentence is the most cues in one text. 0 means DefaultMaxCuesPerSentence.
+	MaxCuesPerSentence int
+	// MaxCharactersPerRequest is the most grapheme clusters of the encoded texts in one engine call.
+	// A longer text goes alone. 0 means DefaultMaxCharactersPerRequest.
+	MaxCharactersPerRequest int
 }
 
 // The defaults of Options.
