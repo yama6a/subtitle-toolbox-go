@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/pac"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func ExampleRead() {

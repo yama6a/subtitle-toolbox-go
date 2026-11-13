@@ -4,9 +4,9 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/container/mkv"
-	"github.com/yama6a/subtitle-toolbox-go/v3/container/mp4"
-	"github.com/yama6a/subtitle-toolbox-go/v3/container/mpegts"
+	"github.com/yama6a/subtitle-toolbox-go/v4/container/mkv"
+	"github.com/yama6a/subtitle-toolbox-go/v4/container/mp4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/container/mpegts"
 )
 
 // containerFile is an open container file. Each table row has an adapter type for the file type of its package.

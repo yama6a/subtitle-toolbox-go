@@ -148,6 +148,12 @@ Each piece reopens the tags that are open at its start. The output is at most `M
 
 Every `*ServiceError` matches `translation.ErrService` with `errors.Is`. A `ctx` error is no `*ServiceError`, so a caller can tell an interrupt from a service failure. `Report` is empty on every error, and `s` does not change.
 
+## Words and speakers
+
+The runner sets `Words` to nil on each cue that it translated. A source-language word time has no meaning for a target-language word, so karaoke output and resegmenting by words do not work on a translation. A cue that the runner does not send keeps its words. `Speaker` is a name. The runner does not send it, and it stays. The tags of a cue with 2 voices are in the lines, so they become placeholders.
+
+Example: a cue with `Speaker` `Fred`, the line `Hi there.` and 2 words sends `Hi there.`. The result keeps `Fred`, has the line `HI THERE.` and no words.
+
 ## HTTP
 
 The engines send JSON requests through `translation.HTTPClient`, an interface with the method `Do`. `*http.Client` implements it. A test points an engine at an `httptest.Server`.
@@ -259,6 +265,7 @@ Every message replaces the key with `***`. Example: status 500 with the body `{"
 - An empty target language fails before any request. PHP sends it to the service.
 - An answer larger than 1 MiB plus 16 bytes for each request byte fails. PHP reads any size.
 - An answer such as `<x<x1/>1>Hallo` gives plain text and a warning. PHP throws a `TypeError`.
+- The runner sets `Words` to nil on a translated cue. PHP puts the source word timestamps back in the text.
 - Go needs no ext-curl, because it uses `net/http`.
 - A character of a script without spaces that is new after Unicode 15.0, such as U+2EBF0, is a cut candidate in Go only.
 

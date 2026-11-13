@@ -10,8 +10,8 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/extfallback"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/extfallback"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
 )
 
 // Load reads the subtitle file at path. On error the subtitle is nil and ReadInfo is the zero value.

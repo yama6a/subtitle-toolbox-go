@@ -6,7 +6,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
 )
 
 // Adapted from Subtitle Edit, src/libse/SubtitleFormats/Pac.cs

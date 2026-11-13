@@ -34,6 +34,8 @@ const (
 	QuickTimeText Format = "qttext"
 	VobSub        Format = "vobsub"
 	WebVTT        Format = "vtt"
+	// YouTubeChapters is a list of lines such as "0:00 Intro". Detection never finds it.
+	YouTubeChapters Format = "youtube-chapters"
 )
 
 type formatFact struct {
@@ -74,6 +76,7 @@ var formatFacts = []formatFact{
 	{format: QuickTimeText, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: VobSub, extensions: []string{"idx"}, canRead: true, binary: true},
 	{format: WebVTT, extensions: []string{"vtt"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: YouTubeChapters, extensions: []string{"txt"}, canRead: true, canWrite: true},
 }
 
 func (f Format) fact() formatFact {

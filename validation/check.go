@@ -7,10 +7,10 @@ import (
 
 	"github.com/dlclark/regexp2/v2"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/markup"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // NoCue is the cue index of a violation that is about the whole subtitle.
@@ -96,6 +96,7 @@ type measures struct {
 	characters   int      // sum of lengths
 	visibleLines int      // lines with a visible length of 1 or more
 	raw          string   // the lines with markup, joined with LF
+	speaker      string   // Speaker of the cue
 	text         []string // the plain lines that have text
 	words        int
 	duration     time.Duration
@@ -103,7 +104,7 @@ type measures struct {
 }
 
 func measure(cue model.Cue) measures {
-	m := measures{lengths: make([]int, len(cue.Lines)), raw: strings.Join(cue.Lines, "\n"), duration: cue.End - cue.Start}
+	m := measures{lengths: make([]int, len(cue.Lines)), raw: strings.Join(cue.Lines, "\n"), speaker: cue.Speaker, duration: cue.End - cue.Start}
 	m.secs = timecode.FloatSeconds(m.duration)
 	plain := make([]string, len(cue.Lines))
 	for k, line := range cue.Lines {

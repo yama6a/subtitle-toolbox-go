@@ -52,7 +52,7 @@ All 4 types live in package `model`. Package `stbox` aliases them under the same
 | `*TrackError` | `Container`, `Tracks` | `stbox: unsupported format: The MKV or WebM file has 6 subtitle tracks.` Matches `ErrUnsupportedFormat`, not `ErrUnknownFormat`. `Tracks` is empty when the file has no subtitle track |
 | `*InvalidArgumentError` | `Option`, `Msg` | `stbox: invalid argument: WriteOptions.MicroDVD.FrameRate: Msg`. No option part when `Option` is "" |
 
-- **Cause**: `Unwrap` of `*ParseError` and `*UnwritableError` returns `Err`, for example a `*json.SyntaxError`. `Error()` shows `Err` only when the message field is empty, because the message quotes the cause where it matters.
+- **Cause**: `Unwrap` of `*ParseError` and `*UnwritableError` returns `Err`, for example an error of the standard library. `Error()` shows `Err` only when the message field is empty, because the message quotes the cause where it matters.
 - **Message text**: `Msg` and `Reason` hold a full English sentence, as the PHP library writes it. `Error()` adds a lower-case prefix in Go style. People read these messages in the CLI, and the PHP sentences exist already.
 - **No identifiers in messages**: a message never names a Go identifier or a CLI flag. A missing or bad option goes in `Option` as its Go path, such as `ReadOptions.MicroDVD.FrameRate`. A sentinel in `Err` names an edit that the caller must make first.
 - **Cue index**: `UnwritableError.CueIndex` is the 0-based index of the first cue that the format cannot hold. It is -1 when no single cue causes the error.
@@ -102,5 +102,5 @@ The CLI maps an error to an exit code by the phase in which it occurs, not by it
 
 - **Precedence**: 130 wins over 3, and 3 wins over 1. A run where one input failed and another gave a result exits 3.
 - **Message**: for a failed input the CLI prints `LABEL: MESSAGE` on stderr. LABEL is the input path as given, or `stdin`.
-- **Lenient hint**: after an input fails in strict mode with a `*ParseError`, the CLI prints `Pass --lenient to skip or repair broken cues.` on stderr. It skips the hint for a format that ignores lenient mode.
+- **Lenient hint**: after an input fails in strict mode with a `*ParseError`, the CLI prints `Pass --lenient to skip or repair broken cues.` on stderr. It skips the hint for a format that ignores lenient mode. That is the YouTube chapter format, see [chapters.md](chapters.md).
 - **Advice**: the CLI maps the `Option` field of an error to its own flag text. Example: `WriteOptions.MicroDVD.FrameRate` becomes `Pass --fps or --output-fps.`. It maps a sentinel in `Err` the same way.

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // Text writes the differences as a text report. Each difference is a block with the kind, the cue numbers from 1,
@@ -41,7 +41,7 @@ func writeCue(b *strings.Builder, marker string, c *model.Cue) {
 		b.WriteString(" forced")
 	}
 	b.WriteByte('\n')
-	for _, line := range c.Lines {
+	for _, line := range c.TaggedLines() {
 		b.WriteString("  " + line + "\n")
 	}
 }

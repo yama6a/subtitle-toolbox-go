@@ -3,7 +3,7 @@ package cea608
 import (
 	"slices"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 )
 
 // CodeLine is the start frame at 29.97 fps and the words of one SCC line, or of one run of MCC pairs.

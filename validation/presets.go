@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // The numbers of the presets that have no constant in package model.

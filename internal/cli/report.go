@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 )
 
 const jsonHelp = "Print JSON: a list with one object for each input file."

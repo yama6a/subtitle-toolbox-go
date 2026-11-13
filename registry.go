@@ -9,34 +9,35 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/cavena890"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/dcp"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ebustl"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/lrc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mpl2"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/pac"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/pgs"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/qttext"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/sbv"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/sprucestl"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/tmplayer"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/vobsub"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/cavena890"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/chapters"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/dcp"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/lrc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpl2"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/pgs"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/qttext"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/sbv"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/tmplayer"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // The shapes of the Read, Write and Detect functions of a format package.
@@ -159,6 +160,7 @@ var registry = []formatFuncs{
 	{format: QuickTimeText, read: readQuickTimeText, write: writeQuickTimeText},
 	{format: VobSub, read: readVobSub},
 	{format: WebVTT, read: readWebVTT, write: writeWebVTT},
+	{format: YouTubeChapters, read: readYouTubeChapters, write: writeYouTubeChapters},
 }
 
 type jsonCheck struct {
@@ -520,4 +522,12 @@ func lookup(f Format) (formatFuncs, bool) {
 		return formatFuncs{}, false
 	}
 	return registry[i], true
+}
+
+func readYouTubeChapters(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return chapters.ReadYouTube(r, common, opts.Chapters)
+}
+
+func writeYouTubeChapters(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	return WriteReport{}, chapters.WriteYouTube(w, s, common, chapters.WriteOptions{})
 }

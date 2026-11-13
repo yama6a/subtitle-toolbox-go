@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/ebml"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/ebml"
 )
 
 func TestReadVint(t *testing.T) {

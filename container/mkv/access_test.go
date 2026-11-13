@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/container/mkv"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/container/mkv"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const mkvmergeApp = "mkvmerge v99.0 ('Buka') 64-bit"
