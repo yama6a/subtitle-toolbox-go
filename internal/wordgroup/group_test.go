@@ -105,6 +105,10 @@ func FuzzGroup(f *testing.F) {
 			require.NotEmpty(t, g)
 			flat = append(flat, g...)
 		}
+		if len(words) == 0 {
+			require.Empty(t, flat)
+			return
+		}
 		require.Equal(t, words, flat)
 	})
 }

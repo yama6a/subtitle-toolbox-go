@@ -61,7 +61,10 @@ func TestSpans(t *testing.T) {
 			model.Cue{Start: ms(800), Lines: []string{"x a"}, Words: []model.Word{{Text: "a", Start: ms(500), End: ms(600)}}},
 			[]span{{"x", 0, 800, -1}, {"a", 500, 600, 0}},
 		},
-		{"no word found", model.Cue{Lines: []string{"abc"}, Words: []model.Word{{Text: "z", End: ms(1)}}}, []span{{"abc", 0, 0, -1}}},
+		{"the first word is not in the text", model.Cue{Lines: []string{"Well, the end"}, Words: []model.Word{
+			{Text: "gone", Start: ms(300), End: ms(400)}, {Text: "the", Start: ms(500), End: ms(600)},
+		}}, []span{{"Well,", 0, 500, -1}, {"the end", 500, 600, 1}}},
+		{"no word found", model.Cue{End: ms(900), Lines: []string{"abc"}, Words: []model.Word{{Text: "z", End: ms(1)}}}, []span{{"abc", 0, 900, -1}}},
 		{"no words", model.Cue{Lines: []string{"abc"}}, nil},
 	}
 	for _, tt := range tests {
