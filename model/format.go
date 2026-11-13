@@ -34,6 +34,8 @@ const (
 	QuickTimeText Format = "qttext"
 	VobSub        Format = "vobsub"
 	WebVTT        Format = "vtt"
+	// YouTubeTimedText is the timed text that YouTube serves: json3, srv3, srv2 and srv1.
+	YouTubeTimedText Format = "youtube"
 	// YouTubeChapters is a list of lines such as "0:00 Intro". Detection never finds it.
 	YouTubeChapters Format = "youtube-chapters"
 )
@@ -76,6 +78,7 @@ var formatFacts = []formatFact{
 	{format: QuickTimeText, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: VobSub, extensions: []string{"idx"}, canRead: true, binary: true},
 	{format: WebVTT, extensions: []string{"vtt"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: YouTubeTimedText, extensions: []string{"srv3", "json3", "srv1", "ytt"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: YouTubeChapters, extensions: []string{"txt"}, canRead: true, canWrite: true},
 }
 
