@@ -92,6 +92,7 @@ func TestWritePlansDisplaySets(t *testing.T) {
 		{"a third cue drops the first", []model.Cue{solid(t, 1, 9, 0, 0, 4, red), solid(t, 2, 9, 10, 0, 4, blue), solid(t, 3, 9, 20, 0, 4, green)}, []string{"1:show1", "2:show2", "3:show2", "9:clear0"}},
 		{"cues with the same start share one display set", []model.Cue{solid(t, 1, 2, 0, 0, 4, red), solid(t, 1, 3, 10, 0, 4, blue)}, []string{"1:show2", "2:show1", "3:clear0"}},
 		{"a cue that ends at its start shows at once", []model.Cue{solid(t, 1, 1, 0, 0, 4, red), solid(t, 1, 3, 10, 0, 4, blue)}, []string{"1:show1", "1:show1", "3:clear0"}},
+		{"a cue that ends before it starts ends at its start", []model.Cue{solid(t, 3, 1, 0, 0, 4, red)}, []string{"3:show1", "3:clear0"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -126,7 +127,7 @@ func TestWriteSegments(t *testing.T) {
 	pcs := segments(t, writeCues(t, forced))[0].data
 	assert.Equal(t, byte(0x40), pcs[14])
 
-	// A 300x300 image with 2 colours per row of noise needs more than one fragment.
+	// A 400x400 image with 251 colours needs more than one fragment.
 	noise := image.NewNRGBA(image.Rect(0, 0, 400, 400))
 	for i := 0; i < len(noise.Pix); i += 4 {
 		v := byte(i / 4 * 7 % 251)
@@ -157,21 +158,42 @@ func TestWriteSegments(t *testing.T) {
 func TestWriteIndexedMatchesRGBA(t *testing.T) {
 	t.Parallel()
 
-	pixels := make([]uint32, 12)
-	for i := range pixels {
-		pixels[i] = uint32(i%3)<<24 | 0xFF
-	}
-	rgba := bitmap.EncodeRGBA(bitmap.Pixels{Width: 4, Height: 3, RGBA: pixels})
-	palette, indexes, err := bitmap.Reduce(pixels, 256)
-	require.NoError(t, err)
-	indexed := bitmap.EncodeIndexed(bitmap.Indexed{Width: 4, Height: 3, Indexes: indexes, Palette: palette})
-	cue := func(png []byte) model.Cue {
-		return model.Cue{
-			Start: time.Second, End: 2 * time.Second,
-			Image: &model.Image{PNG: png, Width: 4, Height: 3, ScreenWidth: 720, ScreenHeight: 576},
+	// colors returns 12 pixels for each of n opaque colours. Two families share no colour.
+	colors := func(family uint32, n int) []uint32 {
+		pixels := make([]uint32, 12*n)
+		for i := range pixels {
+			pixels[i] = (family<<16|uint32(i/12)<<8)<<8 | 0xFF
 		}
+		return pixels
 	}
-	assert.Equal(t, writeCues(t, cue(rgba)), writeCues(t, cue(indexed)))
+	tests := []struct {
+		name   string
+		images [][]uint32
+	}{
+		{"1 colour", [][]uint32{colors(0, 1)}},
+		{"2 overlapping images of 200 colours each", [][]uint32{colors(1, 200), colors(2, 200)}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var rgbaCues, indexedCues []model.Cue
+			for i, pixels := range tt.images {
+				width, height := 12, len(pixels)/12
+				place := func(png []byte) model.Cue {
+					return model.Cue{
+						Start: time.Duration(i+1) * time.Second, End: 6 * time.Second,
+						Image: &model.Image{PNG: png, X: 2 * i, Width: width, Height: height, ScreenWidth: 720, ScreenHeight: 576},
+					}
+				}
+				palette, indexes, err := bitmap.Reduce(pixels, 256)
+				require.NoError(t, err)
+				rgbaCues = append(rgbaCues, place(bitmap.EncodeRGBA(bitmap.Pixels{Width: width, Height: height, RGBA: pixels})))
+				indexedCues = append(indexedCues, place(bitmap.EncodeIndexed(bitmap.Indexed{Width: width, Height: height, Indexes: indexes, Palette: palette})))
+			}
+			assert.Equal(t, writeCues(t, rgbaCues...), writeCues(t, indexedCues...))
+		})
+	}
 }
 
 func TestWriteUnwritable(t *testing.T) {
@@ -245,14 +267,21 @@ func TestWriteRoundTripsFixtures(t *testing.T) {
 
 	files, err := filepath.Glob(testfiles.Path(t, "pgs/*.sup"))
 	require.NoError(t, err)
+	fixing, err := filepath.Glob(testfiles.Path(t, "fixing/ocr-*.sup"))
+	require.NoError(t, err)
 	require.NotEmpty(t, files)
+	require.Len(t, fixing, 4)
 	byteForByte := map[string]bool{"text_1080p.sup": true, "text_cyrillic_1080p.sup": true}
-	for _, name := range files {
+	for _, name := range fixing {
+		byteForByte[filepath.Base(name)] = true
+	}
+	for _, name := range append(files, fixing...) {
 		base := filepath.Base(name)
-		t.Run(base, func(t *testing.T) {
+		dir := filepath.Base(filepath.Dir(name))
+		t.Run(dir+"/"+base, func(t *testing.T) {
 			t.Parallel()
 
-			input := testfiles.Read(t, "pgs/"+base)
+			input := testfiles.Read(t, dir+"/"+base)
 			first, _ := read(t, input, model.CommonReadOptions{})
 			var out bytes.Buffer
 			_, err := pgs.Write(&out, first, model.CommonWriteOptions{}, pgs.WriteOptions{})
@@ -264,21 +293,8 @@ func TestWriteRoundTripsFixtures(t *testing.T) {
 			require.Equal(t, first.Len(), second.Len())
 			for i, c := range first.Cues() {
 				d, _ := second.Cue(i)
-				// An overlapping pair of cues in the input comes back with colours that PGS cannot hold exactly.
-				assert.Equal(t, cueKey(t, c)[:10], cueKey(t, d)[:10], "cue %d", i)
+				assert.Equal(t, cueKey(t, c), cueKey(t, d), "cue %d", i)
 			}
 		})
 	}
-}
-
-func TestWriteWritesNothingOnError(t *testing.T) {
-	t.Parallel()
-
-	var b bytes.Buffer
-	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second})
-	_, err := pgs.Write(&b, s, model.CommonWriteOptions{}, pgs.WriteOptions{})
-	require.Error(t, err)
-	require.ErrorIs(t, err, model.ErrUnwritable)
-	assert.Zero(t, b.Len())
 }

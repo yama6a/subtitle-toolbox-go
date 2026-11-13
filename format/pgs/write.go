@@ -2,6 +2,7 @@ package pgs
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/binary"
 	"io"
 	"slices"
@@ -116,7 +117,8 @@ func checkCue(i int, c model.Cue) (start, end int64, err error) {
 	if c.Image == nil {
 		return 0, 0, unwritable(i, c, "the cue holds no image, and PGS output cannot hold text.")
 	}
-	start, end = c.Start.Milliseconds()*ticksPerMillisecond, c.End.Milliseconds()*ticksPerMillisecond
+	start = c.Start.Milliseconds() * ticksPerMillisecond
+	end = max(start, c.End.Milliseconds()*ticksPerMillisecond)
 	if start < 0 || start > maxPTS || end < 0 || end > maxPTS {
 		return 0, 0, unwritable(i, c, "a time stamp must be from 0 to "+strconv.Itoa(maxPTS)+" ticks of 90 kHz.")
 	}
@@ -156,7 +158,7 @@ func decode(i int, c model.Cue) (bitmapOf, error) {
 // set of the next cue replaces them.
 func (e *encoder) endShown(shown []shownCue, before int64, all bool) []shownCue {
 	for len(shown) > 0 {
-		t := slices.MinFunc(shown, func(a, b shownCue) int { return int(a.end - b.end) }).end
+		t := slices.MinFunc(shown, func(a, b shownCue) int { return cmp.Compare(a.end, b.end) }).end
 		if !all && t >= before {
 			break
 		}
