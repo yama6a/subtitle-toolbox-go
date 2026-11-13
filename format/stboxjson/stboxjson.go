@@ -7,6 +7,7 @@ package stboxjson
 import (
 	"fmt"
 	"io"
+	"strconv"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
@@ -56,8 +57,22 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 	return s, sortWarnings(st.Warnings()), nil
 }
 
+// Validate returns an error that matches model.ErrInvalidArgument for a Version other than 0, 1 and 2.
+func (o WriteOptions) Validate() error {
+	if o.Version < 0 || o.Version > Version {
+		return &model.InvalidArgumentError{
+			Option: "WriteOptions.JSON.Version",
+			Msg:    "The library JSON version must be 0, 1 or 2, got " + strconv.Itoa(o.Version) + ".",
+		}
+	}
+	return nil
+}
+
 // Write writes s to w as a library JSON document of version 2, or of version 1 when opts.Version is 1. Negative times stay as they are, and StripTags has no effect.
 func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	if err := opts.Validate(); err != nil {
+		return WriteReport{}, err
+	}
 	body, err := document(s, opts)
 	if err != nil {
 		return WriteReport{}, err

@@ -80,4 +80,4 @@ Text outside format data must be valid UTF-8. That text is the cue lines and ide
 
 `WriteOptions.Version` picks the version to write. 0 and 2 write version 2. 1 writes version 1, with the word timestamps and the speaker as tags in the lines. Version 1 loses the end and the confidence of each word. The writer returns an `*InvalidArgumentError` for another value.
 
-Version 1 is API for the whole 4.x line, see [compatibility.md](compatibility.md#changes-a-minor-release-can-make): a minor release may add fields, and readers ignore unknown fields. [upgrade-4.0.md](upgrade-4.0.md) lists the change from version 1 to version 2.
+Versions 1 and 2 are API for the whole 4.x line, see [compatibility.md](compatibility.md#changes-a-minor-release-can-make): a minor release may add fields, and readers ignore unknown fields. [upgrade-4.0.md](upgrade-4.0.md) lists the change from version 1 to version 2.

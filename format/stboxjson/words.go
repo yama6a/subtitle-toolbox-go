@@ -66,11 +66,8 @@ func wordTimes(w *model.Word, d *model.Data, path string) string {
 		if !ok || n.f < 0 {
 			return path + "." + t.key + " must be a time of 0 or more."
 		}
-		d := timecode.MaxTime
-		if n.f < maxSeconds {
-			d = milliseconds(n)
-		}
-		if d >= timecode.MaxTime {
+		d, ok := milliseconds(n)
+		if !ok {
 			return path + "." + t.key + " is not below " + strconv.Itoa(timecode.MaxHours) + " hours."
 		}
 		*t.to = d

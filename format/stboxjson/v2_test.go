@@ -129,6 +129,34 @@ func TestReadVersions(t *testing.T) {
 	assert.Empty(t, c.Words)
 }
 
+// A time literal with more than a million fraction digits reads as its rounded value and does not crash.
+func TestReadTimeWithAMillionFractionDigits(t *testing.T) {
+	t.Parallel()
+
+	digits := strings.Repeat("0", 1_000_001)
+	tests := []struct {
+		name, doc string
+	}{
+		{"cue times version 1", `{"version": 1, "cues": [{"start": 1.` + digits + `1, "end": 2.` + digits + `, "lines": ["a"]}]}`},
+		{"cue times version 2", `{"version": 2, "cues": [{"start": 1.` + digits + `1, "end": 2.` + digits + `, "lines": ["a"]}]}`},
+		{"word times", `{"version": 2, "cues": [{"start": 1, "end": 2, "lines": ["a"], "words": [{"text": "a", "start": 1.` + digits + `1, "end": 2.` + digits + `}]}]}`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s := mustRead(t, tt.doc, false)
+			c, ok := s.Cue(0)
+			require.True(t, ok)
+			assert.Equal(t, time.Second, c.Start)
+			assert.Equal(t, 2*time.Second, c.End)
+			if len(c.Words) > 0 {
+				assert.Equal(t, model.Word{Text: "a", Start: time.Second, End: 2 * time.Second}, c.Words[0])
+			}
+		})
+	}
+}
+
 func TestReadVersion2LenientSkipsABadCue(t *testing.T) {
 	t.Parallel()
 

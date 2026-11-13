@@ -2,6 +2,7 @@ package stboxjson
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -32,10 +33,7 @@ var errInfOrNaN = errors.New("inf or NaN")
 // document returns the library JSON of s. A string outside format data that is not valid UTF-8 fails first,
 // because encoding/json would replace its bad bytes without an error.
 func document(s *model.Subtitle, opts WriteOptions) ([]byte, error) {
-	version, err := writeVersion(opts.Version)
-	if err != nil {
-		return nil, err
-	}
+	version := cmp.Or(opts.Version, Version)
 	if i, ok := validText(s, !opts.OmitFormatData, version); !ok {
 		return nil, &model.UnwritableError{Format: model.JSON, CueIndex: i, Reason: malformedUTF8, Err: model.ErrInvalidUTF8}
 	}
@@ -84,17 +82,6 @@ func (e *encoder) cues(s *model.Subtitle, withFormatData bool) error {
 	}
 	e.raw("]}")
 	return nil
-}
-
-func writeVersion(v int) (int, error) {
-	switch v {
-	case 0:
-		return Version, nil
-	case 1, Version:
-		return v, nil
-	default:
-		return 0, &model.InvalidArgumentError{Option: "Version", Msg: "The library JSON version must be 0, 1 or 2, got " + strconv.Itoa(v) + "."}
-	}
 }
 
 // validText returns false and the index of the first cue with text that is not valid UTF-8, or -1 for other text.
