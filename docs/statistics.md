@@ -1,6 +1,6 @@
 # Statistics
 
-A QC script wants numbers about a subtitle file. `stats.Of(s)` returns them in one value and never changes `s`. It skips image cues without lines. Example: for a 3-cue SubRip file, `stbox info trip.srt` prints `Characters per second: min 12.5, average 27.533, max 42.5` and `Most used words: the (3), train (1), ...`.
+A QC script wants numbers about a subtitle file. `stats.Of(s)` returns them in one value and never changes `s`. It counts an image cue without lines as a cue with a time and no text, as PHP does. Example: for a 3-cue SubRip file, `stbox info trip.srt` prints `Characters per second: min 12.5, average 27.533, max 42.5` and `Most used words: the (3), train (1), ...`.
 
 <!-- example: ExampleOf -->
 ```go

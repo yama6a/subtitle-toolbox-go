@@ -290,7 +290,7 @@ func TestInfoListsTracks(t *testing.T) {
 	tests := []struct {
 		name  string
 		words []string
-		stdin string
+		stdin string // fixture path of the standard input, "" for none
 		want  string
 	}{
 		{
@@ -310,7 +310,7 @@ func TestInfoListsTracks(t *testing.T) {
 		{
 			"pgs on stdin",
 			[]string{"info", "-"},
-			"pgs",
+			"mkv/pgs.mkv",
 			"stdin\n  Container: matroska\n  Track 3: S_HDMV/PGS, ger, default\n  Track 4: S_HDMV/PGS, eng, default, forced\n",
 		},
 		{
@@ -326,9 +326,9 @@ func TestInfoListsTracks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			stdin := tt.stdin
-			if stdin == "pgs" {
-				stdin = string(testfiles.Read(t, "mkv/pgs.mkv"))
+			stdin := ""
+			if tt.stdin != "" {
+				stdin = string(testfiles.Read(t, tt.stdin))
 			}
 			got := call{dir: dir, stdin: stdin}.run(t, tt.words...)
 			assert.Equal(t, 0, got.Code, got.Stderr)
@@ -378,8 +378,12 @@ func TestInfoOfATrackShowsImageCues(t *testing.T) {
 	assert.Contains(t, got.Stdout, "  Format:                pgs\n")
 	assert.Regexp(t, `(?m)^  Image cues: +\d+, 0 with text$`, got.Stdout)
 
+	assert.Regexp(t, `(?m)^  Cues: +6$`, got.Stdout)
+	assert.Regexp(t, `(?m)^  Display time: +16\.5 s$`, got.Stdout)
+
 	got = call{dir: dir}.run(t, "info", "pgs.mkv", "--track", "4", "--json")
-	assert.Regexp(t, `"imageCues": \{\s+"count": \d+,\s+"withText": 0\s+\}`, got.Stdout)
+	assert.Regexp(t, `"cueCount": 6,`, got.Stdout)
+	assert.Regexp(t, `"imageCues": \{\s+"count": 6,\s+"withText": 0\s+\}`, got.Stdout)
 }
 
 func TestImageCuesNeedAnAnswer(t *testing.T) {
@@ -390,19 +394,21 @@ func TestImageCuesNeedAnAnswer(t *testing.T) {
 	assert.Equal(t, result{Code: exitFile, Stderr: "text_1080p.sup: Cue #0 holds an image but no text, and srt needs text. " +
 		"Pass --ocr to read the text, --to pgs to keep the images, or --skip-image-cues to leave them out.\n"}, got)
 
+	noOCR := "Cue #0 holds an image but no text, and srt needs text. " + imageCueAdviceNoOCR + "\n"
+	got = call{dir: dir}.run(t, "sync", "text_1080p.sup", "--reference", "trip.srt", "--to", "srt")
+	assert.Equal(t, exitFile, got.Code)
+	assert.True(t, strings.HasSuffix(got.Stderr, noOCR), got.Stderr)
+	got = call{dir: dir}.run(t, "dual", "--primary", "text_1080p.sup", "--secondary", "trip.srt", "--to", "srt")
+	assert.Equal(t, exitFile, got.Code)
+	assert.True(t, strings.HasSuffix(got.Stderr, imageCueAdviceNoOCR+"\n"), got.Stderr)
+
 	got = call{dir: dir}.run(t, "convert", "text_1080p.sup", "--to", "srt", "--skip-image-cues", "-o", "-")
 	assert.Equal(t, 0, got.Code, got.Stderr)
 	assert.Equal(t, "\ufeff", got.Stdout)
 
 	got = call{dir: dir}.run(t, "convert", "text-pal.idx", "--to", "sup", "-o", "-")
 	assert.Equal(t, 0, got.Code, got.Stderr)
-	assert.Equal(t, libraryWriteOf(t, "vobsub/text-pal.idx", stbox.PGS), got.Stdout)
-}
-
-func libraryWriteOf(t *testing.T, rel string, f stbox.Format) string {
-	t.Helper()
-
-	return libraryWrite(t, rel, 0, f)
+	assert.Equal(t, libraryWrite(t, "vobsub/text-pal.idx", 0, stbox.PGS), got.Stdout)
 }
 
 func TestConvertReadsALargeWebM(t *testing.T) {

@@ -190,20 +190,20 @@ func (r *runner) open(arg string, opts stbox.ReadOptions) (source, error) {
 }
 
 // listInput returns the track list of a video file for info, when the call lists tracks, names no track, and the
-// extension of arg names no subtitle format. A file that cannot be parsed returns nil and no error, so the normal read
+// extension of arg names no subtitle format. A file that cannot be parsed is not listed, so the normal read
 // reports the failure.
-func (r *runner) listInput(arg string, src source, container stbox.Container, track int) (*input, error) {
+func (r *runner) listInput(arg string, src source, container stbox.Container, track int) (in *input, listed bool, err error) {
 	if !r.listTracks || container == "" || track != 0 || !namesNoSubtitle(arg) {
-		return nil, nil //nolint:nilnil // nil and no error mean: read the file as usual
+		return nil, false, nil
 	}
 	tracks, err := tracksOf(src.path, src.content)
 	switch {
 	case err == nil:
-		return &input{arg: arg, container: container, tracks: tracks}, nil
+		return &input{arg: arg, container: container, tracks: tracks}, true, nil
 	case errors.Is(err, stbox.ErrParse):
-		return nil, nil //nolint:nilnil // nil and no error mean: read the file as usual
+		return nil, false, nil
 	default:
-		return nil, err
+		return nil, true, err
 	}
 }
 
@@ -215,7 +215,7 @@ func (r *runner) readWith(arg string, opts stbox.ReadOptions, trackOption string
 		return nil, err
 	}
 	container := containerOfHead(src.head)
-	if in, err := r.listInput(arg, src, container, opts.Track); in != nil || err != nil {
+	if in, listed, err := r.listInput(arg, src, container, opts.Track); listed {
 		return in, err
 	}
 	in := &input{arg: arg}
@@ -401,23 +401,11 @@ func (r *runner) detect(path string) (stbox.Format, bool) {
 // readUnlessContainer returns the content of the file at path. It returns false for a file that cannot be read and
 // for a video container, which it reads only as far as its head.
 func readUnlessContainer(path string) ([]byte, bool) {
-	file, err := os.Open(path)
-	if err != nil {
+	head, err := readFileHead(path)
+	if err != nil || containerOfHead(head) != "" {
 		return nil, false
 	}
-	defer file.Close()
-	head := make([]byte, stbox.ContainerHeadSize)
-	n, err := io.ReadFull(file, head)
-	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.EOF) {
-		return nil, false
-	}
-	if d, ok := stbox.Detect(head[:n]); ok && d.Container != "" {
-		return nil, false
-	}
-	if _, err := file.Seek(0, io.SeekStart); err != nil {
-		return nil, false
-	}
-	content, err := io.ReadAll(file)
+	content, err := os.ReadFile(path)
 	return content, err == nil
 }
 

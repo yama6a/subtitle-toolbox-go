@@ -52,6 +52,8 @@ type writeOutput struct {
 	// outputFPS is the rate of --output-fps or --fps, the zero value when the call gives neither.
 	outputFPS stbox.FrameRate
 	sccFit    bool
+	// hasOCR is true for a command with the --ocr option, which the image cue advice names.
+	hasOCR bool
 	// ass holds the write options of the ass group, nil without them.
 	ass *ass.WriteOptions
 }
@@ -140,7 +142,7 @@ func (w *writeOutput) write(r *runner, in *input, edit func(*stbox.Subtitle) (*s
 	var buf bytes.Buffer
 	report, err := stbox.Write(&buf, s, f, w.optionsFor(f))
 	if err != nil {
-		return withImageCueAdvice(s, err)
+		return withImageCueAdvice(s, err, w.hasOCR)
 	}
 	printWriteReport(r.c, in.label(), report)
 	if target == stdinArg {
@@ -154,17 +156,24 @@ func (w *writeOutput) write(r *runner, in *input, edit func(*stbox.Subtitle) (*s
 	return nil
 }
 
-const imageCueAdvice = "Pass --ocr to read the text, --to pgs to keep the images, or --skip-image-cues to leave them out."
+const (
+	imageCueAdvice = "Pass --ocr to read the text, --to pgs to keep the images, or --skip-image-cues to leave them out."
+	// imageCueAdviceNoOCR is for the commands without --ocr.
+	imageCueAdviceNoOCR = "Run stbox convert --ocr first, pass --to pgs to keep the images, or pass --skip-image-cues to leave them out."
+)
 
 // withImageCueAdvice adds the advice to the error of a text writer that met an image cue without lines. Another
 // error stays as it is.
-func withImageCueAdvice(s *stbox.Subtitle, err error) error {
+func withImageCueAdvice(s *stbox.Subtitle, err error, hasOCR bool) error {
 	e, ok := errors.AsType[*stbox.UnwritableError](err)
 	if !ok {
 		return err
 	}
 	if c, found := s.Cue(e.CueIndex); !found || !c.IsImageWithoutText() {
 		return err
+	}
+	if !hasOCR {
+		return usage(e.Reason + " " + imageCueAdviceNoOCR)
 	}
 	return usage(e.Reason + " " + imageCueAdvice)
 }
