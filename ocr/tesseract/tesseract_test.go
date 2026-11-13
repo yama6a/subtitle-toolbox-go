@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v3/format/pgs"
+	"github.com/yama6a/subtitle-toolbox-go/v3/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v3/markup"
 	"github.com/yama6a/subtitle-toolbox-go/v3/model"
@@ -260,7 +261,7 @@ func TestTesseractRequireLanguages(t *testing.T) {
 	require.ErrorIs(t, e.RequireLanguages(context.Background(), "xyz"), model.ErrInvalidArgument)
 }
 
-// TestTesseractAccuracy reads the PGS fixtures with a real Tesseract. It skips when the program is missing,
+// TestTesseractAccuracy reads the PGS and VobSub fixtures with a real Tesseract. It skips when the program is missing,
 // unless STBOX_REQUIRE_TESSERACT=1 is set.
 func TestTesseractAccuracy(t *testing.T) {
 	t.Parallel()
@@ -274,18 +275,27 @@ func TestTesseractAccuracy(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		sup      string
+		file     string
+		idx      string
 		drawn    string
 		language ocr.Language
 	}{
-		{"PGS 1080p, 44 to 60 px", "pgs/text_1080p.sup", "ocr/drawn/text_1080p.json", ocr.English},
-		{"PGS 1080p, Cyrillic", "pgs/text_cyrillic_1080p.sup", "ocr/drawn/text_cyrillic_1080p.json", ocr.Russian},
+		{"PGS 1080p, 44 to 60 px", "pgs/text_1080p.sup", "", "ocr/drawn/text_1080p.json", ocr.English},
+		{"VobSub 576p, 24 to 30 px", "vobsub/text-pal.sub", "vobsub/text-pal.idx", "ocr/drawn/text-pal.json", ocr.English},
+		{"PGS 1080p, Cyrillic", "pgs/text_cyrillic_1080p.sup", "", "ocr/drawn/text_cyrillic_1080p.json", ocr.Russian},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, _, err := pgs.Read(bytes.NewReader(testfiles.Read(t, tt.sup)), model.CommonReadOptions{}, pgs.ReadOptions{})
+			var s *model.Subtitle
+			var err error
+			if tt.idx == "" {
+				s, _, err = pgs.Read(bytes.NewReader(testfiles.Read(t, tt.file)), model.CommonReadOptions{}, pgs.ReadOptions{})
+			} else {
+				idx := string(testfiles.Read(t, tt.idx))
+				s, _, err = vobsub.Read(bytes.NewReader(testfiles.Read(t, tt.file)), model.CommonReadOptions{}, vobsub.ReadOptions{IDX: idx})
+			}
 			require.NoError(t, err)
 			var drawn [][]string
 			require.NoError(t, json.Unmarshal(testfiles.Read(t, tt.drawn), &drawn))

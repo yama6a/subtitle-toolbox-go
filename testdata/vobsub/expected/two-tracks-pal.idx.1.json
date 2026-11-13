@@ -1,0 +1,28 @@
+[
+    {
+        "start": 3.0,
+        "end": 3.99,
+        "x": 309,
+        "y": 470,
+        "width": 101,
+        "height": 25,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "495e065afbd409d8ca229103a6545926aa762750212f22742564c91a63310c3c"
+    },
+    {
+        "start": 3724.456,
+        "end": 3726.447,
+        "x": 0,
+        "y": 0,
+        "width": 50,
+        "height": 10,
+        "screenWidth": 720,
+        "screenHeight": 576,
+        "forced": false,
+        "alignment": "BottomCenter",
+        "rgbaSha256": "0ffe364eeb715a4c160ff718ecd2e9139889fe2fd5b8a7448744603d00ac02c9"
+    }
+]

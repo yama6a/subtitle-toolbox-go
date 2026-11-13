@@ -105,6 +105,10 @@ engine, err := tesseract.New(tesseract.Options{Language: ocr.German})
 - **Errors**: a program that exits with a code other than 0, or that cannot start, gives an error that matches `ErrRecognize`.
 - **Tests**: tests with a fake program run everywhere. `TestTesseractAccuracy` needs a real Tesseract with `eng` and `rus` data. It skips without one, unless `STBOX_REQUIRE_TESSERACT=1` is set. The CI job `tesseract` sets it.
 
+## VobSub input
+
+A VobSub read gives image cues, so OCR can read DVD subtitles. See [VobSub in formats.md](formats.md#vobsub). Example: `stbox.Load("movie.idx", stbox.ReadOptions{})` reads `movie.idx` and `movie.sub` into image cues without lines.
+
 ## Tests
 
 Package `ocr/ocrtest` holds `Engine`, a fake that returns the same `Text` for every image and records each call with its image and language.
