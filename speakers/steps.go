@@ -137,7 +137,7 @@ func colorsBySpeaker(works []work, opts Options) map[string]string {
 
 // setStyle writes the speakers of a cue with a voice tag in the style of opts. The new lines hold no voice tag.
 func (w *work) setStyle(opts Options, colors map[string]string) {
-	if !voiceInLines.MatchString(strings.Join(w.lines, "\n")) {
+	if w.cue.Speaker == "" && !voiceInLines.MatchString(strings.Join(w.lines, "\n")) {
 		return
 	}
 	parts := speakerParts(w.lines)
