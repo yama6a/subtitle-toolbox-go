@@ -12,7 +12,7 @@ Package `format/transcript` reads and writes the JSON and HTML transcripts of sp
 | `SpeakerVoices` | false: `Cue.Speaker` stays empty | set `Cue.Speaker` from the speaker of the source | the formats with speakers. The Podcasting 2.0 and HTML transcripts always set it |
 | `KeepSegments` | false: join one-word segments | one cue per segment | the Podcasting 2.0 transcript only |
 
-`WriteOptions.Transcript` holds `transcript.WriteOptions`. It holds one nested struct for each format with write settings. So far that is `Podcast`, see [Podcasting 2.0 transcript JSON](#podcasting-20-transcript-json).
+`WriteOptions.Transcript` holds `transcript.WriteOptions`. It holds one nested struct for each format with write settings. So far that is `Podcast`, see [Podcasting 2.0 transcript JSON](#podcasting-20-transcript-json), and `HTML`, see [HTML transcript](#html-transcript).
 
 The raw source words stay in the cue format data with both values of `WordTimestamps`. So a writer reuses them after a read without word times.
 
@@ -82,6 +82,7 @@ A writer rebuilds the word list of a cue from `Cue.Words`. It keeps each source 
 | Google Speech-to-Text JSON | `ReadGoogleSpeech` | `WriteGoogleSpeech` | [Google Speech-to-Text JSON](#google-speech-to-text-json) |
 | Whisper JSON | `ReadWhisper` | `WriteWhisper` | [Whisper JSON](#whisper-json) |
 | Podcasting 2.0 transcript JSON | `ReadPodcast` | `WritePodcast` | [Podcasting 2.0 transcript JSON](#podcasting-20-transcript-json) |
+| HTML transcript | `ReadHTML` | `WriteHTML` | [HTML transcript](#html-transcript) |
 
 ## Whisper JSON
 
@@ -223,6 +224,69 @@ Example: the words `Hello` (Anna, 0 to 0.4 s), `there.` (Anna, 0.5 to 0.9 s), `C
 | `PrettyPrint` | false: one compact line, no final LF | 4-space indent and a final LF |
 
 Cue `<v Ben>Home &amp; bed.` and `<v Anna>Why?` from 3 to 5 s, with the word `bed.` at 4 s, writes `{"speaker":"Ben","startTime":3.0,"endTime":5.0,"body":"Home & bed."},{"speaker":"Anna","startTime":3.0,"endTime":5.0,"body":"Why?"}`. With `WordSegments` it writes `Home &` from 3 to 4 s, `bed.` from 4 to 4 s and `Why?` from 4 to 5 s.
+
+## HTML transcript
+
+The Podcasting 2.0 spec allows a transcript as simple HTML. A `<cite>` holds the speaker, a `<time>` holds the start and each `<p>` holds text. Example: `<cite>Anna:</cite>` `<time>0:05</time>` `<p>Hello<br>there.</p>`. Podcast hosts publish it next to the audio, and readers can show it on a web page.
+
+| Item | Value |
+|:--- |:--- |
+| Format | `stbox.HTMLTranscript`, name `html`, extensions `.html` and `.htm` |
+| Functions | `transcript.ReadHTML`, `WriteHTML` and `DetectHTML` |
+| Read options | none. The speaker always goes to `Cue.Speaker`. The last cue duration applies |
+| Write options | `transcript.HTMLWriteOptions` in `WriteOptions.HTML`: `ParagraphGap` |
+| Detection | [signature 22](detection.md#signatures): `<cite` and `<time` anywhere. A transcript without speakers has no `<cite>`, so `Load` finds it only by its extension |
+
+### HTML read
+
+The reader has no HTML parser. It scans the content for `<cite>`, `<time>` and `<p>` elements anywhere, in any case. Other markup is ignored and no `<html>` element is needed.
+
+- **Elements**: a start tag is `<`, the name, then `>` or white space and any characters up to `>`. The element ends at the first end tag of the same name after it: `</`, the name, optional white space and `>`. So `<pre>` and `<timeline>` are no elements, and `</p >` ends a `<p>`. A start tag without an end tag is no element, and the scan goes on one character later. The scan skips the inner markup of a match, so a `<p>` inside a `<cite>` is part of the `<cite>`.
+- **Cost**: the scanner remembers where the next `>` is and, for each name, the position after which no end tag exists. So a file of 1 MB with `<p>` and no `</p>` costs one pass, not one pass for each tag.
+- **Paragraphs**: a paragraph starts at the first element, at a `<cite>` when the paragraph has a speaker or lines, and at a `<time>` when it has a time or lines. Its line is the line of the element that starts it. A paragraph without lines gives no cue.
+- **Text**: tags go, entities decode, and each run of space, tab, CR and LF becomes one space. The `<cite>` text loses its trailing colons, so `Anna :` gives `Anna`. A `<p>` splits at `<br>`, `<br/>` and `<br />`, and each non-empty part becomes one escaped line.
+- **Times**: a cue starts at its `<time>` and ends at the first later start among the cues after it. The last cue lasts the last cue duration.
+
+| Check | Error | Line |
+|:--- |:--- |:--- |
+| the paragraph has a time | `The paragraph has no <time>.` | the paragraph line |
+| the time is `h:mm:ss`, `m:ss` or `mm:ss`, with an optional fraction after `.` or `,`. Seconds go up to 59, minutes have any digits | `The time "soon" is not valid.` | the line of the `<time>` |
+| the time, rounded to milliseconds, is below 100000 hours | `The time "99999999999999999999:00:04" is not below 100000 hours.` | the line of the `<time>` |
+
+A failure follows the strict and lenient rules of [lenient-parsing.md](lenient-parsing.md). Lenient mode skips the paragraph with a `Skipped` warning. The block is the paragraph index and the block text is the time text, or the first line when there is no time.
+
+### HTML write
+
+The writer takes the segments of the [Podcasting 2.0 write](#podcast-write) without word segments, one for each cue and speaker. It groups them into paragraphs. A paragraph starts at a speaker that differs from the speaker of the segment before, and at a gap of `ParagraphGap` or more between its start and the latest end so far. A missing speaker differs from every name.
+
+Each paragraph is `<cite>NAME:</cite>`, when its first segment has a speaker, then `<time>CLOCK</time>` and `<p>BODIES</p>`, each on its own line. The bodies join with one space. Names and bodies are escaped. `CLOCK` is the paragraph start floored to whole seconds, a negative start as 0: `m:ss` below 1 hour and `h:mm:ss` from 1 hour. 9 s gives `0:09` and 3725 s gives `1:02:05`. The output has no `<html>` element, no `<br>` and no BOM by default.
+
+| Option | Zero value | Meaning |
+|:--- |:--- |:--- |
+| `ParagraphGap` | nil: 2 s | a gap of this length or more starts a new paragraph. 0 starts one at every segment. `transcript.NoParagraphBreaks` never starts one. A negative gap fails with `The paragraph gap must be 0 or more seconds, got -1.` |
+
+The cues `<v Anna><b>Hello</b>` and `there.` (1 to 2 s), `<v Anna>Where are you going?` (2.5 to 4 s), `<v Ben>Home &amp; bed.` and `<v Anna>Why?` (4 to 5 s), `<v Anna>Fish &lt;3` (9 to 10 s) and `No speaker.` (3725 to 3727 s) write:
+
+```html
+<cite>Anna:</cite>
+<time>0:01</time>
+<p>Hello there. Where are you going?</p>
+<cite>Ben:</cite>
+<time>0:04</time>
+<p>Home &amp; bed.</p>
+<cite>Anna:</cite>
+<time>0:04</time>
+<p>Why?</p>
+<cite>Anna:</cite>
+<time>0:09</time>
+<p>Fish &lt;3</p>
+<time>1:02:05</time>
+<p>No speaker.</p>
+```
+
+With a gap of 0.5 s, `Hello there.` and `Where are you going?` become 2 paragraphs, at `0:01` and `0:02`.
+
+**Round trip.** Fractions of seconds, line breaks, styles and end times are lost. Writer output read again and written again gives the same bytes. A transcript without speakers writes no `<cite>`, so `Detect` does not find it. `Load` falls back to the extension `.html` or `.htm`. `Parse` needs `ReadOptions.Format` set to `html`.
 
 ## Google Speech-to-Text JSON
 

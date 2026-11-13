@@ -157,23 +157,40 @@ func collapseSpace(s string) string {
 	}), " ")
 }
 
+// laterStarts returns, for each start, the index of the first start after it in the list that is later than it, or
+// -1 for none. One pass from the back finds every index.
+func laterStarts(starts []time.Duration) []int {
+	next := make([]int, len(starts))
+	var stack []int // indexes after i, whose starts rise from the top of the stack to the bottom
+	for i := len(starts) - 1; i >= 0; i-- {
+		for len(stack) > 0 && starts[stack[len(stack)-1]] <= starts[i] {
+			stack = stack[:len(stack)-1]
+		}
+		next[i] = -1
+		if len(stack) > 0 {
+			next[i] = stack[len(stack)-1]
+		}
+		stack = append(stack, i)
+	}
+	return next
+}
+
 // resolvePodcastItems gives each segment without an end the first later start among the segments after it, or the last
-// cue duration after its own start. One pass from the back finds that start for every segment. It then drops the
-// segments without a body. The HTML transcript reader builds on it.
+// cue duration after its own start. It then drops the segments without a body.
 func resolvePodcastItems(st *parsing.State, segments []podcastItem) []podcastItem {
-	var later []int // indexes after i, whose starts rise from the top of the stack to the bottom
-	for i := len(segments) - 1; i >= 0; i-- {
-		for len(later) > 0 && segments[later[len(later)-1]].start <= segments[i].start {
-			later = later[:len(later)-1]
+	starts := make([]time.Duration, len(segments))
+	for i, seg := range segments {
+		starts[i] = seg.start
+	}
+	for i, next := range laterStarts(starts) {
+		if segments[i].hasEnd {
+			continue
 		}
-		if !segments[i].hasEnd {
-			if len(later) > 0 {
-				segments[i].end = segments[later[len(later)-1]].start
-			} else {
-				segments[i].end = st.LastCueEnd(segments[i].start)
-			}
+		if next >= 0 {
+			segments[i].end = segments[next].start
+		} else {
+			segments[i].end = st.LastCueEnd(segments[i].start)
 		}
-		later = append(later, i)
 	}
 	kept := segments[:0]
 	for _, seg := range segments {

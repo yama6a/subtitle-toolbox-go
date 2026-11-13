@@ -1,0 +1,61 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 12.0,
+                "lines": [
+                    "<v Marta>Welcome back to the garden show. Today we're planting tomatoes, and we'll talk about the right soil for them."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 12.0,
+                "end": 31.0,
+                "lines": [
+                    "<v Jonas>Thanks, Marta. The first thing I check is the weather. Tomatoes don't like a cold night, so I wait until late spring."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 31.0,
+                "end": 44.0,
+                "lines": [
+                    "<v Marta>And how deep do you put the young plants? I always worry that the stem breaks when I press the soil down."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 44.0,
+                "end": 62.0,
+                "lines": [
+                    "<v Jonas>Deeper than you think. Bury two thirds of the stem &amp; the plant grows new roots along it."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 62.0,
+                "end": 67.0,
+                "lines": [
+                    "<v Marta>That's all for this week. Next time we talk about water."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

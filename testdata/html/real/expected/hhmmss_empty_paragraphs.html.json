@@ -1,0 +1,71 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {},
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 4.0,
+                "lines": [
+                    "<v Speaker 1>Good morning and welcome to the station news."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 4.0,
+                "end": 8.0,
+                "lines": [
+                    "<v Speaker 1>The new timetable starts on Monday."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 8.0,
+                "end": 11.0,
+                "lines": [
+                    "<v Speaker 2>Will the early train to the harbour still run?"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 11.0,
+                "end": 3598.0,
+                "lines": [
+                    "<v Speaker 1>Yes, it leaves at six, as before."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3598.0,
+                "end": 3603.0,
+                "lines": [
+                    "<v Speaker 2>Thank you for listening."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 3603.0,
+                "end": 3608.0,
+                "lines": [
+                    "<v Speaker 1>See you next week."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

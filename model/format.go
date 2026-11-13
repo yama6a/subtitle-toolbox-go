@@ -7,35 +7,37 @@ type Format string
 
 // The formats of the registry, in registry order.
 const (
-	ASS           Format = "ass"
-	Cavena890     Format = "cavena890"
-	CSV           Format = "csv"
-	ITT           Format = "itt"
-	JSON          Format = "json"
-	GoogleSpeech  Format = "google-speech"
-	LRC           Format = "lrc"
-	MCC           Format = "mcc"
-	MicroDVD      Format = "microdvd"
-	MPSub         Format = "mpsub"
-	PAC           Format = "pac"
-	PGS           Format = "pgs"
-	SAMI          Format = "sami"
-	SBV           Format = "sbv"
-	SCC           Format = "scc"
-	SubRip        Format = "srt"
-	EBUSTL        Format = "stl"
-	SpruceSTL     Format = "spruce-stl"
-	SubViewer     Format = "subviewer"
-	TTML          Format = "ttml"
-	DCP           Format = "dcp"
-	TSV           Format = "tsv"
-	PlainText     Format = "txt"
-	MPL2          Format = "mpl2"
-	TMPlayer      Format = "tmplayer"
-	QuickTimeText Format = "qttext"
-	VobSub        Format = "vobsub"
-	WebVTT        Format = "vtt"
-	Whisper       Format = "whisper"
+	ASS       Format = "ass"
+	Cavena890 Format = "cavena890"
+	CSV       Format = "csv"
+	// HTMLTranscript is the HTML transcript of a podcast: a cite, a time and a p per paragraph. Detection finds it last.
+	HTMLTranscript Format = "html"
+	ITT            Format = "itt"
+	JSON           Format = "json"
+	GoogleSpeech   Format = "google-speech"
+	LRC            Format = "lrc"
+	MCC            Format = "mcc"
+	MicroDVD       Format = "microdvd"
+	MPSub          Format = "mpsub"
+	PAC            Format = "pac"
+	PGS            Format = "pgs"
+	SAMI           Format = "sami"
+	SBV            Format = "sbv"
+	SCC            Format = "scc"
+	SubRip         Format = "srt"
+	EBUSTL         Format = "stl"
+	SpruceSTL      Format = "spruce-stl"
+	SubViewer      Format = "subviewer"
+	TTML           Format = "ttml"
+	DCP            Format = "dcp"
+	TSV            Format = "tsv"
+	PlainText      Format = "txt"
+	MPL2           Format = "mpl2"
+	TMPlayer       Format = "tmplayer"
+	QuickTimeText  Format = "qttext"
+	VobSub         Format = "vobsub"
+	WebVTT         Format = "vtt"
+	Whisper        Format = "whisper"
 	// PodcastTranscript is the JSON transcript of a podcast feed. Detection finds it before Whisper JSON.
 	PodcastTranscript Format = "podcast-transcript"
 	// YouTubeChapters is a list of lines such as "0:00 Intro". Detection never finds it.
@@ -63,6 +65,7 @@ var formatFacts = []formatFact{
 	{format: Cavena890, extensions: []string{"890"}, canRead: true, canWrite: true, binary: true},
 	{format: CSV, extensions: []string{"csv"}, canRead: true, canWrite: true},
 	{format: FFMetadataChapters, extensions: []string{"ffmeta"}, canRead: true, canWrite: true},
+	{format: HTMLTranscript, extensions: []string{"html", "htm"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: ITT, extensions: []string{"itt"}, canRead: true, canWrite: true},
 	{format: JSON, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: GoogleSpeech, extensions: []string{"json"}, canRead: true, canWrite: true},

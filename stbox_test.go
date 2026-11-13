@@ -205,6 +205,7 @@ func ExampleFormats() {
 	// cavena890 [890]
 	// csv [csv]
 	// ffmeta-chapters [ffmeta]
+	// html [html htm]
 	// itt [itt]
 	// json [json]
 	// google-speech [json]
