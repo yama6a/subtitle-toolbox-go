@@ -92,6 +92,7 @@ var layers = map[string]layer{
 	"translation/internal/httppost": layerPlugin,
 	"translation/*":                 layerPluginUser,
 	"hls":                           layerFacade,
+	"resegment":                     layerFacade,
 	"internal/cli":                  layerCLI,
 	"cmd/stbox":                     layerCLI,
 }

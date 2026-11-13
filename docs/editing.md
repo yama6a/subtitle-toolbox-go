@@ -351,6 +351,101 @@ for _, c := range s.All() {
 - **Right-to-left lines**: a cue with the embedding of `FixRightToLeft` gets a new embedding on each new line, because a line break ends every embedding in the Unicode bidi algorithm.
 - **Errors**: a limit below 1 returns an error that matches `ErrInvalidArgument`, and the subtitle stays unchanged.
 
+## Resegmenting
+
+Speech-to-text tools write long segments, often one per breath. A subtitle needs short cues that fit 2 lines. Package `resegment` has 2 functions. `resegment.SplitLong` splits each cue that breaks a limit. `resegment.ByWords` drops the cue boundaries and builds new cues from the timed words in `Cue.Words`.
+
+<!-- example: resegment/ExampleSplitLong -->
+```go
+var s model.Subtitle
+s.AddCue(model.Cue{
+	Start: 0, End: 11800 * time.Millisecond,
+	Lines: []string{"Welcome to the city library tour. The library opens at nine and closes at six every weekday. Please keep your voices down."},
+})
+
+report, err := resegment.SplitLong(&s, resegment.Options{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+fmt.Println(report.CuesBefore, "cues became", report.CuesAfter)
+for _, c := range s.All() {
+	fmt.Println(c.Start, c.End, c.Text())
+}
+// Output:
+// 1 cues became 3
+// 0s 3.289s Welcome to the city library tour.
+// 3.289s 8.995s The library opens at nine and
+// closes at six every weekday.
+// 8.995s 11.8s Please keep your voices down.
+```
+
+| Option | Default | Meaning |
+|:--- |:--- |:--- |
+| `Limits` | the defaults of `model.CueLimits`: 42 characters per line, 2 lines, minimum 1 s, maximum 7 s | the limits of each new cue |
+| `MaxWordGap` | nil: `DefaultMaxWordGap`, 600 ms | `ByWords` ends a cue before a word that starts this long or longer after the end of the word before it. 0 puts every word in its own cue |
+
+A range of text fits when its duration is at most `MaxDuration`, the lines wrap within `MaxCharactersPerLine` and `MaxLinesPerCue`, and the characters per second stay at or below `MaxCharactersPerSecond`. Both functions return a `Report` with `CuesBefore` and `CuesAfter`, and an error that matches `ErrInvalidArgument` for a bad option. A `Subtitle` stays unchanged on an error.
+
+### Pieces and break order
+
+A **piece** is the unit that a break can separate. A piece is a word of the text between single spaces outside tags. A word also splits into pieces after CJK break punctuation, and where the timed word of the next piece starts inside it. So the words `Wel` and `come` of the text `Welcome` are 2 pieces.
+
+- **Sentence end**: a piece ends a sentence when its text ends with `.`, `?`, `!`, `...` as U+2026, or a CJK sentence end, plus closing quotes or brackets. A full stop before a word in lower case, as in `e.g. this`, ends no sentence.
+- **Rank of a break**: `SplitLong` prefers a break after a sentence end, then after a clause end (`,`, `;`, `:`, a dash or a CJK comma), then at any other space or word start. Inside one word, no break is possible.
+- **Choice**: among breaks of the lowest rank, it takes the one nearest to the middle of the visible characters. Both parts must last at least `MinDuration`. It repeats on each part until the part fits. A cue with no break that keeps both parts at `MinDuration` stays as it is.
+- **Time**: a piece starts at the start of its word. Pieces between 2 words share the time in proportion to their visible characters.
+- **Tags**: a break closes the open `b`, `i`, `u`, `s` and `font` tags and opens them again in the next part.
+
+### SplitLong
+
+- **Parts**: the first part is the cue and keeps its `ID`. The other parts have no `ID`. Each part keeps `Position`, `Forced`, `Speaker` and the format data.
+- **Words**: each part gets the `Word` values that start in its text, unchanged. A word whose text a break cuts in two loses its timing in both parts.
+- **Lines**: each part wraps as `WrapLines` does. A cue with the embedding of `FixRightToLeft` gets a new embedding on each new line.
+- **Not split**: image cues and cues that fit.
+- **Comments**: a comment before a cue stays before its first part.
+
+### ByWords
+
+- **Walk**: the timed words of all cues in start order. A word starts at its start. It ends at the start of the next word of the same cue, or at the cue end. So a pause inside one cue is 0 s, and `MaxWordGap` ends a cue only between 2 cues.
+- **A new cue starts**: after a sentence end, before a word that starts `MaxWordGap` or more after the end of the word before it, before a word that makes the cue break a limit, and at a cue that `Cue.CanJoin` rejects. Cues that differ in alignment, forced flag or speakers never join.
+- **Result**: a new cue copies the first cue that it holds a word of. It keeps the `ID` only when it starts with the first word of that cue. `MinDuration` does not count.
+- **Not changed**: image cues and cues without words.
+- **Comments**: a comment before a source cue moves before the new cue that holds the first word of that source cue.
+
+<!-- example: resegment/ExampleByWords -->
+```go
+var first, second model.Cue
+first.Start, first.End = 0, 2*time.Second
+first.Lines = []string{"One two. Three"}
+first.Words = []model.Word{
+	{Text: "One", Start: 0, End: 500 * time.Millisecond},
+	{Text: "two.", Start: 500 * time.Millisecond, End: time.Second},
+	{Text: "Three", Start: time.Second, End: 2 * time.Second},
+}
+second.Start, second.End = 2*time.Second, 4*time.Second
+second.Lines = []string{"four five."}
+second.Words = []model.Word{
+	{Text: "four", Start: 2 * time.Second, End: 3 * time.Second},
+	{Text: "five.", Start: 3 * time.Second, End: 4 * time.Second},
+}
+var s model.Subtitle
+s.AddCues(first, second)
+
+if _, err := resegment.ByWords(&s, resegment.Options{}); err != nil {
+	fmt.Println(err)
+	return
+}
+for _, c := range s.All() {
+	fmt.Println(c.Start, c.End, c.Text())
+}
+// Output:
+// 0s 1s One two.
+// 1s 4s Three four five.
+```
+
+`stbox` has no command for these functions yet.
+
 ## Dual subtitles
 
 A language learner watches a film with the English and the German subtitle at once. Most players show only one subtitle track, so both languages go into one file. `dual.FromPair(&english, &german, dual.Options{SecondaryStyle: "i"})` joins the English cue `Where are you going?` from 1 s to 4 s and the German cue `Wohin gehst du?` from 1.2 s to 3.9 s into one cue from 1 s to 4 s.
