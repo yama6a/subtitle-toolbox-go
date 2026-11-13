@@ -23,10 +23,11 @@ func supDisplaySet(tb testing.TB, name string) []byte {
 	sup := testfiles.Read(tb, "pgs/"+name)
 	var set []byte
 	for pos := 0; pos < len(sup); {
+		segmentType := sup[pos+10]
 		size := int(binary.BigEndian.Uint16(sup[pos+11:]))
 		set = append(set, sup[pos+10:pos+13+size]...)
 		pos += 13 + size
-		if sup[pos-13-size+10] == segmentEnd {
+		if segmentType == segmentEnd {
 			break
 		}
 	}
@@ -80,21 +81,20 @@ func TestExtractPGSBlocks(t *testing.T) {
 	t.Parallel()
 
 	set := supDisplaySet(t, "shapes_1080p.sup")
-	pgsFile := func(blocks ...[]byte) []byte {
-		return segmentFile("matroska", info(1000000, "x"), tracks(subTrack(2, "S_HDMV/PGS")), cluster(0, blocks...))
+	pgsFile := func(clusterMs uint64, blocks ...[]byte) []byte {
+		return segmentFile("matroska", info(1000000, "x"), tracks(subTrack(2, "S_HDMV/PGS")), cluster(clusterMs, blocks...))
 	}
 
 	t.Run("a block at 14 hours keeps its time", func(t *testing.T) {
 		t.Parallel()
 
-		s, _, err := openFile(t, segmentFile("matroska", info(1000000, "x"), tracks(subTrack(2, "S_HDMV/PGS")),
-			cluster(14*3600*1000, simpleBlock(2, 0, string(set), 0)))).Extract(2, model.CommonReadOptions{})
+		s, _, err := openFile(t, pgsFile(14*3600*1000, simpleBlock(2, 0, string(set), 0))).Extract(2, model.CommonReadOptions{})
 		require.NoError(t, err)
 		require.Len(t, s.Cues(), 1)
 		assert.Equal(t, 14*time.Hour, s.Cues()[0].Start)
 	})
 
-	cut := pgsFile(simpleBlock(2, 0, string(set), 0), simpleBlock(2, 1000, "\x14\x00\x10ab", 0))
+	cut := pgsFile(0, simpleBlock(2, 0, string(set), 0), simpleBlock(2, 1000, "\x14\x00\x10ab", 0))
 	t.Run("a cut segment fails a strict read", func(t *testing.T) {
 		t.Parallel()
 

@@ -29,7 +29,11 @@ read:
 		ns, _ := f.nanos(b.start)
 		pts := ns * ptsTicks / ptsNanoseconds
 		for data := b.data; len(data) > 0; {
-			if len(data) < pgsSegmentHeader || len(data)-pgsSegmentHeader < int(binary.BigEndian.Uint16(data[1:])) {
+			var size int
+			if len(data) >= pgsSegmentHeader {
+				size = pgsSegmentHeader + int(binary.BigEndian.Uint16(data[1:]))
+			}
+			if size == 0 || size > len(data) {
 				msg := fmt.Sprintf("The block of track %d at byte %d holds a PGS segment that is cut off.", t.Number, b.offset)
 				if err := d.Skip(&model.ParseError{Format: model.PGS, Msg: msg}); err != nil {
 					return nil, nil, err
@@ -37,7 +41,6 @@ read:
 				cutOff = true
 				break read
 			}
-			size := pgsSegmentHeader + int(binary.BigEndian.Uint16(data[1:]))
 			if err := d.Add(pts, data[0], data[pgsSegmentHeader:size]); err != nil {
 				return nil, nil, err
 			}

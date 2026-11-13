@@ -50,10 +50,10 @@ func (f *File) extract(number int, common model.CommonReadOptions) (*model.Subti
 	}
 	var s *model.Subtitle
 	var warnings []model.ParseWarning
-	switch t.Format { //nolint:exhaustive // the other formats are text
-	case model.PGS:
+	switch t.CodecID {
+	case "S_HDMV/PGS":
 		s, warnings, err = f.readPGS(t, blocks, common)
-	case model.VobSub:
+	case "S_VOBSUB":
 		s, warnings, err = f.readVobSub(t, private, blocks, common)
 	default:
 		s, warnings, err = parseRebuilt(t, string(private), f.timedBlocks(blocks, t, common), common)
