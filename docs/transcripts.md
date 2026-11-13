@@ -75,3 +75,64 @@ A writer rebuilds the word list of a cue from `Cue.Words`. It keeps each source 
 
 | Format | Read | Write | Page section |
 |:--- |:--- |:--- |:--- |
+| AssemblyAI JSON | `ReadAssemblyAI` | `WriteAssemblyAI` | [AssemblyAI JSON](#assemblyai-json) |
+
+## AssemblyAI JSON
+
+AssemblyAI returns a transcript as JSON with times in milliseconds: a list of `words`, and with speaker labels a list of `utterances`. Example: `{"text": "Where", "start": 260, "end": 560, "confidence": 0.94655, "speaker": "A"}`. The reader makes one cue for each utterance, else it groups the words into cues. The writer writes `text`, `words` and `utterances` back, keeps all other fields, and writes `"utterances": null` when the words hold every cue, as AssemblyAI does.
+
+| Item | Value |
+|:--- |:--- |
+| Format | `stbox.AssemblyAI`, name `assemblyai`, extension `.json` |
+| Functions | `transcript.ReadAssemblyAI` and `WriteAssemblyAI` |
+| Read options | `WordTimestamps` and `SpeakerVoices`. `KeepSegments` has no effect |
+| Write options | none |
+| Detection | none. `.json` belongs to the library JSON, so name the format with `--from assemblyai` or `ReadOptions.Format` |
+
+### Read
+
+- **Lists**: `utterances` counts when it is an array with items. Without utterances, `words` must be an array. Else the read fails with `The JSON has no "words" or "utterances" list.` in both modes. `"utterances": null` falls back to the words. An object with the keys `"0"` and `"1"` is no list ([subtitle-toolbox-php#1208](https://github.com/yama6a/subtitle-toolbox-php/issues/1208)).
+- **Utterances**: one cue for each utterance, with the text of `text`. The cue data is the whole utterance.
+- **Words only**: the words group into cues by the [grouping rules](#grouping-words-into-cues). The cue data is `{"words": [...]}`.
+- **Language**: `language_code` when it is a string that is not empty. The part after the first `_` is upper-cased in ASCII and joins with `-`. So `en_us` gives `en-US`, `en_au` gives `en-AU` and `de` stays `de`.
+- **File data**: every top-level member except `text`, `words` and `utterances`.
+
+| Word field | Source |
+|:--- |:--- |
+| `Text` | `text`, a string. Trimmed |
+| `Start` and `End` | `start` and `end` in milliseconds, numbers or numeric strings of 0 or more |
+| `Speaker` | `speaker`, a string or an integer |
+| `Confidence` | `confidence`, a number from 0 to 1 |
+
+A field error fails the word or the utterance. Strict mode returns the error. Lenient mode skips it with a `Skipped` warning, and a skipped word leaves the rest of its cue.
+
+| Field | Error |
+|:--- |:--- |
+| a word `start` or `end` that is no time | `The field words[0].start must be a time.`, or `utterances[0].words[0].start` inside an utterance |
+| a word `text` that is no string | `The field words[0].text must be a string.` |
+| an utterance with a bad `start`, `end` or `text` | `The field utterances[0].end must be a time.` |
+
+### Write
+
+The output is compact JSON without a BOM. The members are the stored file members, then `language_code` when the subtitle has a language and the file has none, then `text`, `words` and `utterances`. The reader removed these 3 members from the file data, so they come last.
+
+- **Language**: the language lower-cased with `-` turned into `_`. So `en-US` gives `en_us`.
+- **Utterance**: the stored utterance, or `{"confidence": 1.0}` for a grouped cue, with `end`, `speaker`, `start`, `text` and `words` replaced in this order. `start`, `end` and `text` keep the stored value when it equals the cue. Else they are the cue values, with times as whole milliseconds. `speaker` is the cue speaker, else the stored speaker, else null.
+- **Words**: the writer applies the rules of [reuse of source words](#reuse-of-source-words). No result gives `[]`. A new word is `{"text", "start", "end", "confidence", "speaker"}` with `speaker` null when the cue has none.
+- **Typed values**: a reused word gets `Word.End` in `end` and `Word.Confidence` in `confidence`, when it has the member and the value differs.
+- **Speaker**: a cue speaker that differs from the stored `speaker` is written on every word.
+- **Utterances are written** when the source had them, when an utterance has a speaker that is not null, or when a cue has no words. Else the writer writes `"utterances": null`.
+- **Empty objects**: an empty JSON object in the file data stays `{}`. PHP writes `[]`.
+
+A subtitle with the language `en-US` and one cue from another format, from 4 to 5 s, with the words `See` (4 to 4.5 s) and `you.` (4.5 to 5 s) writes:
+
+```json
+{"language_code":"en_us","text":"See you.","words":[{"text":"See","start":4000,"end":4500,"confidence":1.0,"speaker":null},{"text":"you.","start":4500,"end":5000,"confidence":1.0,"speaker":null}],"utterances":null}
+```
+
+### Cost
+
+| Operation | Cost | Benchmark |
+|:--- |:--- |:--- |
+| read AssemblyAI JSON | linear in the file | `BenchmarkAssemblyAI`: 12,000 words, and 12,000 words in one utterance. Each input is about 1 MB |
+| write AssemblyAI JSON | linear in the cues, the words and the stored words | the same inputs |

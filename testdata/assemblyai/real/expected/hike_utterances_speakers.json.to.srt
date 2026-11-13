@@ -1,0 +1,11 @@
+﻿1
+00:00:00,260 --> 00:00:03,500
+Where should we meet for the hike tomorrow?
+
+2
+00:00:04,020 --> 00:00:09,260
+At the car park by the bridge. Bring water and a warm jacket.
+
+3
+00:00:09,960 --> 00:00:11,860
+Great, see you at eight.

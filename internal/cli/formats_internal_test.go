@@ -41,6 +41,7 @@ func TestFormatsPrintsTheListOf1x(t *testing.T) {
 		"csv               .csv              yes   yes",
 		"itt               .itt              yes   yes",
 		"json              .json             yes   yes",
+		"assemblyai        .json             yes   yes",
 		"lrc               .lrc              yes   yes",
 		"mcc               .mcc              yes   yes",
 		"microdvd          .sub              yes   yes",
