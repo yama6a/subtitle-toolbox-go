@@ -53,11 +53,11 @@ func BenchmarkDeepgram(b *testing.B) {
 	}
 }
 
-// deepgramBenchCopies is 1 paragraph of 600 members with 1,000 sentences, and 8,000 words. The file has about 0.7 MB.
-// The cues hold 11 MB of paragraph copies, near the limit of 16 times the file plus 1 MiB.
+// deepgramBenchCopies is 1 paragraph of 190 members with 1,000 sentences, and 8,000 words. The file has about 0.7 MB.
+// The cues hold 3.4 MB of paragraph copies, near the limit of 4 times the file plus 1 MiB.
 func deepgramBenchCopies() string {
 	var paragraph, sentences, words strings.Builder
-	for i := range 600 {
+	for i := range 190 {
 		fmt.Fprintf(&paragraph, `"k%04d": "0123456", `, i)
 	}
 	for i := range 1000 {
@@ -77,5 +77,5 @@ func deepgramBenchCopies() string {
 }
 
 func BenchmarkDeepgramParagraphCopies(b *testing.B) {
-	cloudBench(b, deepgramFormat, "1,000 sentences of a paragraph of 600 members", deepgramBenchCopies())
+	cloudBench(b, deepgramFormat, "1,000 sentences of a paragraph of 190 members", deepgramBenchCopies())
 }

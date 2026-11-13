@@ -177,7 +177,7 @@ func deepgramParagraphs(members, sentences int) string {
 		`"sentences": [` + list.String() + `]}]}}]}]}}`
 }
 
-// The cue of each sentence holds a copy of its paragraph. The copies together stay below 16 times the file plus 1 MiB.
+// The cue of each sentence holds a copy of its paragraph. The copies together stay below 4 times the file plus 1 MiB.
 func TestReadDeepgramLimitsTheCopiesOfAParagraph(t *testing.T) {
 	t.Parallel()
 

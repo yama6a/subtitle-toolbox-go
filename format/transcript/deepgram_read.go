@@ -19,7 +19,8 @@ const deepgramKey = string(model.Deepgram)
 // else one per paragraph sentence, else cues grouped from the words. A field error names the path of the field, such
 // as results.channels[0].alternatives[0].words[3].end.
 func ReadDeepgram(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	st, root, ok, err := readRoot(r, model.Deepgram, common)
+	counted := &countingReader{r: r}
+	st, root, ok, err := readRoot(counted, model.Deepgram, common)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -31,7 +32,7 @@ func ReadDeepgram(r io.Reader, common model.CommonReadOptions, opts ReadOptions)
 	if results.Kind() != orderedjson.Object || channels.Kind() != orderedjson.Array {
 		return nil, nil, &model.ParseError{Format: model.Deepgram, Msg: `The JSON has no "results.channels" list.`}
 	}
-	rd := &deepgramReader{st: st, root: root, cues: wordgroup.NewReader(st, wordgroup.Options{
+	rd := &deepgramReader{st: st, size: counted.n, cues: wordgroup.NewReader(st, wordgroup.Options{
 		WordTimestamps: opts.WordTimestamps, SpeakerVoices: opts.SpeakerVoices,
 	}, deepgramKey)}
 	cues, err := rd.cuesOf(results, channels.Items())
@@ -65,7 +66,8 @@ func (rd *deepgramReader) cuesOf(results orderedjson.Value, channels []orderedjs
 type deepgramReader struct {
 	st   *parsing.State
 	cues *wordgroup.Reader
-	root orderedjson.Value
+	// size is the length of the file in bytes.
+	size int
 	// copied is the size in bytes of the paragraph data that the cues hold so far, and limit is its upper bound.
 	copied, limit int
 }
@@ -73,7 +75,7 @@ type deepgramReader struct {
 // paragraphCopyFactor and paragraphCopyBase give the upper bound of the paragraph data that all cues of a file hold:
 // the factor times the size of the file, plus the base. A real file has 3 or 4 paragraph members, so it stays far below.
 const (
-	paragraphCopyFactor = 16
+	paragraphCopyFactor = 4
 	paragraphCopyBase   = 1 << 20
 )
 
@@ -150,7 +152,7 @@ func (rd *deepgramReader) paragraphCues(paragraphs []orderedjson.Value, words []
 	var cues []*model.Cue
 	index := 0
 	if rd.limit == 0 {
-		rd.limit = paragraphCopyFactor*len(orderedjson.Block(rd.root)) + paragraphCopyBase
+		rd.limit = paragraphCopyFactor*rd.size + paragraphCopyBase
 	}
 	for p, paragraph := range paragraphs {
 		speaker, hasSpeaker := wordgroup.Speaker(cloudGet(paragraph, "speaker"))
@@ -207,4 +209,16 @@ func deepgramSentenceFields(sentence orderedjson.Value, path string) (start, end
 	}
 	text, err = wordgroup.Text(sentence, "text", path)
 	return start, end, text, err
+}
+
+// countingReader counts the bytes that it reads.
+type countingReader struct {
+	r io.Reader
+	n int
+}
+
+func (c *countingReader) Read(p []byte) (int, error) {
+	n, err := c.r.Read(p)
+	c.n += n
+	return n, err
 }
