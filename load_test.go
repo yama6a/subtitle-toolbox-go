@@ -65,6 +65,9 @@ func TestLoadWithoutFormat(t *testing.T) {
 		{name: "extension fallback for srv1", file: "film.srv1", content: []byte("plain words"), want: stbox.YouTubeTimedText, wantErr: stbox.ErrParse},
 		{name: "extension fallback for ytt", file: "film.ytt", content: []byte("plain words"), want: stbox.YouTubeTimedText, wantErr: stbox.ErrParse},
 		{name: "json3 by content in a .json file", file: "captions.json", content: []byte(`{"events": [{"tStartMs": 0, "segs": [{"utf8": "Hi"}]}]}`), want: stbox.YouTubeTimedText},
+
+		{name: "HTML transcript without speakers by .html", file: "talk.html", content: []byte("<time>0:01</time>\n<p>Hello</p>\n"), want: stbox.HTMLTranscript},
+		{name: "HTML transcript without speakers by .htm", file: "TALK.HTM", content: []byte("<time>0:01</time>\n<p>Hello</p>\n"), want: stbox.HTMLTranscript},
 		{name: "CSV by extension", file: "film.csv", content: []byte("start,end,text\n1,2,Hello\n"), want: stbox.CSV},
 		{name: "TTML content in a .itt file is iTT", file: "film.itt", content: itt, want: stbox.ITT},
 		{name: "TTML content in a .ttml file", file: "film.ttml", content: itt, want: stbox.TTML},

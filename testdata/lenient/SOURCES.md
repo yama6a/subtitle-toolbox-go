@@ -40,6 +40,7 @@ Every file except `mantas_utf16.srt` and `mantas_multiple_new_lines.vtt` is writ
 | `start_after_end.json` | in the shape of `JsonFormatter` output, a cue that ends 2 s before it starts and a cue that ends 68 s before it starts, LF | MIT |
 | `absurd_hours.vtt` | a cue with 20 hour digits between two good cues, LF | MIT |
 | `absurd_hours.ttml` | a `p` with 20 hour digits and a `p` with an `end` of 20 digits in hours, LF | MIT |
+| `absurd_hours.html` | an HTML transcript. A `time` with 20 hour digits between two good ones, LF | MIT |
 | `absurd_seconds.json` | the library JSON. A cue with a start of `1e20` seconds between two good cues, LF | MIT |
 | `missing_segment_end.whisper.json` | the OpenAI API shape, a segment without `end`, LF | MIT |
 | `absurd_word_timestamp.vtt` | a cue with a word timestamp of 20 hour digits between two good cues, LF | MIT |
