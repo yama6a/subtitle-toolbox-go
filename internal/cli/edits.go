@@ -40,8 +40,6 @@ type group struct {
 	// writeOptions replaces build for a group that sets ASS write options and runs no edit. It returns false
 	// without its options.
 	writeOptions func(a *args) (ass.WriteOptions, bool, error)
-	// wordTrigger names the option that turns on word timestamps, "" for none.
-	wordTrigger string
 }
 
 // edit is the work of one group on one input.
@@ -397,10 +395,10 @@ func buildText(a *args, add func(edit)) error {
 	var st steps
 	if hasSpeakers {
 		opts := speakerOptions[speakerMode]
-		st = append(st, func(s *stbox.Subtitle) (*stbox.Subtitle, error) {
+		st = append(st, inPlace(func(s *stbox.Subtitle) error {
 			_, err := speakers.Apply(s, opts)
-			return s, err
-		})
+			return err
+		}))
 	}
 	if hasCase {
 		language, _ := a.Value("language")
@@ -421,9 +419,8 @@ func buildText(a *args, add func(edit)) error {
 
 func structureGroup() group {
 	return group{
-		name:        "structure",
-		summary:     "Rebuild, join, split and wrap cues.",
-		wordTrigger: "structure-resegment",
+		name:    "structure",
+		summary: "Rebuild, join, split and wrap cues.",
 		options: []option{
 			flagOption("structure-resegment", "Build new cues from the word timestamps. Each cue holds one sentence, or what fits "+
 				"--structure-max-cpl and --structure-max-lines."),
@@ -476,11 +473,11 @@ func buildStructure(a *args, add func(edit)) error {
 	limits := model.CueLimits{MaxCharactersPerLine: int(cpl), MaxLinesPerCue: int(lines)}
 	wrapCPL := cmp.Or(int(cpl), model.DefaultMaxCharactersPerLine)
 	wrapLines := cmp.Or(int(lines), model.DefaultMaxLinesPerCue)
-	// The run order of docs/cli.md, which is not the order of the help.
 	var wordGap *time.Duration
 	if hasGap {
 		wordGap = &gap
 	}
+	// The run order of docs/cli.md, which is not the order of the help.
 	addSteps(add, flagSteps(a, []flagStep{
 		{"structure-resegment", func(s *stbox.Subtitle) error {
 			_, err := resegment.ByWords(s, resegment.Options{Limits: limits, MaxWordGap: wordGap})
@@ -893,9 +890,8 @@ func (m *maskingEdit) writeMuteFiles(r *runner, label string) error {
 
 func karaokeGroup() group {
 	return group{
-		name:        "karaoke",
-		summary:     "Write one cue per word timestamp.",
-		wordTrigger: "karaoke",
+		name:    "karaoke",
+		summary: "Write one cue per word timestamp.",
 		options: []option{
 			flagOption("karaoke", "Write one cue per word timestamp, with the active word styled, for players without karaoke."),
 			valueOption("karaoke-style", "TAG", "Style of the active word for --karaoke: b, i, u, s or 'font color=\"#ffff00\"'. Default: u."),
@@ -932,9 +928,8 @@ var assOptions = []string{"ass-karaoke-tag", "ass-style"}
 
 func assGroup() group {
 	return group{
-		name:        "ass",
-		summary:     "Set how ASS output writes word timestamps and the Default style.",
-		wordTrigger: "ass-karaoke-tag",
+		name:    "ass",
+		summary: "Set how ASS output writes word timestamps and the Default style.",
 		options: []option{
 			valueOption("ass-karaoke-tag", "TAG", "ASS karaoke tag for word timestamps: k, kf or ko. Default: k."),
 			valueOption("ass-style", "STYLE", "Change the Default style, for example 'Fontname=Roboto,Fontsize=48,Outline=2'."),

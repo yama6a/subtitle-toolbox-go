@@ -115,11 +115,7 @@ func (cc *convertCommand) run(ctx context.Context, a *args, c *console) error {
 // rule, each group in pipeline order, then the --to ass rule.
 func (cc *convertCommand) prepare(a *args, r *runner) error {
 	cc.out.hasOCR = true
-	for _, g := range convertGroups() {
-		if g.wordTrigger != "" {
-			r.wordTriggers = append(r.wordTriggers, g.wordTrigger)
-		}
-	}
+	r.wordTriggers = []string{"structure-resegment", "karaoke", "ass-karaoke-tag"}
 	if err := r.prepareRead(a); err != nil {
 		return err
 	}

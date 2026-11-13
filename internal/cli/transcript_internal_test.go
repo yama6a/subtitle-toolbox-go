@@ -265,7 +265,9 @@ func TestWordTimestampsOptionIsAcceptedByEveryReadingCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, call{dir: dir}.run(t, tt.words...).Code)
+			got := call{dir: dir}.run(t, tt.words...)
+			assert.Equal(t, tt.want, got.Code)
+			assert.NotContains(t, got.Stderr, "Unknown option")
 		})
 	}
 }

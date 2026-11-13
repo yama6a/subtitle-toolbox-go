@@ -175,8 +175,8 @@ func withAdvice(msg, option string, cause error) string {
 		return strings.Replace(msg, "Set the mediaDuration option to segment it.", "Pass --media-duration to segment it.", 1)
 	case errors.Is(cause, itt.ErrNeedsFrameRate):
 		return msg + " Pass --fps or --output-fps."
-	case errors.Is(cause, scc.ErrWrapFirst), errors.Is(cause, scc.ErrSplitFirst):
-		return sccAdvice(msg)
+	case isSCCLimit(cause):
+		return sccAdvice(msg, cause)
 	case errors.Is(cause, stbox.ErrInvalidUTF8):
 		return msg + " " + encodingAdvice
 	default:
@@ -184,10 +184,15 @@ func withAdvice(msg, option string, cause error) string {
 	}
 }
 
+func isSCCLimit(err error) bool {
+	return errors.Is(err, scc.ErrWrapFirst) || errors.Is(err, scc.ErrSplitFirst)
+}
+
 // sccAdvice replaces the library sentence of an SCC limit error with the CLI options that fix it.
-func sccAdvice(msg string) string {
-	if msg, ok := strings.CutSuffix(msg, " Wrap the lines to 4 lines of 32 characters first."); ok {
-		return msg + " Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4."
+func sccAdvice(msg string, cause error) string {
+	if errors.Is(cause, scc.ErrWrapFirst) {
+		return strings.TrimSuffix(msg, " Wrap the lines to 4 lines of 32 characters first.") +
+			" Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4."
 	}
 	return strings.TrimSuffix(msg, " Split the cue into cues of 4 lines of 32 characters, then wrap the lines.") +
 		" Pass --structure-split-long --structure-wrap --structure-max-cpl 32 --structure-max-lines 4."
