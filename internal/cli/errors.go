@@ -188,3 +188,9 @@ func warningMessage(w stbox.ParseWarning) string {
 	}
 	return w.Message
 }
+
+// wantsLenientHint reports whether err is a parse error of a format that honours --lenient.
+func wantsLenientHint(err error) bool {
+	perr, ok := errors.AsType[*stbox.ParseError](err)
+	return ok && perr.Format != stbox.YouTubeChapters
+}
