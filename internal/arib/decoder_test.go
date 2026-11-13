@@ -213,6 +213,12 @@ func TestDecoderText(t *testing.T) {
 			nil,
 		},
 		{
+			"JIS X 0201 katakana stays full width in a Latin stream at normal size", "por",
+			[]packet{{0, management(false, "por")}, {1, statement(text(base + position(6, 3) + nsz + "\x1B\x2B\x49\x1D\x41"))}},
+			[]stateRow{{1, []string{string(rune(0x30C1))}, model.BottomLeft}},
+			nil,
+		},
+		{
 			"rows 85 to 94", "jpn",
 			[]packet{{0, statement(text(base + position(6, 3) + "\x75\x21\x7A\x21\x7C\x21\x7E\x21"))}},
 			[]stateRow{{0, []string{"\u3402\u26cc\u27a1\u2160"}, model.BottomCenter}},
@@ -368,15 +374,17 @@ func shiftLeft(pattern string, nibbles int) string {
 	return sb.String()
 }
 
-// TestDecoderCellLimit feeds 600 rows and 200 more of 960 cells of 1 by 1 dot, which would need 518,000 cells.
-func TestDecoderCellLimit(t *testing.T) {
+// TestDecoderStateLimit feeds a full screen and then 8,000 changes of one character, each with a TIME control.
+func TestDecoderStateLimit(t *testing.T) {
 	t.Parallel()
 
-	codes := cs + "\x9B1;1 \x57\x9B0 \x58\x9B0 \x59" + ls1 + strings.Repeat("\x98\x40A", 600) + strings.Repeat("\x98\x40B", 200) + wait(0)
-	got, warnings := decode("jpn", packet{0, statement(text(codes))})
-	require.Len(t, got, 1)
-	assert.NotEmpty(t, got[0].Lines)
-	require.Len(t, warnings, 1)
-	assert.True(t, warnings[0].Skipped)
-	assert.Equal(t, "The caption screen holds more than 4096 characters. The reader dropped the characters past that.", warnings[0].Message)
+	codes := cs + "\x9B1;1 \x57\x9B0 \x58\x9B0 \x59" + ls1 + strings.Repeat("\x98\x40A", 600) +
+		strings.Repeat("\x1C\x40\x40B"+wait(0)+"\x1C\x40\x40A"+wait(0), 4000)
+	d := arib.NewDecoder("jpn")
+	d.Add([]byte(statement(text(codes))), 0)
+	assert.Less(t, len(d.Finish()), 1000)
+	require.Len(t, d.Warnings(), 2)
+	assert.True(t, d.Warnings()[0].Skipped)
+	assert.Equal(t, "The caption screen holds more than 4096 characters. The reader dropped the characters past that.", d.Warnings()[0].Message)
+	assert.Equal(t, "The caption states of one data group are longer than 32 KiB plus 32 times the data group. The reader dropped the states past that.", d.Warnings()[1].Message)
 }

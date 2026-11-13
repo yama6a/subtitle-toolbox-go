@@ -62,31 +62,39 @@ func twoByteSet(set int) bool {
 // character returns the character of the codes first and second, from 0x21 to 0x7E, in set. It returns "" for a
 // mosaic set. halfWidth is true for middle size text.
 func character(set, first, second int, halfWidth, latin bool) string {
-	c := setCharacter(set, first, second, halfWidth || latin)
+	c := setCharacter(set, first, second, halfWidth, latin)
 	if !halfWidth || latin {
 		return c
 	}
 	return toHalfWidth(c)
 }
 
-func setCharacter(set, first, second int, halfWidth bool) string {
+func setCharacter(set, first, second int, halfWidth, latin bool) string {
 	switch set {
 	case setKanji, setJISX0213Plane1, setAdditional:
 		return kanji(first, second, false)
 	case setJISX0213Plane2:
 		return kanji(first, second, true)
 	case setAlphanumeric, setPropAlphanumeric:
-		return alphanumeric(first, halfWidth)
+		return alphanumeric(first, halfWidth || latin)
 	case setHiragana, setPropHiragana:
 		return kana(first, 0x3041, 0x73, hiraganaIterationMarks)
 	case setKatakana, setPropKatakana:
 		return kana(first, 0x30A1, 0x76, katakanaIterationMarks)
 	case setJISX0201Kana:
 		return jisX0201(first, halfWidth)
+	default:
+		return latinCharacter(set, first)
+	}
+}
+
+// latinCharacter returns the character of the Latin sets of ABNT NBR 15606-1, or "" for another set.
+func latinCharacter(set, code int) string {
+	switch set {
 	case setLatinExtension:
-		return latinExtensionCharacter(first)
+		return latinExtensionCharacter(code)
 	case setLatinSpecial:
-		return latinSpecialCharacter(first)
+		return latinSpecialCharacter(code)
 	default:
 		return ""
 	}

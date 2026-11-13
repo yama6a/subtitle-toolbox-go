@@ -29,8 +29,13 @@ const (
 	// maxRepeat limits the cells that one RPC control writes. A row of the widest format holds 96 cells.
 	maxRepeat = 1024
 	// maxCells limits the characters on the screen. A screen of the widest format with 1 by 1 dot cells holds
-	// more than 500,000. The largest screen of ARIB TR-B14 profile A holds a few hundred.
+	// more than 500,000. The largest screen of ARIB TR-B14 profile A, 1920 by 1080, holds 864 at normal size and
+	// 3,456 at small size.
 	maxCells = 4096
+	// A data group may add states with text of up to stateTextBase plus stateTextPerByte times its size.
+	// One state is as long as the screen, so a group that repeats TIME would else grow without a limit.
+	stateTextBase    = 32 << 10
+	stateTextPerByte = 32
 	// maxParameter limits a number of a CSI control, so that the screen coordinates stay small.
 	maxParameter = 1 << 20
 )
@@ -87,7 +92,8 @@ type Decoder struct {
 	warnings []Warning
 	warned   map[string]bool
 
-	overflowed bool
+	groupText   int
+	groupBudget int
 }
 
 // NewDecoder returns a decoder. The ISO 639-2 language of the stream picks the coding until the caption management data does.
@@ -111,6 +117,7 @@ func (d *Decoder) Add(data []byte, pts int64) {
 		return
 	}
 	d.time = max(pts, d.time)
+	d.groupText, d.groupBudget = 0, stateTextBase+stateTextPerByte*len(data)
 	switch {
 	case id&0x0F == 0 && id>>5 != d.managementGroup:
 		d.managementGroup = id >> 5
@@ -683,14 +690,7 @@ func (d *Decoder) store(c cell) {
 		return
 	}
 	if len(d.cells) >= maxCells {
-		if !d.overflowed {
-			d.overflowed = true
-			d.warnings = append(d.warnings, Warning{
-				Time:    d.time,
-				Message: fmt.Sprintf("The caption screen holds more than %d characters. The reader dropped the characters past that.", maxCells),
-				Skipped: true,
-			})
-		}
+		d.skip("cells", fmt.Sprintf("The caption screen holds more than %d characters. The reader dropped the characters past that.", maxCells))
 		return
 	}
 	d.cellAt[key] = len(d.cells)
@@ -806,14 +806,36 @@ func (d *Decoder) resetFormat() {
 	}
 }
 
+// skip adds the warning with the id once. The reader dropped data.
+func (d *Decoder) skip(id, message string) {
+	if !d.warned[id] {
+		d.warned[id] = true
+		d.warnings = append(d.warnings, Warning{Time: d.time, Message: message, Skipped: true})
+	}
+}
+
 // snapshot records the screen at the decoder time. A state at the time of the last state replaces it.
 func (d *Decoder) snapshot() {
+	if d.groupText > d.groupBudget {
+		return
+	}
 	lines, alignment := d.render()
-	state := State{d.time, lines, alignment}
+	for _, l := range lines {
+		d.groupText += len(l)
+	}
+	if d.groupText > d.groupBudget {
+		d.skip("states", "The caption states of one data group are longer than 32 KiB plus 32 times the data group. The reader dropped the states past that.")
+		return
+	}
+	d.addState(State{d.time, lines, alignment})
+}
+
+// addState adds the state. A state at the time of the last state replaces it and drops it when it equals the one before.
+func (d *Decoder) addState(state State) {
 	last := len(d.states) - 1
-	same := func(s State) bool { return slices.Equal(s.Lines, lines) && s.Alignment == alignment }
+	same := func(s State) bool { return slices.Equal(s.Lines, state.Lines) && s.Alignment == state.Alignment }
 	switch {
-	case last >= 0 && d.states[last].Start == d.time:
+	case last >= 0 && d.states[last].Start == state.Start:
 		d.states[last] = state
 		if last > 0 && same(d.states[last-1]) {
 			d.states = d.states[:last]
