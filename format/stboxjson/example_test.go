@@ -46,7 +46,7 @@ func ExampleWrite() {
 	}
 	// Output:
 	// {
-	//     "version": 1,
+	//     "version": 2,
 	//     "metadata": {
 	//         "title": "Morning train"
 	//     },

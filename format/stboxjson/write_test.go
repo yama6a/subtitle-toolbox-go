@@ -60,7 +60,7 @@ func TestWriteDocuments(t *testing.T) {
 				require.NoError(t, s.AddComment("Translated by Jane Doe", 0))
 				return s
 			},
-			want: `{"version":1,"metadata":{"language":"en","title":"Big Buck Bunny"},` +
+			want: `{"version":2,"metadata":{"language":"en","title":"Big Buck Bunny"},` +
 				`"comments":[{"text":"Translated by Jane Doe","beforeCueIndex":0}],"formatData":{},` +
 				`"cues":[{"start":1.5,"end":4.0,"lines":["Hello","<i>world</i>"],"identifier":"intro","alignment":8,"formatData":{}}]}`,
 		},
@@ -73,7 +73,7 @@ func TestWriteDocuments(t *testing.T) {
 				setFormatData(t, s, "sub", model.Field{Key: "0", Value: "a"}, model.Field{Key: "1", Value: "b"})
 				return s
 			},
-			want: `{"version":1,"metadata":{"0":"zero"},"comments":[],"formatData":{"sub":{"0":"a","1":"b"}},"cues":[]}`,
+			want: `{"version":2,"metadata":{"0":"zero"},"comments":[],"formatData":{"sub":{"0":"a","1":"b"}},"cues":[]}`,
 		},
 		{
 			name: "without format data",
@@ -86,7 +86,7 @@ func TestWriteDocuments(t *testing.T) {
 				return s
 			},
 			opts: stboxjson.WriteOptions{OmitFormatData: true},
-			want: `{"version":1,"metadata":{},"comments":[],"cues":[{"start":1.0,"end":2.0,"lines":["Rain"],"identifier":null,"alignment":null}]}`,
+			want: `{"version":2,"metadata":{},"comments":[],"cues":[{"start":1.0,"end":2.0,"lines":["Rain"],"identifier":null,"alignment":null}]}`,
 		},
 		{
 			name: "sorted metadata and format data keys",
@@ -101,7 +101,7 @@ func TestWriteDocuments(t *testing.T) {
 				s.AddCue(cueWithData(t, c, "ass", model.Field{Key: "text", Value: "x"}))
 				return s
 			},
-			want: `{"version":1,"metadata":{"a":"1","b":"2"},"comments":[],"formatData":{"ass":{"x":1},"vtt":{"z":"last","a":"first"}},` +
+			want: `{"version":2,"metadata":{"a":"1","b":"2"},"comments":[],"formatData":{"ass":{"x":1},"vtt":{"z":"last","a":"first"}},` +
 				`"cues":[{"start":0.0,"end":0.0,"lines":[],"identifier":null,"alignment":null,"formatData":{"ass":{"text":"x"},"vtt":{"line":"0"}}}]}`,
 		},
 	}
@@ -118,7 +118,7 @@ func TestWriteDocuments(t *testing.T) {
 func TestPrettyPrintEndsWithANewLine(t *testing.T) {
 	t.Parallel()
 
-	assert.Equal(t, "{\r\n    \"version\": 1,\r\n    \"metadata\": {},\r\n    \"comments\": [],\r\n    \"formatData\": {},\r\n    \"cues\": []\r\n}\r\n",
+	assert.Equal(t, "{\r\n    \"version\": 2,\r\n    \"metadata\": {},\r\n    \"comments\": [],\r\n    \"formatData\": {},\r\n    \"cues\": []\r\n}\r\n",
 		writeString(t, &model.Subtitle{}, model.CommonWriteOptions{LineEnding: model.CRLF}, stboxjson.WriteOptions{PrettyPrint: true}))
 }
 
@@ -192,7 +192,7 @@ func TestWriteCueFields(t *testing.T) {
 			s := &model.Subtitle{}
 			s.AddCue(tt.cue)
 			got := writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
-			assert.Equal(t, `{"version":1,"metadata":{},"comments":[],"formatData":{},"cues":[`+tt.want+`]}`, got)
+			assert.Equal(t, `{"version":2,"metadata":{},"comments":[],"formatData":{},"cues":[`+tt.want+`]}`, got)
 		})
 	}
 }
@@ -224,7 +224,7 @@ func TestWriteFormatDataNumbers(t *testing.T) {
 			s := &model.Subtitle{}
 			setFormatData(t, s, "x", model.Field{Key: "v", Value: tt.value})
 			got := writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
-			assert.Equal(t, `{"version":1,"metadata":{},"comments":[],"formatData":{"x":{"v":`+tt.want+`}},"cues":[]}`, got)
+			assert.Equal(t, `{"version":2,"metadata":{},"comments":[],"formatData":{"x":{"v":`+tt.want+`}},"cues":[]}`, got)
 			assert.Equal(t, s, mustRead(t, got, false))
 		})
 	}
@@ -326,7 +326,7 @@ func TestWritePrettyNests(t *testing.T) {
 	got := writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{PrettyPrint: true})
 	assert.Equal(t, strings.Join([]string{
 		"{",
-		`    "version": 1,`,
+		`    "version": 2,`,
 		`    "metadata": {},`,
 		`    "comments": [],`,
 		`    "formatData": {`,

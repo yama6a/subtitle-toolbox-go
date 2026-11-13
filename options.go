@@ -188,7 +188,7 @@ func (o WriteOptions) Validate() error {
 	}
 	for _, check := range []func() error{
 		o.ASS.Validate, o.MicroDVD.Validate, o.MPSub.Validate, o.PlainText.Validate, o.CSV.Validate, o.ITT.Validate,
-		o.SubViewer.Validate, o.SCC.Validate, o.MCC.Validate, o.SpruceSTL.Validate, o.EBUSTL.Validate,
+		o.SubViewer.Validate, o.SCC.Validate, o.MCC.Validate, o.SpruceSTL.Validate, o.EBUSTL.Validate, o.JSON.Validate,
 	} {
 		if err := check(); err != nil {
 			return err

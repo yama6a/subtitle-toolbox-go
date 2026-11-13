@@ -7,22 +7,22 @@ import (
 	"errors"
 	"maps"
 	"math"
-	"math/big"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/phpkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-const maxSeconds = timecode.MaxHours * 3600
-
 type reader struct {
 	st *parsing.State
+	// version is the version field of the document, 0 when it is missing or not an integer.
+	version int64
 }
 
 type number struct {
@@ -51,6 +51,8 @@ func (r *reader) read(content []byte) (*model.Subtitle, error) {
 		return nil, err
 	}
 	normalize(root)
+	v, _ := root.Get("version")
+	r.version, _ = integer(v)
 	if err := r.decodeFileBinary(root); err != nil {
 		return nil, err
 	}
@@ -258,8 +260,10 @@ func (r *reader) checkTimes(cue *model.Data, i int) string {
 	if msg := checkBound(i, "end", end, endOK); msg != "" {
 		return msg
 	}
-	if msg := message(parsing.CheckWordTimestamps(stringLines(cue), model.NoLine)); msg != "" {
-		return msg
+	if r.version == 1 {
+		if msg := message(parsing.CheckWordTimestamps(stringLines(cue), model.NoLine)); msg != "" {
+			return msg
+		}
 	}
 	if !startOK || !endOK || end.f >= start.f {
 		return ""
@@ -268,24 +272,18 @@ func (r *reader) checkTimes(cue *model.Data, i int) string {
 }
 
 // checkBound returns the message for a time that rounds to 100000 hours or more, or to -100000 hours or less.
-// The float check comes first, so milliseconds never sees a value beyond the int64 range.
 func checkBound(i int, key string, n number, ok bool) string {
 	if !ok {
 		return ""
 	}
-	var d time.Duration
-	if math.Abs(n.f) < maxSeconds {
-		d = milliseconds(n)
-	}
-	switch {
-	case n.f >= maxSeconds || d >= timecode.MaxTime:
-		_, err := parsing.BoundedField(timecode.MaxTime, cuePath(i)+"."+key)
-		return message(err)
-	case n.f <= -maxSeconds || d <= -timecode.MaxTime:
-		return "The field " + cuePath(i) + "." + key + " is not above -" + strconv.Itoa(timecode.MaxHours) + " hours."
-	default:
+	if _, ok := milliseconds(n); ok {
 		return ""
 	}
+	if n.f < 0 {
+		return "The field " + cuePath(i) + "." + key + " is not above -" + strconv.Itoa(timecode.MaxHours) + " hours."
+	}
+	_, err := parsing.BoundedField(timecode.MaxTime, cuePath(i)+"."+key)
+	return message(err)
 }
 
 // orderTimes compares the float values, as PHP does, where parsing.State.OrderedTimes compares durations.
@@ -341,19 +339,14 @@ func integer(v any) (int64, bool) {
 	return n, err == nil
 }
 
-// milliseconds converts the decimal literal of n exactly and rounds half away from zero, so 1.0005 gives 1001 ms.
-func milliseconds(n number) time.Duration {
-	// A value below 0.0001 s gives 0 ms. The check also keeps big.Rat from expanding an exponent such as 1e-999999999.
-	if math.Abs(n.f) < 1e-4 {
-		return 0
+// milliseconds converts the decimal literal of n and rounds half away from zero, so 1.0005 gives 1001 ms.
+// It fails for a time of 100000 hours or more, in either sign.
+func milliseconds(n number) (time.Duration, bool) {
+	v, err := orderedjson.NumberText(string(n.text))
+	if err != nil {
+		return 0, false
 	}
-	r, _ := new(big.Rat).SetString(string(n.text))
-	r.Mul(r, big.NewRat(int64(time.Second/time.Millisecond), 1))
-	q, m := new(big.Int).QuoRem(r.Num(), r.Denom(), new(big.Int))
-	if m.Abs(m).Lsh(m, 1).Cmp(r.Denom()) >= 0 {
-		q.Add(q, big.NewInt(int64(r.Num().Sign())))
-	}
-	return time.Duration(q.Int64()) * time.Millisecond
+	return v.Duration(time.Second)
 }
 
 func toModel(v any) any {
@@ -427,7 +420,7 @@ func (r *reader) cues(list []any, skipped map[int]bool) ([]model.Cue, error) {
 		if skipped[i] {
 			continue
 		}
-		c, msg := cue(entry, i)
+		c, msg := r.cue(entry, i)
 		if msg == "" {
 			cues = append(cues, c)
 			continue
@@ -445,8 +438,8 @@ func checkVersion(root *model.Data) error {
 	if !ok {
 		return parseError("The field version is missing.")
 	}
-	if n, ok := integer(version); !ok || n != Version {
-		return parseError("The field version must be " + strconv.Itoa(Version) + ".")
+	if n, ok := integer(version); !ok || n != 1 && n != Version {
+		return parseError("The field version must be 1 or 2.")
 	}
 	return nil
 }
@@ -514,20 +507,32 @@ func formatDataMessage(err error, prefix string) string {
 	return iae.Msg
 }
 
-func cue(entry any, i int) (model.Cue, string) {
+func (r *reader) cue(entry any, i int) (model.Cue, string) {
 	path := "The field " + cuePath(i)
 	d, ok := asObject(entry).(*model.Data)
 	if !ok {
 		return model.Cue{}, path + " must be an object."
 	}
 	var c model.Cue
-	for _, check := range []func(*model.Cue, *model.Data, string) string{cueTimes, cueLines, cueSettings, cuePosition, cueForced} {
+	checks := []func(*model.Cue, *model.Data, string) string{cueTimes, cueLines, cueSettings, cuePosition, cueForced}
+	if r.version == Version {
+		checks = append(checks, cueSpeaker, cueWords)
+	}
+	for _, check := range checks {
 		if msg := check(&c, d, path); msg != "" {
 			return model.Cue{}, msg
 		}
 	}
 	if msg := cueFormatData(&c, d, i); msg != "" {
 		return model.Cue{}, msg
+	}
+	if r.version == Version {
+		if msg := validateWords(&c, path); msg != "" {
+			return c, msg
+		}
+		r.restoreTaggedLines(&c, i, entry)
+		restoreASSLines(&c)
+		return c, ""
 	}
 	c.ExtractWordTags()
 	return c, ""
@@ -542,7 +547,7 @@ func cueTimes(c *model.Cue, d *model.Data, path string) string {
 		if !ok {
 			return path + "." + t.key + " must be a number."
 		}
-		*t.to = milliseconds(n)
+		*t.to, _ = milliseconds(n) // checkBound accepted the time
 	}
 	return ""
 }

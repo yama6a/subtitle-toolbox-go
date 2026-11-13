@@ -10,7 +10,7 @@ The module follows semantic versioning. A 3.x minor or patch release does not br
 | Behaviour | the behaviour that these pages and the godoc describe, the default of each option, and the output of a conversion. Only a major release changes them, except for the changes that the sections below list |
 | Errors | the sentinel errors that `errors.Is` matches and the error types that `errors.As` matches. [errors.md](errors.md) lists them. The library has no numeric error codes |
 | CLI | the commands, the flags, the meaning of each exit code and the `--json` shapes of `stbox`. The CLI never overwrites a file. See [cli.md](cli.md) |
-| Library JSON | version 1 of the library JSON, its keys and its value types. See [json.md](json.md) |
+| Library JSON | versions 1 and 2 of the library JSON, their keys and value types. See [json.md](json.md) |
 | Format data | the keys and the value types of the format data that `Subtitle.FormatData` and `Cue.FormatData` return. See [format-data.md](format-data.md) |
 | Module path | `github.com/yama6a/subtitle-toolbox-go/v4`, with the major suffix |
 
