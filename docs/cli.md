@@ -598,6 +598,7 @@ ass                 .ass .ssa         yes   yes
 cavena890           .890              yes   yes
 csv                 .csv              yes   yes
 ffmeta-chapters     .ffmeta           yes   yes
+html                .html .htm        yes   yes
 itt                 .itt              yes   yes
 json                .json             yes   yes
 aws-transcribe      .json             yes   yes

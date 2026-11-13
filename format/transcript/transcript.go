@@ -14,8 +14,9 @@ type ReadOptions struct {
 }
 
 // WriteOptions holds the write settings of the transcript formats, one nested struct per format with options.
-// #101 adds HTML.
 type WriteOptions struct {
 	// Podcast holds the settings of the Podcasting 2.0 transcript writer.
 	Podcast PodcastWriteOptions
+	// HTML holds the settings of the HTML transcript writer.
+	HTML HTMLWriteOptions
 }

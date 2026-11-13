@@ -56,7 +56,7 @@ func clockSeconds(s string) (seconds, millis int64, ok bool) {
 	if hasFraction && !IsDigits(fraction) || !IsSexagesimal(whole) {
 		return 0, 0, false
 	}
-	return int64(atoi(whole)), fractionMillis(fraction), true
+	return int64(atoi(whole)), FractionMillis(fraction), true
 }
 
 // IsSexagesimal reports whether s is 2 digits from 00 to 59.
@@ -64,7 +64,8 @@ func IsSexagesimal(s string) bool {
 	return len(s) == 2 && s[0] >= '0' && s[0] <= '5' && IsDigit(s[1])
 }
 
-func fractionMillis(fraction string) int64 {
+// FractionMillis returns the milliseconds of the digits of a decimal fraction, rounded half up on the fourth digit.
+func FractionMillis(fraction string) int64 {
 	if len(fraction) <= 3 {
 		return int64(atoi(fraction + strings.Repeat("0", 3-len(fraction))))
 	}

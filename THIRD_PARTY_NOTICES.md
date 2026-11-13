@@ -1389,7 +1389,7 @@ SOFTWARE.
 - Project: <https://github.com/Podcastindex-org/podcast-namespace>
 - Licence: CC0-1.0
 - Checked at: `c0ff5caa3729610362ee93f8034454fa41f3c493`
-- Shape used, no file copied: `testdata/podcast/real/spec_word_segments.json`, written in the shape of `docs/examples/transcripts/example.json`
+- Shape used, no file copied: `testdata/podcast/real/spec_word_segments.json`, written in the shape of `docs/examples/transcripts/example.json`, and `testdata/html/real/spec_example_shape.html`, written in the shape of `docs/examples/transcripts/example.html`
 
 CC0 asks for no credit. This section is a courtesy.
 

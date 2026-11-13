@@ -56,6 +56,7 @@ Before step 1, `Detect` looks for a video container in the raw bytes. A containe
 | 17 | MCC | the first line is `File Format=MacCaption_MCC V<n>.<n>` plus optional spaces or tabs |
 | 18 | MPL2 | `[digits][digits]` at the start |
 | 19 | TMPlayer | `H:MM:SS` with minutes and seconds up to 59, an optional `,` and digits, then `=` or `:`. A `:` does not count when 1 or 2 digits, spaces or tabs and a comma follow it, or digits `:dd:dd` |
+| 22 | HTML transcript | the first character after white space is `<`, and the content holds `<cite` and `<time`, each followed by white space or `>`, in any case. The last rule, because TTML, SAMI and YouTube XML can hold these names |
 
 - **DCP subtitles**: `dcp.Detect` holds rule 3. It comes after TTML, because the roots differ, and before SAMI. DCP subtitle files use the extension `.xml`, which TTML owns in `FormatFromPath`. So `Load` finds them by this rule, and a write needs the format `dcp`.
 - **ASS header**: `ass.Detect` holds rule 5. A file that starts with a comment line before `[Script Info]` is not detected, but the ASS reader reads it.
@@ -70,6 +71,7 @@ Before step 1, `Detect` looks for a video container in the raw bytes. A containe
 - **PAC**: `pac.Detect` holds rule 14. It comes after EBU STL and before Spruce STL, in the PHP order. The check reads the first 24 bytes of the content after steps 2 and 4. So a first subtitle number whose bytes are `0Dh 0Ah` is not detected, because step 4 turns them into one LF. PHP has the same limit. A file with such a number still loads by the extension `.pac` or `.fpc`.
 - **SCC**: `scc.Detect` holds rule 16. The SCC header is a line of its own, so it needs no rule against other formats. It comes after Spruce STL and before MPL2, in the PHP order.
 - **MCC**: `mcc.Detect` holds rule 17. It accepts any version, such as `V3.0`, and the reader rejects all but 1.0 and 2.0. It comes after SCC and before MPL2, in the PHP order.
+- **HTML transcript**: `transcript.DetectHTML` holds rule 22. The XML prolog items all start with `<`, so the rule needs none of them. A transcript without speakers has no `<cite>`, so no rule finds it. `Load` reads it by the extension `.html` or `.htm`, which step 8 allows. `Parse` needs the format `html`.
 - **Order**: WebVTT comes before SubRip, because a WebVTT file without its header looks like SubRip. A new format inserts its signature at its place in the PHP order. `TestDetectionListsFollowTheOrder` in [registry_test.go](../registry_test.go) holds that order.
 - **SubRip hours and comma**: a timing line without a cue number on the line before it needs 2 hour digits and a comma. So a headerless WebVTT file that starts with `00:00:01.000 -->` and SBV with `0:00:01,500` do not match. A headerless WebVTT file that starts with a cue number, such as `1` LF `00:00:01.000 -->`, detects as SubRip.
 - **SBV fraction**: SBV has 3 fraction digits and SubViewer has 2, so `0:00:01.5,0:00:04.000` is no SBV signature. `sbv.Detect` holds rule 10.
