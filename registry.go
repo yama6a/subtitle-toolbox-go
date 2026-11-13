@@ -143,6 +143,7 @@ var registry = []formatFuncs{
 	{format: ITT, read: readITT, write: writeITT},
 	{format: JSON, read: readJSON, write: writeJSON},
 	{format: AWSTranscribe, read: readAWSTranscribe, write: writeAWSTranscribe},
+	{format: Deepgram, read: readDeepgram, write: writeDeepgram},
 	{format: LRC, read: readLRC, write: writeLRC},
 	{format: MCC, read: readMCC, write: writeMCC},
 	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
@@ -315,6 +316,14 @@ func readAWSTranscribe(r io.Reader, common model.CommonReadOptions, opts ReadOpt
 
 func writeAWSTranscribe(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	return WriteReport{}, transcript.WriteAWSTranscribe(w, s, common, opts.Transcript)
+}
+
+func readDeepgram(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return transcript.ReadDeepgram(r, common, opts.Transcript)
+}
+
+func writeDeepgram(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	return WriteReport{}, transcript.WriteDeepgram(w, s, common, opts.Transcript)
 }
 
 func readVobSub(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {

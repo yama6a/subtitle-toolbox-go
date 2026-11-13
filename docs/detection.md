@@ -33,6 +33,7 @@ Before step 1, `Detect` looks for a video container in the raw bytes. A containe
 - **Library JSON first**: a file with `version` as a number and `cues` as an array is library JSON, also when it has `segments`. `{"segments": {}}` and `{"words": []}` match no check. See [transcripts.md](transcripts.md#whisper-json).
 
 - **No check for Amazon Transcribe JSON**: a file with `results.items` matches no rule, so `Detect` finds no format. Name it with `ReadOptions.Format` or `--from aws-transcribe`. See [transcripts.md](transcripts.md#amazon-transcribe-json).
+- **No check for Deepgram JSON**: a file with `results.channels` matches no rule, so `Detect` finds no format. Name it with `ReadOptions.Format` or `--from deepgram`. See [transcripts.md](transcripts.md#deepgram-json).
 
 ## Signatures
 

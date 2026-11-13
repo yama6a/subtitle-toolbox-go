@@ -15,6 +15,7 @@ const (
 	ITT            Format = "itt"
 	JSON           Format = "json"
 	AWSTranscribe  Format = "aws-transcribe"
+	Deepgram       Format = "deepgram"
 	LRC            Format = "lrc"
 	MCC            Format = "mcc"
 	MicroDVD       Format = "microdvd"
@@ -71,6 +72,7 @@ var formatFacts = []formatFact{
 	{format: ITT, extensions: []string{"itt"}, canRead: true, canWrite: true},
 	{format: JSON, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: AWSTranscribe, extensions: []string{"json"}, canRead: true, canWrite: true},
+	{format: Deepgram, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: LRC, extensions: []string{"lrc"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MCC, extensions: []string{"mcc"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MicroDVD, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},

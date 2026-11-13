@@ -209,6 +209,7 @@ func ExampleFormats() {
 	// itt [itt]
 	// json [json]
 	// aws-transcribe [json]
+	// deepgram [json]
 	// lrc [lrc]
 	// mcc [mcc]
 	// microdvd [sub]

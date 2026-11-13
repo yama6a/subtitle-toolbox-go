@@ -88,6 +88,7 @@ const (
 	ITT           = model.ITT
 	JSON          = model.JSON
 	AWSTranscribe = model.AWSTranscribe
+	Deepgram      = model.Deepgram
 	LRC           = model.LRC
 	MCC           = model.MCC
 	MicroDVD      = model.MicroDVD

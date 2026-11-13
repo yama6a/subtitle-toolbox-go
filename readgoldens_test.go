@@ -70,6 +70,7 @@ func goldenFolders() []goldenFolder {
 			}},
 		}},
 		{name: "dcp", format: stbox.DCP, files: 4},
+		{name: "deepgram", format: stbox.Deepgram, files: 3, transcript: true, defaults: true},
 		{name: "html", format: stbox.HTMLTranscript, files: 2, transcript: true},
 		{name: "itt", format: stbox.ITT, files: 3},
 		{name: "json", format: stbox.JSON, files: 6},
