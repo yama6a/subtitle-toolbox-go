@@ -1,0 +1,38 @@
+{
+    "version": "1.0.0",
+    "segments": [
+        {
+            "speaker": "Marta",
+            "startTime": 0.0,
+            "endTime": 2.76,
+            "body": "This week we look at how to keep"
+        },
+        {
+            "startTime": 2.76,
+            "endTime": 6.09,
+            "body": "bread fresh for a week. And if not,"
+        },
+        {
+            "startTime": 6.09,
+            "endTime": 11.61,
+            "body": "what to do with the old loaf. Let's start with a question."
+        },
+        {
+            "speaker": "Jonas",
+            "startTime": 19.08,
+            "endTime": 21.45,
+            "body": "Hi Marta, Jonas here from the caf\u00e9 by"
+        },
+        {
+            "startTime": 21.45,
+            "endTime": 25.35,
+            "body": "the river. My question is, should bread go in the fridge?"
+        },
+        {
+            "speaker": "Marta",
+            "startTime": 25.8,
+            "endTime": 28.125,
+            "body": "No. The fridge makes it stale faster \u2013 use a bread box."
+        }
+    ]
+}

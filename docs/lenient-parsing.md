@@ -392,6 +392,17 @@ All errors are `*ParseError` values with the format `pgs` and line 0. T is the t
 - **Top-level words**: a segment that fails takes none of the top-level words, so the next segment takes them. A segment that fails because of one of its words has taken its words already, so they are lost with it.
 - **Block text**: the compact JSON of the segment. With top-level words, it holds them in `words`. A number keeps its source text, so `1e400` stays `1e400`.
 
+## Podcasting 2.0 transcript JSON
+
+| Damage | Strict | Lenient |
+|:--- |:--- |:--- |
+| a segment that is no object, or has a bad `startTime`, `endTime`, `speaker` or `body` | `The field segments[1].body must be a string.` and the other messages of [transcripts.md](transcripts.md#podcast-read) | skips the segment. `Skipped`, no line, `Block` the index in the list, the segment as block text |
+| a time of 100000 hours or more | `The field segments[0].startTime is not below 100000 hours.` | skips the segment |
+| a segment that ends before it starts | `The cue ends at E s, before it starts at S s.` | swaps the times when the segment then lasts 30 s or less. `Repaired`. Else skips the segment |
+| no `segments` list, a root that is no object, invalid JSON | the error | the same error |
+
+- **Block text**: the compact JSON of the segment. A number keeps its source text.
+
 ## Tests
 
 [lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.

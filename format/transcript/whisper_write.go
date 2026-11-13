@@ -15,12 +15,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-const (
-	malformedUTF8 = "Whisper JSON cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. " +
-		"Read a file in another encoding with its source encoding."
-	infOrNaN = "Whisper JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
-)
-
 // WriteWhisper writes s to w as Whisper JSON in the shape of the tool that wrote the source, one segment per cue.
 // The format field of the file format data names the shape. Cues from another format give the openai-whisper shape.
 // A value that a cue did not change stays as the reader stored it. A cue without a speaker keeps the stored speaker.
@@ -33,16 +27,27 @@ func WriteWhisper(w io.Writer, s *model.Subtitle, common model.CommonWriteOption
 	if err != nil {
 		return err
 	}
-	body, err := orderedjson.Encode(doc, false)
+	body, err := encodeDocument(model.Whisper, "Whisper JSON", doc, false)
 	if err != nil {
-		reason := infOrNaN
-		var cause error
-		if errors.Is(err, orderedjson.ErrInvalidUTF8) {
-			reason, cause = malformedUTF8, model.ErrInvalidUTF8
-		}
-		return &model.UnwritableError{Format: model.Whisper, CueIndex: -1, Reason: reason, Err: cause}
+		return err
 	}
 	return writing.Write(w, model.Whisper, body, common, false)
+}
+
+// encodeDocument returns the JSON of doc, or an *UnwritableError that names the format as name.
+func encodeDocument(f model.Format, name string, doc orderedjson.Value, pretty bool) ([]byte, error) {
+	body, err := orderedjson.Encode(doc, pretty)
+	if err == nil {
+		return body, nil
+	}
+	reason := name + " cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
+	var cause error
+	if errors.Is(err, orderedjson.ErrInvalidUTF8) {
+		reason = name + " cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. " +
+			"Read a file in another encoding with its source encoding."
+		cause = model.ErrInvalidUTF8
+	}
+	return nil, &model.UnwritableError{Format: f, CueIndex: -1, Reason: reason, Err: cause}
 }
 
 func member(key string, v orderedjson.Value) orderedjson.Member {

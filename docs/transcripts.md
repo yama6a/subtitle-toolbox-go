@@ -12,7 +12,7 @@ Package `format/transcript` reads and writes the JSON and HTML transcripts of sp
 | `SpeakerVoices` | false: `Cue.Speaker` stays empty | set `Cue.Speaker` from the speaker of the source | the formats with speakers. The Podcasting 2.0 and HTML transcripts always set it |
 | `KeepSegments` | false: join one-word segments | one cue per segment | the Podcasting 2.0 transcript only |
 
-`WriteOptions.Transcript` holds `transcript.WriteOptions`. It has no fields yet. A format that needs a write setting adds a nested struct there.
+`WriteOptions.Transcript` holds `transcript.WriteOptions`. It holds one nested struct for each format with write settings. So far that is `Podcast`, see [Podcasting 2.0 transcript JSON](#podcasting-20-transcript-json).
 
 The raw source words stay in the cue format data with both values of `WordTimestamps`. So a writer reuses them after a read without word times.
 
@@ -70,6 +70,8 @@ A writer rebuilds the word list of a cue from `Cue.Words`. It keeps each source 
 | reuse source words | linear in the text and the source words, plus one try for each source word that shares a start | `BenchmarkReuse`, 1 MB of text in one cue |
 | read Whisper JSON | linear in the file. A segment takes the top-level words with one pass over them. A word of whisper.cpp tokens joins its token texts once | `BenchmarkReadWhisper`: 12,000 words in one segment, 12,000 top-level words in 2,000 segments, 24,000 tokens in one word. Each input is about 1 MB |
 | write Whisper JSON | linear in the cues, the words and the stored words | `BenchmarkWriteWhisper`: the first 2 inputs above |
+| read Podcasting 2.0 JSON | linear in the file. One pass from the back finds the first later start of all segments that have no end | `BenchmarkReadPodcast`: 16,000 one-word segments joined and kept, and 16,000 segments without an end whose starts fall. Each input is about 1 MB |
+| write Podcasting 2.0 JSON | linear in the cue text and the words | `BenchmarkWritePodcast`: one cue of 16,000 words, with and without `WordSegments` |
 
 `TestWordgroupGrowth` runs with `STBOX_GROWTH=1`. It fails when 10 times the words cost more than 30 times the time.
 
@@ -78,6 +80,7 @@ A writer rebuilds the word list of a cue from `Cue.Words`. It keeps each source 
 | Format | Read | Write | Page section |
 |:--- |:--- |:--- |:--- |
 | Whisper JSON | `ReadWhisper` | `WriteWhisper` | [Whisper JSON](#whisper-json) |
+| Podcasting 2.0 transcript JSON | `ReadPodcast` | `WritePodcast` | [Podcasting 2.0 transcript JSON](#podcasting-20-transcript-json) |
 
 ## Whisper JSON
 
@@ -158,3 +161,64 @@ A subtitle from another format with the language `de` writes this, for a cue `<v
 ```json
 {"text":" Guten Morgen. Bis bald.","segments":[{"id":0,"start":1.5,"end":3.0,"text":" Guten Morgen.","speaker":"Anna"},{"id":1,"start":4.0,"end":5.0,"text":" Bis bald.","words":[{"word":" Bis","start":4.0,"end":4.5,"probability":1.0},{"word":" bald.","start":4.5,"end":5.0,"probability":1.0}]}],"language":"de"}
 ```
+
+## Podcasting 2.0 transcript JSON
+
+A podcast feed links a transcript per episode with the `<podcast:transcript>` tag, and Apple Podcasts, Podverse and Fountain read its JSON form. Example: `{"version": "1.0.0", "segments": [{"speaker": "Anna", "startTime": 0.5, "endTime": 0.75, "body": "The"}, {"speaker": "Anna", "startTime": 1, "endTime": 1.25, "body": "bakery"}]}`. Many tools write one segment per word, so the reader joins the one-word segments of a speaker into cues. The writer writes one segment per cue and speaker, or one segment per word for the word highlight of the apps. The format follows the [Podcasting 2.0 transcript spec](https://github.com/Podcastindex-org/podcast-namespace/blob/c0ff5caa3729610362ee93f8034454fa41f3c493/docs/examples/transcripts/transcripts.md).
+
+| Item | Value |
+|:--- |:--- |
+| Format | `stbox.PodcastTranscript`, name `podcast-transcript`, extension `.json` |
+| Functions | `transcript.ReadPodcast`, `WritePodcast`, `DetectPodcast` and `DetectPodcastJSON` |
+| Read options | `WordTimestamps` and `KeepSegments`. `SpeakerVoices` has no effect, because the speaker always goes to `Cue.Speaker` |
+| Write options | `transcript.PodcastWriteOptions` in `WriteOptions.Podcast`: `WordSegments` and `PrettyPrint` |
+| Detection | [JSON check 2](detection.md#json-checks): `segments` is an array whose first item is an object with the keys `startTime` and `body`. `.json` belongs to the library JSON in `FormatFromPath`, so output needs `--to podcast-transcript` |
+
+### Podcast read
+
+- **Segments**: `segments` must be an array. Else the read fails with `The JSON has no "segments" list.` in both modes.
+- **File data**: the top-level members except `segments`, such as `version`, under the key `podcast-transcript`.
+- **Segment fields**: a field error fails the segment. Strict mode returns the error. Lenient mode skips the segment with a `Skipped` warning without a line, with the segment as block text. The checks run in the order of the table.
+
+| Field | Rule | Error |
+|:--- |:--- |:--- |
+| the segment | an object | `The field segments[0] must be an object.` |
+| `startTime` | a finite number of 0 or more. A string such as `"0:01"` fails | `The field segments[0].startTime must be a number.` |
+| `endTime` | missing, null, or the same rule | `The field segments[0].endTime must be a number.` |
+| `speaker`, `body` | missing, null, or a string | `The field segments[0].speaker must be a string.` |
+| times | below 100000 hours after the rounding to whole milliseconds | `The field segments[0].startTime is not below 100000 hours.` |
+| order | a segment with an end must not end before it starts. Lenient mode swaps the times when the segment then lasts 30 s or less | `The cue ends at 1.5 s, before it starts at 2 s.` |
+
+- **Text**: the speaker is trimmed. In the body, each run of space, tab, CR and LF becomes one space, then the body is trimmed.
+- **Missing end**: a segment without `endTime` ends at the first later start among the segments after it in the file. Without one, it ends at its start plus the last cue duration, 5 s by default. A segment with an empty body counts for this rule. Then the reader drops each segment with an empty body, without a warning.
+
+**Joining.** Unless `KeepSegments` is set, a segment is a **word** when its body holds no space. A word joins the open group when 2 things hold. The first segment of the group has the same speaker. The gap from the end of the last segment of the group to the start of the word is below 1 s. After each segment the group is open when that segment is a word whose body does not end a sentence. A body ends a sentence when it ends with `.`, `?`, `!` or U+2026, not counting the closing characters `"`, `'`, U+201D, U+2019, `)` and `]` at its end. A segment that is not a word never joins and closes the group. With `KeepSegments` every segment is its own cue.
+
+Example: the words `Hello` (Anna, 0 to 0.4 s), `there.` (Anna, 0.5 to 0.9 s), `Come`, `in!`, `Thanks` (Ben), `Sit`, `"down."` and `Tea` give the cues `Hello there.`, `Come in!`, `Thanks`, `Sit "down."` and `Tea`.
+
+**Cue.** A group becomes one cue.
+
+| Part | Value |
+|:--- |:--- |
+| Times | the start of the first segment and the end of the last segment |
+| Lines | the bodies, escaped, joined with one space |
+| Speaker | the speaker of the first segment, when it is not empty |
+| Words | with `WordTimestamps` and a group of 2 or more segments, one `Word` for each segment: the body, the segment start and the segment end. No confidence |
+| Cue data | for a group of one segment with other members, those members under `podcast-transcript` |
+
+### Podcast write
+
+- **Pieces**: the writer splits the text of a cue at each speaker change, and with `WordSegments` at each word timestamp. A speaker change is a `<v Name>` tag or a `</v>` tag. A piece with an empty body gives no segment.
+- **Without `WordSegments`**: each piece has the cue start and the cue end. So a cue with 2 speakers gives 2 segments with the full cue times.
+- **With `WordSegments`**: a piece starts at its word start, clamped into the cue times. It ends at the start of the next piece, or at the cue end. A piece that starts at a word ends earlier when `Word.End` is earlier. It never ends before its start.
+- **Segment**: `{"speaker"?, "startTime", "endTime", "body"}`. `speaker` is there only when the piece has one. A time below 0 counts as 0. `endTime` is never before `startTime`.
+- **Other members**: without `WordSegments`, a cue that gives exactly one segment adds its stored `podcast-transcript` members after `body`.
+- **Document**: `{"version": V, "segments": [...]}`, then the stored file members. `V` is the stored `version` when it is set and not null, else `"1.0.0"`.
+- **Output**: compact JSON without a BOM. With `PrettyPrint` it has a 4-space indent and a final LF, which the line ending option turns into CR LF.
+
+| Option | Zero value | Meaning |
+|:--- |:--- |:--- |
+| `WordSegments` | false: one segment for each cue and speaker | one segment for each word of `Cue.Words` |
+| `PrettyPrint` | false: one compact line, no final LF | 4-space indent and a final LF |
+
+Cue `<v Ben>Home &amp; bed.` and `<v Anna>Why?` from 3 to 5 s, with the word `bed.` at 4 s, writes `{"speaker":"Ben","startTime":3.0,"endTime":5.0,"body":"Home & bed."},{"speaker":"Anna","startTime":3.0,"endTime":5.0,"body":"Why?"}`. With `WordSegments` it writes `Home &` from 3 to 4 s, `bed.` from 4 to 4 s and `Why?` from 4 to 5 s.

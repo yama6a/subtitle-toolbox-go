@@ -13,6 +13,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ebustl"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -51,6 +52,9 @@ func roundTripFiles() []roundTripFile {
 		{"whisper", "whisper_cpp_ojf.json"},
 		{"whisper", "whisper_cpp_ojf_split_utf8.json"},
 		{"whisper", "whisperx_diarize.json"},
+		{"podcast", "podcast_transcript_convert_from_html.json"},
+		{"podcast", "podcast_transcript_convert_from_srt.json"},
+		{"podcast", "spec_word_segments.json"},
 	}
 }
 
@@ -162,6 +166,8 @@ func conversions() []conversion {
 		{"whisper", "openai_whisper_word_timestamps.json", stbox.WebVTT, ""},
 		{"whisper", "whisperx_diarize.json", stbox.SubRip, ""},
 		{"whisper", "whisperx_diarize.json", stbox.WebVTT, ""},
+		{"podcast", "spec_word_segments.json", stbox.SubRip, ""},
+		{"podcast", "spec_word_segments.json", stbox.WebVTT, ""},
 	}
 }
 
@@ -245,6 +251,20 @@ func TestWriteGoldenWhisperConversions(t *testing.T) {
 			golden.Equal(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(stbox.Whisper))), writeAs(t, s, stbox.Whisper), *update)
 		})
 	}
+}
+
+// TestWriteGoldenPodcastWordSegments writes the word segments of a read with word timestamps.
+func TestWriteGoldenPodcastWordSegments(t *testing.T) {
+	t.Parallel()
+
+	const file = "spec_word_segments.json"
+	g := folder(t, "podcast")
+	s, _ := g.read(t, file)
+	var out bytes.Buffer
+	opts := stbox.WriteOptions{Transcript: transcript.WriteOptions{Podcast: transcript.PodcastWriteOptions{WordSegments: true}}}
+	_, err := stbox.Write(&out, s, stbox.PodcastTranscript, opts)
+	require.NoError(t, err)
+	golden.Equal(t, testfiles.Path(t, goldenPath(g, file, ".out.wordsegments.json")), out.Bytes(), *update)
 }
 
 func TestWriteGoldenSCCNonDropFrame(t *testing.T) {

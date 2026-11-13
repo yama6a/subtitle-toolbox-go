@@ -63,3 +63,61 @@ func ExampleDetectWhisperJSON() {
 	// true
 	// false
 }
+
+func ExampleReadPodcast() {
+	content := `{"version": "1.0.0", "segments": [
+		{"speaker": "Anna", "startTime": 0.5, "endTime": 0.75, "body": "The"},
+		{"speaker": "Anna", "startTime": 1, "endTime": 1.25, "body": "bakery"},
+		{"speaker": "Anna", "startTime": 1.5, "endTime": 2, "body": "opens."},
+		{"speaker": "Ben", "startTime": 3, "body": "Good news"}]}`
+	opts := transcript.ReadOptions{SpeakerVoices: true}
+	s, _, err := transcript.ReadPodcast(strings.NewReader(content), model.CommonReadOptions{}, opts)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for _, c := range s.Cues() {
+		fmt.Println(c.Start, c.End, c.Speaker, c.Lines)
+	}
+	// Output:
+	// 500ms 2s Anna [The bakery opens.]
+	// 3s 8s Ben [Good news]
+}
+
+func ExampleWritePodcast() {
+	s := &model.Subtitle{}
+	s.AddCue(model.Cue{Start: 1500 * time.Millisecond, End: 3 * time.Second, Lines: []string{"Guten", "Morgen."}, Speaker: "Anna"})
+	opts := transcript.WriteOptions{Podcast: transcript.PodcastWriteOptions{PrettyPrint: true}}
+	if err := transcript.WritePodcast(os.Stdout, s, model.CommonWriteOptions{}, opts); err != nil {
+		fmt.Println(err)
+	}
+	// Output:
+	// {
+	//     "version": "1.0.0",
+	//     "segments": [
+	//         {
+	//             "speaker": "Anna",
+	//             "startTime": 1.5,
+	//             "endTime": 3.0,
+	//             "body": "Guten Morgen."
+	//         }
+	//     ]
+	// }
+}
+
+func ExampleDetectPodcast() {
+	fmt.Println(transcript.DetectPodcast([]byte(`{"segments": [{"startTime": 0, "body": "Hi"}]}`)))
+	fmt.Println(transcript.DetectPodcast([]byte(`{"segments": [{"start": 0, "text": "Hi"}]}`)))
+	// Output:
+	// true
+	// false
+}
+
+func ExampleDetectPodcastJSON() {
+	keys := map[string]json.RawMessage{"segments": json.RawMessage(`[{"startTime": 0, "body": "Hi"}]`)}
+	fmt.Println(transcript.DetectPodcastJSON(keys))
+	fmt.Println(transcript.DetectPodcastJSON(map[string]json.RawMessage{"segments": json.RawMessage(`[]`)}))
+	// Output:
+	// true
+	// false
+}

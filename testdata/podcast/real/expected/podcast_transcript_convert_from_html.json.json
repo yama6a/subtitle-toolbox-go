@@ -1,0 +1,59 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "podcast-transcript": {
+                "version": "1.0.0",
+                "metadata": {
+                    "title": "Library news",
+                    "episode": 4
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 0.0,
+                "end": 7.0,
+                "lines": [
+                    "<v Speaker 1>The library opens a new reading room on Friday."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 7.0,
+                "end": 11.0,
+                "lines": [
+                    "<v Speaker 2>Can children use it too?"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 11.0,
+                "end": 19.0,
+                "lines": [
+                    "<v Speaker 1>Yes. There is a corner with picture books and small chairs."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            },
+            {
+                "start": 19.0,
+                "end": 24.0,
+                "lines": [
+                    "<v Speaker 2>That sounds good. Thank you."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {}
+            }
+        ]
+    }
+}

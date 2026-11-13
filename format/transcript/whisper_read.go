@@ -34,7 +34,7 @@ func ReadWhisper(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 	if !ok {
 		return &model.Subtitle{}, st.Warnings(), nil
 	}
-	root, err := decodeObject(content)
+	root, err := decodeObject(content, model.Whisper)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -51,14 +51,14 @@ func ReadWhisper(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 	return s, st.Warnings(), nil
 }
 
-func decodeObject(content []byte) (orderedjson.Value, error) {
+func decodeObject(content []byte, f model.Format) (orderedjson.Value, error) {
 	v, err := orderedjson.Decode(content)
 	if err != nil {
 		msg := "The content is not valid JSON: " + err.Error() + "."
-		return v, &model.ParseError{Format: model.Whisper, Msg: msg, Err: err}
+		return v, &model.ParseError{Format: f, Msg: msg, Err: err}
 	}
 	if v.Kind() != orderedjson.Object {
-		return v, &model.ParseError{Format: model.Whisper, Msg: "The JSON root must be an object."}
+		return v, &model.ParseError{Format: f, Msg: "The JSON root must be an object."}
 	}
 	return v, nil
 }

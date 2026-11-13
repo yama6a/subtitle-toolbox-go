@@ -1,0 +1,125 @@
+{
+  "version": "1.0.0",
+  "segments": [
+    {
+      "speaker": "Marta",
+      "startTime": 0.5,
+      "endTime": 0.75,
+      "body": "The"
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 1,
+      "endTime": 1.25,
+      "body": "bakery"
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 1.5,
+      "endTime": 2.0,
+      "body": "opens"
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 2.25,
+      "endTime": 2.50,
+      "body": "at"
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 2.75,
+      "endTime": 3.0,
+      "body": "seven.\n"
+    },
+    {
+      "speaker": "Jonas",
+      "startTime": 3.5,
+      "endTime": 3.75,
+      "body": "Is"
+    },
+    {
+      "speaker": "Jonas",
+      "startTime": 4,
+      "endTime": 4.25,
+      "body": "it"
+    },
+    {
+      "speaker": "Jonas",
+      "startTime": 4.5,
+      "endTime": 4.75,
+      "body": "open"
+    },
+    {
+      "speaker": "Jonas",
+      "startTime": 5,
+      "endTime": 5.25,
+      "body": "on"
+    },
+    {
+      "speaker": "Jonas",
+      "startTime": 5.5,
+      "endTime": 6.0,
+      "body": "Sunday?\n"
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 6.5,
+      "endTime": 6.75,
+      "body": "Only"
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 7,
+      "endTime": 7.25,
+      "body": "in"
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 7.5,
+      "endTime": 8.0,
+      "body": "summer."
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 8.25,
+      "endTime": 8.5,
+      "body": "The"
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 8.75,
+      "endTime": 9.0,
+      "body": "rest"
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 9.25,
+      "endTime": 9.5,
+      "body": "of"
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 9.75,
+      "endTime": 10.0,
+      "body": "the"
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 10.25,
+      "endTime": 10.5,
+      "body": "year"
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 10.75,
+      "endTime": 11.0,
+      "body": "it"
+    },
+    {
+      "speaker": "Marta",
+      "startTime": 11.25,
+      "endTime": 11.5,
+      "body": "closes."
+    }
+  ]
+}
