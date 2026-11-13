@@ -1,0 +1,21 @@
+{
+    "id": "chatcmpl-own-1",
+    "object": "chat.completion",
+    "created": 1760000000,
+    "model": "gpt-4o-mini",
+    "choices": [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "[\"Der Zug nach Basel fährt um <x1>10:15</x1> von Gleis 4 ab.\",\"<x1>Fahrkarten &amp; Platz-\\nreservierungen</x1> gibt es hier.\",\"- Ist dieser Platz frei?\\n- Ja, ist er.\",\"<x1>Der nächste Halt ist Zürich Hauptbahnhof.</x1>\"]"
+            },
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "prompt_tokens": 142,
+        "completion_tokens": 61,
+        "total_tokens": 203
+    }
+}

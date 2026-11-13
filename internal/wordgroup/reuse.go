@@ -2,7 +2,6 @@ package wordgroup
 
 import (
 	"slices"
-	"sort"
 	"strings"
 	"time"
 	"unicode"
@@ -13,7 +12,7 @@ import (
 
 // SourceWord is a stored source word as a writer reads it.
 type SourceWord struct {
-	Text       string         // trimmed
+	Text       string         // trimmed. An empty text matches no span
 	Start      *time.Duration // rounded to whole milliseconds, nil when the stored word has no valid start
 	End        *time.Duration
 	Confidence *float64
@@ -82,25 +81,29 @@ func keepAll(source []SourceWord) []Choice {
 // reuseSpans matches each span to the first source word that can match it. A source word matches only a span with
 // its own start, so an index by start finds the candidates of a span without a scan of all source words.
 func reuseSpans(c *model.Cue, source []SourceWord) []Choice {
-	timed := map[time.Duration][]int{}
-	var untimed []int
-	for i, s := range source {
-		if s.Start == nil {
-			untimed = append(untimed, i)
-			continue
+	starts := map[time.Duration]bool{}
+	for _, s := range source {
+		if s.Start != nil {
+			starts[s.Start.Round(time.Millisecond)] = true
 		}
-		k := s.Start.Round(time.Millisecond)
-		timed[k] = append(timed[k], i)
 	}
+	idx := newRunIndex(source)
+	var untimed *untimedIndex
 	spans := Spans(c)
 	choices := make([]Choice, 0, len(spans))
 	next := 0
 	for _, sp := range spans {
-		cands := untimed
+		var first, end int
+		var ok bool
 		if sp.Word != nil {
-			cands = timed[sp.Start.Round(time.Millisecond)]
+			first, end, ok = idx.find(sp.Text, sp.Start.Round(time.Millisecond), source, next)
+		} else {
+			if untimed == nil {
+				untimed = newUntimedIndex(source)
+			}
+			first, end, ok = untimed.find(sp.Text, source, next)
 		}
-		if first, end, ok := firstRun(sp.Text, source, cands, next); ok {
+		if ok {
 			ch := Choice{Source: makeRange(first, end)}
 			if end == first+1 {
 				ch.Word = sp.Word
@@ -109,18 +112,18 @@ func reuseSpans(c *model.Cue, source []SourceWord) []Choice {
 			next = end
 			continue
 		}
-		choices = append(choices, Choice{New: newWord(sp, max(0, c.Start), timed)})
+		choices = append(choices, Choice{New: newWord(sp, max(0, c.Start), starts)})
 	}
 	return choices
 }
 
 // newWord builds the word of a span that no source word matched. A word on the start of a source word is an edited
 // word and gets confidence 1.0. A moved word keeps its confidence.
-func newWord(sp Span, cueStart time.Duration, timed map[time.Duration][]int) *NewWord {
+func newWord(sp Span, cueStart time.Duration, starts map[time.Duration]bool) *NewWord {
 	start, conf := sp.Start, 1.0
 	if sp.Word == nil {
 		start = cueStart
-	} else if sp.Word.Confidence != nil && timed[start.Round(time.Millisecond)] == nil {
+	} else if sp.Word.Confidence != nil && !starts[start.Round(time.Millisecond)] {
 		conf = *sp.Word.Confidence
 	}
 	return &NewWord{Text: sp.Text, Start: start, End: sp.End, Confidence: conf}
@@ -132,17 +135,6 @@ func makeRange(from, to int) []int {
 		out[i] = from + i
 	}
 	return out
-}
-
-// firstRun returns the first candidate at or after next whose run of source words matches text. The run is the
-// indexes first to end-1.
-func firstRun(text string, source []SourceWord, cands []int, next int) (first, end int, ok bool) {
-	for _, i := range cands[sort.SearchInts(cands, next):] {
-		if end, ok := runMatch(text, source, i); ok {
-			return i, end, true
-		}
-	}
-	return 0, 0, false
 }
 
 // runMatch tries the source word i, then the following source words without a start, as one run. The texts of the
@@ -189,7 +181,8 @@ func sameWordText(t, s string) bool {
 	return ok && s != "" && onlyPunct(rest)
 }
 
-// SameWords reports whether the cue has no words, or has exactly the source words.
+// SameWords reports whether the cue has no words, or has exactly the source words. It compares texts and starts only.
+// A typed End or Confidence that differs from the stored one does not count.
 func SameWords(c *model.Cue, source []SourceWord) bool {
 	if len(c.Words) == 0 {
 		return true

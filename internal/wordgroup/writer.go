@@ -95,12 +95,12 @@ func Spans(c *model.Cue) []Span {
 		}
 	}
 	var spans []Span
-	first := len(text)
+	first, lead := len(text), c.End
 	if len(found) > 0 {
-		first = matches[found[0]].Start
+		first, lead = matches[found[0]].Start, max(c.Words[found[0]].Start, c.Start)
 	}
 	if t := cleanSpace(text[:first]); t != "" {
-		spans = append(spans, Span{Text: t, End: max(c.Words[0].Start, c.Start)})
+		spans = append(spans, Span{Text: t, End: lead})
 	}
 	for n, k := range found {
 		to := len(text)
