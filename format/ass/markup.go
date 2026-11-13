@@ -23,7 +23,7 @@ var (
 	overrideBlockRegexp = regexp.MustCompile(`\{[^{}]*\}`)
 	toggleRegexp        = regexp.MustCompile(`^\\([bius])([01]?)$`)
 	colorRegexp         = regexp.MustCompile(`^\\1?c(?:&H([0-9A-Fa-f]{1,8})&?)?$`)
-	karaokeRegexp       = regexp.MustCompile(`^\\(?:k|K|kf|ko)(\d+)(?:\.(\d+))?$`)
+	karaokeRegexp       = regexp.MustCompile(`^\\(k|K|kf|ko)(\d+)(?:\.(\d+))?$`)
 	resetRegexp         = regexp.MustCompile(`^\\r(.*)$`)
 	drawingRegexp       = regexp.MustCompile(`^\\p(\d+)$`)
 )
@@ -58,7 +58,9 @@ type textMarkup struct {
 // next karaoke tag.
 type syllable struct {
 	start, end time.Duration
-	hasText    bool
+	// tag is the karaoke tag as written, without the backslash, such as kf25.
+	tag     string
+	hasText bool
 }
 
 // convert returns the core markup lines of text and the numpad value of its first \an or \a tag, or 0.
@@ -128,8 +130,8 @@ func (m *textMarkup) tag(tag string) error {
 	}
 	if g := karaokeRegexp.FindStringSubmatch(tag); g != nil {
 		m.b.WriteString("<" + markupcore.CoreTimestamp(m.karaoke) + ">")
-		d, err := parsing.BoundedTime(m.karaoke+karaokeDuration(g[1], g[2]), tag, m.line)
-		m.syllables = append(m.syllables, syllable{start: m.karaoke, end: d})
+		d, err := parsing.BoundedTime(m.karaoke+karaokeDuration(g[2], g[3]), tag, m.line)
+		m.syllables = append(m.syllables, syllable{start: m.karaoke, end: d, tag: tag[1:]})
 		m.karaoke = d
 		return err
 	}

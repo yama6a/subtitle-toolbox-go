@@ -25,6 +25,7 @@ const (
 const (
 	imageKey = "image"
 	vttKey   = "vtt"
+	assKey   = "ass"
 )
 
 var errInfOrNaN = errors.New("inf or NaN")
@@ -273,13 +274,16 @@ func (e *encoder) cueFormatData(c model.Cue) error {
 	})
 }
 
-// withoutVoiceForm returns the format data of key without voiceClass and voiceEnd of the vtt data. The tagged lines
-// carry both.
+// withoutVoiceForm returns the format data of key without voiceClass and voiceEnd of the vtt data and without karaoke
+// of the ass data. The tagged lines carry the voice form, and version 1 has no place for the karaoke tags.
 func withoutVoiceForm(c model.Cue, key string) (*model.Data, bool) {
 	d, ok := c.FormatData(key)
 	if ok && key == vttKey {
 		d.Delete("voiceClass")
 		d.Delete("voiceEnd")
+	}
+	if ok && key == assKey {
+		d.Delete("karaoke")
 	}
 	return d, ok
 }

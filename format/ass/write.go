@@ -43,6 +43,8 @@ type writer struct {
 	ssa        bool
 	stripTags  bool
 	karaokeTag string
+	// karaokeSet is true when the options set the karaoke tag, which then wins over the tags the reader stored.
+	karaokeSet bool
 	// styles are the styles before the Style option, so the option changes the look of every cue without its own tag.
 	styles []record
 	legacy bool
@@ -70,6 +72,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		ssa:        isSSA(f.scriptInfo, f.stylesSection),
 		stripTags:  common.StripTags,
 		karaokeTag: opts.KaraokeTag.String(),
+		karaokeSet: opts.KaraokeTag != "",
 		styles:     f.styles,
 		legacy:     f.hasStylesSection && equalFold(f.stylesSection, ssaStylesSection),
 	}
@@ -279,7 +282,8 @@ func (wr *writer) dialogueLine(c model.Cue, format []string) string {
 	fieldsValue, _ := data.Get("fields")
 	fields := recordOf(fieldsValue)
 	var text, name string
-	if wr.unchanged(c, data) {
+	karaoke, _ := data.Strings(karaokeKey)
+	if wr.unchanged(c, data, karaoke) {
 		text, _ = data.String("text")
 		name, _ = fields.field("Name")
 	} else {
@@ -288,7 +292,7 @@ func (wr *writer) dialogueLine(c model.Cue, format []string) string {
 			styleName = "Default"
 		}
 		style := eventStyle(wr.styles, styleName)
-		text, name = wr.convertLines(c, style)
+		text, name = wr.convertLines(c, style, karaoke)
 	}
 	values := make([]string, len(format))
 	for i, field := range format {
@@ -314,7 +318,7 @@ func (wr *writer) dialogueLine(c model.Cue, format []string) string {
 
 // unchanged reports whether the cue has the lines and the alignment that the reader stored, so the writer
 // writes its stored Text field.
-func (wr *writer) unchanged(c model.Cue, data *model.Data) bool {
+func (wr *writer) unchanged(c model.Cue, data *model.Data, karaoke []string) bool {
 	if wr.stripTags {
 		return false
 	}
@@ -325,12 +329,31 @@ func (wr *writer) unchanged(c model.Cue, data *model.Data) bool {
 	if !ok || !slices.Equal(lines, c.Lines) {
 		return false
 	}
-	return position.AlignmentUnchanged(data, c.Position.Alignment)
+	return syllablesUnchanged(c.Words, karaoke) && position.AlignmentUnchanged(data, c.Position.Alignment)
+}
+
+// syllablesUnchanged reports whether each word still has the length of the karaoke syllable the reader stored.
+func syllablesUnchanged(words []model.Word, karaoke []string) bool {
+	if len(karaoke) == 0 {
+		return true
+	}
+	if len(karaoke) != len(words) {
+		return false
+	}
+	for i, tag := range karaoke {
+		if g := karaokeRegexp.FindStringSubmatch(`\` + tag); g != nil {
+			length := karaokeDuration(g[2], g[3]).Round(time.Millisecond)
+			if words[i].End-words[i].Start != length {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // convertLines returns the Text field and the speaker name of the core markup of c. It leaves out the tags
 // that the style of the event implies.
-func (wr *writer) convertLines(c model.Cue, style record) (string, string) {
+func (wr *writer) convertLines(c model.Cue, style record, karaoke []string) (string, string) {
 	text := markupcore.RubyAsText(strings.Join(c.Lines, "\n"))
 	speaker := c.Speaker
 	if speaker == "" {
@@ -360,7 +383,7 @@ func (wr *writer) convertLines(c model.Cue, style record) (string, string) {
 			parts = append(parts, part{true, `\` + name + "0"})
 		}
 	}
-	parts = append(parts, wr.convertTokens(tokens, c)...)
+	parts = append(parts, wr.convertTokens(tokens, c, karaoke)...)
 	return mergeBlocks(parts), name
 }
 
@@ -460,14 +483,18 @@ func closingIndex(tokens []string, opening int) (int, bool) {
 	return 0, false
 }
 
-// convertTokens returns the override tags and the escaped text of the tokens.
-func (wr *writer) convertTokens(tokens []string, c model.Cue) []part {
-	leading, durations := karaokeDurations(tokens, c)
+// convertTokens returns the override tags and the escaped text of the tokens. karaoke holds the karaoke tag of
+// each word as the reader stored it.
+func (wr *writer) convertTokens(tokens []string, c model.Cue, karaoke []string) []part {
+	leading, syllables := karaokeSyllables(tokens, c)
 	var parts []part
 	if leading >= 0 {
 		parts = append(parts, part{true, `\` + wr.karaokeTag + strconv.FormatInt(leading, 10)})
 	}
-	tc := tokenConverter{karaokeTag: wr.karaokeTag, durations: durations}
+	tc := tokenConverter{karaokeTag: wr.karaokeTag, syllables: syllables}
+	if !wr.karaokeSet && len(karaoke) == len(syllables) {
+		tc.stored = karaoke
+	}
 	for i, token := range tokens {
 		switch {
 		case i%2 == 0 && token != "":
@@ -484,8 +511,10 @@ func (wr *writer) convertTokens(tokens []string, c model.Cue) []part {
 // tokenConverter turns the core markup tags of one cue into override tags.
 type tokenConverter struct {
 	karaokeTag string
-	durations  []int64
-	next       int
+	syllables  []syllableTime
+	// stored holds the karaoke tag of each syllable as the reader stored it, or is empty.
+	stored []string
+	next   int
 	// colors holds the colors of the open <font> tags, "" for a <font> without a color.
 	colors []string
 }
@@ -507,9 +536,19 @@ func (tc *tokenConverter) tag(token string) (string, bool) {
 		return tc.closeFont()
 	}
 	if _, ok := markupcore.WordTimestamp(token); ok {
-		d := tc.durations[tc.next]
+		s := tc.syllables[tc.next]
+		kind := tc.karaokeTag
+		if tc.next < len(tc.stored) {
+			if g := karaokeRegexp.FindStringSubmatch(`\` + tc.stored[tc.next]); g != nil {
+				kind = g[1]
+			}
+		}
 		tc.next++
-		return `\` + tc.karaokeTag + strconv.FormatInt(d, 10), true
+		tag := `\` + kind + strconv.FormatInt(s.length, 10)
+		if s.gap > 0 {
+			tag = `\` + tc.karaokeTag + strconv.FormatInt(s.gap, 10) + tag
+		}
+		return tag, true
 	}
 	return "", false
 }
@@ -561,13 +600,38 @@ func escapeText(text string) string {
 	return textEscapes.Replace(text)
 }
 
-// karaokeDurations turns the word timestamps into karaoke durations in centiseconds. Each syllable lasts until
-// the next timestamp or the cue end. leading is the gap before the first timestamp when text comes before it,
-// else -1.
-func karaokeDurations(tokens []string, c model.Cue) (leading int64, durations []int64) {
+// syllableTime is the length of one karaoke syllable and the gap before it, in centiseconds.
+type syllableTime struct{ length, gap int64 }
+
+// karaokeSyllables turns the word timestamps into karaoke syllables. A syllable lasts until the end of its word
+// when the next word starts later, and a gap syllable fills the time between. The last syllable lasts until the
+// cue end. leading is the gap before the first timestamp when text comes before it, else -1.
+func karaokeSyllables(tokens []string, c model.Cue) (leading int64, syllables []syllableTime) {
 	start := centiseconds(c.Start)
-	var times []int64
-	textBefore := false
+	times, textBefore := timestampTimes(tokens, start)
+	if len(times) == 0 {
+		return -1, nil
+	}
+	ends := append(slices.Clone(times[1:]), max(start, centiseconds(c.End)))
+	syllables = make([]syllableTime, len(times))
+	for i, t := range times {
+		syllables[i].length = max(0, ends[i]-t)
+		if i < len(times)-1 && len(c.Words) == len(times) {
+			if end := centiseconds(c.Words[i].End); end >= t && end < ends[i] {
+				syllables[i].length = end - t
+				syllables[i+1].gap = ends[i] - end
+			}
+		}
+	}
+	if !textBefore {
+		return -1, syllables
+	}
+	return times[0] - start, syllables
+}
+
+// timestampTimes returns the time of each word timestamp token in centiseconds, not before start, and whether
+// text comes before the first one.
+func timestampTimes(tokens []string, start int64) (times []int64, textBefore bool) {
 	for i, token := range tokens {
 		if i%2 == 1 {
 			if d, ok := markupcore.WordTimestamp(token); ok {
@@ -579,18 +643,7 @@ func karaokeDurations(tokens []string, c model.Cue) (leading int64, durations []
 			textBefore = true
 		}
 	}
-	if len(times) == 0 {
-		return -1, nil
-	}
-	ends := append(slices.Clone(times[1:]), max(start, centiseconds(c.End)))
-	durations = make([]int64, len(times))
-	for i, t := range times {
-		durations[i] = max(0, ends[i]-t)
-	}
-	if !textBefore {
-		return -1, durations
-	}
-	return times[0] - start, durations
+	return times, textBefore
 }
 
 // centiseconds rounds d to centiseconds, half away from zero, up to the largest count below the time limit. The

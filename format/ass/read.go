@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -370,11 +371,13 @@ type converted struct {
 // field, the cue lines and the alignment, or null for none.
 func newCue(start, end time.Duration, body converted, f eventFields, text string) (model.Cue, error) {
 	c := model.Cue{Start: start, End: end}
-	c.SetText(strings.Join(body.lines, "\n"))
-	c.ExtractWordTags()
-	setSyllableEnds(c.Words, body.syllables)
 	name, _ := f.field("Name")
-	c.Speaker = phpTrim(name)
+	c.SetText(strings.Join(markupcore.AddSpeaker(body.lines, name), "\n"))
+	c.ExtractWordTags()
+	karaoke := setSyllableEnds(c.Words, body.syllables)
+	if c.Speaker == "" {
+		c.Speaker = phpTrim(name)
+	}
 	numpad := body.numpad
 	var alignment any
 	if numpad > 0 {
@@ -387,12 +390,16 @@ func newCue(start, end time.Duration, body converted, f eventFields, text string
 			kept.set(n, f.values[i])
 		}
 	}
-	data := model.NewData(
-		model.Field{Key: "fields", Value: kept.data()},
-		model.Field{Key: "text", Value: text},
-		model.Field{Key: "lines", Value: stringlist.Any(c.TaggedLines())},
-		model.Field{Key: "alignment", Value: alignment},
-	)
+	fields := []model.Field{
+		{Key: "fields", Value: kept.data()},
+		{Key: "text", Value: text},
+		{Key: "lines", Value: stringlist.Any(c.TaggedLines())},
+		{Key: "alignment", Value: alignment},
+	}
+	if slices.ContainsFunc(karaoke, func(tag string) bool { return tag != "" }) {
+		fields = append(fields, model.Field{Key: karaokeKey, Value: stringlist.Any(karaoke)})
+	}
+	data := model.NewData(fields...)
 	if err := c.SetFormatData(formatDataKey, data); err != nil {
 		return model.Cue{}, fmt.Errorf("%s cue data: %w", model.ASS, err)
 	}
@@ -524,17 +531,21 @@ func (f file) data() *model.Data {
 	)
 }
 
-// setSyllableEnds sets the end of each word to the end of its karaoke syllable. ExtractWordTags drops a syllable
-// without text, so each word takes the next syllable with its start and some text.
-func setSyllableEnds(words []model.Word, syllables []syllable) {
+// setSyllableEnds sets the end of each word to the end of its karaoke syllable and returns the karaoke tag of each
+// word, "" for a word without a syllable. ExtractWordTags drops a syllable without text, so each word takes the
+// next syllable with its start and some text.
+func setSyllableEnds(words []model.Word, syllables []syllable) []string {
+	tags := make([]string, len(words))
 	j := 0
 	for i := range words {
 		for ; j < len(syllables); j++ {
 			if s := syllables[j]; s.hasText && s.start.Round(time.Millisecond) == words[i].Start {
 				words[i].End = s.end.Round(time.Millisecond)
+				tags[i] = s.tag
 				j++
 				break
 			}
 		}
 	}
+	return tags
 }

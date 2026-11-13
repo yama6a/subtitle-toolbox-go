@@ -361,6 +361,12 @@ func TestFirstCueLines(t *testing.T) {
 			[]string{"a", "b"},
 		},
 		{
+			"a named karaoke cue in a bold style keeps the placement of the tags",
+			"[V4+ Styles]\nFormat: Name, Bold\nStyle: Default,-1\n\n" + eventsHeader +
+				`Dialogue: 0,0:00:13.50,0:00:16.00,Default,Conductor,0,0,0,,{\k40}The {\k35}train {\k20}{\k50}leaves` + "\n",
+			[]string{"<v Conductor><b><00:00:13.500>The <00:00:13.900>train <00:00:14.250><00:00:14.450>leaves</b>"},
+		},
+		{
 			"the name becomes the speaker on the first text line",
 			eventsHeader + `Dialogue: 0,0:00:01.00,0:00:02.00,Default,A<B,0,0,0,,{\an8}\N  Hi` + "\n",
 			[]string{"<v A&lt;B>Hi"},
