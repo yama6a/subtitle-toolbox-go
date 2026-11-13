@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
 )
 
 // programLanguages holds the language list of one program. Its mutex also serialises the checks of that program.

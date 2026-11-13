@@ -7,8 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
 // Ports testAegisubFileKeepsMetadataCommentsAndFormatData of tests/Parsers/JsonRealFilesTest.php of
@@ -25,7 +26,7 @@ func TestAegisubJSONEqualsTheASSFile(t *testing.T) {
 
 	library := func(s *stbox.Subtitle) string {
 		var out bytes.Buffer
-		_, err := stbox.Write(&out, s, stbox.JSON, stbox.WriteOptions{})
+		_, err := stbox.Write(&out, s, stbox.JSON, stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: 1}})
 		require.NoError(t, err)
 		return out.String()
 	}

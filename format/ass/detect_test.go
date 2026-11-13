@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
 // Rows of the ASS signature of https://github.com/yama6a/subtitle-toolbox-go/issues/15.

@@ -14,10 +14,10 @@ import (
 
 	"github.com/dlclark/regexp2/v2"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/grapheme"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/grapheme"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // Mask is how Apply writes a match. The values are the values of the CLI option --mask.
@@ -118,20 +118,39 @@ func apply(s *model.Subtitle, opts Options, timeout time.Duration) (Report, erro
 		return Report{}, err
 	}
 	f := filter{re: compile(opts.Words, timeout), mask: opts.maskFunc()}
-	edited := make([][]string, s.Len())
+	edited := make([]model.Cue, s.Len())
+	changed := make([]bool, s.Len())
 	var ranges []MuteRange
 	for i, c := range s.All() {
 		if len(c.Lines) == 0 {
 			continue
 		}
-		lines, found, ok := f.cue(c)
+		edit, found, ok := f.cue(c)
 		if !ok {
 			return Report{}, invalid("Words", "The word match took longer than 1 s on cue "+strconv.Itoa(i+1)+".")
 		}
-		edited[i] = lines
+		edited[i], changed[i] = edit, edit.Lines != nil
 		ranges = append(ranges, found...)
 	}
-	s.EditLines(func(i int, _ model.Cue) ([]string, bool) { return edited[i], edited[i] != nil }, nil)
+	removing := false
+	for i, c := range edited {
+		if !changed[i] {
+			continue
+		}
+		c.SyncWords()
+		if !markupcore.HasVisibleText(c.Lines) {
+			removing = true
+			edited[i].Lines = c.Lines
+			continue
+		}
+		if err := s.SetCue(i, c); err != nil {
+			return Report{}, err
+		}
+		changed[i] = false
+	}
+	if removing {
+		s.EditLines(func(i int, _ model.Cue) ([]string, bool) { return edited[i].Lines, changed[i] }, nil)
+	}
 	return Report{MuteRanges: join(ranges, opts.Padding)}, nil
 }
 
@@ -221,22 +240,24 @@ type filter struct {
 	mask func(string) string
 }
 
-func (f filter) cue(c model.Cue) ([]string, []MuteRange, bool) {
+// cue returns a copy of c with the masked lines and words, and the mute ranges. The copy has nil Lines when no
+// text changed.
+func (f filter) cue(c model.Cue) (model.Cue, []MuteRange, bool) {
 	tokens := tokenize(c)
 	var ranges []MuteRange
 	changed := false
 	for i, tok := range tokens {
-		if tok.tag || tok.text == "" {
+		if tok.text == "" || tok.tag {
 			continue
 		}
 		masked, found, ok := f.run(tok.text)
 		if !ok {
-			return nil, nil, false
+			return model.Cue{}, nil, false
 		}
 		if !found {
 			continue
 		}
-		// FixOverlaps can end a cue before a word timestamp, and players skip a range that ends before it starts.
+		// FixOverlaps can end a cue before a word start, and players skip a range that ends before it starts.
 		ranges = append(ranges, MuteRange{Start: min(tok.start, tok.end), End: max(tok.start, tok.end)})
 		if masked != tok.text {
 			tokens[i].text = masked
@@ -244,17 +265,32 @@ func (f filter) cue(c model.Cue) ([]string, []MuteRange, bool) {
 		}
 	}
 	if !changed {
-		return nil, ranges, true
+		return model.Cue{}, ranges, true
 	}
-	lines := make([]string, len(c.Lines))
+	c.Lines = make([]string, len(c.Lines))
 	for _, tok := range tokens {
-		lines[tok.line] += tok.text
+		c.Lines[tok.line] += tok.text
 	}
-	return lines, ranges, true
+	words, ok := f.maskWords(c.Words)
+	c.Words = words
+	return c, ranges, ok
 }
 
-// token is a text run or a tag of a cue line. A text run starts at the last word timestamp before it in the cue,
-// or at the cue start, and ends at the first word timestamp after it, or at the cue end.
+// maskWords returns a copy of words with the masks applied to their texts.
+func (f filter) maskWords(words []model.Word) ([]model.Word, bool) {
+	words = slices.Clone(words)
+	for i, w := range words {
+		masked, _, ok := f.run(markupcore.EscapeText(w.Text))
+		if !ok {
+			return nil, false
+		}
+		words[i].Text = markupcore.UnescapeText(masked)
+	}
+	return words, true
+}
+
+// token is a text run or a tag of a cue line. A text run starts at the start of the last word whose marker is at or
+// before it, or at the cue start, and ends at the start of the next word, or at the cue end.
 type token struct {
 	line       int
 	text       string
@@ -262,25 +298,64 @@ type token struct {
 	start, end time.Duration
 }
 
+// tokenize splits the lines at their tags and at the markers of the words.
 func tokenize(c model.Cue) []token {
-	var tokens []token
-	t := c.Start
-	for i, line := range c.Lines {
-		for k, part := range markupcore.SplitTags(line) {
-			if d, ok := markupcore.WordTimestamp(part); ok {
-				t = d
-			}
-			tokens = append(tokens, token{line: i, text: part, tag: k%2 == 1, start: t})
-		}
+	texts := make([]string, len(c.Words))
+	for i, w := range c.Words {
+		texts[i] = w.Text
 	}
-	t = c.End
-	for i := range slices.Backward(tokens) {
-		tokens[i].end = t
-		if d, ok := markupcore.WordTimestamp(tokens[i].text); ok {
-			t = d
+	marks := markupcore.WordMarks(c.Lines, texts)
+	var tokens []token
+	next := 0
+	for i, line := range c.Lines {
+		at := 0
+		add := func(text string, tag bool) {
+			for next < len(marks) && atOrBefore(marks[next], i, at) {
+				next++
+			}
+			tokens = append(tokens, token{line: i, text: text, tag: tag, start: wordStart(c, next-1, c.Start), end: wordStart(c, next, c.End)})
+			at += len(text)
+		}
+		for k, part := range markupcore.SplitTags(line) {
+			if k%2 == 1 {
+				add(part, true)
+				continue
+			}
+			for _, cut := range cutAtMarks(part, marks[next:], i, at) {
+				add(cut, false)
+			}
 		}
 	}
 	return tokens
+}
+
+// atOrBefore reports whether the marker m lies at or before byte offset at of line i.
+func atOrBefore(m markupcore.Mark, i, at int) bool {
+	return m.Line < i || m.Line == i && m.Offset <= at
+}
+
+// wordStart returns the start of word i of c, or fallback when c has no such word.
+func wordStart(c model.Cue, i int, fallback time.Duration) time.Duration {
+	if i < 0 || i >= len(c.Words) {
+		return fallback
+	}
+	return c.Words[i].Start
+}
+
+// cutAtMarks splits the text run part, which starts at byte offset at of line i, at the markers inside it.
+func cutAtMarks(part string, marks []markupcore.Mark, i, at int) []string {
+	var cuts []string
+	from := 0
+	for _, m := range marks {
+		if m.Line != i || m.Offset >= at+len(part) {
+			break
+		}
+		if m.Offset > at+from {
+			cuts = append(cuts, part[from:m.Offset-at])
+			from = m.Offset - at
+		}
+	}
+	return append(cuts, part[from:])
 }
 
 func (f filter) run(raw string) (masked string, found, ok bool) {

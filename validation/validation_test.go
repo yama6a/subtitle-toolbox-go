@@ -11,11 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
-	"github.com/yama6a/subtitle-toolbox-go/v3/stats"
-	"github.com/yama6a/subtitle-toolbox-go/v3/validation"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/stats"
+	"github.com/yama6a/subtitle-toolbox-go/v4/validation"
 )
 
 // cue builds a cue from times in milliseconds.
@@ -174,6 +174,12 @@ func TestCountRules(t *testing.T) {
 		{
 			"speakers from voices",
 			[]model.Cue{cue(0, 1000, "<v Anna>Hi", "<v.loud Tom>Hello", "<v Anna>Bye"), cue(1000, 2000, "<v Anna>Hi", "Bye")},
+			validation.Rules{MaxSpeakersPerCue: 1},
+			[]string{"0 maxSpeakersPerCue 2, limit 1"},
+		},
+		{
+			"the speaker and a voice tag",
+			[]model.Cue{{Start: 0, End: time.Second, Lines: []string{"<v Tom>Hi", "Bye"}, Speaker: "Anna"}},
 			validation.Rules{MaxSpeakersPerCue: 1},
 			[]string{"0 maxSpeakersPerCue 2, limit 1"},
 		},

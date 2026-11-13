@@ -5,7 +5,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // FromPair returns a new subtitle with the cues of primary and secondary. Neither input changes.
@@ -38,11 +38,14 @@ func FromPair(primary, secondary *model.Subtitle, opts Options) (*model.Subtitle
 func secondaryCopies(s *model.Subtitle, opts Options) []model.Cue {
 	cues := make([]model.Cue, 0, s.Len())
 	for _, c := range s.All() {
-		lines := make([]string, len(c.Lines))
-		for i, line := range c.Lines {
+		tagged := c.TaggedLines()
+		lines := make([]string, len(tagged))
+		for i, line := range tagged {
 			lines[i] = opts.style(line)
 		}
-		cues = append(cues, model.Cue{Start: c.Start, End: c.End, Lines: lines, Position: c.Position, Forced: c.Forced})
+		cue := model.Cue{Start: c.Start, End: c.End, Lines: lines, Position: c.Position, Forced: c.Forced}
+		cue.ExtractWordTags()
+		cues = append(cues, cue)
 	}
 	return cues
 }
@@ -58,13 +61,21 @@ func stack(lookup *model.Subtitle, primary, secondary []model.Cue) []model.Cue {
 			unpaired = append(unpaired, c)
 		}
 	}
+	joinedCues := map[int]bool{}
 	for i, c := range secondary {
 		if p := partners[i]; p >= 0 {
 			joined := &primary[p]
-			joined.Lines = append(joined.Lines, c.Lines...)
+			if !joinedCues[p] {
+				joinedCues[p] = true
+				joined.Lines, joined.Speaker, joined.Words = joined.TaggedLines(), "", nil
+			}
+			joined.Lines = append(joined.Lines, c.TaggedLines()...)
 			joined.Start = min(joined.Start, c.Start)
 			joined.End = max(joined.End, c.End)
 		}
+	}
+	for p := range joinedCues {
+		primary[p].ExtractWordTags()
 	}
 	return unpaired
 }

@@ -12,7 +12,7 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 )
 
 // The patterns use the syntax of regexp2. space is \s of PCRE, which also matches U+180E.

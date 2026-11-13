@@ -6,7 +6,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
 
 // SyncPoint is a time in the subtitle and the time where it belongs, for SyncByPoints.
@@ -17,12 +17,12 @@ type SyncPoint struct {
 	New time.Duration
 }
 
-// Shift moves every cue and its word timestamps by d. See ShiftRange for the rules.
+// Shift moves every cue and its words by d. See ShiftRange for the rules.
 func (s *Subtitle) Shift(d time.Duration) error {
 	return s.ShiftRange(d, nil, nil)
 }
 
-// ShiftRange moves each cue with from <= Start < to, and its word timestamps, by d. A nil bound sets no limit on that side.
+// ShiftRange moves each cue with from <= Start < to, and its words, by d. A nil bound sets no limit on that side.
 // The start decides, so a cue across to moves as a whole. A time that becomes negative becomes 0, and the cue stays.
 // Each sum is rounded to whole milliseconds, and the moved cues take their place in start order with their comments.
 // ShiftRange returns an error that matches ErrInvalidArgument and changes nothing when to is not after from,
@@ -37,7 +37,7 @@ func (s *Subtitle) ShiftRange(d time.Duration, from, to *time.Duration) error {
 	})
 }
 
-// Scale multiplies the start, the end and the word timestamps of every cue by factor, rounded to whole milliseconds.
+// Scale multiplies the start, the end and the words of every cue by factor, rounded to whole milliseconds.
 // It returns an error that matches ErrInvalidArgument and changes nothing when factor is not a finite number above 0,
 // or when a cue would end at 100,000 hours or later.
 func (s *Subtitle) Scale(factor float64) error {
@@ -62,7 +62,7 @@ func (s *Subtitle) ConvertFrameRate(from, to FrameRate) error {
 
 // SyncByPoints moves the Old time of each point to its New time and maps all times in between on the line through
 // the neighbouring points. Times before the first point and after the last point follow the nearest 2 points.
-// 1 point shifts every cue by New - Old. Start, end and each word timestamp map on their own, and a time
+// 1 point shifts every cue by New - Old. Start, end and each word map on their own, and a time
 // that becomes negative becomes 0. SyncByPoints returns an error that matches ErrInvalidArgument and changes nothing
 // when points is empty, when the Old and New times do not both increase strictly, or when a cue would end at
 // 100,000 hours or later.
@@ -157,7 +157,7 @@ func (s *Subtitle) retime(r retiming, affected func(start time.Duration) bool) e
 			continue
 		}
 		c.Start, c.End = r.at(c.Start), r.at(c.End)
-		c.MapWordTimestamps(r.at)
+		c.moveWords(r.at)
 	}
 	s.index = nil
 	if !startsInOrder(s.cues) {
@@ -166,7 +166,8 @@ func (s *Subtitle) retime(r retiming, affected func(start time.Duration) bool) e
 	return nil
 }
 
-// checkTimeLimit returns an error when r moves the end of a cue whose start affected accepts to the time limit or later.
+// checkTimeLimit returns an error when r moves the end of a cue or of one of its words, for a cue whose start affected
+// accepts, to the time limit or later.
 // A nil affected accepts every cue.
 func checkTimeLimit(cues []Cue, r retiming, affected func(start time.Duration) bool) error {
 	limit := timecode.MaxTime.Seconds()
@@ -174,7 +175,7 @@ func checkTimeLimit(cues []Cue, r retiming, affected func(start time.Duration) b
 		if affected != nil && !affected(c.Start) {
 			continue
 		}
-		if end := r.seconds(max(c.Start, c.End)); !(end < limit) { // also true for NaN
+		if end := r.seconds(c.latestTime()); !(end < limit) { // also true for NaN
 			return timeLimitError(i, end)
 		}
 	}

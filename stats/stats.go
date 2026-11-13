@@ -9,9 +9,9 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/markup"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // Statistics holds the numbers of a subtitle at the time of the call.

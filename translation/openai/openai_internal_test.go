@@ -8,14 +8,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/translationtest"
-	"github.com/yama6a/subtitle-toolbox-go/v3/translation"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/translationtest"
+	"github.com/yama6a/subtitle-toolbox-go/v4/translation"
 )
 
 const key = "sk-proj-4f1c9e2a7b3d"
 
-func noWait(e *Engine) *[]time.Duration {
+func recordWaits(e *Engine) *[]time.Duration {
 	var waits []time.Duration
 	e.wait = func(_ context.Context, d time.Duration) error {
 		waits = append(waits, d)
@@ -33,7 +33,7 @@ func TestTranslateRetriesAfterHTTP429(t *testing.T) {
 	}}
 	e, err := New(Options{BaseURL: "http://localhost:11434/v1", Model: "llama3", HTTPClient: client})
 	require.NoError(t, err)
-	waits := noWait(e)
+	waits := recordWaits(e)
 
 	got, err := e.Translate(t.Context(), []string{"Hello"}, "en", "de")
 
@@ -78,7 +78,7 @@ func TestTranslateStatusErrors(t *testing.T) {
 			client := &translationtest.Client{Answers: []translationtest.Answer{{Status: tt.status, Body: tt.body}}}
 			e, err := New(Options{BaseURL: "http://localhost:11434/v1", Model: "llama3", APIKey: key, HTTPClient: client})
 			require.NoError(t, err)
-			noWait(e)
+			recordWaits(e)
 
 			_, err = e.Translate(t.Context(), []string{"Hello"}, "en", "de")
 

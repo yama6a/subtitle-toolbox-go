@@ -3,7 +3,7 @@ package codepage_test
 import (
 	"fmt"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/codepage"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/codepage"
 )
 
 func Example() {

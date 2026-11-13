@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
 const validateHelp = `Usage: stbox validate <input>... --preset netflix-en|bbc [options]
@@ -61,7 +61,8 @@ Options:
                                       page detection. A BOM, valid UTF-8 and
                                       UTF-16 input win over it.
   --lenient                           Skip or repair broken cues and print a
-                                      warning for each.
+                                      warning for each. Chapter input ignores
+                                      it.
   --input-fps RATE                    Frame rate of a MicroDVD input without a
                                       {1}{1}<fps> first line, of Spruce STL
                                       timecodes, and of CSV or TSV times in

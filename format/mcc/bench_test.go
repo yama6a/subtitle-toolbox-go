@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const benchCues = 20000

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func ExampleRead() {
@@ -21,7 +21,7 @@ func ExampleRead() {
 		return
 	}
 	for _, c := range s.All() {
-		fmt.Println(c.Start, c.End, c.Lines, c.Position.Alignment)
+		fmt.Println(c.Start, c.End, c.TaggedLines(), c.Position.Alignment)
 	}
 	lang, _ := s.Metadata(model.MetadataLanguage)
 	data, _ := s.FormatData("ttml")

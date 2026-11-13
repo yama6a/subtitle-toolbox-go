@@ -9,16 +9,16 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/grapheme"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/grapheme"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const sentenceEnds = ".?!\u2026\u3002\uff0e\uff1f\uff01"
 
 const sentenceEndClosers = "\"'\u201d\u2019\u00bb)]"
 
-// mongolianVowelSeparator is white space for PCRE2 10.44, which holds Unicode 6.3 White_Space.
+// mongolianVowelSeparator is U+180E. Unicode 6.3 removed it from White_Space, and PCRE2 10.44 still counts it as \s.
 const mongolianVowelSeparator = '\u180e'
 
 // request is the text of one cue or of a sentence over several cues.
@@ -179,6 +179,9 @@ func batches(requests []request, maxCharacters int) [][]request {
 // fill writes the translation of r into the cues of r and returns the warnings.
 func fill(cues []model.Cue, r request, translation string) []Warning {
 	var warnings []Warning
+	for _, i := range r.cues {
+		cues[i].Words = nil
+	}
 	tags := r.tags
 	var tokens []token
 	if keepsPlaceholders(translation, tags) {

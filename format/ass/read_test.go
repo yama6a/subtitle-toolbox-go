@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // Ports testAegisubFileKeepsHeaderStylesAndComments of tests/Parsers/AssParserTest.php of subtitle-toolbox-php.
@@ -53,11 +53,11 @@ func TestAegisubFileConvertsOverrideTagsAndKaraoke(t *testing.T) {
 
 	s := readFile(t, realDir+"/own_aegisub.ass")
 
-	assert.Equal(t, []string{"<v Conductor>The train to the coast", "leaves from platform four."}, cueAt(t, s, 1).Lines)
-	assert.Equal(t, []string{`Platform 4: <font color="#ffd700">Coast Express</font>`}, cueAt(t, s, 3).Lines)
+	assert.Equal(t, []string{"<v Conductor>The train to the coast", "leaves from platform four."}, cueAt(t, s, 1).TaggedLines())
+	assert.Equal(t, []string{`Platform 4: <font color="#ffd700">Coast Express</font>`}, cueAt(t, s, 3).TaggedLines())
 	assert.Equal(t, model.TopCenter, cueAt(t, s, 3).Position.Alignment)
 	assert.Equal(t, []string{"<b><00:00:13.500>The <00:00:13.900>train <00:00:14.250>leaves <00:00:14.750>at <00:00:15.350>noon</b>"},
-		cueAt(t, s, 5).Lines)
+		cueAt(t, s, 5).TaggedLines())
 	d := cueData(t, cueAt(t, s, 2))
 	fields := object(t, d, "fields")
 	assert.Equal(t, []string{"Layer", "Style", "Name", "MarginL", "MarginR", "MarginV", "Effect"}, fields.Keys())
@@ -72,13 +72,13 @@ func TestSignsFileSortsCuesAndSkipsDrawingsAndUnknownTags(t *testing.T) {
 
 	s := readFile(t, realDir+"/own_signs_crlf.ass")
 
-	assert.Equal(t, []string{"<v Reporter>Clouds move in from the west during the night."}, cueAt(t, s, 1).Lines)
-	assert.Equal(t, []string{"SUNNY", "25 \xc2\xb0C"}, cueAt(t, s, 2).Lines)
+	assert.Equal(t, []string{"<v Reporter>Clouds move in from the west during the night."}, cueAt(t, s, 1).TaggedLines())
+	assert.Equal(t, []string{"SUNNY", "25 \xc2\xb0C"}, cueAt(t, s, 2).TaggedLines())
 	assert.Equal(t, "1", str(t, object(t, cueData(t, cueAt(t, s, 2)), "fields"), "Layer"))
-	assert.Empty(t, cueAt(t, s, 3).Lines)
+	assert.Empty(t, cueAt(t, s, 3).TaggedLines())
 	assert.Equal(t, model.TopLeft, cueAt(t, s, 3).Position.Alignment)
-	assert.Equal(t, []string{"<v Reporter>Expect light rain,\xc2\xa0mostly after 10\xc2\xa0pm."}, cueAt(t, s, 4).Lines)
-	assert.Equal(t, []string{"<b><i>Tomorrow:</i></b> dry and windy"}, cueAt(t, s, 5).Lines)
+	assert.Equal(t, []string{"<v Reporter>Expect light rain,\xc2\xa0mostly after 10\xc2\xa0pm."}, cueAt(t, s, 4).TaggedLines())
+	assert.Equal(t, []string{"<b><i>Tomorrow:</i></b> dry and windy"}, cueAt(t, s, 5).TaggedLines())
 
 	sections := object(t, fileData(t, s), "sections")
 	assert.Equal(t, "fontname: WeatherSans_0.ttf", strs(t, sections, "Fonts")[0])
@@ -114,7 +114,7 @@ func TestStyleFlagsAndAlignmentApplyToTheCues(t *testing.T) {
 	}
 	var got []row
 	for _, c := range readFile(t, realDir+"/own_style_flags.ass").All() {
-		got = append(got, row{c.Lines, c.Position.Alignment})
+		got = append(got, row{c.TaggedLines(), c.Position.Alignment})
 	}
 	assert.Equal(t, []row{
 		{[]string{"<v Driver>Last stop is the depot."}, model.BottomCenter},
@@ -219,7 +219,7 @@ func TestStylesApply(t *testing.T) {
 
 			s, _ := mustRead(t, tt.content, false)
 			c := cueAt(t, s, 0)
-			assert.Equal(t, tt.want, c.Lines)
+			assert.Equal(t, tt.want, c.TaggedLines())
 			assert.Equal(t, tt.alignment, c.Position.Alignment)
 		})
 	}
@@ -295,7 +295,7 @@ func TestOverrideTagsBecomeCoreMarkup(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, event(t, tt.text).Lines)
+			assert.Equal(t, tt.want, event(t, tt.text).TaggedLines())
 		})
 	}
 }
@@ -361,6 +361,12 @@ func TestFirstCueLines(t *testing.T) {
 			[]string{"a", "b"},
 		},
 		{
+			"a named karaoke cue in a bold style keeps the placement of the tags",
+			"[V4+ Styles]\nFormat: Name, Bold\nStyle: Default,-1\n\n" + eventsHeader +
+				`Dialogue: 0,0:00:13.50,0:00:16.00,Default,Conductor,0,0,0,,{\k40}The {\k35}train {\k20}{\k50}leaves` + "\n",
+			[]string{"<v Conductor><b><00:00:13.500>The <00:00:13.900>train <00:00:14.250><00:00:14.450>leaves</b>"},
+		},
+		{
 			"the name becomes the speaker on the first text line",
 			eventsHeader + `Dialogue: 0,0:00:01.00,0:00:02.00,Default,A<B,0,0,0,,{\an8}\N  Hi` + "\n",
 			[]string{"<v A&lt;B>Hi"},
@@ -371,7 +377,7 @@ func TestFirstCueLines(t *testing.T) {
 			t.Parallel()
 
 			s, _ := mustRead(t, tt.content, false)
-			assert.Equal(t, tt.want, cueAt(t, s, 0).Lines)
+			assert.Equal(t, tt.want, cueAt(t, s, 0).TaggedLines())
 		})
 	}
 }
@@ -394,7 +400,7 @@ func TestWindows1252FileReadAsUTF8KeepsItsLinesAndSpeaker(t *testing.T) {
 func linesOf(s *model.Subtitle) [][]string {
 	var out [][]string
 	for _, c := range s.All() {
-		out = append(out, c.Lines)
+		out = append(out, c.TaggedLines())
 	}
 	return out
 }
@@ -415,7 +421,7 @@ func TestEventsWithoutFormatLineUseTheDefaultColumns(t *testing.T) {
 	t.Parallel()
 
 	s, _ := mustRead(t, "[Script Info]\nScriptType: v4.00\n\n[Events]\nDialogue: Marked=0,0:00:01.00,0:00:02.00,Default,,0,0,0,,Hi\n", false)
-	assert.Equal(t, []string{"Hi"}, cueAt(t, s, 0).Lines)
+	assert.Equal(t, []string{"Hi"}, cueAt(t, s, 0).TaggedLines())
 	assert.Equal(t, []string{"Marked", "Start", "End", "Style", "Name", "MarginL", "MarginR", "MarginV", "Effect", "Text"},
 		strs(t, fileData(t, s), "eventFormat"))
 }
@@ -605,4 +611,59 @@ func TestBlankContentGivesAnEmptySubtitle(t *testing.T) {
 	s, warnings := mustRead(t, " \r\n\t", false)
 	assert.Zero(t, s.Len())
 	assert.Empty(t, warnings)
+}
+
+func TestKaraokeSyllablesAndNameBecomeWordsAndSpeaker(t *testing.T) {
+	t.Parallel()
+
+	type word struct {
+		text       string
+		start, end time.Duration
+	}
+	tests := []struct {
+		name, name2, text string
+		want              []word
+		speaker           string
+	}{
+		{
+			"each tag kind gives its length", "", `{\k50}Ka{\kf25}ra{\K100}o{\ko12.5}ke`,
+			[]word{{"Ka", 1000 * ms, 1500 * ms}, {"ra", 1500 * ms, 1750 * ms}, {"o", 1750 * ms, 2750 * ms}, {"ke", 2750 * ms, 2875 * ms}},
+			"",
+		},
+		{
+			"a gap between syllables stays", "", `{\k50}Hi {\k20}{\k30}there`,
+			[]word{{"Hi", 1000 * ms, 1500 * ms}, {"there", 1700 * ms, 2000 * ms}},
+			"",
+		},
+		{
+			"a syllable without text is not a word", "", `{\k0}{\k50}Hi {\k25}there`,
+			[]word{{"Hi", 1000 * ms, 1500 * ms}, {"there", 1500 * ms, 1750 * ms}},
+			"",
+		},
+		{
+			"text before the first tag is no word", "", `Oh {\k50}Hi`,
+			[]word{{"Hi", 1000 * ms, 1500 * ms}},
+			"",
+		},
+		{
+			"the name is the speaker", " Anna ", `{\k50}Hi`,
+			[]word{{"Hi", 1000 * ms, 1500 * ms}},
+			"Anna",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s, _ := mustRead(t, eventsHeader+"Dialogue: 0,0:00:01.00,0:00:02.00,Default,"+tt.name2+",0,0,0,,"+tt.text+"\n", false)
+			c := cueAt(t, s, 0)
+			var got []word
+			for _, w := range c.Words {
+				got = append(got, word{w.Text, w.Start, w.End})
+			}
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.speaker, c.Speaker)
+			assert.NotContains(t, strings.Join(c.Lines, "\n"), "<")
+		})
+	}
 }

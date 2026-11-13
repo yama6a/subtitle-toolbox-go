@@ -12,11 +12,11 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/extfallback"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/extfallback"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
 )
 
 const stdinArg = "-"
@@ -45,7 +45,7 @@ func inputOptions(manyInputs bool, fpsHelp string) []option {
 			"When detection finds no format, the file extension sets it."),
 		valueOption("encoding", "NAME", "Encoding of input that is not UTF-8, for example Windows-1252. "+
 			"It replaces code page detection. A BOM, valid UTF-8 and UTF-16 input win over it."),
-		flagOption("lenient", "Skip or repair broken cues and print a warning for each."),
+		flagOption("lenient", "Skip or repair broken cues and print a warning for each. Chapter input ignores it."),
 		valueOption("input-fps", "RATE", "Frame rate of a MicroDVD input without a {1}{1}<fps> first line, "+
 			"of Spruce STL timecodes, and of CSV or TSV times in hh:mm:ss:ff."),
 		valueOption("fps", "RATE", fpsHelp),

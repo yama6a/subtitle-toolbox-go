@@ -18,7 +18,7 @@ A `Subtitle` keeps its cues in start order at all times. `Cue` is plain data wit
 - **Line cleaning**: on entry, CR LF and a lone CR become LF, each run of tabs and spaces becomes 1 space, each run of LF becomes 1 LF, and each line is trimmed. U+00A0 stays. Empty lines are dropped. Cleaning is lossy: double spaces inside a line do not come back.
 - **Inner LF**: `Lines: []string{"a\nb"}` keeps one line `"a\nb"`. Only `SetText` splits at LF.
 - **No lines**: a cue with 0 lines is legal. A SubRip timing line without text gives one.
-- **Markup**: lines hold the core markup. Word times are `<hh:mm:ss.mmm>` tags and speakers are `<v Name>` tags in the text. `MapWordTimestamps` rewrites the word times.
+- **Markup**: lines hold the core markup, without word timestamps and without a whole-cue voice tag. `Words` holds the timed words, and `Speaker` the voice of the whole cue. A cue with 2 voices keeps its `<v>` tags in the lines. `SetCue` checks the words with `ValidateWords`, and `AddCue` does not. `TaggedLines` gives the lines with the tags.
 
 ## SetCue and index drift
 
