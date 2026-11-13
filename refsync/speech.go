@@ -72,16 +72,16 @@ func SpeechFromSilenceLog(log []byte, mediaDuration time.Duration) (*model.Subti
 }
 
 // SpeechFromIntervals returns a reference with one cue without text for each interval, in start order.
-// It rounds each time to whole milliseconds. It returns a *model.InvalidArgumentError for an interval with a start below 0, an end before its start,
-// or an end of 100000 hours or more.
+// It rounds each time to whole milliseconds. It returns a *model.InvalidArgumentError for an interval with a
+// start below 0, an end before its start, or an end of 100000 hours or more.
 func SpeechFromIntervals(intervals []Interval) (*model.Subtitle, error) {
 	cues := make([]model.Cue, len(intervals))
 	for i, iv := range intervals {
 		iv.Start, iv.End = iv.Start.Round(time.Millisecond), iv.End.Round(time.Millisecond)
 		if iv.Start < 0 || iv.End < iv.Start || iv.End >= timecode.MaxTime {
 			return nil, &model.InvalidArgumentError{Msg: "Interval " + strconv.Itoa(i) +
-				" must have a start of 0 or more and an end at or after its start and below 100000 hours, got " + timecode.Number(iv.Start.Seconds()) +
-				" and " + timecode.Number(iv.End.Seconds()) + "."}
+				" must have a start of 0 or more and an end at or after its start and below 100000 hours, got " +
+				timecode.Number(iv.Start.Seconds()) + " and " + timecode.Number(iv.End.Seconds()) + "."}
 		}
 		cues[i] = model.Cue{Start: iv.Start, End: iv.End}
 	}

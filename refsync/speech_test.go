@@ -193,8 +193,8 @@ func FuzzSpeechFromSilenceLog(f *testing.F) {
 	f.Add([]byte("Press [q] to stop\n"+logLine+"channel: 0 | silence_start: 1.5\n"), int64(10_000_000_000))
 	f.Add([]byte(logLine+"silence_end: 1.5\nsilence_start: 99999999999999999999\n"), int64(1))
 	f.Add([]byte("silence_start: 5\nsilence_end: 3\nsilence_start: 4\n"), int64(36_000_000_000_000))
-	f.Fuzz(func(t *testing.T, log []byte, ms int64) {
-		duration := time.Duration(1 + uint64(ms)%36_000_000_000_000)
+	f.Fuzz(func(t *testing.T, log []byte, nanos int64) {
+		duration := time.Duration(1 + uint64(nanos)%36_000_000_000_000)
 		s, err := refsync.SpeechFromSilenceLog(log, duration)
 		if err != nil {
 			assert.True(t, errors.Is(err, model.ErrParse) || errors.Is(err, model.ErrInvalidArgument), "%v", err)
