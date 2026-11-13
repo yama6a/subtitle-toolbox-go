@@ -921,7 +921,7 @@ SOFTWARE.
   - `testdata/cavena890/real/weather_greek.890`
 - Code adapted from it:
   - `format/cavena890`, the reader, the writer and the variant rules, from `src/libse/SubtitleFormats/Cavena890.cs` at `a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c`
-  - `hearingimpaired`, the hearing-impaired rules, from `src/libse/Forms/RemoveTextForHI.cs` at `5b9ee8baf08c472c7a74fbc337446b656dedabb4`
+  - `hearingimpaired` and `internal/hilabels`, the hearing-impaired rules and the speaker label rule, from `src/libse/Forms/RemoveTextForHI.cs` at `5b9ee8baf08c472c7a74fbc337446b656dedabb4`
   - `fixing/replacelist.go` and `fixing/replacelistrule.go`, the OCR replace list sections and rules, from `src/libuilogic/Ocr/FixEngine/OcrFixReplaceList2.cs` at `e1b854665b40bf6e04271c2ec64084947060e632`. The `LICENSE` file at that commit is MIT
   - `internal/cea708`, the G2 table, from `src/libse/Cea708/Cea708.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`
   - `format/mcc`, the alias letters and the hex codec, and `internal/cea708`, the CDP codec `ReadCDP` and `WriteCDP`, from `src/libse/SubtitleFormats/MacCaption10.cs` and `src/libse/Cea708/Smpte291M.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`

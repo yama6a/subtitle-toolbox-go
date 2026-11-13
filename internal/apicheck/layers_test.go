@@ -46,6 +46,7 @@ var layers = map[string]layer{
 	"internal/ebml":                 layerLeaf,
 	"internal/orderedjson":          layerLeaf,
 	"internal/markupcore":           layerLeaf,
+	"internal/hilabels":             layerMarkup,
 	"internal/teletext":             layerLeaf,
 	"internal/linewrap":             layerLeaf,
 	"internal/testfiles":            layerLeaf,
@@ -76,6 +77,7 @@ var layers = map[string]layer{
 	"stats":                         layerFacade,
 	"stream":                        layerFacade,
 	"hearingimpaired":               layerFacade,
+	"speakers":                      layerFacade,
 	"fixing":                        layerFacade,
 	"profanity":                     layerFacade,
 	"refsync":                       layerFacade,
@@ -92,6 +94,7 @@ var layers = map[string]layer{
 	"translation/internal/httppost": layerPlugin,
 	"translation/*":                 layerPluginUser,
 	"hls":                           layerFacade,
+	"resegment":                     layerFacade,
 	"internal/cli":                  layerCLI,
 	"cmd/stbox":                     layerCLI,
 }

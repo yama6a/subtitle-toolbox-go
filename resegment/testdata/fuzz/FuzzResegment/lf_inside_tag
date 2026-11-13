@@ -1,0 +1,4 @@
+go test fuzz v1
+string("&amp;\n<v A>,<ccc\r>")
+byte(0)
+byte(0)

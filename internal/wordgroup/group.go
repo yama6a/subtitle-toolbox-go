@@ -1,6 +1,7 @@
 package wordgroup
 
 import (
+	"strings"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -102,13 +103,18 @@ func CueWords(plainText string, words []Word, cueEnd time.Duration) []model.Word
 	return out
 }
 
+// foldSpaces turns each run of white space into one space and trims it, as PlainText does to the text of a cue.
+func foldSpaces(s string) string {
+	return strings.Join(strings.FieldsFunc(s, markupcore.IsSpace), " ")
+}
+
 func foundWords(plainText string, words []Word) []Word {
 	var timed []Word
 	var texts []string
 	for _, w := range words {
-		if w.Text != "" && w.Timed {
+		if text := foldSpaces(w.Text); text != "" && w.Timed {
 			timed = append(timed, w)
-			texts = append(texts, w.Text)
+			texts = append(texts, text)
 		}
 	}
 	var kept []Word
