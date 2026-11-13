@@ -12,6 +12,7 @@ const (
 	CSV           Format = "csv"
 	ITT           Format = "itt"
 	JSON          Format = "json"
+	GoogleSpeech  Format = "google-speech"
 	LRC           Format = "lrc"
 	MCC           Format = "mcc"
 	MicroDVD      Format = "microdvd"
@@ -54,6 +55,7 @@ var formatFacts = []formatFact{
 	{format: CSV, extensions: []string{"csv"}, canRead: true, canWrite: true},
 	{format: ITT, extensions: []string{"itt"}, canRead: true, canWrite: true},
 	{format: JSON, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: GoogleSpeech, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: LRC, extensions: []string{"lrc"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MCC, extensions: []string{"mcc"}, canRead: true, canWrite: true, autoDetected: true},
 	{format: MicroDVD, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},

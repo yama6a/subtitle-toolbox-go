@@ -33,6 +33,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/tmplayer"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
@@ -138,6 +139,7 @@ var registry = []formatFuncs{
 	{format: CSV, read: readCSV, write: writeCSV},
 	{format: ITT, read: readITT, write: writeITT},
 	{format: JSON, read: readJSON, write: writeJSON},
+	{format: GoogleSpeech, read: readGoogleSpeech, write: writeGoogleSpeech},
 	{format: LRC, read: readLRC, write: writeLRC},
 	{format: MCC, read: readMCC, write: writeMCC},
 	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
@@ -292,6 +294,14 @@ func readJSON(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subt
 func writeJSON(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	_, err := stboxjson.Write(w, s, common, opts.JSON)
 	return WriteReport{}, err
+}
+
+func readGoogleSpeech(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return transcript.ReadGoogleSpeech(r, common, opts.Transcript)
+}
+
+func writeGoogleSpeech(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	return WriteReport{}, transcript.WriteGoogleSpeech(w, s, common, opts.Transcript)
 }
 
 func readVobSub(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {

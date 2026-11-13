@@ -1,0 +1,141 @@
+{
+  "name": "7612202767953098924",
+  "metadata": {
+    "@type": "type.googleapis.com/google.cloud.speech.v1.LongRunningRecognizeMetadata",
+    "progressPercent": 100,
+    "startTime": "2026-09-14T09:01:12.033650Z",
+    "lastUpdateTime": "2026-09-14T09:01:31.158630Z"
+  },
+  "done": true,
+  "response": {
+    "@type": "type.googleapis.com/google.cloud.speech.v1.LongRunningRecognizeResponse",
+    "results": [
+      {
+        "alternatives": [
+          {
+            "transcript": "okay the bus to the airport leaves every twenty minutes",
+            "confidence": 0.9612345,
+            "words": [
+              {
+                "startTime": "0.200s",
+                "endTime": "0.660s",
+                "word": "okay"
+              },
+              {
+                "startTime": "0.660s",
+                "endTime": "1.080s",
+                "word": "the"
+              },
+              {
+                "startTime": "1.080s",
+                "endTime": "1.500s",
+                "word": "bus"
+              },
+              {
+                "startTime": "1.500s",
+                "endTime": "1.880s",
+                "word": "to"
+              },
+              {
+                "startTime": "1.880s",
+                "endTime": "2.300s",
+                "word": "the"
+              },
+              {
+                "startTime": "2.300s",
+                "endTime": "2.680s",
+                "word": "airport"
+              },
+              {
+                "startTime": "2.680s",
+                "endTime": "3.020s",
+                "word": "leaves"
+              },
+              {
+                "startTime": "3.020s",
+                "endTime": "3.320s",
+                "word": "every"
+              },
+              {
+                "startTime": "3.320s",
+                "endTime": "3.660s",
+                "word": "twenty"
+              },
+              {
+                "startTime": "3.660s",
+                "endTime": "4.040s",
+                "word": "minutes"
+              }
+            ]
+          }
+        ],
+        "resultEndTime": "4.390s",
+        "languageCode": "en-us"
+      },
+      {
+        "alternatives": [
+          {
+            "transcript": " the first one is at five thirty in the morning",
+            "confidence": 0.9512345,
+            "words": [
+              {
+                "startTime": "4.940s",
+                "endTime": "5.360s",
+                "word": "the"
+              },
+              {
+                "startTime": "5.360s",
+                "endTime": "5.660s",
+                "word": "first"
+              },
+              {
+                "startTime": "5.660s",
+                "endTime": "6.080s",
+                "word": "one"
+              },
+              {
+                "startTime": "6.080s",
+                "endTime": "6.460s",
+                "word": "is"
+              },
+              {
+                "startTime": "6.460s",
+                "endTime": "6.840s",
+                "word": "at"
+              },
+              {
+                "startTime": "6.840s",
+                "endTime": "7.300s",
+                "word": "five"
+              },
+              {
+                "startTime": "7.300s",
+                "endTime": "7.640s",
+                "word": "thirty"
+              },
+              {
+                "startTime": "7.640s",
+                "endTime": "8.020s",
+                "word": "in"
+              },
+              {
+                "startTime": "8.020s",
+                "endTime": "8.440s",
+                "word": "the"
+              },
+              {
+                "startTime": "8.440s",
+                "endTime": "8.820s",
+                "word": "morning"
+              }
+            ]
+          }
+        ],
+        "resultEndTime": "9.170s",
+        "languageCode": "en-us"
+      }
+    ],
+    "totalBilledTime": "15s",
+    "requestId": "8134561079217445238"
+  }
+}

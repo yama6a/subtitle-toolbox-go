@@ -206,6 +206,7 @@ func ExampleFormats() {
 	// csv [csv]
 	// itt [itt]
 	// json [json]
+	// google-speech [json]
 	// lrc [lrc]
 	// mcc [mcc]
 	// microdvd [sub]
