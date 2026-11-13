@@ -322,6 +322,9 @@ func isTag(s string) bool {
 // TagWords returns lines with the word timestamp tag of each word at its mark, and the voice tag. A word without a
 // mark gets no tag.
 func TagWords(lines []string, words []TimedText, voice Voice) []string {
+	if len(lines) == 0 {
+		return nil
+	}
 	marks := WordMarks(lines, wordTexts(words))
 	out := make([]string, len(lines))
 	k := 0
@@ -337,9 +340,14 @@ func TagWords(lines []string, words []TimedText, voice Voice) []string {
 		b.WriteString(line[copied:])
 		out[i] = b.String()
 	}
-	if voice.Name == "" {
-		return out
+	if voice.Name != "" {
+		addVoice(out, voice)
 	}
+	return out
+}
+
+// addVoice puts the voice tag before the first line with visible text and, with Close, </v> after the last one.
+func addVoice(lines []string, voice Voice) {
 	first, last := -1, -1
 	for i, line := range lines {
 		if HasVisibleText([]string{line}) {
@@ -349,13 +357,13 @@ func TagWords(lines []string, words []TimedText, voice Voice) []string {
 			last = i
 		}
 	}
-	if first >= 0 {
-		out[first] = "<v" + voice.Class + " " + EscapeText(voice.Name) + ">" + out[first]
-		if voice.Close {
-			out[last] += "</v>"
-		}
+	if first < 0 {
+		return
 	}
-	return out
+	lines[first] = "<v" + voice.Class + " " + EscapeText(voice.Name) + ">" + lines[first]
+	if voice.Close {
+		lines[last] += "</v>"
+	}
 }
 
 // WordTags is what ExtractWordTags found in the lines of a cue.

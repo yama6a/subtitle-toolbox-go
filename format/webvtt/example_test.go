@@ -26,7 +26,7 @@ intro
 		return
 	}
 	c, _ := s.Cue(0)
-	fmt.Println(c.ID, c.Start, c.End, c.Position.Alignment, c.Text())
+	fmt.Println(c.ID, c.Start, c.End, c.Position.Alignment, taggedText(c))
 	fmt.Println(s.Comments()[0].Text)
 	file, _ := s.FormatData("vtt")
 	headerLines, _ := file.Strings("headerLines")

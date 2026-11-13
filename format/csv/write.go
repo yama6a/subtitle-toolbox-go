@@ -56,7 +56,7 @@ func write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	speakers := make([]string, len(cues))
 	texts := make([]string, len(cues))
 	for i, c := range cues {
-		speakers[i], texts[i] = splitSpeaker(c.Lines)
+		speakers[i], texts[i] = splitSpeaker(c.TaggedLines())
 	}
 	columns, header, quoted := layoutOf(file, hasFile, cues, speakers)
 	var seconds []string

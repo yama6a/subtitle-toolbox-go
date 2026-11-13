@@ -28,6 +28,7 @@ type taggedSource struct {
 	plain   []string // Lines after ExtractWordTags
 	speaker string
 	voice   markupcore.Voice // the voice of the cue right after ExtractWordTags
+	form    markupcore.Voice // the voice as the lines held it, with its class and end
 	words   []markupcore.TimedText
 }
 
@@ -161,6 +162,7 @@ func (c *Cue) ExtractWordTags() {
 			plain:   slices.Clone(got.Lines),
 			speaker: c.Speaker,
 			voice:   c.voice(),
+			form:    got.Voice,
 			words:   timedTexts(c.Words),
 		}
 	}
@@ -201,7 +203,12 @@ func (c Cue) TaggedLines() []string {
 		c.voice() == t.voice && slices.Equal(timedTexts(c.Words), t.words) {
 		return slices.Clone(t.lines)
 	}
-	return markupcore.TagWords(c.Lines, timedTexts(c.Words), c.voice())
+	voice := c.voice()
+	if t := c.tagged; t != nil && c.Speaker == t.speaker && c.formatData["vtt"] == nil {
+		// Without vtt format data the cue cannot hold the end of the voice, so an edited cue keeps the form it was read in.
+		voice = t.form
+	}
+	return markupcore.TagWords(c.Lines, timedTexts(c.Words), voice)
 }
 
 func cloneWords(words []Word) []Word {
@@ -224,4 +231,21 @@ func roundWords(words []Word) []Word {
 		words[i].End = words[i].End.Round(time.Millisecond)
 	}
 	return words
+}
+
+// moveWords sets the start and the end of each word to fn of it.
+func (c *Cue) moveWords(fn func(time.Duration) time.Duration) {
+	for i := range c.Words {
+		c.Words[i].Start, c.Words[i].End = fn(c.Words[i].Start), fn(c.Words[i].End)
+	}
+}
+
+// latestTime returns the later of the end of c and the end of its last word. Word ends do not decrease in practice,
+// but the check does not rely on it.
+func (c Cue) latestTime() time.Duration {
+	latest := max(c.Start, c.End)
+	for _, w := range c.Words {
+		latest = max(latest, w.End)
+	}
+	return latest
 }

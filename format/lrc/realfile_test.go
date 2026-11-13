@@ -38,7 +38,7 @@ func describe(t *testing.T, s *model.Subtitle) []any {
 
 	var cues []cueRow
 	for _, c := range s.All() {
-		cues = append(cues, cueRow{c.Start.Round(10 * ms), c.End.Round(10 * ms), c.Text()})
+		cues = append(cues, cueRow{c.Start.Round(10 * ms), c.End.Round(10 * ms), taggedText(c)})
 	}
 	return []any{cues, s.AllMetadata(), fileData(t, s), s.Comments()}
 }

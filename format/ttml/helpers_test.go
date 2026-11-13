@@ -81,7 +81,7 @@ func paragraphCue(t *testing.T, p, rootAttributes, head string) model.Cue {
 func cueRows(s *model.Subtitle) []cueRow {
 	out := make([]cueRow, 0, s.Len())
 	for _, c := range s.All() {
-		out = append(out, cueRow{c.Start, c.End, c.Text()})
+		out = append(out, cueRow{c.Start, c.End, taggedText(c)})
 	}
 	return out
 }

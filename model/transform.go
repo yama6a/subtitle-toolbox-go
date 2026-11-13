@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -15,8 +16,6 @@ import (
 
 // regexTimeout limits each match of a user pattern, because regexp2 backtracks and can run without end.
 const regexTimeout = time.Second
-
-var wordTimestampRegexp = regexp.MustCompile(markupcore.WordTimestampPattern)
 
 // ReplaceOptions holds the settings of ReplaceText.
 type ReplaceOptions struct {
@@ -31,12 +30,10 @@ type ReplaceOptions struct {
 type StripOptions struct {
 	// KeepTags names the tags to keep, compared in lower case, for example "i". Nil removes every tag.
 	KeepTags []string
-	// RemoveWordTimestamps also removes the <hh:mm:ss.mmm> word timestamps. False keeps them.
-	RemoveWordTimestamps bool
 }
 
 // EditLines calls fn for each cue with its index and a copy, and sets the cleaned lines that fn returns when fn
-// returns true. Then it removes each cue that had text before and has none after, by hasText, or by
+// returns true. It then searches the words of a cue with changed lines again with SyncWords. Then it removes each cue that had text before and has none after, by hasText, or by
 // markup.HasVisibleText when hasText is nil. A comment before a removed cue moves to the next cue.
 // A cue without text before stays. A cue that holds an image stays too, because its removal would drop the image.
 // EditLines returns the old indexes of the removed cues in ascending order.
@@ -53,6 +50,9 @@ func (s *Subtitle) EditLines(fn func(i int, c Cue) (lines []string, ok bool), ha
 		}
 		before := s.cues[i].Lines
 		s.cues[i].Lines = cleanLines(lines)
+		if !slices.Equal(before, s.cues[i].Lines) {
+			s.cues[i].SyncWords()
+		}
 		if s.cues[i].Image == nil && hasText(before) && !hasText(s.cues[i].Lines) {
 			removed = append(removed, i)
 		}
@@ -191,25 +191,16 @@ func replaceASCIIFold(text, search, replace string) string {
 	return b.String()
 }
 
-// StripFormatting removes each tag of each line whose name is not in opts.KeepTags. It keeps the word timestamps
-// unless opts.RemoveWordTimestamps is set. ASS override blocks such as {\an8} are no tags and stay.
+// StripFormatting removes each tag of each line whose name is not in opts.KeepTags. The words stay. Speaker goes,
+// unless opts.KeepTags holds "v". ASS override blocks such as {\an8} are no tags and stay.
 // A cue that loses all its text goes, as EditLines says.
 func (s *Subtitle) StripFormatting(opts StripOptions) {
-	strip := func(text string) string { return markupcore.KeepTags(text, opts.KeepTags...) }
-	s.MapLines(func(line string, _ Cue) string {
-		if opts.RemoveWordTimestamps {
-			return strip(line)
+	s.MapLines(func(line string, _ Cue) string { return markupcore.KeepTags(line, opts.KeepTags...) })
+	if !slices.ContainsFunc(opts.KeepTags, func(name string) bool { return strings.EqualFold(name, "v") }) {
+		for i := range s.cues {
+			s.cues[i].Speaker = ""
 		}
-		var b strings.Builder
-		copied := 0
-		for _, loc := range wordTimestampRegexp.FindAllStringIndex(line, -1) {
-			b.WriteString(strip(line[copied:loc[0]]))
-			b.WriteString(line[loc[0]:loc[1]])
-			copied = loc[1]
-		}
-		b.WriteString(strip(line[copied:]))
-		return b.String()
-	})
+	}
 }
 
 // FixRightToLeft wraps each line with a right-to-left letter in U+202B and U+202C, inside its leading and trailing

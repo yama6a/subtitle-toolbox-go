@@ -102,7 +102,7 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions, opt
 func cueRows(s *model.Subtitle) []cueRow {
 	var rows []cueRow
 	for _, c := range s.All() {
-		rows = append(rows, cueRow{c.Start, c.End, c.Lines})
+		rows = append(rows, cueRow{c.Start, c.End, c.TaggedLines()})
 	}
 	return rows
 }

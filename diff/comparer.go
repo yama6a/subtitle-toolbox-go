@@ -38,7 +38,7 @@ func describe(cues []model.Cue, opts Options) (texts []string, starts, ends []fl
 	starts = make([]float64, len(cues))
 	ends = make([]float64, len(cues))
 	for i, cue := range cues {
-		texts[i] = comparedText(cue.Text(), opts)
+		texts[i] = comparedText(strings.Join(cue.TaggedLines(), "\n"), opts)
 		starts[i] = timecode.FloatSeconds(cue.Start)
 		ends[i] = timecode.FloatSeconds(cue.End)
 	}

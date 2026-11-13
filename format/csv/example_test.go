@@ -20,7 +20,7 @@ func ExampleRead() {
 		return
 	}
 	for _, c := range s.All() {
-		fmt.Println(c.Start, c.End, c.Lines)
+		fmt.Println(c.Start, c.End, c.TaggedLines())
 	}
 	fmt.Println(len(warnings), "warnings")
 	// Output:

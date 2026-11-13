@@ -29,6 +29,7 @@ func cuesAt(times [][2]float64, texts ...string) *model.Subtitle {
 	for i, text := range texts {
 		c := model.Cue{Start: sec(times[i][0]), End: sec(times[i][1])}
 		c.SetText(text)
+		c.ExtractWordTags()
 		s.AddCue(c)
 	}
 	return &s
@@ -45,7 +46,7 @@ func load(t *testing.T, rel string) *model.Subtitle {
 func lines(s *model.Subtitle) [][]string {
 	var out [][]string
 	for _, c := range s.All() {
-		out = append(out, c.Lines)
+		out = append(out, c.TaggedLines())
 	}
 	return out
 }
@@ -415,4 +416,21 @@ func TestApplyLongPadding(t *testing.T) {
 	require.Len(t, report.MuteRanges, 1)
 	assert.Equal(t, time.Duration(0), report.MuteRanges[0].Start)
 	assert.Greater(t, report.MuteRanges[0].End, time.Duration(0))
+}
+
+func TestApplyMasksTheWordsToo(t *testing.T) {
+	t.Parallel()
+
+	var s model.Subtitle
+	s.AddCue(model.Cue{
+		Start: sec(1), End: sec(3), Lines: []string{"damn it"},
+		Words: []model.Word{{Text: "damn", Start: sec(1.5), End: sec(2)}, {Text: "it", Start: sec(2), End: sec(3)}},
+	})
+	report, err := profanity.Apply(&s, profanity.Options{Words: []string{"damn"}})
+	require.NoError(t, err)
+
+	c, _ := s.Cue(0)
+	assert.Equal(t, []string{"**** it"}, c.Lines)
+	assert.Equal(t, []model.Word{{Text: "****", Start: sec(1.5), End: sec(2)}, {Text: "it", Start: sec(2), End: sec(3)}}, c.Words)
+	assert.Equal(t, []profanity.MuteRange{span(1.5, 2)}, report.MuteRanges)
 }

@@ -58,13 +58,13 @@ func ExampleSubtitle_ReplaceText() {
 
 func ExampleSubtitle_StripFormatting() {
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{`<v Fred><b><i>Run</i></b>, <font color="#ff0000">now</font> <00:00:02.000>&amp; hide!`}})
+	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{`<v Fred><b><i>Run</i></b>, <font color="#ff0000">now</font> &amp; hide!`}})
 
 	s.StripFormatting(model.StripOptions{KeepTags: []string{"i"}})
 
 	fmt.Println(s.Cues()[0].Text())
 	// Output:
-	// <i>Run</i>, now <00:00:02.000>&amp; hide!
+	// <i>Run</i>, now &amp; hide!
 }
 
 func ExampleSubtitle_MapText() {

@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 
 var voiceTagRegexp = regexp.MustCompile(`(?i)` + markupcore.VoiceTagPattern)
 
-// Append adds copies of the cues of other with their start, end and word timestamps moved by offset.
+// Append adds copies of the cues of other with their start, end and words moved by offset.
 // A time that becomes negative becomes 0. The cues take their place in start order, and each comment stays before its cue.
 // A comment of s after its last cue comes before the first copied cue. Metadata and file format data of s win
 // over other, per key. Other stays as it is. Append returns an error that matches ErrInvalidArgument and changes
@@ -31,7 +32,7 @@ func (s *Subtitle) Append(other *Subtitle, offset time.Duration) error {
 	for i := range copies {
 		c := &copies[i]
 		c.Start, c.End = r.at(c.Start), r.at(c.End)
-		c.MapWordTimestamps(r.at)
+		c.moveWords(r.at)
 	}
 	anchors := s.commentAnchors()
 	if len(copies) > 0 {
@@ -72,7 +73,7 @@ func (s *Subtitle) addMissingKeys(other *Subtitle) {
 }
 
 // Slice returns a copy of s with the cues that overlap the range from to to, cut at both bounds. A cue that only
-// touches the range drops. With moveToZero, the times and word timestamps of the copy move back by from, and a time
+// touches the range drops. With moveToZero, the times and words of the copy move back by from, and a time
 // below 0 becomes 0. The copy keeps the metadata, the file format data and the comments before the kept cues.
 // A comment after the last cue stays when the last cue stays. Slice returns an error that matches
 // ErrInvalidArgument when from is after to.
@@ -93,7 +94,7 @@ func (s *Subtitle) Slice(from, to time.Duration, moveToZero bool) (*Subtitle, er
 		}
 		// PHP subtracts from before it rounds, so a from of 2.0005 s turns a start of 2.0005 s into 0, not 0.001 s.
 		c.Start, c.End = toZero.at(c.Start), toZero.at(c.End)
-		c.MapWordTimestamps(toZero.at)
+		c.moveWords(toZero.at)
 		return true
 	}), nil
 }
@@ -131,8 +132,9 @@ func (s *Subtitle) copyWith(keep func(c *Cue) bool) *Subtitle {
 }
 
 // SplitCue splits the cue at index at the time at. The first cue keeps the lines 1 to splitAfterLine and ends at at.
-// The second cue starts at at, holds the other lines, has no ID, and copies the alignment, the forced flag and
-// the format data. It takes its place in start order after the first cue. Word timestamps do not move.
+// The second cue starts at at, holds the other lines, has no ID, and copies the alignment, the forced flag, the speaker and
+// the format data. It takes its place in start order after the first cue. Words do not move.
+// A word goes to the first cue when its text starts in one of the first lines, else to the second cue.
 // SplitCue returns an error that matches ErrCueNotFound when no cue has the index, and an error that matches
 // ErrInvalidArgument when at is not inside the cue or splitAfterLine leaves no line for one of the 2 cues.
 func (s *Subtitle) SplitCue(index int, at time.Duration, splitAfterLine int) error {
@@ -153,8 +155,11 @@ func (s *Subtitle) SplitCue(index int, at time.Duration, splitAfterLine int) err
 	second.ID = ""
 	second.Start = at
 	second.Lines = slices.Clone(c.Lines[splitAfterLine:])
+	second.Words, c.Words = splitWords(c, splitAfterLine)
 	c.End = at
 	c.Lines = slices.Clip(c.Lines[:splitAfterLine])
+	c.SyncWords()
+	second.SyncWords()
 	s.cues[index] = c
 
 	later := s.cues[index+1:]
@@ -171,7 +176,21 @@ func (s *Subtitle) SplitCue(index int, at time.Duration, splitAfterLine int) err
 	return nil
 }
 
-// JoinCues joins the cues first to last into cue first, with the lines of all of them in order and the latest end.
+// splitWords returns the words of c that come after the first lines, and the words that come before.
+func splitWords(c Cue, after int) (later, earlier []Word) {
+	marks := markupcore.WordMarks(c.Lines, wordTexts(c.Words))
+	for i, w := range c.Words {
+		if i < len(marks) && marks[i].Line < after {
+			earlier = append(earlier, w)
+		} else {
+			later = append(later, w)
+		}
+	}
+	return later, earlier
+}
+
+// JoinCues joins the cues first to last into cue first, with the lines and the words of all of them in order and the
+// latest end. When the cues have different speakers, each speaker goes into a <v> tag of its own lines.
 // The joined cue keeps the start, the ID, the alignment, the forced flag and the format data of cue first, and
 // the comments before the joined cues move before it. JoinCues returns an error that matches ErrCueNotFound
 // when no cue has the index first or last, and an error that matches ErrInvalidArgument when first is not below last
@@ -190,13 +209,10 @@ func (s *Subtitle) JoinCues(first, last int) error {
 		return invalidArgument(fmt.Sprintf("Cannot join cues %d to %d: cue %d holds an image, and a join would drop it.", first, last, first+i))
 	}
 
-	joined := s.cues[first]
-	var lines []string
+	joined := joinParts(s.cues[first], s.cues[first:last+1])
 	for _, c := range s.cues[first : last+1] {
-		lines = append(lines, c.Lines...)
 		joined.End = max(joined.End, c.End)
 	}
-	joined.Lines = lines
 
 	anchors := s.commentAnchors()
 	s.cues[first] = joined
@@ -215,9 +231,10 @@ func (s *Subtitle) JoinCues(first, last int) error {
 	return nil
 }
 
-// RemoveDuplicateCues never joins an image cue. It joins each run of neighbouring cues with the same text, tags included, that overlap,
-// touch or are at most maxGap apart. The cues of a run also have the same alignment, forced flag, speakers and
-// format data. A run joins into its first cue, which keeps its lines and ends at the latest end of the run.
+// RemoveDuplicateCues never joins an image cue. It joins each run of neighbouring cues with the same text, speaker and
+// words, tags included, that overlap, touch or are at most maxGap apart. The cues of a run also have the same alignment,
+// forced flag, speakers and format data. A run joins into its first cue, which keeps its lines and words and ends at
+// the latest end of the run.
 // The comments before the joined cues move before it. RemoveDuplicateCues rounds maxGap to whole milliseconds,
 // and returns an error that matches ErrInvalidArgument when maxGap is below 0.
 func (s *Subtitle) RemoveDuplicateCues(maxGap time.Duration) error {
@@ -226,15 +243,16 @@ func (s *Subtitle) RemoveDuplicateCues(maxGap time.Duration) error {
 	}
 	maxGap = maxGap.Round(time.Millisecond)
 	s.joinRuns(func(first Cue, runEnd time.Duration, c Cue) bool {
-		return c.Text() == first.Text() && canJoin(first, c) && sameFormatData(first.formatData, c.formatData) &&
+		return textKey(c) == textKey(first) && canJoin(first, c) && sameFormatData(first.formatData, c.formatData) &&
 			c.Start-runEnd <= maxGap && first.Start-c.End <= maxGap
-	}, func(run []Cue) []string { return run[0].Lines })
+	}, func(run []Cue) []Cue { return run[:1] })
 	return nil
 }
 
 // MergeSameTimeCues never joins an image cue. It joins each run of neighbouring cues whose start and end both differ by at most timeTolerance
 // from the first cue of the run. The cues of a run also have the same alignment and forced flag. The joined cue
-// holds the lines of the run in order, without the lines of a cue whose text came before in the run. It keeps the
+// holds the lines and the words of the run in order, without the lines and the words of a cue whose text, speaker
+// and words came before in the run. It keeps the
 // start, the ID and the format data of the first cue and ends at the latest end of the run. The comments before
 // the joined cues move before it. MergeSameTimeCues rounds timeTolerance to whole milliseconds, and returns
 // an error that matches ErrInvalidArgument when timeTolerance is below 0.
@@ -246,25 +264,25 @@ func (s *Subtitle) MergeSameTimeCues(timeTolerance time.Duration) error {
 	s.joinRuns(func(first Cue, _ time.Duration, c Cue) bool {
 		return first.Image == nil && c.Image == nil && c.Forced == first.Forced && c.Position.Alignment.Numpad() == first.Position.Alignment.Numpad() &&
 			(c.Start-first.Start).Abs() <= tol && (c.End-first.End).Abs() <= tol
-	}, func(run []Cue) []string {
-		var lines []string
+	}, func(run []Cue) []Cue {
+		var parts []Cue
 		seen := make(map[string]bool, len(run))
 		for _, c := range run {
-			if text := c.Text(); !seen[text] {
-				seen[text] = true
-				lines = append(lines, c.Lines...)
+			if key := textKey(c); !seen[key] {
+				seen[key] = true
+				parts = append(parts, c)
 			}
 		}
-		return lines
+		return parts
 	})
 	return nil
 }
 
 // joinRuns joins each run of neighbouring cues into the first cue of the run, which ends at the latest end of the run
-// and gets the lines that linesOf returns for the run. A cue continues the run when continues returns true for the
+// and gets the lines, the words and the speaker of the cues that partsOf returns for the run, as joinParts joins them. A cue continues the run when continues returns true for the
 // first cue of the run, the latest end of the run so far, and the cue. The comments before the joined cues
 // move before the first cue.
-func (s *Subtitle) joinRuns(continues func(first Cue, runEnd time.Duration, c Cue) bool, linesOf func(run []Cue) []string) {
+func (s *Subtitle) joinRuns(continues func(first Cue, runEnd time.Duration, c Cue) bool, partsOf func(run []Cue) []Cue) {
 	n := len(s.cues)
 	newIndex := make([]int, n)
 	out := make([]Cue, 0, n)
@@ -276,7 +294,7 @@ func (s *Subtitle) joinRuns(continues func(first Cue, runEnd time.Duration, c Cu
 			j++
 		}
 		if j-i > 1 {
-			joined.Lines = linesOf(s.cues[i:j])
+			joined = joinParts(joined, partsOf(s.cues[i:j]))
 		}
 		for k := i; k < j; k++ {
 			newIndex[k] = len(out)
@@ -299,15 +317,65 @@ func canJoin(a, b Cue) bool {
 	return a.Image == nil && b.Image == nil && a.Position.Alignment.Numpad() == b.Position.Alignment.Numpad() && a.Forced == b.Forced && slices.Equal(speakers(a), speakers(b))
 }
 
-// speakers returns the names of the <v> tags of c, trimmed, without repeats, in byte order.
+// speakers returns Speaker and the names of the <v> tags of c, trimmed, without repeats, in byte order.
 func speakers(c Cue) []string {
 	matches := voiceTagRegexp.FindAllStringSubmatch(c.Text(), -1)
-	names := make([]string, 0, len(matches))
+	names := make([]string, 0, len(matches)+1)
+	if c.Speaker != "" {
+		names = append(names, c.Speaker)
+	}
 	for _, m := range matches {
 		names = append(names, strings.Trim(m[2], markupcore.PHPTrimSet))
 	}
 	slices.Sort(names)
 	return slices.Compact(names)
+}
+
+// textKey identifies the text of c for the comparison of cues: the text, the speaker, and the text and start of each word.
+func textKey(c Cue) string {
+	var b strings.Builder
+	b.WriteString(c.Text())
+	b.WriteByte(0)
+	b.WriteString(c.Speaker)
+	for _, w := range c.Words {
+		b.WriteByte(0)
+		b.WriteString(w.Text)
+		b.WriteByte(0)
+		b.WriteString(strconv.FormatInt(w.Start.Milliseconds(), 10))
+	}
+	return b.String()
+}
+
+// joinParts returns first with the lines and the words of the parts in order. It leaves out a word that starts before
+// the last kept word. When all parts have the same speaker, the joined cue keeps it. Else each part writes its voice
+// into its own lines as a <v> tag, so a joined cue with 2 voices holds 2 <v> tags and a single voice becomes the
+// speaker again.
+func joinParts(first Cue, parts []Cue) Cue {
+	first.Lines, first.Words = nil, nil
+	sameSpeaker := true
+	for _, p := range parts {
+		sameSpeaker = sameSpeaker && p.Speaker == parts[0].Speaker
+	}
+	for _, p := range parts {
+		lines := p.Lines
+		if !sameSpeaker {
+			lines = markupcore.TagWords(lines, nil, p.voice())
+		}
+		first.Lines = append(first.Lines, lines...)
+		for _, w := range p.Words {
+			if n := len(first.Words); n == 0 || w.Start >= first.Words[n-1].Start {
+				first.Words = append(first.Words, w)
+			}
+		}
+	}
+	first.Words = cloneWords(first.Words)
+	if sameSpeaker {
+		first.Speaker = parts[0].Speaker
+		return first
+	}
+	first.Speaker = ""
+	first.ExtractWordTags()
+	return first
 }
 
 func sameFormatData(a, b map[string]*Data) bool {

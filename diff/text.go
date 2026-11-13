@@ -41,7 +41,7 @@ func writeCue(b *strings.Builder, marker string, c *model.Cue) {
 		b.WriteString(" forced")
 	}
 	b.WriteByte('\n')
-	for _, line := range c.Lines {
+	for _, line := range c.TaggedLines() {
 		b.WriteString("  " + line + "\n")
 	}
 }

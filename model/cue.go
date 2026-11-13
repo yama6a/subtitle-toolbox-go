@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
 )
 
 // Cue is one timed text block.
@@ -50,13 +49,6 @@ func (c *Cue) SetText(text string) {
 func (c *Cue) AddLine(line string) {
 	if line = cleanLine(line); line != "" {
 		c.Lines = append(c.Lines, line)
-	}
-}
-
-// MapWordTimestamps replaces the time of each word timestamp in the lines, such as <00:00:02.000>, with fn of it.
-func (c *Cue) MapWordTimestamps(fn func(time.Duration) time.Duration) {
-	for i, line := range c.Lines {
-		c.Lines[i] = markup.MapWordTimestamps(line, fn)
 	}
 }
 

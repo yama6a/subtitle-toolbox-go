@@ -71,58 +71,6 @@ func TestCueAddLine(t *testing.T) {
 	assert.Equal(t, []string{"first line", "second line"}, c.Lines)
 }
 
-func TestCueMapWordTimestamps(t *testing.T) {
-	t.Parallel()
-
-	double := func(d time.Duration) time.Duration { return 2*d - 3*time.Second }
-	tests := []struct {
-		name  string
-		lines []string
-		fn    func(time.Duration) time.Duration
-		want  []string
-	}{
-		{
-			"below 0 becomes 0",
-			[]string{"One <00:00:01.000>two <00:00:02.500>three"},
-			double,
-			[]string{"One <00:00:00.000>two <00:00:02.000>three"},
-		},
-		{
-			"each line",
-			[]string{"<00:00:01.000>Hi", "<00:59:59.500>there"},
-			func(d time.Duration) time.Duration { return d + 2*time.Second },
-			[]string{"<00:00:03.000>Hi", "<01:00:01.500>there"},
-		},
-		{
-			"rounds to whole milliseconds",
-			[]string{"<00:00:01.000>Hi"},
-			func(d time.Duration) time.Duration { return d + 500*time.Microsecond },
-			[]string{"<00:00:01.001>Hi"},
-		},
-		{
-			"more than 2 hour digits",
-			[]string{"<100:59:59.999>end"},
-			func(d time.Duration) time.Duration { return d + time.Millisecond },
-			[]string{"<101:00:00.000>end"},
-		},
-		{
-			"not word timestamps",
-			[]string{"<01:02.500> <00:60:00.000> <00:00:01.50> <0:00:01.500> <b>x</b>"},
-			func(time.Duration) time.Duration { return 0 },
-			[]string{"<01:02.500> <00:60:00.000> <00:00:01.50> <0:00:01.500> <b>x</b>"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			c := model.Cue{Lines: tt.lines}
-			c.MapWordTimestamps(tt.fn)
-			assert.Equal(t, tt.want, c.Lines)
-		})
-	}
-}
-
 func TestCueClone(t *testing.T) {
 	t.Parallel()
 
