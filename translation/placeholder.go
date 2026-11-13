@@ -170,6 +170,15 @@ func tokenize(translation string) []token {
 	return tokens
 }
 
+// plainTokens makes one text token of a translation after removePlaceholders. Removing a placeholder can join the
+// rest to a new one, such as "<x<x1/>1>", so the result is text and no tokenize input.
+func plainTokens(translation string) []token {
+	if translation == "" {
+		return nil
+	}
+	return []token{{kind: textToken, text: markupcore.DecodeEntities(translation)}}
+}
+
 const placeholderSpace = " \t\n\v\f\r"
 
 func appendText(out []token, s string) []token {
@@ -183,41 +192,29 @@ func appendText(out []token, s string) []token {
 	return append(out, token{kind: textToken, text: s})
 }
 
-// emptyPairStart returns the index of the open token of number that the end of out holds with only white space
-// after it, or -1.
-func emptyPairStart(out []token, number int) int {
-	n := len(out)
-	if n > 0 && out[n-1].kind == openToken && out[n-1].number == number {
-		return n - 1
-	}
-	if n > 1 && out[n-2].kind == openToken && out[n-2].number == number &&
-		out[n-1].kind == textToken && strings.Trim(out[n-1].text, placeholderSpace) == "" {
-		return n - 2
-	}
-	return -1
-}
-
 // dropEmptyPairs removes each open token that its close token follows with only white space between them.
-// The white space stays.
+// The white space stays. It never joins text tokens, so its cost is linear in the tokens.
 func dropEmptyPairs(tokens []token) []token {
 	out := make([]token, 0, len(tokens))
+	blank := make([]bool, 0, len(tokens))
+	// blankStart is the index of the first token of the white space text tokens at the end of out.
+	blankStart := 0
 	for _, t := range tokens {
-		switch {
-		case t.kind == textToken:
-			out = appendText(out, t.text)
-		case t.kind != closeToken:
-			out = append(out, t)
-		default:
-			start := emptyPairStart(out, t.number)
-			if start < 0 {
-				out = append(out, t)
-				break
+		isBlank := t.kind == textToken && strings.Trim(t.text, placeholderSpace) == ""
+		if t.kind == closeToken && blankStart > 0 && out[blankStart-1].kind == openToken && out[blankStart-1].number == t.number {
+			p := blankStart - 1
+			out = append(out[:p], out[p+1:]...)
+			blank = append(blank[:p], blank[p+1:]...)
+			blankStart = p
+			for blankStart > 0 && blank[blankStart-1] {
+				blankStart--
 			}
-			var space string
-			if start+1 < len(out) {
-				space = out[start+1].text
-			}
-			out = appendText(out[:start], space)
+			continue
+		}
+		out = append(out, t)
+		blank = append(blank, isBlank)
+		if !isBlank {
+			blankStart = len(out)
 		}
 	}
 	return out
