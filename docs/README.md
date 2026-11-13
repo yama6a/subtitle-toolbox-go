@@ -26,6 +26,7 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [validation.md](validation.md) | `validation` and `stbox validate`: the 19 rules, their units, the order of the violations and the command options |
 | [text.md](text.md) | case, replace, strip tags, right-to-left fixes, dialogue dashes, `hearingimpaired`: the removal of hearing-impaired annotations, `speakers`: labels, renames and prefix, dash or color styles, `fixing`: the fixes of common text and OCR errors, and `profanity`: masked words and mute ranges |
 | [ocr.md](ocr.md) | package `ocr`: the engine interface, `Run`, the report, the language constants and an engine for an OCR web service |
+| [translation.md](translation.md) | package translation: the engine interface, Translate, the placeholders, the sentence splitter, the warnings and how to write an engine |
 | [hls.md](hls.md) | package `hls` and `stbox hls`: the WebVTT segments, the playlist, the timestamp map and the joiner |
 | [cli.md](cli.md) | the `stbox` command: install, arguments, input and output files, `info`, `validate`, `sync`, `diff`, `dual`, `hls`, `formats` and exit codes |
 | [compatibility.md](compatibility.md) | what a release may change, and what stays the same for the whole 3.x line |
