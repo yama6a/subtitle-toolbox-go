@@ -83,14 +83,47 @@ MicroDVD counts time in video frames, so a MicroDVD read and a MicroDVD write ne
 
 | Option | Commands | Sets | Without it |
 |:--- |:--- |:--- |:--- |
-| `--scc-roll-up MODE` | every command that reads subtitle files | `ReadOptions.SCC.RollUp` and `ReadOptions.MCC.RollUp`. `MODE` is `screen` or `lines`, in any case | `screen`: one cue per screen of a roll-up caption. `lines` gives one cue per row |
+| `--scc-roll-up MODE` | every command that reads subtitle files | `ReadOptions.SCC.RollUp` and `ReadOptions.MCC.RollUp`, and the same field for the `c608` captions of an MP4 track. `MODE` is `screen` or `lines`, in any case | `screen`: one cue per screen of a roll-up caption. `lines` gives one cue per row |
 | `--scc-fit` | `convert`, `sync`, `dual` | `WriteOptions.SCC.Fit`, for SCC output only | an SCC write of a cue that SCC cannot hold fails |
 
-- **Order**: `--scc-roll-up` comes after `--fps` and is checked after `--input-fps`, before `--from`. `--scc-fit` comes after `--no-bom`.
+- **Order**: `--scc-roll-up` comes after `--fps` and is checked after `--input-fps`, before `--track` and `--from`. `--scc-fit` comes after `--no-bom`.
 - **Write reports**: after a write, the CLI prints each change on stderr. SCC and MCC changes read `ferry.srt: Cue #3 at 5 s is left out. Its caption data needs the frames up to 5.839 s, but the cue ends at 5.4 s. (dropped)`. The action is `transliterated`, `wrapped`, `delayed` or `dropped`. The SCC changes need `--scc-fit`, and the MCC writer always fits.
 - **EBU STL report**: a character that the character code table lacks becomes `?` in the file. The CLI prints one line for each, where C stands for the character, such as an em dash in cue 1: `show.srt: Cue 1: the character table has no "C", so the file holds "?".`. A character of a GSI field gives `GSI field OPT: ...`, and a character of a comment gives `Comment: ...`. PHP prints nothing.
 - **SCC advice**: a cue that fits 4 lines of 32 characters after a wrap fails with `Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.`. A cue that needs a split fails without advice.
 - **Binary output**: EBU STL, PAC and Cavena 890 output goes to stdout or to a file as raw bytes. `info` shows no `Encoding:` row for them, and `--json` gives `"encoding": null`.
+
+### Video files and tracks
+
+An MKV, WebM, MP4, MOV, MPEG-TS or M2TS file holds subtitle tracks. A track number picks one. [containers.md](containers.md) lists the track numbers of each container.
+
+```
+stbox info movie.mkv
+stbox convert movie.mkv --track 3 --to srt -o movie.srt
+```
+
+| Option | Commands | Sets | Without it |
+|:--- |:--- |:--- |:--- |
+| `--track NUMBER` | every command that reads subtitle files | `ReadOptions.Track`. A whole number of 1 or more | the only subtitle track of the file. A file with 0 or 2 or more tracks fails |
+| `--reference-track NUMBER` | `sync` | `ReadOptions.Track` of the reference file | as for `--track` |
+| `--new-track NUMBER` | `diff` | `ReadOptions.Track` of the new file | `--track`, but only when the new file is a video file. `diff a.mkv b.srt --track 3` reads `b.srt` as a subtitle |
+| `--primary-track NUMBER` | `dual` | the renamed `--track` of the primary file | as for `--track` |
+| `--secondary-track NUMBER` | `dual` | `ReadOptions.Track` of the secondary file. It does not inherit `--primary-track` | as for `--track` |
+
+- **Order**: `--track` comes after `--scc-roll-up`, is checked before `--from`, and comes before `--keep-going`.
+- **Detection**: the first 389 bytes decide whether an input is a video file. The extension does not.
+- **Format**: a track read has no input format, because the track decides it. `--from` has no effect with `--track`. `--from` without `--track` fails with `movie.mp4: The input is an MP4 file. Pass --track N.` The text says `an MKV or WebM file` or `an MPEG-TS file` for the other containers.
+- **Memory**: a file input goes to `stbox.Load`, which reads only the bytes that the track needs. Standard input is read into memory, because the library cannot seek in a pipe. PHP writes it to a temporary file first.
+- **Track errors**: a file with 0 or 2 or more subtitle tracks and no `--track` fails with exit 3 and lists the tracks. The sentence names the option of the file, here `--track`. The lenient hint does not print.
+
+```
+movie.mkv: The MKV or WebM file has 2 subtitle tracks. Pass --track N with one of them:
+  3: S_TEXT/UTF8, de, "Deutsch (Forced)", forced
+  4: S_TEXT/ASS, eng, "English", default
+```
+
+- **Track text**: each track line joins the codec, the language, the name as a JSON string, `default` and `forced`. It leaves out the parts that are empty or false.
+- **Wrong number**: a number that no track has fails with `The file has no subtitle track with the number 9.`. `--track` on a file that is no video file fails with `Only MKV, WebM, MP4 and MPEG-TS files have tracks.` Both exit 3.
+- **Output names**: the output format is the track format when `--to` is absent. A SubRip track of `movie.mkv` with `--output-dir out` writes `out/movie.srt`, and an MP4 `c608` track writes SCC.
 
 ### VobSub input
 
@@ -172,6 +205,18 @@ Each group calls the library methods of [editing.md](editing.md) and [text.md](t
 | 5 | `--structure-merge-duplicates` | `RemoveDuplicateCues(0)` |
 
 `--structure-merge-same-time` comes last in the help but runs second. So its joined cues take part in the merge of short cues and in the wrap.
+
+### Image cues
+
+PGS, VobSub and DVB subtitles hold bitmaps, so their cues have no text. A text writer fails on such a cue. `stbox convert text_1080p.sup --to srt` fails with exit 3:
+
+```
+text_1080p.sup: Cue #0 holds an image but no text, and srt needs text. Pass --ocr to read the text, --to pgs to keep the images, or --skip-image-cues to leave them out.
+```
+
+- **`--skip-image-cues`**: leaves out the image cues without text and sets `WriteOptions.SkipImageCues`. It comes after `--no-bom`, on `convert`, `sync` and `dual`. `convert text_1080p.sup --to srt --skip-image-cues` writes only the cues with text, here none.
+- **Order**: the writer checks the image cues before its other checks, so an SCC write of PGS input reports them first.
+- **`hls`**: the command has no `--skip-image-cues`. An image cue without text fails the cut.
 
 ### OCR
 
@@ -318,6 +363,7 @@ morning.srt
 | `Encoding:` | the read has a source encoding | for example `UTF-8` or `Windows-1252` |
 | `Cues:` | always | the cue count |
 | `Warnings:` | the read returned warnings | their count |
+| `Image cues:` | the subtitle has 1 or more image cues | `N, M with text`. N counts the cues with an image, M those of them with lines |
 | `Words:`, `Characters:` | always | the counts |
 | `Display time:` | always | the total display time, `X s` |
 | `Span:` | always | `X s`, or `-` without cues |
@@ -339,6 +385,7 @@ morning.srt
 | `encoding` | the source encoding, or `null` when the read has none |
 | `metadata` | an object with the metadata keys in byte order, `{}` when empty |
 | `statistics` | the numbers of [statistics.md](statistics.md#json) |
+| `imageCues` | `{"count": N, "withText": M}` as for the `Image cues:` row, also with 0 image cues |
 | `warnings` | the warnings of the read as in [JSON output](#json-output), `[]` when none |
 
 ```json
@@ -386,6 +433,33 @@ morning.srt
 ]
 ```
 
+### Video files
+
+Without `--track`, `info` lists the tracks of a video file when the extension of the input names no subtitle format. `movie.mkv`, `movie.webm`, `movie.mp4`, `rec.ts` and `-` qualify. A video file named `x.srt` reads as a subtitle. With `--track`, `info` reads the track and prints the normal block.
+
+```
+movie.mp4
+  Container: mp4
+  Track 2: tx3g, eng, "English", default
+  Track 3: tx3g, fr-CA, forced
+  Track 4: c608, eng
+  Track 5: enct, deu
+```
+
+`Container:` is `matroska`, `mp4` or `mpegts`. The first line is the input as given, or `stdin`. A damaged container makes `info` read the file as usual, which then reports the damage. The JSON object of a video file has the keys `file`, `container` and `tracks`. A track has the keys `number`, `codecId`, `language`, `name`, `default` and `forced`. `language` and `name` are `null` when empty.
+
+```json
+{
+    "file": "pgs.mkv",
+    "container": "matroska",
+    "tracks": [
+        {"number": 3, "codecId": "S_HDMV/PGS", "language": "ger", "name": null, "default": true, "forced": false}
+    ]
+}
+```
+
+The real output puts each key of a track on its own line, with 4 spaces of indent per level.
+
 A minor release may add keys to these objects. [compatibility.md](compatibility.md) states the rule.
 
 ## validate
@@ -429,13 +503,15 @@ A rule option sets its field on the preset result. A flag can only turn a check 
 
 `stbox sync <input>... --reference FILE [options]` retimes each input to the cue times of a reference subtitle. It finds the offset and the frame-rate scale. [sync.md](sync.md#command-line) lists its options and output.
 
+`--reference-track NUMBER` picks the track when the reference is a video file. A video file with 2 or more subtitle tracks and no `--reference-track` fails with `Error: movie.mkv: The MKV or WebM file has 6 subtitle tracks. Pass --reference-track N with one of them:` and the track lines, exit 3. A PGS or VobSub reference track works without OCR, because only the cue times count.
+
 ## diff
 
 `stbox diff OLD NEW` compares two files and prints the differences of [compare.md](compare.md). It exits 1 when the files differ.
 
 - **Expansion**: only OLD goes through the input expansion. A directory or glob that gives 2 or more files fails with exit 2. NEW is used as given, and it cannot be `-`.
-- **Input options**: `--from`, `--encoding`, `--lenient`, `--input-fps` and `--fps` apply to both files. `--new-from` replaces `--from` for NEW.
-- **Failure**: a failed file prints `PATH: MESSAGE` with its own path and exits 3. A message about the format of NEW names `--new-from`.
+- **Input options**: `--from`, `--track`, `--encoding`, `--lenient`, `--input-fps` and `--fps` apply to both files. `--new-from` replaces `--from` for NEW, and `--new-track` replaces `--track`. Without `--new-track`, NEW takes `--track` only when it is a video file.
+- **Failure**: a failed file prints `PATH: MESSAGE` with its own path and exits 3. A message about the format of NEW names `--new-from`, and a track error names `--new-track`.
 - **No `--keep-going`**: the command has one pair of files.
 - **JSON**: one object with the keys `oldFile`, `newFile`, `equal`, `differences`, `oldWarnings` and `newWarnings`. Cue times are seconds, such as `6.2`.
 
@@ -449,7 +525,7 @@ stbox dual --primary movie.en.srt --secondary movie.de.srt --mode top-bottom --t
 ```
 
 - **Files**: both go by option, and `dual` takes no positional argument. `--primary` can be `-` and goes through the input expansion, so a glob or directory that gives 2 or more files fails with exit 2. `--secondary` is used as given, and it cannot be `-`.
-- **Input options**: `--primary-from` replaces `--from` and sets the format of the primary file. `--secondary-from` sets the format of the secondary file, which otherwise comes from the content. The secondary file does not inherit `--primary-from`. `--encoding`, `--lenient`, `--input-fps` and `--fps` apply to both files. A message about the format names the option of its file.
+- **Input options**: `--primary-from` replaces `--from` and sets the format of the primary file. `--secondary-from` sets the format of the secondary file, which otherwise comes from the content. The secondary file does not inherit `--primary-from`. `--primary-track` replaces `--track` for the primary file, and `--secondary-track` sets the track of the secondary file, which does not inherit `--primary-track`. `--encoding`, `--lenient`, `--input-fps` and `--fps` apply to both files. A message about the format or the track names the option of its file.
 - **Failure**: a failed secondary file prints `PATH: MESSAGE` with its own path and exits 3. The secondary file counts as a file that the command reads, so `-o` cannot name it. `--output-dir` takes the base name of the primary file.
 - **Options**: `--mode` is `stack` or `top-bottom`. `--secondary-alignment` is a numpad value from 1 to 9, `--snap-tolerance` a time of 0 or more, and `--secondary-style` a core tag such as `i` or `font color="#ffff00"`.
 - **No `--keep-going`**: the command has one pair of files.

@@ -17,6 +17,8 @@ type diffCommand struct {
 	opts       diff.Options
 	newFile    string
 	newOptions stbox.ReadOptions
+	// inheritsTrack is true when --new-track is absent, so the new file takes --track when it is a video file.
+	inheritsTrack bool
 }
 
 var _ fileCommand = &diffCommand{}
@@ -32,8 +34,8 @@ func (*diffCommand) usage() []string { return []string{"<old> <new> [options]"} 
 func (*diffCommand) details() string {
 	return "The diff pairs cues by time and text, not by cue number. So one added cue does not shift the rest. " +
 		"Cue numbers start at 1. The exit code is 1 when the files differ, as with the Unix diff command. " +
-		"The files can have different formats. --from and --encoding apply to both files. " +
-		"--new-from replaces --from for the new file."
+		"The files can have different formats. --from, --track and --encoding apply to both files. " +
+		"--new-from and --new-track replace --from and --track for the new file."
 }
 
 func (*diffCommand) options() []option {
@@ -46,6 +48,8 @@ func (*diffCommand) options() []option {
 		flagOption("json", "Print the differences as JSON: a list with one object for the pair of files."),
 	}, inputOptions(false, reportFPSHelp), []option{
 		valueOption("new-from", "FORMAT", "Format of the new file. Default: as for --from."),
+		valueOption("new-track", "NUMBER", "Subtitle track of an MKV, WebM, MP4 or MPEG-TS new file. "+
+			"Needed when the file has 2 or more subtitle tracks."),
 	})
 }
 
@@ -77,6 +81,14 @@ func (d *diffCommand) prepare(a *args, r *runner) error {
 			return err
 		}
 	}
+	n, ok, err := a.PositiveInt("new-track")
+	if err != nil {
+		return err
+	}
+	d.inheritsTrack = !ok
+	if ok {
+		d.newOptions.Track = int(n)
+	}
 	if len(a.positionals) != 2 {
 		return usage("Pass two files, the old one and the new one.")
 	}
@@ -98,7 +110,11 @@ func (*diffCommand) checkInputs(_ *runner, inputs []string) error {
 func (*diffCommand) loadSideFiles(context.Context, *runner) error { return nil }
 
 func (d *diffCommand) process(_ context.Context, r *runner, in *input) error {
-	updated, err := r.readOther(d.newFile, d.newOptions, "new-from")
+	opts := d.newOptions
+	if d.inheritsTrack && !r.isVideoFile(d.newFile) {
+		opts.Track = 0
+	}
+	updated, err := r.readOther(d.newFile, opts, "new-from", "new-track")
 	if err != nil {
 		return err
 	}

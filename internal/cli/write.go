@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"errors"
 	"slices"
 	"strconv"
 
@@ -37,6 +38,7 @@ func outputOptions(toHelp string) []option {
 		valueOption("line-ending", "lf|crlf", "Line ending of the output. Default: "+lineEndings[0].name+"."),
 		flagOption("bom", "Start the output with a UTF-8 BOM."),
 		flagOption("no-bom", "Write no UTF-8 BOM. Default: the BOM rule of the output format."),
+		flagOption("skip-image-cues", "Leave out image cues without text, for example from PGS or VobSub, in place of failing."),
 		flagOption("scc-fit", "Wrap, replace characters and delay or drop captions that SCC output cannot hold, "+
 			"in place of failing. Prints each change."),
 	}
@@ -54,7 +56,7 @@ type writeOutput struct {
 	ass *ass.WriteOptions
 }
 
-// prepare reads --to, --output-fps, -o, --output-dir, --bom, --no-bom, --line-ending and --scc-fit. With --to, it
+// prepare reads --to, --output-fps, -o, --output-dir, --bom, --no-bom, --skip-image-cues, --line-ending and --scc-fit. With --to, it
 // checks the write options of that format.
 func (w *writeOutput) prepare(a *args, r *runner) error {
 	if v, ok := a.Value("to"); ok {
@@ -84,8 +86,9 @@ func (w *writeOutput) prepare(a *args, r *runner) error {
 	return w.optionsFor(w.to).Validate()
 }
 
-// prepareText reads --bom, --no-bom and --line-ending.
+// prepareText reads --bom, --no-bom, --skip-image-cues and --line-ending.
 func (w *writeOutput) prepareText(a *args) error {
+	w.opts.SkipImageCues = a.Has("skip-image-cues")
 	switch {
 	case a.Has("bom") && a.Has("no-bom"):
 		return usage("Pass only one of --bom and --no-bom.")
@@ -137,7 +140,7 @@ func (w *writeOutput) write(r *runner, in *input, edit func(*stbox.Subtitle) (*s
 	var buf bytes.Buffer
 	report, err := stbox.Write(&buf, s, f, w.optionsFor(f))
 	if err != nil {
-		return err
+		return withImageCueAdvice(s, err)
 	}
 	printWriteReport(r.c, in.label(), report)
 	if target == stdinArg {
@@ -149,6 +152,21 @@ func (w *writeOutput) write(r *runner, in *input, edit func(*stbox.Subtitle) (*s
 	}
 	r.report(in.label() + " -> " + target + "\n")
 	return nil
+}
+
+const imageCueAdvice = "Pass --ocr to read the text, --to pgs to keep the images, or --skip-image-cues to leave them out."
+
+// withImageCueAdvice adds the advice to the error of a text writer that met an image cue without lines. Another
+// error stays as it is.
+func withImageCueAdvice(s *stbox.Subtitle, err error) error {
+	e, ok := errors.AsType[*stbox.UnwritableError](err)
+	if !ok {
+		return err
+	}
+	if c, found := s.Cue(e.CueIndex); !found || !c.IsImageWithoutText() {
+		return err
+	}
+	return usage(e.Reason + " " + imageCueAdvice)
 }
 
 // optionsFor returns the write options for output in format f. The field of a format is set only for that format,

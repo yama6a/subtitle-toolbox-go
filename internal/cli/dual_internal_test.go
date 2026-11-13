@@ -310,7 +310,7 @@ func TestDualHelp(t *testing.T) {
 			names = append(names, strings.Fields(strings.TrimPrefix(line+name, "  "))[0])
 		}
 	}
-	assert.Equal(t, []string{"--primary", "--secondary", "--secondary-style", "--secondary-alignment", "--primary-from", "--secondary-from"}, names)
+	assert.Equal(t, []string{"--primary", "--secondary", "--secondary-style", "--secondary-alignment", "--primary-from", "--primary-track", "--secondary-from", "--secondary-track"}, names)
 }
 
 func TestDualAppliesTheOutputAndInputOptions(t *testing.T) {

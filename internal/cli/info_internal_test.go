@@ -26,6 +26,8 @@ Print the format, the cue count and statistics of subtitle files.
 
 Times are in seconds. Character counts leave out tags. The gap is the start of a
 cue minus the latest end of the earlier cues. An overlap gives a negative gap.
+For an MKV, WebM, MP4 or MPEG-TS file, info lists the subtitle tracks. Pass
+--track for the statistics of one track.
 
 Options:
   --json              Print JSON: a list with one object for each input file.
@@ -40,9 +42,12 @@ Options:
                       line, of Spruce STL timecodes, and of CSV or TSV times in
                       hh:mm:ss:ff.
   --fps RATE          Same as --input-fps.
-  --scc-roll-up MODE  How SCC and MCC input reads roll-up captions: screen gives
-                      one cue per screen, lines gives one cue per row. Default:
-                      screen.
+  --scc-roll-up MODE  How SCC, MCC and MP4 c608 input reads roll-up captions:
+                      screen gives one cue per screen, lines gives one cue per
+                      row. Default: screen.
+  --track NUMBER      Subtitle track of an MKV, WebM, MP4 or MPEG-TS input.
+                      Needed when the file has 2 or more subtitle tracks. "info"
+                      lists them.
   --keep-going        Go on with the next file after a file fails. Default: stop
                       at the first failure.
   -h, --help          Show this help.
@@ -125,7 +130,7 @@ func TestInfoJSONKeyOrder(t *testing.T) {
 	for i, m := range matches {
 		keys[i] = m[1]
 	}
-	assert.Equal(t, []string{"file", "format", "encoding", "metadata", "statistics", "warnings"}, keys)
+	assert.Equal(t, []string{"file", "format", "encoding", "metadata", "statistics", "imageCues", "warnings"}, keys)
 }
 
 func TestInfoReportsTheSourceEncoding(t *testing.T) {
@@ -254,6 +259,10 @@ func TestInfoParseWarnings(t *testing.T) {
                     "count": 1
                 }
             ]
+        },
+        "imageCues": {
+            "count": 0,
+            "withText": 0
         },
         "warnings": [
             {
@@ -454,8 +463,5 @@ func TestInfoJSONEqualsThePHPOutput(t *testing.T) {
 	var php, got []map[string]any
 	require.NoError(t, json.Unmarshal(testfiles.Read(t, "cli/trip_info.json"), &php))
 	require.NoError(t, json.Unmarshal([]byte(runCLI(t, "info", "trip.srt", "--json").Stdout), &got))
-	for _, entry := range php {
-		delete(entry, "imageCues")
-	}
 	assert.Equal(t, php, got)
 }

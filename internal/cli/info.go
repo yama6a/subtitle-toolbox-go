@@ -26,7 +26,14 @@ type infoEntry struct {
 	Encoding *string          `json:"encoding"` // nil prints null for a format without a source encoding
 	Metadata orderedMetadata  `json:"metadata"`
 	Stats    stats.Statistics `json:"statistics"`
+	Images   imageCuesJSON    `json:"imageCues"`
 	Warnings []warningJSON    `json:"warnings"`
+}
+
+// imageCuesJSON counts the image cues of a subtitle and those of them with lines.
+type imageCuesJSON struct {
+	Count    int `json:"count"`
+	WithText int `json:"withText"`
 }
 
 // orderedMetadata writes its keys in byte order and prints {} when empty.
@@ -57,7 +64,8 @@ func (*infoCommand) usage() []string { return []string{"<input>... [--json] [opt
 
 func (*infoCommand) details() string {
 	return "Times are in seconds. Character counts leave out tags. " +
-		"The gap is the start of a cue minus the latest end of the earlier cues. An overlap gives a negative gap."
+		"The gap is the start of a cue minus the latest end of the earlier cues. An overlap gives a negative gap. " +
+		"For an MKV, WebM, MP4 or MPEG-TS file, info lists the subtitle tracks. Pass --track for the statistics of one track."
 }
 
 func (*infoCommand) options() []option {
@@ -72,6 +80,7 @@ func (c *infoCommand) prepare(a *args, r *runner) error {
 	if err := r.prepareRead(a); err != nil {
 		return err
 	}
+	r.listTracks = true
 	c.report.prepare(a, r)
 	return nil
 }
@@ -80,6 +89,14 @@ func (*infoCommand) checkInputs(*runner, []string) error          { return nil }
 func (*infoCommand) loadSideFiles(context.Context, *runner) error { return nil }
 
 func (c *infoCommand) process(_ context.Context, r *runner, in *input) error {
+	if in.container != "" {
+		text := listTracksText(in)
+		if r.succeeded > 0 {
+			text = "\n" + text
+		}
+		c.report.emit(r, text, newContainerEntry(in))
+		return nil
+	}
 	metadata := in.sub.AllMetadata()
 	st := stats.Of(in.sub)
 	entry := infoEntry{
@@ -87,6 +104,7 @@ func (c *infoCommand) process(_ context.Context, r *runner, in *input) error {
 		Format:   in.info.Format,
 		Metadata: metadata,
 		Stats:    st,
+		Images:   countImageCues(in.sub),
 		Warnings: warningsJSON(in.info.Warnings),
 	}
 	rows := [][]string{{"Format:", string(in.info.Format)}}
@@ -97,6 +115,9 @@ func (c *infoCommand) process(_ context.Context, r *runner, in *input) error {
 	rows = append(rows, []string{"Cues:", strconv.Itoa(in.sub.Len())})
 	if n := len(in.info.Warnings); n > 0 {
 		rows = append(rows, []string{"Warnings:", strconv.Itoa(n)})
+	}
+	if entry.Images.Count > 0 {
+		rows = append(rows, []string{"Image cues:", strconv.Itoa(entry.Images.Count) + ", " + strconv.Itoa(entry.Images.WithText) + " with text"})
 	}
 	rows = append(rows, statisticsRows(st)...)
 	for _, key := range slices.Sorted(maps.Keys(metadata)) {
@@ -111,3 +132,17 @@ func (c *infoCommand) process(_ context.Context, r *runner, in *input) error {
 }
 
 func (c *infoCommand) finish(r *runner) error { return c.report.finish(r) }
+
+func countImageCues(s *stbox.Subtitle) imageCuesJSON {
+	var n imageCuesJSON
+	for _, c := range s.All() {
+		if c.Image == nil {
+			continue
+		}
+		n.Count++
+		if len(c.Lines) > 0 {
+			n.WithText++
+		}
+	}
+	return n
+}

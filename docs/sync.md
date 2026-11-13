@@ -131,6 +131,7 @@ stbox sync de.srt --reference tv.srt --min-offset -180 --max-offset 180 --max-sp
 | Option | Value | Default |
 |:--- |:--- |:--- |
 | `--reference FILE` | a subtitle in any readable format. Required | |
+| `--reference-track NUMBER` | a whole number of 1 or more, the track of a video file | the only subtitle track |
 | `--min-offset SECONDS` | a time, may be negative | -60 |
 | `--max-offset SECONDS` | a time | 60 |
 | `--no-scale` | keep the scale at 1 | scale search on |
