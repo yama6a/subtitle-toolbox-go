@@ -98,3 +98,22 @@ func ExampleApply_splits() {
 	// from 1m2s, to nil, scale 1.00000, offset 2m28s
 	// offset -2s, score 1.00
 }
+
+func ExampleSpeechFromSilenceLog() {
+	log := []byte("[silencedetect @ 0x1] silence_start: 0\n" +
+		"[silencedetect @ 0x1] silence_end: 2.5 | silence_duration: 2.5\n" +
+		"[silencedetect @ 0x1] silence_start: 4.25\n" +
+		"[silencedetect @ 0x1] silence_end: 6 | silence_duration: 1.75\n")
+
+	speech, err := refsync.SpeechFromSilenceLog(log, 10*time.Second)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for _, c := range speech.All() {
+		fmt.Println(c.Start, c.End)
+	}
+	// Output:
+	// 2.5s 4.25s
+	// 6s 10s
+}

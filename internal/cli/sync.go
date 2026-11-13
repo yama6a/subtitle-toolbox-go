@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"cmp"
 	"context"
 	"slices"
 	"strconv"
@@ -16,10 +17,14 @@ const (
 	scoreDecimals = 2
 )
 
-// syncCommand syncs each input to the cue times of a reference subtitle and writes it as convert does.
+// syncCommand syncs each input to the cue times of a reference subtitle, or to the speech of a silencedetect log,
+// and writes it as convert does.
 type syncCommand struct {
 	out       writeOutput
 	reference string
+	// silenceLog is --silence-log, "" without it. Then reference is set.
+	silenceLog    string
+	mediaDuration time.Duration
 	// referenceTrack is --reference-track, 0 without it.
 	referenceTrack int
 	opts           refsync.Options
@@ -30,16 +35,21 @@ var _ fileCommand = &syncCommand{}
 func (*syncCommand) name() string { return "sync" }
 
 func (*syncCommand) summary() string {
-	return "Find the offset and frame-rate scale against a reference subtitle, and retime the input."
+	return "Find the offset and frame-rate scale against a reference subtitle or the speech, and retime the input."
 }
 
-func (*syncCommand) usage() []string { return []string{"<input>... --reference FILE [options]"} }
+func (*syncCommand) usage() []string {
+	return []string{"<input>... --reference FILE [options]", "<input>... --silence-log FILE --media-duration SECONDS [options]"}
+}
 
 func (*syncCommand) details() string {
 	return "Only the cue times count, so the reference can be in another language. " +
 		"The scale is 1 or a factor between 23.976, 24 and 25 fps. sync prints the scale, the offset and a score " +
 		"from 0 to 1. A score below " + formatNumber(lowScore) + " means that the files likely do not match. " +
-		"Without -o or --output-dir, the output goes to standard output."
+		"Without -o or --output-dir, the output goes to standard output.\n" +
+		"For a sync to the speech, run this command and pass --silence-log silence.log:\n" +
+		"  ffmpeg -i movie.mkv -af silencedetect=n=-30dB:d=0.4 -f null - 2> silence.log\n" +
+		"A Whisper JSON transcript of the audio also works as --reference."
 }
 
 func (*syncCommand) options() []option {
@@ -47,6 +57,8 @@ func (*syncCommand) options() []option {
 		valueOption("reference", "FILE", "Subtitle in sync with the video, in any format that the tool reads."),
 		valueOption("reference-track", "NUMBER", "Subtitle track of an MKV, WebM, MP4 or MPEG-TS reference file. "+
 			"Needed when the file has 2 or more subtitle tracks."),
+		valueOption("silence-log", "FILE", "Log of the FFmpeg silencedetect filter. The speech between the silences is the reference."),
+		valueOption("media-duration", "SECONDS", "Duration of the video, for --silence-log."),
 		valueOption("min-offset", "SECONDS", "Smallest offset to try. Default: "+formatNumber(refsync.DefaultMinOffset.Seconds())+"."),
 		valueOption("max-offset", "SECONDS", "Largest offset to try. Default: "+formatNumber(refsync.DefaultMaxOffset.Seconds())+"."),
 		flagOption("no-scale", "Keep the scale at 1 and find only the offset."),
@@ -68,9 +80,19 @@ func (s *syncCommand) prepare(a *args, r *runner) error {
 	if err := s.out.prepare(a, r); err != nil {
 		return err
 	}
-	var ok bool
-	if s.reference, ok = a.Value("reference"); !ok {
-		return usage("Pass --reference FILE.")
+	s.reference, _ = a.Value("reference")
+	s.silenceLog, _ = a.Value("silence-log")
+	switch {
+	case a.Has("reference") == a.Has("silence-log"):
+		return usage("Pass one of --reference FILE and --silence-log FILE.")
+	case a.Has("silence-log") != a.Has("media-duration"):
+		return usage("Pass --media-duration with --silence-log.")
+	case a.Has("reference-track") && !a.Has("reference"):
+		return usage("Pass --reference with --reference-track.")
+	}
+	var err error
+	if s.mediaDuration, _, err = a.PositiveTime("media-duration"); err != nil {
+		return err
 	}
 	n, _, err := a.PositiveInt("reference-track")
 	if err != nil {
@@ -110,13 +132,27 @@ func (s *syncCommand) prepareSearch(a *args) error {
 }
 
 func (s *syncCommand) checkInputs(r *runner, inputs []string) error {
-	return s.out.checkInputs(r, inputs, append(slices.Clone(inputs), s.reference), nil)
+	return s.out.checkInputs(r, inputs, append(slices.Clone(inputs), cmp.Or(s.reference, s.silenceLog)), nil)
 }
 
 func (s *syncCommand) loadSideFiles(_ context.Context, r *runner) error {
+	if s.silenceLog != "" {
+		return s.loadSpeech(r)
+	}
 	ref, err := r.readSideFile(s.reference, s.referenceTrack, "--reference-track")
 	s.opts.Reference = ref
 	return err
+}
+
+func (s *syncCommand) loadSpeech(r *runner) error {
+	content, err := readSideText(r.c, s.silenceLog)
+	if err != nil {
+		return err
+	}
+	if s.opts.Reference, err = refsync.SpeechFromSilenceLog(content, s.mediaDuration); err != nil {
+		return &fileError{msg: s.silenceLog + ": " + message(err)}
+	}
+	return nil
 }
 
 // process prints the result lines before the write, so an input that cannot be written still shows its result.
