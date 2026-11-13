@@ -23,6 +23,7 @@ go get github.com/yama6a/subtitle-toolbox-go/v4@latest
 | a reader of WebVTT, ASS, TTML, iTT, LRC, CSV or library JSON left the tags in `cue.Lines` | `cue.Lines` holds no word timestamps and no whole-cue voice tag. `cue.TaggedLines()` gives the 3.x lines |
 | a cue of an ASS file had the karaoke tags as word timestamps and `Name` as a `<v Name>` tag in `cue.Lines` | `cue.Words` holds one word per syllable with `End` = `Start` plus the syllable length, and `cue.Speaker` holds `Name`. A syllable without text is no word |
 | `RemoveDuplicateCues` compared `<v>` tags in the text | it compares `Speaker` and the words too |
+| a WebVTT cue kept `<v.loud Anna>Hi</v>` in its lines | `Speaker` is `Anna`, and the `vtt` cue format data holds `voiceClass` `.loud` and `voiceEnd` true. Deleting that data writes `<v Anna>` |
 | a text edit kept the tags in place | it searches the words again with `SyncWords`. A word that the edit changed beyond case loses its timing |
 
 ## Typed words
