@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strconv"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 )
 
 // isInterrupt reports whether err is the error of the cancelled ctx, so the run stops with exit code 130.

@@ -3,7 +3,7 @@ package dvbsub
 import (
 	"encoding/binary"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
 )
 
 // clut holds the colours of the 2-bit, 4-bit and 8-bit pixel codes as 0xRRGGBBAA.

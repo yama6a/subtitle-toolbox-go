@@ -3,7 +3,7 @@ package tesseract_test
 import (
 	"fmt"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr/tesseract"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/tesseract"
 )
 
 func ExampleNew() {

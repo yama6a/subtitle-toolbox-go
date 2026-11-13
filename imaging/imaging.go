@@ -8,8 +8,8 @@ import (
 	"image/png"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/bitmap"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // DecodePNG returns the pixels of data with straight alpha. It checks the size limit before it inflates the data.
