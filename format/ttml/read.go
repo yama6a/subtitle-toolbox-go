@@ -79,6 +79,7 @@ type run struct {
 	text      string
 	style     ttmlwrite.Style
 	agent     string
+	agentEnd  bool
 }
 
 // Read reads TTML, IMSC and DFXP. It expects UTF-8, as stbox.Parse passes it. The reader ignores the encoding of
@@ -726,6 +727,7 @@ func (r *reader) runsToLines(runs []run) []string {
 	var lines []string
 	var line []run
 	openAgent := ""
+	runs = markAgentEnds(runs)
 	for _, rn := range append(slices.Clip(runs), run{lineBreak: true}) {
 		if !rn.lineBreak {
 			line = append(line, rn)
@@ -752,7 +754,34 @@ func (r *reader) runsToLines(runs []run) []string {
 	return lines
 }
 
-// runsToMarkup writes the runs of one line. A speaker tag stays open across lines, as in WebVTT.
+// markAgentEnds returns the runs with agentEnd set on the last run of each agent text. That is a run with visible
+// text whose next run with visible text has another agent, or none. One agent that covers all the text is the
+// speaker of the cue, so it gets no end.
+func markAgentEnds(runs []run) []run {
+	runs = slices.Clone(runs)
+	var visible []*run
+	for i := range runs {
+		if visibleRun(runs[i]) {
+			visible = append(visible, &runs[i])
+		}
+	}
+	if len(visible) == 0 || !slices.ContainsFunc(visible, func(rn *run) bool { return rn.agent != visible[0].agent }) && visible[0].agent != "" {
+		return runs
+	}
+	for i, rn := range visible {
+		if i == len(visible)-1 || visible[i+1].agent != rn.agent {
+			rn.agentEnd = true
+		}
+	}
+	return runs
+}
+
+func visibleRun(rn run) bool {
+	return !rn.timed && !rn.lineBreak && strings.Trim(rn.text, markupcore.PHPTrimSet) != ""
+}
+
+// runsToMarkup writes the runs of one line. A speaker tag opens before the text of its agent and closes after it,
+// also across lines.
 func runsToMarkup(runs []run, openAgent *string) string {
 	var b strings.Builder
 	var styled []markupcore.Run
@@ -762,11 +791,8 @@ func runsToMarkup(runs []run, openAgent *string) string {
 			styled = nil
 			continue
 		}
-		if strings.Trim(rn.text, markupcore.PHPTrimSet) != "" && rn.agent != *openAgent {
+		if visibleRun(rn) && rn.agent != *openAgent {
 			b.WriteString(markupcore.StyleRuns(styled, false))
-			if *openAgent != "" {
-				b.WriteString("</v>")
-			}
 			if rn.agent != "" {
 				b.WriteString(markupcore.VoiceTag(rn.agent, ""))
 			}
@@ -774,6 +800,11 @@ func runsToMarkup(runs []run, openAgent *string) string {
 			*openAgent = rn.agent
 		}
 		styled = append(styled, rn.style.Run(rn.text))
+		if rn.agentEnd && *openAgent != "" {
+			b.WriteString(markupcore.StyleRuns(styled, false) + "</v>")
+			styled = nil
+			*openAgent = ""
+		}
 	}
 	return b.String() + markupcore.StyleRuns(styled, false)
 }

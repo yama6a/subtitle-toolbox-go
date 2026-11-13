@@ -228,7 +228,7 @@ func (w *writer) paragraph(containers []Properties, c model.Cue, cueData *model.
 		inherited = inherited.Apply(props)
 	}
 	inherited = inherited.Apply(w.styleProperties(stored))
-	agent, hasAgent, content := w.content(text, inherited)
+	agent, hasAgent, content := w.content(text, c.Speaker, inherited)
 	if hasAgent {
 		out += w.attribute(w.ttm+":agent", w.agentID(agent))
 	}

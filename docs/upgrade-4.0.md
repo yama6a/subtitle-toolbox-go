@@ -23,6 +23,7 @@ go get github.com/yama6a/subtitle-toolbox-go/v4@latest
 | a reader of WebVTT, ASS, TTML, iTT, LRC, CSV or library JSON left the tags in `cue.Lines` | `cue.Lines` holds no word timestamps and no whole-cue voice tag. `cue.TaggedLines()` gives the 3.x lines |
 | `RemoveDuplicateCues` compared `<v>` tags in the text | it compares `Speaker` and the words too |
 | a text edit kept the tags in place | it searches the words again with `SyncWords`. A word that the edit changed beyond case loses its timing |
+| the TTML and iTT readers wrote `<v Anna>` for every `ttm:agent` and left it open across the cue | an agent that covers all the text is `cue.Speaker`. An agent on a span becomes a `<v>` span that closes after its text. The writer writes `ttm:agent` on the `<p>` for `cue.Speaker` and on a `<span>` for other `<v>` spans |
 
 ## Typed words
 
