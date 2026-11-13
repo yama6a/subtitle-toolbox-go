@@ -5,6 +5,7 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | Page | Covers |
 |:--- |:--- |
 | [design.md](design.md) | the decisions behind the package layout, the options, the errors and the dependencies |
+| [chapters.md](chapters.md) | chapter lists as subtitles, the end rule, `ReadOptions.Chapters`, the YouTube chapter format and the YouTube chapter check |
 | [formats.md](formats.md) | the `Format` type, shared extensions, the time limit, and one section per format |
 | [json.md](json.md) | library JSON versions 1 and 2, which keep every field of the model |
 | [subtitle.md](subtitle.md) | `Subtitle` and `Cue`, times, comments, metadata, alignment and lookups |
