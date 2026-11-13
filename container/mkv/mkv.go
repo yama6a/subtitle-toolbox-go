@@ -462,6 +462,8 @@ func codecFormat(codecID string) model.Format {
 		return model.PGS
 	case "S_VOBSUB":
 		return model.VobSub
+	case codecDVB:
+		return model.PGS
 	default:
 		return ""
 	}

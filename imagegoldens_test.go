@@ -69,7 +69,12 @@ func vobsubGolden(name string, index int) imageGolden {
 }
 
 // dvbImageGoldens lists one row for each DVB subtitle track of a transport stream or an MKV file.
-var dvbImageGoldens = []imageGolden{}
+var dvbImageGoldens = []imageGolden{
+	{fixture: "mpegts/dvb_subtitles.ts", options: stbox.ReadOptions{Track: 257}, golden: "mpegts/expected/dvb_subtitles.ts.257"},
+	{fixture: "mpegts/dvb_subtitles.ts", options: stbox.ReadOptions{Track: 258}, golden: "mpegts/expected/dvb_subtitles.ts.258"},
+	{fixture: "mkv/dvbsub.mkv", options: stbox.ReadOptions{Track: 2}, golden: "mkv/expected/dvbsub.mkv.2"},
+	{fixture: "mkv/dvbsub.mkv", options: stbox.ReadOptions{Track: 3}, golden: "mkv/expected/dvbsub.mkv.3"},
+}
 
 // imageGoldenDirs are the folders under testdata whose expected subfolder holds pixel goldens.
 var imageGoldenDirs = []string{"pgs", "vobsub", "mpegts", "mkv"}

@@ -20,6 +20,7 @@ import (
 
 const (
 	codecTeletext = "dvb_teletext"
+	codecDVB      = "dvb_subtitle"
 	// tableScanBytes is the file offset at which the table scan ends. A PAT or a PMT further in is not part of a
 	// recording that starts at a packet.
 	tableScanBytes = 32 << 20
@@ -35,6 +36,7 @@ const (
 type stream struct {
 	pid         uint16
 	page        int // magazine (0 for 8) << 8 | page byte
+	ancillary   int // DVB subtitles: the ancillary page, and page holds the composition page
 	programPIDs []uint16
 }
 
@@ -143,6 +145,9 @@ func (f *File) scanTables() error {
 	}
 	for _, pid := range scan.programs {
 		f.addTeletext(scan.pmts[pid])
+	}
+	for _, pid := range scan.programs {
+		f.addDVB(scan.pmts[pid])
 	}
 	return nil
 }
