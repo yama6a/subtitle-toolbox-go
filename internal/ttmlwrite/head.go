@@ -161,14 +161,16 @@ func (w *writer) agentID(name string) string {
 	agent := newElement(w.ttm, "agent", xmlIDAttr(id), xml.Attr{Name: xml.Name{Local: "type"}, Value: "person"})
 	appendChild(agent, nameElement)
 
-	var before *xmlraw.Node
-	for _, c := range w.head.Children {
-		if c.Kind == xmlraw.ElementNode && (LocalName(c) == "styling" || LocalName(c) == "layout") {
-			before = c
-			break
+	if !w.agentBeforeKnown {
+		for _, c := range w.head.Children {
+			if c.Kind == xmlraw.ElementNode && (LocalName(c) == "styling" || LocalName(c) == "layout") {
+				w.agentBefore = c
+				break
+			}
 		}
+		w.agentBeforeKnown = true
 	}
-	insertChild(w.head, agent, before, 2)
+	insertChild(w.head, agent, w.agentBefore, 2)
 	reconcile(agent, w.uris[w.ttm])
 	w.agentIDs[name] = id
 	return id
@@ -225,6 +227,9 @@ func (w *writer) addRegion(name, origin, extent string, a model.Alignment) strin
 	if layout == nil {
 		layout = newElement("", "layout")
 		insertChild(w.head, layout, nil, 2)
+		if w.agentBefore == nil {
+			w.agentBefore = layout
+		}
 		reconcile(layout, w.ns)
 	}
 
@@ -292,13 +297,24 @@ func insertChild(parent, el, before *xmlraw.Node, depth int) {
 			before = indent(depth - 1)
 			appendChild(parent, before)
 		}
-	} else if i := slices.Index(parent.Children, before); i > 0 && isBlankText(parent.Children[i-1]) {
+	} else if i := indexFromEnd(parent.Children, before); i > 0 && isBlankText(parent.Children[i-1]) {
 		before = parent.Children[i-1]
 	}
-	i := slices.Index(parent.Children, before)
+	i := indexFromEnd(parent.Children, before)
 	in := indent(depth)
 	in.Parent, el.Parent = parent, parent
 	parent.Children = slices.Insert(parent.Children, i, in, el)
+}
+
+// indexFromEnd returns the index of n in nodes, searching from the end, because the nodes that the writer
+// inserts before sit near the end. It returns -1 when n is absent.
+func indexFromEnd(nodes []*xmlraw.Node, n *xmlraw.Node) int {
+	for i := len(nodes) - 1; i >= 0; i-- {
+		if nodes[i] == n {
+			return i
+		}
+	}
+	return -1
 }
 
 // reconcile gives a new element in the namespace uri the prefix and the xmlns declaration that libxml gives it when

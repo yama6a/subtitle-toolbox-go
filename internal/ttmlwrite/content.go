@@ -10,6 +10,7 @@ import (
 
 var (
 	paragraphVoiceRegexp = regexp.MustCompile(`^` + markupcore.VoiceTagPattern + `$`)
+	wordTimestampRegexp  = regexp.MustCompile(`^` + markupcore.WordTimestampPattern + `$`)
 	voiceTagsRegexp      = regexp.MustCompile(`</?v[\t\n\v\f\r .>]`)
 	endTagRegexp         = regexp.MustCompile(`^</([a-zA-Z]+)[\t\n\v\f\r ]*>$`)
 	startTagRegexp       = regexp.MustCompile(`^<([a-zA-Z]+)([\t\n\v\f\r .][^>]*)?>$`)
@@ -35,10 +36,15 @@ type converter struct {
 	resets    resets
 }
 
-// content returns the core markup of text as TTML spans. A speaker of the whole text comes back apart, for the
-// ttm:agent of the <p>.
-func (w *writer) content(text string, inherited Style) (agent string, hasAgent bool, out string) {
-	agent, hasAgent, tokens := paragraphAgent(markupcore.SplitTags(text), text)
+// content returns the core markup of text as TTML spans. The speaker of the cue, or else a single <v> tag that
+// starts the text, comes back apart, for the ttm:agent of the <p>. A <v> tag of another voice becomes a <span>.
+func (w *writer) content(text, speaker string, inherited Style) (agent string, hasAgent bool, out string) {
+	tokens := markupcore.SplitTags(text)
+	if speaker != "" {
+		agent, hasAgent, tokens = speaker, true, dropSpeakerTags(tokens)
+	} else {
+		agent, hasAgent, tokens = paragraphAgent(tokens, text)
+	}
 	c := &converter{w: w, inherited: inherited}
 	for i, token := range tokens {
 		if i%2 == 0 {
@@ -57,6 +63,36 @@ func (w *writer) content(text string, inherited Style) (agent string, hasAgent b
 		out = "<span" + w.resetAttributes(c.resets) + ">" + out + "</span>"
 	}
 	return agent, hasAgent, out
+}
+
+// dropSpeakerTags removes the <v> tag that opens the text, and the </v> tag after the last visible text. Both come
+// from the speaker of the cue. Blank text and word timestamps may come before the <v> tag.
+func dropSpeakerTags(tokens []string) []string {
+	for i := 0; i < len(tokens); i++ {
+		if i%2 == 0 {
+			if strings.Trim(tokens[i], markupcore.PHPTrimSet) != "" {
+				break
+			}
+			continue
+		}
+		if paragraphVoiceRegexp.MatchString(tokens[i]) {
+			tokens = slices.Concat(tokens[:i-1], []string{tokens[i-1] + tokens[i+1]}, tokens[i+2:])
+			break
+		}
+		if !wordTimestampRegexp.MatchString(tokens[i]) {
+			break
+		}
+	}
+	for i := len(tokens) - 2; i >= 1; i -= 2 {
+		if strings.Trim(tokens[i+1], markupcore.PHPTrimSet) != "" {
+			break
+		}
+		if tokens[i] == "</v>" {
+			tokens = slices.Concat(tokens[:i-1], []string{tokens[i-1] + tokens[i+1]}, tokens[i+2:])
+			break
+		}
+	}
+	return tokens
 }
 
 // paragraphAgent takes the speaker out of the tokens when one <v> tag after blank text starts the text and the text

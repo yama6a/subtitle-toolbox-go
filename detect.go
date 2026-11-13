@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
 )
 
@@ -43,8 +44,7 @@ func detectFormat(content []byte) (Format, bool) {
 	}
 	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.PHPTrimSet)
 	if len(content) > 0 && content[0] == '{' {
-		var keys map[string]json.RawMessage
-		if json.Unmarshal(content, &keys) == nil {
+		if keys, ok := jsonKeys(content); ok {
 			for _, c := range jsonChecks {
 				if c.match(keys) {
 					return c.format, true
@@ -91,4 +91,23 @@ func lfLineEnds(content []byte) []byte {
 // isBlank reports whether content holds nothing but UTF-8 BOMs and the bytes of PHP trim.
 func isBlank(content []byte) bool {
 	return len(bytes.Trim(textenc.TrimUTF8BOMs(content), markupcore.PHPTrimSet)) == 0
+}
+
+// jsonKeys returns the top-level keys of a JSON object, each with its compact JSON. PHP json_decode fails on
+// what orderedjson rejects, such as a lone surrogate escape or 512 nested levels, so such a document goes on
+// to the text signatures.
+func jsonKeys(content []byte) (map[string]json.RawMessage, bool) {
+	v, err := orderedjson.Decode(content)
+	if err != nil || v.Kind() != orderedjson.Object {
+		return nil, false
+	}
+	keys := make(map[string]json.RawMessage, len(v.Members()))
+	for _, m := range v.Members() {
+		raw, err := orderedjson.Encode(m.Value, false)
+		if err != nil {
+			return nil, false
+		}
+		keys[m.Key] = raw
+	}
+	return keys, true
 }

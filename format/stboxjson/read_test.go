@@ -72,8 +72,9 @@ type readErrorCase struct {
 func readErrorCases() []readErrorCase {
 	deep := func(n int) string { return strings.Repeat("[", n) + strings.Repeat("]", n) }
 	return []readErrorCase{
-		{name: "not JSON", content: `{"version": 1,`, msg: "The content is not valid JSON: unexpected end of JSON input.", wholeFile: true},
-		{name: "text after the root", content: `{"version": 1, "cues": []} x`, msg: "The content is not valid JSON: invalid character 'x' after top-level value.", wholeFile: true},
+		{name: "not JSON", content: `{"version": 1,`, msg: "The content is not valid JSON: Syntax error.", wholeFile: true},
+		{name: "text after the root", content: `{"version": 1, "cues": []} x`, msg: "The content is not valid JSON: Syntax error.", wholeFile: true},
+		{name: "lone surrogate", content: `{"version": 1, "cues": [], "t": "\ud800"}`, msg: "The content is not valid JSON: Single unpaired UTF-16 surrogate in unicode escape.", wholeFile: true},
 		{name: "512 levels", content: `{"version": 1, "cues": [], "x": ` + deep(511) + `}`, msg: "The content is not valid JSON: Maximum stack depth exceeded.", wholeFile: true},
 		{name: "list root", content: `[1, 2]`, msg: "The JSON root must be an object.", wholeFile: true},
 		{name: "string root", content: `"cues"`, msg: "The JSON root must be an object.", wholeFile: true},
