@@ -36,6 +36,10 @@ type runner struct {
 	readOptions stbox.ReadOptions
 	// fromOption is the name of the option that sets the input format, "" for --from.
 	fromOption string
+	// trackOption is the name of the option that sets the input track, "" for --track.
+	trackOption string
+	// listTracks makes the read of a video file without --track list its tracks, as info does.
+	listTracks bool
 	files      *outputFiles
 	// reportToStderr sends the report lines and the summary to stderr, because stdout gets data.
 	reportToStderr bool

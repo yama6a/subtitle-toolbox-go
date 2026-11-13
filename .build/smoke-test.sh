@@ -20,7 +20,7 @@ if ! grep -qx 'Café au lait.' <<< "$vtt"; then
   exit 1
 fi
 
-srt=$("$@" convert "$files/mpegts/arib_japanese.ts" --to srt --output -)
+srt=$("$@" convert "$files/mpegts/arib_japanese.ts" --track 304 --to srt --output -)
 if ! grep -q "$(printf '\xe5\xa4\xa9\xe6\xb0\x97')" <<< "$srt"; then
   printf 'convert printed:\n%s\n' "$srt" >&2
   exit 1

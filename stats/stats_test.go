@@ -150,7 +150,7 @@ func TestOfCuesWithoutTextCountOnlyAsCuesAndInTimes(t *testing.T) {
 	assertDurationRange(t, &stats.DurationRange{Min: time.Second, Average: time.Second, Max: time.Second}, got.Gaps)
 }
 
-func TestOfSkipsImageCuesWithoutLines(t *testing.T) {
+func TestOfCountsImageCuesWithoutLinesAsCuesWithoutText(t *testing.T) {
 	t.Parallel()
 
 	image := &model.Image{PNG: []byte("x"), Width: 1, Height: 1, ScreenWidth: 2, ScreenHeight: 2}
@@ -158,9 +158,10 @@ func TestOfSkipsImageCuesWithoutLines(t *testing.T) {
 	withLines.Image = image
 	got := stats.Of(subtitle(model.Cue{Start: at(1), End: at(2), Image: image}, cue(3, 4, "One"), withLines))
 
-	assert.Equal(t, 2, got.CueCount)
-	assert.Equal(t, 2*time.Second, got.TotalDisplayTime)
-	assert.Equal(t, ptr(3*time.Second), got.Span)
+	assert.Equal(t, 3, got.CueCount)
+	assert.Equal(t, 3*time.Second, got.TotalDisplayTime)
+	assert.Equal(t, ptr(5*time.Second), got.Span)
+	assert.Equal(t, 6, got.CharacterCount)
 	assertDurationRange(t, &stats.DurationRange{Min: time.Second, Average: time.Second, Max: time.Second}, got.Gaps)
 }
 

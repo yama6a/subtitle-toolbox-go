@@ -220,20 +220,23 @@ offset and a score from 0 to 1. A score below 0.5 means that the files likely do
 not match. Without -o or --output-dir, the output goes to standard output.
 
 Options:
-  --reference FILE       Subtitle in sync with the video, in any format that the
-                         tool reads.
-  --min-offset SECONDS   Smallest offset to try. Default: -60.
-  --max-offset SECONDS   Largest offset to try. Default: 60.
-  --no-scale             Keep the scale at 1 and find only the offset.
-  --max-splits SPLITS    Find up to this many points where the offset jumps, for
-                         example at ad breaks. Default: 0.
-  --split-penalty SCORE  Score that a split must add to stay. Default: 0.1.
-  --to FORMAT            Output format. Default: the input format.
+  --reference FILE          Subtitle in sync with the video, in any format that
+                            the tool reads.
+  --reference-track NUMBER  Subtitle track of an MKV, WebM, MP4 or MPEG-TS
+                            reference file. Needed when the file has 2 or more
+                            subtitle tracks.
+  --min-offset SECONDS      Smallest offset to try. Default: -60.
+  --max-offset SECONDS      Largest offset to try. Default: 60.
+  --no-scale                Keep the scale at 1 and find only the offset.
+  --max-splits SPLITS       Find up to this many points where the offset jumps,
+                            for example at ad breaks. Default: 0.
+  --split-penalty SCORE     Score that a split must add to stay. Default: 0.1.
+  --to FORMAT               Output format. Default: the input format.
 `
 	got := call{}.run(t, "help", "sync")
 	assert.Equal(t, 0, got.Code)
 	assert.True(t, strings.HasPrefix(got.Stdout, head), got.Stdout)
-	assert.True(t, strings.HasSuffix(got.Stdout, "  -h, --help             Show this help.\n"), got.Stdout)
+	assert.True(t, strings.HasSuffix(got.Stdout, "  -h, --help                Show this help.\n"), got.Stdout)
 }
 
 func TestFormatDecimals(t *testing.T) {

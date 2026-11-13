@@ -20,7 +20,9 @@ const (
 type syncCommand struct {
 	out       writeOutput
 	reference string
-	opts      refsync.Options
+	// referenceTrack is --reference-track, 0 without it.
+	referenceTrack int
+	opts           refsync.Options
 }
 
 var _ fileCommand = &syncCommand{}
@@ -43,6 +45,8 @@ func (*syncCommand) details() string {
 func (*syncCommand) options() []option {
 	return slices.Concat([]option{
 		valueOption("reference", "FILE", "Subtitle in sync with the video, in any format that the tool reads."),
+		valueOption("reference-track", "NUMBER", "Subtitle track of an MKV, WebM, MP4 or MPEG-TS reference file. "+
+			"Needed when the file has 2 or more subtitle tracks."),
 		valueOption("min-offset", "SECONDS", "Smallest offset to try. Default: "+formatNumber(refsync.DefaultMinOffset.Seconds())+"."),
 		valueOption("max-offset", "SECONDS", "Largest offset to try. Default: "+formatNumber(refsync.DefaultMaxOffset.Seconds())+"."),
 		flagOption("no-scale", "Keep the scale at 1 and find only the offset."),
@@ -68,6 +72,11 @@ func (s *syncCommand) prepare(a *args, r *runner) error {
 	if s.reference, ok = a.Value("reference"); !ok {
 		return usage("Pass --reference FILE.")
 	}
+	n, _, err := a.PositiveInt("reference-track")
+	if err != nil {
+		return err
+	}
+	s.referenceTrack = int(n)
 	s.opts = refsync.Options{Reference: &stbox.Subtitle{}, NoScale: a.Has("no-scale")}
 	if err := s.prepareSearch(a); err != nil {
 		return err
@@ -105,7 +114,7 @@ func (s *syncCommand) checkInputs(r *runner, inputs []string) error {
 }
 
 func (s *syncCommand) loadSideFiles(_ context.Context, r *runner) error {
-	ref, err := r.readSideFile(s.reference)
+	ref, err := r.readSideFile(s.reference, s.referenceTrack, "--reference-track")
 	s.opts.Reference = ref
 	return err
 }

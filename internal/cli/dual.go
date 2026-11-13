@@ -55,13 +55,19 @@ func (*dualCommand) options() []option {
 	}
 	input := inputOptions(false, writeFPSHelp)
 	for i, o := range input {
-		if o.name == "from" {
+		switch o.name {
+		case "from":
 			input[i] = valueOption("primary-from", "FORMAT", "Format of the primary file. Default: the format detected from the content. "+
 				"When detection finds no format, the file extension sets it.")
+		case "track":
+			input[i] = valueOption("primary-track", "NUMBER", "Subtitle track of an MKV, WebM, MP4 or MPEG-TS primary file. "+
+				"Needed when the file has several.")
 		}
 	}
 	return slices.Concat(files, output, input, []option{
 		valueOption("secondary-from", "FORMAT", "Format of the secondary file. Default: the format detected from the content."),
+		valueOption("secondary-track", "NUMBER", "Subtitle track of an MKV, WebM, MP4 or MPEG-TS secondary file. "+
+			"Needed when the file has 2 or more subtitle tracks."),
 	})
 }
 
@@ -84,16 +90,12 @@ func (d *dualCommand) prepare(a *args, r *runner) error {
 	}
 	d.secondary = secondary
 	r.fromOption = "primary-from"
+	r.trackOption = "primary-track"
 	if err := r.prepareRead(a); err != nil {
 		return err
 	}
-	d.secondaryOptions = r.readOptions
-	d.secondaryOptions.Format = ""
-	if v, ok := a.Value("secondary-from"); ok {
-		var err error
-		if d.secondaryOptions.Format, err = readableFormat(v); err != nil {
-			return err
-		}
+	if err := d.prepareSecondary(a, r.readOptions); err != nil {
+		return err
 	}
 	if err := d.out.prepare(a, r); err != nil {
 		return err
@@ -103,6 +105,25 @@ func (d *dualCommand) prepare(a *args, r *runner) error {
 	}
 	a.positionals = []string{primary}
 	return d.opts.Validate()
+}
+
+// prepareSecondary builds the read options of the secondary file from those of the primary file. The secondary file
+// takes neither the format nor the track of the primary file.
+func (d *dualCommand) prepareSecondary(a *args, primary stbox.ReadOptions) error {
+	d.secondaryOptions = primary
+	d.secondaryOptions.Format = ""
+	d.secondaryOptions.Track = 0
+	if v, ok := a.Value("secondary-from"); ok {
+		var err error
+		if d.secondaryOptions.Format, err = readableFormat(v); err != nil {
+			return err
+		}
+	}
+	n, ok, err := a.PositiveInt("secondary-track")
+	if ok {
+		d.secondaryOptions.Track = int(n)
+	}
+	return err
 }
 
 func (d *dualCommand) prepareOptions(a *args) error {
@@ -142,7 +163,7 @@ func (d *dualCommand) checkInputs(r *runner, inputs []string) error {
 func (*dualCommand) loadSideFiles(context.Context, *runner) error { return nil }
 
 func (d *dualCommand) process(_ context.Context, r *runner, in *input) error {
-	secondary, err := r.readOther(d.secondary, d.secondaryOptions, "secondary-from")
+	secondary, err := r.readOther(d.secondary, d.secondaryOptions, "secondary-from", "secondary-track")
 	if err != nil {
 		return err
 	}

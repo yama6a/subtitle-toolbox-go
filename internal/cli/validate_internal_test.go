@@ -68,10 +68,14 @@ Options:
                                       hh:mm:ss:ff.
   --fps RATE                          Sets --input-fps and --video-fps. A
                                       specific option wins over --fps.
-  --scc-roll-up MODE                  How SCC and MCC input reads roll-up
-                                      captions: screen gives one cue per screen,
-                                      lines gives one cue per row. Default:
-                                      screen.
+  --scc-roll-up MODE                  How SCC, MCC and MP4 c608 input reads
+                                      roll-up captions: screen gives one cue per
+                                      screen, lines gives one cue per row.
+                                      Default: screen.
+  --track NUMBER                      Subtitle track of an MKV, WebM, MP4 or
+                                      MPEG-TS input. Needed when the file has 2
+                                      or more subtitle tracks. "info" lists
+                                      them.
   --keep-going                        Go on with the next file after a file
                                       fails. Default: stop at the first failure.
   -h, --help                          Show this help.

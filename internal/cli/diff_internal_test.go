@@ -316,8 +316,8 @@ List the added, removed and changed cues between two subtitle files.
 The diff pairs cues by time and text, not by cue number. So one added cue does
 not shift the rest. Cue numbers start at 1. The exit code is 1 when the files
 differ, as with the Unix diff command. The files can have different formats.
---from and --encoding apply to both files. --new-from replaces --from for the
-new file.
+--from, --track and --encoding apply to both files. --new-from and --new-track
+replace --from and --track for the new file.
 
 Options:
   --time-tolerance SECONDS  A larger difference of a start or end time is a
@@ -340,10 +340,16 @@ Options:
                             first line, of Spruce STL timecodes, and of CSV or
                             TSV times in hh:mm:ss:ff.
   --fps RATE                Same as --input-fps.
-  --scc-roll-up MODE        How SCC and MCC input reads roll-up captions: screen
-                            gives one cue per screen, lines gives one cue per
-                            row. Default: screen.
+  --scc-roll-up MODE        How SCC, MCC and MP4 c608 input reads roll-up
+                            captions: screen gives one cue per screen, lines
+                            gives one cue per row. Default: screen.
+  --track NUMBER            Subtitle track of an MKV, WebM, MP4 or MPEG-TS
+                            input. Needed when the file has 2 or more subtitle
+                            tracks. "info" lists them.
   --new-from FORMAT         Format of the new file. Default: as for --from.
+  --new-track NUMBER        Subtitle track of an MKV, WebM, MP4 or MPEG-TS new
+                            file. Needed when the file has 2 or more subtitle
+                            tracks.
   -h, --help                Show this help.
 `
 	got := call{}.run(t, "diff", "--help")

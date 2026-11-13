@@ -49,8 +49,10 @@ func inputOptions(manyInputs bool, fpsHelp string) []option {
 		valueOption("input-fps", "RATE", "Frame rate of a MicroDVD input without a {1}{1}<fps> first line, "+
 			"of Spruce STL timecodes, and of CSV or TSV times in hh:mm:ss:ff."),
 		valueOption("fps", "RATE", fpsHelp),
-		valueOption("scc-roll-up", "MODE", "How SCC and MCC input reads roll-up captions: screen gives one cue per screen, "+
-			"lines gives one cue per row. Default: "+rollUps[0]+"."),
+		valueOption("scc-roll-up", "MODE", "How SCC, MCC and MP4 c608 input reads roll-up captions: screen gives one cue per "+
+			"screen, lines gives one cue per row. Default: "+rollUps[0]+"."),
+		valueOption("track", "NUMBER", "Subtitle track of an MKV, WebM, MP4 or MPEG-TS input. "+
+			`Needed when the file has 2 or more subtitle tracks. "info" lists them.`),
 	}
 	if manyInputs {
 		opts = append(opts, flagOption("keep-going",
@@ -99,6 +101,9 @@ type input struct {
 	sub *stbox.Subtitle
 	// info holds the format, the source encoding and the warnings of the read.
 	info stbox.ReadInfo
+	// container and tracks are set when info lists the tracks of a video file, and sub is nil then.
+	container stbox.Container
+	tracks    []stbox.Track
 }
 
 // label names the input in messages: the path as given, or "stdin".
@@ -113,8 +118,8 @@ func label(arg string) string {
 	return arg
 }
 
-// prepareRead builds the read options of --input-fps, --scc-roll-up, --from, --encoding and --lenient and checks them.
-// A command that renames --from sets fromOption first.
+// prepareRead builds the read options of --input-fps, --scc-roll-up, --track, --from, --encoding and --lenient and
+// checks them. A command that renames --from or --track sets fromOption or trackOption first.
 func (r *runner) prepareRead(a *args) error {
 	fps, ok, err := a.Rate("input-fps")
 	if err != nil {
@@ -131,6 +136,11 @@ func (r *runner) prepareRead(a *args) error {
 		r.readOptions.SCC.RollUp = scc.RollUp(rollUp)
 		r.readOptions.MCC.RollUp = mcc.RollUp(rollUp)
 	}
+	if n, ok, err := a.PositiveInt(cmp.Or(r.trackOption, "track")); err != nil {
+		return err
+	} else if ok {
+		r.readOptions.Track = int(n)
+	}
 	if v, ok := a.Value(cmp.Or(r.fromOption, "from")); ok {
 		f, err := readableFormat(v)
 		if err != nil {
@@ -143,42 +153,160 @@ func (r *runner) prepareRead(a *args) error {
 	return r.readOptions.Validate()
 }
 
-// read reads one input with the read options of the call and prints its warnings.
+// read reads one input with the read options of the call and prints its warnings. info lists the tracks of a
+// video file in place of a read.
 func (r *runner) read(arg string) (*input, error) {
-	return r.readWith(arg, r.readOptions)
+	return r.readWith(arg, r.readOptions, "--"+cmp.Or(r.trackOption, "track"))
 }
 
-// readWith reads one input with opts and prints its warnings.
-func (r *runner) readWith(arg string, opts stbox.ReadOptions) (*input, error) {
-	in := &input{arg: arg}
-	var err error
+// source is an input that readWith has opened: the path of a file, or the bytes of standard input.
+type source struct {
+	// path is the file path, "" for standard input.
+	path string
+	// content holds the bytes of standard input.
+	content []byte
+	// head holds the first bytes, enough to detect a video container.
+	head []byte
+}
+
+// open finds the input arg. A file is read only as far as its head, and standard input is read whole.
+func (r *runner) open(arg string, opts stbox.ReadOptions) (source, error) {
 	if arg == stdinArg {
 		if opts.Format == stbox.VobSub {
-			return nil, usage(vobSubStdinMessage)
+			return source{}, usage(vobSubStdinMessage)
 		}
-		var content []byte
-		if content, err = io.ReadAll(r.c.stdin); err != nil {
-			return nil, fmt.Errorf("read standard input: %w", err)
+		content, err := io.ReadAll(r.c.stdin)
+		if err != nil {
+			return source{}, fmt.Errorf("read standard input: %w", err)
 		}
-		in.sub, in.info, err = stbox.Parse(bytes.NewReader(content), int64(len(content)), opts)
-	} else {
-		path := r.c.path(arg)
-		if st, statErr := os.Stat(path); statErr != nil || !st.Mode().IsRegular() {
-			return nil, usage(missingFileMessage)
-		}
-		in.sub, in.info, err = stbox.Load(path, opts)
+		return source{content: content, head: content[:min(len(content), stbox.ContainerHeadSize)]}, nil
 	}
+	path := r.c.path(arg)
+	if st, err := os.Stat(path); err != nil || !st.Mode().IsRegular() {
+		return source{}, usage(missingFileMessage)
+	}
+	head, err := readFileHead(path)
+	return source{path: path, head: head}, err
+}
+
+// listInput returns the track list of a video file for info, when the call lists tracks, names no track, and the
+// extension of arg names no subtitle format. A file that cannot be parsed is not listed, so the normal read
+// reports the failure.
+func (r *runner) listInput(arg string, src source, container stbox.Container, track int) (in *input, listed bool, err error) {
+	if !r.listTracks || container == "" || track != 0 || !namesNoSubtitle(arg) {
+		return nil, false, nil
+	}
+	tracks, err := tracksOf(src.path, src.content)
+	switch {
+	case err == nil:
+		return &input{arg: arg, container: container, tracks: tracks}, true, nil
+	case errors.Is(err, stbox.ErrParse):
+		return nil, false, nil
+	default:
+		return nil, true, err
+	}
+}
+
+// readWith reads one input with opts and prints its warnings. trackOption names the track option of the input,
+// with its dashes, for the messages of a video file.
+func (r *runner) readWith(arg string, opts stbox.ReadOptions, trackOption string) (*input, error) {
+	src, err := r.open(arg, opts)
 	if err != nil {
 		return nil, err
+	}
+	container := containerOfHead(src.head)
+	if in, listed, err := r.listInput(arg, src, container, opts.Track); listed {
+		return in, err
+	}
+	in := &input{arg: arg}
+	if opts, err = trackOptions(container, opts, trackOption); err != nil {
+		return nil, err
+	}
+	if src.path == "" {
+		in.sub, in.info, err = stbox.Parse(bytes.NewReader(src.content), int64(len(src.content)), opts)
+	} else {
+		in.sub, in.info, err = stbox.Load(src.path, opts)
+	}
+	if err != nil {
+		return nil, trackFailure(err, trackOption)
 	}
 	r.printWarnings(in)
 	return in, nil
 }
 
+// trackOptions adjusts opts for an input in a video container. A track read has no format, because the track
+// decides it. A read of a container with a format but no track fails.
+func trackOptions(container stbox.Container, opts stbox.ReadOptions, trackOption string) (stbox.ReadOptions, error) {
+	switch {
+	case container == "":
+	case opts.Track != 0:
+		opts.Format = ""
+	case opts.Format != "":
+		return opts, usage("The input is an " + container.Label() + " file. Pass " + trackOption + " N.")
+	}
+	return opts, nil
+}
+
+// trackFailure turns a *stbox.TrackError into a usage error with the track listing. Another error stays as it is.
+func trackFailure(err error, trackOption string) error {
+	if e, ok := errors.AsType[*stbox.TrackError](err); ok {
+		return usage(trackErrorMessage(e, trackOption))
+	}
+	return err
+}
+
+// namesNoSubtitle reports whether the extension of arg names no subtitle format, as for "-" and "movie.mkv".
+func namesNoSubtitle(arg string) bool {
+	_, ok := stbox.FormatFromPath(arg)
+	return !ok
+}
+
+// tracksOf lists the tracks of the video file at path, or of content when path is empty.
+func tracksOf(path string, content []byte) ([]stbox.Track, error) {
+	if path == "" {
+		return stbox.Tracks(bytes.NewReader(content), int64(len(content)))
+	}
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err //nolint:wrapcheck // the message names no Go call
+	}
+	defer file.Close()
+	st, err := file.Stat()
+	if err != nil {
+		return nil, err //nolint:wrapcheck // the message names no Go call
+	}
+	return stbox.Tracks(file, st.Size())
+}
+
+// readFileHead returns the first bytes of the file at path that container detection needs.
+func readFileHead(path string) ([]byte, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err //nolint:wrapcheck // the message names no Go call
+	}
+	defer file.Close()
+	head := make([]byte, stbox.ContainerHeadSize)
+	n, err := io.ReadFull(file, head)
+	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.EOF) {
+		return nil, err //nolint:wrapcheck // the message names no Go call
+	}
+	return head[:n], nil
+}
+
+// containerOfHead returns the video container that the first bytes of a file show, "" for a subtitle file.
+func containerOfHead(head []byte) stbox.Container {
+	d, ok := stbox.Detect(head)
+	if !ok {
+		return ""
+	}
+	return d.Container
+}
+
 // readOther reads a file other than the input of the call, such as the new file of diff, and prints its warnings.
-// A failure carries the path as its label. A file with no detectable format gets the advice for fromOption.
-func (r *runner) readOther(path string, opts stbox.ReadOptions, fromOption string) (*input, error) {
-	in, err := r.readWith(path, opts)
+// A failure carries the path as its label. A file with no detectable format gets the advice for fromOption, and a
+// video file with many tracks gets the advice for trackOption.
+func (r *runner) readOther(path string, opts stbox.ReadOptions, fromOption, trackOption string) (*input, error) {
+	in, err := r.readWith(path, opts, "--"+trackOption)
 	if errors.Is(err, stbox.ErrUnknownFormat) {
 		err = usage(unknownFormatAdvice(fromOption))
 	}
@@ -204,12 +332,16 @@ func (r *runner) printWarnings(in *input) {
 	}
 }
 
-// peek returns the format that the read of arg will pick, without a message: --from, else the detected format,
-// else the extension fallback of docs/detection.md. It returns "" for standard input and on any error.
+// peek returns the format that the read of arg will pick, without a message: for a video container the format of the
+// track, else --from, else the detected format, else the extension fallback of docs/detection.md. It returns "" for
+// standard input and on any error.
 func (r *runner) peek(arg string) stbox.Format {
 	path := r.c.path(arg)
 	if st, err := os.Stat(path); arg == stdinArg || err != nil || !st.Mode().IsRegular() {
 		return ""
+	}
+	if f, ok := r.trackFormat(path); ok {
+		return f
 	}
 	if r.readOptions.Format != "" {
 		return r.readOptions.Format
@@ -221,6 +353,31 @@ func (r *runner) peek(arg string) stbox.Format {
 		return f
 	}
 	return ""
+}
+
+// isVideoFile reports whether the file at path is a video container.
+func (r *runner) isVideoFile(path string) bool {
+	head, err := readFileHead(r.c.path(path))
+	return err == nil && containerOfHead(head) != ""
+}
+
+// trackFormat returns the format of the track that --track names in the video file at path, or of its only track.
+// The second result is false for a file that is no video container.
+func (r *runner) trackFormat(path string) (stbox.Format, bool) {
+	head, err := readFileHead(path)
+	if err != nil || containerOfHead(head) == "" {
+		return "", false
+	}
+	tracks, err := tracksOf(path, nil)
+	if err != nil {
+		return "", true
+	}
+	for _, t := range tracks {
+		if t.Number == r.readOptions.Track || r.readOptions.Track == 0 && len(tracks) == 1 {
+			return t.Format, true
+		}
+	}
+	return "", true
 }
 
 // detect runs content detection on the file at path, after the decode of --encoding. A video container returns
@@ -244,23 +401,11 @@ func (r *runner) detect(path string) (stbox.Format, bool) {
 // readUnlessContainer returns the content of the file at path. It returns false for a file that cannot be read and
 // for a video container, which it reads only as far as its head.
 func readUnlessContainer(path string) ([]byte, bool) {
-	file, err := os.Open(path)
-	if err != nil {
+	head, err := readFileHead(path)
+	if err != nil || containerOfHead(head) != "" {
 		return nil, false
 	}
-	defer file.Close()
-	head := make([]byte, stbox.ContainerHeadSize)
-	n, err := io.ReadFull(file, head)
-	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.EOF) {
-		return nil, false
-	}
-	if d, ok := stbox.Detect(head[:n]); ok && d.Container != "" {
-		return nil, false
-	}
-	if _, err := file.Seek(0, io.SeekStart); err != nil {
-		return nil, false
-	}
-	content, err := io.ReadAll(file)
+	content, err := os.ReadFile(path)
 	return content, err == nil
 }
 
