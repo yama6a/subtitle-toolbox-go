@@ -17,6 +17,8 @@ func TestAllowed(t *testing.T) {
 	}{
 		{"film.srt", true},
 		{"film.vtt", true},
+		{"talk.html", true},
+		{"talk.HTM", true},
 		{"noext", true},
 		{"dir.json/film.srt", true},
 		{"call.json", false},

@@ -110,6 +110,8 @@ const (
 	VobSub        = model.VobSub
 	WebVTT        = model.WebVTT
 	Whisper       = model.Whisper
+	// HTMLTranscript is the format of the Podcasting 2.0 HTML transcript.
+	HTMLTranscript = model.HTMLTranscript
 	// PodcastTranscript is the format of the Podcasting 2.0 JSON transcript.
 	PodcastTranscript = model.PodcastTranscript
 	// YouTubeChapters is the format of the chapter lines of a YouTube description.
