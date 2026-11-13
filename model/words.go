@@ -22,7 +22,7 @@ type Word struct {
 	Confidence *float64
 }
 
-// taggedSource holds what ExtractWordTags read and set. Nothing changes it after ExtractWordTags built it.
+// taggedSource holds what ExtractWordTags read from the lines, not what the cue held before. Nothing changes it after ExtractWordTags built it.
 type taggedSource struct {
 	lines   []string // the cleaned lines with the tags, as ExtractWordTags read them
 	plain   []string // Lines after ExtractWordTags
@@ -157,14 +157,11 @@ func (c *Cue) ExtractWordTags() {
 	}
 	c.Lines = got.Lines
 	if got.Found || got.Voice.Name != "" {
-		c.tagged = &taggedSource{
-			lines:   source,
-			plain:   slices.Clone(got.Lines),
-			speaker: c.Speaker,
-			voice:   c.voice(),
-			form:    got.Voice,
-			words:   timedTexts(c.Words),
+		t := &taggedSource{lines: source, plain: slices.Clone(got.Lines), speaker: got.Voice.Name, form: got.Voice, words: got.Words}
+		if got.Voice.Name != "" {
+			t.voice = c.voice()
 		}
+		c.tagged = t
 	}
 }
 

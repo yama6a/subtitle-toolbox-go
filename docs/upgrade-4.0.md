@@ -28,7 +28,8 @@ go get github.com/yama6a/subtitle-toolbox-go/v4@latest
 
 `Cue.Words` holds the timed words of a cue. A `Word` has a `Text`, a `Start`, an `End` and a `Confidence`. `Confidence` is a `*float64` from 0 to 1, and nil means the source gives none.
 
-```text
+<!-- example: ExampleWord -->
+```go
 c := stbox.Cue{
 	End:   5 * time.Second,
 	Lines: []string{"The beach"},
@@ -37,6 +38,8 @@ c := stbox.Cue{
 		{Text: "beach", Start: 240 * time.Millisecond, End: time.Second},
 	},
 }
+fmt.Println(c.TaggedLines())
+// Output: [<00:00:00.000>The <00:00:00.240>beach]
 ```
 
 - **Order rule**: the text of each word occurs in `cue.PlainText()`, after the end of the word before it. `ValidateWords` checks this and the time rules. `SetCue` calls it. `AddCue` does not.

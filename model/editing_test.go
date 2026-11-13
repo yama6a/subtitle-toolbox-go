@@ -1053,3 +1053,43 @@ func TestEditsCarryWords(t *testing.T) {
 		})
 	}
 }
+
+func TestTaggedLinesKeepWordsAndSpeaker(t *testing.T) {
+	t.Parallel()
+
+	join := &model.Subtitle{}
+	join.AddCues(wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(1, 2, "", []string{"there"}, word("there", 1, 2)))
+	require.NoError(t, join.JoinCues(0, 1))
+	joined, _ := join.Cue(0)
+
+	merge := &model.Subtitle{}
+	merge.AddCues(wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(0, 1, "", []string{"Bye"}, word("Bye", 0.5, 1)))
+	require.NoError(t, merge.MergeSameTimeCues(0))
+	merged, _ := merge.Cue(0)
+
+	voiceOnly := wordCueAt(0, 2, "", []string{"x"}, word("Hi", 0, 1))
+	voiceOnly.Lines = []string{"<v Bob>Hi there"}
+	voiceOnly.Words = []model.Word{word("Hi", 0, 1)}
+	voiceOnly.ExtractWordTags()
+
+	stampOnly := wordCueAt(0, 2, "Anna", []string{"<00:00:01.000>Hi"})
+	stampOnly.ExtractWordTags()
+
+	tests := []struct {
+		name string
+		cue  model.Cue
+		want []string
+	}{
+		{"join of a cue with a speaker and one without", joined, []string{"<v Anna><00:00:00.000>Hi", "<00:00:01.000>there"}},
+		{"merge at the same time", merged, []string{"<v Anna><00:00:00.000>Hi", "<00:00:00.500>Bye"}},
+		{"a lone voice tag keeps the words", voiceOnly, []string{"<v Bob><00:00:00.000>Hi there"}},
+		{"a lone timestamp keeps the speaker", stampOnly, []string{"<v Anna><00:00:01.000>Hi"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tt.want, tt.cue.TaggedLines())
+		})
+	}
+}

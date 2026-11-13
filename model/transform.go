@@ -49,7 +49,7 @@ func (s *Subtitle) EditLines(fn func(i int, c Cue) (lines []string, ok bool), ha
 			continue
 		}
 		before := s.cues[i].Lines
-		s.cues[i].Lines = cleanLines(lines)
+		s.cues[i].Lines = markupcore.CleanLines(lines)
 		if !slices.Equal(before, s.cues[i].Lines) {
 			s.cues[i].SyncWords()
 		}

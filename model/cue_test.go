@@ -311,7 +311,7 @@ func TestSyncWords(t *testing.T) {
 			[]model.Word{word("Hi", 0, 1), word("there", 1, 2)},
 			0,
 		},
-		{"Kelvin sign", []string{"Key"}, []model.Word{word("Key", 0, 1)}, []string{"Key"}, []model.Word{word("Key", 0, 1)}, 0},
+		{"Kelvin sign", []string{"Key"}, []model.Word{word("Key", 0, 1)}, []string{"\u212Aey"}, []model.Word{word("\u212Aey", 0, 1)}, 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

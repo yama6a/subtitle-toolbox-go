@@ -88,6 +88,14 @@ func FuzzWordTags(f *testing.F) {
 			t.Fatalf("%q: %d of %d words occur in %q", s, n, len(texts), plain)
 		}
 		again := markupcore.ExtractWordTags(markupcore.TagWords(got.Lines, got.Words, got.Voice), cueEnd, true)
+		if len(again.Words) != len(got.Words) {
+			t.Fatalf("%q: %d words, then %d words", s, len(got.Words), len(again.Words))
+		}
+		for i, w := range got.Words {
+			if again.Words[i].Start != w.Start {
+				t.Fatalf("%q: word %d starts at %v, then at %v", s, i, w.Start, again.Words[i].Start)
+			}
+		}
 		if !slices.Equal(again.Lines, got.Lines) || again.Voice != got.Voice {
 			t.Fatalf("%q: lines %q voice %+v, then lines %q voice %+v", s, got.Lines, got.Voice, again.Lines, again.Voice)
 		}

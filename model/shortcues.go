@@ -271,7 +271,7 @@ func (m shortCueMerge) join(first, second Cue) (Cue, bool) {
 		return Cue{}, false
 	}
 	joined.End = max(first.End, second.End)
-	joined.Lines = cleanLines(lines)
+	joined.Lines = markupcore.CleanLines(lines)
 	joined.SyncWords()
 	return joined, true
 }

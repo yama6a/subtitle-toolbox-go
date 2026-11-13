@@ -42,12 +42,12 @@ func (c Cue) Text() string {
 
 // SetText sets the lines to the parts of text between LF characters, cleaned, without the empty ones.
 func (c *Cue) SetText(text string) {
-	c.Lines = cleanLines(strings.Split(text, "\n"))
+	c.Lines = markupcore.CleanLines(strings.Split(text, "\n"))
 }
 
 // AddLine cleans line and appends it. An empty result is ignored.
 func (c *Cue) AddLine(line string) {
-	if line = cleanLine(line); line != "" {
+	if line = markupcore.CleanLine(line); line != "" {
 		c.Lines = append(c.Lines, line)
 	}
 }
@@ -66,11 +66,7 @@ func (c Cue) normalized() Cue {
 	c.Image = cloneImage(c.Image)
 	c.Start = c.Start.Round(time.Millisecond)
 	c.End = c.End.Round(time.Millisecond)
-	c.Lines = cleanLines(c.Lines)
+	c.Lines = markupcore.CleanLines(c.Lines)
 	c.Words = roundWords(cloneWords(c.Words))
 	return c
 }
-
-func cleanLines(lines []string) []string { return markupcore.CleanLines(lines) }
-
-func cleanLine(s string) string { return markupcore.CleanLine(s) }

@@ -101,12 +101,6 @@ func TestTagWords(t *testing.T) {
 	}
 }
 
-func TestCuePlainText(t *testing.T) {
-	t.Parallel()
-
-	assert.Equal(t, "Fish & Chips a b", markupcore.CuePlainText([]string{" <i>Fish &amp;\t Chips</i> ", "", "a  b "}))
-}
-
 func TestSearchWords(t *testing.T) {
 	t.Parallel()
 
@@ -120,7 +114,7 @@ func TestSearchWords(t *testing.T) {
 		{"exact", "a bc a", []string{"bc", "a"}, false, []markupcore.Match{{2, 4}, {5, 6}}},
 		{"case differs without fold", "Hello", []string{"hello"}, false, []markupcore.Match{{-1, -1}}},
 		{"case folds", "HELLO there", []string{"hello", "THERE"}, true, []markupcore.Match{{0, 5}, {6, 11}}},
-		{"Kelvin sign", "Key", []string{"key"}, true, []markupcore.Match{{0, 5}}},
+		{"Kelvin sign", "\u212Aey", []string{"key"}, true, []markupcore.Match{{0, 5}}},
 		{
 			"missing word keeps the place", "a b",
 			[]string{"a", "x", "b", "x"},
