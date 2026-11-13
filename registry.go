@@ -11,6 +11,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/cavena890"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/chapters"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/dcp"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ebustl"
@@ -161,6 +162,7 @@ var registry = []formatFuncs{
 	{format: VobSub, read: readVobSub},
 	{format: WebVTT, read: readWebVTT, write: writeWebVTT},
 	{format: Whisper, read: readWhisper, write: writeWhisper},
+	{format: YouTubeChapters, read: readYouTubeChapters, write: writeYouTubeChapters},
 }
 
 type jsonCheck struct {
@@ -531,4 +533,12 @@ func lookup(f Format) (formatFuncs, bool) {
 		return formatFuncs{}, false
 	}
 	return registry[i], true
+}
+
+func readYouTubeChapters(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	return chapters.ReadYouTube(r, common, opts.Chapters)
+}
+
+func writeYouTubeChapters(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
+	return WriteReport{}, chapters.WriteYouTube(w, s, common, chapters.WriteOptions{})
 }

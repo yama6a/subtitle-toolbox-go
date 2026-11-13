@@ -110,6 +110,8 @@ const (
 	VobSub        = model.VobSub
 	WebVTT        = model.WebVTT
 	Whisper       = model.Whisper
+	// YouTubeChapters is the format of the chapter lines of a YouTube description.
+	YouTubeChapters = model.YouTubeChapters
 )
 
 // The containers that a read can name.
