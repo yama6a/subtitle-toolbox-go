@@ -161,37 +161,7 @@ func (rd *whisperReader) segments(items, top []orderedjson.Value) ([]*model.Cue,
 	var cues []*model.Cue
 	next := 0
 	for i, seg := range items {
-		path := "segments[" + strconv.Itoa(i) + "]"
-		start, end, text, perr := segmentFields(seg, path, time.Second)
-		if perr != nil {
-			if err := rd.fail(perr, i, seg); err != nil {
-				return nil, err
-			}
-			continue
-		}
-		own, _ := seg.Get("words")
-		words := slices.Clone(own.Items())
-		ownCount, firstTop := len(words), next
-		if len(top) > 0 {
-			for next < len(top) && (i == len(items)-1 || middle(top[next]) <= float64(end.Milliseconds())/1000) {
-				words = append(words, top[next])
-				next++
-			}
-			seg = seg.With("words", orderedjson.ArrayOf(words...))
-		}
-		timed, perr := segmentWords(words, func(j int) string {
-			if j < ownCount {
-				return path + ".words[" + strconv.Itoa(j) + "]"
-			}
-			return "words[" + strconv.Itoa(firstTop+j-ownCount) + "]"
-		})
-		if perr != nil {
-			if err := rd.fail(perr, i, seg); err != nil {
-				return nil, err
-			}
-			continue
-		}
-		cue, err := rd.cue(start, end, text, timed, seg, i)
+		cue, err := rd.segment(i, seg, top, &next, i == len(items)-1)
 		if err != nil {
 			return nil, err
 		}
@@ -200,6 +170,36 @@ func (rd *whisperReader) segments(items, top []orderedjson.Value) ([]*model.Cue,
 		}
 	}
 	return cues, nil
+}
+
+// segment reads segment i. It takes the top-level words from *next on whose middle is at most the segment end, or
+// all of them when last is true. A segment that fails before that takes none, so the next segment gets its words.
+func (rd *whisperReader) segment(i int, seg orderedjson.Value, top []orderedjson.Value, next *int, last bool) (*model.Cue, error) {
+	path := "segments[" + strconv.Itoa(i) + "]"
+	start, end, text, perr := segmentFields(seg, path, time.Second)
+	if perr != nil {
+		return nil, rd.fail(perr, i, seg)
+	}
+	own, _ := seg.Get("words")
+	words := slices.Clone(own.Items())
+	ownCount, firstTop := len(words), *next
+	if len(top) > 0 {
+		for *next < len(top) && (last || middle(top[*next]) <= float64(end.Milliseconds())/1000) {
+			words = append(words, top[*next])
+			*next++
+		}
+		seg = seg.With("words", orderedjson.ArrayOf(words...))
+	}
+	timed, perr := segmentWords(words, func(j int) string {
+		if j < ownCount {
+			return path + ".words[" + strconv.Itoa(j) + "]"
+		}
+		return "words[" + strconv.Itoa(firstTop+j-ownCount) + "]"
+	})
+	if perr != nil {
+		return nil, rd.fail(perr, i, seg)
+	}
+	return rd.cue(start, end, text, timed, seg, i)
 }
 
 func segmentFields(seg orderedjson.Value, path string, unit time.Duration) (start, end time.Duration, text string, perr *model.ParseError) {

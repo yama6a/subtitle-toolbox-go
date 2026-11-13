@@ -596,6 +596,7 @@ tmplayer    .txt              yes   yes
 qttext      .txt              yes   yes
 vobsub      .idx              yes   no
 vtt         .vtt              yes   yes
+whisper     .json             yes   yes
 ```
 
 - **Shared extensions**: the first format in the list owns an extension, so `.sub` is MicroDVD and `.txt` is plain text. `--from` reads a file as another format. A `.sub` file with MPSub or SubViewer content is found by its content. Plain text has no reader, so `--from txt` fails with `The format txt can be written but not read.` Pass `--from mpl2`, `--from tmplayer` or `--from qttext`. `--to txt` writes plain text with the default options.
