@@ -35,17 +35,17 @@ func TestWriteDeepgramEdits(t *testing.T) {
 		opts   transcript.ReadOptions
 		index  int
 		edit   func(c *model.Cue)
-		checks []cloudCheck
+		checks []check
 		absent [][]any
 	}{
 		{
 			name: "an edited word gets the confidence of a person in the utterance and the channel",
-			file: "pool_utterances_diarize.json", opts: cloudWords, index: 0,
+			file: "pool_utterances_diarize.json", opts: withWords, index: 0,
 			edit: func(c *model.Cue) {
 				c.Lines = []string{"Good morning, is the sauna open today?"}
 				c.Words[4].Text = "sauna"
 			},
-			checks: []cloudCheck{
+			checks: []check{
 				{[]any{"results", "utterances", 0, "transcript"}, `"Good morning, is the sauna open today?"`},
 				{[]any{"results", "utterances", 0, "words", 4}, sauna},
 				{[]any{"results", "channels", 0, "alternatives", 0, "words", 4}, sauna},
@@ -55,9 +55,9 @@ func TestWriteDeepgramEdits(t *testing.T) {
 		},
 		{
 			name: "a new speaker changes the utterance and its words",
-			file: "pool_utterances_diarize.json", opts: cloudWords, index: 1,
+			file: "pool_utterances_diarize.json", opts: withWords, index: 1,
 			edit: func(c *model.Cue) { c.Speaker = "2" },
-			checks: []cloudCheck{
+			checks: []check{
 				{[]any{"results", "utterances", 1, "speaker"}, `2`},
 				{[]any{"results", "utterances", 1, "words", 0, "speaker"}, `2`},
 				{[]any{"results", "utterances", 1, "words", 3, "speaker"}, `2`},
@@ -67,7 +67,7 @@ func TestWriteDeepgramEdits(t *testing.T) {
 			name: "an edited sentence stays in its paragraph",
 			file: "train_paragraphs_german.json", index: 1,
 			edit: func(c *model.Cue) { c.Lines = []string{"Bitte steigen Sie hinten ein."} },
-			checks: []cloudCheck{
+			checks: []check{
 				{
 					[]any{"results", "channels", 0, "alternatives", 0, "paragraphs", "transcript"},
 					"\"\\nDer Zug nach Hamburg f\u00e4hrt um zehn Uhr ab. Bitte steigen Sie hinten ein.\\n\\nDer Speisewagen ist heute geschlossen.\"",
@@ -90,7 +90,7 @@ func TestWriteDeepgramEdits(t *testing.T) {
 			edit: func(c *model.Cue) {
 				setChannel(c, 1)
 			},
-			checks: []cloudCheck{{[]any{"results", "channels", 1, "alternatives", 0, "words", 0, "word"}, `"the"`}},
+			checks: []check{{[]any{"results", "channels", 1, "alternatives", 0, "words", 0, "word"}, `"the"`}},
 		},
 		{
 			name: "a channel number far above the cue count counts as channel 0",
@@ -98,18 +98,18 @@ func TestWriteDeepgramEdits(t *testing.T) {
 			edit: func(c *model.Cue) {
 				setChannel(c, 1<<40)
 			},
-			checks: []cloudCheck{{[]any{"results", "channels", 0, "alternatives", 0, "words", 0, "word"}, `"the"`}},
+			checks: []check{{[]any{"results", "channels", 0, "alternatives", 0, "words", 0, "word"}, `"the"`}},
 			absent: [][]any{{"results", "channels", 1}},
 		},
 		{
 			name: "a typed end and confidence of a reused word reach the word",
-			file: "museum_words_punctuate.json", opts: cloudWords, index: 0,
+			file: "museum_words_punctuate.json", opts: withWords, index: 0,
 			edit: func(c *model.Cue) {
-				c.Words[0].End = cloudMS(500)
+				c.Words[0].End = ms(500)
 				conf := 0.5
 				c.Words[0].Confidence = &conf
 			},
-			checks: []cloudCheck{
+			checks: []check{
 				{[]any{"results", "channels", 0, "alternatives", 0, "words", 0, "end"}, `0.5`},
 				{[]any{"results", "channels", 0, "alternatives", 0, "words", 0, "confidence"}, `0.5`},
 				{[]any{"results", "channels", 0, "alternatives", 0, "words", 1, "start"}, `0.57999998`},
@@ -122,11 +122,11 @@ func TestWriteDeepgramEdits(t *testing.T) {
 
 			s := deepgramFormat.parseFile(t, tt.file, tt.opts)
 			if tt.edit != nil {
-				cloudEdit(t, s, tt.index, tt.edit)
+				editCue(t, s, tt.index, tt.edit)
 			}
 			doc := deepgramFormat.output(t, s)
 			for _, c := range tt.checks {
-				assert.Equal(t, c.want, cloudAt(t, doc, c.path...), c.path)
+				assert.Equal(t, c.want, compact(t, doc, c.path...), c.path)
 			}
 			for _, path := range tt.absent {
 				assert.False(t, cloudHasPath(doc, path...), path)
@@ -141,10 +141,10 @@ func TestWriteDeepgramFromAnotherFormat(t *testing.T) {
 
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataLanguage, "de")
-	s.AddCue(model.Cue{Start: cloudMS(1500), End: cloudMS(3000), Lines: []string{"Guten", "Morgen."}, Speaker: "1"})
+	s.AddCue(model.Cue{Start: ms(1500), End: ms(3000), Lines: []string{"Guten", "Morgen."}, Speaker: "1"})
 	s.AddCue(model.Cue{
-		Start: cloudMS(4000), End: cloudMS(5000), Lines: []string{"Bis bald."},
-		Words: []model.Word{{Text: "Bis", Start: cloudMS(4000), End: cloudMS(4500)}, {Text: "bald.", Start: cloudMS(4500), End: cloudMS(5000)}},
+		Start: ms(4000), End: ms(5000), Lines: []string{"Bis bald."},
+		Words: []model.Word{{Text: "Bis", Start: ms(4000), End: ms(4500)}, {Text: "bald.", Start: ms(4500), End: ms(5000)}},
 	})
 	want := `{"results":{"channels":[{"alternatives":[{"transcript":"Guten Morgen. Bis bald.","words":[` +
 		`{"word":"bis","start":4.0,"end":4.5,"confidence":1.0,"punctuated_word":"Bis"},` +
@@ -163,10 +163,10 @@ func TestWriteDeepgramKeepsTheEndAndConfidenceOfAWord(t *testing.T) {
 	conf := 0.93
 	s := &model.Subtitle{}
 	s.AddCue(model.Cue{
-		End: cloudMS(1000), Lines: []string{"beach"},
-		Words: []model.Word{{Text: "beach", Start: cloudMS(100), End: cloudMS(650), Confidence: &conf}},
+		End: ms(1000), Lines: []string{"beach"},
+		Words: []model.Word{{Text: "beach", Start: ms(100), End: ms(650), Confidence: &conf}},
 	})
 	doc := deepgramFormat.output(t, s)
 	assert.JSONEq(t, `{"word":"beach","start":0.1,"end":0.65,"confidence":0.93,"punctuated_word":"beach"}`,
-		cloudAt(t, doc, "results", "channels", 0, "alternatives", 0, "words", 0))
+		compact(t, doc, "results", "channels", 0, "alternatives", 0, "words", 0))
 }

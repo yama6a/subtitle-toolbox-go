@@ -9,6 +9,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -17,7 +18,19 @@ import (
 // cue when the source had utterances, or when a cue outside paragraphs has no words, because the words alone cannot
 // hold such a cue. A value that a cue did not change stays as the reader stored it.
 func WriteDeepgram(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
-	return cloudWrite(w, s, model.Deepgram, "Deepgram JSON", common, deepgramDocument)
+	s, err := writing.SkipImageCues(s, model.Deepgram, common)
+	if err != nil {
+		return err
+	}
+	doc, err := deepgramDocument(s)
+	if err != nil {
+		return err
+	}
+	body, err := encodeDocument(model.Deepgram, "Deepgram JSON", doc, false)
+	if err != nil {
+		return err
+	}
+	return writing.Write(w, model.Deepgram, body, common, false)
 }
 
 // deepgramEntry is the written form of one cue.
@@ -45,7 +58,7 @@ func deepgramDocument(s *model.Subtitle) (orderedjson.Value, error) {
 	byChannel := map[int][]deepgramEntry{}
 	hasUtterances := false
 	for _, c := range s.All() {
-		data := cloudCueData(&c, model.Deepgram)
+		data := storedObject(&c, deepgramKey)
 		channel := deepgramChannel(data, len(channels)+s.Len())
 		e := deepgramCue(&c, data)
 		transcript := cloudGet(data, "transcript").Kind() != orderedjson.Null
@@ -60,12 +73,12 @@ func deepgramDocument(s *model.Subtitle) (orderedjson.Value, error) {
 	}
 	channels = deepgramChannels(channels, byChannel, language, hasLanguage)
 
-	out := orderedjson.ObjectOf(cloudMember("channels", orderedjson.ArrayOf(channels...)))
+	out := orderedjson.ObjectOf(member("channels", orderedjson.ArrayOf(channels...)))
 	if hasUtterances {
-		out = orderedjson.Union(out, orderedjson.ObjectOf(cloudMember("utterances", orderedjson.ArrayOf(utterances...))))
+		out = orderedjson.Union(out, orderedjson.ObjectOf(member("utterances", orderedjson.ArrayOf(utterances...))))
 	}
 	out = orderedjson.Union(out, results)
-	return orderedjson.Union(orderedjson.ObjectOf(cloudMember("results", out)), file), nil
+	return orderedjson.Union(orderedjson.ObjectOf(member("results", out)), file), nil
 }
 
 // deepgramChannels returns one channel object for each stored channel and each channel that a cue names.
@@ -81,7 +94,7 @@ func deepgramChannels(stored []orderedjson.Value, byChannel map[int][]deepgramEn
 			channels[i] = stored[i]
 		}
 		if i == 0 && hasLanguage {
-			channels[i] = orderedjson.Union(channels[i], orderedjson.ObjectOf(cloudMember("detected_language", orderedjson.StringValue(language))))
+			channels[i] = orderedjson.Union(channels[i], orderedjson.ObjectOf(member("detected_language", orderedjson.StringValue(language))))
 		}
 		channels[i] = deepgramChannelOut(channels[i], byChannel[i])
 	}
@@ -98,18 +111,18 @@ func deepgramChannel(data orderedjson.Value, limit int) int {
 
 func deepgramUtterance(data orderedjson.Value, e deepgramEntry, channel int, transcript bool) orderedjson.Value {
 	base := orderedjson.ObjectOf(
-		cloudMember("start", orderedjson.Value{}), cloudMember("end", orderedjson.Value{}), cloudMember("confidence", orderedjson.Float(1)),
+		member("start", orderedjson.Value{}), member("end", orderedjson.Value{}), member("confidence", orderedjson.Float(1)),
 	)
 	stored := orderedjson.ObjectOf()
 	if transcript {
 		stored = data
 	}
 	with := []orderedjson.Value{stored, orderedjson.ObjectOf(
-		cloudMember("start", e.start), cloudMember("end", e.end), cloudMember("channel", orderedjson.Int(int64(channel))),
-		cloudMember("transcript", orderedjson.StringValue(e.text)), cloudMember("words", orderedjson.ArrayOf(e.words...)),
+		member("start", e.start), member("end", e.end), member("channel", orderedjson.Int(int64(channel))),
+		member("transcript", orderedjson.StringValue(e.text)), member("words", orderedjson.ArrayOf(e.words...)),
 	)}
 	if e.speaker.Kind() != orderedjson.Null {
-		with = append(with, orderedjson.ObjectOf(cloudMember("speaker", e.speaker)))
+		with = append(with, orderedjson.ObjectOf(member("speaker", e.speaker)))
 	}
 	return orderedjson.Replace(base, with...)
 }
@@ -266,13 +279,13 @@ func deepgramNewWord(n wordgroup.NewWord, speaker orderedjson.Value) orderedjson
 		word = n.Text
 	}
 	m := []orderedjson.Member{
-		cloudMember("word", orderedjson.StringValue(word)), cloudMember("start", orderedjson.Seconds(n.Start)),
-		cloudMember("end", orderedjson.Seconds(n.End)), cloudMember("confidence", orderedjson.Float(n.Confidence)),
+		member("word", orderedjson.StringValue(word)), member("start", orderedjson.Seconds(n.Start)),
+		member("end", orderedjson.Seconds(n.End)), member("confidence", orderedjson.Float(n.Confidence)),
 	}
 	if speaker.Kind() != orderedjson.Null {
-		m = append(m, cloudMember("speaker", speaker))
+		m = append(m, member("speaker", speaker))
 	}
-	return orderedjson.ObjectOf(append(m, cloudMember("punctuated_word", orderedjson.StringValue(n.Text)))...)
+	return orderedjson.ObjectOf(append(m, member("punctuated_word", orderedjson.StringValue(n.Text)))...)
 }
 
 // deepgramChannelOut returns the channel with the transcript and the words of its entries.
@@ -289,12 +302,12 @@ func deepgramChannelOut(channel orderedjson.Value, entries []deepgramEntry) orde
 		words = append(words, e.words...)
 		hasParagraph = hasParagraph || len(e.paragraph.Members()) > 0
 	}
-	alt = orderedjson.Union(orderedjson.ObjectOf(cloudMember("transcript", orderedjson.StringValue(strings.Join(texts, " ")))), alt)
-	alt = orderedjson.Union(alt, orderedjson.ObjectOf(cloudMember("words", orderedjson.ArrayOf(words...))))
+	alt = orderedjson.Union(orderedjson.ObjectOf(member("transcript", orderedjson.StringValue(strings.Join(texts, " ")))), alt)
+	alt = orderedjson.Union(alt, orderedjson.ObjectOf(member("words", orderedjson.ArrayOf(words...))))
 	if hasParagraph {
 		alt = alt.With("paragraphs", deepgramParagraphs(entries))
 	}
-	return orderedjson.Union(orderedjson.ObjectOf(cloudMember("alternatives", orderedjson.ArrayOf(alt))), channel)
+	return orderedjson.Union(orderedjson.ObjectOf(member("alternatives", orderedjson.ArrayOf(alt))), channel)
 }
 
 type deepgramParagraph struct {
@@ -342,20 +355,20 @@ func deepgramParagraphs(entries []deepgramEntry) orderedjson.Value {
 		count := 0
 		for k, e := range p.entries {
 			sentences[k] = orderedjson.Replace(e.sentence, orderedjson.ObjectOf(
-				cloudMember("text", orderedjson.StringValue(e.text)), cloudMember("start", e.start), cloudMember("end", e.end),
+				member("text", orderedjson.StringValue(e.text)), member("start", e.start), member("end", e.end),
 			))
 			texts[k] = e.text
 			count += len(e.words)
 		}
 		first, last := p.entries[0], p.entries[len(p.entries)-1]
-		base := orderedjson.ObjectOf(cloudMember("sentences", orderedjson.ArrayOf(sentences...)))
+		base := orderedjson.ObjectOf(member("sentences", orderedjson.ArrayOf(sentences...)))
 		speaker := orderedjson.ObjectOf()
 		if p.speaker.Kind() != orderedjson.Null {
-			speaker = orderedjson.ObjectOf(cloudMember("speaker", p.speaker))
+			speaker = orderedjson.ObjectOf(member("speaker", p.speaker))
 		}
 		list[i] = orderedjson.Replace(orderedjson.Union(base, speaker), p.source, orderedjson.ObjectOf(
-			cloudMember("sentences", orderedjson.ArrayOf(sentences...)), cloudMember("num_words", orderedjson.Int(int64(count))),
-			cloudMember("start", first.start), cloudMember("end", last.end),
+			member("sentences", orderedjson.ArrayOf(sentences...)), member("num_words", orderedjson.Int(int64(count))),
+			member("start", first.start), member("end", last.end),
 		), speaker)
 		transcript.WriteString("\n")
 		if p.speaker.Kind() != orderedjson.Null {
@@ -364,7 +377,7 @@ func deepgramParagraphs(entries []deepgramEntry) orderedjson.Value {
 		transcript.WriteString(strings.Join(texts, " ") + "\n")
 	}
 	text := strings.TrimSuffix(transcript.String(), "\n")
-	return orderedjson.ObjectOf(cloudMember("transcript", orderedjson.StringValue(text)), cloudMember("paragraphs", orderedjson.ArrayOf(list...)))
+	return orderedjson.ObjectOf(member("transcript", orderedjson.StringValue(text)), member("paragraphs", orderedjson.ArrayOf(list...)))
 }
 
 func deepgramSpeakerText(v orderedjson.Value) string {

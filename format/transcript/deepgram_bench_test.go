@@ -52,3 +52,30 @@ func BenchmarkDeepgram(b *testing.B) {
 		cloudBench(b, deepgramFormat, fmt.Sprintf("%s words=%d", kind, deepgramBenchWords), deepgramBenchInput(strings.Fields(kind)[0]))
 	}
 }
+
+// deepgramBenchCopies is 1 paragraph of 600 members with 1,000 sentences, and 8,000 words. The file has about 0.7 MB.
+// The cues hold 11 MB of paragraph copies, near the limit of 16 times the file plus 1 MiB.
+func deepgramBenchCopies() string {
+	var paragraph, sentences, words strings.Builder
+	for i := range 600 {
+		fmt.Fprintf(&paragraph, `"k%04d": "0123456", `, i)
+	}
+	for i := range 1000 {
+		if i > 0 {
+			sentences.WriteString(",")
+		}
+		fmt.Fprintf(&sentences, `{"text": "w", "start": %s, "end": %s}`, deepgramBenchTime(i), deepgramBenchTime(i+1))
+	}
+	for i := range 8000 {
+		if i > 0 {
+			words.WriteString(",")
+		}
+		fmt.Fprintf(&words, `{"word": "w%d", "start": %s, "end": %s, "confidence": 0.9, "punctuated_word": "W%d"}`, i, deepgramBenchTime(i/8), deepgramBenchTime(i/8+1), i)
+	}
+	return fmt.Sprintf(`{"results": {"channels": [{"alternatives": [{"words": [%s], "paragraphs": {"paragraphs": [{%s"sentences": [%s]}]}}]}]}}`,
+		words.String(), paragraph.String(), sentences.String())
+}
+
+func BenchmarkDeepgramParagraphCopies(b *testing.B) {
+	cloudBench(b, deepgramFormat, "1,000 sentences of a paragraph of 600 members", deepgramBenchCopies())
+}

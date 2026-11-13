@@ -241,7 +241,7 @@ Deepgram returns the transcript of a recording as JSON. Each audio channel has a
 
 - **Lists**: `results` must be an object and `results.channels` a JSON array. Else the read fails with `The JSON has no "results.channels" list.` in both modes. An object with the keys `"0"` and `"1"` is no list ([subtitle-toolbox-php#1208](https://github.com/yama6a/subtitle-toolbox-php/issues/1208)).
 - **Utterances**: when `results.utterances` is an array with items, each utterance gives one cue. The channels are not read. The cue data is the whole utterance.
-- **Paragraphs**: a channel whose first alternative has `paragraphs.paragraphs` gives one cue for each sentence. The speaker is the `speaker` of the paragraph. The words of a cue are the words whose middle lies between the start and the end of the sentence. The cue data is the sentence members, then `channel`, `speaker`, `paragraph` without `sentences`, and `words`.
+- **Paragraphs**: a channel whose first alternative has `paragraphs.paragraphs` gives one cue for each sentence. The cue data of each sentence holds a copy of its paragraph. The copies of a file together may not pass 16 times the size of the file plus 1 MiB. Past that, the read fails in both modes with `The sentences copy more than N bytes of paragraph data into the cues.` ([subtitle-toolbox-php#1280](https://github.com/yama6a/subtitle-toolbox-php/issues/1280)). The speaker is the `speaker` of the paragraph. The words of a cue are the words whose middle lies between the start and the end of the sentence. The cue data is the sentence members, then `channel`, `speaker`, `paragraph` without `sentences`, and `words`.
 - **Words only**: the words of a channel group into cues by the [grouping rules](#grouping-words-into-cues). The cue data is `{"channel": N, "words": [...]}`.
 - **Channels**: only a channel whose `alternatives[0]` is an object gives cues. The cues of all channels are sorted by start, so channel 1 can come before channel 0.
 - **Language**: `results.channels[0].detected_language`.
@@ -285,5 +285,5 @@ A subtitle with the language `de` and the cue `<v 1>Guten` / `Morgen.` from 1.5 
 
 | Operation | Cost | Benchmark |
 |:--- |:--- |:--- |
-| read Deepgram JSON | linear in the file. The sentences of a channel take their words with one pass over the words | `BenchmarkDeepgram`: 9,000 words in one channel, 9,000 words in one utterance, 9,000 sentences in one paragraph. Each input is about 1 MB |
+| read Deepgram JSON | linear in the file, plus the copies of each paragraph that its sentence cues hold. The sentences of a channel take their words with one pass over the words. The copies together may not pass 16 times the file plus 1 MiB, else the read fails | `BenchmarkDeepgram`: 9,000 words in one channel, 9,000 words in one utterance, 9,000 sentences in one paragraph. `BenchmarkDeepgramParagraphCopies`: 1,000 sentences of a paragraph of 600 members, with copies near the limit. Each input is about 1 MB, the last about 0.7 MB |
 | write Deepgram JSON | linear in the cues, the words and the stored words | the same inputs |

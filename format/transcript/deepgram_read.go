@@ -19,7 +19,7 @@ const deepgramKey = string(model.Deepgram)
 // else one per paragraph sentence, else cues grouped from the words. A field error names the path of the field, such
 // as results.channels[0].alternatives[0].words[3].end.
 func ReadDeepgram(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	st, root, ok, err := cloudRead(r, model.Deepgram, common)
+	st, root, ok, err := readRoot(r, model.Deepgram, common)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -31,7 +31,7 @@ func ReadDeepgram(r io.Reader, common model.CommonReadOptions, opts ReadOptions)
 	if results.Kind() != orderedjson.Object || channels.Kind() != orderedjson.Array {
 		return nil, nil, &model.ParseError{Format: model.Deepgram, Msg: `The JSON has no "results.channels" list.`}
 	}
-	rd := &deepgramReader{st: st, cues: wordgroup.NewReader(st, wordgroup.Options{
+	rd := &deepgramReader{st: st, root: root, cues: wordgroup.NewReader(st, wordgroup.Options{
 		WordTimestamps: opts.WordTimestamps, SpeakerVoices: opts.SpeakerVoices,
 	}, deepgramKey)}
 	cues, err := rd.cuesOf(results, channels.Items())
@@ -65,7 +65,17 @@ func (rd *deepgramReader) cuesOf(results orderedjson.Value, channels []orderedjs
 type deepgramReader struct {
 	st   *parsing.State
 	cues *wordgroup.Reader
+	root orderedjson.Value
+	// copied is the size in bytes of the paragraph data that the cues hold so far, and limit is its upper bound.
+	copied, limit int
 }
+
+// paragraphCopyFactor and paragraphCopyBase give the upper bound of the paragraph data that all cues of a file hold:
+// the factor times the size of the file, plus the base. A real file has 3 or 4 paragraph members, so it stays far below.
+const (
+	paragraphCopyFactor = 16
+	paragraphCopyBase   = 1 << 20
+)
 
 // deepgramChannelData returns the members of a channel and of its first alternative, without the transcript, the
 // words and the paragraphs.
@@ -74,7 +84,7 @@ func deepgramChannelData(channel orderedjson.Value) orderedjson.Value {
 	if channel.Kind() != orderedjson.Object || len(alt) == 0 || alt[0].Kind() != orderedjson.Object {
 		return channel
 	}
-	first := orderedjson.ObjectOf(cloudMember("alternatives", orderedjson.ArrayOf(alt[0].Without("transcript", "words", "paragraphs"))))
+	first := orderedjson.ObjectOf(member("alternatives", orderedjson.ArrayOf(alt[0].Without("transcript", "words", "paragraphs"))))
 	return orderedjson.Union(first, channel)
 }
 
@@ -139,8 +149,13 @@ func (rd *deepgramReader) channels(channels []orderedjson.Value) ([]*model.Cue, 
 func (rd *deepgramReader) paragraphCues(paragraphs []orderedjson.Value, words []wordgroup.Word, path string, channel int) ([]*model.Cue, error) {
 	var cues []*model.Cue
 	index := 0
+	if rd.limit == 0 {
+		rd.limit = paragraphCopyFactor*len(orderedjson.Block(rd.root)) + paragraphCopyBase
+	}
 	for p, paragraph := range paragraphs {
 		speaker, hasSpeaker := wordgroup.Speaker(cloudGet(paragraph, "speaker"))
+		rest := paragraph.Without("sentences")
+		size := len(orderedjson.Block(rest))
 		for s, sentence := range cloudGet(paragraph, "sentences").Items() {
 			sentencePath := path + ".paragraphs.paragraphs[" + strconv.Itoa(p) + "].sentences[" + strconv.Itoa(s) + "]"
 			start, end, text, err := deepgramSentenceFields(sentence, sentencePath)
@@ -150,17 +165,12 @@ func (rd *deepgramReader) paragraphCues(paragraphs []orderedjson.Value, words []
 				}
 				continue
 			}
+			if rd.copied += size; rd.copied > rd.limit {
+				return nil, &model.ParseError{Format: model.Deepgram, Msg: "The sentences copy more than " + strconv.Itoa(rd.limit) +
+					" bytes of paragraph data into the cues. Each cue of a sentence holds a copy of its paragraph."}
+			}
 			between := wordgroup.Between(words, &index, start, end)
-			data := orderedjson.Union(sentence, orderedjson.ObjectOf(cloudMember("channel", orderedjson.Int(int64(channel)))))
-			if hasSpeaker {
-				data = orderedjson.Union(data, orderedjson.ObjectOf(cloudMember("speaker", cloudGet(paragraph, "speaker"))))
-			}
-			raw := make([]orderedjson.Value, 0, len(between))
-			for _, w := range between {
-				raw = append(raw, w.Source...)
-			}
-			data = orderedjson.Union(data, orderedjson.ObjectOf(cloudMember("paragraph", paragraph.Without("sentences"))))
-			data = orderedjson.Union(data, orderedjson.ObjectOf(cloudMember("words", orderedjson.ArrayOf(raw...))))
+			data := deepgramSentenceData(sentence, channel, paragraph, rest, between, hasSpeaker)
 			c, err := rd.cues.Cue(start, end, text, between, speaker, cloudData(data), s, sentence)
 			if err != nil {
 				return nil, err
@@ -171,6 +181,21 @@ func (rd *deepgramReader) paragraphCues(paragraphs []orderedjson.Value, words []
 		}
 	}
 	return cues, nil
+}
+
+// deepgramSentenceData returns the cue data of a sentence: its members, then the channel, the speaker of the paragraph,
+// the paragraph without its sentences, and the raw words of the sentence.
+func deepgramSentenceData(sentence orderedjson.Value, channel int, paragraph, rest orderedjson.Value, words []wordgroup.Word, hasSpeaker bool) orderedjson.Value {
+	data := orderedjson.Union(sentence, orderedjson.ObjectOf(member("channel", orderedjson.Int(int64(channel)))))
+	if hasSpeaker {
+		data = orderedjson.Union(data, orderedjson.ObjectOf(member("speaker", cloudGet(paragraph, "speaker"))))
+	}
+	raw := make([]orderedjson.Value, 0, len(words))
+	for _, w := range words {
+		raw = append(raw, w.Source...)
+	}
+	data = orderedjson.Union(data, orderedjson.ObjectOf(member("paragraph", rest)))
+	return orderedjson.Union(data, orderedjson.ObjectOf(member("words", orderedjson.ArrayOf(raw...))))
 }
 
 func deepgramSentenceFields(sentence orderedjson.Value, path string) (start, end time.Duration, text string, err error) {

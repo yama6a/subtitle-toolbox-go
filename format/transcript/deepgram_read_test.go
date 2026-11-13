@@ -1,6 +1,7 @@
 package transcript_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -69,7 +70,7 @@ func TestReadDeepgramCues(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, cloudDescribe(deepgramFormat.parse(t, tt.content, tt.opts)))
+			assert.Equal(t, tt.want, describe(deepgramFormat.parse(t, tt.content, tt.opts)))
 		})
 	}
 }
@@ -104,7 +105,7 @@ func TestReadDeepgramParagraphErrors(t *testing.T) {
 	prefix := "The field results.channels[0].alternatives[0].paragraphs.paragraphs"
 	s, warnings, err := transcript.ReadDeepgram(strings.NewReader(content), model.CommonReadOptions{Lenient: true}, transcript.ReadOptions{})
 	require.NoError(t, err)
-	assert.Equal(t, []string{"1-2 Bye."}, cloudDescribe(s))
+	assert.Equal(t, []string{"1-2 Bye."}, describe(s))
 	assert.Equal(t, []string{
 		prefix + "[0].sentences[0].end must be a time.|0|skipped", prefix + "[1].sentences[0].end must be a time.|0|skipped",
 	}, cloudWarnings(warnings))
@@ -156,5 +157,55 @@ func TestReadDeepgramErrors(t *testing.T) {
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr, content)
 		assert.Equal(t, `The JSON has no "results.channels" list.`, perr.Msg)
+	}
+}
+
+// deepgramParagraphs returns a response with one paragraph of members that each hold about 11 bytes, and sentences
+// sentences.
+func deepgramParagraphs(members, sentences int) string {
+	var paragraph, list strings.Builder
+	for i := range members {
+		fmt.Fprintf(&paragraph, `"k%04d": 1, `, i)
+	}
+	for i := range sentences {
+		if i > 0 {
+			list.WriteString(",")
+		}
+		fmt.Fprintf(&list, `{"text": "s", "start": %d, "end": %d}`, i, i+1)
+	}
+	return `{"results": {"channels": [{"alternatives": [{"words": [], "paragraphs": {"paragraphs": [{` + paragraph.String() +
+		`"sentences": [` + list.String() + `]}]}}]}]}}`
+}
+
+// The cue of each sentence holds a copy of its paragraph. The copies together stay below 16 times the file plus 1 MiB.
+func TestReadDeepgramLimitsTheCopiesOfAParagraph(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name               string
+		members, sentences int
+		wantErr            bool
+	}{
+		{"a real paragraph", 4, 200, false},
+		{"copies below the limit", 500, 200, false},
+		{"copies above the limit", 5000, 1500, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			content := deepgramParagraphs(tt.members, tt.sentences)
+			for _, lenient := range []bool{false, true} {
+				s, _, err := transcript.ReadDeepgram(strings.NewReader(content), model.CommonReadOptions{Lenient: lenient}, transcript.ReadOptions{})
+				if !tt.wantErr {
+					require.NoError(t, err)
+					assert.Equal(t, tt.sentences, s.Len())
+					continue
+				}
+				var perr *model.ParseError
+				require.ErrorAs(t, err, &perr)
+				assert.Contains(t, perr.Msg, "bytes of paragraph data into the cues")
+			}
+		})
 	}
 }
