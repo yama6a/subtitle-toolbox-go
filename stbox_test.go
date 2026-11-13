@@ -206,6 +206,7 @@ func ExampleFormats() {
 	// csv [csv]
 	// itt [itt]
 	// json [json]
+	// deepgram [json]
 	// lrc [lrc]
 	// mcc [mcc]
 	// microdvd [sub]

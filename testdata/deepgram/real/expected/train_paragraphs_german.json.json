@@ -1,0 +1,252 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {
+            "language": "de"
+        },
+        "comments": [],
+        "formatData": {
+            "deepgram": {
+                "metadata": {
+                    "transaction_key": "deprecated",
+                    "request_id": "6a1f0c52-8e3b-4d2a-9c71-2f4b5d6e7a80",
+                    "sha256": "4c7b0e9d2a5f8136e0c4b7a9d1f2e3c4b5a6978877665544332211ffeeddccbb",
+                    "created": "2026-09-14T08:12:40.517Z",
+                    "duration": 9.49,
+                    "channels": 1,
+                    "models": [
+                        "1abfe86b-e047-4eed-858a-35e5625b41ee"
+                    ],
+                    "model_info": {
+                        "1abfe86b-e047-4eed-858a-35e5625b41ee": {
+                            "name": "general-nova-3",
+                            "version": "2025-07-31.0",
+                            "arch": "nova-3"
+                        }
+                    }
+                },
+                "results": {
+                    "channels": [
+                        {
+                            "alternatives": [
+                                {
+                                    "confidence": 0.99609375
+                                }
+                            ],
+                            "detected_language": "de",
+                            "language_confidence": 0.9902344
+                        }
+                    ]
+                }
+            }
+        },
+        "cues": [
+            {
+                "start": 0.4,
+                "end": 4.06,
+                "lines": [
+                    "<00:00:00.400>Der <00:00:00.820>Zug <00:00:01.240>nach <00:00:01.700>Hamburg <00:00:02.080>fährt <00:00:02.380>um <00:00:02.760>zehn <00:00:03.220>Uhr <00:00:03.640>ab."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "deepgram": {
+                        "text": "Der Zug nach Hamburg fährt um zehn Uhr ab.",
+                        "start": 0.4,
+                        "end": 4.06,
+                        "channel": 0,
+                        "paragraph": {
+                            "num_words": 14,
+                            "start": 0.4,
+                            "end": 6.2
+                        },
+                        "words": [
+                            {
+                                "word": "der",
+                                "start": 0.4,
+                                "end": 0.82,
+                                "confidence": 0.9087655,
+                                "punctuated_word": "Der"
+                            },
+                            {
+                                "word": "zug",
+                                "start": 0.82,
+                                "end": 1.24,
+                                "confidence": 0.9087655,
+                                "punctuated_word": "Zug"
+                            },
+                            {
+                                "word": "nach",
+                                "start": 1.24,
+                                "end": 1.7,
+                                "confidence": 0.9787655,
+                                "punctuated_word": "nach"
+                            },
+                            {
+                                "word": "hamburg",
+                                "start": 1.7,
+                                "end": 2.08,
+                                "confidence": 0.9887655,
+                                "punctuated_word": "Hamburg"
+                            },
+                            {
+                                "word": "fährt",
+                                "start": 2.08,
+                                "end": 2.38,
+                                "confidence": 0.9487655,
+                                "punctuated_word": "fährt"
+                            },
+                            {
+                                "word": "um",
+                                "start": 2.38,
+                                "end": 2.76,
+                                "confidence": 0.9387655,
+                                "punctuated_word": "um"
+                            },
+                            {
+                                "word": "zehn",
+                                "start": 2.75999998,
+                                "end": 3.22,
+                                "confidence": 0.9787655,
+                                "punctuated_word": "zehn"
+                            },
+                            {
+                                "word": "uhr",
+                                "start": 3.22,
+                                "end": 3.64,
+                                "confidence": 0.9087655,
+                                "punctuated_word": "Uhr"
+                            },
+                            {
+                                "word": "ab",
+                                "start": 3.64,
+                                "end": 4.06,
+                                "confidence": 0.9087655,
+                                "punctuated_word": "ab."
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 4.34,
+                "end": 6.2,
+                "lines": [
+                    "<00:00:04.340>Bitte <00:00:04.640>steigen <00:00:05.020>Sie <00:00:05.440>vorne <00:00:05.740>ein."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "deepgram": {
+                        "text": "Bitte steigen Sie vorne ein.",
+                        "start": 4.34,
+                        "end": 6.2,
+                        "channel": 0,
+                        "paragraph": {
+                            "num_words": 14,
+                            "start": 0.4,
+                            "end": 6.2
+                        },
+                        "words": [
+                            {
+                                "word": "bitte",
+                                "start": 4.34,
+                                "end": 4.64,
+                                "confidence": 0.9487655,
+                                "punctuated_word": "Bitte"
+                            },
+                            {
+                                "word": "steigen",
+                                "start": 4.64,
+                                "end": 5.02,
+                                "confidence": 0.9887655,
+                                "punctuated_word": "steigen"
+                            },
+                            {
+                                "word": "sie",
+                                "start": 5.01999998,
+                                "end": 5.44,
+                                "confidence": 0.9087655,
+                                "punctuated_word": "Sie"
+                            },
+                            {
+                                "word": "vorne",
+                                "start": 5.44,
+                                "end": 5.74,
+                                "confidence": 0.9487655,
+                                "punctuated_word": "vorne"
+                            },
+                            {
+                                "word": "ein",
+                                "start": 5.74,
+                                "end": 6.2,
+                                "confidence": 0.9787655,
+                                "punctuated_word": "ein."
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "start": 7.1,
+                "end": 8.96,
+                "lines": [
+                    "<00:00:07.100>Der <00:00:07.520>Speisewagen <00:00:07.860>ist <00:00:08.280>heute <00:00:08.580>geschlossen."
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "deepgram": {
+                        "text": "Der Speisewagen ist heute geschlossen.",
+                        "start": 7.1,
+                        "end": 8.96,
+                        "channel": 0,
+                        "paragraph": {
+                            "num_words": 5,
+                            "start": 7.1,
+                            "end": 8.96
+                        },
+                        "words": [
+                            {
+                                "word": "der",
+                                "start": 7.1,
+                                "end": 7.52,
+                                "confidence": 0.9087655,
+                                "punctuated_word": "Der"
+                            },
+                            {
+                                "word": "speisewagen",
+                                "start": 7.52,
+                                "end": 7.86,
+                                "confidence": 0.9687655,
+                                "punctuated_word": "Speisewagen"
+                            },
+                            {
+                                "word": "ist",
+                                "start": 7.85999998,
+                                "end": 8.28,
+                                "confidence": 0.9087655,
+                                "punctuated_word": "ist"
+                            },
+                            {
+                                "word": "heute",
+                                "start": 8.28,
+                                "end": 8.58,
+                                "confidence": 0.9487655,
+                                "punctuated_word": "heute"
+                            },
+                            {
+                                "word": "geschlossen",
+                                "start": 8.57999998,
+                                "end": 8.96,
+                                "confidence": 0.9387655,
+                                "punctuated_word": "geschlossen."
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}
