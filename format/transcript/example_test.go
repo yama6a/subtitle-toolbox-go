@@ -70,8 +70,7 @@ func ExampleReadPodcast() {
 		{"speaker": "Anna", "startTime": 1, "endTime": 1.25, "body": "bakery"},
 		{"speaker": "Anna", "startTime": 1.5, "endTime": 2, "body": "opens."},
 		{"speaker": "Ben", "startTime": 3, "body": "Good news"}]}`
-	opts := transcript.ReadOptions{SpeakerVoices: true}
-	s, _, err := transcript.ReadPodcast(strings.NewReader(content), model.CommonReadOptions{}, opts)
+	s, _, err := transcript.ReadPodcast(strings.NewReader(content), model.CommonReadOptions{}, transcript.ReadOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return

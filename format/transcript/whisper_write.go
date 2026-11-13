@@ -3,6 +3,7 @@ package transcript
 import (
 	"errors"
 	"io"
+	"math"
 	"strings"
 	"time"
 
@@ -191,11 +192,15 @@ func (ww *whisperWriter) newID(stored orderedjson.Value) orderedjson.Value {
 	if id, _ := stored.Get("id"); id.Kind() != orderedjson.Null || ww.shape == shapeWhisperX {
 		return orderedjson.ObjectOf()
 	}
-	next := int64(0)
+	next := orderedjson.Int(0)
 	if n, ok := ww.previousID(); ok {
-		next = n + 1
+		// An id past the int64 range becomes a float, as PHP does.
+		next = orderedjson.Int(n + 1)
+		if n == math.MaxInt64 {
+			next = orderedjson.Float(float64(n) + 1)
+		}
 	}
-	return orderedjson.ObjectOf(member("id", orderedjson.Int(next)))
+	return orderedjson.ObjectOf(member("id", next))
 }
 
 func (ww *whisperWriter) previousID() (int64, bool) {
@@ -277,10 +282,12 @@ func (ww *whisperWriter) wordList(c *model.Cue, stored []orderedjson.Value, same
 }
 
 // withTypedValues gives a reused source word the End and the Confidence of its entry in Cue.Words, for each member
-// that the source word has and that differs.
+// that the source word has and that differs. A stored end that is no valid time stays as it is.
 func withTypedValues(item orderedjson.Value, w *model.Word) orderedjson.Value {
-	if item.Has("end") && !sameTime(item, "end", time.Second, w.End) {
-		item = item.With("end", orderedjson.Seconds(w.End))
+	if v, _ := item.Get("end"); v.Kind() == orderedjson.Number {
+		if _, state := timeOf(v, time.Second); state == validTime && !sameTime(item, "end", time.Second, w.End) {
+			item = item.With("end", orderedjson.Seconds(w.End))
+		}
 	}
 	if w.Confidence == nil {
 		return item

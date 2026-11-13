@@ -503,7 +503,7 @@ A rule option sets its field on the preset result. A flag can only turn a check 
 
 ## sync
 
-`stbox sync <input>... --reference FILE [options]` retimes each input to the cue times of a reference subtitle. It finds the offset and the frame-rate scale. [sync.md](sync.md#command-line) lists its options and output.
+`stbox sync <input>... --reference FILE [options]` retimes each input to the cue times of a reference subtitle. `--silence-log FILE --media-duration SECONDS` takes the speech of an FFmpeg `silencedetect` log as the reference instead. It finds the offset and the frame-rate scale. [sync.md](sync.md#command-line) lists its options and output.
 
 `--reference-track NUMBER` picks the track when the reference is a video file. A video file with 2 or more subtitle tracks and no `--reference-track` fails with `Error: movie.mkv: The MKV or WebM file has 6 subtitle tracks. Pass --reference-track N with one of them:` and the track lines, exit 3. A PGS or VobSub reference track works without OCR, because only the cue times count.
 
@@ -516,6 +516,31 @@ A rule option sets its field on the preset result. A flag can only turn a check 
 - **Failure**: a failed file prints `PATH: MESSAGE` with its own path and exits 3. A message about the format of NEW names `--new-from`, and a track error names `--new-track`.
 - **No `--keep-going`**: the command has one pair of files.
 - **JSON**: one object with the keys `oldFile`, `newFile`, `equal`, `differences`, `oldWarnings` and `newWarnings`. Cue times are seconds, such as `6.2`.
+
+## translate
+
+`stbox translate <input>... --engine deepl|google|openai --target-language CODE` sends the cue text to a translation service with `translation.Translate` of [translation.md](translation.md). It keeps the times and the tags, and sets the `language` metadata to the target. It is a write command, so the output rules of [Output files](#output-files) apply.
+
+```
+DEEPL_API_KEY=... stbox translate station.srt --engine deepl --source-language en --target-language de --to vtt
+OPENAI_MODEL=llama3 OPENAI_BASE_URL=http://localhost:11434/v1 stbox translate station.srt --engine openai --target-language de
+```
+
+- **Options**: `--engine` takes `deepl`, `google` or `openai` in any ASCII case. `--target-language` is required. `--source-language` is optional, and the engine detects the language without it. The CLI does not check the language codes.
+- **Key**: `--api-key` wins over the environment variable of the engine, also when it is empty. An empty variable counts as unset. Only the variable of the chosen engine counts.
+- **Checks**: every check runs before any read and fails with exit 2. The order is engine, key, target, then for `openai` the model and the base URL, then the engine options.
+
+| Variable | Engine | Effect |
+|:--- |:--- |:--- |
+| `DEEPL_API_KEY` | `deepl` | API key when `--api-key` is absent. Required |
+| `GOOGLE_TRANSLATE_API_KEY` | `google` | The same. Required |
+| `OPENAI_API_KEY` | `openai` | The same. Optional, because a local service needs no key |
+| `OPENAI_MODEL` | `openai` | The model name. Required |
+| `OPENAI_BASE_URL` | `openai` | The base URL. Default `https://api.openai.com/v1` |
+
+- **Key rules**: a key of only white space gives `The API key is empty. Pass --api-key or set DEEPL_API_KEY.`. A key with a control character, or a space at the start or end, gives `The API key has a control character, or a space at the start or end. Pass the key without them.`. The key never appears in a message, a warning or the help.
+- **Warnings**: each warning of the run goes to stderr as `LABEL: cue N: MESSAGE`, for example `station.srt: cue 3: The engine dropped or changed a placeholder tag. The cue has no tags.`.
+- **Failure**: a service error fails the input with exit 3 and the message `LABEL: MESSAGE`, for example `stdin: DeepL rejected the API key (HTTP 403). Check the key and its plan.`. `--keep-going` goes on with the next input. Ctrl-C stops the request in flight.
 
 ## dual
 

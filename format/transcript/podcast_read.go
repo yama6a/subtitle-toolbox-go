@@ -12,12 +12,15 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // podcastItem is a segment of a Podcasting 2.0 transcript as the reader reads it.
 type podcastItem struct {
+	index      int               // the place in the segments list, for warnings
+	raw        orderedjson.Value // the segment, for warnings
 	start, end time.Duration
 	hasEnd     bool
 	speaker    string
@@ -57,6 +60,7 @@ func ReadPodcast(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 
 	var cues []*model.Cue
 	for _, group := range podcastGroups(segments, opts.KeepSegments) {
+		warnLateStart(st, group)
 		cue, err := podcastCue(group, opts.WordTimestamps)
 		if err != nil {
 			return nil, nil, err
@@ -76,6 +80,7 @@ func readPodcastItems(st *parsing.State, items []orderedjson.Value) ([]podcastIt
 	for i, item := range items {
 		path := "segments[" + strconv.Itoa(i) + "]"
 		seg, perr := readPodcastItem(item, path)
+		seg.index, seg.raw = i, item
 		if perr == nil && seg.hasEnd && seg.end < seg.start {
 			var err error
 			seg.start, seg.end, err = st.OrderedTimes(seg.start, seg.end, model.NoLine, i, []string{orderedjson.Block(item)}, true)
@@ -161,41 +166,23 @@ func collapseSpace(s string) string {
 	}), " ")
 }
 
-// laterStarts returns, for each start, the index of the first start after it in the list that is later than it, or
-// -1 for none. One pass from the back finds every index, because a start that is not later than the one before it
-// can never be the answer for an earlier index.
-func laterStarts(starts []time.Duration) []int {
-	next := make([]int, len(starts))
-	var stack []int // indexes after i, whose starts rise from the top of the stack to the bottom
-	for i := len(starts) - 1; i >= 0; i-- {
-		for len(stack) > 0 && starts[stack[len(stack)-1]] <= starts[i] {
-			stack = stack[:len(stack)-1]
-		}
-		next[i] = -1
-		if len(stack) > 0 {
-			next[i] = stack[len(stack)-1]
-		}
-		stack = append(stack, i)
-	}
-	return next
-}
-
 // resolvePodcastItems gives each segment without an end the first later start among the segments after it, or the last
-// cue duration after its own start. It then drops the segments without a body.
+// cue duration after its own start. One pass from the back finds that start for every segment. It then drops the
+// segments without a body. The HTML transcript reader builds on it.
 func resolvePodcastItems(st *parsing.State, segments []podcastItem) []podcastItem {
-	starts := make([]time.Duration, len(segments))
-	for i, seg := range segments {
-		starts[i] = seg.start
-	}
-	for i, next := range laterStarts(starts) {
-		if segments[i].hasEnd {
-			continue
+	var later []int // indexes after i, whose starts rise from the top of the stack to the bottom
+	for i := len(segments) - 1; i >= 0; i-- {
+		for len(later) > 0 && segments[later[len(later)-1]].start <= segments[i].start {
+			later = later[:len(later)-1]
 		}
-		if next >= 0 {
-			segments[i].end = segments[next].start
-		} else {
-			segments[i].end = st.LastCueEnd(segments[i].start)
+		if !segments[i].hasEnd {
+			if len(later) > 0 {
+				segments[i].end = segments[later[len(later)-1]].start
+			} else {
+				segments[i].end = st.LastCueEnd(segments[i].start)
+			}
 		}
+		later = append(later, i)
 	}
 	kept := segments[:0]
 	for _, seg := range segments {
@@ -239,13 +226,28 @@ func endsSentence(body string) bool {
 	return r == '.' || r == '?' || r == '!' || r == ellipsis
 }
 
+// warnLateStart warns when the group ends before it starts. That happens when the file lists the segments out of
+// order. podcastCue sets the end to the start.
+func warnLateStart(st *parsing.State, group []podcastItem) {
+	first, last := group[0], group[len(group)-1]
+	if last.end >= first.start {
+		return
+	}
+	msg := "The cue ends at " + timecode.Seconds(last.end) + " s, before it starts at " + timecode.Seconds(first.start) + " s. The parser set the end to the start."
+	lines := []string{orderedjson.Block(first.raw)}
+	if len(group) > 1 {
+		lines = append(lines, orderedjson.Block(last.raw))
+	}
+	st.Warn(msg, model.NoLine, first.index, lines, model.Repaired)
+}
+
 func podcastCue(group []podcastItem, wordTimestamps bool) (*model.Cue, error) {
 	first, last := group[0], group[len(group)-1]
 	texts := make([]string, len(group))
 	for i, seg := range group {
 		texts[i] = markupcore.EscapeText(seg.body)
 	}
-	c := model.Cue{Start: first.start, End: last.end, Speaker: first.speaker}
+	c := model.Cue{Start: first.start, End: max(first.start, last.end), Speaker: first.speaker}
 	c.SetText(strings.Join(texts, " "))
 	if wordTimestamps && len(group) > 1 {
 		words := make([]wordgroup.Word, len(group))

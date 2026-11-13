@@ -70,6 +70,24 @@ func ReadHTML(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*mode
 	return s, st.Warnings(), nil
 }
 
+// laterStarts returns, for each start, the index of the first start after it in the list that is later than it, or
+// -1 for none. One pass from the back finds every index.
+func laterStarts(starts []time.Duration) []int {
+	next := make([]int, len(starts))
+	var stack []int // indexes after i, whose starts rise from the top of the stack to the bottom
+	for i := len(starts) - 1; i >= 0; i-- {
+		for len(stack) > 0 && starts[stack[len(stack)-1]] <= starts[i] {
+			stack = stack[:len(stack)-1]
+		}
+		next[i] = -1
+		if len(stack) > 0 {
+			next[i] = stack[len(stack)-1]
+		}
+		stack = append(stack, i)
+	}
+	return next
+}
+
 // htmlCues returns a cue without an end for each paragraph that has lines. A paragraph with a bad time goes to Fail.
 func htmlCues(st *parsing.State, paragraphs []htmlParagraph) ([]model.Cue, error) {
 	var cues []model.Cue

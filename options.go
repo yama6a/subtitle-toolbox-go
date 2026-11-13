@@ -64,10 +64,10 @@ type ReadOptions struct {
 	// VobSub holds the settings of the VobSub reader. The zero value reads the first track. Load and LoadFS fill IDX
 	// from the file next to the .sub file. Parse needs it.
 	VobSub vobsub.ReadOptions
-	// Transcript holds the settings of the transcript readers. The zero value reads no word times and no speakers.
-	Transcript transcript.ReadOptions
 	// Chapters holds the settings of the chapter readers. The zero value ends a last chapter at its own start.
 	Chapters chapters.ReadOptions
+	// Transcript holds the settings of the transcript readers. The zero value reads no word times and no speakers.
+	Transcript transcript.ReadOptions
 	// Track is the number of the subtitle track to read from a video container. Zero reads the only subtitle track.
 	// Matroska and MP4 count from 1. MPEG-TS uses teletext page numbers from 100, or PIDs. A subtitle file needs 0.
 	Track int

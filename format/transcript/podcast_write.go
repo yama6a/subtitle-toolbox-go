@@ -23,7 +23,6 @@ var (
 
 // podcastSegment is a segment that the writer writes.
 type podcastSegment struct {
-	cue        int
 	speaker    string // empty: the segment has no speaker
 	start, end time.Duration
 	body       string
@@ -57,8 +56,8 @@ func podcastDocument(s *model.Subtitle, opts PodcastWriteOptions) (orderedjson.V
 		}
 	}
 	var segments []orderedjson.Value
-	for i, c := range s.All() {
-		pieces := cuePieces(&c, i, opts.WordSegments)
+	for _, c := range s.All() {
+		pieces := cuePieces(&c, opts.WordSegments)
 		var stored orderedjson.Value
 		if d, ok := c.FormatData(podcastKey); ok && len(pieces) == 1 && !opts.WordSegments {
 			stored, _ = jsondata.FromData(d)
@@ -93,15 +92,14 @@ func (p podcastSegment) object() orderedjson.Value {
 // transcript writer groups them into paragraphs.
 func podcastSegments(s *model.Subtitle) []podcastSegment {
 	var out []podcastSegment
-	for i, c := range s.All() {
-		out = append(out, cuePieces(&c, i, false)...)
+	for _, c := range s.All() {
+		out = append(out, cuePieces(&c, false)...)
 	}
 	return out
 }
 
 // pieceWalk holds the state of the walk along the tags of one cue.
 type pieceWalk struct {
-	index            int
 	speaker          string
 	start            time.Duration
 	word             int // the word timestamp tag that started the piece, or -1
@@ -115,7 +113,7 @@ type pieceWalk struct {
 func (pw *pieceWalk) close() {
 	body := strings.Trim(collapseSpace(markupcore.DecodeEntities(pw.text.String())), markupcore.PHPTrimSet)
 	if body != "" {
-		pw.pieces = append(pw.pieces, podcastSegment{cue: pw.index, speaker: pw.speaker, start: pw.start, end: pw.start, body: body, word: pw.word})
+		pw.pieces = append(pw.pieces, podcastSegment{speaker: pw.speaker, start: pw.start, end: pw.start, body: body, word: pw.word})
 	}
 	pw.text.Reset()
 }
@@ -153,8 +151,8 @@ func (pw *pieceWalk) tag(tag string, wordSegments bool) {
 }
 
 // cuePieces splits the cue at each speaker change, and with wordSegments at each word timestamp.
-func cuePieces(c *model.Cue, index int, wordSegments bool) []podcastSegment {
-	pw := &pieceWalk{index: index, speaker: c.Speaker, start: c.Start, word: -1, cueStart: c.Start, cueEnd: c.End}
+func cuePieces(c *model.Cue, wordSegments bool) []podcastSegment {
+	pw := &pieceWalk{speaker: c.Speaker, start: c.Start, word: -1, cueStart: c.Start, cueEnd: c.End}
 	for i, part := range markupcore.SplitTags(markupcore.RubyAsText(strings.Join(wordgroup.TaggedLines(c), " "))) {
 		if i%2 == 0 {
 			pw.text.WriteString(part)
