@@ -626,3 +626,14 @@ func TestKaraokeStaysBelowTheTimeLimit(t *testing.T) {
 		})
 	}
 }
+
+func TestKaraokeFileWritesBackByteForByte(t *testing.T) {
+	t.Parallel()
+
+	in := eventsHeader + `Dialogue: 0,0:00:01.00,0:00:02.00,Default,Anna,0,0,0,,{\k50}Hi {\k20}{\k30}there` + "\n"
+	s, _ := mustRead(t, in, false)
+	assert.Contains(t, write(t, s, model.CommonWriteOptions{}, ass.WriteOptions{}), `Dialogue: 0,0:00:01.00,0:00:02.00,Default,Anna,0,0,0,,{\k50}Hi {\k20}{\k30}there`+"\n")
+
+	setCue(t, s, 0, func(c *model.Cue) { c.Speaker = "Bo" })
+	assert.Contains(t, write(t, s, model.CommonWriteOptions{}, ass.WriteOptions{}), `Default,Bo,0,0,0,,{\k70}Hi {\k30}there`+"\n")
+}

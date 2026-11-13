@@ -606,3 +606,58 @@ func TestBlankContentGivesAnEmptySubtitle(t *testing.T) {
 	assert.Zero(t, s.Len())
 	assert.Empty(t, warnings)
 }
+
+func TestKaraokeSyllablesAndNameBecomeWordsAndSpeaker(t *testing.T) {
+	t.Parallel()
+
+	type word struct {
+		text       string
+		start, end time.Duration
+	}
+	tests := []struct {
+		name, name2, text string
+		want              []word
+		speaker           string
+	}{
+		{
+			"each tag kind gives its length", "", `{\k50}Ka{\kf25}ra{\K100}o{\ko12.5}ke`,
+			[]word{{"Ka", 1000 * ms, 1500 * ms}, {"ra", 1500 * ms, 1750 * ms}, {"o", 1750 * ms, 2750 * ms}, {"ke", 2750 * ms, 2875 * ms}},
+			"",
+		},
+		{
+			"a gap between syllables stays", "", `{\k50}Hi {\k20}{\k30}there`,
+			[]word{{"Hi", 1000 * ms, 1500 * ms}, {"there", 1700 * ms, 2000 * ms}},
+			"",
+		},
+		{
+			"a syllable without text is not a word", "", `{\k0}{\k50}Hi {\k25}there`,
+			[]word{{"Hi", 1000 * ms, 1500 * ms}, {"there", 1500 * ms, 1750 * ms}},
+			"",
+		},
+		{
+			"text before the first tag is no word", "", `Oh {\k50}Hi`,
+			[]word{{"Hi", 1000 * ms, 1500 * ms}},
+			"",
+		},
+		{
+			"the name is the speaker", " Anna ", `{\k50}Hi`,
+			[]word{{"Hi", 1000 * ms, 1500 * ms}},
+			"Anna",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s, _ := mustRead(t, eventsHeader+"Dialogue: 0,0:00:01.00,0:00:02.00,Default,"+tt.name2+",0,0,0,,"+tt.text+"\n", false)
+			c := cueAt(t, s, 0)
+			var got []word
+			for _, w := range c.Words {
+				got = append(got, word{w.Text, w.Start, w.End})
+			}
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.speaker, c.Speaker)
+			assert.NotContains(t, strings.Join(c.Lines, "\n"), "<")
+		})
+	}
+}

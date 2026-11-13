@@ -332,7 +332,10 @@ func (wr *writer) unchanged(c model.Cue, data *model.Data) bool {
 // that the style of the event implies.
 func (wr *writer) convertLines(c model.Cue, style record) (string, string) {
 	text := markupcore.RubyAsText(strings.Join(c.Lines, "\n"))
-	speaker, _ := markupcore.Speaker(text)
+	speaker := c.Speaker
+	if speaker == "" {
+		speaker, _ = markupcore.Speaker(text)
+	}
 	name := strings.ReplaceAll(speaker, ",", "")
 
 	var parts []part

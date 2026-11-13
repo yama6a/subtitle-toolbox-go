@@ -50,6 +50,15 @@ type textMarkup struct {
 	b       strings.Builder
 	drawing bool
 	karaoke time.Duration
+	// syllables holds each karaoke syllable of the event in order.
+	syllables []syllable
+}
+
+// syllable is one karaoke tag with the time it covers. hasText is true when visible text follows it before the
+// next karaoke tag.
+type syllable struct {
+	start, end time.Duration
+	hasText    bool
 }
 
 // convert returns the core markup lines of text and the numpad value of its first \an or \a tag, or 0.
@@ -61,12 +70,16 @@ func (m *textMarkup) convert(text string, start time.Duration, hardBreak bool) (
 		breaks = hardBreaks
 	}
 	m.karaoke = start
+	m.syllables = nil
 	m.openStyle(m.style)
 	numpad := 0
 	at := 0
 	for _, loc := range append(overrideBlockRegexp.FindAllStringIndex(text, -1), []int{len(text), len(text)}) {
 		if !m.drawing && loc[0] > at {
 			m.b.WriteString(breaks.Replace(markupcore.EscapeText(text[at:loc[0]])))
+			if n := len(m.syllables); n > 0 && phpTrim(text[at:loc[0]]) != "" {
+				m.syllables[n-1].hasText = true
+			}
 		}
 		at = loc[1]
 		if loc[0] == loc[1] {
@@ -116,6 +129,7 @@ func (m *textMarkup) tag(tag string) error {
 	if g := karaokeRegexp.FindStringSubmatch(tag); g != nil {
 		m.b.WriteString("<" + markupcore.CoreTimestamp(m.karaoke) + ">")
 		d, err := parsing.BoundedTime(m.karaoke+karaokeDuration(g[1], g[2]), tag, m.line)
+		m.syllables = append(m.syllables, syllable{start: m.karaoke, end: d})
 		m.karaoke = d
 		return err
 	}
