@@ -150,6 +150,16 @@ func TestCueWords(t *testing.T) {
 			[]model.Word{{Text: "a", Start: ms(100), End: ms(200)}, {Text: "c", Start: ms(300), End: ms(400)}},
 		},
 		{
+			"no-break space in a word", "a b c",
+			[]wordgroup.Word{word("a\u00a0b", 100, 200), word("c", 300, 400)},
+			[]model.Word{{Text: "a\u00a0b", Start: ms(100), End: ms(200)}, {Text: "c", Start: ms(300), End: ms(400)}},
+		},
+		{
+			"em space around a word", "a b c",
+			[]wordgroup.Word{word("a\u2003b\u2003", 100, 200), word("c", 300, 400)},
+			[]model.Word{{Text: "a\u2003b\u2003", Start: ms(100), End: ms(200)}, {Text: "c", Start: ms(300), End: ms(400)}},
+		},
+		{
 			"confidence is copied", "a",
 			[]wordgroup.Word{{Text: "a", Start: 0, Timed: true, HasEnd: true, End: ms(10), Confidence: &half}},
 			[]model.Word{{Text: "a", Start: 0, End: ms(10), Confidence: &half}},

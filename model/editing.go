@@ -243,7 +243,7 @@ func (s *Subtitle) RemoveDuplicateCues(maxGap time.Duration) error {
 	}
 	maxGap = maxGap.Round(time.Millisecond)
 	s.joinRuns(func(first Cue, runEnd time.Duration, c Cue) bool {
-		return textKey(c) == textKey(first) && canJoin(first, c) && sameFormatData(first.formatData, c.formatData) &&
+		return textKey(c) == textKey(first) && first.CanJoin(c) && sameFormatData(first.formatData, c.formatData) &&
 			c.Start-runEnd <= maxGap && first.Start-c.End <= maxGap
 	}, func(run []Cue) []Cue { return run[:1] })
 	return nil
@@ -312,9 +312,10 @@ func (s *Subtitle) joinRuns(continues func(first Cue, runEnd time.Duration, c Cu
 	s.rebuildComments(anchors, func(old int) int { return newIndex[old] })
 }
 
-// canJoin reports whether a and b hold no image and have the same alignment, the same forced flag and the same speakers.
-func canJoin(a, b Cue) bool {
-	return a.Image == nil && b.Image == nil && a.Position.Alignment.Numpad() == b.Position.Alignment.Numpad() && a.Forced == b.Forced && slices.Equal(speakers(a), speakers(b))
+// CanJoin reports whether c and next hold no image and have the same alignment, the same forced flag and the same
+// speakers. The speakers are Speaker and the names of the <v> tags of the lines.
+func (c Cue) CanJoin(next Cue) bool {
+	return c.Image == nil && next.Image == nil && c.Position.Alignment.Numpad() == next.Position.Alignment.Numpad() && c.Forced == next.Forced && slices.Equal(speakers(c), speakers(next))
 }
 
 // speakers returns Speaker and the names of the <v> tags of c, trimmed, without repeats, in byte order.

@@ -36,7 +36,8 @@ type NewWord struct {
 // sameTimes tells that the stored start and end equal the cue times. sameText tells that the stored text equals the
 // cue text. A new word on the start of a source word gets confidence 1.0, any other new word the confidence of its
 // Cue.Words entry, else 1.0.
-func Reuse(c *model.Cue, source []SourceWord, sameTimes, sameText bool) ([]Choice, bool) {
+func Reuse(c *model.Cue, stored []SourceWord, sameTimes, sameText bool) ([]Choice, bool) {
+	source := foldSource(stored)
 	if len(c.Words) > 0 {
 		return reuseSpans(c, source), true
 	}
@@ -68,6 +69,17 @@ func Reuse(c *model.Cue, source []SourceWord, sameTimes, sameText bool) ([]Choic
 		choices[i] = Choice{New: &NewWord{Text: t, Start: s, End: e, Confidence: 1}}
 	}
 	return choices, true
+}
+
+// foldSource returns a copy of source with the space folding of PlainText in each text, so a stored word with a
+// no-break space matches the cue text. The indexes stay the same.
+func foldSource(source []SourceWord) []SourceWord {
+	out := make([]SourceWord, len(source))
+	for i, s := range source {
+		s.Text = foldSpaces(s.Text)
+		out[i] = s
+	}
+	return out
 }
 
 func keepAll(source []SourceWord) []Choice {
