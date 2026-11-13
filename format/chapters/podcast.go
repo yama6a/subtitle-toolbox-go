@@ -19,10 +19,6 @@ import (
 
 const (
 	podcastVersion = "1.2.0"
-
-	malformedUTF8 = "JSON cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. " +
-		"Read a file in another encoding with its source encoding."
-	infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
 )
 
 // ReadPodcast reads a Podcasting 2.0 chapters file. The members of the file and of each chapter that the model has
@@ -153,9 +149,9 @@ func WritePodcast(w io.Writer, s *model.Subtitle, common model.CommonWriteOption
 	body, err := orderedjson.Encode(document, true)
 	switch {
 	case errors.Is(err, orderedjson.ErrInvalidUTF8):
-		return &model.UnwritableError{Format: model.PodcastChapters, CueIndex: -1, Reason: malformedUTF8, Err: model.ErrInvalidUTF8}
+		return &model.UnwritableError{Format: model.PodcastChapters, CueIndex: -1, Reason: orderedjson.MalformedUTF8Reason, Err: model.ErrInvalidUTF8}
 	case err != nil:
-		return &model.UnwritableError{Format: model.PodcastChapters, CueIndex: -1, Reason: infOrNaN}
+		return &model.UnwritableError{Format: model.PodcastChapters, CueIndex: -1, Reason: orderedjson.NotFiniteReason}
 	}
 	return writing.Write(w, model.PodcastChapters, body, common, false)
 }

@@ -5,7 +5,7 @@ A chapter list names the parts of a video or a podcast episode. The library read
 The same chapter in each format:
 
 ```text
-0:00 Intro                                     YouTube chapters
+2:48 Hearing aids                              YouTube chapters
 {"startTime": 168, "title": "Hearing aids"}    Podcasting 2.0 chapters
 [CHAPTER] TIMEBASE=1/1000 START=168000 ...     FFmpeg metadata chapters
 CHAPTER02=00:02:48.000                         OGM chapters
@@ -135,7 +135,7 @@ The format name is `ffmeta-chapters` (`stbox.FFMetadataChapters`). It is the `;F
 - **Sections**: tags before a section are global tags. `[STREAM]` starts a stream with its own tags. `[CHAPTER]` starts a chapter. The line must match exactly.
 - **Chapter times**: only the lines right after `[CHAPTER]`, in this order, as FFmpeg reads them: `TIMEBASE=N/D`, `START=ticks` and `END=ticks`. Each is optional. Text after the digits is ignored. A later `START=` line is a normal tag.
 - **Time base**: without `TIMEBASE` it is `1/1000000000`, which is nanoseconds. A 0 in `N` or `D`, or a number beyond 64 bits, fails with `The chapter time base 0/1000 is not valid.` and its line.
-- **Start and end**: the ticks times N / D seconds, rounded half away from zero to whole milliseconds. A chapter without `START` starts at the `END` of the chapter before, when that one had an `END`, else at 0. A time of 100000 hours or more, also a number beyond 64 bits, fails with `The time "START=360000000000" is not below 100000 hours.` and its line.
+- **Start and end**: the ticks times N / D seconds, rounded half away from zero to whole milliseconds. A chapter without `START` starts at the `END` of the chapter before, when that one had an `END`, else at 0. A time of 100000 hours or more, also a number beyond 64 bits, fails with `The time "START=360000000000" is not below 100000 hours.` and its line. A negative time of -100000 hours or less, also a number beyond 64 bits, becomes -359999999.999 s, because `time.Duration` cannot hold more.
 - **Tags**: `KEY=VALUE`, split at the first `=` that no backslash escapes. A backslash before any character stands for that character, in key and value. A line without such an `=` is ignored. A repeated key replaces the value and keeps the place of the first one.
 - **Title**: the `title` tag of the chapter, escaped. A title with LF gives several lines.
 - **Metadata**: the global tags `title`, `author`, `artist`, `album` and `language`.

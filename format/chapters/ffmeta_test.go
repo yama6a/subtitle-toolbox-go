@@ -55,7 +55,7 @@ func TestReadFFMetadataKeepsTheTags(t *testing.T) {
 	t.Parallel()
 
 	content := ";FFMETADATA1\r\ntitle=Meetup\r\nartist=Jane\r\ngenre=Talk\\\r\nshow\r\ntitle=Spring\r\n# comment\r\nw\\=x=y\\;z\r\nlone\r\n" +
-		"[STREAM]\r\nhandler=Sound\r\n[CHAPTER]\r\nTIMEBASE=1/1000\r\nSTART=0\r\nEND=5\r\nlang\\=x=en\r\ntitle=A\r\n"
+		"[STREAM]\r\nhandler=Sound\r\n[STREAM]\r\n[CHAPTER]\r\nTIMEBASE=1/1000\r\nSTART=0\r\nEND=5\r\nlang\\=x=en\r\ntitle=A\r\n"
 	s := readSubtitle(t, chapters.ReadFFMetadata, content, chapters.ReadOptions{})
 
 	title, _ := s.Metadata(model.MetadataTitle)
@@ -70,7 +70,8 @@ func TestReadFFMetadataKeepsTheTags(t *testing.T) {
 	value, _ := tags.String("w=x")
 	assert.Equal(t, "y;z", value)
 	streams, _ := file.List("streams")
-	require.Len(t, streams, 1)
+	require.Len(t, streams, 2)
+	assert.Equal(t, []any{}, streams[1])
 	c, _ := s.Cue(0)
 	cue, _ := c.FormatData("ffmeta-chapters")
 	cueTags, _ := cue.Object("tags")

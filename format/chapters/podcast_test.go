@@ -38,7 +38,7 @@ func TestReadPodcast(t *testing.T) {
 			[]span{{0, sec(1.235), ""}, {sec(1.235), sec(1.235), ""}},
 		},
 		{"end before start stays", `{"chapters": [{"startTime": 10, "endTime": 5}]}`, 0, []span{{sec(10), sec(5), ""}}},
-		{"empty list root has no chapters", `{"chapters": []}`, 0, nil},
+		{"empty chapters list", `{"chapters": []}`, 0, nil},
 		{"blank content", " \n", 0, nil},
 	}
 	for _, tt := range tests {

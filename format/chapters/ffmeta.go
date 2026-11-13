@@ -64,11 +64,10 @@ func ReadFFMetadata(r io.Reader, common model.CommonReadOptions, opts ReadOption
 	if !ok {
 		return s, st.Warnings(), nil
 	}
-	text := lineEnds.Replace(string(content))
-	if !strings.HasPrefix(text, ";FFMETADATA") {
+	if !strings.HasPrefix(string(content), ";FFMETADATA") {
 		return nil, nil, parseError(model.FFMetadataChapters, 1, "The content does not start with the ;FFMETADATA header.")
 	}
-	global, streams, chapters, err := readSections(logicalLines(text))
+	global, streams, chapters, err := readSections(logicalLines(physicalLines(string(content))))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -84,12 +83,11 @@ type logicalLine struct {
 }
 
 // logicalLines joins each line that ends with an odd number of backslashes to the next line with LF, except the last
-// line of text. It drops empty lines and lines that start with ; or #. A line keeps the number of its first physical line.
-func logicalLines(text string) []logicalLine {
+// line. It drops empty lines and lines that start with ; or #. A line keeps the number of its first physical line.
+func logicalLines(physical []string) []logicalLine {
 	var lines []logicalLine
 	var pending []string
 	first := 0
-	physical := strings.Split(text, "\n")
 	for i, line := range physical {
 		if pending == nil {
 			first = i + 1
@@ -318,6 +316,10 @@ func buildFFMetadata(s *model.Subtitle, global *model.Data, streams []any, chapt
 			value, _ := global.String(key)
 			s.SetMetadata(key, value)
 		}
+	}
+	streams = slices.Clone(streams)
+	for i, stream := range streams {
+		streams[i] = tagsValue(stream.(*model.Data)) //nolint:forcetypeassert // readSections stores only *model.Data
 	}
 	if streams == nil {
 		streams = []any{}

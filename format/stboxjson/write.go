@@ -14,14 +14,14 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/vtt"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const (
-	malformedUTF8 = "JSON cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. " +
-		"Read a file in another encoding with its source encoding."
-	infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
+	malformedUTF8 = orderedjson.MalformedUTF8Reason
+	infOrNaN      = orderedjson.NotFiniteReason
 )
 
 const (

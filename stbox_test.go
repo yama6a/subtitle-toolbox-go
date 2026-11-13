@@ -229,9 +229,9 @@ func ExampleFormats() {
 	// qttext [txt]
 	// vobsub [idx]
 	// vtt [vtt]
-	// youtube-chapters [txt]
 	// ogm-chapters [txt]
 	// podcast-chapters [json]
+	// youtube-chapters [txt]
 }
 
 func TestBinaryWriteIgnoresLineEndingAndBOM(t *testing.T) {

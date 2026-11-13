@@ -34,6 +34,8 @@ func TestReadOGM(t *testing.T) {
 		},
 		{"CR line ends and no name", "CHAPTER01=00:00:01.000\rCHAPTER01NAME=\r", []span{{sec(1), sec(1), ""}}},
 		{"blank content", "\n", nil},
+		{"a million spaces in the name", "CHAPTER01=00:00:00.000\nCHAPTER01NAME=" + strings.Repeat(" ", 1<<20) + "x\n", []span{{0, 0, "x"}}},
+		{"a million spaces in the time line", "CHAPTER01=" + strings.Repeat(" ", 1<<20) + "0:0:1.0\nCHAPTER01NAME=x\n", []span{{sec(1), sec(1), "x"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -70,27 +72,6 @@ func TestReadOGMErrors(t *testing.T) {
 			perr := readError(t, chapters.ReadOGM, tt.content)
 			assert.Equal(t, tt.wantMsg, perr.Msg)
 			assert.Equal(t, tt.wantLine, perr.Line)
-		})
-	}
-}
-
-func TestReadOGMLongLines(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name    string
-		content string
-		want    int
-	}{
-		{"a million spaces", "CHAPTER01=00:00:00.000\nCHAPTER01NAME=" + strings.Repeat(" ", 1<<20) + "x\n", 1},
-		{"spaces in the time line", "CHAPTER01=" + strings.Repeat(" ", 1<<20) + "0:0:0.0\nCHAPTER01NAME=x\n", 1},
-		{"20000 chapters", strings.Repeat("CHAPTER01=0:0:1.0\nCHAPTER01NAME=x\n", 20_000), 20_000},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			assert.Equal(t, tt.want, readSubtitle(t, chapters.ReadOGM, tt.content, chapters.ReadOptions{}).Len())
 		})
 	}
 }

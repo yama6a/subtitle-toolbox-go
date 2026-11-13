@@ -161,9 +161,9 @@ var registry = []formatFuncs{
 	{format: QuickTimeText, read: readQuickTimeText, write: writeQuickTimeText},
 	{format: VobSub, read: readVobSub},
 	{format: WebVTT, read: readWebVTT, write: writeWebVTT},
-	{format: YouTubeChapters, read: readYouTubeChapters, write: writeYouTubeChapters},
 	{format: OGMChapters, read: readOGMChapters, write: writeOGMChapters},
 	{format: PodcastChapters, read: readPodcastChapters, write: writePodcastChapters},
+	{format: YouTubeChapters, read: readYouTubeChapters, write: writeYouTubeChapters},
 }
 
 type jsonCheck struct {
