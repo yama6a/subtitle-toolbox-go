@@ -1,0 +1,11 @@
+﻿1
+00:00:00,000 --> 00:00:02,200
+The bakery opens at seven.
+
+2
+00:00:02,200 --> 00:00:04,600
+The café sells rolls & buns.
+
+3
+00:00:04,620 --> 00:00:07,360
+Fresh bread is ready by eight.
