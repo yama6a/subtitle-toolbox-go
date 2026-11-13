@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	subtitlingEntrySize = 8
 	hearingImpairedFrom = 0x20
 	hearingImpairedTo   = 0x25
 )
@@ -52,7 +53,7 @@ func subtitlingItems(es *astits.PMTElementaryStream) []*astits.DescriptorSubtitl
 	var items []*astits.DescriptorSubtitlingItem
 	for _, desc := range es.ElementaryStreamDescriptors {
 		if desc.Subtitling != nil {
-			items = append(items, desc.Subtitling.Items...)
+			items = append(items, desc.Subtitling.Items[:min(len(desc.Subtitling.Items), int(desc.Length)/subtitlingEntrySize)]...)
 		}
 	}
 	return items
@@ -71,26 +72,26 @@ func (b *packetBuffer) Add(data []byte, pts int64) {
 	*b = append(*b, pesPacket{slices.Clone(data), pts})
 }
 
-// ticksToDuration returns ticks of the 90 kHz clock as a duration. A negative value is 0. The caller keeps ticks below
-// the time limit.
+// ticksToDuration returns ticks of the 90 kHz clock as a duration. The caller keeps ticks below the time limit.
+// A negative time stays negative, and the decoder turns it into 0 when it builds the cues.
 func ticksToDuration(ticks int64) time.Duration {
-	return time.Duration(max(0, ticks) * 100_000 / 9)
+	return time.Duration(ticks * 100_000 / 9)
 }
 
-func (f *File) dvbCues(s stream, number int, common model.CommonReadOptions) ([]model.Cue, error) {
+func (f *File) dvbCues(s stream, number int, common model.CommonReadOptions) ([]model.Cue, []model.ParseWarning, error) {
 	var packets packetBuffer
 	zero, _, err := f.readPES(s, &packets)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	dec := dvbsub.NewDecoder(s.page, s.ancillary, false)
+	dec := dvbsub.NewDecoder(s.page, s.ancillary, false, common)
 	for _, p := range packets {
 		if _, err := ticksToTime(number, p.pts-zero); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if err := dec.Add(p.data, ticksToDuration(p.pts-zero), 0, false); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
-	return dec.Finish(parsing.NewState(model.PGS, common).LastCueDuration()), nil
+	return dec.Finish(parsing.NewState(model.PGS, common).LastCueDuration()), dec.Warnings(), nil
 }

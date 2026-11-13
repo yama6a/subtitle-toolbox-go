@@ -28,10 +28,11 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 	}
 	track, s := f.tracks[i], f.streams[i]
 	var cues []model.Cue
+	var warnings []model.ParseWarning
 	var err error
 	switch track.CodecID {
 	case codecDVB:
-		cues, err = f.dvbCues(s, number, common)
+		cues, warnings, err = f.dvbCues(s, number, common)
 	default:
 		cues, err = f.teletextCues(track, s, number, common)
 	}
@@ -41,7 +42,7 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 	sub := &model.Subtitle{}
 	sub.AddCues(cues...)
 	sub.SetMetadata(model.MetadataLanguage, track.Language)
-	return sub, nil, nil
+	return sub, warnings, nil
 }
 
 func (f *File) teletextCues(track model.Track, s stream, number int, common model.CommonReadOptions) ([]model.Cue, error) {

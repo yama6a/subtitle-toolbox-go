@@ -75,13 +75,21 @@ type Decoder struct {
 	pending     *pending
 	shown       *shownCue
 	cues        []cueRecord
+	st          *parsing.State
+	segments    int // count of the segments that Add has read, for the block of a warning
+
+	// image is the rendered page. imageValid is false after a change of the regions, the CLUTs or the page.
+	image      model.Image
+	imageOK    bool
+	imageValid bool
 }
 
 // NewDecoder reads the segments of the composition page and the ancillary page.
 // all reads every page, for a Matroska track without page numbers.
-func NewDecoder(compositionPage, ancillaryPage int, all bool) *Decoder {
+// Lenient mode of common skips a region that would exceed the pixel limit and records a Skipped warning.
+func NewDecoder(compositionPage, ancillaryPage int, all bool, common model.CommonReadOptions) *Decoder {
 	return &Decoder{
-		pages: [2]int{compositionPage, ancillaryPage}, all: all,
+		pages: [2]int{compositionPage, ancillaryPage}, all: all, st: parsing.NewState("", common),
 		width: defaultWidth, height: defaultHeight, version: -1,
 		regions: map[int]*region{}, cluts: map[int]*clut{},
 	}
@@ -111,7 +119,13 @@ func (d *Decoder) Add(data []byte, start, end time.Duration, hasEnd bool) error 
 	return d.show()
 }
 
+// Warnings returns the warnings of the lenient reads, in read order.
+func (d *Decoder) Warnings() []model.ParseWarning {
+	return d.st.Warnings()
+}
+
 func (d *Decoder) read(typ byte, segment []byte, start, end time.Duration, hasEnd bool) error {
+	d.segments++
 	switch typ {
 	case segPage:
 		d.readPage(segment, start, end, hasEnd)
@@ -174,6 +188,7 @@ func (d *Decoder) readPage(data []byte, start, end time.Duration, hasEnd bool) {
 		return
 	}
 	d.version = version
+	d.imageValid = false
 	if data[1]>>2&0x03 != 0 {
 		clear(d.regions)
 		clear(d.cluts)
@@ -194,9 +209,10 @@ func (d *Decoder) readRegion(data []byte) error {
 	if depth == 0 || width == 0 || height == 0 {
 		return nil
 	}
-	if reason := bitmap.SizeLimit(width, height); reason != "" {
-		return &model.ParseError{Msg: "Cannot read region " + strconv.Itoa(id) + ": " + reason}
+	if ok, err := d.fits(id, width, height); !ok {
+		return err
 	}
+	d.imageValid = false
 	r := &region{width: width, height: height, depth: depth, clut: int(data[7]), objects: regionObjects(data)}
 	if old := d.regions[id]; old != nil && old.width == width && old.height == height && flags&0x08 == 0 {
 		r.pixels = old.pixels
@@ -205,6 +221,31 @@ func (d *Decoder) readRegion(data []byte) error {
 	}
 	d.regions[id] = r
 	return nil
+}
+
+// fits checks the size limits for region id. ok is false when the region must not be stored. Then err is the error of
+// strict mode, or nil after a Skipped warning.
+func (d *Decoder) fits(id, width, height int) (ok bool, err error) {
+	prefix := "Cannot read region " + strconv.Itoa(id) + ": "
+	if reason := bitmap.SizeLimit(width, height); reason != "" {
+		return false, &model.ParseError{Msg: prefix + reason}
+	}
+	if d.regionPixels(id)+width*height > model.MaxImagePixels {
+		msg := prefix + "the regions hold more than " + strconv.Itoa(model.MaxImagePixels) + " pixels in total."
+		return false, d.st.Fail(&model.ParseError{Msg: msg}, model.NoLine, d.segments, nil)
+	}
+	return true, nil
+}
+
+// regionPixels returns the pixels of all regions but the one with the id.
+func (d *Decoder) regionPixels(id int) int {
+	total := 0
+	for i, r := range d.regions {
+		if i != id {
+			total += r.width * r.height
+		}
+	}
+	return total
 }
 
 func filled(n int, code byte) []byte {
@@ -255,6 +296,7 @@ func regionObjects(data []byte) []objectRef {
 }
 
 func (d *Decoder) readCLUT(data []byte) {
+	d.imageValid = false
 	id := 0
 	if len(data) > 0 {
 		id = int(data[0])
@@ -273,6 +315,7 @@ func (d *Decoder) readObject(data []byte) {
 	if len(data) < 7 || data[2]>>2&0x03 != 0 {
 		return
 	}
+	d.imageValid = false
 	id := int(binary.BigEndian.Uint16(data))
 	nonModifying := data[2]&0x02 != 0
 	topLength, bottomLength := int(binary.BigEndian.Uint16(data[3:])), int(binary.BigEndian.Uint16(data[5:]))
@@ -295,6 +338,7 @@ func (d *Decoder) readDisplay(data []byte) {
 	if len(data) < 5 {
 		return
 	}
+	d.imageValid = false
 	d.width, d.height = int(binary.BigEndian.Uint16(data[1:]))+1, int(binary.BigEndian.Uint16(data[3:]))+1
 	d.left, d.top = 0, 0
 	if data[0]&0x08 != 0 && len(data) >= 13 {
@@ -309,7 +353,7 @@ func (d *Decoder) show() error {
 		return nil
 	}
 	d.pending = nil
-	im, ok, err := d.render()
+	im, ok, err := d.rendered()
 	if err != nil {
 		return err
 	}
@@ -341,14 +385,28 @@ func (d *Decoder) endCue(end time.Duration) {
 	d.shown = nil
 }
 
+// rendered returns the image of the page, and renders it again only after a change.
+func (d *Decoder) rendered() (model.Image, bool, error) {
+	if !d.imageValid {
+		im, ok, err := d.render()
+		if err != nil {
+			return model.Image{}, false, err
+		}
+		d.image, d.imageOK, d.imageValid = im, ok, true
+	}
+	return d.image, d.imageOK, nil
+}
+
 // render returns the image of the page. ok is false when no region shows a pixel.
 func (d *Decoder) render() (im model.Image, ok bool, err error) {
 	var parts []bitmap.Part
+	var seen [256]bool
 	for _, pr := range d.pageRegions {
 		r := d.regions[pr.id]
-		if r == nil {
+		if r == nil || seen[pr.id] {
 			continue
 		}
+		seen[pr.id] = true
 		var colors [256]uint32
 		if c := d.cluts[r.clut]; c != nil {
 			colors = c.colors(r.depth)

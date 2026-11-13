@@ -49,4 +49,15 @@ func TestDVBTracks(t *testing.T) {
 			dvbTrack(888000, "eng", ""), dvbTrack(888001, "eng", ""),
 		}, open(t, w.bytes()).Tracks())
 	})
+
+	t.Run("a short last entry is not a track", func(t *testing.T) {
+		t.Parallel()
+
+		short := append(subtitling([4]any{"eng", 0x10, 1, 1}), "eng\x20\x00"...)
+		short[1] = 8 + 6
+		w := newWriter()
+		w.tables(1, pmtPID, videoPID, pmtStream{pid: 300, streamType: 0x06, descriptors: short})
+		w.packets(videoPID, make([]byte, 400))
+		assert.Equal(t, []model.Track{dvbTrack(300, "eng", "")}, open(t, w.bytes()).Tracks())
+	})
 }

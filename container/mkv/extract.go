@@ -15,7 +15,7 @@ import (
 const (
 	codecDVB           = "S_DVBSUB"
 	unreadCodecMessage = "Track %d has the codec %s. The reader extracts only S_TEXT/UTF8, S_TEXT/ASS, S_TEXT/SSA, " +
-		"S_TEXT/WEBVTT, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."
+		"S_TEXT/WEBVTT, S_DVBSUB, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."
 	laterCodecMessage = "Track %d has the codec %s. The reader does not extract this codec yet. A later release adds it."
 )
 

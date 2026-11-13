@@ -15,7 +15,7 @@ func FuzzDecoder(f *testing.F) {
 	f.Add([]byte{0x0F, 0x11, 0, 1, 0, 10, 1, 0, 0, 2, 0, 2, 0x08, 1, 0, 0, 0x0F, 0x13, 0, 1, 0, 9, 0, 1, 0, 0, 3, 0, 0, 0x11, 0x12, 0xF0}, false)
 
 	f.Fuzz(func(t *testing.T, data []byte, all bool) {
-		d := dvbsub.NewDecoder(1, 1, all)
+		d := dvbsub.NewDecoder(1, 1, all, model.CommonReadOptions{Lenient: all})
 		if err := d.Add(data, time.Second, 2*time.Second, true); err != nil {
 			var perr *model.ParseError
 			require.ErrorAs(t, err, &perr)
