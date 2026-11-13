@@ -10,11 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
 )
 
 // Ports testRealFilesGiveTheCuesOf1x of tests/ReadOptionsTest.php of subtitle-toolbox-php.
@@ -56,6 +57,16 @@ func TestReadOptionGoldens(t *testing.T) {
 			file:   "scc/real/rollup_news_ndf.scc",
 			opts:   stbox.ReadOptions{Format: stbox.SCC, LastCueDuration: new(4 * time.Second), SCC: scc.ReadOptions{Channel: 1}},
 		},
+		{
+			golden: "whisper_word_timestamps",
+			file:   "whisper/real/openai_whisper_word_timestamps.json",
+			opts:   stbox.ReadOptions{Format: stbox.Whisper, Transcript: transcript.ReadOptions{WordTimestamps: true}},
+		},
+		{
+			golden: "whisperx_speaker_voices",
+			file:   "whisper/real/whisperx_diarize.json",
+			opts:   stbox.ReadOptions{Format: stbox.Whisper, Transcript: transcript.ReadOptions{SpeakerVoices: true}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.golden, func(t *testing.T) {
@@ -71,8 +82,9 @@ func TestReadOptionGoldens(t *testing.T) {
 			require.NoError(t, err)
 			var rows []any
 			for _, c := range s.All() {
-				lines := make([]any, len(c.Lines))
-				for i, line := range c.Lines {
+				tagged := c.TaggedLines()
+				lines := make([]any, len(tagged))
+				for i, line := range tagged {
 					lines[i] = line
 				}
 				rows = append(rows, []any{c.Start.Seconds(), c.End.Seconds(), lines})

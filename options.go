@@ -5,24 +5,26 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ebustl"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/pac"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/sprucestl"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/vobsub"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/chapters"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // ReadOptions holds the settings of a read. The zero value reads with the defaults.
@@ -62,6 +64,10 @@ type ReadOptions struct {
 	// VobSub holds the settings of the VobSub reader. The zero value reads the first track. Load and LoadFS fill IDX
 	// from the file next to the .sub file. Parse needs it.
 	VobSub vobsub.ReadOptions
+	// Chapters holds the settings of the chapter readers. The zero value ends a last chapter at its own start.
+	Chapters chapters.ReadOptions
+	// Transcript holds the settings of the transcript readers. The zero value reads no word times and no speakers.
+	Transcript transcript.ReadOptions
 	// Track is the number of the subtitle track to read from a video container. Zero reads the only subtitle track.
 	// Matroska and MP4 count from 1. MPEG-TS uses teletext page numbers from 100, or PIDs. A subtitle file needs 0.
 	Track int
@@ -105,6 +111,8 @@ type WriteOptions struct {
 	MCC mcc.WriteOptions
 	// EBUSTL holds the settings of the EBU STL writer. The zero value takes the frame rate of the stored DFC, else 25.
 	EBUSTL ebustl.WriteOptions
+	// Transcript holds the settings of the transcript writers. It has no fields yet.
+	Transcript transcript.WriteOptions
 }
 
 // WriteReport holds the changes that a writer made to fit the subtitle into its format.
@@ -158,7 +166,7 @@ func (o ReadOptions) Validate() error {
 			Msg:    fmt.Sprintf("The track number must be 0 or more, got %d.", o.Track),
 		}
 	}
-	for _, check := range []func() error{o.SAMI.Validate, o.MicroDVD.Validate, o.CSV.Validate, o.SCC.Validate, o.MCC.Validate} {
+	for _, check := range []func() error{o.SAMI.Validate, o.MicroDVD.Validate, o.CSV.Validate, o.SCC.Validate, o.MCC.Validate, o.Chapters.Validate} {
 		if err := check(); err != nil {
 			return err
 		}
@@ -188,7 +196,7 @@ func (o WriteOptions) Validate() error {
 	}
 	for _, check := range []func() error{
 		o.ASS.Validate, o.MicroDVD.Validate, o.MPSub.Validate, o.PlainText.Validate, o.CSV.Validate, o.ITT.Validate,
-		o.SubViewer.Validate, o.SCC.Validate, o.MCC.Validate, o.SpruceSTL.Validate, o.EBUSTL.Validate,
+		o.SubViewer.Validate, o.SCC.Validate, o.MCC.Validate, o.SpruceSTL.Validate, o.EBUSTL.Validate, o.JSON.Validate,
 	} {
 		if err := check(); err != nil {
 			return err

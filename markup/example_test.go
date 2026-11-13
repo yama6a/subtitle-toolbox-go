@@ -3,9 +3,8 @@ package markup_test
 import (
 	"fmt"
 	"strings"
-	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
 )
 
 func ExampleStripAllTags() {
@@ -47,28 +46,6 @@ func ExampleVoiceTag() {
 	// Output:
 	// <v O'Neil>
 	// <v.loud Ann &amp; Bo>
-}
-
-func ExampleInsertWordTimestamps() {
-	at := func(d time.Duration) *time.Duration { return &d }
-	fmt.Println(markup.InsertWordTimestamps("Hi there", []markup.TimedWord{
-		{Text: "Hi", Start: at(time.Second)},
-		{Text: "there", Start: at(1400 * time.Millisecond)},
-	}))
-	// Output: <00:00:01.000>Hi <00:00:01.400>there
-}
-
-func ExampleWordTimestamp() {
-	fmt.Println(markup.WordTimestamp("<00:01:02.500>"))
-	fmt.Println(markup.WordTimestamp("<01:02.500>"))
-	// Output:
-	// 1m2.5s true
-	// 0s false
-}
-
-func ExampleMapWordTimestamps() {
-	fmt.Println(markup.MapWordTimestamps("<00:00:01.000>Hi", func(d time.Duration) time.Duration { return d + 2*time.Second }))
-	// Output: <00:00:03.000>Hi
 }
 
 func ExampleMapTextRuns() {

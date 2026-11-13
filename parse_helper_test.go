@@ -3,7 +3,7 @@ package stbox_test
 import (
 	"bytes"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 )
 
 // parseBytes reads content with stbox.Parse.

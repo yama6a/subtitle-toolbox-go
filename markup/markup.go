@@ -1,17 +1,6 @@
 package markup
 
-import (
-	"time"
-
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-)
-
-// TimedWord is one word and the time it is spoken, for InsertWordTimestamps.
-type TimedWord struct {
-	Text string
-	// Start is the time the word is spoken. Nil gives the word no timestamp.
-	Start *time.Duration
-}
+import "github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 
 // StripAllTags removes every tag, word timestamps too. Entities stay.
 func StripAllTags(text string) string {
@@ -63,26 +52,4 @@ func MapTextRuns(lines []string, fn func(text string, first, last bool) string) 
 // The class holds voice classes such as ".loud".
 func VoiceTag(name, class string) string {
 	return markupcore.VoiceTag(name, class)
-}
-
-// InsertWordTimestamps escapes text and writes a word timestamp before each word, searching from the end of the
-// word before it. A word that is empty, has no start or is not in the rest of the text gets no timestamp.
-func InsertWordTimestamps(text string, words []TimedWord) string {
-	core := make([]markupcore.TimedWord, len(words))
-	for i, w := range words {
-		core[i] = markupcore.TimedWord(w)
-	}
-	return markupcore.InsertWordTimestamps(text, core)
-}
-
-// WordTimestamp returns the time of a word timestamp such as <00:01:02.500>, or false for other text.
-// It also returns false for 2562047 hours or more, which time.Duration cannot hold.
-func WordTimestamp(tag string) (time.Duration, bool) {
-	return markupcore.WordTimestamp(tag)
-}
-
-// MapWordTimestamps replaces the time of each word timestamp in text with fn of it, rounded to whole milliseconds.
-// A time below 0 becomes 0. A word timestamp of 2562047 hours or more stays as written.
-func MapWordTimestamps(text string, fn func(time.Duration) time.Duration) string {
-	return markupcore.MapWordTimestamps(text, fn)
 }

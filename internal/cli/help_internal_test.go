@@ -10,17 +10,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/diff"
-	"github.com/yama6a/subtitle-toolbox-go/v3/dual"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/hls"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
-	"github.com/yama6a/subtitle-toolbox-go/v3/ocr"
-	"github.com/yama6a/subtitle-toolbox-go/v3/profanity"
-	"github.com/yama6a/subtitle-toolbox-go/v3/refsync"
-	"github.com/yama6a/subtitle-toolbox-go/v3/timing"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/diff"
+	"github.com/yama6a/subtitle-toolbox-go/v4/dual"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/hls"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v4/profanity"
+	"github.com/yama6a/subtitle-toolbox-go/v4/refsync"
+	"github.com/yama6a/subtitle-toolbox-go/v4/timing"
 )
 
 // summaryCommand is a command with a name and a summary only, for the layout of the global help.
@@ -56,19 +56,22 @@ func TestGlobalHelp(t *testing.T) {
 
 	head := "stbox 1.2.3\nConverts, retimes, checks and fixes subtitle files.\n\nUsage: stbox <command> [<file>...] [options]\n\n"
 	want := head + `Commands:
-  convert   Convert subtitle files to another format, and run text, structure
-            and timing edits on the way.
-  info      Print the format, the cue count and statistics of subtitle files.
-  validate  Check the cues against reading speed, line length, timing and text
-            rules.
-  sync      Find the offset and frame-rate scale against a reference subtitle or
-            the speech, and retime the input.
-  diff      List the added, removed and changed cues between two subtitle files.
-  dual      Merge two subtitles in two languages into one file that shows both.
-  hls       Cut a subtitle into WebVTT segments and write an HLS playlist for
-            them.
-  formats   List the format names and file extensions for --from and --to.
-  help      Show the help of a command.
+  convert    Convert subtitle files to another format, and run text, structure
+             and timing edits on the way.
+  info       Print the format, the cue count and statistics of subtitle files.
+  validate   Check the cues against reading speed, line length, timing and text
+             rules.
+  sync       Find the offset and frame-rate scale against a reference subtitle
+             or the speech, and retime the input.
+  diff       List the added, removed and changed cues between two subtitle
+             files.
+  translate  Translate the cue text with DeepL, Google Cloud Translation or an
+             OpenAI-compatible service.
+  dual       Merge two subtitles in two languages into one file that shows both.
+  hls        Cut a subtitle into WebVTT segments and write an HLS playlist for
+             them.
+  formats    List the format names and file extensions for --from and --to.
+  help       Show the help of a command.
 ` + globalHelpTail
 	assert.Equal(t, result{Stdout: want}, call{}.run(t))
 }
@@ -223,7 +226,7 @@ Options:
                          Windows-1252. It replaces code page detection. A BOM,
                          valid UTF-8 and UTF-16 input win over it.
   --lenient              Skip or repair broken cues and print a warning for
-                         each.
+                         each. Chapter input ignores it.
   --input-fps RATE       Frame rate of a MicroDVD input without a {1}{1}<fps>
                          first line, of Spruce STL timecodes, and of CSV or TSV
                          times in hh:mm:ss:ff.
@@ -366,7 +369,7 @@ func TestEachHelpDefaultIsTheDefaultThatTheCommandUses(t *testing.T) {
 		"the format detected from the content", "stop at the first failure", "the input format",
 		"the BOM rule of the output format", "as for --from", "the frame rate of a MicroDVD, Spruce STL, iTT or MCC input",
 		"none", "the format of the primary file", "half the --video-fps, rounded to the nearest frame",
-		"0", "the end of the last cue", "tesseract when it is installed", "the subtitle fonts database of go-glyph-ocr",
+		"0", "the end of the last cue", "the environment variable of the engine", "the engine detects it", "tesseract when it is installed", "the subtitle fonts database of go-glyph-ocr",
 	}
 	unwrap := regexp.MustCompile(`\n {3,}(\S)`)
 	defaultText := regexp.MustCompile(`(?m)^  (?:-\w, )?--([\w-]+).*? Default: (.+?)\.(?: |$)`)

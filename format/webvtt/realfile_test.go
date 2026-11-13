@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 type cueRow struct {
@@ -19,7 +19,7 @@ type cueRow struct {
 }
 
 func row(c model.Cue) cueRow {
-	return cueRow{Start: c.Start, End: c.End, Text: c.Text()}
+	return cueRow{Start: c.Start, End: c.End, Text: taggedText(c)}
 }
 
 func rows(s *model.Subtitle) []cueRow {
@@ -63,7 +63,7 @@ func describe(t *testing.T, s *model.Subtitle) []any {
 
 	var out []any
 	for _, c := range s.All() {
-		out = append(out, []any{c.Start, c.End, c.Lines, c.Position.Alignment, cueData(t, c)})
+		out = append(out, []any{c.Start, c.End, c.TaggedLines(), c.Position.Alignment, cueData(t, c)})
 	}
 	return out
 }
@@ -78,7 +78,7 @@ func TestReadRealFileDetails(t *testing.T) {
 
 		s := readFile(t, filepath.Join(realDir, "own_empty_cues.vtt"))
 		c, _ := s.Cue(1)
-		assert.Nil(t, c.Lines)
+		assert.Nil(t, c.TaggedLines())
 	})
 	t.Run("hours of any number of digits", func(t *testing.T) {
 		t.Parallel()

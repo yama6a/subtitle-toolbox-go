@@ -12,11 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/pgs"
-	"github.com/yama6a/subtitle-toolbox-go/v3/imaging"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/bitmap"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/pgs"
+	"github.com/yama6a/subtitle-toolbox-go/v4/imaging"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // solid returns an image cue of one colour that is w x h pixels at x, y of a 1920x1080 screen.

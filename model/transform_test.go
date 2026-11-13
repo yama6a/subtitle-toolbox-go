@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // fromTexts builds a subtitle with one cue per text, cue i from i s to i+1 s, as TestSubtitles::fromTexts of
@@ -393,11 +393,7 @@ func TestStripFormatting(t *testing.T) {
 		{name: "voice tag and entity", line: "<b><i>Run</i></b> &amp; <v Fred>hide", want: []string{"Run &amp; hide"}},
 		{name: "keep list", line: "<b><i>Run</i></b> &amp; <v Fred>hide", opts: model.StripOptions{KeepTags: []string{"i"}}, want: []string{"<i>Run</i> &amp; hide"}},
 		{name: "keep list in upper case", line: "<b><I>Run</I></b>", opts: model.StripOptions{KeepTags: []string{"I"}}, want: []string{"<I>Run</I>"}},
-		{name: "keeps word timestamps", line: timed, want: []string{"One <00:00:01.500>two <00:00:02.000>three"}},
-		{
-			name: "removes word timestamps", line: timed,
-			opts: model.StripOptions{KeepTags: []string{"i"}, RemoveWordTimestamps: true}, want: []string{"One two <i>three</i>"},
-		},
+		{name: "word timestamps", line: timed, opts: model.StripOptions{KeepTags: []string{"i"}}, want: []string{"One two <i>three</i>"}},
 		{name: "ASS override block is no tag", line: `{\an8}<i>Hi</i>`, want: []string{`{\an8}Hi`}},
 		{name: "a cue without text stays", line: "<i></i>", want: []string{""}},
 	}
@@ -727,6 +723,31 @@ func TestMultilingualFixture(t *testing.T) {
 			s := readTransformFixture(t, "own_multilingual_caps.srt")
 			require.NoError(t, s.ChangeCase(tt.Mode, tt.Language))
 			assert.Equal(t, tt.Want, texts(s))
+		})
+	}
+}
+
+func TestStripFormattingKeepsWordsAndClearsSpeaker(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		keep        []string
+		wantSpeaker string
+	}{
+		{"no tag kept", nil, ""},
+		{"voice tag kept", []string{"V"}, "Anna"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var s model.Subtitle
+			s.AddCue(model.Cue{End: time.Second, Lines: []string{"<i>Hi</i> there"}, Speaker: "Anna", Words: []model.Word{{Text: "there", Start: 500 * time.Millisecond, End: time.Second}}})
+			s.StripFormatting(model.StripOptions{KeepTags: tt.keep})
+			c, _ := s.Cue(0)
+			assert.Equal(t, tt.wantSpeaker, c.Speaker)
+			assert.Equal(t, []model.Word{{Text: "there", Start: 500 * time.Millisecond, End: time.Second}}, c.Words)
 		})
 	}
 }

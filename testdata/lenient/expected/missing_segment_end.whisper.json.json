@@ -1,0 +1,28 @@
+{
+    "name": "Whisper JSON with a segment without end",
+    "format": "whisper",
+    "strict": {
+        "error": "The field segments[1].end must be a number.",
+        "line": null
+    },
+    "cues": [
+        {
+            "start": 0,
+            "end": 2.5,
+            "text": "The meeting starts at ten."
+        },
+        {
+            "start": 5,
+            "end": 7.5,
+            "text": "Coffee is in the kitchen."
+        }
+    ],
+    "warnings": [
+        {
+            "line": null,
+            "block": 1,
+            "action": "skipped",
+            "message": "The field segments[1].end must be a number."
+        }
+    ]
+}

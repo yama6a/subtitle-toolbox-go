@@ -11,10 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func TestParseUnsupportedFormat(t *testing.T) {
@@ -48,7 +48,7 @@ func TestParseNoFormatFound(t *testing.T) {
 	}{
 		{"empty", ""},
 		{"cue number and text only", "1\nHello\n"},
-		{"JSON object of no format", `{"segments": []}`},
+		{"JSON object of no format", `{"words": []}`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -228,6 +228,8 @@ func ExampleFormats() {
 	// qttext [txt]
 	// vobsub [idx]
 	// vtt [vtt]
+	// whisper [json]
+	// youtube-chapters [txt]
 }
 
 func TestBinaryWriteIgnoresLineEndingAndBOM(t *testing.T) {

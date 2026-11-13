@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/blocks"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/position"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/blocks"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/position"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 //nolint:gochecknoglobals // lookup tables of the writer
@@ -119,6 +119,7 @@ func NoteBlock(text string) string {
 
 // CueBlock writes cue c, the cue number i counting from 0, as a block without a line end at the end.
 func (w *Writer) CueBlock(c model.Cue, i int) string {
+	c.Lines = c.TaggedLines()
 	id := c.ID
 	if phpTrim(id) == "" || strings.Contains(id, arrow) || strings.ContainsAny(id, "\r\n") {
 		id = strconv.Itoa(i + 1)

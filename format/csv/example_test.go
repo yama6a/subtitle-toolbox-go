@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func ExampleRead() {
@@ -20,7 +20,7 @@ func ExampleRead() {
 		return
 	}
 	for _, c := range s.All() {
-		fmt.Println(c.Start, c.End, c.Lines)
+		fmt.Println(c.Start, c.End, c.TaggedLines())
 	}
 	fmt.Println(len(warnings), "warnings")
 	// Output:

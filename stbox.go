@@ -12,7 +12,7 @@ package stbox
 import (
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // Aliases of the model types. Package model documents their methods.
@@ -21,6 +21,8 @@ type (
 	Subtitle = model.Subtitle
 	// Cue is one timed text block.
 	Cue = model.Cue
+	// Word is a timed part of the text of a cue, usually one word.
+	Word = model.Word
 	// Image is the PNG bitmap of an image cue and its place on the screen.
 	Image = model.Image
 	// Comment is text that a writer puts before a cue, or after the last cue.
@@ -107,6 +109,9 @@ const (
 	SpruceSTL     = model.SpruceSTL
 	VobSub        = model.VobSub
 	WebVTT        = model.WebVTT
+	Whisper       = model.Whisper
+	// YouTubeChapters is the format of the chapter lines of a YouTube description.
+	YouTubeChapters = model.YouTubeChapters
 )
 
 // The containers that a read can name.

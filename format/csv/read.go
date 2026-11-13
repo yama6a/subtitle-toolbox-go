@@ -10,12 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/phpkey"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/stringlist"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/phpkey"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/stringlist"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // millisecondsMedian is the smallest median cue duration, read as seconds, of a table of whole numbers that the
@@ -118,6 +118,9 @@ func (rd *reader) read(content string) (*model.Subtitle, error) {
 		return nil, err
 	}
 	s := &model.Subtitle{}
+	for i := range cues {
+		cues[i].ExtractWordTags()
+	}
 	s.AddCues(cues...)
 	_ = s.SetFormatData(formatDataKey, rd.fileData(header, recs, roles, timeFormat)) // the data has the shape of the schema
 	return s, nil

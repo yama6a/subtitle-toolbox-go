@@ -4,8 +4,8 @@ import (
 	"math"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // segmentGap is the least time between the end of an earlier cue and the first cue of a later segment.
@@ -35,7 +35,9 @@ func apply(s *model.Subtitle, segments []Segment) error {
 		seg := segments[segmentOf[i]]
 		c := &cues[i]
 		c.Start, c.End = seg.at(c.Start), seg.at(c.End)
-		c.MapWordTimestamps(seg.at)
+		for k := range c.Words {
+			c.Words[k].Start, c.Words[k].End = seg.at(c.Words[k].Start), seg.at(c.Words[k].End)
+		}
 		members[segmentOf[i]] = append(members[segmentOf[i]], i)
 	}
 	endBeforeLaterSegments(cues, members)
@@ -90,7 +92,11 @@ func applyOne(s *model.Subtitle, seg Segment) error {
 func checkTimeLimit(cues []model.Cue, millis func(i int, t time.Duration) float64) error {
 	limit := timecode.MaxTime.Seconds()
 	for i, c := range cues {
-		if end := millis(i, max(c.Start, c.End)) / 1000; !(end < limit) { // also true for NaN
+		latest := max(c.Start, c.End)
+		for _, w := range c.Words {
+			latest = max(latest, w.End)
+		}
+		if end := millis(i, latest) / 1000; !(end < limit) { // also true for NaN
 			return &model.InvalidArgumentError{Msg: timecode.TimeLimitMessage(i+1, end)}
 		}
 	}

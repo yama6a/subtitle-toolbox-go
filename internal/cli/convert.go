@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 )
 
 // convertCommand reads subtitle files, runs the edits of its option groups in pipeline order, and writes them.

@@ -9,13 +9,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v3"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/ebustl"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/golden"
-	"github.com/yama6a/subtitle-toolbox-go/v3/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/golden"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 var update = flag.Bool("update", false, "rewrite the write golden files")
@@ -41,6 +41,16 @@ func roundTripFiles() []roundTripFile {
 		{"mcc", "captionmaker_608_708.mcc"},
 		{"mcc", "captionmaker_popon_df.mcc"},
 		{"mcc", "v1_23976_timecode.mcc"},
+		{"whisper", "faster_whisper_ctranslate2_segments.json"},
+		{"whisper", "faster_whisper_ctranslate2_words.json"},
+		{"whisper", "openai_api_verbose_json_french.json"},
+		{"whisper", "openai_api_verbose_json_words.json"},
+		{"whisper", "openai_whisper_german.json"},
+		{"whisper", "openai_whisper_word_timestamps.json"},
+		{"whisper", "whisper_cpp_oj.json"},
+		{"whisper", "whisper_cpp_ojf.json"},
+		{"whisper", "whisper_cpp_ojf_split_utf8.json"},
+		{"whisper", "whisperx_diarize.json"},
 	}
 }
 
@@ -148,6 +158,12 @@ func conversions() []conversion {
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.SubRip, ""},
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.WebVTT, ""},
 		{"microdvd", "sub_microdvd_with_styles.sub", stbox.ASS, ""},
+		{"whisper", "openai_whisper_word_timestamps.json", stbox.SubRip, ""},
+		{"whisper", "openai_whisper_word_timestamps.json", stbox.WebVTT, ""},
+		{"whisper", "whisperx_diarize.json", stbox.SubRip, ""},
+		{"whisper", "whisperx_diarize.json", stbox.WebVTT, ""},
+		{"srt", "own_styled.srt", stbox.Whisper, ""},
+		{"vtt", "w3c_timestamps.vtt", stbox.Whisper, ""},
 	}
 }
 
@@ -275,7 +291,7 @@ func TestLRCWordTimesWriteAsWordsInSubRip(t *testing.T) {
 	s, _ := folder(t, "lrc").read(t, "handwritten-enhanced.lrc")
 	first, ok := s.Cue(0)
 	require.True(t, ok)
-	assert.Equal(t, "<00:00:03.000>Slow <00:00:03.550>river <00:00:04.400>runs", first.Text())
+	assert.Equal(t, []string{"<00:00:03.000>Slow <00:00:03.550>river <00:00:04.400>runs"}, first.TaggedLines())
 	assert.Contains(t, string(writeAs(t, s, stbox.SubRip)), "\nSlow river runs\n")
 }
 

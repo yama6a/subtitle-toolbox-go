@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v3/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v3/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func ExampleRead() {
@@ -26,7 +26,7 @@ intro
 		return
 	}
 	c, _ := s.Cue(0)
-	fmt.Println(c.ID, c.Start, c.End, c.Position.Alignment, c.Text())
+	fmt.Println(c.ID, c.Start, c.End, c.Position.Alignment, taggedText(c))
 	fmt.Println(s.Comments()[0].Text)
 	file, _ := s.FormatData("vtt")
 	headerLines, _ := file.Strings("headerLines")
