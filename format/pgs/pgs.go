@@ -10,3 +10,9 @@ package pgs
 
 // ReadOptions holds the settings of the PGS reader. PGS has none yet.
 type ReadOptions struct{}
+
+// WriteOptions holds the settings of the PGS writer. PGS has none yet.
+type WriteOptions struct{}
+
+// WriteReport lists the changes of a PGS write. PGS reports none yet.
+type WriteReport struct{}

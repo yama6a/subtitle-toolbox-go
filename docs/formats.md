@@ -1685,7 +1685,7 @@ The file does not store its code page. `pac.CodePage` is a string type with thes
 
 ## PGS
 
-PGS (Presentation Graphic Stream) is the bitmap subtitle format of Blu-ray discs, stored as `.sup` files. Package `format/pgs` reads it. The format name is `pgs`, the extension is `.sup`. PGS has no writer yet, so `PGS.CanWrite()` is false. The code follows the sources in the package comment of `format/pgs`. It copies no code of FFmpeg or libbluray.
+PGS (Presentation Graphic Stream) is the bitmap subtitle format of Blu-ray discs, stored as `.sup` files. Package `format/pgs` reads and writes it. The format name is `pgs`, the extension is `.sup`. The code follows the sources in the package comment of `format/pgs`. It copies no code of FFmpeg or libbluray.
 
 A **display set** is the group of segments from one presentation composition segment (PCS) to its end segment. It changes the screen at one time. Each display set that shows objects gives one image cue. Example: `shapes_1080p.sup` starts with a display set at PTS 90000. It shows a 640x90 object at x 640, y 940 on a 1920x1080 screen. A display set at PTS 315000 clears it. The reader returns one image cue from 1 s to 3.5 s with that bitmap as a PNG. The cue has no lines, so [OCR](ocr.md) can fill them.
 
@@ -1727,6 +1727,25 @@ Example: `shapes_576p.sup` cut to 1400 bytes reads 1 cue from 0.5 s to 3 s in le
 ### Lenient mode
 
 Damage in the segment framing stops the read. The cues before it stay, and the display set that was open shows nothing. Damage inside a complete segment skips only its display set. The shown cue ends at the PCS time of that display set and reading goes on, so one bad object does not lose the other cues. [lenient-parsing.md](lenient-parsing.md#pgs) lists the messages. Strict mode fails on the first damage, as PHP does.
+
+### Writing
+
+`pgs.Write` writes image cues as a `.sup` stream, the inverse of the reader. Every cue must hold an image. The writer ignores the lines of an image cue. A cue without an image gives an `*UnwritableError`.
+
+Example: cue A from 1.5 s to 4 s and cue B from 4 s to 5 s give 3 display sets. The first shows A at 1.5 s. The second shows B at 4 s, with no clear for A. The third clears the screen at 5 s.
+
+- **Display set plan**: the writer keeps a list of shown cues. Before a cue starts, each shown cue that ends earlier gets a display set at its end time. That display set shows the cues that remain, or clears the screen when none remain. A cue that ends at the start of the next cue leaves without a display set, because the next display set replaces it. At most 2 cues show at once. A third cue drops the cue that started first. A cue with the same start as the next cue waits, so both share one display set, unless it ends at its own start.
+- **Show display set**: it is an epoch start (state `0x80`). Its segments all have the same PTS and a DTS of 0, in this order: PCS, WDS, PDS, the ODS segments of each object, END. The PCS has the screen size of the first shown image, the frame rate code `0x10` and no cropping. The composition number counts from 0 per `Write` call, and wraps after `0xFFFF`. `Cue.Forced` sets the object flag `0x40`.
+- **Windows**: one window per image. Two images that overlap on the screen share one window around both.
+- **Clear display set**: state `0x00`, no objects, the windows of the images shown before. It has no PDS and no ODS.
+- **Palette**: all shown images share one palette. When every image is a palette PNG and the images together hold at most 256 colours, the palette keeps those colours in order of first use. Otherwise the writer decodes every image to RGBA and reduces the pixels of all shown images together to 256 colours. Above 256 colours, a median cut gives 255 opaque entries and entry 0 transparent. An indexed PNG and an RGBA PNG with the same pixels give the same bytes.
+- **Colour codes**: each colour becomes a limited range Y, Cr, Cb code with the matrix of the screen height of the first shown image, BT.601 up to 576 lines and BT.709 above. The writer searches the codes within 2 steps of the rounded code for the one that reads back as the same RGB. Some RGB values have no such code, so a colour can read back with one channel 1 off. The alpha is kept.
+- **Objects**: the data is the width, the height and the run-length data of each row, with the codes of the reader. The first ODS segment holds at most 65,528 bytes of data and the 3-byte total length. Each later one holds at most 65,531 bytes.
+- **Times**: a PTS is the cue time in milliseconds times 90. It must be from 0 to 4294967295.
+- **Errors**: x, y, width, height and the screen size must be from 0 to 65535. The PNG must have the size that the image data says. A PNG that does not decode is an `*UnwritableError` with the decode error as `Err`. The writer checks every cue before it writes a byte, so a failed write writes nothing.
+- **Round trip**: reading the output gives the same times, positions, sizes, forced flags, alignments and pixels. Two overlapping cues read back as one cue with one image per display set. A file with one object per display set in this segment order reads and writes back byte for byte.
+
+`pgs.WriteOptions` and `pgs.WriteReport` have no field. `LineEnding`, `BOM` and `StripTags` have no effect, and neither has `SkipImageCues`.
 
 ## SubViewer
 
