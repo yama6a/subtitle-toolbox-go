@@ -131,6 +131,48 @@ Each text edit of this page searches the words of a changed cue again with `Cue.
 - **Lost words**: a word that the edit changed beyond case is not found and loses its timing. `damn` to `d***` and `New York` to `NYC` drop their words. The remaining words keep their times.
 - **Fixes**: no fix looks inside a word to keep its timing. A fix that changes letters inside a word drops that word, unless it only changes case. Only the profanity filter masks the words too.
 
+## Word highlight
+
+Lyric videos and short captions mark the word that is sung. SubRip and WebVTT players have no karaoke effect, so `karaoke.Apply` writes one cue per word with the active word in a style tag. A cue from 0 to 1.6 s with the line `The beach was quiet.` and 4 words that start at 0, 0.24, 0.71 and 0.95 s becomes 4 cues. The first runs from 0 to 0.24 s with `<u>The</u> beach was quiet.` and the last from 0.95 to 1.6 s with `The beach was <u>quiet.</u>`.
+
+- **Words**: the words come from `Cue.Words`. A cue without words stays as it is. The word cues hold no `Words`. `Apply` replaces the cues of the subtitle, so pass `s.Clone()` to keep the original.
+- **Active word**: a word stays active until the next word starts, so the word cues have no gaps. `Word.End` is not used. The time from the cue start to the first word gets a cue without a styled word. A word that is 0 ms long gets no cue.
+- **Style**: `Options.Style` is the tag of the active word without brackets, such as `b` or `font color="#ffff00"`. It must start with `b`, `i`, `u`, `s` or `font`. The default is `u`. The style closes before every other tag, so `Hi <b>there</b>` becomes `<u>Hi</u> <b><u>there</u></b>`.
+- **Modes**: `ModeWord` styles only the active word. `ModeCumulative` styles every word up to the active word, so `<font color="#ffff00">The beach</font> was quiet.` marks the second word.
+- **Window**: `MaxWordsPerCue` shows only that many words around the active word, 0 shows all. With 5 words and a window of 3, the cues show `One two three`, `One two three`, `two three four`, `three four five` and `three four five`, with the active word styled. Tags stay, and a tag pair without text goes.
+- **Cue data**: each word cue keeps `Position`, `Forced`, `Speaker` and the format data. Only the first keeps `ID`. A comment before a cue moves before its first word cue.
+- **Size limit**: each word cue repeats the whole text of the cue, so the output grows with words times text. `Apply` fails with an `*InvalidArgumentError` when the new cues would hold more than 64 MiB of line text. The message names the cue. Split the cue first with `resegment.SplitLong`, or set `MaxWordsPerCue`. PHP has no limit and runs out of memory.
+
+<!-- example: karaoke/ExampleApply -->
+```go
+ms := time.Millisecond
+var s model.Subtitle
+s.AddCue(model.Cue{
+	Start: 0, End: 1600 * ms, Lines: []string{"The beach was quiet."},
+	Words: []model.Word{
+		{Text: "The", Start: 0, End: 240 * ms},
+		{Text: "beach", Start: 240 * ms, End: 710 * ms},
+		{Text: "was", Start: 710 * ms, End: 950 * ms},
+		{Text: "quiet.", Start: 950 * ms, End: 1600 * ms},
+	},
+})
+report, err := karaoke.Apply(&s, karaoke.Options{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+fmt.Println(report.CuesBefore, "cue became", report.CuesAfter)
+for _, c := range s.All() {
+	fmt.Println(c.Start, c.Lines[0])
+}
+// Output:
+// 1 cue became 4
+// 0s <u>The</u> beach was quiet.
+// 240ms The <u>beach</u> was quiet.
+// 710ms The beach <u>was</u> quiet.
+// 950ms The beach was <u>quiet.</u>
+```
+
 ## Strip tags
 
 `StripFormatting` removes the tags of each line. `<b>Run</b>, <font color="#ff0000">now</font>!` becomes `Run, now!`.

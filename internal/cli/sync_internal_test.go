@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -20,6 +21,7 @@ func syncDir(t *testing.T) string {
 	dir := newDir(t)
 	for from, to := range map[string]string{
 		"own_target_de_25fps.srt": "de.srt", "own_reference_en.srt": "en.srt", "own_reference_en_tv_break.srt": "tv.srt",
+		"own_ffmpeg_silencedetect.log": "silence.log",
 	} {
 		copyFile(t, testfiles.Path(t, "sync/"+from), filepath.Join(dir, to))
 	}
@@ -100,13 +102,37 @@ func TestSyncGolden(t *testing.T) {
 func TestSyncUsageErrors(t *testing.T) {
 	t.Parallel()
 
+	const onlyOne = "Pass one of --reference FILE and --silence-log FILE."
 	sync := []string{"sync", "de.srt", "--reference", "missing.srt"}
 	tests := []struct {
 		name  string
 		words []string
 		msg   string
 	}{
-		{"no reference", []string{"sync", "de.srt"}, "Pass --reference FILE."},
+		{"no reference", []string{"sync", "de.srt"}, onlyOne},
+		{"--media-duration alone", []string{"sync", "de.srt", "--media-duration", "840"}, onlyOne},
+		{"both inputs", []string{"sync", "de.srt", "--reference", "en.srt", "--silence-log", "silence.log", "--media-duration", "840"}, onlyOne},
+		{"--silence-log without a duration", []string{"sync", "de.srt", "--silence-log", "silence.log"}, "Pass --media-duration with --silence-log."},
+		{
+			"--reference-track without --reference",
+			[]string{"sync", "de.srt", "--silence-log", "silence.log", "--media-duration", "840", "--reference-track", "2"},
+			"Pass --reference with --reference-track.",
+		},
+		{
+			"bad duration",
+			[]string{"sync", "de.srt", "--silence-log", "silence.log", "--media-duration", "0"},
+			"The option --media-duration must be greater than 0.",
+		},
+		{
+			"bad track",
+			[]string{"sync", "de.srt", "--reference", "en.srt", "--reference-track", "x"},
+			`The option --reference-track needs a whole number of 1 or more, got "x".`,
+		},
+		{
+			"output is the silence log",
+			[]string{"sync", "de.srt", "--silence-log", "silence.log", "--media-duration", "840", "-o", "silence.log"},
+			"The output silence.log is a file that the command reads. Pass another output file or directory.",
+		},
 		{
 			"offsets reversed", slices.Concat(sync, []string{"--min-offset", "10", "--max-offset", "-10"}),
 			"The minimum offset must not be greater than the maximum offset, got 10 and -10.",
@@ -206,18 +232,67 @@ func TestSyncReferenceFailures(t *testing.T) {
 	})
 }
 
+// Adapted from BinaryTimingTest::testSyncToTheSpeech and BinaryGeneralTest.
+func TestSyncToTheSpeech(t *testing.T) {
+	t.Parallel()
+
+	t.Run("the golden", func(t *testing.T) {
+		t.Parallel()
+
+		got := call{dir: syncDir(t)}.run(t, "sync", "de.srt", "--silence-log", "silence.log", "--media-duration", "00:14:00")
+		want := result{
+			Stdout: string(testfiles.Read(t, "sync/own_target_de_synced.srt")),
+			Stderr: "de.srt: scale 1.04271, offset -2.3 s, score 0.78\n",
+		}
+		assert.Equal(t, want, got)
+	})
+
+	tests := []struct {
+		name string
+		log  string
+		want string
+	}{
+		{"a mono log", logLine + "channel: 0 | silence_start: 1.5\n", "Error: bad.log: line 1: Cannot read a silencedetect log with one line per channel. Run silencedetect without mono.\n"},
+		{"a log out of order", logLine + "silence_end: 1.5\n", "Error: bad.log: line 1: The line silence_end is out of order. The silence_start and silence_end lines must alternate.\n"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			dir := syncDir(t)
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "bad.log"), []byte(tt.log), 0o600))
+			got := call{dir: dir}.run(t, "sync", "de.srt", "--silence-log", "bad.log", "--media-duration", "840")
+			assert.Equal(t, result{Code: exitFile, Stderr: tt.want}, got)
+		})
+	}
+
+	t.Run("a missing log", func(t *testing.T) {
+		t.Parallel()
+
+		got := call{dir: syncDir(t)}.run(t, "sync", "de.srt", "--silence-log", "missing.log", "--media-duration", "60")
+		assert.Equal(t, result{Code: exitFile, Stderr: "Error: missing.log: The file does not exist.\n"}, got)
+	})
+}
+
+const logLine = "[silencedetect @ 0x1] "
+
 func TestSyncHelp(t *testing.T) {
 	t.Parallel()
 
 	head := `Usage: stbox sync <input>... --reference FILE [options]
+       stbox sync <input>... --silence-log FILE --media-duration SECONDS
+                  [options]
 
-Find the offset and frame-rate scale against a reference subtitle, and retime
-the input.
+Find the offset and frame-rate scale against a reference subtitle or the speech,
+and retime the input.
 
 Only the cue times count, so the reference can be in another language. The scale
 is 1 or a factor between 23.976, 24 and 25 fps. sync prints the scale, the
 offset and a score from 0 to 1. A score below 0.5 means that the files likely do
 not match. Without -o or --output-dir, the output goes to standard output.
+For a sync to the speech, run this command and pass --silence-log silence.log:
+  ffmpeg -i movie.mkv -af silencedetect=n=-30dB:d=0.4 -f null - 2> silence.log
+A Whisper JSON transcript of the audio also works as --reference.
 
 Options:
   --reference FILE          Subtitle in sync with the video, in any format that
@@ -225,6 +300,9 @@ Options:
   --reference-track NUMBER  Subtitle track of an MKV, WebM, MP4 or MPEG-TS
                             reference file. Needed when the file has 2 or more
                             subtitle tracks.
+  --silence-log FILE        Log of the FFmpeg silencedetect filter. The speech
+                            between the silences is the reference.
+  --media-duration SECONDS  Duration of the video, for --silence-log.
   --min-offset SECONDS      Smallest offset to try. Default: -60.
   --max-offset SECONDS      Largest offset to try. Default: 60.
   --no-scale                Keep the scale at 1 and find only the offset.

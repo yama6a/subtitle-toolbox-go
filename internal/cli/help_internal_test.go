@@ -61,8 +61,8 @@ func TestGlobalHelp(t *testing.T) {
   info       Print the format, the cue count and statistics of subtitle files.
   validate   Check the cues against reading speed, line length, timing and text
              rules.
-  sync       Find the offset and frame-rate scale against a reference subtitle,
-             and retime the input.
+  sync       Find the offset and frame-rate scale against a reference subtitle
+             or the speech, and retime the input.
   diff       List the added, removed and changed cues between two subtitle
              files.
   translate  Translate the cue text with DeepL, Google Cloud Translation or an

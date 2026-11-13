@@ -81,6 +81,7 @@ var layers = map[string]layer{
 	"refsync":                       layerFacade,
 	"diff":                          layerFacade,
 	"dual":                          layerFacade,
+	"karaoke":                       layerFacade,
 	"validation":                    layerFacade,
 	"timing":                        layerFacade,
 	"imaging":                       layerFacade,
