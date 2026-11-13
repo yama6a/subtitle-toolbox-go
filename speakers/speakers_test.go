@@ -125,6 +125,7 @@ func TestFromLabels(t *testing.T) {
 		{"dialogue dashes", "- JOHN: Hi.\n- MARY: Bye.", false, want{"", []string{"<v John>Hi.", "<v Mary>Bye."}}},
 		{"inside italics", "<i>JOHN: Hi.</i>", false, want{"John", []string{"<i>Hi.</i>"}}},
 		{"label on its own line", "JOHN:\nHi there.", false, want{"John", []string{"Hi there."}}},
+		{"label alone in its own tag pair", "<i>JOHN:</i>\nHi.", false, want{"John", []string{"Hi."}}},
 		{"label on its own line keeps its style tags", "<i>JOHN:\nMARY: Hi.</i>", false, want{"Mary", []string{"<i>Hi.</i>"}}},
 		{"no-break space before the dash", "\u00a0- JOHN: Hi.", false, want{"John", []string{"Hi."}}},
 		{"label is the whole cue", "JOHN:", false, want{"", []string{"JOHN:"}}},
@@ -176,6 +177,12 @@ func TestStyles(t *testing.T) {
 		{"dashes dash already there", "<v Anna>- Where?\n<v Ben>Home.", dashes, []string{"- Where?", "- Home."}},
 		{"dashes own dash", "<v Anna>Where?\n<v Ben>Home.", speakers.Options{Style: speakers.StyleDialogueDashes, DialogueDashStyle: model.DialogueDashHyphen}, []string{"-Where?", "-Home."}},
 		{"dashes three speakers", "<v Anna>One.\n<v Ben>Two.\n<v Clara>Three.", dashes, []string{"- One.", "- Two.", "- Three."}},
+		{
+			"prefix 5 nested tags, only the 4 innermost reopen", `<b><i><u><font color="#fff"><c.x>Where? <v Ben>Home.</c></font></u></i></b>`, prefix,
+			[]string{`<b><i><u><font color="#fff"><c.x>Where?</c></font></u></i>`, `BEN: <i><u><font color="#fff"><c.x>Home.</c></font></u></i></b>`},
+		},
+		{"prefix text with a less-than sign", "<v Anna>1 < 2", prefix, []string{"ANNA: 1 &lt; 2"}},
+		{"prefix voice tag joins text through an empty pair", "<v <i></i></v>Anna>Hi", prefix, []string{"&lt;v <i></i>Anna>Hi"}},
 		{"prefix invalid UTF-8 name", "<v anna\xff>Hi.", prefix, []string{"ANNA\xff: Hi."}},
 		{"prefix voice tag joins text", "<v </v>Anna>Hi", prefix, []string{"&lt;v Anna>Hi"}},
 		{"dashes voice tag joins text", "<v </v>Anna>Hi\nthere", dashes, []string{"&lt;v Anna>Hi", "there"}},
@@ -193,46 +200,55 @@ func TestStyles(t *testing.T) {
 	}
 }
 
-// Adapted from SpeakerLabelsTest::testToColoursWithOwnColours.
-func TestColorsWithOwnColors(t *testing.T) {
+// Adapted from SpeakerLabelsTest::testToColoursUsesTheBbcOrderAndStartsAgainAfterTheLastColour and testToColoursWithOwnColours.
+func TestColors(t *testing.T) {
 	t.Parallel()
 
-	s := subtitleOf("<v A>Hi.\nthere", "No speaker.", "<v B>Bye.")
-	_, err := speakers.Apply(s, speakers.Options{Style: speakers.StyleColors, Colors: []string{"#FF0000", "#00ff00"}})
-	require.NoError(t, err)
-
-	got := make([][]string, 0, s.Len())
-	for _, v := range viewsOf(s) {
-		got = append(got, v.Lines)
+	tests := []struct {
+		name  string
+		in    []string
+		opts  speakers.Options
+		wants [][]string
+	}{
+		{
+			"BBC order, then again from the first color",
+			[]string{"<v A>1", "<v B>2", "<v C>3", "<v D>4", "<v E>5", "<v A>6 <v B>7", "No speaker."},
+			speakers.Options{Style: speakers.StyleColors},
+			[][]string{
+				{`<font color="#ffffff">1</font>`},
+				{`<font color="#ffff00">2</font>`},
+				{`<font color="#00ffff">3</font>`},
+				{`<font color="#00ff00">4</font>`},
+				{`<font color="#ffffff">5</font>`},
+				{`<font color="#ffffff">6</font>`, `<font color="#ffff00">7</font>`},
+				{"No speaker."},
+			},
+		},
+		{
+			"own colors in lower case",
+			[]string{"<v A>Hi.\nthere", "No speaker.", "<v B>Bye."},
+			speakers.Options{Style: speakers.StyleColors, Colors: []string{"#FF0000", "#00ff00"}},
+			[][]string{
+				{`<font color="#ff0000">Hi.</font>`, `<font color="#ff0000">there</font>`},
+				{"No speaker."},
+				{`<font color="#00ff00">Bye.</font>`},
+			},
+		},
 	}
-	assert.Equal(t, [][]string{
-		{`<font color="#ff0000">Hi.</font>`, `<font color="#ff0000">there</font>`},
-		{"No speaker."},
-		{`<font color="#00ff00">Bye.</font>`},
-	}, got)
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-// Adapted from SpeakerLabelsTest::testToColoursUsesTheBbcOrderAndStartsAgainAfterTheLastColour.
-func TestColorsUseTheBBCOrder(t *testing.T) {
-	t.Parallel()
-
-	s := subtitleOf("<v A>1", "<v B>2", "<v C>3", "<v D>4", "<v E>5", "<v A>6 <v B>7", "No speaker.")
-	_, err := speakers.Apply(s, speakers.Options{Style: speakers.StyleColors})
-	require.NoError(t, err)
-
-	got := make([][]string, 0, s.Len())
-	for _, v := range viewsOf(s) {
-		got = append(got, v.Lines)
+			s := subtitleOf(tt.in...)
+			_, err := speakers.Apply(s, tt.opts)
+			require.NoError(t, err)
+			got := make([][]string, 0, s.Len())
+			for _, v := range viewsOf(s) {
+				got = append(got, v.Lines)
+			}
+			assert.Equal(t, tt.wants, got)
+		})
 	}
-	assert.Equal(t, [][]string{
-		{`<font color="#ffffff">1</font>`},
-		{`<font color="#ffff00">2</font>`},
-		{`<font color="#00ffff">3</font>`},
-		{`<font color="#00ff00">4</font>`},
-		{`<font color="#ffffff">5</font>`},
-		{`<font color="#ffffff">6</font>`, `<font color="#ffff00">7</font>`},
-		{"No speaker."},
-	}, got)
 }
 
 // Adapted from SpeakerLabelsTest::testRenameChangesOnlyTheGivenSpeakers.

@@ -240,7 +240,7 @@ With `Options{Style: StylePrefix}`, a WebVTT cue with `Speaker` `Anna` and the l
 - **Label rule**: a label is 1 to 4 words of upper case letters, digits, `.`, `'`, `&` and `-`, then `:` and a space, at the start of a line or after its dash. It is the speaker label rule of [hearing-impaired annotations](#hearing-impaired-annotations). With `AnyCaseLabels`, `Baker:` is a label too. `JOHN:Hi.`, `Then JOHN: Hi.` and `At 10:30 we go.` are not.
 - **Names**: an upper case label becomes title case, so `DR. O'NEIL` gives `Dr. O'Neil`. A label with a lower case letter stays as it is.
 - **Several speakers in one cue**: a speaker that changes in the middle of a line starts a new line, and the open style tags close and open again. `<v Anna><i>Where? <v Ben>Home.</i>` with `StylePrefix` gives `ANNA: <i>Where?</i>` and `BEN: <i>Home.</i>`.
-- **Open tags**: a speaker change closes and opens again only the 4 innermost open style tags. So the time and the output grow in line with the text. A `<` next to a voice tag becomes `&lt;`, so that no voice tag can form from the text around a removed one.
+- **Open tags**: a speaker change closes and opens again only the 4 innermost open style tags. So the time and the output grow in line with the text. A `<` in the text of a cue that a style writes becomes `&lt;`, so that no voice tag can form from the text around a removed one.
 - **Colors**: the speakers of `List` get the colors in turn, from the first color again after the last.
 - **Word timing**: `Words` stay. `ANNA: ` is new text, so the words keep their timing.
 - **Report**: `ChangedCues` counts the cues whose lines or `Speaker` differ after `Apply`.

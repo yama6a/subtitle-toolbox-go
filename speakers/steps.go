@@ -36,7 +36,7 @@ func fromLabels(lines []string, anyCase bool) []string {
 			pendingTag, pendingTags = "", ""
 		default:
 			out = append(out, "")
-			pendingTag, pendingTags = tag, pendingTags+styleTags(line)
+			pendingTag, pendingTags = tag, pendingTags+openStyleTags(line)
 		}
 	}
 	if slices.Equal(out, lines) {
@@ -45,13 +45,17 @@ func fromLabels(lines []string, anyCase bool) []string {
 	return markupcore.CleanLines(out)
 }
 
-// styleTags returns the tags of line that are not voice tags, in order.
-func styleTags(line string) string {
-	var b strings.Builder
+// openStyleTags returns the style tags of line that are still open at its end, in order.
+func openStyleTags(line string) string {
+	var st splitter
 	for i, tok := range markupcore.SplitTags(line) {
 		if _, voice := voiceName(tok); i%2 == 1 && !voice {
-			b.WriteString(tok)
+			st.track(tok)
 		}
+	}
+	var b strings.Builder
+	for _, o := range st.open {
+		b.WriteString(o.tag)
 	}
 	return b.String()
 }
@@ -170,6 +174,7 @@ func (w *work) setStyle(opts Options, colors map[string]string) {
 	}
 	w.lines = lines
 	w.changed = true
+	w.styled = true
 }
 
 // prefixLines writes the name and the separator before each part that starts a speaker.

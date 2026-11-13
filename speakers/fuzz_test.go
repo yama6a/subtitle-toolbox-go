@@ -25,6 +25,8 @@ func FuzzApply(f *testing.F) {
 		"<v.loud O&#39;Neil>Hi.\n<b>x",
 		"Baker: <i>JOHN:</i>\nHi",
 		"<v </v>Anna>Hi",
+		"<v <i></i></v>Anna>Hi",
+		"<i>JOHN:</i>\nHi.",
 		"<i>JOHN:\nMARY: Hi.</i>",
 	} {
 		f.Add([]byte(seed))

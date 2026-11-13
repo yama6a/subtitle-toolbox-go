@@ -58,15 +58,12 @@ func speakerParts(lines []string) []part {
 func (st *splitter) splitLine(line string) {
 	var cur strings.Builder
 	hasText, split := false, false
-	tokens := markupcore.SplitTags(line)
-	for i, tok := range tokens {
+	for i, tok := range markupcore.SplitTags(line) {
 		if i%2 == 0 {
 			if split && !hasText {
 				tok = strings.TrimLeft(tok, markupcore.PHPTrimSet)
 			}
-			if nextToVoiceTag(tokens, i) {
-				tok = strings.ReplaceAll(tok, "<", "&lt;")
-			}
+			tok = strings.ReplaceAll(tok, "<", "&lt;")
 			cur.WriteString(tok)
 			hasText = hasText || markupcore.VisibleText(tok) != ""
 			continue
@@ -87,19 +84,6 @@ func (st *splitter) splitLine(line string) {
 		st.speaker = name
 	}
 	st.parts = append(st.parts, part{speaker: st.speaker, text: cur.String()})
-}
-
-// nextToVoiceTag reports whether the token before or after the text token i is a voice tag or a closing voice tag.
-// A voice tag goes away, so the "<" of the text next to it could join with the text on the other side into a new tag.
-func nextToVoiceTag(tokens []string, i int) bool {
-	for _, k := range []int{i - 1, i + 1} {
-		if k >= 0 && k < len(tokens) {
-			if _, ok := voiceName(tokens[k]); ok {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 // endPart closes the text of cur as a part of the current speaker, and starts the next part with the open style tags.

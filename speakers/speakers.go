@@ -97,6 +97,7 @@ type work struct {
 	cue     model.Cue
 	lines   []string
 	changed bool
+	styled  bool // a style wrote the lines, so they hold no voice tag and no word timestamp tag
 }
 
 // Apply runs the steps that opts selects: labels to speakers, rename, then the style. It returns the error of
@@ -216,7 +217,9 @@ func (w *work) rebuilt() (model.Cue, error) {
 	c := w.cue
 	c.Speaker = ""
 	c.Lines = markupcore.CleanLines(w.lines)
-	c.ExtractWordTags()
+	if !w.styled {
+		c.ExtractWordTags()
+	}
 	c.SyncWords()
 	if c.Speaker == "" {
 		if err := dropVoiceForm(&c); err != nil {
