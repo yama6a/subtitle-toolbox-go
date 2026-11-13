@@ -28,7 +28,6 @@ type taggedSource struct {
 	plain   []string // Lines after ExtractWordTags
 	speaker string
 	voice   markupcore.Voice // the voice of the cue right after ExtractWordTags
-	form    markupcore.Voice // the voice as the lines held it, with its class and end
 	words   []markupcore.TimedText
 }
 
@@ -157,7 +156,7 @@ func (c *Cue) ExtractWordTags() {
 	}
 	c.Lines = got.Lines
 	if got.Found || got.Voice.Name != "" {
-		t := &taggedSource{lines: source, plain: slices.Clone(got.Lines), speaker: got.Voice.Name, form: got.Voice, words: got.Words}
+		t := &taggedSource{lines: source, plain: slices.Clone(got.Lines), speaker: got.Voice.Name, words: got.Words}
 		if got.Voice.Name != "" {
 			t.voice = c.voice()
 		}
@@ -200,12 +199,7 @@ func (c Cue) TaggedLines() []string {
 		c.voice() == t.voice && slices.Equal(timedTexts(c.Words), t.words) {
 		return slices.Clone(t.lines)
 	}
-	voice := c.voice()
-	if t := c.tagged; t != nil && c.Speaker == t.speaker && c.formatData["vtt"] == nil {
-		// Without vtt format data the cue cannot hold the end of the voice, so an edited cue keeps the form it was read in.
-		voice = t.form
-	}
-	return markupcore.TagWords(c.Lines, timedTexts(c.Words), voice)
+	return markupcore.TagWords(c.Lines, timedTexts(c.Words), c.voice())
 }
 
 func cloneWords(words []Word) []Word {
