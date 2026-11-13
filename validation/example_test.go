@@ -3,6 +3,7 @@ package validation_test
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 	"github.com/yama6a/subtitle-toolbox-go/v4/validation"
@@ -59,4 +60,17 @@ func ExampleNetflixEnglish() {
 	// cue 2 maxCharactersPerSecond 142.5
 	// cue 2 minDuration 0.4
 	// cue 2 noOverlap 0.5
+}
+
+func ExampleCheckYouTubeChapters() {
+	s := &stbox.Subtitle{}
+	s.AddCue(stbox.Cue{Start: 5 * time.Second, End: 9500 * time.Millisecond})
+	s.AddCue(stbox.Cue{Start: 9500 * time.Millisecond, End: 30 * time.Second})
+	for _, v := range validation.CheckYouTubeChapters(s) {
+		fmt.Println("cue", v.Cue, v.Rule, v.Value)
+	}
+	// Output:
+	// cue 0 firstChapterAtZero 5
+	// cue -1 minChapters 2
+	// cue 0 minDuration 4.5
 }
