@@ -1,0 +1,73 @@
+{
+    "warnings": [],
+    "subtitle": {
+        "version": 1,
+        "metadata": {},
+        "comments": [],
+        "formatData": {
+            "youtube": {
+                "format": "srv1"
+            }
+        },
+        "cues": [
+            {
+                "start": 1.0,
+                "end": 3.0,
+                "lines": [
+                    "the market opens at eight"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "start": "1.0",
+                        "dur": "2.0"
+                    }
+                }
+            },
+            {
+                "start": 4.0,
+                "end": 6.5,
+                "lines": [
+                    "bring a basket"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "start": "4.0"
+                    }
+                }
+            },
+            {
+                "start": 6.5,
+                "end": 6.5,
+                "lines": [
+                    "and some coins"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "start": "6.5",
+                        "dur": "0"
+                    }
+                }
+            },
+            {
+                "start": 8.0,
+                "end": 13.0,
+                "lines": [
+                    "we close at noon"
+                ],
+                "identifier": null,
+                "alignment": null,
+                "formatData": {
+                    "youtube": {
+                        "start": "8.0"
+                    }
+                }
+            }
+        ]
+    }
+}
