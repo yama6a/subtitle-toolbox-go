@@ -899,6 +899,18 @@ func TestConvertMergeSameTimeASSEvents(t *testing.T) {
 func TestConvertChapterInputGetsNoLenientHint(t *testing.T) {
 	t.Parallel()
 
-	got := call{stdin: "0:00 Intro\x00\n"}.run(t, "convert", "-", "--from", "youtube-chapters", "--to", "srt")
-	assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 1: Line 1 has a NUL character. Check the encoding of the file.\n"}, got)
+	tests := []struct{ format, content string }{
+		{"youtube-chapters", "0:00 Intro\x00\n"},
+		{"podcast-chapters", "{\x00}"},
+		{"ffmeta-chapters", ";FFMETADATA1\x00\n"},
+		{"ogm-chapters", "CHAPTER01=0:0:0.0\x00\n"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.format, func(t *testing.T) {
+			t.Parallel()
+
+			got := call{stdin: tt.content}.run(t, "convert", "-", "--from", tt.format, "--to", "srt")
+			assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 1: Line 1 has a NUL character. Check the encoding of the file.\n"}, got)
+		})
+	}
 }

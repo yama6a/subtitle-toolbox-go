@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"io/fs"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -201,8 +202,13 @@ func warningMessage(w stbox.ParseWarning) string {
 	return w.Message
 }
 
+// chapterFormats are the formats whose readers ignore --lenient for their own lines.
+//
+//nolint:gochecknoglobals // fixed list
+var chapterFormats = []stbox.Format{stbox.YouTubeChapters, stbox.FFMetadataChapters, stbox.OGMChapters, stbox.PodcastChapters}
+
 // wantsLenientHint reports whether err is a parse error of a format that honours --lenient.
 func wantsLenientHint(err error) bool {
 	perr, ok := errors.AsType[*stbox.ParseError](err)
-	return ok && perr.Format != stbox.YouTubeChapters
+	return ok && !slices.Contains(chapterFormats, perr.Format)
 }

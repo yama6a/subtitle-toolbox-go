@@ -630,6 +630,8 @@ Name                Extensions        Read  Write
 ass                 .ass .ssa         yes   yes
 cavena890           .890              yes   yes
 csv                 .csv              yes   yes
+ffmeta-chapters     .ffmeta           yes   yes
+html                .html .htm        yes   yes
 itt                 .itt              yes   yes
 json                .json             yes   yes
 lrc                 .lrc              yes   yes
@@ -655,6 +657,8 @@ qttext              .txt              yes   yes
 vobsub              .idx              yes   no
 vtt                 .vtt              yes   yes
 whisper             .json             yes   yes
+ogm-chapters        .txt              yes   yes
+podcast-chapters    .json             yes   yes
 podcast-transcript  .json             yes   yes
 youtube-chapters    .txt              yes   yes
 ```
