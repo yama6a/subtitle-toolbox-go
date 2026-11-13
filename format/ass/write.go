@@ -274,12 +274,11 @@ func commentLine(text string, format []string, stored []record, used []bool, at 
 }
 
 func (wr *writer) dialogueLine(c model.Cue, format []string) string {
-	c.Lines = c.TaggedLines()
 	data, _ := c.FormatData(formatDataKey)
 	fieldsValue, _ := data.Get("fields")
 	fields := recordOf(fieldsValue)
 	var text, name string
-	if wr.unchanged(c, data) {
+	if wr.unchanged(c, data, fields) {
 		text, _ = data.String("text")
 		name, _ = fields.field("Name")
 	} else {
@@ -288,6 +287,7 @@ func (wr *writer) dialogueLine(c model.Cue, format []string) string {
 			styleName = "Default"
 		}
 		style := eventStyle(wr.styles, styleName)
+		c.Lines = c.TaggedLines()
 		text, name = wr.convertLines(c, style)
 	}
 	values := make([]string, len(format))
@@ -312,27 +312,78 @@ func (wr *writer) dialogueLine(c model.Cue, format []string) string {
 	return "Dialogue: " + strings.Join(values, ",")
 }
 
-// unchanged reports whether the cue has the lines and the alignment that the reader stored, so the writer
-// writes its stored Text field.
-func (wr *writer) unchanged(c model.Cue, data *model.Data) bool {
+// unchanged reports whether the cue has the lines, the speaker, the words, the word lengths and the alignment
+// that the stored cue data encodes, so the writer writes its stored Text field.
+func (wr *writer) unchanged(c model.Cue, data *model.Data, fields record) bool {
 	if wr.stripTags {
 		return false
 	}
-	if _, ok := data.String("text"); !ok {
+	text, ok := data.String("text")
+	if !ok {
 		return false
 	}
 	lines, ok := data.Strings("lines")
-	if !ok || !slices.Equal(lines, c.Lines) {
+	if !ok {
 		return false
 	}
-	return position.AlignmentUnchanged(data, c.Position.Alignment)
+	stored := model.Cue{End: c.End, Lines: lines}
+	stored.ExtractWordTags()
+	if !slices.Equal(stored.Lines, c.Lines) || !sameSpeaker(stored, c) || !sameWords(stored.Words, c.Words) {
+		return false
+	}
+	return wr.lengthsUnchanged(c, text, fields) && position.AlignmentUnchanged(data, c.Position.Alignment)
+}
+
+// sameSpeaker reports whether both cues have the same speaker. A cue without visible text has no voice tag in its
+// lines, so its speaker, which the writer does not use for stored text, is not compared.
+func sameSpeaker(stored, c model.Cue) bool {
+	return stored.Speaker == c.Speaker || stored.Speaker == "" && c.PlainText() == ""
+}
+
+// sameWords reports whether both lists have the same texts and starts.
+func sameWords(a, b []model.Word) bool {
+	return slices.EqualFunc(a, b, func(x, y model.Word) bool { return x.Text == y.Text && x.Start == y.Start })
+}
+
+// lengthsUnchanged reports whether each word still has the length of its karaoke syllable in text, or ends where
+// the next word starts, or at the cue end for the last word, as the words of library JSON version 1 do. It returns
+// true when text has no karaoke tags or a number of syllables other than the number of words.
+func (wr *writer) lengthsUnchanged(c model.Cue, text string, fields record) bool {
+	words := c.Words
+	styleName, _ := fields.field("Style")
+	m := textMarkup{styles: wr.styles, style: eventStyle(wr.styles, styleName)}
+	if _, _, err := m.convert(text, 0, false); err != nil {
+		return true
+	}
+	var lengths []time.Duration
+	for _, s := range m.syllables {
+		if s.hasText {
+			lengths = append(lengths, s.end-s.start)
+		}
+	}
+	if len(lengths) != len(words) {
+		return true
+	}
+	for i, w := range words {
+		next := c.End
+		if i+1 < len(words) {
+			next = words[i+1].Start
+		}
+		if (w.End-w.Start-lengths[i]).Abs() > time.Millisecond && w.End != next {
+			return false
+		}
+	}
+	return true
 }
 
 // convertLines returns the Text field and the speaker name of the core markup of c. It leaves out the tags
 // that the style of the event implies.
 func (wr *writer) convertLines(c model.Cue, style record) (string, string) {
 	text := markupcore.RubyAsText(strings.Join(c.Lines, "\n"))
-	speaker, _ := markupcore.Speaker(text)
+	speaker := c.Speaker
+	if speaker == "" {
+		speaker, _ = markupcore.Speaker(text)
+	}
 	name := strings.ReplaceAll(speaker, ",", "")
 
 	var parts []part
@@ -459,12 +510,12 @@ func closingIndex(tokens []string, opening int) (int, bool) {
 
 // convertTokens returns the override tags and the escaped text of the tokens.
 func (wr *writer) convertTokens(tokens []string, c model.Cue) []part {
-	leading, durations := karaokeDurations(tokens, c)
+	leading, syllables := karaokeSyllables(tokens, c)
 	var parts []part
 	if leading >= 0 {
 		parts = append(parts, part{true, `\` + wr.karaokeTag + strconv.FormatInt(leading, 10)})
 	}
-	tc := tokenConverter{karaokeTag: wr.karaokeTag, durations: durations}
+	tc := tokenConverter{karaokeTag: wr.karaokeTag, syllables: syllables}
 	for i, token := range tokens {
 		switch {
 		case i%2 == 0 && token != "":
@@ -481,7 +532,7 @@ func (wr *writer) convertTokens(tokens []string, c model.Cue) []part {
 // tokenConverter turns the core markup tags of one cue into override tags.
 type tokenConverter struct {
 	karaokeTag string
-	durations  []int64
+	syllables  []syllableTime
 	next       int
 	// colors holds the colors of the open <font> tags, "" for a <font> without a color.
 	colors []string
@@ -504,9 +555,16 @@ func (tc *tokenConverter) tag(token string) (string, bool) {
 		return tc.closeFont()
 	}
 	if _, ok := markupcore.WordTimestamp(token); ok {
-		d := tc.durations[tc.next]
+		s := tc.syllables[tc.next]
 		tc.next++
-		return `\` + tc.karaokeTag + strconv.FormatInt(d, 10), true
+		if s.skip {
+			return "", false
+		}
+		tag := `\` + tc.karaokeTag + strconv.FormatInt(s.length, 10)
+		if s.gap > 0 {
+			tag = `\` + tc.karaokeTag + strconv.FormatInt(s.gap, 10) + tag
+		}
+		return tag, true
 	}
 	return "", false
 }
@@ -558,13 +616,82 @@ func escapeText(text string) string {
 	return textEscapes.Replace(text)
 }
 
-// karaokeDurations turns the word timestamps into karaoke durations in centiseconds. Each syllable lasts until
-// the next timestamp or the cue end. leading is the gap before the first timestamp when text comes before it,
-// else -1.
-func karaokeDurations(tokens []string, c model.Cue) (leading int64, durations []int64) {
+// syllableTime is the length of one karaoke syllable and the gap before it, in centiseconds. A syllable with skip
+// set belongs to a timestamp that no word starts at, and writes nothing.
+type syllableTime struct {
+	length, gap int64
+	skip        bool
+}
+
+// karaokeSyllables turns the word timestamps into karaoke syllables, one per timestamp token. A syllable lasts
+// until the end of its word when the next word starts later, and a gap syllable fills the time between. The last
+// syllable lasts until the cue end. leading is the time before the first word when text or a skipped timestamp
+// comes before it, else -1.
+func karaokeSyllables(tokens []string, c model.Cue) (leading int64, syllables []syllableTime) {
 	start := centiseconds(c.Start)
-	var times []int64
-	textBefore := false
+	times, textBefore := timestampTimes(tokens, start)
+	if len(times) == 0 {
+		return -1, nil
+	}
+	kept, byWord := wordTimestamps(times, c.Words)
+	syllables = make([]syllableTime, len(times))
+	for i := range syllables {
+		syllables[i].skip = !slices.Contains(kept, i)
+	}
+	fillSyllables(syllables, times, kept, c.Words, byWord, max(start, centiseconds(c.End)))
+	if !textBefore && kept[0] == 0 {
+		return -1, syllables
+	}
+	return times[kept[0]] - start, syllables
+}
+
+// fillSyllables sets the length and the gap of the syllables of the kept timestamps. byWord says that words has one
+// word for each kept timestamp, so a word end before the next start makes a gap.
+func fillSyllables(syllables []syllableTime, times []int64, kept []int, words []model.Word, byWord bool, cueEnd int64) {
+	for k, i := range kept {
+		next := cueEnd
+		if k+1 < len(kept) {
+			next = times[kept[k+1]]
+		}
+		syllables[i].length = max(0, next-times[i])
+		if !byWord || k+1 == len(kept) {
+			continue
+		}
+		if end := centiseconds(words[k].End); end >= times[i] && end < next {
+			syllables[i].length = end - times[i]
+			syllables[kept[k+1]].gap = next - end
+		}
+	}
+}
+
+// wordTimestamps returns the indexes of the timestamps that the words start at, and whether it found one for each
+// word. When it finds none for a word, it returns the indexes of all timestamps.
+func wordTimestamps(times []int64, words []model.Word) (kept []int, byWord bool) {
+	next := 0
+	for _, w := range words {
+		for next < len(times) && times[next] != max(0, centiseconds(w.Start)) {
+			next++
+		}
+		if next == len(times) {
+			kept = nil
+			break
+		}
+		kept = append(kept, next)
+		next++
+	}
+	if kept != nil && len(kept) == len(words) {
+		return kept, true
+	}
+	kept = make([]int, len(times))
+	for i := range kept {
+		kept[i] = i
+	}
+	return kept, false
+}
+
+// timestampTimes returns the time of each word timestamp token in centiseconds, not before start, and whether
+// text comes before the first one.
+func timestampTimes(tokens []string, start int64) (times []int64, textBefore bool) {
 	for i, token := range tokens {
 		if i%2 == 1 {
 			if d, ok := markupcore.WordTimestamp(token); ok {
@@ -576,18 +703,7 @@ func karaokeDurations(tokens []string, c model.Cue) (leading int64, durations []
 			textBefore = true
 		}
 	}
-	if len(times) == 0 {
-		return -1, nil
-	}
-	ends := append(slices.Clone(times[1:]), max(start, centiseconds(c.End)))
-	durations = make([]int64, len(times))
-	for i, t := range times {
-		durations[i] = max(0, ends[i]-t)
-	}
-	if !textBefore {
-		return -1, durations
-	}
-	return times[0] - start, durations
+	return times, textBefore
 }
 
 // centiseconds rounds d to centiseconds, half away from zero, up to the largest count below the time limit. The

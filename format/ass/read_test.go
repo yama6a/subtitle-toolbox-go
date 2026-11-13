@@ -361,6 +361,12 @@ func TestFirstCueLines(t *testing.T) {
 			[]string{"a", "b"},
 		},
 		{
+			"a named karaoke cue in a bold style keeps the placement of the tags",
+			"[V4+ Styles]\nFormat: Name, Bold\nStyle: Default,-1\n\n" + eventsHeader +
+				`Dialogue: 0,0:00:13.50,0:00:16.00,Default,Conductor,0,0,0,,{\k40}The {\k35}train {\k20}{\k50}leaves` + "\n",
+			[]string{"<v Conductor><b><00:00:13.500>The <00:00:13.900>train <00:00:14.250><00:00:14.450>leaves</b>"},
+		},
+		{
 			"the name becomes the speaker on the first text line",
 			eventsHeader + `Dialogue: 0,0:00:01.00,0:00:02.00,Default,A<B,0,0,0,,{\an8}\N  Hi` + "\n",
 			[]string{"<v A&lt;B>Hi"},
@@ -605,4 +611,59 @@ func TestBlankContentGivesAnEmptySubtitle(t *testing.T) {
 	s, warnings := mustRead(t, " \r\n\t", false)
 	assert.Zero(t, s.Len())
 	assert.Empty(t, warnings)
+}
+
+func TestKaraokeSyllablesAndNameBecomeWordsAndSpeaker(t *testing.T) {
+	t.Parallel()
+
+	type word struct {
+		text       string
+		start, end time.Duration
+	}
+	tests := []struct {
+		name, name2, text string
+		want              []word
+		speaker           string
+	}{
+		{
+			"each tag kind gives its length", "", `{\k50}Ka{\kf25}ra{\K100}o{\ko12.5}ke`,
+			[]word{{"Ka", 1000 * ms, 1500 * ms}, {"ra", 1500 * ms, 1750 * ms}, {"o", 1750 * ms, 2750 * ms}, {"ke", 2750 * ms, 2875 * ms}},
+			"",
+		},
+		{
+			"a gap between syllables stays", "", `{\k50}Hi {\k20}{\k30}there`,
+			[]word{{"Hi", 1000 * ms, 1500 * ms}, {"there", 1700 * ms, 2000 * ms}},
+			"",
+		},
+		{
+			"a syllable without text is not a word", "", `{\k0}{\k50}Hi {\k25}there`,
+			[]word{{"Hi", 1000 * ms, 1500 * ms}, {"there", 1500 * ms, 1750 * ms}},
+			"",
+		},
+		{
+			"text before the first tag is no word", "", `Oh {\k50}Hi`,
+			[]word{{"Hi", 1000 * ms, 1500 * ms}},
+			"",
+		},
+		{
+			"the name is the speaker", " Anna ", `{\k50}Hi`,
+			[]word{{"Hi", 1000 * ms, 1500 * ms}},
+			"Anna",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			s, _ := mustRead(t, eventsHeader+"Dialogue: 0,0:00:01.00,0:00:02.00,Default,"+tt.name2+",0,0,0,,"+tt.text+"\n", false)
+			c := cueAt(t, s, 0)
+			var got []word
+			for _, w := range c.Words {
+				got = append(got, word{w.Text, w.Start, w.End})
+			}
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.speaker, c.Speaker)
+			assert.NotContains(t, strings.Join(c.Lines, "\n"), "<")
+		})
+	}
 }

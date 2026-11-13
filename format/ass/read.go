@@ -119,9 +119,6 @@ func (rd *reader) read(content string) (*model.Subtitle, error) {
 	if err := s.SetFormatData(formatDataKey, rd.f.data()); err != nil {
 		return nil, fmt.Errorf("%s file data: %w", model.ASS, err)
 	}
-	for i := range rd.cues {
-		rd.cues[i].ExtractWordTags()
-	}
 	parsing.AddParsed(s, rd.cues, rd.comments)
 	return s, nil
 }
@@ -316,9 +313,6 @@ func (rd *reader) parseEvent(ev event, index int) ([]looseTime, error) {
 	if numpad == 0 {
 		numpad = styleAlignment(m.style, rd.legacyStyles())
 	}
-	name, _ := f.field("Name")
-	lines = markupcore.AddSpeaker(lines, name)
-
 	endText, _ := f.get(f.end)
 	end, err := rd.time(endText, ev.number, &loose)
 	if err != nil {
@@ -327,7 +321,7 @@ func (rd *reader) parseEvent(ev event, index int) ([]looseTime, error) {
 	if start, end, err = rd.st.OrderedTimes(start, end, ev.number, index, []string{ev.line}, true); err != nil {
 		return nil, err
 	}
-	c, err := newCue(start, end, lines, numpad, f, text)
+	c, err := newCue(start, end, converted{lines, numpad, m.syllables}, f, text)
 	if err != nil {
 		return nil, err
 	}
@@ -365,11 +359,25 @@ func (rd *reader) fields(ev event) (eventFields, error) {
 	return f, nil
 }
 
+// converted is the core markup of the Text field of one event.
+type converted struct {
+	lines     []string
+	numpad    int
+	syllables []syllable
+}
+
 // newCue returns the cue of an event with its cue data: the fields other than Start, End and Text, the Text
 // field, the cue lines and the alignment, or null for none.
-func newCue(start, end time.Duration, lines []string, numpad int, f eventFields, text string) (model.Cue, error) {
+func newCue(start, end time.Duration, body converted, f eventFields, text string) (model.Cue, error) {
 	c := model.Cue{Start: start, End: end}
-	c.SetText(strings.Join(lines, "\n"))
+	name, _ := f.field("Name")
+	c.SetText(strings.Join(markupcore.AddSpeaker(body.lines, name), "\n"))
+	c.ExtractWordTags()
+	setSyllableEnds(c.Words, body.syllables)
+	if c.Speaker == "" {
+		c.Speaker = phpTrim(name)
+	}
+	numpad := body.numpad
 	var alignment any
 	if numpad > 0 {
 		c.Position.Alignment, _ = model.AlignmentFromNumpad(numpad)
@@ -384,7 +392,7 @@ func newCue(start, end time.Duration, lines []string, numpad int, f eventFields,
 	data := model.NewData(
 		model.Field{Key: "fields", Value: kept.data()},
 		model.Field{Key: "text", Value: text},
-		model.Field{Key: "lines", Value: stringlist.Any(c.Lines)},
+		model.Field{Key: "lines", Value: stringlist.Any(c.TaggedLines())},
 		model.Field{Key: "alignment", Value: alignment},
 	)
 	if err := c.SetFormatData(formatDataKey, data); err != nil {
@@ -516,4 +524,19 @@ func (f file) data() *model.Data {
 		model.Field{Key: "commentEvents", Value: comments},
 		model.Field{Key: "sections", Value: sections},
 	)
+}
+
+// setSyllableEnds sets the end of each word to the end of its karaoke syllable. ExtractWordTags drops a syllable
+// without text, so each word takes the next syllable with its start and some text.
+func setSyllableEnds(words []model.Word, syllables []syllable) {
+	j := 0
+	for i := range words {
+		for ; j < len(syllables); j++ {
+			if s := syllables[j]; s.hasText && s.start.Round(time.Millisecond) == words[i].Start {
+				words[i].End = s.end.Round(time.Millisecond)
+				j++
+				break
+			}
+		}
+	}
 }
