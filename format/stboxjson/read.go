@@ -531,6 +531,7 @@ func (r *reader) cue(entry any, i int) (model.Cue, string) {
 			return c, msg
 		}
 		r.restoreTaggedLines(&c, i, entry)
+		restoreASSLines(&c)
 		return c, ""
 	}
 	c.ExtractWordTags()

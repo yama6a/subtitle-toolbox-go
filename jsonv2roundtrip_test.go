@@ -65,3 +65,20 @@ func TestLibraryJSONVersion2KeepsTheNativeBytes(t *testing.T) {
 func hasWordsOrSpeaker(s *stbox.Subtitle) bool {
 	return slices.ContainsFunc(s.Cues(), func(c stbox.Cue) bool { return len(c.Words) > 0 || c.Speaker != "" })
 }
+
+// A cue read from version 2 writes the same version 1 bytes as the cue before: the tags keep their place.
+func TestLibraryJSONVersion2KeepsTheVersion1Bytes(t *testing.T) {
+	t.Parallel()
+
+	s, _, err := parseBytes(testfiles.Read(t, "json/real/own_aegisub.json"), stbox.ReadOptions{})
+	require.NoError(t, err)
+	write := func(s *stbox.Subtitle, version int) []byte {
+		var out bytes.Buffer
+		_, err := stbox.Write(&out, s, stbox.JSON, stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: version}})
+		require.NoError(t, err)
+		return out.Bytes()
+	}
+	back, _, err := parseBytes(write(s, 2), stbox.ReadOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, string(write(s, 1)), string(write(back, 1)))
+}

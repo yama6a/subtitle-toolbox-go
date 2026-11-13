@@ -43,7 +43,7 @@ The writer writes version 2 and the reader reads versions 1 and 2. Version 2 hol
 | `cues[].words[].confidence` | number | optional, from 0 to 1. A missing key and `null` mean none | only when set |
 | `cues[].formatData` | object of objects | optional | always. Left out with `OmitFormatData`. Version 2 keeps `voiceClass` and `voiceEnd` of the vtt cue data, because the lines hold no voice tag |
 
-- **Tagged lines**: the WebVTT reader stores `formatData.vtt.taggedLines` for a cue whose word timestamp tags and voice tags stand where the placement rule of `Cue.TaggedLines` would not write them. Example: the YouTube line `the<00:05:04.199><c> train</c>`. Version 2 writes the key while the lines still match the cue. The version 2 reader restores the layout when the lines match the `lines`, `speaker`, voice form and word texts and starts of the cue. Else it drops the key and adds a `Repaired` warning, also in strict mode. So a round trip through version 2 gives the bytes of the file. Version 1 never writes the key.
+- **Tagged lines**: the WebVTT reader stores `formatData.vtt.taggedLines` for a cue whose word timestamp tags and voice tags stand where the placement rule of `Cue.TaggedLines` would not write them. Example: the YouTube line `the<00:05:04.199><c> train</c>`. Version 2 writes the key while the lines still match the cue. The version 2 reader restores the layout when the lines match the `lines`, `speaker`, voice form and word texts and starts of the cue. Else it drops the key and adds a `Repaired` warning, also in strict mode. So a round trip through version 2 gives the bytes of the file. Version 1 never writes the key. The layout also keeps a timestamp that belongs to no word, such as the trailing `<00:00:24.000>` of a line. The ASS reader stores its tagged lines in `formatData.ass.lines`, and the version 2 reader restores the layout from them the same way, without a warning when they no longer match.
 - **Words**: the starts do not decrease from word to word. Each `text` occurs in the plain text of the cue, after the end of the word before it. `Cue.ValidateWords` holds the rules. The reader checks the order rule with one pass over the text of each cue.
 - **Key order**: the writer uses the order of the table. The fields inside one format's data keep their stored order, because writers such as ASS depend on it.
 - **Lists for objects**: `metadata`, `formatData`, the data of one format and `cues[].formatData` may be JSON lists, as PHP writes an empty or numbered array. A list reads as an object with the keys `"0"`, `"1"` and so on. `cues`, `lines` and `comments` must be JSON lists.
@@ -54,7 +54,7 @@ The writer writes version 2 and the reader reads versions 1 and 2. Version 2 hol
 
 ## Warnings
 
-A lenient read gives one warning per skipped or repaired entry.
+A lenient read gives one warning per skipped or repaired entry. A strict read gives the `Repaired` warning of a dropped `formatData.vtt.taggedLines`, and fails on the other problems.
 
 | Field | Holds |
 |:--- |:--- |

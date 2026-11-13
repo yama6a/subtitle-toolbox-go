@@ -146,6 +146,30 @@ func (r *reader) restoreTaggedLines(c *model.Cue, i int, entry any) {
 		"the words of the cue. The parser dropped it.", model.NoLine, i, []string{encodeEntry(entry)}, model.Repaired)
 }
 
+// restoreASSLines does what restoreTaggedLines does for the key lines of the ass cue data. A mismatch is not an
+// error, because an edit leaves the stored lines behind.
+func restoreASSLines(c *model.Cue) {
+	stored, ok := c.FormatData(string(model.ASS))
+	if !ok {
+		return
+	}
+	list, ok := stored.List("lines")
+	if !ok {
+		return
+	}
+	probe := c.Clone()
+	probe.Lines, probe.Speaker, probe.Words = nil, "", nil
+	for _, item := range list {
+		l, _ := item.(string)
+		probe.Lines = append(probe.Lines, l)
+	}
+	probe.ExtractWordTags()
+	if sameLayout(*c, probe) {
+		probe.Words = c.Words
+		*c = probe
+	}
+}
+
 func sameLayout(c, probe model.Cue) bool {
 	if !slices.Equal(c.Lines, probe.Lines) || c.Speaker != probe.Speaker || len(c.Words) != len(probe.Words) {
 		return false
