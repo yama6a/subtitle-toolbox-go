@@ -241,7 +241,7 @@ Amazon Transcribe returns a batch transcript as JSON with one item for each word
 
 - **Lists**: `results` must be an object and `results.items` a JSON array. Else the read fails with `The JSON has no "results.items" list.` in both modes. `audio_segments` counts when it is an array with items. An object with the keys `"0"` and `"1"` is no list ([subtitle-toolbox-php#1208](https://github.com/yama6a/subtitle-toolbox-php/issues/1208)).
 - **Words**: a pronunciation item makes a word. A punctuation item joins the word before it without a space. Punctuation before the first word waits and joins the first word in front. So the item U+00BF, the word `Vienes` and the item `?` give the word U+00BF followed by `Vienes?`.
-- **Cues with audio segments**: one cue for each segment. Its words are the words of the item ids in the segment `items` list. The integer 5 and the string `"5"` name the same item, and `"05"` is another id. An id that names no word is ignored. A word that the list names twice in a row counts once.
+- **Cues with audio segments**: one cue for each segment. Its words are the words of the item ids in the segment `items` list. The integer 5 and the string `"5"` name the same item, and `"05"` is another id. An id that names no word is ignored. A word that an earlier segment, or the same segment, already named belongs to that segment, so each word is copied into the cue data once ([subtitle-toolbox-php#1279](https://github.com/yama6a/subtitle-toolbox-php/issues/1279)).
 - **Cues without audio segments**: the words group into cues by the [grouping rules](#grouping-words-into-cues).
 - **Language**: `results.language_code`.
 - **Speaker**: with `SpeakerVoices`, the `speaker_label` of the segment, or of the first item of a grouped cue. A string or an integer.
@@ -291,5 +291,5 @@ A cue from another format, `<v Ben>` with the words `See` (4 to 4.5 s) and `you.
 
 | Operation | Cost | Benchmark |
 |:--- |:--- |:--- |
-| read Amazon Transcribe JSON | linear in the file. A segment looks up each item id once. A word with many punctuation items joins their texts once | `BenchmarkAWSTranscribe`: 10,000 items, 10,000 items in one segment, 20,000 punctuation items on one word. Each input is about 1 MB |
+| read Amazon Transcribe JSON | linear in the file. A segment looks up each item id once, and a word goes to the first segment that names it. A word with many punctuation items joins their texts once | `BenchmarkAWSTranscribe`: 10,000 items, 10,000 items in one segment, 20,000 punctuation items on one word, 5,000 segments that name one word with 5,000 punctuation items. Each input is about 1 MB |
 | write Amazon Transcribe JSON | linear in the cues, the items and the stored items | the same inputs |

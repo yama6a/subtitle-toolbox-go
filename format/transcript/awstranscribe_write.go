@@ -11,6 +11,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -19,7 +20,19 @@ import (
 // for each cue when the source had them, or when a cue has no words, because the items alone cannot hold such a cue.
 // A value that a cue did not change stays as the reader stored it.
 func WriteAWSTranscribe(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
-	return cloudWrite(w, s, model.AWSTranscribe, "Amazon Transcribe JSON", common, awsDocument)
+	s, err := writing.SkipImageCues(s, model.AWSTranscribe, common)
+	if err != nil {
+		return err
+	}
+	doc, err := awsDocument(s)
+	if err != nil {
+		return err
+	}
+	body, err := encodeDocument(model.AWSTranscribe, "Amazon Transcribe JSON", doc, false)
+	if err != nil {
+		return err
+	}
+	return writing.Write(w, model.AWSTranscribe, body, common, false)
 }
 
 func awsDocument(s *model.Subtitle) (orderedjson.Value, error) {
@@ -45,25 +58,25 @@ func awsDocument(s *model.Subtitle) (orderedjson.Value, error) {
 		items = append(items, cueItems...)
 		text, _ := cloudGet(seg, "transcript").AsString()
 		texts = append(texts, text)
-		id := cloudMember("id", orderedjson.Int(int64(len(segments))))
+		id := member("id", orderedjson.Int(int64(len(segments))))
 		segments = append(segments, orderedjson.Union(orderedjson.ObjectOf(id), seg))
-		stored := cloudGet(cloudCueData(&c, model.AWSTranscribe), "transcript")
+		stored := cloudGet(storedObject(&c, awsKey), "transcript")
 		hasSegments = hasSegments || stored.Kind() != orderedjson.Null || len(cueItems) == 0
 	}
 
-	out := orderedjson.ObjectOf(cloudMember("transcripts", orderedjson.ArrayOf(orderedjson.ObjectOf(
-		cloudMember("transcript", orderedjson.StringValue(strings.Join(texts, " "))),
+	out := orderedjson.ObjectOf(member("transcripts", orderedjson.ArrayOf(orderedjson.ObjectOf(
+		member("transcript", orderedjson.StringValue(strings.Join(texts, " "))),
 	))))
 	if runs := awsSpeakerRuns(items); len(runs) > 0 {
-		labels := orderedjson.ObjectOf(cloudMember("speaker_labels", awsSpeakerLabels(cloudGet(results, "speaker_labels"), runs)))
+		labels := orderedjson.ObjectOf(member("speaker_labels", awsSpeakerLabels(cloudGet(results, "speaker_labels"), runs)))
 		out = orderedjson.Union(out, labels)
 	}
-	out = orderedjson.Union(out, orderedjson.ObjectOf(cloudMember("items", orderedjson.ArrayOf(items...))))
+	out = orderedjson.Union(out, orderedjson.ObjectOf(member("items", orderedjson.ArrayOf(items...))))
 	if hasSegments {
-		out = orderedjson.Union(out, orderedjson.ObjectOf(cloudMember("audio_segments", orderedjson.ArrayOf(segments...))))
+		out = orderedjson.Union(out, orderedjson.ObjectOf(member("audio_segments", orderedjson.ArrayOf(segments...))))
 	}
 	out = orderedjson.Union(out, results.Without("speaker_labels"))
-	return orderedjson.Union(orderedjson.ObjectOf(cloudMember("results", out)), file), nil
+	return orderedjson.Union(orderedjson.ObjectOf(member("results", out)), file), nil
 }
 
 // awsSpeakerLabels returns the stored speaker_labels object with the number of speakers and the runs.
@@ -72,14 +85,14 @@ func awsSpeakerLabels(stored orderedjson.Value, runs []orderedjson.Value) ordere
 		stored = orderedjson.ObjectOf()
 	}
 	return orderedjson.Replace(stored, orderedjson.ObjectOf(
-		cloudMember("speakers", orderedjson.Int(int64(awsDistinctLabels(runs)))),
-		cloudMember("segments", orderedjson.ArrayOf(runs...)),
+		member("speakers", orderedjson.Int(int64(awsDistinctLabels(runs)))),
+		member("segments", orderedjson.ArrayOf(runs...)),
 	))
 }
 
 // awsSegment returns the audio segment of the cue without its id, and the items of the cue with the ids from firstID on.
 func awsSegment(c *model.Cue, firstID int) (orderedjson.Value, []orderedjson.Value) {
-	data := cloudCueData(c, model.AWSTranscribe)
+	data := storedObject(c, awsKey)
 	groups := awsWordGroups(cloudGet(data, "items").Items())
 	startV, endV, textV := awsSourceValues(data, groups)
 	sameStart := wordgroup.SameTime(startV, time.Second, c.Start)
@@ -99,12 +112,12 @@ func awsSegment(c *model.Cue, firstID int) (orderedjson.Value, []orderedjson.Val
 		endV = orderedjson.StringValue(awsTime(c.End))
 	}
 	with := []orderedjson.Value{orderedjson.ObjectOf(
-		cloudMember("transcript", transcript), cloudMember("start_time", startV), cloudMember("end_time", endV),
+		member("transcript", transcript), member("start_time", startV), member("end_time", endV),
 	)}
 	if speaker != "" {
-		with = append(with, orderedjson.ObjectOf(cloudMember("speaker_label", orderedjson.StringValue(speaker))))
+		with = append(with, orderedjson.ObjectOf(member("speaker_label", orderedjson.StringValue(speaker))))
 	}
-	with = append(with, orderedjson.ObjectOf(cloudMember("items", orderedjson.ArrayOf(ids...))))
+	with = append(with, orderedjson.ObjectOf(member("items", orderedjson.ArrayOf(ids...))))
 	return orderedjson.Replace(data.Without("id"), with...), items
 }
 
@@ -166,7 +179,7 @@ func awsNumberItems(items []orderedjson.Value, data orderedjson.Value, speaker s
 			item = item.With("speaker_label", orderedjson.StringValue(speaker))
 		}
 		id := orderedjson.Int(int64(firstID + k))
-		first := orderedjson.ObjectOf(cloudMember("id", id))
+		first := orderedjson.ObjectOf(member("id", id))
 		out[k], ids[k] = orderedjson.Replace(first, item, first), id
 	}
 	return out, ids
@@ -314,6 +327,20 @@ func awsTyped(group []orderedjson.Value, w *model.Word) []orderedjson.Value {
 	return out
 }
 
+// awsLabel returns the speaker_label member for a speaker, or no member.
+func awsLabel(speaker string) []orderedjson.Member {
+	if speaker == "" {
+		return nil
+	}
+	return []orderedjson.Member{member("speaker_label", orderedjson.StringValue(speaker))}
+}
+
+func awsAlternative(confidence, content string) orderedjson.Member {
+	return member("alternatives", orderedjson.ArrayOf(orderedjson.ObjectOf(
+		member("confidence", orderedjson.StringValue(confidence)), member("content", orderedjson.StringValue(content)),
+	)))
+}
+
 // awsNewItems returns a pronunciation item for a word, and a punctuation item for the punctuation at its end.
 func awsNewItems(n wordgroup.NewWord, speaker string) []orderedjson.Value {
 	body := n.Text
@@ -325,28 +352,17 @@ func awsNewItems(n wordgroup.NewWord, speaker string) []orderedjson.Value {
 		body = body[:len(body)-size]
 	}
 	punct := n.Text[len(body):]
-	label := func() []orderedjson.Member {
-		if speaker == "" {
-			return nil
-		}
-		return []orderedjson.Member{cloudMember("speaker_label", orderedjson.StringValue(speaker))}
-	}
-	alternative := func(confidence, content string) orderedjson.Member {
-		return cloudMember("alternatives", orderedjson.ArrayOf(orderedjson.ObjectOf(
-			cloudMember("confidence", orderedjson.StringValue(confidence)), cloudMember("content", orderedjson.StringValue(content)),
-		)))
-	}
 	var items []orderedjson.Value
 	if body != "" || punct == "" {
 		m := make([]orderedjson.Member, 0, 5)
-		m = append(m, cloudMember("start_time", orderedjson.StringValue(awsTime(n.Start))))
-		m = append(m, label()...)
-		m = append(m, cloudMember("end_time", orderedjson.StringValue(awsTime(n.End))),
-			alternative(awsConfidenceText(n.Confidence), body), cloudMember("type", orderedjson.StringValue("pronunciation")))
+		m = append(m, member("start_time", orderedjson.StringValue(awsTime(n.Start))))
+		m = append(m, awsLabel(speaker)...)
+		m = append(m, member("end_time", orderedjson.StringValue(awsTime(n.End))),
+			awsAlternative(awsConfidenceText(n.Confidence), body), member("type", orderedjson.StringValue("pronunciation")))
 		items = append(items, orderedjson.ObjectOf(m...))
 	}
 	if punct != "" {
-		m := append(label(), alternative("0.0", punct), cloudMember("type", orderedjson.StringValue("punctuation")))
+		m := append(awsLabel(speaker), awsAlternative("0.0", punct), member("type", orderedjson.StringValue("punctuation")))
 		items = append(items, orderedjson.ObjectOf(m...))
 	}
 	return items
@@ -366,7 +382,7 @@ func awsSpeakerRuns(items []orderedjson.Value) []orderedjson.Value {
 		if start.Kind() == orderedjson.Null || end.Kind() == orderedjson.Null || label.Kind() == orderedjson.Null {
 			continue
 		}
-		entry := orderedjson.ObjectOf(cloudMember("start_time", start), cloudMember("speaker_label", label), cloudMember("end_time", end))
+		entry := orderedjson.ObjectOf(member("start_time", start), member("speaker_label", label), member("end_time", end))
 		if n := len(runs); n > 0 && orderedjson.Equal(runs[n-1].label, label) {
 			runs[n-1].end = end
 			runs[n-1].entries = append(runs[n-1].entries, entry)
@@ -377,8 +393,8 @@ func awsSpeakerRuns(items []orderedjson.Value) []orderedjson.Value {
 	out := make([]orderedjson.Value, len(runs))
 	for i, r := range runs {
 		out[i] = orderedjson.ObjectOf(
-			cloudMember("start_time", r.start), cloudMember("speaker_label", r.label), cloudMember("end_time", r.end),
-			cloudMember("items", orderedjson.ArrayOf(r.entries...)),
+			member("start_time", r.start), member("speaker_label", r.label), member("end_time", r.end),
+			member("items", orderedjson.ArrayOf(r.entries...)),
 		)
 	}
 	return out

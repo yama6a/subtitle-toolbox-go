@@ -19,7 +19,7 @@ const awsKey = string(model.AWSTranscribe)
 // ReadAWSTranscribe reads the JSON of an Amazon Transcribe batch job from r. It makes one cue per audio segment,
 // else cues grouped from the words. A field error names the path of the field, such as results.items[3].start_time.
 func ReadAWSTranscribe(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	st, root, ok, err := cloudRead(r, model.AWSTranscribe, common)
+	st, root, ok, err := readRoot(r, model.AWSTranscribe, common)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -199,9 +199,10 @@ func awsWordIDs(words []wordgroup.Word) map[string]int {
 
 func (rd *awsReader) segments(items []orderedjson.Value, words []wordgroup.Word) ([]*model.Cue, error) {
 	byID := awsWordIDs(words)
+	used := make([]bool, len(words))
 	var cues []*model.Cue
 	for i, seg := range items {
-		c, err := rd.segment(i, seg, words, byID)
+		c, err := rd.segment(i, seg, words, byID, used)
 		if err != nil {
 			return nil, err
 		}
@@ -212,21 +213,21 @@ func (rd *awsReader) segments(items []orderedjson.Value, words []wordgroup.Word)
 	return cues, nil
 }
 
-// segment makes the cue of audio segment i from the words that its item ids name.
-func (rd *awsReader) segment(i int, seg orderedjson.Value, words []wordgroup.Word, byID map[string]int) (*model.Cue, error) {
+// segment makes the cue of audio segment i from the words that its item ids name. A word that an earlier segment, or
+// the same segment, already named belongs to that one, so the cost of damaged input stays linear.
+func (rd *awsReader) segment(i int, seg orderedjson.Value, words []wordgroup.Word, byID map[string]int, used []bool) (*model.Cue, error) {
 	start, end, text, err := awsSegmentFields(seg, "results.audio_segments["+strconv.Itoa(i)+"]")
 	if err != nil {
 		return nil, cloudFail(rd.st, err, i, seg)
 	}
 	var segWords []wordgroup.Word
 	var raw []orderedjson.Value
-	last := -1
 	for _, id := range cloudGet(seg, "items").Items() {
 		key, ok := idKey(id)
-		if k, found := byID[key]; ok && found && k != last {
+		if k, found := byID[key]; ok && found && !used[k] {
 			segWords = append(segWords, words[k])
 			raw = append(raw, words[k].Source...)
-			last = k
+			used[k] = true
 		}
 	}
 	speaker, _ := wordgroup.Speaker(cloudGet(seg, "speaker_label"))

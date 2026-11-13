@@ -8,8 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -85,7 +83,7 @@ func TestReadAWSTranscribeCues(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, cloudDescribe(awsFormat.parse(t, tt.content, tt.opts)))
+			assert.Equal(t, tt.want, describe(awsFormat.parse(t, tt.content, tt.opts)))
 		})
 	}
 }
@@ -95,12 +93,12 @@ func TestReadAWSTranscribeData(t *testing.T) {
 
 	s := awsFormat.parse(t, awsHelloWorld, transcript.ReadOptions{})
 	file, _ := s.FormatData("aws-transcribe")
-	assert.JSONEq(t, `{"jobName":"lecture-12"}`, awsJSONOf(file))
+	assert.JSONEq(t, `{"jobName":"lecture-12"}`, jsonOf(file))
 	c, _ := s.Cue(0)
 	cue, _ := c.FormatData("aws-transcribe")
 	assert.JSONEq(t, `{"items":[{"type":"pronunciation","start_time":"0.04","end_time":"0.51","alternatives":[{"confidence":"0.99","content":"Hello"}]},`+
 		`{"type":"pronunciation","start_time":"0.51","end_time":"0.98","alternatives":[{"confidence":"0.98","content":"world"}]},`+
-		`{"type":"punctuation","alternatives":[{"confidence":"0.0","content":"."}]}]}`, awsJSONOf(cue))
+		`{"type":"punctuation","alternatives":[{"confidence":"0.0","content":"."}]}]}`, jsonOf(cue))
 
 	s = awsFormat.parseFile(t, "library_speakers_language_id.json", transcript.ReadOptions{})
 	file, _ = s.FormatData("aws-transcribe")
@@ -108,17 +106,9 @@ func TestReadAWSTranscribeData(t *testing.T) {
 	results, _ := file.Get("results")
 	assert.JSONEq(t, `{"speaker_labels":{"channel_label":"ch_0","speakers":2},"language_code":"en-GB",`+
 		`"language_identification":[{"score":"0.9871","code":"en-GB"},{"score":"0.0102","code":"en-AU"},{"score":"0.0027","code":"en-US"}]}`,
-		awsJSONOf(results))
+		jsonOf(results))
 	language, _ := s.Metadata(model.MetadataLanguage)
 	assert.Equal(t, "en-GB", language)
-}
-
-func awsJSONOf(v any) string {
-	out, err := jsondata.FromData(v)
-	if err != nil {
-		return err.Error()
-	}
-	return orderedjson.Block(out)
 }
 
 func TestReadAWSTranscribeErrors(t *testing.T) {
