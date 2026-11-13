@@ -196,6 +196,8 @@ func TestConvertWritesTheFormatOfTo(t *testing.T) {
 		{"itt/real/fcp_23976_styles.itt", stbox.WebVTT},
 		{"scc/real/popon_broadcast_df.scc", stbox.SubRip},
 		{"stl/real/bakery_teletext_25fps.stl", stbox.SubRip},
+		{"whisper/real/whisperx_diarize.json", stbox.SubRip},
+		{"youtube/real/auto.en.json3", stbox.WebVTT},
 	}
 	for _, tt := range tests {
 		t.Run(tt.path, func(t *testing.T) {
@@ -735,7 +737,7 @@ func TestConvertUsageErrors(t *testing.T) {
 
 	trip := []string{"convert", "trip.srt", "--to", "srt", "-o", "-"}
 	timeMsg := "needs seconds or a timecode such as 00:01:02.500, got"
-	wrapLimits := "Pass --structure-wrap or --structure-merge-short with"
+	wrapLimits := "Pass --structure-wrap, --structure-resegment, --structure-merge-short or --structure-split-long with"
 	minGap := "Pass --timing-fix-overlaps, --timing-min-duration, --timing-lead-in or --timing-lead-out with --timing-min-gap."
 	tests := []struct {
 		name  string
