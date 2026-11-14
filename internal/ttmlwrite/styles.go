@@ -121,7 +121,7 @@ func StylingAttributes(n *xmlraw.Node) Properties {
 // Apply returns s with the properties applied. See https://www.w3.org/TR/ttml2/#semantics-style-resolution-processing-sss.
 func (s Style) Apply(props Properties) Style {
 	for name, value := range props {
-		value = strings.Trim(value, markupcore.PHPTrimSet)
+		value = strings.Trim(value, markupcore.TrimSet)
 		switch name {
 		case "fontWeight":
 			s.bold = value == "bold"
@@ -142,7 +142,7 @@ func (s Style) Apply(props Properties) Style {
 // normalizeColor returns a color as "#rrggbb" without its alpha channel, because core markup has none, or "".
 // See https://www.w3.org/TR/ttml2/#style-value-color.
 func normalizeColor(color string) string {
-	color = markupcore.ASCIILower(strings.Trim(color, markupcore.PHPTrimSet))
+	color = markupcore.ASCIILower(strings.Trim(color, markupcore.TrimSet))
 	if m := hexColorRegexp.FindStringSubmatch(color); m != nil {
 		return "#" + m[1]
 	}

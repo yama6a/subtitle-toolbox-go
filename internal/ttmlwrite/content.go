@@ -70,7 +70,7 @@ func (w *writer) content(text, speaker string, inherited Style) (agent string, h
 func dropSpeakerTags(tokens []string) []string {
 	for i := 0; i < len(tokens); i++ {
 		if i%2 == 0 {
-			if strings.Trim(tokens[i], markupcore.PHPTrimSet) != "" {
+			if strings.Trim(tokens[i], markupcore.TrimSet) != "" {
 				break
 			}
 			continue
@@ -84,7 +84,7 @@ func dropSpeakerTags(tokens []string) []string {
 		}
 	}
 	for i := len(tokens) - 2; i >= 1; i -= 2 {
-		if strings.Trim(tokens[i+1], markupcore.PHPTrimSet) != "" {
+		if strings.Trim(tokens[i+1], markupcore.TrimSet) != "" {
 			break
 		}
 		if tokens[i] == "</v>" {
@@ -98,19 +98,19 @@ func dropSpeakerTags(tokens []string) []string {
 // paragraphAgent takes the speaker out of the tokens when one <v> tag after blank text starts the text and the text
 // holds no other <v> tag.
 func paragraphAgent(tokens []string, text string) (string, bool, []string) {
-	if len(tokens) < 2 || strings.Trim(tokens[0], markupcore.PHPTrimSet) != "" || len(voiceTagsRegexp.FindAllStringIndex(text, 2)) != 1 {
+	if len(tokens) < 2 || strings.Trim(tokens[0], markupcore.TrimSet) != "" || len(voiceTagsRegexp.FindAllStringIndex(text, 2)) != 1 {
 		return "", false, tokens
 	}
 	m := paragraphVoiceRegexp.FindStringSubmatch(tokens[1])
 	if m == nil {
 		return "", false, tokens
 	}
-	return markupcore.DecodeEntities(strings.Trim(m[2], markupcore.PHPTrimSet)), true, tokens[2:]
+	return markupcore.DecodeEntities(strings.Trim(m[2], markupcore.TrimSet)), true, tokens[2:]
 }
 
 func (c *converter) text(token string) {
 	c.b.WriteString(c.w.text(token))
-	if strings.Trim(token, markupcore.PHPTrimSet) != "" {
+	if strings.Trim(token, markupcore.TrimSet) != "" {
 		c.resets.add(c.inherited, c.stack)
 	}
 }
@@ -154,7 +154,7 @@ func (w *writer) openSpan(tag, rest string) (string, bool) {
 	case "c":
 		return w.classSpan(rest), true
 	case "v":
-		name := markupcore.DecodeEntities(strings.Trim(voiceClassRegexp.ReplaceAllLiteralString(rest, ""), markupcore.PHPTrimSet))
+		name := markupcore.DecodeEntities(strings.Trim(voiceClassRegexp.ReplaceAllLiteralString(rest, ""), markupcore.TrimSet))
 		if name == "" {
 			return "", true
 		}
@@ -166,7 +166,7 @@ func (w *writer) openSpan(tag, rest string) (string, bool) {
 
 func (w *writer) fontSpan(rest string) string {
 	color, _ := markupcore.FontColor(rest)
-	color = markupcore.DecodeEntities(strings.Trim(color, markupcore.PHPTrimSet))
+	color = markupcore.DecodeEntities(strings.Trim(color, markupcore.TrimSet))
 	// A value that TTMLColor cannot read stays as written, so no color drops.
 	if c, ok := markupcore.TTMLColor(color); ok {
 		color = c

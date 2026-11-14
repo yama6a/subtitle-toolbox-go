@@ -52,7 +52,7 @@ func readEntries(st *parsing.State, content string) ([]entry, error) {
 	var entries []entry
 	block := -1
 	for n, raw := range parsing.Lines(content) {
-		raw = strings.Trim(raw, markupcore.PHPTrimSet)
+		raw = strings.Trim(raw, markupcore.TrimSet)
 		if raw == "" {
 			continue
 		}

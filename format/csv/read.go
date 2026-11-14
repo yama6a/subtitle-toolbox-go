@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/phpkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/stringlist"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -322,9 +322,9 @@ func (rd *reader) millisecondTimes(recs []record, roles layout) bool {
 		}
 		switch {
 		case start != "" && end != "":
-			durations = append(durations, phpkey.DigitsToInt(end)-phpkey.DigitsToInt(start))
+			durations = append(durations, intkey.DigitsToInt(end)-intkey.DigitsToInt(start))
 		case duration != "":
-			durations = append(durations, phpkey.DigitsToInt(duration))
+			durations = append(durations, intkey.DigitsToInt(duration))
 		}
 	}
 	if len(durations) == 0 {
@@ -339,7 +339,7 @@ func (rd *reader) millisecondTimes(recs []record, roles layout) bool {
 	return true
 }
 
-// medianOf returns the median of values and its text as PHP prints the number. The median of an even count is
+// medianOf returns the median of values and its text in the shortest form of the number. The median of an even count is
 // the mean of the 2 middle values.
 func medianOf(values []int64) (float64, string) {
 	slices.Sort(values)
@@ -403,8 +403,7 @@ func (rd *reader) end(rec record, roles layout, start time.Duration, millis bool
 }
 
 // otherCells returns the cells of the columns without a role, keyed by header name, else by column index. A short
-// row is padded with "" up to the header width. The result is a list when its keys are 0 to n-1 in order, as PHP
-// encodes such an array, else an object. It is nil when no cell is left.
+// row is padded with "" up to the header width. The result is a list when its keys are 0 to n-1 in order, else an object. It is nil when no cell is left.
 func otherCells(cells []string, roles layout, header *record) any {
 	width := len(cells)
 	if header != nil {
@@ -507,5 +506,5 @@ func (rd *reader) join(cells []string) string {
 }
 
 func trim(s string) string {
-	return strings.Trim(s, markupcore.PHPTrimSet)
+	return strings.Trim(s, markupcore.TrimSet)
 }

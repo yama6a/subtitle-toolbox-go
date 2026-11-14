@@ -570,7 +570,7 @@ func fontColor(tag string) string {
 func baseOf(font []attr) baseStyle {
 	values := map[string]string{}
 	for _, a := range font {
-		values[markupcore.ASCIILower(a.name)] = markupcore.ASCIILower(strings.Trim(a.value, markupcore.PHPTrimSet))
+		values[markupcore.ASCIILower(a.name)] = markupcore.ASCIILower(strings.Trim(a.value, markupcore.TrimSet))
 	}
 	b := baseStyle{color: "ffffff", bold: values["weight"] == "bold"}
 	if m := colorRegexp.FindStringSubmatch(values["color"]); m != nil {

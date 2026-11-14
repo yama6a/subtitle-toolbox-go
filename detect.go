@@ -42,7 +42,7 @@ func detectFormat(content []byte) (Format, bool) {
 			return s.format, true
 		}
 	}
-	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.PHPTrimSet)
+	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.TrimSet)
 	if len(content) > 0 && content[0] == '{' {
 		if keys, ok := jsonKeys(content); ok {
 			for _, c := range jsonChecks {
@@ -88,13 +88,12 @@ func lfLineEnds(content []byte) []byte {
 	return out
 }
 
-// isBlank reports whether content holds nothing but UTF-8 BOMs and the bytes of PHP trim.
+// isBlank reports whether content holds nothing but UTF-8 BOMs and the bytes of markupcore.TrimSet.
 func isBlank(content []byte) bool {
-	return len(bytes.Trim(textenc.TrimUTF8BOMs(content), markupcore.PHPTrimSet)) == 0
+	return len(bytes.Trim(textenc.TrimUTF8BOMs(content), markupcore.TrimSet)) == 0
 }
 
-// jsonKeys returns the top-level keys of a JSON object, each with its compact JSON. PHP json_decode fails on
-// what orderedjson rejects, such as a lone surrogate escape or 512 nested levels, so such a document goes on
+// jsonKeys returns the top-level keys of a JSON object, each with its compact JSON. A document that orderedjson rejects, such as a lone surrogate escape or 512 nested levels, goes on
 // to the text signatures.
 func jsonKeys(content []byte) (map[string]json.RawMessage, bool) {
 	v, err := orderedjson.Decode(content)

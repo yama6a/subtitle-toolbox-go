@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/phpkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/stringlist"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -118,7 +118,7 @@ type sampler struct {
 func (rd *reader) samples(lines []string, offset int) ([]sample, bool, error) {
 	sp := &sampler{rd: rd}
 	for i, line := range lines {
-		trimmed := strings.Trim(line, markupcore.PHPTrimSet)
+		trimmed := strings.Trim(line, markupcore.TrimSet)
 		m := timestampRegexp.FindStringSubmatch(trimmed)
 		if m == nil {
 			sp.addText(line, trimmed)
@@ -157,7 +157,7 @@ func (sp *sampler) addStamp(m []string, line, trimmed string, number int) error 
 	sp.blank = false
 	sp.previous = start
 	sm := sample{start: start, line: number}
-	if rest := trimmed[len(m[0]):]; strings.Trim(rest, markupcore.PHPTrimSet) != "" {
+	if rest := trimmed[len(m[0]):]; strings.Trim(rest, markupcore.TrimSet) != "" {
 		sm.lines = []string{rest}
 	}
 	sp.samples = append(sp.samples, sm)
@@ -210,7 +210,7 @@ func (rd *reader) time(m []string, line int) (time.Duration, error) {
 	text, fraction := m[0][1:len(m[0])-1], m[4]
 	var units int64
 	if rd.scale > 0 && fraction != "" {
-		units = phpkey.DigitsToInt(fraction)
+		units = intkey.DigitsToInt(fraction)
 		if units >= rd.scale {
 			msg := fmt.Sprintf("The timestamp %q counts %s units, but the time scale is %d per second.", m[0], fraction, rd.scale)
 			if !rd.st.Lenient() {
@@ -220,11 +220,11 @@ func (rd *reader) time(m []string, line int) (time.Duration, error) {
 		}
 	}
 
-	hours := phpkey.DigitsToInt(m[1])
+	hours := intkey.DigitsToInt(m[1])
 	if hours >= timecode.MaxHours {
 		return parsing.BoundedTime(timecode.MaxTime, text, line)
 	}
-	ms := ((hours*60+phpkey.DigitsToInt(m[2]))*60 + phpkey.DigitsToInt(m[3])) * 1000
+	ms := ((hours*60+intkey.DigitsToInt(m[2]))*60 + intkey.DigitsToInt(m[3])) * 1000
 	switch {
 	case fraction == "":
 	case rd.scale == 0:

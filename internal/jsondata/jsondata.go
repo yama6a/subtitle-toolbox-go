@@ -10,7 +10,7 @@ import (
 )
 
 // ToData returns the model.Data value of v: nil, bool, int64, float64, string, []any or *model.Data.
-// A number outside int64 or float64 range reads as PHP reads it: a float, with an infinity for 1e400.
+// A number outside int64 or float64 range reads as a float, with an infinity for 1e400.
 func ToData(v orderedjson.Value) any {
 	switch v.Kind() {
 	case orderedjson.Bool:

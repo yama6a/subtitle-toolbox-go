@@ -46,11 +46,11 @@ func (o Options) Validate() error {
 	switch {
 	case !httppost.ValidBaseURL(o.BaseURL):
 		return invalid("BaseURL", fmt.Sprintf("The base URL must start with http:// or https://, got %q.", o.BaseURL))
-	case strings.Trim(o.Model, markupcore.PHPTrimSet) == "":
+	case strings.Trim(o.Model, markupcore.TrimSet) == "":
 		return invalid("Model", "The model must not be empty. Pass a model name such as gpt-4o-mini or llama3.")
 	case o.APIKey != "" && !httppost.CleanKey(o.APIKey):
 		return invalid("APIKey", "The API key must not be empty, have a control character, or a space at the start or end. Leave it empty for a service without a key.")
-	case o.Prompt != "" && strings.Trim(o.Prompt, markupcore.PHPTrimSet) == "":
+	case o.Prompt != "" && strings.Trim(o.Prompt, markupcore.TrimSet) == "":
 		return invalid("Prompt", "The prompt must not be empty. Leave it empty for the built-in prompt.")
 	}
 	return nil
@@ -217,7 +217,7 @@ func answerText(answer []byte) string {
 		return ""
 	}
 	for _, field := range []string{"content", "reasoning", "reasoning_content"} {
-		if s, ok := first.Message[field].(string); ok && strings.Trim(s, markupcore.PHPTrimSet) != "" {
+		if s, ok := first.Message[field].(string); ok && strings.Trim(s, markupcore.TrimSet) != "" {
 			return s
 		}
 	}

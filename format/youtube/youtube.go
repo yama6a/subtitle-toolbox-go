@@ -61,7 +61,7 @@ func DetectJSON(keys map[string]json.RawMessage) bool {
 
 // isJSON reports whether content is json3: it starts with "{" after BOMs and white space.
 func isJSON(content []byte) bool {
-	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.PHPTrimSet)
+	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.TrimSet)
 	return len(content) > 0 && content[0] == '{'
 }
 
@@ -89,4 +89,4 @@ func stringOf(v orderedjson.Value) string {
 	return s
 }
 
-func trimSpace(s string) string { return strings.Trim(s, markupcore.PHPTrimSet) }
+func trimSpace(s string) string { return strings.Trim(s, markupcore.TrimSet) }

@@ -212,7 +212,7 @@ func (rd *reader) addSets(sets [][][]byte) {
 func (rd *reader) addComment(lines []string, hexes []any) {
 	var kept []string
 	for _, l := range lines {
-		if l = strings.Trim(l, markupcore.PHPTrimSet); l != "" {
+		if l = strings.Trim(l, markupcore.TrimSet); l != "" {
 			kept = append(kept, l)
 		}
 	}

@@ -130,7 +130,7 @@ func (rd *reader) read(s *model.Subtitle) error {
 // readHead reads the title into s, and the SAMIParam and STYLE blocks into data. It returns the classes of STYLE.
 func (rd *reader) readHead(s *model.Subtitle, data *model.Data) styleClasses {
 	if m := titleRegexp.FindStringSubmatch(rd.content); m != nil {
-		if title := strings.Trim(m[1], markupcore.PHPTrimSet); title != "" {
+		if title := strings.Trim(m[1], markupcore.TrimSet); title != "" {
 			s.SetMetadata(model.MetadataTitle, markupcore.DecodeEntities(title))
 		}
 	}
@@ -152,7 +152,7 @@ func readClasses(style string) styleClasses {
 		lang := ""
 		for declaration := range strings.SplitSeq(m[2], ";") {
 			name, value, ok := strings.Cut(declaration, ":")
-			if ok && markupcore.ASCIILower(strings.Trim(name, markupcore.PHPTrimSet)) == "lang" {
+			if ok && markupcore.ASCIILower(strings.Trim(name, markupcore.TrimSet)) == "lang" {
 				lang = strings.Trim(value, " \t\n\"'")
 			}
 		}
@@ -234,7 +234,7 @@ func (rd *reader) syncBlock(chunk string, index, line int) (syncBlock, bool, err
 	lines := func() []string {
 		var out []string
 		for l := range strings.SplitSeq("<SYNC"+chunk, "\n") {
-			if l = strings.Trim(l, markupcore.PHPTrimSet); l != "" {
+			if l = strings.Trim(l, markupcore.TrimSet); l != "" {
 				out = append(out, l)
 			}
 		}
@@ -348,7 +348,7 @@ func (rd *reader) classLine(class string) (int, []string) {
 		return model.NoLine, nil
 	}
 	match := rd.content[start+loc[0] : start+loc[1]]
-	return 1 + strings.Count(rd.content[:start+loc[0]], "\n"), []string{strings.Trim(match, markupcore.PHPTrimSet)}
+	return 1 + strings.Count(rd.content[:start+loc[0]], "\n"), []string{strings.Trim(match, markupcore.TrimSet)}
 }
 
 // cues returns a cue for each block whose paragraphs of the class hold lines. A cue ends at the next block that
@@ -432,7 +432,7 @@ func (rd *reader) textLine() (int, bool) {
 			i = end
 			continue
 		}
-		if strings.IndexByte(markupcore.PHPTrimSet, c[i]) < 0 {
+		if strings.IndexByte(markupcore.TrimSet, c[i]) < 0 {
 			return 1 + strings.Count(c[:i], "\n"), true
 		}
 		i++
@@ -440,7 +440,7 @@ func (rd *reader) textLine() (int, bool) {
 	return 0, false
 }
 
-// markupFinder finds the matches of /<HEAD\b.*?<\/HEAD\s*>|<!--.*?-->|<[^>]*>|&nbsp;/is of PHP in linear time.
+// markupFinder finds the matches of /<HEAD\b.*?<\/HEAD\s*>|<!--.*?-->|<[^>]*>|&nbsp;/is in linear time.
 type markupFinder struct {
 	heads, comments, tags finder
 }

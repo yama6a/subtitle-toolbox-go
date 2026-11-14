@@ -36,7 +36,7 @@ func readParagraphs(content string) []paragraph {
 		loose = append(loose, n)
 		looseText.WriteString(textContent(n))
 	}
-	if paragraphs == nil || strings.Trim(strings.ReplaceAll(looseText.String(), nbsp, " "), markupcore.PHPTrimSet) != "" {
+	if paragraphs == nil || strings.Trim(strings.ReplaceAll(looseText.String(), nbsp, " "), markupcore.TrimSet) != "" {
 		wrapper := &node{kind: elementNode, name: "p", children: loose}
 		paragraphs = append([]paragraph{newParagraph(wrapper)}, paragraphs...)
 	}
@@ -77,11 +77,11 @@ func newParagraph(p *node) paragraph {
 	for _, c := range p.children {
 		serialize(&html, c)
 	}
-	para.html = strings.Trim(html.String(), markupcore.PHPTrimSet)
+	para.html = strings.Trim(html.String(), markupcore.TrimSet)
 	var text strings.Builder
 	markup(&text, p.children)
 	for line := range strings.SplitSeq(text.String(), "\n") {
-		line = strings.Trim(line, markupcore.PHPTrimSet)
+		line = strings.Trim(line, markupcore.TrimSet)
 		if strings.Trim(line, " "+nbsp) != "" {
 			para.lines = append(para.lines, line)
 		}
@@ -152,7 +152,7 @@ func fontColor(font *node) (string, bool) {
 			value = a.value
 		}
 	}
-	value = markupcore.ASCIILower(strings.Trim(value, markupcore.PHPTrimSet))
+	value = markupcore.ASCIILower(strings.Trim(value, markupcore.TrimSet))
 	if m := hexColorRegexp.FindStringSubmatch(value); m != nil {
 		return "#" + m[1], true
 	}

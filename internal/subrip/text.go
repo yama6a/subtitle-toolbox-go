@@ -100,7 +100,7 @@ func overrideTags(content string) []string {
 	}
 }
 
-// toggle reads a tag such as \b1 or \i0. One final LF after it passes, as the PHP pattern end $ allows it.
+// toggle reads a tag such as \b1 or \i0. One final LF after it passes, as the PCRE pattern end $ allows it.
 func toggle(tag string) (name string, on, ok bool) {
 	tag = strings.TrimSuffix(tag, "\n")
 	if len(tag) != len(`\b1`) || !strings.ContainsRune("bius", rune(tag[1])) || tag[2] != '0' && tag[2] != '1' {

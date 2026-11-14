@@ -174,7 +174,7 @@ func buildErrors(a *args, add func(edit)) error {
 	optional := fixing.OptionalRules()
 	names, _ := a.Value("errors-enable")
 	for name := range strings.SplitSeq(names, ",") {
-		name = strings.Trim(name, markupcore.PHPTrimSet)
+		name = strings.Trim(name, markupcore.TrimSet)
 		if name == "" {
 			continue
 		}
@@ -227,8 +227,8 @@ func (e *errorsEdit) apply(_ context.Context, s *stbox.Subtitle, c *console, lab
 	return s, nil
 }
 
-// jsonString writes s as a JSON string as PHP does with JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE and
-// JSON_INVALID_UTF8_SUBSTITUTE.
+// jsonString writes s as a JSON string. It does not escape "/" or non-ASCII characters.
+// Invalid UTF-8 becomes U+FFFD.
 func jsonString(s string) string {
 	var b strings.Builder
 	enc := json.NewEncoder(&b)
@@ -863,7 +863,7 @@ func (m *maskingEdit) loadWords(c *console) error {
 		text = strings.TrimPrefix(text, "\ufeff")
 	}
 	for _, line := range parsing.Lines(text) {
-		if word := strings.Trim(line, markupcore.PHPTrimSet); word != "" {
+		if word := strings.Trim(line, markupcore.TrimSet); word != "" {
 			m.opts.Words = append(m.opts.Words, word)
 		}
 	}
@@ -909,7 +909,7 @@ func buildKaraoke(a *args, add func(edit)) error {
 	}
 	style, hasStyle := a.Value("karaoke-style")
 	if hasStyle && style == "" {
-		// The library reads an empty Style as u, but PHP rejects an empty --karaoke-style.
+		// The library reads an empty Style as u, but the CLI rejects an empty --karaoke-style.
 		return usage("The style  must be one of the core markup tags b, i, u, s or font, for example u or font color=\"#ffff00\".")
 	}
 	opts := karaoke.Options{Style: style}
@@ -948,7 +948,7 @@ func assWriteOptions(a *args) (ass.WriteOptions, bool, error) {
 	}
 	style, hasStyle := a.Value("ass-style")
 	if hasStyle && style == "" {
-		// The library reads an empty Style as no change, but PHP rejects an empty --ass-style.
+		// The library reads an empty Style as no change, but the CLI rejects an empty --ass-style.
 		return ass.WriteOptions{}, false, usage(`The option --ass-style is not valid. The ASS style "" must hold Field=Value pairs such as Fontsize=48, got "".`)
 	}
 	opts := ass.WriteOptions{KaraokeTag: ass.KaraokeTag(tag), Style: style}

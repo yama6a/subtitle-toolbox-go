@@ -183,7 +183,7 @@ func matchesPattern(pattern, name string) bool {
 		return false
 	}
 	digits, ok = strings.CutSuffix(digits, suffix)
-	// sscanf of PHP skips the spaces that a width such as %3d pads with. The comparison below rejects other padding.
+	// The width padding of sscanf skips the spaces that a width such as %3d pads with. The comparison below rejects other padding.
 	if digits = strings.TrimLeft(digits, " "); !ok || !timecode.IsDigits(digits) {
 		return false
 	}

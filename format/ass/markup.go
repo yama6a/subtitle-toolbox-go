@@ -77,7 +77,7 @@ func (m *textMarkup) convert(text string, start time.Duration, hardBreak bool) (
 	for _, loc := range append(overrideBlockRegexp.FindAllStringIndex(text, -1), []int{len(text), len(text)}) {
 		if !m.drawing && loc[0] > at {
 			m.b.WriteString(breaks.Replace(markupcore.EscapeText(text[at:loc[0]])))
-			if n := len(m.syllables); n > 0 && phpTrim(text[at:loc[0]]) != "" {
+			if n := len(m.syllables); n > 0 && trim(text[at:loc[0]]) != "" {
 				m.syllables[n-1].hasText = true
 			}
 		}
@@ -148,7 +148,7 @@ func (m *textMarkup) tag(tag string) error {
 func (m *textMarkup) reset(name string) {
 	m.closeAll()
 	next := m.style
-	if phpTrim(name) != "" {
+	if trim(name) != "" {
 		if s, ok := findStyle(m.styles, name); ok {
 			next = s
 		}
@@ -183,13 +183,13 @@ func overrideTags(content string) []string {
 	var tags []string
 	for i := strings.IndexByte(content, '\\'); i >= 0 && i < len(content); {
 		end := tagEnd(content, i)
-		tags = append(tags, phpTrim(content[i:end]))
+		tags = append(tags, trim(content[i:end]))
 		i = end
 	}
 	return tags
 }
 
-// tagEnd returns the end of the tag at start. It follows the PHP pattern /\\[^\\(]*(\((?:[^()]++|(?1))*\))?[^\\]*/,
+// tagEnd returns the end of the tag at start. It follows the PCRE pattern /\\[^\\(]*(\((?:[^()]++|(?1))*\))?[^\\]*/,
 // whose recursion RE2 lacks.
 func tagEnd(content string, start int) int {
 	i := start + 1

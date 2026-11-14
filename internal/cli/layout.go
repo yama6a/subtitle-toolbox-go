@@ -7,7 +7,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 )
 
-// helpWidth is the line width of the help in bytes, as PHP strlen counts. All help text is ASCII.
+// helpWidth is the line width of the help in bytes. All help text is ASCII.
 const helpWidth = 80
 
 // usageWord is a word of a usage line that the wrap keeps whole: a [...] group, an --option VALUE pair, or a
@@ -81,5 +81,5 @@ func wrapWords(words []string, prefix, nextPrefix string) string {
 }
 
 func rtrim(s string) string {
-	return strings.TrimRight(s, markupcore.PHPTrimSet)
+	return strings.TrimRight(s, markupcore.TrimSet)
 }

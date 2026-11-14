@@ -149,7 +149,7 @@ func readGSI(block []byte) gsiValues {
 	return values
 }
 
-// fieldInt reads a GSI number the way the PHP (int) cast does. It skips leading white space, reads an optional
+// fieldInt reads a GSI number. It skips leading white space, reads an optional
 // sign and the leading digits, and gives 0 when there are none. So "2x" is 2.
 func fieldInt(s string) int {
 	s = strings.TrimLeft(s, " \t\n\r\v\f")

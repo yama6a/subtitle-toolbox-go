@@ -126,12 +126,12 @@ func titleCase(char string, turkic bool) string {
 	return cases.Title(language.Und).String(char)
 }
 
-// asciiLower lowers A to Z only, as PHP strtolower does. It keeps every other byte, also of invalid UTF-8.
+// asciiLower lowers A to Z only. It keeps every other byte, also of invalid UTF-8.
 func asciiLower(s string) string {
 	return asciiMap(s, 'A', 'Z', 'a'-'A')
 }
 
-// asciiUpper raises a to z only, as PHP strtoupper does. It keeps every other byte, also of invalid UTF-8.
+// asciiUpper raises a to z only. It keeps every other byte, also of invalid UTF-8.
 func asciiUpper(s string) string {
 	return asciiMap(s, 'a', 'z', 'A'-'a')
 }

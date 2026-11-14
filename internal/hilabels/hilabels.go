@@ -18,8 +18,8 @@ import (
 // hspace is the PCRE class \h.
 const hspace = `[\t \x{A0}\x{1680}\x{180E}\x{2000}-\x{200A}\x{202F}\x{205F}\x{3000}]`
 
-// The PHP upper case pattern starts with a lookahead for an upper case letter. Remove checks the captured
-// label for one in its place.
+// The upper case pattern has no lookahead for an upper case letter. Remove checks the captured
+// label for one instead.
 var (
 	upperLabel = regexp.MustCompile(labelPattern(`[\p{Lu}\p{N}][\p{Lu}\p{N}.'&-]*(?:` + hspace + `[\p{Lu}\p{N}.'&-]+){0,3}`))
 	anyLabel   = regexp.MustCompile(labelPattern(`\p{Lu}[\p{L}\p{N}.'&-]*(?:` + hspace + `[\p{L}\p{N}.'&-]+){0,3}`))
@@ -212,8 +212,8 @@ func RemoveEmptied(original, lines []string) []string {
 }
 
 func emptied(was, line string) bool {
-	t := strings.Trim(visibleLine(line), markupcore.PHPTrimSet)
-	return strings.Trim(was, markupcore.PHPTrimSet) != "" && (t == "" || t == "-")
+	t := strings.Trim(visibleLine(line), markupcore.TrimSet)
+	return strings.Trim(was, markupcore.TrimSet) != "" && (t == "" || t == "-")
 }
 
 func tagsOf(line string) string {

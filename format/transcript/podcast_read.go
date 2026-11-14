@@ -118,8 +118,8 @@ func readPodcastItem(item orderedjson.Value, path string) (podcastItem, *model.P
 		start:   start,
 		end:     end,
 		hasEnd:  endState == validTime,
-		speaker: strings.Trim(speaker, markupcore.PHPTrimSet),
-		body:    strings.Trim(collapseSpace(body), markupcore.PHPTrimSet),
+		speaker: strings.Trim(speaker, markupcore.TrimSet),
+		body:    strings.Trim(collapseSpace(body), markupcore.TrimSet),
 		other:   item.Without("speaker", "startTime", "endTime", "body"),
 	}, nil
 }

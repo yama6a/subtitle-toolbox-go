@@ -20,8 +20,8 @@ const MaxValidTime = MaxTime - time.Millisecond
 // stays a time for the next retiming.
 const MaxRetimed = 2562047*time.Hour - time.Millisecond
 
-// FromSeconds rounds seconds to whole nanoseconds, then to whole milliseconds, half away from zero. This gives the
-// value of PHP round($seconds, 3) for the times of the read goldens. secs must be below MaxTime in size.
+// FromSeconds rounds seconds to whole nanoseconds, then to whole milliseconds, half away from zero. This gives
+// round(secs, 3) for the times of the read goldens. secs must be below MaxTime in size.
 func FromSeconds(secs float64) time.Duration {
 	return time.Duration(math.Round(secs * 1e9)).Round(time.Millisecond)
 }
@@ -33,7 +33,7 @@ func TimeLimitMessage(n int, end float64) string {
 		strconv.Itoa(MaxHours) + " hours."
 }
 
-// Seconds writes d in seconds as PHP prints a float, so 3 s gives "3" and 1.5 s gives "1.5".
+// Seconds writes d in seconds in the shortest form, so 3 s gives "3" and 1.5 s gives "1.5".
 func Seconds(d time.Duration) string {
 	return Number(d.Seconds())
 }
@@ -43,8 +43,8 @@ func FloatSeconds(d time.Duration) float64 {
 	return float64(d.Milliseconds()) / 1000
 }
 
-// Number writes f as PHP prints a float: 14 significant digits, no trailing zeros, and "NAN", "INF" or "-INF".
-// A value from 1e14 on or below 1e-4 in size gets the exponent form of strconv, such as "8e+300" where PHP writes "8.0E+300".
+// Number writes f with 14 significant digits, no trailing zeros, and "NAN", "INF" or "-INF".
+// A value from 1e14 on or below 1e-4 in size gets the exponent form of strconv, such as "8e+300".
 func Number(f float64) string {
 	switch {
 	case math.IsNaN(f):

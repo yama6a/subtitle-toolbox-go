@@ -75,7 +75,7 @@ func headerTags(s *model.Subtitle, data *model.Data, version Version) []tag {
 	return tags
 }
 
-// storedHeader returns the stored header tags. A header stored as a list has the keys 0, 1 and so on, as in PHP.
+// storedHeader returns the stored header tags. A header stored as a list has the keys 0, 1 and so on.
 func storedHeader(data *model.Data) ([]tag, bool) {
 	v, ok := data.Get("header")
 	if !ok {
@@ -108,7 +108,7 @@ func appendVersion1(body []byte, s *model.Subtitle, tags []tag) []byte {
 		if t.key == "DELAY" {
 			value = "0" // the reader added the delay to the times
 		}
-		trimmed := strings.Trim(value, markupcore.PHPTrimSet)
+		trimmed := strings.Trim(value, markupcore.TrimSet)
 		body = append(body, '[')
 		body = append(body, t.key...)
 		body = append(body, ']')
@@ -157,7 +157,7 @@ func appendVersion2(body []byte, s *model.Subtitle, tags []tag, data *model.Data
 	}
 	body = append(body, "[END INFORMATION]\n[SUBTITLE]\n"...)
 	if style, ok := data.String("style"); ok {
-		style = strings.Trim(lineBreaks.Replace(style), markupcore.PHPTrimSet)
+		style = strings.Trim(lineBreaks.Replace(style), markupcore.TrimSet)
 		if isStyleLine(style) && !looksLikeTimingLine(style) {
 			body = append(body, style...)
 			body = append(body, '\n')
@@ -228,13 +228,13 @@ var lineBreaks = strings.NewReplacer("\r", " ", "\n", " ") //nolint:gochecknoglo
 // validKey reports whether the reader reads the tag key back as the same key: 1 or more characters without ], no
 // white space at the ends, and no lower-case ASCII letters.
 func validKey(key string) bool {
-	return key != "" && !strings.ContainsAny(key, "]\r\n") && key == strings.Trim(key, markupcore.PHPTrimSet) && key == asciiUpper(key)
+	return key != "" && !strings.ContainsAny(key, "]\r\n") && key == strings.Trim(key, markupcore.TrimSet) && key == asciiUpper(key)
 }
 
 // readsAsHeader reports whether the reader takes line as a header line of SubViewer 2. It does not when the line is a
 // style line or looks like a timing line.
 func readsAsHeader(line string) bool {
-	line = strings.Trim(line, markupcore.PHPTrimSet)
+	line = strings.Trim(line, markupcore.TrimSet)
 	return !isStyleLine(line) && !looksLikeTimingLine(line)
 }
 

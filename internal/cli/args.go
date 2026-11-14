@@ -62,7 +62,7 @@ type args struct {
 	fs          *flag.FlagSet
 }
 
-// parseArgs reads the words after the command name. A pre-pass applies the PHP syntax and messages, so that
+// parseArgs reads the words after the command name. A pre-pass applies the option syntax and messages, so that
 // flag.FlagSet.Parse gets only known options in the forms -name and -name=value. On its own, flag would stop
 // at the first positional argument, accept -name for every long option, accept --flag=false and keep the
 // last of 2 values.

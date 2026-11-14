@@ -123,7 +123,7 @@ func (r *Reader) trimLines(lines iter.Seq2[int, string]) iter.Seq2[int, string] 
 		if t.started {
 			r.tailEnd = t.held.n + 1
 			r.tailOpen = len(t.pending) > 0 && !slices.ContainsFunc(t.pending, func(l line) bool { return l.text == "" })
-			yield(t.held.n, strings.TrimRight(t.held.text, markupcore.PHPTrimSet))
+			yield(t.held.n, strings.TrimRight(t.held.text, markupcore.TrimSet))
 		}
 	}
 }
@@ -136,14 +136,14 @@ type trimmer struct {
 }
 
 func (t *trimmer) add(l line, yield func(int, string) bool) bool {
-	if phpTrim(l.text) == "" {
+	if trim(l.text) == "" {
 		if t.started && (l.text != "" || len(t.pending) == 0 || t.pending[len(t.pending)-1].text != "") {
 			t.pending = append(t.pending, l)
 		}
 		return true
 	}
 	if !t.started {
-		l.text = strings.TrimLeft(l.text, markupcore.PHPTrimSet)
+		l.text = strings.TrimLeft(l.text, markupcore.TrimSet)
 	} else if !t.flush(yield) {
 		return false
 	}
@@ -216,7 +216,7 @@ func (s *signer) feed(raw string, l line) ([]line, error) {
 			return nil, &model.ParseError{Format: model.WebVTT, Line: l.n + 1, Msg: noSignature}
 		}
 	}
-	if s.firstLine == 0 && phpTrim(l.text) != "" {
+	if s.firstLine == 0 && trim(l.text) != "" {
 		s.firstLine = l.n + 1
 	}
 	switch {
@@ -227,7 +227,7 @@ func (s *signer) feed(raw string, l line) ([]line, error) {
 	case !hasArrow(l.text):
 		s.skipped = append(s.skipped, l)
 		return nil, nil
-	case !isRepairableTimingLine(phpTrim(l.text)):
+	case !isRepairableTimingLine(trim(l.text)):
 		return nil, s.noSignature()
 	}
 	return s.addSignature(l), nil
@@ -238,7 +238,7 @@ func (s *signer) feed(raw string, l line) ([]line, error) {
 func (s *signer) addSignature(l line) []line {
 	cueStart := l.n
 	var identifier []line
-	if last := len(s.skipped) - 1; last >= 0 && phpTrim(s.skipped[last].text) != "" {
+	if last := len(s.skipped) - 1; last >= 0 && trim(s.skipped[last].text) != "" {
 		identifier = []line{s.skipped[last]}
 		s.skipped = s.skipped[:last]
 		cueStart = identifier[0].n
@@ -260,7 +260,7 @@ func isRepairableTimingLine(text string) bool {
 func (r *Reader) warnMissingSignature(skipped []line, firstLine, readFrom int) {
 	var lines []string
 	for _, l := range skipped {
-		if t := phpTrim(l.text); t != "" {
+		if t := trim(l.text); t != "" {
 			lines = append(lines, t)
 		}
 	}
@@ -284,7 +284,7 @@ func (r *Reader) numberedBlocks(lines iter.Seq[line]) iter.Seq[blocks.Block] {
 }
 
 func isOtherBlock(lines []string) bool {
-	first := phpTrim(lines[0])
+	first := trim(lines[0])
 	return keywordRegexp.MatchString(first) || HasSignature(first)
 }
 
@@ -342,7 +342,7 @@ func (r *Reader) collect(lines iter.Seq[line]) iter.Seq[blocks.Block] {
 // endsBlock reports whether text ends the block of current. The spec ends a cue only at an empty line.
 // YouTube auto captions put a line with one space into each cue.
 func endsBlock(text string, current []string) bool {
-	return text == "" || phpTrim(text) == "" && !slices.ContainsFunc(current, hasArrow)
+	return text == "" || trim(text) == "" && !slices.ContainsFunc(current, hasArrow)
 }
 
 func firstTimingLine(lines []string) int {
@@ -407,7 +407,7 @@ func (c *collector) block() blocks.Block {
 
 func (r *Reader) parseHeader(b blocks.Block) error {
 	text, _ := strings.CutPrefix(b.Lines[0], signature)
-	if text = phpTrim(text); text != "" {
+	if text = trim(text); text != "" {
 		r.file.Set("header", text)
 	}
 	if len(b.Lines) == 1 {
@@ -450,7 +450,7 @@ func (r *Reader) ParseBlock(b blocks.Block, index int) (model.Cue, bool, error) 
 }
 
 func (r *Reader) parseOtherBlock(b blocks.Block, index int) *model.ParseError {
-	first := phpTrim(b.Lines[0])
+	first := trim(b.Lines[0])
 	switch {
 	case isNote(first):
 		if r.keepComments {
@@ -496,7 +496,7 @@ func (r *Reader) appendFileData(key string, value any) {
 func (r *Reader) parseCue(b blocks.Block, index int) (model.Cue, error) {
 	lines := make([]string, len(b.Lines))
 	for i, l := range b.Lines {
-		lines[i] = phpTrim(spacesRegexp.ReplaceAllString(l, " "))
+		lines[i] = trim(spacesRegexp.ReplaceAllString(l, " "))
 	}
 	timingLine := b.Line
 	var id string
@@ -537,7 +537,7 @@ func (r *Reader) parseCue(b blocks.Block, index int) (model.Cue, error) {
 
 func (r *Reader) splitTimingLine(timing string, timingLine int) (start, end, settings string, err error) {
 	start, endPart, _ := strings.Cut(timing, arrow)
-	endPart = phpTrim(endPart)
+	endPart = trim(endPart)
 	end, settings, ok := splitEnd(endPart)
 	if ok {
 		return start, end, settings, nil
@@ -613,7 +613,7 @@ func escapeBareAmpersands(l string) string {
 
 // time reads a cue time. Lenient mode also reads the timecode.Loose forms with "." or "," and adds them to loose.
 func (r *Reader) time(text string, timingLine int, loose *[]looseTime) (time.Duration, error) {
-	text = phpTrim(text)
+	text = trim(text)
 	if d, ok := strictTime(text); ok {
 		return parsing.BoundedTime(d, text, timingLine)
 	}
@@ -664,7 +664,7 @@ func strictTime(text string) (time.Duration, bool) {
 // wins and keeps the place of the first. See https://www.w3.org/TR/webvtt1/#parse-the-webvtt-cue-settings.
 func parseSettings(input string, names []string) *model.Data {
 	d := model.NewData()
-	for _, token := range strings.FieldsFunc(phpTrim(input), func(r rune) bool { return r == ' ' || r == '\t' }) {
+	for _, token := range strings.FieldsFunc(trim(input), func(r rune) bool { return r == ' ' || r == '\t' }) {
 		colon := strings.IndexByte(token, ':')
 		if colon <= 0 || colon == len(token)-1 {
 			continue
@@ -788,10 +788,10 @@ func settingsColumn(align string, ok bool) (int, bool) {
 
 // commentText returns the text of a NOTE block: the text after NOTE and the other lines, trimmed, without empty lines.
 func commentText(lines []string) string {
-	first, _ := strings.CutPrefix(phpTrim(lines[0]), "NOTE")
+	first, _ := strings.CutPrefix(trim(lines[0]), "NOTE")
 	out := make([]string, 0, len(lines))
 	for _, l := range slices.Concat([]string{first}, lines[1:]) {
-		if l = phpTrim(l); l != "" {
+		if l = trim(l); l != "" {
 			out = append(out, l)
 		}
 	}
@@ -814,8 +814,8 @@ func hasArrow(l string) bool {
 	return strings.Contains(l, arrow)
 }
 
-func phpTrim(s string) string {
-	return strings.Trim(s, markupcore.PHPTrimSet)
+func trim(s string) string {
+	return strings.Trim(s, markupcore.TrimSet)
 }
 
 func trimBOMs(s string) string {

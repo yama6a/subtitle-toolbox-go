@@ -99,7 +99,7 @@ func isControl(b byte) bool {
 }
 
 // lineAt returns the 1-based line of offset i, which holds no CR or LF. LF, a run of CRs and LF, and a lone CR
-// each end a line, as the PHP pattern /\r+\n|\r/ reads them.
+// each end a line.
 func lineAt(content []byte, i int) int {
 	line := 1
 	for j := 0; j < i; j++ {

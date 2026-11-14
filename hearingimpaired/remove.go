@@ -10,7 +10,7 @@ import (
 )
 
 // removeFromLines removes the annotations that opts selects from the lines of one cue, and the lines that they
-// emptied. Lines whose visible text is not valid UTF-8 stay as they are, as the PHP patterns with the u flag fail.
+// emptied. Lines whose visible text is not valid UTF-8 stay as they are.
 func removeFromLines(lines []string, opts Options) []string {
 	if !utf8.ValidString(hilabels.VisibleOf(lines).Text) {
 		return lines
@@ -147,7 +147,7 @@ func musicLineSpans(text string, opts Options) []hilabels.Span {
 }
 
 // symbolAt returns the length of the music symbol at text[i], or 0. A music symbol is U+2669 to U+266C, or a #
-// with white space or the text edge on both sides, as PHP \s with the u flag reads white space.
+// with white space or the text edge on both sides. White space is as markupcore.IsSpace reads it.
 func symbolAt(text string, i int) int {
 	r, n := utf8.DecodeRuneInString(text[i:])
 	if r >= 0x2669 && r <= 0x266C {

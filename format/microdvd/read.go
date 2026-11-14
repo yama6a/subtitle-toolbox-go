@@ -108,7 +108,7 @@ func readCues(st *parsing.State, lines []rawLine, fps float64) ([]model.Cue, err
 func nonEmptyLines(content string) []rawLine {
 	var out []rawLine
 	for n, line := range parsing.Lines(content) {
-		if line = strings.Trim(line, markupcore.PHPTrimSet); line != "" {
+		if line = strings.Trim(line, markupcore.TrimSet); line != "" {
 			out = append(out, rawLine{number: n + 1, block: len(out), text: line})
 		}
 	}
@@ -217,8 +217,7 @@ func readCue(st *parsing.State, l rawLine, fps float64) (model.Cue, error) {
 	return c, nil
 }
 
-// frameTime returns the time of a frame number. Digits beyond the int64 range read as its maximum, as PHP (int)
-// reads them. The duration is checked against the limit after the rounding.
+// frameTime returns the time of a frame number. Digits beyond the int64 range read as its maximum. The duration is checked against the limit after the rounding.
 func frameTime(digits string, fps float64, line int) (time.Duration, error) {
 	n, _ := strconv.ParseInt(digits, 10, 64)
 	return parsing.BoundedTime(timecode.FromFrames(float64(n), fps), "{"+digits+"}", line)
@@ -264,7 +263,7 @@ func parseLine(part string, cue *style) (textLine, bool) {
 		}
 	}
 	l.other = other.String()
-	l.text = strings.Trim(part[len(l.codes):], markupcore.PHPTrimSet)
+	l.text = strings.Trim(part[len(l.codes):], markupcore.TrimSet)
 	return l, l.text != ""
 }
 

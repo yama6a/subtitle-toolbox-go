@@ -36,7 +36,7 @@ var (
 // textWhiteSpace removes the characters that a <Text> element does not show.
 var textWhiteSpace = strings.NewReplacer("\r", "", "\n", "", "\t", "") //nolint:gochecknoglobals // a fixed replacer
 
-// attr is one attribute by its local name. Prefixes and namespace declarations are not kept, as the PHP library does.
+// attr is one attribute by its local name. Prefixes and namespace declarations are not kept.
 type attr struct {
 	name, value string
 }
@@ -231,7 +231,7 @@ func headerOf(root *xmlraw.Node) (header []attr, loadFonts []any) {
 	return header, loadFonts
 }
 
-// attrData returns the attributes as format data. An empty list is an empty list, as PHP stores an empty array.
+// attrData returns the attributes as format data. An empty set of attributes is an empty list.
 func attrData(attrs []attr) any {
 	if len(attrs) == 0 {
 		return []any{}
@@ -290,7 +290,7 @@ func firstChild(n *xmlraw.Node, local string) *xmlraw.Node {
 // childText returns the trimmed text of the first child element with the local name, "" for none.
 func childText(n *xmlraw.Node, local string) string {
 	if c := firstChild(n, local); c != nil {
-		return strings.Trim(c.Text(), markupcore.PHPTrimSet)
+		return strings.Trim(c.Text(), markupcore.TrimSet)
 	}
 	return ""
 }
@@ -399,7 +399,7 @@ func collectTexts(n *xmlraw.Node, font map[string]string, lines *[]line) {
 			collectRuns(child, font, &runs)
 			attrs := attributes(child)
 			*lines = append(*lines, line{
-				text:  strings.Trim(markupcore.StyleRuns(runs, true), markupcore.PHPTrimSet),
+				text:  strings.Trim(markupcore.StyleRuns(runs, true), markupcore.TrimSet),
 				y:     screenY(attrs),
 				attrs: attrs,
 			})
@@ -446,7 +446,7 @@ func mergeFont(n *xmlraw.Node, font map[string]string) map[string]string {
 		out[k] = v
 	}
 	for _, a := range attributes(n) {
-		out[markupcore.ASCIILower(a.name)] = markupcore.ASCIILower(strings.Trim(a.value, markupcore.PHPTrimSet))
+		out[markupcore.ASCIILower(a.name)] = markupcore.ASCIILower(strings.Trim(a.value, markupcore.TrimSet))
 	}
 	return out
 }
@@ -473,7 +473,7 @@ func runOf(text string, font map[string]string) markupcore.Run {
 func textAttr(attrs []attr, name string) (string, bool) {
 	for _, a := range attrs {
 		if markupcore.ASCIILower(a.name) == name {
-			return strings.Trim(a.value, markupcore.PHPTrimSet), true
+			return strings.Trim(a.value, markupcore.TrimSet), true
 		}
 	}
 	return "", false
@@ -483,7 +483,7 @@ func textAttr(attrs []attr, name string) (string, bool) {
 // counts from the edge that VAlign names, or down from the middle for "center", the default.
 func screenY(attrs []attr) float64 {
 	v, _ := textAttr(attrs, "vposition")
-	pos := phpFloat(v)
+	pos := leadingFloat(v)
 	align, ok := textAttr(attrs, "valign")
 	if !ok {
 		align = "center"
@@ -498,8 +498,8 @@ func screenY(attrs []attr) float64 {
 	}
 }
 
-// phpFloat returns the number at the start of s, 0 for none, as the PHP cast (float) reads it.
-func phpFloat(s string) float64 {
+// leadingFloat returns the number at the start of s, 0 for none.
+func leadingFloat(s string) float64 {
 	f, _ := strconv.ParseFloat(numberPrefix.FindString(s), 64)
 	return f
 }
@@ -573,7 +573,7 @@ func anchorX(a model.Alignment, top []attr) float64 {
 	if !ok {
 		return position.DefaultAnchor(a).X
 	}
-	x := phpFloat(hp)
+	x := leadingFloat(hp)
 	switch a.Column() {
 	case 1:
 		return x
@@ -586,7 +586,7 @@ func anchorX(a model.Alignment, top []attr) float64 {
 
 // time reads HH:MM:SS:EE, where EE counts rate units per second, or Interop HH:MM:SS.sss with a decimal fraction.
 func (rd *reader) time(value string, lineNumber int) (time.Duration, error) {
-	value = strings.Trim(value, markupcore.PHPTrimSet)
+	value = strings.Trim(value, markupcore.TrimSet)
 	var d time.Duration
 	var hours string
 	if m := decimalTime.FindStringSubmatch(value); m != nil && rd.interop {

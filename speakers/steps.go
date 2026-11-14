@@ -68,7 +68,7 @@ func splitLabel(line string, anyCase bool) (name, rest string, ok bool) {
 	}
 	visible := markupcore.VisibleText(line)
 	label, _, _ := strings.Cut(visible[hilabels.AfterLead(visible, 0):], ":")
-	name = strings.Trim(label, markupcore.PHPTrimSet)
+	name = strings.Trim(label, markupcore.TrimSet)
 	if p := hilabels.SkipHSpace(visible, 0); p < len(visible) && visible[p] == '-' {
 		rest = removeLeadingDash(rest)
 	}
@@ -119,7 +119,7 @@ func rename(lines []string, names map[string]string) []string {
 	for i, line := range lines {
 		out[i] = voiceTagAny.ReplaceAllStringFunc(line, func(tag string) string {
 			m := voiceTagAny.FindStringSubmatch(tag)
-			name := markupcore.DecodeEntities(strings.Trim(m[2], markupcore.PHPTrimSet))
+			name := markupcore.DecodeEntities(strings.Trim(m[2], markupcore.TrimSet))
 			if to, ok := names[name]; ok {
 				return markupcore.VoiceTag(to, m[1])
 			}

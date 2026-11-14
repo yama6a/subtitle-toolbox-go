@@ -36,7 +36,7 @@ var utf8Leads = []utf8Lead{
 	{0xF4, 0xF4, 4, 0x80, 0x8F},
 }
 
-// decodeUnicode reads UTF-8 with FFh as a period. Each ill-formed sequence becomes "?", as PHP mb_scrub writes it.
+// decodeUnicode reads UTF-8 with FFh as a period. Each ill-formed sequence becomes "?".
 // A cut sequence that is valid so far, such as E4 BD, counts as one.
 func decodeUnicode(b []byte) string {
 	var out strings.Builder

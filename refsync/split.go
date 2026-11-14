@@ -6,7 +6,7 @@ import (
 )
 
 // splitBlocks is the number of blocks that the split search cuts the target into. A search per span can pick
-// other splits than PHP, so Go keeps the blocks.
+// other splits, so the search keeps the blocks.
 const splitBlocks = 200
 
 // splitNode is the start of one segment on the best path of a layer.

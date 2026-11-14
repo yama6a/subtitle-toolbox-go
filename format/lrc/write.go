@@ -133,7 +133,7 @@ func plainText(part string) string {
 }
 
 func isTrimByte(b byte) bool {
-	return strings.IndexByte(markupcore.PHPTrimSet, b) >= 0
+	return strings.IndexByte(markupcore.TrimSet, b) >= 0
 }
 
 func appendStamp(body []byte, d time.Duration) []byte {

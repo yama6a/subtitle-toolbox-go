@@ -5,7 +5,7 @@ import "sync"
 // entities maps each HTML5 entity name, without its ";", to its text.
 //
 // Adapted from the entity table of Go's html package (src/html/entity.go, go1.27.2), BSD-3-Clause.
-// The HTML spec also lists nGt and nLt, which Go leaves out and PHP decodes.
+// The HTML spec also lists nGt and nLt, which Go leaves out and this package decodes.
 var entities = sync.OnceValue(func() map[string]string { //nolint:gochecknoglobals // a lookup table, built on first use
 	return map[string]string{
 		"AElig":                           "\u00c6",

@@ -215,7 +215,7 @@ func middle(word orderedjson.Value) float64 {
 	return (s + e) / 2
 }
 
-// numeric reads a number or a numeric string as PHP is_numeric does. A value out of range is an infinity.
+// numeric reads a number or a numeric string. A value out of range is an infinity.
 func numeric(v orderedjson.Value) (float64, bool) {
 	text, ok := v.Text()
 	if !ok {

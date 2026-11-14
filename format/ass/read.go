@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/phpkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/stringlist"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -126,7 +126,7 @@ func (rd *reader) read(content string) (*model.Subtitle, error) {
 func (rd *reader) readSections(content string) error {
 	section, inSection := "", false
 	for n, line := range parsing.Lines(content) {
-		line = phpTrim(line)
+		line = trim(line)
 		if line == "" {
 			continue
 		}
@@ -220,7 +220,7 @@ func (rd *reader) scriptInfoLine(line string) {
 	if !ok {
 		return
 	}
-	key, value = phpTrim(key), phpTrim(value)
+	key, value = trim(key), trim(value)
 	if equalFold(key, "Title") {
 		rd.title, rd.hasTitle = value, true
 		return
@@ -265,7 +265,7 @@ func (rd *reader) eventLine(line string, number int) error {
 // mode drops the values of such a field.
 func (rd *reader) checkFieldNames(line string, number int) error {
 	for _, name := range rd.f.eventFormat {
-		if !phpkey.IsIntKey(name) {
+		if !intkey.IsIntKey(name) {
 			continue
 		}
 		msg := `The field name "` + name + `" in the Format line of the [Events] section is a number.`
@@ -341,7 +341,7 @@ func (rd *reader) fields(ev event) (eventFields, error) {
 	}
 	f := eventFields{record: record{names: make([]string, 0, len(all.names)), values: make([]string, 0, len(all.names))}}
 	for i, name := range all.names {
-		if !phpkey.IsIntKey(name) {
+		if !intkey.IsIntKey(name) {
 			f.set(name, all.values[i])
 		}
 	}
@@ -375,7 +375,7 @@ func newCue(start, end time.Duration, body converted, f eventFields, text string
 	c.ExtractWordTags()
 	setSyllableEnds(c.Words, body.syllables)
 	if c.Speaker == "" {
-		c.Speaker = phpTrim(name)
+		c.Speaker = trim(name)
 	}
 	numpad := body.numpad
 	var alignment any
@@ -408,7 +408,7 @@ func (rd *reader) legacyStyles() bool {
 // time reads a Start or End value of the event on line. Lenient mode also reads the forms of timecode.Loose and
 // adds them to loose.
 func (rd *reader) time(text string, line int, loose *[]looseTime) (time.Duration, error) {
-	t := phpTrim(text)
+	t := trim(text)
 	if m := timeRegexp.FindStringSubmatch(t); m != nil {
 		return parsing.BoundedTime(clock(m[1], m[2], m[3])+fraction(m[4]), text, line)
 	}
@@ -443,13 +443,13 @@ func fraction(digits string) time.Duration {
 // splitDescriptor returns the trimmed descriptor before the first colon of line and the value after it.
 func splitDescriptor(line string) (string, string) {
 	typ, value, _ := strings.Cut(line, ":")
-	return phpTrim(typ), strings.TrimLeft(value, markupcore.PHPTrimSet)
+	return trim(typ), strings.TrimLeft(value, markupcore.TrimSet)
 }
 
 func splitNames(value string) []string {
 	names := strings.Split(value, ",")
 	for i, n := range names {
-		names[i] = phpTrim(n)
+		names[i] = trim(n)
 	}
 	return names
 }
@@ -468,7 +468,7 @@ func combine(format []string, value string, pad bool) (record, bool) {
 	for i, name := range format {
 		v := values[i]
 		if i < len(format)-1 {
-			v = phpTrim(v)
+			v = trim(v)
 		}
 		r.set(name, v)
 	}

@@ -23,7 +23,7 @@ type Word struct {
 	End        time.Duration
 	HasEnd     bool // false: the end comes from the next start, and Group and CuesFromWords take the start as the end
 	Speaker    string
-	HasSpeaker bool                // a missing speaker and an empty one differ, as in PHP
+	HasSpeaker bool                // a missing speaker and an empty one differ
 	Confidence *float64            // nil when the source gives none or a value outside 0 to 1
 	Source     []orderedjson.Value // the raw source objects of the word
 }

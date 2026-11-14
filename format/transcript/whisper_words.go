@@ -33,7 +33,7 @@ func timeOf(v orderedjson.Value, unit time.Duration) (time.Duration, timeState) 
 func wordText(item orderedjson.Value) string {
 	v, _ := item.Get("word")
 	if s, ok := v.AsString(); ok {
-		return strings.Trim(s, markupcore.PHPTrimSet)
+		return strings.Trim(s, markupcore.TrimSet)
 	}
 	return ""
 }
@@ -78,7 +78,7 @@ func tokenWords(tokens []orderedjson.Value) []tokenWord {
 		texts[last].WriteString(text)
 	}
 	for i := range words {
-		words[i].text = strings.Trim(texts[i].String(), markupcore.PHPTrimSet)
+		words[i].text = strings.Trim(texts[i].String(), markupcore.TrimSet)
 	}
 	return words
 }

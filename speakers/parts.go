@@ -61,7 +61,7 @@ func (st *splitter) splitLine(line string) {
 	for i, tok := range markupcore.SplitTags(line) {
 		if i%2 == 0 {
 			if split && !hasText {
-				tok = strings.TrimLeft(tok, markupcore.PHPTrimSet)
+				tok = strings.TrimLeft(tok, markupcore.TrimSet)
 			}
 			tok = strings.ReplaceAll(tok, "<", "&lt;")
 			cur.WriteString(tok)
@@ -88,7 +88,7 @@ func (st *splitter) splitLine(line string) {
 
 // endPart closes the text of cur as a part of the current speaker, and starts the next part with the open style tags.
 func (st *splitter) endPart(cur *strings.Builder) {
-	st.parts = append(st.parts, part{speaker: st.speaker, text: strings.TrimRight(cur.String(), markupcore.PHPTrimSet) + st.closing()})
+	st.parts = append(st.parts, part{speaker: st.speaker, text: strings.TrimRight(cur.String(), markupcore.TrimSet) + st.closing()})
 	cur.Reset()
 	for _, o := range st.open {
 		cur.WriteString(o.tag)
@@ -101,7 +101,7 @@ func voiceName(tok string) (name string, ok bool) {
 		return "", false
 	}
 	if m := voiceTagExact.FindStringSubmatch(tok); m != nil {
-		return markupcore.DecodeEntities(strings.Trim(m[2], markupcore.PHPTrimSet)), true
+		return markupcore.DecodeEntities(strings.Trim(m[2], markupcore.TrimSet)), true
 	}
 	return "", voiceEndExact.MatchString(tok)
 }

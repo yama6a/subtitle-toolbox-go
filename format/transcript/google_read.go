@@ -82,7 +82,7 @@ func googleWords(result orderedjson.Value) []orderedjson.Value {
 	return cloudGet(alt[0], "words").Items()
 }
 
-// googleDiarized reports whether a word of the result has a speakerLabel, or a speakerTag that PHP empty() does not
+// googleDiarized reports whether a word of the result has a speakerLabel, or a speakerTag that googleFalsy does not
 // count as empty. Each diarized result repeats the words of the results before it, so the last result holds all words.
 func googleDiarized(result orderedjson.Value) bool {
 	for _, w := range googleWords(result) {
@@ -93,7 +93,7 @@ func googleDiarized(result orderedjson.Value) bool {
 	return false
 }
 
-// googleFalsy reports whether PHP empty() is true for v: null, false, 0, "", "0" and an empty array.
+// googleFalsy reports whether v is empty: null, false, 0, "", "0" and an empty array.
 func googleFalsy(v orderedjson.Value) bool {
 	switch v.Kind() {
 	case orderedjson.Null:
@@ -165,7 +165,7 @@ func googleWord(item orderedjson.Value, path string) (wordgroup.Word, error) {
 		return wordgroup.Word{}, err
 	}
 	w := wordgroup.Word{
-		Text: strings.Trim(text, markupcore.PHPTrimSet), Start: start, Timed: true, End: end, HasEnd: true,
+		Text: strings.Trim(text, markupcore.TrimSet), Start: start, Timed: true, End: end, HasEnd: true,
 		Confidence: cloudConfidence(cloudGet(item, "confidence")),
 	}
 	label := cloudGet(item, "speakerLabel")

@@ -143,7 +143,7 @@ func outputRate(opts WriteOptions, file *model.Data) (model.FrameRate, error) {
 // and every other line must be a $ command.
 func appendStored(body []byte, line string, st *style, isHeader bool) []byte {
 	line = lineEnds.Replace(line)
-	trimmed := strings.Trim(line, markupcore.PHPTrimSet)
+	trimmed := strings.Trim(line, markupcore.TrimSet)
 	isCommand := strings.HasPrefix(trimmed, "$")
 	isHeaderOnly := trimmed == "" || strings.HasPrefix(trimmed, "//")
 	if isCommand || isHeader && isHeaderOnly {
@@ -204,7 +204,7 @@ func writtenText(c model.Cue, st style, lineBreak string) string {
 	current := [3]bool{st.bold, st.italic, st.underline}
 	var lines []string
 	for _, line := range markupcore.CarryOpenTags(split) {
-		if text := strings.Trim(textLine(line, &current), markupcore.PHPTrimSet); text != "" {
+		if text := strings.Trim(textLine(line, &current), markupcore.TrimSet); text != "" {
 			lines = append(lines, text)
 		}
 	}
@@ -224,7 +224,7 @@ func textLine(line string, current *[3]bool) string {
 			continue
 		}
 		token = markupcore.DecodeEntities(token)
-		if strings.Trim(token, markupcore.PHPTrimSet) == "" {
+		if strings.Trim(token, markupcore.TrimSet) == "" {
 			b.WriteString(token)
 			continue
 		}

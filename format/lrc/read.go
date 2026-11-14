@@ -90,11 +90,11 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 }
 
 func cleanLine(line string) string {
-	return strings.Trim(blocks.CollapseSpaces(line), markupcore.PHPTrimSet)
+	return strings.Trim(blocks.CollapseSpaces(line), markupcore.TrimSet)
 }
 
 // cleanLines returns the lines of content that are not empty after cleanLine. A line of spaces goes too, so it
-// never becomes the text of a time tag before it, as it does in PHP.
+// never becomes the text of a time tag before it.
 func cleanLines(content string) []string {
 	var lines []string
 	for _, line := range parsing.Lines(content) {
@@ -131,14 +131,14 @@ func isPlainText(line string) bool {
 	return !timeTagsRegexp.MatchString(line) && !idTagRegexp.MatchString(line) && !brokenTimeTagRegexp.MatchString(line)
 }
 
-// findOffset clamps a value beyond int64, as PHP (int) does.
+// findOffset clamps a value beyond int64.
 func findOffset(lines []string) int64 {
 	for _, line := range lines {
 		m := idTagRegexp.FindStringSubmatch(line)
 		if m == nil || markupcore.ASCIILower(m[1]) != "offset" {
 			continue
 		}
-		if value := strings.Trim(m[2], markupcore.PHPTrimSet); offsetRegexp.MatchString(value) {
+		if value := strings.Trim(m[2], markupcore.TrimSet); offsetRegexp.MatchString(value) {
 			offset, _ := strconv.ParseInt(value, 10, 64)
 			return offset
 		}
@@ -155,7 +155,7 @@ func (rd *reader) readLines(s *model.Subtitle, lines []string) error {
 			continue
 		}
 		text := line[loc[1]:]
-		if strings.Trim(text, markupcore.PHPTrimSet) == "" && i+1 < len(lines) && isPlainText(lines[i+1]) {
+		if strings.Trim(text, markupcore.TrimSet) == "" && i+1 < len(lines) && isPlainText(lines[i+1]) {
 			i++
 			text = lines[i]
 		}
@@ -172,7 +172,7 @@ func (rd *reader) readLines(s *model.Subtitle, lines []string) error {
 }
 
 func (rd *reader) readTimedLine(tags, text string) error {
-	text, err := rd.convertWordTimes(strings.Trim(text, markupcore.PHPTrimSet))
+	text, err := rd.convertWordTimes(strings.Trim(text, markupcore.TrimSet))
 	if err != nil {
 		return err
 	}
@@ -267,7 +267,7 @@ func (rd *reader) addIDTag(s *model.Subtitle, line string) {
 	if m == nil {
 		return
 	}
-	tag, value := markupcore.ASCIILower(m[1]), strings.Trim(m[2], markupcore.PHPTrimSet)
+	tag, value := markupcore.ASCIILower(m[1]), strings.Trim(m[2], markupcore.TrimSet)
 	if tag == "#" {
 		rd.comments = append(rd.comments, parsing.ParsedComment{Text: value, CuesBefore: len(rd.cues)})
 		return

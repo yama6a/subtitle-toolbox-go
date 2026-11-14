@@ -21,8 +21,8 @@ const (
 
 const (
 	asciiSpace = " \t\n\r\f\v"
-	// PHPTrimSet holds the bytes that PHP trim removes without a character list.
-	PHPTrimSet = " \t\n\r\x00\v"
+	// TrimSet holds the bytes that trimming removes at both ends of a text: space, TAB, LF, CR, NUL and VT.
+	TrimSet = " \t\n\r\x00\v"
 )
 
 var (
@@ -58,7 +58,7 @@ func SplitTags(line string) []string {
 
 // TagName returns the first word of a tag body such as `FONT color="yellow"`, in lower case.
 func TagName(body string) string {
-	body = strings.Trim(body, PHPTrimSet)
+	body = strings.Trim(body, TrimSet)
 	if i := strings.IndexAny(body, asciiSpace); i >= 0 {
 		body = body[:i]
 	}
@@ -95,7 +95,7 @@ func KeepTags(text string, names ...string) string {
 // HasVisibleText reports whether a line holds more than white space outside its tags. An entity counts as text.
 func HasVisibleText(lines []string) bool {
 	for _, line := range lines {
-		if strings.Trim(StripAllTags(line), PHPTrimSet) != "" {
+		if strings.Trim(StripAllTags(line), TrimSet) != "" {
 			return true
 		}
 	}
@@ -342,7 +342,7 @@ func isASCIILetter(c byte) bool {
 	return 'a' <= c|0x20 && c|0x20 <= 'z'
 }
 
-// ASCIILower lowers A to Z only, as PHP strtolower does. It keeps every other byte, also of invalid UTF-8.
+// ASCIILower lowers A to Z only. It keeps every other byte, also of invalid UTF-8.
 func ASCIILower(s string) string {
 	i := strings.IndexFunc(s, func(r rune) bool { return 'A' <= r && r <= 'Z' })
 	if i < 0 {
