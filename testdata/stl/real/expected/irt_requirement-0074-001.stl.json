@@ -62,6 +62,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 23,
+                    "column": 0,
+                    "grid": {
+                        "rows": 23,
+                        "columns": 40
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 1,

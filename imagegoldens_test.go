@@ -24,7 +24,7 @@ import (
 )
 
 // imageGolden is a row of the pixel golden table. The golden JSON and the PNG of its first cue lie next to the fixture
-// in an expected folder. The PHP goldens are the oracle, so no tool rewrites them.
+// in an expected folder. No tool rewrites them.
 type imageGolden struct {
 	// fixture is the path under testdata that Load reads.
 	fixture string
@@ -79,7 +79,7 @@ var dvbImageGoldens = []imageGolden{
 // imageGoldenDirs are the folders under testdata whose expected subfolder holds pixel goldens.
 var imageGoldenDirs = []string{"pgs", "vobsub", "mpegts", "mkv"}
 
-// imageGoldenCue is one cue of a pixel golden. The field order is the key order of the PHP goldens.
+// imageGoldenCue is one cue of a pixel golden.
 type imageGoldenCue struct {
 	Start        float64 `json:"start"`
 	End          float64 `json:"end"`

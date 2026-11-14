@@ -19,7 +19,7 @@ import (
 )
 
 // Ports testRealFilesGiveTheCuesOf1x of tests/ReadOptionsTest.php of subtitle-toolbox-php.
-// Each golden holds [start, end, lines] rows that PHP 1.x read from the file with the options.
+// Each golden holds the expected [start, end, lines] rows of the file with the options.
 func TestReadOptionGoldens(t *testing.T) {
 	t.Parallel()
 

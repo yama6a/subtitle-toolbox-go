@@ -61,6 +61,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 22,
+                    "column": 0,
+                    "grid": {
+                        "rows": 23,
+                        "columns": 40
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 1,
@@ -82,6 +90,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 22,
+                    "column": 0,
+                    "grid": {
+                        "rows": 23,
+                        "columns": 40
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 1,
@@ -103,6 +119,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 22,
+                    "column": 0,
+                    "grid": {
+                        "rows": 23,
+                        "columns": 40
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 2,
@@ -124,6 +148,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 22,
+                    "column": 0,
+                    "grid": {
+                        "rows": 23,
+                        "columns": 40
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 3,

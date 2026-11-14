@@ -27,7 +27,7 @@ func roundTripFolders() []string {
 }
 
 // roundTripFile is a round trip case in a folder that roundTripFolders does not hold. Its golden is
-// expected/<file>.out.<extension of the file>, as in PHP.
+// expected/<file>.out.<extension of the file>.
 type roundTripFile struct {
 	folder, file string
 }
@@ -269,7 +269,7 @@ func TestWriteGoldens(t *testing.T) {
 				opts.SAMI.LanguageClass = c.class
 			}
 			if c.folder == "microdvd" {
-				// The PHP write goldens read MicroDVD at 23.976 fps, the read goldens at 25 fps.
+				// The write goldens read MicroDVD at 23.976 fps, the read goldens at 25 fps.
 				opts.MicroDVD.FrameRate = stbox.FrameRate{Num: 2997, Den: 125}
 			}
 			s, _ := g.readWith(t, c.file, opts)

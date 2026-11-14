@@ -34,7 +34,7 @@ type goldenFolder struct {
 	defaults bool
 }
 
-// microDVDAt25 is the read option of the MicroDVD read goldens, as tests/files/generate-read-goldens.php sets it.
+// microDVDAt25 is the read option of the MicroDVD read goldens.
 var microDVDAt25 = stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}}
 
 // dubbingScript is the CSV layout of csv/real/dubbing_script.csv in the read golden table of #9.
@@ -43,8 +43,7 @@ var dubbingScript = csv.ReadOptions{
 	FrameRate: stbox.FrameRate{Num: 25, Den: 1},
 }
 
-// transcriptGolden holds the read options of the transcript read goldens, as tests/Support/ReadGoldens.php of
-// subtitle-toolbox-php sets them.
+// transcriptGolden holds the read options of the transcript read goldens.
 var transcriptGolden = stbox.ReadOptions{
 	Transcript: transcript.ReadOptions{WordTimestamps: true, SpeakerVoices: true},
 	YouTube:    youtube.ReadOptions{WordTimestamps: true},
@@ -141,8 +140,8 @@ func (g goldenFolder) readWith(t *testing.T, file string, opts stbox.ReadOptions
 	return s, info
 }
 
-// TestReadGoldens reads each real file and compares the warnings and the library JSON of the result with the PHP
-// read golden expected/<file>.json. It never writes a golden file, because the PHP goldens are the oracle.
+// TestReadGoldens reads each real file and compares the warnings and the library JSON of the result with the read
+// golden expected/<file>.json. With -update it rewrites a golden file whose content differs. Review each diff by hand.
 func TestReadGoldens(t *testing.T) {
 	t.Parallel()
 
@@ -172,51 +171,31 @@ func compareGolden(t *testing.T, s *stbox.Subtitle, info stbox.ReadInfo, golden 
 	var library bytes.Buffer
 	_, err := stbox.Write(&library, s, stbox.JSON, stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: 1}})
 	require.NoError(t, err)
-	var subtitle any
-	require.NoError(t, json.Unmarshal(library.Bytes(), &subtitle))
-	dropPositions(subtitle)
-	got := map[string]any{"warnings": goldenWarnings(info.Warnings), "subtitle": subtitle}
+	warnings, err := json.Marshal(goldenWarnings(info.Warnings))
+	require.NoError(t, err)
+	var got bytes.Buffer
+	got.WriteString(`{"warnings":`)
+	got.Write(warnings)
+	got.WriteString(`,"subtitle":`)
+	got.Write(library.Bytes())
+	got.WriteString("}")
 
-	var want any
-	require.NoError(t, json.Unmarshal(testfiles.Read(t, golden), &want))
-	assert.Equal(t, canonicalJSON(t, emptyValuesAsEmptyList(want)), canonicalJSON(t, emptyValuesAsEmptyList(got)))
+	file := testfiles.Path(t, golden)
+	if *update && canonicalJSONOf(t, testfiles.Read(t, golden)) != canonicalJSONOf(t, got.Bytes()) {
+		var indented bytes.Buffer
+		require.NoError(t, json.Indent(&indented, got.Bytes(), "", "    "))
+		indented.WriteString("\n")
+		require.NoError(t, os.WriteFile(file, indented.Bytes(), 0o600))
+	}
+	assert.Equal(t, canonicalJSONOf(t, testfiles.Read(t, golden)), canonicalJSONOf(t, got.Bytes()))
 }
 
-// emptyValuesAsEmptyList turns every empty object and every empty array into one empty list, and leaves null as it is. PHP decodes `{}` to an empty array, so a PHP
-// golden writes `[]` where Go keeps the type and writes `{}`, see the row of #19 in docs/php-differences.md.
-func emptyValuesAsEmptyList(v any) any {
-	switch v := v.(type) {
-	case map[string]any:
-		if len(v) == 0 {
-			return []any{}
-		}
-		out := make(map[string]any, len(v))
-		for k, item := range v {
-			out[k] = emptyValuesAsEmptyList(item)
-		}
-		return out
-	case []any:
-		if len(v) == 0 {
-			return []any{}
-		}
-		out := make([]any, len(v))
-		for i, item := range v {
-			out[i] = emptyValuesAsEmptyList(item)
-		}
-		return out
-	}
-	return v
-}
+func canonicalJSONOf(t *testing.T, b []byte) string {
+	t.Helper()
 
-// dropPositions removes the key position from each cue, because the PHP goldens never hold it.
-func dropPositions(subtitle any) {
-	root, _ := subtitle.(map[string]any)
-	cues, _ := root["cues"].([]any)
-	for _, c := range cues {
-		if cue, ok := c.(map[string]any); ok {
-			delete(cue, "position")
-		}
-	}
+	var v any
+	require.NoError(t, json.Unmarshal(b, &v))
+	return canonicalJSON(t, v)
 }
 
 func TestEveryReadGoldenHasARealFile(t *testing.T) {

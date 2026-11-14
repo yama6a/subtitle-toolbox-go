@@ -64,6 +64,14 @@
                 ],
                 "identifier": null,
                 "alignment": 1,
+                "position": {
+                    "row": 9,
+                    "column": 0,
+                    "grid": {
+                        "rows": 12,
+                        "columns": 38
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 0,
@@ -86,6 +94,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 11,
+                    "column": 0,
+                    "grid": {
+                        "rows": 12,
+                        "columns": 38
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 0,
@@ -108,6 +124,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 11,
+                    "column": 0,
+                    "grid": {
+                        "rows": 12,
+                        "columns": 38
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 0,
@@ -130,6 +154,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 11,
+                    "column": 0,
+                    "grid": {
+                        "rows": 12,
+                        "columns": 38
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 0,
@@ -152,6 +184,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 11,
+                    "column": 0,
+                    "grid": {
+                        "rows": 12,
+                        "columns": 38
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 0,

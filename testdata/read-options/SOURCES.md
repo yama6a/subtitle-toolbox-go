@@ -2,7 +2,7 @@
 
 Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5313f1583fc7e67942d514600/tests/files/read-options, MIT. In the rows below, "this repository" means subtitle-toolbox-php.
 
-The JSON files hold the cues that PHP 1.x read from a real file, as `[start, end, lines]` rows. `TestReadOptionGoldens` checks that Go reads the same cues with the matching `ReadOptions`.
+The JSON files hold the expected cues of each real file as `[start, end, lines]` rows. subtitle-toolbox-php 1.x wrote them. `TestReadOptionGoldens` reads each file with the matching `ReadOptions` and compares.
 
 | File | Source | License |
 |:--- |:--- |:--- |
