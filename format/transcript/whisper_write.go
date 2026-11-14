@@ -110,7 +110,7 @@ func (ww *whisperWriter) document(rest, segments orderedjson.Value, text string)
 	object := orderedjson.ObjectOf
 	switch ww.shape {
 	case shapeOpenAIAPI:
-		doc := orderedjson.Union(rest, object(member("text", orderedjson.StringValue(strings.Trim(text, markupcore.PHPTrimSet)))))
+		doc := orderedjson.Union(rest, object(member("text", orderedjson.StringValue(strings.Trim(text, markupcore.TrimSet)))))
 		if len(ww.words) > 0 {
 			doc = orderedjson.Union(doc, object(member("words", orderedjson.ArrayOf(ww.words...))))
 		}
@@ -182,7 +182,7 @@ func (ww *whisperWriter) newID(stored orderedjson.Value) orderedjson.Value {
 	}
 	next := orderedjson.Int(0)
 	if n, ok := ww.previousID(); ok {
-		// An id past the int64 range becomes a float, as PHP does.
+		// An id past the int64 range becomes a float.
 		next = orderedjson.Int(n + 1)
 		if n == math.MaxInt64 {
 			next = orderedjson.Float(float64(n) + 1)

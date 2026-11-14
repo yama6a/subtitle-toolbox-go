@@ -6,7 +6,7 @@ import (
 	"unicode/utf8"
 )
 
-// Encode writes v in the form of PHP json_encode with JSON_UNESCAPED_SLASHES and JSON_UNESCAPED_UNICODE.
+// Encode writes v as JSON without escaping "/" or non-ASCII characters.
 // Pretty output has a 4-space indent and ends with LF. Compact output has no white space.
 func Encode(v Value, pretty bool) ([]byte, error) {
 	e := &encoder{pretty: pretty}

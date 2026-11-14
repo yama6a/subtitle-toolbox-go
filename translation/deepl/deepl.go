@@ -39,7 +39,7 @@ type Options struct {
 // Validate checks the key and the base URL. The error matches model.ErrInvalidArgument.
 func (o Options) Validate() error {
 	switch {
-	case strings.Trim(o.APIKey, markupcore.PHPTrimSet) == "":
+	case strings.Trim(o.APIKey, markupcore.TrimSet) == "":
 		return &model.InvalidArgumentError{Option: "deepl.Options.APIKey", Msg: "The API key must not be empty. Pass the key of your DeepL account."}
 	case !httppost.CleanKey(o.APIKey):
 		return &model.InvalidArgumentError{Option: "deepl.Options.APIKey", Msg: "The API key must not have a control character, or a space at the start or end."}
@@ -88,7 +88,7 @@ func New(opts Options) (*Engine, error) {
 	return &Engine{endpoint: strings.TrimRight(base, "/") + path, key: opts.APIKey, client: client, wait: httppost.Sleep}, nil
 }
 
-// request is the JSON body. DeepL takes the keys in any order, PHP sends them in this one.
+// request is the JSON body. DeepL takes the keys in any order.
 //
 //nolint:tagliatelle // the DeepL API names the keys in snake case
 type request struct {

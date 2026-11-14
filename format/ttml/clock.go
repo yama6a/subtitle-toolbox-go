@@ -21,7 +21,7 @@ var (
 	bareSecondsRegexp  = regexp.MustCompile(`^\d{1,15}\.\d{1,9}$`)
 )
 
-// clock reads time expressions with the timing parameters of one document, in float64 seconds as PHP computes them.
+// clock reads time expressions with the timing parameters of one document, in float64 seconds.
 // See https://www.w3.org/TR/ttml2/#timing-value-time-expression.
 type clock struct {
 	// frameRate is ttp:frameRate with the multiplier, smpteFrameRate the frame labels per second without it.
@@ -35,12 +35,12 @@ type clock struct {
 
 // seconds returns the seconds of a clock time or an offset time, with no upper bound.
 func (c clock) seconds(expression string) (float64, bool) {
-	expression = strings.Trim(expression, markupcore.PHPTrimSet)
+	expression = strings.Trim(expression, markupcore.TrimSet)
 	if m := clockRegexp.FindStringSubmatch(expression); m != nil {
 		return c.clockTime(m), true
 	}
 	if m := offsetRegexp.FindStringSubmatch(expression); m != nil {
-		return c.offsetTime(ttmlwrite.PHPFloat(m[1]), m[2]), true
+		return c.offsetTime(ttmlwrite.LeadingFloat(m[1]), m[2]), true
 	}
 	return 0, false
 }
@@ -59,10 +59,10 @@ func looseSeconds(expression string) (float64, bool) {
 		return clockSeconds("0", m[1], m[2], m[3]), true
 	}
 	if bareMillisRegexp.MatchString(expression) {
-		return float64(phpInt(expression)) / 1000, true
+		return float64(leadingInt(expression)) / 1000, true
 	}
 	if bareSecondsRegexp.MatchString(expression) {
-		return ttmlwrite.PHPFloat(expression), true
+		return ttmlwrite.LeadingFloat(expression), true
 	}
 	return 0, false
 }
@@ -80,7 +80,7 @@ func (c clock) droppedFrames(hours, minutes int64) int64 {
 	}
 }
 
-// clockSeconds returns the seconds of the digit fields of a clock time, as PHP reads the decimal text
+// clockSeconds returns the seconds of the digit fields of a clock time as the decimal text
 // "whole.fraction". An hour count too large for an int64 sum gives a value far above the time limit.
 func clockSeconds(hours, minutes, secs, fraction string) float64 {
 	h := strings.TrimLeft(hours, "0")
@@ -89,7 +89,7 @@ func clockSeconds(hours, minutes, secs, fraction string) float64 {
 		v, _ := strconv.ParseFloat(h, 64)
 		return v * 3600
 	}
-	whole := phpInt(hours)*3600 + phpInt(minutes)*60 + phpInt(secs)
+	whole := leadingInt(hours)*3600 + leadingInt(minutes)*60 + leadingInt(secs)
 	text := strconv.FormatInt(whole, 10)
 	if fraction != "" {
 		text += "." + fraction
@@ -98,9 +98,9 @@ func clockSeconds(hours, minutes, secs, fraction string) float64 {
 	return v
 }
 
-// phpInt reads s as the PHP cast (int) does, for the digit strings of the patterns. A value beyond int64 saturates.
-func phpInt(s string) int64 {
-	v := ttmlwrite.PHPFloat(s)
+// leadingInt reads the integer at the start of s, for the digit strings of the patterns. A value beyond int64 saturates.
+func leadingInt(s string) int64 {
+	v := ttmlwrite.LeadingFloat(s)
 	switch {
 	case v >= math.MaxInt64:
 		return math.MaxInt64
@@ -123,14 +123,14 @@ func (c clock) clockTime(m []string) float64 {
 		return secs
 	}
 	if c.hundredths && m[5] != "" {
-		return secs + float64(phpInt(m[5]))/100
+		return secs + float64(leadingInt(m[5]))/100
 	}
-	frames := float64(phpInt(m[5]))
+	frames := float64(leadingInt(m[5]))
 	if m[6] != "" {
-		frames += float64(phpInt(m[6])) / c.subFrameRate
+		frames += float64(leadingInt(m[6])) / c.subFrameRate
 	}
 	if c.smpteTimeBase {
-		return (secs*c.smpteFrameRate + frames - float64(c.droppedFrames(phpInt(m[1]), phpInt(m[2])))) / c.frameRate
+		return (secs*c.smpteFrameRate + frames - float64(c.droppedFrames(leadingInt(m[1]), leadingInt(m[2])))) / c.frameRate
 	}
 	return secs + frames/c.frameRate
 }

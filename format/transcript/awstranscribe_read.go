@@ -80,7 +80,7 @@ func (w *awsWord) add(content string, item orderedjson.Value) {
 }
 
 func (w *awsWord) finish() wordgroup.Word {
-	w.word.Text = strings.Trim(strings.Join(w.parts, ""), markupcore.PHPTrimSet)
+	w.word.Text = strings.Trim(strings.Join(w.parts, ""), markupcore.TrimSet)
 	w.word.Source = w.source
 	return w.word
 }
@@ -169,7 +169,7 @@ func awsConfidence(v orderedjson.Value) *float64 {
 }
 
 // idKey returns the key under which an item id is known, or false for an id that is no integer or string.
-// The integer 5 and the string "5" give one key, as PHP array keys do.
+// The integer 5 and the string "5" give one key.
 func idKey(id orderedjson.Value) (string, bool) {
 	if i, ok := id.AsInt64(); ok {
 		return strconv.FormatInt(i, 10), true

@@ -130,7 +130,7 @@ type formatFuncs struct {
 	write  func(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error)
 }
 
-// registry lists the formats in the PHP row order, because the first row that lists an
+// registry lists the formats in an order where the first row that lists an
 // extension owns it in FormatFromPath. The facts table of package model has the same rows.
 //
 //nolint:gochecknoglobals // lookup table of the format functions

@@ -220,8 +220,8 @@ func lastIndex(names []string, name string) int {
 
 // dashStart returns the line without the spaces and bidi controls before its first character.
 func dashStart(line string) string {
-	_, rest := markupcore.SplitLeadingBidiControls(strings.TrimLeft(line, markupcore.PHPTrimSet))
-	return strings.TrimLeft(rest, markupcore.PHPTrimSet)
+	_, rest := markupcore.SplitLeadingBidiControls(strings.TrimLeft(line, markupcore.TrimSet))
+	return strings.TrimLeft(rest, markupcore.TrimSet)
 }
 
 // wrongDashes counts the lines that open a dialogue turn in another style than style.
@@ -253,7 +253,7 @@ func speakers(raw, speaker string, text []string) int {
 		names[speaker] = true
 	}
 	for _, m := range voiceRegexp.FindAllStringSubmatch(raw, -1) {
-		names[strings.Trim(m[2], markupcore.PHPTrimSet)] = true
+		names[strings.Trim(m[2], markupcore.TrimSet)] = true
 	}
 	return max(dashes, len(names), min(len(text), 1))
 }

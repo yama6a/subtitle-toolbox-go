@@ -65,7 +65,7 @@ func (o Options) Validate() error {
 	for _, w := range o.Words {
 		if !validWord(w) {
 			return invalid("Words", "A profanity word must be a non-empty UTF-8 string with a * only at the end, got "+
-				phpQuote(w)+".")
+				quoteString(w)+".")
 		}
 	}
 	if len(o.Words) == 0 {
@@ -86,7 +86,7 @@ func invalid(field, msg string) error {
 	return &model.InvalidArgumentError{Option: "profanity.Options." + field, Msg: msg}
 }
 
-// validWord checks the PHP pattern ^[^*\s](?:[^*]*[^*\s])?\*?$ with \s as Unicode white space.
+// validWord checks the pattern ^[^*\s](?:[^*]*[^*\s])?\*?$ with \s as Unicode white space.
 func validWord(w string) bool {
 	if !utf8.ValidString(w) {
 		return false
@@ -100,8 +100,8 @@ func validWord(w string) bool {
 	return !markupcore.IsSpace(first) && !markupcore.IsSpace(last)
 }
 
-// phpQuote writes s as PHP var_export writes a string.
-func phpQuote(s string) string {
+// quoteString writes s as a single-quoted string that escapes \ and '.
+func quoteString(s string) string {
 	return "'" + strings.NewReplacer(`\`, `\\`, `'`, `\'`).Replace(s) + "'"
 }
 

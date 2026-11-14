@@ -139,7 +139,7 @@ func (v Value) Has(key string) bool {
 	return ok
 }
 
-// Union returns the PHP array union a + b: the members of a, then the members of b whose keys a lacks.
+// Union returns the union of a and b: the members of a, then the members of b whose keys a lacks.
 func Union(a, b Value) Value {
 	out := Value{kind: Object, members: slices.Clone(a.members)}
 	ix := newKeyIndex(out.members)
@@ -151,7 +151,7 @@ func Union(a, b Value) Value {
 	return out
 }
 
-// Replace returns base with each argument applied in turn, as PHP array_replace does.
+// Replace returns base with each argument applied in turn.
 // A key that exists keeps its place and gets the new value. A new key goes last.
 func Replace(base Value, with ...Value) Value {
 	out := Value{kind: Object, members: slices.Clone(base.members)}

@@ -27,7 +27,7 @@ type ReadOptions struct {
 
 // Validate reports a LanguageClass of only white space.
 func (o ReadOptions) Validate() error {
-	if o.LanguageClass != "" && strings.Trim(o.LanguageClass, markupcore.PHPTrimSet) == "" {
+	if o.LanguageClass != "" && strings.Trim(o.LanguageClass, markupcore.TrimSet) == "" {
 		return &model.InvalidArgumentError{
 			Option: "ReadOptions.SAMI.LanguageClass",
 			Msg:    "The language class must not be empty.",

@@ -66,5 +66,5 @@ func italicLines(lines []string) []string {
 }
 
 func hasVisibleText(part string) bool {
-	return strings.Trim(markupcore.StripAllTags(part), markupcore.PHPTrimSet) != ""
+	return strings.Trim(markupcore.StripAllTags(part), markupcore.TrimSet) != ""
 }

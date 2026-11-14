@@ -85,7 +85,7 @@ func rowOf(r model.FrameRate) (int, bool) {
 // fraction, or false when it does not fit a frame rate. The multiplier counts as the TTML reader counts it.
 func storedRate(frameRate, multiplier string) (model.FrameRate, bool) {
 	a, b := ttmlwrite.Multiplier(multiplier)
-	fps, okFPS := fraction(ttmlwrite.PHPFloat(frameRate))
+	fps, okFPS := fraction(ttmlwrite.LeadingFloat(frameRate))
 	num, okNum := fraction(a)
 	den, okDen := fraction(b)
 	if !okFPS || !okNum || !okDen {

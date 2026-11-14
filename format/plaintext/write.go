@@ -58,7 +58,7 @@ func textLines(lines []string) []string {
 	var out []string
 	for _, line := range lines {
 		line = spacesRegexp.ReplaceAllLiteralString(markupcore.PlainText(markupcore.RubyAsText(line)), " ")
-		if line = strings.Trim(line, markupcore.PHPTrimSet); line != "" {
+		if line = strings.Trim(line, markupcore.TrimSet); line != "" {
 			out = append(out, line)
 		}
 	}

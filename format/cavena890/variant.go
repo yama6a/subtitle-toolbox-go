@@ -82,7 +82,7 @@ func (v variant) decode(b []byte) string {
 	if v == hebrew {
 		runs = []markupcore.Run{{Text: swapEnds(reverseAnsi(text.String()))}}
 	}
-	return strings.TrimRight(markupcore.StyleRuns(runs, true), markupcore.PHPTrimSet)
+	return strings.TrimRight(markupcore.StyleRuns(runs, true), markupcore.TrimSet)
 }
 
 // appendText writes the text of the first code of codes, or of its 2-byte code, to text. It returns the count of codes used.

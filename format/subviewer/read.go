@@ -59,7 +59,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 
 	var lines []string
 	for _, raw := range parsing.Lines(string(content)) {
-		lines = append(lines, strings.Trim(raw, markupcore.PHPTrimSet))
+		lines = append(lines, strings.Trim(raw, markupcore.TrimSet))
 	}
 	rd := &reader{st: st, s: s, header: model.NewData()}
 	var data *model.Data
@@ -89,7 +89,7 @@ func splitTag(line string) (tag, rest string, ok bool) {
 	return line[1:i], line[i+1:], true
 }
 
-// asciiUpper raises a to z only, as PHP strtoupper does. It keeps every other byte, also of invalid UTF-8.
+// asciiUpper raises a to z only. It keeps every other byte, also of invalid UTF-8.
 func asciiUpper(s string) string {
 	b := []byte(s)
 	for i, c := range b {
@@ -100,8 +100,7 @@ func asciiUpper(s string) string {
 	return string(b)
 }
 
-// headerValue returns the header tags. A header whose tags are 0, 1 and so on in this order is a list, as it is in a
-// PHP array. So an empty header is an empty list.
+// headerValue returns the header tags. A header whose tags are 0, 1 and so on in this order is a list. So an empty header is an empty list.
 func (rd *reader) headerValue() any {
 	keys := rd.header.Keys()
 	for i, k := range keys {
@@ -163,14 +162,14 @@ func (rd *reader) version1Header(lines []string) (int64, error) {
 			}
 			continue
 		}
-		tag = asciiUpper(strings.Trim(tag, markupcore.PHPTrimSet))
-		value := strings.Trim(rest, markupcore.PHPTrimSet)
+		tag = asciiUpper(strings.Trim(tag, markupcore.TrimSet))
+		value := strings.Trim(rest, markupcore.TrimSet)
 		if value == "" && i+1 < len(lines) && lines[i+1] != "" && !strings.HasPrefix(lines[i+1], "[") {
 			i++
 			value = lines[i]
 		}
 		if tag == "DELAY" {
-			delay, value = phpInt(value), "0"
+			delay, value = leadingInt(value), "0"
 		}
 		rd.addHeaderTag(tag, value)
 	}
@@ -265,7 +264,7 @@ func endLastCue(entries []scriptEntry, t time.Duration) {
 	}
 }
 
-// pipeLines splits a SubViewer 1 text line at |. It keeps empty parts, as PHP does.
+// pipeLines splits a SubViewer 1 text line at |. It keeps empty parts.
 func pipeLines(line string) []string {
 	parts := strings.Split(line, "|")
 	for i, p := range parts {
@@ -359,7 +358,7 @@ func (rd *reader) flush() {
 func brLines(line string) []string {
 	var lines []string
 	for part := range strings.SplitSeq(line, "[br]") {
-		if part = strings.Trim(part, markupcore.PHPTrimSet); part != "" {
+		if part = strings.Trim(part, markupcore.TrimSet); part != "" {
 			lines = append(lines, markupcore.EscapeText(part))
 		}
 	}
@@ -447,16 +446,17 @@ func (rd *reader) version2Header(line string, number int) error {
 		err := &model.ParseError{Line: number, Msg: `The line "` + line + `" is neither a header tag nor a timing line.`}
 		return rd.st.Fail(err, number, 0, []string{line})
 	}
-	tag = asciiUpper(strings.Trim(tag, markupcore.PHPTrimSet))
+	tag = asciiUpper(strings.Trim(tag, markupcore.TrimSet))
 	if !isBlockTag(tag) {
-		rd.addHeaderTag(tag, strings.Trim(rest, markupcore.PHPTrimSet))
+		rd.addHeaderTag(tag, strings.Trim(rest, markupcore.TrimSet))
 	}
 	return nil
 }
 
-// phpInt reads the number at the start of s as the PHP cast (int) does. It skips leading white space, reads a sign,
-// digits, a fraction and an exponent, and cuts off the fraction. A finite value beyond the int64 range gives its limit, and one beyond the float range gives 0.
-func phpInt(s string) int64 {
+// leadingInt reads the number at the start of s as an integer. It skips leading white space, reads a sign,
+// digits, a fraction and an exponent, and cuts off the fraction. A finite value beyond the int64 range gives its limit,
+// and one beyond the float range gives 0.
+func leadingInt(s string) int64 {
 	s = strings.TrimLeft(s, " \t\n\r\v\f")
 	s = s[:numberEnd(s)]
 	if n, err := strconv.ParseInt(s, 10, 64); err == nil {
@@ -465,7 +465,7 @@ func phpInt(s string) int64 {
 	f, _ := strconv.ParseFloat(s, 64) // an empty string gives 0, a value beyond the float range gives +Inf or -Inf
 	switch {
 	case math.IsInf(f, 0):
-		return 0 // PHP casts INF to 0, but a finite value beyond the int64 range to its limit
+		return 0 // an infinite value gives 0, a finite value beyond the int64 range gives its limit
 	case f >= math.MaxInt64:
 		return math.MaxInt64
 	case f <= math.MinInt64:

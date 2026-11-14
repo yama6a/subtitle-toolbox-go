@@ -143,7 +143,7 @@ func report(offsetMillis int64, scale, score float64, segments []segmentResult) 
 	return r
 }
 
-// milliseconds rounds seconds to whole milliseconds, as the PHP offsets are rounded.
+// milliseconds rounds seconds to whole milliseconds.
 func milliseconds(sec float64) int64 {
 	return int64(math.Round(sec * 1000))
 }

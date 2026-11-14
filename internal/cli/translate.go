@@ -91,7 +91,7 @@ func (t *translateCommand) prepare(a *args, r *runner) error {
 		return err
 	}
 	t.source, _ = a.Value("source-language")
-	if t.target, ok = a.Value("target-language"); !ok || strings.Trim(t.target, markupcore.PHPTrimSet) == "" {
+	if t.target, ok = a.Value("target-language"); !ok || strings.Trim(t.target, markupcore.TrimSet) == "" {
 		return usage("Pass --target-language, for example --target-language fr.")
 	}
 	return t.build(name, key, r.c.getenv)
@@ -127,7 +127,7 @@ func apiKey(a *args, getenv func(string) string, engine string) (string, error) 
 		}
 		return "", usage("Pass --api-key or set the environment variable " + variable + ".")
 	}
-	if strings.Trim(key, markupcore.PHPTrimSet) == "" {
+	if strings.Trim(key, markupcore.TrimSet) == "" {
 		return "", usage("The API key is empty. Pass --api-key or set " + variable + ".")
 	}
 	if strings.HasPrefix(key, " ") || strings.HasSuffix(key, " ") || strings.ContainsFunc(key, isControl) {
@@ -144,7 +144,7 @@ func openAISettings(getenv func(string) string) (model, base string, err error) 
 	switch {
 	case model == "":
 		return "", "", usage("Set the environment variable OPENAI_MODEL, for example OPENAI_MODEL=gpt-4o-mini.")
-	case strings.Trim(model, markupcore.PHPTrimSet) == "":
+	case strings.Trim(model, markupcore.TrimSet) == "":
 		return "", "", usage("The environment variable OPENAI_MODEL is empty. Set it to a model name, for example gpt-4o-mini.")
 	}
 	base = getenv("OPENAI_BASE_URL")

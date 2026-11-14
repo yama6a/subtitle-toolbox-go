@@ -10,7 +10,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-// scalarText returns a string, number or bool value as PHP casts it to a string, and "" for another value.
+// scalarText returns a string, number or bool value as text, and "" for another value.
 func scalarText(v orderedjson.Value) string {
 	switch v.Kind() {
 	case orderedjson.String:
@@ -32,7 +32,7 @@ func isScalar(v orderedjson.Value) bool {
 	return k == orderedjson.String || k == orderedjson.Number || k == orderedjson.Bool
 }
 
-// leadingInt returns the integer at the start of s as PHP intval reads it, 0 for none.
+// leadingInt returns the integer at the start of s, 0 for none.
 func leadingInt(s string) int {
 	s = strings.TrimLeft(s, asciiSpace)
 	end := 0

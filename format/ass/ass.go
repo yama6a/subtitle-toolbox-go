@@ -65,7 +65,7 @@ func (o WriteOptions) Validate() error {
 	return err
 }
 
-// signatureRegexp is the signature of PHP FormatDetector: a first line [Script Info] in any case.
+// signatureRegexp is the signature of the format: a first line [Script Info] in any case.
 var signatureRegexp = regexp.MustCompile(`(?i)\A\[Script Info\][ \t]*(?:\n|\z)`)
 
 // Detect reports whether content has the ASS signature of stbox.Detect. The content must have no leading
@@ -103,11 +103,11 @@ const (
 	ssaScriptType     = "v4.00"
 )
 
-func phpTrim(s string) string {
-	return strings.Trim(s, markupcore.PHPTrimSet)
+func trim(s string) string {
+	return strings.Trim(s, markupcore.TrimSet)
 }
 
-// equalFold compares a and b without ASCII case, as PHP strcasecmp does.
+// equalFold compares a and b without ASCII case.
 func equalFold(a, b string) bool {
 	if len(a) != len(b) {
 		return false

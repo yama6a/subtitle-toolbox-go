@@ -57,7 +57,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 }
 
 // readSegment reads the header into header and the data of the segment at offset into data. It returns the size of the
-// data, or the message of the framing damage, or io.EOF when no byte is left. The checks run in the order of PHP.
+// data, or the message of the framing damage, or io.EOF when no byte is left. The checks run in a fixed order.
 func readSegment(r io.Reader, offset int, header, data []byte) (size int, msg string, err error) {
 	if msg, err = readHeader(r, offset, header); msg != "" || err != nil {
 		return 0, msg, err

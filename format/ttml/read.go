@@ -149,7 +149,7 @@ func (r *reader) readClock() (clock, error) {
 	}
 	smpteFrameRate := guess
 	if hasFrameRate {
-		smpteFrameRate = ttmlwrite.PHPFloat(frameRate)
+		smpteFrameRate = ttmlwrite.LeadingFloat(frameRate)
 	}
 	if smpteFrameRate == 0 {
 		smpteFrameRate = 30
@@ -166,11 +166,11 @@ func (r *reader) readClock() (clock, error) {
 	if hasFrameRate {
 		c.tickRate = c.frameRate
 	}
-	if v, ok := r.parameter("tickRate"); ok && ttmlwrite.PHPFloat(v) > 0 {
-		c.tickRate = ttmlwrite.PHPFloat(v)
+	if v, ok := r.parameter("tickRate"); ok && ttmlwrite.LeadingFloat(v) > 0 {
+		c.tickRate = ttmlwrite.LeadingFloat(v)
 	}
-	if v, ok := r.parameter("subFrameRate"); ok && ttmlwrite.PHPFloat(v) != 0 {
-		c.subFrameRate = ttmlwrite.PHPFloat(v)
+	if v, ok := r.parameter("subFrameRate"); ok && ttmlwrite.LeadingFloat(v) != 0 {
+		c.subFrameRate = ttmlwrite.LeadingFloat(v)
 	}
 	return c, nil
 }
@@ -191,7 +191,7 @@ func (r *reader) parameter(local string) (string, bool) {
 
 func (r *reader) trimmedParameter(local, fallback string) string {
 	if v, ok := r.parameter(local); ok {
-		return strings.Trim(v, markupcore.PHPTrimSet)
+		return strings.Trim(v, markupcore.TrimSet)
 	}
 	return fallback
 }
@@ -229,9 +229,9 @@ func (r *reader) highestFrameLabel() (label int64, expression string, line int) 
 			if a.Name.Space != "" || !slices.Contains(timingAttributes, a.Name.Local) {
 				continue
 			}
-			v := strings.Trim(a.Value, markupcore.PHPTrimSet)
-			if m := frameLabelRegexp.FindStringSubmatch(v); m != nil && phpInt(m[1]) >= 30 && phpInt(m[1]) > label {
-				label, expression, line = phpInt(m[1]), v, n.Line
+			v := strings.Trim(a.Value, markupcore.TrimSet)
+			if m := frameLabelRegexp.FindStringSubmatch(v); m != nil && leadingInt(m[1]) >= 30 && leadingInt(m[1]) > label {
+				label, expression, line = leadingInt(m[1]), v, n.Line
 			}
 		}
 	}
@@ -260,7 +260,7 @@ func (r *reader) readAgents(head *xmlraw.Node) map[string]string {
 		}
 		for _, c := range n.Children {
 			if isMetadataElement(c, "name") {
-				if name := strings.Trim(c.Text(), markupcore.PHPTrimSet); name != "" {
+				if name := strings.Trim(c.Text(), markupcore.TrimSet); name != "" {
 					agents[ttmlwrite.XMLAttr(n, "id")] = name
 					break
 				}
@@ -277,8 +277,8 @@ func (r *reader) readFileData(s *model.Subtitle, head *xmlraw.Node) error {
 	}
 	data := model.NewData(
 		model.Field{Key: "namespace", Value: r.ns},
-		model.Field{Key: "namespaces", Value: phpArray(r.readNamespaces())},
-		model.Field{Key: "attributes", Value: phpArray(readAttributes(r.root, "xml:lang"))},
+		model.Field{Key: "namespaces", Value: emptyListIfEmpty(r.readNamespaces())},
+		model.Field{Key: "attributes", Value: emptyListIfEmpty(readAttributes(r.root, "xml:lang"))},
 	)
 	if head != nil {
 		if title, ok := removeTitle(head); ok {
@@ -343,10 +343,10 @@ func removeTitle(head *xmlraw.Node) (string, bool) {
 		if !isMetadataElement(n, "title") {
 			continue
 		}
-		title := strings.Trim(n.Text(), markupcore.PHPTrimSet)
+		title := strings.Trim(n.Text(), markupcore.TrimSet)
 		parent := n.Parent
 		if i := slices.Index(parent.Children, n); i > 0 {
-			if prev := parent.Children[i-1]; prev.Kind == xmlraw.TextNode && strings.Trim(prev.Data, markupcore.PHPTrimSet) == "" {
+			if prev := parent.Children[i-1]; prev.Kind == xmlraw.TextNode && strings.Trim(prev.Data, markupcore.TrimSet) == "" {
 				parent.RemoveChild(prev)
 			}
 		}
@@ -356,9 +356,9 @@ func removeTitle(head *xmlraw.Node) (string, bool) {
 	return "", false
 }
 
-// phpArray returns an empty list for an empty object, as PHP stores both as an empty array, so the format data
-// writes as the PHP library writes it.
-func phpArray(d *model.Data) any {
+// emptyListIfEmpty returns an empty list for an empty object, so the format data
+// of an empty object writes as an empty list.
+func emptyListIfEmpty(d *model.Data) any {
 	if d.Len() == 0 {
 		return []any{}
 	}
@@ -531,7 +531,7 @@ func (r *reader) interval(n *xmlraw.Node, parent interval) (interval, *model.Par
 		base float64
 	}{{"end", parent.begin}, {"dur", iv.begin}} {
 		v, _ := ttmlwrite.PlainAttr(n, attr.name)
-		if strings.Trim(v, markupcore.PHPTrimSet) == "" {
+		if strings.Trim(v, markupcore.TrimSet) == "" {
 			continue
 		}
 		t, err := r.offsetTime(attr.base, n, attr.name)
@@ -548,7 +548,7 @@ func (r *reader) interval(n *xmlraw.Node, parent interval) (interval, *model.Par
 // offsetTime returns base plus the time of the attribute. Lenient mode reads the forms of looseSeconds too.
 func (r *reader) offsetTime(base float64, n *xmlraw.Node, attr string) (float64, *model.ParseError) {
 	v, _ := ttmlwrite.PlainAttr(n, attr)
-	expression := strings.Trim(v, markupcore.PHPTrimSet)
+	expression := strings.Trim(v, markupcore.TrimSet)
 	secs, err := r.boundedExpression(expression)
 	if err == nil {
 		return r.bounded(base+secs, expression, n.Line)
@@ -780,7 +780,7 @@ func markAgentEnds(runs []run) []run {
 }
 
 func visibleRun(rn run) bool {
-	return !rn.timed && !rn.lineBreak && strings.Trim(rn.text, markupcore.PHPTrimSet) != ""
+	return !rn.timed && !rn.lineBreak && strings.Trim(rn.text, markupcore.TrimSet) != ""
 }
 
 // runsToMarkup writes the runs of one line. A speaker tag opens before the text of its agent and closes after it,
@@ -850,7 +850,7 @@ func (r *reader) alignment(region string, hasRegion bool, textAlign string, hasT
 	if !hasTextAlign {
 		textAlign = propOr(props, "textAlign", "start")
 	}
-	column := map[string]int{"left": 1, "center": 2, "right": 3}[strings.Trim(textAlign, markupcore.PHPTrimSet)]
+	column := map[string]int{"left": 1, "center": 2, "right": 3}[strings.Trim(textAlign, markupcore.TrimSet)]
 	row, ok := r.row(props)
 	if column == 0 || !ok {
 		return model.BottomCenter, false
@@ -863,7 +863,7 @@ func (r *reader) alignment(region string, hasRegion bool, textAlign string, hasT
 // middle or the far edge of the region by the column of alignment a.
 func (r *reader) offset(region string, hasRegion bool, a model.Alignment) *model.Offset {
 	props := r.styles.RegionProperties(region, hasRegion)
-	if origin, ok := props["origin"]; !ok || strings.Trim(origin, markupcore.PHPTrimSet) == "auto" {
+	if origin, ok := props["origin"]; !ok || strings.Trim(origin, markupcore.TrimSet) == "auto" {
 		return nil
 	}
 	var anchor [2]float64
@@ -875,7 +875,7 @@ func (r *reader) offset(region string, hasRegion bool, a model.Alignment) *model
 		}
 		share := [...]float64{0, 0.5, 1}[a.Column()-1]
 		if axis == 1 {
-			share = map[string]float64{"before": 0, "center": 0.5, "after": 1}[strings.Trim(propOr(props, "displayAlign", "before"), markupcore.PHPTrimSet)]
+			share = map[string]float64{"before": 0, "center": 0.5, "after": 1}[strings.Trim(propOr(props, "displayAlign", "before"), markupcore.TrimSet)]
 		}
 		if anchor[axis] = origin + extent*share; math.IsNaN(anchor[axis]) {
 			return nil
@@ -901,7 +901,7 @@ func (r *reader) row(props ttmlwrite.Properties) (int, bool) {
 		return 0, false
 	}
 	var anchor float64
-	switch strings.Trim(propOr(props, "displayAlign", "before"), markupcore.PHPTrimSet) {
+	switch strings.Trim(propOr(props, "displayAlign", "before"), markupcore.TrimSet) {
 	case "before":
 		anchor = origin
 	case "center":
@@ -935,7 +935,7 @@ func (r *reader) axisLength(value string, axis int, auto float64) (float64, bool
 	if m == nil {
 		return 0, false
 	}
-	length := ttmlwrite.PHPFloat(m[1])
+	length := ttmlwrite.LeadingFloat(m[1])
 	switch m[2] {
 	case "%":
 		return length / 100, true
@@ -952,11 +952,11 @@ func (r *reader) cellLength(length float64, axis int) (float64, bool) {
 	if !ok {
 		v = "32 15"
 	}
-	resolution := spaceRegexp.Split(strings.Trim(v, markupcore.PHPTrimSet), -1)
-	if len(resolution) != 2 || phpInt(resolution[axis]) <= 0 {
+	resolution := spaceRegexp.Split(strings.Trim(v, markupcore.TrimSet), -1)
+	if len(resolution) != 2 || leadingInt(resolution[axis]) <= 0 {
 		return 0, false
 	}
-	return length / float64(phpInt(resolution[axis])), true
+	return length / float64(leadingInt(resolution[axis])), true
 }
 
 // pixelLength returns a length in pixels as a fraction of the width or height of tts:extent on <tt>, else on <body>.
@@ -966,10 +966,10 @@ func (r *reader) pixelLength(length float64, axis int) (float64, bool) {
 		extent, ok = ttmlwrite.StylingAttributes(r.body)["extent"]
 	}
 	m := rootExtentRegexp.FindStringSubmatch(extent)
-	if !ok || m == nil || ttmlwrite.PHPFloat(m[1+axis]) <= 0 {
+	if !ok || m == nil || ttmlwrite.LeadingFloat(m[1+axis]) <= 0 {
 		return 0, false
 	}
-	return length / ttmlwrite.PHPFloat(m[1+axis]), true
+	return length / ttmlwrite.LeadingFloat(m[1+axis]), true
 }
 
 func propOr(props ttmlwrite.Properties, name, fallback string) string {
@@ -1001,7 +1001,7 @@ func (r *reader) forcedDisplay(n *xmlraw.Node) (bool, bool) {
 func (r *reader) forcedDisplayAt(n *xmlraw.Node, depth int) (bool, bool) {
 	for _, a := range ttmlwrite.Attributes(n) {
 		if n.AttrNamespaceURI(a) == ttmlwrite.NSIMSCStyle && a.Name.Local == "forcedDisplay" || ttmlwrite.UndeclaredName(n, a) == "itts:forcedDisplay" {
-			return strings.Trim(a.Value, markupcore.PHPTrimSet) == "true", true
+			return strings.Trim(a.Value, markupcore.TrimSet) == "true", true
 		}
 	}
 	forced, found := false, false
@@ -1093,7 +1093,7 @@ func (r *reader) addCues(s *model.Subtitle) error {
 func xmlLines(n *xmlraw.Node) []string {
 	var lines []string
 	for line := range strings.SplitSeq(ttmlwrite.Serialize(n), "\n") {
-		if line = strings.Trim(line, markupcore.PHPTrimSet); line != "" {
+		if line = strings.Trim(line, markupcore.TrimSet); line != "" {
 			lines = append(lines, line)
 		}
 	}

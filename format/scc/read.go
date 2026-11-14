@@ -60,7 +60,7 @@ func readCodeLines(st *parsing.State, content string) ([]cea608.CodeLine, *bool,
 	var dropFrame *bool
 	block := -1
 	for n, raw := range parsing.Lines(content) {
-		raw = strings.Trim(raw, markupcore.PHPTrimSet)
+		raw = strings.Trim(raw, markupcore.TrimSet)
 		if raw == "" {
 			continue
 		}
@@ -115,7 +115,7 @@ func matchCodeLine(st *parsing.State, raw string, line, block int) (m []string, 
 	return m, start, nil
 }
 
-// isSpace matches the white space of the PHP pattern \s.
+// isSpace matches TAB, LF, VT, FF, CR and space.
 func isSpace(r rune) bool {
 	return strings.ContainsRune("\t\n\v\f\r ", r)
 }

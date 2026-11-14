@@ -37,7 +37,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 	var cues []model.Cue
 	block := 0
 	for n, raw := range parsing.Lines(string(content)) {
-		raw = strings.Trim(raw, markupcore.PHPTrimSet)
+		raw = strings.Trim(raw, markupcore.TrimSet)
 		if raw == "" {
 			continue
 		}
@@ -93,7 +93,7 @@ func parseText(text string) []string {
 	var lines []string
 	for _, part := range parsing.PipeLines(text) {
 		if rest, italic := strings.CutPrefix(part, "/"); italic {
-			if rest = strings.Trim(rest, markupcore.PHPTrimSet); rest != "" {
+			if rest = strings.Trim(rest, markupcore.TrimSet); rest != "" {
 				lines = append(lines, "<i>"+markupcore.EscapeText(rest)+"</i>")
 			}
 		} else {

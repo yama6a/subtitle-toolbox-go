@@ -111,7 +111,7 @@ func htmlParagraphs(content string) []htmlParagraph {
 		cur := &out[len(out)-1]
 		switch el.name {
 		case nameCite:
-			cur.speaker = strings.Trim(strings.TrimRight(htmlText(el.inner), ":"), markupcore.PHPTrimSet)
+			cur.speaker = strings.Trim(strings.TrimRight(htmlText(el.inner), ":"), markupcore.TrimSet)
 			cur.hasSpeaker = true
 		case nameTime:
 			cur.timeText, cur.timeLine, cur.hasTime = htmlText(el.inner), line, true
@@ -136,7 +136,7 @@ func (p htmlParagraph) endsBefore(name int) bool {
 
 // htmlText removes the tags, decodes the entities and joins each run of space, tab, CR and LF to one space.
 func htmlText(html string) string {
-	return strings.Trim(collapseSpace(markupcore.PlainText(html)), markupcore.PHPTrimSet)
+	return strings.Trim(collapseSpace(markupcore.PlainText(html)), markupcore.TrimSet)
 }
 
 // htmlLines splits the inner HTML of a p at each br and returns the escaped text of each part, without empty ones.

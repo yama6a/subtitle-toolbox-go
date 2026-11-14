@@ -180,13 +180,13 @@ func singleRune(char string) (rune, bool) {
 
 // startsTurn reports whether text starts with the CEA-608 speaker change ">>" or a dialogue dash.
 func startsTurn(text string) bool {
-	text = strings.TrimLeft(text, markupcore.PHPTrimSet)
+	text = strings.TrimLeft(text, markupcore.TrimSet)
 	return strings.HasPrefix(text, ">>") || markupcore.StartsDialogueTurn(text)
 }
 
 // startsAnnotation reports whether text starts with a sound description or a music note.
 func startsAnnotation(text string) bool {
-	r, _ := utf8.DecodeRuneInString(strings.TrimLeft(text, markupcore.PHPTrimSet))
+	r, _ := utf8.DecodeRuneInString(strings.TrimLeft(text, markupcore.TrimSet))
 	return r == '[' || r == '(' || r == musicNote
 }
 

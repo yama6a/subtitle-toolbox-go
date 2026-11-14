@@ -13,11 +13,11 @@ type pcrePattern struct {
 	ignoreCase bool
 }
 
-// convertPCRE turns a PHP PCRE pattern with delimiters and flags, such as /\.{4,}/i, into a regexp2 pattern.
-// ok is false for a pattern that PHP rejects, and for an empty pattern such as //m, which ReplaceText rejects.
+// convertPCRE turns a PCRE pattern with delimiters and flags, such as /\.{4,}/i, into a regexp2 pattern.
+// ok is false for a pattern that PCRE rejects, and for an empty pattern such as //m, which ReplaceText rejects.
 // badFlag holds the first flag that regexp2 lacks, or "".
 func convertPCRE(from string) (p pcrePattern, badFlag string, ok bool) {
-	s := strings.TrimLeft(from, phpSpace)
+	s := strings.TrimLeft(from, numberSpace)
 	if s == "" || isAlnum(s[0]) || s[0] == '\\' {
 		return pcrePattern{}, "", false
 	}
@@ -35,8 +35,8 @@ func convertPCRE(from string) (p pcrePattern, badFlag string, ok bool) {
 	return pcrePattern{pattern: body, ignoreCase: ignoreCase}, "", true
 }
 
-// readFlags returns the flags m, s and x for an inline group, whether i is set, and the first other flag. PHP
-// skips u, a space, LF and CR.
+// readFlags returns the flags m, s and x for an inline group, whether i is set, and the first other flag. The flags
+// u, space, LF and CR are skipped.
 func readFlags(flags string) (inline string, ignoreCase bool, badFlag string) {
 	for _, f := range flags {
 		switch f {
@@ -80,7 +80,7 @@ func splitDelimited(s string) (body, flags string, ok bool) {
 	return "", "", false
 }
 
-// unescapeEscape returns the escape \c inside the pattern. PHP passes the "\" on to PCRE, and regexp2 reads a
+// unescapeEscape returns the escape \c inside the pattern. PCRE keeps the "\", and regexp2 reads a
 // "\" before ASCII punctuation as PCRE does. Only \_ fails in regexp2, so it becomes _, which PCRE reads the same.
 func unescapeEscape(c byte) string {
 	if c == '_' {
@@ -110,8 +110,8 @@ func isAlnum(c byte) bool {
 	return c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
 }
 
-// convertReplacement turns a PHP TO into a regexp2 replacement. The references \N, \NN, $N, $NN, ${N} and ${NN}
-// become ${N}, or nothing for a group that the pattern lacks, as in PHP. \\ and \$ give \ and $. Every other $
+// convertReplacement turns a PCRE replacement into a regexp2 replacement. The references \N, \NN, $N, $NN, ${N} and ${NN}
+// become ${N}, or nothing for a group that the pattern lacks. \\ and \$ give \ and $. Every other $
 // becomes $$, so the regexp2 substitutions such as $_ and $& stay text.
 func convertReplacement(to string, hasGroup func(n int) bool) string {
 	var b strings.Builder
@@ -136,12 +136,12 @@ func convertReplacement(to string, hasGroup func(n int) bool) string {
 	return b.String()
 }
 
-// phpBackReference is a back reference of a PHP TO, as preg_get_backref of php_pcre.c reads it.
-var phpBackReference = regexp.MustCompile(`^(?:[\\$]([0-9]{1,2})|\$\{([0-9]{1,2})\})`)
+// backReferenceRegexp is a back reference of a PCRE replacement: \N, $N, \NN, $NN or ${NN}, with 1 or 2 digits.
+var backReferenceRegexp = regexp.MustCompile(`^(?:[\\$]([0-9]{1,2})|\$\{([0-9]{1,2})\})`)
 
 // backReference returns the group number of the back reference at the start of s and its length in bytes.
 func backReference(s string) (n, size int, ok bool) {
-	m := phpBackReference.FindStringSubmatch(s)
+	m := backReferenceRegexp.FindStringSubmatch(s)
 	if m == nil {
 		return 0, 0, false
 	}

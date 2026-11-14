@@ -67,14 +67,14 @@ func (w *writer) readHeadElement(n *xmlraw.Node) {
 	}
 	if forced, ok := imscForcedDisplay(n); ok && IsElement(n, w.ns, "region") {
 		if _, seen := w.forcedRegions[id]; !seen {
-			w.forcedRegions[id] = strings.Trim(forced, markupcore.PHPTrimSet) == "true"
+			w.forcedRegions[id] = strings.Trim(forced, markupcore.TrimSet) == "true"
 		}
 	}
 	if LocalName(n) != "agent" || !slices.Contains(MetadataNamespaces, n.NamespaceURI()) {
 		return
 	}
 	for name := range n.Descendants() {
-		text := strings.Trim(name.Text(), markupcore.PHPTrimSet)
+		text := strings.Trim(name.Text(), markupcore.TrimSet)
 		if _, seen := w.agentIDs[text]; !seen && IsElement(name, n.NamespaceURI(), "name") {
 			w.agentIDs[text] = id
 		}
@@ -318,7 +318,7 @@ func indexFromEnd(nodes []*xmlraw.Node, n *xmlraw.Node) int {
 }
 
 // reconcile gives a new element in the namespace uri the prefix and the xmlns declaration that libxml gives it when
-// PHP inserts it. Without its prefix, the element takes the prefix of the nearest declaration of uri. With its
+// the element is inserted. Without its prefix, the element takes the prefix of the nearest declaration of uri. With its
 // prefix, the element keeps it, and declares it when the nearest declaration of uri has another prefix.
 func reconcile(el *xmlraw.Node, uri string) {
 	prefix, found := searchNamespace(el.Parent, uri, el.Parent)
@@ -368,5 +368,5 @@ func inScope(n *xmlraw.Node, prefix, uri string) bool {
 }
 
 func isBlankText(n *xmlraw.Node) bool {
-	return n.Kind == xmlraw.TextNode && strings.Trim(n.Data, markupcore.PHPTrimSet) == ""
+	return n.Kind == xmlraw.TextNode && strings.Trim(n.Data, markupcore.TrimSet) == ""
 }

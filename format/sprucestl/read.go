@@ -100,7 +100,7 @@ func splitLines(content string) []string {
 func guessFrameRate(st *parsing.State, lines []string) model.FrameRate {
 	highest, found := 0, false
 	for _, line := range lines {
-		if c, ok := parseCueLine(strings.Trim(line, markupcore.PHPTrimSet)); ok {
+		if c, ok := parseCueLine(strings.Trim(line, markupcore.TrimSet)); ok {
 			found = true
 			highest = max(highest, atoi(c.start[3]), atoi(c.end[3]))
 		}
@@ -136,7 +136,7 @@ type reader struct {
 }
 
 func (rd *reader) line(number int, line string) error {
-	trimmed := strings.Trim(line, markupcore.PHPTrimSet)
+	trimmed := strings.Trim(line, markupcore.TrimSet)
 	if cl, ok := parseCueLine(trimmed); ok {
 		return rd.cue(number, line, cl)
 	}
@@ -221,7 +221,7 @@ func cueText(text string, st style) []string {
 	bold, italic, underline := st.bold, st.italic, st.underline
 	var lines []string
 	for _, part := range lineBreakRegexp.Split(text, -1) {
-		part = strings.Trim(part, markupcore.PHPTrimSet)
+		part = strings.Trim(part, markupcore.TrimSet)
 		var runs []markupcore.Run
 		from := 0
 		for _, loc := range toggleRegexp.FindAllStringIndex(part, -1) {
@@ -237,7 +237,7 @@ func cueText(text string, st style) []string {
 			from = loc[1]
 		}
 		runs = appendRun(runs, part[from:], bold, italic, underline)
-		if line := strings.Trim(markupcore.StyleRuns(runs, true), markupcore.PHPTrimSet); line != "" {
+		if line := strings.Trim(markupcore.StyleRuns(runs, true), markupcore.TrimSet); line != "" {
 			lines = append(lines, line)
 		}
 	}

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/phpkey"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
 )
 
 // valueType is one type of the type language of the format data schema.
@@ -67,7 +67,7 @@ func timeBase() valueType {
 	}}
 }
 
-// trimFinalLF removes one final LF, because PHP checks with a PCRE "$", which also matches before a final LF.
+// trimFinalLF removes one final LF, because the check uses a PCRE "$", which also matches before a final LF.
 func trimFinalLF(s string) string {
 	return strings.TrimSuffix(s, "\n")
 }
@@ -116,7 +116,7 @@ func listOf(elem valueType) valueType {
 }
 
 func namesOf(elem valueType) valueType {
-	return namedValues(elem, func(key string) bool { return !phpkey.IsIntKey(key) },
+	return namedValues(elem, func(key string) bool { return !intkey.IsIntKey(key) },
 		func(path string) string {
 			return "The field " + path + " must be an object whose keys are names, not numbers."
 		})
@@ -287,9 +287,9 @@ func childPath(v any, path string, i int) string {
 	return keyPath(path, d.keys[i])
 }
 
-// keyPath returns the path of the object key at path. A key that PHP turns into an integer gets the list form.
+// keyPath returns the path of the object key at path. A key that reads as an integer gets the list form.
 func keyPath(path, key string) string {
-	if phpkey.IsIntKey(key) {
+	if intkey.IsIntKey(key) {
 		return path + "[" + key + "]"
 	}
 	return path + "." + key

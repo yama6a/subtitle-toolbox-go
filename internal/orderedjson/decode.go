@@ -6,10 +6,10 @@ import (
 	"unicode/utf8"
 )
 
-// maxDepth is the most arrays and objects inside each other. PHP json_decode with depth 512 fails at the 512th.
+// maxDepth is the most arrays and objects inside each other. The 512th level fails.
 const maxDepth = 511
 
-// The error texts of PHP json_decode.
+// The error texts of a decode failure.
 const (
 	msgSyntax    = "Syntax error"
 	msgDepth     = "Maximum stack depth exceeded"
@@ -19,15 +19,15 @@ const (
 	msgState     = "State mismatch (invalid or malformed JSON)"
 )
 
-// SyntaxError is a decode failure. Its text is one of the PHP json_decode texts.
+// SyntaxError is a decode failure. Its text is one of the msg constants.
 type SyntaxError struct {
 	// Offset is the byte offset of the input where the error starts.
 	Offset int
-	// Msg is the PHP error text.
+	// Msg is the error text.
 	Msg string
 }
 
-// Error returns the PHP text.
+// Error returns Msg.
 func (e *SyntaxError) Error() string { return e.Msg }
 
 type decoder struct {
@@ -62,8 +62,8 @@ func (d *decoder) space() {
 // at reports whether the byte at pos is b.
 func (d *decoder) at(b byte) bool { return d.pos < len(d.data) && d.data[d.pos] == b }
 
-// outside returns the error text for the unexpected token at pos. PHP scans a string token before it
-// finds the grammar error, so a bad string there gives the string error.
+// outside returns the error text for the unexpected token at pos. A string token is scanned before the
+// grammar error is found, so a bad string there gives the string error.
 func (d *decoder) outside() string {
 	if d.pos >= len(d.data) {
 		return msgSyntax

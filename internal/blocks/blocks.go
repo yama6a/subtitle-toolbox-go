@@ -11,7 +11,7 @@ import (
 
 var (
 	// brokenTimeRegexp matches a first line that looks like a broken time or arrow, so its block stays apart.
-	// PHP reads its pattern with the u flag, so the digits and the white space are those of Unicode.
+	// The pattern reads Unicode: the digits and the white space are those of Unicode.
 	brokenTimeRegexp = regexp.MustCompile(`^\p{Nd}+[\t\n\v\f\r\x{85}\p{Z}]*[:\x{FF1A}]\p{Nd}`)
 	numericRegexp    = regexp.MustCompile(`^[ \t\n\r\v\f]*[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?[ \t\n\r\v\f]*$`)
 )
@@ -81,7 +81,7 @@ func JoinWarning(block, line int) string {
 		" inside the cue. The parser kept the text after it in the cue."
 }
 
-// IsNumeric reports whether s is a PHP numeric string, such as "1", "+1", "1.5", ".5", "1." or "1e3",
+// IsNumeric reports whether s is a decimal number, such as "1", "+1", "1.5", ".5", "1." or "1e3",
 // with optional white space before and after.
 func IsNumeric(s string) bool {
 	return numericRegexp.MatchString(s)

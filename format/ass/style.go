@@ -115,7 +115,7 @@ func isDefaultStyle(s *record) bool {
 		return false
 	}
 	name, _ := s.get(nameField)
-	return equalFold(strings.TrimLeft(phpTrim(name), "*"), "Default")
+	return equalFold(strings.TrimLeft(trim(name), "*"), "Default")
 }
 
 // newDefaultStyle returns a Default style with the fields of the Format line. Each field takes the value of the
@@ -132,7 +132,7 @@ func (f *fileData) newDefaultStyle() record {
 	return added
 }
 
-// replaced returns a copy of r with the values set, as PHP array_replace does.
+// replaced returns a copy of r with the values set.
 func replaced(r, values record) record {
 	out := record{names: slices.Clone(r.names), values: slices.Clone(r.values)}
 	for i, n := range values.names {

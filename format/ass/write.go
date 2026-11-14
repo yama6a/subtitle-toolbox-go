@@ -699,7 +699,7 @@ func timestampTimes(tokens []string, start int64) (times []int64, textBefore boo
 				continue
 			}
 		}
-		if len(times) == 0 && i%2 == 0 && phpTrim(token) != "" {
+		if len(times) == 0 && i%2 == 0 && trim(token) != "" {
 			textBefore = true
 		}
 	}

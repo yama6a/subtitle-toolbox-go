@@ -156,7 +156,7 @@ func newRegexReplacer(search, replace string, ignoreCase bool) (func(string) (st
 }
 
 // newFoldReplacer matches search in any case with the case folding of package regexp. A search or a text run of
-// invalid UTF-8 falls back to the case of ASCII letters, as PHP str_ireplace does.
+// invalid UTF-8 falls back to the case of ASCII letters.
 func newFoldReplacer(search, replace string) func(string) (string, error) {
 	if !utf8.ValidString(search) {
 		return func(text string) (string, error) { return replaceASCIIFold(text, search, replace), nil }

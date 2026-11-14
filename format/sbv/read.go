@@ -150,7 +150,7 @@ func (rd *reader) timing(text string, index, line int) (start, end time.Duration
 }
 
 func strictDuration(text string, line int) (time.Duration, error) {
-	text = strings.Trim(text, markupcore.PHPTrimSet)
+	text = strings.Trim(text, markupcore.TrimSet)
 	m := timeRegexp.FindStringSubmatch(text)
 	if m == nil {
 		return 0, &model.ParseError{Line: line, Msg: `The time "` + text + `" is not valid.`}

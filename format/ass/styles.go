@@ -17,7 +17,7 @@ var flagFields = [...]struct{ tag, field string }{
 // findStyle returns the style of name. A leading "*" is ignored and the last style of a name wins, as in libass.
 // "Default" matches in any case.
 func findStyle(styles []record, name string) (record, bool) {
-	name = strings.TrimLeft(phpTrim(name), "*")
+	name = strings.TrimLeft(trim(name), "*")
 	for i := len(styles) - 1; i >= 0; i-- {
 		styleName, _ := styles[i].field("Name")
 		styleName = strings.TrimLeft(styleName, "*")
@@ -43,7 +43,7 @@ func styleTags(style record) []string {
 	var tags []string
 	for _, f := range flagFields {
 		v, _ := style.field(f.field)
-		if v = phpTrim(v); v == "-1" || v == "1" {
+		if v = trim(v); v == "-1" || v == "1" {
 			tags = append(tags, f.tag)
 		}
 	}
@@ -54,7 +54,7 @@ func styleTags(style record) []string {
 // value. The styles of a [V4 Styles] section hold the legacy SSA codes.
 func styleAlignment(style record, legacy bool) int {
 	v, _ := style.field("Alignment")
-	v = phpTrim(v)
+	v = trim(v)
 	if v == "" || len(v) > 2 || strings.Trim(v, "0123456789") != "" {
 		return 0
 	}
