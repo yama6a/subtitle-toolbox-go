@@ -229,7 +229,7 @@ func TestChoiceIgnoresASCIICaseAndReturnsTheAllowedSpelling(t *testing.T) {
 	require.NoError(t, err)
 	assert.False(t, ok)
 
-	// U+212A KELVIN SIGN folds to k in strings.EqualFold, so the comparison folds ASCII letters only.
+	// U+212A KELVIN SIGN folds to k in strings.EqualFold, but the comparison folds ASCII letters only.
 	_, _, err = parse(t, "--by", "K").Choice("by", "k")
 	require.Error(t, err)
 }

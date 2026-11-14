@@ -6,8 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestDigestVariations pins the hashes of the scaled variations of a 16 by 18 glyph with 2 levels to the values of
-// the first release.
+// TestDigestVariations pins the hashes of the scaled variations of a 16 by 18 glyph with 2 levels to fixed values.
 func TestDigestVariations(t *testing.T) {
 	t.Parallel()
 

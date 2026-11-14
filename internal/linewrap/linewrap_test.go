@@ -522,7 +522,7 @@ func TestRows(t *testing.T) {
 	}
 }
 
-// Regression for subtitle-toolbox-php#1255.
+// Ports the regression of subtitle-toolbox-php#1255.
 func TestJoinMakesNoTagFromText(t *testing.T) {
 	t.Parallel()
 
