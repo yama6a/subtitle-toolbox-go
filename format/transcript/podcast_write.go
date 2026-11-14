@@ -111,7 +111,7 @@ type pieceWalk struct {
 
 // close adds the text so far as a piece, unless its body is empty.
 func (pw *pieceWalk) close() {
-	body := strings.Trim(collapseSpace(markupcore.DecodeEntities(pw.text.String())), markupcore.PHPTrimSet)
+	body := strings.Trim(collapseSpace(markupcore.DecodeEntities(pw.text.String())), markupcore.TrimSet)
 	if body != "" {
 		pw.pieces = append(pw.pieces, podcastSegment{speaker: pw.speaker, start: pw.start, end: pw.start, body: body, word: pw.word})
 	}
@@ -134,7 +134,7 @@ func (pw *pieceWalk) tag(tag string, wordSegments bool) {
 	if !isStamp {
 		name = ""
 		if voice != nil {
-			name = strings.Trim(markupcore.DecodeEntities(voice[2]), markupcore.PHPTrimSet)
+			name = strings.Trim(markupcore.DecodeEntities(voice[2]), markupcore.TrimSet)
 		}
 		if name == pw.speaker {
 			return

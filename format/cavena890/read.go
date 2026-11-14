@@ -84,7 +84,7 @@ func cue(blocks [][]byte, v variant) model.Cue {
 	for i, block := range blocks {
 		hexes[i] = hex.EncodeToString(block)
 		for _, at := range [...]int{line1At, line2At} {
-			if line := v.decode(block[at : at+textSize]); strings.Trim(line, markupcore.PHPTrimSet) != "" {
+			if line := v.decode(block[at : at+textSize]); strings.Trim(line, markupcore.TrimSet) != "" {
 				c.AddLine(line)
 			}
 		}

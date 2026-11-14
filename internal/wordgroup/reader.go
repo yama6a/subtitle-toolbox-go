@@ -31,7 +31,7 @@ func NewReader(st *parsing.State, opts Options, key string) *Reader {
 func (r *Reader) Cue(start, end time.Duration, text string, words []Word, speaker string,
 	data *model.Data, block int, source orderedjson.Value,
 ) (*model.Cue, error) {
-	text = strings.Trim(text, markupcore.PHPTrimSet)
+	text = strings.Trim(text, markupcore.TrimSet)
 	if text == "" {
 		return nil, nil //nolint:nilnil // a nil cue is an empty text, not an error
 	}
@@ -49,7 +49,7 @@ func (r *Reader) Cue(start, end time.Duration, text string, words []Word, speake
 	if r.opts.WordTimestamps {
 		c.Words = CueWords(c.PlainText(), words, c.End)
 	}
-	if name := strings.Trim(speaker, markupcore.PHPTrimSet); r.opts.SpeakerVoices && name != "" {
+	if name := strings.Trim(speaker, markupcore.TrimSet); r.opts.SpeakerVoices && name != "" {
 		c.Speaker = name
 	}
 	if err := c.SetFormatData(r.key, data); err != nil {

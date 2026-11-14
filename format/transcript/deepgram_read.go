@@ -112,7 +112,7 @@ func deepgramWord(item orderedjson.Value, path string) (wordgroup.Word, error) {
 		return wordgroup.Word{}, err
 	}
 	w := wordgroup.Word{
-		Text: strings.Trim(text, markupcore.PHPTrimSet), Start: start, Timed: true, End: end, HasEnd: true,
+		Text: strings.Trim(text, markupcore.TrimSet), Start: start, Timed: true, End: end, HasEnd: true,
 		Confidence: cloudConfidence(cloudGet(item, "confidence")),
 	}
 	w.Speaker, w.HasSpeaker = wordgroup.Speaker(cloudGet(item, "speaker"))

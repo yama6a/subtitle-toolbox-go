@@ -77,7 +77,7 @@ func compile(pattern string, opts regexp2.RegexOptions) *regexp2.Regexp {
 	return re
 }
 
-// replace returns text unchanged when it is not valid UTF-8, as PHP does for a pattern with the u flag.
+// replace returns text unchanged when it is not valid UTF-8.
 func replace(re *regexp2.Regexp, text, replacement string) string {
 	if !utf8.ValidString(text) {
 		return text
@@ -431,7 +431,7 @@ func (f *fixer) dialogueOnOneLine(lines []string) []string {
 		if !isFirst || startsWith(strings.TrimLeftFunc(text, markupcore.IsSpace), markupcore.IsDialogueDash) {
 			return text
 		}
-		return style + strings.TrimLeft(text, markupcore.PHPTrimSet)
+		return style + strings.TrimLeft(text, markupcore.TrimSet)
 	})
 }
 

@@ -137,7 +137,7 @@ func validValueKeys(v any) bool {
 }
 
 // encoder builds compact JSON. Strings go through encoding/json without HTML escaping, so "/" and non-ASCII
-// characters stay as they are. U+2028 and U+2029 are escaped, as PHP escapes them.
+// characters stay as they are. U+2028 and U+2029 are escaped.
 type encoder struct {
 	out []byte
 	str bytes.Buffer

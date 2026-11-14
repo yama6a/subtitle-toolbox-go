@@ -162,8 +162,7 @@ func (w *writer) assemble(s *model.Subtitle, data *model.Data, divs []div) strin
 	return b.String()
 }
 
-// storedAttrs returns the string fields of the object at key in order. An empty list, as PHP stores an empty
-// object, gives none.
+// storedAttrs returns the string fields of the object at key in order. An empty list gives none.
 func storedAttrs(d *model.Data, key string) []Attr {
 	o, _ := d.Object(key)
 	out := make([]Attr, 0, o.Len())
@@ -260,7 +259,7 @@ func (w *writer) withTextAlign(containers []Properties, stored []Attr, a model.A
 			textAlign, ok = v, true
 		}
 	}
-	if !ok || strings.Trim(textAlign, markupcore.PHPTrimSet) == columnName(a) {
+	if !ok || strings.Trim(textAlign, markupcore.TrimSet) == columnName(a) {
 		return stored
 	}
 	name := w.tts + ":textAlign"
@@ -278,11 +277,11 @@ func (w *writer) forcedDisplay(stored []Attr, cueData *model.Data, forced bool) 
 	i := w.forcedIndex(stored)
 	var given bool
 	if i >= 0 {
-		given = strings.Trim(stored[i].Value, markupcore.PHPTrimSet) == "true"
+		given = strings.Trim(stored[i].Value, markupcore.TrimSet) == "true"
 	} else {
 		div := storedAttrs(cueData, "div")
 		if j := w.forcedIndex(div); j >= 0 {
-			given = strings.Trim(div[j].Value, markupcore.PHPTrimSet) == "true"
+			given = strings.Trim(div[j].Value, markupcore.TrimSet) == "true"
 		} else {
 			region, _ := value(stored, "region")
 			given = w.forcedRegions[region]
@@ -367,8 +366,8 @@ func (w *writer) attribute(name, value string) string {
 	return " " + name + `="` + attributeEscaper.Replace(w.xmlText(value)) + `"`
 }
 
-// The attribute escapes add TAB, LF and CR to those of PHP htmlspecialchars, because a reader turns them into
-// spaces (https://github.com/yama6a/subtitle-toolbox-php/issues/1071).
+// The attribute escapes add TAB, LF and CR to those of XML text, because a reader turns them into
+// spaces.
 //
 //nolint:gochecknoglobals // lookup tables of the escapes
 var (

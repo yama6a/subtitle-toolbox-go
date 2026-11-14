@@ -10,19 +10,19 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 )
 
-// phpTextLine is findTextLineWithoutCues of src/Parsers/SamiParser.php of subtitle-toolbox-php. Its regular
-// expression takes quadratic time on many <HEAD tags without an end.
-func phpTextLine(content string) (int, bool) {
+// regexpTextLine is the plain regular expression form of textLine. It takes quadratic time on many <HEAD tags without an
+// end.
+func regexpTextLine(content string) (int, bool) {
 	re := regexp.MustCompile(`(?s)<` + fold("head") + `\b.*?</` + fold("head") + `\s*>|<!--.*?-->|<[^>]*>|` + fold("&nbsp;"))
 	stripped := re.ReplaceAllStringFunc(content, func(m string) string { return strings.Repeat("\n", strings.Count(m, "\n")) })
-	text := strings.TrimLeft(stripped, markupcore.PHPTrimSet)
+	text := strings.TrimLeft(stripped, markupcore.TrimSet)
 	if text == "" {
 		return 0, false
 	}
 	return 1 + strings.Count(stripped[:len(stripped)-len(text)], "\n"), true
 }
 
-func TestTextLineMatchesPHP(t *testing.T) {
+func TestTextLineMatchesTheRegexp(t *testing.T) {
 	t.Parallel()
 
 	for _, in := range []string{
@@ -33,7 +33,7 @@ func TestTextLineMatchesPHP(t *testing.T) {
 		t.Run(in, func(t *testing.T) {
 			t.Parallel()
 
-			wantLine, wantOK := phpTextLine(in)
+			wantLine, wantOK := regexpTextLine(in)
 			gotLine, gotOK := (&reader{content: in}).textLine()
 			assert.Equal(t, [2]any{wantLine, wantOK}, [2]any{gotLine, gotOK})
 		})
@@ -48,7 +48,7 @@ func FuzzTextLine(f *testing.F) {
 		if anySyncRegexp.MatchString(in) {
 			return
 		}
-		wantLine, wantOK := phpTextLine(in)
+		wantLine, wantOK := regexpTextLine(in)
 		gotLine, gotOK := (&reader{content: in}).textLine()
 		if wantLine != gotLine || wantOK != gotOK {
 			t.Fatalf("textLine(%q) = %d, %t, want %d, %t", in, gotLine, gotOK, wantLine, wantOK)
@@ -56,7 +56,7 @@ func FuzzTextLine(f *testing.F) {
 	})
 }
 
-func TestStripCSSCommentsMatchesPHP(t *testing.T) {
+func TestStripCSSCommentsMatchesTheRegexp(t *testing.T) {
 	t.Parallel()
 
 	re := regexp.MustCompile(`(?s)/\*.*?\*/|<!--|-->`)

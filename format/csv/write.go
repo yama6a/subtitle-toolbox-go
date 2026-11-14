@@ -87,7 +87,7 @@ func write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	return WriteReport{}, writing.Write(w, model.CSV, []byte(b.String()), common, true)
 }
 
-// withSecondText inserts the SecondText column after the text column, as PHP inserts it: at index 1 without one.
+// withSecondText inserts the SecondText column after the text column, at index 1 without one.
 func withSecondText(columns []column, header []string, name string) ([]column, []string) {
 	if name == "" {
 		name = defaultSecondTextHeader
@@ -169,11 +169,11 @@ func storedLayout(file *model.Data) (columns []column, header []string, quoted [
 		if r, ok := roleAt(storedRoles, int64(i)); ok {
 			columns = append(columns, column{role: r})
 		} else if hasName {
-			columns = append(columns, column{key: phpString(name)})
+			columns = append(columns, column{key: scalarString(name)})
 		} else {
 			columns = append(columns, column{key: key})
 		}
-		header = append(header, phpString(name))
+		header = append(header, scalarString(name))
 	}
 	stored, _ := file.Get("quotedColumns")
 	for _, v := range values(stored) {
@@ -222,7 +222,7 @@ func storedCells(c model.Cue) any {
 	return v
 }
 
-// item returns the value of a list or an object by the PHP array key, where the key "1" is the list index 1.
+// item returns the value of a list or an object by key, where the key "1" is the list index 1.
 func item(v any, key string) (any, bool) {
 	switch v := v.(type) {
 	case []any:
@@ -270,8 +270,8 @@ func values(v any) []any {
 	}
 }
 
-// phpString returns a stored scalar as PHP (string) writes it. Nil and false give "", true gives "1".
-func phpString(v any) string {
+// scalarString returns a stored scalar as text. Nil and false give "", true gives "1".
+func scalarString(v any) string {
 	switch v := v.(type) {
 	case string:
 		return v
@@ -344,7 +344,7 @@ func (set settings) cell(c model.Cue, col column, speaker, text string, seconds 
 		return seconds[i]
 	default:
 		v, _ := item(storedCells(c), col.key)
-		return phpString(v)
+		return scalarString(v)
 	}
 }
 

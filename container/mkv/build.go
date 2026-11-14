@@ -167,7 +167,7 @@ func formatAfter(lines []string) ([]string, bool) {
 	return nil, false
 }
 
-// leadingInt reads the integer at the start of s after white space, 0 when there is none, as PHP casts a string.
+// leadingInt reads the integer at the start of s after white space, 0 when there is none.
 func leadingInt(s string) int {
 	s = strings.TrimLeft(s, " \t\n\r\v\f")
 	end := 0

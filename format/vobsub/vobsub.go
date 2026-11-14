@@ -38,7 +38,7 @@ func (o ReadOptions) Validate() error {
 			Msg:    "The track index must be 0 or more, got " + strconv.Itoa(*o.Index) + ".",
 		}
 	}
-	if o.Language != "" && strings.Trim(o.Language, markupcore.PHPTrimSet) == "" {
+	if o.Language != "" && strings.Trim(o.Language, markupcore.TrimSet) == "" {
 		return &model.InvalidArgumentError{Option: "ReadOptions.VobSub.Language", Msg: "The language must not be empty."}
 	}
 	return nil

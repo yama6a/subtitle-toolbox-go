@@ -114,7 +114,7 @@ func measure(cue model.Cue) measures {
 			m.visibleLines++
 		}
 		plain[k] = markup.PlainText(line)
-		if strings.Trim(plain[k], markupcore.PHPTrimSet) != "" {
+		if strings.Trim(plain[k], markupcore.TrimSet) != "" {
 			m.text = append(m.text, plain[k])
 		}
 	}

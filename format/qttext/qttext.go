@@ -9,8 +9,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/phpkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -64,7 +64,7 @@ func Detect(content []byte) bool {
 type style struct{ bold, italic, underline bool }
 
 func isTimestampLine(line string) bool {
-	return timestampRegexp.MatchString(strings.Trim(line, markupcore.PHPTrimSet))
+	return timestampRegexp.MatchString(strings.Trim(line, markupcore.TrimSet))
 }
 
 func findDescriptor(lines []string, re *regexp.Regexp) (string, bool) {
@@ -81,7 +81,7 @@ func timeScale(header []string) int64 {
 	if !ok || !timecode.IsDigits(value) {
 		return 0
 	}
-	return phpkey.DigitsToInt(value)
+	return intkey.DigitsToInt(value)
 }
 
 func isRelative(header []string) bool {
@@ -111,7 +111,7 @@ func readLines(lines []string, st *style) []string {
 			at = loc[1]
 		}
 		runs = appendRun(runs, line[at:], *st)
-		if text := strings.Trim(markupcore.StyleRuns(runs, true), markupcore.PHPTrimSet); text != "" {
+		if text := strings.Trim(markupcore.StyleRuns(runs, true), markupcore.TrimSet); text != "" {
 			out = append(out, text)
 		}
 	}

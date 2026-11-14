@@ -69,7 +69,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 func trimmedLines(content string) []string {
 	lines := make([]string, 0, strings.Count(content, "\n")+1)
 	for _, l := range parsing.Lines(content) {
-		lines = append(lines, strings.Trim(l, markupcore.PHPTrimSet))
+		lines = append(lines, strings.Trim(l, markupcore.TrimSet))
 	}
 	return lines
 }
@@ -211,7 +211,7 @@ func splitField(line string) (name, value string, ok bool) {
 	if m == nil {
 		return "", "", false
 	}
-	return strings.Trim(m[1], markupcore.PHPTrimSet), strings.Trim(m[2], markupcore.PHPTrimSet), true
+	return strings.Trim(m[1], markupcore.TrimSet), strings.Trim(m[2], markupcore.TrimSet), true
 }
 
 func readVersion(lines []string) (string, error) {

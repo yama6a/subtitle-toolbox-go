@@ -73,7 +73,7 @@ func rawEntity(entity, raw string) (string, bool) {
 	return "", false
 }
 
-// DecodeEntities decodes the entities of text as PHP html_entity_decode does with ENT_QUOTES and ENT_HTML5.
+// DecodeEntities decodes the HTML5 named entities and the numeric entities of text.
 // A named entity needs its ";". A numeric entity decodes only to a code point that HTML5 allows in a document.
 func DecodeEntities(text string) string {
 	i := strings.IndexByte(text, '&')
@@ -133,7 +133,7 @@ func decodeNumericEntity(s string) (string, int, bool) {
 	return string(rune(cp)), end + 1, true
 }
 
-// hexPrefixLength returns 2 when s starts with 0x and a hex digit. PHP reads hex digits with strtol, which skips
+// hexPrefixLength returns 2 when s starts with 0x and a hex digit. The hex digits skip
 // such a prefix, so &#x0x41; decodes to A.
 func hexPrefixLength(s string) int {
 	if len(s) > 2 && s[0] == '0' && s[1]|0x20 == 'x' && strings.IndexByte(hexDigits, s[2]) >= 0 {
@@ -142,7 +142,7 @@ func hexPrefixLength(s string) int {
 	return 0
 }
 
-// allowedCodePoint reports whether HTML5 allows r in a document, as PHP html_entity_decode checks with ENT_HTML5.
+// allowedCodePoint reports whether HTML5 allows r in a document.
 func allowedCodePoint(r rune) bool {
 	switch {
 	case r == '\t', r == '\n', r == '\f':

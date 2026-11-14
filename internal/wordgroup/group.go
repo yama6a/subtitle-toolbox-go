@@ -11,7 +11,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-// MaxGap and MaxCharacters are the limits of Group, as in PHP.
+// MaxGap and MaxCharacters are the limits of Group.
 const (
 	MaxGap        = time.Second
 	MaxCharacters = 84

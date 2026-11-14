@@ -33,7 +33,7 @@ var metadataTags = []struct{ tag, key string }{
 
 // timestampPattern is the time of a time tag. Groups 1 and 2 hold hours and minutes, or group 3 holds the minutes.
 // Group 4 holds the seconds and group 5 the fraction. Hours count only when 1 or 2 minute digits up to 59 and :
-// follow, which PHP checks with the lookahead (?=[0-5]?\d:).
+// follow, as the lookahead (?=[0-5]?\d:) checks.
 const timestampPattern = `(?:(\d{1,2}):([0-5]?\d)|(\d{1,3})):([0-5]\d)(?:\.(\d{1,3}))?`
 
 const timeTagPattern = `\[[ \t]*` + timestampPattern + `[ \t]*\]`

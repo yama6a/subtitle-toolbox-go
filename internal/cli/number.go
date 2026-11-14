@@ -9,7 +9,7 @@ import (
 
 // formatNumber prints a number of a text report: at most 3 decimals without trailing zeros, "INF" for an
 // infinity of either sign, and "-" for NaN, which stands for no value. It rounds the shortest decimal form
-// half away from zero, as PHP number_format does, so 1.0005 prints 1.001.
+// half away from zero, so 1.0005 prints 1.001.
 func formatNumber(v float64) string {
 	return formatDecimals(v, 3)
 }

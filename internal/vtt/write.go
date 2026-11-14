@@ -103,7 +103,7 @@ func NoteBlock(text string) string {
 	}
 	var lines []string
 	for _, l := range parsing.Lines(text) {
-		if l = phpTrim(spacesRegexp.ReplaceAllString(l, " ")); l != "" {
+		if l = trim(spacesRegexp.ReplaceAllString(l, " ")); l != "" {
 			lines = append(lines, l)
 		}
 	}
@@ -121,7 +121,7 @@ func NoteBlock(text string) string {
 func (w *Writer) CueBlock(c model.Cue, i int) string {
 	c.Lines = c.TaggedLines()
 	id := c.ID
-	if phpTrim(id) == "" || strings.Contains(id, arrow) || strings.ContainsAny(id, "\r\n") {
+	if trim(id) == "" || strings.Contains(id, arrow) || strings.ContainsAny(id, "\r\n") {
 		id = strconv.Itoa(i + 1)
 	}
 	out := id + "\n" + markupcore.CoreTimestamp(c.Start) + " " + arrow + " " + markupcore.CoreTimestamp(c.End)

@@ -129,7 +129,7 @@ func (r Rules) ReadParts(b Block, index int, p PartReader) ([]model.Cue, error) 
 // CleanLine returns line as SplitAtEmptyLines reads it: without leading BOMs, with each run of tabs and each run of
 // spaces as 1 space, and trimmed. A writer tests its text lines in this form.
 func CleanLine(line string) string {
-	return strings.Trim(CollapseSpaces(trimBOMs(line)), markupcore.PHPTrimSet)
+	return strings.Trim(CollapseSpaces(trimBOMs(line)), markupcore.TrimSet)
 }
 
 func trimBOMs(s string) string {
@@ -139,7 +139,7 @@ func trimBOMs(s string) string {
 	return s
 }
 
-// CollapseSpaces turns each run of spaces and tabs into 1 space, as the PHP pre-pass of the text readers does.
+// CollapseSpaces turns each run of spaces and tabs into 1 space.
 func CollapseSpaces(s string) string {
 	if !strings.Contains(s, "\t") && !strings.Contains(s, "  ") {
 		return s

@@ -43,7 +43,7 @@ func ReadYouTube(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 	}
 	var cues []model.Cue
 	for _, line := range parsing.Lines(string(content)) {
-		line = strings.Trim(line, markupcore.PHPTrimSet)
+		line = strings.Trim(line, markupcore.TrimSet)
 		f, title, ok := leadingTime(line)
 		if !ok {
 			f, title, ok = trailingTime(line)
@@ -81,7 +81,7 @@ func WriteYouTube(w io.Writer, s *model.Subtitle, common model.CommonWriteOption
 			line = fmt.Sprintf("%d:%02d", secs/60, secs%60)
 		}
 		line += " " + strings.Join(markupcore.PlainLines(c.Lines), " ")
-		body = append(body, strings.TrimRight(line, markupcore.PHPTrimSet)...)
+		body = append(body, strings.TrimRight(line, markupcore.TrimSet)...)
 		body = append(body, '\n')
 	}
 	return writing.Write(w, model.YouTubeChapters, body, common, false)

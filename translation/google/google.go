@@ -37,7 +37,7 @@ type Options struct {
 // Validate checks the key and the base URL. The error matches model.ErrInvalidArgument.
 func (o Options) Validate() error {
 	switch {
-	case strings.Trim(o.APIKey, markupcore.PHPTrimSet) == "":
+	case strings.Trim(o.APIKey, markupcore.TrimSet) == "":
 		return &model.InvalidArgumentError{
 			Option: "google.Options.APIKey",
 			Msg:    "The API key must not be empty. Pass the key of your Google Cloud project.",

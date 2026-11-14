@@ -302,7 +302,7 @@ func unescapeTag(s string) string {
 	return b.String()
 }
 
-// tagsValue returns tags, or an empty list when it has no tag, because PHP cannot tell an empty object from an empty list.
+// tagsValue returns tags, or an empty list when it has no tag.
 func tagsValue(tags *model.Data) any {
 	if tags.Len() == 0 {
 		return []any{}

@@ -17,7 +17,7 @@ const (
 // span is a time interval in seconds that at least 1 cue covers.
 type span struct{ start, end float64 }
 
-// seconds gives the same float64 as the PHP time of a whole number of milliseconds. d.Seconds() can differ in the
+// seconds gives the float64 that a whole number of milliseconds divides to. d.Seconds() can differ in the
 // last bit.
 func seconds(ms int64) float64 {
 	return float64(ms) / 1000

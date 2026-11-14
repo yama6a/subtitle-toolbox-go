@@ -1,12 +1,12 @@
-// Package phpkey holds the rules by which PHP converts strings to array keys and integers.
-package phpkey
+// Package intkey tells which object keys of format data read as list indexes.
+package intkey
 
 import (
 	"strconv"
 	"strings"
 )
 
-// IsIntKey reports whether PHP turns the array key into an integer: a canonical decimal int64.
+// IsIntKey reports whether the key is a canonical decimal int64, so it reads as a list index.
 func IsIntKey(key string) bool {
 	digits := strings.TrimPrefix(key, "-")
 	if digits == "" || (digits[0] == '0' && key != "0") {

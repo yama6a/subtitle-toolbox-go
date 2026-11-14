@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/blocks"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/phpkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -232,7 +232,7 @@ func (rd *Reader) arrowLength(s string) int {
 // time reads a time of the timing line at line. Lenient mode also reads the forms of timecode.Loose and
 // adds them to loose, once per text.
 func (rd *Reader) time(text string, line int, loose *[]looseTime) (time.Duration, error) {
-	text = strings.Trim(text, markupcore.PHPTrimSet)
+	text = strings.Trim(text, markupcore.TrimSet)
 	if m := timeRegexp.FindStringSubmatch(text); m != nil {
 		return time.Duration(atoi(m[1]))*time.Hour + time.Duration(atoi(m[2]))*time.Minute +
 			time.Duration(atoi(m[3]))*time.Second + fraction(m[4]+m[5]), nil
@@ -319,10 +319,10 @@ func readCoordinates(text string) (*model.Data, bool) {
 		return nil, false
 	}
 	return model.NewData(
-		model.Field{Key: "x1", Value: phpkey.DigitsToInt(m[1])},
-		model.Field{Key: "x2", Value: phpkey.DigitsToInt(m[2])},
-		model.Field{Key: "y1", Value: phpkey.DigitsToInt(m[3])},
-		model.Field{Key: "y2", Value: phpkey.DigitsToInt(m[4])},
+		model.Field{Key: "x1", Value: intkey.DigitsToInt(m[1])},
+		model.Field{Key: "x2", Value: intkey.DigitsToInt(m[2])},
+		model.Field{Key: "y1", Value: intkey.DigitsToInt(m[3])},
+		model.Field{Key: "y2", Value: intkey.DigitsToInt(m[4])},
 	), true
 }
 

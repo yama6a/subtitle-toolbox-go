@@ -118,7 +118,7 @@ func (xw *xmlWriter) attributes(object orderedjson.Value, skip ...string) string
 	return b.String()
 }
 
-// numberText writes a number as PHP casts it to a string: an integer in decimal, a float in its shortest form
+// numberText writes a number as text: an integer in decimal, a float in its shortest form
 // without a trailing ".0".
 func numberText(v orderedjson.Value) string {
 	if i, ok := v.AsInt64(); ok {

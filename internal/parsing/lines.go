@@ -40,7 +40,7 @@ func Lines(content string) iter.Seq2[int, string] {
 func PipeLines(text string) []string {
 	var lines []string
 	for part := range strings.SplitSeq(text, "|") {
-		if part = strings.Trim(part, markupcore.PHPTrimSet); part != "" {
+		if part = strings.Trim(part, markupcore.TrimSet); part != "" {
 			lines = append(lines, part)
 		}
 	}

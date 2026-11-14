@@ -315,8 +315,7 @@ func leadingVoiceTag(text string) (string, bool) {
 	return text[:loc[1]], true
 }
 
-// removeVoiceTags removes the <v> and </v> tags in one pass from left to right, as PHP does with one pattern for
-// both. 2 passes would differ for a line such as "</<v Anna>v>", where the first pass forms a new </v>.
+// removeVoiceTags removes the <v> and </v> tags in one pass from left to right. 2 passes would differ for a line such as "</<v Anna>v>", where the first pass forms a new </v>.
 func removeVoiceTags(line string) string {
 	var b strings.Builder
 	for {
@@ -334,6 +333,6 @@ func removeVoiceTags(line string) string {
 }
 
 func endsWithStop(c Cue) bool {
-	text := strings.TrimRight(markupcore.PlainText(c.Text()), markupcore.PHPTrimSet)
+	text := strings.TrimRight(markupcore.PlainText(c.Text()), markupcore.TrimSet)
 	return strings.HasSuffix(text, ".") || strings.HasSuffix(text, "?") || strings.HasSuffix(text, "!")
 }

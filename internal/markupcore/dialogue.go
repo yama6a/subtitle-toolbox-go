@@ -38,7 +38,7 @@ func StartsDialogueTurn(text string) bool {
 	return rest != "" && !IsSpace(r) && !unicode.IsNumber(r)
 }
 
-// IsSpace reports whether r is white space as PHP reads \s in a pattern with the u flag: unicode.IsSpace and U+180E.
+// IsSpace reports whether r is white space as \s reads it in a PCRE pattern with the u flag: unicode.IsSpace and U+180E.
 func IsSpace(r rune) bool {
 	return unicode.IsSpace(r) || r == mongolianVowelSeparator
 }

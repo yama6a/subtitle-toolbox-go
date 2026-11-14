@@ -31,7 +31,7 @@ type reader struct {
 	// fps is the frame rate of the FORMAT line, 0 for seconds.
 	fps       float64
 	hasFormat bool
-	// position is the end of the last timing line in seconds. It stays unrounded, as in PHP, so that rounding
+	// position is the end of the last timing line in seconds. It stays unrounded, so that rounding
 	// errors of fractional frames do not add up differently.
 	position float64
 	// timings counts the timing lines so far, good and bad. It is the block index of warnings.
@@ -62,7 +62,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 
 	rd := &reader{st: st, s: s, data: model.NewData()}
 	for n, raw := range parsing.Lines(string(content)) {
-		if err := rd.line(strings.Trim(raw, markupcore.PHPTrimSet), n+1); err != nil {
+		if err := rd.line(strings.Trim(raw, markupcore.TrimSet), n+1); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -88,7 +88,7 @@ func (rd *reader) line(line string, number int) error {
 		return nil
 	}
 	if m := headerRegexp.FindStringSubmatch(line); m != nil {
-		return rd.header(m[1], strings.Trim(m[2], markupcore.PHPTrimSet), line, number)
+		return rd.header(m[1], strings.Trim(m[2], markupcore.TrimSet), line, number)
 	}
 	return rd.startCue(line, number)
 }
@@ -123,7 +123,7 @@ func (rd *reader) setMetadata(key, value string) {
 }
 
 // frameRate returns the frame rate of a FORMAT value, 0 for TIME. Only the leading integer counts, as in MPlayer
-// and FFmpeg, so 29.97 gives 29. A run of digits beyond the int64 range counts as its maximum, as PHP (int) reads it.
+// and FFmpeg, so 29.97 gives 29. A run of digits beyond the int64 range counts as its maximum.
 func frameRate(value string, line int) (float64, *model.ParseError) {
 	if value == "TIME" {
 		return 0, nil

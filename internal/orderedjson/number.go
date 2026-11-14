@@ -19,7 +19,7 @@ func validNumber(s string) bool {
 	return err == nil && d.pos == len(s)
 }
 
-// NumericString reports whether s is numeric as PHP is_numeric says, and returns its text without the
+// NumericString reports whether s is a decimal number, and returns its text without the
 // surrounding white space.
 func NumericString(s string) (string, bool) {
 	s = strings.Trim(s, " \t\n\r\v\f")
@@ -37,7 +37,7 @@ type decimal struct {
 // maxExp clamps the exponent text so that it cannot overflow int.
 const maxExp = 1_000_000_000
 
-// parseDecimal reads a PHP numeric text: an optional sign, digits with an optional fraction or a fraction alone,
+// parseDecimal reads a numeric text: an optional sign, digits with an optional fraction or a fraction alone,
 // and an optional exponent.
 func parseDecimal(s string) (decimal, bool) {
 	var d decimal

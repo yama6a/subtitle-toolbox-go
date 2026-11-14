@@ -53,7 +53,7 @@ func FuzzApply(f *testing.F) {
 			for i, c := range cues {
 				require.False(t, i > 0 && c.Start < cues[i-1].Start, "cue %d starts before cue %d", i, i-1)
 				for _, line := range c.Lines {
-					require.NotEmpty(t, strings.Trim(line, markupcore.PHPTrimSet), "cue %d", i)
+					require.NotEmpty(t, strings.Trim(line, markupcore.TrimSet), "cue %d", i)
 				}
 			}
 		}

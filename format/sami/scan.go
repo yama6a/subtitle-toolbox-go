@@ -87,7 +87,7 @@ type scanner struct {
 }
 
 // scan parses s as the content of <body> and returns the top-level nodes. It gives the tree of the libxml2 HTML
-// parser of PHP for the markup that SAMI files hold. Lists, tables, forms and scripts follow more libxml2 rules.
+// parser for the markup that SAMI files hold. Lists, tables, forms and scripts follow more libxml2 rules.
 //
 // Behaviour reference only: libxml2, HTMLparser.c (https://gitlab.gnome.org/GNOME/libxml2/-/blob/master/HTMLparser.c).
 func scan(s string) []*node {

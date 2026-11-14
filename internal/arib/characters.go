@@ -140,7 +140,7 @@ func jisX0201(code int, halfWidth bool) string {
 	}
 }
 
-// jisX0208Exceptions are the cells where x/text and the glibc EUC-JP table of the PHP reader differ. x/text follows
+// jisX0208Exceptions are the cells where x/text and the glibc EUC-JP table differ. x/text follows
 // the Encoding Standard, glibc follows JIS X 0208. The value 0xFFFD marks a NEC row 13 cell that glibc lacks.
 //
 //nolint:gochecknoglobals // lookup table

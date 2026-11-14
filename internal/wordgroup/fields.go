@@ -64,8 +64,8 @@ func Speaker(v orderedjson.Value) (string, bool) {
 }
 
 // Between returns the words from *index on whose middle lies between start and end, and moves *index past them.
-// It first skips the words whose middle lies before start. The middle is a float64 of seconds, as in PHP, so a word
-// on a boundary falls to the same side as in PHP.
+// It first skips the words whose middle lies before start. The middle is a float64 of seconds, so a word
+// on a boundary falls to the side that the float comparison gives.
 func Between(words []Word, index *int, start, end time.Duration) []Word {
 	middle := func(w Word) float64 { return (w.Start.Seconds() + w.end().Seconds()) / 2 }
 	for *index < len(words) && middle(words[*index]) < start.Seconds() {
