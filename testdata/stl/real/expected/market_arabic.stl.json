@@ -3,8 +3,8 @@
     "subtitle": {
         "version": 1,
         "metadata": {
-            "title": "Market",
-            "language": "ar"
+            "language": "ar",
+            "title": "Market"
         },
         "comments": [],
         "formatData": {
@@ -62,6 +62,14 @@
                 ],
                 "identifier": null,
                 "alignment": 3,
+                "position": {
+                    "row": 22,
+                    "column": 0,
+                    "grid": {
+                        "rows": 23,
+                        "columns": 40
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 0,
@@ -84,6 +92,14 @@
                 ],
                 "identifier": null,
                 "alignment": 3,
+                "position": {
+                    "row": 20,
+                    "column": 0,
+                    "grid": {
+                        "rows": 23,
+                        "columns": 40
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 0,

@@ -8,6 +8,12 @@
         },
         "comments": [],
         "formatData": {
+            "itt": {
+                "timeBase": "smpte",
+                "frameRate": "30",
+                "frameRateMultiplier": "999 1000",
+                "dropMode": "nonDrop"
+            },
             "ttml": {
                 "namespace": "http://www.w3.org/ns/ttml",
                 "namespaces": {
@@ -26,12 +32,6 @@
                 "body": {
                     "style": "normal"
                 }
-            },
-            "itt": {
-                "timeBase": "smpte",
-                "frameRate": "30",
-                "frameRateMultiplier": "999 1000",
-                "dropMode": "nonDrop"
             }
         },
         "cues": [
@@ -43,6 +43,12 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "offset": {
+                        "x": 50.0,
+                        "y": 100.0
+                    }
+                },
                 "formatData": {
                     "ttml": {
                         "attributes": {
@@ -61,6 +67,12 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "offset": {
+                        "x": 50.0,
+                        "y": 100.0
+                    }
+                },
                 "formatData": {
                     "ttml": {
                         "attributes": {
@@ -78,6 +90,12 @@
                 ],
                 "identifier": null,
                 "alignment": 8,
+                "position": {
+                    "offset": {
+                        "x": 50.0,
+                        "y": 0.0
+                    }
+                },
                 "formatData": {
                     "ttml": {
                         "attributes": {
@@ -96,6 +114,12 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "offset": {
+                        "x": 50.0,
+                        "y": 100.0
+                    }
+                },
                 "formatData": {
                     "ttml": {
                         "attributes": {
@@ -113,6 +137,12 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "offset": {
+                        "x": 50.0,
+                        "y": 100.0
+                    }
+                },
                 "formatData": {
                     "ttml": {
                         "attributes": {
@@ -130,6 +160,12 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "offset": {
+                        "x": 50.0,
+                        "y": 100.0
+                    }
+                },
                 "formatData": {
                     "ttml": {
                         "attributes": {

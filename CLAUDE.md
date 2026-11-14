@@ -1,7 +1,6 @@
 # CLAUDE.md - subtitle-toolbox-go
 
 This file covers how the repo is built. The GitHub issues hold the behaviour of each feature.
-The Go port follows the PHP project yama6a/subtitle-toolbox-php.
 
 ## Tech stack
 
@@ -13,29 +12,30 @@ The Go port follows the PHP project yama6a/subtitle-toolbox-php.
 
 ## Project structure
 
-The package map of #8. A package appears when its issue lands.
+The package map.
 
 ```
 *.go           Root package stbox: the facade (Load, Parse, Write, Detect), aliases, format registry
 model/         Subtitle, Cue, format facts table, common options, shared errors
 markup/        Inline tag model and its helpers
 format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microdvd, mpl2,
-               tmplayer, mpsub, subviewer, qttext, sprucestl, dcp, lrc, csv, itt, stboxjson, plaintext, pgs, chapters, transcript, youtube
+               tmplayer, mpsub, subviewer, qttext, sprucestl, dcp, lrc, csv, itt, stboxjson, plaintext, pgs, chapters, transcript, youtube,
+               cavena890, ebustl, mcc, pac, scc, vobsub
 stats/ stream/ hearingimpaired/ speakers/ fixing/ profanity/ refsync/ diff/ dual/ karaoke/
                The 1.x services. A service never imports the root package
 container/<name>/ The 3.x readers of video containers, layer 4b: mkv, mp4, mpegts. They call the format readers
 ocr/           The 3.x service that reads the text of image cues with an OCR engine, and ocr/ocrtest, a fake engine for tests.
-               Engines live in ocr/<engine>, the chooser in ocr/auto. Layers 5b and 5c, see CONTRIBUTING.md
+               The engines are ocr/glyph and ocr/tesseract, the chooser is ocr/auto. Layers 5b and 5c, see CONTRIBUTING.md
 translation/   The service that translates cue text with a machine translation engine. Its HTTP helper is translation/internal/httppost, the engines live in translation/<engine>. Layers 5, 5b and 5c, see CONTRIBUTING.md
 validation/    The 2.x service that checks a subtitle against rules. It follows the same layer rule
 timing/        The 2.x service that moves cue times to shot changes and frames. Same layer rule
 imaging/       The 3.x public helpers that decode and build the PNG bitmaps of image cues. Same layer rule
 hls/           The service that cuts a subtitle into HLS WebVTT segments and joins segments. Same layer rule
 resegment/     The 4.x service that splits long cues and builds cues from word timings. Same layer rule
-internal/      Helpers: markupcore, hilabels, teletext, linewrap, timecode, textenc, extfallback, grapheme, ssatag, phpkey, stringlist, xmlraw, ebml, orderedjson, jsondata, wordgroup, paragraphs, blocks, subrip,
+internal/      Helpers: apicheck, caption, cea608, cea708, codepage, markupcore, hilabels, teletext, linewrap, timecode, textenc, extfallback, grapheme, ssatag, phpkey, stringlist, xmlraw, ebml, orderedjson, jsondata, wordgroup, paragraphs, blocks, subrip,
                vtt, position, parsing, writing, ttmlwrite, bitmap, displayset, dvbsub, arib, dvdsub, cli, and the test helpers testfiles, golden and translationtest
 cmd/stbox/     The CLI main. Wiring, no business logic
-testdata/      All fixtures and goldens, one folder per topic, PHP folder names for PHP data. Packages read
+testdata/      All fixtures and goldens, one folder per topic. Packages read
                them through internal/testfiles. Only fuzz corpora stay in <package>/testdata/fuzz/
 ```
 
@@ -46,7 +46,7 @@ make ci      # tidy-check, generate-check, fmt-check, lint, vet, test, vuln
 make fmt     # rewrite formatting in place
 make test    # go test -race ./...
 make build   # write bin/stbox, VERSION=1.2.3 stamps the version
-make golden  # rewrite the Go write goldens, then review each diff by hand
+make golden  # rewrite the Go read and write goldens, then review each diff by hand
 make cross   # build and vet for darwin and windows
 make fuzz    # run each fuzz target for 30 s, FUZZTIME=10s shortens it, FUZZSHARD=0 FUZZSHARDS=7 runs a seventh
 make bench   # run the benchmarks, BENCHTIME=1x runs each once
@@ -62,10 +62,11 @@ make smoke   # run the smoke test on this machine's archive in dist/
 - **No logging in the library.** It returns warnings and reports. Only `cmd/stbox` prints, to stderr, as plain messages. No zap.
 - **Durations.** Every time is a `time.Duration`. Every parser and setter rounds it to whole milliseconds.
 - **Cue order.** A `Subtitle` always holds its cues in start order.
-- **PHP read goldens.** A tool never rewrites them. A deliberate difference is a hand edit with a "Changed:" note in `SOURCES.md` (#9).
+- **Read goldens.** They are Go goldens. `go test -run TestReadGoldens -update` rewrites them. Review each diff by hand.
 - **Test text.** Right-to-left and CJK text lives in testdata files, never in Go string literals. `bidichk` and `gosmopolitan` fail on it.
 - **Regular expressions.** Use `regexp`. Use `github.com/dlclark/regexp2/v2` only where a pattern needs lookaround or back references, and for user-supplied patterns. Always set `regexp2.Regexp.MatchTimeout`, because `regexp` has no timeout and regexp2 matches can run without limit.
 - **Files.** The CLI never overwrites a file.
+- **PHP bugs.** A bug in yama6a/subtitle-toolbox-php that this repo finds gets an issue in that repo.
 - **Credit.** Ported or copied code carries its credit line, see CONTRIBUTING.md.
 
 ## Code style
@@ -85,7 +86,7 @@ make smoke   # run the smoke test on this machine's archive in dist/
 - Table-driven.
 - Black-box `package x_test`. Only `*_internal_test.go` files use `package x`, for unexported helpers.
 - Fixtures come from real or upstream data, never from invented data.
-- **Read goldens**: the PHP read goldens `<folder>/real/expected/<file>.json`. `readgoldens_test.go` reads each real file and compares canonical JSON. A format issue adds its folder row and its per-file read options there. Never rewrite a read golden with a tool.
+- **Read goldens**: `<folder>/real/expected/<file>.json`, Go's own. `readgoldens_test.go` reads each real file and compares canonical JSON. A format issue adds its folder row and its per-file read options there. `go test -run TestReadGoldens -update` rewrites a golden that differs. Review each diff by hand.
 - **Write goldens**: Go's own, in `writegoldens_test.go` or the test of a format package. A round trip without a golden must equal its input after `golden.Normalize`. The package declares `var update = flag.Bool("update", false, "rewrite the write golden files")`. `make golden` rewrites them.
 - **Fuzz targets**: `FuzzRead` in `fuzz_test.go` of each format package, `FuzzDetect` in the root package.
   - Seeds: every file of the format's testdata folders, plus the short inputs of the table tests.

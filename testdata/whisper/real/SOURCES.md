@@ -1,6 +1,6 @@
 # Sources
 
-Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5313f1583fc7e67942d514600/tests/files/whisper/real, MIT. In the rows below, "this repository" means subtitle-toolbox-php. The PHP write goldens `expected/*.out.json` and `expected/*.to.*` stay there.
+Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5313f1583fc7e67942d514600/tests/files/whisper/real, MIT. In the rows below, "this repository" means subtitle-toolbox-php.
 
 No permissively licensed project ships Whisper JSON output with neutral text. So every file here is written for this repository in the exact shape that the tool writes. The text is new neutral sample text.
 
@@ -16,5 +16,5 @@ No permissively licensed project ships Whisper JSON output with neutral text. So
 | `whisper_cpp_oj.json` | Written for this repository in the shape of whisper.cpp `-oj`: `output_json()` in [`cli.cpp`](https://github.com/ggml-org/whisper.cpp/blob/60c0be6ac8fa71b1a2ae2dd938a31a34a508e774/examples/cli/cli.cpp). Tab indentation, offsets in milliseconds | MIT |
 | `whisper_cpp_ojf.json` | Written for this repository in the shape of whisper.cpp `-ojf`, same source. Tokens with the special tokens `[_BEG_]` and `[_TT_n]` of [`whisper.cpp`](https://github.com/ggml-org/whisper.cpp/blob/60c0be6ac8fa71b1a2ae2dd938a31a34a508e774/src/whisper.cpp), and a word of two tokens | MIT |
 | `whisper_cpp_ojf_split_utf8.json` | Written for this repository in the shape of whisper.cpp `-ojf` before the fix for [issue #1798](https://github.com/ggml-org/whisper.cpp/issues/1798). The first character is split across two tokens, so the token texts hold invalid UTF-8 | MIT |
-| `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name, written by `tests/files/generate-read-goldens.php` | MIT |
-| `expected/*.out.*`, `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand. Each file equals the PHP write golden of the same name at the pinned commit | MIT |
+| `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name. First written by `tests/files/generate-read-goldens.php` of subtitle-toolbox-php. `go test -run TestReadGoldens -update` rewrites them | MIT |
+| `expected/*.out.*`, `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand | MIT |

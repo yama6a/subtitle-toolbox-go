@@ -22,6 +22,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 12,
+                    "column": 0,
+                    "grid": {
+                        "rows": 12,
+                        "columns": 0
+                    }
+                },
                 "formatData": {
                     "pac": {
                         "verticalPosition": 11,
@@ -40,6 +48,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 11,
+                    "column": 0,
+                    "grid": {
+                        "rows": 12,
+                        "columns": 0
+                    }
+                },
                 "formatData": {
                     "pac": {
                         "verticalPosition": 10,

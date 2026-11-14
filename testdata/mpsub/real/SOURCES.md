@@ -8,5 +8,5 @@ No real MPSub file with a license that allows copying into this MIT repository w
 |:--- |:--- |:--- |
 | `mplayer_doc_time.sub` | Written from the format notes in https://github.com/pigoz/mplayer-svn/blob/7f6453553628729b151490144f13eae290a0fd67/DOCS/tech/mpsub.sub | MIT, part of this repository |
 | `mplayer_doc_frames.sub` | Written from the same format notes, with `FORMAT=25` and fractional frame counts | MIT, part of this repository |
-| `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name, written by `tests/files/generate-read-goldens.php` | MIT |
+| `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name. First written by `tests/files/generate-read-goldens.php` of subtitle-toolbox-php. `go test -run TestReadGoldens -update` rewrites them | MIT |
 | `expected/*.out.*`, `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand | MIT |

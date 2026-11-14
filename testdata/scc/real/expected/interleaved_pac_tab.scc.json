@@ -20,6 +20,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 13,
+                    "column": 3,
+                    "grid": {
+                        "rows": 15,
+                        "columns": 32
+                    }
+                },
                 "formatData": {
                     "scc": {
                         "mode": "pop-on",
@@ -45,6 +53,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 14,
+                    "column": 4,
+                    "grid": {
+                        "rows": 15,
+                        "columns": 32
+                    }
+                },
                 "formatData": {
                     "scc": {
                         "mode": "pop-on",
