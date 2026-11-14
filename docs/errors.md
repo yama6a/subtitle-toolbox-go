@@ -24,16 +24,16 @@ fmt.Println(err)
 
 ## Causes
 
-| Go | Returned for | PHP class and code |
-|:--- |:--- |:--- |
-| `ErrParse`, `*ParseError` | content that a reader cannot read. A byte that is not valid in the source encoding, in both modes. Invalid UTF-8 in strict mode, for the formats of [Invalid UTF-8](encodings.md#invalid-utf-8). A library JSON document with a wrong shape | `ParsingException` 100 |
-| `ErrUnsupportedFormat` | a read of a format without a reader, such as `txt`. A write of a format without a writer. A `Format` value that no registry row lists, such as `Format("foo")`. A read of a video file with a `Format` set, which says to read it by track. A read of a video file with no subtitle track or with 2 or more, as a `*TrackError`. `Tracks` on content that is no video file | `UnsupportedFormatException` 102 |
-| `ErrUnknownFormat` | detection found no format, see [detection.md](detection.md). Also matches `ErrUnsupportedFormat` | `UnknownFormatException` 106, a subclass of 102 |
-| `ErrInvalidArgument`, `*InvalidArgumentError` | an invalid option or argument, for example frame rate 0 or NaN. An unknown `ReadOptions.Encoding`. A negative `ReadOptions.Track` or `size`. A `Track` on a subtitle file, or a `Track` that no track of the video file has. A retime or `Append` that moves a cue time to 100000 h or more, for example `Scale(1e300)`. MicroDVD output without a frame rate. CSV output with frame times and no frame rate. Format data that fails its type check in a setter | `InvalidArgumentException` 104 |
-| `ErrCueNotFound` | `RemoveCue`, `SplitCue` and `JoinCues` with an index that has no cue | `CueNotFoundException` 105 |
-| `ErrUnwritable`, `*UnwritableError` | the output format cannot hold the subtitle. Text that is not valid UTF-8 in a JSON format, TTML or SAMI output, which also matches `ErrInvalidUTF8`. An image cue without lines in a text format, such as `Cue #3 holds an image but no text, and srt needs text.` A stored TTML head that is not valid XML. An `ass.WriteOptions.Style` that the `Format:` line of the stored styles lacks | `UnwritableContentException` 108 |
+| Go | Returned for |
+|:--- |:--- |
+| `ErrParse`, `*ParseError` | content that a reader cannot read. A byte that is not valid in the source encoding, in both modes. Invalid UTF-8 in strict mode, for the formats of [Invalid UTF-8](encodings.md#invalid-utf-8). A library JSON document with a wrong shape |
+| `ErrUnsupportedFormat` | a read of a format without a reader, such as `txt`. A write of a format without a writer. A `Format` value that no registry row lists, such as `Format("foo")`. A read of a video file with a `Format` set, which says to read it by track. A read of a video file with no subtitle track or with 2 or more, as a `*TrackError`. `Tracks` on content that is no video file |
+| `ErrUnknownFormat` | detection found no format, see [detection.md](detection.md). Also matches `ErrUnsupportedFormat` |
+| `ErrInvalidArgument`, `*InvalidArgumentError` | an invalid option or argument, for example frame rate 0 or NaN. An unknown `ReadOptions.Encoding`. A negative `ReadOptions.Track` or `size`. A `Track` on a subtitle file, or a `Track` that no track of the video file has. A retime or `Append` that moves a cue time to 100000 h or more, for example `Scale(1e300)`. MicroDVD output without a frame rate. CSV output with frame times and no frame rate. Format data that fails its type check in a setter |
+| `ErrCueNotFound` | `RemoveCue`, `SplitCue` and `JoinCues` with an index that has no cue |
+| `ErrUnwritable`, `*UnwritableError` | the output format cannot hold the subtitle. Text that is not valid UTF-8 in a JSON format, TTML or SAMI output, which also matches `ErrInvalidUTF8`. An image cue without lines in a text format, such as `Cue #3 holds an image but no text, and srt needs text.` A stored TTML head that is not valid XML. An `ass.WriteOptions.Style` that the `Format:` line of the stored styles lacks |
 | `ErrInvalidUTF8` | text that an output format cannot hold because it is not valid UTF-8. It is the `Err` of the `*UnwritableError`. Read the input again with its source encoding | none, part of `UnwritableContentException` 108 |
-| the `*fs.PathError` of package `os`, wrapped | a file that does not exist or cannot be read or written. Test it with `errors.Is(err, fs.ErrNotExist)` | `InvalidArgumentException` 104 |
+| the `*fs.PathError` of package `os`, wrapped | a file that does not exist or cannot be read or written. Test it with `errors.Is(err, fs.ErrNotExist)` |
 
 - **No codes**: the library has no numeric error codes. `errors.Is` and `errors.As` replace them.
 - **No catch-all**: no sentinel matches every library error. A caller matches the causes it handles, so errors of its own reader, such as a closed network stream, stay apart.
@@ -53,7 +53,7 @@ All 4 types live in package `model`. Package `stbox` aliases them under the same
 | `*InvalidArgumentError` | `Option`, `Msg` | `stbox: invalid argument: WriteOptions.MicroDVD.FrameRate: Msg`. No option part when `Option` is "" |
 
 - **Cause**: `Unwrap` of `*ParseError` and `*UnwritableError` returns `Err`, for example an error of the standard library. `Error()` shows `Err` only when the message field is empty, because the message quotes the cause where it matters.
-- **Message text**: `Msg` and `Reason` hold a full English sentence, as the PHP library writes it. `Error()` adds a lower-case prefix in Go style. People read these messages in the CLI, and the PHP sentences exist already.
+- **Message text**: `Msg` and `Reason` hold a full English sentence. `Error()` adds a lower-case prefix in Go style. People read these messages in the CLI.
 - **No identifiers in messages**: a message never names a Go identifier or a CLI flag. A missing or bad option goes in `Option` as its Go path, such as `ReadOptions.MicroDVD.FrameRate`. A sentinel in `Err` names an edit that the caller must make first.
 - **Cue index**: `UnwritableError.CueIndex` is the 0-based index of the first cue that the format cannot hold. It is -1 when no single cue causes the error.
 

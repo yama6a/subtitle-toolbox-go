@@ -29,10 +29,9 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [ocr.md](ocr.md) | package `ocr`: the engine interface, `Run`, the report, the language constants and an engine for an OCR web service |
 | [translation.md](translation.md) | package translation: the engine interface, Translate, the placeholders, the sentence splitter, the warnings and how to write an engine |
 | [hls.md](hls.md) | package `hls` and `stbox hls`: the WebVTT segments, the playlist, the timestamp map and the joiner |
-| [cli.md](cli.md) | the `stbox` command: install, arguments, input and output files, `info`, `validate`, `sync`, `diff`, `dual`, `hls`, `formats` and exit codes |
-| [compatibility.md](compatibility.md) | what a release may change, and what stays the same for the whole 3.x line |
+| [cli.md](cli.md) | the `stbox` command: install, arguments, input and output files, `convert`, `info`, `validate`, `sync`, `diff`, `dual`, `hls`, `translate`, `formats` and exit codes |
+| [compatibility.md](compatibility.md) | what a release may change, and what stays the same for the whole 4.x line |
 | [upgrade-2.0.md](upgrade-2.0.md) | the breaks of 2.0 with the old call and the new call, the new types, and the conversions that change output |
 | [upgrade-3.0.md](upgrade-3.0.md) | the breaks of 3.0 with the old call and the new call |
 | [upgrade-4.0.md](upgrade-4.0.md) | the breaks of 4.0 with the old call and the new call |
 | [runbooks/release.md](runbooks/release.md) | the release steps, the checks before a major release, and the checks after each release |
-| [php-differences.md](php-differences.md) | each behaviour that differs from PHP 5.x on purpose |

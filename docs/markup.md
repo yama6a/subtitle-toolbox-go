@@ -2,7 +2,7 @@
 
 A SubRip line `<i>Fish & Chips</i>` reads as `<i>Fish &amp; Chips</i>`. An ASS line `{\i1}Hi{\i0}` reads as `<i>Hi</i>`. Every cue line holds **core markup**: text with `&`, `<` and `>` escaped, plus HTML-like inline tags. Readers write this string, and writers convert the tags back to the syntax of their format.
 
-- **Why a string**: the PHP project stores the same string, so the Go readers compare byte for byte with the PHP read goldens.
+- **Why a string**: one string holds the text and the tags of every format, and tests compare it byte for byte.
 - **Cost**: writers parse the tags again with exact string rules. The helpers below hold these rules, so a format package does not write its own.
 
 ## Terms
@@ -35,7 +35,7 @@ Text outside tags holds `&`, `<` and `>` as `&amp;`, `&lt;` and `&gt;`.
 
 - **WebVTT exception**: the WebVTT reader escapes only a bare `&`. A raw `>`, and a `<` before white space, stay raw in WebVTT lines, because WebVTT text allows them and a round trip keeps the bytes.
 - **Changed text runs**: `MapTextRuns` escapes a changed run in the form of its raw run. It keeps `&` and `>` raw where the raw run has them raw, and it keeps an entity such as `&nbsp;` as an entity.
-- **Entities**: `DecodeEntities` decodes as PHP `html_entity_decode` with `ENT_QUOTES | ENT_HTML5`. A named entity needs its `;`, and a numeric entity decodes only to a code point that HTML5 allows. So `&amp` and `&#13;` stay as written. Go `html.UnescapeString` differs: it maps `&#128;` to the euro sign and decodes `&notit;` as the not sign plus `it;`.
+- **Entities**: `DecodeEntities` decodes the HTML5 named entities and the numeric entities. A named entity needs its `;`, and a numeric entity decodes only to a code point that HTML5 allows. So `&amp` and `&#13;` stay as written. Go `html.UnescapeString` differs: it maps `&#128;` to the euro sign and decodes `&notit;` as the not sign plus `it;`.
 
 ## Colors
 

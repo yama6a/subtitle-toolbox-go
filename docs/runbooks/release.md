@@ -7,7 +7,7 @@ The `release` workflow releases on every merge to `main` whose pull request carr
 1. Label the pull request `patch` or `minor`.
 
    ```bash
-   gh pr edit <number> -R yama6a/subtitle-toolbox-go --add-label minor
+   gh api -X POST repos/yama6a/subtitle-toolbox-go/issues/<number>/labels -f 'labels[]=minor'
    ```
 
 2. Merge the pull request after every required check is green.
@@ -87,11 +87,11 @@ Do every step on the last commit of `main`. For a major N of 2 or more, do step 
    ```bash
    out=$(mktemp)
    go test -count=1 -run '^TestReadGoldens$' -v . > "$out"
-   grep -o -- '--- PASS: TestReadGoldens/[a-z]*' "$out" | sort | uniq -c
+   grep -o -- '--- PASS: TestReadGoldens/[a-z0-9-]*' "$out" | sort | uniq -c
    grep -c -- '--- SKIP' "$out"
    ```
 
-   Expected for 1.0.0: 6 cases in `json`, 19 in `srt` and 30 in `vtt`, 55 in total. The skip count is 0.
+   Expected: one line for each format folder with its number of passed cases, and a skip count of 0. The cases are the `expected/*.json` files of `testdata`, so a new golden adds a case.
 
 5. Rewrite the write goldens.
 
@@ -101,7 +101,7 @@ Do every step on the last commit of `main`. For a major N of 2 or more, do step 
 
    Expected: no output from `git status`.
 
-6. Run every fuzz target for 5 minutes. At 1.0.0 the module has 16 targets, so this takes about 80 minutes.
+6. Run every fuzz target for 5 minutes. The module has 89 fuzz targets, so this takes about 7.5 hours on one machine. `FUZZSHARD` and `FUZZSHARDS` split the run over machines, for example `FUZZSHARD=0 FUZZSHARDS=7` runs every seventh target.
 
    ```bash
    make fuzz FUZZTIME=5m
@@ -140,7 +140,7 @@ Do every step on the last commit of `main`. For a major N of 2 or more, do step 
     for pkg in $(go list ./... | grep -v -e /internal/ -e /cmd/); do go doc -all "$pkg"; done
     ```
 
-    Expected: only identifiers that are meant as API. Nothing that the PHP code marks `@internal` is exported. The names follow the section "API rules" of `CONTRIBUTING.md`.
+    Expected: only identifiers that are meant as API. The names follow the section "API rules" of `CONTRIBUTING.md`.
 
 11. Check the docs. Every page of `docs/README.md` holds its content, and the docs tests pass.
 

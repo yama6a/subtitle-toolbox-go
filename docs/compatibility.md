@@ -45,7 +45,7 @@ The hearing-impaired remover, the common error fixer and the profanity filter ca
 - **Existing rules**: a patch release can change a rule so that it stops changing text that it should keep.
 - **New rules**: a new rule is off by default. Turn it on with its option.
 
-Validation presets arrive in 2.x. From then on, a preset never gets a new rule inside its major line.
+Validation presets came in 2.x. From then on, a preset never gets a new rule inside its major line.
 
 ## Interfaces
 

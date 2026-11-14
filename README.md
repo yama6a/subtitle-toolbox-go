@@ -57,7 +57,7 @@ stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
 
 - Go of the `go` line in [go.mod](go.mod) or later.
 - No cgo.
-- The library imports `golang.org/x/text`, `github.com/rivo/uniseg` and `github.com/dlclark/regexp2/v2`.
+- The library imports `golang.org/x/text`, `github.com/rivo/uniseg`, `github.com/dlclark/regexp2/v2`, `github.com/Eyevinn/mp4ff`, `github.com/asticode/go-astits` and `github.com/yama6a/go-glyph-ocr`.
 
 ## Formats
 
@@ -148,18 +148,18 @@ Each format has its own field in `ReadOptions` and `WriteOptions`. See [docs/for
 
 ## Design
 
-- **Time**: every time is a `time.Duration`, rounded to whole milliseconds. PHP shifts in binary seconds, so it rounds some shifts differently, see [docs/php-differences.md](docs/php-differences.md).
+- **Time**: every time is a `time.Duration`, rounded to whole milliseconds.
 - **Options**: the zero value of every option is its default, so `stbox.ReadOptions{}` reads with the defaults. A struct literal then needs no constructor.
 - **Logging**: the library never logs. A read returns its warnings in `ReadInfo`. A logger in the API would put zap into the module graph of every importer.
 - **Errors**: each cause is a sentinel error such as `ErrParse`, matched with `errors.Is`. No sentinel matches every error, so errors of the caller's own reader stay apart.
 - **Packages**: no format package registers itself in `init()`. A missing format is then a compile error, and not an "unknown format" at run time.
-- **Tests**: the PHP read goldens are the conformance oracle, and a Go bug never rewrites them. [docs/php-differences.md](docs/php-differences.md) lists each deliberate difference.
+- **Tests**: the read goldens are the expected cues of real files. `go test -run TestReadGoldens -update` rewrites them. Review each diff by hand.
 
 [docs/design.md](docs/design.md) links each decision to its issue.
 
 ## Compatibility
 
-Every 3.x release keeps the API, the option defaults and the conversion output. See [docs/compatibility.md](docs/compatibility.md).
+Every 4.x release keeps the API, the option defaults and the conversion output. See [docs/compatibility.md](docs/compatibility.md).
 
 ## Documentation
 
@@ -178,8 +178,8 @@ Every 3.x release keeps the API, the option defaults and the conversion output. 
 make ci      # tidy-check, generate-check, fmt-check, lint, vet, test, vuln
 make test    # go test -race ./...
 make fmt     # rewrite formatting in place
-make golden  # rewrite the Go write goldens, then review each diff by hand
-make fuzz    # run each fuzz target for 30 s, FUZZSHARD=0 FUZZSHARDS=5 runs a fifth
+make golden  # rewrite the Go read and write goldens, then review each diff by hand
+make fuzz    # run each fuzz target for 30 s, FUZZSHARD=0 FUZZSHARDS=7 runs a seventh
 make bench   # run the benchmarks
 make build   # write bin/stbox
 ```
@@ -212,6 +212,6 @@ MIT, see [LICENSE](LICENSE). Material from third parties keeps its own licence, 
 
 ## Credits
 
-This module is a Go port of [yama6a/subtitle-toolbox-php](https://github.com/yama6a/subtitle-toolbox-php) 5.17.
+This module is a Go port of [yama6a/subtitle-toolbox-php](https://github.com/yama6a/subtitle-toolbox-php).
 
-The PHP libraries [mantas-done/subtitles](https://github.com/mantas-done/subtitles) and [captioning/captioning](https://github.com/captioning/captioning) shaped that library. [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) lists every file copied from other projects.
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) lists every file copied from other projects.

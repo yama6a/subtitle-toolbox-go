@@ -85,7 +85,7 @@ func (e webEngine) Recognize(ctx context.Context, im model.Image, language ocr.L
 
 ## PGS colour reduction
 
-`stbox.Write` with `stbox.PGS` writes image cues as a `.sup` file, see [formats.md](formats.md#pgs). All images that show at the same time share one palette of at most 256 colours. The writer reduces the colours only when the shown images together hold more than 256 colours. Then a median cut gives 255 opaque colours and entry 0 as transparent. One image with 256 colours stays as it is. Two images with 200 different colours each are reduced.
+`stbox.Write` with `stbox.PGS` writes image cues as a `.sup` file, see [formats.md](formats.md#pgs). All images that show at the same time share one palette of at most 256 colours. The writer reduces the colours only when the shown images together hold more than 256 colours. Then a median cut gives 255 opaque colours and entry 0 as transparent. One image with 256 colours stays as it is. Two images with 200 different colours each are reduced. The writer returns an `*UnwritableError` for a PNG that does not decode.
 
 ## Tesseract
 
@@ -107,7 +107,7 @@ engine, err := tesseract.New(tesseract.Options{Language: ocr.German})
 - **Container image**: `ghcr.io/yama6a/subtitle-toolbox-go:<version>-tesseract` holds `tesseract` and the fast models of every language. It reads every language with no install step. See [cli.md](cli.md#install).
 - **Checks**: `Recognize` and `RequireLanguages` first check that the program runs and that the data of every part of the language is installed. A failure is an `*InvalidArgumentError` with an install hint, for example `apt install tesseract-ocr` for Debian and Ubuntu, `apk add tesseract-ocr tesseract-ocr-data-eng` for Alpine, `dnf install tesseract` for Fedora and `brew install tesseract` for macOS. `Installed(ctx, program)` reports whether the program runs.
 - **Text**: the words of one TSV line become one line, escaped as core markup. Tesseract reports no italic, so the lines hold no `<i>` tags. The confidence is the mean word confidence from 0 to 1.
-- **Errors**: a program that exits with a code other than 0, or that cannot start, gives an error that matches `ErrRecognize`.
+- **Errors**: a program that exits with a code other than 0, or that cannot start, gives an error that matches `ErrRecognize`. A program that cannot start gives its start error, such as `Cannot start Tesseract for the cue image at 7, 9: REASON.`
 - **Tests**: tests with a fake program run everywhere. `TestTesseractAccuracy` needs a real Tesseract with `eng` and `rus` data. It skips without one, unless `STBOX_REQUIRE_TESSERACT=1` is set. The CI job `tesseract` sets it.
 
 ## Glyph engine
@@ -165,12 +165,3 @@ A VobSub read gives image cues, so OCR can read DVD subtitles. See [VobSub in fo
 Package `ocr/ocrtest` holds `Engine`, a fake that returns the same `Text` for every image and records each call with its image and language.
 
 `ocr/glyph` reads the PGS and VobSub fixtures and compares the SubRip output with `pgs/text_1080p.ocr.srt` and `vobsub/text-pal.ocr.srt`. With the Latin database and no line context it reads the I and l errors that `fixing` repairs, as `fixing/text_1080p.ocr.srt` and `fixing/text-pal.ocr.srt` keep them.
-
-## Differences from PHP
-
-- A Tesseract program that cannot start gives its start error. PHP reports `exits with code -1`. See [php-differences.md](php-differences.md).
-- The cue gets the cleaned lines. The report holds the raw result of the engine. PHP `docs/ocr.md` says the library drops empty lines, which only the cue setter does.
-- A `Text` with a confidence of NaN fails `Validate`. See [php-differences.md](php-differences.md).
-- PHP `docs/ocr.md` says lenient mode keeps the cues before framing damage of a PGS file and is silent on other damage. Go skips only the display set with damage inside a segment, see [lenient-parsing.md](lenient-parsing.md#pgs).
-- PHP `docs/ocr.md` says the PGS writer reduces "an image with more than 255 colors". The rule is the one above: the shown images together, above 256 colours.
-- The PGS writer returns an `*UnwritableError` for a PNG that does not decode. PHP lets the decoder exception escape.
