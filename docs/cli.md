@@ -31,7 +31,7 @@
 
 ## Argument syntax
 
-The words after the command name follow these rules. The standard `flag` package stores the values, and a pre-pass applies these rules first.
+The words after the command name follow the rules below. The standard `flag` package stores the values, and a pre-pass applies these rules first.
 
 | Word | Meaning |
 |:--- |:--- |

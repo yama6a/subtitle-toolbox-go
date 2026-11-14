@@ -178,7 +178,7 @@ Every 4.x release keeps the API, the option defaults and the conversion output. 
 make ci      # tidy-check, generate-check, fmt-check, lint, vet, test, vuln
 make test    # go test -race ./...
 make fmt     # rewrite formatting in place
-make golden  # rewrite the Go write goldens, then review each diff by hand
+make golden  # rewrite the Go read and write goldens, then review each diff by hand
 make fuzz    # run each fuzz target for 30 s, FUZZSHARD=0 FUZZSHARDS=7 runs a seventh
 make bench   # run the benchmarks
 make build   # write bin/stbox

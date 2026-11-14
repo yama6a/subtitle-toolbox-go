@@ -87,11 +87,11 @@ Do every step on the last commit of `main`. For a major N of 2 or more, do step 
    ```bash
    out=$(mktemp)
    go test -count=1 -run '^TestReadGoldens$' -v . > "$out"
-   grep -o -- '--- PASS: TestReadGoldens/[a-z]*' "$out" | sort | uniq -c
+   grep -o -- '--- PASS: TestReadGoldens/[a-z0-9-]*' "$out" | sort | uniq -c
    grep -c -- '--- SKIP' "$out"
    ```
 
-   Expected for 1.0.0: 6 cases in `json`, 19 in `srt` and 30 in `vtt`, 55 in total. The skip count is 0.
+   Expected: one line for each format folder with its number of passed cases, and a skip count of 0. The cases are the `expected/*.json` files of `testdata`, so a new golden adds a case.
 
 5. Rewrite the write goldens.
 

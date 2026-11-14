@@ -87,7 +87,7 @@ The files `<folder>/real/expected/<file>.json` hold the expected parse warnings 
 
 - **Why**: the goldens catch a change in what a reader returns for real files.
 - **Update**: `go test -run TestReadGoldens -update` rewrites them. Review each diff by hand, because a read bug would otherwise hide in the new golden.
-- **Write output**: the write goldens are separate files. `make golden` rewrites them.
+- **Write output**: the write goldens are separate files. `make golden` rewrites them and the read goldens.
 - **Source**: [#9](https://github.com/yama6a/subtitle-toolbox-go/issues/9), [#1](https://github.com/yama6a/subtitle-toolbox-go/issues/1).
 
 ## Word times and speakers
