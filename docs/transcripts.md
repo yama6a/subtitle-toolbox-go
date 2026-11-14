@@ -113,7 +113,7 @@ The reader stores the shape as the `format` member of the file format data `whis
 
 ### Read
 
-- **Lists**: `segments` that is an array takes the segment path. Else `transcription` that is an array takes the whisper.cpp path. Else the read fails with `The JSON has no "segments" or "transcription" list.` in both modes. A list must be a JSON array. An object with the keys `"0"` and `"1"` is no list ([subtitle-toolbox-php#1208](https://github.com/yama6a/subtitle-toolbox-php/issues/1208)).
+- **Lists**: `segments` that is an array takes the segment path. Else `transcription` that is an array takes the whisper.cpp path. Else the read fails with `The JSON has no "segments" or "transcription" list.` in both modes. A list must be a JSON array. An object with the keys `"0"` and `"1"` is no list.
 - **Cues**: a segment whose trimmed text is empty gives no cue and no warning. A long segment stays one cue.
 - **Language**: `language`, else `result.language`. A string is looked up in lower case ASCII in the 112 names of `whisper/tokenizer.py`. A hit gives the code, so `english` gives `en` and `castilian` gives `es`. A miss keeps the string.
 - **File data**: `{"format": SHAPE}`, then every top-level member except `segments`, `transcription`, `words`, `word_segments`, `text` and `format`.
@@ -157,7 +157,7 @@ The shape is the `format` member of the file data when it names one of the 4 sha
 | `whisper.cpp` | the stored file members, `transcription` |
 
 - **Language**: the subtitle language becomes `language`, unless the file data has a `language` that is not null. Not in the whisper.cpp shape.
-- **Segment**: the stored segment keeps its members in order. A segment without `id` gets the `id` of the segment before it plus 1, else 0. The id after 9223372036854775807 is the float `9.223372036854776e+18`, as in PHP. WhisperX segments get none. `start`, `end` and `text` keep the stored value when it equals the cue. Else the writer writes the cue value, with a space before the text unless the stored text is a string without one. A changed text removes `tokens`, because the writer cannot make token ids.
+- **Segment**: the stored segment keeps its members in order. A segment without `id` gets the `id` of the segment before it plus 1, else 0. The id after 9223372036854775807 is the float `9.223372036854776e+18`. WhisperX segments get none. `start`, `end` and `text` keep the stored value when it equals the cue. Else the writer writes the cue value, with a space before the text unless the stored text is a string without one. A changed text removes `tokens`, because the writer cannot make token ids.
 - **Words**: the writer applies the rules of [reuse of source words](#reuse-of-source-words). No result removes a stored `words` array. A stored `"words": null` stays. A new word is `{"word": " text", "start", "end", "probability"}` in openai-whisper, `{"word": "text", "start", "end"}` in openai-api and `{"word", "start", "end", "score", "speaker"}` in WhisperX, with `speaker` only when the cue has one.
 - **Speaker**: a cue speaker that differs from the stored `speaker` sets `speaker`, and each word with a `speaker` that is not null gets the new name. A cue without a speaker keeps the stored speaker, so the writer cannot write the removal of a speaker.
 - **whisper.cpp entry**: `offsets` is always `{"from": MS, "to": MS}` in whole milliseconds. `timestamps` keeps the stored value when the offsets are the same, else it is `{"from": "00:01:02,500", "to": ...}`. `text` follows the segment rule. `tokens` stay only when the offsets, the text and the words of the cue equal the stored ones. `speaker` follows the segment rule.
@@ -277,7 +277,7 @@ The `format` field of the file data names the variant. A cue from another format
 - **Unchanged cue**: when the lines and the words are the ones that the reader builds from the stored segments, the writer writes the stored segments as they are.
 - **Changed cue**: the segments come from the tagged lines. A word timestamp sets the offset of the next text. The tags `b`, `i`, `u` and `font` set the style. The white space at the end of a segment moves to the start of the next timed segment. A cue without word times and styles whose words equal the stored one-word segments in number keeps the stored offsets, and a changed word loses only its own fields. Else each new segment takes the fields of the next unused stored segment with the same text and offset.
 - **Pens and positions**: a style takes the preferred pen when it has the style, else the first pen with the style, else a new pen. A plain style needs none. An alignment other than bottom center takes the first window position with that anchor point, else a new one: `ah` and `av` are 0, 50 or 100 from the anchor point. A new id is the largest numeric id plus 1.
-- **Escapes**: XML text escapes `&`, `<` and `>`, and attribute values also `"`. The writer drops the characters that XML cannot hold. A text that is not valid UTF-8 returns an `*UnwritableError`, as in [TTML](formats.md#ttml). A segment is escaped once, where PHP escapes some twice.
+- **Escapes**: XML text escapes `&`, `<` and `>`, and attribute values also `"`. The writer drops the characters that XML cannot hold. A text that is not valid UTF-8 returns an `*UnwritableError`, as in [TTML](formats.md#ttml). A segment is escaped once.
 
 ### YouTube cost
 
@@ -364,9 +364,9 @@ Amazon Transcribe returns a batch transcript as JSON with one item for each word
 
 ### Read
 
-- **Lists**: `results` must be an object and `results.items` a JSON array. Else the read fails with `The JSON has no "results.items" list.` in both modes. `audio_segments` counts when it is an array with items. An object with the keys `"0"` and `"1"` is no list ([subtitle-toolbox-php#1208](https://github.com/yama6a/subtitle-toolbox-php/issues/1208)).
+- **Lists**: `results` must be an object and `results.items` a JSON array. Else the read fails with `The JSON has no "results.items" list.` in both modes. `audio_segments` counts when it is an array with items. An object with the keys `"0"` and `"1"` is no list.
 - **Words**: a pronunciation item makes a word. A punctuation item joins the word before it without a space. Punctuation before the first word waits and joins the first word in front. So the item U+00BF, the word `Vienes` and the item `?` give the word U+00BF followed by `Vienes?`.
-- **Cues with audio segments**: one cue for each segment. Its words are the words of the item ids in the segment `items` list. The integer 5 and the string `"5"` name the same item, and `"05"` is another id. An id that names no word is ignored. A word that an earlier segment, or the same segment, already named belongs to that segment, so each word is copied into the cue data once ([subtitle-toolbox-php#1279](https://github.com/yama6a/subtitle-toolbox-php/issues/1279)).
+- **Cues with audio segments**: one cue for each segment. Its words are the words of the item ids in the segment `items` list. The integer 5 and the string `"5"` name the same item, and `"05"` is another id. An id that names no word is ignored. A word that an earlier segment, or the same segment, already named belongs to that segment, so each word is copied into the cue data once.
 - **Cues without audio segments**: the words group into cues by the [grouping rules](#grouping-words-into-cues).
 - **Language**: `results.language_code`.
 - **Speaker**: with `SpeakerVoices`, the `speaker_label` of the segment, or of the first item of a grouped cue. A string or an integer.
@@ -434,9 +434,9 @@ Deepgram returns the transcript of a recording as JSON. Each audio channel has a
 
 ### Read
 
-- **Lists**: `results` must be an object and `results.channels` a JSON array. Else the read fails with `The JSON has no "results.channels" list.` in both modes. An object with the keys `"0"` and `"1"` is no list ([subtitle-toolbox-php#1208](https://github.com/yama6a/subtitle-toolbox-php/issues/1208)).
+- **Lists**: `results` must be an object and `results.channels` a JSON array. Else the read fails with `The JSON has no "results.channels" list.` in both modes. An object with the keys `"0"` and `"1"` is no list.
 - **Utterances**: when `results.utterances` is an array with items, each utterance gives one cue. The channels are not read. The cue data is the whole utterance.
-- **Paragraphs**: a channel whose first alternative has `paragraphs.paragraphs` gives one cue for each sentence. The cue data of each sentence holds a copy of its paragraph. The copies of a file together may not pass 4 times the size of the file plus 1 MiB. Past that, the read fails in both modes with `The sentences copy more than N bytes of paragraph data into the cues.` ([subtitle-toolbox-php#1280](https://github.com/yama6a/subtitle-toolbox-php/issues/1280)). The speaker is the `speaker` of the paragraph. The words of a cue are the words whose middle lies between the start and the end of the sentence. The cue data is the sentence members, then `channel`, `speaker`, `paragraph` without `sentences`, and `words`.
+- **Paragraphs**: a channel whose first alternative has `paragraphs.paragraphs` gives one cue for each sentence. The cue data of each sentence holds a copy of its paragraph. The copies of a file together may not pass 4 times the size of the file plus 1 MiB. Past that, the read fails in both modes with `The sentences copy more than N bytes of paragraph data into the cues.`. The speaker is the `speaker` of the paragraph. The words of a cue are the words whose middle lies between the start and the end of the sentence. The cue data is the sentence members, then `channel`, `speaker`, `paragraph` without `sentences`, and `words`.
 - **Words only**: the words of a channel group into cues by the [grouping rules](#grouping-words-into-cues). The cue data is `{"channel": N, "words": [...]}`.
 - **Channels**: only a channel whose `alternatives[0]` is an object gives cues. The cues of all channels are sorted by start, so channel 1 can come before channel 0.
 - **Language**: `results.channels[0].detected_language`.
@@ -461,12 +461,12 @@ A field error fails the word, the utterance or the sentence. Strict mode returns
 
 The output is compact JSON without a BOM. `results` has `channels`, then `utterances` when they are written, then the stored members. Then the other stored top-level members such as `metadata`.
 
-- **Channels**: a cue goes to the channel in its stored data, when that is an integer below the number of stored channels plus the number of cues. Else it goes to channel 0 ([subtitle-toolbox-php#1274](https://github.com/yama6a/subtitle-toolbox-php/issues/1274)). The count is the larger of the stored channels and the highest cue channel plus 1, at least 1. The first channel gets `detected_language` from the subtitle language when it has none.
+- **Channels**: a cue goes to the channel in its stored data, when that is an integer below the number of stored channels plus the number of cues. Else it goes to channel 0. The count is the larger of the stored channels and the highest cue channel plus 1, at least 1. The first channel gets `detected_language` from the subtitle language when it has none.
 - **Alternative**: `transcript` is the cue texts of the channel joined with one space. Then the stored members, then `words` with the words of all its cues. `paragraphs` follows when a cue has a stored paragraph.
 - **Cue values**: `start`, `end` and the text keep the stored value when it equals the cue. Else the writer writes the cue value.
 - **Words**: the writer applies the rules of [reuse of source words](#reuse-of-source-words). No result gives no words. A new word is `{"word", "start", "end", "confidence", "speaker"?, "punctuated_word"}`. `word` is the text in lower case without the characters `.,?!;:"'()[]` and white space at both ends, or the text when nothing is left.
 - **Typed values**: a reused word gets `Word.End` in `end` and `Word.Confidence` in `confidence`, when it has the member and the value differs.
-- **Speaker**: the name of the cue. A name of the digits 0 to 9 only becomes an integer, so `<v 0>` writes `0`. A name too large for an integer stays a string ([subtitle-toolbox-php#1274](https://github.com/yama6a/subtitle-toolbox-php/issues/1274)). When it differs from the stored `speaker`, each word gets it.
+- **Speaker**: the name of the cue. A name of the digits 0 to 9 only becomes an integer, so `<v 0>` writes `0`. A name too large for an integer stays a string. When it differs from the stored `speaker`, each word gets it.
 - **Utterance**: written when a cue has a stored `transcript`, or when a cue has no words and no paragraph. It is `{"start": null, "end": null, "confidence": 1.0}` replaced by the stored utterance, then `start`, `end`, `channel`, `transcript`, `words` and `speaker`.
 - **Paragraphs**: a cue with a stored paragraph joins the paragraph before it when the stored paragraphs are equal. A cue without one joins it when the speaker is equal. Each sentence is the stored sentence members with `text`, `start` and `end`. A paragraph gets `num_words`, `start` and `end`. `transcript` is one line for each paragraph with `Speaker N: ` before it when it has a speaker, and starts with a line break as Deepgram writes it.
 
@@ -505,12 +505,12 @@ Google Cloud Speech-to-Text returns a list of `results`. Each result has alterna
 | a plain number | seconds | no duration |
 | any other value | no time | no duration |
 
-A plain number is a time for the reader and no duration for the writer, as in PHP. So a result end that is a plain number never counts as the same time, and the writer writes it again as a string. The writer prints a duration from whole milliseconds: `"6s"` when the milliseconds are a multiple of 1000, else `"1.500s"`.
+A plain number is a time for the reader and no duration for the writer. So a result end that is a plain number never counts as the same time, and the writer writes it again as a string. The writer prints a duration from whole milliseconds: `"6s"` when the milliseconds are a multiple of 1000, else `"1.500s"`.
 
 ### Read
 
 - **Operation**: a top-level `response` that is an object is unwrapped. The other top-level members, such as `name`, `metadata` and `done`, go first into the file data.
-- **Lists**: `results` must be a JSON array. Else the read fails with `The JSON has no "results" list.` in both modes. An object with the keys `"0"` and `"1"` is no list ([subtitle-toolbox-php#1208](https://github.com/yama6a/subtitle-toolbox-php/issues/1208)).
+- **Lists**: `results` must be a JSON array. Else the read fails with `The JSON has no "results" list.` in both modes. An object with the keys `"0"` and `"1"` is no list.
 - **Diarized**: the last result is diarized when a word of its first alternative has a `speakerLabel` that is not null, or a `speakerTag` that is not 0, `""`, `"0"`, false or null. Each diarized result repeats the words of the results before it, so the last one holds all words. The words group into cues by the [grouping rules](#grouping-words-into-cues). The file data then holds `results` with the last result without its transcript and words.
 - **Other files**: one cue for each result. A result without words starts where the result before it ended, and ends at its result end. A result with words runs from its first word to its last word. The cue data is the result without `alternatives`, then the members of the first alternative.
 - **Language**: the first `languageCode` of the results that is a string and not empty.
@@ -543,7 +543,7 @@ The writer uses V2 names when a stored result or a cue has a `resultEndOffset`, 
 - **Text**: the stored transcript when it equals the cue text. A leading space of the stored transcript stays.
 - **Words**: the writer applies the rules of [reuse of source words](#reuse-of-source-words). No result gives `[]`. A new word is `{"startTime", "endTime", "word"}`, with `startOffset` and `endOffset` in V2, and `confidence` when a stored word of the cue has one.
 - **Typed values**: a reused word gets `Word.End` in its end member and `Word.Confidence` in `confidence`, when it has the member and the value differs.
-- **Diarized source**: one result with all words of all cues. Each word gets `speakerLabel` with the cue speaker in V2, or `speakerTag` in V1. A V1 speaker of the digits 0 to 9 only is an integer, unless it is too large for one ([subtitle-toolbox-php#1274](https://github.com/yama6a/subtitle-toolbox-php/issues/1274)). A cue without words fails with an `UnwritableError` that names the cue, such as `Cue #2 at 8.24 s has no words.`
+- **Diarized source**: one result with all words of all cues. Each word gets `speakerLabel` with the cue speaker in V2, or `speakerTag` in V1. A V1 speaker of the digits 0 to 9 only is an integer, unless it is too large for one. A cue without words fails with an `UnwritableError` that names the cue, such as `Cue #2 at 8.24 s has no words.`
 
 2 cues from another format with the language `en-US`, `<v Anna>Good` / `morning.` from 1.5 to 3 s, and `See you.` from 4 to 5 s with 2 words, write:
 
@@ -572,7 +572,7 @@ AssemblyAI returns a transcript as JSON with times in milliseconds: a list of `w
 
 ### Read
 
-- **Lists**: `utterances` counts when it is an array with items. Without utterances, `words` must be an array. Else the read fails with `The JSON has no "words" or "utterances" list.` in both modes. `"utterances": null` falls back to the words. An object with the keys `"0"` and `"1"` is no list ([subtitle-toolbox-php#1208](https://github.com/yama6a/subtitle-toolbox-php/issues/1208)).
+- **Lists**: `utterances` counts when it is an array with items. Without utterances, `words` must be an array. Else the read fails with `The JSON has no "words" or "utterances" list.` in both modes. `"utterances": null` falls back to the words. An object with the keys `"0"` and `"1"` is no list.
 - **Utterances**: one cue for each utterance, with the text of `text`. The cue data is the whole utterance.
 - **Words only**: the words group into cues by the [grouping rules](#grouping-words-into-cues). The cue data is `{"words": [...]}`.
 - **Language**: `language_code` when it is a string that is not empty. The part after the first `_` is upper-cased in ASCII and joins with `-`. So `en_us` gives `en-US`, `en_au` gives `en-AU` and `de` stays `de`.
@@ -603,7 +603,7 @@ The output is compact JSON without a BOM. The members are the stored file member
 - **Typed values**: a reused word gets `Word.End` in `end` and `Word.Confidence` in `confidence`, when it has the member and the value differs.
 - **Speaker**: a cue speaker that differs from the stored `speaker` is written on every word.
 - **Utterances are written** when the source had them, when an utterance has a speaker that is not null, or when a cue has no words. Else the writer writes `"utterances": null`.
-- **Empty objects**: an empty JSON object in the file data stays `{}`. PHP writes `[]`.
+- **Empty objects**: an empty JSON object in the file data stays `{}`.
 
 A subtitle with the language `en-US` and one cue from another format, from 4 to 5 s, with the words `See` (4 to 4.5 s) and `you.` (4.5 to 5 s) writes:
 

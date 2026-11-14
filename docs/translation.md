@@ -38,7 +38,7 @@ The engines of the library live in `translation/<engine>`. Package `translation`
 
 `Translate(ctx, s, engine, source, target, opts)` does these steps.
 
-1. It checks `opts`, the engine and the target. A nil engine, and a target that is empty after the PHP trim, return an `*model.InvalidArgumentError`.
+1. It checks `opts`, the engine and the target. A nil engine, and a target that is empty after trimming space, tab, LF, CR, NUL and VT, return an `*model.InvalidArgumentError`.
 2. It copies the cues with `s.Cues()`.
 3. It picks the cues that need translation, and joins them into sentences, see [What the runner sends](#what-the-runner-sends).
 4. It replaces the tags of each text with placeholders.
@@ -130,7 +130,7 @@ Each piece reopens the tags that are open at its start. The output is at most `M
 
 | Message | When |
 |:--- |:--- |
-| `The engine dropped or changed a placeholder tag. The cue has no tags.` | the translation of the text does not keep the placeholders. One warning for each cue of the text |
+| `The engine dropped or changed a placeholder tag. The cue has no tags.` | the translation of the text does not keep the placeholders. One warning for each cue of the text. An answer such as `<x<x1/>1>Hallo` gives plain text and this warning |
 | `The translation of the sentence is too short to fill this cue. The cue has no text.` | a piece of a sentence over several cues is empty. The cue keeps no line |
 
 ## Errors
@@ -329,16 +329,3 @@ fmt.Println(s.Cues()[0].Lines)
 | 403 | `Google Cloud Translation refused the request (HTTP 403). Check the key and that the API is enabled.` and the `error.message` of the answer |
 | 429, after 4 attempts | `Google Cloud Translation got too many requests (HTTP 429). Wait and try again.` |
 | other | `Google Cloud Translation answered with HTTP N.` and the `error.message` of the answer |
-
-## Differences from PHP
-
-- An engine that returns a wrong number of strings gives a `*ServiceError`. PHP throws `InvalidArgumentException`.
-- The engines read `Retry-After`. PHP always waits 1, 2 and 4 s.
-- An empty target language fails before any request. PHP sends it to the service.
-- An answer larger than 1 MiB plus 16 bytes for each request byte fails. PHP reads any size.
-- An answer such as `<x<x1/>1>Hallo` gives plain text and a warning. PHP throws a `TypeError`.
-- The runner sets `Words` to nil on a translated cue. PHP puts the source word timestamps back in the text.
-- Go needs no ext-curl, because it uses `net/http`.
-- A character of a script without spaces that is new after Unicode 15.0, such as U+2EBF0, is a cut candidate in Go only.
-
-See [php-differences.md](php-differences.md).

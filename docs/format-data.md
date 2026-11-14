@@ -30,18 +30,17 @@ fmt.Println(s.FormatDataKeys())
 - **Integers**: always `int64`, so a 32-bit build reads the same values.
 - **Copies**: `SetFormatData` stores a deep copy, and `FormatData` returns one. A change to a returned `*Data` changes nothing until you pass it back.
 - **Keys**: the `Format` value of the format that owns the data, such as `ass`, `vtt` or `microdvd`. CSV and TSV share `csv`. The cue key `image` is not format data. The image of a cue lives in `Cue.Image`, and `Cue.SetFormatData` rejects the key `image`. `FormatDataKeys` returns the keys sorted.
-- **Why one ordered type**: it keeps unknown fields and key order without a codec per format, and the PHP read goldens match it as they are. A typed struct per format would need a codec per format and lose unknown fields.
+- **Why one ordered type**: it keeps unknown fields and key order without a codec per format. A typed struct per format would need a codec per format and lose unknown fields.
 
 ## Type checks
 
 Data enters only through `SetFormatData`, which checks the fields that writers read. A failed check returns an error that matches `ErrInvalidArgument`. The old data then stays. An empty `*Data` removes the key.
 
-- **Message**: `The field PATH must be TYPE.` The path starts with `formatData.KEY`. An object key adds `.key`, a list index adds `[i]`. An object key that is a canonical decimal integer, such as `12` or `-5` but not `012`, also gets the `[12]` form, as in PHP.
+- **Message**: `The field PATH must be TYPE.` The path starts with `formatData.KEY`. An object key adds `.key`, a list index adds `[i]`. An object key that is a canonical decimal integer, such as `12` or `-5` but not `012`, also gets the `[12]` form.
 - **Go types first**: the Go type check of the whole tree runs before the schema check. Example: the `scc` data `{dropFrame: "yes", x: uint8(1)}` fails on `x`.
 - **First problem**: the schema check walks the schema fields in table order and the values in stored order. It returns the first problem.
 - **Cue paths**: every message starts with `The field formatData.KEY`. The library JSON reader puts `cues[N].` after `The field ` for cue data. A test pins this start.
 - **Free data**: empty data passes. A key without a row passes, such as `whisper` or `pac`. A field outside its row passes.
-- **All lines**: the tables hold the keys of formats that later lines add, such as `dcp` and `stl`. So data from PHP or from a later Go line passes the same checks in 1.x.
 
 ### Type language
 
@@ -50,8 +49,8 @@ Data enters only through `SetFormatData`, which checks the fields that writers r
 | `string`, `int`, `bool` | a string, an int64, a bool | `a string`, `an integer`, `a boolean` |
 | `number` | an int64 or a finite float64 | `a finite number` |
 | `scalar` | a string, int64, float64, bool or nil | `a string, a number, a boolean or null` |
-| `ttiBlock` | a string of exactly 256 hex digits. One final LF passes, as in PHP | `a TTI block of 256 hexadecimal digits` |
-| `timeBase` | a string such as `1/1000`, both parts without a leading 0. One final LF passes, as in PHP | `a time base such as "1/1000"` |
+| `ttiBlock` | a string of exactly 256 hex digits. One final LF passes | `a TTI block of 256 hexadecimal digits` |
+| `timeBase` | a string such as `1/1000`, both parts without a leading 0. One final LF passes | `a time base such as "1/1000"` |
 | `range(min, max)` | an int64 from min to max | `an integer from MIN to MAX` |
 | `oneOf(values)` | one of the strings, exact | `one of "a", "b"` |
 | `list(T)` | a list or an object, each value of type T | `a list or an object` |

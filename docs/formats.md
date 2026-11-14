@@ -163,7 +163,7 @@ This block reads as one cue from 1.5 s to 4 s with the alignment `TopCenter`, th
 
 | Input | Goes to |
 |:--- |:--- |
-| the cue number line | dropped. It must be a PHP numeric string, such as `1`, `+1`, `1.5` or `1e3` |
+| the cue number line | dropped. It must be a numeric string, such as `1`, `+1`, `1.5` or `1e3` |
 | `X1:a X2:b Y1:c Y2:d` after the end time | cue data `srt.coordinates`, 4 integers. A value above the int64 range becomes the int64 maximum |
 | `vertical`, `line`, `position`, `size`, `align` after the end time, as yt-dlp writes them | cue data `vtt`, values as written. `vtt.alignment` holds the numpad value of an `\an` or `\a` tag of the cue |
 | `<b>`, `<i>`, `<u>`, `<s>`, `<font>`, `<v>`, and tags whose attributes are all `name=value` pairs | markup |
@@ -382,11 +382,11 @@ This file reads as one cue from 1 s to 3 s with the alignment `TopCenter` and th
 | Input | Goes to |
 |:--- |:--- |
 | the root namespace: TTML, DFXP `2006/10`, DFXP `2006/04`, or none | file data `ttml.namespace`, `""` for none. Another root gives `The root element is not a TTML <tt> element.` |
-| the `xmlns` declarations on `<tt>` | file data `ttml.namespaces`, a `*model.Data` of prefix to URI, sorted by prefix, `""` for the default namespace. An empty list `[]any{}` when the root declares none, as PHP writes it |
-| the other attributes of `<tt>` except `xml:lang` | file data `ttml.attributes`, a `*model.Data` in file order. An empty list `[]any{}` when the root has none, as PHP writes it |
+| the `xmlns` declarations on `<tt>` | file data `ttml.namespaces`, a `*model.Data` of prefix to URI, sorted by prefix, `""` for the default namespace. An empty list `[]any{}` when the root declares none |
+| the other attributes of `<tt>` except `xml:lang` | file data `ttml.attributes`, a `*model.Data` in file order. An empty list `[]any{}` when the root has none |
 | `xml:lang` of `<tt>` | the metadata `language` |
 | the first `ttm:title` in `<head>` | the metadata `title`, trimmed. The reader removes the element from the stored head |
-| `<head>` | file data `ttml.head`, the XML text as libxml writes it, so it equals the head that the PHP library stores |
+| `<head>` | file data `ttml.head`, the XML text as libxml writes it |
 | the attributes of `<body>` except `begin`, `end` and `dur` | file data `ttml.body` |
 | each `<p>` | a cue. `xml:id` gives `Cue.ID` |
 | the attributes of the `<p>` except the times, `xml:id` and `ttm:agent` | cue data `ttml.attributes`. An inherited `region` is added |
@@ -400,7 +400,7 @@ This file reads as one cue from 1 s to 3 s with the alignment `TopCenter` and th
 
 - **Times**: clock times such as `00:00:01.500`, `00:00:01,500` and `00:00:01:12` with frames, and offsets such as `1.5s`, `1500ms`, `36f` and `15000000t`. The reader reads `ttp:frameRate`, `ttp:frameRateMultiplier`, `ttp:subFrameRate`, `ttp:tickRate`, and `ttp:timeBase="smpte"` with `ttp:dropMode`. Without `ttp:frameRate`, frames count at 30 fps.
 - **Timing model**: a time adds to the begin of its parent. A paragraph ends at the earliest of its parent end, its `end` and its begin plus `dur`. A paragraph without an end takes the times of its timed spans. A paragraph without an end and without timed spans fails. `seq` containers read as `par`.
-- **Arithmetic**: the reader computes in float64 seconds as PHP does, then rounds each cue time to whole milliseconds. So `smpte_drop_ntsc.ttml` gives starts such as 57.391 s and 3599.996 s.
+- **Arithmetic**: the reader computes in float64 seconds, then rounds each cue time to whole milliseconds. So `smpte_drop_ntsc.ttml` gives starts such as 57.391 s and 3599.996 s.
 - **End before begin**: `<p begin="5s" end="2s">` fails with `The cue ends at 2 s, before it starts at 5 s.` Lenient mode swaps the times, as in SubRip.
 - **Alignment**: `tts:textAlign` `left`, `center` or `right` gives the column. The `tts:origin`, `tts:extent` and `tts:displayAlign` of the region give the row, in `%`, `px` or cells. A file without regions has one region over the whole screen from the top, so `tts:textAlign="center"` alone gives `TopCenter`. `start`, `end` and an unknown region give `BottomCenter` and no `ttml.alignment`.
 - **Namespaces**: `tts:`, `ttp:` and `ttm:` attributes count in the namespaces of TTML and of both DFXP drafts, and with an undeclared prefix.
@@ -480,7 +480,7 @@ This file reads as one cue from 90.08 s to 93.124 s with 2 lines and the alignme
 | SMPTE `Language` | the metadata `language`, trimmed. Interop names the language in words, such as `English`, so the reader skips it |
 | the root namespace URI and prefix of an SMPTE root | file data `dcp.namespace` and `dcp.prefix`. The reader does not check the URI |
 | the rate of the SMPTE times | file data `dcp.timeCodeRate` |
-| the root attributes in file order, plus `xmlns:xs` when declared | file data `dcp.attributes`. The names are local names, as the PHP library writes them |
+| the root attributes in file order, plus `xmlns:xs` when declared | file data `dcp.attributes`. The names are local names |
 | each child of the root that has no child element, other than `Font`, `Subtitle`, `SubtitleList` and `LoadFont` | file data `dcp.header`, the local name to the text, not trimmed |
 | each `LoadFont` child of the root | file data `dcp.loadFonts`, a list of `attributes` and `text` |
 | the attributes of the first `Font` child of the subtitle list | file data `dcp.font`. The subtitle list is the root for Interop and `SubtitleList` for SMPTE, or the root when SMPTE has none |
@@ -668,13 +668,13 @@ Without a class, every paragraph counts.
 
 ### Tag scanner
 
-The reader parses the content of each `SYNC` block with a tag scanner of its own, in place of the libxml2 HTML parser of PHP. The cue data `sami.paragraphs` holds the HTML that the scanner writes back. So the scanner gives the libxml2 tree for the markup of real SAMI files:
+The reader parses the content of each `SYNC` block with a tag scanner of its own. The cue data `sami.paragraphs` holds the HTML that the scanner writes back. The scanner gives the tree of the libxml2 HTML parser for the markup of real SAMI files:
 
 - A `<P>` closes an open `<P>` and the inline tags `b`, `i`, `u`, `s`, `strike`, `tt`, `big`, `small` and `h1` to `h6` before it, so 2 paragraphs of one block are siblings. It does not close `<font>` or `<span>`.
 - An end tag closes the innermost open element of its name and every element after it. An end tag without such an element is ignored.
 - The named entities of HTML 4.01 and `&apos;` decode. An unknown name, or a name without `;`, stays text. A numeric reference such as `&#39` decodes also without `;`.
 
-**Limit**: lists, tables, forms and scripts follow more libxml2 rules than the scanner knows. Such content keeps its text, but the cue data can differ from PHP. SAMI files do not use them.
+**Limit**: lists, tables, forms and scripts follow more libxml2 rules than the scanner knows. Such content keeps its text, but the cue data can differ from the libxml2 tree. SAMI files do not use them.
 
 ### Write
 
@@ -1086,14 +1086,14 @@ The header has one `KEY=value` line each, in this order:
 Then each cue with visible text writes an empty line, its timing line and its text lines.
 
 - **Header lines**: a CR or LF in the title, the author or a stored value becomes a space. A stored key that is not 1 or more ASCII capitals is not written. So the output always reads back.
-- **Seconds**: the wait is the start minus the end of the last written cue. The duration is the end minus the start. Both are whole milliseconds as PHP prints a float: `1`, `1.5`, `-1.5`, `0.456`. A negative time is 0 first.
-- **Frames**: `WriteOptions.MPSub.FrameRate` writes frame counts. A frame is the time in seconds times the frame rate, rounded to the nearest frame. The wait and duration are differences of frames, so the rounding errors do not add up. The writer computes in binary `float64`, as PHP 8.5 does, so a time on an exact half frame can round down: 64.82 s at 25 fps writes frame 1620, not 1621. 4 cues of 0.06 s at 25 fps write `0 2`, `0 1`, `0 2` and `0 1`.
+- **Seconds**: the wait is the start minus the end of the last written cue. The duration is the end minus the start. Both are whole milliseconds and print in the shortest form: `1`, `1.5`, `-1.5`, `0.456`. A negative time is 0 first.
+- **Frames**: `WriteOptions.MPSub.FrameRate` writes frame counts. A frame is the time in seconds times the frame rate, rounded to the nearest frame. The wait and duration are differences of frames, so the rounding errors do not add up. The writer computes in binary `float64`, so a time on an exact half frame can round down: 64.82 s at 25 fps writes frame 1620, not 1621. 4 cues of 0.06 s at 25 fps write `0 2`, `0 1`, `0 2` and `0 1`.
 - **Time limit**: a frame stops at the largest frame whose time is below 100000 hours. At 25 fps that is `8999999999`, so every output reads back.
 - **Overlap**: cues `First` from 1 to 4 s and `Second` from 2.5 to 5 s write `1 3` and `-1.5 2.5`. The second reads back as 2.5 s to 5 s.
 - **Skipped cues**: a cue without visible text is not written and does not move the end of the last written cue.
 - **Text**: the visible text of each line, with entities decoded. So `<i>I &lt;3 bread &amp; jam</i>` writes `I <3 bread & jam`.
 - **Frame input**: the reader does not store the `FORMAT` line. A file with `FORMAT=25` writes `FORMAT=TIME` and seconds, unless `FrameRate` is set.
-- **NOTE**: the default names this library. PHP writes a `NOTE` that names the PHP library.
+- **NOTE**: the default names this library.
 - **BOM**: yes by default.
 - **Lost on write**: all markup, `#` comments, empty header values and the frame unit of the input. Frame counts round each time to the nearest frame, 40 ms at 25 fps. A header value with ` #` reads back without the comment, so `Part #2` reads as `Part`.
 
@@ -1210,7 +1210,7 @@ The file data `qttext` holds:
   ```
 
 - **Layout**: the paired layout for a new file and when the file data has `pairedTimestamps`. It writes the start timestamp, the text lines, the end timestamp and an empty line for each cue. Else the QuickTime layout: an empty sample `[00:00:00.00]` first when the first cue starts after 0, then for each cue its start timestamp only when the start differs, in units, from the end of the cue before, the text lines and the end timestamp.
-- **Timestamp**: `[HH:MM:SS.F]`. F counts units of the time scale, zero-padded to the digit count of the scale minus 1, at least 1 digit: scale 30 gives 2 digits, 600 gives 3 and 10 gives 1. Without a time scale, F is milliseconds with 3 digits. Up to 1000 units per second, the count is the seconds as a float times the scale, rounded half away from zero, as PHP 8.5 and the MicroDVD and MPSub writers do. So a time on an exact half unit can round down: 64.82 s at scale 25 writes 1620 units. Above 1000 units per second, floats lose milliseconds, so the writer rounds the exact milliseconds half away from zero. Every time scale keeps the time to the millisecond. A negative start writes as 0, and an end before the start writes as the start.
+- **Timestamp**: `[HH:MM:SS.F]`. F counts units of the time scale, zero-padded to the digit count of the scale minus 1, at least 1 digit: scale 30 gives 2 digits, 600 gives 3 and 10 gives 1. Without a time scale, F is milliseconds with 3 digits. Up to 1000 units per second, the count is the seconds as a float times the scale, rounded half away from zero, as the MicroDVD and MPSub writers do. So a time on an exact half unit can round down: 64.82 s at scale 25 writes 1620 units. Above 1000 units per second, floats lose milliseconds, so the writer rounds the exact milliseconds half away from zero. Every time scale keeps the time to the millisecond. A negative start writes as 0, and an end before the start writes as the start.
 - **Relative timestamps**: the header `{timeStamps:relative}` makes each timestamp the difference to the time that a reader has after the timestamps written so far. So an overlap moves no later cue, and a rounding error stays within half a unit. A cue that starts before that time cannot go back, so its start timestamp is 0.
 - **Time limit**: a timestamp stops at the largest count of units whose time is below 100000 hours, `99999:59:59.29` at scale 30. A relative timestamp shrinks until the sum that the reader adds stays below the limit.
 - **Text**: when a cue has `source` and the reader would read `source` as the cue lines, the writer writes `source` unchanged. Else it writes ruby as text, carries open tags into the next line, decodes entities, strips all tags except `<b>`, `<i>` and `<u>`, and trims each line. Before a text run with visible text it writes the descriptors that change the running style to the open tags. Turning a style off writes `{plain}` and then the styles that stay on. Turning styles on writes `{bold}`, `{italic}` and `{underline}` in that order.
@@ -1267,10 +1267,10 @@ The first two cues are 0.5 s apart, so they share a paragraph. The third starts 
 - **Text of a line**: ruby becomes `base (annotation)`. All tags go, also `<v>` and word timestamps, and entities are decoded. Each run of spaces and tabs becomes 1 space, and the line is trimmed. Empty lines drop out.
 - **Skipped cues**: a cue without a line after that. It takes no part in the paragraphs.
 - **Cue text**: the lines of a cue join with a space, or with LF under `KeepLineBreaks`.
-- **Paragraphs**: the first cue starts a paragraph. A cue whose start minus the latest end so far is `ParagraphGap` or more starts a new one. The latest end is the largest end of all earlier cues. So `Long` from 0 to 10 s, `Short` from 1 to 2 s and `Overlapped` from 11 to 12 s make one paragraph `Long Short Overlapped`. The gap is exact: cue times are whole milliseconds, so cues at 1.3 s and 3.3 s are 2 s apart. PHP computes it in floats and can split one gap too late ([php-differences.md](php-differences.md)).
+- **Paragraphs**: the first cue starts a paragraph. A cue whose start minus the latest end so far is `ParagraphGap` or more starts a new one. The latest end is the largest end of all earlier cues. So `Long` from 0 to 10 s, `Short` from 1 to 2 s and `Overlapped` from 11 to 12 s make one paragraph `Long Short Overlapped`. The gap is exact: cue times are whole milliseconds, so cues at 1.3 s and 3.3 s are 2 s apart.
 - **Paragraph text**: the cues of the paragraph, joined with a space or, under `OneCuePerLine`, with LF. With `WithTimes` the paragraph starts with `[HH:MM:SS] `, the start floored to whole seconds. A negative start writes as 0 and an hour count of 100 or more keeps all digits.
 - **Output**: each paragraph ends with LF, and one empty line separates the paragraphs. No cues give empty output.
-- **Line feed inside a line**: a decoded `&#10;` stays in the text, as in PHP. The line then spans 2 lines of the output, also without `KeepLineBreaks`. The format has no reader, so nothing reads it back.
+- **Line feed inside a line**: a decoded `&#10;` stays in the text. The line then spans 2 lines of the output, also without `KeepLineBreaks`. The format has no reader, so nothing reads it back.
 - **BOM**: none by default. `StripTags` changes nothing, because the writer always removes the markup.
 - **Lost on write**: everything but the text. That is the times except the optional paragraph start, markup, speakers, word timestamps, alignment, and the line layout under the default options.
 
@@ -1288,7 +1288,7 @@ All rows use these 4 cues. They are `<v Mara><b>Hello</b>` and `world.` from 1 t
 
 ### Options
 
-`plaintext.WriteOptions` is the root field `WriteOptions.PlainText`. The writer reads `LineEnding` and `BOM` too. PHP has no CLI flags for these options, and `stbox convert --to txt` writes with the defaults.
+`plaintext.WriteOptions` is the root field `WriteOptions.PlainText`. The writer reads `LineEnding` and `BOM` too. The CLI has no flags for these options, so `stbox convert --to txt` writes with the defaults.
 
 | Field | Type | Default | Meaning |
 |:--- |:--- |:--- |:--- |
@@ -1297,8 +1297,8 @@ All rows use these 4 cues. They are `<v Mara><b>Hello</b>` and `world.` from 1 t
 | `ParagraphGap` | `*time.Duration` | nil: 2 s | a gap of this length or more after the latest end so far starts a new paragraph. 0 is legal |
 | `WithTimes` | `bool` | false | start each paragraph with `[HH:MM:SS] ` |
 
-- **Names**: PHP has 2 bools that default to true, `joinLines` and `joinCues`. Go names them so that false is the default. `ParagraphGap` is a pointer because 0 is legal and differs from the default.
-- **One paragraph**: `ParagraphGap: new(plaintext.NoParagraphBreaks)`. PHP passes `INF`, and a `time.Duration` has no infinity. `NoParagraphBreaks` is the largest `time.Duration`, about 292 years, which no gap between cues reaches.
+- **Names**: each bool is named so that false is the default. `ParagraphGap` is a pointer because 0 is legal and differs from the default.
+- **One paragraph**: `ParagraphGap: new(plaintext.NoParagraphBreaks)`. A `time.Duration` has no infinity. `NoParagraphBreaks` is the largest `time.Duration`, about 292 years, which no gap between cues reaches.
 - **Check**: `Validate` rejects a negative gap, for example `The paragraph gap must be 0 or more seconds, got -1.`, with an error that matches `ErrInvalidArgument`.
 
 ## CSV and TSV
@@ -1456,7 +1456,7 @@ The reader writes each row as core markup and escapes its text. Example: `01 red
 
 **Cumulative sets**: each subtitle of a cumulative set becomes its own cue with its own times. The text of earlier members is not added.
 
-**Alignment and position**: JC (justification code) 1 is left, 3 right, and 0 or 2 center. The maximum row is 23 when DSC (display standard code) is `1` or `2`, teletext level 1 or 2. Else it is MNR (maximum number of rows) when above 0, else 23. MNR and MNC are read like a PHP `(int)` cast, so `2x` is 2. VP (vertical position) gives the row band: top when `3*VP < max`, middle when `3*VP < 2*max`, else bottom. Examples: teletext VP 1 with JC 1 is `TopLeft`, VP 12 with JC 3 is `MiddleRight` and VP 22 with JC 2 is `BottomCenter`.
+**Alignment and position**: JC (justification code) 1 is left, 3 right, and 0 or 2 center. The maximum row is 23 when DSC (display standard code) is `1` or `2`, teletext level 1 or 2. Else it is MNR (maximum number of rows) when above 0, else 23. MNR and MNC are read as their leading integer, so `2x` is 2. VP (vertical position) gives the row band: top when `3*VP < max`, middle when `3*VP < 2*max`, else bottom. Examples: teletext VP 1 with JC 1 is `TopLeft`, VP 12 with JC 3 is `MiddleRight` and VP 22 with JC 2 is `BottomCenter`.
 
 `Position.Row` and `Position.Grid` follow EBU Tech 3264. Teletext rows count from 1, so `Row` is VP and `Grid.Rows` is 23. Open subtitles (DSC `0`) count VP from 0. So `Row` is VP plus 1 and `Grid.Rows` is the maximum row plus 1. `Grid.Columns` is MNC when above 0, else 40. A VP outside the grid gives a cue with an alignment but no row, no column and a zero grid. Examples: teletext VP 0, and open VP 30 with MNR 23.
 
@@ -1488,7 +1488,7 @@ The cue key `stl` holds `subtitleGroupNumber`, `cumulativeStatus`, `verticalPosi
 
 **Subtitle numbers**: the first set takes `firstSubtitleNumber`, else 1, and each later set, comment sets too, takes the next number. A number above 65535 fails with `EBU STL allows subtitle numbers up to 65535.`.
 
-**Times**: the writer takes the frame nearest to the time, at 25 or 30 fps, and caps hours at 255. With `startOfProgrammeSubtracted` in the file data, the stored TCP is added back. The writer reads TCP at the rate of the stored DFC. PHP reads it at the output rate, so a file read at 25 fps and written at 30 fps differs.
+**Times**: the writer takes the frame nearest to the time, at 25 or 30 fps, and caps hours at 255. With `startOfProgrammeSubtracted` in the file data, the stored TCP is added back. The writer reads TCP at the rate of the stored DFC.
 
 **Position**: the stored VP and JC stay when they still give the alignment and the row of the cue. Else the writer calls `Position.RowOn` on the grid of the file, 23 rows for teletext, else the maximum row plus 1, and writes that row as VP when it falls in the band of the alignment. Else the first row goes at the top, in the middle or at the bottom of the rows. Example: a one-line `BottomCenter` cue without a row writes VP 23 and JC 2. `RowOn` drops the row of 2 cues that the reader gives a row: teletext VP 8 read as `MiddleCenter`, and SCC row 5 with `BottomCenter`. After a conversion from SCC, or after a change of `Position.Row`, these 2 fall back to the alignment. A rewritten EBU STL file keeps VP 8, because the stored VP and JC stay.
 
@@ -1632,7 +1632,7 @@ The file does not store its code page. `pac.CodePage` is a string type with thes
 - **Encoding option**: `stbox.Parse` and `stbox.Load` set `PAC.CodePage` from `ReadOptions.Encoding` when `PAC.CodePage` is empty. `pac.CodePageFromEncoding` maps the canonical name of [encodings.md](encodings.md), so the names in the last column work and `Encoding` accepts them in any case. A name that no PAC code page uses, such as `KOI8-R`, fails with an `*InvalidArgumentError` for `ReadOptions.Encoding`. `PAC.CodePage` wins when both are set, and `pac.Read` never sees `Encoding`. The spellings `TIS-620`, `BIG-5`, `GB2312`, `LATIN2` and `LATIN5` are no encoding names in this library, so `Encoding` rejects them before PAC sees them.
 - **Detector**: the detector decodes the text of all cues with each candidate and checks that the result looks like the script of the code page. Any PAC Unicode run gives `unicode`. Double-byte runs give the candidates `korean`, `japanese`, `chinese-simplified` and `chinese-traditional`. Else the candidates are `latin`, `latin-czech`, `latin-turkish`, `greek`, `cyrillic`, `hebrew`, `arabic` and `thai`. A candidate that leaves more than 1 % of the characters undefined gets no fit. The other checks are in the godoc of the package. When the best fit is a tie between Latin pages, `textenc.ScoreText` decides if the top score leads by 0.5.
 - **Unclear code page**: a strict read fails with `The code page of the PAC file is not clear. REASON Set the code page of the file, for example ISO-8859-7 for Greek.`. A lenient read warns with the same text and ` The parser read it as VALUE.` as a `Repaired` warning without a line or block. Examples of the reason: `No code page gives text in its script.` for the bytes `C3 C4`, and `These code pages fit: greek, cyrillic.` for the bytes `Lf`.
-- **Double-byte tables**: the decoders of the 4 double-byte pages are the `golang.org/x/text` decoders. They follow the WHATWG indexes, which differ from iconv in a few codes. The Big5 and Shift_JIS writers do not use the x/text encoders. x/text writes Hong Kong extension codes such as `FABDh` for U+5305, which CP950 readers cannot read, and the NEC selected IBM extension where CP932 writes the IBM extension. These 2 writers use a table of the lowest CP950 or CP932 code of each character, built from the x/text decoder, plus the 7 one-way CP932 codes such as U+301C to `8160h`. The GBK and CP949 writers use x/text. A character that has no 2-byte code, or whose code starts with `FEh`, is written as `00h ?`. Each of the 13 fixtures reads as in the PHP library and writes back byte for byte.
+- **Double-byte tables**: the decoders of the 4 double-byte pages are the `golang.org/x/text` decoders. They follow the WHATWG indexes, which differ from iconv in a few codes. The Big5 and Shift_JIS writers do not use the x/text encoders. x/text writes Hong Kong extension codes such as `FABDh` for U+5305, which CP950 readers cannot read, and the NEC selected IBM extension where CP932 writes the IBM extension. These 2 writers use a table of the lowest CP950 or CP932 code of each character, built from the x/text decoder, plus the 7 one-way CP932 codes such as U+301C to `8160h`. The GBK and CP949 writers use x/text. A character that has no 2-byte code, or whose code starts with `FEh`, is written as `00h ?`. Each of the 13 fixtures reads and writes back byte for byte.
 
 ### Read
 
@@ -1651,7 +1651,7 @@ The file does not store its code page. `pac.CodePage` is a string type with thes
 - **Latin table**: it moves some ASCII bytes. `23h` is the pound sign, `5Ch` the capital AE ligature, `7Ch` the small ae ligature and `80h` is `#`. The Greek and Cyrillic tables put their letters on the ASCII letter bytes. A byte from `80h` without an entry in a code page that is not Latin counts as undefined for the detector.
 - **Arabic marks**: a vowel mark byte (`E0h` to `EAh`) right before a letter byte from `80h` gives the letter, then the mark.
 - **Double-byte runs**: a byte below `80h` is one ASCII character, and `00h` escapes the next byte. Only `20h` to `7Eh` give text. Other bytes go in pairs through the decoder of the code page, or Big5 for a code page without one. A pair that the decoder does not define gives no text.
-- **Unicode runs**: UTF-8 with `FFh` as a period. Each invalid sequence becomes `?`, as PHP `mb_scrub` writes it.
+- **Unicode runs**: UTF-8 with `FFh` as a period. Each invalid sequence becomes `?`.
 - **Right to left**: for Arabic and Hebrew lines the reader swaps `(` with `)` and `[` with `]` after decoding, then reverses each run of Latin characters. For Arabic a run is digits and ASCII letters of both cases. For Hebrew it is digits and lower-case ASCII letters only, as in Subtitle Edit.
 - **Italics**: a space goes in before `<` after a letter or digit, and after `>` before a letter or digit. Then the runs become `<i>` tags. `Go<now>, he said<quietly` gives `Go <i>now</i>, he said <i>quietly</i>`.
 - **Not read**: colors, and a second code page that Screen marks for some lines.
@@ -1735,7 +1735,7 @@ Example: `shapes_576p.sup` cut to 1400 bytes reads 1 cue from 0.5 s to 3 s in le
 
 ### Lenient mode
 
-Damage in the segment framing stops the read. The cues before it stay, and the display set that was open shows nothing. Damage inside a complete segment skips only its display set. The shown cue ends at the PCS time of that display set and reading goes on, so one bad object does not lose the other cues. [lenient-parsing.md](lenient-parsing.md#pgs) lists the messages. Strict mode fails on the first damage, as PHP does.
+Damage in the segment framing stops the read. The cues before it stay, and the display set that was open shows nothing. Damage inside a complete segment skips only its display set. The shown cue ends at the PCS time of that display set and reading goes on, so one bad object does not lose the other cues. [lenient-parsing.md](lenient-parsing.md#pgs) lists the messages. Strict mode fails on the first damage.
 
 ### Writing
 
@@ -1793,7 +1793,7 @@ Each line is trimmed first. A line that equals `******** START SCRIPT ********` 
 - **Tags**: each non-empty line must be `[TAG]value`. The tag is trimmed and upper-cased, the value trimmed. A line that is no tag is an error.
 - **Value on the next line**: when the value is empty and the next line is not empty and does not start with `[`, the next line is the value. So `[TITLE]` and `Market` on the next line give the title `Market`.
 - **TITLE and AUTHOR**: they set the metadata `title` and `author`. An empty value deletes the key.
-- **DELAY**: the reader adds the delay in whole seconds to every time, as FFmpeg does. It reads the number at the start of the value as PHP `(int)` does: `2` from `2.5`, `12` from `12abc`, `1000` from `1e3`, `0` from `abc`, and `0` from a number beyond the float range such as `1e999`. A negative delay is allowed. The stored header value becomes `0`, because the times already hold the delay.
+- **DELAY**: the reader adds the delay in whole seconds to every time, as FFmpeg does. It reads the number at the start of the value as its leading integer: `2` from `2.5`, `12` from `12abc`, `1000` from `1e3`, `0` from `abc`, and `0` from a number beyond the float range such as `1e999`. A negative delay is allowed. The stored header value becomes `0`, because the times already hold the delay.
 - **Other tags**: they go to `header` under their upper-case tag.
 
 **SubViewer 1 script**
@@ -1817,14 +1817,14 @@ Each line is trimmed first. A line that equals `******** START SCRIPT ********` 
 
 **Both versions**
 
-- **Format data**: `{version: 1, header: {TAG: value}}` or `{version: 2, header: {TAG: value}, style: "..."}`. A file without header tags stores `header` as an empty list. The tags `0`, `1` and so on in this order also store a list, because a PHP array with these keys is a list.
+- **Format data**: `{version: 1, header: {TAG: value}}` or `{version: 2, header: {TAG: value}, style: "..."}`. A file without header tags stores `header` as an empty list. The tags `0`, `1` and so on in this order also store a list, because these keys form a list.
 - **Order**: the cues sort by start.
 - **Encoding**: invalid UTF-8 stays in the text. Lenient mode adds the decode warning of [encodings.md](encodings.md).
 - **Errors**: strict mode returns a `*ParseError` with the line of the error. Lenient mode records a `Skipped` warning. The rules are in [lenient-parsing.md](lenient-parsing.md#subviewer).
 
 ### Write
 
-`WriteOptions.SubViewer.Version` sets the version. The zero value writes the version that the reader stored in the file format data, else SubViewer 2. So a SubViewer 1 file reads and writes as SubViewer 1, and `V2` converts it. PHP always writes SubViewer 2 and ignores the stored version.
+`WriteOptions.SubViewer.Version` sets the version. The zero value writes the version that the reader stored in the file format data, else SubViewer 2. So a SubViewer 1 file reads and writes as SubViewer 1, and `V2` converts it.
 
 **Header tags**: `TITLE` and `AUTHOR` from the metadata, empty when missing. Then the stored `header` in stored order, or these tags when no header is stored. The tag names are the ones that Subtitle Edit writes. The values are empty except where shown.
 

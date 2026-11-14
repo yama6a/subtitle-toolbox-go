@@ -6,15 +6,15 @@
 
 | Form | Needs | Example |
 |:--- |:--- |:--- |
-| archive on the GitHub release | nothing | `curl -fsSLO https://github.com/yama6a/subtitle-toolbox-go/releases/download/v1.0.0/stbox_1.0.0_linux_amd64.tar.gz` |
+| archive on the GitHub release | nothing | `curl -fsSLO https://github.com/yama6a/subtitle-toolbox-go/releases/download/vX.Y.Z/stbox_X.Y.Z_linux_amd64.tar.gz` |
 | `go install` | Go of the `go` line in `go.mod` | `go install github.com/yama6a/subtitle-toolbox-go/v4/cmd/stbox@latest` |
-| image `ghcr.io/yama6a/subtitle-toolbox-go` | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:1.0.0 convert in.srt --to vtt -o out.vtt` |
-| image `ghcr.io/yama6a/subtitle-toolbox-go` with Tesseract | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:1.0.0-tesseract convert film.sup --ocr --ocr-engine tesseract --ocr-language rus --to srt -o film.srt` |
+| image `ghcr.io/yama6a/subtitle-toolbox-go` | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:X.Y.Z convert in.srt --to vtt -o out.vtt` |
+| image `ghcr.io/yama6a/subtitle-toolbox-go` with Tesseract | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:X.Y.Z-tesseract convert film.sup --ocr --ocr-engine tesseract --ocr-language rus --to srt -o film.srt` |
 
-- **Version**: the archive names, the image tag and `stbox --version` show `1.0.0`. The git tag is `v1.0.0`. The image also has the tags `1.0`, `1` and `latest`.
-- **Tesseract image**: the tags are `1.0.0-tesseract`, `1.0-tesseract`, `1-tesseract` and `tesseract`. It runs the same `stbox` and adds the `tesseract` program with the fast models of every language. It is about 400 MB larger. See [ocr.md](ocr.md#tesseract).
-- **Archives**: `stbox_1.0.0_OS_ARCH.tar.gz` for linux and darwin, `stbox_1.0.0_windows_ARCH.zip` for windows. Each holds `stbox`, `LICENSE`, `README.md` and `THIRD_PARTY_NOTICES.md`.
-- **Checksums**: `sha256sum --ignore-missing -c stbox_1.0.0_checksums.txt`.
+- **Version**: X.Y.Z is the version of a release, such as 4.21.0. The archive names, the image tag and `stbox --version` show `X.Y.Z`. The git tag is `vX.Y.Z`. The image also has the tags `X.Y`, `X` and `latest`.
+- **Tesseract image**: the tags are `X.Y.Z-tesseract`, `X.Y-tesseract`, `X-tesseract` and `tesseract`. It runs the same `stbox` and adds the `tesseract` program with the fast models of every language. It is about 400 MB larger. See [ocr.md](ocr.md#tesseract).
+- **Archives**: `stbox_X.Y.Z_OS_ARCH.tar.gz` for linux and darwin, `stbox_X.Y.Z_windows_ARCH.zip` for windows. Each holds `stbox`, `LICENSE`, `README.md` and `THIRD_PARTY_NOTICES.md`.
+- **Checksums**: `sha256sum --ignore-missing -c stbox_X.Y.Z_checksums.txt`.
 - **macOS**: the binaries are not notarized. macOS blocks a downloaded binary until the user runs `xattr -d com.apple.quarantine stbox`.
 - **Image**: the tool runs in `/work`, so mount the files there. `--user` makes the tool write files that the user owns. Without it, the tool runs as user 65532 and cannot write to most mounted folders.
 - **Platforms**: archives for linux, darwin and windows on amd64 and arm64. The image is for linux/amd64 and linux/arm64.
@@ -24,14 +24,14 @@
 | Call | Result |
 |:--- |:--- |
 | `stbox`, `stbox --help`, `stbox -h`, `stbox help` | the global help on stdout, exit 0 |
-| `stbox --version`, `stbox -V` | the version, for example `1.0.0`, exit 0 |
+| `stbox --version`, `stbox -V` | the version, for example `X.Y.Z`, exit 0 |
 | `stbox help CMD`, `stbox CMD --help`, `stbox CMD -h` | the help of CMD, exit 0. `--help` wins over every other word before `--` |
 | `stbox CMD ...` | runs CMD |
 | an unknown command | `Error: Unknown command "NAME".` and `Run "stbox help" for the usage.`, exit 2 |
 
 ## Argument syntax
 
-The words after the command name follow the PHP 5.x CLI. The standard `flag` package stores the values, and a pre-pass applies these rules first.
+The words after the command name follow these rules. The standard `flag` package stores the values, and a pre-pass applies these rules first.
 
 | Word | Meaning |
 |:--- |:--- |
@@ -46,7 +46,7 @@ The words after the command name follow the PHP 5.x CLI. The standard `flag` pac
 - **Repeats**: a flag given twice is fine. A value option given twice fails with `The option --NAME is given twice.`, unless its help says "Repeatable".
 - **Negative numbers**: `-2.5` as a file argument fails with `Unknown option -2.5.`. Pass `-- -2.5` for a file of that name.
 - **Choices**: values such as `--line-ending CRLF` ignore ASCII case.
-- **Numbers**: a number option takes the PHP numeric forms `2.5`, `-2.5`, `+1`, `.5`, `5.` and `1e3`. Hexadecimal, `inf` and `NaN` fail.
+- **Numbers**: a number option takes the numeric forms `2.5`, `-2.5`, `+1`, `.5`, `5.` and `1e3`. Hexadecimal, `inf` and `NaN` fail.
 - **Times**: a time option takes seconds, such as `2.5`, or a time code `h:mm:ss.mmm` or `m:ss.mmm` with `.` or `,`, such as `00:00:02,500`. A leading `-` makes it negative. Times round to whole milliseconds and stay below 100000 hours.
 
 ## Input files
@@ -102,7 +102,7 @@ MicroDVD counts time in video frames, so a MicroDVD read and a MicroDVD write ne
 
 - **Order**: `--scc-roll-up` comes after `--fps` and is checked after `--input-fps`, before `--track` and `--from`. `--scc-fit` comes after `--no-bom`.
 - **Write reports**: after a write, the CLI prints each change on stderr. SCC and MCC changes read `ferry.srt: Cue #3 at 5 s is left out. Its caption data needs the frames up to 5.839 s, but the cue ends at 5.4 s. (dropped)`. The action is `transliterated`, `wrapped`, `delayed` or `dropped`. The SCC changes need `--scc-fit`, and the MCC writer always fits.
-- **EBU STL report**: a character that the character code table lacks becomes `?` in the file. The CLI prints one line for each, where C stands for the character, such as an em dash in cue 1: `show.srt: Cue 1: the character table has no "C", so the file holds "?".`. A character of a GSI field gives `GSI field OPT: ...`, and a character of a comment gives `Comment: ...`. PHP prints nothing.
+- **EBU STL report**: a character that the character code table lacks becomes `?` in the file. The CLI prints one line for each, where C stands for the character, such as an em dash in cue 1: `show.srt: Cue 1: the character table has no "C", so the file holds "?".`. A character of a GSI field gives `GSI field OPT: ...`, and a character of a comment gives `Comment: ...`.
 - **SCC advice**: a cue that fits 4 lines of 32 characters after a wrap fails with `Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.`. A cue that needs a split fails with `Pass --structure-split-long --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.`.
 - **Binary output**: EBU STL, PAC and Cavena 890 output goes to stdout or to a file as raw bytes. `info` shows no `Encoding:` row for them, and `--json` gives `"encoding": null`.
 
@@ -126,7 +126,7 @@ stbox convert movie.mkv --track 3 --to srt -o movie.srt
 - **Order**: `--track` comes after `--scc-roll-up`, is checked before `--from`, and comes before `--keep-going`.
 - **Detection**: the first 389 bytes decide whether an input is a video file. The extension does not.
 - **Format**: a track read has no input format, because the track decides it. `--from` has no effect with `--track`. `--from` without `--track` fails with `movie.mp4: The input is an MP4 file. Pass --track N.` The text says `an MKV or WebM file` or `an MPEG-TS file` for the other containers.
-- **Memory**: a file input goes to `stbox.Load`, which reads only the bytes that the track needs. Standard input is read into memory, because the library cannot seek in a pipe. PHP writes it to a temporary file first.
+- **Memory**: a file input goes to `stbox.Load`, which reads only the bytes that the track needs. Standard input is read into memory, because the library cannot seek in a pipe.
 - **Track errors**: a file with 0 or 2 or more subtitle tracks and no `--track` fails with exit 3 and lists the tracks. The sentence names the option of the file, here `--track`. The lenient hint does not print.
 
 ```
@@ -153,7 +153,7 @@ VobSub has 2 files, such as `movie.idx` and `movie.sub`. See [VobSub in formats.
 A `.txt` file in a directory is an input only when content detection finds a format in it. A WebVTT file named `film.txt` converts, and a note such as `notes.txt` stays out without a message.
 
 - **Why**: MPL2, TMPlayer and QuickTime text use `.txt` too, and so do notes and logs. The extension alone cannot tell them apart.
-- **Not chosen**: keep every `.txt` file, which fails on each note. Skip every `.txt` file as PHP does, which leaves the subtitle files of these formats unread.
+- **Not chosen**: keep every `.txt` file, which fails on each note. Skip every `.txt` file, which leaves the subtitle files of these formats unread.
 - **Cost**: the expansion reads each `.txt` file of a directory once more.
 
 ## Output files
@@ -358,15 +358,15 @@ text_1080p.sup: Cue #0 holds an image but no text, and srt needs text. Pass --oc
 
 ### Regular expressions
 
-`--replace-regex` reads each FROM as a PHP PCRE pattern with delimiters, such as `/\.{4,}/` or `#colou?r#i`. Convert turns it into a pattern of [regexp2](https://github.com/dlclark/regexp2), the engine of [text.md](text.md#replace).
+`--replace-regex` reads each FROM as a PCRE pattern with delimiters, such as `/\.{4,}/` or `#colou?r#i`. Convert turns it into a pattern of [regexp2](https://github.com/dlclark/regexp2), the engine of [text.md](text.md#replace).
 
 | Part | Rule | Example |
 |:--- |:--- |:--- |
 | leading white space | skipped | ` /a/` reads as `/a/` |
 | delimiter | the first character, not a letter, a digit, `\` or white space. `(`, `[`, `{` and `<` close with their partner and nest. Other delimiters close with the same character | `/a/`, `#a/b#`, `{a{2}}` |
-| escapes | a `\` before the delimiter or other punctuation stays, because PHP passes it to PCRE and regexp2 reads it the same way. `\_` becomes `_`, because regexp2 rejects `\_` | `/a\/b/` gives `a\/b`, `/a\_b/` gives `a_b` |
-| flags | `i` matches in any case. `m`, `s` and `x` become `(?msx)` before the pattern. `u` changes nothing, because Go strings are UTF-8. A space, LF and CR are skipped, as in PHP. Other flags fail | `/col(ou)r/i` |
-| TO | `\N`, `$N` and `${N}`, each with 1 or 2 digits, insert group N, or nothing when the pattern has no group N. `\\` and `\$` write `\` and `$`. Every other `$` is text, as in PHP | `\1` gives group 1, `$_` stays `$_` |
+| escapes | a `\` before the delimiter or other punctuation stays, because regexp2 reads it as written. `\_` becomes `_`, because regexp2 rejects `\_` | `/a\/b/` gives `a\/b`, `/a\_b/` gives `a_b` |
+| flags | `i` matches in any case. `m`, `s` and `x` become `(?msx)` before the pattern. `u` changes nothing, because Go strings are UTF-8. A space, LF and CR are skipped. Other flags fail | `/col(ou)r/i` |
+| TO | `\N`, `$N` and `${N}`, each with 1 or 2 digits, insert group N, or nothing when the pattern has no group N. `\\` and `\$` write `\` and `$`. Every other `$` is text | `\1` gives group 1, `$_` stays `$_` |
 
 - **Not supported**: `\K`, `\h`, `\o{...}`, `(?|...)`, `(*VERB)` controls and the Python-style named groups `(?P<name>...)`, `(?P=name)` and `(?P>name)`. Write `(?<name>...)` and `\k<name>`. A pattern with one of them fails as an invalid regular expression.
 - **POSIX classes**: `[[:alpha:]]` and `[[:digit:]]` give no error, but they match the characters of the brackets, not a letter or a digit. Write `\p{L}` and `\d`.

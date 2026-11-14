@@ -165,7 +165,7 @@ fmt.Printf("offset %s, score %.2f\n", r.Offset, r.Score)
 
 ### Why the search uses blocks
 
-The split search cuts the target into 200 blocks and moves each split to the best span near its block boundary afterwards. A search per span is fast enough in Go, but it can pick other splits than PHP. The PHP fixtures `own_target_de_split_synced.srt` and `own_target_de_split_penalty_synced.srt` need the same results, so Go ports the PHP formulas and loop orders, and every tie uses an epsilon of `1e-9`.
+The split search cuts the target into 200 blocks and moves each split to the best span near its block boundary afterwards. Every tie uses an epsilon of `1e-9`.
 
 ## Command line
 

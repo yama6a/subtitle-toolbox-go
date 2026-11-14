@@ -47,7 +47,7 @@ fmt.Println(info.SourceEncoding) // cp1250, as the caller wrote it
 | CP949 | UHC |
 | CP437, CP850, CP866 | IBM437, IBM850, IBM866 |
 
-- **UTF-16 and UTF-32**: little endian unless a BOM says otherwise. glibc iconv reads them in host byte order, which is little endian on x86-64 and arm64, so the results match PHP there.
+- **UTF-16 and UTF-32**: little endian unless a BOM says otherwise.
 - **Shift_JIS**: reads as CP932, so the bytes 0x5C and 0x7E stay `\` and `~`. The ASS line break `\N` and tags such as `{\i1}` survive.
 - **EUC-KR and CP949**: both read the CP949 table.
 - **Decision**: a name is a `string`, and `stbox.Encodings()` lists the names. A constant per name would crowd the root package next to the `Format` constants, and `Validate` catches typos.
@@ -101,9 +101,9 @@ Every writer writes UTF-8. A text format writes the bytes of invalid UTF-8 as th
 
 ## Differences from glibc iconv
 
-PHP decodes with glibc iconv, and Go with the WHATWG tables of `golang.org/x/text`. Code page detection gives the same result on every test file. With a chosen encoding, these bytes differ.
+The library decodes with the WHATWG tables of `golang.org/x/text`. glibc iconv reads the bytes below differently.
 
-| Encoding | Bytes | PHP | Go |
+| Encoding | Bytes | glibc iconv | This library |
 |:--- |:--- |:--- |:--- |
 | EUC-KR | a CP949 pair such as `8C 63` | U+008C and `c` | U+B620, as CP949 |
 | EUC-KR | a CP949 pair with a first byte from `81` to `A0` and a second byte from `A1`, such as `81 A1` | fails | U+AC7E for `81 A1` |
@@ -128,5 +128,5 @@ PHP decodes with glibc iconv, and Go with the WHATWG tables of `golang.org/x/tex
 | Windows-1255 | `CA` | fails | U+05BA |
 | KOI8-U | `AE`, `BE` | U+255D, U+256C | U+045E, U+040E |
 
-- **Names**: PHP accepts every iconv name, for example `CP1125`. Go accepts only the table above.
-- **Test files**: `chinese-gbk.srt` read with `Encoding: "Big5"` holds `C8 A5`. PHP reads the file, and Go fails with `Cannot convert the content from Big5 to UTF-8.` The x/text table has no entry for these pairs.
+- **Names**: only the names of the table above work. `CP1125`, for example, fails.
+- **Test files**: `chinese-gbk.srt` read with `Encoding: "Big5"` holds `C8 A5`. The library fails with `Cannot convert the content from Big5 to UTF-8.` The x/text table has no entry for these pairs.

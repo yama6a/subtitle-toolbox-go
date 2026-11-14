@@ -141,7 +141,7 @@ Speech-to-text output often splits a sentence into cues of less than 1 s. Take `
 - **One speaker in tags**: when both cues start with a `<v>` tag of one speaker, the result gets one tag. `<v.loud Anna>Hi.</v>` and `<v Anna>Hello.</v>` become `<v.loud Anna>Hi. Hello.</v>`.
 - **Options**: `KeepSentenceEnds` stops a join after a cue that ends with `.`, `?` or `!`. `MergeSameSpeakerAnyDuration` makes every cue a candidate, joins only cues of one `<v>` speaker, and has no duration limit.
 - **Result**: the joined cue keeps the start, the ID, the alignment, the forced flag and the format data of the first cue. A comment before a joined cue moves before the result.
-- **Rounding**: the checks round `MinDuration`, `MaxDuration` and `MaxGap` to whole milliseconds, as PHP does.
+- **Rounding**: the checks round `MinDuration`, `MaxDuration` and `MaxGap` to whole milliseconds.
 
 ## Shot changes and gaps
 
@@ -276,7 +276,7 @@ Cues from 1 s to 3 s, 4 s to 6 s and 7 s to 9 s give 2 s to 3 s, 4 s to 6 s and 
 
 - **Touching cues**: a cue drops when `End <= from` or `Start >= to`.
 - **Empty range**: `from == to` is legal. Only a cue across `from` stays, with a length of 0.
-- **moveToZero**: subtracts `from` from the times and the words, then rounds once to whole milliseconds, as PHP does. A time below 0 becomes 0. Without it, words stay, also when they fall outside the cut cue.
+- **moveToZero**: subtracts `from` from the times and the words, then rounds once to whole milliseconds. A time below 0 becomes 0. Without it, words stay, also when they fall outside the cut cue.
 - **moveToZero and Shift**: for a `from` of whole milliseconds, `Slice(from, to, true)` equals `Slice(from, to, false)` followed by `Shift(-from)`. Otherwise the 2 differ, because the second way rounds twice. Example: a cue from 1 s to 5 s with `from` 2.0005 s starts at 0 with `moveToZero` and at 0.001 s after the shift.
 
 ### Split and join
@@ -525,7 +525,7 @@ for _, c := range result.All() {
 - **From the primary**: the metadata, the comments and the file format data. A comment stays before its cue. A comment after the last primary cue stays after the last cue.
 - **Language**: when both inputs have `language` metadata, the result gets both, such as `en+de`. Else it keeps the language of the primary.
 - **Secondary cue of its own**: it keeps its times, lines, alignment and forced flag. It has no ID and no format data, because they belong to the format of the secondary subtitle.
-- **Forced flag**: a secondary cue that stays a cue of its own keeps `Forced`, because the secondary language needs a forced narrative as much as the primary language. In stack mode, the flag of the primary cue counts. PHP drops the flag of every secondary cue ([php-differences.md](php-differences.md)).
+- **Forced flag**: a secondary cue that stays a cue of its own keeps `Forced`, because the secondary language needs a forced narrative as much as the primary language. In stack mode, the flag of the primary cue counts.
 - **Output formats**: in top-bottom mode, the alignment survives in SubRip as `{\an8}`, and in WebVTT, ASS and TTML. Other formats drop it.
 
 `stbox dual --primary FILE --secondary FILE` runs the same code. [cli.md](cli.md#dual) lists its options.

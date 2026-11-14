@@ -56,7 +56,7 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 
 - **Equal times**: a cue whose end equals its start is valid.
 - **No swap**: CSV and TSV never swap. A comma in a time or a cut-off last row gives such an end, and a swap would invent times.
-- **Seconds**: E and S print as PHP prints a float: 3 s gives `3`, 1.5 s gives `1.5`.
+- **Seconds**: E and S print in the shortest form: 3 s gives `3`, 1.5 s gives `1.5`.
 - **Quotes**: a message that quotes a line cuts it to 60 characters. A longer line keeps 57 characters and `...`.
 
 ## WebVTT
@@ -142,7 +142,7 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 
 - **Block numbers**: none. A warning of DCP subtitles has `NoBlock` and no lines, except the text before the XML.
 - **Line numbers**: the line of the `<Subtitle>` element, which is the line of the `>` that ends its start tag.
-- **R**: the rate prints as PHP prints a float: `250`, `25`.
+- **R**: the rate prints in the shortest form: `250`, `25`.
 
 ## SAMI
 
@@ -154,7 +154,7 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 | no `<P>` class in the classes of `<STYLE>` | reads the first `<P>` class | reads it. `No <P> class matches a class of the STYLE block. The parser read the class X.` `Repaired`, no block, the first line of the body that holds `Class=X` |
 
 - **Block numbers**: N counts the `SYNC` tags from 1. The warning block is N minus 1.
-- **Line numbers**: the line of the `<SYNC`. The reader counts lines after it removes every `</SYNC>`, as PHP does. A `</SYNC>` with a line end inside it moves the later lines up by one.
+- **Line numbers**: the line of the `<SYNC`. The reader counts lines after it removes every `</SYNC>`. A `</SYNC>` with a line end inside it moves the later lines up by one.
 
 ## MicroDVD
 
@@ -167,7 +167,7 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 | `{1}{1}0` | `The frame rate must be greater than 0, got 0.` | the same error |
 
 - **Block numbers**: B counts the non-empty lines from 0, the frame rate line too. The warnings report the line and hold it trimmed.
-- **Quotes**: the message quotes the whole line, as PHP does, without the cut at 60 characters.
+- **Quotes**: the message quotes the whole line, without the cut at 60 characters.
 
 ## SBV
 
@@ -233,7 +233,7 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 
 - **Block numbers**: B counts the timing lines from 0, the bad ones too. A `FORMAT` warning has the count of timing lines before it.
 - **Line numbers**: the 1-based line of the file. A cue without text reports its timing line.
-- **Quotes**: L is the whole timing line, as PHP does, without the cut at 60 characters.
+- **Quotes**: L is the whole timing line, without the cut at 60 characters.
 - **Position**: a timing line that fails does not move the position, so the next cue counts from the end of the last good cue.
 
 ## LRC
@@ -262,7 +262,7 @@ A subtitle download is often broken in one place. Example: `bad_timestamp.srt` h
 - **Skipped cue**: a SubViewer 2 warning for a skipped cue holds the timing line and every text line that followed it. The reader records it when the next timing line or the end of the file comes.
 - **Block numbers**: for SubViewer 2, B counts the timing lines from 0, the bad ones too. For SubViewer 1, a time line error has the count of cues read so far, and an order error the index of the cue. A header line has block 0.
 - **Line numbers**: the 1-based line of the file. A SubViewer 1 cue reports the line of its start time line.
-- **L**: the whole line, as PHP does, without the cut at 60 characters.
+- **L**: the whole line, without the cut at 60 characters.
 - **Bad time line**: after a SubViewer 1 time line that fails, the text line below it is not read as a cue.
 
 ## Cavena 890
@@ -324,7 +324,6 @@ All errors are `*ParseError` values with the format `pgs` and line 0. T is the t
 | a PCS with a screen width or height of 0 | `Cannot create a cue image of WxH pixels on a screen of SWxSH pixels: every size must be at least 1.` | the same as above |
 
 - **Order of the framing checks**: the magic bytes, then the 13 header bytes, then the data size.
-- **PHP**: PHP turns only the 3 framing errors into warnings. The other 8 rows fail the read there too, see [php-differences.md](php-differences.md).
 
 ## CSV and TSV
 
@@ -367,7 +366,7 @@ All errors are `*ParseError` values with the format `pgs` and line 0. T is the t
 
 - **Block numbers**: none. A warning of Spruce STL has `NoBlock` and holds the raw line.
 - **Line numbers**: the 1-based line of the file.
-- **R**: the rate prints as PHP prints a float: `25`, `29.97`.
+- **R**: the rate prints in the shortest form: `25`, `29.97`.
 
 ## VobSub
 
@@ -429,4 +428,4 @@ An append caption and a window event give no cue and no warning. A caption witho
 
 ## Tests
 
-[lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result, taken from the PHP tests. A row runs once its format has a reader.
+[lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result. A row runs once its format has a reader.

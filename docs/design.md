@@ -24,14 +24,14 @@ Package `model` holds the types. Each format has one package under `format/`, su
 - **Zero value**: a bool is named so that false is the default. A setting with 3 states is an enum, such as `BOM`. A pointer appears only where 0 is legal and differs from the default, as in `LastCueDuration`. A struct literal then needs no constructor.
 - **Defaults**: option defaults and conversion output stay the same for a whole major line. A caller cannot pin a default that is a zero value.
 - **Format packages**: each one declares its own options, empty when it has none. A first option is then a new field, never a signature change.
-- **Not chosen**: a pointer for every nullable field, and a generic `model.Optional[T]`. Also not chosen: a minor release that changes a default, as PHP does. Also not chosen: option types only for formats that have options.
+- **Not chosen**: a pointer for every nullable field, and a generic `model.Optional[T]`. Also not chosen: option types only for formats that have options.
 - **Source**: [#7](https://github.com/yama6a/subtitle-toolbox-go/issues/7) D1 and D2, [#8](https://github.com/yama6a/subtitle-toolbox-go/issues/8) D3.
 
 ## Warnings in ReadInfo
 
 A read returns its warnings in `ReadInfo.Warnings`. The `Subtitle` holds none.
 
-- **Why**: PHP stores the warnings on the subtitle, so they travel with every copy and edit.
+- **Why**: warnings on the subtitle would travel with every copy and edit.
 - **Line and block**: `ParseWarning.Line` 0 means no line, because lines start at 1. `Block` -1 (`NoBlock`) means no block. Plain ints print without a nil check.
 - **Not chosen**: `Line, Block *int` with nil for none.
 - **Source**: [#17](https://github.com/yama6a/subtitle-toolbox-go/issues/17), [#14](https://github.com/yama6a/subtitle-toolbox-go/issues/14).
@@ -40,8 +40,8 @@ A read returns its warnings in `ReadInfo.Warnings`. The `Subtitle` holds none.
 
 Each cause is a sentinel error such as `ErrParse`. Some causes also have a type with fields, such as `*ParseError`. The library has no numeric error codes. See [errors.md](errors.md).
 
-- **Messages**: a message keeps the PHP sentence. `Error()` adds a lower-case prefix, as in `srt: line 6: Block #1 has no timing line on its second line. The line is "...".` People read these messages in the CLI, and the PHP sentences exist already.
-- **No identifiers**: a message never names a PHP or Go identifier or a CLI flag. The `Option` field names the option.
+- **Messages**: a message is a full English sentence. `Error()` adds a lower-case prefix, as in `srt: line 6: Block #1 has no timing line on its second line. The line is "...".` People read these messages in the CLI.
+- **No identifiers**: a message never names a Go identifier or a CLI flag. The `Option` field names the option.
 - **No catch-all**: no sentinel matches every library error. A caller matches the causes it handles, so errors of its own reader, such as a closed network stream, stay apart.
 - **Not chosen**: Go style messages everywhere, and an `ErrStbox` that every sentinel wraps and every error type matches.
 - **Source**: [#13](https://github.com/yama6a/subtitle-toolbox-go/issues/13) D1 and D2.
@@ -50,7 +50,6 @@ Each cause is a sentinel error such as `ErrParse`. Some causes also have a type 
 
 Every time is a `time.Duration`. Each parser and setter rounds it to whole milliseconds, half away from zero. Example: 1.0005 s becomes 1.001 s.
 
-- **PHP difference**: PHP shifts in binary seconds, so 1.001 + 0.0005 is 1.0014999999999998 there. [php-differences.md](php-differences.md) lists the cases.
 - **Source**: [#1](https://github.com/yama6a/subtitle-toolbox-go/issues/1), [#7](https://github.com/yama6a/subtitle-toolbox-go/issues/7), [#10](https://github.com/yama6a/subtitle-toolbox-go/issues/10), [#34](https://github.com/yama6a/subtitle-toolbox-go/issues/34).
 
 ## No logging in the library
@@ -82,18 +81,18 @@ Code uses `regexp`. It uses `regexp2` only where a pattern needs lookaround or b
 
 - **Source**: [#2](https://github.com/yama6a/subtitle-toolbox-go/issues/2), [#18](https://github.com/yama6a/subtitle-toolbox-go/issues/18), [#38](https://github.com/yama6a/subtitle-toolbox-go/issues/38).
 
-## PHP read goldens as the conformance suite
+## Read goldens
 
-The repository copies the PHP input files and the PHP read goldens. Each golden holds the parse warnings and the [library JSON](json.md) of a parse result. Go must produce the same JSON for the same file.
+The files `<folder>/real/expected/<file>.json` hold the expected parse warnings and the [library JSON](json.md) of each real input file. `readgoldens_test.go` reads each file and compares the JSON.
 
-- **Why**: the PHP goldens are the conformance oracle. A Go bug must never rewrite them.
-- **Differences**: a deliberate difference is a row in [php-differences.md](php-differences.md).
-- **Write output**: the write goldens are Go's own, and they do not have to match the PHP bytes.
+- **Why**: the goldens catch a change in what a reader returns for real files.
+- **Update**: `go test -run TestReadGoldens -update` rewrites them. Review each diff by hand, because a read bug would otherwise hide in the new golden.
+- **Write output**: the write goldens are separate files. `make golden` rewrites them.
 - **Source**: [#9](https://github.com/yama6a/subtitle-toolbox-go/issues/9), [#1](https://github.com/yama6a/subtitle-toolbox-go/issues/1).
 
-## Word times and speakers are tags
+## Word times and speakers
 
-In 1.x a word time such as `<00:00:01.500>` and a speaker such as `<v Anna>` stay as tags in the cue text. See [markup.md](markup.md).
+`Cue.Words` holds the word times of a cue, and `Cue.Speaker` holds the voice of the whole cue. A cue with 2 or more voices keeps its `<v>` tags in the lines and has no `Speaker`. The lines hold no word timestamps. See [markup.md](markup.md).
 
 - **Source**: [#10](https://github.com/yama6a/subtitle-toolbox-go/issues/10).
 

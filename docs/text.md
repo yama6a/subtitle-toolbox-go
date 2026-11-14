@@ -141,7 +141,7 @@ Lyric videos and short captions mark the word that is sung. SubRip and WebVTT pl
 - **Modes**: `ModeWord` styles only the active word. `ModeCumulative` styles every word up to the active word, so `<font color="#ffff00">The beach</font> was quiet.` marks the second word.
 - **Window**: `MaxWordsPerCue` shows only that many words around the active word, 0 shows all. With 5 words and a window of 3, the cues show `One two three`, `One two three`, `two three four`, `three four five` and `three four five`, with the active word styled. Tags stay, and a tag pair without text goes.
 - **Cue data**: each word cue keeps `Position`, `Forced`, `Speaker` and the format data. Only the first keeps `ID`. A comment before a cue moves before its first word cue.
-- **Size limit**: each word cue repeats the whole text of the cue, so the output grows with words times text. `Apply` fails with an `*InvalidArgumentError` when the new cues would hold more than 64 MiB of line text. The message names the cue. Split the cue first with `resegment.SplitLong`, or set `MaxWordsPerCue`. PHP has no limit and runs out of memory.
+- **Size limit**: each word cue repeats the whole text of the cue, so the output grows with words times text. `Apply` fails with an `*InvalidArgumentError` when the new cues would hold more than 64 MiB of line text. The message names the cue. Split the cue first with `resegment.SplitLong`, or set `MaxWordsPerCue`.
 
 <!-- example: karaoke/ExampleApply -->
 ```go
