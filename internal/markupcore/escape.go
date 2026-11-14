@@ -133,8 +133,8 @@ func decodeNumericEntity(s string) (string, int, bool) {
 	return string(rune(cp)), end + 1, true
 }
 
-// hexPrefixLength returns 2 when s starts with 0x and a hex digit. The hex digits skip
-// such a prefix, so &#x0x41; decodes to A.
+// hexPrefixLength returns 2 when s starts with 0x and a hex digit. A 0x prefix after &#x is
+// skipped, so &#x0x41; decodes to A.
 func hexPrefixLength(s string) int {
 	if len(s) > 2 && s[0] == '0' && s[1]|0x20 == 'x' && strings.IndexByte(hexDigits, s[2]) >= 0 {
 		return 2

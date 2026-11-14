@@ -366,7 +366,7 @@ func (w *writer) attribute(name, value string) string {
 	return " " + name + `="` + attributeEscaper.Replace(w.xmlText(value)) + `"`
 }
 
-// The attribute escapes add TAB, LF and CR to those of XML text, because a reader turns them into
+// Attribute values escape &, <, >, the double quote, TAB, LF and CR, because a reader turns TAB, LF and CR into
 // spaces.
 //
 //nolint:gochecknoglobals // lookup tables of the escapes
