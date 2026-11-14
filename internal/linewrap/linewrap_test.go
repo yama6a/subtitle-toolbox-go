@@ -244,7 +244,7 @@ func TestFewestLines(t *testing.T) {
 	}
 }
 
-// TestFewestLinesIsTheLineCountOfWrap checks FewestLines against Wrap without a line limit, for the PHP cases and
+// TestFewestLinesIsTheLineCountOfWrap checks FewestLines against Wrap without a line limit, for the ported cases and
 // for random ASCII and CJK text.
 func TestFewestLinesIsTheLineCountOfWrap(t *testing.T) {
 	t.Parallel()

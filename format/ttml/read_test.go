@@ -62,7 +62,7 @@ func TestTimeExpressions(t *testing.T) {
 		{"frame rate 0 gives 30", "30f", `ttp:frameRate="0"`, 1},
 		{"tick rate 0 gives the frame rate", "25t", `ttp:frameRate="25" ttp:tickRate="0"`, 1},
 		{"sub-frame rate 0 gives 1", "00:00:00:01.1", `ttp:frameRate="25" ttp:subFrameRate="0"`, 0.08},
-		{"frame rate as PHP reads a float", "25f", `ttp:frameRate=" 25fps"`, 1},
+		{"frame rate as a float", "25f", `ttp:frameRate=" 25fps"`, 1},
 		{"white space around the expression", " 1.5s ", "", 1.5},
 	}
 	for _, tt := range tests {
@@ -272,7 +272,7 @@ func TestParagraphText(t *testing.T) {
 
 	tests := []struct{ name, p, head, want string }{
 		{
-			"white space of the PHP row is collapsed",
+			"white space is collapsed",
 			"<p end=\"1s\">\n  Hello  <span tts:fontWeight=\"bold\"> bold </span>\n  world <br/>  next\tline\n</p>", "",
 			"Hello <b>bold </b>world\nnext line",
 		},
@@ -750,7 +750,7 @@ func TestAttributeReferences(t *testing.T) {
 	}
 }
 
-// Covers https://github.com/yama6a/subtitle-toolbox-go/issues/181, with the result of PHP 8.5.
+// Covers https://github.com/yama6a/subtitle-toolbox-go/issues/181.
 func TestProcessingInstructionInTheDoctypeSubset(t *testing.T) {
 	t.Parallel()
 

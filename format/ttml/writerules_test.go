@@ -462,7 +462,7 @@ func TestWriteReturnsTheWriterError(t *testing.T) {
 	require.ErrorIs(t, err, errWrite)
 }
 
-// The new elements take the prefixes and declarations that libxml gives them when PHP inserts them into the head.
+// The new elements take the prefixes and declarations that libxml gives them when it inserts them into the head.
 func TestNewElementsInAHeadWithItsOwnDeclarations(t *testing.T) {
 	t.Parallel()
 

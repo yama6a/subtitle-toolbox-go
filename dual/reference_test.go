@@ -27,7 +27,7 @@ func randomSubtitle(rng *rand.Rand, prefix string) *model.Subtitle {
 	return &s
 }
 
-// naiveStack is the search of the PHP code: every secondary cue against every primary cue.
+// naiveStack is the plain search: every secondary cue against every primary cue.
 func naiveStack(primary, secondary *model.Subtitle) []got {
 	cues := primary.Cues()
 	partners := make([][]model.Cue, len(cues))
@@ -61,7 +61,7 @@ func naiveStack(primary, secondary *model.Subtitle) []got {
 	return out
 }
 
-// naiveSnap is the loop of the PHP code over every primary time.
+// naiveSnap is the plain loop over every primary time.
 func naiveSnap(t time.Duration, times []time.Duration, tolerance time.Duration) time.Duration {
 	snapped, distance := t, time.Duration(-1)
 	for _, c := range times {

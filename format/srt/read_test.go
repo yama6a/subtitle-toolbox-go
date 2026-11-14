@@ -185,7 +185,7 @@ func TestReadCues(t *testing.T) {
 			want:    []cueRow{{time.Second, 2 * time.Second, []string{"Text"}}},
 		},
 		{
-			name:    "cue numbers in PHP numeric forms",
+			name:    "cue numbers in numeric forms",
 			content: "+1\n00:00:01,000 --> 00:00:02,000\nA\n\n1.5\n00:00:03,000 --> 00:00:04,000\nB\n\n1e3\n00:00:05,000 --> 00:00:06,000\nC\n",
 			want: []cueRow{
 				{time.Second, 2 * time.Second, []string{"A"}},
@@ -596,7 +596,7 @@ func TestReadArrows(t *testing.T) {
 	}
 }
 
-// The arrow is the first "-->" that does not directly follow a "-", as the PHP pattern (.*?)(?<!-)\s*(-->) reads it.
+// The arrow is the first "-->" that does not directly follow a "-".
 func TestReadArrowAfterADash(t *testing.T) {
 	t.Parallel()
 

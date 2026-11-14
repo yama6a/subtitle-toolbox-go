@@ -242,9 +242,9 @@ func TestWriteWithHeader(t *testing.T) {
 			"{QTtext}{timeScale:30}\n[00:00:00.00]\nA\n[00:00:00.01]\n\n[00:00:00.00]\nB\n[00:00:00.00]\n\n[00:00:00.02]\nC\n[00:00:01.02]\n\n",
 		},
 		{
-			// Up to 1000 units per second the writer rounds as PHP 8.5 does, in floats, so 64.82 s at 25 per second is
+			// Up to 1000 units per second the writer rounds in floats, so 64.82 s at 25 per second is
 			// 1620.5 units in decimal and 1620.4999999999998 in binary.
-			"time stamps round as PHP does up to 1000 units per second",
+			"time stamps round in floats up to 1000 units per second",
 			"{QTtext}{timeScale:25}", true,
 			[]model.Cue{cue(64820*ms, 64820*ms, "A")},
 			"{QTtext}{timeScale:25}\n[00:01:04.20]\nA\n[00:01:04.20]\n\n",

@@ -28,8 +28,8 @@ func load(tb testing.TB, name string) *model.Subtitle {
 	return s
 }
 
-// randomSubtitle builds n cues with random gaps of 0.5 to 4 s and random lengths of 1 to 5 s from 1 s on, as the
-// PHP fixture does. The same seed gives the same cues.
+// randomSubtitle builds n cues with random gaps of 0.5 to 4 s and random lengths of 1 to 5 s from 1 s on.
+// The same seed gives the same cues.
 func randomSubtitle(n int, seed uint64) *model.Subtitle {
 	rng := rand.New(rand.NewPCG(seed, seed)) //nolint:gosec // test data, not a secret
 	t := time.Second

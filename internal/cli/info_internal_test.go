@@ -96,7 +96,7 @@ func TestInfoHelp(t *testing.T) {
 	assert.Equal(t, want, call{}.run(t, "help", "info"))
 }
 
-func TestInfoTextEqualsThePHPOutput(t *testing.T) {
+func TestInfoTextEqualsTheGoldenFile(t *testing.T) {
 	t.Parallel()
 
 	assert.Equal(t, result{Stdout: string(testfiles.Read(t, "cli/trip_info.txt"))}, runCLI(t, "info", "trip.srt"))
@@ -461,11 +461,11 @@ func TestOrderedMetadata(t *testing.T) {
 	}
 }
 
-func TestInfoJSONEqualsThePHPOutput(t *testing.T) {
+func TestInfoJSONEqualsTheGoldenFile(t *testing.T) {
 	t.Parallel()
 
-	var php, got []map[string]any
-	require.NoError(t, json.Unmarshal(testfiles.Read(t, "cli/trip_info.json"), &php))
+	var want, got []map[string]any
+	require.NoError(t, json.Unmarshal(testfiles.Read(t, "cli/trip_info.json"), &want))
 	require.NoError(t, json.Unmarshal([]byte(runCLI(t, "info", "trip.srt", "--json").Stdout), &got))
-	assert.Equal(t, php, got)
+	assert.Equal(t, want, got)
 }

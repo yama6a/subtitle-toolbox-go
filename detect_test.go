@@ -20,7 +20,6 @@ type detectTest struct {
 	name    string
 	content string
 	want    stbox.Format
-	later   string // the format that PHP detects, for a row whose format has no signature in this release
 }
 
 // detectTests ports the signatures of tests/FormatDetectorTest.php of subtitle-toolbox-php, then adds rows of its own.
@@ -141,7 +140,6 @@ func TestDetect(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			require.NotEqual(t, tt.want == "", tt.later == "", "a row sets either want or later")
 			d, ok := stbox.Detect([]byte(tt.content))
 			f := d.Format
 			assert.Equal(t, tt.want != "", ok)

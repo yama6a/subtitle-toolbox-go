@@ -201,8 +201,7 @@ func TestFrameRatesOfDiffAndSync(t *testing.T) {
 	assert.Contains(t, got.Stdout, framesOutput)
 }
 
-// Ports the frame rate change of cli/frames_23976.vtt of subtitle-toolbox-php. The PHP output is the cue oracle,
-// the same file holds the bytes.
+// Ports the frame rate change of cli/frames_23976.vtt of subtitle-toolbox-php. The same file holds the bytes.
 func TestMicroDVDFrameRateChange(t *testing.T) {
 	t.Parallel()
 

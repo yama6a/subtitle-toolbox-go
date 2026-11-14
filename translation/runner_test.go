@@ -24,7 +24,7 @@ type call struct {
 	source, target string
 }
 
-// upperEngine upper-cases the ASCII letters of the text between tags and entities, as the PHP test engine does.
+// upperEngine upper-cases the ASCII letters of the text between tags and entities.
 type upperEngine struct {
 	drop  bool
 	calls []call

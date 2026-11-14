@@ -7,7 +7,7 @@ import (
 )
 
 // TestDigestVariations pins the hashes of the scaled variations of a 16 by 18 glyph with 2 levels to the values of
-// the PHP reader.
+// the first release.
 func TestDigestVariations(t *testing.T) {
 	t.Parallel()
 

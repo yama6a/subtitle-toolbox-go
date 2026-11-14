@@ -116,7 +116,7 @@ func TestFrameRateZeroValue(t *testing.T) {
 	assert.Equal(t, time.Minute, r.ClockDuration(model.Timecode{Minutes: 1, Frames: 7}))
 }
 
-// TestFramesMatchTheFloatFormula compares Frames with round(ms / 1000 * fps) of PHP for every millisecond of the first
+// TestFramesMatchTheFloatFormula compares Frames with round(ms / 1000 * fps) for every millisecond of the first
 // 2 minutes and every 997th millisecond up to 1 hour. It skips the times where the float product lies within 1e-6 of
 // a half frame. There the float error decides the rounding, while Frames always rounds the exact half up.
 func TestFramesMatchTheFloatFormula(t *testing.T) {

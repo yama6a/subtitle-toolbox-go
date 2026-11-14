@@ -16,10 +16,10 @@ import (
 
 const (
 	realDir = "ttml/real"
-	// header is the root start tag of the PHP parser tests, without its closing >.
+	// header is the root start tag of the parser tests, without its closing >.
 	header = `<tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling"` +
 		` xmlns:ttp="http://www.w3.org/ns/ttml#parameter" xmlns:ttm="http://www.w3.org/ns/ttml#metadata"`
-	// bare is the root start tag of the PHP lenient tests.
+	// bare is the root start tag of the lenient tests.
 	bare = `<tt xmlns="http://www.w3.org/ns/ttml">`
 )
 
@@ -34,7 +34,7 @@ type warningRow struct {
 	Message     string
 }
 
-// sec returns seconds as a duration in whole milliseconds, for the times of the PHP tests.
+// sec returns seconds as a duration in whole milliseconds.
 func sec(s float64) time.Duration {
 	return time.Duration(math.Round(s*1000)) * time.Millisecond
 }
@@ -63,7 +63,7 @@ func readError(t *testing.T, content string, lenient bool) *model.ParseError {
 	return perr
 }
 
-// document returns the TTML of the PHP parser tests: the header with extra root attributes, a head and a body.
+// document returns the TTML of the parser tests: the header with extra root attributes, a head and a body.
 func document(body, rootAttributes, head string) string {
 	return header + " " + rootAttributes + "><head>" + head + "</head><body>" + body + "</body></tt>"
 }

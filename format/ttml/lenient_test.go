@@ -97,7 +97,7 @@ func TestHTMLEntities(t *testing.T) {
 
 	tests := []struct{ name, text, want string }{
 		{"2 code points", "&nGt;", "\u226b\u20d2"},
-		{"a name that PHP leaves out of its table", "&NonBreakingSpace;", "\u00a0"},
+		{"a name that is not in the entity table", "&NonBreakingSpace;", "\u00a0"},
 		{"XML entities stay", "&amp;&lt;&gt;&quot;&apos;&eacute;", "&amp;&lt;&gt;\"'\u00e9"},
 		{"no semicolon", "&eacute &nbsp;", "&amp;eacute \u00a0"},
 	}

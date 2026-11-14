@@ -97,7 +97,7 @@ func encodingReads(t *testing.T) []encodingRead {
 }
 
 // Ports tests/EncodingTest.php of subtitle-toolbox-php for the decode step: each fixture with and without
-// Encoding "Windows-1252" gives the source encoding and the decode warning of the PHP read.
+// Encoding "Windows-1252" gives the source encoding and the decode warning.
 func TestEncodingFixturesDecode(t *testing.T) {
 	t.Parallel()
 

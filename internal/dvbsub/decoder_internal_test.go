@@ -65,7 +65,7 @@ func bits(s string) []byte {
 	return out
 }
 
-func TestDefaultCLUTEqualsThePHPTable(t *testing.T) {
+func TestDefaultCLUTEqualsTheReferenceTable(t *testing.T) {
 	t.Parallel()
 
 	c := defaultCLUT()
