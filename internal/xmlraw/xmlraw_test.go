@@ -211,7 +211,7 @@ func TestAttributeValueNormalization(t *testing.T) {
 	}
 }
 
-// The cases compare with PHP 8.5, which reads the files with libxml2.
+// The expected values are the results of libxml2.
 func TestAttributeValuesAfterDeclarationsAndComments(t *testing.T) {
 	t.Parallel()
 
@@ -242,7 +242,7 @@ func TestAttributeValuesAfterDeclarationsAndComments(t *testing.T) {
 	assert.Equal(t, ` <x a="1`+"\n"+`2"/> `, r.Children[0].Data[1:])
 }
 
-// Covers https://github.com/yama6a/subtitle-toolbox-go/issues/181. PHP 8.5 reads each case, and the attribute
+// Covers https://github.com/yama6a/subtitle-toolbox-go/issues/181. The attribute
 // after the DOCTYPE keeps the space of its literal LF.
 func TestProcessingInstructionInTheDoctypeSubset(t *testing.T) {
 	t.Parallel()

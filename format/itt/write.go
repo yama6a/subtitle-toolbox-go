@@ -149,7 +149,7 @@ func supportedMarkup(line string) string {
 	line = markupcore.KeepTags(markupcore.WebVTTColorsToFont(markupcore.RubyAsText(line)), "b", "i", "u", "font")
 	return fontRegexp.ReplaceAllStringFunc(line, func(tag string) string {
 		attrs, _ := markupcore.FontColor(fontRegexp.FindStringSubmatch(tag)[1])
-		color := markupcore.ASCIILower(strings.Trim(markupcore.DecodeEntities(attrs), markupcore.PHPTrimSet))
+		color := markupcore.ASCIILower(strings.Trim(markupcore.DecodeEntities(attrs), markupcore.TrimSet))
 		if c, ok := markupcore.TTMLColor(color); ok {
 			return `<font color="` + c + `">`
 		}

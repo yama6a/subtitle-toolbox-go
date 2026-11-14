@@ -131,7 +131,7 @@ func checkWrite(t *testing.T, s *model.Subtitle, v subviewer.Version) {
 	for _, k := range []string{model.MetadataTitle, model.MetadataAuthor} {
 		a, _ := s.Metadata(k)
 		b, _ := back.Metadata(k)
-		if strings.Trim(a, markupcore.PHPTrimSet) != b {
+		if strings.Trim(a, markupcore.TrimSet) != b {
 			t.Fatalf("the %s is %q, want %q", k, b, a)
 		}
 	}

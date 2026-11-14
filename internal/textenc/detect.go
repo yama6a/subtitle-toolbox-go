@@ -74,7 +74,7 @@ func scoreCandidates(s []byte) []scored {
 }
 
 // ScoreText returns the score per non-ASCII rune of UTF-8 text in the language of languages that fits best.
-// It scores as DetectCodePage does, without the cut-off that turns a score of 0.5 or less into 0, as PHP scoreText.
+// It scores as DetectCodePage does, without the cut-off that turns a score of 0.5 or less into 0.
 // Text without a non-ASCII rune scores 0. languages holds alphabet codes such as "cs" or "zh-Hans".
 func ScoreText(text string, languages []string) float64 {
 	sum, n := rawScore(text, languages)

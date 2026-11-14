@@ -345,7 +345,7 @@ func googleTyped(item orderedjson.Value, w *model.Word) orderedjson.Value {
 
 func googleWordText(w orderedjson.Value) string {
 	s, _ := cloudGet(w, "word").AsString()
-	return strings.Trim(s, markupcore.PHPTrimSet)
+	return strings.Trim(s, markupcore.TrimSet)
 }
 
 // googleWordTime returns the start or the end of a stored word as seconds, or null. edge is "start" or "end".

@@ -40,7 +40,7 @@ func ShotChangesFromText(text []byte) ([]time.Duration, error) {
 	var times []time.Duration
 	content := strings.TrimPrefix(string(text), "\xef\xbb\xbf")
 	for n, line := range parsing.Lines(content) {
-		line = strings.Trim(line, markupcore.PHPTrimSet)
+		line = strings.Trim(line, markupcore.TrimSet)
 		if line == "" {
 			continue
 		}

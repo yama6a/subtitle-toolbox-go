@@ -58,7 +58,7 @@ func frameFields(t string) ([4]string, bool) {
 
 // frameTime returns the whole seconds of the fields plus the frames divided by fps. The frame number is not
 // checked against the rate. Hours of more than 6 digits give timecode.MaxTime, so the sum cannot wrap. Frame
-// digits beyond the int64 range read as its maximum, as PHP (int) reads them.
+// digits beyond the int64 range read as its maximum.
 func frameTime(fields [4]string, fps float64) time.Duration {
 	hours := strings.TrimLeft(fields[0], "0")
 	if len(hours) > maxHourDigits {
@@ -72,7 +72,7 @@ func frameTime(fields [4]string, fps float64) time.Duration {
 }
 
 // padSeconds puts a 0 before each single digit that follows a colon and ends t or comes before "." or ",", as
-// the PHP pattern :(\d)(?=$|[.,]) does. So 00:00:1 becomes 00:00:01.
+// the pattern :(\d)(?=$|[.,]) does. So 00:00:1 becomes 00:00:01.
 func padSeconds(t string) string {
 	var b strings.Builder
 	for i := range len(t) {

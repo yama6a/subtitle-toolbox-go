@@ -19,6 +19,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 14,
+                    "column": 9,
+                    "grid": {
+                        "rows": 15,
+                        "columns": 32
+                    }
+                },
                 "formatData": {
                     "scc": {
                         "mode": "pop-on",
@@ -41,6 +49,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 15,
+                    "column": 1,
+                    "grid": {
+                        "rows": 15,
+                        "columns": 32
+                    }
+                },
                 "formatData": {
                     "scc": {
                         "mode": "pop-on",
@@ -62,6 +78,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 14,
+                    "column": 5,
+                    "grid": {
+                        "rows": 15,
+                        "columns": 32
+                    }
+                },
                 "formatData": {
                     "scc": {
                         "mode": "pop-on",

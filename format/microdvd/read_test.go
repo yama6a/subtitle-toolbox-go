@@ -275,7 +275,7 @@ func TestMaxFrames(t *testing.T) {
 	c, _ := s.Cue(1)
 	assert.Equal(t, 359999999960*ms, c.End)
 
-	// 359999999.99965 s is below 100000 h, but it rounds to 100000 h. PHP checks the time before the rounding.
+	// 359999999.99965 s is below 100000 h, but it rounds to 100000 h. The reader checks the time before the rounding.
 	_, _, err := read("{359999999999650}{359999999999650}x", false, 1e6)
 	require.ErrorIs(t, err, model.ErrParse)
 }

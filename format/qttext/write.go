@@ -122,7 +122,7 @@ func writableHeader(stored []string) []string {
 }
 
 // count returns d in units of the time scale. Up to 1000 units per second it rounds the float seconds times the scale,
-// as PHP 8.5 and the MicroDVD and MPSub writers do, so a time on an exact half unit can round down. Above that, floats
+// as the MicroDVD and MPSub writers do, so a time on an exact half unit can round down. Above that, floats
 // lose milliseconds, so it rounds the exact milliseconds half away from zero. A time at the limit stops at the largest
 // count whose time a reader reads below the limit.
 func (wr *writer) count(d time.Duration) count {
@@ -228,13 +228,13 @@ func (wr *writer) markupLine(line string) string {
 			continue
 		}
 		token = markupcore.DecodeEntities(token)
-		if strings.Trim(token, markupcore.PHPTrimSet) != "" {
+		if strings.Trim(token, markupcore.TrimSet) != "" {
 			text.WriteString(descriptors(wr.style, open))
 			wr.style = open
 		}
 		text.WriteString(token)
 	}
-	return strings.Trim(text.String(), markupcore.PHPTrimSet)
+	return strings.Trim(text.String(), markupcore.TrimSet)
 }
 
 func (st style) after(tag string) style {

@@ -54,7 +54,7 @@ var (
 	fontColorRegexp = regexp.MustCompile(`(?i)\bcolor` + ws + `=` + ws + `(?:"([^"]*)"|'([^']*)'|([^ \t\n\r\f\v"'>]+))`)
 	rgbRegexp       = regexp.MustCompile(`^rgba?\(` + ws + `(\d{1,3})` + ws + `,` + ws + `(\d{1,3})` + ws + `,` + ws + `(\d{1,3})` + ws +
 		`(?:,` + ws + `(\d+(?:\.\d*)?|\.\d+)(%?)` + ws + `)?\)$`)
-	// PHP ends this pattern with $, which also matches before a final LF.
+	// The pattern ends with $ in the PCRE sense, which also matches before a final LF.
 	ttmlColorRegexp = regexp.MustCompile(`^(?:#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?|rgb\(` + ws + `\d{1,3}(?:` + ws + `,` + ws + `\d{1,3}){2}` + ws +
 		`\)|rgba\(` + ws + `\d{1,3}(?:` + ws + `,` + ws + `\d{1,3}){3}` + ws + `\)|transparent)\n?$`)
 	cTagRegexp    = regexp.MustCompile(`^<c((?:\.[^ \t\n\r\f\v.<>]*)*)(?:[ \t\n\r\f\v][^<>]*)?>$`)
@@ -90,7 +90,7 @@ func FontColor(attrs string) (string, bool) {
 // the 18 TTML color names, in any case and with entities decoded. The alpha of rgba() is a fraction such as 0.5,
 // a percentage, or an integer from 0 to 255 as in TTML, so rgba(255, 0, 0, 1) is almost transparent.
 func ColorHexWithAlpha(color string) (string, bool) {
-	c := ASCIILower(strings.Trim(DecodeEntities(color), PHPTrimSet))
+	c := ASCIILower(strings.Trim(DecodeEntities(color), TrimSet))
 	if hex, ok := hexColor(c); ok {
 		return hex, true
 	}
@@ -240,7 +240,7 @@ func fontClass(tag string) (class, color string, drop bool) {
 		return "", "", false
 	}
 	class = webVTTColorClass(color)
-	return class, color, class == "" && strings.Trim(color, PHPTrimSet) != ""
+	return class, color, class == "" && strings.Trim(color, TrimSet) != ""
 }
 
 func webVTTColorClass(color string) string {
@@ -275,7 +275,7 @@ func RGBToBGR(rgb string) string {
 	return BGRToRGB(rgb)
 }
 
-// hexByte returns the 2 characters of s at start, or fewer at the end of s, as PHP substr does.
+// hexByte returns the 2 characters of s at start, or fewer at the end of s.
 func hexByte(s string, start int) string {
 	if start >= len(s) {
 		return ""

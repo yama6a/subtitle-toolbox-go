@@ -80,7 +80,7 @@ func (o Options) style(line string) string {
 	if o.SecondaryStyle == "" {
 		return line
 	}
-	open := strings.Trim(o.SecondaryStyle, markupcore.PHPTrimSet)
+	open := strings.Trim(o.SecondaryStyle, markupcore.TrimSet)
 	name := markupcore.TagName(open)
 	return "<" + name + open[len(name):] + ">" + line + "</" + name + ">"
 }

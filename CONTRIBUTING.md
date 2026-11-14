@@ -13,7 +13,7 @@ A package imports only packages of a lower layer. Every layer may also import th
 
 | Layer | Packages | May import |
 |---:|:--- |:--- |
-| 0 | leaf helpers in `internal/`: `markupcore`, `linewrap`, `paragraphs`, `timecode`, `grapheme`, `ssatag`, `phpkey`, `stringlist`, `textenc`, `xmlraw`, `extfallback`, `codepage`, the test helpers `testfiles`, `golden` and `translationtest`, `cea608`, `cea708`, `ebml`, `orderedjson`, `teletext` | other layer 0 packages |
+| 0 | leaf helpers in `internal/`: `markupcore`, `linewrap`, `paragraphs`, `timecode`, `grapheme`, `ssatag`, `intkey`, `stringlist`, `textenc`, `xmlraw`, `extfallback`, `codepage`, the test helpers `testfiles`, `golden` and `translationtest`, `cea608`, `cea708`, `ebml`, `orderedjson`, `teletext` | other layer 0 packages |
 | 1 | `markup`, `internal/hilabels` | layer 0 |
 | 2 | `model` | layers 0 and 1 |
 | 3 | `internal/` helpers that work on model types: `blocks`, `subrip`, `vtt`, `position`, `parsing`, `writing`, `caption`, `ttmlwrite`, `bitmap`, `displayset`, `dvbsub`, `arib`, `dvdsub`, `jsondata`, `wordgroup` | layers 0 to 2, and other layer 3 packages. Go rejects an import cycle |
@@ -41,7 +41,7 @@ func Detect(content []byte) bool
 
 ### Format registry
 
-The registry is written by hand, and no package registers itself in `init()`. The facts table and the functions table hold the same rows in the same order. The rows follow the PHP row order, because the first row that lists an extension owns it in `FormatFromPath`. A later line inserts its rows at the PHP position.
+The registry is written by hand, and no package registers itself in `init()`. The facts table and the functions table hold the same rows in the same order. The first row that lists an extension owns it in `FormatFromPath`. A new format inserts its row after every row whose extension it shares and must not take.
 
 | Table | File | Holds |
 |:--- |:--- |:--- |
@@ -49,17 +49,18 @@ The registry is written by hand, and no package registers itself in `init()`. Th
 | functions | `registry.go` | the read and write function of each format |
 | detection lists | `registry.go` | the JSON checks and the signatures, in detection order. First match wins |
 
-Every 1.x row and `Format` constant exists from 1.0.0, so `FormatFromPath` gives the same result for the whole 1.x line. The issue that adds a format reader or writer:
+A pull request that adds a format:
 
-1. Sets can read, can write and auto-detected in its facts row.
-2. Sets the `read` and `write` functions of its row in `registry.go`.
-3. Inserts its matcher into `signatures` or `jsonChecks`. `TestDetectionListsFollowTheOrder` in `registry_test.go` holds the order.
-4. Adds a field of its options type to the root `ReadOptions` or `WriteOptions` when the type is not empty. TSV uses the `CSV` field.
-5. Adds a compile-time shape check in the root for each of its `Read`, `Write` and `Detect`, for example `var _ readFunc[srt.ReadOptions] = srt.Read`. The first format issue declares the generic types:
+1. Adds its `Format` constant and its facts row.
+2. Sets can read, can write and auto-detected in its facts row.
+3. Sets the `read` and `write` functions of its row in `registry.go`.
+4. Inserts its matcher into `signatures` or `jsonChecks`. `TestDetectionListsFollowTheOrder` in `registry_test.go` holds the order.
+5. Adds a field of its options type to the root `ReadOptions` or `WriteOptions` when the type is not empty. TSV uses the `CSV` field.
+6. Adds a compile-time shape check in the root for each of its `Read`, `Write` and `Detect`, for example `var _ readFunc[srt.ReadOptions] = srt.Read`. The generic types are:
 
    ```go
    type readFunc[O any] func(io.Reader, model.CommonReadOptions, O) (*model.Subtitle, []model.ParseWarning, error)
-   type writeFunc[O any] func(io.Writer, *model.Subtitle, model.CommonWriteOptions, O) error
+   type writeFunc[O, R any] func(io.Writer, *model.Subtitle, model.CommonWriteOptions, O) (R, error)
    type detectFunc func([]byte) bool
    ```
 
@@ -168,7 +169,7 @@ Its exception table names the rule and the reason for each exception.
 | Majors | A break lands only in the issue that opens a major line. The major release moves the module path to `/vN` |
 | Errors | Wrap with `%w`. Sentinels `ErrX` live in `errors.go`. Error types `XError` have an `Unwrap` method when the type has an `Err` field. Interfaces get compile-time checks |
 | Comments | A doc comment on each exported identifier, one sentence that starts with the name |
-| Go version | `go 1.27.2` in `go.mod`, no `toolchain` line. Renovate raises the `go` line |
+| Go version | a `go` line with a patch version in `go.mod`, no `toolchain` line. Renovate raises the `go` line |
 
 ### Naming rules
 

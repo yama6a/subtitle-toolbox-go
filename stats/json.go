@@ -33,7 +33,7 @@ type jsonStatistics struct {
 	MostUsedWords       []jsonWord `json:"mostUsedWords"`
 }
 
-// MarshalJSON writes the shape of PHP SubtitleStatistics::toArray(): durations as seconds, a nil value as null
+// MarshalJSON writes a JSON object: durations as seconds, a nil value as null
 // and the first MostUsedWordsInJSON words.
 func (st Statistics) MarshalJSON() ([]byte, error) {
 	out := jsonStatistics{

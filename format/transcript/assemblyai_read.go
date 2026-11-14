@@ -63,7 +63,7 @@ func assemblyAIWord(item orderedjson.Value, path string) (wordgroup.Word, error)
 	if err != nil {
 		return wordgroup.Word{}, err
 	}
-	w := wordgroup.Word{Text: strings.Trim(text, markupcore.PHPTrimSet), Start: start, Timed: true, End: end, HasEnd: true}
+	w := wordgroup.Word{Text: strings.Trim(text, markupcore.TrimSet), Start: start, Timed: true, End: end, HasEnd: true}
 	w.Confidence = cloudConfidence(cloudGet(item, "confidence"))
 	w.Speaker, w.HasSpeaker = wordgroup.Speaker(cloudGet(item, "speaker"))
 	return w, nil

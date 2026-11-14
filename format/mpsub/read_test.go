@@ -543,7 +543,7 @@ func TestReadTimeLimit(t *testing.T) {
 	}
 }
 
-// Fractional frames: the reader keeps the position in float64 seconds and rounds only the cue times, as PHP does.
+// Fractional frames: the reader keeps the position in float64 seconds and rounds only the cue times.
 // Rounding the position of each cue to milliseconds would drift from the expected times.
 func TestReadFractionalFramesKeepTheUnroundedPosition(t *testing.T) {
 	t.Parallel()
@@ -556,7 +556,7 @@ func TestReadFractionalFramesKeepTheUnroundedPosition(t *testing.T) {
 		content.WriteString("\n1.1 2.3\ncue " + string(rune('A'+i%26)) + "\n")
 		start := position + 1.1/30
 		position = start + 2.3/30
-		want = append(want, cueRow{phpRound(start), phpRound(position), []string{"cue " + string(rune('A'+i%26))}})
+		want = append(want, cueRow{roundSeconds(start), roundSeconds(position), []string{"cue " + string(rune('A'+i%26))}})
 	}
 	s, warnings := mustRead(t, content.String(), false)
 	assert.Empty(t, warnings)
@@ -565,13 +565,13 @@ func TestReadFractionalFramesKeepTheUnroundedPosition(t *testing.T) {
 	// The same file with a position rounded after each cue ends 100 cues later by more than a millisecond.
 	rounded := 0.0
 	for range 100 {
-		rounded = float64(phpRound(rounded+1.1/30)/ms) / 1000
-		rounded = float64(phpRound(rounded+2.3/30)/ms) / 1000
+		rounded = float64(roundSeconds(rounded+1.1/30)/ms) / 1000
+		rounded = float64(roundSeconds(rounded+2.3/30)/ms) / 1000
 	}
 	assert.Greater(t, math.Abs(rounded-position), 0.01)
 }
 
-// phpRound rounds seconds as PHP round($seconds, 3) does for the times of the read goldens.
-func phpRound(secs float64) time.Duration {
+// roundSeconds rounds seconds to whole milliseconds.
+func roundSeconds(secs float64) time.Duration {
 	return time.Duration(math.Round(secs * 1e9)).Round(ms)
 }

@@ -114,7 +114,7 @@ func assemblyAISpeaker(stored orderedjson.Value, speaker string, grouped bool) o
 
 func assemblyAIWordText(w orderedjson.Value) string {
 	s, _ := cloudGet(w, "text").AsString()
-	return strings.Trim(s, markupcore.PHPTrimSet)
+	return strings.Trim(s, markupcore.TrimSet)
 }
 
 func assemblyAIMillis(d time.Duration) orderedjson.Value {

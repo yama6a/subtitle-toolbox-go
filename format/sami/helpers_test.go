@@ -54,7 +54,7 @@ func readError(t *testing.T, content string) *model.ParseError {
 	return perr
 }
 
-// readBody reads a file of the given SYNC blocks, as parseBody of tests/Parsers/SamiParserTest.php builds it.
+// readBody reads a file of the given SYNC blocks.
 func readBody(t *testing.T, body string) *model.Subtitle {
 	t.Helper()
 

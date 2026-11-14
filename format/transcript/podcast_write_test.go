@@ -116,7 +116,7 @@ func TestWritePodcastFileDataAndPretty(t *testing.T) {
 }
 
 // Ports testWritesWordSegmentsFromWhisperJson. The Whisper words end before the next word starts, so the segments
-// keep their ends. PHP ends every word at the next word start.
+// keep their ends.
 func TestWritePodcastWordSegmentsOfWhisperJSON(t *testing.T) {
 	t.Parallel()
 

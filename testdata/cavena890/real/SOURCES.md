@@ -11,8 +11,8 @@ Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5
 | `noodle_chinese.890` | Written for this repository by `tests/files/cavena890/generate-fixtures.php`. UTF-16BE text with italics | MIT |
 | `train_russian.890` | Written for this repository by `tests/files/cavena890/generate-fixtures.php`. The Russian table | MIT |
 | `weather_greek.890` | Written for this repository by `tests/files/cavena890/generate-fixtures.php`. The Greek table | MIT |
-| `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name, written by `tests/files/generate-read-goldens.php` | MIT |
-| `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand. The files `harbour_english.890.to.*` equal the PHP write goldens of the same name at the pinned commit | MIT |
+| `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name. First written by `tests/files/generate-read-goldens.php` of subtitle-toolbox-php. `go test -run TestReadGoldens -update` rewrites them | MIT |
+| `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand. | MIT |
 
 No permissive real Cavena 890 files are known. The script writes each file in the shape that the Cavena 890 code of Subtitle Edit reads and writes, with the bytes of its text tables, see THIRD_PARTY_NOTICES.md.
 

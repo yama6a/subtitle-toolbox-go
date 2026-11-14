@@ -36,7 +36,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 			continue
 		}
 		value, _ := attributes.String(name)
-		found[local] = strings.Trim(value, markupcore.PHPTrimSet)
+		found[local] = strings.Trim(value, markupcore.TrimSet)
 	}
 	var fields []model.Field
 	for _, local := range timingParameters {

@@ -67,7 +67,7 @@ func check(engine Engine, target string, opts Options) error {
 	if engine == nil {
 		return &model.InvalidArgumentError{Msg: "The translation engine is missing."}
 	}
-	if strings.Trim(target, markupcore.PHPTrimSet) == "" {
+	if strings.Trim(target, markupcore.TrimSet) == "" {
 		return &model.InvalidArgumentError{Msg: "The target language is missing."}
 	}
 	return nil

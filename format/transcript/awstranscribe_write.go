@@ -226,12 +226,12 @@ func awsLastMember(group []orderedjson.Value, key string) orderedjson.Value {
 	return orderedjson.Value{}
 }
 
-// awsLastEnd returns the last end_time of all items that PHP array_filter keeps.
+// awsLastEnd returns the last end_time of all items whose end_time is not empty: not null, false, 0, "", "0" or an empty list.
 func awsLastEnd(groups [][]orderedjson.Value) orderedjson.Value {
 	var last orderedjson.Value
 	for _, g := range groups {
 		for _, item := range g {
-			if v, ok := item.Get("end_time"); ok && !phpFalsy(v) {
+			if v, ok := item.Get("end_time"); ok && !isFalsy(v) {
 				last = v
 			}
 		}
@@ -239,7 +239,7 @@ func awsLastEnd(groups [][]orderedjson.Value) orderedjson.Value {
 	return last
 }
 
-func phpFalsy(v orderedjson.Value) bool {
+func isFalsy(v orderedjson.Value) bool {
 	switch v.Kind() {
 	case orderedjson.Null:
 		return true
@@ -289,7 +289,7 @@ func awsPronunciation(group []orderedjson.Value) int {
 }
 
 func awsSourceWord(group []orderedjson.Value) wordgroup.SourceWord {
-	w := wordgroup.SourceWord{Text: strings.Trim(awsWordText(group), markupcore.PHPTrimSet)}
+	w := wordgroup.SourceWord{Text: strings.Trim(awsWordText(group), markupcore.TrimSet)}
 	w.Start = cloudStoredTime(awsFirstMember(group, "start_time"))
 	w.End = cloudStoredTime(awsLastMember(group, "end_time"))
 	if i := awsPronunciation(group); i >= 0 {

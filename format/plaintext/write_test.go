@@ -52,7 +52,6 @@ func walk() *model.Subtitle {
 }
 
 // Ports testFormatsWithOptions of tests/Formatters/PlainTextFormatterTest.php of subtitle-toolbox-php.
-// PHP passes paragraphGap INF where the Go option is NoParagraphBreaks.
 func TestWriteOptions(t *testing.T) {
 	t.Parallel()
 
@@ -106,7 +105,7 @@ func TestGapCountsFromTheLatestEnd(t *testing.T) {
 }
 
 // Ports testSkipsCuesWithoutTextAndWritesNothingForNoCues of tests/Formatters/PlainTextFormatterTest.php of
-// subtitle-toolbox-php. The image cue of PHP has no counterpart in Go.
+// subtitle-toolbox-php.
 func TestCuesWithoutText(t *testing.T) {
 	t.Parallel()
 
@@ -207,7 +206,7 @@ func TestParagraphGap(t *testing.T) {
 	}{
 		{name: "nil is 2 s, just below", cues: []model.Cue{cue(0, time.Second, "A"), cue(2999*ms, 4*time.Second, "B")}, want: "A B\n"},
 		{name: "nil is 2 s, equal", cues: []model.Cue{cue(0, time.Second, "A"), cue(3*time.Second, 4*time.Second, "B")}, want: "A\n\nB\n"},
-		{name: "a decimal gap that PHP floats compare below", gap: new(2 * time.Second), cues: []model.Cue{cue(time.Second, 1300*ms, "A"), cue(3300*ms, 4*time.Second, "B")}, want: "A\n\nB\n"},
+		{name: "a decimal gap that floats compare below", gap: new(2 * time.Second), cues: []model.Cue{cue(time.Second, 1300*ms, "A"), cue(3300*ms, 4*time.Second, "B")}, want: "A\n\nB\n"},
 		{name: "0.1 s", gap: new(100 * ms), cues: []model.Cue{cue(100*ms, 200*ms, "A"), cue(300*ms, 400*ms, "B")}, want: "A\n\nB\n"},
 		{name: "overlap at gap 0 joins", gap: new(time.Duration(0)), cues: []model.Cue{cue(0, 2*time.Second, "A"), cue(time.Second, 3*time.Second, "B")}, want: "A B\n"},
 		{name: "a cue that ends before it starts leaves the latest end at its end", gap: new(time.Second), cues: []model.Cue{cue(5*time.Second, 0, "A"), cue(5500*ms, 6*time.Second, "B")}, want: "A\n\nB\n"},
@@ -279,9 +278,8 @@ func TestWriteFailsOnWriterError(t *testing.T) {
 	assert.Contains(t, err.Error(), "txt")
 }
 
-// The two real files are the PHP output for sbv/real/youtube_studio_lf.sbv. Ports testRealFileGivesTheExpectedTranscript
-// of tests/Formatters/PlainTextFormatterTest.php of subtitle-toolbox-php. PHP calls the options
-// withTimes: true, joinCues: false.
+// The two real files are the plain text of sbv/real/youtube_studio_lf.sbv. Ports testRealFileGivesTheExpectedTranscript
+// of tests/Formatters/PlainTextFormatterTest.php of subtitle-toolbox-php.
 func TestRealFiles(t *testing.T) {
 	t.Parallel()
 

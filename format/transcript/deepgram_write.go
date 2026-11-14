@@ -192,7 +192,7 @@ func deepgramWordText(w orderedjson.Value) string {
 		v = cloudGet(w, "word")
 	}
 	s, _ := v.AsString()
-	return strings.Trim(s, markupcore.PHPTrimSet)
+	return strings.Trim(s, markupcore.TrimSet)
 }
 
 func deepgramWords(c *model.Cue, stored []orderedjson.Value, sameTimes, sameText bool, speaker orderedjson.Value) []orderedjson.Value {

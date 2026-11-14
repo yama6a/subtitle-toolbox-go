@@ -132,7 +132,7 @@ func TestVersion2HeaderEmptyValueDeletesMetadata(t *testing.T) {
 	assert.Empty(t, header(s))
 }
 
-// PHP stores the tags 0, 1 and so on as a list, so library JSON writes an array.
+// The tags 0, 1 and so on form a list, so library JSON writes an array.
 func TestHeaderOfNumberedTagsIsAList(t *testing.T) {
 	t.Parallel()
 

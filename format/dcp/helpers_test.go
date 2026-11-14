@@ -15,7 +15,7 @@ import (
 
 const ms = time.Millisecond
 
-// smpteReel wraps subtitles in an SMPTE root at 25 fps, as the PHP parser tests do.
+// smpteReel wraps subtitles in an SMPTE root at 25 fps.
 func smpteReel(subtitles string) string {
 	return `<SubtitleReel xmlns="http://www.smpte-ra.org/schemas/428-7/2014/DCST"><EditRate>25 1</EditRate><TimeCodeRate>25</TimeCodeRate>` +
 		`<SubtitleList>` + subtitles + `</SubtitleList></SubtitleReel>`

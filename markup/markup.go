@@ -13,8 +13,7 @@ func KeepTags(text string, names ...string) string {
 	return markupcore.KeepTags(text, names...)
 }
 
-// DecodeEntities decodes the entities of text, such as &lt;, &eacute; or &#233;, as PHP html_entity_decode does with
-// ENT_QUOTES and ENT_HTML5. A named entity needs its ";". A numeric entity decodes only to a code point that HTML5
+// DecodeEntities decodes the entities of text, such as &lt;, &eacute; or &#233;. It decodes the HTML5 named entities and the numeric entities. A named entity needs its ";". A numeric entity decodes only to a code point that HTML5
 // allows in a document, so &#13; and &#128; stay as written.
 func DecodeEntities(text string) string {
 	return markupcore.DecodeEntities(text)

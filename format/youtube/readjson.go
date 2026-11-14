@@ -162,7 +162,7 @@ func entry(list []orderedjson.Value, id orderedjson.Value) (orderedjson.Value, b
 	return orderedjson.Value{}, false
 }
 
-// emptyValue reports whether v is empty as PHP empty() says: null, false, 0, "", "0" and an empty list.
+// emptyValue reports whether v is empty: null, false, 0, "", "0" and an empty list.
 func emptyValue(v orderedjson.Value) bool {
 	switch v.Kind() {
 	case orderedjson.Null:

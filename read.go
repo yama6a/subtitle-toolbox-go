@@ -69,7 +69,7 @@ func Parse(r io.ReaderAt, size int64, opts ReadOptions) (*Subtitle, ReadInfo, er
 	return parse(r, size, "", nil, opts)
 }
 
-// noFormat is the PHP message of a read whose format detection found nothing.
+// noFormat is the message of a read whose format detection found nothing.
 const noFormat = "Format detection found no subtitle format."
 
 // parse reads the input. path is "" for Parse, which has no extension to fall back to. open is nil for Parse, which
@@ -386,7 +386,7 @@ func unknownFormat(f Format) error {
 	return unsupported("The format " + strconv.Quote(string(f)) + " is unknown.")
 }
 
-// unsupported keeps msg as the full sentence of the PHP library, as docs/errors.md says.
+// unsupported keeps msg as the full sentence, as docs/errors.md says.
 func unsupported(msg string) error {
 	return fmt.Errorf("%w: %s", ErrUnsupportedFormat, msg)
 }

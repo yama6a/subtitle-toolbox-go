@@ -25,7 +25,7 @@ func PlainText(text string) string {
 
 // VisibleText returns PlainText trimmed, for example "Hi & bye" for "<i>Hi</i> &amp; bye ".
 func VisibleText(text string) string {
-	return strings.Trim(PlainText(text), PHPTrimSet)
+	return strings.Trim(PlainText(text), TrimSet)
 }
 
 // VisibleLength returns the number of characters of VisibleText, counted as grapheme.Count does.
@@ -74,7 +74,7 @@ func RubyAsText(text string) string {
 	if !strings.Contains(ASCIILower(text), "<ruby") {
 		return text
 	}
-	// PHP ends an open ruby with $, which matches before a final LF.
+	// An open ruby ends with $ in the PCRE sense, which matches before a final LF.
 	body, lf := strings.CutSuffix(text, "\n")
 	var b strings.Builder
 	copied := 0
@@ -98,10 +98,10 @@ func rubyText(ruby string) string {
 		if loc := rtEndRegexp.FindStringIndex(part); loc != nil {
 			annotation, base = part[:loc[0]], part[loc[1]:]
 		}
-		if annotation = strings.Trim(annotation, PHPTrimSet); annotation == "" {
+		if annotation = strings.Trim(annotation, TrimSet); annotation == "" {
 			text += base
 		} else {
-			text = strings.TrimRight(text, PHPTrimSet) + " (" + annotation + ")" + base
+			text = strings.TrimRight(text, TrimSet) + " (" + annotation + ")" + base
 		}
 	}
 	return text
@@ -109,7 +109,7 @@ func rubyText(ruby string) string {
 
 // ToSingleLine trims text and joins its lines with a space, for formats that hold one line per cue.
 func ToSingleLine(text string) string {
-	return lineBreakRegexp.ReplaceAllLiteralString(strings.Trim(text, PHPTrimSet), " ")
+	return lineBreakRegexp.ReplaceAllLiteralString(strings.Trim(text, TrimSet), " ")
 }
 
 // Words splits text without tags at white space as IsSpace defines it. Invalid UTF-8 splits at ASCII white space.
@@ -141,7 +141,7 @@ func Speaker(text string) (string, bool) {
 	if m == nil {
 		return "", false
 	}
-	return strings.Trim(DecodeEntities(m[2]), PHPTrimSet), true
+	return strings.Trim(DecodeEntities(m[2]), TrimSet), true
 }
 
 // AddSpeaker puts the <v> tag of name before the first line that holds more than white space, and trims the left
@@ -152,8 +152,8 @@ func AddSpeaker(lines []string, name string) []string {
 		return lines
 	}
 	for i, line := range lines {
-		if strings.Trim(line, PHPTrimSet) != "" {
-			lines[i] = VoiceTag(name, "") + strings.TrimLeft(line, PHPTrimSet)
+		if strings.Trim(line, TrimSet) != "" {
+			lines[i] = VoiceTag(name, "") + strings.TrimLeft(line, TrimSet)
 			break
 		}
 	}

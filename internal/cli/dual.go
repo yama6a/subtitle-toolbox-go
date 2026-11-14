@@ -134,7 +134,7 @@ func (d *dualCommand) prepareOptions(a *args) error {
 	d.opts.Mode = dual.Mode(mode)
 	style, hasStyle := a.Value("secondary-style")
 	if hasStyle && style == "" {
-		// The library reads an empty SecondaryStyle as no style, but PHP rejects an empty --secondary-style.
+		// The library reads an empty SecondaryStyle as no style, but the CLI rejects an empty --secondary-style.
 		return usage(`The secondary style  must be a core markup tag such as i or font color="#ffff00".`)
 	}
 	d.opts.SecondaryStyle = style

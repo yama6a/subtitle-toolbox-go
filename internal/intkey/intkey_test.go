@@ -1,11 +1,11 @@
-package phpkey_test
+package intkey_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/phpkey"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
 )
 
 func TestIsIntKey(t *testing.T) {
@@ -41,7 +41,7 @@ func TestIsIntKey(t *testing.T) {
 		t.Run(tt.key, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, phpkey.IsIntKey(tt.key))
+			assert.Equal(t, tt.want, intkey.IsIntKey(tt.key))
 		})
 	}
 }
@@ -53,7 +53,7 @@ func BenchmarkIsIntKey(b *testing.B) {
 			b.ReportAllocs()
 
 			for b.Loop() {
-				phpkey.IsIntKey(key)
+				intkey.IsIntKey(key)
 			}
 		})
 	}

@@ -106,7 +106,7 @@ var commandRegexp = regexp.MustCompile(`^\$([A-Za-z0-9]+)[ \t]*=[ \t]*(.*?)[ \t]
 // apply changes s as the command of line says. $Bold, $Italic and $Underlined take True or False. $HorzAlign takes
 // Left, Center or Right and $VertAlign takes Top, Center or Bottom. Another line or value leaves s as it is.
 func (s *style) apply(line string) {
-	m := commandRegexp.FindStringSubmatch(strings.Trim(line, markupcore.PHPTrimSet))
+	m := commandRegexp.FindStringSubmatch(strings.Trim(line, markupcore.TrimSet))
 	if m == nil {
 		return
 	}

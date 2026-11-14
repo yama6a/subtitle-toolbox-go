@@ -12,7 +12,7 @@ var legacyAlignments = map[string]int{
 }
 
 // Alignment returns the numpad alignment of an \an or \a tag, for example 8 for `\an8` and for `\a6`.
-// It returns false for another tag. One final LF after the tag passes, as the PHP pattern end $ allows it.
+// It returns false for another tag. One final LF after the tag passes, as the PCRE pattern end $ allows it.
 func Alignment(tag string) (numpad int, ok bool) {
 	tag = strings.TrimSuffix(tag, "\n")
 	if n, ok := strings.CutPrefix(tag, `\an`); ok {

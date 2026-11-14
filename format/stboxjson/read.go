@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/phpkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -38,7 +38,7 @@ func (r *reader) fail(msg string, block int, entry any) error {
 	return r.st.Fail(parseError(msg), model.NoLine, block, lines)
 }
 
-// sortWarnings sorts warnings by block with a stable sort, where NoBlock counts as block 0, as PHP sorts them.
+// sortWarnings sorts warnings by block with a stable sort, where NoBlock counts as block 0.
 // The warnings of the text pre-pass have no block and come first, so they stay first.
 func sortWarnings(warnings []model.ParseWarning) []model.ParseWarning {
 	slices.SortStableFunc(warnings, func(a, b model.ParseWarning) int { return cmp.Compare(max(a.Block, 0), max(b.Block, 0)) })
@@ -67,9 +67,9 @@ func (r *reader) read(content []byte) (*model.Subtitle, error) {
 	return r.subtitle(root, skipped)
 }
 
-// normalize turns each list that PHP reads as an object into an object with the keys "0", "1" and so on:
+// normalize turns each list at these places into an object with the keys "0", "1" and so on:
 // the metadata, the format data and the data of one format. A cue or comment that is a list stays one until its
-// check, so a warning shows it as a list, as PHP does.
+// check, so a warning shows it as a list.
 func normalize(root *model.Data) {
 	listToObject(root, "metadata")
 	normalizeFormatData(root)
@@ -204,7 +204,7 @@ func decodeBinaryObject(d *model.Data, path string) (any, string) {
 	return out, ""
 }
 
-// decodeBase64 decodes s as PHP base64_decode in strict mode does: it skips space, tab, CR and LF, and accepts
+// decodeBase64 decodes base64 in strict mode: it skips space, tab, CR and LF, and accepts
 // the padding either complete or left out.
 func decodeBase64(s string) ([]byte, bool) {
 	s = strings.Map(func(r rune) rune {
@@ -221,9 +221,9 @@ func decodeBase64(s string) ([]byte, bool) {
 	return b, err == nil
 }
 
-// keyPath returns the path of key in the object at path. A key that PHP reads as an integer gets the list form.
+// keyPath returns the path of key in the object at path. A key that reads as an integer gets the list form.
 func keyPath(path, key string) string {
-	if phpkey.IsIntKey(key) {
+	if intkey.IsIntKey(key) {
 		return path + "[" + key + "]"
 	}
 	return path + "." + key
@@ -284,7 +284,7 @@ func checkBound(i int, key string, n number, ok bool) string {
 	return message(err)
 }
 
-// orderTimes compares the float values, as PHP does, where parsing.State.OrderedTimes compares durations.
+// orderTimes compares the float values, where parsing.State.OrderedTimes compares durations.
 // Lenient mode swaps the times of a reversed cue that then lasts parsing.MaxSwappedDuration or less.
 func (r *reader) orderTimes(cue *model.Data, i int, start, end number) string {
 	msg := "The cue ends at " + timecode.Number(end.f) + " s, before it starts at " + timecode.Number(start.f) + " s."
@@ -297,7 +297,7 @@ func (r *reader) orderTimes(cue *model.Data, i int, start, end number) string {
 	return ""
 }
 
-// stringLines returns the strings of the lines of cue. PHP checks their word timestamps before it checks the lines.
+// stringLines returns the strings of the lines of cue. The word timestamps are checked before the lines.
 func stringLines(cue *model.Data) []string {
 	lines, _ := cue.List("lines")
 	var out []string
@@ -317,7 +317,8 @@ func message(err error) string {
 	return perr.Msg
 }
 
-// finite returns v as a number when it is a JSON number with a finite float64 value. PHP reads 1e400 as INF.
+// finite returns v as a number when it is a JSON number with a finite float64 value.
+// A literal such as 1e400 reads as infinite and gives false.
 func finite(v any, _ bool) (number, bool) {
 	text, ok := v.(json.Number)
 	if !ok {
@@ -327,7 +328,7 @@ func finite(v any, _ bool) (number, bool) {
 	return number{text, f}, !math.IsInf(f, 0)
 }
 
-// integer returns v when it is a number literal without fraction and exponent that fits an int64, as PHP reads an int.
+// integer returns v when it is a number literal without fraction and exponent that fits an int64.
 func integer(v any) (int64, bool) {
 	text, ok := v.(json.Number)
 	if !ok || strings.ContainsAny(string(text), ".eE") {
@@ -377,7 +378,7 @@ func toModelData(d *model.Data) *model.Data {
 	return out
 }
 
-// subtitle runs the document steps of PHP ArrayReader on the decoded tree.
+// subtitle runs the document steps on the decoded tree.
 func (r *reader) subtitle(root *model.Data, skipped map[int]bool) (*model.Subtitle, error) {
 	if err := checkVersion(root); err != nil {
 		return nil, err
@@ -442,7 +443,7 @@ func checkVersion(root *model.Data) error {
 	return nil
 }
 
-// object treats a missing key and null as an empty object, as the PHP ?? operator does.
+// object treats a missing key and null as an empty object.
 func object(d *model.Data, key string) (*model.Data, bool) {
 	v, _ := d.Get(key)
 	switch v := v.(type) {
@@ -767,7 +768,7 @@ func imageFields(im *model.Image, d *model.Data, path string) string {
 	return ""
 }
 
-// addAlignment adds the numpad alignment to vtt and ttml cue data that has none. PHP 3.x stored no alignment there,
+// addAlignment adds the numpad alignment to vtt and ttml cue data that has none. Older files stored no alignment there,
 // and the writers drop a stored position without it.
 func addAlignment(data *model.Data, key string, a model.Alignment) {
 	if key != string(model.WebVTT) && key != string(model.TTML) || data.Len() == 0 || a == model.BottomCenter {

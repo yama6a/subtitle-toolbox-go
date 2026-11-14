@@ -26,6 +26,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 15,
+                    "column": 1,
+                    "grid": {
+                        "rows": 15,
+                        "columns": 32
+                    }
+                },
                 "formatData": {
                     "scc": {
                         "mode": "roll-up",
@@ -46,6 +54,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 15,
+                    "column": 1,
+                    "grid": {
+                        "rows": 15,
+                        "columns": 32
+                    }
+                },
                 "formatData": {
                     "scc": {
                         "mode": "roll-up",
@@ -67,6 +83,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 14,
+                    "column": 1,
+                    "grid": {
+                        "rows": 15,
+                        "columns": 32
+                    }
+                },
                 "formatData": {
                     "scc": {
                         "mode": "roll-up",
@@ -91,6 +115,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 13,
+                    "column": 1,
+                    "grid": {
+                        "rows": 15,
+                        "columns": 32
+                    }
+                },
                 "formatData": {
                     "scc": {
                         "mode": "roll-up",
@@ -117,6 +149,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 13,
+                    "column": 1,
+                    "grid": {
+                        "rows": 15,
+                        "columns": 32
+                    }
+                },
                 "formatData": {
                     "scc": {
                         "mode": "roll-up",
@@ -143,6 +183,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 13,
+                    "column": 1,
+                    "grid": {
+                        "rows": 15,
+                        "columns": 32
+                    }
+                },
                 "formatData": {
                     "scc": {
                         "mode": "roll-up",
@@ -168,6 +216,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 14,
+                    "column": 1,
+                    "grid": {
+                        "rows": 15,
+                        "columns": 32
+                    }
+                },
                 "formatData": {
                     "scc": {
                         "mode": "roll-up",

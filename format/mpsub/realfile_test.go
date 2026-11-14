@@ -16,8 +16,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-const phpNote = "NOTE=Created with the PHP Subtitle Toolbox (https://github.com/yama6a/subtitle-toolbox-php)\n"
-
 func readFile(t *testing.T, rel string) *model.Subtitle {
 	t.Helper()
 
@@ -91,8 +89,7 @@ func TestExpectedWriterOutputReadsBack(t *testing.T) {
 }
 
 // Ports testSubtitleIsFormattedCorrectlyAndXmlTagsAreStripped and testFrameRateOptionWritesFrames of
-// tests/Formatters/MpSubFormatterTest.php of subtitle-toolbox-php. The expected files hold the PHP NOTE line,
-// which the Go default replaces.
+// tests/Formatters/MpSubFormatterTest.php of subtitle-toolbox-php.
 func TestWriteSubRipAsMPSub(t *testing.T) {
 	t.Parallel()
 
@@ -111,15 +108,13 @@ func TestWriteSubRipAsMPSub(t *testing.T) {
 		t.Run(tt.file, func(t *testing.T) {
 			t.Parallel()
 
-			want := strings.Replace(string(testfiles.Read(t, tt.file)), phpNote, goNote, 1)
-			require.NotContains(t, want, "PHP")
-			assert.Equal(t, want, write(t, s, model.CommonWriteOptions{}, tt.opts))
+			assert.Equal(t, string(testfiles.Read(t, tt.file)), write(t, s, model.CommonWriteOptions{}, tt.opts))
 		})
 	}
 }
 
 // Ports testEmptyCuesAndLinesAreSkippedSoTheOutputReadsBack of tests/Formatters/MpSubFormatterTest.php of
-// subtitle-toolbox-php. The third PHP file, validation/own_netflix_checks.srt, is not in this repository, so its
+// subtitle-toolbox-php. The third file, validation/own_netflix_checks.srt, is not in this repository, so its
 // cue of empty tags is built here.
 func TestEmptyCuesAndLinesAreSkippedSoTheOutputReadsBack(t *testing.T) {
 	t.Parallel()

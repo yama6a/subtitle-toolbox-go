@@ -26,7 +26,7 @@ const (
 // yccEntry is the Y, Cr, Cb code and the alpha of a palette entry.
 type yccEntry [4]byte
 
-// testPalette holds the palette of the PHP fixtures, plus a half transparent white. Yellow is 254, 255, 0 in BT.709.
+// testPalette holds the palette of the fixtures, plus a half transparent white. Yellow is 254, 255, 0 in BT.709.
 var testPalette = map[byte]yccEntry{
 	transparent: {16, 128, 128, 0},
 	white:       {235, 128, 128, 255},
@@ -59,7 +59,7 @@ type obj struct {
 	version byte
 }
 
-// builder writes the segments of a PGS stream, as the fixture writer of the PHP library does.
+// builder writes the segments of a PGS stream.
 type builder struct{ bytes.Buffer }
 
 func (b *builder) segment(pts uint32, typ byte, data []byte) *builder {

@@ -3,8 +3,8 @@
     "subtitle": {
         "version": 1,
         "metadata": {
-            "title": "Météo du port",
-            "language": "fr"
+            "language": "fr",
+            "title": "Météo du port"
         },
         "comments": [],
         "formatData": {
@@ -62,6 +62,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 14,
+                    "column": 0,
+                    "grid": {
+                        "rows": 16,
+                        "columns": 38
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 0,
@@ -83,6 +91,14 @@
                 ],
                 "identifier": null,
                 "alignment": 8,
+                "position": {
+                    "row": 1,
+                    "column": 0,
+                    "grid": {
+                        "rows": 16,
+                        "columns": 38
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 0,
@@ -105,6 +121,14 @@
                 ],
                 "identifier": null,
                 "alignment": 4,
+                "position": {
+                    "row": 8,
+                    "column": 0,
+                    "grid": {
+                        "rows": 16,
+                        "columns": 38
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 0,
@@ -126,6 +150,14 @@
                 ],
                 "identifier": null,
                 "alignment": 3,
+                "position": {
+                    "row": 14,
+                    "column": 0,
+                    "grid": {
+                        "rows": 16,
+                        "columns": 38
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 1,
@@ -148,6 +180,14 @@
                 ],
                 "identifier": null,
                 "alignment": null,
+                "position": {
+                    "row": 13,
+                    "column": 0,
+                    "grid": {
+                        "rows": 16,
+                        "columns": 38
+                    }
+                },
                 "formatData": {
                     "stl": {
                         "subtitleGroupNumber": 1,

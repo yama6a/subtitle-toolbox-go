@@ -37,7 +37,7 @@ func (c *wordCounter) sorted() []WordCount {
 }
 
 // normalize strips the punctuation and symbols around a word and makes it lower case with the full Unicode
-// mapping, as PHP mb_strtolower does. A word that is not valid UTF-8 gets ASCII punctuation and ASCII letters only.
+// mapping. A word that is not valid UTF-8 gets ASCII punctuation and ASCII letters only.
 func normalize(word string, lower cases.Caser) string {
 	if utf8.ValidString(word) {
 		return lower.String(strings.TrimFunc(word, isPunctuationOrSymbol))

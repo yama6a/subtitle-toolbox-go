@@ -4,4 +4,4 @@ Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5
 
 | File | Source | License |
 |:--- |:--- |:--- |
-| `own_out_of_range_number.json` | Written for this repository from `real/openai_api_verbose_json_french.json`. Segment 1 has no `start`, and its `avg_logprob` is `1e400`, a number beyond the range of a PHP float | MIT |
+| `own_out_of_range_number.json` | Written for this repository from `real/openai_api_verbose_json_french.json`. Segment 1 has no `start`, and its `avg_logprob` is `1e400`, a number beyond the range of a float64 | MIT |

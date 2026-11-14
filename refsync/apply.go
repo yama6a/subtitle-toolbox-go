@@ -66,7 +66,7 @@ func endBeforeLaterSegments(cues []model.Cue, members [][]int) {
 	}
 }
 
-// applyOne scales and then shifts s, as PHP does. The check comes first, so a shift that fails after the scale
+// applyOne scales and then shifts s. The check comes first, so a shift that fails after the scale
 // cannot leave s half retimed.
 func applyOne(s *model.Subtitle, seg Segment) error {
 	if seg.Scale != 1 && seg.Offset > 0 {

@@ -85,7 +85,7 @@ func ParseIndex(idx []byte) (Index, error) {
 	}
 	var p parser
 	for _, line := range text[1:] {
-		line = strings.Trim(line, markupcore.PHPTrimSet)
+		line = strings.Trim(line, markupcore.TrimSet)
 		if line == "" || line[0] == '#' || !strings.Contains(line, ":") {
 			continue
 		}
@@ -126,9 +126,9 @@ func (p *parser) finish() (Index, error) {
 
 func (p *parser) parseLine(line string) error {
 	key, value, _ := strings.Cut(line, ":")
-	value = strings.Trim(value, markupcore.PHPTrimSet)
+	value = strings.Trim(value, markupcore.TrimSet)
 	var err error
-	switch strings.ToLower(strings.Trim(key, markupcore.PHPTrimSet)) {
+	switch strings.ToLower(strings.Trim(key, markupcore.TrimSet)) {
 	case "size":
 		err = p.parseSize(value, line)
 	case "palette":
@@ -209,7 +209,7 @@ func parseColors(value string, count int, line string) ([]uint32, error) {
 	parts := strings.Split(value, ",")
 	colors := make([]uint32, 0, count)
 	for _, part := range parts {
-		part = strings.Trim(part, markupcore.PHPTrimSet)
+		part = strings.Trim(part, markupcore.TrimSet)
 		if !colorRegexp.MatchString(part) {
 			break
 		}
@@ -226,7 +226,7 @@ func (p *parser) parseID(value, line string) error {
 	m := idRegexp.FindStringSubmatch(value)
 	if m != nil {
 		if n, err := strconv.Atoi(m[2]); err == nil && n <= MaxTrackIndex {
-			p.ix.Tracks = append(p.ix.Tracks, Track{ID: strings.Trim(m[1], markupcore.PHPTrimSet), Index: n})
+			p.ix.Tracks = append(p.ix.Tracks, Track{ID: strings.Trim(m[1], markupcore.TrimSet), Index: n})
 			p.delay = 0
 			return nil
 		}
@@ -265,7 +265,7 @@ func (p *parser) parseEntry(value, line string) error {
 
 // parseTime reads h:mm:ss and 1 to 3 digits of milliseconds after one of ":.,". Line is the text of the error.
 func parseTime(value, line string) (time.Duration, error) {
-	m := timeRegexp.FindStringSubmatch(strings.Trim(value, markupcore.PHPTrimSet))
+	m := timeRegexp.FindStringSubmatch(strings.Trim(value, markupcore.TrimSet))
 	if m == nil {
 		return 0, parseError(`The .idx time "` + line + `" is not valid.`)
 	}

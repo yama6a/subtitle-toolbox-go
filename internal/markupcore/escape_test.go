@@ -18,7 +18,7 @@ func TestDecodeEntities(t *testing.T) {
 		{"&lt;b&gt;1 &amp; 2&lt;/b&gt; &quot;it&#39;s&quot;", `<b>1 & 2</b> "it's"`},
 		{"Caf&eacute; &nbsp;", "Caf\u00e9 \u00a0"},
 		{"plain & simple", "plain & simple"},
-		// The rows below are measured on PHP 8.5 with html_entity_decode(ENT_QUOTES | ENT_HTML5).
+		// The expected values come from PHP 8.5 html_entity_decode(ENT_QUOTES | ENT_HTML5).
 		{"&#9;", "\t"},
 		{"&#12;", "\f"},
 		{"&#160;", "\u00a0"},

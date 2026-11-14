@@ -21,7 +21,7 @@ func CEA708Service(service int, cea608Only bool) int {
 // it returns the cues of the CEA-608 field 1 pairs, read with opts.
 // The CEA-708 cues hold only the alignment of the window anchor, and no offset.
 //
-//nolint:revive // the name comes from the issue and the PHP class
+//nolint:revive // the name comes from the issue
 func CaptionDataCues(frames []cea708.Frame, service int, opts CEA608Options, lastCueDuration time.Duration) []model.Cue {
 	if service != 0 {
 		if cues := cea708Cues(cea708.NewDecoder(service).Decode(frames), lastCueDuration); len(cues) > 0 {

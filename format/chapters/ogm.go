@@ -45,7 +45,7 @@ func ReadOGM(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*mo
 	var start time.Duration
 	pending := false
 	for i, line := range physicalLines(string(content)) {
-		line = strings.Trim(line, markupcore.PHPTrimSet)
+		line = strings.Trim(line, markupcore.TrimSet)
 		if line == "" {
 			continue
 		}

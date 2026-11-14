@@ -299,7 +299,7 @@ func (w *writer) finish() string {
 
 func (p cuePlan) highlight(active int, opts Options) []string {
 	first, last := window(active, p.n, opts.MaxWordsPerCue)
-	style := strings.Trim(opts.style(), markupcore.PHPTrimSet)
+	style := strings.Trim(opts.style(), markupcore.TrimSet)
 
 	write := func(ln *line) string {
 		w := writer{openTag: "<" + style + ">", closeTag: "</" + markupcore.TagName(style) + ">"}

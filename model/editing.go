@@ -92,7 +92,7 @@ func (s *Subtitle) Slice(from, to time.Duration, moveToZero bool) (*Subtitle, er
 			c.Start, c.End = c.Start.Round(time.Millisecond), c.End.Round(time.Millisecond)
 			return true
 		}
-		// PHP subtracts from before it rounds, so a from of 2.0005 s turns a start of 2.0005 s into 0, not 0.001 s.
+		// The shift subtracts from before it rounds, so a from of 2.0005 s turns a start of 2.0005 s into 0, not 0.001 s.
 		c.Start, c.End = toZero.at(c.Start), toZero.at(c.End)
 		c.moveWords(toZero.at)
 		return true
@@ -326,7 +326,7 @@ func speakers(c Cue) []string {
 		names = append(names, c.Speaker)
 	}
 	for _, m := range matches {
-		names = append(names, strings.Trim(m[2], markupcore.PHPTrimSet))
+		names = append(names, strings.Trim(m[2], markupcore.TrimSet))
 	}
 	slices.Sort(names)
 	return slices.Compact(names)
@@ -412,5 +412,5 @@ func sameValue(a, b any) bool {
 }
 
 func cueDoesNotExist(action string, i int) error {
-	return fmt.Errorf("%w: Cannot %s cue %d: the cue does not exist.", ErrCueNotFound, action, i) //nolint:revive,staticcheck // the message is the PHP sentence, as docs/errors.md says
+	return fmt.Errorf("%w: Cannot %s cue %d: the cue does not exist.", ErrCueNotFound, action, i) //nolint:revive,staticcheck // the message is a full sentence, as docs/errors.md says
 }

@@ -11,24 +11,24 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
 
-// phpSpace holds the white space that a PHP numeric string may have at both ends.
-const phpSpace = " \t\n\r\v\f"
+// numberSpace holds the white space that a numeric string may have at both ends.
+const numberSpace = " \t\n\r\v\f"
 
-// maxIntDigits keeps a whole number below the int64 limit, as PHP keeps it below PHP_INT_MAX.
+// maxIntDigits keeps a whole number below the int64 limit.
 const maxIntDigits = 18
 
 var (
-	// numberPattern is the PHP numeric string. strconv.ParseFloat alone also takes "inf", "nan" and hexadecimal.
+	// numberPattern is a numeric string. strconv.ParseFloat alone also takes "inf", "nan" and hexadecimal.
 	numberPattern = regexp.MustCompile(`^[ \t\n\r\v\f]*[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?[ \t\n\r\v\f]*$`)
 	intPattern    = regexp.MustCompile(`^-?[0-9]+$`)
 )
 
-// parseNumber returns the value of a PHP numeric string, which may be infinite, such as "1e999".
+// parseNumber returns the value of a numeric string, which may be infinite, such as "1e999".
 func parseNumber(s string) (float64, bool) {
 	if !numberPattern.MatchString(s) {
 		return 0, false
 	}
-	f, _ := strconv.ParseFloat(strings.Trim(s, phpSpace), 64)
+	f, _ := strconv.ParseFloat(strings.Trim(s, numberSpace), 64)
 	return f, true
 }
 
@@ -178,7 +178,7 @@ func (a *args) wholeNumber(name string, lo, hi int64, bounds string) (int64, boo
 }
 
 // Choice returns the entry of allowed that the value of the option name matches in any ASCII case.
-// strings.EqualFold would also fold U+017F and U+212A, which PHP strcasecmp does not.
+// strings.EqualFold would also fold U+017F and U+212A, which this check must not.
 func (a *args) Choice(name string, allowed ...string) (string, bool, error) {
 	v, ok := a.Value(name)
 	if !ok {
@@ -218,7 +218,7 @@ func asciiLower(s string) string {
 	return string(b)
 }
 
-// quote puts v in double quotes as written, as the PHP messages do.
+// quote puts v in double quotes as written.
 func quote(v string) string {
 	return `"` + v + `"`
 }

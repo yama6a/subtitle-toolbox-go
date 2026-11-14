@@ -194,7 +194,7 @@ func TestOfGapCountsFromTheLatestEndOfTheEarlierCues(t *testing.T) {
 	assertDurationRange(t, &stats.DurationRange{Min: -8 * time.Second, Average: -3 * time.Second, Max: 2 * time.Second}, got.Gaps)
 }
 
-func TestOfLinesAndWordsOfPortedPHPTests(t *testing.T) {
+func TestOfLinesAndWords(t *testing.T) {
 	t.Parallel()
 
 	t.Run("visible characters", func(t *testing.T) {
@@ -234,7 +234,7 @@ func TestOfMostUsedWords(t *testing.T) {
 		{"an entity is decoded", []string{"AT&amp;T at&amp;t"}, 2, words("at&t", 2)},
 		{"lines join with a space", []string{"Hello", "hello"}, 2, words("hello", 2)},
 		{"no break space and ideographic space split", []string{"one\u00a0two\u3000three\u2028four"}, 4, words("one", 1, "two", 1, "three", 1, "four", 1)},
-		{"mongolian vowel separator splits as in PHP", []string{"one\u180etwo"}, 2, words("one", 1, "two", 1)},
+		{"mongolian vowel separator splits", []string{"one\u180etwo"}, 2, words("one", 1, "two", 1)},
 		{"zero width space does not split", []string{"one\u200btwo"}, 1, words("one\u200btwo", 1)},
 	}
 	for _, tt := range tests {

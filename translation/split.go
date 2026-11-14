@@ -56,7 +56,7 @@ func noSpaceScript(c string) bool {
 }
 
 func isSpaceCharacter(c string) bool {
-	return len(c) == 1 && strings.IndexByte(markupcore.PHPTrimSet, c[0]) >= 0
+	return len(c) == 1 && strings.IndexByte(markupcore.TrimSet, c[0]) >= 0
 }
 
 // split cuts tokens into one piece per weight, in proportion to the weights.
@@ -154,7 +154,7 @@ func distributeText(out [][]token, text string, cuts []int, piece, offset int) (
 }
 
 // removeLast removes the last number from open. A number is in open at most once, because the codec numbers
-// each tag pair once, so this is the match that PHP removes.
+// each tag pair once, so this is the only match.
 func removeLast(open []int, number int) []int {
 	for k := len(open) - 1; k >= 0; k-- {
 		if open[k] == number {

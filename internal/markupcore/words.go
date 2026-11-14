@@ -33,7 +33,7 @@ type Match struct{ Start, End int }
 type Mark struct{ Line, Offset int }
 
 // CleanLines cleans each line, as Cue.SetText does, and drops the lines that stay empty. A clean line has LF
-// and CR turned into one form, runs of spaces and tabs collapsed, and no PHP trim character at either end.
+// and CR turned into one form, runs of spaces and tabs collapsed, and no TrimSet character at either end.
 func CleanLines(lines []string) []string {
 	var out []string
 	for _, l := range lines {
@@ -46,7 +46,7 @@ func CleanLines(lines []string) []string {
 
 // CleanLine cleans one line as CleanLines does.
 func CleanLine(s string) string {
-	return strings.Trim(collapseRuns(NormalizeLineEnds(s)), PHPTrimSet)
+	return strings.Trim(collapseRuns(NormalizeLineEnds(s)), TrimSet)
 }
 
 func collapseRuns(s string) string {
@@ -515,7 +515,7 @@ type voiceScan struct {
 }
 
 func (v *voiceScan) text(part string) {
-	if strings.Trim(part, PHPTrimSet) != "" {
+	if strings.Trim(part, TrimSet) != "" {
 		v.visibleAfterClose = v.visibleAfterClose || v.closed
 		v.closed = false
 	}
@@ -531,7 +531,7 @@ func (v *voiceScan) tag(part string, canStart bool) bool {
 	if m == nil {
 		return true
 	}
-	t := Voice{Name: strings.Trim(DecodeEntities(m[2]), PHPTrimSet), Class: m[1]}
+	t := Voice{Name: strings.Trim(DecodeEntities(m[2]), TrimSet), Class: m[1]}
 	switch {
 	case v.voice.Name == "" && canStart:
 		v.voice = t

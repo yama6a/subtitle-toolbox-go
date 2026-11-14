@@ -26,7 +26,7 @@ func StartRegexp(rootPattern string) *regexp.Regexp {
 // and "<". Line breaks replace that text after the XML declaration, so a parser still reports the line numbers of
 // the file. It returns the new content and the removed text without white space at its ends.
 func SkipLeadingText(content string, start *regexp.Regexp) (repaired, skipped string) {
-	trimmed := strings.TrimLeft(content, markupcore.PHPTrimSet)
+	trimmed := strings.TrimLeft(content, markupcore.TrimSet)
 	at := len(content) - len(trimmed)
 	if !strings.HasPrefix(trimmed, "<") {
 		loc := start.FindStringIndex(content)
@@ -44,10 +44,10 @@ func SkipLeadingText(content string, start *regexp.Regexp) (repaired, skipped st
 	content = content[at:]
 	if strings.HasPrefix(content, "<?xml") {
 		if end := strings.Index(content, "?>"); end >= 0 {
-			return content[:end+2] + breaks + content[end+2:], strings.Trim(prefix, markupcore.PHPTrimSet)
+			return content[:end+2] + breaks + content[end+2:], strings.Trim(prefix, markupcore.TrimSet)
 		}
 	}
-	return breaks + content, strings.Trim(prefix, markupcore.PHPTrimSet)
+	return breaks + content, strings.Trim(prefix, markupcore.TrimSet)
 }
 
 // LeadingText returns the line where the text skipped by SkipLeadingText starts, its lines, and the message

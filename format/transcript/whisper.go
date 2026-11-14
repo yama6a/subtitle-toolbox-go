@@ -23,7 +23,7 @@ const whisperKey = string(model.Whisper)
 // DetectWhisper reports whether content is a JSON object with a segments list or a transcription list.
 // stbox.Detect runs the same check after the library JSON check.
 func DetectWhisper(content []byte) bool {
-	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.PHPTrimSet)
+	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.TrimSet)
 	root, err := orderedjson.Decode(content)
 	if err != nil || root.Kind() != orderedjson.Object {
 		return false

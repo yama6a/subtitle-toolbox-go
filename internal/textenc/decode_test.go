@@ -165,7 +165,7 @@ func TestShiftJISKeepsBackslashes(t *testing.T) {
 }
 
 // Ports testUtf16WithoutBomKeepsAnExplicitUtf16SourceEncoding of tests/EncodingTest.php of subtitle-toolbox-php.
-// glibc iconv, and so PHP, reads UTF-16 without a BOM as little endian on x86-64 and arm64.
+// glibc iconv reads UTF-16 without a BOM as little endian on x86-64 and arm64.
 func TestDecodeNamedUTF16WithoutBOM(t *testing.T) {
 	t.Parallel()
 
