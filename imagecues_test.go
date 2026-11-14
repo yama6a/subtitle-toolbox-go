@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func imageCue(start, end time.Duration, lines ...string) stbox.Cue {
@@ -31,6 +32,9 @@ func subtitleOfCues(t *testing.T, comment int, cues ...stbox.Cue) *stbox.Subtitl
 	s := &stbox.Subtitle{}
 	s.AddCues(cues...)
 	require.NoError(t, s.AddComment("note", comment))
+	// DCP writes the clock as IssueDate when none is set, so 2 writes that span a second boundary differ.
+	header := model.NewData(model.Field{Key: "IssueDate", Value: "2026-10-12T00:00:00"})
+	require.NoError(t, s.SetFormatData("dcp", model.NewData(model.Field{Key: "header", Value: header})))
 	return s
 }
 
