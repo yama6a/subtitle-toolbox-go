@@ -147,7 +147,7 @@ func TestReadPositions(t *testing.T) {
 		{"open bottom", map[string]string{"DSC": "0", "MNR": "23"}, 20, 2, model.Position{Alignment: model.BottomCenter, Row: 21, Grid: model.Grid{Rows: 24, Columns: 40}}},
 		{"open below the grid", map[string]string{"DSC": "0", "MNR": "23"}, 30, 2, model.Position{Alignment: model.BottomCenter}},
 		{"open without MNR", map[string]string{"DSC": "0", "MNR": "", "MNC": "37"}, 20, 2, model.Position{Alignment: model.BottomCenter, Row: 21, Grid: model.Grid{Rows: 24, Columns: 37}}},
-		{"MNC read like a PHP integer", map[string]string{"DSC": "0", "MNR": "15", "MNC": "2x"}, 1, 0, model.Position{Alignment: model.TopCenter, Row: 2, Grid: model.Grid{Rows: 16, Columns: 2}}},
+		{"MNC read as its leading integer", map[string]string{"DSC": "0", "MNR": "15", "MNC": "2x"}, 1, 0, model.Position{Alignment: model.TopCenter, Row: 2, Grid: model.Grid{Rows: 16, Columns: 2}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

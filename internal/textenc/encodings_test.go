@@ -45,7 +45,7 @@ func TestLookup(t *testing.T) {
 	}
 }
 
-// TestDecoderEdges pins the x/text results where glibc iconv, and so PHP, differs. docs/encodings.md lists them.
+// TestDecoderEdges pins the x/text results where glibc iconv differs. docs/encodings.md lists them.
 func TestDecoderEdges(t *testing.T) {
 	t.Parallel()
 

@@ -14,7 +14,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-// write writes s in the format f without a BOM, as the PHP goldens are.
+// write writes s in the format f without a BOM, as the goldens are.
 func write(tb testing.TB, s *model.Subtitle, f model.Format) string {
 	tb.Helper()
 	var buf bytes.Buffer

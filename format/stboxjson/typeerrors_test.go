@@ -68,7 +68,7 @@ func TestReadInfiniteTime(t *testing.T) {
 }
 
 // Ports testBadFileFormatDataThrowsInStrictModeAndIsDroppedInLenientMode of tests/JsonTypeErrorsTest.php of
-// subtitle-toolbox-php. The PHP test also writes each format, which needs the writers of the later format issues.
+// subtitle-toolbox-php.
 func TestReadBadFileFormatData(t *testing.T) {
 	t.Parallel()
 

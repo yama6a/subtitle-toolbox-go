@@ -107,7 +107,7 @@ func TestWrite(t *testing.T) {
 			header2 + "\n25 75\nA\n\n-37 62\nB\n",
 		},
 		{
-			"an exact half frame can round down, as on PHP 8.5", 25,
+			"an exact half frame can round down", 25,
 			[]model.Cue{cue(0, 64820*ms, "A")},
 			header2 + "\n0 1620\nA\n",
 		},

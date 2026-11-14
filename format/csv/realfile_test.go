@@ -22,8 +22,7 @@ type realFile struct {
 var dubbingColumns = csv.Columns{Start: csv.ColumnNamed("Start TC"), Text: csv.ColumnNamed("Text"), Speaker: csv.ColumnNamed("Character")}
 
 // realFiles holds the cases of the realFiles provider of tests/Parsers/CsvRealFilesTest.php of subtitle-toolbox-php.
-// The PHP cases pass an empty layout, which turns the synonyms off. The files need none, so Go reads them with
-// the zero layout. The read goldens check what each file reads as.
+// The files need no synonyms, so Go reads them with the zero layout. The read goldens check what each file reads as.
 func realFiles() []realFile {
 	return []realFile{
 		{name: "mantas-done shape", file: "mantas_done_shape.csv"},

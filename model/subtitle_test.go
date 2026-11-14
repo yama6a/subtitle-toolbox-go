@@ -58,7 +58,7 @@ func TestEntryNormalization(t *testing.T) {
 			wantLines: []string{"this is a line", "with a linebreak"},
 		},
 		{
-			name:      "trim like PHP trim",
+			name:      "trim space, tab, LF, CR, NUL and VT",
 			in:        model.Cue{Lines: []string{"\x00\x0b\t a \r\n"}},
 			wantLines: []string{"a"},
 		},

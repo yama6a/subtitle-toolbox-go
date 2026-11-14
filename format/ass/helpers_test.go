@@ -17,7 +17,7 @@ import (
 const (
 	ms      = time.Millisecond
 	realDir = "ass/real"
-	// eventsHeader is the [Events] section start of the PHP tests.
+	// eventsHeader is the [Events] section start.
 	eventsHeader = "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
 	// defaultHeader is the header that the writer writes for cues of another format.
 	defaultHeader = "\xEF\xBB\xBF[Script Info]\n" +

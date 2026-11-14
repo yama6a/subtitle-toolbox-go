@@ -69,11 +69,11 @@ func TestConvertPCRE(t *testing.T) {
 	}
 }
 
-// The PHP column holds what preg_replace of PHP 8.5 writes for each TO when /(a)/ matches "a".
-func TestConvertReplacementGivesThePHPResult(t *testing.T) {
+// result is the text that the replacement writes when /(a)/ matches "a".
+func TestConvertReplacement(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct{ to, want, php string }{
+	tests := []struct{ to, want, result string }{
 		{`\1`, "${1}", "a"},
 		{`[\0]`, "[${0}]", "[a]"},
 		{`\11`, "", ""},
@@ -104,7 +104,7 @@ func TestConvertReplacementGivesThePHPResult(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 			out, err := re.Replace("a", got, -1, -1)
 			require.NoError(t, err)
-			assert.Equal(t, tt.php, out)
+			assert.Equal(t, tt.result, out)
 		})
 	}
 }

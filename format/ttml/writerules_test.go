@@ -358,7 +358,7 @@ func TestStoredAttributes(t *testing.T) {
 	})
 }
 
-// Covers https://github.com/yama6a/subtitle-toolbox-php/issues/1071, which Go does not copy.
+// Attribute values keep TAB, LF and CR as character references, so a reader does not turn them into spaces.
 func TestAttributeValuesKeepTabLFAndCR(t *testing.T) {
 	t.Parallel()
 
@@ -462,7 +462,7 @@ func TestWriteReturnsTheWriterError(t *testing.T) {
 	require.ErrorIs(t, err, errWrite)
 }
 
-// The new elements take the prefixes and declarations that libxml gives them when PHP inserts them into the head.
+// The new elements take the prefixes and declarations that libxml gives them when it inserts them into the head.
 func TestNewElementsInAHeadWithItsOwnDeclarations(t *testing.T) {
 	t.Parallel()
 

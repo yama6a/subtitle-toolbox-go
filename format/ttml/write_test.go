@@ -481,7 +481,7 @@ func TestJSONFrom3xKeepsTheStoredPositions(t *testing.T) {
 	assert.Equal(t, writeDefault(t, source), writeDefault(t, fromJSON))
 }
 
-// Covers https://github.com/yama6a/subtitle-toolbox-go/issues/188 with the results of PHP 8.5: the stored head keeps
+// Covers https://github.com/yama6a/subtitle-toolbox-go/issues/188. The stored head keeps
 // its CDATA sections, a CDATA section of a paragraph gives text, and a CDATA section is no white space text for the
 // title removal and the insert rule.
 func TestCDATASections(t *testing.T) {
