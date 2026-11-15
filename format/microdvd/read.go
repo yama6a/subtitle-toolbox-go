@@ -125,8 +125,8 @@ func frameRate(st *parsing.State, lines []rawLine, option float64) (fps float64,
 	default:
 		return 0, nil, false, &model.ParseError{
 			Format: model.MicroDVD,
-			Msg: "The frame rate is unknown. Start the file with {1}{1}<fps>, set the frame rate, or read the file in " +
-				"lenient mode for " + timecode.Number(lenientFrameRate) + " fps.",
+			Msg: "the frame rate is unknown. Start the file with {1}{1}<fps>, set the frame rate, or read the file in " +
+				"lenient mode for " + timecode.Number(lenientFrameRate) + " fps",
 			Option: frameRateOption,
 		}
 	}
@@ -189,7 +189,7 @@ func frameNumber(s string) (digits, rest string, ok bool) {
 func readCue(st *parsing.State, l rawLine, fps float64) (model.Cue, error) {
 	shape, ok := parseCueShape(l.text)
 	if !ok {
-		return model.Cue{}, &model.ParseError{Line: l.number, Msg: `The line "` + l.text + `" is not a MicroDVD cue.`}
+		return model.Cue{}, &model.ParseError{Line: l.number, Msg: `the line "` + l.text + `" is not a MicroDVD cue`}
 	}
 	start, err := frameTime(shape.start, fps, l.number)
 	if err != nil {

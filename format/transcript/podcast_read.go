@@ -41,7 +41,7 @@ func ReadPodcast(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 	}
 	list, _ := root.Get("segments")
 	if list.Kind() != orderedjson.Array {
-		return nil, nil, &model.ParseError{Format: model.PodcastTranscript, Msg: `The JSON has no "segments" list.`}
+		return nil, nil, &model.ParseError{Format: model.PodcastTranscript, Msg: `the JSON has no "segments" list`}
 	}
 	segments, err := readPodcastItems(st, list.Items())
 	if err != nil {
@@ -90,7 +90,7 @@ func readPodcastItems(st *parsing.State, items []orderedjson.Value) ([]podcastIt
 
 func readPodcastItem(item orderedjson.Value, path string) (podcastItem, *model.ParseError) {
 	if item.Kind() != orderedjson.Object {
-		return podcastItem{}, fieldError("The field " + path + " must be an object.")
+		return podcastItem{}, fieldError("the field " + path + " must be an object")
 	}
 	start, startState, perr := podcastTime(item, "startTime", path, true)
 	if perr != nil {
@@ -132,7 +132,7 @@ func podcastTime(item orderedjson.Value, key, path string, required bool) (time.
 	}
 	d, state := timeOf(v, time.Second)
 	if state == noTime {
-		return 0, noTime, fieldError("The field " + path + "." + key + " must be a number.")
+		return 0, noTime, fieldError("the field " + path + "." + key + " must be a number")
 	}
 	return d, state, nil
 }
@@ -145,7 +145,7 @@ func podcastString(item orderedjson.Value, key, path string) (string, *model.Par
 	}
 	s, ok := v.AsString()
 	if !ok {
-		return "", fieldError("The field " + path + "." + key + " must be a string.")
+		return "", fieldError("the field " + path + "." + key + " must be a string")
 	}
 	return s, nil
 }

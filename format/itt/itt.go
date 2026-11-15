@@ -19,8 +19,8 @@ const (
 )
 
 const (
-	needsFrameRate = "iTT output needs the frame rate of the video."
-	badFrameRate   = "The ITT formatter accepts the frame rates 23.976, 24, 25, 29.97 and 30, got "
+	needsFrameRate = "iTT output needs the frame rate of the video"
+	badFrameRate   = "the ITT formatter accepts the frame rates 23.976, 24, 25, 29.97 and 30, got "
 )
 
 // profileRate is one frame rate of the iTT profile.
@@ -59,7 +59,7 @@ func (o WriteOptions) Validate() error {
 		return nil
 	}
 	if _, ok := o.row(); !ok {
-		return &model.InvalidArgumentError{Option: frameRateOption, Msg: badFrameRate + o.FrameRate.String() + "."}
+		return &model.InvalidArgumentError{Option: frameRateOption, Msg: badFrameRate + o.FrameRate.String()}
 	}
 	return nil
 }

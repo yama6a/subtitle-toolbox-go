@@ -181,9 +181,9 @@ func (g *googleWriter) diarized(cues []*model.Cue, data []orderedjson.Value, sou
 		if len(e.words) == 0 {
 			return source, &model.UnwritableError{
 				Format: model.GoogleSpeech, CueIndex: i,
-				Reason: "A Google Speech-to-Text result with speaker diarization holds cues only through their words. Cue #" +
+				Reason: "a Google Speech-to-Text result with speaker diarization holds cues only through their words. Cue #" +
 					strconv.Itoa(i) + " at " + timecode.Seconds(c.Start) + " s has no words. " +
-					"Read the file with word timestamps before you change the number of words.",
+					"Read the file with word timestamps before you change the number of words",
 			}
 		}
 		texts = append(texts, e.text)

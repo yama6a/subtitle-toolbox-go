@@ -21,7 +21,7 @@ var (
 	rate2997  = model.FrameRate{Num: 2997, Den: 100}
 )
 
-const noRateError = "stbox: invalid argument: WriteOptions.ITT.FrameRate: iTT output needs the frame rate of the video."
+const noRateError = "stbox: invalid argument: WriteOptions.ITT.FrameRate: iTT output needs the frame rate of the video"
 
 // cue is a cue with its times in seconds.
 type cue struct {
@@ -66,7 +66,7 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions, opt
 func TestWriteOptions(t *testing.T) {
 	t.Parallel()
 
-	const bad = "stbox: invalid argument: WriteOptions.ITT.FrameRate: The ITT formatter accepts the frame rates 23.976, 24, 25, 29.97 and 30, got "
+	const bad = "stbox: invalid argument: WriteOptions.ITT.FrameRate: the ITT formatter accepts the frame rates 23.976, 24, 25, 29.97 and 30, got "
 	root := func(frameRate, multiplier string) string {
 		return `ttp:timeBase="smpte" ttp:frameRate="` + frameRate + `" ttp:frameRateMultiplier="` + multiplier + `" ttp:dropMode="nonDrop"`
 	}
@@ -119,8 +119,8 @@ func TestWriteOptions(t *testing.T) {
 		{name: "no rate", cues: []cue{{1, 2, ""}}, wantErr: noRateError},
 		{name: "an unsupported stored rate and no option", stored: []string{"frameRate", "50"}, wantErr: noRateError},
 		{name: "a stored rate that is not a number", stored: []string{"frameRate", "fast"}, wantErr: noRateError},
-		{name: "a rate outside the table", rate: model.FrameRate50, wantErr: bad + "50."},
-		{name: "a rate that is not valid", rate: model.FrameRate{Num: 25}, wantErr: bad + "0."},
+		{name: "a rate outside the table", rate: model.FrameRate50, wantErr: bad + "50"},
+		{name: "a rate that is not valid", rate: model.FrameRate{Num: 25}, wantErr: bad + "0"},
 		{name: "strip tags", rate: model.FrameRate25, cues: []cue{{1, 2, "<b>Hi</b> <i>you</i>"}}, common: model.CommonWriteOptions{StripTags: true}, want: []string{">Hi you</p>"}},
 		{name: "keep tags", rate: model.FrameRate25, cues: []cue{{1, 2, "<b>Hi</b>"}}, want: []string{`<span tts:fontWeight="bold">Hi</span>`}},
 		{name: "CRLF", rate: model.FrameRate25, cues: []cue{{1, 2, ""}}, common: model.CommonWriteOptions{LineEnding: model.CRLF}, want: []string{"?>\r\n<tt ", "</tt>\r\n"}},

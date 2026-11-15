@@ -247,7 +247,7 @@ func TestWriteWhisperErrors(t *testing.T) {
 		_, err := transcript.WriteWhisper(&bytes.Buffer{}, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
 		var uerr *model.UnwritableError
 		require.ErrorAs(t, err, &uerr)
-		assert.Equal(t, "Whisper JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded.", uerr.Reason)
+		assert.Equal(t, "Whisper JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded", uerr.Reason)
 	})
 	t.Run("format data that is not UTF-8", func(t *testing.T) {
 		t.Parallel()

@@ -113,17 +113,17 @@ func (rd *blockReader) parsePart(part []string, index, line int) (model.Cue, err
 // parseCue parses the lines of one cue: the cue number at line, the timing line and the text.
 // Warnings hold shown, the lines as read.
 func (rd *blockReader) parseCue(lines, shown []string, index, line int) (model.Cue, error) {
-	block := "Block #" + strconv.Itoa(index)
+	block := "block #" + strconv.Itoa(index)
 	if !textblock.IsNumeric(lines[0]) {
-		return model.Cue{}, &model.ParseError{Line: line, Msg: block + " has no cue number on its first line. The line is " + parsing.Quote(lines[0]) + "."}
+		return model.Cue{}, &model.ParseError{Line: line, Msg: block + " has no cue number on its first line. The line is " + parsing.Quote(lines[0])}
 	}
 	if len(lines) < 2 {
-		return model.Cue{}, &model.ParseError{Line: line, Msg: block + " has no timing line on its second line."}
+		return model.Cue{}, &model.ParseError{Line: line, Msg: block + " has no timing line on its second line"}
 	}
 	line++
 	t, ok := rd.readTimingLine(lines[1])
 	if !ok {
-		return model.Cue{}, &model.ParseError{Line: line, Msg: block + " has no timing line on its second line. The line is " + parsing.Quote(lines[1]) + "."}
+		return model.Cue{}, &model.ParseError{Line: line, Msg: block + " has no timing line on its second line. The line is " + parsing.Quote(lines[1])}
 	}
 
 	var loose []looseTime
@@ -266,7 +266,7 @@ func (rd *blockReader) applyTextAfterEndTime(c *model.Cue, rest string, numpad, 
 	}
 	settings, unknown := cueSettings(rest)
 	if unknown != "" && !rd.st.Lenient() {
-		return &model.ParseError{Line: line, Msg: `The text "` + unknown + `" after the end time is not valid.`}
+		return &model.ParseError{Line: line, Msg: `the text "` + unknown + `" after the end time is not valid`}
 	}
 	if settings.Len() > 0 {
 		if numpad != 0 {

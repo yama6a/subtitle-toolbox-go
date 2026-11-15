@@ -179,7 +179,8 @@ func TestSyncUsageErrors(t *testing.T) {
 func TestSyncReferenceFailures(t *testing.T) {
 	t.Parallel()
 
-	broken := `broken.srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000".`
+	broken := `broken.srt: line 6: block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000"`
+	brokenWarning := `broken.srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000".`
 	tests := []struct {
 		name  string
 		words []string
@@ -219,7 +220,7 @@ func TestSyncReferenceFailures(t *testing.T) {
 
 		got := call{dir: syncDir(t)}.run(t, "sync", "de.srt", "--reference", "broken.srt", "--lenient")
 		assert.Equal(t, 0, got.Code)
-		assert.True(t, strings.HasPrefix(got.Stderr, broken+" (skipped)\nde.srt: scale "), got.Stderr)
+		assert.True(t, strings.HasPrefix(got.Stderr, brokenWarning+" (skipped)\nde.srt: scale "), got.Stderr)
 	})
 
 	t.Run("--from does not apply to the reference", func(t *testing.T) {

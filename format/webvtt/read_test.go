@@ -24,8 +24,8 @@ const (
 	vttDir   = "vtt"
 	realDir  = "vtt/real"
 	lenDir   = "lenient"
-	noWebVTT = "The file does not start with WEBVTT."
-	noEmpty  = "The WEBVTT header has no empty line before the first cue."
+	noWebVTT = "the file does not start with WEBVTT"
+	noEmpty  = "the WEBVTT header has no empty line before the first cue"
 )
 
 func fixture(t *testing.T, rel string) string {
@@ -102,13 +102,13 @@ func TestReadErrors(t *testing.T) {
 		{name: "minutes of 99", content: fixture(t, filepath.Join(vttDir, "exceeded_minutes.vtt")), msg: `the time "55:99:00.456" is not valid`, line: 4},
 		{name: "seconds of 99", content: fixture(t, filepath.Join(vttDir, "exceeded_seconds.vtt")), msg: `the time "34:00:99.123" is not valid`, line: 4},
 		{name: "4 fraction digits", content: fixture(t, filepath.Join(vttDir, "exceeded_milli_accuracy.vtt")), msg: `the time "34:00:00.1234" is not valid`, line: 4},
-		{name: "no timing line", content: fixture(t, filepath.Join(vttDir, "missing_timestamps.vtt")), msg: `Block #3 is not a WebVTT cue, comment, style or region. The line is "3".`, line: 11},
-		{name: "a line of text", content: "WEBVTT\n\nstray line", msg: `Block #1 is not a WebVTT cue, comment, style or region. The line is "stray line".`, line: 3},
+		{name: "no timing line", content: fixture(t, filepath.Join(vttDir, "missing_timestamps.vtt")), msg: `block #3 is not a WebVTT cue, comment, style or region. The line is "3"`, line: 11},
+		{name: "a line of text", content: "WEBVTT\n\nstray line", msg: `block #1 is not a WebVTT cue, comment, style or region. The line is "stray line"`, line: 3},
 		{name: "no dot before the fraction", content: "WEBVTT\n\n00:00:01x000 --> 00:00:04.000\nText\n", msg: `the time "00:00:01x000" is not valid`, line: 3},
 		{name: "text before the arrow", content: "WEBVTT\n\n00:00:01.000 align:left --> 00:00:04.000\nText\n", msg: `the time "00:00:01.000 align:left" is not valid`, line: 3},
 		{name: "4th fraction digit is no setting", content: "WEBVTT\n\nid\n00:01.000 --> 00:01.0005\nText\n", msg: `the time "00:01.0005" is not valid`, line: 4},
 		{name: "long arrow", content: "WEBVTT\n\n00:01.000 ---> 00:02.000\nText\n", msg: `the time "00:01.000 -" is not valid`, line: 3},
-		{name: "short arrow", content: "WEBVTT\n\n00:01.000 -> 00:02.000\nText\n", msg: `Block #1 is not a WebVTT cue, comment, style or region. The line is "00:01.000 -> 00:02.000".`, line: 3},
+		{name: "short arrow", content: "WEBVTT\n\n00:01.000 -> 00:02.000\nText\n", msg: `block #1 is not a WebVTT cue, comment, style or region. The line is "00:01.000 -> 00:02.000"`, line: 3},
 		{name: "minutes of 60", content: "WEBVTT\n\n00:00:01.000 --> 00:60:02.000\nText\n", msg: `the time "00:60:02.000" is not valid`, line: 3},
 		{name: "100000 hours", content: "WEBVTT\n\n100000:00:00.000 --> 100000:00:01.000\nText\n", msg: `the time "100000:00:00.000" is not below 100000 hours`, line: 3},
 		{name: "hours beyond int64", content: "WEBVTT\n\n00:01.000 --> 99999999999999999999:00:00.000\nText\n", msg: `the time "99999999999999999999:00:00.000" is not below 100000 hours`, line: 3},

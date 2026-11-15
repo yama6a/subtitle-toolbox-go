@@ -37,7 +37,7 @@ func (o WriteOptions) Validate() error {
 	if o.Version < 0 || o.Version > Version {
 		return &model.InvalidArgumentError{
 			Option: "WriteOptions.JSON.Version",
-			Msg:    "The library JSON version must be 0, 1 or 2, got " + strconv.Itoa(o.Version) + ".",
+			Msg:    "the library JSON version must be 0, 1 or 2, got " + strconv.Itoa(o.Version),
 		}
 	}
 	return nil

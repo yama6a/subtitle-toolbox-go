@@ -91,7 +91,7 @@ func TestHTMLWriteOptionsValidate(t *testing.T) {
 
 	require.NoError(t, transcript.HTMLWriteOptions{ParagraphGap: new(time.Duration(0))}.Validate())
 	err := transcript.HTMLWriteOptions{ParagraphGap: new(-time.Second)}.Validate()
-	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.Transcript.HTML.ParagraphGap", Msg: "The paragraph gap must be 0 or more seconds, got -1."}, err)
+	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.Transcript.HTML.ParagraphGap", Msg: "the paragraph gap must be 0 or more seconds, got -1"}, err)
 
 	var out bytes.Buffer
 	_, werr := transcript.WriteHTML(&out, htmlDialogue(), model.CommonWriteOptions{}, transcript.WriteOptions{HTML: transcript.HTMLWriteOptions{ParagraphGap: new(-time.Second)}})

@@ -255,7 +255,7 @@ func TestHeaderTextMatchesTheMCCNotice(t *testing.T) {
 func TestValidate(t *testing.T) {
 	t.Parallel()
 
-	rates := "The MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got "
+	rates := "the MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got "
 	tests := []struct {
 		name    string
 		err     error
@@ -264,7 +264,7 @@ func TestValidate(t *testing.T) {
 		{"service 63", mcc.ReadOptions{Service: 63}.Validate(), nil},
 		{
 			"service 64", mcc.ReadOptions{Service: 64}.Validate(),
-			&model.InvalidArgumentError{Option: "ReadOptions.MCC.Service", Msg: "The CEA-708 service must be from 1 to 63, got 64."},
+			&model.InvalidArgumentError{Option: "ReadOptions.MCC.Service", Msg: "the CEA-708 service must be from 1 to 63, got 64"},
 		},
 		{
 			"channel 3", mcc.ReadOptions{Channel: 3}.Validate(),
@@ -277,7 +277,7 @@ func TestValidate(t *testing.T) {
 		{"29.97 as 2997/100", mcc.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 100}}.Validate(), nil},
 		{
 			"48 fps", mcc.WriteOptions{FrameRate: model.FrameRate{Num: 48, Den: 1}}.Validate(),
-			&model.InvalidArgumentError{Option: "WriteOptions.MCC.FrameRate", Msg: rates + "48."},
+			&model.InvalidArgumentError{Option: "WriteOptions.MCC.FrameRate", Msg: rates + "48"},
 		},
 		{
 			"drop-frame mode", mcc.WriteOptions{DropFrame: model.DropFrameMode(3)}.Validate(),

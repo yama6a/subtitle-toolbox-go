@@ -28,7 +28,7 @@ func parseTime(t string, fps float64, millis bool, line int) (time.Duration, err
 	if fields, ok := frameFields(t); ok {
 		if fps == 0 {
 			return 0, &model.ParseError{
-				Line: line, Msg: `The time "` + t + `" counts frames and needs a frame rate.`, Option: "ReadOptions.CSV.FrameRate",
+				Line: line, Msg: `the time "` + t + `" counts frames and needs a frame rate`, Option: "ReadOptions.CSV.FrameRate",
 			}
 		}
 		return parsing.BoundedTime(frameTime(fields, fps), t, line)
@@ -37,7 +37,7 @@ func parseTime(t string, fps float64, millis bool, line int) (time.Duration, err
 		return parsing.BoundedTime(d, t, line)
 	}
 	return 0, &model.ParseError{
-		Line: line, Msg: `The time "` + t + `" is not seconds, h:mm:ss.mmm, m:ss.mmm, hh:mm:ss,mmm or hh:mm:ss:ff.`,
+		Line: line, Msg: `the time "` + t + `" is not seconds, h:mm:ss.mmm, m:ss.mmm, hh:mm:ss,mmm or hh:mm:ss:ff`,
 	}
 }
 

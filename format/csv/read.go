@@ -165,7 +165,7 @@ func (rd *reader) records(content string) ([]record, error) {
 		if len(r.cells) > maxColumns {
 			return nil, &model.ParseError{
 				Format: model.CSV, Line: r.line,
-				Msg: "The table has " + strconv.Itoa(len(r.cells)) + " columns. The limit is " + strconv.Itoa(maxColumns) + ".",
+				Msg: "the table has " + strconv.Itoa(len(r.cells)) + " columns. The limit is " + strconv.Itoa(maxColumns),
 			}
 		}
 	}
@@ -209,7 +209,7 @@ func (rd *reader) resolveRoles(header *record) (layout, error) {
 			out = append(out, roleIndex{r.name, index})
 		case needed(c, r.name):
 			return nil, &model.ParseError{
-				Format: model.CSV, Line: line, Msg: `The table has no column "` + columnName(c, r.name) + `" for ` + r.name + ".",
+				Format: model.CSV, Line: line, Msg: `the table has no column "` + columnName(c, r.name) + `" for ` + r.name,
 			}
 		}
 	}

@@ -2,7 +2,7 @@
     "name": "ASS with a number as a field name in the Format line of [Events]",
     "format": "ass",
     "strict": {
-        "error": "The field name \"1\" in the Format line of the [Events] section is a number.",
+        "error": "the field name \"1\" in the Format line of the [Events] section is a number",
         "line": 13
     },
     "cues": [

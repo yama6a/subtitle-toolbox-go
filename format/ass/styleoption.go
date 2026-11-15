@@ -22,14 +22,14 @@ func parseStyle(style string) (record, error) {
 		if m == nil {
 			return record{}, &model.InvalidArgumentError{
 				Option: styleOption,
-				Msg:    `The ASS style "` + style + `" must hold Field=Value pairs such as Fontsize=48, got "` + pair + `".`,
+				Msg:    `the ASS style "` + style + `" must hold Field=Value pairs such as Fontsize=48, got "` + pair + `"`,
 			}
 		}
 		field, ok := findName(fields, m[1])
 		if !ok {
 			return record{}, &model.InvalidArgumentError{
 				Option: styleOption,
-				Msg:    `The ASS style field "` + m[1] + `" does not exist. Use one of: ` + strings.Join(fields, ", ") + ".",
+				Msg:    `the ASS style field "` + m[1] + `" does not exist. Use one of: ` + strings.Join(fields, ", "),
 			}
 		}
 		values.set(field, m[2])
@@ -100,7 +100,7 @@ func (f *fileData) styleValues(style string) (record, error) {
 			return record{}, &model.UnwritableError{
 				Format:   model.ASS,
 				CueIndex: -1,
-				Reason:   "The Format line of the styles has no field " + field + ". It holds: " + strings.Join(f.styleFormat, ", ") + ".",
+				Reason:   "the Format line of the styles has no field " + field + ". It holds: " + strings.Join(f.styleFormat, ", "),
 			}
 		}
 		values.set(name, parsed.values[i])

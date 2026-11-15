@@ -55,7 +55,7 @@ func (o WriteOptions) Validate() error {
 	default:
 		return &model.InvalidArgumentError{
 			Option: "WriteOptions.ASS.KaraokeTag",
-			Msg:    "The ASS karaoke tag " + strconv.Quote(string(o.KaraokeTag)) + " is unknown. Use one of: k, kf, ko.",
+			Msg:    "the ASS karaoke tag " + strconv.Quote(string(o.KaraokeTag)) + " is unknown. Use one of: k, kf, ko",
 		}
 	}
 	if o.Style == "" {

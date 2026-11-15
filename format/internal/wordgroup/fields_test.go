@@ -24,11 +24,11 @@ func TestSeconds(t *testing.T) {
 		{"number", `1.5`, time.Second, ms(1500), ""},
 		{"numeric string", `"2.0"`, time.Second, ms(2000), ""},
 		{"unit", `1500`, time.Millisecond, ms(1500), ""},
-		{"negative", `-1`, time.Second, 0, "The field f must be a time."},
-		{"not numeric", `"abc"`, time.Second, 0, "The field f must be a time."},
-		{"not finite", `1e400`, time.Second, 0, "The field f must be a time."},
-		{"null", `null`, time.Second, 0, "The field f must be a time."},
-		{"bool", `true`, time.Second, 0, "The field f must be a time."},
+		{"negative", `-1`, time.Second, 0, "the field f must be a time"},
+		{"not numeric", `"abc"`, time.Second, 0, "the field f must be a time"},
+		{"not finite", `1e400`, time.Second, 0, "the field f must be a time"},
+		{"null", `null`, time.Second, 0, "the field f must be a time"},
+		{"bool", `true`, time.Second, 0, "the field f must be a time"},
 		{"100000 hours", `360000000`, time.Second, 0, "the field f is not below 100000 hours"},
 	}
 	for _, tt := range tests {
@@ -53,7 +53,7 @@ func TestText(t *testing.T) {
 		_, err := wordgroup.Text(parseJSON(t, js), "t", "p[0]")
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr, js)
-		assert.Equal(t, "The field p[0].t must be a string.", perr.Msg)
+		assert.Equal(t, "the field p[0].t must be a string", perr.Msg)
 	}
 	got, err := wordgroup.Text(parseJSON(t, `{"t": "x"}`), "t", "p")
 	require.NoError(t, err)

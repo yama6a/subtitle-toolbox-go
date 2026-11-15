@@ -12,7 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
-const unknownFrameRate = "The frame rate is unknown. Start the file with {1}{1}<fps>, set the frame rate, or read the file in lenient mode for 23.976 fps."
+const unknownFrameRate = "the frame rate is unknown. Start the file with {1}{1}<fps>, set the frame rate, or read the file in lenient mode for 23.976 fps"
 
 // Ports testRealFileParses of tests/Parsers/MicroDvdParserTest.php of subtitle-toolbox-php. The read goldens hold the
 // files at 25 fps. These rows read at 23.976 fps.
@@ -221,8 +221,8 @@ func TestReadErrors(t *testing.T) {
 		{"frame rate line of 0", "{1}{1}0\n{25}{50}Hello", false, 0, "the frame rate must be greater than 0, got 0", 0, ""},
 		{"frame rate line of 0 in lenient mode", "{1}{1}0\n{25}{50}Hello", true, 0, "the frame rate must be greater than 0, got 0", 0, ""},
 		// Ports testLineWithoutFramesThrowsException of tests/Parsers/MicroDvdParserTest.php of subtitle-toolbox-php.
-		{"line without frames", "{1}{1}25\n{25}{50}Hello\n00:00:01,000 --> 00:00:02,000", false, 0, `The line "00:00:01,000 --> 00:00:02,000" is not a MicroDVD cue.`, 3, ""},
-		{"empty end frame", "{24}{}Hello", false, 25, `The line "{24}{}Hello" is not a MicroDVD cue.`, 1, ""},
+		{"line without frames", "{1}{1}25\n{25}{50}Hello\n00:00:01,000 --> 00:00:02,000", false, 0, `the line "00:00:01,000 --> 00:00:02,000" is not a MicroDVD cue`, 3, ""},
+		{"empty end frame", "{24}{}Hello", false, 25, `the line "{24}{}Hello" is not a MicroDVD cue`, 1, ""},
 		{"20-digit frame number", "{24}{99999999999999999999}Hello", false, 25, `the time "{99999999999999999999}" is not below 100000 hours`, 1, ""},
 		{"13-digit frame number", "{1}{1}25\n{9000000000000}{9000000000050}Hello", false, 0, `the time "{9000000000000}" is not below 100000 hours`, 2, ""},
 		{"end before start", "{50}{25}Hello", false, 25, "the cue ends at 1 s, before it starts at 2 s", 1, ""},

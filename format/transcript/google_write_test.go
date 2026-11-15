@@ -116,7 +116,7 @@ func TestWriteGoogleSpeechDiarized(t *testing.T) {
 		require.ErrorAs(t, err, &uerr)
 		assert.Equal(t, 2, uerr.CueIndex)
 		assert.Contains(t, uerr.Reason, "Cue #2 at 8.24 s has no words.")
-		assert.Contains(t, uerr.Reason, "A Google Speech-to-Text result with speaker diarization holds cues only through their words.")
+		assert.Contains(t, uerr.Reason, "a Google Speech-to-Text result with speaker diarization holds cues only through their words")
 	})
 }
 

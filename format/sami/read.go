@@ -242,7 +242,7 @@ func (rd *reader) syncBlock(chunk string, index, line int) (syncBlock, bool, err
 		m = startRegexp.FindStringSubmatch(tag)
 	}
 	if m == nil {
-		err := &model.ParseError{Line: line, Msg: "SYNC tag " + strconv.Itoa(index+1) + " has no valid Start attribute."}
+		err := &model.ParseError{Line: line, Msg: "SYNC tag " + strconv.Itoa(index+1) + " has no valid Start attribute"}
 		return syncBlock{}, false, rd.st.Fail(err, line, index, lines())
 	}
 	start, negative, err := startTime(m[1], line)
@@ -303,7 +303,7 @@ func optionClass(want string, classes styleClasses, used names) (string, bool, e
 	if name, ok := used.written[key]; ok {
 		return name, true, nil
 	}
-	return "", false, &model.ParseError{Format: model.SAMI, Msg: "The SAMI file has no class " + want + "."}
+	return "", false, &model.ParseError{Format: model.SAMI, Msg: "the SAMI file has no class " + want}
 }
 
 // chooseDefaultClass picks the class without the option. False for matched means that no <P> class is in STYLE.

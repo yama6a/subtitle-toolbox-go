@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	brokenMessage = `broken.srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000".`
+	brokenMessage = `broken.srt: line 6: block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000"`
+	brokenWarning = `broken.srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000".`
 	bom           = "\xEF\xBB\xBF"
 )
 
@@ -277,7 +278,7 @@ func TestLenientEncodingLineEndingAndBOMOptions(t *testing.T) {
 	assert.Equal(t,
 		result{
 			Stdout: "1\r\n00:00:01,000 --> 00:00:02,000\r\nFirst cue.\r\n\r\n2\r\n00:00:05,000 --> 00:00:06,000\r\nLast cue.\r\n",
-			Stderr: brokenMessage + " (skipped)\n",
+			Stderr: brokenWarning + " (skipped)\n",
 		},
 		call{dir: dir}.run(t, "convert", "broken.srt", "--to", "srt", "-o", "-", "--lenient", "--line-ending", "crlf", "--no-bom"))
 

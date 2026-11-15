@@ -159,7 +159,7 @@ func TestReaderLists(t *testing.T) {
 		_, err := r.Utterances(bad, "u", "text", time.Second, readWords(r))
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr)
-		assert.Equal(t, "The field u[0].words[0].s must be a time.", perr.Msg)
+		assert.Equal(t, "the field u[0].words[0].s must be a time", perr.Msg)
 	})
 }
 

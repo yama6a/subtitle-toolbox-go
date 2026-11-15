@@ -182,11 +182,11 @@ func TestReadInvalidFiles(t *testing.T) {
 		line    int
 		msg     string
 	}{
-		{"no header", "\n00:00:01:00\t942c 942c\n", 2, `An SCC file must start with the line "Scenarist_SCC V1.0".`},
-		{"other header", "Scenarist_SCC V2.0\n\n00:00:01:00\t942c 942c\n", 1, `An SCC file must start with the line "Scenarist_SCC V1.0".`},
-		{"no time code", "Scenarist_SCC V1.0\n\n942c 942c\n", 3, `The SCC line "942c 942c" does not start with a time code.`},
-		{"short byte pair", "Scenarist_SCC V1.0\n\n00:00:01:00\t942c 94c\n", 3, `The SCC line has the invalid byte pair "94c".`},
-		{"byte pair not hex", "Scenarist_SCC V1.0\r\n\r\n00:00:01:00\t942c\n\n00:00:02:00\t94zz\n", 5, `The SCC line has the invalid byte pair "94zz".`},
+		{"no header", "\n00:00:01:00\t942c 942c\n", 2, `an SCC file must start with the line "Scenarist_SCC V1.0"`},
+		{"other header", "Scenarist_SCC V2.0\n\n00:00:01:00\t942c 942c\n", 1, `an SCC file must start with the line "Scenarist_SCC V1.0"`},
+		{"no time code", "Scenarist_SCC V1.0\n\n942c 942c\n", 3, `the SCC line "942c 942c" does not start with a time code`},
+		{"short byte pair", "Scenarist_SCC V1.0\n\n00:00:01:00\t942c 94c\n", 3, `the SCC line has the invalid byte pair "94c"`},
+		{"byte pair not hex", "Scenarist_SCC V1.0\r\n\r\n00:00:01:00\t942c\n\n00:00:02:00\t94zz\n", 5, `the SCC line has the invalid byte pair "94zz"`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -261,7 +261,7 @@ func TestReadLenient(t *testing.T) {
 		}}, warnings)
 
 		_, _, err := read(t, cut, model.CommonReadOptions{}, scc.ReadOptions{})
-		assert.Equal(t, &model.ParseError{Format: model.SCC, Line: 35, Msg: `The SCC line has the invalid byte pair "9".`}, err)
+		assert.Equal(t, &model.ParseError{Format: model.SCC, Line: 35, Msg: `the SCC line has the invalid byte pair "9"`}, err)
 	})
 	t.Run("bad pair and cut-off time code", func(t *testing.T) {
 		t.Parallel()
@@ -276,6 +276,6 @@ func TestReadLenient(t *testing.T) {
 		t.Parallel()
 
 		_, _, err := read(t, "00:00:01:00\t942c 942c\n", lenient, scc.ReadOptions{})
-		assert.Equal(t, &model.ParseError{Format: model.SCC, Line: 1, Msg: `An SCC file must start with the line "Scenarist_SCC V1.0".`}, err)
+		assert.Equal(t, &model.ParseError{Format: model.SCC, Line: 1, Msg: `an SCC file must start with the line "Scenarist_SCC V1.0"`}, err)
 	})
 }

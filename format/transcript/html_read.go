@@ -148,11 +148,11 @@ func htmlLines(inner string) []string {
 
 func (p htmlParagraph) start() (time.Duration, *model.ParseError) {
 	if !p.hasTime {
-		return 0, &model.ParseError{Line: p.line, Msg: "The paragraph has no <time>."}
+		return 0, &model.ParseError{Line: p.line, Msg: "the paragraph has no <time>"}
 	}
 	m := htmlTimeRegexp.FindStringSubmatch(p.timeText)
 	if m == nil {
-		return 0, &model.ParseError{Line: p.timeLine, Msg: `The time "` + p.timeText + `" is not valid.`}
+		return 0, &model.ParseError{Line: p.timeLine, Msg: `the time "` + p.timeText + `" is not valid`}
 	}
 	hours, minutes := strings.TrimLeft(m[1], "0"), strings.TrimLeft(m[2], "0")
 	if len(hours) > maxClockDigits || len(minutes) > maxClockDigits {

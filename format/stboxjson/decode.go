@@ -12,7 +12,7 @@ import (
 func decodeRoot(content []byte) (*model.Data, error) {
 	v, err := orderedjson.Decode(content)
 	if err != nil {
-		msg := "The content is not valid JSON: " + err.Error() + "."
+		msg := "the content is not valid JSON: " + err.Error()
 		return nil, &model.ParseError{Format: model.JSON, Msg: msg, Err: err}
 	}
 	if v.Kind() == orderedjson.Object {
@@ -22,7 +22,7 @@ func decodeRoot(content []byte) (*model.Data, error) {
 	if v.Kind() == orderedjson.Array && len(v.Items()) == 0 {
 		return model.NewData(), nil
 	}
-	return nil, parseError("The JSON root must be an object.")
+	return nil, parseError("the JSON root must be an object")
 }
 
 // tree converts v. A number stays a json.Number, so the writer prints the source literal.

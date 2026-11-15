@@ -25,11 +25,11 @@ func readRoot(r io.Reader, f model.Format, common model.CommonReadOptions) (st *
 func decodeObject(content []byte, f model.Format) (orderedjson.Value, error) {
 	v, err := orderedjson.Decode(content)
 	if err != nil {
-		msg := "The content is not valid JSON: " + err.Error() + "."
+		msg := "the content is not valid JSON: " + err.Error()
 		return v, &model.ParseError{Format: f, Msg: msg, Err: err}
 	}
 	if v.Kind() != orderedjson.Object {
-		return v, &model.ParseError{Format: f, Msg: "The JSON root must be an object."}
+		return v, &model.ParseError{Format: f, Msg: "the JSON root must be an object"}
 	}
 	return v, nil
 }

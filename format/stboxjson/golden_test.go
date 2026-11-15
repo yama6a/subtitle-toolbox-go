@@ -148,5 +148,5 @@ func TestReadFailsForADropFrameString(t *testing.T) {
 		model.CommonReadOptions{}, stboxjson.ReadOptions{})
 	var perr *model.ParseError
 	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, "The field formatData.scc.dropFrame must be a boolean.", perr.Msg)
+	assert.Equal(t, "the field formatData.scc.dropFrame must be a boolean", perr.Msg)
 }

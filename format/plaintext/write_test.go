@@ -229,11 +229,11 @@ func TestValidate(t *testing.T) {
 		{name: "no paragraph breaks", gap: new(plaintext.NoParagraphBreaks)},
 		{
 			name: "minus 1 s", gap: new(-time.Second),
-			want: &model.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "The paragraph gap must be 0 or more seconds, got -1."},
+			want: &model.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "the paragraph gap must be 0 or more seconds, got -1"},
 		},
 		{
 			name: "minus 1 ms", gap: new(-ms),
-			want: &model.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "The paragraph gap must be 0 or more seconds, got -0.001."},
+			want: &model.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "the paragraph gap must be 0 or more seconds, got -0.001"},
 		},
 	}
 	for _, tt := range tests {

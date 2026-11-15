@@ -126,11 +126,11 @@ func frameRate(value string, line int) (float64, *model.ParseError) {
 	}
 	digits := leadingDigits.FindString(value)
 	if digits == "" {
-		return 0, &model.ParseError{Line: line, Msg: `The FORMAT value "` + value + `" is not known.`}
+		return 0, &model.ParseError{Line: line, Msg: `the FORMAT value "` + value + `" is not known`}
 	}
 	n, _ := strconv.ParseInt(digits, 10, 64)
 	if n == 0 {
-		return 0, &model.ParseError{Line: line, Msg: `The frame rate "` + value + `" is not valid.`}
+		return 0, &model.ParseError{Line: line, Msg: `the frame rate "` + value + `" is not valid`}
 	}
 	return float64(n), nil
 }
@@ -156,11 +156,11 @@ func (rd *reader) startCue(line string, number int) error {
 func (rd *reader) timingLine(line string, number int) (model.Cue, *model.ParseError) {
 	m := timingRegexp.FindStringSubmatch(line)
 	if m == nil {
-		return model.Cue{}, &model.ParseError{Line: number, Msg: `The line "` + line + `" is not a header, a comment or a timing line.`}
+		return model.Cue{}, &model.ParseError{Line: number, Msg: `the line "` + line + `" is not a header, a comment or a timing line`}
 	}
 	wait, duration := rd.seconds(m[1]), rd.seconds(m[2])
 	if duration < 0 {
-		return model.Cue{}, &model.ParseError{Line: number, Msg: `The timing line "` + line + `" has a negative duration.`}
+		return model.Cue{}, &model.ParseError{Line: number, Msg: `the timing line "` + line + `" has a negative duration`}
 	}
 	startSecs := rd.position + wait
 	endSecs := startSecs + duration
@@ -214,7 +214,7 @@ func (rd *reader) endCue() error {
 	}
 	rd.open = nil
 	if len(c.Lines) == 0 {
-		return rd.st.Fail(&model.ParseError{Line: rd.openLine, Msg: "The cue has no text lines."}, rd.openLine, rd.openBlock, []string{rd.openText})
+		return rd.st.Fail(&model.ParseError{Line: rd.openLine, Msg: "the cue has no text lines"}, rd.openLine, rd.openBlock, []string{rd.openText})
 	}
 	rd.cues = append(rd.cues, *c)
 	return nil

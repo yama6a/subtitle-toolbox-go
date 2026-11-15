@@ -225,11 +225,11 @@ func readVersion(lines []string) (string, error) {
 		if m == nil {
 			return "", &model.ParseError{
 				Format: model.MCC, Line: i + 1,
-				Msg: `An MCC file must start with the line "` + versionPrefix + `2.0" or "` + versionPrefix + `1.0".`,
+				Msg: `an MCC file must start with the line "` + versionPrefix + `2.0" or "` + versionPrefix + `1.0"`,
 			}
 		}
 		if m[1] != "1.0" && m[1] != "2.0" {
-			return "", &model.ParseError{Format: model.MCC, Line: i + 1, Msg: "The MCC version " + m[1] + " is unknown. The parser reads 1.0 and 2.0."}
+			return "", &model.ParseError{Format: model.MCC, Line: i + 1, Msg: "the MCC version " + m[1] + " is unknown. The parser reads 1.0 and 2.0"}
 		}
 		return m[1], nil
 	}
@@ -241,7 +241,7 @@ func readVersion(lines []string) (string, error) {
 func readLine(line string) (code int, tc model.Timecode, triplets []cea708.Triplet, msg string) {
 	tc, text, ok := parseDataLine(line)
 	if !ok {
-		return 0, tc, nil, `The MCC line "` + line + `" does not start with a time code.`
+		return 0, tc, nil, `the MCC line "` + line + `" does not start with a time code`
 	}
 	data, msg := decodeHex(text)
 	if msg != "" {
@@ -327,14 +327,14 @@ func timeCode(st *parsing.State, header *model.Data) (labels int, dropFrame bool
 		labels, _ = strconv.Atoi(m[1])
 		return labels, m[2] != "", nil
 	}
-	msg := "The MCC file has no Time Code Rate line."
+	msg := "the MCC file has no Time Code Rate line"
 	if found {
-		msg = `The MCC Time Code Rate "` + field + `" is unknown.`
+		msg = `the MCC Time Code Rate "` + field + `" is unknown`
 	}
 	if !st.Lenient() {
 		return 0, false, &model.ParseError{Format: model.MCC, Msg: msg}
 	}
-	st.Warn(msg+" The parser read 30DF.", model.NoLine, model.NoBlock, nil, model.Repaired)
+	st.Warn(parsing.Sentence(msg)+" The parser read 30DF.", model.NoLine, model.NoBlock, nil, model.Repaired)
 	return 30, true, nil
 }
 

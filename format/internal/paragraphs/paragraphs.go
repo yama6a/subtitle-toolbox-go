@@ -39,7 +39,7 @@ func ValidateGap(gap *time.Duration, option string) error {
 	if gap != nil && *gap < 0 {
 		return &model.InvalidArgumentError{
 			Option: option,
-			Msg:    "The paragraph gap must be 0 or more seconds, got " + timecode.Seconds(*gap) + ".",
+			Msg:    "the paragraph gap must be 0 or more seconds, got " + timecode.Seconds(*gap),
 		}
 	}
 	return nil

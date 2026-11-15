@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
@@ -78,7 +79,7 @@ func TestReadLenient(t *testing.T) {
 		t.Parallel()
 
 		perr := parseError(t, fixture(t, filepath.Join(lenDir, "joined_files.vtt")), false)
-		assert.Equal(t, `Block #2 is not a WebVTT cue, comment, style or region. The line is "WEBVTT".`, perr.Msg)
+		assert.Equal(t, `block #2 is not a WebVTT cue, comment, style or region. The line is "WEBVTT"`, perr.Msg)
 		assert.Equal(t, 6, perr.Line)
 	})
 }
@@ -97,31 +98,31 @@ func TestRepairSignature(t *testing.T) {
 			name:    "no signature and no text before the cue",
 			content: "00:00:01.000 --> 00:00:02.000\nHi\n",
 			texts:   []string{"Hi"}, ids: []string{""},
-			warning: model.ParseWarning{Message: noWebVTT + " The parser read the cues without it.", Line: 1, Block: 0, Action: model.Repaired},
+			warning: model.ParseWarning{Message: parsing.Sentence(noWebVTT) + " The parser read the cues without it.", Line: 1, Block: 0, Action: model.Repaired},
 		},
 		{
 			name:    "the line above the timing line is the identifier",
 			content: "\n\n  \nhello\n1\n00:00:01.000 --> 00:00:02.000 align:left\nHi\n",
 			texts:   []string{"Hi"}, ids: []string{"1"},
-			warning: model.ParseWarning{Message: noWebVTT + " The parser skipped the lines before line 5.", Line: 4, Block: 0, Lines: []string{"hello"}, Action: model.Repaired},
+			warning: model.ParseWarning{Message: parsing.Sentence(noWebVTT) + " The parser skipped the lines before line 5.", Line: 4, Block: 0, Lines: []string{"hello"}, Action: model.Repaired},
 		},
 		{
 			name:    "a signature after text",
 			content: "converted by a tool\n\nWEBVTT Title\n\n00:01.000 --> 00:02.000\nHi\n",
 			texts:   []string{"Hi"}, ids: []string{""},
-			warning: model.ParseWarning{Message: noWebVTT + " The parser skipped the lines before line 3.", Line: 1, Block: 0, Lines: []string{"converted by a tool"}, Action: model.Repaired},
+			warning: model.ParseWarning{Message: parsing.Sentence(noWebVTT) + " The parser skipped the lines before line 3.", Line: 1, Block: 0, Lines: []string{"converted by a tool"}, Action: model.Repaired},
 		},
 		{
 			name:    "WEBVTTX is no signature",
 			content: "WEBVTTX\n\n00:01.000 --> 00:02.000\nHi\n",
 			texts:   []string{"Hi"}, ids: []string{""},
-			warning: model.ParseWarning{Message: noWebVTT + " The parser skipped the lines before line 3.", Line: 1, Block: 0, Lines: []string{"WEBVTTX"}, Action: model.Repaired},
+			warning: model.ParseWarning{Message: parsing.Sentence(noWebVTT) + " The parser skipped the lines before line 3.", Line: 1, Block: 0, Lines: []string{"WEBVTTX"}, Action: model.Repaired},
 		},
 		{
 			name:    "settings after the timing line",
 			content: "00:01.000-->00:02.000 line:0\nHi\n",
 			texts:   []string{"Hi"}, ids: []string{""},
-			warning: model.ParseWarning{Message: noWebVTT + " The parser read the cues without it.", Line: 1, Block: 0, Action: model.Repaired},
+			warning: model.ParseWarning{Message: parsing.Sentence(noWebVTT) + " The parser read the cues without it.", Line: 1, Block: 0, Action: model.Repaired},
 		},
 	}
 	for _, tt := range tests {

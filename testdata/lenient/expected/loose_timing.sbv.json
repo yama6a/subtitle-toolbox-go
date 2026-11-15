@@ -2,7 +2,7 @@
     "name": "SBV with other separators and short fractions",
     "format": "sbv",
     "strict": {
-        "error": "Block #1 has no timing line on its first line. The line is \"0:00:04.000.0:00:06.000\".",
+        "error": "block #1 has no timing line on its first line. The line is \"0:00:04.000.0:00:06.000\"",
         "line": 4
     },
     "cues": [

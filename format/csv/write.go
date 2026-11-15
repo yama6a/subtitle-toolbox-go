@@ -136,7 +136,7 @@ func resolve(file *model.Data, opts WriteOptions) (settings, error) {
 		}
 	}
 	if set.timeFormat == TimeFrames && set.fps == 0 {
-		return settings{}, invalid("WriteOptions.CSV.FrameRate", "The time format hh:mm:ss:ff needs a frame rate.")
+		return settings{}, invalid("WriteOptions.CSV.FrameRate", "the time format hh:mm:ss:ff needs a frame rate")
 	}
 	return set, nil
 }

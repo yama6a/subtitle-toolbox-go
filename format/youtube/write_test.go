@@ -90,7 +90,7 @@ func TestWriteRejectsInvalidUTF8(t *testing.T) {
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	require.ErrorIs(t, err, model.ErrInvalidUTF8)
-	assert.Equal(t, "The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding.", uerr.Reason)
+	assert.Equal(t, "the output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding", uerr.Reason)
 }
 
 // Each source stays as it is after a read and a write without an edit.

@@ -129,15 +129,15 @@ func TestWriteErrors(t *testing.T) {
 	}{
 		{
 			name: "a line of 52 bytes", cues: 2, lines: strings.Repeat("a", 52), wantCue: 1,
-			want: `Cavena 890 holds 51 bytes per line, got 52 for "` + strings.Repeat("a", 52) + `".`,
+			want: `Cavena 890 holds 51 bytes per line, got 52 for "` + strings.Repeat("a", 52) + `"`,
 		},
 		{
 			name: "a line with quotes and a backslash is quoted as it is", cues: 1, lines: `"` + strings.Repeat("a", 50) + `\`, wantCue: 0,
-			want: `Cavena 890 holds 51 bytes per line, got 52 for "` + `"` + strings.Repeat("a", 50) + `\` + `".`,
+			want: `Cavena 890 holds 51 bytes per line, got 52 for "` + `"` + strings.Repeat("a", 50) + `\` + `"`,
 		},
 		{
 			name: "a line of 52 bytes after the italics", cues: 1, lines: "<i>" + strings.Repeat("a", 50) + "</i>", wantCue: 0,
-			want: `Cavena 890 holds 51 bytes per line, got 52 for "<i>` + strings.Repeat("a", 50) + `</i>".`,
+			want: `Cavena 890 holds 51 bytes per line, got 52 for "<i>` + strings.Repeat("a", 50) + `</i>"`,
 		},
 	}
 	for _, tt := range tests {
@@ -189,7 +189,7 @@ func TestWriteNumbersPastTheStep(t *testing.T) {
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	assert.Equal(t, 4110, uerr.CueIndex)
-	assert.Equal(t, "Cavena 890 allows subtitle numbers up to 65535.", uerr.Reason)
+	assert.Equal(t, "Cavena 890 allows subtitle numbers up to 65535", uerr.Reason)
 }
 
 func TestWriteTimes(t *testing.T) {

@@ -44,17 +44,17 @@ func ReadPodcast(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 func readPodcastDocument(s *model.Subtitle, content []byte, opts ReadOptions) error {
 	root, err := orderedjson.Decode(content)
 	if err != nil {
-		return &model.ParseError{Format: model.PodcastChapters, Msg: "The content is not valid JSON: " + err.Error() + ".", Err: err}
+		return &model.ParseError{Format: model.PodcastChapters, Msg: "the content is not valid JSON: " + err.Error(), Err: err}
 	}
 	if root.Kind() == orderedjson.Array && len(root.Items()) == 0 {
 		root = orderedjson.ObjectOf()
 	}
 	if root.Kind() != orderedjson.Object {
-		return parseError(model.PodcastChapters, 0, "The JSON root must be an object.")
+		return parseError(model.PodcastChapters, 0, "the JSON root must be an object")
 	}
 	list, _ := root.Get("chapters")
 	if list.Kind() != orderedjson.Array {
-		return parseError(model.PodcastChapters, 0, `The JSON has no "chapters" list.`)
+		return parseError(model.PodcastChapters, 0, `the JSON has no "chapters" list`)
 	}
 	cues := make([]model.Cue, len(list.Items()))
 	ends := make([]*time.Duration, len(list.Items()))
@@ -86,10 +86,10 @@ func podcastChapter(i int, chapter orderedjson.Value) (model.Cue, *time.Duration
 	endValue, hasEnd := chapter.Get("endTime")
 	hasEnd = hasEnd && endValue.Kind() != orderedjson.Null
 	if !isTime(startValue) {
-		return model.Cue{}, nil, parseError(model.PodcastChapters, 0, "The field "+path+"startTime must be a number.")
+		return model.Cue{}, nil, parseError(model.PodcastChapters, 0, "the field "+path+"startTime must be a number")
 	}
 	if hasEnd && !isTime(endValue) {
-		return model.Cue{}, nil, parseError(model.PodcastChapters, 0, "The field "+path+"endTime must be a number.")
+		return model.Cue{}, nil, parseError(model.PodcastChapters, 0, "the field "+path+"endTime must be a number")
 	}
 	start, err := boundedField(startValue, path+"startTime")
 	if err != nil {
@@ -131,7 +131,7 @@ func isTime(v orderedjson.Value) bool {
 func boundedField(v orderedjson.Value, path string) (time.Duration, error) {
 	d, ok := v.Duration(time.Second)
 	if !ok {
-		return 0, parseError(model.PodcastChapters, 0, "The field "+path+" is not below "+strconv.Itoa(timecode.MaxHours)+" hours.")
+		return 0, parseError(model.PodcastChapters, 0, "the field "+path+" is not below "+strconv.Itoa(timecode.MaxHours)+" hours")
 	}
 	return d, nil
 }

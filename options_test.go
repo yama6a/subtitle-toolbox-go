@@ -46,7 +46,7 @@ func TestReadOptionsValidate(t *testing.T) {
 		{
 			name:    "MCC service 64",
 			opts:    stbox.ReadOptions{MCC: mcc.ReadOptions{Service: 64}},
-			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.MCC.Service", Msg: "The CEA-708 service must be from 1 to 63, got 64."},
+			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.MCC.Service", Msg: "the CEA-708 service must be from 1 to 63, got 64"},
 		},
 		{
 			name:    "SCC channel 3",
@@ -109,7 +109,7 @@ func TestWriteOptionsValidate(t *testing.T) {
 			opts: stbox.WriteOptions{MCC: mcc.WriteOptions{FrameRate: stbox.FrameRate{Num: 48, Den: 1}}},
 			wantErr: &stbox.InvalidArgumentError{
 				Option: "WriteOptions.MCC.FrameRate",
-				Msg:    "The MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got 48.",
+				Msg:    "the MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got 48",
 			},
 		},
 		{
@@ -127,30 +127,30 @@ func TestWriteOptionsValidate(t *testing.T) {
 		{
 			name:    "MPSub frame rate 29.97",
 			opts:    stbox.WriteOptions{MPSub: mpsub.WriteOptions{FrameRate: stbox.FrameRate{Num: 2997, Den: 100}}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.MPSub.FrameRate", Msg: "The MPSub frame rate must be a positive integer, got 29.97."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.MPSub.FrameRate", Msg: "the MPSub frame rate must be a positive integer, got 29.97"},
 		},
 		{name: "plain text paragraph gap 0", opts: stbox.WriteOptions{PlainText: plaintext.WriteOptions{ParagraphGap: new(time.Duration(0))}}},
 		{
 			name:    "plain text paragraph gap -1 s",
 			opts:    stbox.WriteOptions{PlainText: plaintext.WriteOptions{ParagraphGap: new(-time.Second)}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "The paragraph gap must be 0 or more seconds, got -1."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "the paragraph gap must be 0 or more seconds, got -1"},
 		},
 		{name: "JSON version 1", opts: stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: 1}}},
 		{
 			name:    "JSON version 3",
 			opts:    stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: 3}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.JSON.Version", Msg: "The library JSON version must be 0, 1 or 2, got 3."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.JSON.Version", Msg: "the library JSON version must be 0, 1 or 2, got 3"},
 		},
 		{
 			name:    "JSON version -1",
 			opts:    stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: -1}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.JSON.Version", Msg: "The library JSON version must be 0, 1 or 2, got -1."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.JSON.Version", Msg: "the library JSON version must be 0, 1 or 2, got -1"},
 		},
 		{name: "SubViewer 1", opts: stbox.WriteOptions{SubViewer: subviewer.WriteOptions{Version: subviewer.V1}}},
 		{
 			name:    "SubViewer version 3",
 			opts:    stbox.WriteOptions{SubViewer: subviewer.WriteOptions{Version: subviewer.Version(3)}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.SubViewer.Version", Msg: "The SubViewer version must be 1 or 2, got 3."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.SubViewer.Version", Msg: "the SubViewer version must be 1 or 2, got 3"},
 		},
 	}
 	for _, tt := range tests {

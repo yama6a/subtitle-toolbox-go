@@ -64,11 +64,11 @@ func (rd *reader) readXML(content string) (*model.Subtitle, error) {
 		if !rd.st.Lenient() {
 			return nil, rd.parseError(line, msg)
 		}
-		rd.st.Warn(msg+" The parser skipped it.", line, model.NoBlock, lines, model.Repaired)
+		rd.st.Warn(parsing.Sentence(msg)+" The parser skipped it.", line, model.NoBlock, lines, model.Repaired)
 	}
 	doc, err := xmlraw.Parse(strings.NewReader(repaired), xmlraw.ParseOptions{})
 	if err != nil {
-		return nil, rd.parseError(model.NoLine, "The content is not well-formed XML.")
+		return nil, rd.parseError(model.NoLine, "the content is not well-formed XML")
 	}
 	root, _ := doc.Root()
 	name := xmlraw.QName(root.Name)
@@ -81,7 +81,7 @@ func (rd *reader) readXML(content string) (*model.Subtitle, error) {
 		}
 		return rd.readTexts(root, variantSrv2, "t", "d", time.Millisecond)
 	}
-	return nil, rd.parseError(model.NoLine, "The root element must be <timedtext> or <transcript>, not <"+name+">.")
+	return nil, rd.parseError(model.NoLine, "the root element must be <timedtext> or <transcript>, not <"+name+">")
 }
 
 func elements(n *xmlraw.Node) []*xmlraw.Node {
@@ -160,7 +160,7 @@ func attrTime(n *xmlraw.Node, name string, unit time.Duration) (d time.Duration,
 }
 
 func invalidAttr(n *xmlraw.Node, name string) *model.ParseError {
-	return &model.ParseError{Line: n.Line, Msg: "The <" + xmlraw.QName(n.Name) + "> element has no valid \"" + name + "\" attribute."}
+	return &model.ParseError{Line: n.Line, Msg: "the <" + xmlraw.QName(n.Name) + "> element has no valid \"" + name + "\" attribute"}
 }
 
 // startAndEnd reads the required start attribute and the optional duration attribute of a caption element.

@@ -214,7 +214,7 @@ func TestDiffFileFailures(t *testing.T) {
 			"new file in the wrong format",
 			[]string{"diff", "trip.srt", "shop.vtt", "--new-from", "srt"},
 			"",
-			"shop.vtt: line 1: Block #0 has no cue number on its first line. The line is \"WEBVTT\".\n" + lenientHint + "\n",
+			"shop.vtt: line 1: block #0 has no cue number on its first line. The line is \"WEBVTT\"\n" + lenientHint + "\n",
 		},
 		{
 			"broken new file in JSON",
@@ -252,14 +252,14 @@ func TestDiffReadOptionsApplyToBothFiles(t *testing.T) {
 		t.Parallel()
 
 		got := call{dir: dir}.run(t, "diff", "broken.srt", "broken.srt", "--lenient")
-		assert.Equal(t, result{Stderr: brokenMessage + " (skipped)\n" + brokenMessage + " (skipped)\n"}, got)
+		assert.Equal(t, result{Stderr: brokenWarning + " (skipped)\n" + brokenWarning + " (skipped)\n"}, got)
 	})
 	t.Run("lenient JSON lists the warnings of both files", func(t *testing.T) {
 		t.Parallel()
 
 		got := call{dir: dir}.run(t, "diff", "broken.srt", "trip.srt", "--lenient", "--json")
 		assert.Equal(t, exitResult, got.Code)
-		assert.Equal(t, brokenMessage+" (skipped)\n", got.Stderr)
+		assert.Equal(t, brokenWarning+" (skipped)\n", got.Stderr)
 		assert.Contains(t, got.Stdout, `        "oldWarnings": [
             {
                 "lineNumber": 6,

@@ -2,7 +2,7 @@
     "name": "WebVTT files joined into one",
     "format": "vtt",
     "strict": {
-        "error": "Block #2 is not a WebVTT cue, comment, style or region. The line is \"WEBVTT\".",
+        "error": "block #2 is not a WebVTT cue, comment, style or region. The line is \"WEBVTT\"",
         "line": 6
     },
     "cues": [

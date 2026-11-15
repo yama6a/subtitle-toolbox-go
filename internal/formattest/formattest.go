@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
-// CheckRead fails tb when a read breaks the fuzz rules of CLAUDE.md: err must hold a *model.ParseError, the cues
+// CheckRead fails tb when a read breaks the fuzz rules of CLAUDE.md: err must hold a *model.ParseError and its text must not end in a period, the cues
 // of s are in start order, each start and end is whole milliseconds above -timecode.MaxTime and below
 // timecode.MaxTime, and each warning is Skipped or Repaired. A time may be negative, as model.Cue allows. It
 // returns false when err is not nil, so the caller skips the write checks.
@@ -25,6 +26,9 @@ func CheckRead(tb testing.TB, s *model.Subtitle, warnings []model.ParseWarning, 
 		var perr *model.ParseError
 		if !errors.As(err, &perr) {
 			tb.Fatalf("read returned %v, which is no *model.ParseError", err)
+		}
+		if strings.HasSuffix(err.Error(), ".") {
+			tb.Fatalf("the error text %q ends in a period", err.Error())
 		}
 		return false
 	}

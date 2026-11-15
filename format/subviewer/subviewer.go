@@ -54,7 +54,7 @@ func (o WriteOptions) Validate() error {
 	if o.Version > V2 {
 		return &model.InvalidArgumentError{
 			Option: "WriteOptions.SubViewer.Version",
-			Msg:    "The SubViewer version must be 1 or 2, got " + strconv.Itoa(int(o.Version)) + ".",
+			Msg:    "the SubViewer version must be 1 or 2, got " + strconv.Itoa(int(o.Version)),
 		}
 	}
 	return nil

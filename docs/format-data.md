@@ -23,7 +23,7 @@ fmt.Println(s.FormatDataKeys())
 
 ## The Data type
 
-- **Values**: `model.Data` is an ordered object. A value is `nil`, `bool`, `int64`, `float64`, `string`, `[]any` or `*Data`. `SetFormatData` rejects any other Go type, such as `int`, anywhere in the tree. It also rejects a list or object that holds itself, with `The field PATH holds itself.`, because `Clone` would never end.
+- **Values**: `model.Data` is an ordered object. A value is `nil`, `bool`, `int64`, `float64`, `string`, `[]any` or `*Data`. `SetFormatData` rejects any other Go type, such as `int`, anywhere in the tree. It also rejects a list or object that holds itself, with `the field PATH holds itself`, because `Clone` would never end.
 - **Nil**: a nil `*Data` reads as an empty object. `Set` needs a non-nil `*Data`.
 - **Equality**: compare 2 objects with `reflect.DeepEqual` or testify `assert.Equal`. An object whose last key was deleted equals `NewData()`.
 - **Order**: an object keeps its key order, because writers depend on it. The ASS writer writes the `[Script Info]` keys in stored order.
@@ -36,7 +36,7 @@ fmt.Println(s.FormatDataKeys())
 
 Data enters only through `SetFormatData`, which checks the fields that writers read. A failed check returns an error that matches `ErrInvalidArgument`. The old data then stays. An empty `*Data` removes the key.
 
-- **Message**: `The field PATH must be TYPE.` The path starts with `formatData.KEY`. An object key adds `.key`, a list index adds `[i]`. An object key that is a canonical decimal integer, such as `12` or `-5` but not `012`, also gets the `[12]` form.
+- **Message**: `the field PATH must be TYPE`. The path starts with `formatData.KEY`. An object key adds `.key`, a list index adds `[i]`. An object key that is a canonical decimal integer, such as `12` or `-5` but not `012`, also gets the `[12]` form.
 - **Go types first**: the Go type check of the whole tree runs before the schema check. Example: the `scc` data `{dropFrame: "yes", x: uint8(1)}` fails on `x`.
 - **First problem**: the schema check walks the schema fields in table order and the values in stored order. It returns the first problem.
 - **Cue paths**: every message starts with `The field formatData.KEY`. The library JSON reader puts `cues[N].` after `The field ` for cue data. A test pins this start.
@@ -55,9 +55,9 @@ Data enters only through `SetFormatData`, which checks the fields that writers r
 | `oneOf(values)` | one of the strings, exact | `one of "a", "b"` |
 | `list(T)` | a list or an object, each value of type T | `a list or an object` |
 | `strings` | `list(string)` | |
-| `names(T)` | an object whose keys are names, each value of type T. An empty list passes | `an object`. A number key gives `The field PATH must be an object whose keys are names, not numbers.` |
-| `keys(names, T)` | an object with only these keys, each value of type T | `an object`. Another key gives `The field PATH must hold only the keys a, b, c.` |
-| `object(fields)` | a list or an object with these fields. `!` marks a required field | `an object`. A missing required field gives `The field PATH.NAME is missing.` |
+| `names(T)` | an object whose keys are names, each value of type T. An empty list passes | `an object`. A number key gives `the field PATH must be an object whose keys are names, not numbers`. |
+| `keys(names, T)` | an object with only these keys, each value of type T | `an object`. Another key gives `the field PATH must hold only the keys a, b, c`. |
+| `object(fields)` | a list or an object with these fields. `!` marks a required field | `an object`. A missing required field gives `the field PATH.NAME is missing`. |
 | `?T` | T, or nil | as T |
 
 ### File schema

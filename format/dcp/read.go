@@ -19,7 +19,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
-const notWellFormed = "The content is not well-formed XML."
+const notWellFormed = "the content is not well-formed XML"
 
 var (
 	startRegexp  = xmlraw.StartRegexp(rootPattern) //nolint:gochecknoglobals // a compiled pattern
@@ -85,7 +85,7 @@ func (rd *reader) read(content []byte, s *model.Subtitle) error {
 		rd.interop = true
 	case "SubtitleReel":
 	default:
-		return parseError(model.NoLine, "The root element must be <DCSubtitle> or <SubtitleReel>, not <"+xmlraw.QName(root.Name)+">.")
+		return parseError(model.NoLine, "the root element must be <DCSubtitle> or <SubtitleReel>, not <"+xmlraw.QName(root.Name)+">")
 	}
 	rd.readMetadata(root, s)
 
@@ -117,7 +117,7 @@ func (rd *reader) parse(content []byte) (*xmlraw.Node, error) {
 		if !rd.st.Lenient() {
 			return nil, parseError(line, msg)
 		}
-		rd.st.Warn(msg+" The parser skipped it.", line, model.NoBlock, lines, model.Repaired)
+		rd.st.Warn(parsing.Sentence(msg)+" The parser skipped it.", line, model.NoBlock, lines, model.Repaired)
 	}
 	doc, err := xmlraw.Parse(strings.NewReader(repaired), xmlraw.ParseOptions{})
 	if err != nil {
@@ -350,7 +350,7 @@ func (rd *reader) cue(sub *xmlraw.Node, font map[string]string) (model.Cue, bool
 	if len(lines) == 0 {
 		for d := range sub.Descendants() {
 			if d.Name.Local == "Image" {
-				return model.Cue{}, false, parseError(sub.Line, "The subtitle at "+rawAttr(sub, "TimeIn")+" is an image. The parser reads only text subtitles.")
+				return model.Cue{}, false, parseError(sub.Line, "the subtitle at "+rawAttr(sub, "TimeIn")+" is an image. The parser reads only text subtitles")
 			}
 		}
 		return model.Cue{}, false, nil
@@ -594,7 +594,7 @@ func (rd *reader) time(value string, lineNumber int) (time.Duration, error) {
 			d = rate.ClockDuration(model.Timecode{Hours: h, Minutes: atoi(m[2]), Seconds: atoi(m[3]), Frames: atoi(m[4])}).Round(time.Millisecond)
 		}
 	} else {
-		return 0, parseError(lineNumber, `The time "`+value+`" is not a DCP time code at `+timecode.Number(float64(rd.rate))+" units per second.")
+		return 0, parseError(lineNumber, `the time "`+value+`" is not a DCP time code at `+timecode.Number(float64(rd.rate))+" units per second")
 	}
 	if _, ok := belowLimit(hours); !ok {
 		d = timecode.MaxTime

@@ -150,15 +150,15 @@ func TestReadErrors(t *testing.T) {
 	}{
 		{
 			name: "no header", content: "\nScenarist_SCC V1.0\n", line: 2,
-			msg: `An MCC file must start with the line "File Format=MacCaption_MCC V2.0" or "File Format=MacCaption_MCC V1.0".`,
+			msg: `an MCC file must start with the line "File Format=MacCaption_MCC V2.0" or "File Format=MacCaption_MCC V1.0"`,
 		},
 		{
 			name: "unknown version", content: "File Format=MacCaption_MCC V3.0\n", line: 1,
-			msg: "The MCC version 3.0 is unknown. The parser reads 1.0 and 2.0.",
+			msg: "the MCC version 3.0 is unknown. The parser reads 1.0 and 2.0",
 		},
-		{name: "no time code", content: header2 + "captions\n", line: 4, msg: `The MCC line "captions" does not start with a time code.`},
-		{name: "invalid letter", content: header2 + data("T49SV") + "\n", line: 4, msg: `The MCC data has the invalid character "V" at position 5.`},
-		{name: "half a byte", content: header2 + data("T4") + "\n", line: 4, msg: "The MCC data ends with half a byte."},
+		{name: "no time code", content: header2 + "captions\n", line: 4, msg: `the MCC line "captions" does not start with a time code`},
+		{name: "invalid letter", content: header2 + data("T49SV") + "\n", line: 4, msg: `the MCC data has the invalid character "V" at position 5`},
+		{name: "half a byte", content: header2 + data("T4") + "\n", line: 4, msg: "the MCC data ends with half a byte"},
 		{name: "no CDP identifier", content: header2 + data("T0A9670ZZZZZZZZZZZZZZ") + "\n", line: 4, msg: "the data holds no caption distribution packet"},
 		{
 			name: "short cc_data", content: header2 + data("T0BS0B4F43ZZ72F4FC") + "\n", line: 4,
@@ -166,11 +166,11 @@ func TestReadErrors(t *testing.T) {
 		},
 		{
 			name: "no Time Code Rate", content: "File Format=MacCaption_MCC V2.0\n\n" + data(packet(edm)) + "\n", repaired: true,
-			msg: "The MCC file has no Time Code Rate line.",
+			msg: "the MCC file has no Time Code Rate line",
 		},
 		{
 			name: "unknown Time Code Rate", content: "File Format=MacCaption_MCC V2.0\nTime Code Rate=25DF\n", repaired: true,
-			msg: `The MCC Time Code Rate "25DF" is unknown.`,
+			msg: `the MCC Time Code Rate "25DF" is unknown`,
 		},
 		{
 			name: "time above 100000 hours", content: header2 + "100001:00:00:00\t" + packet(edm) + "\n", line: 4,

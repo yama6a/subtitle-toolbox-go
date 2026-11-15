@@ -96,7 +96,7 @@ func (o ReadOptions) Validate() error {
 	if o.CodePage != CodePageAuto && !o.CodePage.known() {
 		return &model.InvalidArgumentError{
 			Option: "ReadOptions.PAC.CodePage",
-			Msg:    "The PAC code page " + strconv.Quote(string(o.CodePage)) + " is unknown.",
+			Msg:    "the PAC code page " + strconv.Quote(string(o.CodePage)) + " is unknown",
 		}
 	}
 	return nil

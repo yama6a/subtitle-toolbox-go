@@ -53,7 +53,7 @@ func ReadOGM(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*mo
 		}
 		m := ogmName.FindStringSubmatch(line)
 		if m == nil {
-			return nil, nil, parseError(model.OGMChapters, i+1, `The line "`+line+`" is not a CHAPTERxxNAME= line.`)
+			return nil, nil, parseError(model.OGMChapters, i+1, `the line "`+line+`" is not a CHAPTERxxNAME= line`)
 		}
 		cues = append(cues, escapedCue(start, m[1]))
 		pending = false
@@ -68,11 +68,11 @@ func ReadOGM(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*mo
 func ogmStart(line string, number int) (time.Duration, error) {
 	m := ogmTimestamp.FindStringSubmatch(line)
 	if m == nil {
-		return 0, parseError(model.OGMChapters, number, `The line "`+line+`" is not a CHAPTERxx= line.`)
+		return 0, parseError(model.OGMChapters, number, `the line "`+line+`" is not a CHAPTERxx= line`)
 	}
 	hours, minutes, seconds := capped(m[1]), capped(m[2]), capped(m[3])
 	if minutes > 59 || seconds > 59 {
-		return 0, parseError(model.OGMChapters, number, `The line "`+line+`" has a minute or second above 59.`)
+		return 0, parseError(model.OGMChapters, number, `the line "`+line+`" has a minute or second above 59`)
 	}
 	fraction, _ := strconv.ParseInt((m[4] + "00000000")[:9], 10, 64)
 	ms := (hours*3600+minutes*60+seconds)*1000 + (fraction+500_000)/1_000_000

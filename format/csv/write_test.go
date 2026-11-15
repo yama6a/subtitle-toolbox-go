@@ -366,7 +366,7 @@ func TestWriteFrameRateErrors(t *testing.T) {
 
 	// Ports testFramesWithoutAFrameRateThrow of tests/Formatters/CsvFormatterTest.php of subtitle-toolbox-php.
 	_, err := csv.Write(&bytes.Buffer{}, english(), model.CommonWriteOptions{}, csv.WriteOptions{TimeFormat: csv.TimeFrames})
-	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.CSV.FrameRate", Msg: "The time format hh:mm:ss:ff needs a frame rate."}, err)
+	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.CSV.FrameRate", Msg: "the time format hh:mm:ss:ff needs a frame rate"}, err)
 
 	s, _ := mustRead(t, "start,end,text\n1,2,a\n", strict, csv.ReadOptions{})
 	d := fileData(t, s)

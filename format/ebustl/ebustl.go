@@ -40,7 +40,7 @@ func (o WriteOptions) Validate() error {
 	}
 	return &model.InvalidArgumentError{
 		Option: writeFrameRateOption,
-		Msg:    "The EBU STL formatter writes 25 or 30 fps, got " + o.FrameRate.String() + ".",
+		Msg:    "the EBU STL formatter writes 25 or 30 fps, got " + o.FrameRate.String(),
 	}
 }
 

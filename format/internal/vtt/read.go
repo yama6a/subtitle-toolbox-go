@@ -23,7 +23,7 @@ const (
 	arrow       = "-->"
 	utf8BOM     = "\ufeff"
 	signature   = "WEBVTT"
-	noSignature = "The file does not start with WEBVTT."
+	noSignature = "the file does not start with WEBVTT"
 	// timestampPattern is a WebVTT timestamp: hours of any length or none, then exactly mm:ss.mmm.
 	timestampPattern = `(?:\d+:)?[0-5]\d:[0-5]\d\.\d{3}`
 )
@@ -264,9 +264,9 @@ func (r *Reader) warnMissingSignature(skipped []line, firstLine, readFrom int) {
 			lines = append(lines, t)
 		}
 	}
-	msg := noSignature + " The parser read the cues without it."
+	msg := parsing.Sentence(noSignature) + " The parser read the cues without it."
 	if len(lines) > 0 {
-		msg = noSignature + " The parser skipped the lines before line " + strconv.Itoa(readFrom) + "."
+		msg = parsing.Sentence(noSignature) + " The parser skipped the lines before line " + strconv.Itoa(readFrom) + "."
 	}
 	r.st.Warn(msg, firstLine, 0, lines, model.Repaired)
 }
@@ -413,7 +413,7 @@ func (r *Reader) parseHeader(b textblock.Block) error {
 	headerLines := make([]any, len(b.Lines)-1)
 	for i, l := range b.Lines[1:] {
 		if hasArrow(l) {
-			return &model.ParseError{Format: model.WebVTT, Line: b.Line + 1 + i, Msg: "The WEBVTT header has no empty line before the first cue."}
+			return &model.ParseError{Format: model.WebVTT, Line: b.Line + 1 + i, Msg: "the WEBVTT header has no empty line before the first cue"}
 		}
 		headerLines[i] = l
 	}
@@ -463,7 +463,7 @@ func (r *Reader) parseOtherBlock(b textblock.Block, index int) *model.ParseError
 		return &model.ParseError{
 			Format: model.WebVTT,
 			Line:   b.Line,
-			Msg:    "Block #" + strconv.Itoa(index) + " is not a WebVTT cue, comment, style or region. The line is " + parsing.Quote(first) + ".",
+			Msg:    "block #" + strconv.Itoa(index) + " is not a WebVTT cue, comment, style or region. The line is " + parsing.Quote(first),
 		}
 	}
 	return nil

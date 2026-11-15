@@ -52,7 +52,7 @@ func podcastDocument(s *model.Subtitle, opts PodcastWriteOptions) (orderedjson.V
 	if d, ok := s.FormatData(podcastKey); ok {
 		var err error
 		if file, err = formatdata.ToJSON(d); err != nil {
-			return file, &model.UnwritableError{Format: model.PodcastTranscript, CueIndex: -1, Reason: "The Podcasting 2.0 format data is no JSON.", Err: err}
+			return file, &model.UnwritableError{Format: model.PodcastTranscript, CueIndex: -1, Reason: "the Podcasting 2.0 format data is no JSON", Err: err}
 		}
 	}
 	var segments []orderedjson.Value

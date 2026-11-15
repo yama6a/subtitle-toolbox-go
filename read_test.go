@@ -392,7 +392,7 @@ func TestMicroDVDWithoutFrameRateLine(t *testing.T) {
 				require.ErrorAs(t, err, &perr)
 				assert.Equal(t, stbox.MicroDVD, perr.Format)
 				assert.Equal(t, "ReadOptions.MicroDVD.FrameRate", perr.Option)
-				assert.True(t, strings.HasPrefix(perr.Msg, "The frame rate is unknown."), perr.Msg)
+				assert.True(t, strings.HasPrefix(perr.Msg, "the frame rate is unknown."), perr.Msg)
 			}
 		})
 	}
@@ -495,7 +495,7 @@ func TestPACEncodingNamesTheCodePage(t *testing.T) {
 		},
 		{
 			name: "unknown code page field", opts: stbox.ReadOptions{PAC: pac.ReadOptions{CodePage: "klingon"}},
-			option: "ReadOptions.PAC.CodePage", errorMsg: `The PAC code page "klingon" is unknown.`,
+			option: "ReadOptions.PAC.CodePage", errorMsg: `the PAC code page "klingon" is unknown`,
 		},
 	}
 	for _, tt := range tests {
@@ -647,7 +647,7 @@ func TestTSVReadErrorsNameTSV(t *testing.T) {
 	_, _, err := parseBytes([]byte("start\tend\n1\t2\n"), stbox.ReadOptions{Format: stbox.TSV})
 	var perr *stbox.ParseError
 	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, &stbox.ParseError{Format: stbox.TSV, Line: 1, Msg: `The table has no column "text" for text.`}, perr)
+	assert.Equal(t, &stbox.ParseError{Format: stbox.TSV, Line: 1, Msg: `the table has no column "text" for text`}, perr)
 }
 
 // pairFS returns a file system with the VobSub pair two-tracks-pal under the names of idx and sub.

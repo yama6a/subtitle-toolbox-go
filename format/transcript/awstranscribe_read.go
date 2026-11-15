@@ -29,7 +29,7 @@ func ReadAWSTranscribe(r io.Reader, common model.CommonReadOptions, opts ReadOpt
 	results, _ := root.Get("results")
 	items, _ := results.Get("items")
 	if results.Kind() != orderedjson.Object || items.Kind() != orderedjson.Array {
-		return nil, nil, &model.ParseError{Format: model.AWSTranscribe, Msg: `The JSON has no "results.items" list.`}
+		return nil, nil, &model.ParseError{Format: model.AWSTranscribe, Msg: `the JSON has no "results.items" list`}
 	}
 	rd := &awsReader{st: st, cues: wordgroup.NewReader(st, wordgroup.Options{
 		WordTimestamps: opts.WordTimestamps, SpeakerVoices: opts.SpeakerVoices,

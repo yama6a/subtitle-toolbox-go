@@ -222,7 +222,7 @@ func TestPrepareInvalidUTF8(t *testing.T) {
 
 	const (
 		content = "\ufeffCaf\u00e9 noir, caf\xE9 noir\x01\n"
-		msg     = "The content is not valid UTF-8. The first bad byte is at offset 18. Set the source encoding of the file."
+		msg     = "the content is not valid UTF-8. The first bad byte is at offset 18. Set the source encoding of the file"
 	)
 	tests := []struct {
 		name     string
@@ -237,7 +237,7 @@ func TestPrepareInvalidUTF8(t *testing.T) {
 			name:     "lenient keeps the bytes and warns first",
 			lenient:  true,
 			want:     "Caf\u00e9 noir, caf\xE9 noir\n",
-			warnings: []model.ParseWarning{{Message: msg, Line: model.NoLine, Block: model.NoBlock, Action: model.Repaired}, controlWarning(1)},
+			warnings: []model.ParseWarning{{Message: Sentence(msg), Line: model.NoLine, Block: model.NoBlock, Action: model.Repaired}, controlWarning(1)},
 		},
 		{name: "strict fails for a format that replaces", replaces: true, wantErr: true},
 		{
@@ -245,7 +245,7 @@ func TestPrepareInvalidUTF8(t *testing.T) {
 			lenient:  true,
 			replaces: true,
 			want:     "Caf\u00e9 noir, caf\ufffd noir\n",
-			warnings: []model.ParseWarning{{Message: msg + " The parser read the bad bytes as U+FFFD.", Line: model.NoLine, Block: model.NoBlock, Action: model.Repaired}, controlWarning(1)},
+			warnings: []model.ParseWarning{{Message: Sentence(msg) + " The parser read the bad bytes as U+FFFD.", Line: model.NoLine, Block: model.NoBlock, Action: model.Repaired}, controlWarning(1)},
 		},
 	}
 	for _, tt := range tests {

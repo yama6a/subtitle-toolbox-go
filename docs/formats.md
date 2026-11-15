@@ -216,14 +216,14 @@ At 25 fps this file reads as one cue from 137.4 s to 140.4 s with 2 lines. The f
 | toggle in the text | `^B` bold, `^I` italics, `^U` underline. Each flips its flag |
 
 - **Frame rate**: `ReadOptions.FrameRate`. Without it, the highest frame number of all cue lines decides: 25 or more gives 30 fps, else 25 fps. A file without cue lines gives 25 fps. In lenient mode, the guess adds the warning `The file does not give its frame rate. The parser read the frames at 25 fps.`, `Repaired`, with no line and no block.
-- **Times**: hours, minutes and seconds are clock time. The frames add `frames / rate` seconds, rounded to whole milliseconds. `99:00:00:00` is 356400 s. The option rate can be a non-integer rate such as 29.97. The frame number must be below the rate rounded up, else the read fails with `The frame number in "hh:mm:ss:ff" is not below the frame rate of R fps.`
+- **Times**: hours, minutes and seconds are clock time. The frames add `frames / rate` seconds, rounded to whole milliseconds. `99:00:00:00` is 356400 s. The option rate can be a non-integer rate such as 29.97. The frame number must be below the rate rounded up, else the read fails with `the frame number in "hh:mm:ss:ff" is not below the frame rate of R fps`.
 - **Detection**: the file starts with `$` or `//` lines and a cue line, or with a cue line whose text does not start with a double quote. The signature needs exactly 2 hour digits. So a file whose first cue starts at hour 100 is not detected, but the reader reads it. `sprucestl.Detect` holds the rule.
 - **Shared extension**: EBU STL uses `.stl` too. `FormatFromPath` returns the format of the first registry row.
 
 ### Read
 
 1. Each line is trimmed for matching. A blank line is ignored after the first cue line.
-2. A line that is no cue, command, comment or blank fails with `The line "L" is no Spruce STL subtitle, command or comment.`, and lenient mode skips it.
+2. A line that is no cue, command, comment or blank fails with `the line "L" is no Spruce STL subtitle, command or comment`, and lenient mode skips it.
 3. A cue line with a bad frame number, a time of 100000 hours or more, or an end before the start fails as in [lenient-parsing.md](lenient-parsing.md#spruce-stl) says.
 4. **Style**: bold, italics and underline start off, the alignment starts at `BottomCenter`. `$Bold`, `$Italic` and `$Underlined` take `True` or `False`. `$HorzAlign` takes `Left`, `Center` or `Right`. `$VertAlign` takes `Top`, `Center` or `Bottom`. Every `$` line applies to the state, also in the header. Other commands and other values change nothing.
 5. **Cue text**: the text splits at the line breaks. Each part is trimmed and split at the toggles. The style starts from the commands for every cue and carries from one line of the cue to the next. `&`, `<` and `>` become entities. Empty lines drop.
@@ -280,7 +280,7 @@ The root `ReadOptions.SpruceSTL` holds a `sprucestl.ReadOptions`, `WriteOptions.
 | `ReadOptions.SpruceSTL` | `FrameRate` | `FrameRate` | zero value: guess 25 or 30 fps | the frame rate of the time codes |
 | `WriteOptions.SpruceSTL` | `FrameRate` | `FrameRate` | zero value: the stored frame rate, else 25 | the output frame rate |
 
-- **Check**: `Validate` rejects a frame rate that fails `FrameRate.Validate`. The `Option` is `ReadOptions.SpruceSTL.FrameRate` or `WriteOptions.SpruceSTL.FrameRate`. The messages are `The frame rate must be greater than 0, got X.` and `The Spruce STL frame rate must be greater than 0, got X.`
+- **Check**: `Validate` rejects a frame rate that fails `FrameRate.Validate`. The `Option` is `ReadOptions.SpruceSTL.FrameRate` or `WriteOptions.SpruceSTL.FrameRate`. The messages are `the frame rate must be greater than 0, got X` and `the Spruce STL frame rate must be greater than 0, got X`.
 
 ## ASS and SSA
 
@@ -383,7 +383,7 @@ This file reads as one cue from 1 s to 3 s with the alignment `TopCenter` and th
 
 | Input | Goes to |
 |:--- |:--- |
-| the root namespace: TTML, DFXP `2006/10`, DFXP `2006/04`, or none | file data `ttml.namespace`, `""` for none. Another root gives `The root element is not a TTML <tt> element.` |
+| the root namespace: TTML, DFXP `2006/10`, DFXP `2006/04`, or none | file data `ttml.namespace`, `""` for none. Another root gives `the root element is not a TTML <tt> element`. |
 | the `xmlns` declarations on `<tt>` | file data `ttml.namespaces`, a `*model.Data` of prefix to URI, sorted by prefix, `""` for the default namespace. An empty list `[]any{}` when the root declares none |
 | the other attributes of `<tt>` except `xml:lang` | file data `ttml.attributes`, a `*model.Data` in file order. An empty list `[]any{}` when the root has none |
 | `xml:lang` of `<tt>` | the metadata `language` |
@@ -403,7 +403,7 @@ This file reads as one cue from 1 s to 3 s with the alignment `TopCenter` and th
 - **Times**: clock times such as `00:00:01.500`, `00:00:01,500` and `00:00:01:12` with frames, and offsets such as `1.5s`, `1500ms`, `36f` and `15000000t`. The reader reads `ttp:frameRate`, `ttp:frameRateMultiplier`, `ttp:subFrameRate`, `ttp:tickRate`, and `ttp:timeBase="smpte"` with `ttp:dropMode`. Without `ttp:frameRate`, frames count at 30 fps.
 - **Timing model**: a time adds to the begin of its parent. A paragraph ends at the earliest of its parent end, its `end` and its begin plus `dur`. A paragraph without an end takes the times of its timed spans. A paragraph without an end and without timed spans fails. `seq` containers read as `par`.
 - **Arithmetic**: the reader computes in float64 seconds, then rounds each cue time to whole milliseconds. So `smpte_drop_ntsc.ttml` gives starts such as 57.391 s and 3599.996 s.
-- **End before begin**: `<p begin="5s" end="2s">` fails with `The cue ends at 2 s, before it starts at 5 s.` Lenient mode swaps the times, as in SubRip.
+- **End before begin**: `<p begin="5s" end="2s">` fails with `the cue ends at 2 s, before it starts at 5 s`. Lenient mode swaps the times, as in SubRip.
 - **Alignment**: `tts:textAlign` `left`, `center` or `right` gives the column. The `tts:origin`, `tts:extent` and `tts:displayAlign` of the region give the row, in `%`, `px` or cells. A file without regions has one region over the whole screen from the top, so `tts:textAlign="center"` alone gives `TopCenter`. `start`, `end` and an unknown region give `BottomCenter` and no `ttml.alignment`.
 - **Namespaces**: `tts:`, `ttp:` and `ttm:` attributes count in the namespaces of TTML and of both DFXP drafts, and with an undeclared prefix.
 - **Encoding**: the reader reads the content as UTF-8 and ignores the `encoding` of the XML declaration, because the root decodes other encodings first.
@@ -451,7 +451,7 @@ The writer keeps what the reader stored, so a DFXP file stays DFXP after a retim
 - **Unique IDs**: each `xml:id` of the output is unique. An ID that is taken gets `_2`, `_3` and so on. The head IDs keep their value. New agents and regions take their IDs next, then `<tt>`, `<body>`, each `<div>` and each `<p>` in output order. So 2 cues with the ID `c1` come out as `c1` and `c1_2`. A cue ID that is no XML name, such as `1`, gives no `xml:id`.
 - **Forbidden characters**: the writer removes the characters that XML 1.0 forbids from text and attribute values: the C0 controls except tab, LF and CR, U+FFFE and U+FFFF. Text that is not valid UTF-8 returns an `*UnwritableError` whose `Err` is `ErrInvalidUTF8`.
 - **Attribute values**: the writer writes TAB, LF and CR as `&#9;`, `&#10;` and `&#13;`, because a raw one reads back as a space.
-- **Stored head that is no head**: a `ttml.head` that is not well-formed XML, or whose first node is no `<head>` element, returns an `*UnwritableError` with `The stored TTML head is not a well-formed <head> element.`.
+- **Stored head that is no head**: a `ttml.head` that is not well-formed XML, or whose first node is no `<head>` element, returns an `*UnwritableError` with `the stored TTML head is not a well-formed <head> element`.
 - **Lost on write**: word timestamps and timed spans. Span style references, because spans are written inline. Styles that core markup does not hold: a background color of the input, fonts, sizes, positions. `<set>`, comments and `<metadata>` in the body. The `<div>` tree, div IDs and div regions. The time format: the output holds media clock times in whole milliseconds.
 
 ### Options
@@ -477,7 +477,7 @@ This file reads as one cue from 90.08 s to 93.124 s with 2 lines and the alignme
 
 | Input | Goes to |
 |:--- |:--- |
-| the root: `DCSubtitle` is Interop, `SubtitleReel` is SMPTE, with any prefix | file data `dcp.dialect`. Another root gives `The root element must be <DCSubtitle> or <SubtitleReel>, not <NAME>.` with the name as written |
+| the root: `DCSubtitle` is Interop, `SubtitleReel` is SMPTE, with any prefix | file data `dcp.dialect`. Another root gives `the root element must be <DCSubtitle> or <SubtitleReel>, not <NAME>` with the name as written |
 | `MovieTitle` (Interop) or `ContentTitleText` (SMPTE), a child of the root | the metadata `title`, trimmed. An empty title gives none |
 | SMPTE `Language` | the metadata `language`, trimmed. Interop names the language in words, such as `English`, so the reader skips it |
 | the root namespace URI and prefix of an SMPTE root | file data `dcp.namespace` and `dcp.prefix`. The reader does not check the URI |
@@ -491,15 +491,15 @@ This file reads as one cue from 90.08 s to 93.124 s with 2 lines and the alignme
 
 - **Rate**: Interop counts 250 ticks per second. SMPTE uses `TimeCodeRate` when it is a whole number from 1 to 1000. Else it uses `EditRate` as `a b`, the quotient rounded, when both are above 0 and the result is from 1 to 1000. Else it uses 24. So `<EditRate>48 1</EditRate>` gives 48.
 - **`StartTime`**: the reader does not subtract it. It stays in `dcp.header`, so a caller can shift the cues. A `StartTime` of `10:00:00:00` and `TimeIn="00:00:13:00"` give 13 s.
-- **Times**: `HH:MM:SS:EE` with 1 to 3 digits in EE, below the rate. `00:01:30:020` is 90.08 s, and SMPTE `00:00:30:04` at 25 fps is 30.16 s. Interop also reads `HH:MM:SS.sss` with any count of fraction digits, so `01:12:42.5` is 4362.5 s. Minutes and seconds have 1 or 2 digits and no range check. The reader rounds each time to whole milliseconds. Another shape, or an EE at or above the rate, fails with `The time "T" is not a DCP time code at R units per second.` R prints as `250` or `25`.
+- **Times**: `HH:MM:SS:EE` with 1 to 3 digits in EE, below the rate. `00:01:30:020` is 90.08 s, and SMPTE `00:00:30:04` at 25 fps is 30.16 s. Interop also reads `HH:MM:SS.sss` with any count of fraction digits, so `01:12:42.5` is 4362.5 s. Minutes and seconds have 1 or 2 digits and no range check. The reader rounds each time to whole milliseconds. Another shape, or an EE at or above the rate, fails with `the time "T" is not a DCP time code at R units per second`. R prints as `250` or `25`.
 - **Fonts**: `Font` elements nest around `Subtitle`, inside it and inside `Text`. Each passes its attributes to the elements inside it, with lower-case names and values. `color` of 8 hex digits `AARRGGBB` gives `<font color="#rrggbb">` unless it is white, and the alpha is dropped. `weight` `bold` gives `<b>`. `italic` `yes`, `left` or `right` gives `<i>`. `underlined` (Interop) or `underline` (SMPTE) `yes` gives `<u>`. Font name, size, effect and script are ignored.
 - **Lines**: each `Text` is one line. Inside it, CR, LF and tab drop, `Space` is a space, and `Ruby` becomes `base (note)`, or `base` without a note.
 - **Height**: `VAlign` `top` gives `VPosition` as the height from the top in percent. `bottom` gives 100 minus `VPosition`. `center` or no `VAlign` gives 50 plus `VPosition`. A `VPosition` that is no number counts as 0. Lines sort by height, top first, and empty lines drop.
 - **Alignment**: the mean height of the lines gives the row. Below a third it is top, above two thirds it is bottom, else middle. `HAlign` of the top line gives the column: `left`, `right`, else center.
 - **Offset**: `Cue.Position.Offset` is the anchor edge of the alignment. `Y` is the height of the top line for a top row, of the bottom line for a bottom row, and the mean height for a middle row. So a 1-line and a 2-line cue at the same place read the same `Y`. `HPosition` of the top line counts from the edge that `HAlign` names, so it gives `X`: left gives `HPosition`, right gives 100 minus it, center gives 50 plus it. A line without `HPosition` has the default anchor of its column: 10, 50 or 90. Values are clamped to 0 to 100. A top or bottom row whose edge line lies within 10 % of the screen edge, such as `VAlign="bottom" VPosition="8"`, has no offset when `X` is the default anchor of the column. `HAlign="left" HPosition="10"` is such a place.
-- **No lines**: a `Subtitle` without `Text` gives no cue. When it holds an `Image` element, it fails with `The subtitle at T is an image. The parser reads only text subtitles.` The reader reads only text subtitles.
+- **No lines**: a `Subtitle` without `Text` gives no cue. When it holds an `Image` element, it fails with `the subtitle at T is an image. The parser reads only text subtitles`. The reader reads only text subtitles.
 - **Text before the XML**: strict mode fails and lenient mode skips it, as in [lenient-parsing.md](lenient-parsing.md#dcp-subtitles).
-- **XML**: the reader loads no DTD and does no repair. Malformed XML fails with `The content is not well-formed XML.` in both modes. Text that is not valid UTF-8 makes the XML malformed. Elements match by local name.
+- **XML**: the reader loads no DTD and does no repair. Malformed XML fails with `the content is not well-formed XML` in both modes. Text that is not valid UTF-8 makes the XML malformed. Elements match by local name.
 
 ### Write
 
@@ -548,7 +548,7 @@ The writer keeps the dialect, root, header, fonts and positions of the input. A 
 - **Positions**: the cue keeps its stored `Text` attributes while it has the same number of lines and the stored attributes give its alignment. Else the alignment sets the positions: a bottom row gets `Valign="bottom"` and `Vposition` 8, 15, 22, from the bottom line up. A top row gets `Valign="top"` and 8, 15, 22 from the top line down. A middle row gets `Valign="center"` and (i - (n - 1) / 2) x 7, so 2 lines give `-3.5` and `3.5`. `Halign` comes first, only for left and right. Interop writes `VAlign`, `HAlign` and `VPosition`. A cue whose `Offset` lies in the screen cell of its alignment moves the anchor edge: the bottom line of a bottom row sits at `Vposition` 100 minus `Y`, the top line of a top row at `Y`, and the middle of a middle row at `Y` minus 50. The other lines keep 7 % apart on the same side, so they stay on the screen. `Hposition` is `X` for left, 100 minus `X` for right, and `X` minus 50 for center when that is not 0.
 - **Runs**: the base style is the stored `font`, white and plain by default. `<b>`, `<i>`, `<u>` and `<font color>` change the style of a run. Text is entity-decoded, loses the characters that XML 1.0 forbids, and gets `&`, `<`, `>` and `"` escaped. `<s>`, `<v>`, word timestamps and other tags drop.
 - **Time limit**: a time that rounds to 100000 hours stops at the last unit below it, so the output reads back.
-- **Check**: the writer parses its output. A result that is not well-formed returns an `*UnwritableError` with `The formatter wrote XML that is not well-formed.` Text that is not valid UTF-8 returns an `*UnwritableError` whose `Err` is `ErrInvalidUTF8`.
+- **Check**: the writer parses its output. A result that is not well-formed returns an `*UnwritableError` with `the formatter wrote XML that is not well-formed`. Text that is not valid UTF-8 returns an `*UnwritableError` whose `Err` is `ErrInvalidUTF8`.
 - **Lost on write**: comments, indentation, header elements with child elements, `Font` elements inside `Subtitle`, which the writer rebuilds per run, font name, size and effect, `<s>`, speakers, word timestamps, images, and more than one `Font` around the subtitles.
 
 ### Options
@@ -598,7 +598,7 @@ The writer builds a TTML document with the TTML writer and changes these parts:
 | 29.97 | `30` | `999 1000` | 2997/100 |
 | 30 | `30` | `1 1` | 30/1 |
 
-- **Which rate**: `WriteOptions.ITT.FrameRate` wins over the stored rate. The stored rate is `itt.frameRate` times `itt.frameRateMultiplier` (`1 1` when missing), when it matches a row and its `frameRate` equals the `ttp:frameRate` of that row. When the option and the stored rate name the same row, the stored strings stay, so `1000 1001` is not rewritten. A subtitle without a usable stored rate and without the option returns an `*InvalidArgumentError` with `Option` `WriteOptions.ITT.FrameRate` and `iTT output needs the frame rate of the video.`. An option outside the table returns the same type with `The ITT formatter accepts the frame rates 23.976, 24, 25, 29.97 and 30, got 50.`.
+- **Which rate**: `WriteOptions.ITT.FrameRate` wins over the stored rate. The stored rate is `itt.frameRate` times `itt.frameRateMultiplier` (`1 1` when missing), when it matches a row and its `frameRate` equals the `ttp:frameRate` of that row. When the option and the stored rate name the same row, the stored strings stay, so `1000 1001` is not rewritten. A subtitle without a usable stored rate and without the option returns an `*InvalidArgumentError` with `Option` `WriteOptions.ITT.FrameRate` and `iTT output needs the frame rate of the video.`. An option outside the table returns the same type with `the ITT formatter accepts the frame rates 23.976, 24, 25, 29.97 and 30, got 50`.
 - **Multiplier**: the writer counts the stored multiplier as the TTML reader does: 2 numbers above 0, split at white space or `:`. Anything else counts as `1 1`. So `1000x 1001` is 1000/1001.
 - **Drop-frame**: `FrameRate2997DF` is near the 29.97 row. The writer writes that row with `ttp:dropMode="nonDrop"`. Labels are never drop-frame.
 - **Times**: begin frame is the start rounded to the nearest frame, and 0 for a negative start. End frame is the end rounded the same way, and at least the begin frame plus 1. So each cue lasts 1 frame or more. Both stop at the last frame below 100000 hours, `99999:59:59:24` at 25 fps. At 29.97 fps the label `01:00:00:00` is 3603.6 s.
@@ -660,7 +660,7 @@ This file reads as one cue from 1 s to 4 s with the lines `The bridge is <b>open
 
 | # | Case | Class |
 |---:|:--- |:--- |
-| 1 | `sami.ReadOptions.LanguageClass` is set | that class of `<STYLE>` or of a `<P>`, in any case. Missing: `The SAMI file has no class X.`, also in lenient mode |
+| 1 | `sami.ReadOptions.LanguageClass` is set | that class of `<STYLE>` or of a `<P>`, in any case. Missing: `the SAMI file has no class X`, also in lenient mode |
 | 2 | `<STYLE>` has no class | the first class that a `<P>` uses, or none |
 | 3 | no `<P>` uses a class | the first class of `<STYLE>` |
 | 4 | a `<P>` uses a class of `<STYLE>` | the first such class in `<STYLE>` order |
@@ -716,15 +716,15 @@ A read needs the frame rate of the video. The reader takes the first source that
 
 - **No frame rate**: strict mode fails with a `*ParseError` whose `Option` is `ReadOptions.MicroDVD.FrameRate`. The CLI turns it into the advice to pass `--fps`.
 - **First line**: strict mode looks at the first non-empty line. Lenient mode looks at the first line of the shape `{N}{N}text`, so the frame rate line may follow junk such as a release name.
-- **Line value 0**: `{1}{1}0` fails in both modes with `The frame rate must be greater than 0, got 0.`. With the option set, the reader does not check the line value.
+- **Line value 0**: `{1}{1}0` fails in both modes with `the frame rate must be greater than 0, got 0`. With the option set, the reader does not check the line value.
 - **Not a frame rate line**: `{1}{1}Hello` is a cue from frame 1 to frame 1.
 - **23.976**: the plain float, not 24000/1001, as mantas-done/subtitles, pysubs2 and subtitle_it use it.
-- **Write**: `WriteOptions.MicroDVD.FrameRate`, else the stored `frameRate`, else an `*InvalidArgumentError` with `Option` `WriteOptions.MicroDVD.FrameRate`. So a file read at 25 fps writes back at 25 fps without options. A stored `frameRate` that is not above 0 fails with the same `Option` and `The MicroDVD frame rate must be greater than 0, got X.`, for example `got -2.` for -2.
+- **Write**: `WriteOptions.MicroDVD.FrameRate`, else the stored `frameRate`, else an `*InvalidArgumentError` with `Option` `WriteOptions.MicroDVD.FrameRate`. So a file read at 25 fps writes back at 25 fps without options. A stored `frameRate` that is not above 0 fails with the same `Option` and `the MicroDVD frame rate must be greater than 0, got X`, for example `got -2.` for -2.
 
 ### Read
 
-- **Lines**: one cue per non-empty line `{start}{end}text`. Each line is trimmed. A line of another shape fails: `The line "L" is not a MicroDVD cue.`. So `{24}{}Hello` detects as MicroDVD and then fails.
-- **Times**: frames divided by the frame rate, rounded to whole milliseconds. A time of 100000 hours or more fails with `The time "{N}" is not below 100000 hours.`. A frame number beyond the int64 range reads as the int64 maximum.
+- **Lines**: one cue per non-empty line `{start}{end}text`. Each line is trimmed. A line of another shape fails: `the line "L" is not a MicroDVD cue`. So `{24}{}Hello` detects as MicroDVD and then fails.
+- **Times**: frames divided by the frame rate, rounded to whole milliseconds. A time of 100000 hours or more fails with `the time "{N}" is not below 100000 hours`. A frame number beyond the int64 range reads as the int64 maximum.
 - **Text**: `&`, `<` and `>` are text, so the line holds `&amp;`, `&lt;` and `&gt;`. A line that is empty after its codes is dropped. Invalid UTF-8 stays as bytes.
 
 | Control code | Core markup |
@@ -756,7 +756,7 @@ The root `ReadOptions.MicroDVD` holds a `microdvd.ReadOptions`, `WriteOptions.Mi
 | `WriteOptions.MicroDVD` | `FrameRate` | `FrameRate` | zero value: the stored frame rate | the output frame rate |
 | `WriteOptions.MicroDVD` | `WriteFrameRateLine` | `bool` | false: only when the input had the line | write `{1}{1}<fps>` first |
 
-- **Check**: `Validate` rejects a frame rate that fails `FrameRate.Validate`, for example `The frame rate must be greater than 0, got -1.`, with an error that matches `ErrInvalidArgument`.
+- **Check**: `Validate` rejects a frame rate that fails `FrameRate.Validate`, for example `the frame rate must be greater than 0, got -1`, with an error that matches `ErrInvalidArgument`.
 
 ## SBV
 
@@ -839,7 +839,7 @@ The writer turns each cue into a pop-on caption. The caption loads into hidden m
 - **Output**: the header, an empty line, then one line for each run of consecutive frames. A line holds the label of its first frame, a tab and the words as 4 lowercase hex digits. Lines are separated by an empty line. The output ends with one LF. A subtitle without text writes the header and an LF.
 - **Time codes**: `DropFrameOn` writes `00:01:00;02`. `DropFrameOff` writes `00:01:00:00`. `DropFrameKeep` takes the stored `dropFrame` of the file, else drop-frame. A cue from 58 s to 61 s ends with `00:01:01;00` by default and `00:01:00:28` without drop-frame.
 - **Line ending and BOM**: `LineEnding` and `BOM` apply. The default writes no BOM. The writer ignores `StripTags`.
-- **Limits**: a cue holds at most 4 lines of 32 characters, and only characters that CEA-608 has. A cue that breaks a limit gives an `*UnwritableError`. Its message says the fix in words, for example `Cue #0 at 1 s has a line with 33 characters, but SCC allows 32. Wrap the lines to 4 lines of 32 characters first.` The error wraps `scc.ErrWrapFirst` when the text fits 4 lines of 32 characters after a wrap, and `scc.ErrSplitFirst` when it needs a split into cues first. A cue without text writes nothing.
+- **Limits**: a cue holds at most 4 lines of 32 characters, and only characters that CEA-608 has. A cue that breaks a limit gives an `*UnwritableError`. Its message says the fix in words, for example `cue #0 at 1 s has a line with 33 characters, but SCC allows 32. Wrap the lines to 4 lines of 32 characters first`. The error wraps `scc.ErrWrapFirst` when the text fits 4 lines of 32 characters after a wrap, and `scc.ErrSplitFirst` when it needs a split into cues first. A cue without text writes nothing.
 - **Markup**: `<i>`, `<u>` and `<font color>` in the 7 CEA-608 colors become PAC styles and mid-row codes. Another color becomes white. Other tags drop. A style change inside a word costs a space, because a mid-row code shows as a space. Text that looks like a tag stays: `a &lt; b &gt; c` reads back as the same text.
 - **Positions**: the first rule that holds sets the rows and columns. First, the cue data `rows` and `columns` of a read, when both list one integer for each line, the rows rise from 1 to 15, a first row of 4 or less goes with a top alignment, and `Position.Row` equals the first stored row. A column is moved to fit the line. Second, `Position.RowOn` on the 15 by 32 grid, with every line at `Position.Column` when the position is on the CEA-608 grid. Third, the alignment: row 1 for top, the middle rows for middle and the last rows for bottom, with column 0 for left, the end for right and the middle for center.
 - **Row edge**: the reader gives rows 1 to 4 a `TopCenter` alignment and rows 5 to 15 a `BottomCenter` alignment. The top third of a 15-row grid is rows 1 to 5, so a cue on SCC row 5 with `BottomCenter` loses its row in other writers that use `RowOn`, such as EBU STL.
@@ -868,8 +868,8 @@ Without `Fit`, a late caption writes late and no change is reported. A cue that 
 | `ReadOptions.SCC` | `Channel` | `int` | 0, read as 1 | 1 reads CC1 and CC3. 2 reads CC2 and CC4 |
 | `ReadOptions.SCC` | `RollUp` | `scc.RollUp` | `RollUpScreen` | `RollUpScreen` or `RollUpLines`. The text forms are `screen` and `lines` |
 
-- **Read check**: `ReadOptions.Validate` rejects a channel other than 0, 1 and 2 with `The SCC data channel must be 1 or 2, got 3.` and an unknown roll-up mode. Both match `ErrInvalidArgument`.
-- **Write check**: `WriteOptions.Validate` rejects an unknown drop-frame mode with `The SCC drop-frame mode 3 is unknown.`. It matches `ErrInvalidArgument`.
+- **Read check**: `ReadOptions.Validate` rejects a channel other than 0, 1 and 2 with `the SCC data channel must be 1 or 2, got 3` and an unknown roll-up mode. Both match `ErrInvalidArgument`.
+- **Write check**: `WriteOptions.Validate` rejects an unknown drop-frame mode with `the SCC drop-frame mode 3 is unknown`. It matches `ErrInvalidArgument`.
 - **Reader**: it reads `Lenient` and `LastCueDuration` too.
 
 ## MCC
@@ -887,7 +887,7 @@ The line has the time code `00:00:01:00`, a tab, and the hex data. The letter `T
 
 ### Read
 
-- **Header**: the first non-blank line must be `File Format=MacCaption_MCC V1.0` or `V2.0`. Another version gives `The MCC version 3.0 is unknown. The parser reads 1.0 and 2.0.` Both errors also stop a lenient read.
+- **Header**: the first non-blank line must be `File Format=MacCaption_MCC V1.0` or `V2.0`. Another version gives `the MCC version 3.0 is unknown. The parser reads 1.0 and 2.0`. Both errors also stop a lenient read.
 - **Header fields**: a line `Name=Value` before or between data lines is a header field. The reader stores the fields in file order, except `Time Code Rate`. A later line of the same name replaces the value. Lines that start with `//` and blank lines are skipped.
 - **Data line**: `HH:MM:SS:FF`, white space and the hex data. The hour has 2 to 6 digits. Version 2.0 may add a field suffix and a line number, such as `01:00:00:00.1,9`. The reader ignores both. It reads no `;` in the label, because the header decides drop-frame.
 - **Hex data**: pairs of hex digits in any case, and the alias letters `G` to `O` (1 to 9 times `FA 00 00`), `P`, `Q`, `R` (`FB 80 80`, `FC 80 80`, `FD 80 80`), `S` (`96 69`), `T` (`61 01`), `U` (`E1 00 00 00`) and `Z` (`00`).
@@ -896,7 +896,7 @@ The line has the time code `00:00:01:00`, a tab, and the hex data. The letter `T
 - **Times**: the label is a frame count, as in SCC. Drop-frame skips 2 labels per minute at 30 labels and 4 at 60, except every tenth minute. Packets with the same time code join in file order.
 - **Services**: the cues come from CEA-708 service 1, or from `ReadOptions.Service`. When that service has no captions, the cues come from the CEA-608 field 1 pairs, read as in SCC. `CEA608Only` skips CEA-708.
 - **Format data**: the file holds `version`, `frameRate` (one of `23.976`, `24`, `25`, `29.97`, `30`, `50`, `59.94`, `60`), `dropFrame` and `header`. CEA-608 cues hold the `scc` cue data of SCC. CEA-708 cues hold none, and only the alignment of the window anchor.
-- **Time limit**: a data line at 100000 hours or later fails with `The time "100001:00:00:00" is not below 100000 hours.` A cue that ends at 100000 hours or later ends at 99999:59:59.999, also a cue of CEA-708 data.
+- **Time limit**: a data line at 100000 hours or later fails with `the time "100001:00:00:00" is not below 100000 hours`. A cue that ends at 100000 hours or later ends at 99999:59:59.999, also a cue of CEA-708 data.
 - **Lenient repairs**: see [lenient-parsing.md](lenient-parsing.md#mcc).
 
 ### Write
@@ -943,8 +943,8 @@ The CEA-608 part follows the limits of SCC: 4 lines of 32 characters and charact
 | `WriteOptions.MCC` | `FrameRate` | `FrameRate` | zero: the stored rate, else 29.97 | within 0.01 of a rate of the table, so 2997/100 writes at 29.97 |
 | `WriteOptions.MCC` | `DropFrame` | `DropFrameMode` | `DropFrameKeep` | `DropFrameOn`, `DropFrameOff`, or the rule above |
 
-- **Read check**: `ReadOptions.Validate` rejects a service above 63 with `The CEA-708 service must be from 1 to 63, got 64.`, a channel other than 0, 1 and 2, and an unknown roll-up mode.
-- **Write check**: `WriteOptions.Validate` rejects other frame rates with `The MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got 48.` and an unknown drop-frame mode.
+- **Read check**: `ReadOptions.Validate` rejects a service above 63 with `the CEA-708 service must be from 1 to 63, got 64`, a channel other than 0, 1 and 2, and an unknown roll-up mode.
+- **Write check**: `WriteOptions.Validate` rejects other frame rates with `the MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got 48` and an unknown drop-frame mode.
 - **Reader**: it reads `Lenient` and `LastCueDuration` too.
 
 ## MPL2
@@ -1107,7 +1107,7 @@ Then each cue with visible text writes an empty line, its timing line and its te
 |:--- |:--- |:--- |:--- |
 | `FrameRate` | `FrameRate` | zero value: seconds and `FORMAT=TIME` | write frames at this whole rate and `FORMAT=<rate>` |
 
-- **Check**: `Validate` rejects a frame rate that fails `FrameRate.Validate` or is not whole, for example `The MPSub frame rate must be a positive integer, got 29.97.`, with an error that matches `ErrInvalidArgument`. MPlayer and FFmpeg read `FORMAT=29.97` as 29 fps, so a fractional rate would not read back.
+- **Check**: `Validate` rejects a frame rate that fails `FrameRate.Validate` or is not whole, for example `the MPSub frame rate must be a positive integer, got 29.97`, with an error that matches `ErrInvalidArgument`. MPlayer and FFmpeg read `FORMAT=29.97` as 29 fps, so a fractional rate would not read back.
 
 ## LRC
 
@@ -1139,7 +1139,7 @@ This file has the title `Morning Train` and 3 cues:
 - **Word times**: `<mm:ss.xx>` in the text becomes the word timestamp `<hh:mm:ss.mmm>`, with the offset applied. The reader drops the spaces after a word time, and before a word time at the line end. Then the file data `spacedWordTimes` is true.
 - **Escaping**: `&`, `<` and `>` of the other text become entities. So `I <3 bread` reads as `I &lt;3 bread`.
 - **End times**: a cue ends at the next time tag in time, also one without text. When that time tag has no text, the cue data `endLine` is true. The last cue ends at its start plus `LastCueDuration`, as [reading-writing.md](reading-writing.md#last-cue-default) says.
-- **Other lines**: every other line is ignored. A file with plain text and no cue fails with `The file has text but no cues.`.
+- **Other lines**: every other line is ignored. A file with plain text and no cue fails with `the file has text but no cues`.
 - **Encoding**: invalid UTF-8 stays in the text.
 
 ### Write
@@ -1170,17 +1170,17 @@ A header of descriptors comes first, then samples that each start at a timestamp
 
 ### Read
 
-- **Header**: all lines before the first line that is a timestamp line. The reader keeps them raw in the file data `header`. The first header line must start with `{QTtext}`, in any case, after optional white space. Strict mode fails otherwise with `The file does not start with {QTtext}.` on line 1. Lenient mode warns `The file does not start with {QTtext}. The parser read it as QuickTime text.`, `Repaired`, on line 1.
+- **Header**: all lines before the first line that is a timestamp line. The reader keeps them raw in the file data `header`. The first header line must start with `{QTtext}`, in any case, after optional white space. Strict mode fails otherwise with `the file does not start with {QTtext}` on line 1. Lenient mode warns `The file does not start with {QTtext}. The parser read it as QuickTime text.`, `Repaired`, on line 1.
 - **Timestamp line**: `[h:mm:ss]` or `[h:mm:ss.f]` after optional white space, with 1 or more hour digits and minutes and seconds up to 59. Text may follow the `]` on the same line. Later lines that are no timestamp line belong to the sample before them. A sample without text is a gap and gives no cue.
 - **Time scale**: `{timeScale:N}` in the header, with N all digits and above 0. A fraction then counts units of 1/N s. Without a time scale, the fraction is a decimal fraction, so `[00:00:07.25]` is 7.25 s. A descriptor name matches in any case, and spaces around the colon are allowed.
 - **Rounding**: the time is hours, minutes, seconds and fraction, rounded half up to whole milliseconds. The reader computes in integers. So `[00:00:01.13]` at scale 30 is 1433 ms, and a decimal fraction of `[00:00:02.7665]` is 2767 ms.
-- **Fraction at or above the time scale**: `[00:00:01.45]` at scale 30 fails in strict mode with `The timestamp "[00:00:01.45]" counts 45 units, but the time scale is 30 per second.` Lenient mode warns the same text plus ` The parser added them to the seconds.`, `Repaired`, and reads 1 s and 45/30 s, which is 2.5 s.
+- **Fraction at or above the time scale**: `[00:00:01.45]` at scale 30 fails in strict mode with `the timestamp "[00:00:01.45]" counts 45 units, but the time scale is 30 per second`. Lenient mode warns that text written as a sentence, plus ` The parser added them to the seconds.`, `Repaired`, and reads 1 s and 45/30 s, which is 2.5 s.
 - **Relative timestamps**: `{timeStamps:relative}`, in any case, adds each timestamp to the one before it. The sum must stay below 100000 hours too.
-- **End times**: a cue ends at the next sample, also one without text. The last cue ends at its start plus `LastCueDuration`, as [reading-writing.md](reading-writing.md#last-cue-default) says. A sample that ends before it starts fails with `The cue ends at E s, before it starts at S s.` on the line of the sample. Lenient mode swaps the times when the cue then lasts 30 s or less.
+- **End times**: a cue ends at the next sample, also one without text. The last cue ends at its start plus `LastCueDuration`, as [reading-writing.md](reading-writing.md#last-cue-default) says. A sample that ends before it starts fails with `the cue ends at E s, before it starts at S s` on the line of the sample. Lenient mode swaps the times when the cue then lasts 30 s or less.
 - **Styles**: `{bold}`, `{italic}` and `{underline}` turn a style on for the rest of the sample and for all later samples. `{plain}` turns all off. The names match in any case. The styles of the header set the starting style. Other descriptors, such as `{font:Geneva}`, give no markup. A sample that is skipped because of its times does not move the style.
 - **Text**: the white space around a styled run stays outside its tags. Each line is trimmed. A line without text drops out. `&`, `<` and `>` become entities.
 - **Paired layout**: Subtitle Edit writes a start timestamp, the text, an end timestamp and an empty line. The reader sets the file data `pairedTimestamps` when an empty line follows a sample without text, after at least 2 samples, and another timestamp follows.
-- **Time limit**: a timestamp or a relative sum of 100000 hours or more fails with `The time "99999:59:59.9995" is not below 100000 hours.`, after the rounding to milliseconds. The message quotes the timestamp without brackets. Lenient mode skips the line and the text lines after it, up to the next timestamp line.
+- **Time limit**: a timestamp or a relative sum of 100000 hours or more fails with `the time "99999:59:59.9995" is not below 100000 hours`, after the rounding to milliseconds. The message quotes the timestamp without brackets. Lenient mode skips the line and the text lines after it, up to the next timestamp line.
 - **Encoding**: invalid UTF-8 stays in the text. Lenient mode adds the decode warning of [encodings.md](encodings.md).
 
 | Input | Result |
@@ -1243,7 +1243,7 @@ The file data `qttext` holds:
 
 ## Plain text
 
-Plain text is a transcript of the words, without times or markup. Package `format/plaintext` writes it. The format name is `txt`, the extension `.txt`. The format has no reader and no detection, so `Parse` with `ReadOptions.Format` set to `stbox.PlainText` returns `ErrUnsupportedFormat` with `The format txt can be written but not read.` Plain text owns `.txt` in `FormatFromPath`. `Load` still finds MPL2, TMPlayer and QuickTime text files named `.txt` by their content.
+Plain text is a transcript of the words, without times or markup. Package `format/plaintext` writes it. The format name is `txt`, the extension `.txt`. The format has no reader and no detection, so `Parse` with `ReadOptions.Format` set to `stbox.PlainText` returns `ErrUnsupportedFormat` with `the format txt can be written but not read`. Plain text owns `.txt` in `FormatFromPath`. `Load` still finds MPL2, TMPlayer and QuickTime text files named `.txt` by their content.
 
 <!-- example: format/plaintext/ExampleWrite -->
 ```go
@@ -1303,7 +1303,7 @@ All rows use these 4 cues. They are `<v Mara><b>Hello</b>` and `world.` from 1 t
 
 - **Names**: each bool is named so that false is the default. `ParagraphGap` is a pointer because 0 is legal and differs from the default.
 - **One paragraph**: `ParagraphGap: new(plaintext.NoParagraphBreaks)`. A `time.Duration` has no infinity. `NoParagraphBreaks` is the largest `time.Duration`, about 292 years, which no gap between cues reaches.
-- **Check**: `Validate` rejects a negative gap, for example `The paragraph gap must be 0 or more seconds, got -1.`, with an error that matches `ErrInvalidArgument`.
+- **Check**: `Validate` rejects a negative gap, for example `the paragraph gap must be 0 or more seconds, got -1`, with an error that matches `ErrInvalidArgument`.
 
 ## CSV and TSV
 
@@ -1337,7 +1337,7 @@ This table reads as 2 cues: `<v Anna>Where are you going?` and `<v Ben>Home.` pl
 - **Synonym warning**: a role found under another name warns in both modes, for example `The parser reads the column "Begin" as start.`, action `Repaired`.
 - **Column layout**: `ReadOptions.CSV.Columns` maps a role to a header name with `csv.ColumnNamed` or to a 0-based index with `csv.ColumnAt`. A layout turns the synonyms off. Map one role, for example `Start: csv.ColumnNamed("start")`, to read without synonyms.
 - **No header**: with `NoHeader`, `Start`, `Text` and every other mapped role need an index.
-- **Missing column**: a missing `start` or `text`, or a mapped column that the table lacks, fails in both modes with `The table has no column "NAME" for ROLE.` at the line of the header row. An index without a header must be below 1000.
+- **Missing column**: a missing `start` or `text`, or a mapped column that the table lacks, fails in both modes with `the table has no column "NAME" for ROLE` at the line of the header row. An index without a header must be below 1000.
 - **Other columns**: the cells of a column without a role go to cue data `csv.columns`, keyed by header name, or by column index without a header. A short row is padded with `""` up to the header width.
 
 | Role | Synonyms, in order |
@@ -1352,9 +1352,9 @@ This table reads as 2 cues: `<v Anna>Where are you going?` and `<v Ben>Home.` pl
 
 - **Delimiter**: `,`, `;` or tab, from the option or from the first line that has one. Outside quotes, the most frequent wins, and a tie goes to `,`, then `;`.
 - **Quoting**: a `"` at the start of a cell starts a quoted cell. `""` inside is one quote, and a line break inside becomes LF. Text after the closing quote appends to the cell. A `"` inside an unquoted cell is text.
-- **Unclosed quote**: strict mode fails with `A quoted CSV cell has no closing quote.` at the line where the row starts. Lenient mode ends the cell at the end of its line, with a `Repaired` warning.
+- **Unclosed quote**: strict mode fails with `a quoted CSV cell has no closing quote` at the line where the row starts. Lenient mode ends the cell at the end of its line, with a `Repaired` warning.
 - **Blank rows**: a row whose cells are all blank is dropped.
-- **Width**: a row of more than 1000 cells fails in both modes: `The table has 1001 columns. The limit is 1000.`
+- **Width**: a row of more than 1000 cells fails in both modes: `the table has 1001 columns. The limit is 1000`.
 - **Rows before the header**: lenient mode drops the rows before the first row that has the needed columns, with one `Skipped` warning such as `The table has 2 rows before the header row.`
 - **Row errors**: a row with a bad time fails in strict mode. Lenient mode skips it.
 - **End before start**: fails the row in both modes, because a comma in a time or a cut-off last row gives such an end. The reader never swaps.
@@ -1419,9 +1419,9 @@ The root `ReadOptions.CSV` holds a `csv.ReadOptions` and `WriteOptions.CSV` a `c
 | `WriteOptions.CSV` | `SecondTextHeader` | `string` | `text2` | the header of the second text column |
 | `WriteOptions.CSV` | `EscapeFormulas` | `bool` | false | put `'` before a formula cell |
 
-- **Checks**: `Validate` rejects a negative column index (`The column index of start must be 0 or more, got -1.`), a column name or a missing index with `NoHeader` (`A table without a header row needs a column index for start.`), another delimiter (`The CSV delimiter must be ",", ";" or a tab.`), another time format, and a frame rate that is negative, NaN or infinite. Each error matches `ErrInvalidArgument` and names the option path, such as `ReadOptions.CSV.Columns.Start`.
-- **Frames without a frame rate**: `TimeFrames` without a frame rate in the options or the file data fails at write time with `The time format hh:mm:ss:ff needs a frame rate.` and `Option` `WriteOptions.CSV.FrameRate`.
-- **Stored frame rate**: a stored `frameRate` that is not above 0 fails at write time with, for example, `The frame rate must be greater than 0, got 0.` and the same `Option`, also for another time format.
+- **Checks**: `Validate` rejects a negative column index (`the column index of start must be 0 or more, got -1`), a column name or a missing index with `NoHeader` (`A table without a header row needs a column index for start.`), another delimiter (`The CSV delimiter must be ",", ";" or a tab.`), another time format, and a frame rate that is negative, NaN or infinite. Each error matches `ErrInvalidArgument` and names the option path, such as `ReadOptions.CSV.Columns.Start`.
+- **Frames without a frame rate**: `TimeFrames` without a frame rate in the options or the file data fails at write time with `the time format hh:mm:ss:ff needs a frame rate` and `Option` `WriteOptions.CSV.FrameRate`.
+- **Stored frame rate**: a stored `frameRate` that is not above 0 fails at write time with, for example, `the frame rate must be greater than 0, got 0` and the same `Option`, also for another time format.
 
 ## EBU STL
 
@@ -1480,15 +1480,15 @@ The cue key `stl` holds `subtitleGroupNumber`, `cumulativeStatus`, `verticalPosi
 
 ### Write
 
-`ebustl.Write` writes the GSI block, then the TTI blocks of each comment and cue. `WriteOptions.EBUSTL.FrameRate` is 25 or 30 fps. The zero value takes the stored DFC, else 25. Another rate fails `Validate` with `The EBU STL formatter writes 25 or 30 fps, got 24.`. The writer reads `StripTags` and ignores `LineEnding` and `BOM`.
+`ebustl.Write` writes the GSI block, then the TTI blocks of each comment and cue. `WriteOptions.EBUSTL.FrameRate` is 25 or 30 fps. The zero value takes the stored DFC, else 25. Another rate fails `Validate` with `the EBU STL formatter writes 25 or 30 fps, got 24`. The writer reads `StripTags` and ignores `LineEnding` and `BOM`.
 
 **Byte for byte**: a file that the reader read comes back with the same bytes, also after a retiming. A cue whose text did not change keeps its stored blocks, and the writer patches only the changed header fields (SGN, CS, TCI, TCO, VP, JC). When the text changed, the writer keeps the stored user data blocks and encodes the text again. A subtitle from another format gets a new GSI block. The writer writes the sets in cue order, with the comments before the cue they sit in front of. So a file with sets out of time order comes back reordered and renumbered.
 
 **New GSI values**: CPN `850`, DSC `1`, RN `00`, MNC `40`, MNR `23`, TCS `1`, TCP `00000000`, TND `1` and DSN `1` fill a missing field. CD and RD hold today in UTC as `yymmdd`. OPT is the metadata `title`, LC is the code of the metadata `language` (`en-GB` gives `09` through the primary subtag `en`, no language gives `00`), TNB, TNS, TNG and TCF are the counts of the written blocks. A stored count stays when it still equals the count that the reader stored, so a count padded with spaces keeps its bytes. MNC grows to the longest row in displayable bytes, up to 99. Rows never wrap. A field is encoded with the code page of CPN, padded with spaces and cut to its length.
 
-**Character code table**: the stored CCT stays. Without one, the writer picks the table that writes the fewest `?` for the cue and comment text. It tries 00, 01, 02, 03 and 04 in this order, and table 00 wins a tie. The count is the number of `?` bytes in the encoded text, so a `?` in the text counts too. A stored CCT outside `00` to `04` fails with `The character code table "05" is not 00, 01, 02, 03 or 04.`.
+**Character code table**: the stored CCT stays. Without one, the writer picks the table that writes the fewest `?` for the cue and comment text. It tries 00, 01, 02, 03 and 04 in this order, and table 00 wins a tie. The count is the number of `?` bytes in the encoded text, so a `?` in the text counts too. A stored CCT outside `00` to `04` fails with `the character code table "05" is not 00, 01, 02, 03 or 04`.
 
-**Text**: each cue line is one row, and rows join with `8Ah`. `<i>` and `<u>` write `80h` to `83h`, and only the first open and the last close of nested tags write. A `<font>` or WebVTT color class with one of the 8 teletext colors writes `00h` to `07h`, and its end tag writes the color below it, white when none. Another color writes nothing. A color code replaces one space next to it. A color code at the row end goes. Italics or underline still open at the row end get `81h` or `83h`. A style open at a row end starts again on the next row. Bold, strike, voice, ruby annotation tags and positions of WebVTT write nothing, and ruby writes as `base (annotation)`. Double height, boxing and backgrounds that the reader dropped are lost when a cue text changes. They survive only through reused blocks. A text field has 112 bytes padded with `8Fh`. The last field always holds one `8Fh`, so 112 bytes of text give a second, empty block. In table 00 a field that would end with a diacritic ends one byte early. A cue that needs more than 241 blocks fails with `The cue text needs more than 241 TTI blocks.`.
+**Text**: each cue line is one row, and rows join with `8Ah`. `<i>` and `<u>` write `80h` to `83h`, and only the first open and the last close of nested tags write. A `<font>` or WebVTT color class with one of the 8 teletext colors writes `00h` to `07h`, and its end tag writes the color below it, white when none. Another color writes nothing. A color code replaces one space next to it. A color code at the row end goes. Italics or underline still open at the row end get `81h` or `83h`. A style open at a row end starts again on the next row. Bold, strike, voice, ruby annotation tags and positions of WebVTT write nothing, and ruby writes as `base (annotation)`. Double height, boxing and backgrounds that the reader dropped are lost when a cue text changes. They survive only through reused blocks. A text field has 112 bytes padded with `8Fh`. The last field always holds one `8Fh`, so 112 bytes of text give a second, empty block. In table 00 a field that would end with a diacritic ends one byte early. A cue that needs more than 241 blocks fails with `the cue text needs more than 241 TTI blocks`.
 
 **Subtitle numbers**: the first set takes `firstSubtitleNumber`, else 1, and each later set, comment sets too, takes the next number. A number above 65535 fails with `EBU STL allows subtitle numbers up to 65535.`.
 
@@ -1539,7 +1539,7 @@ The Latin table maps single bytes. `5Bh` is U+00C6, `5Ch` is U+00D8 and `5Dh` is
 
 ### Read
 
-**Errors**: a file under 388 bytes fails with `A Cavena 890 file starts with a header of 388 bytes.` A body whose length leaves 124 bytes after the last whole block has a short end. The reader adds 4 zero bytes and stores `shortEnd` true. Any other body length that is not a multiple of 128 fails a strict read with `The blocks of a Cavena 890 file have 128 bytes each.` A lenient read cuts the rest and warns, see [lenient-parsing.md](lenient-parsing.md#cavena-890).
+**Errors**: a file under 388 bytes fails with `a Cavena 890 file starts with a header of 388 bytes`. A body whose length leaves 124 bytes after the last whole block has a short end. The reader adds 4 zero bytes and stores `shortEnd` true. Any other body length that is not a multiple of 128 fails a strict read with `the blocks of a Cavena 890 file have 128 bytes each`. A lenient read cuts the rest and warns, see [lenient-parsing.md](lenient-parsing.md#cavena-890).
 
 **Cues**: consecutive blocks with the same 2 number bytes form one cue, with 2 lines per block. A line that is blank after decoding and trimming is dropped, so a cue with text in the lower line only has 1 line.
 
@@ -1635,7 +1635,7 @@ The file does not store its code page. `pac.CodePage` is a string type with thes
 - **Choice**: the first rule that holds decides. 1. `ReadOptions.PAC.CodePage`. 2. The `LANG:XXX` code of the story record, in any case: DAR, OAR, ARA and ARB give `arabic`. ISR and HEB give `hebrew`. GRC, GRE and ELL give `greek`. DRU, RUS, BGR, MKD, MNG and UKR give `cyrillic`. THA gives `thai`. TRD, OCH and CHT give `chinese-traditional`. SIM and CHS give `chinese-simplified`. DJA and JPN give `japanese`. DKO and KOR give `korean`. TUR gives `latin-turkish`. CSK and CZE give `latin-czech`. 3. The detector.
 - **Encoding option**: `stbox.Parse` and `stbox.Load` set `PAC.CodePage` from `ReadOptions.Encoding` when `PAC.CodePage` is empty. `pac.CodePageFromEncoding` maps the canonical name of [encodings.md](encodings.md), so the names in the last column work and `Encoding` accepts them in any case. A name that no PAC code page uses, such as `KOI8-R`, fails with an `*InvalidArgumentError` for `ReadOptions.Encoding`. `PAC.CodePage` wins when both are set, and `pac.Read` never sees `Encoding`. The spellings `TIS-620`, `BIG-5`, `GB2312`, `LATIN2` and `LATIN5` are no encoding names in this library, so `Encoding` rejects them before PAC sees them.
 - **Detector**: the detector decodes the text of all cues with each candidate and checks that the result looks like the script of the code page. Any PAC Unicode run gives `unicode`. Double-byte runs give the candidates `korean`, `japanese`, `chinese-simplified` and `chinese-traditional`. Else the candidates are `latin`, `latin-czech`, `latin-turkish`, `greek`, `cyrillic`, `hebrew`, `arabic` and `thai`. A candidate that leaves more than 1 % of the characters undefined gets no fit. The other checks are in the godoc of the package. When the best fit is a tie between Latin pages, `textenc.ScoreText` decides if the top score leads by 0.5.
-- **Unclear code page**: a strict read fails with `The code page of the PAC file is not clear. REASON Set the code page of the file, for example ISO-8859-7 for Greek.`. A lenient read warns with the same text and ` The parser read it as VALUE.` as a `Repaired` warning without a line or block. Examples of the reason: `No code page gives text in its script.` for the bytes `C3 C4`, and `These code pages fit: greek, cyrillic.` for the bytes `Lf`.
+- **Unclear code page**: a strict read fails with `the code page of the PAC file is not clear. REASON. Set the code page of the file, for example ISO-8859-7 for Greek`. A lenient read warns with that text written as a sentence and ` The parser read it as VALUE.` as a `Repaired` warning without a line or block. Examples of the reason: `no code page gives text in its script` for the bytes `C3 C4`, and `these code pages fit: greek, cyrillic` for the bytes `Lf`.
 - **Double-byte tables**: the decoders of the 4 double-byte pages are the `golang.org/x/text` decoders. They follow the WHATWG indexes, which differ from iconv in a few codes. The Big5 and Shift_JIS writers do not use the x/text encoders. x/text writes Hong Kong extension codes such as `FABDh` for U+5305, which CP950 readers cannot read, and the NEC selected IBM extension where CP932 writes the IBM extension. These 2 writers use a table of the lowest CP950 or CP932 code of each character, built from the x/text decoder, plus the 7 one-way CP932 codes such as U+301C to `8160h`. The GBK and CP949 writers use x/text. A character that has no 2-byte code, or whose code starts with `FEh`, is written as `00h ?`. Each of the 13 fixtures reads and writes back byte for byte.
 
 ### Read
@@ -1807,7 +1807,7 @@ Each line is trimmed first. A line that equals `******** START SCRIPT ********` 
 - **No end line**: a cue ends at the start of the next cue in the file that does not start before it. The last such cue lasts `LastCueDuration`, and its end stops at 99999:59:59.999.
 - **Order**: a cue that a time line ended must not end before it starts.
 - **Example**: with `[DELAY]` 2, the script `[00:00:01]` `Sunny|cloudy` `[00:00:04]`, an empty line, `[00:00:06]` `Light wind` `[00:00:09]` `Snow tonight` gives `Sunny` and `cloudy` from 3 to 6 s, `Light wind` from 8 to 11 s, and `Snow tonight` from 11 s for `LastCueDuration`.
-- **Time limit**: the time plus the delay must be below 100000 hours and above -100000 hours. The message quotes the time line and the delay, such as `The time "[00:00:12] with DELAY 359999990" is not below 100000 hours.` Without a delay it quotes the time line alone.
+- **Time limit**: the time plus the delay must be below 100000 hours and above -100000 hours. The message quotes the time line and the delay, such as `the time "[00:00:12] with DELAY 359999990" is not below 100000 hours`. Without a delay it quotes the time line alone.
 
 **SubViewer 2**
 
@@ -1853,7 +1853,7 @@ Each line is trimmed first. A line that equals `******** START SCRIPT ********` 
 |:--- |:--- |:--- |:--- |
 | `Version` | `Version` | `VersionDefault`: the stored version, else SubViewer 2 | `V1` writes SubViewer 1, `V2` writes SubViewer 2 |
 
-- **Check**: `Validate` rejects a version above `V2`, for example `The SubViewer version must be 1 or 2, got 3.`, with an error that matches `ErrInvalidArgument`.
+- **Check**: `Validate` rejects a version above `V2`, for example `the SubViewer version must be 1 or 2, got 3`, with an error that matches `ErrInvalidArgument`.
 
 ## VobSub
 
@@ -1889,5 +1889,5 @@ A **subpicture unit** (SPU) is one DVD subtitle bitmap with its control commands
 | `Language` | `string` | `""`: no filter | the track whose `id:` value equals this, without case |
 
 - **Selection**: the first track that matches every set filter. With no filter, the first track. `Index` names the `index:` field of the `.idx` file. It is not `ReadOptions.Track`.
-- **Check**: `Validate` rejects an `Index` below 0, for example `The track index must be 0 or more, got -1.`, and a `Language` of only white space, with an error that matches `ErrInvalidArgument`.
+- **Check**: `Validate` rejects an `Index` below 0, for example `the track index must be 0 or more, got -1`, and a `Language` of only white space, with an error that matches `ErrInvalidArgument`.
 - **CLI**: the input must be the path of the `.idx` file or of the `.sub` file with `--from vobsub`. Standard input with `--from vobsub` is a usage error. A directory input reads the `.idx` file and skips a `.sub` file that has an `.idx` file of the same name. No output may overwrite either file of the pair.

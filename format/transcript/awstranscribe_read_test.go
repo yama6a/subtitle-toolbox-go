@@ -120,25 +120,25 @@ func TestReadAWSTranscribeErrors(t *testing.T) {
 	awsFormat.testBroken(t, []cloudBroken{
 		{
 			"start", item(`"start_time": "soon", "end_time": "1", "alternatives": [{"content": "Hi"}]`),
-			"The field results.items[0].start_time must be a time.",
+			"the field results.items[0].start_time must be a time",
 			[]string{"1-2 there"},
 			0,
 		},
 		{
 			"end", item(`"start_time": "0", "end_time": -1, "alternatives": [{"content": "Hi"}]`),
-			"The field results.items[0].end_time must be a time.",
+			"the field results.items[0].end_time must be a time",
 			[]string{"1-2 there"},
 			0,
 		},
 		{
 			"content", item(`"start_time": "0", "end_time": "1", "alternatives": [{"content": 5}]`),
-			"The field results.items[0].alternatives[0].content must be a string.",
+			"the field results.items[0].alternatives[0].content must be a string",
 			[]string{"1-2 there"},
 			0,
 		},
 		{
 			"no alternatives", item(`"start_time": "0", "end_time": "1"`),
-			"The field results.items[0].alternatives[0].content must be a string.",
+			"the field results.items[0].alternatives[0].content must be a string",
 			[]string{"1-2 there"},
 			0,
 		},
@@ -152,20 +152,20 @@ func TestReadAWSTranscribeErrors(t *testing.T) {
 			"segment end",
 			`{"results": {"items": [], "audio_segments": [{"start_time": "0", "end_time": "x", "transcript": "a"}, ` +
 				`{"start_time": "1", "end_time": "2", "transcript": "b"}]}}`,
-			"The field results.audio_segments[0].end_time must be a time.",
+			"the field results.audio_segments[0].end_time must be a time",
 			[]string{"1-2 b"},
 			0,
 		},
 		{
 			"segment text",
 			`{"results": {"items": [], "audio_segments": [{"start_time": "0", "end_time": "1"}, {"start_time": "1", "end_time": "2", "transcript": "b"}]}}`,
-			"The field results.audio_segments[0].transcript must be a string.",
+			"the field results.audio_segments[0].transcript must be a string",
 			[]string{"1-2 b"},
 			0,
 		},
 		{
 			"segment that is no object", `{"results": {"items": [], "audio_segments": [5, {"start_time": "1", "end_time": "2", "transcript": "b"}]}}`,
-			"The field results.audio_segments[0].start_time must be a time.",
+			"the field results.audio_segments[0].start_time must be a time",
 			[]string{"1-2 b"},
 			0,
 		},
@@ -175,9 +175,9 @@ func TestReadAWSTranscribeErrors(t *testing.T) {
 		_, _, err := transcript.ReadAWSTranscribe(strings.NewReader(content), model.CommonReadOptions{Lenient: true}, transcript.ReadOptions{})
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr, content)
-		assert.Equal(t, `The JSON has no "results.items" list.`, perr.Msg)
+		assert.Equal(t, `the JSON has no "results.items" list`, perr.Msg)
 	}
-	for content, msg := range map[string]string{"[1]": "The JSON root must be an object.", "{": "The content is not valid JSON: "} {
+	for content, msg := range map[string]string{"[1]": "the JSON root must be an object", "{": "the content is not valid JSON: "} {
 		_, _, err := transcript.ReadAWSTranscribe(strings.NewReader(content), model.CommonReadOptions{}, transcript.ReadOptions{})
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr)

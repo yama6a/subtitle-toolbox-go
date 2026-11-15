@@ -205,7 +205,7 @@ func TestWriteUnwritable(t *testing.T) {
 		edit(&c)
 		return c
 	}
-	const head = "Cannot write cue "
+	const head = "cannot write cue "
 	tests := []struct {
 		name   string
 		cue    model.Cue
@@ -214,23 +214,23 @@ func TestWriteUnwritable(t *testing.T) {
 		{
 			"text cue",
 			model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"a"}},
-			head + "1 to 2 as PGS: the cue holds no image, and PGS output cannot hold text.",
+			head + "1 to 2 as PGS: the cue holds no image, and PGS output cannot hold text",
 		},
 		{
 			"size mismatch", with(func(c *model.Cue) { c.Image.Width = 3 }),
-			head + "1.5 to 3 as PGS: the PNG has 2x2 pixels, but the image data says 3x2.",
+			head + "1.5 to 3 as PGS: the PNG has 2x2 pixels, but the image data says 3x2",
 		},
 		{
 			"negative x", with(func(c *model.Cue) { c.Image.X = -1 }),
-			head + "1.5 to 3 as PGS: the image position and size must be from 0 to 65535.",
+			head + "1.5 to 3 as PGS: the image position and size must be from 0 to 65535",
 		},
 		{
 			"negative start", with(func(c *model.Cue) { c.Start = -500 * time.Millisecond }),
-			head + "-0.5 to 3 as PGS: a time stamp must be from 0 to 4294967295 ticks of 90 kHz.",
+			head + "-0.5 to 3 as PGS: a time stamp must be from 0 to 4294967295 ticks of 90 kHz",
 		},
 		{
 			"not a PNG", with(func(c *model.Cue) { c.Image.PNG = []byte("text") }),
-			head + "1.5 to 3 as PGS: the PNG does not decode.",
+			head + "1.5 to 3 as PGS: the PNG does not decode",
 		},
 	}
 	for _, tt := range tests {

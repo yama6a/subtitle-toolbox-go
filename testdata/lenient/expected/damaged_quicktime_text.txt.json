@@ -2,7 +2,7 @@
     "name": "QuickTime text without {QTtext}, with a fraction at the time scale, a swapped sample and a time of 100000 hours",
     "format": "qttext",
     "strict": {
-        "error": "The file does not start with {QTtext}.",
+        "error": "the file does not start with {QTtext}",
         "line": 1
     },
     "cues": [

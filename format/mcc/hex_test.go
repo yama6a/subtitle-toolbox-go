@@ -20,9 +20,9 @@ func TestDecodeHex(t *testing.T) {
 		{"aliases and lower-case hex", "HPQRSTUZ9fA0", []byte{
 			0xFA, 0, 0, 0xFA, 0, 0, 0xFB, 0x80, 0x80, 0xFC, 0x80, 0x80, 0xFD, 0x80, 0x80, 0x96, 0x69, 0x61, 0x01, 0xE1, 0, 0, 0, 0, 0x9F, 0xA0,
 		}, ""},
-		{"invalid character", "T49SV", nil, `The MCC data has the invalid character "V" at position 5.`},
-		{"alias after half a byte", "T4S", nil, `The MCC data has the invalid character "S" at position 3.`},
-		{"half a byte", "T4", nil, "The MCC data ends with half a byte."},
+		{"invalid character", "T49SV", nil, `the MCC data has the invalid character "V" at position 5`},
+		{"alias after half a byte", "T4S", nil, `the MCC data has the invalid character "S" at position 3`},
+		{"half a byte", "T4", nil, "the MCC data ends with half a byte"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

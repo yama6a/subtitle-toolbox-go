@@ -33,7 +33,7 @@ func ExampleRead() {
 	// Output:
 	// Morning train
 	// 1s 3.5s TopCenter <i>The train leaves at nine.</i>
-	// json: The field cues[0].start must be a number.
+	// json: the field cues[0].start must be a number
 }
 
 func ExampleWrite() {

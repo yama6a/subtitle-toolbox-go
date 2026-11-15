@@ -229,17 +229,17 @@ func TestReadErrors(t *testing.T) {
 		{"1 fraction digit", string(testfiles.Read(t, "sbv/missing_milli_digits.sbv")), `the time "0:00:01.5" is not valid`, 1},
 		{
 			"SubRip timing line", string(testfiles.Read(t, "sbv/srt_timestamps.sbv")),
-			`Block #0 has no timing line on its first line. The line is "0:00:01,500 --> 0:00:04,000".`, 1,
+			`block #0 has no timing line on its first line. The line is "0:00:01,500 --> 0:00:04,000"`, 1,
 		},
 		{"note line with one comma", "Auto-generated, may contain errors\n\n0:00:01.000,0:00:02.000\nA\n", `the time "Auto-generated" is not valid`, 1},
-		{"2 commas", "0:00:01.000,0:00:02.000,0:00:03.000\nA\n", `Block #0 has no timing line on its first line. The line is "0:00:01.000,0:00:02.000,0:00:03.000".`, 1},
-		{"no comma on line 4", "0:00:01.000,0:00:02.000\nA\n\n1:2\nB\n\n0:00:00.000 0:00:01.000\n", `Block #1 has no timing line on its first line. The line is "1:2".`, 4},
-		{"long line cut to 60 characters", "1:00:00.000 " + long + "\n", `Block #0 has no timing line on its first line. The line is "1:00:00.000 ` + strings.Repeat("x", 45) + `...".`, 1},
+		{"2 commas", "0:00:01.000,0:00:02.000,0:00:03.000\nA\n", `block #0 has no timing line on its first line. The line is "0:00:01.000,0:00:02.000,0:00:03.000"`, 1},
+		{"no comma on line 4", "0:00:01.000,0:00:02.000\nA\n\n1:2\nB\n\n0:00:00.000 0:00:01.000\n", `block #1 has no timing line on its first line. The line is "1:2"`, 4},
+		{"long line cut to 60 characters", "1:00:00.000 " + long + "\n", `block #0 has no timing line on its first line. The line is "1:00:00.000 ` + strings.Repeat("x", 45) + `..."`, 1},
 		{"end before start", "0:00:05.000,0:00:04.000\nA\n", "the cue ends at 4 s, before it starts at 5 s", 1},
 		{"20 hour digits", "99999999999999999999:00:04.000,99999999999999999999:00:06.000\nA\n", `the time "99999999999999999999:00:04.000" is not below 100000 hours`, 1},
 		{"100000 hours", "100000:00:00.000,100000:00:01.000\nA\n", `the time "100000:00:00.000" is not below 100000 hours`, 1},
 		{"hour digits with leading zeros", "000000000000000100000:00:00.000,1:00:00.000\nA\n", `the time "000000000000000100000:00:00.000" is not below 100000 hours`, 1},
-		{"text before the first cue", "Hello\n0:00:01.000,0:00:02.000\n", `Block #0 has no timing line on its first line. The line is "Hello".`, 1},
+		{"text before the first cue", "Hello\n0:00:01.000,0:00:02.000\n", `block #0 has no timing line on its first line. The line is "Hello"`, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

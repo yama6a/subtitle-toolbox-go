@@ -388,7 +388,7 @@ func TestValidate(t *testing.T) {
 	require.ErrorAs(t, err, &aerr)
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 	assert.Equal(t, "WriteOptions.SubViewer.Version", aerr.Option)
-	assert.Equal(t, "The SubViewer version must be 1 or 2, got 3.", aerr.Msg)
+	assert.Equal(t, "the SubViewer version must be 1 or 2, got 3", aerr.Msg)
 
 	var out bytes.Buffer
 	_, err = subviewer.Write(&out, formattest.Subtitle(), model.CommonWriteOptions{}, subviewer.WriteOptions{Version: subviewer.Version(200)})

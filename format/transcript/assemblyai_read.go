@@ -26,7 +26,7 @@ func ReadAssemblyAI(r io.Reader, common model.CommonReadOptions, opts ReadOption
 	words, utterances := cloudGet(root, "words"), cloudGet(root, "utterances")
 	hasUtterances := utterances.Kind() == orderedjson.Array && len(utterances.Items()) > 0
 	if !hasUtterances && words.Kind() != orderedjson.Array {
-		return nil, nil, &model.ParseError{Format: model.AssemblyAI, Msg: `The JSON has no "words" or "utterances" list.`}
+		return nil, nil, &model.ParseError{Format: model.AssemblyAI, Msg: `the JSON has no "words" or "utterances" list`}
 	}
 	reader := wordgroup.NewReader(st, wordgroup.Options{WordTimestamps: opts.WordTimestamps, SpeakerVoices: opts.SpeakerVoices}, assemblyAIKey)
 	var cues []*model.Cue

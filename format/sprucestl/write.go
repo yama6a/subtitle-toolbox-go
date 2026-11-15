@@ -76,8 +76,8 @@ func write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	if frameLimit(rate) > maxFrameLimit {
 		return WriteReport{}, &model.UnwritableError{
 			Format: model.SpruceSTL, CueIndex: -1,
-			Reason: writeFrameRateOption + ": The frame number has 2 digits, so the Spruce STL frame rate must not be above " +
-				strconv.Itoa(maxFrameLimit) + " fps, got " + timecode.Number(rate.Float64()) + ".",
+			Reason: writeFrameRateOption + ": the frame number has 2 digits, so the Spruce STL frame rate must not be above " +
+				strconv.Itoa(maxFrameLimit) + " fps, got " + timecode.Number(rate.Float64()),
 		}
 	}
 	separator := storedOr(file, "separator", separatorRegexp, defaultSeparator)

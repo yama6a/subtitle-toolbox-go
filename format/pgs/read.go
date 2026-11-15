@@ -70,8 +70,8 @@ func readSegment(r io.Reader, offset int, header, data []byte) (size int, msg st
 		return 0, "", fmt.Errorf("read %s: %w", model.PGS, err)
 	}
 	if n < size {
-		return 0, "The segment at byte " + strconv.Itoa(offset) + " has " + strconv.Itoa(size) +
-			" bytes of data, but the file ends before.", nil
+		return 0, "the segment at byte " + strconv.Itoa(offset) + " has " + strconv.Itoa(size) +
+			" bytes of data, but the file ends before", nil
 	}
 	return size, "", nil
 }
@@ -84,9 +84,9 @@ func readHeader(r io.Reader, offset int, header []byte) (msg string, err error) 
 	case err != nil && !isShort(err):
 		return "", fmt.Errorf("read %s: %w", model.PGS, err)
 	case n < 2 || header[0] != 'P' || header[1] != 'G':
-		return "The segment at byte " + strconv.Itoa(offset) + " does not start with the PG magic bytes.", nil
+		return "the segment at byte " + strconv.Itoa(offset) + " does not start with the PG magic bytes", nil
 	case n < headerLength:
-		return "The segment header at byte " + strconv.Itoa(offset) + " is cut off.", nil
+		return "the segment header at byte " + strconv.Itoa(offset) + " is cut off", nil
 	}
 	return "", nil
 }
