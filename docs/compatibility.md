@@ -12,7 +12,7 @@ The module follows semantic versioning. A 4.x minor or patch release does not br
 | CLI | the commands, the flags, the meaning of each exit code and the `--json` shapes of `stbox`. The CLI never overwrites a file. See [cli.md](cli.md) |
 | Library JSON | versions 1 and 2 of the library JSON, their keys and value types. The library writes version 2 by default. `stboxjson.WriteOptions.Version` 1 writes version 1 for the whole 4.x line. See [json.md](json.md) |
 | Format data | the keys and the value types of the format data that `Subtitle.FormatData` and `Cue.FormatData` return. See [format-data.md](format-data.md) |
-| Module path | `github.com/yama6a/subtitle-toolbox-go/v4`, with the major suffix |
+| Module path | `github.com/yama6a/subtitle-toolbox-go/v5`, with the major suffix |
 
 ## Words and speakers
 

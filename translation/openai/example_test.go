@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/translation/openai"
+	"github.com/yama6a/subtitle-toolbox-go/v5/translation/openai"
 )
 
 func ExampleNew() {

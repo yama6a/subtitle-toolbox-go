@@ -1,6 +1,6 @@
 # Library examples
 
-Each section is one task that a developer has, with code that runs as written. A test runs every block and checks the printed output. The code shows the body of a function and leaves out the imports. Add the root package `stbox "github.com/yama6a/subtitle-toolbox-go/v4"` and every other package that the code names.
+Each section is one task that a developer has, with code that runs as written. A test runs every block and checks the printed output. The code shows the body of a function and leaves out the imports. Add the root package `stbox "github.com/yama6a/subtitle-toolbox-go/v5"` and every other package that the code names.
 
 The file paths point into the `testdata` folder of this repository. Replace them with your own files. [examples-cli.md](examples-cli.md) does the same tasks with the `stbox` command.
 

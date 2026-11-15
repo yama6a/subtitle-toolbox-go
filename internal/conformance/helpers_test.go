@@ -4,7 +4,7 @@ package conformance_test
 import (
 	"bytes"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
 )
 
 // parseBytes reads content with stbox.Parse.

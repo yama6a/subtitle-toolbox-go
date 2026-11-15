@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const modulePath = "github.com/yama6a/subtitle-toolbox-go/v4"
+const modulePath = "github.com/yama6a/subtitle-toolbox-go/v5"
 
 type layer int
 

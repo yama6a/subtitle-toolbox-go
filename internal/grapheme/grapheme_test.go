@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/grapheme"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/grapheme"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 )
 
 func TestCount(t *testing.T) {

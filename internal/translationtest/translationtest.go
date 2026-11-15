@@ -12,7 +12,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 )
 
 // Request is one request that a Server or a Client got.

@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/karaoke"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/karaoke"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // megabyteCue returns one cue whose text is about 1 MB in n words.

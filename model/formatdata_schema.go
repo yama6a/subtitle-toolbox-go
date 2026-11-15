@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/decimal"
 )
 
 // valueType is one type of the type language of the format data schema.

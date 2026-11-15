@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/xmlraw"
 )
 
 func parse(t *testing.T, s string, recovering bool) *xmlraw.Node {

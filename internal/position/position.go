@@ -6,7 +6,7 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // AlignmentUnchanged reports whether a equals the numpad alignment in the field "alignment" of the cue format data d.

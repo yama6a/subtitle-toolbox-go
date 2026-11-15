@@ -3,7 +3,7 @@ package caption
 import (
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Validate returns an error that matches model.ErrInvalidArgument for a channel other than 0, 1 and 2, and for

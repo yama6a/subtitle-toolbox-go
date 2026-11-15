@@ -6,8 +6,8 @@ import (
 
 	"github.com/dlclark/regexp2/v2"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func replaceGroup() group {

@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/translation"
-	"github.com/yama6a/subtitle-toolbox-go/v4/translation/internal/httppost"
+	"github.com/yama6a/subtitle-toolbox-go/v5/translation"
+	"github.com/yama6a/subtitle-toolbox-go/v5/translation/internal/httppost"
 )
 
 // MaxTextsPerRequest is the most texts that the engine sends in one request.

@@ -11,12 +11,12 @@ import (
 
 	glyphocr "github.com/yama6a/go-glyph-ocr"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
-	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
-	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/glyph"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v5/ocr/glyph"
 )
 
 func TestGoldens(t *testing.T) {

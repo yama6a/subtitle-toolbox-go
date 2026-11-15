@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/xmlraw"
 )
 
 // LocalName returns the local name of an element as libxml gives it. An undeclared prefix stays part of the name,

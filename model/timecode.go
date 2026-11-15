@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/decimal"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 )
 
 // labelsPerDropped is the labels per second for each label that drop-frame skips at a minute: 2 at 30, 4 at 60.

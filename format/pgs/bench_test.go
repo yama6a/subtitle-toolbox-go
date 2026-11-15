@@ -6,8 +6,8 @@ import (
 	"io"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/pgs"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/pgs"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // BenchmarkRead replaces a heap limit test. `make bench` prints the allocated bytes of a full 4K object.

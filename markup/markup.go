@@ -1,6 +1,6 @@
 package markup
 
-import "github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+import "github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 
 // StripAllTags removes every tag, word timestamps too. Entities stay.
 func StripAllTags(text string) string {

@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/translation"
-	"github.com/yama6a/subtitle-toolbox-go/v4/translation/deepl"
-	"github.com/yama6a/subtitle-toolbox-go/v4/translation/google"
-	"github.com/yama6a/subtitle-toolbox-go/v4/translation/openai"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/translation"
+	"github.com/yama6a/subtitle-toolbox-go/v5/translation/deepl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/translation/google"
+	"github.com/yama6a/subtitle-toolbox-go/v5/translation/openai"
 )
 
 const defaultOpenAIBaseURL = "https://api.openai.com/v1"

@@ -1,7 +1,7 @@
 package hearingimpaired
 
 import (
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Options selects the annotations to remove. The zero value removes brackets, parentheses, upper case speaker

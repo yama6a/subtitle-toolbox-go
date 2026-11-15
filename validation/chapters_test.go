@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/validation"
+	"github.com/yama6a/subtitle-toolbox-go/v5/validation"
 )
 
 func TestCheckYouTubeChapters(t *testing.T) {

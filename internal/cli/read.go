@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/extfallback"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/extfallback"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textenc"
 )
 
 // read reads one input with the read options of the call and prints its warnings. info lists the tracks of a

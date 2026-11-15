@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
-	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/glyph"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v5/ocr/glyph"
 )
 
 func ExampleNew() {

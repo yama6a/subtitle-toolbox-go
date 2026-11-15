@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ass"
 )
 
 //nolint:gochecknoglobals // the option names of the ass group, in the order of the --to ass message

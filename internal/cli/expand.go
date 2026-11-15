@@ -6,8 +6,8 @@ import (
 	"slices"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/extfallback"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/extfallback"
 )
 
 // expand turns the input arguments into input files: "-", the subtitle files of a directory, the matches of a

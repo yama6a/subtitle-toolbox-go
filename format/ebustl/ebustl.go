@@ -6,7 +6,7 @@ package ebustl
 import (
 	"bytes"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const formatDataKey = string(model.EBUSTL)

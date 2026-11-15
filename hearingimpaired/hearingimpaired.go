@@ -8,7 +8,7 @@ package hearingimpaired
 import (
 	"slices"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Report counts what Apply removed.
