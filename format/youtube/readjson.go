@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -33,12 +33,12 @@ func (rd *reader) readJSON(content []byte) (*model.Subtitle, error) {
 	fileValue := orderedjson.Union(
 		orderedjson.ObjectOf(orderedjson.Member{Key: "format", Value: orderedjson.StringValue(variantJSON3)}),
 		root.Without("events"))
-	file, _ := jsondata.ToData(fileValue).(*model.Data)
+	file, _ := formatdata.FromJSON(fileValue).(*model.Data)
 
 	var caps []caption
 	for i, event := range events.Items() {
 		if isWindowEvent(event) {
-			appendList(file, "windows", jsondata.ToData(event))
+			appendList(file, "windows", formatdata.FromJSON(event))
 			continue
 		}
 		c, perr := readEvent(event, i, lk)
@@ -101,11 +101,11 @@ func readEvent(event orderedjson.Value, i int, lk lookups) (caption, *model.Pars
 	if perr != nil {
 		return caption{}, perr
 	}
-	data, _ := jsondata.ToData(event.Without("segs")).(*model.Data)
+	data, _ := formatdata.FromJSON(event.Without("segs")).(*model.Data)
 	if hasMembers(extras) {
 		data.Set("segments", extras)
 	}
-	source, _ := jsondata.ToData(event).(*model.Data)
+	source, _ := formatdata.FromJSON(event).(*model.Data)
 	c := caption{
 		timing:   timing{start: start, end: end, hasEnd: true},
 		isAppend: !emptyValue(valueOf(event, "aAppend")),
@@ -226,7 +226,7 @@ func readJSONSegments(event orderedjson.Value, path string, start time.Duration,
 		segs = append(segs, seg)
 		extra := model.NewData()
 		if item.Kind() == orderedjson.Object {
-			extra, _ = jsondata.ToData(item).(*model.Data)
+			extra, _ = formatdata.FromJSON(item).(*model.Data)
 		}
 		extras = append(extras, extra)
 	}

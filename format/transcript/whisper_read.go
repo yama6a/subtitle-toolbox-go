@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -66,7 +66,7 @@ func (rd *whisperReader) read(root orderedjson.Value) (*model.Subtitle, error) {
 		orderedjson.ObjectOf(orderedjson.Member{Key: "format", Value: orderedjson.StringValue(shapeOf(root))}),
 		root.Without("segments", "transcription", "words", "word_segments", "text"),
 	)
-	data, _ := jsondata.ToData(fileData).(*model.Data)
+	data, _ := formatdata.FromJSON(fileData).(*model.Data)
 	return rd.cues.Transcript(cues, language(root), data)
 }
 
@@ -196,7 +196,7 @@ func (rd *whisperReader) cue(start, end time.Duration, text string, words []word
 	if name, ok := v.AsString(); ok {
 		speaker = name
 	}
-	data, _ := jsondata.ToData(item).(*model.Data)
+	data, _ := formatdata.FromJSON(item).(*model.Data)
 	return rd.cues.Cue(start, end, text, words, speaker, data, block, item)
 }
 

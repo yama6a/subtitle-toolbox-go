@@ -7,9 +7,9 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 

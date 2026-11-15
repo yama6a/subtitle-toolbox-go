@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/ttmldoc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/ttmlwrite"
 )
 
 var (
@@ -40,7 +40,7 @@ func (c clock) seconds(expression string) (float64, bool) {
 		return c.clockTime(m), true
 	}
 	if m := offsetRegexp.FindStringSubmatch(expression); m != nil {
-		return c.offsetTime(ttmlwrite.LeadingFloat(m[1]), m[2]), true
+		return c.offsetTime(ttmldoc.LeadingFloat(m[1]), m[2]), true
 	}
 	return 0, false
 }
@@ -62,7 +62,7 @@ func looseSeconds(expression string) (float64, bool) {
 		return float64(leadingInt(expression)) / 1000, true
 	}
 	if bareSecondsRegexp.MatchString(expression) {
-		return ttmlwrite.LeadingFloat(expression), true
+		return ttmldoc.LeadingFloat(expression), true
 	}
 	return 0, false
 }
@@ -100,7 +100,7 @@ func clockSeconds(hours, minutes, secs, fraction string) float64 {
 
 // leadingInt reads the integer at the start of s, for the digit strings of the patterns. A value beyond int64 saturates.
 func leadingInt(s string) int64 {
-	v := ttmlwrite.LeadingFloat(s)
+	v := ttmldoc.LeadingFloat(s)
 	switch {
 	case v >= math.MaxInt64:
 		return math.MaxInt64

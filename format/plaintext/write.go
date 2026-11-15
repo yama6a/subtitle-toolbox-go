@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/paragraphs"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/paragraphs"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )

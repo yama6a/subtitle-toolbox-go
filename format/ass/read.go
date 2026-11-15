@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/stringlist"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -392,7 +392,7 @@ func newCue(start, end time.Duration, body converted, f eventFields, text string
 	data := model.NewData(
 		model.Field{Key: "fields", Value: kept.data()},
 		model.Field{Key: "text", Value: text},
-		model.Field{Key: "lines", Value: stringlist.Any(c.TaggedLines())},
+		model.Field{Key: "lines", Value: formatdata.Strings(c.TaggedLines())},
 		model.Field{Key: "alignment", Value: alignment},
 	)
 	if err := c.SetFormatData(formatDataKey, data); err != nil {
@@ -495,7 +495,7 @@ func (f file) data() *model.Data {
 		stylesSection = f.stylesSection
 	}
 	if f.styleFormat != nil {
-		styleFormat = stringlist.Any(f.styleFormat)
+		styleFormat = formatdata.Strings(f.styleFormat)
 	}
 	styles := make([]any, len(f.styles))
 	for i, s := range f.styles {
@@ -509,18 +509,18 @@ func (f file) data() *model.Data {
 	if len(f.sectionNames) > 0 {
 		d := model.NewData()
 		for _, name := range f.sectionNames {
-			d.Set(name, stringlist.Any(f.sections[name]))
+			d.Set(name, formatdata.Strings(f.sections[name]))
 		}
 		sections = d
 	}
 	return model.NewData(
-		model.Field{Key: "sectionOrder", Value: stringlist.Any(f.sectionOrder)},
-		model.Field{Key: "scriptInfoComments", Value: stringlist.Any(f.scriptInfoComments)},
+		model.Field{Key: "sectionOrder", Value: formatdata.Strings(f.sectionOrder)},
+		model.Field{Key: "scriptInfoComments", Value: formatdata.Strings(f.scriptInfoComments)},
 		model.Field{Key: "scriptInfo", Value: f.scriptInfo.data()},
 		model.Field{Key: "stylesSection", Value: stylesSection},
 		model.Field{Key: "styleFormat", Value: styleFormat},
 		model.Field{Key: "styles", Value: styles},
-		model.Field{Key: "eventFormat", Value: stringlist.Any(f.eventFormat)},
+		model.Field{Key: "eventFormat", Value: formatdata.Strings(f.eventFormat)},
 		model.Field{Key: "commentEvents", Value: comments},
 		model.Field{Key: "sections", Value: sections},
 	)

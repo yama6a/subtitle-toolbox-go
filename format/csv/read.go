@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/stringlist"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -459,7 +459,7 @@ func (rd *reader) fileData(header *record, recs []record, roles layout, timeForm
 	var headerCells any
 	width := 0
 	if header != nil {
-		headerCells = stringlist.Any(header.cells)
+		headerCells = formatdata.Strings(header.cells)
 		width = len(header.cells)
 	}
 	for _, r := range recs {

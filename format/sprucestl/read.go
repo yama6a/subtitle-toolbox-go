@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/stringlist"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -176,7 +176,7 @@ func (rd *reader) cue(number int, line string, cl cueLine) error {
 	c.Position.Alignment = rd.style.alignment()
 	c.Lines = cueText(cl.text, rd.style)
 	if len(rd.commands) > 0 {
-		_ = c.SetFormatData(formatDataKey, model.NewData(model.Field{Key: "commands", Value: stringlist.Any(rd.commands)})) // the data has the shape of the schema
+		_ = c.SetFormatData(formatDataKey, model.NewData(model.Field{Key: "commands", Value: formatdata.Strings(rd.commands)})) // the data has the shape of the schema
 		rd.commands = nil
 	}
 	rd.cues = append(rd.cues, c)
@@ -254,7 +254,7 @@ func appendRun(runs []markupcore.Run, text string, bold, italic, underline bool)
 func (rd *reader) fileData() *model.Data {
 	data := model.NewData(
 		model.Field{Key: "frameRate", Value: rd.rate.Float64()},
-		model.Field{Key: "header", Value: stringlist.Any(rd.header)},
+		model.Field{Key: "header", Value: formatdata.Strings(rd.header)},
 	)
 	if rd.separator != "" {
 		data.Set("separator", rd.separator)
@@ -263,7 +263,7 @@ func (rd *reader) fileData() *model.Data {
 		data.Set("lineBreak", rd.lineBreak)
 	}
 	if len(rd.commands) > 0 {
-		data.Set("trailer", stringlist.Any(rd.commands))
+		data.Set("trailer", formatdata.Strings(rd.commands))
 	}
 	return data
 }

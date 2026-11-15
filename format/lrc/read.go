@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/blocks"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textblock"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -90,7 +90,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 }
 
 func cleanLine(line string) string {
-	return strings.Trim(blocks.CollapseSpaces(line), markupcore.TrimSet)
+	return strings.Trim(textblock.CollapseSpaces(line), markupcore.TrimSet)
 }
 
 // cleanLines returns the lines of content that are not empty after cleanLine. A line of spaces goes too, so it

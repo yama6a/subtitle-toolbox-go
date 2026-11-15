@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/xmlraw"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -64,7 +64,7 @@ func storedObject(d *model.Data, ok bool) orderedjson.Value {
 	if !ok {
 		return orderedjson.ObjectOf()
 	}
-	v, err := jsondata.FromData(d)
+	v, err := formatdata.ToJSON(d)
 	if err != nil || v.Kind() != orderedjson.Object {
 		return orderedjson.ObjectOf()
 	}

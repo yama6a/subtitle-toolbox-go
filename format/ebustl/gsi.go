@@ -4,7 +4,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/codepage"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/codepage"
 )
 
 const (

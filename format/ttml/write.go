@@ -3,7 +3,7 @@ package ttml
 import (
 	"io"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/ttmlwrite"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/ttmldoc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -20,7 +20,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 	if err != nil {
 		return WriteReport{}, err
 	}
-	body, err := ttmlwrite.Document(s, common, ttmlwrite.Options{Format: model.TTML})
+	body, err := ttmldoc.Document(s, common, ttmldoc.Options{Format: model.TTML})
 	if err != nil {
 		return WriteReport{}, err
 	}

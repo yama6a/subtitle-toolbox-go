@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -81,7 +81,7 @@ func ms(n int) time.Duration { return time.Duration(n) * time.Millisecond }
 
 // jsonOf returns the JSON text of a model.Data value.
 func jsonOf(v any) string {
-	out, err := jsondata.FromData(v)
+	out, err := formatdata.ToJSON(v)
 	if err != nil {
 		return err.Error()
 	}

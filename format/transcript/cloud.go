@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -26,7 +26,7 @@ func cloudFail(st *parsing.State, err error, block int, item orderedjson.Value) 
 }
 
 func cloudData(v orderedjson.Value) *model.Data {
-	d, _ := jsondata.ToData(v).(*model.Data)
+	d, _ := formatdata.FromJSON(v).(*model.Data)
 	return d
 }
 
@@ -62,7 +62,7 @@ func cloudFileData(s *model.Subtitle, f model.Format) (orderedjson.Value, error)
 	if !ok {
 		return orderedjson.ObjectOf(), nil
 	}
-	v, err := jsondata.FromData(d)
+	v, err := formatdata.ToJSON(d)
 	if err != nil {
 		return v, &model.UnwritableError{Format: f, CueIndex: -1, Reason: "The " + string(f) + " format data is no JSON.", Err: err}
 	}

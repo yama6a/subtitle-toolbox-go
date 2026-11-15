@@ -8,12 +8,12 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -58,7 +58,7 @@ func ReadPodcast(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 		}
 		cues = append(cues, cue)
 	}
-	data, _ := jsondata.ToData(root.Without("segments")).(*model.Data)
+	data, _ := formatdata.FromJSON(root.Without("segments")).(*model.Data)
 	s, err := wordgroup.NewReader(st, wordgroup.Options{}, podcastKey).Transcript(cues, orderedjson.Value{}, data)
 	if err != nil {
 		return nil, nil, err
@@ -266,7 +266,7 @@ func podcastCue(group []podcastItem, wordTimestamps bool) (*model.Cue, error) {
 		c.Words = wordgroup.CueWords(c.PlainText(), words, c.End)
 	}
 	if len(group) == 1 && len(first.other.Members()) > 0 {
-		data, _ := jsondata.ToData(first.other).(*model.Data)
+		data, _ := formatdata.FromJSON(first.other).(*model.Data)
 		if err := c.SetFormatData(podcastKey, data); err != nil {
 			return nil, fmt.Errorf("%s cue data: %w", podcastKey, err)
 		}

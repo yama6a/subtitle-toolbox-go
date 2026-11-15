@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/blocks"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/position"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textblock"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -96,8 +96,8 @@ func (r *Reader) Comments() []parsing.ParsedComment {
 // Blocks yields the blocks of lines, the header block first. The keys of lines are 0-based line numbers.
 // A file that does not start with the signature gives an error in strict mode. Lenient mode repairs it.
 // An error ends the sequence.
-func (r *Reader) Blocks(lines iter.Seq2[int, string]) iter.Seq2[blocks.Block, error] {
-	return func(yield func(blocks.Block, error) bool) {
+func (r *Reader) Blocks(lines iter.Seq2[int, string]) iter.Seq2[textblock.Block, error] {
+	return func(yield func(textblock.Block, error) bool) {
 		var err error
 		for b := range r.numberedBlocks(r.signedLines(r.trimLines(lines), &err)) {
 			if !yield(b, nil) {
@@ -105,7 +105,7 @@ func (r *Reader) Blocks(lines iter.Seq2[int, string]) iter.Seq2[blocks.Block, er
 			}
 		}
 		if err != nil {
-			yield(blocks.Block{}, err)
+			yield(textblock.Block{}, err)
 		}
 	}
 }
@@ -272,15 +272,15 @@ func (r *Reader) warnMissingSignature(skipped []line, firstLine, readFrom int) {
 }
 
 // numberedBlocks returns the blocks of lines. Lenient mode joins cue text after an empty line to its cue.
-func (r *Reader) numberedBlocks(lines iter.Seq[line]) iter.Seq[blocks.Block] {
+func (r *Reader) numberedBlocks(lines iter.Seq[line]) iter.Seq[textblock.Block] {
 	split := r.splitHeader(lines)
 	if !r.st.Lenient() {
 		return split
 	}
 	onJoin := func(block, line int, lines []string) {
-		r.st.Warn(blocks.JoinWarning(block, line), line, block, lines, model.Repaired)
+		r.st.Warn(textblock.JoinWarning(block, line), line, block, lines, model.Repaired)
 	}
-	return blocks.JoinCueTextBlocks(split, blocks.Rules{IsTimingLine: hasArrow}, isOtherBlock, onJoin)
+	return textblock.JoinCueTextBlocks(split, textblock.Rules{IsTimingLine: hasArrow}, isOtherBlock, onJoin)
 }
 
 func isOtherBlock(lines []string) bool {
@@ -289,8 +289,8 @@ func isOtherBlock(lines []string) bool {
 }
 
 // splitHeader returns the blocks of lines. Lenient mode splits the cues off a header block without an empty line after it.
-func (r *Reader) splitHeader(lines iter.Seq[line]) iter.Seq[blocks.Block] {
-	return func(yield func(blocks.Block) bool) {
+func (r *Reader) splitHeader(lines iter.Seq[line]) iter.Seq[textblock.Block] {
+	return func(yield func(textblock.Block) bool) {
 		isHeader := true
 		for b := range r.collect(lines) {
 			offset := -1
@@ -308,7 +308,7 @@ func (r *Reader) splitHeader(lines iter.Seq[line]) iter.Seq[blocks.Block] {
 			at := b.Line + offset
 			r.st.Warn("The WEBVTT header has no empty line before the first cue. The parser split the header block at line "+
 				strconv.Itoa(at)+".", at, 0, b.Lines, model.Repaired)
-			if !yield(blocks.Block{Line: b.Line, Lines: b.Lines[:offset]}) {
+			if !yield(textblock.Block{Line: b.Line, Lines: b.Lines[:offset]}) {
 				return
 			}
 			rest := make([]line, len(b.Lines)-offset)
@@ -325,12 +325,12 @@ func (r *Reader) splitHeader(lines iter.Seq[line]) iter.Seq[blocks.Block] {
 }
 
 // collect splits lines into blocks and drops the last one when an error cut it.
-func (r *Reader) collect(lines iter.Seq[line]) iter.Seq[blocks.Block] {
+func (r *Reader) collect(lines iter.Seq[line]) iter.Seq[textblock.Block] {
 	raw := collectBlocks(lines, false)
 	if r.cut == nil {
 		return raw
 	}
-	return blocks.DropCut(raw, func() (int, bool) {
+	return textblock.DropCut(raw, func() (int, bool) {
 		line, ok := r.cut()
 		if ok && r.tailOpen {
 			return r.tailEnd, true
@@ -357,8 +357,8 @@ func firstTimingLine(lines []string) int {
 // collectBlocks splits lines at empty lines, and before a timing line that cannot belong to the current block.
 // While hasBlocks is false, the first block does not split before a timing line, so a missing empty line after
 // the header still fails in strict mode. See https://www.w3.org/TR/webvtt1/#collect-a-webvtt-block.
-func collectBlocks(lines iter.Seq[line], hasBlocks bool) iter.Seq[blocks.Block] {
-	return func(yield func(blocks.Block) bool) {
+func collectBlocks(lines iter.Seq[line], hasBlocks bool) iter.Seq[textblock.Block] {
+	return func(yield func(textblock.Block) bool) {
 		c := collector{hasBlocks: hasBlocks}
 		for l := range lines {
 			if b, ok := c.add(l); ok && !yield(b) {
@@ -377,17 +377,17 @@ type collector struct {
 	hasBlocks bool
 }
 
-func (c *collector) add(l line) (blocks.Block, bool) {
+func (c *collector) add(l line) (textblock.Block, bool) {
 	if endsBlock(l.text, c.current) {
 		if len(c.current) == 0 {
-			return blocks.Block{}, false
+			return textblock.Block{}, false
 		}
 		b := c.block()
 		c.current = nil
 		c.hasBlocks = true
 		return b, true
 	}
-	var ended blocks.Block
+	var ended textblock.Block
 	ok := false
 	startsCue := len(c.current) == 0 || len(c.current) == 1 && !hasArrow(c.current[0])
 	if hasArrow(l.text) && !startsCue && c.hasBlocks {
@@ -401,11 +401,11 @@ func (c *collector) add(l line) (blocks.Block, bool) {
 	return ended, ok
 }
 
-func (c *collector) block() blocks.Block {
-	return blocks.Block{Line: c.start, Lines: c.current}
+func (c *collector) block() textblock.Block {
+	return textblock.Block{Line: c.start, Lines: c.current}
 }
 
-func (r *Reader) parseHeader(b blocks.Block) error {
+func (r *Reader) parseHeader(b textblock.Block) error {
 	text, _ := strings.CutPrefix(b.Lines[0], signature)
 	if text = trim(text); text != "" {
 		r.file.Set("header", text)
@@ -426,7 +426,7 @@ func (r *Reader) parseHeader(b blocks.Block) error {
 
 // ParseBlock reads the block number index, which comes from Blocks. The header block is number 0.
 // It returns a cue and true for a cue block. Lenient mode skips a broken block with a warning.
-func (r *Reader) ParseBlock(b blocks.Block, index int) (model.Cue, bool, error) {
+func (r *Reader) ParseBlock(b textblock.Block, index int) (model.Cue, bool, error) {
 	if index == 0 {
 		return model.Cue{}, false, r.parseHeader(b)
 	}
@@ -449,7 +449,7 @@ func (r *Reader) ParseBlock(b blocks.Block, index int) (model.Cue, bool, error) 
 	return model.Cue{}, false, r.st.Fail(perr, perr.Line, index, b.Lines)
 }
 
-func (r *Reader) parseOtherBlock(b blocks.Block, index int) *model.ParseError {
+func (r *Reader) parseOtherBlock(b textblock.Block, index int) *model.ParseError {
 	first := trim(b.Lines[0])
 	switch {
 	case isNote(first):
@@ -480,7 +480,7 @@ func isNote(first string) bool {
 
 // warnLateBlock warns in lenient mode about a STYLE or REGION block after a cue. The spec parser ignores every block
 // that is not a cue, so such blocks do not fail.
-func (r *Reader) warnLateBlock(b blocks.Block, index int, first string) {
+func (r *Reader) warnLateBlock(b textblock.Block, index int, first string) {
 	if r.st.Lenient() && (first == "STYLE" || first == "REGION") {
 		r.st.Warn("Block #"+strconv.Itoa(index)+" is a "+first+" block after a cue. The spec allows it only before the first cue, so the parser skipped it.",
 			b.Line, index, b.Lines, model.Skipped)
@@ -493,7 +493,7 @@ func (r *Reader) appendFileData(key string, value any) {
 }
 
 // parseCue reads a cue block: an optional identifier, the timing line with the settings, and the text lines.
-func (r *Reader) parseCue(b blocks.Block, index int) (model.Cue, error) {
+func (r *Reader) parseCue(b textblock.Block, index int) (model.Cue, error) {
 	lines := make([]string, len(b.Lines))
 	for i, l := range b.Lines {
 		lines[i] = trim(spacesRegexp.ReplaceAllString(l, " "))

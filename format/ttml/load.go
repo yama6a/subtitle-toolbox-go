@@ -9,8 +9,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/xmlraw"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 

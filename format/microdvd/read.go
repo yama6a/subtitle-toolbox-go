@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/stringlist"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -279,7 +279,7 @@ func (l textLine) markup(cue style) (string, *model.Data) {
 		Bold: slices.Contains(tags, "b"), Italic: slices.Contains(tags, "i"),
 		Underline: slices.Contains(tags, "u"), Strike: slices.Contains(tags, "s"),
 	}
-	tagList := stringlist.Any(tags)
+	tagList := formatdata.Strings(tags)
 	var storedColor any
 	if color != "" {
 		storedColor = color

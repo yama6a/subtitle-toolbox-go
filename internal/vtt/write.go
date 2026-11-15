@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/blocks"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/position"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textblock"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -229,7 +229,7 @@ func (w *Writer) text(c model.Cue, i int) string {
 	// A line that holds only a dropped tag or a BOM reads as an empty line, and an empty line ends the cue.
 	var kept []string
 	for line := range strings.SplitSeq(text, "\n") {
-		if blocks.CleanLine(line) != "" {
+		if textblock.CleanLine(line) != "" {
 			kept = append(kept, line)
 		}
 	}

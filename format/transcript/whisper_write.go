@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -59,7 +59,7 @@ func whisperDocument(s *model.Subtitle) (orderedjson.Value, error) {
 	var file orderedjson.Value
 	if d, ok := s.FormatData(whisperKey); ok {
 		var err error
-		if file, err = jsondata.FromData(d); err != nil {
+		if file, err = formatdata.ToJSON(d); err != nil {
 			return file, &model.UnwritableError{Format: model.Whisper, CueIndex: -1, Reason: "The Whisper format data is no JSON.", Err: err}
 		}
 	}

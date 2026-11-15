@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/blocks"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textblock"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -39,7 +39,7 @@ var fullWidth = strings.NewReplacer("\uff1a", ":", "\uff0c", ",", "\uff0e", ".",
 // Reader reads the blocks of a SubRip file one at a time.
 type Reader struct {
 	st    *parsing.State
-	rules blocks.Rules
+	rules textblock.Rules
 	cut   func() (int, bool)
 }
 
@@ -59,7 +59,7 @@ type looseTime struct {
 // NewReader returns a reader that records its warnings and reads its mode from st.
 func NewReader(st *parsing.State) *Reader {
 	rd := &Reader{st: st}
-	rd.rules = blocks.Rules{IsTimingLine: rd.isTimingLine, HasCueNumbers: true}
+	rd.rules = textblock.Rules{IsTimingLine: rd.isTimingLine, HasCueNumbers: true}
 	return rd
 }
 
@@ -71,17 +71,17 @@ func (rd *Reader) CutAt(cut func() (int, bool)) {
 
 // Blocks yields the blocks of lines after the join of cue text blocks, which warns in lenient mode.
 // The keys of lines are 0-based line numbers.
-func (rd *Reader) Blocks(lines iter.Seq2[int, string]) iter.Seq[blocks.Block] {
+func (rd *Reader) Blocks(lines iter.Seq2[int, string]) iter.Seq[textblock.Block] {
 	onJoin := func(block, line int, lines []string) {
 		if rd.st.Lenient() {
-			rd.st.Warn(blocks.JoinWarning(block, line), line, block, lines, model.Repaired)
+			rd.st.Warn(textblock.JoinWarning(block, line), line, block, lines, model.Repaired)
 		}
 	}
-	split := blocks.SplitAtEmptyLines(lines)
+	split := textblock.SplitAtEmptyLines(lines)
 	if rd.cut != nil {
-		split = blocks.DropCut(split, rd.cut)
+		split = textblock.DropCut(split, rd.cut)
 	}
-	return blocks.JoinCueTextBlocks(split, rd.rules, nil, onJoin)
+	return textblock.JoinCueTextBlocks(split, rd.rules, nil, onJoin)
 }
 
 func (rd *Reader) isTimingLine(line string) bool {
@@ -98,8 +98,8 @@ func isLenientTimingLine(line string) bool {
 
 // ParseBlock returns the cues of block b, number index, split before each timing line. Lenient mode skips a
 // part that fails, and warns for each split and each skip.
-func (rd *Reader) ParseBlock(b blocks.Block, index int) ([]model.Cue, error) {
-	return rd.rules.ReadParts(b, index, blocks.PartReader{
+func (rd *Reader) ParseBlock(b textblock.Block, index int) ([]model.Cue, error) {
+	return rd.rules.ReadParts(b, index, textblock.PartReader{
 		Lenient: rd.st.Lenient(),
 		Split: func(msg string, line int) {
 			rd.st.Warn(msg, line, index, b.Lines, model.Repaired)
@@ -132,7 +132,7 @@ func (rd *Reader) parsePart(part []string, index, line int) (model.Cue, error) {
 // Warnings hold shown, the lines as read.
 func (rd *Reader) parseCue(lines, shown []string, index, line int) (model.Cue, error) {
 	block := "Block #" + strconv.Itoa(index)
-	if !blocks.IsNumeric(lines[0]) {
+	if !textblock.IsNumeric(lines[0]) {
 		return model.Cue{}, &model.ParseError{Line: line, Msg: block + " has no cue number on its first line. The line is " + parsing.Quote(lines[0]) + "."}
 	}
 	if len(lines) < 2 {

@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/wordgroup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -51,7 +51,7 @@ func podcastDocument(s *model.Subtitle, opts PodcastWriteOptions) (orderedjson.V
 	var file orderedjson.Value
 	if d, ok := s.FormatData(podcastKey); ok {
 		var err error
-		if file, err = jsondata.FromData(d); err != nil {
+		if file, err = formatdata.ToJSON(d); err != nil {
 			return file, &model.UnwritableError{Format: model.PodcastTranscript, CueIndex: -1, Reason: "The Podcasting 2.0 format data is no JSON.", Err: err}
 		}
 	}
@@ -60,7 +60,7 @@ func podcastDocument(s *model.Subtitle, opts PodcastWriteOptions) (orderedjson.V
 		pieces := cuePieces(&c, opts.WordSegments)
 		var stored orderedjson.Value
 		if d, ok := c.FormatData(podcastKey); ok && len(pieces) == 1 && !opts.WordSegments {
-			stored, _ = jsondata.FromData(d)
+			stored, _ = formatdata.ToJSON(d)
 		}
 		for _, p := range pieces {
 			segments = append(segments, orderedjson.Union(p.object(), stored))

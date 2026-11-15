@@ -12,12 +12,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/ttmldoc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/position"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/ttmlwrite"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/xmlraw"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -37,7 +37,7 @@ type reader struct {
 	ns      string
 	root    *xmlraw.Node
 	body    *xmlraw.Node
-	styles  ttmlwrite.Sheet
+	styles  ttmldoc.Sheet
 	agents  map[string]string
 	clock   clock
 	cues    []model.Cue
@@ -68,7 +68,7 @@ type scope struct {
 	preserveSpace     bool
 	forced            *bool
 	// properties holds the style properties of <body> and each <div>, outermost first.
-	properties []ttmlwrite.Properties
+	properties []ttmldoc.Properties
 }
 
 // run is one piece of the content of a paragraph: a line break, the start of a timed span, or text.
@@ -77,7 +77,7 @@ type run struct {
 	timed     bool
 	span      interval
 	text      string
-	style     ttmlwrite.Style
+	style     ttmldoc.Style
 	agent     string
 	agentEnd  bool
 }
@@ -116,7 +116,7 @@ func (r *reader) read(content string, s *model.Subtitle) error {
 	}
 	r.root, _ = doc.Root()
 	r.ns = r.root.NamespaceURI()
-	if ttmlwrite.LocalName(r.root) != "tt" || !slices.Contains([]string{ttmlwrite.NSTTML, ttmlwrite.NSDFXP, ttmlwrite.NSDFXP200604, ""}, r.ns) {
+	if ttmldoc.LocalName(r.root) != "tt" || !slices.Contains([]string{ttmldoc.NSTTML, ttmldoc.NSDFXP, ttmldoc.NSDFXP200604, ""}, r.ns) {
 		return r.parseError(model.NoLine, "The root element is not a TTML <tt> element.")
 	}
 	if r.clock, err = r.readClock(); err != nil {
@@ -124,7 +124,7 @@ func (r *reader) read(content string, s *model.Subtitle) error {
 	}
 	head := r.firstChild(r.root, "head")
 	r.body = r.firstChild(r.root, "body")
-	r.styles = ttmlwrite.NewSheet(r.ns, head)
+	r.styles = ttmldoc.NewSheet(r.ns, head)
 	r.agents = r.readAgents(head)
 	if err := r.readFileData(s, head); err != nil {
 		return err
@@ -149,7 +149,7 @@ func (r *reader) readClock() (clock, error) {
 	}
 	smpteFrameRate := guess
 	if hasFrameRate {
-		smpteFrameRate = ttmlwrite.LeadingFloat(frameRate)
+		smpteFrameRate = ttmldoc.LeadingFloat(frameRate)
 	}
 	if smpteFrameRate == 0 {
 		smpteFrameRate = 30
@@ -166,11 +166,11 @@ func (r *reader) readClock() (clock, error) {
 	if hasFrameRate {
 		c.tickRate = c.frameRate
 	}
-	if v, ok := r.parameter("tickRate"); ok && ttmlwrite.LeadingFloat(v) > 0 {
-		c.tickRate = ttmlwrite.LeadingFloat(v)
+	if v, ok := r.parameter("tickRate"); ok && ttmldoc.LeadingFloat(v) > 0 {
+		c.tickRate = ttmldoc.LeadingFloat(v)
 	}
-	if v, ok := r.parameter("subFrameRate"); ok && ttmlwrite.LeadingFloat(v) != 0 {
-		c.subFrameRate = ttmlwrite.LeadingFloat(v)
+	if v, ok := r.parameter("subFrameRate"); ok && ttmldoc.LeadingFloat(v) != 0 {
+		c.subFrameRate = ttmldoc.LeadingFloat(v)
 	}
 	return c, nil
 }
@@ -181,12 +181,12 @@ func (r *reader) frameRateMultiplier() float64 {
 	if !ok {
 		return 1
 	}
-	a, b := ttmlwrite.Multiplier(v)
+	a, b := ttmldoc.Multiplier(v)
 	return a / b
 }
 
 func (r *reader) parameter(local string) (string, bool) {
-	return familyAttr(r.root, ttmlwrite.ParameterNamespaces, "ttp", local)
+	return familyAttr(r.root, ttmldoc.ParameterNamespaces, "ttp", local)
 }
 
 func (r *reader) trimmedParameter(local, fallback string) string {
@@ -225,7 +225,7 @@ func (r *reader) guessFrameRate() (float64, bool, error) {
 // document, with its expression and line. The first one wins a tie. It returns 0 without one.
 func (r *reader) highestFrameLabel() (label int64, expression string, line int) {
 	for n := range r.root.Parent.Descendants() {
-		for _, a := range ttmlwrite.Attributes(n) {
+		for _, a := range ttmldoc.Attributes(n) {
 			if a.Name.Space != "" || !slices.Contains(timingAttributes, a.Name.Local) {
 				continue
 			}
@@ -240,7 +240,7 @@ func (r *reader) highestFrameLabel() (label int64, expression string, line int) 
 
 func (r *reader) firstChild(n *xmlraw.Node, local string) *xmlraw.Node {
 	for _, c := range n.Children {
-		if ttmlwrite.IsElement(c, r.ns, local) {
+		if ttmldoc.IsElement(c, r.ns, local) {
 			return c
 		}
 	}
@@ -261,7 +261,7 @@ func (r *reader) readAgents(head *xmlraw.Node) map[string]string {
 		for _, c := range n.Children {
 			if isMetadataElement(c, "name") {
 				if name := strings.Trim(c.Text(), markupcore.TrimSet); name != "" {
-					agents[ttmlwrite.XMLAttr(n, "id")] = name
+					agents[ttmldoc.XMLAttr(n, "id")] = name
 					break
 				}
 			}
@@ -272,7 +272,7 @@ func (r *reader) readAgents(head *xmlraw.Node) map[string]string {
 
 // readFileData sets the metadata and the file data. It removes the title from head.
 func (r *reader) readFileData(s *model.Subtitle, head *xmlraw.Node) error {
-	if lang := ttmlwrite.XMLAttr(r.root, "lang"); lang != "" {
+	if lang := ttmldoc.XMLAttr(r.root, "lang"); lang != "" {
 		s.SetMetadata(model.MetadataLanguage, lang)
 	}
 	data := model.NewData(
@@ -284,7 +284,7 @@ func (r *reader) readFileData(s *model.Subtitle, head *xmlraw.Node) error {
 		if title, ok := removeTitle(head); ok {
 			s.SetMetadata(model.MetadataTitle, title)
 		}
-		data.Set("head", ttmlwrite.Serialize(head))
+		data.Set("head", ttmldoc.Serialize(head))
 	}
 	if r.body != nil {
 		if attrs := readAttributes(r.body, timingAttributes...); attrs.Len() > 0 {
@@ -302,7 +302,7 @@ func (r *reader) readNamespaces() *model.Data {
 	var prefixes []string
 	uris := map[string]string{}
 	for _, a := range r.root.Attrs {
-		prefix, ok := ttmlwrite.DeclaredPrefix(a)
+		prefix, ok := ttmldoc.DeclaredPrefix(a)
 		if _, seen := uris[prefix]; ok && !seen {
 			prefixes = append(prefixes, prefix)
 			uris[prefix] = a.Value
@@ -320,9 +320,9 @@ func (r *reader) readNamespaces() *model.Data {
 // metadata namespace. An attribute in the XML namespace is named xml: plus its local name, whatever its prefix.
 func readAttributes(n *xmlraw.Node, skip ...string) *model.Data {
 	out := model.NewData()
-	for _, a := range ttmlwrite.Attributes(n) {
+	for _, a := range ttmldoc.Attributes(n) {
 		uri := n.AttrNamespaceURI(a)
-		if slices.Contains(ttmlwrite.MetadataNamespaces, uri) && a.Name.Local == "agent" {
+		if slices.Contains(ttmldoc.MetadataNamespaces, uri) && a.Name.Local == "agent" {
 			continue
 		}
 		name := xmlraw.QName(a.Name)
@@ -374,18 +374,18 @@ func (r *reader) readContainer(container *xmlraw.Node, parent scope, divAttribut
 			return err
 		}
 		iv = parent.interval
-		r.st.Warn(err.Msg+" The parser ignored the timing of the "+ttmlwrite.LocalName(container)+".", container.Line, model.NoBlock, nil, model.Repaired)
+		r.st.Warn(err.Msg+" The parser ignored the timing of the "+ttmldoc.LocalName(container)+".", container.Line, model.NoBlock, nil, model.Repaired)
 	}
 	sc := r.containerScope(container, parent, iv)
-	if ttmlwrite.IsElement(container, r.ns, "div") {
+	if ttmldoc.IsElement(container, r.ns, "div") {
 		divAttributes = mergeData(divAttributes, readAttributes(container, "begin", "end", "dur", "xml:id", "region"))
 	}
 	for _, child := range container.Children {
 		var cerr error
 		switch {
-		case ttmlwrite.IsElement(child, r.ns, "div"):
+		case ttmldoc.IsElement(child, r.ns, "div"):
 			cerr = r.readContainer(child, sc, divAttributes)
-		case ttmlwrite.IsElement(child, r.ns, "p"):
+		case ttmldoc.IsElement(child, r.ns, "p"):
 			cerr = r.readParagraphOf(child, sc, divAttributes)
 		}
 		if cerr != nil {
@@ -400,7 +400,7 @@ func (r *reader) containerScope(container *xmlraw.Node, parent scope, iv interva
 	sc := parent
 	sc.interval = iv
 	sc.preserveSpace = preservesSpace(container, parent.preserveSpace)
-	if region, ok := ttmlwrite.PlainAttr(container, "region"); ok {
+	if region, ok := ttmldoc.PlainAttr(container, "region"); ok {
 		sc.region, sc.hasRegion = region, true
 	}
 	props := r.styles.OwnProperties(container)
@@ -464,7 +464,7 @@ func (r *reader) readParagraph(p *xmlraw.Node, sc scope) (model.Cue, bool, *mode
 		return model.Cue{}, false, err
 	}
 	region, hasRegion := sc.region, sc.hasRegion
-	if v, ok := ttmlwrite.PlainAttr(p, "region"); ok {
+	if v, ok := ttmldoc.PlainAttr(p, "region"); ok {
 		region, hasRegion = v, true
 	}
 	runs := r.paragraphRuns(p, sc, region, hasRegion, iv)
@@ -479,7 +479,7 @@ func (r *reader) readParagraph(p *xmlraw.Node, sc scope) (model.Cue, bool, *mode
 	if err != nil {
 		return model.Cue{}, false, err
 	}
-	c := model.Cue{Start: start, End: end, Lines: r.runsToLines(runs), ID: ttmlwrite.XMLAttr(p, "id")}
+	c := model.Cue{Start: start, End: end, Lines: r.runsToLines(runs), ID: ttmldoc.XMLAttr(p, "id")}
 	if err := r.setCueData(&c, p, sc, region, hasRegion); err != nil {
 		return model.Cue{}, false, err
 	}
@@ -502,7 +502,7 @@ func (r *reader) paragraphInterval(p *xmlraw.Node, sc scope) (interval, *model.P
 func (r *reader) absoluteInterval(p *xmlraw.Node, begin, parentEnd float64) (interval, *model.ParseError) {
 	msg := "The paragraph begins at " + timecode.Number(round3(begin)) + "s, but its parent ends at " + timecode.Number(round3(parentEnd)) + "s."
 	absolute := interval{}
-	if _, ok := ttmlwrite.PlainAttr(p, "begin"); ok {
+	if _, ok := ttmldoc.PlainAttr(p, "begin"); ok {
 		var err *model.ParseError
 		if absolute, err = r.interval(p, interval{}); err != nil {
 			return interval{}, err
@@ -520,7 +520,7 @@ func (r *reader) absoluteInterval(p *xmlraw.Node, begin, parentEnd float64) (int
 // the parent begin plus the own end, and the own begin plus the duration.
 func (r *reader) interval(n *xmlraw.Node, parent interval) (interval, *model.ParseError) {
 	iv := interval{begin: parent.begin, end: parent.end, hasEnd: parent.hasEnd}
-	if _, ok := ttmlwrite.PlainAttr(n, "begin"); ok {
+	if _, ok := ttmldoc.PlainAttr(n, "begin"); ok {
 		var err *model.ParseError
 		if iv.begin, err = r.offsetTime(parent.begin, n, "begin"); err != nil {
 			return interval{}, err
@@ -530,7 +530,7 @@ func (r *reader) interval(n *xmlraw.Node, parent interval) (interval, *model.Par
 		name string
 		base float64
 	}{{"end", parent.begin}, {"dur", iv.begin}} {
-		v, _ := ttmlwrite.PlainAttr(n, attr.name)
+		v, _ := ttmldoc.PlainAttr(n, attr.name)
 		if strings.Trim(v, markupcore.TrimSet) == "" {
 			continue
 		}
@@ -547,7 +547,7 @@ func (r *reader) interval(n *xmlraw.Node, parent interval) (interval, *model.Par
 
 // offsetTime returns base plus the time of the attribute. Lenient mode reads the forms of looseSeconds too.
 func (r *reader) offsetTime(base float64, n *xmlraw.Node, attr string) (float64, *model.ParseError) {
-	v, _ := ttmlwrite.PlainAttr(n, attr)
+	v, _ := ttmldoc.PlainAttr(n, attr)
 	expression := strings.Trim(v, markupcore.TrimSet)
 	secs, err := r.boundedExpression(expression)
 	if err == nil {
@@ -591,7 +591,7 @@ func (r *reader) bounded(secs float64, text string, line int) (float64, *model.P
 
 func (r *reader) isInParagraph(n *xmlraw.Node) bool {
 	for ; n != nil && n.Kind == xmlraw.ElementNode; n = n.Parent {
-		if ttmlwrite.IsElement(n, r.ns, "p") {
+		if ttmldoc.IsElement(n, r.ns, "p") {
 			return true
 		}
 	}
@@ -600,7 +600,7 @@ func (r *reader) isInParagraph(n *xmlraw.Node) bool {
 
 // paragraphRuns returns the runs of a paragraph with the styles of its region, its containers and its own.
 func (r *reader) paragraphRuns(p *xmlraw.Node, sc scope, region string, hasRegion bool, iv interval) []run {
-	st := ttmlwrite.Style{}.Apply(r.styles.RegionProperties(region, hasRegion))
+	st := ttmldoc.Style{}.Apply(r.styles.RegionProperties(region, hasRegion))
 	for _, props := range sc.properties {
 		st = st.Apply(props)
 	}
@@ -612,8 +612,8 @@ func (r *reader) paragraphRuns(p *xmlraw.Node, sc scope, region string, hasRegio
 
 // agentName returns the name of the first agent of the ttm:agent attribute of n, or the ID without a named agent.
 func (r *reader) agentName(n *xmlraw.Node) string {
-	v, _ := familyAttr(n, ttmlwrite.MetadataNamespaces, "ttm", "agent")
-	ids := ttmlwrite.SplitSpace(v)
+	v, _ := familyAttr(n, ttmldoc.MetadataNamespaces, "ttm", "agent")
+	ids := ttmldoc.SplitSpace(v)
 	if len(ids) == 0 {
 		return ""
 	}
@@ -624,7 +624,7 @@ func (r *reader) agentName(n *xmlraw.Node) string {
 }
 
 func preservesSpace(n *xmlraw.Node, inherited bool) bool {
-	space := ttmlwrite.XMLAttr(n, "space")
+	space := ttmldoc.XMLAttr(n, "space")
 	if space == "" {
 		return inherited
 	}
@@ -632,16 +632,16 @@ func preservesSpace(n *xmlraw.Node, inherited bool) bool {
 }
 
 // collectRuns appends the runs of the content of n. A <span> with a time adds a timed span before its content.
-func (r *reader) collectRuns(n *xmlraw.Node, st ttmlwrite.Style, agent string, preserveSpace bool, iv interval, runs *[]run) {
+func (r *reader) collectRuns(n *xmlraw.Node, st ttmldoc.Style, agent string, preserveSpace bool, iv interval, runs *[]run) {
 	for _, child := range n.Children {
 		switch {
 		case child.Kind == xmlraw.TextNode, child.Kind == xmlraw.CDATANode:
 			addTextRuns(runs, child.Data, st, agent, preserveSpace)
-		case ttmlwrite.IsElement(child, r.ns, "br"):
+		case ttmldoc.IsElement(child, r.ns, "br"):
 			*runs = append(*runs, run{lineBreak: true})
-		case ttmlwrite.IsElement(child, r.ns, "span"):
+		case ttmldoc.IsElement(child, r.ns, "span"):
 			spanInterval := iv
-			if slices.ContainsFunc(timingAttributes, func(name string) bool { _, ok := ttmlwrite.PlainAttr(child, name); return ok }) {
+			if slices.ContainsFunc(timingAttributes, func(name string) bool { _, ok := ttmldoc.PlainAttr(child, name); return ok }) {
 				// A bad span time drops only the word timestamp, so the text of the cue stays.
 				if timed, err := r.interval(child, iv); err == nil {
 					spanInterval = timed
@@ -659,7 +659,7 @@ func (r *reader) collectRuns(n *xmlraw.Node, st ttmlwrite.Style, agent string, p
 
 // addTextRuns appends the runs of a text node. With xml:space="preserve", each LF becomes a line break.
 // See https://www.w3.org/TR/ttml2/#content-attribute-space.
-func addTextRuns(runs *[]run, text string, st ttmlwrite.Style, agent string, preserveSpace bool) {
+func addTextRuns(runs *[]run, text string, st ttmldoc.Style, agent string, preserveSpace bool) {
 	text = strings.ReplaceAll(strings.ReplaceAll(text, "\r\n", "\n"), "\r", "\n")
 	parts := []string{text}
 	if preserveSpace {
@@ -815,7 +815,7 @@ func runsToMarkup(runs []run, openAgent *string) string {
 // setCueData sets the cue data and the alignment of the cue of paragraph p.
 func (r *reader) setCueData(c *model.Cue, p *xmlraw.Node, sc scope, region string, hasRegion bool) *model.ParseError {
 	attrs := readAttributes(p, "begin", "end", "dur", "xml:id")
-	if _, ok := ttmlwrite.PlainAttr(p, "region"); !ok && sc.hasRegion {
+	if _, ok := ttmldoc.PlainAttr(p, "region"); !ok && sc.hasRegion {
 		attrs.Set("region", sc.region)
 	}
 	textAlign, hasTextAlign := sc.textAlign, sc.hasTextAlign
@@ -894,7 +894,7 @@ func percent(fraction float64) float64 {
 }
 
 // row returns the grid row of the anchor of a region: below 1/3 of the height the top row, above 2/3 the bottom row.
-func (r *reader) row(props ttmlwrite.Properties) (int, bool) {
+func (r *reader) row(props ttmldoc.Properties) (int, bool) {
 	origin, originOK := r.axisLength(propOr(props, "origin", "auto"), 1, 0)
 	extent, extentOK := r.axisLength(propOr(props, "extent", "auto"), 1, 1)
 	if !originOK || !extentOK {
@@ -924,7 +924,7 @@ func (r *reader) row(props ttmlwrite.Properties) (int, bool) {
 // axisLength returns the length of an origin or extent value on an axis as a fraction of the root container. The
 // axis is 0 for the first length and the width, and 1 for the second length and the height.
 func (r *reader) axisLength(value string, axis int, auto float64) (float64, bool) {
-	parts := ttmlwrite.SplitSpace(value)
+	parts := ttmldoc.SplitSpace(value)
 	if len(parts) == 1 && parts[0] == "auto" {
 		return auto, true
 	}
@@ -935,7 +935,7 @@ func (r *reader) axisLength(value string, axis int, auto float64) (float64, bool
 	if m == nil {
 		return 0, false
 	}
-	length := ttmlwrite.LeadingFloat(m[1])
+	length := ttmldoc.LeadingFloat(m[1])
 	switch m[2] {
 	case "%":
 		return length / 100, true
@@ -961,18 +961,18 @@ func (r *reader) cellLength(length float64, axis int) (float64, bool) {
 
 // pixelLength returns a length in pixels as a fraction of the width or height of tts:extent on <tt>, else on <body>.
 func (r *reader) pixelLength(length float64, axis int) (float64, bool) {
-	extent, ok := ttmlwrite.StylingAttributes(r.root)["extent"]
+	extent, ok := ttmldoc.StylingAttributes(r.root)["extent"]
 	if !ok && r.body != nil {
-		extent, ok = ttmlwrite.StylingAttributes(r.body)["extent"]
+		extent, ok = ttmldoc.StylingAttributes(r.body)["extent"]
 	}
 	m := rootExtentRegexp.FindStringSubmatch(extent)
-	if !ok || m == nil || ttmlwrite.LeadingFloat(m[1+axis]) <= 0 {
+	if !ok || m == nil || ttmldoc.LeadingFloat(m[1+axis]) <= 0 {
 		return 0, false
 	}
-	return length / ttmlwrite.LeadingFloat(m[1+axis]), true
+	return length / ttmldoc.LeadingFloat(m[1+axis]), true
 }
 
-func propOr(props ttmlwrite.Properties, name, fallback string) string {
+func propOr(props ttmldoc.Properties, name, fallback string) string {
 	if v, ok := props[name]; ok {
 		return v
 	}
@@ -999,14 +999,14 @@ func (r *reader) forcedDisplay(n *xmlraw.Node) (bool, bool) {
 }
 
 func (r *reader) forcedDisplayAt(n *xmlraw.Node, depth int) (bool, bool) {
-	for _, a := range ttmlwrite.Attributes(n) {
-		if n.AttrNamespaceURI(a) == ttmlwrite.NSIMSCStyle && a.Name.Local == "forcedDisplay" || ttmlwrite.UndeclaredName(n, a) == "itts:forcedDisplay" {
+	for _, a := range ttmldoc.Attributes(n) {
+		if n.AttrNamespaceURI(a) == ttmldoc.NSIMSCStyle && a.Name.Local == "forcedDisplay" || ttmldoc.UndeclaredName(n, a) == "itts:forcedDisplay" {
 			return strings.Trim(a.Value, markupcore.TrimSet) == "true", true
 		}
 	}
 	forced, found := false, false
-	if depth < ttmlwrite.MaxStyleDepth {
-		for _, id := range ttmlwrite.StyleIDs(n) {
+	if depth < ttmldoc.MaxStyleDepth {
+		for _, id := range ttmldoc.StyleIDs(n) {
 			if ref, ok := r.styles.Styles[id]; ok {
 				if f, ok := r.forcedDisplayAt(ref, depth+1); ok {
 					forced, found = f, true
@@ -1027,7 +1027,7 @@ func (r *reader) regionForcedDisplay(id string, ok bool) (bool, bool) {
 		return forced, true
 	}
 	for _, c := range region.Children {
-		if ttmlwrite.IsElement(c, r.ns, "style") {
+		if ttmldoc.IsElement(c, r.ns, "style") {
 			if forced, ok := r.forcedDisplay(c); ok {
 				return forced, true
 			}
@@ -1039,7 +1039,7 @@ func (r *reader) regionForcedDisplay(id string, ok bool) (bool, bool) {
 // hasForcedSpan reports whether a span of n is forced, with inheritance inside the spans.
 func (r *reader) hasForcedSpan(n *xmlraw.Node, inherited bool) bool {
 	for _, c := range n.Children {
-		if !ttmlwrite.IsElement(c, r.ns, "span") {
+		if !ttmldoc.IsElement(c, r.ns, "span") {
 			continue
 		}
 		forced, ok := r.forcedDisplay(c)
@@ -1092,7 +1092,7 @@ func (r *reader) addCues(s *model.Subtitle) error {
 // xmlLines returns the lines of the serialised element, trimmed, without the empty ones, for warnings.
 func xmlLines(n *xmlraw.Node) []string {
 	var lines []string
-	for line := range strings.SplitSeq(ttmlwrite.Serialize(n), "\n") {
+	for line := range strings.SplitSeq(ttmldoc.Serialize(n), "\n") {
 		if line = strings.Trim(line, markupcore.TrimSet); line != "" {
 			lines = append(lines, line)
 		}

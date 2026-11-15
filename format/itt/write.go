@@ -5,9 +5,9 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/ttmldoc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/ttmlwrite"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -46,15 +46,15 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	}
 	doc := copyOf(s)
 	last := lastFrame(out.rate)
-	times := make([]ttmlwrite.Times, 0, s.Len())
+	times := make([]ttmldoc.Times, 0, s.Len())
 	for _, c := range s.All() {
 		begin := min(out.rate.Frames(max(0, c.Start)), last-1)
 		end := min(max(begin+1, out.rate.Frames(max(0, c.End))), last)
-		times = append(times, ttmlwrite.Times{Begin: out.rate.TimecodeOf(begin).String(), End: out.rate.TimecodeOf(end).String()})
+		times = append(times, ttmldoc.Times{Begin: out.rate.TimecodeOf(begin).String(), End: out.rate.TimecodeOf(end).String()})
 	}
-	body, err := ttmlwrite.Document(doc, common, ttmlwrite.Options{
+	body, err := ttmldoc.Document(doc, common, ttmldoc.Options{
 		Format: model.ITT,
-		RootAttributes: []ttmlwrite.Attr{
+		RootAttributes: []ttmldoc.Attr{
 			{Name: "ttp:timeBase", Value: "smpte"},
 			{Name: "ttp:frameRate", Value: out.frameRate},
 			{Name: "ttp:frameRateMultiplier", Value: out.multiplier},
@@ -117,8 +117,8 @@ func copyOf(s *model.Subtitle) *model.Subtitle {
 		}
 	}
 	_ = doc.SetFormatData(string(model.TTML), model.NewData( // the data has the shape of the schema
-		model.Field{Key: "namespace", Value: ttmlwrite.NSTTML},
-		model.Field{Key: "namespaces", Value: model.NewData(model.Field{Key: "ttp", Value: ttmlwrite.ParameterNamespaces[0]})},
+		model.Field{Key: "namespace", Value: ttmldoc.NSTTML},
+		model.Field{Key: "namespaces", Value: model.NewData(model.Field{Key: "ttp", Value: ttmldoc.ParameterNamespaces[0]})},
 		model.Field{Key: "head", Value: strings.Join(headLines, "\n")},
 		model.Field{Key: "body", Value: model.NewData(model.Field{Key: "style", Value: "normal"})},
 	))
