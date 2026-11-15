@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -102,12 +103,32 @@ func (e *Engine) RequireLanguages(ctx context.Context, language ocr.Language) er
 		missing[0] + ". The installed languages are: " + strings.Join(installed, ", ") + "."}
 }
 
+// languageCache holds the installed languages of one engine. Its mutex also serialises the checks.
+type languageCache struct {
+	mu   sync.Mutex
+	list []string
+	read bool
+}
+
 func (e *Engine) installedLanguages(ctx context.Context) ([]string, error) {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	if e.languagesRead {
-		return e.languages, nil
+	c := e.languages
+	if c == nil {
+		return e.listLanguages(ctx)
 	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.read {
+		return c.list, nil
+	}
+	list, err := e.listLanguages(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c.list, c.read = list, true
+	return list, nil
+}
+
+func (e *Engine) listLanguages(ctx context.Context) ([]string, error) {
 	if err := RequireInstalled(ctx, e.program); err != nil {
 		return nil, err
 	}
@@ -122,6 +143,5 @@ func (e *Engine) installedLanguages(ctx context.Context) ([]string, error) {
 			list = append(list, line)
 		}
 	}
-	e.languages, e.languagesRead = list, true
 	return list, nil
 }

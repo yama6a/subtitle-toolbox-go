@@ -8,7 +8,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -24,9 +23,7 @@ type Engine struct {
 	noInvert bool
 	thresh   int
 
-	mu            sync.Mutex
-	languages     []string
-	languagesRead bool
+	languages *languageCache // nil in an Engine that New did not build
 }
 
 var _ ocr.Engine = (*Engine)(nil)
@@ -43,6 +40,8 @@ func New(opts Options) (*Engine, error) {
 		scale:    opts.Scale,
 		noInvert: opts.NoInvert,
 		thresh:   opts.Threshold,
+
+		languages: &languageCache{},
 	}
 	if e.program == "" {
 		e.program = "tesseract"
