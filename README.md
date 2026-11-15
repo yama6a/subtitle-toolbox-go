@@ -8,10 +8,11 @@ A Go library and command line tool that reads, edits and writes subtitle files.
 go get github.com/yama6a/subtitle-toolbox-go/v4
 ```
 
-The command line tool `stbox`:
+The command line tool `stbox`. Homebrew installs a bottle, a prebuilt package, so it needs no Xcode. `brew upgrade` updates it.
 
 ```sh
 brew install yama6a/tap/stbox
+brew upgrade stbox
 go install github.com/yama6a/subtitle-toolbox-go/v4/cmd/stbox@latest
 ```
 

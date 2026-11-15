@@ -116,8 +116,10 @@ jobs:
             dist/stbox_${{ needs.version.outputs.version }}_windows_arm64.zip
             dist/stbox_${{ needs.version.outputs.version }}_checksums.txt
 
-  # Writes the Homebrew formula of the new release to yama6a/homebrew-tap. The secret HOMEBREW_TAP_TOKEN is a
-  # fine-grained token with contents write on that one repository, because the job token cannot push to another repository.
+  # Pushes the Homebrew formula of the new release to the branch bottle/stbox-<version> of yama6a/homebrew-tap.
+  # The bottle workflow of the tap builds the bottles, adds the bottle block and commits the formula to main.
+  # The secret HOMEBREW_TAP_TOKEN is a fine-grained token with contents write on that one repository,
+  # because the job token cannot push to another repository.
   homebrew:
     needs: [version, release]
     runs-on: ubuntu-26.04-arm
@@ -142,18 +144,15 @@ jobs:
           path: tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           persist-credentials: true # the next step pushes with git
-      - name: Push the formula to the tap
+      - name: Push the formula to the bottle branch of the tap
         env:
           VERSION: ${{ needs.version.outputs.version }}
         run: |
           cp stbox.rb tap/Formula/stbox.rb
           cd tap
-          if git diff --quiet; then
-            echo "The formula of stbox $VERSION is already in the tap."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --create "bottle/stbox-$VERSION"
           git add Formula/stbox.rb
-          git commit --message "Update stbox to $VERSION"
-          git push
+          git commit -m "Update stbox to $VERSION"
+          git push --force origin "bottle/stbox-$VERSION"
