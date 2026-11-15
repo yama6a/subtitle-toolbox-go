@@ -136,10 +136,10 @@ A rule option overrides the preset, for example `--max-cpl 40`. `--json` prints 
 
 ## Clean up a subtitle
 
-`--sdh` removes hearing-impaired annotations, such as `[TRAIN WHISTLE BLOWS]`, `(sighs)` and `CONDUCTOR:`. It also removes a cue that has no text left. The labels in lower case, such as `Baker:`, stay.
+`--sdh` removes hearing-impaired annotations, such as `[TRAIN WHISTLE BLOWS]`, `(sighs)` and `CONDUCTOR:`. It also removes a cue that has no text left. `--sdh-lyrics` removes the text between music symbols. The labels in lower case, such as `Baker:`, stay.
 
 ```sh
-stbox convert train.srt --sdh --no-bom
+stbox convert train.srt --sdh --sdh-lyrics --no-bom
 ```
 
 ```text
@@ -170,25 +170,20 @@ Baker: We open at six.
 Two loaves, please.
 
 7
-00:00:24,500 --> 00:00:27,000
-♪ Rain on the window ♪
-
-8
 00:00:27,500 --> 00:00:30,000
 Note: the last train leaves at 11:40.
 
-9
+8
 00:00:33,500 --> 00:00:36,000
 Fish &amp; chips {chuckles} for two.
 
-10
+9
 00:00:36,500 --> 00:00:39,000
 Sit down, please.
 
-11
+10
 00:00:39,500 --> 00:00:42,000
-- # The wheels go round #
-- It stopped raining.
+It stopped raining.
 ```
 
 A second file has typos from a bad download: `Quiet , please !`, `We landed late.It was cold,but dry.` and `-Did you call?`. `--errors-fix` fixes the spacing, the dashes, the dots and the tags. `--language en` sets the language rules, and without it the OCR fixes such as `lt's` to `It's` do not run. `--structure-wrap` breaks lines longer than 42 characters, such as the fare in cue 7.

@@ -233,7 +233,7 @@ func ExampleLoad_removeHearingImpaired() {
 		fmt.Println(err)
 		return
 	}
-	if _, err := hearingimpaired.Apply(s, hearingimpaired.Options{}); err != nil {
+	if _, err := hearingimpaired.Apply(s, hearingimpaired.Options{Lyrics: true}); err != nil {
 		fmt.Println(err)
 		return
 	}
@@ -268,25 +268,20 @@ func ExampleLoad_removeHearingImpaired() {
 	// Two loaves, please.
 	//
 	// 7
-	// 00:00:24,500 --> 00:00:27,000
-	// ♪ Rain on the window ♪
-	//
-	// 8
 	// 00:00:27,500 --> 00:00:30,000
 	// Note: the last train leaves at 11:40.
 	//
-	// 9
+	// 8
 	// 00:00:33,500 --> 00:00:36,000
 	// Fish &amp; chips {chuckles} for two.
 	//
-	// 10
+	// 9
 	// 00:00:36,500 --> 00:00:39,000
 	// Sit down, please.
 	//
-	// 11
+	// 10
 	// 00:00:39,500 --> 00:00:42,000
-	// - # The wheels go round #
-	// - It stopped raining.
+	// It stopped raining.
 }
 
 func ExampleLoad_fixErrors() {
