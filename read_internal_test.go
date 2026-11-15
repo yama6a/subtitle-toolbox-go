@@ -3,7 +3,7 @@ package stbox
 import (
 	"bytes"
 	"fmt"
-	"io"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -11,49 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-const (
-	utf8BOM    = "\ufeff"
-	stubFormat = Format("stub")
-)
-
-// stubRead reads each line of text as a cue of 1 s. It is a reader of the shape that the format packages have.
-func stubRead(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read stub: %w", err)
-	}
-	st := parsing.NewState(stubFormat, common)
-	content, ok, err := st.Prepare(content, false)
-	if err != nil {
-		return nil, nil, err
-	}
-	s := &Subtitle{}
-	if !ok {
-		return s, st.Warnings(), nil
-	}
-	for i, line := range strings.Split(strings.TrimRight(string(content), "\r\n"), "\n") {
-		start := time.Duration(i) * time.Second
-		s.AddCue(Cue{Start: start, End: start + time.Second, Lines: []string{strings.TrimRight(line, "\r")}})
-	}
-	return s, st.Warnings(), nil
-}
-
-// stubWrite writes the lines of each cue and an empty line after each cue. Its format default is a BOM.
-func stubWrite(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	var b strings.Builder
-	for _, c := range s.All() {
-		b.WriteString(strings.Join(c.Lines, "\n") + "\n\n")
-	}
-	return WriteReport{}, writing.Write(w, stubFormat, []byte(b.String()), common, true)
-}
-
-var stubRow = formatFuncs{format: stubFormat, read: stubRead, write: stubWrite}
+const utf8BOM = "\ufeff"
 
 func utf8Text(content string) textenc.Decoded {
 	return textenc.Decoded{Text: []byte(content), Encoding: "UTF-8"}
@@ -63,16 +25,16 @@ func TestDecodeWarningComesFirstInLenientMode(t *testing.T) {
 	t.Parallel()
 
 	const msg = "The content is UTF-16LE without a BOM."
-	text := textenc.Decoded{Text: []byte("Hel\x01lo\n"), Encoding: "UTF-16LE", Warning: msg}
-	_, info, err := read(stubRow, text, ReadOptions{Lenient: true})
+	text := textenc.Decoded{Text: []byte(srtCue("Hel\x01lo")), Encoding: "UTF-16LE", Warning: msg}
+	_, info, err := read(SubRip, text, ReadOptions{Lenient: true})
 	require.NoError(t, err)
 	assert.Equal(t, "UTF-16LE", info.SourceEncoding)
 	assert.Equal(t, []ParseWarning{
 		{Message: msg, Line: NoLine, Block: NoBlock, Action: Repaired},
-		{Message: "The file has control characters, the first on line 1. The parser removed them.", Line: 1, Block: NoBlock, Action: Repaired},
+		{Message: "The file has control characters, the first on line 3. The parser removed them.", Line: 3, Block: NoBlock, Action: Repaired},
 	}, info.Warnings)
 
-	_, info, err = read(stubRow, text, ReadOptions{})
+	_, info, err = read(SubRip, text, ReadOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, "UTF-16LE", info.SourceEncoding)
 	assert.Empty(t, info.Warnings)
@@ -88,9 +50,9 @@ func TestReadBuildsReadInfo(t *testing.T) {
 		cues     int
 		warnings int
 	}{
-		{name: "two cues", content: "Hello\nworld\n", cues: 2},
-		{name: "strict removes a control character without a warning", content: "Hel\x01lo\n", cues: 1},
-		{name: "lenient warns for a control character", content: "Hel\x01lo\n", lenient: true, cues: 1, warnings: 1},
+		{name: "two cues", content: srtCue("Hello") + "\n2\n00:00:03,000 --> 00:00:04,000\nworld\n", cues: 2},
+		{name: "strict removes a control character without a warning", content: srtCue("Hel\x01lo"), cues: 1},
+		{name: "lenient warns for a control character", content: srtCue("Hel\x01lo"), lenient: true, cues: 1, warnings: 1},
 		{name: "empty content gives an empty subtitle", content: ""},
 		{name: "blank content keeps the warning", content: "\x01\n", lenient: true, warnings: 1},
 	}
@@ -98,10 +60,10 @@ func TestReadBuildsReadInfo(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, info, err := read(stubRow, utf8Text(tt.content), ReadOptions{Lenient: tt.lenient})
+			s, info, err := read(SubRip, utf8Text(tt.content), ReadOptions{Lenient: tt.lenient})
 			require.NoError(t, err)
 			assert.Equal(t, tt.cues, s.Len())
-			assert.Equal(t, stubFormat, info.Format)
+			assert.Equal(t, SubRip, info.Format)
 			assert.Equal(t, "UTF-8", info.SourceEncoding)
 			assert.Len(t, info.Warnings, tt.warnings)
 		})
@@ -111,11 +73,11 @@ func TestReadBuildsReadInfo(t *testing.T) {
 func TestReadErrorGivesNoSubtitleAndNoInfo(t *testing.T) {
 	t.Parallel()
 
-	s, info, err := read(stubRow, utf8Text("Hello\nThe fer\x00ry\n"), ReadOptions{})
+	s, info, err := read(SubRip, utf8Text(srtCue("The fer\x00ry")), ReadOptions{})
 	var perr *ParseError
 	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, 2, perr.Line)
-	assert.Equal(t, stubFormat, perr.Format)
+	assert.Equal(t, 3, perr.Line)
+	assert.Equal(t, SubRip, perr.Format)
 	assert.Nil(t, s)
 	assert.Zero(t, info)
 }
@@ -125,47 +87,42 @@ func TestReadErrorGivesNoSubtitleAndNoInfo(t *testing.T) {
 func TestEachReadStartsWithoutWarnings(t *testing.T) {
 	t.Parallel()
 
-	broken := utf8Text("Hello\nThe fer\x00ry\n")
-	_, info, err := read(stubRow, broken, ReadOptions{Lenient: true})
+	broken := utf8Text(srtCue("The fer\x00ry"))
+	_, info, err := read(SubRip, broken, ReadOptions{Lenient: true})
 	require.NoError(t, err)
 	assert.Equal(t, []ParseWarning{{
-		Message: "The file has control characters, the first on line 2. The parser removed them.",
-		Line:    2,
+		Message: "The file has control characters, the first on line 3. The parser removed them.",
+		Line:    3,
 		Block:   NoBlock,
 		Action:  Repaired,
 	}}, info.Warnings)
 
-	_, info, err = read(stubRow, utf8Text("Hello\n"), ReadOptions{Lenient: true})
+	_, info, err = read(SubRip, utf8Text(srtCue("Hello")), ReadOptions{Lenient: true})
 	require.NoError(t, err)
 	assert.Empty(t, info.Warnings)
 
-	_, _, err = read(stubRow, broken, ReadOptions{})
+	_, _, err = read(SubRip, broken, ReadOptions{})
 	require.ErrorIs(t, err, ErrParse)
 }
 
 func TestReadPassesTheCommonOptions(t *testing.T) {
 	t.Parallel()
 
-	var got model.CommonReadOptions
-	row := formatFuncs{format: stubFormat, read: func(_ io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-		got = common
-		return &Subtitle{}, nil, nil
-	}}
 	last := new(7 * time.Second)
-	_, _, err := read(row, utf8Text(""), ReadOptions{Lenient: true, LastCueDuration: last, Encoding: "UTF-8"})
+	sub, _, err := read(TMPlayer, utf8Text("00:00:01:Hello\n"), ReadOptions{LastCueDuration: last})
 	require.NoError(t, err)
-	assert.Equal(t, model.CommonReadOptions{Lenient: true, LastCueDuration: last}, got)
+	require.Equal(t, 1, sub.Len())
+	cue, _ := sub.Cue(0)
+	assert.Equal(t, 8*time.Second, cue.End)
 }
 
-// textReaders returns the stub row and every registry row with a reader of a text format.
-func textReaders() []formatFuncs {
-	rows := []formatFuncs{stubRow}
-	for _, row := range registry {
-		if row.read != nil && !row.format.IsBinary() {
-			rows = append(rows, row)
-		}
-	}
-	return rows
+func srtCue(text string) string {
+	return "1\n00:00:01,000 --> 00:00:02,000\n" + text + "\n"
+}
+
+// textReaders returns every format with a reader that is not binary.
+func textReaders() []Format {
+	return slices.DeleteFunc(Formats(), func(f Format) bool { return !f.CanRead() || f.IsBinary() })
 }
 
 // Ports testEmptyContentGivesAnEmptySubtitleInBothModes of tests/Parsers/NoCuesTest.php of subtitle-toolbox-php.
@@ -173,17 +130,17 @@ func TestEmptyContentGivesAnEmptySubtitle(t *testing.T) {
 	t.Parallel()
 
 	contents := []struct{ name, text string }{{"empty", ""}, {"BOM and white space", utf8BOM + " \r\n\t\n"}}
-	for _, row := range textReaders() {
+	for _, f := range textReaders() {
 		for _, content := range contents {
 			for _, lenient := range []bool{false, true} {
-				t.Run(fmt.Sprintf("%s, %s, lenient %t", row.format, content.name, lenient), func(t *testing.T) {
+				t.Run(fmt.Sprintf("%s, %s, lenient %t", f, content.name, lenient), func(t *testing.T) {
 					t.Parallel()
 
-					s, info, err := read(row, utf8Text(content.text), ReadOptions{Format: row.format, Lenient: lenient})
+					s, info, err := read(f, utf8Text(content.text), ReadOptions{Format: f, Lenient: lenient})
 					require.NoError(t, err)
 					assert.Zero(t, s.Len())
 					assert.Empty(t, info.Warnings)
-					assert.Equal(t, row.format, info.Format)
+					assert.Equal(t, f, info.Format)
 				})
 			}
 		}
@@ -192,21 +149,15 @@ func TestEmptyContentGivesAnEmptySubtitle(t *testing.T) {
 
 // writesBOM lists the formats whose output starts with a UTF-8 BOM by default.
 var writesBOM = map[Format]bool{
-	stubFormat: true, ASS: true, CSV: true, TSV: true, LRC: true, MPSub: true, SubRip: true, WebVTT: true,
+	ASS: true, CSV: true, TSV: true, LRC: true, MPSub: true, SubRip: true, WebVTT: true,
 }
 
-// textWriters returns the stub row and every registry row with a writer. A binary format ignores the line ending and the BOM.
-func textWriters() []formatFuncs {
-	rows := []formatFuncs{stubRow}
-	for _, row := range registry {
-		if row.write != nil && !row.format.IsBinary() {
-			rows = append(rows, row)
-		}
-	}
-	return rows
+// textWriters returns every format with a writer that is not binary. A binary format ignores the line ending and the BOM.
+func textWriters() []Format {
+	return slices.DeleteFunc(Formats(), func(f Format) bool { return !f.CanWrite() || f.IsBinary() })
 }
 
-func writeString(t *testing.T, row formatFuncs, s *Subtitle, opts WriteOptions) string {
+func writeString(t *testing.T, f Format, s *Subtitle, opts WriteOptions) string {
 	t.Helper()
 
 	if opts.MicroDVD.FrameRate.IsZero() {
@@ -217,7 +168,7 @@ func writeString(t *testing.T, row formatFuncs, s *Subtitle, opts WriteOptions) 
 	}
 	require.NoError(t, opts.Validate())
 	var out bytes.Buffer
-	_, err := row.write(&out, s, opts.common(), opts)
+	_, err := writeFormat(&out, s, f, opts)
 	require.NoError(t, err)
 	return out.String()
 }
@@ -247,23 +198,23 @@ func outputSubtitle(t *testing.T, f Format) *Subtitle {
 func TestOutputOptions(t *testing.T) {
 	t.Parallel()
 
-	for _, row := range textWriters() {
-		t.Run(string(row.format), func(t *testing.T) {
+	for _, f := range textWriters() {
+		t.Run(string(f), func(t *testing.T) {
 			t.Parallel()
 
-			s := outputSubtitle(t, row.format)
-			def := writeString(t, row, s, WriteOptions{})
-			assert.Equal(t, writesBOM[row.format], strings.HasPrefix(def, utf8BOM), "format BOM")
+			s := outputSubtitle(t, f)
+			def := writeString(t, f, s, WriteOptions{})
+			assert.Equal(t, writesBOM[f], strings.HasPrefix(def, utf8BOM), "format BOM")
 			assert.NotContains(t, def, "\r")
-			assert.Equal(t, def, writeString(t, row, s, WriteOptions{LineEnding: LF}))
+			assert.Equal(t, def, writeString(t, f, s, WriteOptions{LineEnding: LF}))
 
 			plain := strings.TrimPrefix(def, utf8BOM)
 			crlf := strings.ReplaceAll(def, "\n", "\r\n")
-			assert.Equal(t, crlf, writeString(t, row, s, WriteOptions{LineEnding: CRLF}))
-			assert.Equal(t, utf8BOM+plain, writeString(t, row, s, WriteOptions{BOM: BOMAdd}))
-			assert.Equal(t, plain, writeString(t, row, s, WriteOptions{BOM: BOMRemove}))
-			assert.Equal(t, utf8BOM+strings.ReplaceAll(plain, "\n", "\r\n"), writeString(t, row, s, WriteOptions{LineEnding: CRLF, BOM: BOMAdd}))
-			assert.Equal(t, strings.ReplaceAll(plain, "\n", "\r\n"), writeString(t, row, s, WriteOptions{LineEnding: CRLF, BOM: BOMRemove}))
+			assert.Equal(t, crlf, writeString(t, f, s, WriteOptions{LineEnding: CRLF}))
+			assert.Equal(t, utf8BOM+plain, writeString(t, f, s, WriteOptions{BOM: BOMAdd}))
+			assert.Equal(t, plain, writeString(t, f, s, WriteOptions{BOM: BOMRemove}))
+			assert.Equal(t, utf8BOM+strings.ReplaceAll(plain, "\n", "\r\n"), writeString(t, f, s, WriteOptions{LineEnding: CRLF, BOM: BOMAdd}))
+			assert.Equal(t, strings.ReplaceAll(plain, "\n", "\r\n"), writeString(t, f, s, WriteOptions{LineEnding: CRLF, BOM: BOMRemove}))
 		})
 	}
 }
@@ -272,17 +223,17 @@ func TestOutputOptions(t *testing.T) {
 func TestNegativeTimesAreWrittenAsZero(t *testing.T) {
 	t.Parallel()
 
-	for _, row := range textWriters() {
-		if row.format == JSON {
+	for _, f := range textWriters() {
+		if f == JSON {
 			continue
 		}
-		t.Run(string(row.format), func(t *testing.T) {
+		t.Run(string(f), func(t *testing.T) {
 			t.Parallel()
 
 			negative, zero := &Subtitle{}, &Subtitle{}
 			negative.AddCues(Cue{Start: -2500 * time.Millisecond, End: -1500 * time.Millisecond, Lines: []string{"One"}}, Cue{Start: -500 * time.Millisecond, End: time.Second, Lines: []string{"Two"}})
 			zero.AddCues(Cue{Lines: []string{"One"}}, Cue{End: time.Second, Lines: []string{"Two"}})
-			assert.Equal(t, writeString(t, row, zero, WriteOptions{}), writeString(t, row, negative, WriteOptions{}))
+			assert.Equal(t, writeString(t, f, zero, WriteOptions{}), writeString(t, f, negative, WriteOptions{}))
 		})
 	}
 }
@@ -292,16 +243,14 @@ func TestStripTagsChangesTheOutput(t *testing.T) {
 	t.Parallel()
 
 	for _, f := range []Format{ASS, MicroDVD, SAMI, SubRip, TTML, WebVTT} {
-		row, ok := lookup(f)
-		require.True(t, ok)
-		if row.write == nil {
+		if !f.CanWrite() {
 			continue
 		}
 		t.Run(string(f), func(t *testing.T) {
 			t.Parallel()
 
 			s := outputSubtitle(t, f)
-			assert.NotEqual(t, writeString(t, row, s, WriteOptions{}), writeString(t, row, s, WriteOptions{StripTags: true}))
+			assert.NotEqual(t, writeString(t, f, s, WriteOptions{}), writeString(t, f, s, WriteOptions{StripTags: true}))
 		})
 	}
 }

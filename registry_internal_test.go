@@ -1,14 +1,122 @@
 package stbox
 
 import (
-	"go/ast"
-	"go/token"
+	"errors"
+	"io"
 	"maps"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/cavena890"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/dcp"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/lrc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpl2"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/pgs"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/qttext"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/sbv"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/tmplayer"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+)
+
+// The shapes of the Read, Write and Detect functions of a format package.
+type (
+	readFunc[O any]     func(io.Reader, model.CommonReadOptions, O) (*model.Subtitle, []model.ParseWarning, error)
+	writeFunc[O, R any] func(io.Writer, *model.Subtitle, model.CommonWriteOptions, O) (R, error)
+	detectFunc          func([]byte) bool
+)
+
+var (
+	_ readFunc[stboxjson.ReadOptions]                          = stboxjson.Read
+	_ writeFunc[stboxjson.WriteOptions, stboxjson.WriteReport] = stboxjson.Write
+	_ readFunc[webvtt.ReadOptions]                             = webvtt.Read
+	_ writeFunc[webvtt.WriteOptions, webvtt.WriteReport]       = webvtt.Write
+	_ detectFunc                                               = webvtt.Detect
+	_ readFunc[srt.ReadOptions]                                = srt.Read
+	_ writeFunc[srt.WriteOptions, srt.WriteReport]             = srt.Write
+	_ detectFunc                                               = srt.Detect
+	_ readFunc[ass.ReadOptions]                                = ass.Read
+	_ writeFunc[ass.WriteOptions, ass.WriteReport]             = ass.Write
+	_ detectFunc                                               = ass.Detect
+	_ readFunc[cavena890.ReadOptions]                          = cavena890.Read
+	_ writeFunc[cavena890.WriteOptions, cavena890.WriteReport] = cavena890.Write
+	_ readFunc[ttml.ReadOptions]                               = ttml.Read
+	_ writeFunc[ttml.WriteOptions, ttml.WriteReport]           = ttml.Write
+	_ readFunc[microdvd.ReadOptions]                           = microdvd.Read
+	_ writeFunc[microdvd.WriteOptions, microdvd.WriteReport]   = microdvd.Write
+	_ detectFunc                                               = microdvd.Detect
+	_ detectFunc                                               = ttml.Detect
+	_ readFunc[sami.ReadOptions]                               = sami.Read
+	_ writeFunc[sami.WriteOptions, sami.WriteReport]           = sami.Write
+	_ detectFunc                                               = sami.Detect
+	_ readFunc[sbv.ReadOptions]                                = sbv.Read
+	_ writeFunc[sbv.WriteOptions, sbv.WriteReport]             = sbv.Write
+	_ detectFunc                                               = sbv.Detect
+	_ readFunc[scc.ReadOptions]                                = scc.Read
+	_ writeFunc[scc.WriteOptions, scc.WriteReport]             = scc.Write
+	_ detectFunc                                               = scc.Detect
+	_ readFunc[mpl2.ReadOptions]                               = mpl2.Read
+	_ writeFunc[mpl2.WriteOptions, mpl2.WriteReport]           = mpl2.Write
+	_ detectFunc                                               = mpl2.Detect
+	_ readFunc[tmplayer.ReadOptions]                           = tmplayer.Read
+	_ writeFunc[tmplayer.WriteOptions, tmplayer.WriteReport]   = tmplayer.Write
+	_ detectFunc                                               = tmplayer.Detect
+	_ readFunc[mpsub.ReadOptions]                              = mpsub.Read
+	_ writeFunc[mpsub.WriteOptions, mpsub.WriteReport]         = mpsub.Write
+	_ detectFunc                                               = mpsub.Detect
+	_ readFunc[pac.ReadOptions]                                = pac.Read
+	_ writeFunc[pac.WriteOptions, pac.WriteReport]             = pac.Write
+	_ detectFunc                                               = pac.Detect
+	_ readFunc[pgs.ReadOptions]                                = pgs.Read
+	_ writeFunc[pgs.WriteOptions, pgs.WriteReport]             = pgs.Write
+	_ detectFunc                                               = pgs.Detect
+	_ readFunc[lrc.ReadOptions]                                = lrc.Read
+	_ writeFunc[lrc.WriteOptions, lrc.WriteReport]             = lrc.Write
+	_ detectFunc                                               = lrc.Detect
+	_ readFunc[mcc.ReadOptions]                                = mcc.Read
+	_ writeFunc[mcc.WriteOptions, mcc.WriteReport]             = mcc.Write
+	_ detectFunc                                               = mcc.Detect
+	_ readFunc[vobsub.ReadOptions]                             = vobsub.Read
+	_ readFunc[qttext.ReadOptions]                             = qttext.Read
+	_ writeFunc[qttext.WriteOptions, qttext.WriteReport]       = qttext.Write
+	_ detectFunc                                               = qttext.Detect
+	_ writeFunc[plaintext.WriteOptions, plaintext.WriteReport] = plaintext.Write
+	_ readFunc[csv.ReadOptions]                                = csv.Read
+	_ writeFunc[csv.WriteOptions, csv.WriteReport]             = csv.Write
+	_ readFunc[itt.ReadOptions]                                = itt.Read
+	_ writeFunc[itt.WriteOptions, itt.WriteReport]             = itt.Write
+	_ readFunc[subviewer.ReadOptions]                          = subviewer.Read
+	_ writeFunc[subviewer.WriteOptions, subviewer.WriteReport] = subviewer.Write
+	_ detectFunc                                               = subviewer.Detect
+	_ readFunc[ebustl.ReadOptions]                             = ebustl.Read
+	_ writeFunc[ebustl.WriteOptions, ebustl.WriteReport]       = ebustl.Write
+	_ detectFunc                                               = ebustl.Detect
+	_ readFunc[sprucestl.ReadOptions]                          = sprucestl.Read
+	_ writeFunc[sprucestl.WriteOptions, sprucestl.WriteReport] = sprucestl.Write
+	_ detectFunc                                               = sprucestl.Detect
+	_ readFunc[dcp.ReadOptions]                                = dcp.Read
+	_ writeFunc[dcp.WriteOptions, dcp.WriteReport]             = dcp.Write
+	_ detectFunc                                               = dcp.Detect
 )
 
 func TestFormatsFollowTheRowOrder(t *testing.T) {
@@ -30,31 +138,19 @@ func TestEveryFormatConstantHasARow(t *testing.T) {
 	assert.Equal(t, values, slices.Sorted(slices.Values(Formats())))
 }
 
-func TestModelFactsListTheRegistryRows(t *testing.T) {
-	t.Parallel()
-
-	consts := formatConsts(t)
-	names := factsRowNames(t)
-	facts := make([]Format, 0, len(names))
-	for _, name := range names {
-		f, ok := consts[name]
-		require.True(t, ok, "the facts row %s names no Format constant", name)
-		facts = append(facts, f)
-	}
-	assert.Equal(t, Formats(), facts)
-}
-
 func TestFactsMatchTheFunctions(t *testing.T) {
 	t.Parallel()
 
-	for _, row := range registry {
-		t.Run(string(row.format), func(t *testing.T) {
+	for _, f := range Formats() {
+		t.Run(string(f), func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, row.read != nil, row.format.CanRead(), "CanRead")
-			assert.Equal(t, row.write != nil, row.format.CanWrite(), "CanWrite")
-			if row.read != nil {
-				assert.Equal(t, detected(row.format), row.format.IsAutoDetected(), "IsAutoDetected")
+			_, _, err := readFormat(f, strings.NewReader(""), ReadOptions{})
+			assert.Equal(t, f.CanRead(), !errors.Is(err, errNoReader), "CanRead")
+			_, err = writeFormat(io.Discard, &Subtitle{}, f, WriteOptions{})
+			assert.Equal(t, f.CanWrite(), !errors.Is(err, errNoWriter), "CanWrite")
+			if f.CanRead() {
+				assert.Equal(t, detected(f), f.IsAutoDetected(), "IsAutoDetected")
 			}
 		})
 	}
@@ -166,52 +262,6 @@ func TestFormatsReturnsACopy(t *testing.T) {
 
 	Formats()[0] = "changed"
 	assert.Equal(t, ASS, Formats()[0])
-}
-
-// factsRowNames returns the Format constant name of each row of the model facts table, in row order.
-func factsRowNames(t *testing.T) []string {
-	t.Helper()
-
-	var names []string
-	for _, f := range parseDir(t, modelDir) {
-		for _, decl := range f.Decls {
-			d, ok := decl.(*ast.GenDecl)
-			if !ok || d.Tok != token.VAR {
-				continue
-			}
-			for _, spec := range d.Specs {
-				s, ok := spec.(*ast.ValueSpec)
-				if !ok || len(s.Names) != 1 || s.Names[0].Name != "formatFacts" {
-					continue
-				}
-				table, ok := s.Values[0].(*ast.CompositeLit)
-				require.True(t, ok)
-				for _, elt := range table.Elts {
-					names = append(names, rowFormat(t, elt))
-				}
-			}
-		}
-	}
-	require.NotEmpty(t, names, "package model has no formatFacts table")
-	return names
-}
-
-func rowFormat(t *testing.T, elt ast.Expr) string {
-	t.Helper()
-
-	row, ok := elt.(*ast.CompositeLit)
-	require.True(t, ok)
-	for _, field := range row.Elts {
-		kv, ok := field.(*ast.KeyValueExpr)
-		require.True(t, ok, "a facts row has a field without a key")
-		if key, ok := kv.Key.(*ast.Ident); ok && key.Name == "format" {
-			value, ok := kv.Value.(*ast.Ident)
-			require.True(t, ok, "a facts row has a format that is no constant name")
-			return value.Name
-		}
-	}
-	require.Fail(t, "a facts row has no format field")
-	return ""
 }
 
 func isSubsequence(list, order []Format) bool {

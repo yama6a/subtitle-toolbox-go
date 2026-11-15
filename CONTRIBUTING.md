@@ -41,22 +41,22 @@ func Detect(content []byte) bool
 
 ### Format registry
 
-The registry is written by hand, and no package registers itself in `init()`. The facts table and the functions table hold the same rows in the same order. The first row that lists an extension owns it in `FormatFromPath`. A new format inserts its row after every row whose extension it shares and must not take.
+The registry is written by hand, and no package registers itself in `init()`. The facts table lists the formats. The first row that lists an extension owns it in `FormatFromPath`. A new format inserts its row after every row whose extension it shares and must not take.
 
 | Table | File | Holds |
 |:--- |:--- |:--- |
 | facts | `model/format.go` | extensions, can read, can write, auto-detected, binary. The `Format` methods read it |
-| functions | `registry.go` | the read and write function of each format |
+| functions | `registry.go` | the read and write switch, `readFormat` and `writeFormat` |
 | detection lists | `registry.go` | the JSON checks and the signatures, in detection order. First match wins |
 
 A pull request that adds a format:
 
 1. Adds its `Format` constant and its facts row.
 2. Sets can read, can write and auto-detected in its facts row.
-3. Sets the `read` and `write` functions of its row in `registry.go`.
+3. Adds its `case` to `readFormat` and `writeFormat` in `registry.go`.
 4. Inserts its matcher into `signatures` or `jsonChecks`. `TestDetectionListsFollowTheOrder` in `registry_internal_test.go` holds the order.
 5. Adds a field of its options type to the root `ReadOptions` or `WriteOptions` when the type is not empty. TSV uses the `CSV` field.
-6. Adds a compile-time shape check in the root for each of its `Read`, `Write` and `Detect`, for example `var _ readFunc[srt.ReadOptions] = srt.Read`. The generic types are:
+6. Adds a compile-time shape check in `registry_internal_test.go` for each of its `Read`, `Write` and `Detect`, for example `var _ readFunc[srt.ReadOptions] = srt.Read`. The generic types are:
 
    ```go
    type readFunc[O any] func(io.Reader, model.CommonReadOptions, O) (*model.Subtitle, []model.ParseWarning, error)
