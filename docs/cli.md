@@ -264,7 +264,7 @@ text_1080p.sup: Cue #0 holds an image but no text, and srt needs text. Pass --oc
 | Option | Value | Default | Effect |
 |:--- |:--- |:--- |:--- |
 | `--ocr` | flag, turns the group on | off | |
-| `--ocr-engine ENGINE` | `tesseract` or `glyph` | Tesseract when it is installed, else glyph | `auto.Options.Engine` |
+| `--ocr-engine ENGINE` | `tesseract` or `glyph` | Tesseract when it is installed, else glyph | the CLI picks the engine, see [ocr.md](ocr.md#the-convert-command) |
 | `--ocr-language CODE` | a Tesseract model name, `deu` or `deu+eng` | `eng` | `tesseract.Options.Language`. The glyph engine ignores it |
 | `--ocr-database FILE` | a glyph database in `.nocr` format | the subtitle fonts database | `glyph.Options.Database`. It selects the glyph engine |
 

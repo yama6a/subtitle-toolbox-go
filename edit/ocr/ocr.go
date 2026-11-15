@@ -14,15 +14,6 @@ import (
 // Language is a Tesseract model name. Any string works, for example a custom model or "deu+eng".
 type Language string
 
-// EngineName names a built-in engine. The engine chooser of package ocr/auto reads it.
-type EngineName string
-
-// The names of the built-in engines.
-const (
-	EngineTesseract EngineName = "tesseract"
-	EngineGlyph     EngineName = "glyph"
-)
-
 // Engine reads the text of one cue image.
 type Engine interface {
 	// Recognize returns the text of im. language is a Tesseract model name such as "deu" or "deu+eng",

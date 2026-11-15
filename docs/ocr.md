@@ -148,13 +148,9 @@ fmt.Println(cue.Lines)
 - **Language**: ignored.
 - **Errors**: `New` returns a `*model.InvalidArgumentError` for an invalid recognizer option. `Recognize` returns the context error before it starts, and an error that matches `ErrRecognize` for an image that is no PNG.
 
-## Choosing an engine
-
-Package `edit/ocr/auto` picks an engine. `auto.Choose(ctx, auto.Options{})` returns `ocr.EngineTesseract` when the `tesseract` program runs, else `ocr.EngineGlyph`. An explicit `Options.Engine` wins. An explicit Tesseract that is missing returns the `*InvalidArgumentError` with the install hint of `tesseract.RequireInstalled`. `auto.New` builds the chosen engine with its default options. `Options.TesseractProgram` sets the program.
-
 ## The convert command
 
-`stbox convert film.sup --ocr --to srt` runs `Apply` with the chosen engine. The `ocr` option group is described in [cli.md](cli.md#ocr). `--ocr-database FILE` loads a `.nocr` file once per run and selects the glyph engine.
+`stbox convert film.sup --ocr --to srt` runs `Apply` with the chosen engine. Without `--ocr-engine`, convert picks Tesseract when the `tesseract` program runs, else the glyph engine. The `ocr` option group is described in [cli.md](cli.md#ocr). `--ocr-database FILE` loads a `.nocr` file once per run and selects the glyph engine.
 
 ## VobSub input
 
