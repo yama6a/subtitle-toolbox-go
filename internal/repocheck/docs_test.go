@@ -1,4 +1,4 @@
-package stbox_test
+package repocheck
 
 import (
 	"bytes"
@@ -35,12 +35,16 @@ var (
 func markdownFiles(t *testing.T) []string {
 	t.Helper()
 	files := []string{"README.md"}
-	err := filepath.WalkDir("docs", func(p string, d fs.DirEntry, err error) error {
+	err := filepath.WalkDir(filepath.Join(moduleRoot, "docs"), func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if !d.IsDir() && strings.HasSuffix(p, ".md") {
-			files = append(files, filepath.ToSlash(p))
+			rel, err := filepath.Rel(moduleRoot, p)
+			if err != nil {
+				return err
+			}
+			files = append(files, filepath.ToSlash(rel))
 		}
 		return nil
 	})
@@ -51,7 +55,7 @@ func markdownFiles(t *testing.T) []string {
 
 func readFile(t *testing.T, name string) string {
 	t.Helper()
-	b, err := os.ReadFile(name)
+	b, err := os.ReadFile(filepath.Join(moduleRoot, name))
 	require.NoError(t, err)
 	return string(b)
 }
@@ -103,7 +107,7 @@ func TestDocsLinks(t *testing.T) {
 				if target[0] == '#' {
 					name = file
 				}
-				info, err := os.Stat(filepath.FromSlash(name))
+				info, err := os.Stat(filepath.Join(moduleRoot, filepath.FromSlash(name)))
 				require.NoError(t, err, "%s links to %s", file, target)
 				if fragment != "" && !info.IsDir() && strings.HasSuffix(name, ".md") {
 					assert.True(t, anchors(readFile(t, filepath.FromSlash(name)))[fragment],
@@ -217,12 +221,16 @@ type exampleFunc struct {
 func examples(t *testing.T) map[string][]exampleFunc {
 	t.Helper()
 	out := map[string][]exampleFunc{}
-	err := filepath.WalkDir(".", func(p string, d fs.DirEntry, err error) error {
+	err := filepath.WalkDir(moduleRoot, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(moduleRoot, p)
 		if err != nil {
 			return err
 		}
 		if d.IsDir() {
-			if p != "." && (d.Name() == "testdata" || strings.HasPrefix(d.Name(), ".")) {
+			if rel != "." && (d.Name() == "testdata" || strings.HasPrefix(d.Name(), ".")) {
 				return filepath.SkipDir
 			}
 			return nil
@@ -251,7 +259,7 @@ func examples(t *testing.T) map[string][]exampleFunc {
 			if err := cfg.Fprint(&buf, fset, &printer.CommentedNode{Node: fn.Body, Comments: comments}); err != nil {
 				return fmt.Errorf("print %s in %s: %w", fn.Name.Name, p, err)
 			}
-			out[fn.Name.Name] = append(out[fn.Name.Name], exampleFunc{dir: path.Dir(filepath.ToSlash(p)), body: unbrace(buf.String())})
+			out[fn.Name.Name] = append(out[fn.Name.Name], exampleFunc{dir: path.Dir(filepath.ToSlash(rel)), body: unbrace(buf.String())})
 		}
 		return nil
 	})

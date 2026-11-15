@@ -1,5 +1,5 @@
-// Package apicheck tests the exported API of the module against the API rules in CONTRIBUTING.md.
-package apicheck
+// Package repocheck tests the repository against the rules of CONTRIBUTING.md: the exported names, the package layers, the fixture credits and the docs.
+package repocheck
 
 import (
 	"go/ast"

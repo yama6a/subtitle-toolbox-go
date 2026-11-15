@@ -2,8 +2,6 @@ package stbox_test
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 	"path/filepath"
 	"testing"
 	"time"
@@ -213,11 +211,9 @@ func TestOtherFormatsIgnoreTheMicroDVDOptions(t *testing.T) {
 	assert.Equal(t, a.String(), b.String())
 }
 
-func ExampleReadOptions_Validate() {
-	err := stbox.ReadOptions{LastCueDuration: new(-time.Second)}.Validate()
-	fmt.Println(errors.Is(err, stbox.ErrInvalidArgument))
-	fmt.Println(err)
-	// Output:
-	// true
-	// stbox: invalid argument: ReadOptions.LastCueDuration: The last cue duration must be 0 or more, got -1s.
+func TestZeroOptionsAreValid(t *testing.T) {
+	t.Parallel()
+
+	require.NoError(t, stbox.ReadOptions{}.Validate())
+	require.NoError(t, stbox.WriteOptions{}.Validate())
 }

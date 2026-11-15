@@ -32,7 +32,7 @@ timing/        The 2.x service that moves cue times to shot changes and frames. 
 imaging/       The 3.x public helpers that decode and build the PNG bitmaps of image cues. Same layer rule
 hls/           The service that cuts a subtitle into HLS WebVTT segments and joins segments. Same layer rule
 resegment/     The 4.x service that splits long cues and builds cues from word timings. Same layer rule
-internal/      Helpers: apicheck, caption, cea608, cea708, codepage, markupcore, hilabels, readingspeed, teletext, linewrap, timecode, textenc, extfallback, grapheme, ssatag, intkey, stringlist, xmlraw, ebml, orderedjson, jsondata, wordgroup, paragraphs, blocks, subrip,
+internal/      Helpers: repocheck, caption, cea608, cea708, codepage, markupcore, hilabels, readingspeed, teletext, linewrap, timecode, textenc, extfallback, grapheme, ssatag, intkey, stringlist, xmlraw, ebml, orderedjson, jsondata, wordgroup, paragraphs, blocks, subrip,
                vtt, position, parsing, writing, ttmlwrite, bitmap, displayset, dvbsub, arib, dvdsub, cli, and the test helpers testfiles, golden and translationtest
 cmd/stbox/     The CLI main. Wiring, no business logic
 testdata/      All fixtures and goldens, one folder per topic. Packages read
