@@ -22,6 +22,9 @@ func FuzzRead(f *testing.F) {
 				continue
 			}
 			for i, c := range s.All() {
+				if c.Start < 0 {
+					t.Fatalf("cue %d has a negative start", i)
+				}
 				if err := c.Position.Validate(); err != nil {
 					t.Fatalf("cue %d has an invalid position: %v", i, err)
 				}

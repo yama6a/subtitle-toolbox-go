@@ -28,6 +28,9 @@ func FuzzRead(f *testing.F) {
 				continue
 			}
 			for i, c := range s.All() {
+				if c.Start < 0 {
+					t.Fatalf("cue %d has a negative start", i)
+				}
 				if c.Image == nil || len(c.Lines) != 0 {
 					t.Fatalf("cue %d is no image cue without lines", i)
 				}

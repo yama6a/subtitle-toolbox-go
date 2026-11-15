@@ -33,6 +33,11 @@ func FuzzRead(f *testing.F) {
 			if !formattest.CheckRead(t, s, warnings, err) {
 				continue
 			}
+			for i, c := range s.Cues() {
+				if c.Start < 0 || c.End < 0 {
+					t.Fatalf("cue %d has a negative time", i)
+				}
+			}
 			for _, fit := range []bool{false, true} {
 				if _, err := scc.Write(io.Discard, s, model.CommonWriteOptions{}, scc.WriteOptions{Fit: fit}); err != nil && !errors.Is(err, model.ErrUnwritable) {
 					t.Fatalf("Write returned %v, which does not match ErrUnwritable", err)

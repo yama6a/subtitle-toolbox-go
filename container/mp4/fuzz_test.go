@@ -29,6 +29,11 @@ func FuzzOpen(f *testing.F) {
 			if !formattest.CheckRead(t, s, warnings, err) {
 				continue
 			}
+			for i, c := range s.All() {
+				if c.Start < 0 {
+					t.Fatalf("cue %d has a negative start", i)
+				}
+			}
 			var out bytes.Buffer
 			var werr error
 			switch track.Format { //nolint:exhaustive // only these 3 formats come from MP4 tracks
