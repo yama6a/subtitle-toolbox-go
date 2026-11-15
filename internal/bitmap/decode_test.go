@@ -73,12 +73,12 @@ func TestDecodePNGRejectsInvalidInput(t *testing.T) {
 		input []byte
 		want  string
 	}{
-		{"no signature", []byte("GIF89a, not a PNG file at all"), "Cannot decode the PNG: the data does not start with the PNG signature."},
-		{"cut chunk", valid[:len(valid)-20], "Cannot decode the PNG: png: invalid format: unexpected EOF."},
-		{"no IHDR", append([]byte(pngSignatureForTest), chunk("IEND", nil)...), "Cannot decode the PNG: png: invalid format: chunk out of order."},
-		{"size 0", zero, "Cannot decode the PNG: the width and the height must be at least 1."},
-		{"size over the limit", huge[:33], "Cannot decode the PNG: an image of 65535x65535 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total."},
-		{"bad zlib data", append(badZlib, chunk("IEND", nil)...), "Cannot decode the PNG: zlib: invalid header."},
+		{"no signature", []byte("GIF89a, not a PNG file at all"), "cannot decode the PNG: the data does not start with the PNG signature"},
+		{"cut chunk", valid[:len(valid)-20], "cannot decode the PNG: png: invalid format: unexpected EOF"},
+		{"no IHDR", append([]byte(pngSignatureForTest), chunk("IEND", nil)...), "cannot decode the PNG: png: invalid format: chunk out of order"},
+		{"size 0", zero, "cannot decode the PNG: the width and the height must be at least 1"},
+		{"size over the limit", huge[:33], "cannot decode the PNG: an image of 65535x65535 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total"},
+		{"bad zlib data", append(badZlib, chunk("IEND", nil)...), "cannot decode the PNG: zlib: invalid header"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

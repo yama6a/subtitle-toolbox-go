@@ -2,7 +2,7 @@
     "name": "MicroDVD with 13-digit frame numbers",
     "format": "microdvd",
     "strict": {
-        "error": "The time \"{9000000000000}\" is not below 100000 hours.",
+        "error": "the time \"{9000000000000}\" is not below 100000 hours",
         "line": 3
     },
     "cues": [

@@ -199,6 +199,7 @@ func TestReadErrors(t *testing.T) {
 	t.Parallel()
 
 	const limit = `" is not below 100000 hours.`
+	const strictLimit = `" is not below 100000 hours`
 	tests := []struct {
 		name    string
 		content string
@@ -330,13 +331,13 @@ func TestReadErrors(t *testing.T) {
 		},
 		{
 			"a start at 100000 hours",
-			"FORMAT=TIME\n\n360000000 1\nx\n\n1 1\nOK\n", 3, `The time "360000000 1` + limit,
+			"FORMAT=TIME\n\n360000000 1\nx\n\n1 1\nOK\n", 3, `the time "360000000 1` + strictLimit,
 			[]cueRow{{time.Second, 2 * time.Second, []string{"OK"}}},
 			[]warningRow{{`The time "360000000 1` + limit, 3, 0, []string{"360000000 1"}, model.Skipped}},
 		},
 		{
 			"an end at 100000 hours",
-			"FORMAT=TIME\n\n1 359999999\nx\n\n1 1\nOK\n", 3, `The time "1 359999999` + limit,
+			"FORMAT=TIME\n\n1 359999999\nx\n\n1 1\nOK\n", 3, `the time "1 359999999` + strictLimit,
 			[]cueRow{{time.Second, 2 * time.Second, []string{"OK"}}},
 			[]warningRow{{`The time "1 359999999` + limit, 3, 0, []string{"1 359999999"}, model.Skipped}},
 		},
@@ -475,7 +476,7 @@ func TestAWaitOf100000HoursFailsOrSkipsTheCue(t *testing.T) {
 
 	content := "FORMAT=TIME\n\n1 2\nThe pool opens at seven.\n\n360000000 2\nTowels are at the desk.\n\n4 2\nNo running, please.\n"
 	perr := readError(t, content)
-	assert.Equal(t, `The time "360000000 2" is not below 100000 hours.`, perr.Msg)
+	assert.Equal(t, `the time "360000000 2" is not below 100000 hours`, perr.Msg)
 	assert.Equal(t, 6, perr.Line)
 
 	s, warnings := mustRead(t, content, true)
@@ -535,7 +536,7 @@ func TestReadTimeLimit(t *testing.T) {
 				return
 			}
 			perr := readError(t, tt.content)
-			assert.Equal(t, `The time "`+tt.errLine+`" is not below 100000 hours.`, perr.Msg)
+			assert.Equal(t, `the time "`+tt.errLine+`" is not below 100000 hours`, perr.Msg)
 			before, _, found := strings.Cut(tt.content, tt.errLine)
 			require.True(t, found)
 			assert.Equal(t, strings.Count(before, "\n")+1, perr.Line)

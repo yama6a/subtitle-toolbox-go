@@ -94,7 +94,7 @@ func nulError(f model.Format, line int) *model.ParseError {
 	return &model.ParseError{
 		Format: f,
 		Line:   line,
-		Msg:    "Line " + strconv.Itoa(line) + " has a NUL character. Check the encoding of the file.",
+		Msg:    "line " + strconv.Itoa(line) + " has a NUL character. Check the encoding of the file",
 	}
 }
 

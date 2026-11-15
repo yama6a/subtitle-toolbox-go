@@ -194,22 +194,22 @@ func TestReadWhisperErrors(t *testing.T) {
 		{"negative start", `{"segments": [{"id": 0, "start": -0.5, "end": 1.0, "text": "Hello there"}]}`, "The field segments[0].start must be a time of 0 or more."},
 		{"negative offsets", `{"transcription": [{"offsets": {"from": -500, "to": 1000}, "text": "Hi"}]}`, "The field transcription[0].offsets.from must be a time of 0 or more."},
 		{"a number out of range", `{"segments": [{"start": 0, "end": 1e400, "text": "Hi"}]}`, "The field segments[0].end must be a number."},
-		{"start of 100000 hours", `{"segments": [{"start": 360000000, "end": 360000001, "text": "Hi"}]}`, "The field segments[0].start is not below 100000 hours."},
-		{"start that rounds to 100000 hours", `{"segments": [{"start": 359999999.9996, "end": 360000000, "text": "Hi"}]}`, "The field segments[0].start is not below 100000 hours."},
-		{"offset of 100000 hours", `{"transcription": [{"offsets": {"from": 0, "to": 360000000000}, "text": "Hi"}]}`, "The field transcription[0].offsets.to is not below 100000 hours."},
+		{"start of 100000 hours", `{"segments": [{"start": 360000000, "end": 360000001, "text": "Hi"}]}`, "the field segments[0].start is not below 100000 hours"},
+		{"start that rounds to 100000 hours", `{"segments": [{"start": 359999999.9996, "end": 360000000, "text": "Hi"}]}`, "the field segments[0].start is not below 100000 hours"},
+		{"offset of 100000 hours", `{"transcription": [{"offsets": {"from": 0, "to": 360000000000}, "text": "Hi"}]}`, "the field transcription[0].offsets.to is not below 100000 hours"},
 		{
 			"word start of 100000 hours", `{"segments": [{"start": 0, "end": 1, "text": "a", "words": [{"word": "a", "start": 1e12}]}]}`,
-			"The field segments[0].words[0].start is not below 100000 hours.",
+			"the field segments[0].words[0].start is not below 100000 hours",
 		},
 		{
 			"top-level word start of 100000 hours",
 			`{"segments": [{"start": 0, "end": 1, "text": "a"}], "words": [{"word": "a", "start": 0}, {"word": "b", "start": 1e12}]}`,
-			"The field words[1].start is not below 100000 hours.",
+			"the field words[1].start is not below 100000 hours",
 		},
 		{
 			"token start of 100000 hours",
 			`{"transcription": [{"offsets": {"from": 0, "to": 1}, "text": "a", "tokens": [{"text": "[_BEG_]"}, {"text": " a", "offsets": {"from": 1e15}}]}]}`,
-			"The field transcription[0].tokens[1].offsets.from is not below 100000 hours.",
+			"the field transcription[0].tokens[1].offsets.from is not below 100000 hours",
 		},
 	}
 	for _, tt := range tests {

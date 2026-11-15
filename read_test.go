@@ -38,20 +38,20 @@ func TestUnsupportedFormatMessages(t *testing.T) {
 	}
 	tests := make([]messages, 0, 2+len(stbox.Formats()))
 	tests = append(tests,
-		messages{"foo", `The format "foo" is unknown.`, `The format "foo" is unknown.`},
-		messages{"", `The format "" is unknown.`, `The format "" is unknown.`},
+		messages{"foo", `the format "foo" is unknown`, `the format "foo" is unknown`},
+		messages{"", `the format "" is unknown`, `the format "" is unknown`},
 	)
 	for _, f := range stbox.Formats() {
 		tt := messages{format: f}
 		switch {
 		case f.CanRead():
 		case f.CanWrite():
-			tt.wantRead = "The format " + string(f) + " can be written but not read."
+			tt.wantRead = "the format " + string(f) + " can be written but not read"
 		}
 		switch {
 		case f.CanWrite():
 		case f.CanRead():
-			tt.wantWrite = "The format " + string(f) + " can be read but not written."
+			tt.wantWrite = "the format " + string(f) + " can be read but not written"
 		}
 		tests = append(tests, tt)
 	}
@@ -165,7 +165,7 @@ func TestLoadMissingFile(t *testing.T) {
 	assert.Zero(t, info)
 }
 
-const unknownFormatMessage = "stbox: unsupported format: no format detected: Format detection found no subtitle format."
+const unknownFormatMessage = "stbox: unsupported format: no format detected: format detection found no subtitle format"
 
 func writeTemp(t *testing.T, name string, content []byte) string {
 	t.Helper()
@@ -487,11 +487,11 @@ func TestPACEncodingNamesTheCodePage(t *testing.T) {
 		{name: "field wins over the encoding", opts: stbox.ReadOptions{Encoding: "ISO-8859-5", PAC: pac.ReadOptions{CodePage: pac.Greek}}, want: detected},
 		{
 			name: "encoding without a PAC code page", opts: stbox.ReadOptions{Encoding: "KOI8-R"},
-			option: "ReadOptions.Encoding", errorMsg: `PAC files have no code page for the encoding "KOI8-R".`,
+			option: "ReadOptions.Encoding", errorMsg: `PAC files have no code page for the encoding "KOI8-R"`,
 		},
 		{
 			name: "spelling that textenc does not know", opts: stbox.ReadOptions{Encoding: "TIS-620"},
-			option: "ReadOptions.Encoding", errorMsg: `The encoding "TIS-620" is unknown.`,
+			option: "ReadOptions.Encoding", errorMsg: `the encoding "TIS-620" is unknown`,
 		},
 		{
 			name: "unknown code page field", opts: stbox.ReadOptions{PAC: pac.ReadOptions{CodePage: "klingon"}},
@@ -802,11 +802,11 @@ func TestParseDecodeFailure(t *testing.T) {
 			var perr *stbox.ParseError
 			require.ErrorAs(t, err, &perr)
 			require.ErrorIs(t, err, stbox.ErrParse)
-			assert.Equal(t, "Cannot convert the content from Windows-1252 to UTF-8.", perr.Msg)
+			assert.Equal(t, "cannot convert the content from Windows-1252 to UTF-8", perr.Msg)
 			var cerr *textenc.ConvertError
 			require.ErrorAs(t, err, &cerr)
 			assert.Equal(t, "Windows-1252", cerr.Encoding)
-			assert.Equal(t, "stbox: Cannot convert the content from Windows-1252 to UTF-8.", err.Error())
+			assert.Equal(t, "stbox: cannot convert the content from Windows-1252 to UTF-8", err.Error())
 			assert.Nil(t, s)
 			assert.Zero(t, info)
 		})
@@ -820,7 +820,7 @@ func TestParseUnknownEncoding(t *testing.T) {
 	var aerr *stbox.InvalidArgumentError
 	require.ErrorAs(t, err, &aerr)
 	assert.Equal(t, "ReadOptions.Encoding", aerr.Option)
-	assert.Equal(t, `The encoding "CP1125" is unknown.`, aerr.Msg)
+	assert.Equal(t, `the encoding "CP1125" is unknown`, aerr.Msg)
 }
 
 type encodingRead struct {
@@ -1022,7 +1022,7 @@ func TestParsePlainTextIsUnsupported(t *testing.T) {
 
 	_, _, err := parseBytes([]byte("Hello\n"), stbox.ReadOptions{Format: stbox.PlainText})
 	require.ErrorIs(t, err, stbox.ErrUnsupportedFormat)
-	require.EqualError(t, err, "stbox: unsupported format: The format txt can be written but not read.")
+	require.EqualError(t, err, "stbox: unsupported format: the format txt can be written but not read")
 }
 
 func TestBinaryWriteIgnoresLineEndingAndBOM(t *testing.T) {

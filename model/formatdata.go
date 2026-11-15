@@ -47,7 +47,7 @@ func (c Cue) FormatData(key string) (*Data, bool) {
 // The key "image" is the field Cue.Image, so SetFormatData rejects it.
 func (c *Cue) SetFormatData(key string, d *Data) error {
 	if key == "image" {
-		return invalidArgument("The field formatData.image is the cue image. Set Cue.Image in place of it.")
+		return invalidArgument("the field formatData.image is the cue image. Set Cue.Image in place of it")
 	}
 	if err := checkFormatData(cueSchema, key, d); err != nil {
 		return err

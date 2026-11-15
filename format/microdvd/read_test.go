@@ -218,14 +218,14 @@ func TestReadErrors(t *testing.T) {
 		{"no frame rate", "{25}{50}Hello", false, 0, unknownFrameRate, 0, "ReadOptions.MicroDVD.FrameRate"},
 		{"frame rate line after junk in strict mode", "Movie.Name\n{1}{1}25\n{25}{50}Hello", false, 0, unknownFrameRate, 0, "ReadOptions.MicroDVD.FrameRate"},
 		// Ports testZeroFrameRateThrowsException of tests/Parsers/MicroDvdParserTest.php of subtitle-toolbox-php.
-		{"frame rate line of 0", "{1}{1}0\n{25}{50}Hello", false, 0, "The frame rate must be greater than 0, got 0.", 0, ""},
-		{"frame rate line of 0 in lenient mode", "{1}{1}0\n{25}{50}Hello", true, 0, "The frame rate must be greater than 0, got 0.", 0, ""},
+		{"frame rate line of 0", "{1}{1}0\n{25}{50}Hello", false, 0, "the frame rate must be greater than 0, got 0", 0, ""},
+		{"frame rate line of 0 in lenient mode", "{1}{1}0\n{25}{50}Hello", true, 0, "the frame rate must be greater than 0, got 0", 0, ""},
 		// Ports testLineWithoutFramesThrowsException of tests/Parsers/MicroDvdParserTest.php of subtitle-toolbox-php.
 		{"line without frames", "{1}{1}25\n{25}{50}Hello\n00:00:01,000 --> 00:00:02,000", false, 0, `The line "00:00:01,000 --> 00:00:02,000" is not a MicroDVD cue.`, 3, ""},
 		{"empty end frame", "{24}{}Hello", false, 25, `The line "{24}{}Hello" is not a MicroDVD cue.`, 1, ""},
-		{"20-digit frame number", "{24}{99999999999999999999}Hello", false, 25, `The time "{99999999999999999999}" is not below 100000 hours.`, 1, ""},
-		{"13-digit frame number", "{1}{1}25\n{9000000000000}{9000000000050}Hello", false, 0, `The time "{9000000000000}" is not below 100000 hours.`, 2, ""},
-		{"end before start", "{50}{25}Hello", false, 25, "The cue ends at 1 s, before it starts at 2 s.", 1, ""},
+		{"20-digit frame number", "{24}{99999999999999999999}Hello", false, 25, `the time "{99999999999999999999}" is not below 100000 hours`, 1, ""},
+		{"13-digit frame number", "{1}{1}25\n{9000000000000}{9000000000050}Hello", false, 0, `the time "{9000000000000}" is not below 100000 hours`, 2, ""},
+		{"end before start", "{50}{25}Hello", false, 25, "the cue ends at 1 s, before it starts at 2 s", 1, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -252,7 +252,7 @@ func TestFrameRateLineBeyondTheFloatRange(t *testing.T) {
 	_, _, err := read("{1}{1}"+digits+"\n{25}{50}Hello", false, 0)
 	var perr *model.ParseError
 	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, "The frame rate must be greater than 0, got INF.", perr.Msg)
+	assert.Equal(t, "the frame rate must be greater than 0, got INF", perr.Msg)
 }
 
 func TestLenientSkipsBrokenLines(t *testing.T) {
@@ -323,11 +323,11 @@ func TestValidate(t *testing.T) {
 			t.Parallel()
 
 			err := microdvd.ReadOptions{FrameRate: tt.fps}.Validate()
-			assert.Equal(t, &model.InvalidArgumentError{Option: "ReadOptions.MicroDVD.FrameRate", Msg: "The frame rate must be greater than 0, got " + tt.want + "."}, err)
+			assert.Equal(t, &model.InvalidArgumentError{Option: "ReadOptions.MicroDVD.FrameRate", Msg: "the frame rate must be greater than 0, got " + tt.want}, err)
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
 
 			err = microdvd.WriteOptions{FrameRate: tt.fps}.Validate()
-			assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "The MicroDVD frame rate must be greater than 0, got " + tt.want + "."}, err)
+			assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "the MicroDVD frame rate must be greater than 0, got " + tt.want}, err)
 
 			_, _, err = microdvd.Read(strings.NewReader("{0}{25}Hello"), model.CommonReadOptions{}, microdvd.ReadOptions{FrameRate: tt.fps})
 			require.ErrorIs(t, err, model.ErrInvalidArgument)

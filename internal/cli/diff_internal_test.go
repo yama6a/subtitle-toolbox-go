@@ -79,7 +79,7 @@ func TestDiffUsageErrors(t *testing.T) {
 			[]string{"diff", "old/*", "trip.srt"},
 			"The diff command takes one old file, got 2.",
 		},
-		{"an unknown encoding", []string{"diff", "trip.srt", "shop.vtt", "--encoding", "CP1125"}, `The encoding "CP1125" is unknown.`},
+		{"an unknown encoding", []string{"diff", "trip.srt", "shop.vtt", "--encoding", "CP1125"}, `the encoding "CP1125" is unknown`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

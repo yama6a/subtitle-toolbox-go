@@ -9,7 +9,7 @@ import (
 
 // ClosedError returns the error of a stream writer that the caller closed.
 func ClosedError() *model.InvalidArgumentError {
-	return &model.InvalidArgumentError{Msg: "The writer is closed."}
+	return &model.InvalidArgumentError{Msg: "the writer is closed"}
 }
 
 // Sink writes the parts of one output and remembers whether the caller closed the writer.

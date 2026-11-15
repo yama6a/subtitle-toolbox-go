@@ -205,7 +205,7 @@ func TestReadErrors(t *testing.T) {
 		},
 		{
 			"the cue ends before it starts", "00:00:05.00,00:00:03.00\nOne\n", 1,
-			"The cue ends at 3 s, before it starts at 5 s.",
+			"the cue ends at 3 s, before it starts at 5 s",
 		},
 		{
 			"a header line without a bracket in version 1", "Ferry times\n" + script + "[00:00:02]\nHello\n", 1,
@@ -217,27 +217,27 @@ func TestReadErrors(t *testing.T) {
 		},
 		{
 			"a time of 60 minutes in version 1", script + "[00:60:02]\nHello\n", 2,
-			`The time "[00:60:02]" is not valid.`,
+			`the time "[00:60:02]" is not valid`,
 		},
 		{
 			"a time of 60 seconds in version 1", script + "[00:00:60]\nHello\n", 2,
-			`The time "[00:00:60]" is not valid.`,
+			`the time "[00:00:60]" is not valid`,
 		},
 		{
 			"the cue ends before it starts in version 1", script + "[00:00:05]\nHello\n[00:00:03]\n", 2,
-			"The cue ends at 3 s, before it starts at 5 s.",
+			"the cue ends at 3 s, before it starts at 5 s",
 		},
 		{
 			"a delay beyond the limit", "[DELAY]\n359999990\n" + script + "[00:00:12]\nHello\n", 4,
-			`The time "[00:00:12] with DELAY 359999990" is not below 100000 hours.`,
+			`the time "[00:00:12] with DELAY 359999990" is not below 100000 hours`,
 		},
 		{
 			"a delay beyond the int64 range", "[DELAY]99999999999999999999\n" + script + "[00:00:12]\nHello\n", 3,
-			`The time "[00:00:12] with DELAY 9223372036854775807" is not below 100000 hours.`,
+			`the time "[00:00:12] with DELAY 9223372036854775807" is not below 100000 hours`,
 		},
 		{
 			"a negative delay beyond the limit", "[DELAY]-99999999999999999999\n" + script + "[00:00:12]\nHello\n", 3,
-			`The time "[00:00:12] with DELAY -9223372036854775808" is not below 100000 hours.`,
+			`the time "[00:00:12] with DELAY -9223372036854775808" is not below 100000 hours`,
 		},
 	}
 	for _, tt := range tests {

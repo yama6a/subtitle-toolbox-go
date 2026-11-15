@@ -17,7 +17,7 @@ fmt.Println(s.FormatDataKeys())
 // Output:
 // <nil>
 // 23.976 true
-// stbox: invalid argument: The field formatData.scc.dropFrame must be a boolean.
+// stbox: invalid argument: the field formatData.scc.dropFrame must be a boolean
 // [microdvd]
 ```
 

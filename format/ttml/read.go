@@ -272,7 +272,7 @@ func (r *reader) readContainer(container *xmlraw.Node, parent scope, divAttribut
 			return err
 		}
 		iv = parent.interval
-		r.st.Warn(err.Msg+" The parser ignored the timing of the "+ttmldoc.LocalName(container)+".", container.Line, model.NoBlock, nil, model.Repaired)
+		r.st.Warn(parsing.Sentence(err.Msg)+" The parser ignored the timing of the "+ttmldoc.LocalName(container)+".", container.Line, model.NoBlock, nil, model.Repaired)
 	}
 	sc := r.containerScope(container, parent, iv)
 	if ttmldoc.IsElement(container, r.ns, "div") {

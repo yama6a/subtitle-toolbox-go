@@ -91,10 +91,10 @@ func DecodeIndexedPNG(data []byte) (Indexed, bool, error) {
 
 func checkedConfig(data []byte) (image.Config, error) {
 	if !bytes.HasPrefix(data, []byte(pngSignature)) {
-		return image.Config{}, decodeError("the data does not start with the PNG signature.")
+		return image.Config{}, decodeError("the data does not start with the PNG signature")
 	}
 	if len(data) >= 24 && string(data[12:16]) == "IHDR" && (binary.BigEndian.Uint32(data[16:20]) == 0 || binary.BigEndian.Uint32(data[20:24]) == 0) {
-		return image.Config{}, decodeError("the width and the height must be at least 1.")
+		return image.Config{}, decodeError("the width and the height must be at least 1")
 	}
 	cfg, err := png.DecodeConfig(bytes.NewReader(data))
 	if err != nil {
@@ -112,14 +112,11 @@ func SizeLimit(width, height int) string {
 		return ""
 	}
 	return "an image of " + strconv.Itoa(width) + "x" + strconv.Itoa(height) + " pixels is larger than the limit of " +
-		strconv.Itoa(model.MaxImageSide) + " pixels per side and " + strconv.Itoa(model.MaxImagePixels) + " pixels in total."
+		strconv.Itoa(model.MaxImageSide) + " pixels per side and " + strconv.Itoa(model.MaxImagePixels) + " pixels in total"
 }
 
 func decodeError(msg string) error {
-	if len(msg) > 0 && msg[len(msg)-1] != '.' {
-		msg += "."
-	}
-	return &model.InvalidArgumentError{Msg: "Cannot decode the PNG: " + msg}
+	return &model.InvalidArgumentError{Msg: "cannot decode the PNG: " + msg}
 }
 
 func pack(r, g, b, a uint8) uint32 {

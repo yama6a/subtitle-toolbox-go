@@ -54,7 +54,7 @@ func ExampleDetect() {
 func ExampleReadOptions_Validate() {
 	fmt.Println(microdvd.ReadOptions{FrameRate: model.FrameRate{Num: -1, Den: 1}}.Validate())
 	// Output:
-	// stbox: invalid argument: ReadOptions.MicroDVD.FrameRate: The frame rate must be greater than 0, got -1.
+	// stbox: invalid argument: ReadOptions.MicroDVD.FrameRate: the frame rate must be greater than 0, got -1
 }
 
 func ExampleWriteOptions_Validate() {

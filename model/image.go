@@ -35,14 +35,14 @@ type Image struct {
 func (im Image) Validate() error {
 	size := strconv.Itoa(im.Width) + "x" + strconv.Itoa(im.Height)
 	if im.Width < 1 || im.Height < 1 || im.ScreenWidth < 1 || im.ScreenHeight < 1 {
-		return invalidArgument("Cannot create a cue image of " + size + " pixels on a screen of " +
-			strconv.Itoa(im.ScreenWidth) + "x" + strconv.Itoa(im.ScreenHeight) + " pixels: every size must be at least 1.")
+		return invalidArgument("cannot create a cue image of " + size + " pixels on a screen of " +
+			strconv.Itoa(im.ScreenWidth) + "x" + strconv.Itoa(im.ScreenHeight) + " pixels: every size must be at least 1")
 	}
 	if im.Width > MaxImageSide || im.Height > MaxImageSide || im.Width*im.Height > MaxImagePixels {
-		return invalidArgument("Cannot create a cue image of " + size + " pixels on a screen of " +
+		return invalidArgument("cannot create a cue image of " + size + " pixels on a screen of " +
 			strconv.Itoa(im.ScreenWidth) + "x" + strconv.Itoa(im.ScreenHeight) + " pixels: an image of " + size +
 			" pixels is larger than the limit of " + strconv.Itoa(MaxImageSide) + " pixels per side and " +
-			strconv.Itoa(MaxImagePixels) + " pixels in total.")
+			strconv.Itoa(MaxImagePixels) + " pixels in total")
 	}
 	return nil
 }

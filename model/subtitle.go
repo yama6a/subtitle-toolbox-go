@@ -377,7 +377,7 @@ func (s *Subtitle) CueIndexAt(t time.Duration) (int, bool) {
 // the cues with Start < to and End > from. It returns an error that matches ErrInvalidArgument when from is after to.
 func (s *Subtitle) CuesBetween(from, to time.Duration) ([]int, error) {
 	if from > to {
-		return nil, invalidArgument(fmt.Sprintf("The range start %s must not be after the range end %s.", timecode.Seconds(from), timecode.Seconds(to)))
+		return nil, invalidArgument(fmt.Sprintf("the range start %s must not be after the range end %s", timecode.Seconds(from), timecode.Seconds(to)))
 	}
 	return s.lookup().overlapping(from, to, false), nil
 }
@@ -435,7 +435,7 @@ func (s *Subtitle) Comments() []Comment {
 // as is and means after the last cue. It returns an error that matches ErrInvalidArgument for a negative index.
 func (s *Subtitle) AddComment(text string, beforeCue int) error {
 	if beforeCue < 0 {
-		return invalidArgument(fmt.Sprintf("The cue index of a comment must not be negative, got %d.", beforeCue))
+		return invalidArgument(fmt.Sprintf("the cue index of a comment must not be negative, got %d", beforeCue))
 	}
 	s.comments = append(s.comments, Comment{Text: text, BeforeCue: beforeCue})
 	if n := len(s.comments); n > 1 && s.comments[n-2].BeforeCue > beforeCue {

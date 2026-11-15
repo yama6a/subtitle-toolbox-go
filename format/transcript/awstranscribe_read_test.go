@@ -144,7 +144,7 @@ func TestReadAWSTranscribeErrors(t *testing.T) {
 		},
 		{
 			"over the limit", item(`"start_time": "360000000", "end_time": "360000001", "alternatives": [{"content": "Hi"}]`),
-			"The field results.items[0].start_time is not below 100000 hours.",
+			"the field results.items[0].start_time is not below 100000 hours",
 			[]string{"1-2 there"},
 			0,
 		},

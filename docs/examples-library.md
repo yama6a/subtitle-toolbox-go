@@ -721,7 +721,7 @@ if err != nil {
 	fmt.Println(err)
 }
 // Output:
-// SOURCES.md skipped: stbox: unsupported format: no format detected: Format detection found no subtitle format.
+// SOURCES.md skipped: stbox: unsupported format: no format detected: format detection found no subtitle format
 // station_de.srt                 srt  6 cues, 32 words, 31.5 characters per line
 // station_en.srt                 srt  5 cues, 35 words, 30.0 characters per line
 // station_stack.ass              ass  6 cues, 67 words, 30.8 characters per line

@@ -198,27 +198,27 @@ func TestReadTimeErrors(t *testing.T) {
 		{
 			// Ports testATimeOf100000HoursNamesTheLimit of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.
 			name: "100000 hours", content: "start,end,text\n100000:00:00.000,100000:00:01.000,a\n",
-			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `The time "100000:00:00.000" is not below 100000 hours.`},
+			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `the time "100000:00:00.000" is not below 100000 hours`},
 		},
 		{
 			name: "a clock time that rounds to 100000 hours", content: "start,end,text\n99999:59:59.9996,1,a\n",
-			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `The time "99999:59:59.9996" is not below 100000 hours.`},
+			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `the time "99999:59:59.9996" is not below 100000 hours`},
 		},
 		{
 			name: "seconds that round to 100000 hours", content: "start,end,text\n359999999.9996,1,a\n",
-			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `The time "359999999.9996" is not below 100000 hours.`},
+			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `the time "359999999.9996" is not below 100000 hours`},
 		},
 		{
 			name: "minutes that reach 100000 hours", content: "start,end,text\n6000000:00,1,a\n",
-			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `The time "6000000:00" is not below 100000 hours.`},
+			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `the time "6000000:00" is not below 100000 hours`},
 		},
 		{
 			name: "20 hour digits of frames", content: "start,end,text\n99999999999999999999:00:00:00,1,a\n", opts: at25,
-			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `The time "99999999999999999999:00:00:00" is not below 100000 hours.`},
+			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `the time "99999999999999999999:00:00:00" is not below 100000 hours`},
 		},
 		{
 			name: "20 digits of seconds", content: "start,end,text\n1,99999999999999999999,a\n",
-			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `The time "99999999999999999999" is not below 100000 hours.`},
+			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `the time "99999999999999999999" is not below 100000 hours`},
 		},
 		{
 			name: "a negative time", content: "start,end,text\n-1,4,a\n",
@@ -234,7 +234,7 @@ func TestReadTimeErrors(t *testing.T) {
 		},
 		{
 			name: "an end before the start", content: "start,end,text\n1:2.5,00:00:5,a\n",
-			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: "The cue ends at 5 s, before it starts at 62.5 s."},
+			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: "the cue ends at 5 s, before it starts at 62.5 s"},
 		},
 	}
 	for _, tt := range tests {

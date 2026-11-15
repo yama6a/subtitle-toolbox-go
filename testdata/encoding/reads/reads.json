@@ -355,8 +355,8 @@
     {
         "file": "japanese-cp932.ass",
         "encoding": "Windows-1252",
-        "error": "Cannot convert the content from Windows-1252 to UTF-8.",
-        "strictError": "Cannot convert the content from Windows-1252 to UTF-8."
+        "error": "cannot convert the content from Windows-1252 to UTF-8",
+        "strictError": "cannot convert the content from Windows-1252 to UTF-8"
     },
     {
         "file": "japanese-euc-jp.srt",
@@ -389,8 +389,8 @@
     {
         "file": "japanese-shift_jis.srt",
         "encoding": "Windows-1252",
-        "error": "Cannot convert the content from Windows-1252 to UTF-8.",
-        "strictError": "Cannot convert the content from Windows-1252 to UTF-8."
+        "error": "cannot convert the content from Windows-1252 to UTF-8",
+        "strictError": "cannot convert the content from Windows-1252 to UTF-8"
     },
     {
         "file": "korean-cp949.smi",

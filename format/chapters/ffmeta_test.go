@@ -92,8 +92,8 @@ func TestReadFFMetadataErrors(t *testing.T) {
 		{"no header", "[CHAPTER]\nSTART=0\n", "The content does not start with the ;FFMETADATA header.", 1},
 		{"zero time base", ";FFMETADATA1\n\n[CHAPTER]\nTIMEBASE=1/0\nSTART=0\n", "The chapter time base 1/0 is not valid.", 4},
 		{"time base beyond int64", ";FFMETADATA1\n[CHAPTER]\nTIMEBASE=99999999999999999999/1000\n", "The chapter time base 99999999999999999999/1000 is not valid.", 3},
-		{"100000 hours", ";FFMETADATA1\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=360000000000\n", `The time "START=360000000000" is not below 100000 hours.`, 4},
-		{"end of 1e20 ns", ";FFMETADATA1\n[CHAPTER]\nSTART=0\nEND=100000000000000000000\n", `The time "END=100000000000000000000" is not below 100000 hours.`, 4},
+		{"100000 hours", ";FFMETADATA1\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=360000000000\n", `the time "START=360000000000" is not below 100000 hours`, 4},
+		{"end of 1e20 ns", ";FFMETADATA1\n[CHAPTER]\nSTART=0\nEND=100000000000000000000\n", `the time "END=100000000000000000000" is not below 100000 hours`, 4},
 		{"line after a continued line", ";FFMETADATA1\ntitle=a\\\nb\n[CHAPTER]\nTIMEBASE=0/1\n", "The chapter time base 0/1 is not valid.", 5},
 	}
 	for _, tt := range tests {

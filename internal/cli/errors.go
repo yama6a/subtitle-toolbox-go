@@ -162,26 +162,31 @@ func withCause(msg string, cause error) string {
 func withAdvice(msg, option string, cause error) string {
 	switch {
 	case option == "ReadOptions.Encoding":
-		return msg + " Known encodings: " + strings.Join(stbox.Encodings(), ", ") + "."
+		return advise(msg, "Known encodings: "+strings.Join(stbox.Encodings(), ", ")+".")
 	case option == "ReadOptions.MicroDVD.FrameRate":
 		// The advice replaces the sentences after the first, which name the library settings.
 		first, _, _ := strings.Cut(msg, ". ")
 		return strings.TrimSuffix(first, ".") + ". Pass --fps or --input-fps, start the file with {1}{1}<fps>, or pass --lenient for 23.976 fps."
 	case option == "ReadOptions.CSV.FrameRate":
-		return msg + " Pass --fps or --input-fps."
+		return advise(msg, "Pass --fps or --input-fps.")
 	case option == "WriteOptions.MicroDVD.FrameRate":
-		return msg + " Pass --fps or --output-fps."
+		return advise(msg, "Pass --fps or --output-fps.")
 	case option == "hls.SegmentOptions.MediaDuration":
 		return strings.Replace(msg, "Set the mediaDuration option to segment it.", "Pass --media-duration to segment it.", 1)
 	case errors.Is(cause, itt.ErrNeedsFrameRate):
-		return msg + " Pass --fps or --output-fps."
+		return advise(msg, "Pass --fps or --output-fps.")
 	case isSCCLimit(cause):
 		return sccAdvice(msg, cause)
 	case errors.Is(cause, stbox.ErrInvalidUTF8):
-		return msg + " " + encodingAdvice
+		return advise(msg, encodingAdvice)
 	default:
 		return msg
 	}
+}
+
+// advise appends the advice sentence to the message of a library error, which has no final period.
+func advise(msg, advice string) string {
+	return strings.TrimSuffix(msg, ".") + ". " + advice
 }
 
 func isSCCLimit(err error) bool {
@@ -191,11 +196,11 @@ func isSCCLimit(err error) bool {
 // sccAdvice replaces the library sentence of an SCC limit error with the CLI options that fix it.
 func sccAdvice(msg string, cause error) string {
 	if errors.Is(cause, scc.ErrWrapFirst) {
-		return strings.TrimSuffix(msg, " Wrap the lines to 4 lines of 32 characters first.") +
-			" Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4."
+		return advise(strings.TrimSuffix(msg, ". Wrap the lines to 4 lines of 32 characters first"),
+			"Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.")
 	}
-	return strings.TrimSuffix(msg, " Split the cue into cues of 4 lines of 32 characters, then wrap the lines.") +
-		" Pass --structure-split-long --structure-wrap --structure-max-cpl 32 --structure-max-lines 4."
+	return advise(strings.TrimSuffix(msg, ". Split the cue into cues of 4 lines of 32 characters, then wrap the lines"),
+		"Pass --structure-split-long --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.")
 }
 
 // warningMessage returns the CLI text of a parse warning. The warning about invalid UTF-8 gets the same advice as

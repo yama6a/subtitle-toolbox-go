@@ -271,9 +271,9 @@ func TestParseTime(t *testing.T) {
 	t.Parallel()
 
 	const (
-		shape  = `The timecode "%s" is not h:mm:ss.mmm, m:ss.mmm or h:mm:ss:ff.`
-		limit  = `The timecode "%s" is not below 100000 hours.`
-		noRate = `The timecode "%s" counts frames and needs a frame rate.`
+		shape  = `the timecode "%s" is not h:mm:ss.mmm, m:ss.mmm or h:mm:ss:ff`
+		limit  = `the timecode "%s" is not below 100000 hours`
+		noRate = `the timecode "%s" counts frames and needs a frame rate`
 	)
 	tests := []struct {
 		in   string
@@ -318,9 +318,9 @@ func TestParseTime(t *testing.T) {
 		{in: "100000:00:00:00", rate: model.FrameRate25, err: limit},
 		{in: "00:01:02:12", err: noRate},
 		{in: "00:01:02:12", rate: model.FrameRate{Num: 0, Den: 1}, err: noRate},
-		{in: "00:01:02:25", rate: model.FrameRate25, err: `The timecode "%s" has a frame number that is not below 25.`},
-		{in: "00:01:02:24", rate: model.FrameRate23976, err: `The timecode "%s" has a frame number that is not below 24.`},
-		{in: "00:01:02:99999999999999999999999", rate: model.FrameRate25, err: `The timecode "%s" has a frame number that is not below 25.`},
+		{in: "00:01:02:25", rate: model.FrameRate25, err: `the timecode "%s" has a frame number that is not below 25`},
+		{in: "00:01:02:24", rate: model.FrameRate23976, err: `the timecode "%s" has a frame number that is not below 24`},
+		{in: "00:01:02:99999999999999999999999", rate: model.FrameRate25, err: `the timecode "%s" has a frame number that is not below 25`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.in, func(t *testing.T) {
@@ -368,7 +368,7 @@ func TestParseTimecode(t *testing.T) {
 			if tt.err {
 				var ia *model.InvalidArgumentError
 				require.ErrorAs(t, err, &ia)
-				assert.Equal(t, `The time code "`+tt.in+`" is not HH:MM:SS:FF or HH:MM:SS;FF.`, ia.Msg)
+				assert.Equal(t, `the time code "`+tt.in+`" is not HH:MM:SS:FF or HH:MM:SS;FF`, ia.Msg)
 				return
 			}
 			require.NoError(t, err)

@@ -16,6 +16,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
@@ -120,7 +121,7 @@ func (f cloudFormat) testBroken(t *testing.T, tests []cloudBroken) {
 			s, warnings, err := f.read(strings.NewReader(tt.content), model.CommonReadOptions{Lenient: true}, transcript.ReadOptions{})
 			require.NoError(t, err)
 			assert.Equal(t, tt.cues, describe(s))
-			assert.Equal(t, []string{fmt.Sprintf("%s|%d|%s", tt.message, tt.block, model.Skipped)}, cloudWarnings(warnings))
+			assert.Equal(t, []string{fmt.Sprintf("%s|%d|%s", parsing.Sentence(tt.message), tt.block, model.Skipped)}, cloudWarnings(warnings))
 		})
 	}
 }

@@ -79,7 +79,7 @@ func (s *Subtitle) addMissingKeys(other *Subtitle) {
 // ErrInvalidArgument when from is after to.
 func (s *Subtitle) Slice(from, to time.Duration, moveToZero bool) (*Subtitle, error) {
 	if from > to {
-		return nil, invalidArgument(fmt.Sprintf("The slice start %s must not be after the slice end %s.",
+		return nil, invalidArgument(fmt.Sprintf("the slice start %s must not be after the slice end %s",
 			timecode.Seconds(from), timecode.Seconds(to)))
 	}
 	toZero := retiming{shift: -from}
@@ -143,11 +143,11 @@ func (s *Subtitle) SplitCue(index int, at time.Duration, splitAfterLine int) err
 	}
 	c := s.cues[index]
 	if at <= c.Start || at >= c.End {
-		return invalidArgument(fmt.Sprintf("Cannot split cue %d at %s: the time must be after the cue start %s and before the cue end %s.",
+		return invalidArgument(fmt.Sprintf("cannot split cue %d at %s: the time must be after the cue start %s and before the cue end %s",
 			index, timecode.Seconds(at), timecode.Seconds(c.Start), timecode.Seconds(c.End)))
 	}
 	if splitAfterLine < 1 || splitAfterLine >= len(c.Lines) {
-		return invalidArgument(fmt.Sprintf("Cannot split cue %d after line %d: the cue has %d lines.", index, splitAfterLine, len(c.Lines)))
+		return invalidArgument(fmt.Sprintf("cannot split cue %d after line %d: the cue has %d lines", index, splitAfterLine, len(c.Lines)))
 	}
 
 	at = at.Round(time.Millisecond)
@@ -202,11 +202,11 @@ func (s *Subtitle) JoinCues(first, last int) error {
 		}
 	}
 	if first >= last {
-		return invalidArgument(fmt.Sprintf("Cannot join cues %d to %d: the first index must be lower than the last index.", first, last))
+		return invalidArgument(fmt.Sprintf("cannot join cues %d to %d: the first index must be lower than the last index", first, last))
 	}
 
 	if i := slices.IndexFunc(s.cues[first:last+1], func(c Cue) bool { return c.Image != nil }); i >= 0 {
-		return invalidArgument(fmt.Sprintf("Cannot join cues %d to %d: cue %d holds an image, and a join would drop it.", first, last, first+i))
+		return invalidArgument(fmt.Sprintf("cannot join cues %d to %d: cue %d holds an image, and a join would drop it", first, last, first+i))
 	}
 
 	joined := joinParts(s.cues[first], s.cues[first:last+1])
@@ -239,7 +239,7 @@ func (s *Subtitle) JoinCues(first, last int) error {
 // and returns an error that matches ErrInvalidArgument when maxGap is below 0.
 func (s *Subtitle) RemoveDuplicateCues(maxGap time.Duration) error {
 	if maxGap < 0 {
-		return invalidArgument(fmt.Sprintf("The maximum gap must be 0 or more seconds, got %s.", timecode.Seconds(maxGap)))
+		return invalidArgument(fmt.Sprintf("the maximum gap must be 0 or more seconds, got %s", timecode.Seconds(maxGap)))
 	}
 	maxGap = maxGap.Round(time.Millisecond)
 	s.joinRuns(func(first Cue, runEnd time.Duration, c Cue) bool {
@@ -258,7 +258,7 @@ func (s *Subtitle) RemoveDuplicateCues(maxGap time.Duration) error {
 // an error that matches ErrInvalidArgument when timeTolerance is below 0.
 func (s *Subtitle) MergeSameTimeCues(timeTolerance time.Duration) error {
 	if timeTolerance < 0 {
-		return invalidArgument(fmt.Sprintf("The time tolerance must be 0 or more seconds, got %s.", timecode.Seconds(timeTolerance)))
+		return invalidArgument(fmt.Sprintf("the time tolerance must be 0 or more seconds, got %s", timecode.Seconds(timeTolerance)))
 	}
 	tol := timeTolerance.Round(time.Millisecond)
 	s.joinRuns(func(first Cue, _ time.Duration, c Cue) bool {
@@ -412,5 +412,5 @@ func sameValue(a, b any) bool {
 }
 
 func cueDoesNotExist(action string, i int) error {
-	return fmt.Errorf("%w: Cannot %s cue %d: the cue does not exist.", ErrCueNotFound, action, i) //nolint:revive,staticcheck // the message is a full sentence, as docs/errors.md says
+	return fmt.Errorf("%w: cannot %s cue %d: the cue does not exist", ErrCueNotFound, action, i)
 }

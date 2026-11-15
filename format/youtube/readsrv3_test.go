@@ -102,7 +102,7 @@ func TestReadSrv3Errors(t *testing.T) {
 		{"no t", `<timedtext format="3"><body><p d="1">a</p></body></timedtext>`, `The <p> element has no valid "t" attribute.`, 1},
 		{"a bad t on line 3", "<timedtext format=\"3\"><body>\n<p t=\"0\" d=\"1\">a</p>\n<p t=\"soon\">b</p>\n</body></timedtext>", `The <p> element has no valid "t" attribute.`, 3},
 		{"a bad span offset", `<timedtext format="3"><body><p t="0"><s t="-5">a</s></p></body></timedtext>`, `The <s> element has no valid "t" attribute.`, 1},
-		{"a span offset over the limit", `<timedtext format="3"><body><p t="359999999999"><s t="2000000">a</s></p></body></timedtext>`, `The time "2000000" is not below 100000 hours.`, 1},
+		{"a span offset over the limit", `<timedtext format="3"><body><p t="359999999999"><s t="2000000">a</s></p></body></timedtext>`, `the time "2000000" is not below 100000 hours`, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

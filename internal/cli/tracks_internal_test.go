@@ -173,12 +173,12 @@ func TestTrackReadFailures(t *testing.T) {
 		{
 			"unknown track",
 			[]string{"convert", "text_tracks.mkv", "--to", "srt", "--track", "9", "-o", "-"},
-			result{Code: exitFile, Stderr: "text_tracks.mkv: The file has no subtitle track with the number 9.\n"},
+			result{Code: exitFile, Stderr: "text_tracks.mkv: the file has no subtitle track with the number 9\n"},
 		},
 		{
 			"track of a subtitle file",
 			[]string{"convert", "trip.srt", "--to", "vtt", "--track", "3", "-o", "-"},
-			result{Code: exitFile, Stderr: "trip.srt: Only MKV, WebM, MP4 and MPEG-TS files have tracks.\n"},
+			result{Code: exitFile, Stderr: "trip.srt: only MKV, WebM, MP4 and MPEG-TS files have tracks\n"},
 		},
 		{
 			"from with an MP4 file",
@@ -391,10 +391,10 @@ func TestImageCuesNeedAnAnswer(t *testing.T) {
 
 	dir := videoDir(t)
 	got := call{dir: dir}.run(t, "convert", "text_1080p.sup", "--to", "srt", "-o", "-")
-	assert.Equal(t, result{Code: exitFile, Stderr: "text_1080p.sup: Cue #0 holds an image but no text, and srt needs text. " +
+	assert.Equal(t, result{Code: exitFile, Stderr: "text_1080p.sup: cue #0 holds an image but no text, and srt needs text. " +
 		"Pass --ocr to read the text, --to pgs to keep the images, or --skip-image-cues to leave them out.\n"}, got)
 
-	noOCR := "Cue #0 holds an image but no text, and srt needs text. " + imageCueAdviceNoOCR + "\n"
+	noOCR := "cue #0 holds an image but no text, and srt needs text. " + imageCueAdviceNoOCR + "\n"
 	got = call{dir: dir}.run(t, "sync", "text_1080p.sup", "--reference", "trip.srt", "--to", "srt")
 	assert.Equal(t, exitFile, got.Code)
 	assert.True(t, strings.HasSuffix(got.Stderr, noOCR), got.Stderr)

@@ -165,7 +165,7 @@ func TestWriteChecksTheFrameRate(t *testing.T) {
 	var aerr *model.InvalidArgumentError
 	require.ErrorAs(t, err, &aerr)
 	assert.Equal(t, "WriteOptions.SpruceSTL.FrameRate", aerr.Option)
-	assert.Equal(t, "The Spruce STL frame rate must be greater than 0, got -1.", aerr.Msg)
+	assert.Equal(t, "the Spruce STL frame rate must be greater than 0, got -1", aerr.Msg)
 	require.ErrorAs(t, writeErr(formattest.Subtitle(), sprucestl.WriteOptions{FrameRate: model.FrameRate{Num: 0, Den: 1}}), &aerr)
 }
 

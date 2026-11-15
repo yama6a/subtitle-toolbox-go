@@ -361,7 +361,7 @@ func readPAC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Su
 		if !ok {
 			return nil, nil, &InvalidArgumentError{
 				Option: "ReadOptions.Encoding",
-				Msg:    "PAC files have no code page for the encoding " + strconv.Quote(opts.Encoding) + ".",
+				Msg:    "PAC files have no code page for the encoding " + strconv.Quote(opts.Encoding),
 			}
 		}
 		pacOpts.CodePage = codePage

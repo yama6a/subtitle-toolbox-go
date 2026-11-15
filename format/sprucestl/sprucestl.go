@@ -34,7 +34,7 @@ type ReadOptions struct {
 
 // Validate returns an error that matches model.ErrInvalidArgument for a frame rate that fails model.FrameRate.Validate.
 func (o ReadOptions) Validate() error {
-	return parsing.ValidateFrameRate(o.FrameRate, readFrameRateOption, "The frame rate")
+	return parsing.ValidateFrameRate(o.FrameRate, readFrameRateOption, "the frame rate")
 }
 
 // WriteReport holds what the writer reports. It has no fields yet.
@@ -48,7 +48,7 @@ type WriteOptions struct {
 
 // Validate returns an error that matches model.ErrInvalidArgument for a frame rate that fails model.FrameRate.Validate.
 func (o WriteOptions) Validate() error {
-	return parsing.ValidateFrameRate(o.FrameRate, writeFrameRateOption, "The Spruce STL frame rate")
+	return parsing.ValidateFrameRate(o.FrameRate, writeFrameRateOption, "the Spruce STL frame rate")
 }
 
 const timing = `\d{2}:[0-5]\d:[0-5]\d:\d{2}[ \t]*,[ \t]*\d{2}:[0-5]\d:[0-5]\d:\d{2}[ \t]*,`

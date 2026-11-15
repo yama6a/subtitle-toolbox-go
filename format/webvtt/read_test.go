@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
@@ -98,21 +99,21 @@ func TestReadErrors(t *testing.T) {
 		{name: "no empty line after the header", content: fixture(t, filepath.Join(vttDir, "no_empty_line_after_webvtt_header.vtt")), msg: noEmpty, line: 3},
 		{name: "header line with an arrow", content: "WEBVTT\nKind: captions\n00:01.000 --> 00:02.000\nText\n", msg: noEmpty, line: 3},
 		{name: "no signature", content: fixture(t, filepath.Join(vttDir, "missing_webvtt_header.vtt")), msg: noWebVTT, line: 1},
-		{name: "minutes of 99", content: fixture(t, filepath.Join(vttDir, "exceeded_minutes.vtt")), msg: `The time "55:99:00.456" is not valid.`, line: 4},
-		{name: "seconds of 99", content: fixture(t, filepath.Join(vttDir, "exceeded_seconds.vtt")), msg: `The time "34:00:99.123" is not valid.`, line: 4},
-		{name: "4 fraction digits", content: fixture(t, filepath.Join(vttDir, "exceeded_milli_accuracy.vtt")), msg: `The time "34:00:00.1234" is not valid.`, line: 4},
+		{name: "minutes of 99", content: fixture(t, filepath.Join(vttDir, "exceeded_minutes.vtt")), msg: `the time "55:99:00.456" is not valid`, line: 4},
+		{name: "seconds of 99", content: fixture(t, filepath.Join(vttDir, "exceeded_seconds.vtt")), msg: `the time "34:00:99.123" is not valid`, line: 4},
+		{name: "4 fraction digits", content: fixture(t, filepath.Join(vttDir, "exceeded_milli_accuracy.vtt")), msg: `the time "34:00:00.1234" is not valid`, line: 4},
 		{name: "no timing line", content: fixture(t, filepath.Join(vttDir, "missing_timestamps.vtt")), msg: `Block #3 is not a WebVTT cue, comment, style or region. The line is "3".`, line: 11},
 		{name: "a line of text", content: "WEBVTT\n\nstray line", msg: `Block #1 is not a WebVTT cue, comment, style or region. The line is "stray line".`, line: 3},
-		{name: "no dot before the fraction", content: "WEBVTT\n\n00:00:01x000 --> 00:00:04.000\nText\n", msg: `The time "00:00:01x000" is not valid.`, line: 3},
-		{name: "text before the arrow", content: "WEBVTT\n\n00:00:01.000 align:left --> 00:00:04.000\nText\n", msg: `The time "00:00:01.000 align:left" is not valid.`, line: 3},
-		{name: "4th fraction digit is no setting", content: "WEBVTT\n\nid\n00:01.000 --> 00:01.0005\nText\n", msg: `The time "00:01.0005" is not valid.`, line: 4},
-		{name: "long arrow", content: "WEBVTT\n\n00:01.000 ---> 00:02.000\nText\n", msg: `The time "00:01.000 -" is not valid.`, line: 3},
+		{name: "no dot before the fraction", content: "WEBVTT\n\n00:00:01x000 --> 00:00:04.000\nText\n", msg: `the time "00:00:01x000" is not valid`, line: 3},
+		{name: "text before the arrow", content: "WEBVTT\n\n00:00:01.000 align:left --> 00:00:04.000\nText\n", msg: `the time "00:00:01.000 align:left" is not valid`, line: 3},
+		{name: "4th fraction digit is no setting", content: "WEBVTT\n\nid\n00:01.000 --> 00:01.0005\nText\n", msg: `the time "00:01.0005" is not valid`, line: 4},
+		{name: "long arrow", content: "WEBVTT\n\n00:01.000 ---> 00:02.000\nText\n", msg: `the time "00:01.000 -" is not valid`, line: 3},
 		{name: "short arrow", content: "WEBVTT\n\n00:01.000 -> 00:02.000\nText\n", msg: `Block #1 is not a WebVTT cue, comment, style or region. The line is "00:01.000 -> 00:02.000".`, line: 3},
-		{name: "minutes of 60", content: "WEBVTT\n\n00:00:01.000 --> 00:60:02.000\nText\n", msg: `The time "00:60:02.000" is not valid.`, line: 3},
-		{name: "100000 hours", content: "WEBVTT\n\n100000:00:00.000 --> 100000:00:01.000\nText\n", msg: `The time "100000:00:00.000" is not below 100000 hours.`, line: 3},
-		{name: "hours beyond int64", content: "WEBVTT\n\n00:01.000 --> 99999999999999999999:00:00.000\nText\n", msg: `The time "99999999999999999999:00:00.000" is not below 100000 hours.`, line: 3},
-		{name: "word timestamp of 100000 hours", content: "WEBVTT\n\n00:01.000 --> 00:02.000\nOne\nTwo <100000:00:00.000>three\n", msg: `The time "100000:00:00.000" is not below 100000 hours.`, line: 5},
-		{name: "end before start", content: "WEBVTT\n\n00:05.000 --> 00:01.000\nText\n", msg: "The cue ends at 1 s, before it starts at 5 s.", line: 3},
+		{name: "minutes of 60", content: "WEBVTT\n\n00:00:01.000 --> 00:60:02.000\nText\n", msg: `the time "00:60:02.000" is not valid`, line: 3},
+		{name: "100000 hours", content: "WEBVTT\n\n100000:00:00.000 --> 100000:00:01.000\nText\n", msg: `the time "100000:00:00.000" is not below 100000 hours`, line: 3},
+		{name: "hours beyond int64", content: "WEBVTT\n\n00:01.000 --> 99999999999999999999:00:00.000\nText\n", msg: `the time "99999999999999999999:00:00.000" is not below 100000 hours`, line: 3},
+		{name: "word timestamp of 100000 hours", content: "WEBVTT\n\n00:01.000 --> 00:02.000\nOne\nTwo <100000:00:00.000>three\n", msg: `the time "100000:00:00.000" is not below 100000 hours`, line: 5},
+		{name: "end before start", content: "WEBVTT\n\n00:05.000 --> 00:01.000\nText\n", msg: "the cue ends at 1 s, before it starts at 5 s", line: 3},
 		{name: "WEBVTTX", content: "WEBVTTX\n\n00:01.000 --> 00:02.000\nHi\n", msg: noWebVTT, line: 1},
 		{name: "empty lines before a missing signature", content: "\n\nHello\n", msg: noWebVTT, line: 3},
 		{name: "lenient SubRip timing line", content: "1\n00:00:01,000 --> 00:00:02,000\ntext\n", lenient: true, msg: noWebVTT, line: 1},
@@ -212,12 +213,12 @@ func TestReadTimes(t *testing.T) {
 		{name: "1 hour digit", start: "0:00:00.800", end: "0:00:02.933", wantStart: 800 * ms, wantEnd: 2933 * ms},
 		{name: "4 hour digits", start: "0000:00:00.123", end: "1234:00:00.456", wantStart: 123 * ms, wantEnd: 4442400456 * ms},
 		{name: "99999 hours", start: "00:00.000", end: "99999:59:59.999", wantEnd: 99999*time.Hour + 3599999*ms},
-		{name: "100000 hours", start: "00:00.000", end: "100000:00:00.000", wantErr: `The time "100000:00:00.000" is not below 100000 hours.`},
+		{name: "100000 hours", start: "00:00.000", end: "100000:00:00.000", wantErr: `the time "100000:00:00.000" is not below 100000 hours`},
 		{name: "arrow without spaces", start: "00:01.000", end: "00:02.500", wantStart: sec, wantEnd: 2500 * ms},
-		{name: "3 minute digits", start: "000:01.000", end: "00:02.000", wantErr: `The time "000:01.000" is not valid.`},
-		{name: "1 minute digit", start: "0:01.000", end: "00:02.000", wantErr: `The time "0:01.000" is not valid.`},
-		{name: "2 fraction digits strict", start: "00:00:01.25", end: "00:00:02.25", wantErr: `The time "00:00:02.25" is not valid.`},
-		{name: "comma in the start strict", start: "00:00:01,500", end: "00:00:02.500 x", wantErr: `The time "00:00:01,500" is not valid.`},
+		{name: "3 minute digits", start: "000:01.000", end: "00:02.000", wantErr: `the time "000:01.000" is not valid`},
+		{name: "1 minute digit", start: "0:01.000", end: "00:02.000", wantErr: `the time "0:01.000" is not valid`},
+		{name: "2 fraction digits strict", start: "00:00:01.25", end: "00:00:02.25", wantErr: `the time "00:00:02.25" is not valid`},
+		{name: "comma in the start strict", start: "00:00:01,500", end: "00:00:02.500 x", wantErr: `the time "00:00:01,500" is not valid`},
 		{
 			name: "1 fraction digit lenient", start: "00:00:01.5", end: "00:00:02.5", lenient: true, wantStart: 1500 * ms, wantEnd: 2500 * ms,
 			warnings: []string{
@@ -254,12 +255,12 @@ func TestReadTimes(t *testing.T) {
 		},
 		{
 			name: "loose time that rounds to 100000 hours lenient", start: "00:01.000", end: "99999:59:59,9997", lenient: true,
-			wantErr: `The time "99999:59:59,9997" is not below 100000 hours.`,
+			wantErr: `the time "99999:59:59,9997" is not below 100000 hours`,
 		},
-		{name: "cut-off time lenient", start: "00:00:01.000", end: "00:00:0", lenient: true, wantErr: `The time "00:00:0" is not valid.`},
-		{name: "letter instead of the dot lenient", start: "00:00:01x000", end: "00:00:04.000", lenient: true, wantErr: `The time "00:00:01x000" is not valid.`},
-		{name: "seconds of 75 lenient", start: "00:01.000", end: "00:75.000", lenient: true, wantErr: `The time "00:75.000" is not valid.`},
-		{name: "minutes of 60 lenient", start: "00:00:01.000", end: "00:60:02,000", lenient: true, wantErr: `The time "00:60:02,000" is not valid.`},
+		{name: "cut-off time lenient", start: "00:00:01.000", end: "00:00:0", lenient: true, wantErr: `the time "00:00:0" is not valid`},
+		{name: "letter instead of the dot lenient", start: "00:00:01x000", end: "00:00:04.000", lenient: true, wantErr: `the time "00:00:01x000" is not valid`},
+		{name: "seconds of 75 lenient", start: "00:01.000", end: "00:75.000", lenient: true, wantErr: `the time "00:75.000" is not valid`},
+		{name: "minutes of 60 lenient", start: "00:00:01.000", end: "00:60:02,000", lenient: true, wantErr: `the time "00:60:02,000" is not valid`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -275,7 +276,7 @@ func TestReadTimes(t *testing.T) {
 			s, warnings := parse(t, content, tt.lenient)
 			if tt.wantErr != "" {
 				assert.Equal(t, []model.ParseWarning{{
-					Message: tt.wantErr, Line: 3, Block: 1, Action: model.Skipped,
+					Message: parsing.Sentence(tt.wantErr), Line: 3, Block: 1, Action: model.Skipped,
 					Lines: []string{tt.start + " --> " + tt.end, "The ferry leaves."},
 				}}, warnings)
 				assert.Equal(t, []string{"It is late."}, cueTexts(s))

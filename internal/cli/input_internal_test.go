@@ -40,8 +40,8 @@ func TestUsageErrors(t *testing.T) {
 		{"bom and no bom", []string{"convert", "trip.srt", "--to", "vtt", "--bom", "--no-bom"}, "Pass only one of --bom and --no-bom."},
 		{"output and output dir", []string{"convert", "trip.srt", "--to", "vtt", "-o", "a.vtt", "--output-dir", "out"}, "Pass only one of --output and --output-dir."},
 		{"value given twice", []string{"convert", "trip.srt", "--to", "vtt", "--to", "srt"}, "The option --to is given twice."},
-		{"unknown encoding", []string{"convert", "trip.srt", "--to", "srt", "--encoding", "CP1125"}, `The encoding "CP1125" is unknown. Known encodings: ` + strings.Join(stbox.Encodings(), ", ") + "."},
-		{"info unknown encoding", []string{"info", "trip.srt", "--encoding", "CP1125"}, `The encoding "CP1125" is unknown. Known encodings: ` + strings.Join(stbox.Encodings(), ", ") + "."},
+		{"unknown encoding", []string{"convert", "trip.srt", "--to", "srt", "--encoding", "CP1125"}, `the encoding "CP1125" is unknown. Known encodings: ` + strings.Join(stbox.Encodings(), ", ") + "."},
+		{"info unknown encoding", []string{"info", "trip.srt", "--encoding", "CP1125"}, `the encoding "CP1125" is unknown. Known encodings: ` + strings.Join(stbox.Encodings(), ", ") + "."},
 		{"info unknown option", []string{"info", "trip.srt", "--to", "vtt"}, "Unknown option --to."},
 	}
 	for _, tt := range tests {

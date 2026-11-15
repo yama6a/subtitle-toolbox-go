@@ -249,8 +249,8 @@ func TestWriteErrors(t *testing.T) {
 	t.Parallel()
 
 	const (
-		malformed = "JSON cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. Read a file in another encoding with its source encoding."
-		infOrNaN  = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
+		malformed = "JSON cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. Read a file in another encoding with its source encoding"
+		infOrNaN  = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded"
 	)
 	twoCues := func(second model.Cue) *model.Subtitle {
 		s := &model.Subtitle{}

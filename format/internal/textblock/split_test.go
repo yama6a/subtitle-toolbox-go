@@ -81,7 +81,7 @@ func TestReadParts(t *testing.T) {
 			wantWarnings: []model.ParseWarning{
 				{Message: "Block #3 has no empty line before line 7. The parser split the block there.", Line: 7, Block: 3, Lines: block.Lines, Action: model.Repaired},
 				{Message: "Block #3 has no empty line before line 9. The parser split the block there.", Line: 9, Block: 3, Lines: block.Lines, Action: model.Repaired},
-				{Message: "bad", Line: 7, Block: 3, Lines: []string{"c --> d", "bad"}, Action: model.Skipped},
+				{Message: "Bad.", Line: 7, Block: 3, Lines: []string{"c --> d", "bad"}, Action: model.Skipped},
 			},
 		},
 		{
@@ -97,7 +97,7 @@ func TestReadParts(t *testing.T) {
 			wantWarnings: []model.ParseWarning{
 				{Message: "Block #3 has no empty line before line 7. The parser split the block there.", Line: 7, Block: 3, Lines: block.Lines, Action: model.Repaired},
 				{Message: "Block #3 has no empty line before line 9. The parser split the block there.", Line: 9, Block: 3, Lines: block.Lines, Action: model.Repaired},
-				{Message: "bad", Line: 42, Block: 3, Lines: []string{"c --> d", "bad"}, Action: model.Skipped},
+				{Message: "Bad.", Line: 42, Block: 3, Lines: []string{"c --> d", "bad"}, Action: model.Skipped},
 			},
 		},
 		{

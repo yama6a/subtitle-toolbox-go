@@ -132,9 +132,9 @@ func TestWrapLinesLimits(t *testing.T) {
 		cpl, max int
 		want     string
 	}{
-		{name: "0 characters", cpl: 0, max: 2, want: "got 0 and 2."},
-		{name: "0 lines", cpl: 42, max: 0, want: "got 42 and 0."},
-		{name: "negative", cpl: -1, max: -5, want: "got -1 and -5."},
+		{name: "0 characters", cpl: 0, max: 2, want: "got 0 and 2"},
+		{name: "0 lines", cpl: 42, max: 0, want: "got 42 and 0"},
+		{name: "negative", cpl: -1, max: -5, want: "got -1 and -5"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -143,7 +143,7 @@ func TestWrapLinesLimits(t *testing.T) {
 			s := oneCue("This is a very long subtitle line that does not fit on the screen")
 			err := s.WrapLines(tt.cpl, tt.max)
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
-			require.EqualError(t, err, "stbox: invalid argument: The maximum characters per line and the maximum lines must be at least 1, "+tt.want)
+			require.EqualError(t, err, "stbox: invalid argument: the maximum characters per line and the maximum lines must be at least 1, "+tt.want)
 			assert.Equal(t, [][]string{{"This is a very long subtitle line that does not fit on the screen"}}, cueLines(s))
 		})
 	}

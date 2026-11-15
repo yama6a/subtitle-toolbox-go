@@ -40,7 +40,7 @@ func TestReadOptionsValidate(t *testing.T) {
 			opts: stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: -1, Den: 1}}},
 			wantErr: &stbox.InvalidArgumentError{
 				Option: "ReadOptions.MicroDVD.FrameRate",
-				Msg:    "The frame rate must be greater than 0, got -1.",
+				Msg:    "the frame rate must be greater than 0, got -1",
 			},
 		},
 		{
@@ -51,19 +51,19 @@ func TestReadOptionsValidate(t *testing.T) {
 		{
 			name:    "SCC channel 3",
 			opts:    stbox.ReadOptions{SCC: scc.ReadOptions{Channel: 3}},
-			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.SCC.Channel", Msg: "The SCC data channel must be 1 or 2, got 3."},
+			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.SCC.Channel", Msg: "the SCC data channel must be 1 or 2, got 3"},
 		},
 		{
 			name:    "unknown encoding",
 			opts:    stbox.ReadOptions{Encoding: "CP1125"},
-			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.Encoding", Msg: `The encoding "CP1125" is unknown.`},
+			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.Encoding", Msg: `the encoding "CP1125" is unknown`},
 		},
 		{
 			name: "negative last cue duration",
 			opts: stbox.ReadOptions{LastCueDuration: new(-time.Second)},
 			wantErr: &stbox.InvalidArgumentError{
 				Option: "ReadOptions.LastCueDuration",
-				Msg:    "The last cue duration must be 0 or more, got -1s.",
+				Msg:    "the last cue duration must be 0 or more, got -1s",
 			},
 		},
 		{
@@ -71,7 +71,7 @@ func TestReadOptionsValidate(t *testing.T) {
 			opts: stbox.ReadOptions{LastCueDuration: new(-time.Millisecond)},
 			wantErr: &stbox.InvalidArgumentError{
 				Option: "ReadOptions.LastCueDuration",
-				Msg:    "The last cue duration must be 0 or more, got -1ms.",
+				Msg:    "the last cue duration must be 0 or more, got -1ms",
 			},
 		},
 	}
@@ -97,12 +97,12 @@ func TestWriteOptionsValidate(t *testing.T) {
 		{
 			name:    "unknown line ending",
 			opts:    stbox.WriteOptions{LineEnding: stbox.LineEnding(2)},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.LineEnding", Msg: "The line ending 2 is unknown."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.LineEnding", Msg: "the line ending 2 is unknown"},
 		},
 		{
 			name:    "unknown BOM rule",
 			opts:    stbox.WriteOptions{BOM: stbox.BOM(3)},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.BOM", Msg: "The BOM rule 3 is unknown."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.BOM", Msg: "the BOM rule 3 is unknown"},
 		},
 		{
 			name: "MCC frame rate 48",
@@ -115,13 +115,13 @@ func TestWriteOptionsValidate(t *testing.T) {
 		{
 			name:    "unknown SCC drop-frame mode",
 			opts:    stbox.WriteOptions{SCC: scc.WriteOptions{DropFrame: stbox.DropFrameMode(3)}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.SCC.DropFrame", Msg: "The SCC drop-frame mode 3 is unknown."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.SCC.DropFrame", Msg: "the SCC drop-frame mode 3 is unknown"},
 		},
 		{name: "MicroDVD frame rate", opts: stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}, WriteFrameRateLine: true}}},
 		{
 			name:    "MicroDVD frame rate with a zero denominator",
 			opts:    stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25}}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "The MicroDVD frame rate must be greater than 0, got INF."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "the MicroDVD frame rate must be greater than 0, got INF"},
 		},
 		{name: "MPSub frame rate", opts: stbox.WriteOptions{MPSub: mpsub.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}}},
 		{

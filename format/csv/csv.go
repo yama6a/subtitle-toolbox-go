@@ -155,7 +155,7 @@ func (o ReadOptions) Validate() error {
 	if err := checkDelimiter(o.Delimiter, "ReadOptions.CSV.Delimiter"); err != nil {
 		return err
 	}
-	return parsing.ValidateFrameRate(o.FrameRate, "ReadOptions.CSV.FrameRate", "The frame rate")
+	return parsing.ValidateFrameRate(o.FrameRate, "ReadOptions.CSV.FrameRate", "the frame rate")
 }
 
 // WriteReport holds what the writer reports. It has no fields yet.
@@ -189,7 +189,7 @@ func (o WriteOptions) Validate() error {
 		return invalid("WriteOptions.CSV.TimeFormat", "The CSV time format must be seconds, hh:mm:ss.mmm, hh:mm:ss,mmm, "+
 			"hh:mm:ss:ff or milliseconds, got "+strconv.Quote(string(o.TimeFormat))+".")
 	}
-	return parsing.ValidateFrameRate(o.FrameRate, "WriteOptions.CSV.FrameRate", "The CSV frame rate")
+	return parsing.ValidateFrameRate(o.FrameRate, "WriteOptions.CSV.FrameRate", "the CSV frame rate")
 }
 
 func checkDelimiter(d Delimiter, option string) error {

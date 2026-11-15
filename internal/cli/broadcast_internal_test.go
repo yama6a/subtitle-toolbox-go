@@ -154,7 +154,7 @@ func TestBroadcastCalls(t *testing.T) {
 			[]string{"convert", "ferry.srt", "--to", "scc", "-o", "-"},
 			"", nil,
 			func(*testing.T) result {
-				return result{Code: exitFile, Stderr: "ferry.srt: Cue #0 at 1 s has a line with 46 characters, but SCC allows 32. " + wrapAdvice + "\n"}
+				return result{Code: exitFile, Stderr: "ferry.srt: cue #0 at 1 s has a line with 46 characters, but SCC allows 32. " + wrapAdvice + "\n"}
 			},
 		},
 		{
@@ -198,7 +198,7 @@ func TestBroadcastCalls(t *testing.T) {
 			},
 			"", nil,
 			func(*testing.T) result {
-				return result{Code: exitFile, Stderr: "bakery.stl: Cue #4 at 36014 s has a line with 38 characters, but SCC allows 32. " +
+				return result{Code: exitFile, Stderr: "bakery.stl: cue #4 at 36014 s has a line with 38 characters, but SCC allows 32. " +
 					"Pass --structure-split-long --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.\n"}
 			},
 		},
@@ -211,7 +211,7 @@ func TestBroadcastCalls(t *testing.T) {
 				return result{
 					Code:   exitFile,
 					Stdout: "one.srt -> out/one.scc\n2 files: 1 succeeded, 1 failed.\n",
-					Stderr: "five.srt: Cue #0 at 1 s has 5 lines, but SCC allows 4. " + wrapAdvice + "\n",
+					Stderr: "five.srt: cue #0 at 1 s has 5 lines, but SCC allows 4. " + wrapAdvice + "\n",
 				}
 			},
 		},

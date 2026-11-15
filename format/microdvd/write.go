@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
@@ -43,8 +42,8 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 			}
 		}
 		var err error
-		if rate, err = model.FrameRateFromFloat(stored); err != nil {
-			return WriteReport{}, parsing.FrameRateOption(err, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate")
+		if rate, err = model.FrameRateFromFloatFor(stored, "WriteOptions.MicroDVD.FrameRate", "the MicroDVD frame rate"); err != nil {
+			return WriteReport{}, err
 		}
 	}
 	fps := rate.Float64()

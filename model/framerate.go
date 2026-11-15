@@ -8,6 +8,9 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 )
 
+// defaultRateSubject starts the message of a frame rate error that has no more specific subject.
+const defaultRateSubject = "the frame rate"
+
 // maxDecimalDigits is the most digits that FrameRateFromFloat accepts, so that the numerator and the denominator fit in an int64.
 const maxDecimalDigits = 18
 
@@ -24,13 +27,19 @@ type FrameRate struct {
 // FrameRateFromFloat returns the shortest decimal of fps as a reduced fraction, so 23.976 gives 2997/125 and 25 gives 25/1.
 // It returns an error that matches ErrInvalidArgument when fps is NaN, infinite, 0 or negative, or has more than 18 digits.
 func FrameRateFromFloat(fps float64) (FrameRate, error) {
+	return FrameRateFromFloatFor(fps, "", defaultRateSubject)
+}
+
+// FrameRateFromFloatFor works like FrameRateFromFloat. The error has the Option and starts its message with subject,
+// for example "the MicroDVD frame rate".
+func FrameRateFromFloatFor(fps float64, option, subject string) (FrameRate, error) {
 	if !(fps > 0) || math.IsInf(fps, 1) {
-		return FrameRate{}, badFrameRate(fps)
+		return FrameRate{}, badFrameRate(option, subject, fps)
 	}
 	whole, frac, _ := strings.Cut(strconv.FormatFloat(fps, 'f', -1, 64), ".")
 	if len(whole)+len(frac) > maxDecimalDigits {
-		return FrameRate{}, invalidArgument("The frame rate must have at most " + strconv.Itoa(maxDecimalDigits) +
-			" digits, got " + timecode.Number(fps) + ".")
+		return FrameRate{}, &InvalidArgumentError{Option: option, Msg: subject + " must have at most " +
+			strconv.Itoa(maxDecimalDigits) + " digits, got " + timecode.Number(fps)}
 	}
 	num, _ := strconv.ParseInt(strings.TrimLeft(whole+frac, "0"), 10, 64)
 	den := int64(1)
@@ -71,12 +80,18 @@ func (r FrameRate) String() string {
 // Validate returns an error that matches ErrInvalidArgument unless Num and Den are above 0 and DropFrame is allowed.
 // DropFrame is allowed for 30000/1001, 2997/100, 60000/1001 and 2997/50 only.
 func (r FrameRate) Validate() error {
+	return r.ValidateFor("", defaultRateSubject)
+}
+
+// ValidateFor works like Validate. The error has the Option and starts its message with subject, for example
+// "the MicroDVD frame rate".
+func (r FrameRate) ValidateFor(option, subject string) error {
 	if r.Num <= 0 || r.Den <= 0 {
-		return badFrameRate(r.number())
+		return badFrameRate(option, subject, r.number())
 	}
 	if r.DropFrame && !r.dropFrameAllowed() {
-		return invalidArgument("The frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got " +
-			timecode.Number(r.Float64()) + ".")
+		return &InvalidArgumentError{Option: option, Msg: subject +
+			" must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got " + timecode.Number(r.Float64())}
 	}
 	return nil
 }
@@ -109,8 +124,8 @@ func (r FrameRate) number() float64 {
 	return math.Inf(int(r.Num))
 }
 
-func badFrameRate(fps float64) error {
-	return invalidArgument("The frame rate must be greater than 0, got " + timecode.Number(fps) + ".")
+func badFrameRate(option, subject string, fps float64) error {
+	return &InvalidArgumentError{Option: option, Msg: subject + " must be greater than 0, got " + timecode.Number(fps)}
 }
 
 func gcd(a, b int64) int64 {

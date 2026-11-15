@@ -125,7 +125,7 @@ func TestDecodeFails(t *testing.T) {
 			var cerr *textenc.ConvertError
 			require.ErrorAs(t, err, &cerr)
 			assert.Equal(t, tt.encoding, cerr.Encoding)
-			assert.Equal(t, "Cannot convert the content from "+tt.encoding+" to UTF-8.", err.Error())
+			assert.Equal(t, "cannot convert the content from "+tt.encoding+" to UTF-8", err.Error())
 		})
 	}
 }
@@ -233,5 +233,5 @@ func TestGBKFileReadAsBig5Fails(t *testing.T) {
 	t.Parallel()
 
 	_, err := textenc.Decode(readFixture(t, "chinese-gbk.srt"), "Big5")
-	require.EqualError(t, err, "Cannot convert the content from Big5 to UTF-8.")
+	require.EqualError(t, err, "cannot convert the content from Big5 to UTF-8")
 }

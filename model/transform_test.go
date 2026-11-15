@@ -156,7 +156,7 @@ func TestChangeCaseRejectsAnUnknownMode(t *testing.T) {
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
 			var invalid *model.InvalidArgumentError
 			require.ErrorAs(t, err, &invalid)
-			assert.Equal(t, `The case mode "`+string(mode)+`" is not upper, lower or sentence.`, invalid.Msg)
+			assert.Equal(t, `the case mode "`+string(mode)+`" is not upper, lower or sentence`, invalid.Msg)
 			assert.Equal(t, []string{"Hi"}, texts(s))
 		})
 	}
@@ -306,15 +306,15 @@ func TestReplaceTextErrors(t *testing.T) {
 		opts            model.ReplaceOptions
 		msg             string
 	}{
-		{name: "empty search", opts: model.ReplaceOptions{}, msg: "The search text must not be empty."},
-		{name: "empty regex", opts: model.ReplaceOptions{Regex: true}, msg: "The search text must not be empty."},
+		{name: "empty search", opts: model.ReplaceOptions{}, msg: "the search text must not be empty"},
+		{name: "empty regex", opts: model.ReplaceOptions{Regex: true}, msg: "the search text must not be empty"},
 		{
 			name: "invalid regex", search: "(", opts: model.ReplaceOptions{Regex: true},
-			msg: "The regular expression \"(\" is not valid: error parsing regexp: missing closing ) in `(`.",
+			msg: "the regular expression \"(\" is not valid: error parsing regexp: missing closing ) in `(`",
 		},
 		{
 			name: "group number too large in the replacement", search: "(a)", replace: "$99999999999", opts: model.ReplaceOptions{Regex: true},
-			msg: "The replacement \"$99999999999\" is not valid: error parsing regexp: capture group number out of range in `$99999999999`.",
+			msg: "the replacement \"$99999999999\" is not valid: error parsing regexp: capture group number out of range in `$99999999999`",
 		},
 	}
 	for _, tt := range tests {
@@ -353,7 +353,7 @@ func TestReplaceTextTimeoutChangesNothing(t *testing.T) {
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
 			var invalid *model.InvalidArgumentError
 			require.ErrorAs(t, err, &invalid)
-			assert.Equal(t, `The regular expression "`+tt.pattern+`" took longer than 1 s on cue 2.`, invalid.Msg)
+			assert.Equal(t, `the regular expression "`+tt.pattern+`" took longer than 1 s on cue 2`, invalid.Msg)
 			assert.Equal(t, tt.texts, texts(s))
 		})
 	}

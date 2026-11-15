@@ -155,7 +155,7 @@ func TestExtractVobSubErrors(t *testing.T) {
 		_, _, err := openFile(t, vobFile("size: 720x576\n")).Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 		var pe *model.ParseError
 		require.ErrorAs(t, err, &pe)
-		assert.Equal(t, model.ParseError{Format: model.VobSub, Msg: "The .idx content has no palette line."}, *pe)
+		assert.Equal(t, model.ParseError{Format: model.VobSub, Msg: "the .idx content has no palette line"}, *pe)
 	})
 
 	broken := vobFile(header, simpleBlock(2, 0, "\x00\x01", 0))

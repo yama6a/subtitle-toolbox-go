@@ -9,6 +9,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/vtt"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
@@ -117,7 +118,7 @@ func wordMessage(err error, path string) string {
 		return ""
 	}
 	i, name, _ := strings.Cut(strings.TrimPrefix(iae.Option, "Words"), "].")
-	return path + ".words" + i + "]." + strings.ToLower(name[:1]) + name[1:] + " is invalid. " + iae.Msg
+	return path + ".words" + i + "]." + strings.ToLower(name[:1]) + name[1:] + " is invalid. " + parsing.Sentence(iae.Msg)
 }
 
 // restoreTaggedLines gives c the tag layout that formatData.vtt.taggedLines holds. It works on a copy of c that reads

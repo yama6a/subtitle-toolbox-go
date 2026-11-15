@@ -104,11 +104,11 @@ func TestCuesBetweenRejectsAReversedRange(t *testing.T) {
 
 	got, err := (&model.Subtitle{}).CuesBetween(sec(10), sec(5))
 	_, fractionErr := (&model.Subtitle{}).CuesBetween(sec(100.25), sec(2.5))
-	require.ErrorContains(t, fractionErr, "The range start 100.25 must not be after the range end 2.5.")
+	require.ErrorContains(t, fractionErr, "the range start 100.25 must not be after the range end 2.5")
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 	var argErr *model.InvalidArgumentError
 	require.ErrorAs(t, err, &argErr)
-	assert.Equal(t, "The range start 10 must not be after the range end 5.", argErr.Msg)
+	assert.Equal(t, "the range start 10 must not be after the range end 5", argErr.Msg)
 	assert.Nil(t, got)
 }
 

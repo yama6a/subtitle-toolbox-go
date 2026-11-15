@@ -164,8 +164,8 @@ func TestWriteRejectedStoredValueKeepsTheTable(t *testing.T) {
 	t.Parallel()
 
 	for _, field := range []struct{ key, value, msg string }{
-		{"timeFormat", "hh:mm:ss;fff", `The field formatData.csv.timeFormat must be one of "seconds", "hh:mm:ss.mmm", "hh:mm:ss,mmm", "hh:mm:ss:ff", "milliseconds".`},
-		{"delimiter", "|", `The field formatData.csv.delimiter must be one of ",", ";", "\t".`},
+		{"timeFormat", "hh:mm:ss;fff", `the field formatData.csv.timeFormat must be one of "seconds", "hh:mm:ss.mmm", "hh:mm:ss,mmm", "hh:mm:ss:ff", "milliseconds"`},
+		{"delimiter", "|", `the field formatData.csv.delimiter must be one of ",", ";", "\t"`},
 	} {
 		t.Run(field.key, func(t *testing.T) {
 			t.Parallel()
@@ -373,7 +373,7 @@ func TestWriteFrameRateErrors(t *testing.T) {
 	d.Set("frameRate", int64(0))
 	require.NoError(t, s.SetFormatData("csv", d))
 	_, err = csv.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, csv.WriteOptions{})
-	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.CSV.FrameRate", Msg: "The frame rate must be greater than 0, got 0."}, err)
+	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.CSV.FrameRate", Msg: "the frame rate must be greater than 0, got 0"}, err)
 	_, err = csv.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, csv.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}})
 	require.NoError(t, err)
 }

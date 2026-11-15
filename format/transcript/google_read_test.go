@@ -119,7 +119,7 @@ func TestReadGoogleSpeechErrors(t *testing.T) {
 		},
 		{
 			"over the limit", words(`{"word": "x", "startTime": "999999999999s", "endTime": "1s"}, {"word": "there", "startTime": "1s", "endTime": "2s"}`),
-			prefix + ".startTime is not below 100000 hours.",
+			"the field results[0].alternatives[0].words[0].startTime is not below 100000 hours",
 			[]string{"1-2 hi there"},
 			0,
 		},

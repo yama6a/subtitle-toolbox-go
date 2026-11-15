@@ -29,8 +29,8 @@ func FromSeconds(secs float64) time.Duration {
 // TimeLimitMessage returns the message of a retiming that moves the end of cue number n, counted from 1, to end
 // seconds, at or beyond MaxTime.
 func TimeLimitMessage(n int, end float64) string {
-	return "The retimed cue " + strconv.Itoa(n) + " would end at " + Number(end) + " s. Cue times must be below " +
-		strconv.Itoa(MaxHours) + " hours."
+	return "the retimed cue " + strconv.Itoa(n) + " would end at " + Number(end) + " s. Cue times must be below " +
+		strconv.Itoa(MaxHours) + " hours"
 }
 
 // Seconds writes d in seconds in the shortest form, so 3 s gives "3" and 1.5 s gives "1.5".

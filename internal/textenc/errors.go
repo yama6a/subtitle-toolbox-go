@@ -11,7 +11,7 @@ type ConvertError struct {
 	Encoding string
 }
 
-// Error returns the message, for example "Cannot convert the content from Windows-1252 to UTF-8.".
+// Error returns the message, for example "cannot convert the content from Windows-1252 to UTF-8".
 func (e *ConvertError) Error() string {
-	return "Cannot convert the content from " + e.Encoding + " to UTF-8."
+	return "cannot convert the content from " + e.Encoding + " to UTF-8"
 }

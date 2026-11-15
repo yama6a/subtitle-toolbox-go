@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
@@ -133,8 +132,7 @@ func outputRate(opts WriteOptions, file *model.Data) (model.FrameRate, error) {
 	if !ok {
 		return model.FrameRate{Num: 25, Den: 1}, nil
 	}
-	rate, err := model.FrameRateFromFloat(stored)
-	return rate, parsing.FrameRateOption(err, writeFrameRateOption, "The Spruce STL frame rate")
+	return model.FrameRateFromFloatFor(stored, writeFrameRateOption, "the Spruce STL frame rate")
 }
 
 // appendStored writes a stored header, command or trailer line, with CR and LF as spaces, and applies it to st. It
