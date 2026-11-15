@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/blocks"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textblock"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -67,7 +67,7 @@ func cueLines(c model.Cue, stripTags bool) string {
 	// A line that holds only a tag becomes empty, and an empty line ends a SubRip cue.
 	var kept []string
 	for line := range strings.SplitSeq(text, "\n") {
-		clean := blocks.CleanLine(line)
+		clean := textblock.CleanLine(line)
 		if clean == "" {
 			continue
 		}

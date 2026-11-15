@@ -3,8 +3,8 @@ package sbv
 import (
 	"io"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/blocks"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textblock"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -47,7 +47,7 @@ func textLines(c model.Cue) []string {
 	lines := markupcore.PlainLines(c.Lines)
 	out := make([]string, 0, len(lines))
 	for _, line := range lines {
-		clean := blocks.CleanLine(line)
+		clean := textblock.CleanLine(line)
 		switch {
 		case clean == "":
 			continue

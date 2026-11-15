@@ -5,9 +5,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/ttmldoc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/ttmlwrite"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -56,5 +56,5 @@ func isParameterPrefix(namespaces *model.Data, prefix string) bool {
 	if !ok {
 		return prefix == "ttp"
 	}
-	return slices.Contains(ttmlwrite.ParameterNamespaces, uri)
+	return slices.Contains(ttmldoc.ParameterNamespaces, uri)
 }

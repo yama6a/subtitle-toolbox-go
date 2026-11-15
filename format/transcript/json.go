@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -45,7 +45,7 @@ func storedObject(c *model.Cue, key string) orderedjson.Value {
 	if !ok {
 		return orderedjson.ObjectOf()
 	}
-	v, err := jsondata.FromData(d)
+	v, err := formatdata.ToJSON(d)
 	if err != nil {
 		return orderedjson.ObjectOf()
 	}

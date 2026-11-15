@@ -12,11 +12,11 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/position"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/xmlraw"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 

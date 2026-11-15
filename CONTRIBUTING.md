@@ -13,10 +13,10 @@ A package imports only packages of a lower layer. Every layer may also import th
 
 | Layer | Packages | May import |
 |---:|:--- |:--- |
-| 0 | leaf helpers in `internal/`: `markupcore`, `linewrap`, `paragraphs`, `timecode`, `grapheme`, `ssatag`, `intkey`, `stringlist`, `textenc`, `xmlraw`, `extfallback`, `codepage`, the test helpers `testfiles` and `translationtest`, `internal/caption/cea608`, `internal/caption/cea708`, `container/mkv/internal/ebml`, `orderedjson`, `container/mpegts/internal/teletext` | other layer 0 packages |
-| 1 | `markup`, `internal/hilabels` | layer 0 |
+| 0 | leaf helpers in `internal/`: `markupcore`, `linewrap`, `format/internal/paragraphs`, `timecode`, `grapheme`, `ssatag`, `intkey`, `textenc`, `format/internal/xmlraw`, `extfallback`, `format/internal/codepage`, the test helpers `testfiles` and `translationtest`, `internal/caption/cea608`, `internal/caption/cea708`, `container/mkv/internal/ebml`, `orderedjson`, `container/mpegts/internal/teletext` | other layer 0 packages |
+| 1 | `markup`, `internal/speakerlabel` | layer 0 |
 | 2 | `model` | layers 0 and 1 |
-| 3 | `internal/` helpers that work on model types: `blocks`, `subrip`, `vtt`, `position`, `parsing`, `writing`, `caption`, `ttmlwrite`, `bitmap`, `bitmap/displayset`, `bitmap/dvbsub`, `container/mpegts/internal/arib`, `bitmap/dvdsub`, `jsondata`, `wordgroup`, `readingspeed` | layers 0 to 2, and other layer 3 packages. Go rejects an import cycle |
+| 3 | `internal/` helpers that work on model types: `textblock`, `subrip`, `vtt`, `position`, `parsing`, `writing`, `caption`, `format/internal/ttmldoc`, `bitmap`, `bitmap/displayset`, `bitmap/dvbsub`, `container/mpegts/internal/arib`, `bitmap/dvdsub`, `format/internal/formatdata`, `format/internal/wordgroup`, `readingspeed` | layers 0 to 2, and other layer 3 packages. Go rejects an import cycle |
 | 4 | `format/<name>` | layers 0 to 3. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML. Other shared code goes to `internal/` |
 | 4b | `container/<name>`, from 3.x | layers 0 to 4. A container returns cues, so it calls the format readers |
 | 5 | root `stbox` and the service packages, such as `stats`, `diff`, `validation`, `timing`, `hls`, `imaging`, `ocr` and `translation` | layers 0 to 4b. A service never imports the root. The root never imports a service |
@@ -188,7 +188,7 @@ Its exception table names the rule and the reason for each exception.
 | N11 | Reports and results are structs with named fields. No `map[string]any`, no lists of pairs | `[]WordCount{Word, Count}`, not `map[string]int` |
 | N12 | A service is one package with `Apply(s *model.Subtitle, opts Options) (Report, error)`, or a few functions. It changes the subtitle in place | `hearingimpaired.Apply(s, hearingimpaired.Options{})` |
 | N13 | Plain data uses exported fields: options, reports, results, `Comment`. A type whose values must keep an invariant hides the field and offers methods | `Subtitle` keeps its cues in start order, so its cue list is not an exported field |
-| N14 | Code that users must not call goes in `internal/` or stays unexported. No exported "for internal use" identifiers | `internal/blocks`, `internal/textenc` |
+| N14 | Code that users must not call goes in `internal/` or stays unexported. No exported "for internal use" identifiers | `internal/textblock`, `internal/textenc` |
 | N15 | Export an interface only when users implement it. Return concrete types, as the `ireturn` linter wants | OCR engine (3.x), translation engine and HTTP client (4.x) |
 | N16 | A function that starts a process or a network request takes `ctx context.Context` first. A file read does not | `ocr/tesseract`, `translation/deepl` |
 | N17 | Bad input and bad options return an error. A panic is a library bug. No `Must` functions | a fuzz target checks every parser |

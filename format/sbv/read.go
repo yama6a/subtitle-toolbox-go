@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/blocks"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textblock"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -35,7 +35,7 @@ var (
 
 type reader struct {
 	st    *parsing.State
-	rules blocks.Rules
+	rules textblock.Rules
 }
 
 // Read reads SBV text. It expects UTF-8, as stbox.Parse passes it.
@@ -54,7 +54,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 		return s, st.Warnings(), nil
 	}
 	rd := &reader{st: st}
-	rd.rules = blocks.Rules{IsTimingLine: rd.isTimingLine}
+	rd.rules = textblock.Rules{IsTimingLine: rd.isTimingLine}
 	var cues []model.Cue
 	index := 0
 	for b := range rd.blocks(string(content)) {
@@ -70,13 +70,13 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 }
 
 // blocks yields the blocks of content after the join of cue text blocks, which warns in lenient mode.
-func (rd *reader) blocks(content string) iter.Seq[blocks.Block] {
+func (rd *reader) blocks(content string) iter.Seq[textblock.Block] {
 	onJoin := func(block, line int, lines []string) {
 		if rd.st.Lenient() {
-			rd.st.Warn(blocks.JoinWarning(block, line), line, block, lines, model.Repaired)
+			rd.st.Warn(textblock.JoinWarning(block, line), line, block, lines, model.Repaired)
 		}
 	}
-	return blocks.JoinCueTextBlocks(blocks.SplitAtEmptyLines(parsing.Lines(content)), rd.rules, nil, onJoin)
+	return textblock.JoinCueTextBlocks(textblock.SplitAtEmptyLines(parsing.Lines(content)), rd.rules, nil, onJoin)
 }
 
 func (rd *reader) isTimingLine(line string) bool {
@@ -90,8 +90,8 @@ func isTimingLine(line string, lenient bool) bool {
 
 // parseBlock returns the cues of block b, number index, split before each timing line. Lenient mode skips a
 // part that fails, and warns for each split and each skip.
-func (rd *reader) parseBlock(b blocks.Block, index int) ([]model.Cue, error) {
-	return rd.rules.ReadParts(b, index, blocks.PartReader{
+func (rd *reader) parseBlock(b textblock.Block, index int) ([]model.Cue, error) {
+	return rd.rules.ReadParts(b, index, textblock.PartReader{
 		Lenient: rd.st.Lenient(),
 		Split: func(msg string, line int) {
 			rd.st.Warn(msg, line, index, b.Lines, model.Repaired)

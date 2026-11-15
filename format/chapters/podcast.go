@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
@@ -74,7 +74,7 @@ func readPodcastDocument(s *model.Subtitle, content []byte, opts ReadOptions) er
 			s.SetMetadata(m.key, text)
 		}
 	}
-	data, _ := jsondata.ToData(root.Without("chapters", "title", "author")).(*model.Data)
+	data, _ := formatdata.FromJSON(root.Without("chapters", "title", "author")).(*model.Data)
 	return s.SetFormatData(string(model.PodcastChapters), data)
 }
 
@@ -104,7 +104,7 @@ func podcastChapter(i int, chapter orderedjson.Value) (model.Cue, *time.Duration
 	}
 	title, _ := stringMember(chapter, "title")
 	cue := escapedCue(start, title)
-	data, _ := jsondata.ToData(chapter.Without("startTime", "endTime", "title")).(*model.Data)
+	data, _ := formatdata.FromJSON(chapter.Without("startTime", "endTime", "title")).(*model.Data)
 	if err := cue.SetFormatData(string(model.PodcastChapters), data); err != nil {
 		return model.Cue{}, nil, err
 	}
@@ -222,7 +222,7 @@ func storedMembers(d *model.Data) (orderedjson.Value, error) {
 	if d == nil {
 		return orderedjson.ObjectOf(), nil
 	}
-	v, err := jsondata.FromData(d)
+	v, err := formatdata.ToJSON(d)
 	if err != nil {
 		return orderedjson.Value{}, fmt.Errorf("stored %s data: %w", model.PodcastChapters, err)
 	}

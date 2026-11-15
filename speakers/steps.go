@@ -9,8 +9,8 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/hilabels"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/speakerlabel"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -62,14 +62,14 @@ func openStyleTags(line string) string {
 
 // splitLabel returns the speaker name of the label of line and the line without the dash and the label.
 func splitLabel(line string, anyCase bool) (name, rest string, ok bool) {
-	rest = hilabels.RemoveLabel(line, anyCase)
+	rest = speakerlabel.RemoveLabel(line, anyCase)
 	if rest == markupcore.CleanLine(line) {
 		return "", line, false
 	}
 	visible := markupcore.VisibleText(line)
-	label, _, _ := strings.Cut(visible[hilabels.AfterLead(visible, 0):], ":")
+	label, _, _ := strings.Cut(visible[speakerlabel.AfterLead(visible, 0):], ":")
 	name = strings.Trim(label, markupcore.TrimSet)
-	if p := hilabels.SkipHSpace(visible, 0); p < len(visible) && visible[p] == '-' {
+	if p := speakerlabel.SkipHSpace(visible, 0); p < len(visible) && visible[p] == '-' {
 		rest = removeLeadingDash(rest)
 	}
 	if !strings.ContainsFunc(name, func(r rune) bool { return unicode.Is(unicode.Ll, r) }) {
@@ -87,11 +87,11 @@ func removeLeadingDash(line string) string {
 		k += 2
 	}
 	text := parts[k]
-	p := hilabels.SkipHSpace(text, 0)
+	p := speakerlabel.SkipHSpace(text, 0)
 	if p >= len(text) || text[p] != '-' {
 		return line
 	}
-	parts[k] = text[hilabels.SkipHSpace(text, p+1):]
+	parts[k] = text[speakerlabel.SkipHSpace(text, p+1):]
 	return strings.Join(parts, "")
 }
 
@@ -216,7 +216,7 @@ func dashLines(lines []string, parts []part, style model.DialogueDashStyle) {
 
 func startsWithDash(text string) bool {
 	visible := markupcore.VisibleText(text)
-	p := hilabels.SkipHSpace(visible, 0)
+	p := speakerlabel.SkipHSpace(visible, 0)
 	return p < len(visible) && visible[p] == '-'
 }
 

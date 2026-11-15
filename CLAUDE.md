@@ -32,8 +32,12 @@ timing/        The 2.x service that moves cue times to shot changes and frames. 
 imaging/       The 3.x public helpers that decode and build the PNG bitmaps of image cues. Same layer rule
 hls/           The service that cuts a subtitle into HLS WebVTT segments and joins segments. Same layer rule
 resegment/     The 4.x service that splits long cues and builds cues from word timings. Same layer rule
-internal/      Helpers: repocheck, conformance, caption, caption/cea608, caption/cea708, codepage, markupcore, hilabels, readingspeed, linewrap, timecode, textenc, extfallback, grapheme, ssatag, intkey, stringlist, xmlraw, orderedjson, jsondata, wordgroup, paragraphs, blocks, subrip,
-               vtt, position, parsing, writing, ttmlwrite, bitmap, bitmap/displayset, bitmap/dvbsub, bitmap/dvdsub, cli, and the test helpers testfiles and translationtest
+internal/      Helpers that more than one top-level folder uses: caption (with caption/cea608 and caption/cea708),
+               bitmap (with bitmap/displayset, bitmap/dvbsub and bitmap/dvdsub), markupcore, speakerlabel, linewrap,
+               timecode, textenc, extfallback, grapheme, ssatag, intkey, orderedjson, textblock, subrip, vtt,
+               position, parsing, writing, cli, readingspeed, the test helpers testfiles and translationtest, and the
+               test-only packages repocheck and conformance
+format/internal/ Helpers that only format packages use: codepage, formatdata, paragraphs, ttmldoc, wordgroup, xmlraw
 cmd/stbox/     The CLI main. Wiring, no business logic
 testdata/      All fixtures and goldens, one folder per topic. Packages read
                them through internal/testfiles. Only fuzz corpora stay in <package>/testdata/fuzz/

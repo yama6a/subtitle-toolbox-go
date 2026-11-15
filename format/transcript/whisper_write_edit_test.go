@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/jsondata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -226,7 +226,7 @@ func TestWriteWhisperShapeAndLanguage(t *testing.T) {
 			if tt.language != "" {
 				s.SetMetadata(model.MetadataLanguage, tt.language)
 			}
-			data, _ := jsondata.ToData(parseJSON(t, tt.data)).(*model.Data)
+			data, _ := formatdata.FromJSON(parseJSON(t, tt.data)).(*model.Data)
 			require.NoError(t, s.SetFormatData("whisper", data))
 			var out bytes.Buffer
 			require.NoError(t, transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}))

@@ -8,7 +8,7 @@ package ttml
 import (
 	"regexp"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 

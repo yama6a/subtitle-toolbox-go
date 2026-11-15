@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/stringlist"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -81,7 +81,7 @@ func splitHeader(content string) (header, body []string) {
 
 func setFileData(s *model.Subtitle, header []string, paired bool) error {
 	data := &model.Data{}
-	data.Set("header", stringlist.Any(header))
+	data.Set("header", formatdata.Strings(header))
 	if paired {
 		data.Set("pairedTimestamps", true)
 	}
@@ -191,7 +191,7 @@ func (rd *reader) cues(samples []sample, running *style) ([]model.Cue, error) {
 		}
 		c := model.Cue{Start: start, End: end, Lines: text}
 		if hasDescriptor(sm.lines) {
-			data := model.NewData(model.Field{Key: "source", Value: stringlist.Any(sm.lines)})
+			data := model.NewData(model.Field{Key: "source", Value: formatdata.Strings(sm.lines)})
 			if err := c.SetFormatData(formatDataKey, data); err != nil {
 				return nil, fmt.Errorf("%s cue data: %w", model.QuickTimeText, err)
 			}
