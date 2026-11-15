@@ -2,20 +2,29 @@
 
 Each record gives a decision, the reason and the rejected alternative that an issue states, and the issue.
 
-## Four major lines
+## Five major lines
 
-1.x reads and writes text subtitles. 2.x adds broadcast delivery and checks. 3.x adds image subtitles, OCR and video files. 4.x adds transcripts, speech and language. Each line opens with one `major` release that lands the API break the line needs. Its module path ends in `/v2`, `/v3` or `/v4`.
+1.x reads and writes text subtitles. 2.x adds broadcast delivery and checks. 3.x adds image subtitles, OCR and video files. 4.x adds transcripts, speech and language. 5.x moves the services into `edit/` and `inspect/` and fixes the API breaks that the review found. Each line opens with one `major` release that lands the API break the line needs. Its module path ends in `/v2`, `/v3`, `/v4` or `/v5`.
 
 - **Rule**: a change of documented behaviour waits for the next major release. [compatibility.md](compatibility.md) lists what a minor or patch release may change.
 - **Source**: [#1](https://github.com/yama6a/subtitle-toolbox-go/issues/1), [#7](https://github.com/yama6a/subtitle-toolbox-go/issues/7).
 
 ## Packages and the root facade
 
-Package `model` holds the types. Each format has one package under `format/`, such as `format/srt`. The root package `stbox` reads and writes every format, and it re-exports the model types as type aliases.
+Package `model` holds the types. Each format has one package under `format/`, such as `format/srt`. The root package `stbox` reads and writes every format, and it re-exports the model types as type aliases. The image helpers live in the root too.
 
 - **No `init()` registration**: no format package registers itself. A missing format is then a compile error, and not an "unknown format" at run time. The detection order is an ordered list, with no priority field.
 - **Not chosen**: registration in `init()`, which runs in import path order.
 - **Source**: [#1](https://github.com/yama6a/subtitle-toolbox-go/issues/1), [#8](https://github.com/yama6a/subtitle-toolbox-go/issues/8).
+
+## Package layout
+
+The folders of the repo state what a package does.
+
+- **Rule**: the root holds the facade. `model` holds the types. `format/` holds one package per format, `container/` one per video container. `edit/` holds the packages that change a subtitle, `inspect/` the packages that only report. A helper sits in the `internal/` folder nearest to all its importers, so Go enforces who may import it.
+- **Why**: 4.x had 25 folders in the repo root, 17 of them services. The reader could not tell from the tree where a feature lives. The services import no other service, so the grouping changes only import paths.
+- **Not chosen**: a `pkg/` folder, which says nothing about its content. A split of the services by doc page into `text/` and `timing/`, which needs more top-level folders and a rename of `timing`.
+- **Source**: the owner decision of 2026-11-15 and the architecture review.
 
 ## Typed options
 

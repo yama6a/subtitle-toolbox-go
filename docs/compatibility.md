@@ -1,22 +1,22 @@
 # Backward compatibility
 
-The module follows semantic versioning. A 4.x minor or patch release does not break code that uses the parts below as this page describes. A break waits for 5.0, which has the module path `github.com/yama6a/subtitle-toolbox-go/v5`. [upgrade-4.0.md](upgrade-4.0.md) lists the breaks of 4.0.
+The module follows semantic versioning. A 5.x minor or patch release does not break code that uses the parts below as this page describes. A break waits for 6.0, which has the module path `github.com/yama6a/subtitle-toolbox-go/v6`. [upgrade-5.0.md](upgrade-5.0.md) lists the breaks of 5.0.
 
 ## Covered
 
-| Part | What stays stable in 4.x |
+| Part | What stays stable in 5.x |
 |:--- |:--- |
 | Go API | every exported identifier outside `internal/`: packages, types, functions, methods, constants, variables and struct fields. The compiler keeps callers out of `internal/`, so the module has no exported names for internal use |
 | Behaviour | the behaviour that these pages and the godoc describe, the default of each option, and the output of a conversion. Only a major release changes them, except for the changes that the sections below list |
 | Errors | the sentinel errors that `errors.Is` matches and the error types that `errors.As` matches. [errors.md](errors.md) lists them. The library has no numeric error codes |
 | CLI | the commands, the flags, the meaning of each exit code and the `--json` shapes of `stbox`. The CLI never overwrites a file. See [cli.md](cli.md) |
-| Library JSON | versions 1 and 2 of the library JSON, their keys and value types. The library writes version 2 by default. `stboxjson.WriteOptions.Version` 1 writes version 1 for the whole 4.x line. See [json.md](json.md) |
+| Library JSON | versions 1 and 2 of the library JSON, their keys and value types. The library writes version 2 by default. `stboxjson.WriteOptions.Version` 1 writes version 1 for the whole 5.x line. See [json.md](json.md) |
 | Format data | the keys and the value types of the format data that `Subtitle.FormatData` and `Cue.FormatData` return. See [format-data.md](format-data.md) |
 | Module path | `github.com/yama6a/subtitle-toolbox-go/v5`, with the major suffix |
 
 ## Words and speakers
 
-4.0 adds `Cue.Words` and `Cue.Speaker`. These rules hold for the whole 4.x line:
+`Cue.Words` and `Cue.Speaker` follow these rules for the whole 5.x line:
 
 - **Words after a text edit**: an edit keeps the timing of each word that the new text still holds, in order. `Cue.SyncWords` finds each word again with simple case folding. A word that the edit removes or changes beyond recognition loses its timing. See [editing.md](editing.md).
 - **Speaker**: `Cue.Speaker` holds only a voice that covers the whole cue. A cue with 2 voices keeps its `<v>` tags in the lines, and `Speaker` stays empty.
@@ -49,7 +49,7 @@ Validation presets came in 2.x. From then on, a preset never gets a new rule ins
 
 ## Interfaces
 
-1.x and 2.x export no interface that callers implement. Later lines add 3: the OCR engine in 3.x, and the translation engine and the HTTP client in 4.x. From the line that adds an interface, it stays the same for the whole line.
+The module exports 2 interfaces that callers implement: `ocr.Engine` and `translation.Engine`. Each stays the same for the whole 5.x line.
 
 ## `==` on structs
 
