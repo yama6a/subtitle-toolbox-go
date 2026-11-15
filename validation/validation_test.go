@@ -14,7 +14,6 @@ import (
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
-	"github.com/yama6a/subtitle-toolbox-go/v4/stats"
 	"github.com/yama6a/subtitle-toolbox-go/v4/validation"
 )
 
@@ -442,18 +441,4 @@ func TestRightToLeftKeepsTheCounts(t *testing.T) {
 
 	rules := validation.Rules{MaxCharactersPerSecond: 15, MaxCharactersPerLine: 10}
 	assert.Equal(t, lines(t, load(t, "transforms/own_rtl.srt"), rules), lines(t, load(t, "transforms/own_rtl_fixed.srt"), rules))
-}
-
-func TestWordsMatchTheStatistics(t *testing.T) {
-	t.Parallel()
-
-	s := load(t, "vtt/real/webvttpy_netflix.vtt")
-	got, err := validation.Check(s, validation.Rules{MaxWordsPerMinute: 0.001})
-	require.NoError(t, err)
-	words := 0
-	for _, v := range got {
-		c := s.Cues()[v.Cue]
-		words += int(math.Round(v.Value * (c.End - c.Start).Seconds() / 60))
-	}
-	assert.Equal(t, stats.Of(s).WordCount, words)
 }

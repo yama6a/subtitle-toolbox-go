@@ -9,8 +9,7 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/readingspeed"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -76,25 +75,23 @@ func Of(s *model.Subtitle) Statistics {
 			latestEnd = max(latestEnd, c.End)
 		}
 
-		characters := 0
-		for _, line := range c.Lines {
-			if n := markup.VisibleLength(line); n > 0 {
+		m := readingspeed.Measure(c)
+		for _, n := range m.LineLengths {
+			if n > 0 {
 				perLine.add(float64(n))
-				characters += n
 			}
 		}
-		if characters == 0 {
+		if m.Characters == 0 {
 			continue
 		}
-		words := markupcore.Words(markup.PlainText(c.Text()))
-		st.CharacterCount += characters
-		st.WordCount += len(words)
-		for _, w := range words {
+		st.CharacterCount += m.Characters
+		st.WordCount += len(m.Words)
+		for _, w := range m.Words {
 			counter.add(normalize(w, lower))
 		}
 		if duration > 0 {
-			perSecond.add(float64(characters) / duration.Seconds())
-			perMinute.add(float64(len(words)) / duration.Seconds() * 60)
+			perSecond.add(m.CharactersPerSecond())
+			perMinute.add(m.WordsPerMinute())
 		}
 	}
 	if st.CueCount > 0 {
