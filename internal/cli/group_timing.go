@@ -28,10 +28,11 @@ func timingGroup() group {
 
 const defaultMinGap time.Duration = 0
 
-func buildTiming(a *args, add func(edit)) error {
+//nolint:ireturn // a group build returns its edit, which is one of several types
+func buildTiming(a *args) (edit, error) {
 	gapUsers := []string{"timing-fix-overlaps", "timing-min-duration", "timing-lead-in", "timing-lead-out"}
 	if err := needsOneOf(a, gapUsers, "timing-min-gap"); err != nil {
-		return err
+		return nil, err
 	}
 	var minDuration, leadIn, leadOut, maxDuration time.Duration
 	minGap := defaultMinGap
@@ -48,7 +49,7 @@ func buildTiming(a *args, add func(edit)) error {
 	} {
 		d, ok, err := v.get(v.name)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if ok {
 			*v.to = d
@@ -64,6 +65,5 @@ func buildTiming(a *args, add func(edit)) error {
 	if a.Has("timing-max-duration") {
 		st = append(st, inPlace(func(s *stbox.Subtitle) error { return s.LimitLongCues(maxDuration) }))
 	}
-	addSteps(add, st)
-	return nil
+	return stepsEdit(st), nil
 }

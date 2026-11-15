@@ -27,18 +27,19 @@ func maskingGroup() group {
 	}
 }
 
-func buildMasking(a *args, add func(edit)) error {
+//nolint:ireturn // a group build returns its edit, which is one of several types
+func buildMasking(a *args) (edit, error) {
 	if err := needs(a, "mask-words", "mask", "mute-edl", "mute-filter", "mute-padding"); err != nil {
-		return err
+		return nil, err
 	}
 	words, ok := a.Value("mask-words")
 	if !ok {
-		return nil
+		return nil, nil //nolint:nilnil // a nil edit means the group is off
 	}
 	mask, _, err := a.Choice("mask", string(profanity.MaskStars), string(profanity.MaskFirstLetter),
 		string(profanity.MaskRemove), string(profanity.MaskNone))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	m := &maskingEdit{wordsPath: words, opts: profanity.Options{Mask: profanity.Mask(mask)}}
 	for _, o := range []muteFile{
@@ -50,16 +51,15 @@ func buildMasking(a *args, add func(edit)) error {
 			continue
 		}
 		if path == stdinArg {
-			return usage("The option --" + o.option + " needs a file path.")
+			return nil, usage("The option --" + o.option + " needs a file path.")
 		}
 		o.path = path
 		m.muteFiles = append(m.muteFiles, o)
 	}
 	if m.opts.Padding, _, err = a.NonNegativeTime("mute-padding"); err != nil {
-		return err
+		return nil, err
 	}
-	add(m)
-	return nil
+	return m, nil
 }
 
 // maskingEdit masks the words of the --mask-words file and keeps the mute ranges of the last input for the mute
@@ -77,15 +77,19 @@ type muteFile struct {
 	render func([]profanity.MuteRange) string
 }
 
+var _ fileEdit = &maskingEdit{}
+
+func (m *maskingEdit) sideFiles() []string { return []string{m.wordsPath} }
+
 func (m *maskingEdit) apply(_ context.Context, s *stbox.Subtitle, _ *console, _ string) (*stbox.Subtitle, error) {
 	report, err := profanity.Apply(s, m.opts)
 	m.ranges = report.MuteRanges
 	return s, err
 }
 
-// loadWords reads one word per line. A UTF-8 BOM, the line endings CR LF, LF and CR, the spaces around a word and
+// load reads one word per line. A UTF-8 BOM, the line endings CR LF, LF and CR, the spaces around a word and
 // empty lines do not count. A word list that fails Validate is a usage error.
-func (m *maskingEdit) loadWords(c *console) error {
+func (m *maskingEdit) load(_ context.Context, c *console) error {
 	content, err := readSideText(c, m.wordsPath)
 	if err != nil {
 		return err

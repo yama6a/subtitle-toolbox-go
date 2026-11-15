@@ -179,7 +179,7 @@ func TestConvertTranscriptUsageErrors(t *testing.T) {
 		{
 			"style empty",
 			[]string{"--karaoke", "--karaoke-style", ""},
-			`The style  must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00".`,
+			`The option --karaoke-style needs a tag, for example u or font color="#ffff00".`,
 		},
 		{"gap without resegment", []string{"--structure-max-word-gap", "1"}, "Pass --structure-resegment with --structure-max-word-gap."},
 		{"gap value", []string{"--structure-resegment", "--structure-max-word-gap", "0"}, "The option --structure-max-word-gap must be greater than 0."},

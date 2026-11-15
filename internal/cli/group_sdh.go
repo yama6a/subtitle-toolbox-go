@@ -29,13 +29,14 @@ func sdhGroup() group {
 	}
 }
 
-func buildSDH(a *args, add func(edit)) error {
+//nolint:ireturn // a group build returns its edit, which is one of several types
+func buildSDH(a *args) (edit, error) {
 	if err := needs(a, "sdh", "sdh-keep-square-brackets", "sdh-keep-parentheses", "sdh-keep-speaker-labels",
 		"sdh-keep-music-lines", "sdh-any-case-labels", "sdh-lyrics", "sdh-brackets"); err != nil {
-		return err
+		return nil, err
 	}
 	if !a.Has("sdh") {
-		return nil
+		return nil, nil //nolint:nilnil // a nil edit means the group is off
 	}
 	opts := hearingimpaired.Options{
 		KeepSquareBrackets: a.Has("sdh-keep-square-brackets"),
@@ -48,13 +49,12 @@ func buildSDH(a *args, add func(edit)) error {
 	for _, pair := range a.Values("sdh-brackets") {
 		open, n := utf8.DecodeRuneInString(pair)
 		if !utf8.ValidString(pair) || utf8.RuneCountInString(pair) != 2 {
-			return usage("The option --sdh-brackets needs two characters, an opening and a closing one, got " + quote(pair) + ".")
+			return nil, usage("The option --sdh-brackets needs two characters, an opening and a closing one, got " + quote(pair) + ".")
 		}
 		opts.CustomBrackets = append(opts.CustomBrackets, hearingimpaired.BracketPair{Open: string(open), Close: pair[n:]})
 	}
-	add(steps{inPlace(func(s *stbox.Subtitle) error {
+	return steps{inPlace(func(s *stbox.Subtitle) error {
 		_, err := hearingimpaired.Apply(s, opts)
 		return err
-	})})
-	return nil
+	})}, nil
 }

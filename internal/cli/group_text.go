@@ -29,18 +29,19 @@ var speakerOptions = map[string]speakers.Options{
 	"from-prefix": {FromLabels: true},
 }
 
-func buildText(a *args, add func(edit)) error {
+//nolint:ireturn // a group build returns its edit, which is one of several types
+func buildText(a *args) (edit, error) {
 	mode, hasCase, err := a.Choice("case", string(model.CaseUpper), string(model.CaseLower), string(model.CaseSentence))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	speakerMode, hasSpeakers, err := a.Choice("speakers", "prefix", "dashes", "colors", "from-prefix")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	rtl, _, err := a.Choice("rtl", "fix", "clean")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var st steps
 	if hasSpeakers {
@@ -63,6 +64,5 @@ func buildText(a *args, add func(edit)) error {
 	case "clean":
 		st = append(st, inPlace(func(s *stbox.Subtitle) error { s.RemoveBidiControls(); return nil }))
 	}
-	addSteps(add, st)
-	return nil
+	return stepsEdit(st), nil
 }

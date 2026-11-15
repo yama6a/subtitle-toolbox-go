@@ -9,11 +9,12 @@ func forcedGroup() group {
 		name:    "forced",
 		summary: "Keep only the forced cues.",
 		options: []option{flagOption("forced-only", "Keep only the forced cues, for example the translations of signs.")},
-		build: func(a *args, add func(edit)) error {
+		build: func(a *args) (edit, error) {
+			var st steps
 			if a.Has("forced-only") {
-				add(steps{func(s *stbox.Subtitle) (*stbox.Subtitle, error) { return s.ForcedCuesOnly(), nil }})
+				st = append(st, func(s *stbox.Subtitle) (*stbox.Subtitle, error) { return s.ForcedCuesOnly(), nil })
 			}
-			return nil
+			return stepsEdit(st), nil
 		},
 	}
 }

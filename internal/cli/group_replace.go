@@ -27,30 +27,30 @@ func replaceGroup() group {
 	}
 }
 
-func buildReplace(a *args, add func(edit)) error {
+//nolint:ireturn // a group build returns its edit, which is one of several types
+func buildReplace(a *args) (edit, error) {
 	if err := needs(a, "replace", "replace-regex", "replace-ignore-case"); err != nil {
-		return err
+		return nil, err
 	}
 	regex := a.Has("replace-regex")
 	var st steps
 	for _, pair := range a.Values("replace") {
 		from, to, ok := strings.Cut(pair, "=")
 		if !ok || from == "" {
-			return usage("The option --replace needs FROM=TO, got " + quote(pair) + ".")
+			return nil, usage("The option --replace needs FROM=TO, got " + quote(pair) + ".")
 		}
 		opts := model.ReplaceOptions{Regex: regex, IgnoreCase: a.Has("replace-ignore-case")}
 		if regex {
 			p, hasGroup, err := regexReplacement(from)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			from, to = p.pattern, convertReplacement(to, hasGroup)
 			opts.IgnoreCase = opts.IgnoreCase || p.ignoreCase
 		}
 		st = append(st, inPlace(func(s *stbox.Subtitle) error { return s.ReplaceText(from, to, opts) }))
 	}
-	addSteps(add, st)
-	return nil
+	return stepsEdit(st), nil
 }
 
 // regexReplacement converts from and compiles it once to find a bad pattern before the first read. ReplaceText

@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
 )
 
 // group is one option group of convert.
@@ -13,18 +12,23 @@ type group struct {
 	name    string
 	summary string
 	options []option
-	// build checks the options of the group and calls add with its edit when a trigger option is set. It reads no
-	// file.
-	build func(a *args, add func(edit)) error
-	// writeOptions replaces build for a group that sets ASS write options and runs no edit. It returns false
-	// without its options.
-	writeOptions func(a *args) (ass.WriteOptions, bool, error)
+	// build checks the options of the group and returns its edit, or nil when no trigger option is set. It reads
+	// no file. The ass group has no build, because it sets write options and runs no edit.
+	build func(a *args) (edit, error)
 }
 
 // edit is the work of one group on one input.
 type edit interface {
 	// apply returns s after the edit, or a new subtitle. label names the input in messages.
 	apply(ctx context.Context, s *stbox.Subtitle, c *console, label string) (*stbox.Subtitle, error)
+}
+
+// fileEdit is an edit that reads the files that its options name. convert checks their paths with the
+// inputs, then loads each file once per run, before the first input.
+type fileEdit interface {
+	edit
+	sideFiles() []string
+	load(ctx context.Context, c *console) error
 }
 
 // step is one library call of an edit. It returns s or a new subtitle.
@@ -51,10 +55,14 @@ func inPlace(call func(s *stbox.Subtitle) error) step {
 	}
 }
 
-func addSteps(add func(edit), st steps) {
-	if len(st) > 0 {
-		add(st)
+// stepsEdit returns st as an edit, or nil when st is empty.
+//
+//nolint:ireturn // it returns nil or steps as the edit interface
+func stepsEdit(st steps) edit {
+	if len(st) == 0 {
+		return nil
 	}
+	return st
 }
 
 // flagStep is a library call that runs when the command line holds the flag name.

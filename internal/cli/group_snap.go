@@ -41,10 +41,12 @@ func snapGroup() group {
 
 // buildSnap runs the checks of docs/cli.md in order: the rate, the --video-fps rule, the rate rule, the
 // --no-snap-chain rule, the frame counts, then Options.Validate.
-func buildSnap(a *args, add func(edit)) error {
+//
+//nolint:ireturn // a group build returns its edit, which is one of several types
+func buildSnap(a *args) (edit, error) {
 	rate, active, err := snapRate(a)
 	if err != nil || !active {
-		return err
+		return nil, err
 	}
 	e := &snapEdit{opts: timing.Options{FrameRate: rate, KeepGaps: a.Has("no-snap-chain")}}
 	e.path, _ = a.Value("snap-shot-changes")
@@ -58,7 +60,7 @@ func buildSnap(a *args, add func(edit)) error {
 	} {
 		n, ok, err := a.Int(c.name, 0)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if ok {
 			v := int(n)
@@ -66,10 +68,9 @@ func buildSnap(a *args, add func(edit)) error {
 		}
 	}
 	if err := e.opts.Validate(); err != nil {
-		return usage(message(err))
+		return nil, usage(message(err))
 	}
-	add(e)
-	return nil
+	return e, nil
 }
 
 // snapRate returns the rate of the video and whether a trigger option turns the group on. It fails for a bad
@@ -99,22 +100,29 @@ func snapRate(a *args) (rate stbox.FrameRate, active bool, err error) {
 	return rate, true, nil
 }
 
-// snapEdit runs timing.Apply with the shot changes of its file, which loadShots reads once per run.
+// snapEdit runs timing.Apply with the shot changes of its file, which load reads once per run.
 type snapEdit struct {
 	// path is the --snap-shot-changes file, "" without it.
 	path string
 	opts timing.Options
 }
 
-var _ edit = &snapEdit{}
+var _ fileEdit = &snapEdit{}
+
+func (e *snapEdit) sideFiles() []string {
+	if e.path == "" {
+		return nil
+	}
+	return []string{e.path}
+}
 
 func (e *snapEdit) apply(_ context.Context, s *stbox.Subtitle, _ *console, _ string) (*stbox.Subtitle, error) {
 	_, err := timing.Apply(s, e.opts)
 	return s, err
 }
 
-// loadShots reads the shot change file. Content with pts_time: is an FFmpeg log, other content is one time per line.
-func (e *snapEdit) loadShots(c *console) error {
+// load reads the shot change file. Content with pts_time: is an FFmpeg log, other content is one time per line.
+func (e *snapEdit) load(_ context.Context, c *console) error {
 	if e.path == "" {
 		return nil
 	}

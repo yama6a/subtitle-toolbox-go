@@ -40,25 +40,25 @@ type retimeValues struct {
 	sync                           []syncPoint
 }
 
-func buildRetime(a *args, add func(edit)) error {
+//nolint:ireturn // a group build returns its edit, which is one of several types
+func buildRetime(a *args) (edit, error) {
 	if err := needs(a, "shift", "shift-after", "shift-before"); err != nil {
-		return err
+		return nil, err
 	}
 	if a.Has("sync") && (a.Has("shift") || a.Has("scale")) {
-		return usage("Pass --sync without --shift and --scale.")
+		return nil, usage("Pass --sync without --shift and --scale.")
 	}
 	v, err := readRetime(a)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if v.shiftAfter != nil && v.shiftBefore != nil && *v.shiftBefore <= *v.shiftAfter {
-		return usage("The option --shift-before must be after --shift-after.")
+		return nil, usage("The option --shift-before must be after --shift-after.")
 	}
 	if (v.fromFPS == nil) != (v.toFPS == nil) {
-		return usage("Pass --from-fps and --to-fps together.")
+		return nil, usage("Pass --from-fps and --to-fps together.")
 	}
-	addSteps(add, v.steps())
-	return nil
+	return stepsEdit(v.steps()), nil
 }
 
 // readRetime reads the values in the check order of docs/cli.md: the times, the numbers, then the sync points.

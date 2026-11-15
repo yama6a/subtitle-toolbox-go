@@ -36,12 +36,13 @@ func ruleNames(rules []fixing.Rule) string {
 	return strings.Join(names, ", ")
 }
 
-func buildErrors(a *args, add func(edit)) error {
+//nolint:ireturn // a group build returns its edit, which is one of several types
+func buildErrors(a *args) (edit, error) {
 	if err := needs(a, "errors-fix", "errors-replace-list", "errors-enable", "errors-list-fixes"); err != nil {
-		return err
+		return nil, err
 	}
 	if !a.Has("errors-fix") {
-		return nil
+		return nil, nil //nolint:nilnil // a nil edit means the group is off
 	}
 	language, _ := a.Value("language")
 	e := &errorsEdit{opts: fixing.Options{Language: language}, list: a.Has("errors-list-fixes")}
@@ -55,14 +56,13 @@ func buildErrors(a *args, add func(edit)) error {
 		}
 		i := slices.IndexFunc(optional, func(r fixing.Rule) bool { return asciiLower(string(r)) == asciiLower(name) })
 		if i < 0 {
-			return usage("Unknown rule " + quote(name) + " in --errors-enable. The valid names are " + ruleNames(optional) + ".")
+			return nil, usage("Unknown rule " + quote(name) + " in --errors-enable. The valid names are " + ruleNames(optional) + ".")
 		}
 		if !slices.Contains(e.opts.Enable, optional[i]) {
 			e.opts.Enable = append(e.opts.Enable, optional[i])
 		}
 	}
-	add(e)
-	return nil
+	return e, nil
 }
 
 // errorsEdit runs fixing.Apply and prints each fix with list. listPath names the replace list file, or is "".
@@ -72,9 +72,19 @@ type errorsEdit struct {
 	listPath string
 }
 
-var _ edit = &errorsEdit{}
+var _ fileEdit = &errorsEdit{}
 
-func (e *errorsEdit) loadReplaceList(c *console) error {
+func (e *errorsEdit) sideFiles() []string {
+	if e.listPath == "" {
+		return nil
+	}
+	return []string{e.listPath}
+}
+
+func (e *errorsEdit) load(_ context.Context, c *console) error {
+	if e.listPath == "" {
+		return nil
+	}
 	content, err := readSideText(c, e.listPath)
 	if err != nil {
 		return err

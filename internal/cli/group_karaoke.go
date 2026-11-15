@@ -17,25 +17,24 @@ func karaokeGroup() group {
 	}
 }
 
-func buildKaraoke(a *args, add func(edit)) error {
+//nolint:ireturn // a group build returns its edit, which is one of several types
+func buildKaraoke(a *args) (edit, error) {
 	if err := needs(a, "karaoke", "karaoke-style"); err != nil {
-		return err
+		return nil, err
 	}
 	if !a.Has("karaoke") {
-		return nil
+		return nil, nil //nolint:nilnil // a nil edit means the group is off
 	}
 	style, hasStyle := a.Value("karaoke-style")
 	if hasStyle && style == "" {
-		// The library reads an empty Style as u, but the CLI rejects an empty --karaoke-style.
-		return usage("The style  must be one of the core markup tags b, i, u, s or font, for example u or font color=\"#ffff00\".")
+		return nil, usage("The option --karaoke-style needs a tag, for example u or font color=\"#ffff00\".")
 	}
 	opts := karaoke.Options{Style: style}
 	if err := opts.Validate(); err != nil {
-		return usage(message(err))
+		return nil, usage(message(err))
 	}
-	add(steps{inPlace(func(s *stbox.Subtitle) error {
+	return steps{inPlace(func(s *stbox.Subtitle) error {
 		_, err := karaoke.Apply(s, opts)
 		return err
-	})})
-	return nil
+	})}, nil
 }

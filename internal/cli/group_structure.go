@@ -41,27 +41,28 @@ func structureGroup() group {
 	}
 }
 
-func buildStructure(a *args, add func(edit)) error {
+//nolint:ireturn // a group build returns its edit, which is one of several types
+func buildStructure(a *args) (edit, error) {
 	if err := needs(a, "structure-resegment", "structure-max-word-gap"); err != nil {
-		return err
+		return nil, err
 	}
 	limited := []string{"structure-wrap", "structure-resegment", "structure-merge-short", "structure-split-long"}
 	for _, opt := range []string{"structure-max-cpl", "structure-max-lines"} {
 		if err := needsOneOf(a, limited, opt); err != nil {
-			return err
+			return nil, err
 		}
 	}
 	gap, hasGap, err := a.PositiveTime("structure-max-word-gap")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	cpl, _, err := a.PositiveInt("structure-max-cpl")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	lines, _, err := a.PositiveInt("structure-max-lines")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// 0 for an option that the call does not set makes the library default apply.
 	limits := model.CueLimits{MaxCharactersPerLine: int(cpl), MaxLinesPerCue: int(lines)}
@@ -72,7 +73,7 @@ func buildStructure(a *args, add func(edit)) error {
 		wordGap = &gap
 	}
 	// The run order of docs/cli.md, which is not the order of the help.
-	addSteps(add, flagSteps(a, []flagStep{
+	return stepsEdit(flagSteps(a, []flagStep{
 		{"structure-resegment", func(s *stbox.Subtitle) error {
 			_, err := resegment.ByWords(s, resegment.Options{Limits: limits, MaxWordGap: wordGap})
 			return err
@@ -88,6 +89,5 @@ func buildStructure(a *args, add func(edit)) error {
 		}},
 		{"structure-wrap", func(s *stbox.Subtitle) error { return s.WrapLines(wrapCPL, wrapLines) }},
 		{"structure-merge-duplicates", func(s *stbox.Subtitle) error { return s.RemoveDuplicateCues(0) }},
-	}))
-	return nil
+	})), nil
 }

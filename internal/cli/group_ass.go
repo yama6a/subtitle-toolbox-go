@@ -19,7 +19,6 @@ func assGroup() group {
 			valueOption("ass-karaoke-tag", "TAG", "ASS karaoke tag for word timestamps: k, kf or ko. Default: k."),
 			valueOption("ass-style", "STYLE", "Change the Default style, for example 'Fontname=Roboto,Fontsize=48,Outline=2'."),
 		},
-		writeOptions: assWriteOptions,
 	}
 }
 

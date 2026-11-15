@@ -15,11 +15,6 @@ type convertCommand struct {
 	edits []edit
 	// masking is the edit of the masking group, nil without --mask-words.
 	masking *maskingEdit
-	errors  *errorsEdit
-	// ocr is the edit of the ocr group, nil without --ocr.
-	ocr *ocrEdit
-	// snap is the edit of the snap group, nil without a trigger option.
-	snap *snapEdit
 }
 
 var (
@@ -131,50 +126,41 @@ func (cc *convertCommand) prepare(a *args, r *runner) error {
 	return nil
 }
 
-// prepareGroups checks the groups in pipeline order and builds their edits, then checks the --to ass rule.
+// prepareGroups checks the groups in pipeline order and builds their edits, then checks the ass options.
 func (cc *convertCommand) prepareGroups(a *args) error {
-	add := func(e edit) {
-		switch e := e.(type) {
-		case *ocrEdit:
-			cc.ocr = e
-		case *errorsEdit:
-			cc.errors = e
-		case *maskingEdit:
-			cc.masking = e
-		case *snapEdit:
-			cc.snap = e
-		}
-		cc.edits = append(cc.edits, e)
-	}
 	for _, g := range convertGroups() {
-		if g.writeOptions == nil {
-			if err := g.build(a, add); err != nil {
-				return err
-			}
+		if g.build == nil {
 			continue
 		}
-		opts, ok, err := g.writeOptions(a)
+		e, err := g.build(a)
 		if err != nil {
 			return err
 		}
-		if ok {
-			cc.out.ass = &opts
+		if e == nil {
+			continue
 		}
+		cc.edits = append(cc.edits, e)
+		if m, ok := e.(*maskingEdit); ok {
+			cc.masking = m
+		}
+	}
+	opts, ok, err := assWriteOptions(a)
+	if err != nil {
+		return err
+	}
+	if ok {
+		cc.out.ass = &opts
 	}
 	return needsASSOutput(a, cc.out.to)
 }
 
-// sideFilePaths returns the files that the options of the groups read, without the masking words.
+// sideFilePaths returns the files that the options of the groups read.
 func (cc *convertCommand) sideFilePaths() []string {
 	var paths []string
-	if cc.snap != nil && cc.snap.path != "" {
-		paths = append(paths, cc.snap.path)
-	}
-	if cc.errors != nil && cc.errors.listPath != "" {
-		paths = append(paths, cc.errors.listPath)
-	}
-	if cc.ocr != nil && cc.ocr.hasDatabase {
-		paths = append(paths, cc.ocr.databasePath)
+	for _, e := range cc.edits {
+		if f, ok := e.(fileEdit); ok {
+			paths = append(paths, f.sideFiles()...)
+		}
 	}
 	return paths
 }
@@ -192,29 +178,18 @@ func (cc *convertCommand) checkInputs(r *runner, inputs []string) error {
 	for i, f := range m.muteFiles {
 		side[i] = f.sideOutput
 	}
-	return cc.out.checkInputs(r, inputs, append(readPaths, m.wordsPath), side)
+	return cc.out.checkInputs(r, inputs, readPaths, side)
 }
 
 func (cc *convertCommand) loadSideFiles(ctx context.Context, r *runner) error {
-	if cc.ocr != nil {
-		if err := cc.ocr.load(ctx, r.c); err != nil {
-			return err
+	for _, e := range cc.edits {
+		if f, ok := e.(fileEdit); ok {
+			if err := f.load(ctx, r.c); err != nil {
+				return err
+			}
 		}
 	}
-	if cc.errors != nil && cc.errors.listPath != "" {
-		if err := cc.errors.loadReplaceList(r.c); err != nil {
-			return err
-		}
-	}
-	if cc.snap != nil {
-		if err := cc.snap.loadShots(r.c); err != nil {
-			return err
-		}
-	}
-	if cc.masking == nil {
-		return nil
-	}
-	return cc.masking.loadWords(r.c)
+	return nil
 }
 
 // process writes the mute files after the subtitle output, so they hold the ranges of this input.
