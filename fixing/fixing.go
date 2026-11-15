@@ -327,7 +327,7 @@ func (f *fixer) fixCue(i int, lines []string) []string {
 		if len(lines) == 0 {
 			break
 		}
-		fixed := fixes[r](f, lines)
+		fixed := f.fix(r, lines)
 		if f.err != nil {
 			return nil
 		}

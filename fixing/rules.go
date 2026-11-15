@@ -100,28 +100,47 @@ func replaceFunc(re *regexp2.Regexp, text string, fn func(string) string) string
 	return out
 }
 
-// fixes holds the fix of each rule. A fix returns lines, or a new slice when it changes a line.
-//
-//nolint:gochecknoglobals // a lookup table of the rules
-var fixes = map[Rule]func(f *fixer, lines []string) []string{
-	RuleAdCues:                       (*fixer).adCues,
-	RuleReplaceList:                  (*fixer).replaceList,
-	RuleUnbalancedTags:               (*fixer).unbalancedTags,
-	RuleEmptyTags:                    (*fixer).emptyTags,
-	RuleDoubleApostrophes:            (*fixer).doubleApostrophes,
-	RuleOCRPipe:                      (*fixer).ocrPipe,
-	RuleOCRZeroInWords:               (*fixer).ocrZero,
-	RuleOCRLowercaseL:                (*fixer).ocrLowercaseL,
-	RuleLoneLowercaseI:               (*fixer).loneLowercaseI,
-	RuleEllipsis:                     (*fixer).ellipsis,
-	RuleUnneededPeriods:              (*fixer).unneededPeriods,
-	RuleDoubleSpaces:                 (*fixer).doubleSpaces,
-	RuleSpaceBeforePunctuation:       (*fixer).spaceBeforePunctuation,
-	RuleMissingSpaceAfterPunctuation: (*fixer).missingSpaceAfterPunctuation,
-	RuleDialogueOnOneLine:            (*fixer).dialogueOnOneLine,
-	RuleDialogueDashes:               (*fixer).dialogueDashes,
-	RuleMusicNotes:                   (*fixer).musicNotes,
-	RuleSentenceStartCase:            (*fixer).sentenceStartCase,
+// fix runs the rule r on lines. A fix returns lines, or a new slice when it changes a line.
+func (f *fixer) fix(r Rule, lines []string) []string {
+	switch r {
+	case RuleAdCues:
+		return f.adCues(lines)
+	case RuleReplaceList:
+		return f.replaceList(lines)
+	case RuleUnbalancedTags:
+		return f.unbalancedTags(lines)
+	case RuleEmptyTags:
+		return f.emptyTags(lines)
+	case RuleDoubleApostrophes:
+		return f.doubleApostrophes(lines)
+	case RuleOCRPipe:
+		return f.ocrPipe(lines)
+	case RuleOCRZeroInWords:
+		return f.ocrZero(lines)
+	case RuleOCRLowercaseL:
+		return f.ocrLowercaseL(lines)
+	case RuleLoneLowercaseI:
+		return f.loneLowercaseI(lines)
+	case RuleEllipsis:
+		return f.ellipsis(lines)
+	case RuleUnneededPeriods:
+		return f.unneededPeriods(lines)
+	case RuleDoubleSpaces:
+		return f.doubleSpaces(lines)
+	case RuleSpaceBeforePunctuation:
+		return f.spaceBeforePunctuation(lines)
+	case RuleMissingSpaceAfterPunctuation:
+		return f.missingSpaceAfterPunctuation(lines)
+	case RuleDialogueOnOneLine:
+		return f.dialogueOnOneLine(lines)
+	case RuleDialogueDashes:
+		return f.dialogueDashes(lines)
+	case RuleMusicNotes:
+		return f.musicNotes(lines)
+	case RuleSentenceStartCase:
+		return f.sentenceStartCase(lines)
+	}
+	return lines
 }
 
 func mapRuns(lines []string, fn func(text string, first bool) string) []string {
