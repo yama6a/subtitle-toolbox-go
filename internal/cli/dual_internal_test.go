@@ -231,7 +231,8 @@ func TestDualReadsEachFileWithItsOwnFormat(t *testing.T) {
 func TestDualFailures(t *testing.T) {
 	t.Parallel()
 
-	broken := `broken.srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000".`
+	broken := `broken.srt: line 6: block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000"`
+	brokenWarning := `broken.srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000".`
 	tests := []struct {
 		name  string
 		words []string
@@ -280,7 +281,7 @@ func TestDualFailures(t *testing.T) {
 		got := call{dir: dualDir(t)}.run(t, "dual", "--primary", "en.srt", "--secondary", "broken.srt", "--lenient")
 
 		assert.Equal(t, 0, got.Code)
-		assert.Equal(t, broken+" (skipped)\n", got.Stderr)
+		assert.Equal(t, brokenWarning+" (skipped)\n", got.Stderr)
 	})
 	t.Run("a secondary failure is the failure of the file", func(t *testing.T) {
 		t.Parallel()
