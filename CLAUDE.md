@@ -21,7 +21,7 @@ markup/        Inline tag model and its helpers
 format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microdvd, mpl2,
                tmplayer, mpsub, subviewer, qttext, sprucestl, dcp, lrc, csv, itt, stboxjson, plaintext, pgs, chapters, transcript, youtube,
                cavena890, ebustl, mcc, pac, scc, vobsub
-stats/ stream/ hearingimpaired/ speakers/ fixing/ profanity/ refsync/ diff/ dual/ karaoke/
+stats/ hearingimpaired/ speakers/ fixing/ profanity/ refsync/ diff/ dual/ karaoke/
                The 1.x services. A service never imports the root package
 container/<name>/ The 3.x readers of video containers, layer 4: mkv, mp4, mpegts. They call the format readers. Their helpers live in container/<name>/internal: ebml (mkv), arib and teletext (mpegts)
 ocr/           The 3.x service that reads the text of image cues with an OCR engine, and ocr/ocrtest, a fake engine for tests.
@@ -34,10 +34,10 @@ hls/           The service that cuts a subtitle into HLS WebVTT segments and joi
 resegment/     The 4.x service that splits long cues and builds cues from word timings. Same layer rule
 internal/      Helpers that more than one top-level folder uses: caption (with caption/cea608 and caption/cea708),
                bitmap (with bitmap/displayset, bitmap/dvbsub and bitmap/dvdsub), markupcore, speakerlabel, linewrap,
-               timecode, textenc, extfallback, grapheme, ssatag, decimal, orderedjson, textblock, subrip, vtt,
-               position, parsing, writing, cli, readingspeed, the test helpers testfiles, formattest and translationtest, and the
+               timecode, textenc, extfallback, grapheme, decimal, orderedjson,
+               parsing, writing, cli, readingspeed, the test helpers testfiles, formattest and translationtest, and the
                test-only packages repocheck and conformance
-format/internal/ Helpers that only format packages use: codepage, formatdata, paragraphs, ttmldoc, wordgroup, xmlraw
+format/internal/ Helpers that only format packages use: codepage, formatdata, paragraphs, ttmldoc, wordgroup, xmlraw, ssatag, textblock, vtt, position
 cmd/stbox/     The CLI main. Wiring, no business logic
 testdata/      All fixtures and goldens, one folder per topic. Packages read
                them through internal/testfiles. Only fuzz corpora stay in <package>/testdata/fuzz/

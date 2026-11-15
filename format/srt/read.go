@@ -4,7 +4,6 @@ import (
 	"io"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v5/internal/subrip"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
@@ -18,7 +17,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 	if !ok {
 		return s, st.Warnings(), nil
 	}
-	rd := subrip.NewReader(st)
+	rd := newBlockReader(st)
 	var cues []model.Cue
 	index := 0
 	for b := range rd.Blocks(parsing.Lines(string(content))) {

@@ -1,12 +1,12 @@
-package subrip
+package srt
 
 import (
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/textblock"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textblock"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
@@ -15,8 +15,8 @@ import (
 // maxTime is 999:59:59.999. The SubRip reader takes at most 3 hour digits, so a later time would not read back.
 const maxTime = 1000*time.Hour - time.Millisecond
 
-// AppendCue appends the block of cue c with cue number n, which ends with LF.
-func AppendCue(dst []byte, n int, c model.Cue, stripTags bool) []byte {
+// appendCue appends the block of cue c with cue number n, which ends with LF.
+func appendCue(dst []byte, n int, c model.Cue, stripTags bool) []byte {
 	dst = strconv.AppendInt(dst, int64(n), 10)
 	dst = append(dst, '\n')
 	dst = timecode.AppendClock(dst, min(c.Start, maxTime), 2, ',')

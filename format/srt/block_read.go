@@ -1,5 +1,4 @@
-// Package subrip holds the SubRip block reader and writer that format/srt and stream share.
-package subrip
+package srt
 
 import (
 	"fmt"
@@ -9,10 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/textblock"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/decimal"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textblock"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
@@ -36,8 +35,8 @@ var (
 // fullWidth replaces the full-width delimiters that Chinese and Japanese tools write in timing lines.
 var fullWidth = strings.NewReplacer("\uff1a", ":", "\uff0c", ",", "\uff0e", ".", "\u3002", ".") //nolint:gochecknoglobals // a replacer holds no state
 
-// Reader reads the blocks of a SubRip file one at a time.
-type Reader struct {
+// blockReader reads the blocks of a SubRip file one at a time.
+type blockReader struct {
 	st    *parsing.State
 	rules textblock.Rules
 	cut   func() (int, bool)
@@ -55,22 +54,22 @@ type looseTime struct {
 	d    time.Duration
 }
 
-// NewReader returns a reader that records its warnings and reads its mode from st.
-func NewReader(st *parsing.State) *Reader {
-	rd := &Reader{st: st}
+// newBlockReader returns a reader that records its warnings and reads its mode from st.
+func newBlockReader(st *parsing.State) *blockReader {
+	rd := &blockReader{st: st}
 	rd.rules = textblock.Rules{IsTimingLine: rd.isTimingLine, HasCueNumbers: true}
 	return rd
 }
 
 // CutAt sets a function that returns the last line read and true when an error ended the input.
 // Blocks then drops the block that this error cut.
-func (rd *Reader) CutAt(cut func() (int, bool)) {
+func (rd *blockReader) CutAt(cut func() (int, bool)) {
 	rd.cut = cut
 }
 
 // Blocks yields the blocks of lines after the join of cue text blocks, which warns in lenient mode.
 // The keys of lines are 0-based line numbers.
-func (rd *Reader) Blocks(lines iter.Seq2[int, string]) iter.Seq[textblock.Block] {
+func (rd *blockReader) Blocks(lines iter.Seq2[int, string]) iter.Seq[textblock.Block] {
 	split := textblock.SplitAtEmptyLines(lines)
 	if rd.cut != nil {
 		split = textblock.DropCut(split, rd.cut)
@@ -78,7 +77,7 @@ func (rd *Reader) Blocks(lines iter.Seq2[int, string]) iter.Seq[textblock.Block]
 	return textblock.JoinCueTextBlocks(split, rd.rules, rd.st)
 }
 
-func (rd *Reader) isTimingLine(line string) bool {
+func (rd *blockReader) isTimingLine(line string) bool {
 	if rd.st.Lenient() {
 		return isLenientTimingLine(line)
 	}
@@ -92,13 +91,13 @@ func isLenientTimingLine(line string) bool {
 
 // ParseBlock returns the cues of block b, number index, split before each timing line. Lenient mode skips a
 // part that fails, and warns for each split and each skip.
-func (rd *Reader) ParseBlock(b textblock.Block, index int) ([]model.Cue, error) {
+func (rd *blockReader) ParseBlock(b textblock.Block, index int) ([]model.Cue, error) {
 	return rd.rules.ReadParts(rd.st, b, index, rd.parsePart)
 }
 
 // parsePart parses one part of a block, which starts at line. Lenient mode reads a part that starts with its
 // timing line as if a cue number came before it.
-func (rd *Reader) parsePart(part []string, index, line int) (model.Cue, error) {
+func (rd *blockReader) parsePart(part []string, index, line int) (model.Cue, error) {
 	if !rd.st.Lenient() || !rd.isTimingLine(part[0]) {
 		return rd.parseCue(part, part, index, line)
 	}
@@ -113,7 +112,7 @@ func (rd *Reader) parsePart(part []string, index, line int) (model.Cue, error) {
 
 // parseCue parses the lines of one cue: the cue number at line, the timing line and the text.
 // Warnings hold shown, the lines as read.
-func (rd *Reader) parseCue(lines, shown []string, index, line int) (model.Cue, error) {
+func (rd *blockReader) parseCue(lines, shown []string, index, line int) (model.Cue, error) {
 	block := "Block #" + strconv.Itoa(index)
 	if !textblock.IsNumeric(lines[0]) {
 		return model.Cue{}, &model.ParseError{Line: line, Msg: block + " has no cue number on its first line. The line is " + parsing.Quote(lines[0]) + "."}
@@ -152,7 +151,7 @@ func (rd *Reader) parseCue(lines, shown []string, index, line int) (model.Cue, e
 }
 
 // warnTimingRepairs warns for the loose times, the full-width delimiters and the arrow of a timing line.
-func (rd *Reader) warnTimingRepairs(t timing, loose []looseTime, index, line int, shown []string) {
+func (rd *blockReader) warnTimingRepairs(t timing, loose []looseTime, index, line int, shown []string) {
 	block := "Block #" + strconv.Itoa(index)
 	for _, lt := range loose {
 		rd.st.Warn(block+` has the time "`+lt.text+`", which is not in the form hh:mm:ss,mmm. The parser read it as `+timecode.Seconds(lt.d)+" s.",
@@ -168,7 +167,7 @@ func (rd *Reader) warnTimingRepairs(t timing, loose []looseTime, index, line int
 
 // readTimingLine splits a timing line at the first arrow that does not directly follow a "-". Strict mode reads
 // only "-->". Lenient mode reads any run of "-" before ">" and the full-width delimiters.
-func (rd *Reader) readTimingLine(line string) (timing, bool) {
+func (rd *blockReader) readTimingLine(line string) (timing, bool) {
 	text := line
 	if rd.st.Lenient() {
 		text = fullWidth.Replace(line)
@@ -195,7 +194,7 @@ func (rd *Reader) readTimingLine(line string) (timing, bool) {
 	return timing{}, false
 }
 
-func (rd *Reader) arrowLength(s string) int {
+func (rd *blockReader) arrowLength(s string) int {
 	if !rd.st.Lenient() {
 		if strings.HasPrefix(s, arrow) {
 			return len(arrow)
@@ -214,7 +213,7 @@ func (rd *Reader) arrowLength(s string) int {
 
 // time reads a time of the timing line at line. Lenient mode also reads the forms of timecode.Loose and
 // adds them to loose, once per text.
-func (rd *Reader) time(text string, line int, loose *[]looseTime) (time.Duration, error) {
+func (rd *blockReader) time(text string, line int, loose *[]looseTime) (time.Duration, error) {
 	text = strings.Trim(text, markupcore.TrimSet)
 	if m := timeRegexp.FindStringSubmatch(text); m != nil {
 		return time.Duration(atoi(m[1]))*time.Hour + time.Duration(atoi(m[2]))*time.Minute +
@@ -261,7 +260,7 @@ func fraction(digits string) time.Duration {
 
 // applyTextAfterEndTime stores the text after the end time as SubRip coordinates or as WebVTT cue settings.
 // Strict mode fails on unknown text. Lenient mode ignores it and warns.
-func (rd *Reader) applyTextAfterEndTime(c *model.Cue, rest string, numpad, index, line int, shown []string) error {
+func (rd *blockReader) applyTextAfterEndTime(c *model.Cue, rest string, numpad, index, line int, shown []string) error {
 	if coordinates, ok := readCoordinates(rest); ok {
 		return setFormatData(c, formatDataKey, model.NewData(model.Field{Key: "coordinates", Value: coordinates}))
 	}

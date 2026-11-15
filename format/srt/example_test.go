@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
@@ -54,4 +55,64 @@ func ExampleDetect() {
 	// Output:
 	// true
 	// false
+}
+
+func ExampleStreamReader() {
+	input := "1\n00:00:01,000 --> 00:00:02,500\nThe ferry leaves.\n\n2\n00:00:04,000 --> 00:00:05,000\nIt is <i>late</i>.\n"
+
+	w, err := webvtt.NewStreamWriter(os.Stdout, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{}, nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for c, err := range srt.NewStreamReader(strings.NewReader(input), srt.StreamOptions{}).Cues() {
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		c.Start += 2 * time.Second
+		c.End += 2 * time.Second
+		if err := w.Write(c); err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+	if err := w.Close(); err != nil {
+		fmt.Println(err)
+	}
+	// Output:
+	// WEBVTT
+	//
+	// 1
+	// 00:00:03.000 --> 00:00:04.500
+	// The ferry leaves.
+	//
+	// 2
+	// 00:00:06.000 --> 00:00:07.000
+	// It is <i>late</i>.
+}
+
+func ExampleStreamWriter() {
+	w, err := srt.NewStreamWriter(os.Stdout, model.CommonWriteOptions{BOM: model.BOMRemove}, srt.WriteOptions{})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for _, text := range []string{"The ferry leaves.", "It is late."} {
+		var c model.Cue
+		c.SetText(text)
+		c.End = time.Second
+		if err := w.Write(c); err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+	// Output:
+	// 1
+	// 00:00:00,000 --> 00:00:01,000
+	// The ferry leaves.
+	//
+	// 2
+	// 00:00:00,000 --> 00:00:01,000
+	// It is late.
 }

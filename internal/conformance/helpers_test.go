@@ -1,4 +1,4 @@
-// Package conformance runs the readers and writers of every format over testdata through the stbox facade.
+// Package conformance runs the readers and writers of every format over testdata through the stbox facade and the stream readers and writers.
 package conformance_test
 
 import (
