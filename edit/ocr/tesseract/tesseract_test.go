@@ -37,13 +37,6 @@ var scripts struct {
 	hangs, flaky, fresh, versionOnStderr, otherProgram, versionThenFailed string
 }
 
-// mainTB lets TestMain call testfiles.Path before any test exists. A failure panics.
-type mainTB struct{ testing.TB }
-
-func (mainTB) Helper() {}
-
-func (mainTB) Fatalf(format string, args ...any) { panic(fmt.Sprintf(format, args...)) }
-
 func TestMain(m *testing.M) {
 	os.Exit(run(m))
 }
@@ -59,7 +52,8 @@ func run(m *testing.M) int {
 	}
 	defer os.RemoveAll(dir)
 
-	fake := testfiles.Path(mainTB{}, "ocr/fake-tesseract/tesseract")
+	wd, _ := os.Getwd()
+	fake := filepath.Join(wd, "..", "..", "..", "testdata", "ocr", "fake-tesseract", "tesseract")
 	write := func(name, body string) string {
 		p := filepath.Join(dir, name)
 		if err := os.WriteFile(p, []byte("#!/bin/sh\n"+body+"\n"), 0o755); err != nil { //nolint:gosec // the test script must run
