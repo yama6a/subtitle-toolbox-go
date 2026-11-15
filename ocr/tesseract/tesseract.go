@@ -51,16 +51,6 @@ func New(opts Options) (*Engine, error) {
 	return e, nil
 }
 
-// recognizeError is an error that matches ocr.ErrRecognize.
-type recognizeError struct {
-	msg string
-	err error
-}
-
-func (e *recognizeError) Error() string        { return e.msg }
-func (e *recognizeError) Unwrap() error        { return e.err }
-func (e *recognizeError) Is(target error) bool { return target == ocr.ErrRecognize }
-
 // Recognize returns the text of im. A non-empty language wins over Options.Language.
 // It checks the program and the language data first, so a missing model fails before any image is written.
 func (e *Engine) Recognize(ctx context.Context, im model.Image, language ocr.Language) (ocr.Text, error) {
@@ -74,7 +64,7 @@ func (e *Engine) Recognize(ctx context.Context, im model.Image, language ocr.Lan
 
 	pixels, err := bitmap.DecodePNG(im.PNG)
 	if err != nil {
-		return ocr.Text{}, &recognizeError{msg: "Cannot read the cue image at " + at + ": " + err.Error(), err: err}
+		return ocr.Text{}, &ocr.RecognizeError{Msg: "Cannot read the cue image at " + at + ": " + err.Error(), Err: err}
 	}
 	scale := e.scale
 	if scale == 0 {
@@ -95,10 +85,10 @@ func (e *Engine) Recognize(ctx context.Context, im model.Image, language ocr.Lan
 		if ctx.Err() != nil {
 			return ocr.Text{}, err
 		}
-		return ocr.Text{}, &recognizeError{msg: "Cannot start Tesseract for the cue image at " + at + ": " + err.Error(), err: err}
+		return ocr.Text{}, &ocr.RecognizeError{Msg: "Cannot start Tesseract for the cue image at " + at + ": " + err.Error(), Err: err}
 	}
 	if exit != 0 {
-		return ocr.Text{}, &recognizeError{msg: "Tesseract exits with code " + strconv.Itoa(exit) + " for the cue image at " + at + ": " + strings.TrimSpace(stderr)}
+		return ocr.Text{}, &ocr.RecognizeError{Msg: "Tesseract exits with code " + strconv.Itoa(exit) + " for the cue image at " + at + ": " + strings.TrimSpace(stderr)}
 	}
 	lines, confidence := parseTSV(stdout)
 	return ocr.Text{Lines: lines, Confidence: confidence}, nil

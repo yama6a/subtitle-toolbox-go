@@ -49,16 +49,6 @@ func New(opts Options) (*Engine, error) {
 // Database returns the database that the engine matches against.
 func (e *Engine) Database() *glyphocr.Database { return e.database }
 
-// recognizeError is an error that matches ocr.ErrRecognize.
-type recognizeError struct {
-	msg string
-	err error
-}
-
-func (e *recognizeError) Error() string        { return e.msg }
-func (e *recognizeError) Unwrap() error        { return e.err }
-func (e *recognizeError) Is(target error) bool { return target == ocr.ErrRecognize }
-
 // Recognize returns the text of im. It ignores language, and it returns ctx.Err() before it starts.
 // An image that is no PNG returns an error that matches ocr.ErrRecognize.
 func (e *Engine) Recognize(ctx context.Context, im model.Image, _ ocr.Language) (ocr.Text, error) {
@@ -67,9 +57,9 @@ func (e *Engine) Recognize(ctx context.Context, im model.Image, _ ocr.Language) 
 	}
 	pixels, err := bitmap.DecodePNG(im.PNG)
 	if err != nil {
-		return ocr.Text{}, &recognizeError{
-			msg: "The recognizer fails on the cue image at " + strconv.Itoa(im.X) + ", " + strconv.Itoa(im.Y) + ": " + err.Error(),
-			err: err,
+		return ocr.Text{}, &ocr.RecognizeError{
+			Msg: "The recognizer fails on the cue image at " + strconv.Itoa(im.X) + ", " + strconv.Itoa(im.Y) + ": " + err.Error(),
+			Err: err,
 		}
 	}
 	return text(e.recognizer.Recognize(pixels.NRGBA())), nil

@@ -83,6 +83,22 @@ func (e *CueError) Unwrap() error { return e.Err }
 // Is reports whether target is ErrRecognize.
 func (e *CueError) Is(target error) bool { return target == ErrRecognize }
 
+// RecognizeError is an error of an engine on one image. It matches ErrRecognize. An engine of another module
+// can return it too.
+type RecognizeError struct {
+	Msg string // the message
+	Err error  // the cause, or nil
+}
+
+// Error returns Msg.
+func (e *RecognizeError) Error() string { return e.Msg }
+
+// Unwrap returns the cause.
+func (e *RecognizeError) Unwrap() error { return e.Err }
+
+// Is reports whether target is ErrRecognize.
+func (e *RecognizeError) Is(target error) bool { return target == ErrRecognize }
+
 // Run sets the lines of every image cue without lines to the text that engine reads, and keeps the images.
 // Each cue gets the cleaned lines of the text, without the empty ones. The report holds the text as the engine
 // returned it. Run calls the engine for one cue at a time, in cue order, and passes language unchanged.
