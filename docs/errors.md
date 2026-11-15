@@ -31,7 +31,7 @@ fmt.Println(err)
 | `ErrNoFormatDetected` | detection found no format, see [detection.md](detection.md). Also matches `ErrUnsupportedFormat` |
 | `ErrInvalidArgument`, `*InvalidArgumentError` | an invalid option or argument, for example frame rate 0 or NaN. An unknown `ReadOptions.Encoding`. A negative `ReadOptions.Track` or `size`. A `Track` on a subtitle file, or a `Track` that no track of the video file has. A retime or `Append` that moves a cue time to 100000 h or more, for example `Scale(1e300)`. MicroDVD output without a frame rate. CSV output with frame times and no frame rate. Format data that fails its type check in a setter |
 | `ErrCueNotFound` | `RemoveCue`, `SplitCue` and `JoinCues` with an index that has no cue |
-| `ErrUnwritable`, `*UnwritableError` | the output format cannot hold the subtitle. Text that is not valid UTF-8 in a JSON format, TTML or SAMI output, which also matches `ErrInvalidUTF8`. An image cue without lines in a text format, such as `cue #3 holds an image but no text, and srt needs text` A stored TTML head that is not valid XML. An `ass.WriteOptions.Style` that the `Format:` line of the stored styles lacks |
+| `ErrUnwritable`, `*UnwritableError` | the output format cannot hold the subtitle. Text that is not valid UTF-8 in a JSON format, TTML or SAMI output, which also matches `ErrInvalidUTF8`. An image cue without lines in a text format, such as `cue #3 holds an image but no text, and srt needs text`. A stored TTML head that is not valid XML. An `ass.WriteOptions.Style` that the `Format:` line of the stored styles lacks |
 | `ErrInvalidUTF8` | text that an output format cannot hold because it is not valid UTF-8. It is the `Err` of the `*UnwritableError`. Read the input again with its source encoding | none, part of `UnwritableContentException` 108 |
 | the `*fs.PathError` of package `os`, wrapped | a file that does not exist or cannot be read or written. Test it with `errors.Is(err, fs.ErrNotExist)` |
 
@@ -49,7 +49,7 @@ All 4 types live in package `model`. Package `stbox` aliases them under the same
 |:--- |:--- |:--- |
 | `*ParseError` | `Format`, `Line`, `Msg`, `Option`, `Err` | `srt: line 6: Msg`. No `line N: ` when `Line` is 0. `stbox` in place of the format when `Format` is "" |
 | `*UnwritableError` | `Format`, `CueIndex`, `Reason`, `Err` | `sami: Reason` |
-| `*TrackError` | `Container`, `Tracks` | `stbox: unsupported format: the MKV or WebM file has 6 subtitle tracks` Matches `ErrUnsupportedFormat`, not `ErrNoFormatDetected`. `Tracks` is empty when the file has no subtitle track |
+| `*TrackError` | `Container`, `Tracks` | `stbox: unsupported format: the MKV or WebM file has 6 subtitle tracks`. Matches `ErrUnsupportedFormat`, not `ErrNoFormatDetected`. `Tracks` is empty when the file has no subtitle track |
 | `*InvalidArgumentError` | `Option`, `Msg` | `stbox: invalid argument: WriteOptions.MicroDVD.FrameRate: Msg`. No option part when `Option` is "" |
 
 - **Cause**: `Unwrap` of `*ParseError` and `*UnwritableError` returns `Err`, for example an error of the standard library. `Error()` shows `Err` only when the message field is empty, because the message quotes the cause where it matters.
