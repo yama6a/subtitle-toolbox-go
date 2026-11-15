@@ -157,10 +157,10 @@ func (c CodePage) encodeDouble(encoder *encoding.Encoder, r rune) ([]byte, bool)
 //nolint:gochecknoglobals // tables built once from the x/text decoders
 var (
 	big5Codes = sync.OnceValue(func() map[rune][2]byte {
-		return codeIndex(traditionalchinese.Big5, big5Allowed, neverLate)
+		return codeIndex(ChineseTraditional)
 	})
 	shiftJISCodes = sync.OnceValue(func() map[rune][2]byte {
-		codes := codeIndex(japanese.ShiftJIS, anyCode, necSelected)
+		codes := codeIndex(Japanese)
 		maps.Copy(codes, shiftJISOneWay)
 		return codes
 	})
@@ -189,31 +189,48 @@ func big5Allowed(lead, trail byte) bool {
 	return true
 }
 
-func anyCode(_, _ byte) bool { return true }
+// codeAllowed reports whether the code page writes the pair of bytes. Only Big5 excludes pairs.
+func codeAllowed(c CodePage, lead, trail byte) bool {
+	if c == ChineseTraditional {
+		return big5Allowed(lead, trail)
+	}
+	return true
+}
 
-func neverLate(byte) bool { return false }
+// lateLead reports whether the code page writes a code with this lead byte only when no other code holds the
+// character. Only Shift_JIS has such codes.
+func lateLead(c CodePage, lead byte) bool {
+	if c == Japanese {
+		return necSelected(lead)
+	}
+	return false
+}
 
 // necSelected reports whether the lead byte starts the NEC selected IBM extension, which CP932 writes only when
 // no other code holds the character.
 func necSelected(lead byte) bool { return lead == 0xED || lead == 0xEE }
 
-// codeIndex maps each character that the double-byte decoder reads from 2 bytes to its lowest code that allowed
-// accepts. A code whose lead byte late accepts counts only when no other code holds the character.
-func codeIndex(enc encoding.Encoding, allowed func(lead, trail byte) bool, late func(lead byte) bool) map[rune][2]byte {
+// codeIndex maps each character that the double-byte decoder of c reads from 2 bytes to its lowest code that
+// codeAllowed accepts. A code whose lead byte lateLead accepts counts only when no other code holds the character.
+func codeIndex(c CodePage) map[rune][2]byte {
+	enc := japanese.ShiftJIS
+	if c == ChineseTraditional {
+		enc = traditionalchinese.Big5
+	}
 	dec := enc.NewDecoder()
 	index := map[rune][2]byte{}
 	isLate := map[rune]bool{}
 	for lead := 0x81; lead <= 0xFE; lead++ {
 		for trail := 0x40; trail <= 0xFE; trail++ {
-			if !allowed(byte(lead), byte(trail)) {
+			if !codeAllowed(c, byte(lead), byte(trail)) {
 				continue
 			}
 			r, ok := decodePair(dec, byte(lead), byte(trail))
 			if !ok {
 				continue
 			}
-			if _, known := index[r]; !known || isLate[r] && !late(byte(lead)) {
-				index[r], isLate[r] = [2]byte{byte(lead), byte(trail)}, late(byte(lead))
+			if _, known := index[r]; !known || isLate[r] && !lateLead(c, byte(lead)) {
+				index[r], isLate[r] = [2]byte{byte(lead), byte(trail)}, lateLead(c, byte(lead))
 			}
 		}
 	}
