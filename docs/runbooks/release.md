@@ -54,29 +54,31 @@ Do every step on the last commit of `main`. For a major N of 2 or more, do step 
 
    Expected for 1.0.0: no output. Expected for N of 2 or more: no tag `vN.*`.
 
-3. Check that the 9 required checks that run on `main` are green on the last commit of `main`. The command prints only the required checks. It ignores the other runs, such as `renovate / renovate`.
+3. Check that the 11 required checks that run on `main` are green on the last commit of `main`. The command prints only the required checks. It ignores the other runs, such as `renovate / renovate`.
 
    ```bash
    gh api 'repos/yama6a/subtitle-toolbox-go/commits/main/check-runs?per_page=100' --jq '
-     ["go / go","cross-compile","fuzz","bench","smoke","docker / docker","shell","yaml","renovate-config"] as $required
+     ["go / go","cross-compile","fuzz","bench","smoke","docker / docker","docker-tesseract / docker","tesseract","shell","yaml","renovate-config"] as $required
      | .check_runs[] | select(.name as $n | $required | index($n)) | "\(.name) \(.conclusion)"' | sort
    ```
 
-   Expected: 9 lines, all `success`. The checks `release label`, `version check` and `gorelease` run on pull requests only, so `main` has no result for them.
+   Expected: 11 lines, all `success`. The checks `release label`, `version check` and `gorelease` run on pull requests only, so `main` has no result for them.
 
    ```text
    bench success
    cross-compile success
    docker / docker success
+   docker-tesseract / docker success
    fuzz success
    go / go success
    renovate-config success
    shell success
    smoke success
+   tesseract success
    yaml success
    ```
 
-   The branch protection of `main` lists those 9 checks and the 3 pull request checks. Keep all 12. Read the protection with:
+   The branch protection of `main` lists those 11 checks and the 3 pull request checks. Keep all 14. Read the protection with:
 
    ```bash
    gh api repos/yama6a/subtitle-toolbox-go/branches/main/protection -q '.required_status_checks.checks[].context'
