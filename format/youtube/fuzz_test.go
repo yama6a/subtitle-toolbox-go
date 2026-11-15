@@ -3,26 +3,16 @@ package youtube_test
 import (
 	"bytes"
 	"errors"
-	"os"
 	"testing"
-	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func FuzzRead(f *testing.F) {
-	entries, err := os.ReadDir(testfiles.Path(f, "youtube/real"))
-	if err != nil {
-		f.Fatal(err)
-	}
-	for _, e := range entries {
-		if !e.IsDir() && e.Name() != "SOURCES.md" {
-			f.Add(testfiles.Read(f, "youtube/real/"+e.Name()))
-		}
-	}
+	formattest.AddSeeds(f, "youtube/real/*")
 	f.Add(testfiles.Read(f, "lenient/credit_before_xml.srv3"))
 	for _, seed := range []string{
 		`<transcript><text start="1" dur="2">a &amp;#39; b</text><text start="x">c</text><text start="1"/></transcript>`,
@@ -41,19 +31,10 @@ func FuzzRead(f *testing.F) {
 			for _, opts := range []youtube.ReadOptions{{}, withWords} {
 				common := model.CommonReadOptions{Lenient: lenient}
 				s, warnings, err := youtube.Read(bytes.NewReader(content), common, opts)
-				if err != nil {
-					var perr *model.ParseError
-					if !errors.As(err, &perr) {
-						t.Fatalf("Read returned %v, which is no *ParseError", err)
-					}
+				if !formattest.CheckRead(t, s, warnings, err) {
 					continue
 				}
-				checkCues(t, s)
-				for _, w := range warnings {
-					if w.Action != model.Skipped && w.Action != model.Repaired {
-						t.Fatalf("the warning %q has no action", w.Message)
-					}
-				}
+				checkWords(t, s)
 				var out bytes.Buffer
 				if err := youtube.Write(&out, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
 					if !errors.Is(err, model.ErrUnwritable) {
@@ -69,20 +50,10 @@ func FuzzRead(f *testing.F) {
 	})
 }
 
-func checkCues(t *testing.T, s *model.Subtitle) {
+func checkWords(t *testing.T, s *model.Subtitle) {
 	t.Helper()
 
-	var previous time.Duration
 	for i, c := range s.Cues() {
-		if i > 0 && c.Start < previous {
-			t.Fatalf("cue %d starts before cue %d", i, i-1)
-		}
-		previous = c.Start
-		for _, d := range []time.Duration{c.Start, c.End} {
-			if d%time.Millisecond != 0 || d < 0 || d >= timecode.MaxTime {
-				t.Fatalf("cue %d has the time %v", i, d)
-			}
-		}
 		if err := c.ValidateWords(); err != nil {
 			t.Fatalf("cue %d has invalid words: %v", i, err)
 		}

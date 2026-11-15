@@ -2,30 +2,15 @@ package mpsub_test
 
 import (
 	"bytes"
-	"errors"
-	"os"
-	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func FuzzRead(f *testing.F) {
-	for _, dir := range []string{"mpsub", realDir, "lenient"} {
-		entries, err := os.ReadDir(testfiles.Path(f, dir))
-		if err != nil {
-			f.Fatal(err)
-		}
-		for _, e := range entries {
-			if ext := filepath.Ext(e.Name()); ext == ".mpsub" || ext == ".sub" && dir != "lenient" {
-				f.Add(testfiles.Read(f, dir+"/"+e.Name()))
-			}
-		}
-	}
+	formattest.AddSeeds(f, "mpsub/*.mpsub", "mpsub/real/*.sub", "lenient/*.mpsub")
 	for _, seed := range []string{
 		"FORMAT=TIME\n\n1 2.5\nHello\n",
 		"FORMAT=29.97\n\n29 58\nHello\n\nFORMAT=0\n",
@@ -40,31 +25,12 @@ func FuzzRead(f *testing.F) {
 	f.Fuzz(func(t *testing.T, content []byte) {
 		for _, lenient := range []bool{false, true} {
 			s, warnings, err := mpsub.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, mpsub.ReadOptions{})
-			if err != nil {
-				var perr *model.ParseError
-				if !errors.As(err, &perr) {
-					t.Fatalf("Read returned %v, which is no *ParseError", err)
-				}
+			if !formattest.CheckRead(t, s, warnings, err) {
 				continue
 			}
-			var previous time.Duration
 			for i, c := range s.All() {
-				if i > 0 && c.Start < previous {
-					t.Fatalf("cue %d starts before cue %d", i, i-1)
-				}
-				previous = c.Start
-				for _, d := range []time.Duration{c.Start, c.End} {
-					if d%time.Millisecond != 0 || d <= -timecode.MaxTime || d >= timecode.MaxTime {
-						t.Fatalf("cue %d has the time %v", i, d)
-					}
-				}
 				if c.End < c.Start || len(c.Lines) == 0 {
 					t.Fatalf("cue %d is %v", i, c)
-				}
-			}
-			for _, w := range warnings {
-				if w.Action != model.Skipped && w.Action != model.Repaired {
-					t.Fatalf("the warning %q has no action", w.Message)
 				}
 			}
 			checkWrite(t, s, mpsub.WriteOptions{})

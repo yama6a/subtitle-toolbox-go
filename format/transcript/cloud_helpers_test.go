@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -127,9 +128,7 @@ func (f cloudFormat) testBroken(t *testing.T, tests []cloudBroken) {
 func cloudFuzz(f *testing.F, cf cloudFormat, seeds ...string) {
 	f.Helper()
 
-	for _, name := range cf.realFiles(f) {
-		f.Add(testfiles.Read(f, cf.folder+"/real/"+name))
-	}
+	formattest.AddSeeds(f, cf.folder+"/real/*.json")
 	for _, seed := range append(seeds, `[1]`, `{`, ``) {
 		f.Add([]byte(seed))
 	}
@@ -138,19 +137,10 @@ func cloudFuzz(f *testing.F, cf cloudFormat, seeds ...string) {
 			common := model.CommonReadOptions{Lenient: lenient}
 			for _, opts := range []transcript.ReadOptions{{}, withWords} {
 				s, warnings, err := cf.read(bytes.NewReader(content), common, opts)
-				if err != nil {
-					var perr *model.ParseError
-					if !errors.As(err, &perr) {
-						t.Fatalf("the reader returned %v, which is no *ParseError", err)
-					}
+				if !formattest.CheckRead(t, s, warnings, err) {
 					continue
 				}
-				checkCues(t, s)
-				for _, w := range warnings {
-					if w.Action != model.Skipped && w.Action != model.Repaired {
-						t.Fatalf("the warning %q has no action", w.Message)
-					}
-				}
+				checkWords(t, s)
 				var out bytes.Buffer
 				if err := cf.write(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
 					t.Fatalf("the writer returned %v, which does not match ErrUnwritable", err)

@@ -3,29 +3,16 @@ package transcript_test
 import (
 	"bytes"
 	"errors"
-	"os"
-	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func FuzzReadWhisper(f *testing.F) {
-	for _, dir := range []string{"whisper/real", "whisper"} {
-		entries, err := os.ReadDir(testfiles.Path(f, dir))
-		if err != nil {
-			f.Fatal(err)
-		}
-		for _, e := range entries {
-			if filepath.Ext(e.Name()) == ".json" {
-				f.Add(testfiles.Read(f, dir+"/"+e.Name()))
-			}
-		}
-	}
+	formattest.AddSeeds(f, "whisper/real/*.json", "whisper/*.json")
 	f.Add(testfiles.Read(f, "lenient/missing_segment_end.whisper.json"))
 	f.Add(testfiles.Read(f, "speakers/whisper_cpp_diarize.json"))
 	f.Add([]byte(twoSegmentsWithWords))
@@ -45,19 +32,10 @@ func FuzzReadWhisper(f *testing.F) {
 			for _, opts := range []transcript.ReadOptions{{}, withWords} {
 				common := model.CommonReadOptions{Lenient: lenient}
 				s, warnings, err := transcript.ReadWhisper(bytes.NewReader(content), common, opts)
-				if err != nil {
-					var perr *model.ParseError
-					if !errors.As(err, &perr) {
-						t.Fatalf("ReadWhisper returned %v, which is no *ParseError", err)
-					}
+				if !formattest.CheckRead(t, s, warnings, err) {
 					continue
 				}
-				checkCues(t, s)
-				for _, w := range warnings {
-					if w.Action != model.Skipped && w.Action != model.Repaired {
-						t.Fatalf("the warning %q has no action", w.Message)
-					}
-				}
+				checkWords(t, s)
 				var out bytes.Buffer
 				if err := transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 					if !errors.Is(err, model.ErrUnwritable) {
@@ -73,20 +51,10 @@ func FuzzReadWhisper(f *testing.F) {
 	})
 }
 
-func checkCues(t *testing.T, s *model.Subtitle) {
+func checkWords(t *testing.T, s *model.Subtitle) {
 	t.Helper()
 
-	var previous time.Duration
 	for i, c := range s.Cues() {
-		if i > 0 && c.Start < previous {
-			t.Fatalf("cue %d starts before cue %d", i, i-1)
-		}
-		previous = c.Start
-		for _, d := range []time.Duration{c.Start, c.End} {
-			if d%time.Millisecond != 0 || d < 0 || d >= timecode.MaxTime {
-				t.Fatalf("cue %d has the time %v", i, d)
-			}
-		}
 		if err := c.ValidateWords(); err != nil {
 			t.Fatalf("cue %d has invalid words: %v", i, err)
 		}

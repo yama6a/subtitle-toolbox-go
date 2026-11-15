@@ -3,31 +3,18 @@ package stboxjson_test
 import (
 	"bytes"
 	"errors"
-	"os"
-	"path/filepath"
 	"reflect"
 	"testing"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
 
 func FuzzRead(f *testing.F) {
-	for _, dir := range []string{"json", realDir, "lenient"} {
-		entries, err := os.ReadDir(testfiles.Path(f, dir))
-		if err != nil {
-			f.Fatal(err)
-		}
-		for _, e := range entries {
-			if filepath.Ext(e.Name()) == ".json" {
-				f.Add(testfiles.Read(f, dir+"/"+e.Name()))
-			}
-		}
-	}
+	formattest.AddSeeds(f, "json/*.json", "json/real/*.json", "lenient/*.json")
 	for _, c := range readErrorCases() {
 		f.Add([]byte(c.content))
 	}
@@ -55,40 +42,14 @@ func FuzzRead(f *testing.F) {
 		for _, lenient := range []bool{false, true} {
 			common := model.CommonReadOptions{Lenient: lenient}
 			s, warnings, err := stboxjson.Read(bytes.NewReader(content), common, stboxjson.ReadOptions{})
-			if err != nil {
-				var perr *model.ParseError
-				if !errors.As(err, &perr) {
-					t.Fatalf("Read returned %v, which is no *ParseError", err)
-				}
+			if !formattest.CheckRead(t, s, warnings, err) {
 				continue
-			}
-			checkCues(t, s)
-			for _, w := range warnings {
-				if w.Action != model.Skipped && w.Action != model.Repaired {
-					t.Fatalf("the warning %q has no action", w.Message)
-				}
 			}
 
 			checkWrite(t, s, common, 1)
 			checkWrite(t, s, common, 2)
 		}
 	})
-}
-
-func checkCues(t *testing.T, s *model.Subtitle) {
-	t.Helper()
-
-	cues := s.Cues()
-	for i, c := range cues {
-		if i > 0 && c.Start < cues[i-1].Start {
-			t.Fatalf("cue %d starts before cue %d", i, i-1)
-		}
-		for _, d := range []int64{int64(c.Start), int64(c.End)} {
-			if d%1e6 != 0 || d >= int64(timecode.MaxTime) || d <= -int64(timecode.MaxTime) {
-				t.Fatalf("cue %d has the time %d ns", i, d)
-			}
-		}
-	}
 }
 
 // checkWrite writes s as the given version and reads it back. A second write gives the same bytes, and a second read
