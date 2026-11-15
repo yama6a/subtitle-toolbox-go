@@ -2,6 +2,8 @@ package parsing
 
 import (
 	"bytes"
+	"fmt"
+	"io"
 	"slices"
 	"strconv"
 
@@ -14,6 +16,21 @@ const (
 	whiteSpace  = " \t\r\n"
 	replacement = "\ufffd"
 )
+
+// ReadText reads all of r and runs the text pre-pass of Prepare. ok is false for blank content, which reads as an
+// empty subtitle. A read error is wrapped as "read <format>: <error>".
+func ReadText(r io.Reader, f model.Format, common model.CommonReadOptions, replacesInvalidUTF8 bool) (st *State, content []byte, ok bool, err error) {
+	content, err = io.ReadAll(r)
+	if err != nil {
+		return nil, nil, false, fmt.Errorf("read %s: %w", f, err)
+	}
+	st = NewState(f, common)
+	content, ok, err = st.Prepare(content, replacesInvalidUTF8)
+	if err != nil {
+		return nil, nil, false, err
+	}
+	return st, content, ok, nil
+}
 
 // Prepare runs the text pre-pass on UTF-8 content and returns the content for the reader.
 // False means that the content is blank, so the reader returns an empty subtitle.

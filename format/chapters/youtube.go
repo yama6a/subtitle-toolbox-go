@@ -28,12 +28,7 @@ func ReadYouTube(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 	if err := opts.Validate(); err != nil {
 		return nil, nil, err
 	}
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.YouTubeChapters, err)
-	}
-	st := parsing.NewState(model.YouTubeChapters, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.YouTubeChapters, common, false)
 	if err != nil {
 		return nil, nil, err
 	}

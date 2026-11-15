@@ -1,8 +1,6 @@
 package dcp
 
 import (
-	"errors"
-	"fmt"
 	"io"
 	"math"
 	"regexp"
@@ -58,12 +56,7 @@ type reader struct {
 // Read reads Interop and SMPTE DCP subtitles. It expects UTF-8, as stbox.Parse passes it. Text that is not valid
 // UTF-8 makes the XML malformed, in both modes.
 func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.DCP, err)
-	}
-	st := parsing.NewState(model.DCP, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.DCP, common, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -327,13 +320,10 @@ func (rd *reader) readElement(n *xmlraw.Node, font map[string]string) error {
 // addCue reads a <Subtitle>. A parse error of the subtitle fails the read in strict mode and skips it in lenient mode.
 func (rd *reader) addCue(sub *xmlraw.Node, font map[string]string) error {
 	c, ok, err := rd.cue(sub, font)
-	var perr *model.ParseError
-	switch {
-	case errors.As(err, &perr):
-		return rd.st.Fail(perr, sub.Line, model.NoBlock, nil)
-	case err != nil:
-		return err
-	case ok:
+	if err != nil {
+		return rd.st.Fail(err, sub.Line, model.NoBlock, nil)
+	}
+	if ok {
 		rd.cues = append(rd.cues, c)
 	}
 	return nil

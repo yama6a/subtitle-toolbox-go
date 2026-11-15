@@ -1,7 +1,6 @@
 package transcript
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
@@ -13,13 +12,9 @@ import (
 // readRoot reads r, runs the text pre-pass and decodes the JSON root object of format f. ok is false for blank
 // content, which reads as an empty subtitle.
 func readRoot(r io.Reader, f model.Format, common model.CommonReadOptions) (st *parsing.State, root orderedjson.Value, ok bool, err error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, root, false, fmt.Errorf("read %s: %w", f, err)
-	}
-	st = parsing.NewState(f, common)
 	// The JSON decoder reads each bad byte as U+FFFD in both modes, so the UTF-8 check only warns.
-	content, ok, err = st.Prepare(content, false)
+	var content []byte
+	st, content, ok, err = parsing.ReadText(r, f, common, false)
 	if err != nil || !ok {
 		return st, root, false, err
 	}

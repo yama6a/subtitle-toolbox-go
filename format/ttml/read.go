@@ -85,12 +85,7 @@ type run struct {
 // Read reads TTML, IMSC and DFXP. It expects UTF-8, as stbox.Parse passes it. The reader ignores the encoding of
 // the XML declaration.
 func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.TTML, err)
-	}
-	st := parsing.NewState(model.TTML, common)
-	content, ok, err := st.Prepare(content, true)
+	st, content, ok, err := parsing.ReadText(r, model.TTML, common, true)
 	if err != nil {
 		return nil, nil, err
 	}

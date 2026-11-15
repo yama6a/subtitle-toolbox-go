@@ -1,8 +1,6 @@
 package sprucestl
 
 import (
-	"errors"
-	"fmt"
 	"io"
 	"regexp"
 	"strconv"
@@ -47,12 +45,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if err := opts.Validate(); err != nil {
 		return nil, nil, err
 	}
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.SpruceSTL, err)
-	}
-	st := parsing.NewState(model.SpruceSTL, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.SpruceSTL, common, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -161,11 +154,7 @@ func (rd *reader) cue(number int, line string, cl cueLine) error {
 	rd.inHeader = false
 	c, err := rd.readCue(number, line, cl)
 	if err != nil {
-		var perr *model.ParseError
-		if !errors.As(err, &perr) {
-			return err
-		}
-		return rd.st.Fail(perr, number, model.NoBlock, []string{line})
+		return rd.st.Fail(err, number, model.NoBlock, []string{line})
 	}
 	if rd.separator == "" {
 		rd.separator = cl.separator

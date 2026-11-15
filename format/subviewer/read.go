@@ -1,7 +1,6 @@
 package subviewer
 
 import (
-	"fmt"
 	"io"
 	"math"
 	"regexp"
@@ -43,12 +42,7 @@ type reader struct {
 
 // Read reads SubViewer 1 or 2 from UTF-8 text.
 func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.SubViewer, err)
-	}
-	st := parsing.NewState(model.SubViewer, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.SubViewer, common, false)
 	if err != nil {
 		return nil, nil, err
 	}

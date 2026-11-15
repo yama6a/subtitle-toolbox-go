@@ -1,7 +1,6 @@
 package ass
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"regexp"
@@ -71,12 +70,7 @@ type looseTime struct {
 
 // Read reads ASS or SSA text. It expects UTF-8, as stbox.Parse passes it.
 func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.ASS, err)
-	}
-	st := parsing.NewState(model.ASS, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.ASS, common, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -167,11 +161,7 @@ func (rd *reader) sectionLine(section, line string, number int) error {
 func (rd *reader) readEvent(ev event, index int) error {
 	loose, err := rd.parseEvent(ev, index)
 	if err != nil {
-		var perr *model.ParseError
-		if !errors.As(err, &perr) {
-			return err
-		}
-		return rd.st.Fail(perr, ev.number, index, []string{ev.line})
+		return rd.st.Fail(err, ev.number, index, []string{ev.line})
 	}
 	for _, lt := range loose {
 		msg := `The time "` + lt.text + `" is not in the form h:mm:ss.cc. The parser read it as ` + timecode.Seconds(lt.d) + " s."

@@ -1,7 +1,6 @@
 package wordgroup
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -38,11 +37,7 @@ func (r *Reader) Cue(start, end time.Duration, text string, words []Word, speake
 	lines := []string{orderedjson.Block(source)}
 	start, end, err := r.st.OrderedTimes(start, end, model.NoLine, block, lines, true)
 	if err != nil {
-		var perr *model.ParseError
-		if !errors.As(err, &perr) {
-			return nil, err
-		}
-		return nil, r.st.Fail(perr, model.NoLine, block, lines)
+		return nil, r.st.Fail(err, model.NoLine, block, lines)
 	}
 	c := model.Cue{Start: start, End: end}
 	c.SetText(markupcore.EscapeText(text))
@@ -166,11 +161,7 @@ func readUtterance(item orderedjson.Value, path, textKey string, unit time.Durat
 
 // fail passes a parse error to State.Fail. An error of another kind ends the read.
 func (r *Reader) fail(err error, block int, item orderedjson.Value) error {
-	var perr *model.ParseError
-	if !errors.As(err, &perr) {
-		return err
-	}
-	return r.st.Fail(perr, model.NoLine, block, []string{orderedjson.Block(item)})
+	return r.st.Fail(err, model.NoLine, block, []string{orderedjson.Block(item)})
 }
 
 // Transcript returns a subtitle with the cues in start order and fileData as the format data of the file.

@@ -1,7 +1,6 @@
 package qttext
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"math/bits"
@@ -31,12 +30,7 @@ type reader struct {
 
 // Read reads QuickTime text from UTF-8 text.
 func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.QuickTimeText, err)
-	}
-	st := parsing.NewState(model.QuickTimeText, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.QuickTimeText, common, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -147,10 +141,9 @@ func (sp *sampler) addStamp(m []string, line, trimmed string, number int) error 
 	if err == nil && sp.rd.relative {
 		start, err = parsing.BoundedTime(sp.previous+start, m[0][1:len(m[0])-1], number)
 	}
-	var perr *model.ParseError
-	if errors.As(err, &perr) {
+	if err != nil {
 		sp.skipping = true
-		return sp.rd.st.Fail(perr, number, model.NoBlock, []string{line})
+		return sp.rd.st.Fail(err, number, model.NoBlock, []string{line})
 	}
 	sp.skipping = false
 	sp.paired = sp.paired || sp.blank
@@ -175,14 +168,10 @@ func (rd *reader) cues(samples []sample, running *style) ([]model.Cue, error) {
 			end = samples[i+1].start
 		}
 		start, end, err := rd.st.OrderedTimes(sm.start, end, sm.line, model.NoBlock, sm.lines, true)
-		var perr *model.ParseError
-		if errors.As(err, &perr) {
-			err = rd.st.Fail(perr, sm.line, model.NoBlock, sm.lines)
-		}
 		if err != nil {
-			return nil, err
-		}
-		if perr != nil {
+			if err = rd.st.Fail(err, sm.line, model.NoBlock, sm.lines); err != nil {
+				return nil, err
+			}
 			continue
 		}
 		text := readLines(sm.lines, running)

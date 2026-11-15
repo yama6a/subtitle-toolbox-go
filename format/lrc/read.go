@@ -2,7 +2,6 @@ package lrc
 
 import (
 	"cmp"
-	"errors"
 	"fmt"
 	"io"
 	"regexp"
@@ -51,12 +50,7 @@ type reader struct {
 
 // Read reads LRC and enhanced LRC from UTF-8 text.
 func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.LRC, err)
-	}
-	st := parsing.NewState(model.LRC, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.LRC, common, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -160,11 +154,7 @@ func (rd *reader) readLines(s *model.Subtitle, lines []string) error {
 			text = lines[i]
 		}
 		err := rd.readTimedLine(line[:loc[1]], text)
-		var perr *model.ParseError
-		if errors.As(err, &perr) {
-			err = rd.st.Fail(perr, model.NoLine, i, []string{line})
-		}
-		if err != nil {
+		if err = rd.st.Fail(err, model.NoLine, i, []string{line}); err != nil {
 			return err
 		}
 	}

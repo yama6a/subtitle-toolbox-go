@@ -3,9 +3,11 @@ package parsing_test
 import (
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"strings"
 	"testing"
+	"testing/iotest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
@@ -133,12 +135,14 @@ func TestFail(t *testing.T) {
 	lines := []string{"2", "00:00:05,000 --> 00:00:0G,000", "Hello"}
 	tests := []struct {
 		name    string
-		err     *model.ParseError
+		err     error
 		line    int
 		block   int
 		lines   []string
 		warning model.ParseWarning
+		plain   bool
 	}{
+		{name: "an error of another kind passes through", err: errors.New("disk full"), line: 3, block: 1, plain: true},
 		{
 			name:    "the line argument",
 			err:     &model.ParseError{Format: model.SubRip, Line: 6, Msg: `The time "00:00:0G,000" is not valid.`},
@@ -186,8 +190,48 @@ func TestFail(t *testing.T) {
 			assert.Empty(t, strict.Warnings())
 
 			lenient := parsing.NewState(model.SubRip, model.CommonReadOptions{Lenient: true})
-			require.NoError(t, lenient.Fail(tt.err, tt.line, tt.block, tt.lines))
+			err = lenient.Fail(tt.err, tt.line, tt.block, tt.lines)
+			if tt.plain {
+				require.Same(t, tt.err, err)
+				assert.Empty(t, lenient.Warnings())
+				return
+			}
+			require.NoError(t, err)
 			assert.Equal(t, []model.ParseWarning{tt.warning}, lenient.Warnings())
+		})
+	}
+}
+
+func TestReadText(t *testing.T) {
+	t.Parallel()
+
+	readErr := errors.New("disk failure")
+	tests := []struct {
+		name    string
+		r       io.Reader
+		wantOK  bool
+		wantErr error
+	}{
+		{name: "reader fails", r: iotest.ErrReader(readErr), wantErr: readErr},
+		{name: "blank content", r: strings.NewReader(" \n\t")},
+		{name: "one cue", r: strings.NewReader("1\n00:00:01,000 --> 00:00:02,000\nHi\n"), wantOK: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			st, content, ok, err := parsing.ReadText(tt.r, model.SubRip, model.CommonReadOptions{}, false)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+				assert.True(t, strings.HasPrefix(err.Error(), "read srt:"), err.Error())
+				return
+			}
+			require.NoError(t, err)
+			require.NotNil(t, st)
+			assert.Equal(t, tt.wantOK, ok)
+			if tt.wantOK {
+				assert.Equal(t, "1\n00:00:01,000 --> 00:00:02,000\nHi\n", string(content))
+			}
 		})
 	}
 }
