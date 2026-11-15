@@ -58,14 +58,14 @@ The registry is written by hand, and no package registers itself in `init()`. Th
 
 | Table | File | Holds |
 |:--- |:--- |:--- |
-| facts | `model/format.go` | extensions, can read, can write, auto-detected, binary. The `Format` methods read it |
+| facts | `model/format.go` | extensions, can read, can write, binary. The `Format` methods read it |
 | functions | `registry.go` | the read and write switch, `readFormat` and `writeFormat` |
 | detection lists | `registry.go` | the JSON checks and the signatures, in detection order. First match wins |
 
 A pull request that adds a format:
 
 1. Adds its `Format` constant and its facts row.
-2. Sets can read, can write and auto-detected in its facts row.
+2. Sets can read and can write in its facts row.
 3. Adds its `case` to `readFormat` and `writeFormat` in `registry.go`.
 4. Inserts its matcher into `signatures` or `jsonChecks`. `TestDetectionListsFollowTheOrder` in `registry_internal_test.go` holds the order.
 5. Adds a field of its options type to the root `ReadOptions` or `WriteOptions` when the type is not empty. TSV uses the `CSV` field.

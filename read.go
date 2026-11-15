@@ -280,7 +280,7 @@ func formatOf(text []byte, path string) (f Format, empty bool, err error) {
 		return extfallback.Profile(detected, path), false, nil
 	}
 	if !ok {
-		return "", false, fmt.Errorf("%w: %s", ErrUnknownFormat, noFormat)
+		return "", false, fmt.Errorf("%w: %s", ErrNoFormatDetected, noFormat)
 	}
 	return f, false, nil
 }

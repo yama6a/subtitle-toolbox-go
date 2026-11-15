@@ -10,10 +10,11 @@ import (
 var (
 	ErrParse             = errors.New("stbox: cannot parse the content")
 	ErrUnsupportedFormat = errors.New("stbox: unsupported format")
-	ErrUnknownFormat     = fmt.Errorf("%w: no format detected", ErrUnsupportedFormat)
-	ErrInvalidArgument   = errors.New("stbox: invalid argument")
-	ErrCueNotFound       = errors.New("stbox: cue not found")
-	ErrUnwritable        = errors.New("stbox: the format cannot hold the content")
+	// ErrNoFormatDetected is the error of a read without a format when neither detection nor the file extension finds one. It also matches ErrUnsupportedFormat.
+	ErrNoFormatDetected = fmt.Errorf("%w: no format detected", ErrUnsupportedFormat)
+	ErrInvalidArgument  = errors.New("stbox: invalid argument")
+	ErrCueNotFound      = errors.New("stbox: cue not found")
+	ErrUnwritable       = errors.New("stbox: the format cannot hold the content")
 	// ErrInvalidUTF8 is the Err of an *UnwritableError for text that is not valid UTF-8. Read the input again
 	// with its source encoding first.
 	ErrInvalidUTF8 = errors.New("stbox: text is not valid UTF-8")

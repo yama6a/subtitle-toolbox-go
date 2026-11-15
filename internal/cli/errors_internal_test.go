@@ -28,7 +28,7 @@ func TestMessage(t *testing.T) {
 		{"parse error with a cause only", &stbox.ParseError{Err: errors.New("cause")}, "cause"},
 		{"wrapped parse error", fmt.Errorf("read: %w", &stbox.ParseError{Line: 2, Msg: "Bad."}), "line 2: Bad."},
 		{"parse error with an option", &stbox.ParseError{Msg: "Bad.", Option: "ReadOptions.Encoding"}, "Bad. " + encodings},
-		{"unknown format", fmt.Errorf("%w: %s", stbox.ErrUnknownFormat, "Format detection found no subtitle format."), unknownFormatMessage},
+		{"unknown format", fmt.Errorf("%w: %s", stbox.ErrNoFormatDetected, "Format detection found no subtitle format."), unknownFormatMessage},
 		{"invalid argument", &stbox.InvalidArgumentError{Option: "ReadOptions.Encoding", Msg: `The encoding "CP1125" is unknown.`}, `The encoding "CP1125" is unknown. ` + encodings},
 		{"invalid argument without advice", &stbox.InvalidArgumentError{Option: "WriteOptions.BOM", Msg: "The BOM rule 7 is unknown."}, "The BOM rule 7 is unknown."},
 		{"unwritable", &stbox.UnwritableError{Format: stbox.JSON, Reason: "The output cannot hold it."}, "The output cannot hold it."},

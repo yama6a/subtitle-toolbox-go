@@ -100,7 +100,7 @@ func message(err error) string {
 		return msg
 	}
 	switch {
-	case errors.Is(err, stbox.ErrUnknownFormat):
+	case errors.Is(err, stbox.ErrNoFormatDetected):
 		return unknownFormatMessage
 	case errors.Is(err, fs.ErrNotExist):
 		return missingFileMessage

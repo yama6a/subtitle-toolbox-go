@@ -75,7 +75,7 @@ func TestReadTrack(t *testing.T) {
 					assert.Len(t, te.Tracks, tt.wantTracks)
 					assert.Equal(t, Matroska, te.Container)
 					require.ErrorIs(t, err, ErrUnsupportedFormat)
-					require.NotErrorIs(t, err, ErrUnknownFormat)
+					require.NotErrorIs(t, err, ErrNoFormatDetected)
 				case *InvalidArgumentError:
 					require.ErrorAs(t, err, &ie)
 					assert.Equal(t, "ReadOptions.Track", ie.Option)
@@ -158,7 +158,7 @@ func TestTrackInputErrors(t *testing.T) {
 			err := tt.call()
 			require.EqualError(t, err, tt.want)
 			require.ErrorIs(t, err, tt.is)
-			assert.NotErrorIs(t, err, ErrUnknownFormat)
+			assert.NotErrorIs(t, err, ErrNoFormatDetected)
 		})
 	}
 }
