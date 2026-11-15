@@ -85,3 +85,18 @@ func checkCues(tb testing.TB, s *model.Subtitle) {
 		}
 	}
 }
+
+// ErrWrite is the error of every write to ErrWriter.
+var ErrWrite = errors.New("disk full")
+
+// ErrWriter is an io.Writer whose every write fails with ErrWrite.
+type ErrWriter struct{}
+
+func (ErrWriter) Write([]byte) (int, error) { return 0, ErrWrite }
+
+// Subtitle returns a new subtitle that holds cues.
+func Subtitle(cues ...model.Cue) *model.Subtitle {
+	s := &model.Subtitle{}
+	s.AddCues(cues...)
+	return s
+}

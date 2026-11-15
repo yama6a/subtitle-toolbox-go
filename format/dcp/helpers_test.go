@@ -52,12 +52,6 @@ func write(t *testing.T, s *model.Subtitle) string {
 	return out.String()
 }
 
-func subtitle(cues ...model.Cue) *model.Subtitle {
-	s := &model.Subtitle{}
-	s.AddCues(cues...)
-	return s
-}
-
 type cueRow struct {
 	Start, End time.Duration
 	Lines      []string

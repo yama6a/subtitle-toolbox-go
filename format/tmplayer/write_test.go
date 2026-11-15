@@ -1,7 +1,6 @@
 package tmplayer_test
 
 import (
-	"errors"
 	"testing"
 	"time"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/tmplayer"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -91,7 +91,7 @@ func TestWrite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, write(t, subtitle(tt.cues...), model.CommonWriteOptions{}))
+			assert.Equal(t, tt.want, write(t, formattest.Subtitle(tt.cues...), model.CommonWriteOptions{}))
 		})
 	}
 }
@@ -106,20 +106,16 @@ func TestWriteEmptySubtitle(t *testing.T) {
 func TestWriteOutputOptions(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(model.Cue{End: time.Second, Lines: []string{"Hello"}})
+	s := formattest.Subtitle(model.Cue{End: time.Second, Lines: []string{"Hello"}})
 	assert.Equal(t, "\xEF\xBB\xBF00:00:00:Hello\r\n", write(t, s, model.CommonWriteOptions{LineEnding: model.CRLF, BOM: model.BOMAdd}))
 	assert.Equal(t, "00:00:00:Hello\n", write(t, s, model.CommonWriteOptions{}))
 	assert.Equal(t, "00:00:00:Hello\n", write(t, s, model.CommonWriteOptions{BOM: model.BOMRemove}))
 }
 
-type failingWriter struct{}
-
-func (failingWriter) Write([]byte) (int, error) { return 0, errors.New("disk full") }
-
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	_, err := tmplayer.Write(failingWriter{}, subtitle(model.Cue{Lines: []string{"x"}}), model.CommonWriteOptions{}, tmplayer.WriteOptions{})
+	_, err := tmplayer.Write(formattest.ErrWriter{}, formattest.Subtitle(model.Cue{Lines: []string{"x"}}), model.CommonWriteOptions{}, tmplayer.WriteOptions{})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "disk full")
 }
@@ -151,7 +147,7 @@ func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := write(t, subtitle(tt.cues...), model.CommonWriteOptions{})
+			got := write(t, formattest.Subtitle(tt.cues...), model.CommonWriteOptions{})
 			assert.Equal(t, tt.want, got)
 			_, _, err := read(got, model.CommonReadOptions{})
 			require.NoError(t, err)

@@ -12,6 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/sbv"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -109,7 +110,7 @@ func TestWriteText(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, write(t, subtitle(t, tt.cues...), model.CommonWriteOptions{}))
+			assert.Equal(t, tt.want, write(t, formattest.Subtitle(tt.cues...), model.CommonWriteOptions{}))
 		})
 	}
 }
@@ -133,7 +134,7 @@ func TestWriteTimes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want+"\nText\n", write(t, subtitle(t, cue(tt.start, tt.end, "Text")), model.CommonWriteOptions{}))
+			assert.Equal(t, tt.want+"\nText\n", write(t, formattest.Subtitle(cue(tt.start, tt.end, "Text")), model.CommonWriteOptions{}))
 		})
 	}
 }
@@ -141,7 +142,7 @@ func TestWriteTimes(t *testing.T) {
 func TestWriteOutputOptions(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(t, cue(time.Second, 2*time.Second, "<i>A</i>"), cue(3*time.Second, 4*time.Second, "B"))
+	s := formattest.Subtitle(cue(time.Second, 2*time.Second, "<i>A</i>"), cue(3*time.Second, 4*time.Second, "B"))
 	tests := []struct {
 		name   string
 		common model.CommonWriteOptions
@@ -165,14 +166,14 @@ func TestWriteNoCues(t *testing.T) {
 	t.Parallel()
 
 	assert.Empty(t, write(t, &model.Subtitle{}, model.CommonWriteOptions{}))
-	assert.Empty(t, write(t, subtitle(t, cue(0, time.Second)), model.CommonWriteOptions{}))
+	assert.Empty(t, write(t, formattest.Subtitle(cue(0, time.Second)), model.CommonWriteOptions{}))
 }
 
 func TestWriteFailsOnWriterError(t *testing.T) {
 	t.Parallel()
 
-	_, err := sbv.Write(errWriter{}, subtitle(t, cue(0, time.Second, "A")), model.CommonWriteOptions{}, sbv.WriteOptions{})
-	require.ErrorIs(t, err, errRead)
+	_, err := sbv.Write(formattest.ErrWriter{}, formattest.Subtitle(cue(0, time.Second, "A")), model.CommonWriteOptions{}, sbv.WriteOptions{})
+	require.ErrorIs(t, err, formattest.ErrWrite)
 }
 
 // The ruby fixture is the SBV output of the shared ruby input of tests/Formatters/SbvFormatterTest.php of subtitle-toolbox-php.

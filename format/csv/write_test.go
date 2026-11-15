@@ -12,6 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -20,7 +21,7 @@ import (
 const bom = "\ufeff"
 
 func english() *model.Subtitle {
-	return subtitle(
+	return formattest.Subtitle(
 		model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<v Anna>Where are you going?"}},
 		model.Cue{Start: 4500 * ms, End: 6 * time.Second, Lines: []string{"<v Ben><i>Home.</i>", "Now."}},
 	)
@@ -53,7 +54,7 @@ func TestWrite(t *testing.T) {
 		},
 		{
 			name: "quotes cells and decodes entities", common: noBOM,
-			s:    subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{`Tom &amp; "Ann", <b>both</b>`}}),
+			s:    formattest.Subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{`Tom &amp; "Ann", <b>both</b>`}}),
 			want: "start,end,text\n00:00:01.000,00:00:02.000,\"Tom & \"\"Ann\"\", both\"\n",
 		},
 		{
@@ -64,28 +65,28 @@ func TestWrite(t *testing.T) {
 		},
 		{
 			name: "a second cue over 2 rows fills the first row it overlaps most", common: noBOM,
-			s: subtitle(model.Cue{End: 2 * time.Second, Lines: []string{"a"}}, model.Cue{Start: 2 * time.Second, End: 6 * time.Second, Lines: []string{"b"}}),
+			s: formattest.Subtitle(model.Cue{End: 2 * time.Second, Lines: []string{"a"}}, model.Cue{Start: 2 * time.Second, End: 6 * time.Second, Lines: []string{"b"}}),
 			opts: csv.WriteOptions{
-				SecondText: subtitle(model.Cue{Start: time.Second, End: 6 * time.Second, Lines: []string{"x"}}), TimeFormat: csv.TimeSeconds,
+				SecondText: formattest.Subtitle(model.Cue{Start: time.Second, End: 6 * time.Second, Lines: []string{"x"}}), TimeFormat: csv.TimeSeconds,
 			},
 			want: "start,end,text,text2\n0,2,a,x\n2,6,b,\n",
 		},
 		{
 			name: "no overlap gives an empty second cell", common: noBOM,
-			s: subtitle(model.Cue{End: time.Second, Lines: []string{"a"}}),
+			s: formattest.Subtitle(model.Cue{End: time.Second, Lines: []string{"a"}}),
 			opts: csv.WriteOptions{
-				SecondText: subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"x"}}), TimeFormat: csv.TimeSeconds,
+				SecondText: formattest.Subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"x"}}), TimeFormat: csv.TimeSeconds,
 			},
 			want: "start,end,text,text2\n0,1,a,\n",
 		},
 		{
 			name: "negative times write as 0", common: noBOM, opts: csv.WriteOptions{TimeFormat: csv.TimeFrames, FrameRate: model.FrameRate{Num: 25, Den: 1}},
-			s:    subtitle(model.Cue{Start: -2 * time.Second, End: -time.Second, Lines: []string{"a"}}),
+			s:    formattest.Subtitle(model.Cue{Start: -2 * time.Second, End: -time.Second, Lines: []string{"a"}}),
 			want: "start,end,text\n00:00:00:00,00:00:00:00,a\n",
 		},
 		{
 			name: "ruby as text and a speaker after it", common: noBOM,
-			s:    subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"<v Ann><ruby>Kan<rt>kan</rt></ruby>ji", "<v Bob>Yes"}}),
+			s:    formattest.Subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"<v Ann><ruby>Kan<rt>kan</rt></ruby>ji", "<v Bob>Yes"}}),
 			want: "start,end,speaker,text\n00:00:01.000,00:00:02.000,Ann,\"Kan (kan)ji\nYes\"\n",
 		},
 	}
@@ -116,7 +117,7 @@ func TestWriteTimeFormats(t *testing.T) {
 		t.Run(string(tt.format), func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(model.Cue{Start: 62480 * ms, End: 3599990 * ms, Lines: []string{"a"}})
+			s := formattest.Subtitle(model.Cue{Start: 62480 * ms, End: 3599990 * ms, Lines: []string{"a"}})
 			assert.Equal(t, "start,end,text\n"+tt.start+","+tt.end+",a\n", write(t, s, noBOM, csv.WriteOptions{TimeFormat: tt.format, FrameRate: model.FrameRate{Num: 25, Den: 1}}))
 		})
 	}
@@ -151,7 +152,7 @@ func TestWriteTimeCells(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(model.Cue{Start: tt.d, End: tt.d, Lines: []string{"a"}})
+			s := formattest.Subtitle(model.Cue{Start: tt.d, End: tt.d, Lines: []string{"a"}})
 			want := "start,end,text\n" + tt.want + "," + tt.want + ",a\n"
 			assert.Equal(t, want, write(t, s, noBOM, csv.WriteOptions{TimeFormat: tt.format, FrameRate: rate(tt.fps)}))
 		})
@@ -218,7 +219,7 @@ func TestWriteIdentifiersAndOtherColumnsFromAnotherFormat(t *testing.T) {
 func TestWriteOtherColumnsOfOtherInput(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(model.Cue{End: time.Second, Lines: []string{"a"}}, model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"b"}})
+	s := formattest.Subtitle(model.Cue{End: time.Second, Lines: []string{"a"}}, model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"b"}})
 	setCue(t, s, 0, func(c *model.Cue) {
 		require.NoError(t, c.SetFormatData("csv", model.NewData(model.Field{Key: "columns", Value: []any{"x", int64(7)}})))
 	})
@@ -288,7 +289,7 @@ func TestWriteBilingualTable(t *testing.T) {
 func TestWriteEscapesFormulasOnlyWhenAsked(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(
+	s := formattest.Subtitle(
 		model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"- Hi.", "- Hello."}},
 		model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Lines: []string{"=SUM(A1)"}},
 		model.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"+1 @home"}},
@@ -307,7 +308,7 @@ func TestWriteStoredRoles(t *testing.T) {
 	require.NoError(t, first.SetFormatData("csv", model.NewData(model.Field{Key: "columns", Value: model.NewData(model.Field{Key: "Notes", Value: "calm"})})))
 	second := model.Cue{Start: 4500 * ms, End: 6 * time.Second, Lines: []string{"Home.", "Now."}}
 	require.NoError(t, second.SetFormatData("csv", model.NewData(model.Field{Key: "columns", Value: model.NewData(model.Field{Key: "Notes", Value: "=1+1"})})))
-	s := subtitle(first, second)
+	s := formattest.Subtitle(first, second)
 	require.NoError(t, s.SetFormatData("csv", model.NewData(
 		model.Field{Key: "delimiter", Value: ";"},
 		model.Field{Key: "header", Value: []any{"ID", "In", "Length", "Who", "Line", "Notes"}},
@@ -323,7 +324,7 @@ func TestWriteStoredRoles(t *testing.T) {
 		"a1;1;3;Anna;Where are you going?;Wohin?;calm\n"+
 		";4.5;1.5;;\"Home.\nNow.\";;'=1+1\n",
 		write(t, s, noBOM, csv.WriteOptions{
-			SecondText:       subtitle(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Wohin?"}}),
+			SecondText:       formattest.Subtitle(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Wohin?"}}),
 			SecondTextHeader: "Second",
 			EscapeFormulas:   true,
 		}))
@@ -335,7 +336,7 @@ func TestWriteQuotesStoredQuotedColumns(t *testing.T) {
 
 	s, _ := mustRead(t, "start,end,text,notes\n1,2,\"Hello\",x\n", strict, csv.ReadOptions{})
 	setCue(t, s, 0, func(c *model.Cue) { c.Lines = []string{"<v Ann>Bye"} })
-	second := subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Tsch\u00fcss"}})
+	second := formattest.Subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Tsch\u00fcss"}})
 	assert.Equal(t, "start,end,speaker,text,Second,notes\n1,2,Ann,\"Bye\",Tsch\u00fcss,x\n",
 		write(t, s, noBOM, csv.WriteOptions{SecondText: second, SecondTextHeader: "Second"}))
 }

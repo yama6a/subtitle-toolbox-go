@@ -1,7 +1,6 @@
 package lrc_test
 
 import (
-	"errors"
 	"testing"
 	"time"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/lrc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -55,7 +55,7 @@ func TestWrite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, bom+tt.want, write(t, subtitle(tt.cues...), model.CommonWriteOptions{}))
+			assert.Equal(t, bom+tt.want, write(t, formattest.Subtitle(tt.cues...), model.CommonWriteOptions{}))
 		})
 	}
 }
@@ -64,7 +64,7 @@ func TestWrite(t *testing.T) {
 func TestWriteCommentsAndIDTags(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(
+	s := formattest.Subtitle(
 		model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"First"}},
 		model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Lines: []string{"Second"}},
 	)
@@ -73,7 +73,7 @@ func TestWriteCommentsAndIDTags(t *testing.T) {
 	require.NoError(t, s.AddComment("Two\nlines", 2))
 	assert.Equal(t, bom+"[ar:Station Choir]\n[00:01.00] First\n[#:Before second]\n[00:03.00] Second\n[#:Two lines]\n", write(t, s, model.CommonWriteOptions{}))
 
-	s = subtitle(model.Cue{Start: time.Second, Lines: []string{"Text"}})
+	s = formattest.Subtitle(model.Cue{Start: time.Second, Lines: []string{"Text"}})
 	s.SetMetadata(model.MetadataAuthor, "Jane\n Doe ")
 	s.SetMetadata(model.MetadataTitle, "")
 	s.SetMetadata(model.MetadataLanguage, "en")
@@ -106,7 +106,7 @@ func TestWriteSkipsIDTagsThatReadBackAsOther(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(model.Cue{Start: time.Second, End: 20 * time.Second, Lines: []string{"First"}})
+			s := formattest.Subtitle(model.Cue{Start: time.Second, End: 20 * time.Second, Lines: []string{"First"}})
 			require.NoError(t, s.SetFormatData("lrc", model.NewData(model.Field{Key: "idTags", Value: tt.value})))
 			out := write(t, s, model.CommonWriteOptions{})
 			assert.Equal(t, bom+tt.want+"[00:01.00] First\n", out)
@@ -134,7 +134,7 @@ func TestWriteIDTagKeysIgnoreCase(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(model.Cue{Start: time.Second, Lines: []string{"Text"}})
+			s := formattest.Subtitle(model.Cue{Start: time.Second, Lines: []string{"Text"}})
 			if tt.title != "" {
 				s.SetMetadata(model.MetadataTitle, tt.title)
 			}
@@ -168,7 +168,7 @@ func TestWriteClampsAtTheLargestReadableTime(t *testing.T) {
 
 			c := model.Cue{Start: tt.start, End: 21 * time.Hour, Lines: []string{"w <" + markupcore.CoreTimestamp(tt.start) + ">x"}}
 			require.NoError(t, c.SetFormatData("lrc", model.NewData(model.Field{Key: "endLine", Value: true})))
-			out := write(t, subtitle(c), model.CommonWriteOptions{BOM: model.BOMRemove})
+			out := write(t, formattest.Subtitle(c), model.CommonWriteOptions{BOM: model.BOMRemove})
 			assert.Equal(t, tt.want, out)
 			back, _, err := read(out, model.CommonReadOptions{})
 			require.NoError(t, err)
@@ -233,7 +233,7 @@ func TestWriteWordTimesWithoutSpaces(t *testing.T) {
 
 	file := string(testfiles.Read(t, "karaoke/hebrew.lrc"))
 	assert.Equal(t, file, write(t, readFile(t, "karaoke/hebrew.lrc"), model.CommonWriteOptions{}))
-	s := subtitle(model.Cue{Start: 3 * time.Second, End: 5 * time.Second, Lines: []string{"<00:00:03.000>Slow <00:00:03.550>river"}})
+	s := formattest.Subtitle(model.Cue{Start: 3 * time.Second, End: 5 * time.Second, Lines: []string{"<00:00:03.000>Slow <00:00:03.550>river"}})
 	assert.Equal(t, bom+"[00:03.00] <00:03.00>Slow <00:03.55>river\n", write(t, s, model.CommonWriteOptions{}))
 }
 
@@ -255,7 +255,7 @@ func TestWriteSpacedWordTimes(t *testing.T) {
 		t.Run(tt.line, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(model.Cue{Start: time.Second, Lines: []string{tt.line}})
+			s := formattest.Subtitle(model.Cue{Start: time.Second, Lines: []string{tt.line}})
 			require.NoError(t, s.SetFormatData("lrc", model.NewData(model.Field{Key: "spacedWordTimes", Value: true})))
 			assert.Equal(t, bom+"[00:01.00] "+tt.want+"\n", write(t, s, model.CommonWriteOptions{}))
 		})
@@ -271,19 +271,15 @@ func TestWriteEmptySubtitle(t *testing.T) {
 func TestWriteOutputOptions(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(model.Cue{End: time.Second, Lines: []string{"Hello"}})
+	s := formattest.Subtitle(model.Cue{End: time.Second, Lines: []string{"Hello"}})
 	assert.Equal(t, bom+"[00:00.00] Hello\r\n", write(t, s, model.CommonWriteOptions{LineEnding: model.CRLF}))
 	assert.Equal(t, "[00:00.00] Hello\n", write(t, s, model.CommonWriteOptions{BOM: model.BOMRemove}))
 }
 
-type failingWriter struct{}
-
-func (failingWriter) Write([]byte) (int, error) { return 0, errors.New("disk full") }
-
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	_, err := lrc.Write(failingWriter{}, subtitle(model.Cue{Lines: []string{"x"}}), model.CommonWriteOptions{}, lrc.WriteOptions{})
+	_, err := lrc.Write(formattest.ErrWriter{}, formattest.Subtitle(model.Cue{Lines: []string{"x"}}), model.CommonWriteOptions{}, lrc.WriteOptions{})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "disk full")
 }

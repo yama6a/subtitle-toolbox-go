@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/qttext"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -79,12 +80,6 @@ func warningRows(warnings []model.ParseWarning) []warningRow {
 	return rows
 }
 
-func subtitle(cues ...model.Cue) *model.Subtitle {
-	s := &model.Subtitle{}
-	s.AddCues(cues...)
-	return s
-}
-
 // withHeader returns a subtitle with the cues and the stored qttext header lines.
 func withHeader(t *testing.T, header []string, paired bool, cues ...model.Cue) *model.Subtitle {
 	t.Helper()
@@ -97,7 +92,7 @@ func withHeader(t *testing.T, header []string, paired bool, cues ...model.Cue) *
 	if paired {
 		data.Set("pairedTimestamps", true)
 	}
-	s := subtitle(cues...)
+	s := formattest.Subtitle(cues...)
 	require.NoError(t, s.SetFormatData("qttext", data))
 	return s
 }
@@ -116,13 +111,3 @@ func fileData(s *model.Subtitle) map[string]any {
 }
 
 var errRead = errors.New("disk gone")
-
-type errReader struct{}
-
-func (errReader) Read([]byte) (int, error) { return 0, errRead }
-
-var errWrite = errors.New("disk full")
-
-type errWriter struct{}
-
-func (errWriter) Write([]byte) (int, error) { return 0, errWrite }

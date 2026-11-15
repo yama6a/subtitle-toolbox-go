@@ -97,11 +97,3 @@ func firstCue(t *testing.T, s *model.Subtitle) model.Cue {
 	require.True(t, ok)
 	return c
 }
-
-func subtitle(t *testing.T, cues ...model.Cue) *model.Subtitle {
-	t.Helper()
-
-	s := &model.Subtitle{}
-	s.AddCues(cues...)
-	return s
-}
