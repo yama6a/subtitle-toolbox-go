@@ -1,7 +1,6 @@
 package stbox_test
 
 import (
-	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
