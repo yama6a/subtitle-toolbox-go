@@ -59,8 +59,8 @@ func TestMeasure(t *testing.T) {
 			t.Parallel()
 
 			m := readingspeed.Measure(tt.cue)
-			assert.Equal(t, len(tt.cue.Lines), len(m.LineLengths))
-			assert.Equal(t, len(tt.cue.Lines), len(m.PlainLines))
+			assert.Len(t, m.LineLengths, len(tt.cue.Lines))
+			assert.Len(t, m.PlainLines, len(tt.cue.Lines))
 			if tt.lengths != nil {
 				assert.Equal(t, tt.lengths, m.LineLengths)
 			}
