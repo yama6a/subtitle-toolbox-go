@@ -83,10 +83,10 @@ Code uses `regexp`. It uses `regexp2` only where a pattern needs lookaround or b
 
 ## Read goldens
 
-The files `<folder>/real/expected/<file>.json` hold the expected parse warnings and the [library JSON](json.md) of each real input file. `readgoldens_test.go` reads each file and compares the JSON.
+The files `<folder>/real/expected/<file>.json` hold the expected parse warnings and the [library JSON](json.md) of each real input file. `internal/conformance/readgoldens_test.go` reads each file and compares the JSON.
 
 - **Why**: the goldens catch a change in what a reader returns for real files.
-- **Update**: `go test -run TestReadGoldens -update` rewrites them. Review each diff by hand, because a read bug would otherwise hide in the new golden.
+- **Update**: `go test ./internal/conformance -run TestReadGoldens -update` rewrites them. Review each diff by hand, because a read bug would otherwise hide in the new golden.
 - **Write output**: the write goldens are separate files. `make golden` rewrites them and the read goldens.
 - **Source**: [#9](https://github.com/yama6a/subtitle-toolbox-go/issues/9), [#1](https://github.com/yama6a/subtitle-toolbox-go/issues/1).
 

@@ -6,4 +6,4 @@ Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5
 |:--- |:--- |:--- |
 | `mkvextract_simple.txt` | Written for this repository in the shape of `mkvextract chapters --simple` output | MIT |
 | `windows_tool_crlf_bom.txt` | Written for this repository in the shape of chapters from a Windows chapter tool: UTF-8 BOM, CR LF, generated names every 5 minutes | MIT |
-| `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name. First written by `tests/files/generate-read-goldens.php` of subtitle-toolbox-php. `go test -run TestReadGoldens -update` rewrites them | MIT |
+| `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name. First written by `tests/files/generate-read-goldens.php` of subtitle-toolbox-php. `go test ./internal/conformance -run TestReadGoldens -update` rewrites them | MIT |

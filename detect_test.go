@@ -655,3 +655,11 @@ func TestDetectReadsPGSFromTheRawBytes(t *testing.T) {
 		})
 	}
 }
+
+func TestLibraryJSONWinsOverWhisper(t *testing.T) {
+	t.Parallel()
+
+	d, ok := stbox.Detect([]byte(`{"version": 1, "cues": [], "segments": []}`))
+	require.True(t, ok)
+	assert.Equal(t, stbox.JSON, d.Format)
+}

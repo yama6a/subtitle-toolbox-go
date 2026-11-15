@@ -166,7 +166,7 @@ Each format has its own field in `ReadOptions` and `WriteOptions`. See [docs/for
 - **Logging**: the library never logs. A read returns its warnings in `ReadInfo`. A logger in the API would put zap into the module graph of every importer.
 - **Errors**: each cause is a sentinel error such as `ErrParse`, matched with `errors.Is`. No sentinel matches every error, so errors of the caller's own reader stay apart.
 - **Packages**: no format package registers itself in `init()`. A missing format is then a compile error, and not an "unknown format" at run time.
-- **Tests**: the read goldens are the expected cues of real files. `go test -run TestReadGoldens -update` rewrites them. Review each diff by hand.
+- **Tests**: the read goldens are the expected cues of real files. `go test ./internal/conformance -run TestReadGoldens -update` rewrites them. Review each diff by hand.
 
 [docs/design.md](docs/design.md) links each decision to its issue.
 

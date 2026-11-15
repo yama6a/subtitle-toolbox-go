@@ -1,6 +1,7 @@
-package stbox_test
+package conformance_test
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -15,10 +16,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v4/imaging"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
@@ -202,4 +203,107 @@ func TestImageGoldenCuesDescribeABuiltImageCue(t *testing.T) {
 		Start: 1.5, End: 2, X: 10, Y: 20, Width: 1, Height: 1, ScreenWidth: 1920, ScreenHeight: 1080, Forced: true, Alignment: "TopCenter",
 		RGBASha256: "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
 	}}, imageGoldenCues(t, s))
+}
+
+// TestVobSubToPGS writes each VobSub track as PGS and compares the file with its golden.
+// Reading the result gives the same cues. Limited range YCrCb has no code for some RGB colours,
+// so a colour channel can differ by 1. The alpha does not change.
+func TestVobSubToPGS(t *testing.T) {
+	t.Parallel()
+
+	for _, g := range vobsubImageGoldens {
+		t.Run(g.golden, func(t *testing.T) {
+			t.Parallel()
+
+			s, _, err := stbox.Load(testfiles.Path(t, g.fixture), g.options)
+			require.NoError(t, err)
+			var out bytes.Buffer
+			_, err = stbox.Write(&out, s, stbox.PGS, stbox.WriteOptions{})
+			require.NoError(t, err)
+			golden.Equal(t, testfiles.Path(t, g.golden+".to.sup"), out.Bytes(), *update)
+
+			back, _, err := stbox.Parse(bytes.NewReader(out.Bytes()), int64(out.Len()), stbox.ReadOptions{Format: stbox.PGS})
+			require.NoError(t, err)
+			require.Equal(t, s.Len(), back.Len())
+			for i, c := range s.Cues() {
+				d, _ := back.Cue(i)
+				assert.Equal(t, c.Start, d.Start, "start of cue %d", i)
+				assert.Equal(t, c.End, d.End, "end of cue %d", i)
+				assert.Equal(t, [6]int{c.Image.X, c.Image.Y, c.Image.Width, c.Image.Height, c.Image.ScreenWidth, c.Image.ScreenHeight},
+					[6]int{d.Image.X, d.Image.Y, d.Image.Width, d.Image.Height, d.Image.ScreenWidth, d.Image.ScreenHeight}, "place of cue %d", i)
+				want, err := imaging.Decode(*c.Image)
+				require.NoError(t, err)
+				got, err := imaging.Decode(*d.Image)
+				require.NoError(t, err)
+				for p := range want.Pix {
+					delta := 1.0
+					if p%4 == 3 {
+						delta = 0
+					}
+					assert.InDelta(t, int(want.Pix[p]), int(got.Pix[p]), delta, "cue %d byte %d", i, p)
+				}
+			}
+		})
+	}
+}
+
+func imageCue(start, end time.Duration, lines ...string) stbox.Cue {
+	c := stbox.Cue{Start: start, End: end, Lines: lines}
+	c.Image = &stbox.Image{PNG: []byte("\x89PNG"), X: 1, Y: 2, Width: 3, Height: 4, ScreenWidth: 720, ScreenHeight: 576}
+	return c
+}
+
+func writeBytes(t *testing.T, s *stbox.Subtitle, f stbox.Format, opts stbox.WriteOptions) ([]byte, error) {
+	t.Helper()
+
+	var b bytes.Buffer
+	_, err := stbox.Write(&b, s, f, opts)
+	return b.Bytes(), err
+}
+
+func subtitleOfCues(t *testing.T, comment int, cues ...stbox.Cue) *stbox.Subtitle {
+	t.Helper()
+
+	s := &stbox.Subtitle{}
+	s.AddCues(cues...)
+	require.NoError(t, s.AddComment("note", comment))
+	return s
+}
+
+func TestWritersHandleImageCues(t *testing.T) {
+	t.Parallel()
+
+	text := func(start, end time.Duration, line string) stbox.Cue {
+		return stbox.Cue{Start: start, End: end, Lines: []string{line}}
+	}
+	one, two, three := text(time.Second, 2*time.Second, "One"), text(5*time.Second, 6*time.Second, "Two"), text(7*time.Second, 8*time.Second, "Three")
+	withImages := subtitleOfCues(t, 1, one, imageCue(3*time.Second, 4*time.Second), two, imageCue(7*time.Second, 8*time.Second, "Three"))
+	// The comment before the dropped image cue moves to the next kept cue.
+	skipped := subtitleOfCues(t, 1, one, two, three)
+
+	for _, f := range stbox.Formats() {
+		if !f.CanWrite() || f == stbox.PGS {
+			continue
+		}
+		t.Run(string(f), func(t *testing.T) {
+			t.Parallel()
+
+			got, err := writeBytes(t, withImages, f, stbox.WriteOptions{})
+			if f == stbox.JSON {
+				require.NoError(t, err)
+				assert.Contains(t, string(got), `"image"`)
+				return
+			}
+			var uerr *stbox.UnwritableError
+			require.ErrorAs(t, err, &uerr)
+			assert.Equal(t, 1, uerr.CueIndex)
+			assert.Equal(t, f, uerr.Format)
+			assert.Equal(t, "Cue #1 holds an image but no text, and "+string(f)+" needs text.", uerr.Reason)
+
+			got, err = writeBytes(t, withImages, f, stbox.WriteOptions{SkipImageCues: true})
+			want, wantErr := writeBytes(t, skipped, f, stbox.WriteOptions{})
+			assert.Equal(t, wantErr, err)
+			assert.Equal(t, want, got)
+		})
+	}
 }

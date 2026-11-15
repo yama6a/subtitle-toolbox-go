@@ -1,16 +1,24 @@
-package stbox_test
+package conformance_test
 
 import (
 	"bytes"
+	"errors"
+	"io/fs"
+	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
 
 type structureTextCase struct {
@@ -206,4 +214,228 @@ func TestWriteCueTextThatReadsAsStructure(t *testing.T) {
 			})
 		}
 	}
+}
+
+func TestOffsetRoundTrip(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		format     stbox.Format
+		alignment  stbox.Alignment
+		offset     stbox.Offset
+		wantOffset *stbox.Offset
+	}{
+		{"TTML bottom center", stbox.TTML, stbox.BottomCenter, stbox.Offset{X: 50, Y: 95}, &stbox.Offset{X: 50, Y: 95}},
+		{"TTML default anchor reads back as none", stbox.TTML, stbox.BottomCenter, stbox.Offset{X: 50, Y: 90}, nil},
+		{"TTML top left", stbox.TTML, stbox.TopLeft, stbox.Offset{X: 10, Y: 5}, &stbox.Offset{X: 10, Y: 5}},
+		{"TTML middle right", stbox.TTML, stbox.MiddleRight, stbox.Offset{X: 80, Y: 40}, &stbox.Offset{X: 80, Y: 40}},
+		{"DCP bottom center", stbox.DCP, stbox.BottomCenter, stbox.Offset{X: 50, Y: 80}, &stbox.Offset{X: 50, Y: 80}},
+		{"DCP bottom center in the usual place reads back as none", stbox.DCP, stbox.BottomCenter, stbox.Offset{X: 50, Y: 95}, nil},
+		{"DCP top left", stbox.DCP, stbox.TopLeft, stbox.Offset{X: 20, Y: 25}, &stbox.Offset{X: 20, Y: 25}},
+		{"DCP top left at the default anchor reads back as none", stbox.DCP, stbox.TopLeft, stbox.Offset{X: 10, Y: 8}, nil},
+		{"DCP middle right", stbox.DCP, stbox.MiddleRight, stbox.Offset{X: 80, Y: 40}, &stbox.Offset{X: 80, Y: 40}},
+		{"WebVTT bottom center", stbox.WebVTT, stbox.BottomCenter, stbox.Offset{X: 50, Y: 95}, &stbox.Offset{X: 50, Y: 95}},
+		{"WebVTT top left keeps the column, not the height", stbox.WebVTT, stbox.TopLeft, stbox.Offset{X: 20, Y: 5}, &stbox.Offset{X: 20, Y: 0}},
+		{"WebVTT top center keeps no offset", stbox.WebVTT, stbox.TopCenter, stbox.Offset{X: 50, Y: 10}, nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			c := stbox.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"One"}}
+			c.Position = stbox.Position{Alignment: tt.alignment, Offset: &tt.offset}
+			s := &stbox.Subtitle{}
+			s.AddCues(c)
+
+			var out bytes.Buffer
+			_, err := stbox.Write(&out, s, tt.format, stbox.WriteOptions{})
+			require.NoError(t, err)
+			back, _, err := parseBytes(out.Bytes(), stbox.ReadOptions{Format: tt.format})
+			require.NoError(t, err)
+			got, ok := back.Cue(0)
+			require.True(t, ok)
+			assert.Equal(t, tt.alignment, got.Position.Alignment)
+			assert.Equal(t, tt.wantOffset, got.Position.Offset)
+		})
+	}
+}
+
+func TestWebVTTHeightConvertsToDCPAndBack(t *testing.T) {
+	t.Parallel()
+
+	vtt := "WEBVTT\n\n00:00:01.000 --> 00:00:02.000 line:80%,end\nOne\n"
+	s, _, err := parseBytes([]byte(vtt), stbox.ReadOptions{})
+	require.NoError(t, err)
+	var out bytes.Buffer
+	_, err = stbox.Write(&out, s, stbox.DCP, stbox.WriteOptions{})
+	require.NoError(t, err)
+	assert.Contains(t, out.String(), `<Text Valign="bottom" Vposition="20">One</Text>`)
+
+	back, _, err := parseBytes(out.Bytes(), stbox.ReadOptions{})
+	require.NoError(t, err)
+	got, _ := back.Cue(0)
+	assert.Equal(t, stbox.BottomCenter, got.Position.Alignment)
+	assert.Equal(t, &stbox.Offset{X: 50, Y: 80}, got.Position.Offset)
+}
+
+// TestCappedLastCueEndReadsBack reads a file whose last cue end the reader caps at 99999:59:59.999, writes it in
+// every format that has a writer and a reader, and reads that output.
+func TestCappedLastCueEndReadsBack(t *testing.T) {
+	t.Parallel()
+
+	inputs := []struct {
+		name    string
+		format  stbox.Format
+		content string
+	}{
+		{"SAMI start at the limit", stbox.SAMI, "<SAMI><BODY><SYNC Start=359999999999><P>last</BODY></SAMI>"},
+		{"SAMI start 3 s before the limit", stbox.SAMI, "<SAMI><BODY><SYNC Start=359999997000><P>last</BODY></SAMI>"},
+		{"TMPlayer start at 99999:59:59", stbox.TMPlayer, "99999:59:59:last\n"},
+		{"TMPlayer start 3 s before the limit", stbox.TMPlayer, "99999:59:57:last\n"},
+		// MPL2 and MPSub have no cue without an end, so their rows end just below the limit.
+		{"LRC start near the limit", stbox.LRC, "[offset:-359999987000]\n[00:12.00]last\n"},
+		{"MPL2 end at the limit", stbox.MPL2, "[3599999990][3599999999]last\n"},
+		{"MPSub end at the limit", stbox.MPSub, "FORMAT=TIME\n\n359999999 0.999\nlast\n"},
+	}
+	for _, in := range inputs {
+		t.Run(in.name, func(t *testing.T) {
+			t.Parallel()
+
+			opts := stbox.ReadOptions{Format: in.format, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}}
+			s, _, err := parseBytes([]byte(in.content), opts)
+			require.NoError(t, err)
+			require.Equal(t, 1, s.Len())
+			if in.format != stbox.MPL2 && in.format != stbox.MPSub {
+				c, _ := s.Cue(0)
+				require.Equal(t, timecode.MaxValidTime, c.End)
+			}
+
+			written := 0
+			for _, f := range stbox.Formats() {
+				if !f.CanRead() || f == stbox.PGS {
+					continue
+				}
+				var out bytes.Buffer
+				_, err := stbox.Write(&out, s, f, stbox.WriteOptions{
+					MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}},
+					ITT:      itt.WriteOptions{FrameRate: stbox.FrameRate25},
+				})
+				if errors.Is(err, stbox.ErrUnsupportedFormat) {
+					continue
+				}
+				require.NoError(t, err, f)
+				written++
+
+				text := out.String()
+				back, _, err := parseBytes(out.Bytes(), stbox.ReadOptions{Format: f, MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}})
+				require.NoError(t, err, "%s: %q", f, text)
+				require.Equal(t, 1, back.Len(), f)
+				c, _ := back.Cue(0)
+				assert.Less(t, c.End, timecode.MaxTime, f)
+				// SubRip, LRC and EBU STL clamp at the largest time they hold: 999:59:59.999, 999:59.99 and 255 hours.
+				// Cavena 890 caps a frame number at FFFFFFh, which is 186 hours at 25 fps.
+				// PAC clamps at 654 hours, because its time code holds hours * 100 + minutes in 2 bytes.
+				// YouTube and OGM chapters have no end time, so the last chapter ends at its own start.
+				if f != stbox.SubRip && f != stbox.LRC && f != stbox.EBUSTL && f != stbox.PAC && f != stbox.Cavena890 && f != stbox.YouTubeChapters && f != stbox.OGMChapters {
+					assert.GreaterOrEqual(t, c.End, timecode.MaxValidTime-time.Second, f)
+				}
+			}
+			assert.Positive(t, written)
+		})
+	}
+}
+
+// Ports testAegisubFileKeepsMetadataCommentsAndFormatData of tests/Parsers/JsonRealFilesTest.php of
+// subtitle-toolbox-php. Both reads detect the format.
+func TestAegisubJSONEqualsTheASSFile(t *testing.T) {
+	t.Parallel()
+
+	fromJSON, info, err := parseBytes(testfiles.Read(t, "json/real/own_aegisub.json"), stbox.ReadOptions{})
+	require.NoError(t, err)
+	require.Equal(t, stbox.JSON, info.Format)
+	original, info, err := parseBytes(testfiles.Read(t, "ass/real/own_aegisub.ass"), stbox.ReadOptions{})
+	require.NoError(t, err)
+	require.Equal(t, stbox.ASS, info.Format)
+
+	library := func(s *stbox.Subtitle) string {
+		var out bytes.Buffer
+		_, err := stbox.Write(&out, s, stbox.JSON, stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: 1}})
+		require.NoError(t, err)
+		return out.String()
+	}
+	assert.Equal(t, library(original), library(fromJSON))
+	title, _ := fromJSON.Metadata(stbox.MetadataTitle)
+	assert.Equal(t, "Morning train to the coast", title)
+	assert.Len(t, fromJSON.Comments(), 3)
+	d, _ := fromJSON.FormatData("ass")
+	section, _ := d.String("stylesSection")
+	assert.Equal(t, "V4+ Styles", section)
+}
+
+// TestLibraryJSONVersion2KeepsTheNativeBytes sends each fixture with words or a speaker through library JSON version 2
+// and back to its own format. The bytes equal the direct write of the fixture.
+func TestLibraryJSONVersion2KeepsTheNativeBytes(t *testing.T) {
+	t.Parallel()
+
+	root := testfiles.Path(t, ".")
+	var paths []string
+	require.NoError(t, filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		switch {
+		case d.IsDir() && d.Name() == "expected":
+			return filepath.SkipDir
+		case d.Type().IsRegular() && !strings.Contains(d.Name(), ".out."):
+			paths = append(paths, path)
+		}
+		return nil
+	}))
+	for _, path := range paths {
+		rel, err := filepath.Rel(root, path)
+		require.NoError(t, err)
+		t.Run(filepath.ToSlash(rel), func(t *testing.T) {
+			t.Parallel()
+
+			s, info, err := parseBytes(testfiles.Read(t, filepath.ToSlash(rel)), stbox.ReadOptions{})
+			if err != nil || info.Format == stbox.JSON || !hasWordsOrSpeaker(s) {
+				t.Skip("no words or speaker")
+			}
+			var direct bytes.Buffer
+			if _, err := stbox.Write(&direct, s, info.Format, stbox.WriteOptions{}); err != nil {
+				t.Skip("the format does not write the file")
+			}
+			var library bytes.Buffer
+			_, err = stbox.Write(&library, s, stbox.JSON, stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: 2}})
+			require.NoError(t, err)
+			back, _, err := parseBytes(library.Bytes(), stbox.ReadOptions{})
+			require.NoError(t, err)
+			var viaJSON bytes.Buffer
+			_, err = stbox.Write(&viaJSON, back, info.Format, stbox.WriteOptions{})
+			require.NoError(t, err)
+			assert.Equal(t, direct.String(), viaJSON.String())
+		})
+	}
+}
+
+func hasWordsOrSpeaker(s *stbox.Subtitle) bool {
+	return slices.ContainsFunc(s.Cues(), func(c stbox.Cue) bool { return len(c.Words) > 0 || c.Speaker != "" })
+}
+
+// A cue read from version 2 writes the same version 1 bytes as the cue before: the tags keep their place.
+func TestLibraryJSONVersion2KeepsTheVersion1Bytes(t *testing.T) {
+	t.Parallel()
+
+	s, _, err := parseBytes(testfiles.Read(t, "json/real/own_aegisub.json"), stbox.ReadOptions{})
+	require.NoError(t, err)
+	write := func(s *stbox.Subtitle, version int) []byte {
+		var out bytes.Buffer
+		_, err := stbox.Write(&out, s, stbox.JSON, stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: version}})
+		require.NoError(t, err)
+		return out.Bytes()
+	}
+	back, _, err := parseBytes(write(s, 2), stbox.ReadOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, string(write(s, 1)), string(write(back, 1)))
 }
