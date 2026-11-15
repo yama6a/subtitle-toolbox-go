@@ -294,19 +294,19 @@ func TestTimingFixFixtures(t *testing.T) {
 		edit     func(s *model.Subtitle) error
 	}{
 		{
-			name: "overlaps and short cues", in: "fixes/own_overlaps_and_short_cues.srt", want: "fixes/own_overlaps_and_short_cues_fixed.srt",
+			name: "overlaps and short cues", in: "timing-and-wrapping/own_overlaps_and_short_cues.srt", want: "timing-and-wrapping/own_overlaps_and_short_cues_fixed.srt",
 			edit: func(s *model.Subtitle) error {
 				return errors.Join(s.FixOverlaps(83*time.Millisecond), s.ExtendShortCues(833*time.Millisecond, 83*time.Millisecond), s.WrapLines(42, 2))
 			},
 		},
 		{
-			name: "lead-in and lead-out of speech-to-text timing", in: "fixes/own_asr_tight_timing.srt", want: "fixes/own_asr_tight_timing_lead.srt",
+			name: "lead-in and lead-out of speech-to-text timing", in: "timing-and-wrapping/own_asr_tight_timing.srt", want: "timing-and-wrapping/own_asr_tight_timing_lead.srt",
 			edit: func(s *model.Subtitle) error {
 				return s.AddLeadInOut(200*time.Millisecond, 300*time.Millisecond, 83*time.Millisecond)
 			},
 		},
 		{
-			name: "long cues", in: "fixes/own_long_cues.srt", want: "fixes/own_long_cues_limited.srt",
+			name: "long cues", in: "timing-and-wrapping/own_long_cues.srt", want: "timing-and-wrapping/own_long_cues_limited.srt",
 			edit: func(s *model.Subtitle) error { return s.LimitLongCues(7 * time.Second) },
 		},
 	}

@@ -1,15 +1,14 @@
 package validation
 
 import (
-	"math"
 	"strings"
 	"time"
 
 	"github.com/dlclark/regexp2/v2"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/readingspeed"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -92,33 +91,23 @@ func limitOf(v float64) *float64 { return &v }
 
 // measures holds what the rules read of one cue.
 type measures struct {
-	lengths      []int    // visible length of each line
-	characters   int      // sum of lengths
+	readingspeed.Measures
 	visibleLines int      // lines with a visible length of 1 or more
 	raw          string   // the lines with markup, joined with LF
 	speaker      string   // Speaker of the cue
 	text         []string // the plain lines that have text
-	words        int
-	duration     time.Duration
-	secs         float64
 }
 
 func measure(cue model.Cue) measures {
-	m := measures{lengths: make([]int, len(cue.Lines)), raw: strings.Join(cue.Lines, "\n"), speaker: cue.Speaker, duration: cue.End - cue.Start}
-	m.secs = timecode.FloatSeconds(m.duration)
-	plain := make([]string, len(cue.Lines))
-	for k, line := range cue.Lines {
-		m.lengths[k] = markup.VisibleLength(line)
-		m.characters += m.lengths[k]
-		if m.lengths[k] > 0 {
+	m := measures{Measures: readingspeed.Measure(cue), raw: strings.Join(cue.Lines, "\n"), speaker: cue.Speaker}
+	for k, n := range m.LineLengths {
+		if n > 0 {
 			m.visibleLines++
 		}
-		plain[k] = markup.PlainText(line)
-		if strings.Trim(plain[k], markupcore.TrimSet) != "" {
-			m.text = append(m.text, plain[k])
+		if strings.Trim(m.PlainLines[k], markupcore.TrimSet) != "" {
+			m.text = append(m.text, m.PlainLines[k])
 		}
 	}
-	m.words = len(markupcore.Words(strings.Join(plain, "\n")))
 	return m
 }
 
@@ -135,14 +124,14 @@ func (c *checker) cue(i int, cue model.Cue) error {
 
 func (c *checker) lengthRules(i int, m measures) {
 	r := c.rules
-	if r.NoNegativeDuration && m.duration < 0 {
-		c.add(i, RuleNoNegativeDuration, m.secs, nil)
+	if r.NoNegativeDuration && m.Duration < 0 {
+		c.add(i, RuleNoNegativeDuration, m.Seconds, nil)
 	}
-	if r.NoEmptyCues && m.characters == 0 {
+	if r.NoEmptyCues && m.Characters == 0 {
 		c.add(i, RuleNoEmptyCues, 0, nil)
 	}
 	if r.MaxCharactersPerLine > 0 {
-		for _, n := range m.lengths {
+		for _, n := range m.LineLengths {
 			if n > r.MaxCharactersPerLine {
 				c.add(i, RuleMaxCharactersPerLine, float64(n), limitOf(float64(r.MaxCharactersPerLine)))
 			}
@@ -155,25 +144,17 @@ func (c *checker) lengthRules(i int, m measures) {
 
 func (c *checker) speedRules(i int, m measures) {
 	r := c.rules
-	if r.MaxCharactersPerSecond > 0 && m.characters > 0 {
-		if v := perSecond(float64(m.characters), m.secs); v > r.MaxCharactersPerSecond {
+	if r.MaxCharactersPerSecond > 0 && m.Characters > 0 {
+		if v := m.CharactersPerSecond(); v > r.MaxCharactersPerSecond {
 			c.add(i, RuleMaxCharactersPerSecond, v, limitOf(r.MaxCharactersPerSecond))
 		}
 	}
-	if r.MinDuration > 0 && m.duration < r.MinDuration.Round(time.Millisecond) {
-		c.add(i, RuleMinDuration, m.secs, limitOf(r.MinDuration.Seconds()))
+	if r.MinDuration > 0 && m.Duration < r.MinDuration.Round(time.Millisecond) {
+		c.add(i, RuleMinDuration, m.Seconds, limitOf(r.MinDuration.Seconds()))
 	}
-	if r.MaxDuration > 0 && m.duration > r.MaxDuration.Round(time.Millisecond) {
-		c.add(i, RuleMaxDuration, m.secs, limitOf(r.MaxDuration.Seconds()))
+	if r.MaxDuration > 0 && m.Duration > r.MaxDuration.Round(time.Millisecond) {
+		c.add(i, RuleMaxDuration, m.Seconds, limitOf(r.MaxDuration.Seconds()))
 	}
-}
-
-// perSecond returns n per second, or +Inf for a duration of 0 or less.
-func perSecond(n, secs float64) float64 {
-	if secs <= 0 {
-		return math.Inf(1)
-	}
-	return n / secs
 }
 
 // gap applies the overlap and gap rules to the gap before cue i. A negative gap is an overlap.

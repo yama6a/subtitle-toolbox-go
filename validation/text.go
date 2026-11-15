@@ -52,17 +52,17 @@ func (c *checker) tagAndSpeakerRules(i int, m measures) {
 
 func (c *checker) wordRules(i int, m measures) {
 	r := c.rules
-	if m.words == 0 {
+	if len(m.Words) == 0 {
 		return
 	}
 	if r.MaxWordsPerMinute > 0 {
-		if v := perSecond(float64(m.words), m.secs) * 60; v > r.MaxWordsPerMinute {
+		if v := m.WordsPerMinute(); v > r.MaxWordsPerMinute {
 			c.add(i, RuleMaxWordsPerMinute, v, limitOf(r.MaxWordsPerMinute))
 		}
 	}
 	if limit := r.MinDurationPerWord; limit > 0 {
-		if need := int64(math.Round(limit.Seconds() * float64(m.words) * 1000)); m.duration.Milliseconds() < need {
-			c.add(i, RuleMinDurationPerWord, m.secs/float64(m.words), limitOf(limit.Seconds()))
+		if need := int64(math.Round(limit.Seconds() * float64(len(m.Words)) * 1000)); m.Duration.Milliseconds() < need {
+			c.add(i, RuleMinDurationPerWord, m.Seconds/float64(len(m.Words)), limitOf(limit.Seconds()))
 		}
 	}
 }

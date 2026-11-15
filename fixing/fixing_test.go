@@ -394,7 +394,7 @@ func TestDialogueOnOneLineSplitsAtADashAfterAChineseOrJapaneseSentenceEnd(t *tes
 	t.Parallel()
 
 	opts := fixing.Options{Language: "zh", Enable: []fixing.Rule{fixing.RuleDialogueOnOneLine}}
-	s := read(t, "fixes/own_cjk_dialogue.srt")
+	s := read(t, "timing-and-wrapping/own_cjk_dialogue.srt")
 
 	_, err := fixing.Apply(s, opts)
 	require.NoError(t, err)

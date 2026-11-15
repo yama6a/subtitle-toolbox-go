@@ -841,7 +841,7 @@ type encodingRead struct {
 func encodingReads(t *testing.T) []encodingRead {
 	t.Helper()
 
-	data, err := os.ReadFile(filepath.Join("testdata", "encoding-reads", "reads.json"))
+	data, err := os.ReadFile(filepath.Join("testdata", "encoding", "reads", "reads.json"))
 	require.NoError(t, err)
 	var rows []encodingRead
 	require.NoError(t, json.Unmarshal(data, &rows))

@@ -31,7 +31,7 @@ func readTexts(t *testing.T) texts {
 	t.Helper()
 
 	var tx texts
-	require.NoError(t, json.Unmarshal(testfiles.Read(t, "encoding-detection/texts.json"), &tx))
+	require.NoError(t, json.Unmarshal(testfiles.Read(t, "encoding/detection/texts.json"), &tx))
 	return tx
 }
 

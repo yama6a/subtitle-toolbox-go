@@ -70,6 +70,7 @@ var layers = map[string]layer{
 	"container/mpegts/internal/arib":     layerModelUser,
 	"internal/bitmap/dvbsub":             layerModelUser,
 	"internal/jsondata":                  layerModelUser,
+	"internal/readingspeed":              layerModelUser,
 	"format/*":                           layerFormat,
 	"container/*":                        layerContainer,
 	".":                                  layerFacade,
