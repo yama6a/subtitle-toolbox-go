@@ -35,7 +35,7 @@ darwin_amd64=$(sum darwin_amd64)
 linux_arm64=$(sum linux_arm64)
 linux_amd64=$(sum linux_amd64)
 
-cat <<EOF
+cat << EOF
 # Written by .build/homebrew-formula.sh in yama6a/subtitle-toolbox-go on each release.
 class Stbox < Formula
   desc "Read, edit and write subtitle files"
