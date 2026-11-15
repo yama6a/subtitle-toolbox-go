@@ -8,9 +8,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/pgs"
-	"github.com/yama6a/subtitle-toolbox-go/v4/imaging"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/pgs"
+	"github.com/yama6a/subtitle-toolbox-go/v5/imaging"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // The palette entry ids of the test palette.

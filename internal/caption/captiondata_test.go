@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea708"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/caption"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/caption/cea708"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // pairs returns a frame for each hex word of the field 1 pairs, one frame after another from the frame start.

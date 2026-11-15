@@ -4,7 +4,7 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // EllipsisStyle is the ellipsis that the ellipsis rule writes.

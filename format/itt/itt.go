@@ -9,8 +9,8 @@ package itt
 import (
 	"math/big"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/ttmldoc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/ttmldoc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (

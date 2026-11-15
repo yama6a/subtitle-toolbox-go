@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
 )
 
 // group is one option group of convert.

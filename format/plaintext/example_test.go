@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleWrite() {

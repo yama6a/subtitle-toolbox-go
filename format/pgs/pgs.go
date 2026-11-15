@@ -8,7 +8,7 @@
 // graphics_controller.c at 0247557842050c8dfc0ae9293d76c3fb7386429a. No code of FFmpeg or libbluray is used.
 package pgs
 
-import "github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap/displayset"
+import "github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap/displayset"
 
 // ReadOptions holds the settings of the PGS reader. PGS has none yet.
 type ReadOptions struct{}

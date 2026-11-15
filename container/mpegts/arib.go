@@ -6,10 +6,10 @@ import (
 
 	"github.com/asticode/go-astits"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/container/mpegts/internal/arib"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/container/mpegts/internal/arib"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // addCaptionStreams adds the ARIB caption streams of one program. A PID that two programs share keeps its last

@@ -3,9 +3,9 @@ package srt
 import (
 	"io"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/subrip"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/subrip"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Read reads SubRip text. It expects UTF-8, as stbox.Parse passes it.

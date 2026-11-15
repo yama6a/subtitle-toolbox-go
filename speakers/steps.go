@@ -9,9 +9,9 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/speakerlabel"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/speakerlabel"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // fromLabels turns the label at the start of a line, or after its dialogue dash, into a voice tag. A label alone

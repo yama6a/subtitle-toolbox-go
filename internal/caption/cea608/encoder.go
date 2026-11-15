@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 )
 
 // Char is one character of a line with its style.

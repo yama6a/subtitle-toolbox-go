@@ -6,7 +6,7 @@ package wordgroup
 import (
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
 )
 
 // Options holds the read settings that the helpers use.

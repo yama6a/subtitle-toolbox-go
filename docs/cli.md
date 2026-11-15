@@ -10,7 +10,7 @@
 |:--- |:--- |:--- |
 | Homebrew formula `yama6a/tap/stbox` | Homebrew on macOS or Linux | `brew install yama6a/tap/stbox`, then `brew upgrade stbox` for a new release |
 | archive on the GitHub release | nothing | `curl -fsSLO https://github.com/yama6a/subtitle-toolbox-go/releases/download/vX.Y.Z/stbox_X.Y.Z_linux_amd64.tar.gz` |
-| `go install` | Go of the `go` line in `go.mod` | `go install github.com/yama6a/subtitle-toolbox-go/v4/cmd/stbox@latest` |
+| `go install` | Go of the `go` line in `go.mod` | `go install github.com/yama6a/subtitle-toolbox-go/v5/cmd/stbox@latest` |
 | image `ghcr.io/yama6a/subtitle-toolbox-go` | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:X.Y.Z convert in.srt --to vtt -o out.vtt` |
 | image `ghcr.io/yama6a/subtitle-toolbox-go` with Tesseract | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:X.Y.Z-tesseract convert film.sup --ocr --ocr-engine tesseract --ocr-language rus --to srt -o film.srt` |
 

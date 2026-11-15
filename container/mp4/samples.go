@@ -11,7 +11,7 @@ import (
 
 	"github.com/Eyevinn/mp4ff/mp4"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 )
 
 // sample is a sample with its position in the file and its times in seconds.

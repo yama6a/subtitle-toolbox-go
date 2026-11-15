@@ -9,7 +9,7 @@ import (
 	"image/png"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const pngSignature = "\x89PNG\r\n\x1a\n"

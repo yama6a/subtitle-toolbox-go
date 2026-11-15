@@ -7,7 +7,7 @@ package lrc
 import (
 	"regexp"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // ReadOptions holds the settings of the LRC reader. It has no fields yet.

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
-	"github.com/yama6a/subtitle-toolbox-go/v4/resegment"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/resegment"
 )
 
 func ExampleSplitLong() {

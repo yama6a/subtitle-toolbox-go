@@ -11,8 +11,8 @@ import (
 	"math"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/container/mkv/internal/ebml"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/container/mkv/internal/ebml"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // File is an open Matroska or WebM file.

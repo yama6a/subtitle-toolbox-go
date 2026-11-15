@@ -8,8 +8,8 @@ package scc
 import (
 	"regexp"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/caption"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // RollUp says how the reader turns roll-up captions into cues. The empty value acts as RollUpScreen.

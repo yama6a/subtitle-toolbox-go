@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/extfallback"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/extfallback"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestAllowed(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/markup"
 )
 
 // parseTSV builds the lines and the mean confidence from the TSV output of tesseract.

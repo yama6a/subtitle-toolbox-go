@@ -8,8 +8,8 @@ import (
 	"math"
 	"slices"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/container/mkv/internal/ebml"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/container/mkv/internal/ebml"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 )
 
 const (

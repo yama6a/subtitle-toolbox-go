@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
 )
 
 // Rows of the SubRip signature of https://github.com/yama6a/subtitle-toolbox-go/issues/15.

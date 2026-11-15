@@ -3,7 +3,7 @@ package vtt
 import (
 	"slices"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // TaggedLinesKey is the key of the vtt cue format data that holds the lines of a cue with their tags, as the file

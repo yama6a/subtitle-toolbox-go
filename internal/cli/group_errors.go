@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 )
 
 func errorsGroup() group {

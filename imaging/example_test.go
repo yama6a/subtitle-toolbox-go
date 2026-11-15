@@ -5,7 +5,7 @@ import (
 	"image"
 	"image/color"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/imaging"
+	"github.com/yama6a/subtitle-toolbox-go/v5/imaging"
 )
 
 func ExampleNewImage() {
