@@ -42,140 +42,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-// The shapes of the Read, Write and Detect functions of a format package.
-type (
-	readFunc[O any]     func(io.Reader, model.CommonReadOptions, O) (*model.Subtitle, []model.ParseWarning, error)
-	writeFunc[O, R any] func(io.Writer, *model.Subtitle, model.CommonWriteOptions, O) (R, error)
-	detectFunc          func([]byte) bool
-)
-
-var (
-	_ readFunc[stboxjson.ReadOptions]                          = stboxjson.Read
-	_ writeFunc[stboxjson.WriteOptions, stboxjson.WriteReport] = stboxjson.Write
-	_ readFunc[webvtt.ReadOptions]                             = webvtt.Read
-	_ writeFunc[webvtt.WriteOptions, webvtt.WriteReport]       = webvtt.Write
-	_ detectFunc                                               = webvtt.Detect
-	_ readFunc[srt.ReadOptions]                                = srt.Read
-	_ writeFunc[srt.WriteOptions, srt.WriteReport]             = srt.Write
-	_ detectFunc                                               = srt.Detect
-	_ readFunc[ass.ReadOptions]                                = ass.Read
-	_ writeFunc[ass.WriteOptions, ass.WriteReport]             = ass.Write
-	_ detectFunc                                               = ass.Detect
-	_ readFunc[cavena890.ReadOptions]                          = cavena890.Read
-	_ writeFunc[cavena890.WriteOptions, cavena890.WriteReport] = cavena890.Write
-	_ readFunc[ttml.ReadOptions]                               = ttml.Read
-	_ writeFunc[ttml.WriteOptions, ttml.WriteReport]           = ttml.Write
-	_ readFunc[microdvd.ReadOptions]                           = microdvd.Read
-	_ writeFunc[microdvd.WriteOptions, microdvd.WriteReport]   = microdvd.Write
-	_ detectFunc                                               = microdvd.Detect
-	_ detectFunc                                               = ttml.Detect
-	_ readFunc[sami.ReadOptions]                               = sami.Read
-	_ writeFunc[sami.WriteOptions, sami.WriteReport]           = sami.Write
-	_ detectFunc                                               = sami.Detect
-	_ readFunc[sbv.ReadOptions]                                = sbv.Read
-	_ writeFunc[sbv.WriteOptions, sbv.WriteReport]             = sbv.Write
-	_ detectFunc                                               = sbv.Detect
-	_ readFunc[scc.ReadOptions]                                = scc.Read
-	_ writeFunc[scc.WriteOptions, scc.WriteReport]             = scc.Write
-	_ detectFunc                                               = scc.Detect
-	_ readFunc[mpl2.ReadOptions]                               = mpl2.Read
-	_ writeFunc[mpl2.WriteOptions, mpl2.WriteReport]           = mpl2.Write
-	_ detectFunc                                               = mpl2.Detect
-	_ readFunc[tmplayer.ReadOptions]                           = tmplayer.Read
-	_ writeFunc[tmplayer.WriteOptions, tmplayer.WriteReport]   = tmplayer.Write
-	_ detectFunc                                               = tmplayer.Detect
-	_ readFunc[mpsub.ReadOptions]                              = mpsub.Read
-	_ writeFunc[mpsub.WriteOptions, mpsub.WriteReport]         = mpsub.Write
-	_ detectFunc                                               = mpsub.Detect
-	_ readFunc[pac.ReadOptions]                                = pac.Read
-	_ writeFunc[pac.WriteOptions, pac.WriteReport]             = pac.Write
-	_ detectFunc                                               = pac.Detect
-	_ readFunc[pgs.ReadOptions]                                = pgs.Read
-	_ writeFunc[pgs.WriteOptions, pgs.WriteReport]             = pgs.Write
-	_ detectFunc                                               = pgs.Detect
-	_ readFunc[lrc.ReadOptions]                                = lrc.Read
-	_ writeFunc[lrc.WriteOptions, lrc.WriteReport]             = lrc.Write
-	_ detectFunc                                               = lrc.Detect
-	_ readFunc[mcc.ReadOptions]                                = mcc.Read
-	_ writeFunc[mcc.WriteOptions, mcc.WriteReport]             = mcc.Write
-	_ detectFunc                                               = mcc.Detect
-	_ readFunc[vobsub.ReadOptions]                             = vobsub.Read
-	_ readFunc[qttext.ReadOptions]                             = qttext.Read
-	_ writeFunc[qttext.WriteOptions, qttext.WriteReport]       = qttext.Write
-	_ detectFunc                                               = qttext.Detect
-	_ writeFunc[plaintext.WriteOptions, plaintext.WriteReport] = plaintext.Write
-	_ readFunc[csv.ReadOptions]                                = csv.Read
-	_ writeFunc[csv.WriteOptions, csv.WriteReport]             = csv.Write
-	_ readFunc[itt.ReadOptions]                                = itt.Read
-	_ writeFunc[itt.WriteOptions, itt.WriteReport]             = itt.Write
-	_ readFunc[subviewer.ReadOptions]                          = subviewer.Read
-	_ writeFunc[subviewer.WriteOptions, subviewer.WriteReport] = subviewer.Write
-	_ detectFunc                                               = subviewer.Detect
-	_ readFunc[ebustl.ReadOptions]                             = ebustl.Read
-	_ writeFunc[ebustl.WriteOptions, ebustl.WriteReport]       = ebustl.Write
-	_ detectFunc                                               = ebustl.Detect
-	_ readFunc[sprucestl.ReadOptions]                          = sprucestl.Read
-	_ writeFunc[sprucestl.WriteOptions, sprucestl.WriteReport] = sprucestl.Write
-	_ detectFunc                                               = sprucestl.Detect
-	_ readFunc[dcp.ReadOptions]                                = dcp.Read
-	_ writeFunc[dcp.WriteOptions, dcp.WriteReport]             = dcp.Write
-	_ detectFunc                                               = dcp.Detect
-)
-
-// formatFuncs holds the read and write functions of one format. A nil function means
-// that the library cannot read or write the format.
-type formatFuncs struct {
-	format Format
-	read   func(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error)
-	write  func(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error)
-}
-
-// registry lists the formats in an order where the first row that lists an
-// extension owns it in FormatFromPath. The facts table of package model has the same rows.
-//
-//nolint:gochecknoglobals // lookup table of the format functions
-var registry = []formatFuncs{
-	{format: ASS, read: readASS, write: writeASS},
-	{format: Cavena890, read: readCavena890, write: writeCavena890},
-	{format: CSV, read: readCSV, write: writeCSV},
-	{format: FFMetadataChapters, read: readFFMetadataChapters, write: writeFFMetadataChapters},
-	{format: HTMLTranscript, read: readHTMLTranscript, write: writeHTMLTranscript},
-	{format: ITT, read: readITT, write: writeITT},
-	{format: JSON, read: readJSON, write: writeJSON},
-	{format: AssemblyAI, read: readAssemblyAI, write: writeAssemblyAI},
-	{format: AWSTranscribe, read: readAWSTranscribe, write: writeAWSTranscribe},
-	{format: Deepgram, read: readDeepgram, write: writeDeepgram},
-	{format: GoogleSpeech, read: readGoogleSpeech, write: writeGoogleSpeech},
-	{format: LRC, read: readLRC, write: writeLRC},
-	{format: MCC, read: readMCC, write: writeMCC},
-	{format: MicroDVD, read: readMicroDVD, write: writeMicroDVD},
-	{format: MPSub, read: readMPSub, write: writeMPSub},
-	{format: PAC, read: readPAC, write: writePAC},
-	{format: PGS, read: readPGS, write: writePGS},
-	{format: SAMI, read: readSAMI, write: writeSAMI},
-	{format: SBV, read: readSBV, write: writeSBV},
-	{format: SCC, read: readSCC, write: writeSCC},
-	{format: SubRip, read: readSubRip, write: writeSubRip},
-	{format: EBUSTL, read: readEBUSTL, write: writeEBUSTL},
-	{format: SpruceSTL, read: readSpruceSTL, write: writeSpruceSTL},
-	{format: SubViewer, read: readSubViewer, write: writeSubViewer},
-	{format: TTML, read: readTTML, write: writeTTML},
-	{format: DCP, read: readDCP, write: writeDCP},
-	{format: TSV, read: readTSV, write: writeTSV},
-	{format: PlainText, write: writePlainText},
-	{format: MPL2, read: readMPL2, write: writeMPL2},
-	{format: TMPlayer, read: readTMPlayer, write: writeTMPlayer},
-	{format: QuickTimeText, read: readQuickTimeText, write: writeQuickTimeText},
-	{format: VobSub, read: readVobSub},
-	{format: WebVTT, read: readWebVTT, write: writeWebVTT},
-	{format: Whisper, read: readWhisper, write: writeWhisper},
-	{format: YouTubeTimedText, read: readYouTube, write: writeYouTube},
-	{format: OGMChapters, read: readOGMChapters, write: writeOGMChapters},
-	{format: PodcastChapters, read: readPodcastChapters, write: writePodcastChapters},
-	{format: PodcastTranscript, read: readPodcastTranscript, write: writePodcastTranscript},
-	{format: YouTubeChapters, read: readYouTubeChapters, write: writeYouTubeChapters},
-}
-
 type jsonCheck struct {
 	format Format
 	match  func(keys map[string]json.RawMessage) bool
@@ -224,27 +90,32 @@ var (
 
 // Formats returns every format of the registry, in registry order.
 func Formats() []Format {
-	formats := make([]Format, len(registry))
-	for i, row := range registry {
-		formats[i] = row.format
-	}
-	return formats
+	return model.Formats()
 }
 
 // FormatFromPath returns the format of the file extension of path, compared without case.
-// When formats share an extension, the first row of the registry owns it: ".sub" is MicroDVD,
+// When formats share an extension, the first row of the facts table owns it: ".sub" is MicroDVD,
 // ".txt" is plain text, ".xml" is TTML and ".json" is the library JSON.
 func FormatFromPath(path string) (Format, bool) {
-	ext := extension(path)
-	if ext == "" {
+	formats := formatsOfExtension(extension(path))
+	if len(formats) == 0 {
 		return "", false
 	}
-	for _, row := range registry {
-		if slices.Contains(row.format.Extensions(), ext) {
-			return row.format, true
+	return formats[0], true
+}
+
+// formatsOfExtension returns the formats that list ext, in facts table order.
+func formatsOfExtension(ext string) []Format {
+	if ext == "" {
+		return nil
+	}
+	var formats []Format
+	for _, f := range Formats() {
+		if slices.Contains(f.Extensions(), ext) {
+			formats = append(formats, f)
 		}
 	}
-	return "", false
+	return formats
 }
 
 // extension returns the file extension of path without the dot, in lower case.
@@ -252,35 +123,223 @@ func extension(path string) string {
 	return strings.ToLower(strings.TrimPrefix(filepath.Ext(path), "."))
 }
 
-func readCavena890(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return cavena890.Read(r, common, cavena890.ReadOptions{})
+// errNoReader and errNoWriter are the results of readFormat and writeFormat for a format without a reader or
+// a writer. Read and Write check CanRead and CanWrite first, so callers never see them.
+var (
+	errNoReader = errors.New("stbox: no reader")
+	errNoWriter = errors.New("stbox: no writer")
+)
+
+// readFormat reads r with the reader of f.
+//
+//nolint:cyclop,gocyclo,funlen // one case per format
+func readFormat(f Format, r io.Reader, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
+	common := opts.common()
+	switch f {
+	case ASS:
+		return ass.Read(r, common, ass.ReadOptions{})
+	case Cavena890:
+		return cavena890.Read(r, common, cavena890.ReadOptions{})
+	case CSV:
+		return csv.Read(r, common, opts.CSV)
+	case FFMetadataChapters:
+		return chapters.ReadFFMetadata(r, common, opts.Chapters)
+	case HTMLTranscript:
+		return transcript.ReadHTML(r, common, opts.Transcript)
+	case ITT:
+		return itt.Read(r, common, itt.ReadOptions{})
+	case JSON:
+		return stboxjson.Read(r, common, stboxjson.ReadOptions{})
+	case AssemblyAI:
+		return transcript.ReadAssemblyAI(r, common, opts.Transcript)
+	case AWSTranscribe:
+		return transcript.ReadAWSTranscribe(r, common, opts.Transcript)
+	case Deepgram:
+		return transcript.ReadDeepgram(r, common, opts.Transcript)
+	case GoogleSpeech:
+		return transcript.ReadGoogleSpeech(r, common, opts.Transcript)
+	case LRC:
+		return lrc.Read(r, common, lrc.ReadOptions{})
+	case MCC:
+		return mcc.Read(r, common, opts.MCC)
+	case MicroDVD:
+		return microdvd.Read(r, common, opts.MicroDVD)
+	case MPSub:
+		return mpsub.Read(r, common, mpsub.ReadOptions{})
+	case PAC:
+		return readPAC(r, common, opts)
+	case PGS:
+		return pgs.Read(r, common, pgs.ReadOptions{})
+	case SAMI:
+		return sami.Read(r, common, opts.SAMI)
+	case SBV:
+		return sbv.Read(r, common, sbv.ReadOptions{})
+	case SCC:
+		return scc.Read(r, common, opts.SCC)
+	case SubRip:
+		return srt.Read(r, common, srt.ReadOptions{})
+	case EBUSTL:
+		return ebustl.Read(r, common, opts.EBUSTL)
+	case SpruceSTL:
+		return sprucestl.Read(r, common, opts.SpruceSTL)
+	case SubViewer:
+		return subviewer.Read(r, common, subviewer.ReadOptions{})
+	case TTML:
+		return ttml.Read(r, common, ttml.ReadOptions{})
+	case DCP:
+		return dcp.Read(r, common, dcp.ReadOptions{})
+	case TSV:
+		return readTSV(r, common, opts)
+	case PlainText:
+		return nil, nil, errNoReader
+	case MPL2:
+		return mpl2.Read(r, common, mpl2.ReadOptions{})
+	case TMPlayer:
+		return tmplayer.Read(r, common, tmplayer.ReadOptions{})
+	case QuickTimeText:
+		return qttext.Read(r, common, qttext.ReadOptions{})
+	case VobSub:
+		return vobsub.Read(r, common, opts.VobSub)
+	case WebVTT:
+		return webvtt.Read(r, common, webvtt.ReadOptions{})
+	case Whisper:
+		return transcript.ReadWhisper(r, common, opts.Transcript)
+	case YouTubeTimedText:
+		return youtube.Read(r, common, opts.YouTube)
+	case OGMChapters:
+		return chapters.ReadOGM(r, common, opts.Chapters)
+	case PodcastChapters:
+		return chapters.ReadPodcast(r, common, opts.Chapters)
+	case PodcastTranscript:
+		return transcript.ReadPodcast(r, common, opts.Transcript)
+	case YouTubeChapters:
+		return chapters.ReadYouTube(r, common, opts.Chapters)
+	}
+	return nil, nil, errNoReader
 }
 
-func writeCavena890(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	_, err := cavena890.Write(w, s, common, cavena890.WriteOptions{})
-	return WriteReport{}, err
-}
-
-func readEBUSTL(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return ebustl.Read(r, common, opts.EBUSTL)
-}
-
-func readITT(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return itt.Read(r, common, itt.ReadOptions{})
-}
-
-func writeITT(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	_, err := itt.Write(w, s, common, opts.ITT)
-	return WriteReport{}, err
-}
-
-func readPGS(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return pgs.Read(r, common, pgs.ReadOptions{})
-}
-
-func writePGS(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	_, err := pgs.Write(w, s, common, pgs.WriteOptions{})
-	return WriteReport{}, err
+// writeFormat writes s with the writer of f.
+//
+//nolint:cyclop,gocyclo,funlen // one case per format
+func writeFormat(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteReport, error) {
+	common := opts.common()
+	switch f {
+	case ASS:
+		_, err := ass.Write(w, s, common, opts.ASS)
+		return WriteReport{}, err
+	case Cavena890:
+		_, err := cavena890.Write(w, s, common, cavena890.WriteOptions{})
+		return WriteReport{}, err
+	case CSV:
+		return writeCSV(w, s, common, opts)
+	case FFMetadataChapters:
+		return WriteReport{}, chapters.WriteFFMetadata(w, s, common, chapters.WriteOptions{})
+	case HTMLTranscript:
+		return WriteReport{}, transcript.WriteHTML(w, s, common, opts.Transcript)
+	case ITT:
+		_, err := itt.Write(w, s, common, opts.ITT)
+		return WriteReport{}, err
+	case JSON:
+		_, err := stboxjson.Write(w, s, common, opts.JSON)
+		return WriteReport{}, err
+	case AssemblyAI:
+		return WriteReport{}, transcript.WriteAssemblyAI(w, s, common, opts.Transcript)
+	case AWSTranscribe:
+		return WriteReport{}, transcript.WriteAWSTranscribe(w, s, common, opts.Transcript)
+	case Deepgram:
+		return WriteReport{}, transcript.WriteDeepgram(w, s, common, opts.Transcript)
+	case GoogleSpeech:
+		return WriteReport{}, transcript.WriteGoogleSpeech(w, s, common, opts.Transcript)
+	case LRC:
+		_, err := lrc.Write(w, s, common, lrc.WriteOptions{})
+		return WriteReport{}, err
+	case MCC:
+		report, err := mcc.Write(w, s, common, opts.MCC)
+		if err != nil {
+			return WriteReport{}, err
+		}
+		return WriteReport{MCC: &report}, nil
+	case MicroDVD:
+		_, err := microdvd.Write(w, s, common, opts.MicroDVD)
+		return WriteReport{}, err
+	case MPSub:
+		_, err := mpsub.Write(w, s, common, opts.MPSub)
+		return WriteReport{}, err
+	case PAC:
+		_, err := pac.Write(w, s, common, pac.WriteOptions{})
+		return WriteReport{}, err
+	case PGS:
+		_, err := pgs.Write(w, s, common, pgs.WriteOptions{})
+		return WriteReport{}, err
+	case SAMI:
+		_, err := sami.Write(w, s, common, sami.WriteOptions{})
+		return WriteReport{}, err
+	case SBV:
+		_, err := sbv.Write(w, s, common, sbv.WriteOptions{})
+		return WriteReport{}, err
+	case SCC:
+		report, err := scc.Write(w, s, common, opts.SCC)
+		if err != nil {
+			return WriteReport{}, err
+		}
+		return WriteReport{SCC: &report}, nil
+	case SubRip:
+		_, err := srt.Write(w, s, common, srt.WriteOptions{})
+		return WriteReport{}, err
+	case EBUSTL:
+		report, err := ebustl.Write(w, s, common, opts.EBUSTL)
+		if err != nil {
+			return WriteReport{}, err
+		}
+		return WriteReport{EBUSTL: &report}, nil
+	case SpruceSTL:
+		_, err := sprucestl.Write(w, s, common, opts.SpruceSTL)
+		return WriteReport{}, err
+	case SubViewer:
+		_, err := subviewer.Write(w, s, common, opts.SubViewer)
+		return WriteReport{}, err
+	case TTML:
+		_, err := ttml.Write(w, s, common, ttml.WriteOptions{})
+		return WriteReport{}, err
+	case DCP:
+		_, err := dcp.Write(w, s, common, dcp.WriteOptions{})
+		return WriteReport{}, err
+	case TSV:
+		return writeTSV(w, s, common, opts)
+	case PlainText:
+		_, err := plaintext.Write(w, s, common, opts.PlainText)
+		return WriteReport{}, err
+	case MPL2:
+		_, err := mpl2.Write(w, s, common, mpl2.WriteOptions{})
+		return WriteReport{}, err
+	case TMPlayer:
+		_, err := tmplayer.Write(w, s, common, tmplayer.WriteOptions{})
+		return WriteReport{}, err
+	case QuickTimeText:
+		_, err := qttext.Write(w, s, common, qttext.WriteOptions{})
+		return WriteReport{}, err
+	case VobSub:
+		return WriteReport{}, errNoWriter
+	case WebVTT:
+		report, err := webvtt.Write(w, s, common, webvtt.WriteOptions{})
+		if err != nil {
+			return WriteReport{}, err
+		}
+		return WriteReport{WebVTT: &report}, nil
+	case Whisper:
+		return WriteReport{}, transcript.WriteWhisper(w, s, common, opts.Transcript)
+	case YouTubeTimedText:
+		return WriteReport{}, youtube.Write(w, s, common, youtube.WriteOptions{})
+	case OGMChapters:
+		return WriteReport{}, chapters.WriteOGM(w, s, common, chapters.WriteOptions{})
+	case PodcastChapters:
+		return WriteReport{}, chapters.WritePodcast(w, s, common, chapters.WriteOptions{})
+	case PodcastTranscript:
+		return WriteReport{}, transcript.WritePodcast(w, s, common, opts.Transcript)
+	case YouTubeChapters:
+		return WriteReport{}, chapters.WriteYouTube(w, s, common, chapters.WriteOptions{})
+	}
+	return WriteReport{}, errNoWriter
 }
 
 func readPAC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
@@ -296,241 +355,6 @@ func readPAC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Su
 		pacOpts.CodePage = codePage
 	}
 	return pac.Read(r, common, pacOpts)
-}
-
-func writePAC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	_, err := pac.Write(w, s, common, pac.WriteOptions{})
-	return WriteReport{}, err
-}
-
-func readJSON(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return stboxjson.Read(r, common, stboxjson.ReadOptions{})
-}
-
-func writeJSON(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	_, err := stboxjson.Write(w, s, common, opts.JSON)
-	return WriteReport{}, err
-}
-
-func readAssemblyAI(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return transcript.ReadAssemblyAI(r, common, opts.Transcript)
-}
-
-func writeAssemblyAI(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	return WriteReport{}, transcript.WriteAssemblyAI(w, s, common, opts.Transcript)
-}
-
-func readAWSTranscribe(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return transcript.ReadAWSTranscribe(r, common, opts.Transcript)
-}
-
-func writeAWSTranscribe(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	return WriteReport{}, transcript.WriteAWSTranscribe(w, s, common, opts.Transcript)
-}
-
-func readDeepgram(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return transcript.ReadDeepgram(r, common, opts.Transcript)
-}
-
-func writeDeepgram(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	return WriteReport{}, transcript.WriteDeepgram(w, s, common, opts.Transcript)
-}
-
-func readGoogleSpeech(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return transcript.ReadGoogleSpeech(r, common, opts.Transcript)
-}
-
-func writeGoogleSpeech(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	return WriteReport{}, transcript.WriteGoogleSpeech(w, s, common, opts.Transcript)
-}
-
-func readVobSub(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return vobsub.Read(r, common, opts.VobSub)
-}
-
-func readWhisper(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return transcript.ReadWhisper(r, common, opts.Transcript)
-}
-
-func writeWhisper(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	return WriteReport{}, transcript.WriteWhisper(w, s, common, opts.Transcript)
-}
-
-func readHTMLTranscript(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return transcript.ReadHTML(r, common, opts.Transcript)
-}
-
-func writeHTMLTranscript(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	return WriteReport{}, transcript.WriteHTML(w, s, common, opts.Transcript)
-}
-
-func readPodcastTranscript(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return transcript.ReadPodcast(r, common, opts.Transcript)
-}
-
-func writePodcastTranscript(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	return WriteReport{}, transcript.WritePodcast(w, s, common, opts.Transcript)
-}
-
-func readWebVTT(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return webvtt.Read(r, common, webvtt.ReadOptions{})
-}
-
-func writeWebVTT(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	report, err := webvtt.Write(w, s, common, webvtt.WriteOptions{})
-	if err != nil {
-		return WriteReport{}, err
-	}
-	return WriteReport{WebVTT: &report}, nil
-}
-
-func readSubRip(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return srt.Read(r, common, srt.ReadOptions{})
-}
-
-func writeSubRip(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	_, err := srt.Write(w, s, common, srt.WriteOptions{})
-	return WriteReport{}, err
-}
-
-func readASS(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return ass.Read(r, common, ass.ReadOptions{})
-}
-
-func writeASS(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	_, err := ass.Write(w, s, common, opts.ASS)
-	return WriteReport{}, err
-}
-
-func readTTML(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return ttml.Read(r, common, ttml.ReadOptions{})
-}
-
-func writeTTML(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	_, err := ttml.Write(w, s, common, ttml.WriteOptions{})
-	return WriteReport{}, err
-}
-
-func readSAMI(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return sami.Read(r, common, opts.SAMI)
-}
-
-func writeSAMI(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	_, err := sami.Write(w, s, common, sami.WriteOptions{})
-	return WriteReport{}, err
-}
-
-func readMicroDVD(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return microdvd.Read(r, common, opts.MicroDVD)
-}
-
-func writeMicroDVD(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	_, err := microdvd.Write(w, s, common, opts.MicroDVD)
-	return WriteReport{}, err
-}
-
-func writeEBUSTL(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	report, err := ebustl.Write(w, s, common, opts.EBUSTL)
-	if err != nil {
-		return WriteReport{}, err
-	}
-	return WriteReport{EBUSTL: &report}, nil
-}
-
-func readSCC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return scc.Read(r, common, opts.SCC)
-}
-
-func writeSCC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	report, err := scc.Write(w, s, common, opts.SCC)
-	if err != nil {
-		return WriteReport{}, err
-	}
-	return WriteReport{SCC: &report}, nil
-}
-
-func readMCC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return mcc.Read(r, common, opts.MCC)
-}
-
-func writeMCC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	report, err := mcc.Write(w, s, common, opts.MCC)
-	if err != nil {
-		return WriteReport{}, err
-	}
-	return WriteReport{MCC: &report}, nil
-}
-
-func readDCP(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return dcp.Read(r, common, dcp.ReadOptions{})
-}
-
-func writeDCP(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	_, err := dcp.Write(w, s, common, dcp.WriteOptions{})
-	return WriteReport{}, err
-}
-
-func readSpruceSTL(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return sprucestl.Read(r, common, opts.SpruceSTL)
-}
-
-func writeSpruceSTL(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	_, err := sprucestl.Write(w, s, common, opts.SpruceSTL)
-	return WriteReport{}, err
-}
-
-func readSBV(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return sbv.Read(r, common, sbv.ReadOptions{})
-}
-
-func writeSBV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	_, err := sbv.Write(w, s, common, sbv.WriteOptions{})
-	return WriteReport{}, err
-}
-
-func readMPL2(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return mpl2.Read(r, common, mpl2.ReadOptions{})
-}
-
-func writeMPL2(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	_, err := mpl2.Write(w, s, common, mpl2.WriteOptions{})
-	return WriteReport{}, err
-}
-
-func readTMPlayer(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return tmplayer.Read(r, common, tmplayer.ReadOptions{})
-}
-
-func writeTMPlayer(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	_, err := tmplayer.Write(w, s, common, tmplayer.WriteOptions{})
-	return WriteReport{}, err
-}
-
-func readMPSub(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return mpsub.Read(r, common, mpsub.ReadOptions{})
-}
-
-func writeMPSub(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	_, err := mpsub.Write(w, s, common, opts.MPSub)
-	return WriteReport{}, err
-}
-
-func readLRC(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return lrc.Read(r, common, lrc.ReadOptions{})
-}
-
-func writeLRC(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	_, err := lrc.Write(w, s, common, lrc.WriteOptions{})
-	return WriteReport{}, err
-}
-
-func writePlainText(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	_, err := plaintext.Write(w, s, common, opts.PlainText)
-	return WriteReport{}, err
-}
-
-func readCSV(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return csv.Read(r, common, opts.CSV)
 }
 
 // readTSV reads with the CSV reader, which detects the delimiter, and names TSV in its errors.
@@ -570,70 +394,4 @@ func writeTSV(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts Wr
 	}
 	_, err = csv.Write(w, s, common, opts.CSV)
 	return WriteReport{}, err
-}
-
-func readSubViewer(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return subviewer.Read(r, common, subviewer.ReadOptions{})
-}
-
-func writeSubViewer(w io.Writer, s *Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
-	_, err := subviewer.Write(w, s, common, opts.SubViewer)
-	return WriteReport{}, err
-}
-
-func readQuickTimeText(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return qttext.Read(r, common, qttext.ReadOptions{})
-}
-
-func writeQuickTimeText(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	_, err := qttext.Write(w, s, common, qttext.WriteOptions{})
-	return WriteReport{}, err
-}
-
-func lookup(f Format) (formatFuncs, bool) {
-	i := slices.IndexFunc(registry, func(row formatFuncs) bool { return row.format == f })
-	if i < 0 {
-		return formatFuncs{}, false
-	}
-	return registry[i], true
-}
-
-func readYouTube(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return youtube.Read(r, common, opts.YouTube)
-}
-
-func writeYouTube(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	return WriteReport{}, youtube.Write(w, s, common, youtube.WriteOptions{})
-}
-
-func readYouTubeChapters(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return chapters.ReadYouTube(r, common, opts.Chapters)
-}
-
-func writeYouTubeChapters(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	return WriteReport{}, chapters.WriteYouTube(w, s, common, chapters.WriteOptions{})
-}
-
-func readFFMetadataChapters(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return chapters.ReadFFMetadata(r, common, opts.Chapters)
-}
-
-func writeFFMetadataChapters(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	return WriteReport{}, chapters.WriteFFMetadata(w, s, common, chapters.WriteOptions{})
-}
-
-func readOGMChapters(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return chapters.ReadOGM(r, common, opts.Chapters)
-}
-
-func writeOGMChapters(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	return WriteReport{}, chapters.WriteOGM(w, s, common, chapters.WriteOptions{})
-}
-
-func readPodcastChapters(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return chapters.ReadPodcast(r, common, opts.Chapters)
-}
-
-func writePodcastChapters(w io.Writer, s *Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
-	return WriteReport{}, chapters.WritePodcast(w, s, common, chapters.WriteOptions{})
 }

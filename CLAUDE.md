@@ -23,10 +23,10 @@ format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microd
                cavena890, ebustl, mcc, pac, scc, vobsub
 stats/ stream/ hearingimpaired/ speakers/ fixing/ profanity/ refsync/ diff/ dual/ karaoke/
                The 1.x services. A service never imports the root package
-container/<name>/ The 3.x readers of video containers, layer 4b: mkv, mp4, mpegts. They call the format readers. Their helpers live in container/<name>/internal: ebml (mkv), arib and teletext (mpegts)
+container/<name>/ The 3.x readers of video containers, layer 4: mkv, mp4, mpegts. They call the format readers. Their helpers live in container/<name>/internal: ebml (mkv), arib and teletext (mpegts)
 ocr/           The 3.x service that reads the text of image cues with an OCR engine, and ocr/ocrtest, a fake engine for tests.
-               The engines are ocr/glyph and ocr/tesseract, the chooser is ocr/auto. Layers 5b and 5c, see CONTRIBUTING.md
-translation/   The service that translates cue text with a machine translation engine. Its HTTP helper is translation/internal/httppost, the engines live in translation/<engine>. Layers 5, 5b and 5c, see CONTRIBUTING.md
+               The engines are ocr/glyph and ocr/tesseract, the chooser is ocr/auto. Layer 5, see CONTRIBUTING.md
+translation/   The service that translates cue text with a machine translation engine. Its HTTP helper is translation/internal/httppost, the engines live in translation/<engine>. Layer 5, see CONTRIBUTING.md
 validation/    The 2.x service that checks a subtitle against rules. It follows the same layer rule
 timing/        The 2.x service that moves cue times to shot changes and frames. Same layer rule
 imaging/       The 3.x public helpers that decode and build the PNG bitmaps of image cues. Same layer rule

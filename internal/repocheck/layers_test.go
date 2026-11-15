@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -19,16 +20,13 @@ type layer int
 
 // The layers of the table in CONTRIBUTING.md. A package imports only packages of a lower layer.
 const (
-	layerLeaf       layer = iota // 0
-	layerMarkup                  // 1
-	layerModel                   // 2
-	layerModelUser               // 3
-	layerFormat                  // 4
-	layerContainer               // 4b
-	layerFacade                  // 5
-	layerPlugin                  // 5b: packages that build on one service, such as an OCR engine
-	layerPluginUser              // 5c: packages that build on a 5b package
-	layerCLI                     // 6
+	layerLeaf      layer = iota // 0: helpers that import no model type
+	layerModel                  // 1: model and markup
+	layerModelUser              // 2: helpers that work on model types
+	layerFormat                 // 3
+	layerContainer              // 4
+	layerService                // 5: the root, the services and the packages below a service folder
+	layerCLI                    // 6
 )
 
 // layers holds the layer of each package. A key that ends in "/*" covers each package one folder below it.
@@ -46,7 +44,7 @@ var layers = map[string]layer{
 	"container/mkv/internal/ebml":        layerLeaf,
 	"internal/orderedjson":               layerLeaf,
 	"internal/markupcore":                layerLeaf,
-	"internal/speakerlabel":              layerMarkup,
+	"internal/speakerlabel":              layerLeaf,
 	"container/mpegts/internal/teletext": layerLeaf,
 	"internal/linewrap":                  layerLeaf,
 	"internal/testfiles":                 layerLeaf,
@@ -54,7 +52,7 @@ var layers = map[string]layer{
 	"internal/translationtest":           layerLeaf,
 	"internal/extfallback":               layerLeaf,
 	"format/internal/paragraphs":         layerLeaf,
-	"markup":                             layerMarkup,
+	"markup":                             layerModel,
 	"model":                              layerModel,
 	"internal/textblock":                 layerModelUser,
 	"internal/subrip":                    layerModelUser,
@@ -73,34 +71,37 @@ var layers = map[string]layer{
 	"internal/readingspeed":              layerModelUser,
 	"format/*":                           layerFormat,
 	"container/*":                        layerContainer,
-	".":                                  layerFacade,
-	"stats":                              layerFacade,
-	"stream":                             layerFacade,
-	"hearingimpaired":                    layerFacade,
-	"speakers":                           layerFacade,
-	"fixing":                             layerFacade,
-	"profanity":                          layerFacade,
-	"refsync":                            layerFacade,
-	"diff":                               layerFacade,
-	"dual":                               layerFacade,
-	"karaoke":                            layerFacade,
-	"validation":                         layerFacade,
-	"timing":                             layerFacade,
-	"imaging":                            layerFacade,
-	"ocr":                                layerFacade,
-	"ocr/*":                              layerPlugin,
-	"ocr/auto":                           layerPluginUser,
-	"translation":                        layerFacade,
-	"translation/internal/httppost":      layerPlugin,
-	"translation/*":                      layerPluginUser,
-	"hls":                                layerFacade,
-	"resegment":                          layerFacade,
+	".":                                  layerService,
+	"stats":                              layerService,
+	"stream":                             layerService,
+	"hearingimpaired":                    layerService,
+	"speakers":                           layerService,
+	"fixing":                             layerService,
+	"profanity":                          layerService,
+	"refsync":                            layerService,
+	"diff":                               layerService,
+	"dual":                               layerService,
+	"karaoke":                            layerService,
+	"validation":                         layerService,
+	"timing":                             layerService,
+	"imaging":                            layerService,
+	"ocr":                                layerService,
+	"ocr/*":                              layerService,
+	"ocr/auto":                           layerService,
+	"translation":                        layerService,
+	"translation/internal/httppost":      layerService,
+	"translation/*":                      layerService,
+	"hls":                                layerService,
+	"resegment":                          layerService,
 	"internal/cli":                       layerCLI,
 	"cmd/stbox":                          layerCLI,
 }
 
 // profiles lists the format packages that may import another format package, because their format is a profile of it.
 var profiles = map[string]string{"format/itt": "format/ttml"}
+
+// engineUsers lists the packages below a service folder that may import engine packages of the same service.
+var engineUsers = map[string][]string{"ocr/auto": {"ocr/glyph", "ocr/tesseract"}}
 
 // allowedModules are the modules that CLAUDE.md allows outside tests.
 var allowedModules = []string{
@@ -166,12 +167,36 @@ func checkImports(rel string, imports []string) []string {
 		if !ok {
 			continue
 		}
-		if dep < own || profiles[rel] == depRel || (dep == own && (own == layerLeaf || own == layerModelUser || own == layerCLI)) {
+		if dep < own || profiles[rel] == depRel {
+			continue
+		}
+		if dep == own && sameLayerAllowed(own, rel, depRel) {
 			continue
 		}
 		problems = append(problems, rel+" imports "+depRel+", which is not in a lower layer")
 	}
 	return problems
+}
+
+func sameLayerAllowed(l layer, rel, dep string) bool {
+	if l == layerService {
+		return serviceImportAllowed(rel, dep)
+	}
+	return l != layerFormat && l != layerContainer
+}
+
+// serviceImportAllowed reports whether a layer 5 package may import another layer 5 package.
+// Only a package below a service folder may do so, and only for its own service.
+func serviceImportAllowed(rel, dep string) bool {
+	if rel == "." || dep == "." {
+		return false
+	}
+	service, below, _ := strings.Cut(rel, "/")
+	depService, _, _ := strings.Cut(dep, "/")
+	if below == "" || service != depService {
+		return false
+	}
+	return dep == service || strings.HasPrefix(dep, service+"/internal/") || slices.Contains(engineUsers[rel], dep)
 }
 
 func layerOf(rel string) (layer, bool) {
@@ -251,10 +276,9 @@ func TestCheckImports(t *testing.T) {
 			want:    []string{"model imports ., which is not in a lower layer"},
 		},
 		{
-			name:    "markup imports model",
-			rel:     "markup",
-			imports: []string{modulePath + "/model"},
-			want:    []string{"markup imports model, which is not in a lower layer"},
+			name:    "model imports markup",
+			rel:     "model",
+			imports: []string{modulePath + "/markup"},
 		},
 		{
 			name:    "format imports another format",
@@ -306,6 +330,12 @@ func TestCheckImports(t *testing.T) {
 			rel:     "translation/deepl",
 			imports: []string{modulePath + "/translation/google"},
 			want:    []string{"translation/deepl imports translation/google, which is not in a lower layer"},
+		},
+		{
+			name:    "ocr imports an engine",
+			rel:     "ocr",
+			imports: []string{modulePath + "/ocr/glyph"},
+			want:    []string{"ocr imports ocr/glyph, which is not in a lower layer"},
 		},
 		{
 			name:    "translation imports ocr",
