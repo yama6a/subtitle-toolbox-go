@@ -65,12 +65,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 
 // blocks yields the blocks of content after the join of cue text blocks, which warns in lenient mode.
 func (rd *reader) blocks(content string) iter.Seq[textblock.Block] {
-	onJoin := func(block, line int, lines []string) {
-		if rd.st.Lenient() {
-			rd.st.Warn(textblock.JoinWarning(block, line), line, block, lines, model.Repaired)
-		}
-	}
-	return textblock.JoinCueTextBlocks(textblock.SplitAtEmptyLines(parsing.Lines(content)), rd.rules, nil, onJoin)
+	return textblock.JoinCueTextBlocks(textblock.SplitAtEmptyLines(parsing.Lines(content)), rd.rules, rd.st)
 }
 
 func (rd *reader) isTimingLine(line string) bool {
@@ -85,18 +80,7 @@ func isTimingLine(line string, lenient bool) bool {
 // parseBlock returns the cues of block b, number index, split before each timing line. Lenient mode skips a
 // part that fails, and warns for each split and each skip.
 func (rd *reader) parseBlock(b textblock.Block, index int) ([]model.Cue, error) {
-	return rd.rules.ReadParts(b, index, textblock.PartReader{
-		Lenient: rd.st.Lenient(),
-		Split: func(msg string, line int) {
-			rd.st.Warn(msg, line, index, b.Lines, model.Repaired)
-		},
-		Parse: func(lines []string, line int) (model.Cue, error) {
-			return rd.parseCue(lines, index, line)
-		},
-		Fail: func(err *model.ParseError, line int, lines []string) error {
-			return rd.st.Fail(err, line, index, lines)
-		},
-	})
+	return rd.rules.ReadParts(rd.st, b, index, rd.parseCue)
 }
 
 // parseCue parses the lines of one cue, whose timing line is on line.

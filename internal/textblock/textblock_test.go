@@ -6,59 +6,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textblock"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func hasArrow(line string) bool { return strings.Contains(line, "-->") }
-
-func subRipTiming(line string) bool {
-	return strings.Contains(line, ",") && strings.Contains(line, " --> ")
-}
-
-// Ports testWebVttRulesHaveNoCueNumbers, testFindsCueTextBlocks and testFindsATimingLine
-// of tests/Parsers/CueBlockRulesTest.php of subtitle-toolbox-php.
-func TestIsCueTextBlock(t *testing.T) {
-	t.Parallel()
-
-	subRip := textblock.Rules{IsTimingLine: subRipTiming, HasCueNumbers: true}
-	webVTT := textblock.Rules{IsTimingLine: hasArrow}
-	tests := []struct {
-		name  string
-		rules textblock.Rules
-		lines []string
-		want  bool
-	}{
-		{"text", subRip, []string{"Tickets are sold at the door."}, true},
-		{"timing line", subRip, []string{"00:00:04,000 --> 00:00:06,000", "Text"}, false},
-		{"short arrow", subRip, []string{"00:00:04 -> 00:00:06"}, false},
-		{"broken time", subRip, []string{"00 :00:04,000 to 00:00:06,000"}, false},
-		{"full-width colon", subRip, []string{"00\uff1a00:04,000"}, false},
-		{"full-width digits", subRip, []string{"\uff11\uff12\uff1a\uff13\uff14 text"}, false},
-		{"ideographic space before the colon", subRip, []string{"12\u3000:34 x"}, false},
-		{"full-width digits without a colon", subRip, []string{"\uff11\uff12 text"}, true},
-		{"number after text", subRip, []string{"Text", "3"}, true},
-		{"cue number", subRip, []string{"2"}, false},
-		{"no cue numbers in WebVTT", webVTT, []string{"2"}, true},
-		{"time in a later line", webVTT, []string{"Text", "00:01 is late"}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			assert.Equal(t, tt.want, tt.rules.IsCueTextBlock(tt.lines))
-		})
-	}
-}
-
-func TestHasTimingLine(t *testing.T) {
-	t.Parallel()
-
-	r := textblock.Rules{IsTimingLine: subRipTiming, HasCueNumbers: true}
-	assert.True(t, r.HasTimingLine([]string{"1", "00:00:01,000 --> 00:00:02,000"}))
-	assert.False(t, r.HasTimingLine([]string{"1", "Text"}))
-	assert.False(t, r.HasTimingLine(nil))
-}
 
 type join struct {
 	block, line int
@@ -68,7 +23,6 @@ type join struct {
 func TestJoinCueTextBlocks(t *testing.T) {
 	t.Parallel()
 
-	rules := textblock.Rules{IsTimingLine: hasArrow}
 	isNote := func(lines []string) bool { return strings.HasPrefix(lines[0], "NOTE") }
 	tests := []struct {
 		name      string
@@ -148,11 +102,23 @@ func TestJoinCueTextBlocks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			var joins []join
-			onJoin := func(block, line int, lines []string) { joins = append(joins, join{block, line, lines}) }
-			got := slices.Collect(textblock.JoinCueTextBlocks(slices.Values(tt.in), rules, tt.isOther, onJoin))
-			assert.Equal(t, tt.want, got)
-			assert.Equal(t, tt.wantJoins, joins)
+			rules := textblock.Rules{IsTimingLine: hasArrow, IsOtherBlock: tt.isOther}
+			strict := parsing.NewState(model.SubRip, model.CommonReadOptions{})
+			assert.Equal(t, tt.want, slices.Collect(textblock.JoinCueTextBlocks(slices.Values(tt.in), rules, strict)))
+			assert.Empty(t, strict.Warnings())
+
+			lenient := parsing.NewState(model.SubRip, model.CommonReadOptions{Lenient: true})
+			assert.Equal(t, tt.want, slices.Collect(textblock.JoinCueTextBlocks(slices.Values(tt.in), rules, lenient)))
+			joins := make([]join, 0, len(lenient.Warnings()))
+			for _, w := range lenient.Warnings() {
+				assert.Equal(t, textblock.JoinWarning(w.Block, w.Line), w.Message)
+				assert.Equal(t, model.Repaired, w.Action)
+				joins = append(joins, join{w.Block, w.Line, w.Lines})
+			}
+			require.Len(t, joins, len(tt.wantJoins))
+			for i, j := range tt.wantJoins {
+				assert.Equal(t, j, joins[i])
+			}
 		})
 	}
 }
@@ -161,7 +127,7 @@ func TestJoinCueTextBlocksStopsEarly(t *testing.T) {
 	t.Parallel()
 
 	in := []textblock.Block{{Line: 1, Lines: []string{"a"}}, {Line: 3, Lines: []string{"b"}}}
-	for b := range textblock.JoinCueTextBlocks(slices.Values(in), textblock.Rules{IsTimingLine: hasArrow}, nil, nil) {
+	for b := range textblock.JoinCueTextBlocks(slices.Values(in), textblock.Rules{IsTimingLine: hasArrow}, parsing.NewState(model.SubRip, model.CommonReadOptions{})) {
 		assert.Equal(t, 1, b.Line)
 		break
 	}

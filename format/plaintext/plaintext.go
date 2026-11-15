@@ -8,14 +8,11 @@ import (
 	"math"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/paragraphs"
 )
 
 // NoParagraphBreaks is the ParagraphGap that writes all cues as one paragraph.
 const NoParagraphBreaks = time.Duration(math.MaxInt64)
-
-const defaultParagraphGap = 2 * time.Second
 
 // WriteReport holds what the writer reports. It has no fields yet.
 type WriteReport struct{}
@@ -34,18 +31,5 @@ type WriteOptions struct {
 
 // Validate returns an error that matches model.ErrInvalidArgument for a negative paragraph gap.
 func (o WriteOptions) Validate() error {
-	if o.ParagraphGap != nil && *o.ParagraphGap < 0 {
-		return &model.InvalidArgumentError{
-			Option: "WriteOptions.PlainText.ParagraphGap",
-			Msg:    "The paragraph gap must be 0 or more seconds, got " + timecode.Seconds(*o.ParagraphGap) + ".",
-		}
-	}
-	return nil
-}
-
-func (o WriteOptions) gap() time.Duration {
-	if o.ParagraphGap == nil {
-		return defaultParagraphGap
-	}
-	return *o.ParagraphGap
+	return paragraphs.ValidateGap(o.ParagraphGap, "WriteOptions.PlainText.ParagraphGap")
 }

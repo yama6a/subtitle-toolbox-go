@@ -83,7 +83,7 @@ func TestByGap(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, paragraphs.ByGap(tt.items, tt.gap, nil))
+			assert.Equal(t, tt.want, paragraphs.ByGap(tt.items, tt.gap))
 		})
 	}
 }
@@ -93,19 +93,11 @@ func TestByGapStartsNew(t *testing.T) {
 
 	const s = time.Second
 	items := []paragraphs.Item[string]{item(0, s, "Anna: hi"), item(s, 2*s, "Anna: there"), item(2*s, 3*s, "Tom: hello"), item(3*s, 4*s, "Tom: you")}
-	speaker := func(v string) string { return v[:4] }
-	var calls [][2]string
-	got := paragraphs.ByGap(items, 5*s, func(previous, value string) bool {
-		calls = append(calls, [2]string{previous, value})
-		return speaker(previous) != speaker(value)
-	})
+	items[2].NewParagraph = true
 	assert.Equal(t, []paragraphs.Paragraph[string]{
 		{Start: 0, Values: []string{"Anna: hi", "Anna: there"}},
 		{Start: 2 * s, Values: []string{"Tom: hello", "Tom: you"}},
-	}, got)
-	assert.Equal(t, [][2]string{
-		{"Anna: hi", "Anna: there"}, {"Anna: there", "Tom: hello"}, {"Tom: hello", "Tom: you"},
-	}, calls, "the hook runs for each item after the first, with the item before it")
+	}, paragraphs.ByGap(items, 5*s))
 }
 
 func TestByGapHookAndGapBothStartParagraphs(t *testing.T) {
@@ -113,8 +105,8 @@ func TestByGapHookAndGapBothStartParagraphs(t *testing.T) {
 
 	const s = time.Second
 	items := []paragraphs.Item[string]{item(0, s, "a"), item(s, 2*s, "b"), item(10*s, 11*s, "c")}
-	got := paragraphs.ByGap(items, 2*s, func(_, value string) bool { return value == "b" })
+	items[1].NewParagraph = true
 	assert.Equal(t, []paragraphs.Paragraph[string]{
 		{Start: 0, Values: []string{"a"}}, {Start: s, Values: []string{"b"}}, {Start: 10 * s, Values: []string{"c"}},
-	}, got)
+	}, paragraphs.ByGap(items, 2*s))
 }
