@@ -209,57 +209,61 @@ func leaders(scores []float64) (int, int) {
 	return best, second
 }
 
-// fitFuncs holds the script check of each code page. A Latin code page has latinFit.
-//
-//nolint:gochecknoglobals // lookup table of the script checks
-var fitFuncs = map[CodePage]func(text string, letters []rune, doubleBytes []byte) fit{
-	Greek:              greekFit,
-	Cyrillic:           cyrillicFit,
-	Hebrew:             hebrewFit,
-	Arabic:             arabicFit,
-	Thai:               thaiFit,
-	Korean:             koreanFit,
-	Japanese:           japaneseFit,
-	ChineseSimplified:  chineseFit(ChineseSimplified),
-	ChineseTraditional: chineseFit(ChineseTraditional),
+//nolint:cyclop // one case per script, and the exhaustive linter needs every code page listed
+func scriptFit(c CodePage, text string, doubleBytes []byte) fit {
+	letters := lettersOf(text)
+	if len(letters) == 0 {
+		return weakFit
+	}
+	switch c {
+	case Greek:
+		return greekFit(text, letters)
+	case Cyrillic:
+		return cyrillicFit(text, letters)
+	case Hebrew:
+		return hebrewFit(letters)
+	case Arabic:
+		return arabicFit(letters)
+	case Thai:
+		return thaiFit(text, letters)
+	case Korean:
+		return koreanFit(text, doubleBytes)
+	case Japanese:
+		return japaneseFit(text)
+	case ChineseSimplified, ChineseTraditional:
+		return chineseFit(c, text, doubleBytes)
+	case CodePageAuto, Latin, LatinCzech, LatinTurkish, Unicode:
+		return latinFit(text, letters)
+	}
+	return latinFit(text, letters)
 }
 
-func scriptFit(c CodePage, text string, doubleBytes []byte) fit {
+func lettersOf(text string) []rune {
 	var letters []rune
 	for _, r := range text {
 		if unicode.IsLetter(r) {
 			letters = append(letters, r)
 		}
 	}
-	if len(letters) == 0 {
-		return weakFit
-	}
-	if f, ok := fitFuncs[c]; ok {
-		return f(text, letters, doubleBytes)
-	}
-	return latinFit(text, letters, doubleBytes)
+	return letters
 }
 
-// share returns the part of the letters that in accepts.
-func share(letters []rune, in func(rune) bool) float64 {
+// scriptShare returns the part of the letters that belong to script.
+func scriptShare(letters []rune, script *unicode.RangeTable) float64 {
 	n := 0
 	for _, r := range letters {
-		if in(r) {
+		if unicode.Is(script, r) {
 			n++
 		}
 	}
 	return float64(n) / float64(len(letters))
 }
 
-func inScript(table *unicode.RangeTable) func(rune) bool {
-	return func(r rune) bool { return unicode.Is(table, r) }
-}
-
 func isASCIILetter(r rune) bool {
 	return r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z'
 }
 
-func latinFit(text string, letters []rune, _ []byte) fit {
+func latinFit(text string, letters []rune) fit {
 	ascii, vowels := 0, 0
 	for _, r := range letters {
 		if isASCIILetter(r) {
@@ -291,9 +295,9 @@ func qWithoutU(text string) int {
 	return n
 }
 
-func greekFit(text string, letters []rune, _ []byte) fit {
+func greekFit(text string, letters []rune) fit {
 	sigmas, badSigmas := sigmaCounts([]rune(text))
-	if share(letters, inScript(unicode.Greek)) < minScriptShare || float64(badSigmas) > maxBadSigmaShare*float64(sigmas) {
+	if scriptShare(letters, unicode.Greek) < minScriptShare || float64(badSigmas) > maxBadSigmaShare*float64(sigmas) {
 		return noFit
 	}
 	if strings.ContainsAny(text, greekAccents) {
@@ -320,10 +324,16 @@ func sigmaCounts(runes []rune) (int, int) {
 	return sigmas, bad
 }
 
-func cyrillicFit(text string, letters []rune, _ []byte) fit {
+func cyrillicFit(text string, letters []rune) fit {
 	words, badStarts := wordCounts(text)
-	vowels := share(letters, func(r rune) bool { return strings.ContainsRune(cyrillicVowels, r) })
-	if share(letters, inScript(unicode.Cyrillic)) < minScriptShare || vowels < minCyrillicVowels || vowels > maxCyrillicVowels ||
+	vowelCount := 0
+	for _, r := range letters {
+		if strings.ContainsRune(cyrillicVowels, r) {
+			vowelCount++
+		}
+	}
+	vowels := float64(vowelCount) / float64(len(letters))
+	if scriptShare(letters, unicode.Cyrillic) < minScriptShare || vowels < minCyrillicVowels || vowels > maxCyrillicVowels ||
 		float64(badStarts) > maxBadStartShare*float64(words) {
 		return noFit
 	}
@@ -353,12 +363,12 @@ func wordCounts(text string) (int, int) {
 	return words, badStarts
 }
 
-func hebrewFit(_ string, letters []rune, _ []byte) fit {
-	return atLeast(share(letters, inScript(unicode.Hebrew)), minRightToLeftShare)
+func hebrewFit(letters []rune) fit {
+	return atLeast(scriptShare(letters, unicode.Hebrew), minRightToLeftShare)
 }
 
-func arabicFit(_ string, letters []rune, _ []byte) fit {
-	return atLeast(share(letters, inScript(unicode.Arabic)), minRightToLeftShare)
+func arabicFit(letters []rune) fit {
+	return atLeast(scriptShare(letters, unicode.Arabic), minRightToLeftShare)
 }
 
 func inRanges(r rune, ranges ...[2]rune) bool {
@@ -402,7 +412,7 @@ func countPairs(b []byte, first, second [2]byte) int {
 	return n
 }
 
-func koreanFit(text string, _ []rune, doubleBytes []byte) fit {
+func koreanFit(text string, doubleBytes []byte) fit {
 	hangul, han := count(text, isHangul), count(text, isHan)
 	pairs := countPairs(doubleBytes, [2]byte{0x81, 0xFE}, [2]byte{0x00, 0xFF})
 	common := countPairs(doubleBytes, [2]byte{0xB0, 0xFE}, [2]byte{0xA1, 0xFE})
@@ -427,7 +437,7 @@ func hasSpaceBetween(text string, in func(rune) bool) bool {
 	return false
 }
 
-func japaneseFit(text string, _ []rune, _ []byte) fit {
+func japaneseFit(text string) fit {
 	kana, han := count(text, isKana), count(text, isHan)
 	if kana > 0 && float64(kana) >= minKanaShare*float64(kana+han) {
 		return strongFit
@@ -436,24 +446,22 @@ func japaneseFit(text string, _ []rune, _ []byte) fit {
 }
 
 // chineseFit uses that GB2312 text has second bytes from A1h only, and Big5 text has second bytes from 40h to 7Eh too.
-func chineseFit(c CodePage) func(string, []rune, []byte) fit {
-	return func(text string, _ []rune, doubleBytes []byte) fit {
-		if count(text, isHan) == 0 || count(text, func(r rune) bool { return isHangul(r) || isKana(r) }) > 0 {
-			return noFit
-		}
-		lowSecondByte := countPairs(doubleBytes, [2]byte{0x81, 0xFE}, [2]byte{0x40, 0x7E}) > 0
-		if lowSecondByte == (c == ChineseTraditional) {
-			return strongFit
-		}
-		return weakFit
+func chineseFit(c CodePage, text string, doubleBytes []byte) fit {
+	if count(text, isHan) == 0 || count(text, func(r rune) bool { return isHangul(r) || isKana(r) }) > 0 {
+		return noFit
 	}
+	lowSecondByte := countPairs(doubleBytes, [2]byte{0x81, 0xFE}, [2]byte{0x40, 0x7E}) > 0
+	if lowSecondByte == (c == ChineseTraditional) {
+		return strongFit
+	}
+	return weakFit
 }
 
 // thaiFit expects vowels and tone marks. Hebrew read as Thai gives consonants only.
-func thaiFit(text string, letters []rune, _ []byte) fit {
+func thaiFit(text string, letters []rune) fit {
 	marks := count(text, func(r rune) bool { return r >= 0x0E30 && r <= 0x0E4E })
 	all := count(text, func(r rune) bool { return r >= 0x0E01 && r <= 0x0E4E })
-	if share(letters, inScript(unicode.Thai)) >= minScriptShare && float64(marks) >= minThaiMarkShare*float64(all) {
+	if scriptShare(letters, unicode.Thai) >= minScriptShare && float64(marks) >= minThaiMarkShare*float64(all) {
 		return strongFit
 	}
 	return noFit

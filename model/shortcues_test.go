@@ -416,6 +416,7 @@ func TestCueLimitsValidate(t *testing.T) {
 	tests := []struct {
 		name   string
 		limits model.CueLimits
+		path   string
 		option string
 		want   string
 	}{
@@ -458,12 +459,20 @@ func TestCueLimitsValidate(t *testing.T) {
 			name: "default minimum duration above the maximum", limits: model.CueLimits{MaxDuration: 500 * time.Millisecond}, option: "CueLimits.MinDuration",
 			want: "The minimum duration must not be greater than the maximum duration, got 1 and 0.5.",
 		},
+		{
+			name: "ValidateAt with a path", limits: model.CueLimits{MaxDuration: -time.Second}, path: "resegment.Options.Limits",
+			option: "resegment.Options.Limits.MaxDuration",
+			want:   "The maximum duration and the maximum characters per second must be greater than 0, got -1 and no limit.",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			err := tt.limits.Validate()
+			if tt.path != "" {
+				err = tt.limits.ValidateAt(tt.path)
+			}
 			if tt.want == "" {
 				require.NoError(t, err)
 				return

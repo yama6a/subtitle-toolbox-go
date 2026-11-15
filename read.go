@@ -84,9 +84,7 @@ func parse(r io.ReaderAt, size int64, path string, open openFunc, opts ReadOptio
 		if path != "" {
 			subject = path
 		}
-		if row, ok := containerRow(c); ok {
-			return readTrack(row, r, size, subject, opts)
-		}
+		return readTrack(c, r, size, subject, opts)
 	}
 	if opts.Track != 0 {
 		return nil, ReadInfo{}, &InvalidArgumentError{

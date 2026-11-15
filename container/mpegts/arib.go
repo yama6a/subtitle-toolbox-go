@@ -1,11 +1,13 @@
 package mpegts
 
 import (
+	"fmt"
 	"slices"
 
 	"github.com/asticode/go-astits"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/container/mpegts/internal/arib"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -94,4 +96,40 @@ func (f *File) captionLanguages(captions []stream) (map[uint16]string, error) {
 		return len(wanted) > 0
 	})
 	return languages, err
+}
+
+const (
+	// Caption streams of ARIB TR-B14 profile A carry a component tag from 0x30 to 0x37 and the data component 0x0008.
+	dataComponentTag     = 0xFD
+	firstCaptionTag      = 0x30
+	lastCaptionTag       = 0x37
+	captionDataComponent = 0x0008
+)
+
+func (f *File) aribCues(track model.Track, s stream, number int, common model.CommonReadOptions) ([]model.Cue, []model.ParseWarning, error) {
+	dec := arib.NewDecoder(track.Language)
+	zero, last, err := f.readPES(s, dec)
+	if err != nil {
+		return nil, nil, err
+	}
+	var states []textState
+	for _, st := range dec.Finish() {
+		states = append(states, textState{start: st.Start, lines: st.Lines, alignment: st.Alignment})
+	}
+	var warnings []model.ParseWarning
+	for _, w := range dec.Warnings() {
+		ms := (max(0, w.Time-zero) + 45) / 90
+		message := fmt.Sprintf("At %d.%03d s: %s", ms/1000, ms%1000, w.Message)
+		if w.Skipped && !common.Lenient {
+			return nil, nil, &model.ParseError{Msg: message}
+		}
+		action := model.Repaired
+		if w.Skipped {
+			action = model.Skipped
+		}
+		warnings = append(warnings, model.ParseWarning{Message: message, Line: model.NoLine, Block: model.NoBlock, Action: action})
+	}
+	lastCue := parsing.NewState(model.SubRip, common).LastCueDuration()
+	cues, err := textCues(number, states, zero, last, lastCue)
+	return cues, warnings, err
 }

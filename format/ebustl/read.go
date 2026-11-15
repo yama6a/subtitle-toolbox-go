@@ -1,6 +1,3 @@
-// Package ebustl reads EBU STL, the binary subtitle exchange format of EBU Tech 3264.
-//
-// A file holds one GSI block of 1024 bytes, then TTI blocks of 128 bytes. A subtitle takes one or more TTI blocks.
 package ebustl
 
 import (
@@ -18,15 +15,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
-
-const formatDataKey = string(model.EBUSTL)
-
-// ReadOptions holds the settings of the EBU STL reader.
-type ReadOptions struct {
-	// SubtractStartOfProgramme subtracts the GSI start of programme (TCP) from every cue time.
-	// A time before it becomes 0.
-	SubtractStartOfProgramme bool
-}
 
 type reader struct {
 	st          *parsing.State

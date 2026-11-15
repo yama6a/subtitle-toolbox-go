@@ -2,8 +2,6 @@ package resegment
 
 import (
 	"cmp"
-	"errors"
-	"strings"
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
@@ -29,10 +27,7 @@ func (o Options) Validate() error {
 }
 
 func (o Options) resolve() (settings, error) {
-	if err := o.Limits.Validate(); err != nil {
-		if e, ok := errors.AsType[*model.InvalidArgumentError](err); ok {
-			e.Option = "resegment.Options.Limits." + strings.TrimPrefix(e.Option, "CueLimits.")
-		}
+	if err := o.Limits.ValidateAt("resegment.Options.Limits"); err != nil {
 		return settings{}, err
 	}
 	l := o.Limits

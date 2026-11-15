@@ -2,7 +2,6 @@ package stbox
 
 import (
 	"bytes"
-	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -56,19 +55,12 @@ func TestReadTrack(t *testing.T) {
 			wantType: &InvalidArgumentError{},
 			wantErr:  "stbox: invalid argument: ReadOptions.Track: The file has no subtitle track with the number 7.",
 		},
-		{
-			name: "a format", tracks: fakeTracks(1), opts: ReadOptions{Format: SubRip},
-			wantErr: "stbox: unsupported format: movie.mkv is an MKV or WebM file. Read it by track.",
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			row := containerFuncs{container: Matroska, open: func(io.ReaderAt, int64) (containerFile, error) {
-				return fakeFile{tt.tracks}, nil
-			}}
-			s, info, err := readTrack(row, bytes.NewReader(nil), 0, "movie.mkv", tt.opts)
+			s, info, err := extractTrack(Matroska, fakeFile{tt.tracks}, tt.opts)
 			if tt.wantErr != "" {
 				require.EqualError(t, err, tt.wantErr)
 				assert.Nil(t, s)
@@ -105,6 +97,8 @@ func TestTrackInputErrors(t *testing.T) {
 
 	srt := []byte("1\n00:00:01,000 --> 00:00:02,000\nHello\n")
 	mp4 := []byte("\x00\x00\x00\x10ftypisom\x00\x00\x00\x00")
+	mp4Path := filepath.Join(t.TempDir(), "movie.mp4")
+	require.NoError(t, os.WriteFile(mp4Path, mp4, 0o600))
 	dir := t.TempDir()
 	srtPath := filepath.Join(dir, "a.srt")
 	require.NoError(t, os.WriteFile(srtPath, srt, 0o600))
@@ -150,6 +144,10 @@ func TestTrackInputErrors(t *testing.T) {
 			_, _, err := Parse(bytes.NewReader(mp4), int64(len(mp4)), ReadOptions{Format: SubRip})
 			return err
 		}, "stbox: unsupported format: The content is an MP4 file. Read it by track.", ErrUnsupportedFormat},
+		{"Load of MP4 with a format", func() error {
+			_, _, err := Load(mp4Path, ReadOptions{Format: SubRip})
+			return err
+		}, "stbox: unsupported format: " + mp4Path + " is an MP4 file. Read it by track.", ErrUnsupportedFormat},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

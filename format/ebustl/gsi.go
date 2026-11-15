@@ -1,10 +1,15 @@
 package ebustl
 
 import (
+	"bytes"
+	"fmt"
 	"slices"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/codepage"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 const (
@@ -165,4 +170,130 @@ func fieldInt(s string) int {
 		n = n*10 + int(s[i]-'0')
 	}
 	return sign * n
+}
+
+// gsiBlock returns the 1024 bytes of the GSI block. The title, the language and the counts of the written blocks
+// replace the stored values when they differ. It also returns the characters of the fields written as "?".
+func (wr *writer) gsiBlock(s *model.Subtitle, gsi map[string]string, file *model.Data, sets []set) ([]byte, []Replacement) {
+	var cues []set
+	for _, st := range sets {
+		if !st.comment {
+			cues = append(cues, st)
+		}
+	}
+	updateCounts(gsi, file, sets, cues)
+	if longest := longestRow(cues, wr.cct); longest > fieldInt(gsi["MNC"]) {
+		gsi["MNC"] = strconv.Itoa(min(longest, maxColumns))
+	}
+	title, _ := s.Metadata(model.MetadataTitle)
+	if title != strings.TrimRight(gsi["OPT"], " \x00") {
+		gsi["OPT"] = title
+	}
+	lang, hasLang := s.Metadata(model.MetadataLanguage)
+	tag, hasTag := languages[strings.ToUpper(gsi["LC"])]
+	if _, ok := gsi["LC"]; !ok || hasLang != hasTag || lang != tag {
+		gsi["LC"] = languageCode(lang, hasLang)
+	}
+	if _, ok := gsi["CD"]; !ok {
+		gsi["CD"] = time.Now().UTC().Format("060102")
+	}
+	if _, ok := gsi["RD"]; !ok {
+		gsi["RD"] = gsi["CD"]
+	}
+	return encodeGSI(gsi)
+}
+
+// updateCounts sets TNB, TNS, TNG and TCF from the written sets. A stored value stays when it equals the count that the
+// reader stored.
+func updateCounts(gsi map[string]string, file *model.Data, sets, cues []set) {
+	groups := map[byte]bool{}
+	for _, st := range cues {
+		groups[st.blocks[0][ttiSGN]] = true
+	}
+	blocks := 0
+	for _, st := range sets {
+		blocks += len(st.blocks)
+	}
+	first := "00000000"
+	if len(cues) > 0 {
+		first = timeCodeDigits(cues[0].blocks[0][ttiTCI:])
+	}
+	stored, _ := file.Object("counts")
+	for _, f := range []struct {
+		name string
+		want any
+		text string
+	}{
+		{"TNB", int64(blocks), fmt.Sprintf("%05d", blocks)},
+		{"TNS", int64(len(cues)), fmt.Sprintf("%05d", len(cues))},
+		{"TNG", int64(len(groups)), fmt.Sprintf("%03d", len(groups))},
+		{"TCF", first, first},
+	} {
+		got, _ := stored.Get(f.name)
+		if _, ok := gsi[f.name]; !ok || got != f.want {
+			gsi[f.name] = f.text
+		}
+	}
+}
+
+// encodeGSI encodes each field with the code page of CPN, pads it with spaces and cuts it to its length.
+func encodeGSI(gsi map[string]string) ([]byte, []Replacement) {
+	table := gsiTable(gsi["CPN"])
+	var replaced []Replacement
+	block := make([]byte, 0, gsiSize)
+	for _, f := range gsiFields {
+		field := make([]byte, 0, f.length)
+		for _, r := range gsi[f.name] {
+			if len(field) == f.length {
+				break
+			}
+			c, ok := table.EncodeRune(r)
+			if !ok {
+				c = codepage.Replacement
+				replaced = append(replaced, Replacement{CueIndex: -1, Field: f.name, Character: r})
+			}
+			field = append(field, c)
+		}
+		block = append(block, field...)
+		block = append(block, bytes.Repeat([]byte{' '}, f.length-len(field))...)
+	}
+	return block, replaced
+}
+
+// longestRow returns the number of displayable bytes of the longest row of the cue sets.
+func longestRow(cues []set, cct string) int {
+	longest := 0
+	for _, st := range cues {
+		for _, row := range bytes.Split(textBytes(st.blocks), []byte{newRow}) {
+			n := 0
+			for _, c := range row {
+				if c >= 0x20 && c <= 0x7F || c >= 0xA0 && (cct != "00" || c <= 0xC0 || c >= 0xD0) {
+					n++
+				}
+			}
+			longest = max(longest, n)
+		}
+	}
+	return longest
+}
+
+// languageCode returns the LC code of a language tag: the first code with the same tag in any case, else with the
+// same primary subtag, else "00".
+func languageCode(lang string, ok bool) string {
+	if !ok {
+		return "00"
+	}
+	codes := make([]string, 0, len(languages))
+	for code := range languages {
+		codes = append(codes, code)
+	}
+	slices.Sort(codes)
+	for _, want := range []string{lang, strings.SplitN(lang, "-", 2)[0]} {
+		for _, code := range codes {
+			if strings.EqualFold(languages[code], want) {
+				return code
+			}
+		}
+	}
+	return "00"
 }
