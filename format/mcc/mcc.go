@@ -54,21 +54,7 @@ func (o ReadOptions) Validate() error {
 			Msg:    "The CEA-708 service must be from 1 to 63, got " + strconv.Itoa(o.Service) + ".",
 		}
 	}
-	if o.Channel < 0 || o.Channel > 2 {
-		return &model.InvalidArgumentError{
-			Option: "ReadOptions.MCC.Channel",
-			Msg:    "The MCC data channel must be 1 or 2, got " + strconv.Itoa(o.Channel) + ".",
-		}
-	}
-	switch o.RollUp {
-	case "", RollUpScreen, RollUpLines:
-		return nil
-	default:
-		return &model.InvalidArgumentError{
-			Option: "ReadOptions.MCC.RollUp",
-			Msg:    "The MCC roll-up mode " + strconv.Quote(string(o.RollUp)) + " is not screen or lines.",
-		}
-	}
+	return caption.CEA608Options{Channel: o.Channel, RollUp: o.RollUp}.Validate("MCC")
 }
 
 // WriteOptions holds the settings of the MCC writer.
@@ -93,13 +79,7 @@ func (o WriteOptions) Validate() error {
 			}
 		}
 	}
-	if o.DropFrame > model.DropFrameOff {
-		return &model.InvalidArgumentError{
-			Option: "WriteOptions.MCC.DropFrame",
-			Msg:    "The MCC drop-frame mode " + strconv.Itoa(int(o.DropFrame)) + " is unknown.",
-		}
-	}
-	return nil
+	return caption.ValidateDropFrame(o.DropFrame, "MCC")
 }
 
 const (

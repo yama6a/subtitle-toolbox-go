@@ -91,6 +91,11 @@ func Blocks(captions []Caption, frameOf func(time.Duration) int64, capacity int)
 		e.place([][]byte{command(cmdDLW, 1<<previous.window)}, previous.end)
 	}
 
+	return e.blocks()
+}
+
+// blocks flattens the commands of each frame into one block, in frame order.
+func (e *encoder) blocks() []Block {
 	blocks := make([]Block, 0, len(e.frames))
 	for _, frame := range slices.Sorted(maps.Keys(e.frames)) {
 		var data []byte

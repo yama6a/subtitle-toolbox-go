@@ -2,7 +2,6 @@ package mkv
 
 import (
 	"errors"
-	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap/dvdsub"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
@@ -32,10 +31,10 @@ func (f *File) readVobSub(t *trackEntry, private []byte, blocks []block, common 
 		if u.Image == nil {
 			continue
 		}
-		start := min(time.Duration(b.startMs)*time.Millisecond+u.StartDelay, timecode.MaxValidTime)
-		end := time.Duration(b.endMs) * time.Millisecond
+		start := min(b.start+u.StartDelay, timecode.MaxValidTime)
+		end := b.end
 		if u.HasStop {
-			end = time.Duration(b.startMs)*time.Millisecond + u.StopDelay
+			end = b.start + u.StopDelay
 		}
 		s.AddCue(model.Cue{Start: start, End: min(max(end, start), timecode.MaxValidTime), Forced: u.Forced, Image: u.Image})
 	}

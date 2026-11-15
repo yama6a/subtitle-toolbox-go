@@ -13,7 +13,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-const formatDataKey = "scc"
+const formatDataKey = string(model.SCC)
 
 // FrameWord is one word on one frame at 29.97 fps.
 type FrameWord struct {
@@ -72,7 +72,7 @@ var (
 
 // lateChange describes a caption that shows after its cue start: dropped when its EOC is not before the cue end.
 func lateChange(index int, c model.Cue, eoc, end int64) FitChange {
-	prefix := "Cue #" + strconv.Itoa(index) + " at " + timecode.Seconds(c.Start) + " s"
+	prefix := cuePrefix(index, c.Start)
 	if eoc >= end {
 		return FitChange{index, Dropped, prefix + " is left out. Its caption data needs the frames up to " +
 			frameSeconds(eoc) + " s, but the cue ends at " + timecode.Seconds(c.End) + " s."}
@@ -182,7 +182,7 @@ func loadWords(f model.Format, c model.Cue, index int, fit bool) ([]uint16, []Fi
 }
 
 func checkLimits(f model.Format, c model.Cue, index int, lines [][]cea608.Char) error {
-	prefix := "Cue #" + strconv.Itoa(index) + " at " + timecode.Seconds(c.Start) + " s has "
+	prefix := cuePrefix(index, c.Start) + " has "
 	fail := func(reason string) error {
 		e := &model.UnwritableError{Format: f, CueIndex: index, Reason: reason}
 		if linewrap.FewestLines(c.Lines, cea608.Columns) <= cea608.MaxLines {
@@ -319,4 +319,9 @@ func intList(data *model.Data, key string, count int) ([]int, bool) {
 		out[i] = int(n)
 	}
 	return out, true
+}
+
+// cuePrefix starts the message about a cue with its number and start time.
+func cuePrefix(index int, start time.Duration) string {
+	return "Cue #" + strconv.Itoa(index) + " at " + timecode.Seconds(start) + " s"
 }

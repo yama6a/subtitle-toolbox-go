@@ -60,7 +60,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	}
 
 	timeline := lr.timeline()
-	cues := caption.CaptionDataCues(timeline, caption.CEA708Service(opts.Service, opts.CEA608Only),
+	cues := caption.CDPCues(timeline, caption.CEA708Service(opts.Service, opts.CEA608Only),
 		caption.CEA608Options{Channel: opts.Channel, RollUp: opts.RollUp}, st.LastCueDuration())
 	s.AddCues(cues...)
 	return s, st.Warnings(), nil
@@ -245,7 +245,7 @@ func readLine(line string) (code int, tc model.Timecode, triplets []cea708.Tripl
 	if msg != "" {
 		return 0, tc, nil, msg
 	}
-	if len(data) < 3 || data[0] != 0x61 || data[1] != 0x01 {
+	if len(data) < 3 || data[0] != ancDID || data[1] != ancSDID {
 		return -1, tc, nil, ""
 	}
 	code, triplets, err := cea708.ReadCDP(data[3:min(3+int(data[2]), len(data))])

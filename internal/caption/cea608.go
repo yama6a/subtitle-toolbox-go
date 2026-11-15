@@ -95,7 +95,7 @@ func newCue(start, end time.Duration, lines []cea608.Line, mode cea608.Mode) mod
 		rows[i] = int64(l.Row)
 		columns[i] = int64(l.Column)
 	}
-	_ = c.SetFormatData("scc", model.NewData(
+	_ = c.SetFormatData(formatDataKey, model.NewData(
 		model.Field{Key: "mode", Value: string(mode)},
 		model.Field{Key: "rows", Value: rows},
 		model.Field{Key: "columns", Value: columns},

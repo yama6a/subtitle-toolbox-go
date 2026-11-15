@@ -121,6 +121,7 @@ func TestExtractErrors(t *testing.T) {
 		var ie *model.InvalidArgumentError
 		require.ErrorAs(t, err, &ie)
 		assert.Equal(t, "The file has no subtitle track with the number 1.", ie.Msg)
+		assert.Equal(t, "ReadOptions.Track", ie.Option)
 	})
 	t.Run("not Matroska", func(t *testing.T) {
 		t.Parallel()

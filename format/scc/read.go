@@ -16,9 +16,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-// padding is the null byte pair with odd parity that fills frames without data.
-const padding = 0x8080
-
 var (
 	codeLineRegexp = regexp.MustCompile(`^(\d{2,6}):(\d{2}):(\d{2})([:;])(\d{2})(?:[\t\n\v\f\r ]+(.*))?$`)
 	bytePairRegexp = regexp.MustCompile(`^[0-9a-fA-F]{4}$`)
@@ -128,12 +125,12 @@ func startFrame(m []string, dropFrame bool) int64 {
 	return frameRate(dropFrame).FrameOf(model.Timecode{Hours: field[0], Minutes: field[1], Seconds: field[2], Frames: field[3]})
 }
 
-// readBytePair returns the word of a pair. A bad pair fails in strict mode. Lenient mode warns and returns padding,
+// readBytePair returns the word of a pair. A bad pair fails in strict mode. Lenient mode warns and returns the null word,
 // so the later pairs of the line keep their frames.
 func readBytePair(st *parsing.State, pair string, line, block int, raw string) (uint16, error) {
 	if !bytePairRegexp.MatchString(pair) {
 		err := st.Fail(&model.ParseError{Line: line, Msg: `The SCC line has the invalid byte pair "` + pair + `".`}, line, block, []string{raw})
-		return padding, err
+		return cea608.NullWord, err
 	}
 	word, _ := strconv.ParseUint(pair, 16, 16) // four hex digits
 	return uint16(word), nil

@@ -76,7 +76,7 @@ func (f *File) c708Cues(w *walker, opts mcc.ReadOptions, lastCueDuration time.Du
 			frames = append(frames, cea708.Frame{Time: nanos(s.start), Triplets: triplets})
 		}
 	}
-	return caption.CaptionDataCues(frames, caption.CEA708Service(opts.Service, opts.CEA608Only),
+	return caption.CDPCues(frames, caption.CEA708Service(opts.Service, opts.CEA608Only),
 		caption.CEA608Options{Channel: opts.Channel, RollUp: opts.RollUp}, lastCueDuration), nil
 }
 
