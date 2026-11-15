@@ -213,7 +213,7 @@ The edits run in this order, whatever the order of the flags. A group runs only 
 | `--structure-max-word-gap SECONDS` | positive time | 0.6 | needs `--structure-resegment`: `Pass --structure-resegment with --structure-max-word-gap.` |
 | `--structure-split-long` | flag | | calls `resegment.SplitLong` with the limits. It does not turn on word timestamps |
 | `--karaoke` | flag | | turns on word timestamps. Calls `karaoke.Apply` |
-| `--karaoke-style TAG` | `b`, `i`, `u`, `s` or `font color="#rrggbb"` | `u` | needs `--karaoke`: `Pass --karaoke with --karaoke-style.`. A wrong tag fails with the library message, for example `The style em must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00".` |
+| `--karaoke-style TAG` | `b`, `i`, `u`, `s` or `font color="#rrggbb"` | `u` | needs `--karaoke`: `Pass --karaoke with --karaoke-style.`. A wrong tag fails with the library message, for example `The style em must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00".` An empty tag gives `The option --karaoke-style needs a tag, for example u or font color="#ffff00".` |
 
 - **Limits**: `--structure-max-cpl` and `--structure-max-lines` need one of `--structure-wrap`, `--structure-resegment`, `--structure-merge-short` or `--structure-split-long`.
 - **Check order** of `structure`: the `--structure-max-word-gap` rule, the `--structure-max-cpl` rule, the `--structure-max-lines` rule, the value of `--structure-max-word-gap`, then the values of `--structure-max-cpl` and `--structure-max-lines`.
@@ -565,7 +565,7 @@ OPENAI_MODEL=llama3 OPENAI_BASE_URL=http://localhost:11434/v1 stbox translate st
 
 - **Options**: `--engine` takes `deepl`, `google` or `openai` in any ASCII case. `--target-language` is required. `--source-language` is optional, and the engine detects the language without it. The CLI does not check the language codes.
 - **Key**: `--api-key` wins over the environment variable of the engine, also when it is empty. An empty variable counts as unset. Only the variable of the chosen engine counts.
-- **Checks**: every check runs before any read and fails with exit 2. The order is engine, key, target, then for `openai` the model and the base URL, then the engine options.
+- **Checks**: every check runs before any read and fails with exit 2. The order is engine, key, target, then for `openai` the model, then the engine options: the key format and the base URL.
 
 | Variable | Engine | Effect |
 |:--- |:--- |:--- |
@@ -575,7 +575,7 @@ OPENAI_MODEL=llama3 OPENAI_BASE_URL=http://localhost:11434/v1 stbox translate st
 | `OPENAI_MODEL` | `openai` | The model name. Required |
 | `OPENAI_BASE_URL` | `openai` | The base URL. Default `https://api.openai.com/v1` |
 
-- **Key rules**: a key of only white space gives `The API key is empty. Pass --api-key or set DEEPL_API_KEY.`. A key with a control character, or a space at the start or end, gives `The API key has a control character, or a space at the start or end. Pass the key without them.`. The key never appears in a message, a warning or the help.
+- **Key rules**: a key of only white space gives `The API key is empty. Pass --api-key or set DEEPL_API_KEY.`. A key with a control character, or a space at the start or end, gives the message of the engine, for example `The API key must not have a control character, or a space at the start or end.`. The key never appears in a message, a warning or the help.
 - **Warnings**: each warning of the run goes to stderr as `LABEL: cue N: MESSAGE`, for example `station.srt: cue 3: The engine dropped or changed a placeholder tag. The cue has no tags.`.
 - **Failure**: a service error fails the input with exit 3 and the message `LABEL: MESSAGE`, for example `stdin: DeepL rejected the API key (HTTP 403). Check the key and its plan.`. `--keep-going` goes on with the next input. Ctrl-C stops the request in flight.
 

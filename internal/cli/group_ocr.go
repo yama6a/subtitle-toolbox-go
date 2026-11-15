@@ -34,30 +34,30 @@ func ocrGroup() group {
 	}
 }
 
-func buildOCR(a *args, add func(edit)) error {
+//nolint:ireturn // a group build returns its edit, which is one of several types
+func buildOCR(a *args) (edit, error) {
 	if err := needs(a, "ocr", "ocr-engine", "ocr-language", "ocr-database"); err != nil {
-		return err
+		return nil, err
 	}
 	if !a.Has("ocr") {
-		return nil
+		return nil, nil //nolint:nilnil // a nil edit means the group is off
 	}
 	name, _, err := a.Choice("ocr-engine", string(ocr.EngineTesseract), string(ocr.EngineGlyph))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	e := &ocrEdit{engine: ocr.EngineName(name)}
 	if path, ok := a.Value("ocr-database"); ok {
 		e.databasePath, e.hasDatabase = path, true
 		if e.engine == ocr.EngineTesseract {
-			return usage("Pass --ocr-engine glyph with --ocr-database.")
+			return nil, usage("Pass --ocr-engine glyph with --ocr-database.")
 		}
 		e.engine = ocr.EngineGlyph
 	}
 	language, _ := a.Value("ocr-language")
 	e.language = ocr.Language(language)
 	e.hasLanguage = a.Has("ocr-language")
-	add(e)
-	return nil
+	return e, nil
 }
 
 // ocrEdit runs OCR on the image cues without lines. load chooses the engine and reads the database once per run.
@@ -75,7 +75,14 @@ type ocrEdit struct {
 	warned    bool
 }
 
-var _ edit = &ocrEdit{}
+var _ fileEdit = &ocrEdit{}
+
+func (e *ocrEdit) sideFiles() []string {
+	if !e.hasDatabase {
+		return nil
+	}
+	return []string{e.databasePath}
+}
 
 // load picks the engine and checks it, before any input is read. A missing Tesseract or a missing language
 // is a usage error. A database that go-glyph-ocr rejects is a *fileError.

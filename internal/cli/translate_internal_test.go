@@ -263,7 +263,7 @@ func TestTranslateUsageErrors(t *testing.T) {
 		return append([]string{"own_station.srt", "--engine", name, "--target-language", "fr"}, more...)
 	}
 	const noKey = "Pass --api-key or set the environment variable DEEPL_API_KEY."
-	const badKey = "The API key has a control character, or a space at the start or end. Pass the key without them."
+	const badKey = "The API key must not have a control character, or a space at the start or end."
 	deepl := map[string]string{"DEEPL_API_KEY": "k"}
 	tests := []struct {
 		name  string
@@ -302,13 +302,13 @@ func TestTranslateUsageErrors(t *testing.T) {
 			"openai with a model of spaces",
 			map[string]string{"OPENAI_MODEL": " "},
 			engine("openai"),
-			"The environment variable OPENAI_MODEL is empty. Set it to a model name, for example gpt-4o-mini.",
+			"The model must not be empty. Pass a model name such as gpt-4o-mini or llama3.",
 		},
 		{
 			"openai with a bad base URL",
 			map[string]string{"OPENAI_MODEL": "m", "OPENAI_BASE_URL": "localhost:11434/v1"},
 			engine("openai"),
-			`The environment variable OPENAI_BASE_URL must start with http:// or https://, got "localhost:11434/v1".`,
+			`The base URL must start with http:// or https://, got "localhost:11434/v1".`,
 		},
 		{
 			"2 inputs without a key come first", nil, []string{"a.srt", "b.srt", "--engine", "deepl", "--target-language", "fr"}, noKey,
@@ -323,7 +323,11 @@ func TestTranslateUsageErrors(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := translateCall(t, translateDir(t), translationtest.ClosedURL(t), "", tt.env, tt.words...)
+			base := translationtest.ClosedURL(t)
+			if tt.env["OPENAI_BASE_URL"] != "" {
+				base = ""
+			}
+			got := translateCall(t, translateDir(t), base, "", tt.env, tt.words...)
 			assert.Equal(t, exitUsage, got.Code)
 			assert.Contains(t, got.Stderr, "Error: "+tt.msg+"\n")
 			assert.Contains(t, got.Stderr, `Run "stbox help translate" for the usage.`)

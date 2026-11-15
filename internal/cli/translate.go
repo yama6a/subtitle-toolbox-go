@@ -3,7 +3,6 @@ package cli
 import (
 	"cmp"
 	"context"
-	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -25,8 +24,6 @@ var keyVariables = map[string]string{
 	"google": "GOOGLE_TRANSLATE_API_KEY",
 	"openai": "OPENAI_API_KEY",
 }
-
-var baseURLPattern = regexp.MustCompile(`(?i)^https?://[^/]`)
 
 // translateCommand translates the cue text of each input and writes it as convert does.
 type translateCommand struct {
@@ -130,28 +127,16 @@ func apiKey(a *args, getenv func(string) string, engine string) (string, error) 
 	if strings.Trim(key, markupcore.TrimSet) == "" {
 		return "", usage("The API key is empty. Pass --api-key or set " + variable + ".")
 	}
-	if strings.HasPrefix(key, " ") || strings.HasSuffix(key, " ") || strings.ContainsFunc(key, isControl) {
-		return "", usage("The API key has a control character, or a space at the start or end. Pass the key without them.")
-	}
 	return key, nil
 }
-
-func isControl(r rune) bool { return r < 0x20 || r == 0x7f }
 
 // openAISettings reads OPENAI_MODEL and OPENAI_BASE_URL. The base URL is "" when the variable is unset.
 func openAISettings(getenv func(string) string) (model, base string, err error) {
 	model = getenv("OPENAI_MODEL")
-	switch {
-	case model == "":
+	if model == "" {
 		return "", "", usage("Set the environment variable OPENAI_MODEL, for example OPENAI_MODEL=gpt-4o-mini.")
-	case strings.Trim(model, markupcore.TrimSet) == "":
-		return "", "", usage("The environment variable OPENAI_MODEL is empty. Set it to a model name, for example gpt-4o-mini.")
 	}
-	base = getenv("OPENAI_BASE_URL")
-	if base != "" && !baseURLPattern.MatchString(base) {
-		return "", "", usage("The environment variable OPENAI_BASE_URL must start with http:// or https://, got " + quote(base) + ".")
-	}
-	return model, base, nil
+	return model, getenv("OPENAI_BASE_URL"), nil
 }
 
 // newEngine builds the engine of name from the checked key, model and base URL. An empty base URL keeps the
