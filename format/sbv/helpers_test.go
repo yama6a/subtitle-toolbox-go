@@ -2,7 +2,6 @@ package sbv_test
 
 import (
 	"bytes"
-	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -90,5 +89,3 @@ func warningRows(warnings []model.ParseWarning) []warningRow {
 	}
 	return rows
 }
-
-var errRead = errors.New("disk gone")

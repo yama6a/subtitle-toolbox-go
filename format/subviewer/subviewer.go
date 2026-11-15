@@ -37,7 +37,7 @@ func (v Version) String() string {
 	return "Version(" + strconv.Itoa(int(v)) + ")"
 }
 
-// ReadOptions holds the settings of the SubViewer reader. SubViewer has none yet.
+// ReadOptions holds the settings of the SubViewer reader. It has no fields yet.
 type ReadOptions struct{}
 
 // WriteReport holds what the writer reports. It has no fields yet.

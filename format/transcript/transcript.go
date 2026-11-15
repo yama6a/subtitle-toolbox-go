@@ -1,5 +1,4 @@
 // Package transcript reads and writes the JSON and HTML transcripts of speech-to-text tools and podcasts.
-// The format issues add Read, Write and Detect per format.
 package transcript
 
 // ReadOptions holds the read settings that the transcript formats share.

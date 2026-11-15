@@ -156,7 +156,10 @@ func (w *WebVTTWriter) Write(c model.Cue) error {
 // DroppedColors returns the font colors that no WebVTT color class has, so the output dropped them,
 // for the cues written so far.
 func (w *WebVTTWriter) DroppedColors() []webvtt.DroppedColor {
-	var dropped []webvtt.DroppedColor //nolint:prealloc // a write without dropped colors reports nil
+	if len(w.cw.Dropped) == 0 {
+		return nil
+	}
+	dropped := make([]webvtt.DroppedColor, 0, len(w.cw.Dropped))
 	for _, d := range w.cw.Dropped {
 		dropped = append(dropped, webvtt.DroppedColor(d))
 	}

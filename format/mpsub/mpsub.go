@@ -14,7 +14,7 @@ import (
 
 const formatDataKey = string(model.MPSub)
 
-// ReadOptions holds the settings of the MPSub reader. MPSub has none yet.
+// ReadOptions holds the settings of the MPSub reader. It has no fields yet.
 type ReadOptions struct{}
 
 // WriteReport holds what the writer reports. It has no fields yet.

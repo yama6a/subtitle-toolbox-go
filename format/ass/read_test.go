@@ -2,6 +2,7 @@ package ass_test
 
 import (
 	"bytes"
+	"errors"
 	"strings"
 	"testing"
 	"testing/iotest"
@@ -602,6 +603,7 @@ func TestSections(t *testing.T) {
 func TestReadError(t *testing.T) {
 	t.Parallel()
 
+	errRead := errors.New("disk gone")
 	_, _, err := ass.Read(iotest.ErrReader(errRead), model.CommonReadOptions{}, ass.ReadOptions{})
 	require.ErrorIs(t, err, errRead)
 }

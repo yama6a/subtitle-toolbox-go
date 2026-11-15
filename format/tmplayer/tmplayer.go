@@ -3,13 +3,13 @@
 // A line is H:MM:SS:text with a start time in whole seconds. A cue ends at the next entry in time. The extension is .txt.
 package tmplayer
 
-// ReadOptions holds the settings of the TMPlayer reader. TMPlayer has none yet.
+// ReadOptions holds the settings of the TMPlayer reader. It has no fields yet.
 type ReadOptions struct{}
 
 // WriteReport holds what the writer reports. It has no fields yet.
 type WriteReport struct{}
 
-// WriteOptions holds the settings of the TMPlayer writer. TMPlayer has none yet.
+// WriteOptions holds the settings of the TMPlayer writer. It has no fields yet.
 type WriteOptions struct{}
 
 // Detect reports whether content starts with a TMPlayer time and a separator, and not with a frame timecode.

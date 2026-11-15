@@ -24,7 +24,7 @@ func (o HTMLWriteOptions) Validate() error {
 
 // DetectHTML reports whether content starts with "<" after any white space, and holds the start tags <cite and
 // <time, each followed by white space or ">", in any case. The XML prolog items all start with "<", so they need
-// no special rule. stbox.Detect runs this check last, because TTML, SAMI and YouTube XML can hold these names.
+// no special rule. A detector must try this check last, because TTML, SAMI and YouTube XML can hold these names.
 func DetectHTML(content []byte) bool {
 	i := 0
 	for i < len(content) && isHTMLSpace(content[i]) {

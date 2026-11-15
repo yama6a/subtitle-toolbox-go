@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"maps"
 	"math"
 	"slices"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/vtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -26,6 +28,18 @@ const (
 )
 
 var errInfOrNaN = errors.New("inf or NaN")
+
+// Write writes s to w as a library JSON document of version 2, or of version 1 when opts.Version is 1. Negative times stay as they are, and StripTags has no effect.
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
+	if err := opts.Validate(); err != nil {
+		return WriteReport{}, err
+	}
+	body, err := document(s, opts)
+	if err != nil {
+		return WriteReport{}, err
+	}
+	return WriteReport{}, writing.Write(w, model.JSON, body, common, false)
+}
 
 // document returns the library JSON of s. A string outside format data that is not valid UTF-8 fails first,
 // because encoding/json would replace its bad bytes without an error.

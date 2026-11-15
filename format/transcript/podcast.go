@@ -22,7 +22,9 @@ type PodcastWriteOptions struct {
 }
 
 // DetectPodcast reports whether content is a JSON object whose segments list starts with an object that has the
-// keys startTime and body. stbox.Detect runs the same check before the Whisper check.
+// keys startTime and body.
+//
+// Deprecated: use stbox.Detect.
 func DetectPodcast(content []byte) bool {
 	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.TrimSet)
 	root, err := orderedjson.Decode(content)
@@ -37,7 +39,7 @@ func DetectPodcast(content []byte) bool {
 	return first.Kind() == orderedjson.Object && first.Has("startTime") && first.Has("body")
 }
 
-// DetectPodcastJSON is JSON check 2 on the top-level keys of an object. It reports whether segments is an array
+// DetectPodcastJSON checks the top-level keys of an object. It reports whether segments is an array
 // whose first item is an object with the keys startTime and body, with any value.
 func DetectPodcastJSON(keys map[string]json.RawMessage) bool {
 	dec := json.NewDecoder(bytes.NewReader(keys["segments"]))

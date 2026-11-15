@@ -21,7 +21,8 @@ const (
 const whisperKey = string(model.Whisper)
 
 // DetectWhisper reports whether content is a JSON object with a segments list or a transcription list.
-// stbox.Detect runs the same check after the library JSON check.
+//
+// Deprecated: use stbox.Detect.
 func DetectWhisper(content []byte) bool {
 	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.TrimSet)
 	root, err := orderedjson.Decode(content)
@@ -31,7 +32,7 @@ func DetectWhisper(content []byte) bool {
 	return isList(root, "segments") || isList(root, "transcription")
 }
 
-// DetectWhisperJSON is JSON check 3 on the top-level keys of an object. It reports whether segments or
+// DetectWhisperJSON checks the top-level keys of an object. It reports whether segments or
 // transcription is an array.
 func DetectWhisperJSON(keys map[string]json.RawMessage) bool {
 	return startsList(keys["segments"]) || startsList(keys["transcription"])

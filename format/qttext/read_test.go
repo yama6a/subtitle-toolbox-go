@@ -1,6 +1,7 @@
 package qttext_test
 
 import (
+	"errors"
 	"strings"
 	"testing"
 	"testing/iotest"
@@ -570,6 +571,7 @@ func TestReadKeepsInvalidUTF8(t *testing.T) {
 func TestReadReturnsTheReaderError(t *testing.T) {
 	t.Parallel()
 
+	errRead := errors.New("disk gone")
 	_, _, err := qttext.Read(iotest.ErrReader(errRead), model.CommonReadOptions{}, qttext.ReadOptions{})
 	require.Error(t, err)
 	assert.ErrorIs(t, err, errRead)

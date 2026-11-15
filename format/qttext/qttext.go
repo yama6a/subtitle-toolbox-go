@@ -17,13 +17,13 @@ import (
 
 const formatDataKey = string(model.QuickTimeText)
 
-// ReadOptions holds the settings of the QuickTime text reader. It has none yet.
+// ReadOptions holds the settings of the QuickTime text reader. It has no fields yet.
 type ReadOptions struct{}
 
 // WriteReport holds what the writer reports. It has no fields yet.
 type WriteReport struct{}
 
-// WriteOptions holds the settings of the QuickTime text writer. It has none yet.
+// WriteOptions holds the settings of the QuickTime text writer. It has no fields yet.
 type WriteOptions struct{}
 
 const (

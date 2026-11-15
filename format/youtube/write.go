@@ -33,9 +33,9 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 	cues := s.Cues()
 	stored := make([]orderedjson.Value, len(cues))
 	for i, c := range cues {
-		stored[i] = storedObject(c.FormatData(key))
+		stored[i] = storedObject(c.FormatData(formatDataKey))
 	}
-	file := storedObject(s.FormatData(key))
+	file := storedObject(s.FormatData(formatDataKey))
 	variant, _ := file.Get("format")
 	name := stringOf(variant)
 

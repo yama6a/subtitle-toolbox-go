@@ -95,10 +95,12 @@ Whisper is the speech-to-text model of OpenAI. 6 tools write its result as JSON 
 | Item | Value |
 |:--- |:--- |
 | Format | `stbox.Whisper`, name `whisper`, extension `.json` |
-| Functions | `transcript.ReadWhisper`, `WriteWhisper`, `DetectWhisper` and `DetectWhisperJSON` |
+| Functions | `transcript.ReadWhisper`, `WriteWhisper` and `DetectWhisperJSON` |
 | Read options | `WordTimestamps` and `SpeakerVoices`. `KeepSegments` has no effect |
 | Write options | none |
 | Detection | [JSON check 3](detection.md#json-checks): `segments` or `transcription` is an array. `.json` belongs to the library JSON in `FormatFromPath`, so name the format with `--from whisper` or `ReadOptions.Format` when the content does not decide |
+
+`DetectWhisper` and `DetectPodcast` are deprecated. Use `stbox.Detect`.
 
 ### Shapes
 
@@ -175,10 +177,12 @@ A podcast feed links a transcript per episode with the `<podcast:transcript>` ta
 | Item | Value |
 |:--- |:--- |
 | Format | `stbox.PodcastTranscript`, name `podcast-transcript`, extension `.json` |
-| Functions | `transcript.ReadPodcast`, `WritePodcast`, `DetectPodcast` and `DetectPodcastJSON` |
+| Functions | `transcript.ReadPodcast`, `WritePodcast` and `DetectPodcastJSON` |
 | Read options | `WordTimestamps` and `KeepSegments`. `SpeakerVoices` has no effect, because the speaker always goes to `Cue.Speaker` |
 | Write options | `transcript.PodcastWriteOptions` in `WriteOptions.Podcast`: `WordSegments` and `PrettyPrint` |
 | Detection | [JSON check 2](detection.md#json-checks): `segments` is an array whose first item is an object with the keys `startTime` and `body`. `.json` belongs to the library JSON in `FormatFromPath`, so output needs `--to podcast-transcript` |
+
+`DetectWhisper` and `DetectPodcast` are deprecated. Use `stbox.Detect`.
 
 ### Podcast read
 

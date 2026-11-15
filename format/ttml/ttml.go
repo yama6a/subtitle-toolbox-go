@@ -17,6 +17,12 @@ const formatDataKey = string(model.TTML)
 // ReadOptions holds the settings of the TTML reader. It has no fields yet.
 type ReadOptions struct{}
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
+// WriteOptions holds the settings of the TTML writer. It has no fields yet.
+type WriteOptions struct{}
+
 const rootPattern = `(?:[A-Za-z_][\w.-]*:)?tt`
 
 var signatureRegexp = regexp.MustCompile(xmlraw.Prolog + `<` + rootPattern + `[\t\n\v\f\r />]`)
