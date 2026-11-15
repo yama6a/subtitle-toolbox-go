@@ -123,7 +123,9 @@ The writer turns `<font color>` into a [color class](markup.md#colors) when the 
 <!-- example: format/webvtt/ExampleWrite_droppedColors -->
 ```go
 s := &model.Subtitle{}
-s.AddCue(model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{`<font color="#123456">Rain</font> <font color="#ffff00">and sun</font>`}})
+if err := s.AddCue(model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{`<font color="#123456">Rain</font> <font color="#ffff00">and sun</font>`}}); err != nil {
+	panic(err)
+}
 var out strings.Builder
 report, err := webvtt.Write(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
 if err != nil {
@@ -1246,11 +1248,13 @@ Plain text is a transcript of the words, without times or markup. Package `forma
 <!-- example: format/plaintext/ExampleWrite -->
 ```go
 s := &model.Subtitle{}
-s.AddCues(
+if err := s.AddCues(
 	model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Hello world."}},
 	model.Cue{Start: 2500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"Where are you going?"}},
 	model.Cue{Start: 6 * time.Second, End: 7 * time.Second, Lines: []string{"<i>Home</i> &amp; bed."}},
-)
+); err != nil {
+	panic(err)
+}
 if _, err := plaintext.Write(os.Stdout, s, model.CommonWriteOptions{}, plaintext.WriteOptions{}); err != nil {
 	fmt.Println(err)
 }

@@ -18,7 +18,7 @@ A `Subtitle` keeps its cues in start order at all times. `Cue` is plain data wit
 - **Line cleaning**: on entry, CR LF and a lone CR become LF, each run of tabs and spaces becomes 1 space, each run of LF becomes 1 LF, and each line is trimmed. U+00A0 stays. Empty lines are dropped. Cleaning is lossy: double spaces inside a line do not come back.
 - **Inner LF**: `Lines: []string{"a\nb"}` keeps one line `"a\nb"`. Only `SetText` splits at LF.
 - **No lines**: a cue with 0 lines is legal. A SubRip timing line without text gives one.
-- **Markup**: lines hold the core markup, without word timestamps and without a whole-cue voice tag. `Words` holds the timed words, and `Speaker` the voice of the whole cue. A cue with 2 voices keeps its `<v>` tags in the lines. `SetCue` checks the words with `ValidateWords`, and `AddCue` does not. `TaggedLines` gives the lines with the tags.
+- **Markup**: lines hold the core markup, without word timestamps and without a whole-cue voice tag. `Words` holds the timed words, and `Speaker` the voice of the whole cue. A cue with 2 voices keeps its `<v>` tags in the lines. `SetCue`, `AddCue` and `AddCues` check the words with `ValidateWords`. `TaggedLines` gives the lines with the tags.
 
 ## SetCue and index drift
 
@@ -27,11 +27,13 @@ A `Subtitle` keeps its cues in start order at all times. `Cue` is plain data wit
 <!-- example: ExampleSubtitle_SetCue -->
 ```go
 var s model.Subtitle
-s.AddCues(
+if err := s.AddCues(
 	model.Cue{Start: 1 * time.Second, Lines: []string{"A"}},
 	model.Cue{Start: 2 * time.Second, Lines: []string{"B"}},
 	model.Cue{Start: 3 * time.Second, Lines: []string{"C"}},
-)
+); err != nil {
+	panic(err)
+}
 
 c, _ := s.Cue(0) // a copy of A
 c.Start = 4 * time.Second
@@ -54,13 +56,17 @@ A comment is text that a format writes before a cue, such as a WebVTT `NOTE` blo
 <!-- example: ExampleSubtitle_AddComment -->
 ```go
 var s model.Subtitle
-s.AddCues(
+if err := s.AddCues(
 	model.Cue{Start: 1 * time.Second, Lines: []string{"first"}},
 	model.Cue{Start: 2 * time.Second, Lines: []string{"second"}},
-)
+); err != nil {
+	panic(err)
+}
 _ = s.AddComment("NOTE before the second cue", 1)
 
-s.AddCue(model.Cue{Start: 0, Lines: []string{"new first"}}) // the second cue moves to index 2
+if err := s.AddCue(model.Cue{Start: 0, Lines: []string{"new first"}}); err != nil { // the second cue moves to index 2
+	panic(err)
+}
 
 fmt.Println(s.Comments())
 // Output: [{NOTE before the second cue 2}]
@@ -77,7 +83,7 @@ fmt.Println(s.Comments())
 
 - **Metadata**: free string keys, with the constants `MetadataTitle`, `MetadataAuthor`, `MetadataArtist`, `MetadataAlbum` and `MetadataLanguage`. An empty value is a value. `DeleteMetadata` removes a key.
 - **Alignment**: 9 places on a numeric keypad grid. The zero value is `BottomCenter`. `Numpad()` gives the keypad key, for example 8 for `TopCenter` as in the ASS tag `{\an8}`. Library JSON stores this number. A value outside the 9 constants counts as `BottomCenter`.
-- **Position**: `Cue.Position` holds `Alignment`, an optional `Row` and `Column` on a `Grid`, and an optional `Offset`. `Row` and `Column` are 1-based, and 0 means none. `Offset` is a point in percent of the video, `X` from the left edge and `Y` from the top edge. Nil means no offset. `Validate` returns an error that matches `ErrInvalidArgument` unless `Row` and `Column` lie on `Grid` and `Offset` is from 0 to 100. `SetCue` and the library JSON reader call it. `AddCue`, `AddCues` and `ReplaceCues` do not, so a writer treats a position that fails `Validate` as having no row. `Equal` compares `Offset` by value. A cue copy from `Clone` or `Subtitle.Cue` holds its own `Offset`.
+- **Position**: `Cue.Position` holds `Alignment`, an optional `Row` and `Column` on a `Grid`, and an optional `Offset`. `Row` and `Column` are 1-based, and 0 means none. `Offset` is a point in percent of the video, `X` from the left edge and `Y` from the top edge. Nil means no offset. `Validate` returns an error that matches `ErrInvalidArgument` unless `Row` and `Column` lie on `Grid` and `Offset` is from 0 to 100. `SetCue` and the library JSON reader call it. `AddCue` and `AddCues` check a cue as `SetCue` does. `ReplaceCues` does not, so a writer treats a position that fails `Validate` as having no row. `Equal` compares `Offset` by value. A cue copy from `Clone` or `Subtitle.Cue` holds its own `Offset`.
 - **RowOn**: `Position.RowOn(g, lines)` moves the row to grid `g`. It splits the rows into thirds by the first row: top when `3*(Row-1) < Rows-1`, bottom when `3*(Row-1) >= 2*(Rows-1)`. A top row keeps its number. A bottom row keeps the distance of the last line from the bottom row. A middle row scales with the grid height. The result lets all `lines` fit on `g`. Example: SCC rows 2, 15 and 8 with the alignments `TopCenter`, `BottomCenter` and `MiddleCenter` and 1 line give rows 2, 23 and 12 on the 23-row teletext grid. It returns false when there is no row, the row lies outside its grid, or the third of the row conflicts with the alignment. See [upgrade-2.0.md](upgrade-2.0.md) for the conflict rule.
 - **Image placement**: an image cue holds its place twice, in `Image.X`, `Image.Y` and the screen size, and in `Cue.Position`. The PGS and DVB readers set `Position.Alignment` to `TopCenter` when the image centre lies in the top third of the screen. The VobSub readers leave it at `BottomCenter`. The PGS writer places the bitmap by `Image` and ignores `Position`. A text writer places the lines of the cue by `Position` and ignores `Image`. A text writer returns an error for an image cue without lines, or skips it with `WriteOptions.SkipImageCues`. Library JSON writes both.
 - **Forced**: a forced cue is a forced narrative. The player shows it also when the viewer turned subtitles off.

@@ -40,7 +40,9 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 		return nil, nil, err
 	}
 	sub := &model.Subtitle{}
-	sub.AddCues(cues...)
+	if err := sub.AddCues(cues...); err != nil {
+		return nil, nil, err
+	}
 	sub.SetMetadata(model.MetadataLanguage, track.Language)
 	return sub, warnings, nil
 }

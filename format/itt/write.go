@@ -44,7 +44,10 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	if err != nil {
 		return WriteReport{}, err
 	}
-	doc := copyOf(s)
+	doc, err := copyOf(s)
+	if err != nil {
+		return WriteReport{}, err
+	}
 	last := lastFrame(out.rate)
 	times := make([]ttmldoc.Times, 0, s.Len())
 	for _, c := range s.All() {
@@ -109,7 +112,7 @@ func chooseOutput(data *model.Data, opts WriteOptions) (profileRate, error) {
 
 // copyOf returns the subtitle that the TTML document writer turns into iTT: the Apple head, a top or bottom region
 // for each cue, and the reduced markup.
-func copyOf(s *model.Subtitle) *model.Subtitle {
+func copyOf(s *model.Subtitle) (*model.Subtitle, error) {
 	doc := &model.Subtitle{}
 	for _, key := range []string{model.MetadataLanguage, model.MetadataTitle} {
 		if v, ok := s.Metadata(key); ok {
@@ -139,8 +142,10 @@ func copyOf(s *model.Subtitle) *model.Subtitle {
 		))
 		cues = append(cues, cue)
 	}
-	doc.AddCues(cues...)
-	return doc
+	if err := doc.AddCues(cues...); err != nil {
+		return nil, err
+	}
+	return doc, nil
 }
 
 // supportedMarkup keeps the tags that iTT holds. A <font> keeps only its color, and a value that is no color

@@ -176,7 +176,7 @@ func TestSubtitleKeepsCueFormatData(t *testing.T) {
 	require.NoError(t, c.SetFormatData("vtt", data("line", "0", "alignment", int64(8))))
 
 	s := &model.Subtitle{}
-	s.AddCue(c)
+	require.NoError(t, s.AddCue(c))
 	require.NoError(t, c.SetFormatData("vtt", data("line", "100%")))
 
 	stored, ok := s.Cue(0)
@@ -200,7 +200,7 @@ func TestCloneKeepsFormatData(t *testing.T) {
 	s := &model.Subtitle{}
 	var c model.Cue
 	require.NoError(t, c.SetFormatData("vtt", data("line", "0")))
-	s.AddCue(c)
+	require.NoError(t, s.AddCue(c))
 	require.NoError(t, s.SetFormatData("srt", data("key", "value")))
 
 	clone := s.Clone()

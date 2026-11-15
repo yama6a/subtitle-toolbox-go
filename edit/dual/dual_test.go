@@ -208,7 +208,7 @@ func TestFromPairReturnsANewSubtitle(t *testing.T) {
 	result, err := dual.FromPair(primary, subtitle(), dual.Options{})
 	require.NoError(t, err)
 
-	result.AddCue(model.Cue{Start: time.Hour, End: 2 * time.Hour, Lines: []string{"added"}})
+	require.NoError(t, result.AddCue(model.Cue{Start: time.Hour, End: 2 * time.Hour, Lines: []string{"added"}}))
 
 	assert.Equal(t, 1, primary.Len())
 }
@@ -362,7 +362,7 @@ func TestFromPairKeepsThePrimaryCueData(t *testing.T) {
 	primaryCue.ID, primaryCue.Position.Alignment, primaryCue.Forced = "7", model.TopLeft, true
 	require.NoError(t, primaryCue.SetFormatData("ass", model.NewData(model.Field{Key: "text", Value: "raw"})))
 	var primary model.Subtitle
-	primary.AddCue(primaryCue)
+	require.NoError(t, primary.AddCue(primaryCue))
 
 	result, err := dual.FromPair(&primary, subtitle(row{1, 3, "erste"}), dual.Options{})
 
@@ -383,7 +383,7 @@ func TestFromPairSecondaryCuesLoseIDAndFormatData(t *testing.T) {
 	cue.Start, cue.End, cue.Lines, cue.ID = 5*time.Second, 6*time.Second, []string{"sp\u00e4ter"}, "7"
 	require.NoError(t, cue.SetFormatData("ass", model.NewData(model.Field{Key: "text", Value: "raw"})))
 	var secondary model.Subtitle
-	secondary.AddCue(cue)
+	require.NoError(t, secondary.AddCue(cue))
 
 	for _, mode := range []dual.Mode{dual.ModeStack, dual.ModeTopBottom} {
 		result, err := dual.FromPair(subtitle(row{0, 2, "first"}), &secondary, dual.Options{Mode: mode})
@@ -401,7 +401,7 @@ func TestFromPairForcedFlag(t *testing.T) {
 
 	forced := func(start, end time.Duration, text string) *model.Subtitle {
 		var s model.Subtitle
-		s.AddCue(model.Cue{Start: start, End: end, Lines: []string{text}, Forced: true})
+		require.NoError(t, s.AddCue(model.Cue{Start: start, End: end, Lines: []string{text}, Forced: true}))
 		return &s
 	}
 	t.Run("a secondary cue of its own keeps the flag", func(t *testing.T) {

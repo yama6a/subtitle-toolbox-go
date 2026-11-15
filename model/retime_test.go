@@ -69,7 +69,7 @@ func readFixture(tb testing.TB, name string) *model.Subtitle {
 		cues = append(cues, model.Cue{Start: fixtureTime(tb, fields[0]), End: fixtureTime(tb, fields[2]), Lines: lines[1:]})
 	}
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	require.NoError(tb, s.AddCues(cues...))
 	return s
 }
 
@@ -381,7 +381,7 @@ func TestEditsMoveWords(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCue(model.Cue{Start: 0, End: 5 * time.Second, Lines: []string{"one two"}, Words: []model.Word{word("one", 1, 2)}})
+			require.NoError(t, s.AddCue(model.Cue{Start: 0, End: 5 * time.Second, Lines: []string{"one two"}, Words: []model.Word{word("one", 1, 2)}}))
 			got, err := tt.edit(s)
 			require.NoError(t, err)
 			c, _ := got.Cue(0)
@@ -394,7 +394,7 @@ func TestScaleStopsAtAWordThatReachesTheTimeLimit(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: 0, End: sec(1), Lines: []string{"far"}, Words: []model.Word{word("far", 0, 99999*3600)}})
+	require.NoError(t, s.AddCue(model.Cue{Start: 0, End: sec(1), Lines: []string{"far"}, Words: []model.Word{word("far", 0, 99999*3600)}}))
 	require.ErrorIs(t, s.Scale(2), model.ErrInvalidArgument)
 	c, _ := s.Cue(0)
 	assert.Equal(t, sec(99999*3600), c.Words[0].End)

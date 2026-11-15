@@ -23,7 +23,7 @@ func repeatHarbourTour(tb testing.TB, n int) *model.Subtitle {
 	cues, comments := harbour.Cues(), harbour.Comments()
 	s := &model.Subtitle{}
 	for i := range n {
-		s.AddCue(shifted(cues[i%len(cues)], i/len(cues)))
+		require.NoError(tb, s.AddCue(shifted(cues[i%len(cues)], i/len(cues))))
 		require.NoError(tb, s.AddComment(comments[i%len(comments)].Text, i))
 	}
 	return s
@@ -157,7 +157,7 @@ func BenchmarkAddCue(b *testing.B) {
 	for b.Loop() {
 		s := &model.Subtitle{}
 		for _, c := range cues {
-			s.AddCue(c)
+			require.NoError(b, s.AddCue(c))
 		}
 	}
 }
@@ -203,7 +203,9 @@ func dotsTester(n int) *model.Subtitle {
 		cues[i] = c
 	}
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return s
 }
 

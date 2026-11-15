@@ -24,7 +24,7 @@ func TestDuplicateCueIDsGrowth(t *testing.T) {
 	best := func(n int) time.Duration {
 		s := &model.Subtitle{}
 		for i := range n {
-			s.AddCue(model.Cue{Start: time.Duration(i) * time.Second, End: time.Duration(i)*time.Second + time.Second, Lines: []string{"x"}, ID: "c1"})
+			require.NoError(t, s.AddCue(model.Cue{Start: time.Duration(i) * time.Second, End: time.Duration(i)*time.Second + time.Second, Lines: []string{"x"}, ID: "c1"}))
 		}
 		fastest := time.Duration(1<<63 - 1)
 		for range 3 {
@@ -44,7 +44,7 @@ func BenchmarkWriteSpeakers(b *testing.B) {
 	s := &model.Subtitle{}
 	for i := range 16000 {
 		at := time.Duration(i) * time.Second
-		s.AddCue(model.Cue{Start: at, End: at + time.Second, Lines: []string{"x"}, Speaker: "Speaker " + strconv.Itoa(i)})
+		require.NoError(b, s.AddCue(model.Cue{Start: at, End: at + time.Second, Lines: []string{"x"}, Speaker: "Speaker " + strconv.Itoa(i)}))
 	}
 	b.ResetTimer()
 	for range b.N {

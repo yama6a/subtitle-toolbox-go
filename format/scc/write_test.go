@@ -23,7 +23,9 @@ func cue(start, end float64, lines ...string) model.Cue {
 
 func subtitle(cues ...model.Cue) *model.Subtitle {
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return s
 }
 

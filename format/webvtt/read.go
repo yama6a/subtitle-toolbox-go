@@ -71,7 +71,9 @@ func read(st *parsing.State, content string) (*model.Subtitle, error) {
 		comments[i].CuesBefore = sort.SearchInts(kept, c.CuesBefore)
 	}
 	s := &model.Subtitle{}
-	parsing.AddParsed(s, cues, comments)
+	if err := parsing.AddParsed(s, cues, comments); err != nil {
+		return nil, err
+	}
 	if err := s.SetFormatData(string(model.WebVTT), rd.File()); err != nil {
 		return nil, fmt.Errorf("%s file data: %w", model.WebVTT, err)
 	}

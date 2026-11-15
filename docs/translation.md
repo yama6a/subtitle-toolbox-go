@@ -8,7 +8,9 @@ s := &model.Subtitle{}
 for i, text := range []string{"The train to Basel leaves", "from platform 4 at <b>10:15</b>."} {
 	c := model.Cue{Start: time.Duration(i+1) * time.Second, End: time.Duration(i+2) * time.Second}
 	c.SetText(text)
-	s.AddCue(c)
+	if err := s.AddCue(c); err != nil {
+		panic(err)
+	}
 }
 
 report, err := translation.Translate(context.Background(), s, stationEngine{}, "en", "de", translation.Options{})
@@ -301,7 +303,9 @@ if err != nil {
 s := &model.Subtitle{}
 c := model.Cue{Start: time.Second, End: 2 * time.Second}
 c.SetText("The train leaves at <b>10:15</b>.")
-s.AddCue(c)
+if err := s.AddCue(c); err != nil {
+	panic(err)
+}
 if _, err := translation.Translate(context.Background(), s, engine, "en", "fr", translation.Options{}); err != nil {
 	fmt.Println(err)
 	return

@@ -58,7 +58,9 @@ func ReadOGM(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*mo
 		cues = append(cues, escapedCue(start, m[1]))
 		pending = false
 	}
-	s.AddCues(endChapters(cues, nil, opts.MediaDuration)...)
+	if err := s.AddCues(endChapters(cues, nil, opts.MediaDuration)...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 

@@ -74,10 +74,12 @@ func ExampleParse() {
 
 func ExampleWrite() {
 	s := &stbox.Subtitle{}
-	s.AddCues(
+	if err := s.AddCues(
 		stbox.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"<i>Fish &amp; Chips</i>"}},
 		stbox.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"<c.yellow>Now</c> open"}, Position: stbox.Position{Alignment: stbox.TopCenter}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	_, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stbox.BOMRemove})
 	if err != nil {
 		fmt.Println(err)
@@ -664,10 +666,12 @@ func ExampleDetect_folder() {
 
 func ExampleSubtitle_fromScratch() {
 	s := &stbox.Subtitle{}
-	s.AddCues(
+	if err := s.AddCues(
 		stbox.Cue{Start: 2 * time.Second, End: 5 * time.Second, Lines: []string{"Welcome to the harbour tour."}},
 		stbox.Cue{Start: 5500 * time.Millisecond, End: 9 * time.Second, Lines: []string{"Our first stop is the", "old lighthouse."}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stbox.BOMRemove}); err != nil {
 		fmt.Println(err)
 	}

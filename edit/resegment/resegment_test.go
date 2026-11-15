@@ -215,7 +215,7 @@ func TestSplitLongKeepsImageCues(t *testing.T) {
 	t.Parallel()
 
 	c := newCue(0, 20, tensor)
-	c.Image = &model.Image{}
+	c.Image = &model.Image{PNG: []byte("png"), Width: 1, Height: 1, ScreenWidth: 1, ScreenHeight: 1}
 	s := build(c)
 	report, err := resegment.SplitLong(s, resegment.Options{Limits: limits(10, 1, 0)})
 	require.NoError(t, err)
@@ -307,7 +307,7 @@ func TestByWordsKeepsImageCues(t *testing.T) {
 	t.Parallel()
 
 	c := newCue(0, 20, "<00:00:00.000>One <00:00:01.000>two")
-	c.Image = &model.Image{}
+	c.Image = &model.Image{PNG: []byte("png"), Width: 1, Height: 1, ScreenWidth: 1, ScreenHeight: 1}
 	s := build(c)
 	report, err := resegment.ByWords(s, resegment.Options{})
 	require.NoError(t, err)

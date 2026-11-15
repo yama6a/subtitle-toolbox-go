@@ -489,7 +489,7 @@ func TestAddParsed(t *testing.T) {
 			t.Parallel()
 
 			sub := &model.Subtitle{}
-			parsing.AddParsed(sub, tt.cues, tt.comments)
+			require.NoError(t, parsing.AddParsed(sub, tt.cues, tt.comments))
 			var texts []string
 			for _, c := range sub.All() {
 				texts = append(texts, c.Text())

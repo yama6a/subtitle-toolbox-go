@@ -11,7 +11,9 @@ import (
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<i>Grüße</i> [x]"}})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<i>Grüße</i> [x]"}}); err != nil {
+		panic(err)
+	}
 
 	var out bytes.Buffer
 	if _, err := cavena890.Write(&out, s, model.CommonWriteOptions{}, cavena890.WriteOptions{}); err != nil {

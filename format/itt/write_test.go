@@ -50,7 +50,7 @@ func subtitle(t *testing.T, stored []string, cues ...cue) *model.Subtitle {
 		if text == "" {
 			text = "Hello"
 		}
-		s.AddCue(model.Cue{Start: seconds(c.start), End: seconds(c.end), Lines: []string{text}})
+		require.NoError(t, s.AddCue(model.Cue{Start: seconds(c.start), End: seconds(c.end), Lines: []string{text}}))
 	}
 	return s
 }
@@ -181,11 +181,11 @@ func TestWriteDocument(t *testing.T) {
 		t.Helper()
 
 		s := subtitle(t, []string{"frameRate", "25"})
-		s.AddCue(model.Cue{
+		require.NoError(t, s.AddCue(model.Cue{
 			Start: time.Second, End: 2 * time.Second, Position: model.Position{Alignment: model.TopCenter},
 			Lines: []string{`<s>gone</s> <v Ann>said</v> <c.yellow>yellow</c> <font color='#FF0000' size="5">red</font> <font face="x">plain</font> <lang en>kept</lang>`},
-		})
-		s.AddCue(model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Position: model.Position{Alignment: model.MiddleRight}, Lines: []string{"middle"}})
+		}))
+		require.NoError(t, s.AddCue(model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Position: model.Position{Alignment: model.MiddleRight}, Lines: []string{"middle"}}))
 		return s
 	}
 	tests := []struct {

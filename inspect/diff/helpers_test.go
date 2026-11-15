@@ -33,7 +33,9 @@ func seconds(f float64) time.Duration {
 func subtitle(rows ...row) *model.Subtitle {
 	var s model.Subtitle
 	for _, r := range rows {
-		s.AddCue(model.Cue{Start: seconds(r.start), End: seconds(r.end), Lines: []string{r.text}})
+		if err := s.AddCue(model.Cue{Start: seconds(r.start), End: seconds(r.end), Lines: []string{r.text}}); err != nil {
+			panic(err)
+		}
 	}
 	return &s
 }

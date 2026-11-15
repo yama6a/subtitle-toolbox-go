@@ -42,7 +42,9 @@ intro
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<v Anna>Good morning."}, Position: model.Position{Alignment: model.TopLeft}})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<v Anna>Good morning."}, Position: model.Position{Alignment: model.TopLeft}}); err != nil {
+		panic(err)
+	}
 	if err := s.AddComment("Morning show", 0); err != nil {
 		fmt.Println(err)
 		return
@@ -63,7 +65,9 @@ func ExampleWrite() {
 
 func ExampleWrite_droppedColors() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{`<font color="#123456">Rain</font> <font color="#ffff00">and sun</font>`}})
+	if err := s.AddCue(model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{`<font color="#123456">Rain</font> <font color="#ffff00">and sun</font>`}}); err != nil {
+		panic(err)
+	}
 	var out strings.Builder
 	report, err := webvtt.Write(&out, s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{})
 	if err != nil {

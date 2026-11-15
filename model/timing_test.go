@@ -152,7 +152,7 @@ func TestAddLeadInOutCreatesNoOverlapAndNoNegativeStart(t *testing.T) {
 			cues[i] = model.Cue{Start: start, End: start + ms(1500), Lines: []string{fmt.Sprintf("text%d", i)}}
 		}
 		s := &model.Subtitle{}
-		s.AddCues(cues...)
+		require.NoError(t, s.AddCues(cues...))
 		before := byText(s)
 		minGap := ms(100)
 

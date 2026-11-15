@@ -23,8 +23,12 @@ Each segment starts with a header `X-TIMESTAMP-MAP=LOCAL:00:00:00.000,MPEGTS:900
 <!-- example: format/hls/ExampleSegment -->
 ```go
 var s model.Subtitle
-s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"The ferry leaves at noon."}})
-s.AddCue(model.Cue{Start: 5 * time.Second, End: 7500 * time.Millisecond, Lines: []string{"Please keep your tickets ready."}})
+if err := s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"The ferry leaves at noon."}}); err != nil {
+	panic(err)
+}
+if err := s.AddCue(model.Cue{Start: 5 * time.Second, End: 7500 * time.Millisecond, Lines: []string{"Please keep your tickets ready."}}); err != nil {
+	panic(err)
+}
 
 r, err := hls.Segment(&s, hls.SegmentOptions{})
 if err != nil {

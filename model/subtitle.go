@@ -84,20 +84,25 @@ func (s *Subtitle) All() iter.Seq2[int, Cue] {
 }
 
 // AddCue adds a rounded and cleaned copy of c after the cues that start at or before c.
-// Each comment stays before its cue.
-func (s *Subtitle) AddCue(c Cue) {
-	s.AddCues(c)
+// Each comment stays before its cue. It returns an error that matches ErrInvalidArgument when c.Position fails
+// Position.Validate, c.Image fails Image.Validate, or the words fail ValidateWords. On an error s stays unchanged.
+func (s *Subtitle) AddCue(c Cue) error {
+	return s.AddCues(c)
 }
 
-// AddCues adds rounded and cleaned copies of cues and sorts all cues once with a stable sort, so an added cue
-// goes after the stored cues with the same start. Each comment stays before its cue.
-func (s *Subtitle) AddCues(cues ...Cue) {
+// AddCues adds rounded and cleaned copies of cues, as AddCue does, and sorts all cues once with a stable sort,
+// so an added cue goes after the stored cues with the same start. Each comment stays before its cue.
+// It checks every cue first and returns the error of the first cue that fails. On an error s stays unchanged.
+func (s *Subtitle) AddCues(cues ...Cue) error {
 	if len(cues) == 0 {
-		return
+		return nil
 	}
 	added := make([]Cue, len(cues))
 	for i, c := range cues {
-		added[i] = c.normalized()
+		var err error
+		if added[i], err = checkedCue(c); err != nil {
+			return err
+		}
 	}
 
 	n := len(s.cues)
@@ -107,15 +112,33 @@ func (s *Subtitle) AddCues(cues ...Cue) {
 		for k := len(s.comments) - 1; k >= 0 && s.comments[k].BeforeCue >= n; k-- {
 			s.comments[k].BeforeCue = len(s.cues)
 		}
-		return
+		return nil
 	}
 
 	if len(added) == 1 {
 		s.insert(added[0])
-		return
+		return nil
 	}
 
 	s.place(append(s.cues, added...), s.commentAnchors())
+	return nil
+}
+
+// checkedCue validates c and returns its rounded and cleaned copy.
+func checkedCue(c Cue) (Cue, error) {
+	if err := c.Position.Validate(); err != nil {
+		return Cue{}, err
+	}
+	if c.Image != nil {
+		if err := c.Image.Validate(); err != nil {
+			return Cue{}, err
+		}
+	}
+	c = c.normalized()
+	if err := c.ValidateWords(); err != nil {
+		return Cue{}, err
+	}
+	return c, nil
 }
 
 // commentAnchors returns, for each comment, the index of the cue it comes before, or -1 for a comment after the last cue.
@@ -173,16 +196,8 @@ func (s *Subtitle) SetCue(i int, c Cue) error {
 	if i < 0 || i >= len(s.cues) {
 		return cueNotFound(i, len(s.cues))
 	}
-	if err := c.Position.Validate(); err != nil {
-		return err
-	}
-	if c.Image != nil {
-		if err := c.Image.Validate(); err != nil {
-			return err
-		}
-	}
-	c = c.normalized()
-	if err := c.ValidateWords(); err != nil {
+	c, err := checkedCue(c)
+	if err != nil {
 		return err
 	}
 	s.cues[i] = c

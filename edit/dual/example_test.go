@@ -10,8 +10,12 @@ import (
 
 func ExampleFromPair() {
 	var english, german model.Subtitle
-	english.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Where are you going?"}})
-	german.AddCue(model.Cue{Start: 1200 * time.Millisecond, End: 3900 * time.Millisecond, Lines: []string{"Wohin gehst du?"}})
+	if err := english.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Where are you going?"}}); err != nil {
+		panic(err)
+	}
+	if err := german.AddCue(model.Cue{Start: 1200 * time.Millisecond, End: 3900 * time.Millisecond, Lines: []string{"Wohin gehst du?"}}); err != nil {
+		panic(err)
+	}
 
 	result, err := dual.FromPair(&english, &german, dual.Options{SecondaryStyle: "i"})
 	if err != nil {
@@ -30,8 +34,12 @@ func ExampleFromPair() {
 
 func ExampleFromPair_topBottom() {
 	var english, german model.Subtitle
-	english.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Where are you going?"}})
-	german.AddCue(model.Cue{Start: 1250 * time.Millisecond, End: 3700 * time.Millisecond, Lines: []string{"Wohin gehst du?"}})
+	if err := english.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Where are you going?"}}); err != nil {
+		panic(err)
+	}
+	if err := german.AddCue(model.Cue{Start: 1250 * time.Millisecond, End: 3700 * time.Millisecond, Lines: []string{"Wohin gehst du?"}}); err != nil {
+		panic(err)
+	}
 
 	result, err := dual.FromPair(&english, &german, dual.Options{Mode: dual.ModeTopBottom})
 	if err != nil {

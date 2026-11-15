@@ -430,7 +430,7 @@ func TestDefaultFieldValues(t *testing.T) {
 	t.Parallel()
 
 	s, _ := mustRead(t, "[Events]\nFormat: Marked, Start, End, Text\nDialogue: Marked=1,0:00:01.00,0:00:02.00,a\n", false)
-	s.AddCue(cue(3*time.Second, 4*time.Second, "b"))
+	require.NoError(t, s.AddCue(cue(3*time.Second, 4*time.Second, "b")))
 	data := fileData(t, s).Clone()
 	data.Set("eventFormat", []any{"Marked", "Layer", "Start", "End", "Style", "Name", "MarginL", "MarginR", "MarginV", "Effect", "Text"})
 	require.NoError(t, s.SetFormatData("ass", data))

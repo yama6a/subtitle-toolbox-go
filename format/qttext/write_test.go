@@ -71,7 +71,7 @@ func TestWriteRelativeTimestamps(t *testing.T) {
 	t.Parallel()
 
 	s, _ := mustRead(t, "{QTtext}{timeScale:600}{timeStamps:relative}\n[00:00:01.300]\nOne\n[00:00:02.000]\n", false)
-	s.AddCues(cue(4500*ms, 6500*ms, "Two"))
+	require.NoError(t, s.AddCues(cue(4500*ms, 6500*ms, "Two")))
 	assert.Equal(t,
 		"{QTtext}{timeScale:600}{timeStamps:relative}\n[00:00:00.000]\n[00:00:01.300]\nOne\n[00:00:02.000]\n[00:00:01.000]\nTwo\n[00:00:02.000]\n",
 		write(t, s, model.CommonWriteOptions{}))
@@ -123,7 +123,7 @@ func TestWriteSourceTakesTheStyleOfTheSource(t *testing.T) {
 	t.Parallel()
 
 	s, _ := mustRead(t, "{QTtext}{timeScale:30}\n[00:00:00.00]\n[00:00:01.00]\n{italic}Sung\n[00:00:02.00]\n", false)
-	s.AddCues(cue(3*time.Second, 4*time.Second, "<i>Still sung</i>"), cue(5*time.Second, 6*time.Second, "Spoken"))
+	require.NoError(t, s.AddCues(cue(3*time.Second, 4*time.Second, "<i>Still sung</i>"), cue(5*time.Second, 6*time.Second, "Spoken")))
 	assert.Equal(t,
 		"{QTtext}{timeScale:30}\n[00:00:00.00]\n[00:00:01.00]\n{italic}Sung\n[00:00:02.00]\n[00:00:03.00]\nStill sung\n[00:00:04.00]\n[00:00:05.00]\n{plain}Spoken\n[00:00:06.00]\n",
 		write(t, s, model.CommonWriteOptions{}))
@@ -410,7 +410,7 @@ func TestWriteReadsBackWithinHalfAUnit(t *testing.T) {
 			s := withHeader(t, []string{header}, false)
 			for i := range 40 {
 				start := time.Duration(i*7919+13) * ms
-				s.AddCues(cue(start, start+time.Duration(i*104729%7000+1)*ms, "x"))
+				require.NoError(t, s.AddCues(cue(start, start+time.Duration(i*104729%7000+1)*ms, "x")))
 			}
 			back, _, err := read(write(t, s, model.CommonWriteOptions{}), model.CommonReadOptions{})
 			require.NoError(t, err)
@@ -442,7 +442,7 @@ func TestWriteRelativeTimestampsTakeTheDifferenceFromTheReader(t *testing.T) {
 		s := withHeader(t, []string{"{QTtext}{timeScale:1}{timeStamps:relative}"}, false)
 		for i := range 100 {
 			start := time.Duration(i) * 1020 * ms
-			s.AddCues(cue(start, start+1020*ms, "x"))
+			require.NoError(t, s.AddCues(cue(start, start+1020*ms, "x")))
 		}
 		back, _, err := read(write(t, s, model.CommonWriteOptions{}), model.CommonReadOptions{})
 		require.NoError(t, err)

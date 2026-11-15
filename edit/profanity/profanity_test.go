@@ -30,7 +30,9 @@ func cuesAt(times [][2]float64, texts ...string) *model.Subtitle {
 		c := model.Cue{Start: sec(times[i][0]), End: sec(times[i][1])}
 		c.SetText(text)
 		c.ExtractWordTags()
-		s.AddCue(c)
+		if err := s.AddCue(c); err != nil {
+			panic(err)
+		}
 	}
 	return &s
 }
@@ -422,10 +424,10 @@ func TestApplyMasksTheWordsToo(t *testing.T) {
 	t.Parallel()
 
 	var s model.Subtitle
-	s.AddCue(model.Cue{
+	require.NoError(t, s.AddCue(model.Cue{
 		Start: sec(1), End: sec(3), Lines: []string{"damn it"},
 		Words: []model.Word{{Text: "damn", Start: sec(1.5), End: sec(2)}, {Text: "it", Start: sec(2), End: sec(3)}},
-	})
+	}))
 	report, err := profanity.Apply(&s, profanity.Options{Words: []string{"damn"}})
 	require.NoError(t, err)
 

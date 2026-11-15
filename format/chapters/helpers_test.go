@@ -66,7 +66,9 @@ func readError(tb testing.TB, rd reader, content string) *model.ParseError {
 // chaptersOf returns a subtitle with one cue per row: start, end and the lines.
 func chaptersOf(rows ...model.Cue) *model.Subtitle {
 	s := &model.Subtitle{}
-	s.AddCues(rows...)
+	if err := s.AddCues(rows...); err != nil {
+		panic(err)
+	}
 	return s
 }
 

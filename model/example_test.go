@@ -9,8 +9,12 @@ import (
 
 func ExampleSubtitle() {
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: 3 * time.Second, End: 5 * time.Second, Lines: []string{"World"}})
-	s.AddCue(model.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"  <i>Hello</i>\t"}})
+	if err := s.AddCue(model.Cue{Start: 3 * time.Second, End: 5 * time.Second, Lines: []string{"World"}}); err != nil {
+		panic(err)
+	}
+	if err := s.AddCue(model.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"  <i>Hello</i>\t"}}); err != nil {
+		panic(err)
+	}
 
 	for i, c := range s.All() {
 		fmt.Println(i, c.Start, c.End, c.Lines)
@@ -22,11 +26,13 @@ func ExampleSubtitle() {
 
 func ExampleSubtitle_SetCue() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 1 * time.Second, Lines: []string{"A"}},
 		model.Cue{Start: 2 * time.Second, Lines: []string{"B"}},
 		model.Cue{Start: 3 * time.Second, Lines: []string{"C"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 
 	c, _ := s.Cue(0) // a copy of A
 	c.Start = 4 * time.Second
@@ -40,13 +46,17 @@ func ExampleSubtitle_SetCue() {
 
 func ExampleSubtitle_AddComment() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 1 * time.Second, Lines: []string{"first"}},
 		model.Cue{Start: 2 * time.Second, Lines: []string{"second"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	_ = s.AddComment("NOTE before the second cue", 1)
 
-	s.AddCue(model.Cue{Start: 0, Lines: []string{"new first"}}) // the second cue moves to index 2
+	if err := s.AddCue(model.Cue{Start: 0, Lines: []string{"new first"}}); err != nil { // the second cue moves to index 2
+		panic(err)
+	}
 
 	fmt.Println(s.Comments())
 	// Output: [{NOTE before the second cue 2}]
@@ -54,11 +64,13 @@ func ExampleSubtitle_AddComment() {
 
 func ExampleSubtitle_CuesAt() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 1 * time.Second, End: 4 * time.Second},
 		model.Cue{Start: 3 * time.Second, End: 6 * time.Second},
 		model.Cue{Start: 4 * time.Second, End: 8 * time.Second},
-	)
+	); err != nil {
+		panic(err)
+	}
 
 	fmt.Println(s.CuesAt(4 * time.Second))
 	i, ok := s.CueIndexAt(2 * time.Second)
@@ -73,10 +85,12 @@ func ExampleSubtitle_CuesAt() {
 
 func ExampleSubtitle_ReplaceCues() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 1 * time.Second, End: 2 * time.Second, Lines: []string{"one"}},
 		model.Cue{Start: 2 * time.Second, End: 4 * time.Second, Lines: []string{"two", "three"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	_ = s.AddComment("before two", 1)
 
 	split := []model.Cue{

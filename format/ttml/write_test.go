@@ -62,7 +62,9 @@ func cue(start, end time.Duration, lines ...string) model.Cue {
 
 func subtitleOf(cues ...model.Cue) *model.Subtitle {
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return s
 }
 

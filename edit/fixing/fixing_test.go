@@ -48,7 +48,9 @@ func fromTexts(texts ...string) *model.Subtitle {
 	for i, text := range texts {
 		c := model.Cue{Start: time.Duration(2*i) * time.Second, End: time.Duration(2*i+1) * time.Second}
 		c.SetText(text)
-		s.AddCue(c)
+		if err := s.AddCue(c); err != nil {
+			panic(err)
+		}
 	}
 	return &s
 }
@@ -57,7 +59,7 @@ func fixLines(t *testing.T, lines []string, opts fixing.Options) ([]string, []fi
 	t.Helper()
 
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: lines})
+	require.NoError(t, s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: lines}))
 	report, err := fixing.Apply(&s, opts)
 	require.NoError(t, err)
 	c, _ := s.Cue(0)
@@ -486,7 +488,7 @@ func TestSkipsCuesWithoutLines(t *testing.T) {
 	t.Parallel()
 
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second})
+	require.NoError(t, s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second}))
 	report, err := fixing.Apply(&s, fixing.Options{})
 	require.NoError(t, err)
 	assert.Empty(t, report.Fixes)

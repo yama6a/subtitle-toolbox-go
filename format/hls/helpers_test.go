@@ -26,7 +26,9 @@ func ms(n int64) time.Duration { return time.Duration(n) * time.Millisecond }
 func build(cues ...cue) *model.Subtitle {
 	var s model.Subtitle
 	for _, c := range cues {
-		s.AddCue(model.Cue{Start: c.Start, End: c.End, Lines: strings.Split(c.Text, "\n")})
+		if err := s.AddCue(model.Cue{Start: c.Start, End: c.End, Lines: strings.Split(c.Text, "\n")}); err != nil {
+			panic(err)
+		}
 	}
 	return &s
 }

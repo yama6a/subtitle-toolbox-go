@@ -25,7 +25,9 @@ func cueLines(s *model.Subtitle) [][]string {
 
 func oneCue(lines ...string) *model.Subtitle {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: lines})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: lines}); err != nil {
+		panic(err)
+	}
 	return s
 }
 
@@ -152,14 +154,14 @@ func TestUnwrapLines(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCues(
+	require.NoError(t, s.AddCues(
 		model.Cue{Start: 1 * time.Second, End: 2 * time.Second, Lines: []string{"<i>Please take a seat,</i>", "the meeting starts."}},
 		model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Lines: []string{"One line"}},
 		model.Cue{Start: 5 * time.Second, End: 6 * time.Second},
 		model.Cue{Start: 7 * time.Second, End: 8 * time.Second, Lines: []string{"- Are you coming?", "- Yes, in a minute,", "I promise you."}},
 		model.Cue{Start: 9 * time.Second, End: 10 * time.Second, Lines: []string{"Who is there?", "- Only me."}},
 		model.Cue{Start: 11 * time.Second, End: 12 * time.Second, Lines: []string{"- It is very cold tonight.", "-20 degrees, they said."}},
-	)
+	))
 
 	s.UnwrapLines()
 

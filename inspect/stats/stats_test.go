@@ -30,7 +30,9 @@ func cue(start, end float64, lines ...string) model.Cue {
 
 func subtitle(cues ...model.Cue) *model.Subtitle {
 	var s model.Subtitle
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return &s
 }
 
@@ -56,7 +58,7 @@ func textCases(t *testing.T, name string) *model.Subtitle {
 	require.NoError(t, json.Unmarshal(testfiles.Read(t, "statistics/texts.json"), &all))
 	var s model.Subtitle
 	for _, c := range all[name] {
-		s.AddCue(cue(c.Start, c.End, c.Lines...))
+		require.NoError(t, s.AddCue(cue(c.Start, c.End, c.Lines...)))
 	}
 	return &s
 }
@@ -359,7 +361,7 @@ func repeated(tb testing.TB, copies int) *model.Subtitle {
 		for _, c := range s.All() {
 			c.Start += time.Duration(i) * 12 * time.Second
 			c.End += time.Duration(i) * 12 * time.Second
-			out.AddCue(c)
+			require.NoError(tb, out.AddCue(c))
 		}
 	}
 	return &out

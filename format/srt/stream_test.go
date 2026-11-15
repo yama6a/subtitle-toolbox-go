@@ -150,7 +150,9 @@ func collect(seq iter.Seq2[model.Cue, error]) ([]model.Cue, error) {
 // inStartOrder puts cues through a subtitle, which sorts them by start as the full readers do.
 func inStartOrder(cues []model.Cue) []model.Cue {
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return cuesOf(s)
 }
 

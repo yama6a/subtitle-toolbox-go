@@ -31,7 +31,9 @@ type frames [][2]int64
 func subtitleOf(r model.FrameRate, f frames) *model.Subtitle {
 	s := &model.Subtitle{}
 	for _, c := range f {
-		s.AddCue(model.Cue{Start: r.Duration(c[0]).Round(time.Millisecond), End: r.Duration(c[1]).Round(time.Millisecond), Lines: []string{"x"}})
+		if err := s.AddCue(model.Cue{Start: r.Duration(c[0]).Round(time.Millisecond), End: r.Duration(c[1]).Round(time.Millisecond), Lines: []string{"x"}}); err != nil {
+			panic(err)
+		}
 	}
 	return s
 }
@@ -172,7 +174,7 @@ func TestApplyTimes(t *testing.T) {
 			t.Parallel()
 			s := &model.Subtitle{}
 			for _, c := range tt.cues {
-				s.AddCue(model.Cue{Start: c[0], End: c[1], Lines: []string{"x"}})
+				require.NoError(t, s.AddCue(model.Cue{Start: c[0], End: c[1], Lines: []string{"x"}}))
 			}
 
 			_, err := timing.Apply(s, timing.Options{FrameRate: tt.rate, ShotChanges: tt.shots})
@@ -300,7 +302,7 @@ func TestApplyAllTimesOnFrames(t *testing.T) {
 				start := now + ms(0, 900)
 				now = start + ms(500, 4000)
 				shots = append(shots, start+ms(-600, 600))
-				s.AddCue(model.Cue{Start: start, End: now, Lines: []string{"x"}})
+				require.NoError(t, s.AddCue(model.Cue{Start: start, End: now, Lines: []string{"x"}}))
 			}
 
 			_, err := timing.Apply(s, timing.Options{FrameRate: r, ShotChanges: shots})

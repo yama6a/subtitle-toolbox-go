@@ -43,7 +43,7 @@ func FuzzApply(f *testing.F) {
 					if len(chunk)%2 == 1 {
 						c.Speaker = "Anna"
 					}
-					s.AddCue(c)
+					require.NoError(t, s.AddCue(c))
 				}
 				_, err := speakers.Apply(&s, speakers.Options{
 					FromLabels: true, AnyCaseLabels: anyCase, Style: style, Rename: map[string]string{"Anna": "Zoë"},

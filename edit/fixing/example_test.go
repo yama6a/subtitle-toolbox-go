@@ -43,7 +43,9 @@ func ExampleApply() {
 
 func ExamplePreview() {
 	var s model.Subtitle
-	s.AddCue(model.Cue{Lines: []string{"''Hi,'' she said.", "# Happy birthday #"}})
+	if err := s.AddCue(model.Cue{Lines: []string{"''Hi,'' she said.", "# Happy birthday #"}}); err != nil {
+		panic(err)
+	}
 
 	report, err := fixing.Preview(&s, fixing.Options{
 		Enable: []fixing.Rule{fixing.RuleDoubleApostrophes, fixing.RuleMusicNotes},
@@ -118,7 +120,9 @@ func ExampleReadReplaceList() {
 	}
 
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"It gets celd."}})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"It gets celd."}}); err != nil {
+		panic(err)
+	}
 	if _, err := fixing.Apply(&s, fixing.Options{ReplaceList: l}); err != nil {
 		fmt.Println(err)
 		return

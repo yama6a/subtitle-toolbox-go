@@ -134,8 +134,8 @@ func TestWriteGoogleSpeechFromAnotherFormat(t *testing.T) {
 		t.Parallel()
 
 		s := &model.Subtitle{}
-		s.AddCue(model.Cue{Start: ms(1000), End: ms(6000), Lines: []string{"Long cue"}})
-		s.AddCue(model.Cue{Start: ms(2000), End: ms(4000), Lines: []string{"Short cue"}})
+		require.NoError(t, s.AddCue(model.Cue{Start: ms(1000), End: ms(6000), Lines: []string{"Long cue"}}))
+		require.NoError(t, s.AddCue(model.Cue{Start: ms(2000), End: ms(4000), Lines: []string{"Short cue"}}))
 		doc := googleFormat.output(t, s)
 		assert.Equal(t, `"6s"`, compact(t, doc, "results", 0, "resultEndTime"))
 		assert.Equal(t, `"6s"`, compact(t, doc, "results", 1, "resultEndTime"))
@@ -148,11 +148,11 @@ func TestWriteGoogleSpeechFromAnotherFormat(t *testing.T) {
 
 		s := &model.Subtitle{}
 		s.SetMetadata(model.MetadataLanguage, "en-US")
-		s.AddCue(model.Cue{Start: ms(1500), End: ms(3000), Lines: []string{"Good", "morning."}, Speaker: "Anna"})
-		s.AddCue(model.Cue{
+		require.NoError(t, s.AddCue(model.Cue{Start: ms(1500), End: ms(3000), Lines: []string{"Good", "morning."}, Speaker: "Anna"}))
+		require.NoError(t, s.AddCue(model.Cue{
 			Start: ms(4000), End: ms(5000), Lines: []string{"See you."},
 			Words: []model.Word{{Text: "See", Start: ms(4000), End: ms(4500)}, {Text: "you.", Start: ms(4500), End: ms(5000)}},
-		})
+		}))
 		want := `{"results":[{"alternatives":[{"transcript":"Good morning."}],"resultEndTime":"3s","languageCode":"en-US"},` +
 			`{"alternatives":[{"transcript":"See you.","words":[{"startTime":"4s","endTime":"4.500s","word":"See"},` +
 			`{"startTime":"4.500s","endTime":"5s","word":"you."}]}],"resultEndTime":"5s","languageCode":"en-US"}]}`

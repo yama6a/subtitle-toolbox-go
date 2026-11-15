@@ -23,7 +23,9 @@ func subtitleOf(specs ...cueSpec) *model.Subtitle {
 		cues[i].SetText(c.Text)
 	}
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return s
 }
 
@@ -934,7 +936,7 @@ func pairs(tb testing.TB, n int, linesOf func(i int) string) *model.Subtitle {
 		cues[i] = model.Cue{Start: start, End: start + time.Second, Lines: []string{linesOf(i)}}
 	}
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	require.NoError(tb, s.AddCues(cues...))
 	for i := range n {
 		require.NoError(tb, s.AddComment(fmt.Sprintf("note %d", i), i))
 	}
@@ -1047,7 +1049,7 @@ func TestEditsCarryWords(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCues(tt.cues...)
+			require.NoError(t, s.AddCues(tt.cues...))
 			require.NoError(t, tt.edit(s))
 			assert.Equal(t, tt.want, timesAndLines(s))
 		})
@@ -1058,12 +1060,12 @@ func TestTaggedLinesKeepWordsAndSpeaker(t *testing.T) {
 	t.Parallel()
 
 	join := &model.Subtitle{}
-	join.AddCues(wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(1, 2, "", []string{"there"}, word("there", 1, 2)))
+	require.NoError(t, join.AddCues(wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(1, 2, "", []string{"there"}, word("there", 1, 2))))
 	require.NoError(t, join.JoinCues(0, 1))
 	joined, _ := join.Cue(0)
 
 	merge := &model.Subtitle{}
-	merge.AddCues(wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(0, 1, "", []string{"Bye"}, word("Bye", 0.5, 1)))
+	require.NoError(t, merge.AddCues(wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(0, 1, "", []string{"Bye"}, word("Bye", 0.5, 1))))
 	require.NoError(t, merge.MergeSameTimeCues(0))
 	merged, _ := merge.Cue(0)
 

@@ -393,8 +393,8 @@ func TestCompareLineBreakCountsAsText(t *testing.T) {
 	t.Parallel()
 
 	var oldSub, newSub model.Subtitle
-	oldSub.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"one two", "three"}})
-	newSub.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"one", "two three"}})
+	require.NoError(t, oldSub.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"one two", "three"}}))
+	require.NoError(t, newSub.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"one", "two three"}}))
 
 	assert.Equal(t, []want{{text, 0, 0}}, compare(t, &oldSub, &newSub, diff.Options{}))
 	assert.Empty(t, compare(t, &oldSub, &newSub, diff.Options{IgnoreWhitespace: true}))
@@ -443,13 +443,17 @@ const repeatedCopies = 400
 // repeatWithOverallCue repeats the cues of s every 45 s and adds one cue over the whole file before them.
 func repeatWithOverallCue(s *model.Subtitle) *model.Subtitle {
 	var out model.Subtitle
-	out.AddCue(model.Cue{End: time.Duration(45*repeatedCopies) * time.Second, Lines: []string{"Coastal train tour"}})
+	if err := out.AddCue(model.Cue{End: time.Duration(45*repeatedCopies) * time.Second, Lines: []string{"Coastal train tour"}}); err != nil {
+		panic(err)
+	}
 	for n := range repeatedCopies {
 		for _, c := range s.Cues() {
 			offset := time.Duration(45*n) * time.Second
 			c.Start += offset
 			c.End += offset
-			out.AddCue(c)
+			if err := out.AddCue(c); err != nil {
+				panic(err)
+			}
 		}
 	}
 	return &out
@@ -459,8 +463,12 @@ func musicCues(n int) (oldSub, newSub *model.Subtitle) {
 	oldSub, newSub = &model.Subtitle{}, &model.Subtitle{}
 	for i := range n {
 		start := time.Duration(3*i) * time.Second
-		oldSub.AddCue(model.Cue{Start: start, End: start + 2*time.Second, Lines: []string{"[MUSIC]"}})
-		newSub.AddCue(model.Cue{Start: start + 300*time.Millisecond, End: start + 2300*time.Millisecond, Lines: []string{"[MUSIC]"}})
+		if err := oldSub.AddCue(model.Cue{Start: start, End: start + 2*time.Second, Lines: []string{"[MUSIC]"}}); err != nil {
+			panic(err)
+		}
+		if err := newSub.AddCue(model.Cue{Start: start + 300*time.Millisecond, End: start + 2300*time.Millisecond, Lines: []string{"[MUSIC]"}}); err != nil {
+			panic(err)
+		}
 	}
 	return oldSub, newSub
 }

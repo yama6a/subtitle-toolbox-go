@@ -29,7 +29,7 @@ func subtitle(t *testing.T, fileData *model.Data, cues ...model.Cue) *model.Subt
 	t.Helper()
 
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	require.NoError(t, s.AddCues(cues...))
 	if fileData != nil {
 		require.NoError(t, s.SetFormatData("pac", fileData))
 	}

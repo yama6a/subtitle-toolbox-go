@@ -28,7 +28,7 @@ func dialogue() *model.Subtitle {
 	w := func(text string, start, end int) model.Word {
 		return model.Word{Text: text, Start: time.Duration(start) * time.Millisecond, End: time.Duration(end) * time.Millisecond}
 	}
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{
 			Start: 1 * time.Second, End: 3 * time.Second, Lines: []string{"<v Anna><i>Where</i> are", "you?"},
 			Words: []model.Word{w("Where", 1000, 1500), w("are", 1500, 2000), w("you?", 2000, 3000)},
@@ -38,7 +38,9 @@ func dialogue() *model.Subtitle {
 			Words: []model.Word{w("bed.", 4000, 4000)},
 		},
 		model.Cue{Start: 6 * time.Second, End: 7 * time.Second, Lines: []string{"No &lt;speaker&gt; here"}, Words: []model.Word{w("here", 9000, 9000)}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	return s
 }
 
@@ -80,11 +82,11 @@ func TestWritePodcastWordEndsAndOrder(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{
+	require.NoError(t, s.AddCue(model.Cue{
 		Start: 0, End: 3 * time.Second, Lines: []string{"a b"},
 		Words: []model.Word{{Text: "a", Start: 0, End: time.Second}, {Text: "b", Start: 2 * time.Second, End: 2500 * time.Millisecond}},
-	})
-	s.AddCue(model.Cue{Start: 4 * time.Second, End: 2 * time.Second, Lines: []string{"back"}})
+	}))
+	require.NoError(t, s.AddCue(model.Cue{Start: 4 * time.Second, End: 2 * time.Second, Lines: []string{"back"}}))
 	got := writePodcast(t, s, model.CommonWriteOptions{}, transcript.PodcastWriteOptions{WordSegments: true})
 	assert.JSONEq(t, `{"version":"1.0.0","segments":[{"startTime":0.0,"endTime":1.0,"body":"a"},`+
 		`{"startTime":2.0,"endTime":2.5,"body":"b"},{"startTime":4.0,"endTime":4.0,"body":"back"}]}`, got,
@@ -103,7 +105,7 @@ func TestWritePodcastFileDataAndPretty(t *testing.T) {
 	cueData := model.NewData()
 	cueData.Set("confidence", 0.9)
 	require.NoError(t, c.SetFormatData("podcast-transcript", cueData))
-	s.AddCue(c)
+	require.NoError(t, s.AddCue(c))
 
 	want := "{\r\n    \"version\": \"1.0.1\",\r\n    \"segments\": [\r\n        {\r\n            \"startTime\": 0.0,\r\n" +
 		"            \"endTime\": 1.25,\r\n            \"body\": \"Hi\",\r\n            \"confidence\": 0.9\r\n        }\r\n" +
@@ -181,7 +183,7 @@ func TestWritePodcastUnwritable(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: 0, End: time.Second, Lines: []string{"bad \xff byte"}})
+	require.NoError(t, s.AddCue(model.Cue{Start: 0, End: time.Second, Lines: []string{"bad \xff byte"}}))
 	var out bytes.Buffer
 	err := transcript.WritePodcast(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
 	require.ErrorIs(t, err, model.ErrUnwritable)

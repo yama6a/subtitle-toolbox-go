@@ -968,7 +968,7 @@ func TestWriteReportIsSetForWebVTTSCCAndMCCOnly(t *testing.T) {
 	t.Parallel()
 
 	s := &stbox.Subtitle{}
-	s.AddCue(stbox.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{`<font color="#123456">dark</font>`}})
+	require.NoError(t, s.AddCue(stbox.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{`<font color="#123456">dark</font>`}}))
 	for _, f := range stbox.Formats() {
 		if !f.CanWrite() || f == stbox.MicroDVD || f == stbox.PGS {
 			continue
@@ -995,11 +995,11 @@ func TestWritePlainText(t *testing.T) {
 	t.Parallel()
 
 	s := &stbox.Subtitle{}
-	s.AddCues(
+	require.NoError(t, s.AddCues(
 		stbox.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"<i>Hello</i>", "world."}},
 		stbox.Cue{Start: 2500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"Where are you going?"}},
 		stbox.Cue{Start: 6 * time.Second, End: 7 * time.Second, Lines: []string{"Home &amp; bed."}},
-	)
+	))
 	var out bytes.Buffer
 	_, err := stbox.Write(&out, s, stbox.PlainText, stbox.WriteOptions{})
 	require.NoError(t, err)
@@ -1031,7 +1031,7 @@ func TestBinaryWriteIgnoresLineEndingAndBOM(t *testing.T) {
 	s := &stbox.Subtitle{}
 	c := stbox.Cue{Start: time.Second, End: 2 * time.Second}
 	c.AddLine("Hello")
-	s.AddCue(c)
+	require.NoError(t, s.AddCue(c))
 	gsi := model.NewData(model.Field{Key: "CD", Value: "261012"}, model.Field{Key: "RD", Value: "261012"})
 	require.NoError(t, s.SetFormatData("stl", model.NewData(model.Field{Key: "gsi", Value: gsi})))
 	write := func(opts stbox.WriteOptions) []byte {

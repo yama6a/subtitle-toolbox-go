@@ -25,7 +25,9 @@ func fromTexts(texts ...string) *model.Subtitle {
 	s := &model.Subtitle{}
 	for i, text := range texts {
 		start := time.Duration(i) * time.Second
-		s.AddCue(model.Cue{Start: start, End: start + time.Second, Lines: strings.Split(text, "\n")})
+		if err := s.AddCue(model.Cue{Start: start, End: start + time.Second, Lines: strings.Split(text, "\n")}); err != nil {
+			panic(err)
+		}
 	}
 	return s
 }
@@ -132,10 +134,10 @@ func TestSentenceCaseGap(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCues(
+			require.NoError(t, s.AddCues(
 				model.Cue{Start: 0, End: time.Second, Lines: []string{"WAIT FOR"}},
 				model.Cue{Start: tt.start, End: tt.start + time.Second, Lines: []string{"ME"}},
-			)
+			))
 			require.NoError(t, s.ChangeCase(model.CaseSentence, ""))
 			assert.Equal(t, []string{"Wait for", tt.want}, texts(s))
 		})
@@ -362,7 +364,7 @@ func TestReplaceTextRemovesEmptiedCues(t *testing.T) {
 	t.Parallel()
 
 	s := fromTexts("first", "<i>[MUSIC]</i>", "[DOOR]\n[MUSIC]", "last")
-	s.AddCue(model.Cue{Start: 10 * time.Second, End: 11 * time.Second})
+	require.NoError(t, s.AddCue(model.Cue{Start: 10 * time.Second, End: 11 * time.Second}))
 	require.NoError(t, s.AddComment("before music", 1))
 	require.NoError(t, s.AddComment("before door", 2))
 	require.NoError(t, s.AddComment("before last", 3))
@@ -743,7 +745,7 @@ func TestStripFormattingKeepsWordsAndClearsSpeaker(t *testing.T) {
 			t.Parallel()
 
 			var s model.Subtitle
-			s.AddCue(model.Cue{End: time.Second, Lines: []string{"<i>Hi</i> there"}, Speaker: "Anna", Words: []model.Word{{Text: "there", Start: 500 * time.Millisecond, End: time.Second}}})
+			require.NoError(t, s.AddCue(model.Cue{End: time.Second, Lines: []string{"<i>Hi</i> there"}, Speaker: "Anna", Words: []model.Word{{Text: "there", Start: 500 * time.Millisecond, End: time.Second}}}))
 			s.StripFormatting(model.StripOptions{KeepTags: tt.keep})
 			c, _ := s.Cue(0)
 			assert.Equal(t, tt.wantSpeaker, c.Speaker)

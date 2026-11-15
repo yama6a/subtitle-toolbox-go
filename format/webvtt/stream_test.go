@@ -116,7 +116,7 @@ func TestWebVTTWriterWritesTheBytesOfTheFullWriter(t *testing.T) {
 		header, _ := parsed.FormatData(string(model.WebVTT))
 		s := &model.Subtitle{}
 		require.NoError(t, s.SetFormatData(string(model.WebVTT), header))
-		s.AddCues(cuesOf(parsed)...)
+		require.NoError(t, s.AddCues(cuesOf(parsed)...))
 		for _, o := range optionSets {
 			t.Run(rel+"/"+o.name, func(t *testing.T) {
 				t.Parallel()
@@ -241,7 +241,9 @@ func collect(seq iter.Seq2[model.Cue, error]) ([]model.Cue, error) {
 // inStartOrder puts cues through a subtitle, which sorts them by start as the full readers do.
 func inStartOrder(cues []model.Cue) []model.Cue {
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return cuesOf(s)
 }
 

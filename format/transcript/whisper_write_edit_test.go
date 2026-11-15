@@ -168,7 +168,7 @@ func TestWriteWhisperEdits(t *testing.T) {
 				editCue(t, s, tt.index, tt.edit)
 			}
 			if tt.add != nil {
-				s.AddCue(*tt.add)
+				require.NoError(t, s.AddCue(*tt.add))
 			}
 			doc := writeWhisper(t, s)
 			for _, c := range tt.checks {
@@ -188,11 +188,11 @@ func TestWriteWhisperFromAnotherFormat(t *testing.T) {
 
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataLanguage, "de")
-	s.AddCue(model.Cue{Start: ms(1500), End: ms(3000), Lines: []string{"<v Anna>Guten", "Morgen."}})
-	s.AddCue(model.Cue{
+	require.NoError(t, s.AddCue(model.Cue{Start: ms(1500), End: ms(3000), Lines: []string{"<v Anna>Guten", "Morgen."}}))
+	require.NoError(t, s.AddCue(model.Cue{
 		Start: ms(4000), End: ms(5000), Lines: []string{"Bis bald."},
 		Words: []model.Word{{Text: "Bis", Start: ms(4000), End: ms(4500)}, {Text: "bald.", Start: ms(4500), End: ms(5000)}},
-	})
+	}))
 	var out bytes.Buffer
 	require.NoError(t, transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}))
 	want := `{"text":" Guten Morgen. Bis bald.","segments":[{"id":0,"start":1.5,"end":3.0,"text":" Guten Morgen.","speaker":"Anna"},` +
@@ -222,7 +222,7 @@ func TestWriteWhisperShapeAndLanguage(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCue(cue)
+			require.NoError(t, s.AddCue(cue))
 			if tt.language != "" {
 				s.SetMetadata(model.MetadataLanguage, tt.language)
 			}
@@ -251,7 +251,7 @@ func TestWriteWhisperErrors(t *testing.T) {
 		t.Parallel()
 
 		s := &model.Subtitle{}
-		s.AddCue(model.Cue{End: ms(1), Lines: []string{"a"}})
+		require.NoError(t, s.AddCue(model.Cue{End: ms(1), Lines: []string{"a"}}))
 		require.NoError(t, s.SetFormatData("whisper", model.NewData(model.Field{Key: "x", Value: "a\xffb"})))
 		err := transcript.WriteWhisper(&bytes.Buffer{}, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
 		require.ErrorIs(t, err, model.ErrInvalidUTF8)

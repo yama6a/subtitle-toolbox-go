@@ -27,7 +27,9 @@ func (f *File) readVobSub(t *trackEntry, private []byte, blocks []block, common 
 		if u.Image == nil {
 			continue
 		}
-		s.AddCue(u.Cue(b.start, b.end))
+		if err := s.AddCue(u.Cue(b.start, b.end)); err != nil {
+			return nil, nil, err
+		}
 	}
 	return s, st.Warnings(), nil
 }

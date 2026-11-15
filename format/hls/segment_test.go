@@ -295,8 +295,8 @@ func TestSegmentImageCues(t *testing.T) {
 	image := &model.Image{Width: 2, Height: 2, ScreenWidth: 10, ScreenHeight: 10}
 	build := func(lines ...string) *model.Subtitle {
 		var s model.Subtitle
-		s.AddCue(model.Cue{Start: ms(1000), End: ms(2000), Lines: []string{"One"}})
-		s.AddCue(model.Cue{Start: ms(3000), End: ms(4000), Lines: lines, Image: image})
+		require.NoError(t, s.AddCue(model.Cue{Start: ms(1000), End: ms(2000), Lines: []string{"One"}}))
+		require.NoError(t, s.AddCue(model.Cue{Start: ms(3000), End: ms(4000), Lines: lines, Image: image}))
 		return &s
 	}
 	t.Run("an image cue without lines fails", func(t *testing.T) {

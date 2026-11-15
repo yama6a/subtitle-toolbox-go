@@ -31,10 +31,12 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"<i>Fish &amp; Chips</i>"}},
 		model.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"On the menu"}, Position: model.Position{Alignment: model.TopCenter}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	_, err := srt.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, srt.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)

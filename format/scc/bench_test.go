@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
@@ -14,7 +16,7 @@ import (
 // The break search of the fit took over a second for this cue, which has a break point after almost every character.
 func BenchmarkFitLongCJKCue(b *testing.B) {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 8 * time.Second, Lines: []string{string(testfiles.Read(b, "scc/fit/own_long_cjk.txt"))}})
+	require.NoError(b, s.AddCue(model.Cue{Start: time.Second, End: 8 * time.Second, Lines: []string{string(testfiles.Read(b, "scc/fit/own_long_cjk.txt"))}}))
 	for b.Loop() {
 		if _, err := scc.Write(io.Discard, s, model.CommonWriteOptions{}, scc.WriteOptions{Fit: true}); err == nil {
 			b.Fatal("the cue fits")

@@ -123,7 +123,7 @@ func TestWriteOutput(t *testing.T) {
 
 	oneCue := func() *model.Subtitle {
 		s := &model.Subtitle{}
-		s.AddCue(model.Cue{Start: 61 * time.Second, End: 62 * time.Second, Lines: []string{"BUS 7"}})
+		require.NoError(t, s.AddCue(model.Cue{Start: 61 * time.Second, End: 62 * time.Second, Lines: []string{"BUS 7"}}))
 		return s
 	}
 	stored := func(name string) func(t *testing.T) *model.Subtitle {
@@ -241,7 +241,7 @@ func TestWriteReport(t *testing.T) {
 	assert.Equal(t, sccReport.Changes, report.Changes)
 
 	cjk := &model.Subtitle{}
-	cjk.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{string(testfiles.Read(t, "scc/fit/own_long_cjk.txt"))}})
+	require.NoError(t, cjk.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{string(testfiles.Read(t, "scc/fit/own_long_cjk.txt"))}}))
 	_, err = mcc.Write(&bytes.Buffer{}, cjk, model.CommonWriteOptions{}, mcc.WriteOptions{})
 	assert.ErrorIs(t, err, model.ErrUnwritable)
 }

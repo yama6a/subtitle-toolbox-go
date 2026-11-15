@@ -14,8 +14,8 @@ func TestApplyTimeoutChangesNothing(t *testing.T) {
 	t.Parallel()
 
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"hell", "x"}})
-	s.AddCue(model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Lines: []string{"Go to hell."}})
+	require.NoError(t, s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"hell", "x"}}))
+	require.NoError(t, s.AddCue(model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Lines: []string{"Go to hell."}}))
 
 	// A negative timeout puts the regexp2 deadline in the past, so the first match attempt fails on any CPU.
 	_, err := apply(&s, Options{Words: []string{"hell"}}, -time.Hour)

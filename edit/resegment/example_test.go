@@ -10,10 +10,12 @@ import (
 
 func ExampleSplitLong() {
 	var s model.Subtitle
-	s.AddCue(model.Cue{
+	if err := s.AddCue(model.Cue{
 		Start: 0, End: 11800 * time.Millisecond,
 		Lines: []string{"Welcome to the city library tour. The library opens at nine and closes at six every weekday. Please keep your voices down."},
-	})
+	}); err != nil {
+		panic(err)
+	}
 
 	report, err := resegment.SplitLong(&s, resegment.Options{})
 	if err != nil {
@@ -48,7 +50,9 @@ func ExampleByWords() {
 		{Text: "five.", Start: 3 * time.Second, End: 4 * time.Second},
 	}
 	var s model.Subtitle
-	s.AddCues(first, second)
+	if err := s.AddCues(first, second); err != nil {
+		panic(err)
+	}
 
 	if _, err := resegment.ByWords(&s, resegment.Options{}); err != nil {
 		fmt.Println(err)

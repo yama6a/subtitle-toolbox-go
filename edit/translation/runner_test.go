@@ -84,7 +84,9 @@ func fromTexts(texts ...string) *model.Subtitle {
 		start := time.Duration(1+2*i) * time.Second
 		c := model.Cue{Start: start, End: start + time.Second}
 		c.SetText(text)
-		s.AddCue(c)
+		if err := s.AddCue(c); err != nil {
+			panic(err)
+		}
 	}
 	return s
 }
@@ -262,7 +264,7 @@ func TestTranslateSends(t *testing.T) {
 				s = readFile(t, tt.file)
 			}
 			if tt.image {
-				s.AddCue(model.Cue{Start: 20 * time.Second, End: 21 * time.Second, Image: image})
+				require.NoError(t, s.AddCue(model.Cue{Start: 20 * time.Second, End: 21 * time.Second, Image: image}))
 			}
 			engine := &upperEngine{}
 
@@ -284,9 +286,10 @@ func TestTranslateWords(t *testing.T) {
 	t.Parallel()
 
 	words := []model.Word{{Text: "Hi", Start: time.Second, End: 1500 * time.Millisecond}, {Text: "there.", Start: 1500 * time.Millisecond, End: 2 * time.Second}}
+	noteWords := []model.Word{{Text: "\u266a", Start: 4 * time.Second, End: 5 * time.Second}}
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"Hi there."}, Speaker: "Fred", Words: words})
-	s.AddCue(model.Cue{Start: 4 * time.Second, End: 5 * time.Second, Lines: []string{"\u266a"}, Words: words[:1]})
+	require.NoError(t, s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"Hi there."}, Speaker: "Fred", Words: words}))
+	require.NoError(t, s.AddCue(model.Cue{Start: 4 * time.Second, End: 5 * time.Second, Lines: []string{"\u266a"}, Words: noteWords}))
 	engine := &upperEngine{}
 
 	_, err := translation.Translate(t.Context(), s, engine, "en", "de", translation.Options{})
@@ -298,7 +301,7 @@ func TestTranslateWords(t *testing.T) {
 	assert.Equal(t, "Fred", cues[0].Speaker)
 	assert.Equal(t, []string{"HI THERE."}, cues[0].Lines)
 	assert.Nil(t, cues[0].Words)
-	assert.Equal(t, words[:1], cues[1].Words)
+	assert.Equal(t, noteWords, cues[1].Words)
 }
 
 func TestTranslateFills(t *testing.T) {

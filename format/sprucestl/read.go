@@ -69,7 +69,9 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if err := s.SetFormatData(formatDataKey, rd.fileData()); err != nil {
 		return nil, nil, err
 	}
-	parsing.AddParsed(s, rd.cues, rd.comments)
+	if err := parsing.AddParsed(s, rd.cues, rd.comments); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 

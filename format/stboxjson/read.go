@@ -421,7 +421,9 @@ func (r *reader) subtitle(root *model.Data, skipped map[int]bool) (*model.Subtit
 	// Cues in start order keep the stored comment indexes. Else each comment moves with the cue it stands before.
 	inOrder := slices.IsSortedFunc(cues, func(a, b model.Cue) int { return cmp.Compare(a.Start, b.Start) })
 	if inOrder {
-		s.AddCues(cues...)
+		if err := s.AddCues(cues...); err != nil {
+			return nil, err
+		}
 	}
 	if err := r.comments(s, root, skipped); err != nil {
 		return nil, err

@@ -20,7 +20,9 @@ func fromTexts(texts ...string) *model.Subtitle {
 	for i, text := range texts {
 		c := model.Cue{Start: time.Duration(i) * time.Second, End: time.Duration(i+1) * time.Second}
 		c.SetText(text)
-		s.AddCue(c)
+		if err := s.AddCue(c); err != nil {
+			panic(err)
+		}
 	}
 	return &s
 }
@@ -396,7 +398,7 @@ func TestApplyRemovesEmptyCuesAndKeepsComments(t *testing.T) {
 	t.Parallel()
 
 	s := fromTexts("first", "<i>[MUSIC]</i>", "[DOOR]\n(SIGHS)", "last")
-	s.AddCue(model.Cue{Start: 10 * time.Second, End: 11 * time.Second})
+	require.NoError(t, s.AddCue(model.Cue{Start: 10 * time.Second, End: 11 * time.Second}))
 	require.NoError(t, s.AddComment("before music", 1))
 	require.NoError(t, s.AddComment("before door", 2))
 	require.NoError(t, s.AddComment("before last", 3))

@@ -34,7 +34,9 @@ func newSubtitle(lines ...string) *model.Subtitle {
 	for i, l := range lines {
 		c := model.Cue{Start: time.Duration(i+1) * time.Second, End: time.Duration(i+2) * time.Second}
 		c.SetText(strings.ReplaceAll(l, "|", "\n"))
-		s.AddCue(c)
+		if err := s.AddCue(c); err != nil {
+			panic(err)
+		}
 	}
 	return s
 }
@@ -210,7 +212,7 @@ func TestWritePositions(t *testing.T) {
 				c.AddLine("x")
 			}
 			s := &model.Subtitle{}
-			s.AddCue(c)
+			require.NoError(t, s.AddCue(c))
 			if tt.gsi != nil {
 				data := model.NewData()
 				gsi := model.NewData()

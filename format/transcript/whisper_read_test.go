@@ -369,7 +369,7 @@ func TestReadWhisperWordFields(t *testing.T) {
 	}
 }
 
-func TestReadWhisperWordWithOddSpaceRoundTrips(t *testing.T) {
+func TestReadWhisperWordWithOddSpaceHoldsAPlainSpace(t *testing.T) {
 	t.Parallel()
 
 	for _, space := range []string{"\u00a0", "\u2003"} {
@@ -379,7 +379,7 @@ func TestReadWhisperWordWithOddSpaceRoundTrips(t *testing.T) {
 			content := `{"segments": [{"start": 0, "end": 3, "text": " a` + space + `b c", "words": [` +
 				`{"word": " a` + space + `b", "start": 0, "end": 1}, {"word": " c", "start": 1, "end": 2}]}]}`
 			c, _ := readWhisper(t, content, withWords).Cue(0)
-			want := []model.Word{{Text: "a" + space + "b", Start: 0, End: ms(1000)}, {Text: "c", Start: ms(1000), End: ms(2000)}}
+			want := []model.Word{{Text: "a b", Start: 0, End: ms(1000)}, {Text: "c", Start: ms(1000), End: ms(2000)}}
 			assert.Equal(t, want, c.Words)
 
 			var out bytes.Buffer

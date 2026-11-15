@@ -259,8 +259,8 @@ func TestMergeShortCuesWalksTheCuesInTimeOrder(t *testing.T) {
 	t.Parallel()
 
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: 500 * time.Millisecond, End: time.Second, Lines: []string{"two"}})
-	s.AddCue(model.Cue{Start: 0, End: 500 * time.Millisecond, Lines: []string{"One"}})
+	require.NoError(t, s.AddCue(model.Cue{Start: 500 * time.Millisecond, End: time.Second, Lines: []string{"two"}}))
+	require.NoError(t, s.AddCue(model.Cue{Start: 0, End: 500 * time.Millisecond, Lines: []string{"One"}}))
 
 	require.NoError(t, s.MergeShortCues(model.MergeShortCuesOptions{}))
 
@@ -339,7 +339,7 @@ func TestMergeShortCuesKeepsOneRightToLeftEmbedding(t *testing.T) {
 	require.NoError(t, json.Unmarshal(testfiles.Read(t, "short-cues/rows/rtl.json"), &row))
 	s := &model.Subtitle{}
 	for _, c := range row.Cues {
-		s.AddCue(model.Cue{Start: sec(c.Start), End: sec(c.End), Lines: []string{c.Text}})
+		require.NoError(t, s.AddCue(model.Cue{Start: sec(c.Start), End: sec(c.End), Lines: []string{c.Text}}))
 	}
 	s.FixRightToLeft()
 
@@ -545,7 +545,7 @@ func wordsEvery600ms(tb testing.TB, n int) *model.Subtitle {
 		cues[i] = model.Cue{Start: start, End: start + 500*time.Millisecond, Lines: []string{fmt.Sprintf("word%d", i)}}
 	}
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	require.NoError(tb, s.AddCues(cues...))
 	for i := range n {
 		require.NoError(tb, s.AddComment(fmt.Sprintf("note %d", i), i))
 	}

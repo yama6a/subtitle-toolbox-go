@@ -76,7 +76,9 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 	for i := range rd.cues {
 		rd.cues[i].ExtractWordTags()
 	}
-	parsing.AddParsed(s, rd.cues, rd.comments)
+	if err := parsing.AddParsed(s, rd.cues, rd.comments); err != nil {
+		return nil, nil, err
+	}
 	if err := st.NoCues(s.Len(), func() (int, bool) { return textLineWithoutCues(text) }); err != nil {
 		return nil, nil, err
 	}

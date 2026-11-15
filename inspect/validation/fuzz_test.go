@@ -42,7 +42,7 @@ func FuzzCheck(f *testing.F) {
 		s := &model.Subtitle{}
 		for i, line := range strings.Split(text, "\n") {
 			start := ms(a + int64(i)*b)
-			s.AddCue(model.Cue{Start: start, End: start + ms(c+int64(i)*a), Lines: []string{line}})
+			require.NoError(t, s.AddCue(model.Cue{Start: start, End: start + ms(c+int64(i)*a), Lines: []string{line}}))
 		}
 
 		got, err := validation.Check(s, rules)

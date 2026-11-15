@@ -60,7 +60,7 @@ func TestWriteVersions(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCue(tt.cue)
+			s.ReplaceCues([]model.Cue{tt.cue}, nil)
 			assert.Equal(t, tt.want, writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{Version: tt.version}))
 		})
 	}
@@ -88,7 +88,7 @@ func TestWriteVersionErrors(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCue(tt.cue)
+			s.ReplaceCues([]model.Cue{tt.cue}, nil)
 			_, err := stboxjson.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, tt.opts)
 			require.Error(t, err)
 			assert.Contains(t, err.Error(), tt.want)
@@ -106,7 +106,7 @@ func TestVersion2KeepsTheTaggedLinesOfWebVTT(t *testing.T) {
 	require.NoError(t, c.SetFormatData("vtt", model.NewData(model.Field{Key: "align", Value: "start"})))
 	vtt.ExtractWords(&c)
 	s := &model.Subtitle{}
-	s.AddCue(c)
+	require.NoError(t, s.AddCue(c))
 	out := writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
 	assert.Contains(t, out, `"formatData":{"vtt":{"align":"start","taggedLines":["`+youtubeLine+`"]}}`)
 	assert.NotContains(t, writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{Version: 1}), "taggedLines")
@@ -118,7 +118,7 @@ func TestVersion2KeepsTheTaggedLinesOfWebVTT(t *testing.T) {
 	edited, _ := s.Cue(0)
 	edited.Words[1].Start += time.Second
 	s2 := &model.Subtitle{}
-	s2.AddCue(edited)
+	require.NoError(t, s2.AddCue(edited))
 	assert.NotContains(t, writeString(t, s2, model.CommonWriteOptions{}, stboxjson.WriteOptions{}), "taggedLines")
 }
 
@@ -163,7 +163,7 @@ func TestVersion2RoundTrip(t *testing.T) {
 	s := &model.Subtitle{}
 	c := beachCue()
 	require.NoError(t, c.SetFormatData("vtt", model.NewData(model.Field{Key: "voiceClass", Value: "loud"}, model.Field{Key: "voiceEnd", Value: true})))
-	s.AddCue(c)
+	require.NoError(t, s.AddCue(c))
 	out := writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{PrettyPrint: true})
 
 	got := mustRead(t, out, false)

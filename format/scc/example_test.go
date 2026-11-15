@@ -30,7 +30,9 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"Hello!"}})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"Hello!"}}); err != nil {
+		panic(err)
+	}
 	report, err := scc.Write(os.Stdout, s, model.CommonWriteOptions{}, scc.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)

@@ -16,7 +16,9 @@ func (f fakeFile) Tracks() []Track { return f.tracks }
 
 func (f fakeFile) Extract(int, ReadOptions) (*Subtitle, []ParseWarning, error) {
 	s := &Subtitle{}
-	s.AddCue(Cue{Start: 0, End: 1000000000, Lines: []string{"Hello"}})
+	if err := s.AddCue(Cue{Start: 0, End: 1000000000, Lines: []string{"Hello"}}); err != nil {
+		panic(err)
+	}
 	return s, []ParseWarning{{Message: "repaired", Line: NoLine, Block: NoBlock, Action: Repaired}}, nil
 }
 

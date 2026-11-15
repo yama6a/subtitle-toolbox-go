@@ -41,7 +41,7 @@ func BenchmarkApply(b *testing.B) {
 		}
 	}
 	input := &model.Subtitle{}
-	input.AddCues(cues...)
+	require.NoError(b, input.AddCues(cues...))
 	opts := timing.Options{FrameRate: r, ShotChanges: shots}
 
 	b.Run("cues="+strconv.Itoa(len(cues)), func(b *testing.B) {

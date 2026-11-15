@@ -26,7 +26,9 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: 137400 * time.Millisecond, End: 140360 * time.Millisecond, Lines: []string{"The bakery opens at seven,", "<i>every day</i> of the week."}})
+	if err := s.AddCue(model.Cue{Start: 137400 * time.Millisecond, End: 140360 * time.Millisecond, Lines: []string{"The bakery opens at seven,", "<i>every day</i> of the week."}}); err != nil {
+		panic(err)
+	}
 	if _, err := sprucestl.Write(os.Stdout, s, model.CommonWriteOptions{}, sprucestl.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}

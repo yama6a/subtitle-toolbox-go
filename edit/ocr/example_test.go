@@ -12,11 +12,13 @@ import (
 
 func ExampleRun() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{
+	if err := s.AddCue(model.Cue{
 		Start: time.Second,
 		End:   3 * time.Second,
 		Image: &model.Image{PNG: []byte("PNG"), X: 640, Y: 940, Width: 1, Height: 1, ScreenWidth: 1920, ScreenHeight: 1080},
-	})
+	}); err != nil {
+		panic(err)
+	}
 	engine := &ocrtest.Engine{Text: ocr.Text{Lines: []string{"Next stop: Bergen"}}}
 
 	report, err := ocr.Run(context.Background(), s, engine, ocr.English)

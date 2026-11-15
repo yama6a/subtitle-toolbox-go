@@ -45,7 +45,7 @@ func checkResegment(t *testing.T, text string, gapStep, size uint8) {
 
 	for _, run := range []func(*model.Subtitle, resegment.Options) (resegment.Report, error){resegment.SplitLong, resegment.ByWords} {
 		var s model.Subtitle
-		s.AddCue(c)
+		require.NoError(t, s.AddCue(c))
 		before := plain(&s)
 		_, err := run(&s, opts)
 		require.NoError(t, err)

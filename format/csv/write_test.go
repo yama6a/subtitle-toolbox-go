@@ -277,7 +277,7 @@ func TestWriteBilingualTable(t *testing.T) {
 		model.CommonReadOptions{}, srt.ReadOptions{})
 	require.NoError(t, err)
 	en := english()
-	en.AddCue(model.Cue{Start: 6500 * ms, End: 8 * time.Second, Lines: []string{"Right now."}})
+	require.NoError(t, en.AddCue(model.Cue{Start: 6500 * ms, End: 8 * time.Second, Lines: []string{"Right now."}}))
 	assert.Equal(t, "start,end,speaker,text,text (de)\n"+
 		"00:00:01.000,00:00:04.000,Anna,Where are you going?,Wohin gehst du?\n"+
 		"00:00:04.500,00:00:06.000,Ben,\"Home.\nNow.\",Nach Hause. Jetzt.\n"+

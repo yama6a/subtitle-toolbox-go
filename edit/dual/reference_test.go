@@ -22,7 +22,9 @@ func randomSubtitle(rng *rand.Rand, prefix string) *model.Subtitle {
 		if rng.IntN(8) == 0 {
 			length = time.Duration(rng.IntN(40)) * time.Second
 		}
-		s.AddCue(model.Cue{Start: start, End: start + length, Lines: []string{prefix + strconv.Itoa(i)}})
+		if err := s.AddCue(model.Cue{Start: start, End: start + length, Lines: []string{prefix + strconv.Itoa(i)}}); err != nil {
+			panic(err)
+		}
 	}
 	return &s
 }

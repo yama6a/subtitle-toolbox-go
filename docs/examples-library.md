@@ -740,10 +740,12 @@ A program that makes captions, such as a tour script, builds the cues itself. `A
 <!-- example: ExampleSubtitle_fromScratch -->
 ```go
 s := &stbox.Subtitle{}
-s.AddCues(
+if err := s.AddCues(
 	stbox.Cue{Start: 2 * time.Second, End: 5 * time.Second, Lines: []string{"Welcome to the harbour tour."}},
 	stbox.Cue{Start: 5500 * time.Millisecond, End: 9 * time.Second, Lines: []string{"Our first stop is the", "old lighthouse."}},
-)
+); err != nil {
+	panic(err)
+}
 if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stbox.BOMRemove}); err != nil {
 	fmt.Println(err)
 }

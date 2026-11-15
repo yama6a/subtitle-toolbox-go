@@ -95,9 +95,11 @@ type ErrWriter struct{}
 
 func (ErrWriter) Write([]byte) (int, error) { return 0, ErrWrite }
 
-// Subtitle returns a new subtitle that holds cues.
+// Subtitle returns a new subtitle that holds cues. It panics when a cue fails validation.
 func Subtitle(cues ...model.Cue) *model.Subtitle {
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return s
 }

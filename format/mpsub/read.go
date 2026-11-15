@@ -64,7 +64,9 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 		return nil, nil, err
 	}
 	_ = s.SetFormatData(formatDataKey, rd.data) // the data holds strings, as the schema says
-	s.AddCues(rd.cues...)
+	if err := s.AddCues(rd.cues...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 

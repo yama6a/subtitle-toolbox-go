@@ -195,7 +195,7 @@ func TestImageGoldenCuesDescribeABuiltImageCue(t *testing.T) {
 	im, err := stbox.NewImage(image.NewNRGBA(image.Rect(0, 0, 1, 1)), 10, 20, 1920, 1080)
 	require.NoError(t, err)
 	s := &stbox.Subtitle{}
-	s.AddCue(stbox.Cue{Start: 1500 * time.Millisecond, End: 2 * time.Second, Image: &im, Forced: true, Position: stbox.Position{Alignment: stbox.TopCenter}})
+	require.NoError(t, s.AddCue(stbox.Cue{Start: 1500 * time.Millisecond, End: 2 * time.Second, Image: &im, Forced: true, Position: stbox.Position{Alignment: stbox.TopCenter}}))
 
 	assert.Equal(t, []imageGoldenCue{{
 		Start: 1.5, End: 2, X: 10, Y: 20, Width: 1, Height: 1, ScreenWidth: 1920, ScreenHeight: 1080, Forced: true, Alignment: "TopCenter",
@@ -263,7 +263,7 @@ func subtitleOfCues(t *testing.T, comment int, cues ...stbox.Cue) *stbox.Subtitl
 	t.Helper()
 
 	s := &stbox.Subtitle{}
-	s.AddCues(cues...)
+	require.NoError(t, s.AddCues(cues...))
 	require.NoError(t, s.AddComment("note", comment))
 	return s
 }

@@ -117,7 +117,9 @@ func (rd *reader) read(s *model.Subtitle) error {
 	if err != nil {
 		return err
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return err
+	}
 	return rd.st.NoCues(len(cues), rd.textLine)
 }
 

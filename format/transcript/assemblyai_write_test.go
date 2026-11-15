@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
@@ -139,7 +140,7 @@ func TestWriteAssemblyAIFromAnotherFormat(t *testing.T) {
 			if tt.lang {
 				s.SetMetadata(model.MetadataLanguage, "en-US")
 			}
-			s.AddCue(tt.cue)
+			require.NoError(t, s.AddCue(tt.cue))
 			assert.Equal(t, tt.want, orderedjson.Block(assemblyAIFormat.output(t, s)))
 		})
 	}

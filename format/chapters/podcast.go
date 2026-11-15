@@ -63,14 +63,20 @@ func readPodcastDocument(s *model.Subtitle, content []byte, opts ReadOptions) er
 			return err
 		}
 	}
-	s.AddCues(endChapters(cues, ends, opts.MediaDuration)...)
+	if err := s.AddCues(endChapters(cues, ends, opts.MediaDuration)...); err != nil {
+		return err
+	}
+	setPodcastMetadata(s, root)
+	data, _ := formatdata.FromJSON(root.Without("chapters", "title", "author")).(*model.Data)
+	return s.SetFormatData(string(model.PodcastChapters), data)
+}
+
+func setPodcastMetadata(s *model.Subtitle, root orderedjson.Value) {
 	for _, m := range [...]struct{ field, key string }{{"title", model.MetadataTitle}, {"author", model.MetadataAuthor}} {
 		if text, ok := stringMember(root, m.field); ok {
 			s.SetMetadata(m.key, text)
 		}
 	}
-	data, _ := formatdata.FromJSON(root.Without("chapters", "title", "author")).(*model.Data)
-	return s.SetFormatData(string(model.PodcastChapters), data)
 }
 
 // podcastChapter reads chapter i. It returns the cue and the end that the chapter gives, or nil.

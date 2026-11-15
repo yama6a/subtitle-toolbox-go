@@ -23,10 +23,12 @@ func fuzzSubtitle(data []byte) *model.Subtitle {
 		length := time.Duration(data[i+1]) * 100 * time.Millisecond
 		from := min(int(data[i+2]), len(data))
 		to := min(from+int(data[i+3]&0x0f), len(data))
-		s.AddCue(model.Cue{
+		if err := s.AddCue(model.Cue{
 			Start: start, End: start + length, Lines: []string{string(data[from:to])},
 			Forced: data[i+3]&0x80 != 0, Position: model.Position{Alignment: model.Alignment(data[i+3] >> 4 & 0x07)},
-		})
+		}); err != nil {
+			panic(err)
+		}
 	}
 	return &s
 }

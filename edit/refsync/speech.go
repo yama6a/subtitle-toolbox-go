@@ -86,6 +86,8 @@ func SpeechFromIntervals(intervals []Interval) (*model.Subtitle, error) {
 		cues[i] = model.Cue{Start: iv.Start, End: iv.End}
 	}
 	var s model.Subtitle
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return nil, err
+	}
 	return &s, nil
 }

@@ -16,18 +16,22 @@ func ExampleApply() {
 		}
 	}
 	var english, german model.Subtitle
-	english.AddCues(
+	if err := english.AddCues(
 		at(10, 12.5, "Where is the station?"),
 		at(20, 23, "Turn left at the bakery."),
 		at(31, 33, "Thank you."),
 		at(45, 47.5, "The last train leaves at ten."),
-	)
-	german.AddCues(
+	); err != nil {
+		panic(err)
+	}
+	if err := german.AddCues(
 		at(10.79, 13.188, "Wo ist der Bahnhof?"),
 		at(20.381, 23.258, "Links an der Ecke."),
 		at(30.93, 32.848, "Danke."),
 		at(44.357, 46.755, "Der letzte Zug geht um zehn."),
-	)
+	); err != nil {
+		panic(err)
+	}
 
 	r, err := refsync.Apply(&german, refsync.Options{Reference: &english})
 	if err != nil {
@@ -54,7 +58,7 @@ func ExampleApply_splits() {
 		}
 	}
 	var englishTV, german model.Subtitle
-	englishTV.AddCues(
+	if err := englishTV.AddCues(
 		at(10, 12.5, "Where is the station?"),
 		at(20, 23, "Turn left at the bakery."),
 		at(31, 33, "Thank you."),
@@ -63,8 +67,10 @@ func ExampleApply_splits() {
 		at(221, 224, "Yes, please sit down."),
 		at(232, 234, "Where are you going?"),
 		at(246, 248.5, "To my sister in the north."),
-	)
-	german.AddCues(
+	); err != nil {
+		panic(err)
+	}
+	if err := german.AddCues(
 		at(12, 14.5, "Wo ist der Bahnhof?"),
 		at(22, 25, "Links an der Ecke."),
 		at(33, 35, "Danke."),
@@ -73,7 +79,9 @@ func ExampleApply_splits() {
 		at(73, 76, "Ja, bitte setzen Sie sich."),
 		at(84, 86, "Wohin fahren Sie?"),
 		at(98, 100.5, "Zu meiner Schwester im Norden."),
-	)
+	); err != nil {
+		panic(err)
+	}
 
 	r, err := refsync.Apply(&german, refsync.Options{
 		Reference: &englishTV,
