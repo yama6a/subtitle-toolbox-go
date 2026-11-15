@@ -64,14 +64,11 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 // newReader checks the DFC and CCT fields of the GSI and sets the frame rate, the start of programme and the grid.
 func newReader(st *parsing.State, gsi gsiValues, opts ReadOptions) (*reader, error) {
 	rd := &reader{st: st, cct: gsi.get("CCT"), groups: map[byte]bool{}}
-	switch dfc := gsi.get("DFC"); dfc {
-	case "STL25.01":
-		rd.rate = model.FrameRate25
-	case "STL30.01":
-		rd.rate = model.FrameRate30
-	default:
-		return nil, &model.ParseError{Format: model.EBUSTL, Msg: `The disk format code "` + dfc + `" is not STL25.01 or STL30.01.`}
+	rate, ok := frameRateOf(gsi.get("DFC"))
+	if !ok {
+		return nil, &model.ParseError{Format: model.EBUSTL, Msg: `The disk format code "` + gsi.get("DFC") + `" is not STL25.01 or STL30.01.`}
 	}
+	rd.rate = rate
 	if !slices.Contains([]string{"00", "01", "02", "03", "04"}, rd.cct) {
 		return nil, &model.ParseError{Format: model.EBUSTL, Msg: `The character code table "` + rd.cct + `" is not 00, 01, 02, 03 or 04.`}
 	}
@@ -326,8 +323,14 @@ func textBytes(blocks [][]byte) []byte {
 
 // teletextColor returns the color value of the alpha color code c, 0 to 7. White gives "".
 func teletextColor(c int) string {
-	return [...]string{"#000000", "#ff0000", "#00ff00", "#ffff00", "#0000ff", "#ff00ff", "#00ffff", ""}[c]
+	if c == white {
+		return ""
+	}
+	return teletextColors[c]
 }
+
+// teletextColors holds the color values of the alpha color codes 0 to 7.
+var teletextColors = [8]string{"#000000", "#ff0000", "#00ff00", "#ffff00", "#0000ff", "#ff00ff", "#00ffff", "#ffffff"} //nolint:gochecknoglobals // lookup table
 
 // style is the state of the control codes while a text field decodes.
 type style struct {
@@ -342,13 +345,13 @@ func (st *style) apply(c byte) {
 	switch {
 	case c < 0x08:
 		st.color = int(c)
-	case c == 0x80:
+	case c == italicsOn:
 		st.italic = true
-	case c == 0x81:
+	case c == italicsOff:
 		st.italic = false
-	case c == 0x82:
+	case c == underlineOn:
 		st.underline = true
-	case c == 0x83:
+	case c == underlineOff:
 		st.underline = false
 	}
 }
@@ -375,7 +378,7 @@ func (rd *reader) decodeLines(b []byte) []string {
 			runs = append(runs, markupcore.Run{Text: " "})
 		}
 		st.apply(c)
-		if c == 0x8A {
+		if c == newRow {
 			lines = append(lines, markupcore.StyleRuns(runs, true))
 			runs, st.color = nil, white
 		}

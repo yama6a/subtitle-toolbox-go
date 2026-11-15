@@ -40,6 +40,15 @@ const (
 	commentFlag = 1
 )
 
+// The control codes of a text field that the reader and the writer share.
+const (
+	italicsOn    = 0x80
+	italicsOff   = 0x81
+	underlineOn  = 0x82
+	underlineOff = 0x83
+	newRow       = 0x8A
+)
+
 type gsiField struct {
 	name   string
 	offset int

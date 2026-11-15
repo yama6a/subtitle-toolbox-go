@@ -187,7 +187,7 @@ func TestObjectPixels(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			d := NewDecoder(1, 1, false, model.CommonReadOptions{})
+			d := NewDecoder(1, 1, model.CommonReadOptions{})
 			data := join(
 				pageSeg(1, 5, 0, 2, [3]int{1, 0, 0}),
 				regionSeg(1, tt.width, tt.height, tt.depthBits, tt.code8, tt.code4, 1),
@@ -218,7 +218,7 @@ func TestCues(t *testing.T) {
 	t.Run("a repeated display set continues the cue until its time-out, and an empty page ends it", func(t *testing.T) {
 		t.Parallel()
 
-		d := NewDecoder(1, 1, false, model.CommonReadOptions{})
+		d := NewDecoder(1, 1, model.CommonReadOptions{})
 		require.NoError(t, d.Add(join(page(3, 0, 2), shape, end), time.Second, 0, false))
 		require.NoError(t, d.Add(join(page(3, 0, 0), end), 2*time.Second, 0, false))
 		require.NoError(t, d.Add(join(pageSeg(1, 3, 1, 0), end), 10*time.Second, 0, false))
@@ -232,7 +232,7 @@ func TestCues(t *testing.T) {
 	t.Run("a display set without an end segment shows at the end of its packet, and a transparent region is skipped", func(t *testing.T) {
 		t.Parallel()
 
-		d := NewDecoder(1, 1, false, model.CommonReadOptions{})
+		d := NewDecoder(1, 1, model.CommonReadOptions{})
 		empty := regionSeg(2, 8, 8, 2, 0, 0, -1)
 		data := join(pageSeg(1, 0, 0, 2, [3]int{1, 3, 4}, [3]int{2, 50, 50}), shape, empty)
 		require.NoError(t, d.Add(data, 2500*time.Microsecond, 0, false))
@@ -245,7 +245,7 @@ func TestCues(t *testing.T) {
 	t.Run("a block end limits the expiry", func(t *testing.T) {
 		t.Parallel()
 
-		d := NewDecoder(1, 1, false, model.CommonReadOptions{})
+		d := NewDecoder(1, 1, model.CommonReadOptions{})
 		require.NoError(t, d.Add(join(page(30, 0, 2), shape, end), time.Second, 2*time.Second, true))
 		cues := d.Finish(time.Hour)
 		require.Len(t, cues, 1)
@@ -258,7 +258,7 @@ func TestCues(t *testing.T) {
 		display := segment(segDisplay, 1, 0x08, 0, 99, 0, 49, 0, 10, 0, 90, 0, 20, 0, 40)
 		white := segment(segCLUT, 1, 1, 0, 1, 0x40|0x01, 235, 128, 128, 0)
 		other := segment(segCLUT, 9, 1, 0, 1, 0x40|0x01, 16, 128, 128, 0)
-		d := NewDecoder(1, 2, false, model.CommonReadOptions{})
+		d := NewDecoder(1, 2, model.CommonReadOptions{})
 		data := join(display, other, pageSeg(9, 1, 0, 2), page(5, 0, 2), white, shape, end)
 		require.NoError(t, d.Add(data, 0, 0, false))
 		cues := d.Finish(time.Second)
@@ -271,7 +271,7 @@ func TestCues(t *testing.T) {
 	t.Run("a region over the size limit fails", func(t *testing.T) {
 		t.Parallel()
 
-		err := NewDecoder(1, 1, false, model.CommonReadOptions{}).Add(regionSeg(1, 8000, 10, 2, 0, 0, -1), 0, 0, false)
+		err := NewDecoder(1, 1, model.CommonReadOptions{}).Add(regionSeg(1, 8000, 10, 2, 0, 0, -1), 0, 0, false)
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr)
 		assert.Equal(t, "Cannot read region 1: an image of 8000x10 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total.", perr.Msg)
@@ -290,7 +290,7 @@ func TestPixelLimits(t *testing.T) {
 		for id := range 256 {
 			data = append(data, regionSeg(id, 3840, 2160, 2, 0, 0x10, -1)...)
 		}
-		err := NewDecoder(1, 1, false, model.CommonReadOptions{}).Add(data, 0, 0, false)
+		err := NewDecoder(1, 1, model.CommonReadOptions{}).Add(data, 0, 0, false)
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr)
 		assert.Equal(t, "Cannot read region 1: "+totalLimit, perr.Msg)
@@ -300,7 +300,7 @@ func TestPixelLimits(t *testing.T) {
 		t.Parallel()
 
 		data := join(regionSeg(0, 3840, 2160, 2, 0, 0x10, -1), regionSeg(1, 10, 10, 2, 0, 0x10, -1))
-		d := NewDecoder(1, 1, false, model.CommonReadOptions{Lenient: true})
+		d := NewDecoder(1, 1, model.CommonReadOptions{Lenient: true})
 		require.NoError(t, d.Add(data, 0, 0, false))
 		assert.Len(t, d.regions, 1)
 		require.Len(t, d.Warnings(), 1)
@@ -316,7 +316,7 @@ func TestPixelLimits(t *testing.T) {
 		for range 200 {
 			data = append(data, join(pageSeg(1, 5, 0, 0), segment(segEnd, 1))...)
 		}
-		d := NewDecoder(1, 1, false, model.CommonReadOptions{})
+		d := NewDecoder(1, 1, model.CommonReadOptions{})
 		require.NoError(t, d.Add(data, 0, 0, false))
 		cues := d.Finish(time.Second)
 		require.Len(t, cues, 1)

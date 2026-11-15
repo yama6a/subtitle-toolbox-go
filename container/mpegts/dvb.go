@@ -21,10 +21,7 @@ const (
 // descriptors of a stream join into one list. The first entry has the PID as its number, a later entry or a clash has
 // PID * 1000 + index. When that number is taken too, the entry is skipped.
 func (f *File) addDVB(streams []*astits.PMTElementaryStream) {
-	pids := make([]uint16, len(streams))
-	for i, es := range streams {
-		pids[i] = es.ElementaryPID
-	}
+	pids := elementaryPIDs(streams)
 	for _, es := range streams {
 		if es.StreamType != astits.StreamTypePrivateData {
 			continue
@@ -84,7 +81,7 @@ func (f *File) dvbCues(s stream, number int, common model.CommonReadOptions) ([]
 	if err != nil {
 		return nil, nil, err
 	}
-	dec := dvbsub.NewDecoder(s.page, s.ancillary, false, common)
+	dec := dvbsub.NewDecoder(s.page, s.ancillary, common)
 	for _, p := range packets {
 		if _, err := ticksToTime(number, p.pts-zero); err != nil {
 			return nil, nil, err
@@ -93,5 +90,5 @@ func (f *File) dvbCues(s stream, number int, common model.CommonReadOptions) ([]
 			return nil, nil, err
 		}
 	}
-	return dec.Finish(parsing.NewState(model.PGS, common).LastCueDuration()), dec.Warnings(), nil
+	return dec.Finish(parsing.LastCueDuration(common)), dec.Warnings(), nil
 }

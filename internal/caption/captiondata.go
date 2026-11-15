@@ -17,8 +17,8 @@ func CEA708Service(service int, cea608Only bool) int {
 	return max(service, 1)
 }
 
-// CDPCues returns the cues of the triplets of caption distribution packets: a CEA-708 service. When service is 0,
-// or the service gives no cue, it returns the cues of the CEA-608 field 1 pairs, read with opts.
+// CDPCues returns the cues that the CEA-708 service of the caption distribution packets in frames holds.
+// When service is 0, or the service gives no cue, it returns the cues of the CEA-608 field 1 pairs, read with opts.
 // The CEA-708 cues hold only the alignment of the window anchor, and no offset.
 func CDPCues(frames []cea708.Frame, service int, opts CEA608Options, lastCueDuration time.Duration) []model.Cue {
 	if service != 0 {

@@ -16,15 +16,15 @@ type ptsEvent struct {
 	pts int64
 }
 
-// aligner is an io.Reader that hands go-astits clean 188-byte packets. go-astits cannot resync after damage and
-// cannot read the time stamp of an M2TS packet, so the aligner does both and filters the packets that the pass
-// does not need.
 // counter holds the last continuity counter of a PID as the file has it and as go-astits gets it.
 type counter struct {
 	raw, fixed uint8
 	payload    []byte
 }
 
+// aligner is an io.Reader that hands go-astits clean 188-byte packets. go-astits cannot resync after damage and
+// cannot read the time stamp of an M2TS packet, so the aligner does both and filters the packets that the pass
+// does not need.
 type aligner struct {
 	r          *bufio.Reader
 	packetSize int

@@ -224,6 +224,7 @@ func absoluteTimestamps(text string, start time.Duration) string {
 		mm, _ := strconv.ParseInt(p[2], 10, 64)
 		ss, _ := strconv.ParseInt(p[3], 10, 64)
 		ms, _ := strconv.ParseInt(p[4], 10, 64)
+		// A time.Duration overflows near 2.56 million hours and would read back as a valid timestamp.
 		offset := time.Duration(min((h*3600+mm*60+ss)*1000+ms, int64(timecode.MaxTime/time.Millisecond))) * time.Millisecond
 		return "<" + timeText(start+offset, 2, '.') + ">"
 	})

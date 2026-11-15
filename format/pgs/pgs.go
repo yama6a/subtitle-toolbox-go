@@ -8,6 +8,8 @@
 // graphics_controller.c at 0247557842050c8dfc0ae9293d76c3fb7386429a. No code of FFmpeg or libbluray is used.
 package pgs
 
+import "github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap/displayset"
+
 // ReadOptions holds the settings of the PGS reader. PGS has none yet.
 type ReadOptions struct{}
 
@@ -27,7 +29,7 @@ func Detect(content []byte) bool {
 		return false
 	}
 	switch content[10] {
-	case 0x14, 0x15, 0x16, 0x17, 0x80:
+	case displayset.SegmentPalette, displayset.SegmentObject, displayset.SegmentComposition, displayset.SegmentWindow, displayset.SegmentEnd:
 		return true
 	}
 	return false

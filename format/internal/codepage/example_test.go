@@ -8,7 +8,8 @@ import (
 
 func Example() {
 	fmt.Println(codepage.DecodeISO6937([]byte("Caf\xC2e")))
-	fmt.Printf("% X\n", codepage.EncodeISO6937("Café"))
+	cafe, _ := codepage.EncodeISO6937("Café")
+	fmt.Printf("% X\n", cafe)
 	fmt.Printf("% X\n", codepage.CP850.Encode("Météo"))
 	// Output:
 	// Café

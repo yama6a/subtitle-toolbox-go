@@ -167,3 +167,12 @@ func language(b []byte) string {
 func isLanguage(s string) bool {
 	return len(s) == 3 && strings.Trim(s, "abcdefghijklmnopqrstuvwxyz") == ""
 }
+
+// elementaryPIDs returns the PIDs of the elementary streams of one program.
+func elementaryPIDs(streams []*astits.PMTElementaryStream) []uint16 {
+	pids := make([]uint16, len(streams))
+	for i, es := range streams {
+		pids[i] = es.ElementaryPID
+	}
+	return pids
+}

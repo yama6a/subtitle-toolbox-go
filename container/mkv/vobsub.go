@@ -1,11 +1,8 @@
 package mkv
 
 import (
-	"errors"
-
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap/dvdsub"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -22,8 +19,7 @@ func (f *File) readVobSub(t *trackEntry, private []byte, blocks []block, common 
 	for i, b := range timed {
 		u, err := dvdsub.DecodeUnit([]byte(b.data), ix)
 		if err != nil {
-			perr, _ := errors.AsType[*model.ParseError](err)
-			if err := st.Fail(perr, model.NoLine, i, nil); err != nil {
+			if err := st.Fail(err, model.NoLine, i, nil); err != nil {
 				return nil, nil, err
 			}
 			continue
@@ -31,12 +27,7 @@ func (f *File) readVobSub(t *trackEntry, private []byte, blocks []block, common 
 		if u.Image == nil {
 			continue
 		}
-		start := min(b.start+u.StartDelay, timecode.MaxValidTime)
-		end := b.end
-		if u.HasStop {
-			end = b.start + u.StopDelay
-		}
-		s.AddCue(model.Cue{Start: start, End: min(max(end, start), timecode.MaxValidTime), Forced: u.Forced, Image: u.Image})
+		s.AddCue(u.Cue(b.start, b.end))
 	}
 	return s, st.Warnings(), nil
 }

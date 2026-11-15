@@ -11,10 +11,10 @@ import (
 
 // dvbSubtitle decodes the blocks of an S_DVBSUB track. CodecPrivate of 4 bytes or more holds the composition page and
 // the ancillary page. Without them the decoder reads every page.
-func (f *File) dvbSubtitle(t *trackEntry, private []byte, blocks []block, common model.CommonReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	dec := dvbsub.NewDecoder(0, 0, true, common)
+func (f *File) dvbSubtitle(private []byte, blocks []block, common model.CommonReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
+	dec := dvbsub.NewAllPagesDecoder(common)
 	if len(private) >= 4 {
-		dec = dvbsub.NewDecoder(int(binary.BigEndian.Uint16(private)), int(binary.BigEndian.Uint16(private[2:])), false, common)
+		dec = dvbsub.NewDecoder(int(binary.BigEndian.Uint16(private)), int(binary.BigEndian.Uint16(private[2:])), common)
 	}
 	for _, b := range blocks {
 		start, _ := f.nanos(b.start)
@@ -28,6 +28,6 @@ func (f *File) dvbSubtitle(t *trackEntry, private []byte, blocks []block, common
 		}
 	}
 	s := &model.Subtitle{}
-	s.AddCues(dec.Finish(parsing.NewState(t.Format, common).LastCueDuration())...)
+	s.AddCues(dec.Finish(parsing.LastCueDuration(common))...)
 	return s, dec.Warnings(), nil
 }

@@ -87,14 +87,8 @@ func DecodeISO6937(b []byte) string {
 }
 
 // EncodeISO6937 returns the bytes of s and writes Replacement for each code point outside the table.
-func EncodeISO6937(s string) []byte {
-	out, _ := EncodeISO6937Replaced(s)
-	return out
-}
-
-// EncodeISO6937Replaced is EncodeISO6937 that also returns the code points that it wrote as Replacement, in order.
-// A Replacement that s holds itself is not in the list.
-func EncodeISO6937Replaced(s string) ([]byte, []rune) {
+// It also returns the code points that it wrote as Replacement, in order. A Replacement that s holds itself is not in the list.
+func EncodeISO6937(s string) ([]byte, []rune) {
 	out := make([]byte, 0, len(s))
 	var replaced []rune
 	letter := false
@@ -122,15 +116,6 @@ func EncodeISO6937Replaced(s string) ([]byte, []rune) {
 		}
 	}
 	return out, replaced
-}
-
-// EncodableISO6937 reports whether EncodeISO6937 writes r without Replacement when r stands alone.
-// A combining mark is not encodable alone, because it needs a letter before it.
-// A caller that counts replacements by code point must count a mark after an ASCII letter as encodable.
-func EncodableISO6937(r rune) bool {
-	_, inTable := iso6937.encode[r]
-	_, composed := iso6937.decompose[r]
-	return inTable || composed || (r >= 0x20 && r < 0x7F)
 }
 
 func isASCIILetter(b byte) bool {

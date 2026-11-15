@@ -10,10 +10,9 @@ import (
 	"time"
 
 	"github.com/Eyevinn/mp4ff/mp4"
-)
 
-// timeLimit is 100000 hours in seconds.
-const timeLimit = 100000 * 3600
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+)
 
 // sample is a sample with its position in the file and its times in seconds.
 type sample struct {
@@ -168,34 +167,22 @@ func (w *walker) next() (sample, bool, error) {
 			w.startChunk()
 			continue
 		}
-		for w.left == 0 {
-			if w.deltaAt >= len(w.deltas) {
-				return sample{}, false, parseError("The stts box of track " + strconv.Itoa(w.t.info.Number) +
-					" has fewer samples than the sample size box.")
-			}
-			w.left, w.delta = w.deltaCounts[w.deltaAt], w.deltas[w.deltaAt]
-			w.deltaAt++
+		if err := w.nextDelta(); err != nil {
+			return sample{}, false, err
 		}
 		s := sample{offset: w.offset, size: w.sizeOf(w.index)}
 		startTicks := new(big.Int).SetUint64(w.ticks)
 		endTicks := new(big.Int).Add(startTicks, new(big.Int).SetUint64(uint64(w.delta)))
 		w.ticks += uint64(w.delta)
-		if sum, carry := bits.Add64(w.offset, uint64(s.size), 0); carry == 0 {
-			w.offset = sum
-		} else {
-			w.offset = math.MaxUint64
-		}
-		w.index++
-		w.inChunk++
-		w.left--
+		w.advance(s.size)
 
 		s.end = w.seconds(endTicks)
 		if s.end.Sign() <= 0 {
 			continue
 		}
-		if s.end.Cmp(new(big.Rat).SetInt64(timeLimit)) >= 0 {
+		if s.end.Cmp(new(big.Rat).SetInt64(int64(timecode.MaxHours)*3600)) >= 0 {
 			return sample{}, false, parseError("The sample of track " + strconv.Itoa(w.t.info.Number) + " at byte " +
-				strconv.FormatUint(s.offset, 10) + " ends at " + decimals(s.end) + " s. Times must be below 100000 hours.")
+				strconv.FormatUint(s.offset, 10) + " ends at " + decimals(s.end) + " s. Times must be below " + strconv.Itoa(timecode.MaxHours) + " hours.")
 		}
 		s.start = w.seconds(startTicks)
 		if s.start.Sign() < 0 {
@@ -204,6 +191,31 @@ func (w *walker) next() (sample, bool, error) {
 		return s, true, nil
 	}
 	return sample{}, false, nil
+}
+
+// nextDelta loads the next stts entry when the current one has no samples left.
+func (w *walker) nextDelta() error {
+	for w.left == 0 {
+		if w.deltaAt >= len(w.deltas) {
+			return parseError("The stts box of track " + strconv.Itoa(w.t.info.Number) +
+				" has fewer samples than the sample size box.")
+		}
+		w.left, w.delta = w.deltaCounts[w.deltaAt], w.deltas[w.deltaAt]
+		w.deltaAt++
+	}
+	return nil
+}
+
+// advance moves past a sample of size bytes. The byte offset stops at the largest uint64 on overflow.
+func (w *walker) advance(size uint32) {
+	if sum, carry := bits.Add64(w.offset, uint64(size), 0); carry == 0 {
+		w.offset = sum
+	} else {
+		w.offset = math.MaxUint64
+	}
+	w.index++
+	w.inChunk++
+	w.left--
 }
 
 // startChunk moves to the next chunk and reads its sample count from the stsc entry that covers it.

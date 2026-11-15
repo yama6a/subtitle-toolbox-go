@@ -5,7 +5,6 @@
 package vobsub
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -15,7 +14,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap/dvdsub"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -88,14 +86,11 @@ func subtitleOf(st *parsing.State, track dvdsub.Track, units []entryUnit) *model
 		if eu.unit.Image == nil {
 			continue
 		}
-		end := clamp(eu.time + eu.unit.StopDelay)
-		if !eu.unit.HasStop {
-			end = st.LastCueEnd(eu.start)
-			if i+1 < len(units) {
-				end = min(end, units[i+1].start)
-			}
+		end := st.LastCueEnd(eu.start)
+		if i+1 < len(units) {
+			end = min(end, units[i+1].start)
 		}
-		s.AddCue(model.Cue{Start: eu.start, End: max(end, eu.start), Forced: eu.unit.Forced, Image: eu.unit.Image})
+		s.AddCue(eu.unit.Cue(eu.time, end))
 	}
 	return s
 }
@@ -107,13 +102,12 @@ func readUnits(st *parsing.State, sub []byte, track dvdsub.Track, ix dvdsub.Inde
 	for _, e := range track.Entries {
 		u, err := readEntry(sub, e, track.Index, ix)
 		if err != nil {
-			perr, _ := errors.AsType[*model.ParseError](err)
-			if err := st.Fail(perr, model.NoLine, e.Line, nil); err != nil {
+			if err := st.Fail(err, model.NoLine, e.Line, nil); err != nil {
 				return nil, err
 			}
 			continue
 		}
-		units = append(units, entryUnit{start: clamp(e.Time + u.StartDelay), unit: u, time: e.Time})
+		units = append(units, entryUnit{start: u.Start(e.Time), unit: u, time: e.Time})
 	}
 	return units, nil
 }
@@ -123,11 +117,6 @@ type entryUnit struct {
 	// time is the time of the index entry, from which the stop delay counts.
 	time time.Duration
 	unit dvdsub.Unit
-}
-
-// clamp keeps a time below the limit of 100000 hours, which a start delay of up to 745 s can pass.
-func clamp(d time.Duration) time.Duration {
-	return min(d, timecode.MaxValidTime)
 }
 
 func selectTrack(ix dvdsub.Index, opts ReadOptions) (dvdsub.Track, error) {

@@ -1,7 +1,6 @@
 package codepage
 
 import (
-	"bytes"
 	"encoding/hex"
 	"encoding/json"
 	"testing"
@@ -42,7 +41,7 @@ func TestPairs(t *testing.T) {
 
 			b, err := hex.DecodeString(p.Bytes)
 			require.NoError(t, err)
-			decode, encode := DecodeISO6937, EncodeISO6937
+			decode, encode := DecodeISO6937, encodeISO6937
 			if p.Table != "iso6937" {
 				decode, encode = testTables[p.Table].Decode, testTables[p.Table].Encode
 			}
@@ -104,7 +103,7 @@ func TestISO6937Table(t *testing.T) {
 			defined++
 		}
 		text := DecodeISO6937([]byte{byte(b)})
-		assert.Equal(t, []byte{byte(b)}, EncodeISO6937(text), "byte %02X", b)
+		assert.Equal(t, []byte{byte(b)}, encodeISO6937(text), "byte %02X", b)
 	}
 	assert.Equal(t, 74, defined)
 	assert.Len(t, iso6937Composed, 251)
@@ -115,18 +114,14 @@ func TestISO6937Composed(t *testing.T) {
 
 	for _, p := range iso6937Composed {
 		want := []byte{p.diacritic, p.base}
-		assert.Equal(t, want, EncodeISO6937(string(p.letter)), "%U", p.letter)
+		assert.Equal(t, want, encodeISO6937(string(p.letter)), "%U", p.letter)
 		assert.Equal(t, string(p.letter), DecodeISO6937(want), "%U", p.letter)
 	}
 }
 
-func TestEncodableISO6937(t *testing.T) {
-	t.Parallel()
-
-	for r := rune(0); r < 0x3000; r++ {
-		want := r == Replacement || !bytes.ContainsRune(EncodeISO6937(string(r)), Replacement)
-		assert.Equal(t, want, EncodableISO6937(r), "%U", r)
-	}
+func encodeISO6937(s string) []byte {
+	out, _ := EncodeISO6937(s)
+	return out
 }
 
 func FuzzISO6937(f *testing.F) {
@@ -134,7 +129,7 @@ func FuzzISO6937(f *testing.F) {
 	f.Add([]byte("\xC2\xC8\xA6"), "B́́")
 	f.Fuzz(func(t *testing.T, b []byte, s string) {
 		DecodeISO6937(b)
-		out := EncodeISO6937(s)
+		out := encodeISO6937(s)
 		if utf8.ValidString(s) {
 			want := utf8.RuneCountInString(s)
 			for _, r := range s {

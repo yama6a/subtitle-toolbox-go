@@ -15,19 +15,26 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-// The segment types.
 const (
-	segPalette      = 0x14
-	segObject       = 0x15
-	segComposition  = 0x16
-	segWindow       = 0x17
-	segEnd          = 0x80
-	ticksPerSecond  = 90000
-	ticksPerMilli   = ticksPerSecond / 1000
-	stateEpochStart = 0x80
-	flagCropped     = 0x80
-	flagForced      = 0x40
-	firstFragment   = 0x80
+	// SegmentPalette is the type byte of a palette definition segment.
+	SegmentPalette = 0x14
+	// SegmentObject is the type byte of an object definition segment.
+	SegmentObject = 0x15
+	// SegmentComposition is the type byte of a presentation composition segment.
+	SegmentComposition = 0x16
+	// SegmentWindow is the type byte of a window definition segment.
+	SegmentWindow = 0x17
+	// SegmentEnd is the type byte of the segment that ends a display set.
+	SegmentEnd = 0x80
+	// StateEpochStart is the composition state of a display set that clears the palettes, objects and windows.
+	StateEpochStart = 0x80
+	// FlagForced is the flag of an object in a composition that marks a forced cue.
+	FlagForced = 0x40
+
+	ticksPerSecond = 90000
+	ticksPerMilli  = ticksPerSecond / 1000
+	flagCropped    = 0x80
+	firstFragment  = 0x80
 )
 
 // The sizes of the parts of a segment, in bytes.
@@ -116,15 +123,15 @@ func NewDecoder(common model.CommonReadOptions) *Decoder {
 func (d *Decoder) Add(pts int64, segmentType byte, data []byte) error {
 	d.segments++
 	switch segmentType {
-	case segComposition:
+	case SegmentComposition:
 		return d.readComposition(pts, data)
-	case segWindow:
+	case SegmentWindow:
 		d.readWindows(data)
-	case segPalette:
+	case SegmentPalette:
 		d.readPalette(data)
-	case segObject:
+	case SegmentObject:
 		return d.readObject(data)
-	case segEnd:
+	case SegmentEnd:
 		return d.endDisplaySet(false)
 	}
 	return nil
@@ -167,7 +174,7 @@ func timeOf(pts int64) time.Duration {
 	case pts >= limit:
 		return timecode.MaxValidTime
 	}
-	return time.Duration((pts+ticksPerMilli/2)/ticksPerMilli) * time.Millisecond
+	return time.Duration(timecode.PTSMilliseconds(pts)) * time.Millisecond
 }
 
 // errorMessage returns the message of an error of package bitmap or model.
@@ -206,7 +213,7 @@ func (d *Decoder) parseComposition(t time.Duration, data []byte) (*composition, 
 	if len(data) < compositionHeader {
 		return nil, "The presentation composition segment at " + timecode.Seconds(t) + " s is cut off."
 	}
-	if data[7]&stateEpochStart != 0 {
+	if data[7]&StateEpochStart != 0 {
 		clear(d.palettes)
 		clear(d.objects)
 		clear(d.windows)
@@ -226,7 +233,7 @@ func (d *Decoder) parseComposition(t time.Duration, data []byte) (*composition, 
 		ref := reference{
 			id:       binary.BigEndian.Uint16(data[pos:]),
 			windowID: data[pos+2],
-			forced:   data[pos+3]&flagForced != 0,
+			forced:   data[pos+3]&FlagForced != 0,
 			cropped:  data[pos+3]&flagCropped != 0,
 			x:        int(binary.BigEndian.Uint16(data[pos+4:])),
 			y:        int(binary.BigEndian.Uint16(data[pos+6:])),

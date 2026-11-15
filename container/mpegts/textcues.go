@@ -62,7 +62,7 @@ func mergeStates(states []textState) []textState {
 
 // ticksToTime returns max(0, ticks) of the 90 kHz clock as whole milliseconds, half up.
 func ticksToTime(number int, ticks int64) (time.Duration, error) {
-	ms := (max(0, ticks) + 45) / 90
+	ms := timecode.PTSMilliseconds(ticks)
 	if ms >= int64(timecode.MaxTime/time.Millisecond) {
 		return 0, &model.ParseError{Msg: fmt.Sprintf("The cue times of track %d reach %s s. Times must be below %d hours.",
 			number, timecode.Number(float64(ms)/1000), timecode.MaxHours)}

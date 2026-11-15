@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -121,6 +122,22 @@ type Unit struct {
 	Image *model.Image
 }
 
+// Start returns the time of the start command for an index entry at at, below the time limit.
+func (u Unit) Start(at time.Duration) time.Duration {
+	return min(at+u.StartDelay, timecode.MaxValidTime)
+}
+
+// Cue returns the image cue of u for an index entry at at. The end is at plus StopDelay when the unit has a
+// stop command, else fallbackEnd. The end is never before the start and stays below the time limit.
+func (u Unit) Cue(at, fallbackEnd time.Duration) model.Cue {
+	start := u.Start(at)
+	end := fallbackEnd
+	if u.HasStop {
+		end = at + u.StopDelay
+	}
+	return model.Cue{Start: start, End: min(max(end, start), timecode.MaxValidTime), Forced: u.Forced, Image: u.Image}
+}
+
 // The commands of a control sequence.
 const (
 	cmdForcedStart = 0x00
@@ -199,7 +216,7 @@ func (d *decoder) runSequences() error {
 
 // delayTime returns units of 1024 ticks of the 90 kHz clock as whole milliseconds, half up.
 func delayTime(units int64) time.Duration {
-	return time.Duration((units*1024+45)/90) * time.Millisecond
+	return time.Duration(timecode.PTSMilliseconds(units*1024)) * time.Millisecond
 }
 
 // runSequence runs the commands of one control sequence from position on. The commands that set the picture count
@@ -293,10 +310,8 @@ func nibbles(a []byte) [4]int {
 func (d *decoder) decodeImage(colors [4]uint32, ix Index) (*model.Image, error) {
 	x, y := d.area[0], d.area[2]
 	width, height := d.area[1]-x+1, d.area[3]-y+1
-	if width > model.MaxImageSide || height > model.MaxImageSide || width*height > model.MaxImagePixels {
-		return nil, parseError("Cannot read the subtitle packet: an image of " + strconv.Itoa(width) + "x" + strconv.Itoa(height) +
-			" pixels is larger than the limit of " + strconv.Itoa(model.MaxImageSide) + " pixels per side and " +
-			strconv.Itoa(model.MaxImagePixels) + " pixels in total.")
+	if reason := bitmap.SizeLimit(width, height); reason != "" {
+		return nil, parseError("Cannot read the subtitle packet: " + reason)
 	}
 	pixels := make([]uint32, width*height)
 	for i := range pixels {

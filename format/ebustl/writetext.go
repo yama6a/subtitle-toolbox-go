@@ -10,16 +10,11 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-const (
-	italicsOff   = 0x81
-	underlineOff = 0x83
-)
-
 var fontOpenRegexp = regexp.MustCompile(`^<font\b[^>]*>$`)
 
 // teletextColorCode returns the alpha color code 0 to 7 of a "#rrggbb" color, or -1.
 func teletextColorCode(hex string) int {
-	return slices.Index([]string{"#000000", "#ff0000", "#00ff00", "#ffff00", "#0000ff", "#ff00ff", "#00ffff", "#ffffff"}, hex)
+	return slices.Index(teletextColors[:], hex)
 }
 
 // encodeText converts the lines of a cue to text field codes. Each line is one row.
