@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/profanity"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
-	"github.com/yama6a/subtitle-toolbox-go/v5/edit/profanity"
 )
 
 func sec(s float64) time.Duration {

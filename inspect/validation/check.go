@@ -6,8 +6,8 @@ import (
 
 	"github.com/dlclark/regexp2/v2"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/internal/readingspeed"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )

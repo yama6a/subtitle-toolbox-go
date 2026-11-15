@@ -5,10 +5,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr/glyph"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr/tesseract"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Options holds the settings of Choose and New.

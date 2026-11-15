@@ -9,8 +9,8 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/internal/speakerlabel"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 

@@ -3,9 +3,9 @@ package tesseract
 import (
 	"strconv"
 
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
-	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
 )
 
 // Options holds the settings of the Tesseract engine. The zero value uses the defaults.

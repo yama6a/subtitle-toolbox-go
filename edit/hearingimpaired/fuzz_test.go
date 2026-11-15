@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"

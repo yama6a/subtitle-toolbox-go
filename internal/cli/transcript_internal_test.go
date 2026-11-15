@@ -11,14 +11,14 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/karaoke"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/resegment"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/speakers"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/youtube"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v5/edit/karaoke"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
-	"github.com/yama6a/subtitle-toolbox-go/v5/edit/resegment"
-	"github.com/yama6a/subtitle-toolbox-go/v5/edit/speakers"
 )
 
 // libraryCall is the library call that a CLI call of TestConvertTranscriptOptions must equal.

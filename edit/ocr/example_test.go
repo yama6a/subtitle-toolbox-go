@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr/ocrtest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleRun() {

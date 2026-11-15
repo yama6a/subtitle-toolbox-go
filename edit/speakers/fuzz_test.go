@@ -8,9 +8,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/speakers"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
-	"github.com/yama6a/subtitle-toolbox-go/v5/edit/speakers"
 )
 
 var voiceToken = regexp.MustCompile(`^(<v(\.[^ \t\n\r\f\v>]*)?([ \t\n\r\f\v][^>]*)?>|</v[ \t\n\r\f\v]*>)$`)

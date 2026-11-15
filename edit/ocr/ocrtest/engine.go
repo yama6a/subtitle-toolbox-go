@@ -4,8 +4,8 @@ package ocrtest
 import (
 	"context"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Call is one call of Engine.Recognize.

@@ -13,10 +13,10 @@ import (
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v5/model/markup"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr/glyph"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model/markup"
 )
 
 func TestGoldens(t *testing.T) {

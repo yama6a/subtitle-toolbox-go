@@ -12,8 +12,8 @@ import (
 
 	glyphocr "github.com/yama6a/go-glyph-ocr"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // chars builds the characters of text. A rune marks an italic character where pattern holds "I" at its index.

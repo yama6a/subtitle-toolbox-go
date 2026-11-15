@@ -20,13 +20,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr/tesseract"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/pgs"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model/markup"
-	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
-	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr/tesseract"
 )
 
 // scripts holds the programs that TestMain writes before any test runs. A script that a parallel test writes

@@ -8,11 +8,11 @@ import (
 	"strings"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/itt"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
-	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation"
 )
 
 // The exit codes of docs/errors.md.

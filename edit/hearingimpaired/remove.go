@@ -5,8 +5,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/internal/speakerlabel"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 )
 
 // removeFromLines removes the annotations that opts selects from the lines of one cue, and the lines that they

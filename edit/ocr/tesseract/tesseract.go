@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
-	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
 )
 
 // Engine reads cue images with the tesseract program. It is safe for concurrent use.

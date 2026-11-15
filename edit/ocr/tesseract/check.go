@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // waitDelay is how long a killed program may keep its output pipes open, for example through a child process.

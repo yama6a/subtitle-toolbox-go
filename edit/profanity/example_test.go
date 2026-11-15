@@ -7,8 +7,8 @@ import (
 	"time"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
-	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/profanity"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleApply() {

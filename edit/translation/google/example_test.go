@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation/google"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleNew() {

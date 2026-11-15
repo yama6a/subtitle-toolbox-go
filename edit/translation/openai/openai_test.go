@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation/openai"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/translationtest"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
-	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation"
-	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation/openai"
 )
 
 const (

@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/internal/translationtest"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation/internal/httppost"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/translationtest"
 )
 
 const endpoint = "http://translate.test/v2/translate"

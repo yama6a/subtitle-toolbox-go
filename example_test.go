@@ -17,18 +17,18 @@ import (
 	"time"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
-	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/diff"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/dual"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/hearingimpaired"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr/glyph"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/refsync"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/resegment"
-	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/stats"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation/deepl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/diff"
+	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/stats"
 	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/validation"
 )
 

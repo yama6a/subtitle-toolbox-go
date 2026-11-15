@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 	"github.com/yama6a/subtitle-toolbox-go/v5/edit/resegment"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func FuzzResegment(f *testing.F) {
