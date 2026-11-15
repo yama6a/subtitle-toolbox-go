@@ -16,7 +16,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-const key = string(model.YouTubeTimedText)
+const formatDataKey = string(model.YouTubeTimedText)
 
 // The variants. The reader stores the name as the format field of the file format data.
 const (
@@ -37,18 +37,18 @@ type ReadOptions struct {
 	WordTimestamps bool
 }
 
-// WriteOptions is empty. The writer takes the variant from the file format data.
+// WriteOptions holds the settings of the YouTube timed text writer. It has no fields yet. The writer takes the variant from the file format data.
 type WriteOptions struct{}
 
 var signatureRegexp = regexp.MustCompile(xmlraw.Prolog + `<(?:timedtext|transcript)[\t\n\v\f\r />]`)
 
 // Detect reports whether content is YouTube XML: the XML prolog, then <timedtext or <transcript, then white space,
-// ">" or "/". stbox.Detect runs the same check after the MCC check.
+// ">" or "/".
 func Detect(content []byte) bool {
 	return signatureRegexp.Match(content)
 }
 
-// DetectJSON is JSON check 4 on the top-level keys of an object. It reports whether events is an array whose first
+// DetectJSON checks the top-level keys of an object. It reports whether events is an array whose first
 // item is an object with the key tStartMs.
 func DetectJSON(keys map[string]json.RawMessage) bool {
 	events, err := orderedjson.Decode(keys["events"])

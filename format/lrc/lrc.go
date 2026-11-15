@@ -10,13 +10,13 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-// ReadOptions holds the settings of the LRC reader. LRC has none yet.
+// ReadOptions holds the settings of the LRC reader. It has no fields yet.
 type ReadOptions struct{}
 
 // WriteReport holds what the writer reports. It has no fields yet.
 type WriteReport struct{}
 
-// WriteOptions holds the settings of the LRC writer. LRC has none yet.
+// WriteOptions holds the settings of the LRC writer. It has no fields yet.
 type WriteOptions struct{}
 
 const formatDataKey = string(model.LRC)

@@ -45,9 +45,8 @@ type Reader struct {
 
 type timing struct {
 	start, arrow, end string
-	// rest is the text after the end time.
-	rest      string
-	fullWidth bool
+	textAfterEnd      string
+	fullWidth         bool
 }
 
 // looseTime is a time that lenient mode read with timecode.Loose.
@@ -145,7 +144,7 @@ func (rd *Reader) parseCue(lines, shown []string, index, line int) (model.Cue, e
 	text, numpad := cueText(lines[2:])
 	c.SetText(text)
 	c.Position.Alignment, _ = model.AlignmentFromNumpad(numpad)
-	if err := rd.applyTextAfterEndTime(&c, t.rest, numpad, index, line, shown); err != nil {
+	if err := rd.applyTextAfterEndTime(&c, t.textAfterEnd, numpad, index, line, shown); err != nil {
 		return model.Cue{}, err
 	}
 	rd.warnTimingRepairs(t, loose, index, line, shown)
@@ -191,7 +190,7 @@ func (rd *Reader) readTimingLine(line string) (timing, bool) {
 		if j := strings.IndexAny(after, space); j >= 0 {
 			end, rest = after[:j], strings.TrimLeft(after[j:], space)
 		}
-		return timing{start: text[:i], arrow: text[k : k+n], end: end, rest: rest, fullWidth: text != line}, true
+		return timing{start: text[:i], arrow: text[k : k+n], end: end, textAfterEnd: rest, fullWidth: text != line}, true
 	}
 	return timing{}, false
 }

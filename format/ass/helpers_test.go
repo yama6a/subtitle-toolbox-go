@@ -2,7 +2,6 @@ package ass_test
 
 import (
 	"bytes"
-	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -177,5 +176,3 @@ func str(t *testing.T, d *model.Data, key string) string {
 	require.True(t, ok, key)
 	return v
 }
-
-var errRead = errors.New("disk gone")

@@ -6,13 +6,13 @@ package mpl2
 
 import "regexp"
 
-// ReadOptions holds the settings of the MPL2 reader. MPL2 has none yet.
+// ReadOptions holds the settings of the MPL2 reader. It has no fields yet.
 type ReadOptions struct{}
 
 // WriteReport holds what the writer reports. It has no fields yet.
 type WriteReport struct{}
 
-// WriteOptions holds the settings of the MPL2 writer. MPL2 has none yet.
+// WriteOptions holds the settings of the MPL2 writer. It has no fields yet.
 type WriteOptions struct{}
 
 var signatureRegexp = regexp.MustCompile(`\A\[\d+\]\[\d+\]`)

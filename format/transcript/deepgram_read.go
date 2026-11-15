@@ -32,7 +32,7 @@ func ReadDeepgram(r io.Reader, common model.CommonReadOptions, opts ReadOptions)
 	if results.Kind() != orderedjson.Object || channels.Kind() != orderedjson.Array {
 		return nil, nil, &model.ParseError{Format: model.Deepgram, Msg: `The JSON has no "results.channels" list.`}
 	}
-	rd := &deepgramReader{st: st, size: counted.n, cues: wordgroup.NewReader(st, wordgroup.Options{
+	rd := &deepgramReader{st: st, fileSize: counted.n, cues: wordgroup.NewReader(st, wordgroup.Options{
 		WordTimestamps: opts.WordTimestamps, SpeakerVoices: opts.SpeakerVoices,
 	}, deepgramKey)}
 	cues, err := rd.cuesOf(results, channels.Items())
@@ -64,10 +64,9 @@ func (rd *deepgramReader) cuesOf(results orderedjson.Value, channels []orderedjs
 }
 
 type deepgramReader struct {
-	st   *parsing.State
-	cues *wordgroup.Reader
-	// size is the length of the file in bytes.
-	size int
+	st       *parsing.State
+	cues     *wordgroup.Reader
+	fileSize int
 	// copied is the size in bytes of the paragraph data that the cues hold so far, and limit is its upper bound.
 	copied, limit int
 }
@@ -152,7 +151,7 @@ func (rd *deepgramReader) paragraphCues(paragraphs []orderedjson.Value, words []
 	var cues []*model.Cue
 	index := 0
 	if rd.limit == 0 {
-		rd.limit = paragraphCopyFactor*rd.size + paragraphCopyBase
+		rd.limit = paragraphCopyFactor*rd.fileSize + paragraphCopyBase
 	}
 	for p, paragraph := range paragraphs {
 		speaker, hasSpeaker := wordgroup.Speaker(cloudGet(paragraph, "speaker"))

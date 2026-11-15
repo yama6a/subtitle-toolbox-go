@@ -2,7 +2,6 @@ package qttext_test
 
 import (
 	"bytes"
-	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -109,5 +108,3 @@ func fileData(s *model.Subtitle) map[string]any {
 	}
 	return out
 }
-
-var errRead = errors.New("disk gone")

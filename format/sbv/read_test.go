@@ -1,6 +1,7 @@
 package sbv_test
 
 import (
+	"errors"
 	"strings"
 	"testing"
 	"testing/iotest"
@@ -323,6 +324,7 @@ func TestReadSwapsTimesInLenientMode(t *testing.T) {
 func TestReadFailsOnReaderError(t *testing.T) {
 	t.Parallel()
 
+	errRead := errors.New("disk gone")
 	_, _, err := sbv.Read(iotest.ErrReader(errRead), model.CommonReadOptions{}, sbv.ReadOptions{})
 	require.ErrorIs(t, err, errRead)
 }

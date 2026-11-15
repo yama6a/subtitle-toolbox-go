@@ -37,6 +37,8 @@ func Detect(content []byte) bool
 - **Other formats**: a reader ignores the option fields of other formats, so one `ReadOptions` value serves a batch of mixed files.
 - **Format data**: an option wins over stored format data, and stored format data wins over the format default.
 
+A format package keeps its package doc, `ReadOptions`, `WriteOptions`, `WriteReport`, `Validate` and `Detect` in `<name>.go`, `Read` in `read.go` and `Write` in `write.go`. Other files hold one topic each. `chapters` and `transcript` hold several formats, so they have one file per format.
+
 ### Format registry
 
 The registry is written by hand, and no package registers itself in `init()`. The facts table lists the formats. The first row that lists an extension owns it in `FormatFromPath`. A new format inserts its row after every row whose extension it shares and must not take.
@@ -191,6 +193,6 @@ Its exception table names the rule and the reason for each exception.
 | N16 | A function that starts a process or a network request takes `ctx context.Context` first. A file read does not | `ocr/tesseract`, `translation/deepl` |
 | N17 | Bad input and bad options return an error. A panic is a library bug. No `Must` functions | a fuzz target checks every parser |
 | N18 | No mutable package state and no `init`. A lookup table at package level carries `//nolint:gochecknoglobals // <reason>` | the format registry |
-| N19 | Each options struct has `Validate() error`. Every entry point calls it before it reads or writes | `ReadOptions.Validate()` returns an error that matches `ErrInvalidArgument` |
+| N19 | An options struct with a field that can hold an invalid value has `Validate() error`. Every entry point calls it before it reads or writes | `ReadOptions.Validate()` returns an error that matches `ErrInvalidArgument` |
 | N20 | The zero value of an option is its default. A bool is named so that false is the default. A setting with 3 states is an enum. A pointer appears only where 0 is legal and differs from the default. The doc comment of an option field states what its zero value does and the unit | `OmitHeader`, `BOM`. The 2 pointers of 1.x are `LastCueDuration` and the plain text `ParagraphGap`. `// LastCueDuration is the length of a last cue without an end. Nil means 5 s.` |
 | N21 | A minor release may mark an identifier `// Deprecated: use X.`. Only the next major release removes it | |

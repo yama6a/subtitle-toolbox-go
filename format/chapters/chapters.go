@@ -22,7 +22,7 @@ type ReadOptions struct {
 	MediaDuration time.Duration
 }
 
-// WriteOptions holds the write settings of the chapter formats. It has no fields.
+// WriteOptions holds the write settings of the chapter formats. It has no fields yet.
 type WriteOptions struct{}
 
 // Validate returns a *model.InvalidArgumentError when MediaDuration is negative.

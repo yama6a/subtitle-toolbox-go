@@ -37,11 +37,11 @@ var signatureRegexp = regexp.MustCompile(xmlraw.Prolog + `<` + rootPattern + `[\
 // ReadOptions holds the settings of the DCP reader. It has no fields yet.
 type ReadOptions struct{}
 
-// WriteOptions holds the settings of the DCP writer. It has no fields yet.
-type WriteOptions struct{}
-
 // WriteReport holds what the writer reports. It has no fields yet.
 type WriteReport struct{}
+
+// WriteOptions holds the settings of the DCP writer. It has no fields yet.
+type WriteOptions struct{}
 
 // Detect reports whether content starts, after an XML prolog, with <DCSubtitle> or a <SubtitleReel> with or without
 // prefix. The content must have no leading BOM or white space and LF line endings, as stbox.Detect passes it.

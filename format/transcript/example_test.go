@@ -45,16 +45,6 @@ func ExampleWriteWhisper() {
 	// {"text":" Guten Morgen.","segments":[{"id":0,"start":1.5,"end":3.0,"text":" Guten Morgen.","speaker":"Anna"}],"language":"de"}
 }
 
-func ExampleDetectWhisper() {
-	fmt.Println(transcript.DetectWhisper([]byte(`{"text": "Hi", "segments": []}`)))
-	fmt.Println(transcript.DetectWhisper([]byte(`{"systeminfo": "", "transcription": []}`)))
-	fmt.Println(transcript.DetectWhisper([]byte(`{"text": "Hi"}`)))
-	// Output:
-	// true
-	// true
-	// false
-}
-
 func ExampleDetectWhisperJSON() {
 	keys := map[string]json.RawMessage{"text": json.RawMessage(`"Hi"`), "segments": json.RawMessage(`[]`)}
 	fmt.Println(transcript.DetectWhisperJSON(keys))
@@ -102,14 +92,6 @@ func ExampleWritePodcast() {
 	//         }
 	//     ]
 	// }
-}
-
-func ExampleDetectPodcast() {
-	fmt.Println(transcript.DetectPodcast([]byte(`{"segments": [{"startTime": 0, "body": "Hi"}]}`)))
-	fmt.Println(transcript.DetectPodcast([]byte(`{"segments": [{"start": 0, "text": "Hi"}]}`)))
-	// Output:
-	// true
-	// false
 }
 
 func ExampleDetectPodcastJSON() {

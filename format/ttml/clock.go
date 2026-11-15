@@ -7,7 +7,10 @@ import (
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/ttmldoc"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 var (
@@ -150,4 +153,77 @@ func (c clock) offsetTime(count float64, unit string) float64 {
 	default:
 		return count / c.tickRate
 	}
+}
+
+// interval returns the interval of n inside the interval of its parent. The end is the earliest of the parent end,
+// the parent begin plus the own end, and the own begin plus the duration.
+func (r *reader) interval(n *xmlraw.Node, parent interval) (interval, *model.ParseError) {
+	iv := interval{begin: parent.begin, end: parent.end, hasEnd: parent.hasEnd}
+	if _, ok := ttmldoc.PlainAttr(n, "begin"); ok {
+		var err *model.ParseError
+		if iv.begin, err = r.offsetTime(parent.begin, n, "begin"); err != nil {
+			return interval{}, err
+		}
+	}
+	for _, attr := range []struct {
+		name string
+		base float64
+	}{{"end", parent.begin}, {"dur", iv.begin}} {
+		v, _ := ttmldoc.PlainAttr(n, attr.name)
+		if strings.Trim(v, markupcore.TrimSet) == "" {
+			continue
+		}
+		t, err := r.offsetTime(attr.base, n, attr.name)
+		if err != nil {
+			return interval{}, err
+		}
+		if !iv.hasEnd || t < iv.end {
+			iv.end, iv.hasEnd = t, true
+		}
+	}
+	return iv, nil
+}
+
+// offsetTime returns base plus the time of the attribute. Lenient mode reads the forms of looseSeconds too.
+func (r *reader) offsetTime(base float64, n *xmlraw.Node, attr string) (float64, *model.ParseError) {
+	v, _ := ttmldoc.PlainAttr(n, attr)
+	expression := strings.Trim(v, markupcore.TrimSet)
+	secs, err := r.boundedExpression(expression)
+	if err == nil {
+		return r.bounded(base+secs, expression, n.Line)
+	}
+	if !r.st.Lenient() {
+		return 0, err
+	}
+	loose, ok := looseSeconds(expression)
+	if !ok {
+		return 0, err
+	}
+	t, berr := r.bounded(base+loose, expression, n.Line)
+	if berr != nil {
+		return 0, berr
+	}
+	block := model.NoBlock
+	if r.isInParagraph(n) {
+		block = r.paragraph
+	}
+	r.st.Warn("The time expression \""+expression+"\" is not valid. The parser read it as "+timecode.Number(loose)+"s.",
+		n.Line, block, nil, model.Repaired)
+	return t, nil
+}
+
+func (r *reader) boundedExpression(expression string) (float64, *model.ParseError) {
+	secs, ok := r.clock.seconds(expression)
+	if !ok {
+		return 0, r.parseError(model.NoLine, "The time expression \""+expression+"\" is not valid.")
+	}
+	return r.bounded(secs, expression, model.NoLine)
+}
+
+// bounded returns secs when the time rounds to whole milliseconds below 100000 hours in size.
+func (r *reader) bounded(secs float64, text string, line int) (float64, *model.ParseError) {
+	if !(math.Abs(secs) < timecode.MaxTime.Seconds()) || timecode.FromSeconds(math.Abs(secs)) >= timecode.MaxTime {
+		return 0, r.parseError(line, "The time \""+text+"\" is not below "+strconv.Itoa(timecode.MaxHours)+" hours.")
+	}
+	return secs, nil
 }

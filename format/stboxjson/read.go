@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"io"
 	"maps"
 	"math"
 	"slices"
@@ -18,6 +19,24 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
+
+// Read reads a library JSON document of version 1 or 2 from r. A field error names the path of the field, such as cues[3].start.
+func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
+	// The JSON decoder reads each bad byte as U+FFFD in both modes, so the UTF-8 check only warns. True would fail strict reads.
+	st, content, ok, err := parsing.ReadText(r, model.JSON, common, false)
+	if err != nil {
+		return nil, nil, err
+	}
+	if !ok {
+		return &model.Subtitle{}, st.Warnings(), nil
+	}
+	rd := &reader{st: st}
+	s, err := rd.read(content)
+	if err != nil {
+		return nil, nil, err
+	}
+	return s, sortWarnings(st.Warnings()), nil
+}
 
 type reader struct {
 	st *parsing.State

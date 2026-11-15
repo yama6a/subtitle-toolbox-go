@@ -1,4 +1,5 @@
-// Package formattest holds the test helpers that the format packages share: the read checks of the fuzz targets and the fuzz seeds.
+// Package formattest holds the test helpers that the format packages share: the read checks of the fuzz targets,
+// the fuzz seeds, a writer that always fails and the subtitle builder.
 package formattest
 
 import (

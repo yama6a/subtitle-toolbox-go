@@ -140,8 +140,8 @@ func assemble(st *parsing.State, caps []caption, file *model.Data, wordTimes boo
 	ends := endsOf(ts, st.LastCueDuration())
 
 	s := &model.Subtitle{}
-	if err := s.SetFormatData(key, file); err != nil {
-		return nil, fmt.Errorf("%s file data: %w", key, err)
+	if err := s.SetFormatData(formatDataKey, file); err != nil {
+		return nil, fmt.Errorf("%s file data: %w", formatDataKey, err)
 	}
 	cues := make([]model.Cue, 0, len(kept))
 	for i, c := range kept {
@@ -168,8 +168,8 @@ func (c caption) cue(end time.Duration, wordTimes bool) (model.Cue, bool, error)
 	if wordTimes {
 		cue.ExtractWordTags()
 	}
-	if err := cue.SetFormatData(key, c.data); err != nil {
-		return model.Cue{}, false, fmt.Errorf("%s cue data: %w", key, err)
+	if err := cue.SetFormatData(formatDataKey, c.data); err != nil {
+		return model.Cue{}, false, fmt.Errorf("%s cue data: %w", formatDataKey, err)
 	}
 	return cue, true, nil
 }
