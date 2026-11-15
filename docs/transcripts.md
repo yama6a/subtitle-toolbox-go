@@ -100,8 +100,6 @@ Whisper is the speech-to-text model of OpenAI. 6 tools write its result as JSON 
 | Write options | none |
 | Detection | [JSON check 3](detection.md#json-checks): `segments` or `transcription` is an array. `.json` belongs to the library JSON in `FormatFromPath`, so name the format with `--from whisper` or `ReadOptions.Format` when the content does not decide |
 
-`DetectWhisper` and `DetectPodcast` are deprecated. Use `stbox.Detect`.
-
 ### Shapes
 
 The reader stores the shape as the `format` member of the file format data `whisper`. It checks the rows in this order:
@@ -181,8 +179,6 @@ A podcast feed links a transcript per episode with the `<podcast:transcript>` ta
 | Read options | `WordTimestamps` and `KeepSegments`. `SpeakerVoices` has no effect, because the speaker always goes to `Cue.Speaker` |
 | Write options | `transcript.PodcastWriteOptions` in `WriteOptions.Podcast`: `WordSegments` and `PrettyPrint` |
 | Detection | [JSON check 2](detection.md#json-checks): `segments` is an array whose first item is an object with the keys `startTime` and `body`. `.json` belongs to the library JSON in `FormatFromPath`, so output needs `--to podcast-transcript` |
-
-`DetectWhisper` and `DetectPodcast` are deprecated. Use `stbox.Detect`.
 
 ### Podcast read
 

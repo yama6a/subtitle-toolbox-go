@@ -35,7 +35,7 @@ func FuzzReadPodcast(f *testing.F) {
 				for _, wordSegments := range []bool{false, true} {
 					var out bytes.Buffer
 					w := transcript.WriteOptions{Podcast: transcript.PodcastWriteOptions{WordSegments: wordSegments}}
-					if err := transcript.WritePodcast(&out, s, model.CommonWriteOptions{}, w); err != nil {
+					if _, err := transcript.WritePodcast(&out, s, model.CommonWriteOptions{}, w); err != nil {
 						if !errors.Is(err, model.ErrUnwritable) {
 							t.Fatalf("WritePodcast returned %v, which does not match ErrUnwritable", err)
 						}

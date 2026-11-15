@@ -155,7 +155,7 @@ func TestWriteFFMetadata(t *testing.T) {
 
 		c := model.Cue{Start: time.Second, End: 2 * time.Second}
 		require.NoError(t, c.SetFormatData("ffmeta-chapters", model.NewData(model.Field{Key: "timeBase", Value: "1/99999999999999999999"})))
-		err := chapters.WriteFFMetadata(&strings.Builder{}, chaptersOf(c), model.CommonWriteOptions{}, chapters.WriteOptions{})
+		_, err := chapters.WriteFFMetadata(&strings.Builder{}, chaptersOf(c), model.CommonWriteOptions{}, chapters.WriteOptions{})
 
 		var uerr *model.UnwritableError
 		require.ErrorAs(t, err, &uerr)

@@ -22,20 +22,20 @@ var googleOperationFields = []string{"name", "metadata", "done", "error"} //noli
 // as the source has them, V1 without a source. It writes one result per cue. A source with speaker diarization gives
 // one result with all words and their speakers. A long-running operation of the source stays around the response.
 // A value that a cue did not change stays as the reader stored it.
-func WriteGoogleSpeech(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WriteGoogleSpeech(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.GoogleSpeech, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	doc, err := googleDocument(s)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	body, err := encodeDocument(model.GoogleSpeech, "Google Speech-to-Text JSON", doc, false)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
-	return writing.Write(w, model.GoogleSpeech, body, common, false)
+	return WriteReport{}, writing.Write(w, model.GoogleSpeech, body, common, false)
 }
 
 func googleDocument(s *model.Subtitle) (orderedjson.Value, error) {

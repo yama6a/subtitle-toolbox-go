@@ -37,7 +37,7 @@ func FuzzReadYouTube(f *testing.F) {
 				}
 			}
 			var out bytes.Buffer
-			if err := chapters.WriteYouTube(&out, s, model.CommonWriteOptions{}, chapters.WriteOptions{}); err != nil {
+			if _, err := chapters.WriteYouTube(&out, s, model.CommonWriteOptions{}, chapters.WriteOptions{}); err != nil {
 				t.Fatalf("WriteYouTube returned %v", err)
 			}
 		}
@@ -73,7 +73,7 @@ func fuzzRead(f *testing.F, rd reader, wr writer, folder string, seeds ...string
 				continue
 			}
 			checkChapters(t, s)
-			if err := wr(&bytes.Buffer{}, s, model.CommonWriteOptions{}, chapters.WriteOptions{}); err != nil {
+			if _, err := wr(&bytes.Buffer{}, s, model.CommonWriteOptions{}, chapters.WriteOptions{}); err != nil {
 				var uerr *model.UnwritableError
 				if !errors.As(err, &uerr) {
 					t.Fatalf("write returned %v", err)

@@ -35,7 +35,8 @@ func writeWhisper(t *testing.T, s *model.Subtitle) orderedjson.Value {
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}))
+	_, err := transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
+	require.NoError(t, err)
 	v, err := orderedjson.Decode(out.Bytes())
 	require.NoError(t, err)
 	return v

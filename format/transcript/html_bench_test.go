@@ -47,7 +47,7 @@ func BenchmarkWriteHTML(b *testing.B) {
 	b.Run(fmt.Sprintf("paragraphs=%d", htmlBenchParagraphs), func(b *testing.B) {
 		b.ReportAllocs()
 		for b.Loop() {
-			if err := transcript.WriteHTML(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+			if _, err := transcript.WriteHTML(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 				b.Fatal(err)
 			}
 		}

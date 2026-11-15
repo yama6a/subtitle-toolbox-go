@@ -38,7 +38,7 @@ func ExampleWriteWhisper() {
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataLanguage, "de")
 	s.AddCue(model.Cue{Start: 1500 * time.Millisecond, End: 3 * time.Second, Lines: []string{"Guten", "Morgen."}, Speaker: "Anna"})
-	if err := transcript.WriteWhisper(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+	if _, err := transcript.WriteWhisper(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:
@@ -77,7 +77,7 @@ func ExampleWritePodcast() {
 	s := &model.Subtitle{}
 	s.AddCue(model.Cue{Start: 1500 * time.Millisecond, End: 3 * time.Second, Lines: []string{"Guten", "Morgen."}, Speaker: "Anna"})
 	opts := transcript.WriteOptions{Podcast: transcript.PodcastWriteOptions{PrettyPrint: true}}
-	if err := transcript.WritePodcast(os.Stdout, s, model.CommonWriteOptions{}, opts); err != nil {
+	if _, err := transcript.WritePodcast(os.Stdout, s, model.CommonWriteOptions{}, opts); err != nil {
 		fmt.Println(err)
 	}
 	// Output:
@@ -127,7 +127,7 @@ func ExampleWriteHTML() {
 	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Hello", "there."}, Speaker: "Anna"})
 	s.AddCue(model.Cue{Start: 2500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"Where are you going?"}, Speaker: "Anna"})
 	s.AddCue(model.Cue{Start: 3725 * time.Second, End: 3727 * time.Second, Lines: []string{"Fish & chips."}})
-	if err := transcript.WriteHTML(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+	if _, err := transcript.WriteHTML(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

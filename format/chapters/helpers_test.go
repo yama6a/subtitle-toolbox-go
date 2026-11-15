@@ -22,7 +22,7 @@ type span struct {
 
 type reader func(io.Reader, model.CommonReadOptions, chapters.ReadOptions) (*model.Subtitle, []model.ParseWarning, error)
 
-type writer func(io.Writer, *model.Subtitle, model.CommonWriteOptions, chapters.WriteOptions) error
+type writer func(io.Writer, *model.Subtitle, model.CommonWriteOptions, chapters.WriteOptions) (chapters.WriteReport, error)
 
 // sec returns f seconds rounded to whole milliseconds.
 func sec(f float64) time.Duration {
@@ -74,6 +74,7 @@ func writeString(tb testing.TB, wr writer, s *model.Subtitle, common model.Commo
 	tb.Helper()
 
 	var buf bytes.Buffer
-	require.NoError(tb, wr(&buf, s, common, chapters.WriteOptions{}))
+	_, err := wr(&buf, s, common, chapters.WriteOptions{})
+	require.NoError(tb, err)
 	return buf.String()
 }

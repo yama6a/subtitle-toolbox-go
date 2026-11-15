@@ -19,20 +19,20 @@ import (
 // WriteWhisper writes s to w as Whisper JSON in the shape of the tool that wrote the source, one segment per cue.
 // The format field of the file format data names the shape. Cues from another format give the openai-whisper shape.
 // A value that a cue did not change stays as the reader stored it. A cue without a speaker keeps the stored speaker.
-func WriteWhisper(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WriteWhisper(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.Whisper, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	doc, err := whisperDocument(s)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	body, err := encodeDocument(model.Whisper, "Whisper JSON", doc, false)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
-	return writing.Write(w, model.Whisper, body, common, false)
+	return WriteReport{}, writing.Write(w, model.Whisper, body, common, false)
 }
 
 // encodeDocument returns the JSON of doc, or an *UnwritableError that names the format as name.
