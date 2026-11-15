@@ -1,7 +1,6 @@
 package mpl2_test
 
 import (
-	"errors"
 	"testing"
 	"time"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpl2"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -79,7 +79,7 @@ func TestWrite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, write(t, subtitle(tt.cues...), model.CommonWriteOptions{}))
+			assert.Equal(t, tt.want, write(t, formattest.Subtitle(tt.cues...), model.CommonWriteOptions{}))
 		})
 	}
 }
@@ -96,20 +96,16 @@ func TestWriteEmptySubtitle(t *testing.T) {
 func TestWriteOutputOptions(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(model.Cue{End: time.Second, Lines: []string{"Hello"}})
+	s := formattest.Subtitle(model.Cue{End: time.Second, Lines: []string{"Hello"}})
 	assert.Equal(t, "\xEF\xBB\xBF[0][10]Hello\r\n", write(t, s, model.CommonWriteOptions{LineEnding: model.CRLF, BOM: model.BOMAdd}))
 	assert.Equal(t, "[0][10]Hello\n", write(t, s, model.CommonWriteOptions{}))
 	assert.Equal(t, "[0][10]Hello\n", write(t, s, model.CommonWriteOptions{BOM: model.BOMRemove}))
 }
 
-type failingWriter struct{}
-
-func (failingWriter) Write([]byte) (int, error) { return 0, errors.New("disk full") }
-
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	_, err := mpl2.Write(failingWriter{}, subtitle(model.Cue{Lines: []string{"x"}}), model.CommonWriteOptions{}, mpl2.WriteOptions{})
+	_, err := mpl2.Write(formattest.ErrWriter{}, formattest.Subtitle(model.Cue{Lines: []string{"x"}}), model.CommonWriteOptions{}, mpl2.WriteOptions{})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "disk full")
 }
@@ -133,7 +129,7 @@ func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(model.Cue{Start: 0, End: tt.end, Lines: []string{"x"}})
+			s := formattest.Subtitle(model.Cue{Start: 0, End: tt.end, Lines: []string{"x"}})
 			got := write(t, s, model.CommonWriteOptions{})
 			assert.Equal(t, tt.want, got)
 			_, _, err := read(got, false)

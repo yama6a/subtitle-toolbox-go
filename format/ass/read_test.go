@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+	"testing/iotest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
@@ -601,7 +602,7 @@ func TestSections(t *testing.T) {
 func TestReadError(t *testing.T) {
 	t.Parallel()
 
-	_, _, err := ass.Read(errReader{}, model.CommonReadOptions{}, ass.ReadOptions{})
+	_, _, err := ass.Read(iotest.ErrReader(errRead), model.CommonReadOptions{}, ass.ReadOptions{})
 	require.ErrorIs(t, err, errRead)
 }
 

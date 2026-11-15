@@ -91,20 +91,4 @@ func warningRows(warnings []model.ParseWarning) []warningRow {
 	return rows
 }
 
-func subtitle(t *testing.T, cues ...model.Cue) *model.Subtitle {
-	t.Helper()
-
-	s := &model.Subtitle{}
-	s.AddCues(cues...)
-	return s
-}
-
 var errRead = errors.New("disk gone")
-
-type errReader struct{}
-
-func (errReader) Read([]byte) (int, error) { return 0, errRead }
-
-type errWriter struct{}
-
-func (errWriter) Write([]byte) (int, error) { return 0, errRead }

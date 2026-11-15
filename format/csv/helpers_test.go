@@ -87,12 +87,6 @@ func messages(warnings []model.ParseWarning) []string {
 	return out
 }
 
-func subtitle(cues ...model.Cue) *model.Subtitle {
-	s := &model.Subtitle{}
-	s.AddCues(cues...)
-	return s
-}
-
 func fileData(t *testing.T, s *model.Subtitle) *model.Data {
 	t.Helper()
 

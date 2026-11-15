@@ -103,9 +103,3 @@ func warningRows(warnings []model.ParseWarning) []warningRow {
 	}
 	return rows
 }
-
-func subtitle(cues ...model.Cue) *model.Subtitle {
-	s := &model.Subtitle{}
-	s.AddCues(cues...)
-	return s
-}

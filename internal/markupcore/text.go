@@ -18,7 +18,7 @@ var (
 	voiceTagRegexp  = regexp.MustCompile(VoiceTagPattern)
 )
 
-// PlainText removes the tags and decodes the entities, for formats without markup. It does not trim.
+// PlainText removes the tags and decodes the entities. markup.PlainText holds the full contract.
 func PlainText(text string) string {
 	return DecodeEntities(StripAllTags(text))
 }
@@ -28,7 +28,7 @@ func VisibleText(text string) string {
 	return strings.Trim(PlainText(text), TrimSet)
 }
 
-// VisibleLength returns the number of characters of VisibleText, counted as grapheme.Count does.
+// VisibleLength returns the number of characters of the visible text. markup.VisibleLength holds the full contract.
 func VisibleLength(text string) int {
 	return grapheme.Count(VisibleText(text))
 }
@@ -160,14 +160,12 @@ func AddSpeaker(lines []string, name string) []string {
 	return lines
 }
 
-// VoiceTag returns a <v> tag for the speaker name with &, < and > escaped and quotes kept.
-// The class holds voice classes such as ".loud".
+// VoiceTag returns a <v> tag for a speaker. markup.VoiceTag holds the full contract.
 func VoiceTag(name, class string) string {
 	return "<v" + class + " " + EscapeText(name) + ">"
 }
 
-// MapTextRuns calls fn for each text run between tags that is not empty, with &lt;, &gt; and &amp; decoded.
-// First and last mark the first and the last such run of the line. A changed run is escaped like its raw form.
+// MapTextRuns changes each text run of the lines. markup.MapTextRuns holds the full contract.
 func MapTextRuns(lines []string, fn func(text string, first, last bool) string) []string {
 	out := make([]string, len(lines))
 	for i, line := range lines {

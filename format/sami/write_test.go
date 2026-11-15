@@ -11,6 +11,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/sami"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -67,7 +68,7 @@ func TestWriteTheChosenClassOnly(t *testing.T) {
 func TestWriteCuesFromAnotherFormat(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(
+	s := formattest.Subtitle(
 		model.Cue{Start: time.Second, End: 2500 * ms, Lines: []string{
 			"<v Anna>The <b>bakery</b> &amp; caf\u00E9", `<font color="#ff0000">opens</font> <00:00:02.000>at six`,
 		}},
@@ -87,7 +88,7 @@ func TestWriteCuesFromAnotherFormat(t *testing.T) {
 func TestWriteClearLines(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(
+	s := formattest.Subtitle(
 		model.Cue{Start: -time.Second, End: time.Second, Lines: []string{"a"}},
 		model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"b"}},
 		model.Cue{Start: 2 * time.Second, End: 4 * time.Second, Lines: []string{"c"}},
@@ -120,7 +121,7 @@ func TestWriteClosesTagsThatTheCueLeavesOpen(t *testing.T) {
 func TestWriteLanguageAndTitle(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(model.Cue{Start: 0, End: time.Second, Lines: []string{"It rains"}})
+	s := formattest.Subtitle(model.Cue{Start: 0, End: time.Second, Lines: []string{"It rains"}})
 	s.SetMetadata(model.MetadataLanguage, "ko-KR")
 	s.SetMetadata(model.MetadataTitle, "Rain & <Sun>")
 	out := write(t, s, model.CommonWriteOptions{})
@@ -185,7 +186,7 @@ func TestWriteStoredParagraphs(t *testing.T) {
 	)
 	c := model.Cue{Start: 0, End: time.Second, Lines: []string{"x"}}
 	require.NoError(t, c.SetFormatData("sami", data))
-	s := subtitle(c)
+	s := formattest.Subtitle(c)
 	require.NoError(t, s.SetFormatData("sami", model.NewData(model.Field{Key: "class", Value: "ENCC"})))
 	assert.Contains(t, write(t, s, model.CommonWriteOptions{}),
 		"<SYNC Start=0><P Class=ENCC ID=a.b-c_1 TITLE=\"it&#039;s &quot;x&quot; &amp; &lt;y&gt;\" LANG=\"en\n\">a&nbsp;<b>b</b><P Class=ENCC>c\n")
@@ -222,7 +223,7 @@ func TestWriteStoredStyle(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(model.Cue{Start: 0, End: time.Second, Lines: []string{"a"}})
+			s := formattest.Subtitle(model.Cue{Start: 0, End: time.Second, Lines: []string{"a"}})
 			require.NoError(t, s.SetFormatData("sami", tt.data))
 			assert.Contains(t, write(t, s, model.CommonWriteOptions{}), "<HEAD>\n"+tt.want+"</HEAD>\n")
 		})
@@ -238,10 +239,10 @@ func TestWriteInvalidUTF8(t *testing.T) {
 		cue  int
 	}{
 		{"cue text", func() *model.Subtitle {
-			return subtitle(model.Cue{Start: 0, End: time.Second, Lines: []string{"a"}}, model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"caf\xe9"}})
+			return formattest.Subtitle(model.Cue{Start: 0, End: time.Second, Lines: []string{"a"}}, model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"caf\xe9"}})
 		}, 1},
 		{"title", func() *model.Subtitle {
-			s := subtitle(model.Cue{Start: 0, End: time.Second, Lines: []string{"a"}})
+			s := formattest.Subtitle(model.Cue{Start: 0, End: time.Second, Lines: []string{"a"}})
 			s.SetMetadata(model.MetadataTitle, "caf\xe9")
 			return s
 		}, -1},
@@ -268,7 +269,7 @@ func TestWriteInvalidUTF8(t *testing.T) {
 func TestWriteBOM(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(model.Cue{Start: 0, End: time.Second, Lines: []string{"a"}})
+	s := formattest.Subtitle(model.Cue{Start: 0, End: time.Second, Lines: []string{"a"}})
 	assert.True(t, strings.HasPrefix(write(t, s, model.CommonWriteOptions{}), "<SAMI>\n"))
 	assert.True(t, strings.HasPrefix(write(t, s, model.CommonWriteOptions{BOM: model.BOMAdd}), "\uFEFF<SAMI>\n"))
 }

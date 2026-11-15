@@ -13,8 +13,9 @@ func KeepTags(text string, names ...string) string {
 	return markupcore.KeepTags(text, names...)
 }
 
-// DecodeEntities decodes the entities of text, such as &lt;, &eacute; or &#233;. It decodes the HTML5 named entities and the numeric entities. A named entity needs its ";". A numeric entity decodes only to a code point that HTML5
-// allows in a document, so &#13; and &#128; stay as written.
+// DecodeEntities decodes the entities of text, such as &lt;, &eacute; or &#233;. It decodes the HTML5 named
+// entities and the numeric entities. A named entity needs its ";". A numeric entity decodes only to a code point
+// that HTML5 allows in a document, so &#13; and &#128; stay as written.
 func DecodeEntities(text string) string {
 	return markupcore.DecodeEntities(text)
 }
@@ -35,7 +36,8 @@ func HasVisibleText(lines []string) bool {
 }
 
 // VisibleLength returns the number of characters of PlainText after trimming space, tab, LF, CR, NUL and VT.
-// A character is a grapheme cluster. The soft hyphen, the zero-width space, the BOM and the bidi controls count 0. Invalid UTF-8 counts its bytes.
+// A character is an extended grapheme cluster of UAX #29.
+// The soft hyphen, the zero-width space, the BOM and the bidi controls count 0. Invalid UTF-8 counts its bytes.
 func VisibleLength(text string) int {
 	return markupcore.VisibleLength(text)
 }

@@ -2,7 +2,6 @@ package webvtt_test
 
 import (
 	"bytes"
-	"errors"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -12,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -24,14 +24,6 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions) str
 	_, err := webvtt.Write(&out, s, common, webvtt.WriteOptions{})
 	require.NoError(t, err)
 	return out.String()
-}
-
-func subtitle(t *testing.T, cues ...model.Cue) *model.Subtitle {
-	t.Helper()
-
-	s := &model.Subtitle{}
-	s.AddCues(cues...)
-	return s
 }
 
 func cue(start, end time.Duration, lines ...string) model.Cue {
@@ -119,7 +111,7 @@ func TestWriteDocument(t *testing.T) {
 				five.ID = "a\nb"
 				six := cue(11*sec, 12*sec, "Six")
 				six.ID = "a\rb"
-				return subtitle(t, one, cue(3*sec, 4*sec, "Two"), three, four, five, six)
+				return formattest.Subtitle(one, cue(3*sec, 4*sec, "Two"), three, four, five, six)
 			},
 			want: bom + "WEBVTT\n\nintro\n00:00:01.000 --> 00:00:02.000\nOne\n\n" +
 				"2\n00:00:03.000 --> 00:00:04.000\nTwo\n\n" +
@@ -133,7 +125,7 @@ func TestWriteDocument(t *testing.T) {
 			s: func(t *testing.T) *model.Subtitle {
 				t.Helper()
 
-				return subtitle(t, cue(sec, 2*sec))
+				return formattest.Subtitle(cue(sec, 2*sec))
 			},
 			want: bom + "WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.000\n",
 		},
@@ -142,7 +134,7 @@ func TestWriteDocument(t *testing.T) {
 			s: func(t *testing.T) *model.Subtitle {
 				t.Helper()
 
-				return subtitle(t, cue(-sec, 100*time.Hour, "x"))
+				return formattest.Subtitle(cue(-sec, 100*time.Hour, "x"))
 			},
 			want: bom + "WEBVTT\n\n1\n00:00:00.000 --> 100:00:00.000\nx\n",
 		},
@@ -151,7 +143,7 @@ func TestWriteDocument(t *testing.T) {
 			s: func(t *testing.T) *model.Subtitle {
 				t.Helper()
 
-				return subtitle(t, cue(sec, 2*sec, "a", "b"))
+				return formattest.Subtitle(cue(sec, 2*sec, "a", "b"))
 			},
 			common: model.CommonWriteOptions{LineEnding: model.CRLF, BOM: model.BOMRemove},
 			want:   "WEBVTT\r\n\r\n1\r\n00:00:01.000 --> 00:00:02.000\r\na\r\nb\r\n",
@@ -161,7 +153,7 @@ func TestWriteDocument(t *testing.T) {
 			s: func(t *testing.T) *model.Subtitle {
 				t.Helper()
 
-				s := subtitle(t, cue(sec, 2*sec, "One"))
+				s := formattest.Subtitle(cue(sec, 2*sec, "One"))
 				require.NoError(t, s.AddComment("first", 0))
 				require.NoError(t, s.AddComment("far", 7))
 				require.NoError(t, s.AddComment("end", 1))
@@ -222,7 +214,7 @@ func TestWriteNote(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(t, cue(sec, 2*sec, "One"))
+			s := formattest.Subtitle(cue(sec, 2*sec, "One"))
 			require.NoError(t, s.AddComment(tt.text, 1))
 			out := write(t, s, model.CommonWriteOptions{})
 			assert.Equal(t, bom+"WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.000\nOne\n\n"+tt.want+"\n", out)
@@ -292,7 +284,7 @@ func TestWriteSettings(t *testing.T) {
 			if tt.data != nil {
 				c = withData(t, c, tt.data...)
 			}
-			assert.Equal(t, bom+"WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.000"+tt.want+"\nOne\n", write(t, subtitle(t, c), model.CommonWriteOptions{}))
+			assert.Equal(t, bom+"WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.000"+tt.want+"\nOne\n", write(t, formattest.Subtitle(c), model.CommonWriteOptions{}))
 		})
 	}
 }
@@ -339,7 +331,7 @@ func TestWriteOffset(t *testing.T) {
 			if tt.data != nil {
 				c = withData(t, c, tt.data...)
 			}
-			assert.Equal(t, bom+"WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.000"+tt.want+"\nOne\n", write(t, subtitle(t, c), model.CommonWriteOptions{}))
+			assert.Equal(t, bom+"WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.000"+tt.want+"\nOne\n", write(t, formattest.Subtitle(c), model.CommonWriteOptions{}))
 		})
 	}
 }
@@ -356,7 +348,7 @@ func TestWriteAlignmentRoundTrip(t *testing.T) {
 		c.Position.Alignment = a
 		cues = append(cues, c)
 	}
-	s, _ := parse(t, write(t, subtitle(t, cues...), model.CommonWriteOptions{}), false)
+	s, _ := parse(t, write(t, formattest.Subtitle(cues...), model.CommonWriteOptions{}), false)
 	for i, c := range s.All() {
 		assert.Equal(t, i+1, c.Position.Alignment.Numpad())
 	}
@@ -406,7 +398,7 @@ func TestWriteText(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := write(t, subtitle(t, cue(sec, 4*sec, tt.text)), model.CommonWriteOptions{StripTags: tt.strip})
+			got := write(t, formattest.Subtitle(cue(sec, 4*sec, tt.text)), model.CommonWriteOptions{StripTags: tt.strip})
 			assert.Equal(t, bom+"WEBVTT\n\n1\n00:00:01.000 --> 00:00:04.000\n"+tt.want+"\n", got)
 		})
 	}
@@ -440,7 +432,7 @@ func TestWriteKeepsSpansWithClasses(t *testing.T) {
 func TestWriteArrowInText(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(t, cue(sec, 2*sec, "a --> b", "", "c"))
+	s := formattest.Subtitle(cue(sec, 2*sec, "a --> b", "", "c"))
 	out := write(t, s, model.CommonWriteOptions{BOM: model.BOMRemove})
 	assert.Equal(t, fixture(t, filepath.Join(realDir, "own_arrow_in_text.vtt")), out)
 	again, _ := parse(t, out, false)
@@ -450,7 +442,7 @@ func TestWriteArrowInText(t *testing.T) {
 func TestWriteReport(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(t,
+	s := formattest.Subtitle(
 		cue(sec, 2*sec, `<font color="#FFFF00">yellow</font> <font color="#123456">dark</font>`),
 		cue(4*sec, 5*sec, `<font color="rgb(1,2,3)">a</font> <font color="">b</font> <font color="white">c</font>`),
 		cue(5500*ms, 6*sec, "plain"),
@@ -471,15 +463,9 @@ func TestWriteReport(t *testing.T) {
 	assert.Empty(t, report.DroppedColors)
 }
 
-type failingWriter struct{}
-
-var errDiskFull = errors.New("disk full")
-
-func (failingWriter) Write([]byte) (int, error) { return 0, errDiskFull }
-
 func TestWriteError(t *testing.T) {
 	t.Parallel()
 
-	_, err := webvtt.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, webvtt.WriteOptions{})
-	require.ErrorIs(t, err, errDiskFull)
+	_, err := webvtt.Write(formattest.ErrWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, webvtt.WriteOptions{})
+	require.ErrorIs(t, err, formattest.ErrWrite)
 }

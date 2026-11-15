@@ -3,6 +3,7 @@ package sbv_test
 import (
 	"strings"
 	"testing"
+	"testing/iotest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
@@ -322,6 +323,6 @@ func TestReadSwapsTimesInLenientMode(t *testing.T) {
 func TestReadFailsOnReaderError(t *testing.T) {
 	t.Parallel()
 
-	_, _, err := sbv.Read(errReader{}, model.CommonReadOptions{}, sbv.ReadOptions{})
+	_, _, err := sbv.Read(iotest.ErrReader(errRead), model.CommonReadOptions{}, sbv.ReadOptions{})
 	require.ErrorIs(t, err, errRead)
 }

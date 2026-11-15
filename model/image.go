@@ -12,6 +12,7 @@ const (
 )
 
 // Image is the PNG bitmap of an image cue and its place on the screen. All sizes are in pixels.
+// Image writers place the bitmap by X and Y, text writers place the lines by Cue.Position.
 type Image struct {
 	// PNG holds the bytes of the PNG file.
 	PNG []byte
