@@ -20,13 +20,10 @@ const maxEmptyRun = 9
 var aliases = newAliases()
 
 func newAliases() (table [256]string) {
-	table['P'] = "\xFB\x80\x80"
-	table['Q'] = "\xFC\x80\x80"
-	table['R'] = "\xFD\x80\x80"
-	table['S'] = "\x96\x69"
-	table['T'] = "\x61\x01"
+	for _, run := range fixedRuns {
+		table[run.letter] = run.bytes
+	}
 	table['U'] = "\xE1\x00\x00\x00"
-	table['Z'] = "\x00"
 	for n := 1; n <= maxEmptyRun; n++ {
 		table['F'+n] = strings.Repeat(emptyTriplet, n)
 	}
@@ -73,11 +70,6 @@ func hexDigit(c byte) (int, bool) {
 		return int(c-'A') + 10, true
 	}
 	return 0, false
-}
-
-// encodeHex writes bytes as upper-case hex digits and alias letters. U stays unused, as files disagree on its length.
-func encodeHex(data []byte) string {
-	return string(appendHex(nil, data))
 }
 
 // appendHex appends the text of data to dst. Runs of empty triplets take the longest letter first.

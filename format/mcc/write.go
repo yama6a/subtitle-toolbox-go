@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea608"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea708"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
@@ -24,8 +25,9 @@ const (
 	defaultRate    = "29.97"
 	defaultVersion = "2.0"
 	program        = "Subtitle Toolbox"
-	nullPair       = 0x8080
 	service1       = 0x20
+	ancDID         = 0x61
+	ancSDID        = 0x01
 )
 
 // Write writes s as MCC with CEA-608 field 1 and CEA-708 service 1 data. A cue that CEA-608 cannot hold fails with
@@ -112,7 +114,7 @@ func frameTriplets(words []uint16, block []byte, sequence uint16, count int) []c
 	for _, word := range orNull(words) {
 		triplets = append(triplets, cea708.CDPTriplet{Type: cea708.Field1, Valid: true, Data: word})
 	}
-	triplets = append(triplets, cea708.CDPTriplet{Type: cea708.Field2, Valid: true, Data: nullPair})
+	triplets = append(triplets, cea708.CDPTriplet{Type: cea708.Field2, Valid: true, Data: cea608.NullWord})
 	if block != nil {
 		triplets = append(triplets, dtvccTriplets(block, sequence)...)
 	}
@@ -124,7 +126,7 @@ func frameTriplets(words []uint16, block []byte, sequence uint16, count int) []c
 
 func orNull(words []uint16) []uint16 {
 	if len(words) == 0 {
-		return []uint16{nullPair}
+		return []uint16{cea608.NullWord}
 	}
 	return words
 }
@@ -151,18 +153,10 @@ func dropFrameOf(file *model.Data, opts WriteOptions, row rate) bool {
 	if row.fps.Den == 1 || row.labels == 24 {
 		return false
 	}
-	switch opts.DropFrame {
-	case model.DropFrameOn:
-		return true
-	case model.DropFrameOff:
-		return false
-	case model.DropFrameKeep:
-	}
-	if opts.FrameRate.DropFrame {
+	if opts.DropFrame == model.DropFrameKeep && opts.FrameRate.DropFrame {
 		return true
 	}
-	stored, ok := file.Bool("dropFrame")
-	return stored || !ok
+	return caption.DropFrame(opts.DropFrame, file)
 }
 
 func label(row rate, dropFrame bool) string {
@@ -193,7 +187,7 @@ func dtvccTriplets(block []byte, sequence uint16) []cea708.CDPTriplet {
 
 // ancPacket wraps a CDP in an ANC packet with DID 61h and SDID 01h and its checksum.
 func ancPacket(cdp []byte) []byte {
-	anc := append([]byte{0x61, 0x01, byte(len(cdp))}, cdp...)
+	anc := append([]byte{ancDID, ancSDID, byte(len(cdp))}, cdp...)
 	var sum byte
 	for _, b := range anc {
 		sum += b

@@ -26,26 +26,14 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		return WriteReport{}, err
 	}
 	rate := model.FrameRate2997DF
-	if !dropFrame(s, opts) {
+	file, _ := s.FormatData(formatDataKey)
+	if !caption.DropFrame(opts.DropFrame, file) {
 		rate = model.FrameRate2997
 	}
 	if err := writing.Write(w, model.SCC, []byte(document(words, rate)), common, false); err != nil {
 		return WriteReport{}, err
 	}
 	return WriteReport{Changes: changes}, nil
-}
-
-func dropFrame(s *model.Subtitle, opts WriteOptions) bool {
-	switch opts.DropFrame {
-	case model.DropFrameOn:
-		return true
-	case model.DropFrameOff:
-		return false
-	case model.DropFrameKeep:
-	}
-	file, _ := s.FormatData(formatDataKey)
-	stored, ok := file.Bool("dropFrame")
-	return stored || !ok
 }
 
 // document writes one line per run of consecutive frames, with an empty line between lines.

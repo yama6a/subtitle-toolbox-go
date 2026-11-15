@@ -7,7 +7,6 @@ package scc
 
 import (
 	"regexp"
-	"strconv"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -35,21 +34,7 @@ type ReadOptions struct {
 // Validate returns an error that matches model.ErrInvalidArgument for a channel other than 0, 1 and 2,
 // and for an unknown roll-up mode.
 func (o ReadOptions) Validate() error {
-	if o.Channel < 0 || o.Channel > 2 {
-		return &model.InvalidArgumentError{
-			Option: "ReadOptions.SCC.Channel",
-			Msg:    "The SCC data channel must be 1 or 2, got " + strconv.Itoa(o.Channel) + ".",
-		}
-	}
-	switch o.RollUp {
-	case "", RollUpScreen, RollUpLines:
-		return nil
-	default:
-		return &model.InvalidArgumentError{
-			Option: "ReadOptions.SCC.RollUp",
-			Msg:    "The SCC roll-up mode " + strconv.Quote(string(o.RollUp)) + " is not screen or lines.",
-		}
-	}
+	return caption.CEA608Options{Channel: o.Channel, RollUp: o.RollUp}.Validate("SCC")
 }
 
 const (
@@ -75,13 +60,7 @@ type WriteOptions struct {
 
 // Validate returns an error that matches model.ErrInvalidArgument for an unknown drop-frame mode.
 func (o WriteOptions) Validate() error {
-	if o.DropFrame > model.DropFrameOff {
-		return &model.InvalidArgumentError{
-			Option: "WriteOptions.SCC.DropFrame",
-			Msg:    "The SCC drop-frame mode " + strconv.Itoa(int(o.DropFrame)) + " is unknown.",
-		}
-	}
-	return nil
+	return caption.ValidateDropFrame(o.DropFrame, "SCC")
 }
 
 // FitAction is the kind of a change that Fit made. The values are "transliterated", "wrapped", "delayed" and "dropped".
