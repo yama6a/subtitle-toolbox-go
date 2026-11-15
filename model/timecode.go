@@ -19,6 +19,32 @@ var (
 	timeFrames    = regexp.MustCompile(`^(\d+):([0-5]\d):([0-5]\d):(\d{2,})$`)
 )
 
+// DropFrameMode selects the time code labels of the SCC and MCC writers.
+type DropFrameMode uint8
+
+// The drop-frame modes. DropFrameKeep is the zero value.
+const (
+	// DropFrameKeep takes the mode that the reader stored, else the default of the format.
+	DropFrameKeep DropFrameMode = iota
+	// DropFrameOn writes drop-frame labels.
+	DropFrameOn
+	// DropFrameOff writes non-drop-frame labels.
+	DropFrameOff
+)
+
+// String returns "keep", "on" or "off".
+func (m DropFrameMode) String() string {
+	switch m {
+	case DropFrameKeep:
+		return "keep"
+	case DropFrameOn:
+		return "on"
+	case DropFrameOff:
+		return "off"
+	}
+	return "DropFrameMode(" + strconv.Itoa(int(m)) + ")"
+}
+
 // Timecode is a SMPTE time code label, such as "01:00:00;00".
 type Timecode struct {
 	Hours   int

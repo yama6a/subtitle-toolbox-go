@@ -15,7 +15,7 @@ Before step 1, `Detect` looks for a video container in the raw bytes. A containe
 - **Format packages**: each `Detect` of a format package gets the content after steps 2 and 4. So a SubRip file with a BOM and CR LF line endings detects.
 - **Bad UTF-8 in JSON**: `encoding/json` reads each bad byte in a JSON string as U+FFFD, so the decode goes on.
 - **PGS**: a BOM or white space before the header hides the PGS signature, because step 1 reads the raw bytes. A `.sup` file has none. `Load` also reads a file with the extension `.sup` as PGS when no signature matches, because only PGS lists `.sup`.
-- **Never detected**: `Detect` returns only formats whose `IsAutoDetected` is true.
+- **Never detected**: `Detect` returns only formats that it can find. `Format.IsAutoDetected` says the same, but it is deprecated and version 5 removes it.
 - **No signature**: Cavena 890 has none, so `Detect` finds no result for a `.890` file. `Load` reads it by its extension before any decoding, step 3 below. `Parse` without `ReadOptions.Format` returns `ErrUnknownFormat`.
 
 ## JSON checks

@@ -16,7 +16,7 @@ var (
 	unescaper = strings.NewReplacer("&lt;", "<", "&gt;", ">", "&amp;", "&") //nolint:gochecknoglobals // a replacer holds no state
 )
 
-// EscapeText escapes &, < and > as &amp;, &lt; and &gt;. It keeps every other byte, also of invalid UTF-8.
+// EscapeText escapes &, < and >. markup.EscapeText holds the full contract.
 func EscapeText(text string) string {
 	return escaper.Replace(text)
 }
@@ -73,8 +73,7 @@ func rawEntity(entity, raw string) (string, bool) {
 	return "", false
 }
 
-// DecodeEntities decodes the HTML5 named entities and the numeric entities of text.
-// A named entity needs its ";". A numeric entity decodes only to a code point that HTML5 allows in a document.
+// DecodeEntities decodes the entities of text. markup.DecodeEntities holds the full contract.
 func DecodeEntities(text string) string {
 	i := strings.IndexByte(text, '&')
 	if i < 0 {

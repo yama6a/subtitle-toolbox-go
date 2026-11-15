@@ -150,7 +150,7 @@ func TestFactsMatchTheFunctions(t *testing.T) {
 			_, err = writeFormat(io.Discard, &Subtitle{}, f, WriteOptions{})
 			assert.Equal(t, f.CanWrite(), !errors.Is(err, errNoWriter), "CanWrite")
 			if f.CanRead() {
-				assert.Equal(t, detected(f), f.IsAutoDetected(), "IsAutoDetected")
+				assert.Equal(t, detected(f), f.IsAutoDetected(), "IsAutoDetected") //nolint:staticcheck // the test checks the deprecated method until v5 removes it
 			}
 		})
 	}
@@ -189,7 +189,7 @@ func TestDetectionListsFollowTheOrder(t *testing.T) {
 	assert.True(t, isSubsequence(signatureFormats, signatureOrder),
 		"signatures %v do not follow %v", signatureFormats, signatureOrder)
 	for _, f := range slices.Concat(jsonFormats, signatureFormats) {
-		assert.True(t, f.IsAutoDetected(), "%s is in a detection list but not auto-detected", f)
+		assert.True(t, f.IsAutoDetected(), "%s is in a detection list but not auto-detected", f) //nolint:staticcheck // the test checks the deprecated method until v5 removes it
 		assert.True(t, f.CanRead(), "%s is in a detection list but cannot be read", f)
 	}
 }

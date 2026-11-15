@@ -1,6 +1,6 @@
 # Formats
 
-`Format` is a string type. Its value is the format name that the CLI takes for `--from` and `--to`. It is also the key of the format data of that format. Example: `stbox.SubRip` is `"srt"`. `stbox.Formats()` lists the registry. Each `Format` has the methods `Extensions`, `CanRead`, `CanWrite` and `IsAutoDetected`.
+`Format` is a string type. Its value is the format name that the CLI takes for `--from` and `--to`. It is also the key of the format data of that format. Example: `stbox.SubRip` is `"srt"`. `stbox.Formats()` lists the formats in the order of the facts table. Each `Format` has the methods `Extensions`, `CanRead`, `CanWrite` and `IsAutoDetected`. `IsAutoDetected` is deprecated. Version 5 removes it.
 
 | Format | Go constant | Name | Extensions | Section |
 |:--- |:--- |:--- |:--- |:--- |

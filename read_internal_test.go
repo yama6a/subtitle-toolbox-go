@@ -105,7 +105,7 @@ func TestEachReadStartsWithoutWarnings(t *testing.T) {
 	require.ErrorIs(t, err, ErrParse)
 }
 
-func TestReadPassesTheCommonOptions(t *testing.T) {
+func TestReadPassesLastCueDuration(t *testing.T) {
 	t.Parallel()
 
 	last := new(7 * time.Second)

@@ -97,9 +97,9 @@ func TestTrackInputErrors(t *testing.T) {
 
 	srt := []byte("1\n00:00:01,000 --> 00:00:02,000\nHello\n")
 	mp4 := []byte("\x00\x00\x00\x10ftypisom\x00\x00\x00\x00")
-	mp4Path := filepath.Join(t.TempDir(), "movie.mp4")
-	require.NoError(t, os.WriteFile(mp4Path, mp4, 0o600))
 	dir := t.TempDir()
+	mp4Path := filepath.Join(dir, "movie.mp4")
+	require.NoError(t, os.WriteFile(mp4Path, mp4, 0o600))
 	srtPath := filepath.Join(dir, "a.srt")
 	require.NoError(t, os.WriteFile(srtPath, srt, 0o600))
 	const noTrackSize = "stbox: invalid argument: The size must be 0 or more, got -1."

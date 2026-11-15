@@ -21,7 +21,7 @@ func IsHSpace(r rune) bool {
 // TextSpan is a byte range of the text of TextRuns.
 type TextSpan struct{ Start, End int }
 
-// rawPlace is the place of the raw bytes of one visible byte: the line index, the offset and the length, such as
+// rawPlace is the place of the raw bytes of one byte of TextRuns.Text: the line index, the offset and the length, such as
 // 5 for &amp;. An LF between lines has the line -1.
 type rawPlace struct{ line, offset, length int }
 
@@ -67,10 +67,10 @@ func decodeAt(s string) (byte, int) {
 }
 
 // Cut removes the raw bytes of the spans from lines. Tags between them stay.
-func (v TextRuns) Cut(lines []string, spans []TextSpan) []string {
+func (r TextRuns) Cut(lines []string, spans []TextSpan) []string {
 	gone := make([][]bool, len(lines))
 	for _, s := range spans {
-		for _, p := range v.raw[s.Start:s.End] {
+		for _, p := range r.raw[s.Start:s.End] {
 			if p.line < 0 {
 				continue
 			}

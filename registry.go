@@ -88,7 +88,7 @@ var (
 	}
 )
 
-// Formats returns every format of the registry, in registry order.
+// Formats returns every format of the facts table, in facts table order.
 func Formats() []Format {
 	return model.Formats()
 }

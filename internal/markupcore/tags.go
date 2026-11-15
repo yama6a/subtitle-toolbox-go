@@ -65,7 +65,7 @@ func TagName(body string) string {
 	return ASCIILower(body)
 }
 
-// StripAllTags removes every tag, word timestamps too. Entities stay.
+// StripAllTags removes every tag. markup.StripAllTags holds the full contract.
 func StripAllTags(text string) string {
 	if !strings.Contains(text, "<") {
 		return text
@@ -73,7 +73,7 @@ func StripAllTags(text string) string {
 	return tagRegexp.ReplaceAllString(text, "")
 }
 
-// KeepTags removes every tag whose name is not in names. The name of <c.yellow> is c.yellow, compared without case.
+// KeepTags removes the tags whose name is not listed. markup.KeepTags holds the full contract.
 func KeepTags(text string, names ...string) string {
 	if !strings.Contains(text, "<") {
 		return text
@@ -92,7 +92,7 @@ func KeepTags(text string, names ...string) string {
 	})
 }
 
-// HasVisibleText reports whether a line holds more than white space outside its tags. An entity counts as text.
+// HasVisibleText reports whether the lines hold text. markup.HasVisibleText holds the full contract.
 func HasVisibleText(lines []string) bool {
 	for _, line := range lines {
 		if strings.Trim(StripAllTags(line), TrimSet) != "" {
