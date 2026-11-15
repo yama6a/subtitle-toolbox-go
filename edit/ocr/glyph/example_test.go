@@ -10,7 +10,7 @@ import (
 )
 
 func ExampleNew() {
-	s, _, err := stbox.Load("../../testdata/pgs/text_1080p.sup", stbox.ReadOptions{})
+	s, _, err := stbox.Load("../../../testdata/pgs/text_1080p.sup", stbox.ReadOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return

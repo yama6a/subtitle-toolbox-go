@@ -114,8 +114,10 @@ func sameLayerAllowed(l layer, rel, dep string) bool {
 		return topImportAllowed(rel, dep)
 	case layerFormat, layerContainer:
 		return false
+	case layerBase, layerCLI:
+		return true
 	}
-	return true
+	return false
 }
 
 // topImportAllowed reports whether a layer 3 package may import another layer 3 package.

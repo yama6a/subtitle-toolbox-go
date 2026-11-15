@@ -53,7 +53,7 @@ func run(m *testing.M) int {
 	defer os.RemoveAll(dir)
 
 	wd, _ := os.Getwd()
-	fake := filepath.Join(wd, "..", "..", "testdata", "ocr", "fake-tesseract", "tesseract")
+	fake := filepath.Join(wd, "..", "..", "..", "testdata", "ocr", "fake-tesseract", "tesseract")
 	write := func(name, body string) string {
 		p := filepath.Join(dir, name)
 		if err := os.WriteFile(p, []byte("#!/bin/sh\n"+body+"\n"), 0o755); err != nil { //nolint:gosec // the test script must run
