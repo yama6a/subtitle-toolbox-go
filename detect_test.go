@@ -330,25 +330,6 @@ func TestDetectionGivesTheCuesOfTheFormat(t *testing.T) {
 	}
 }
 
-// Ports testNeverReturnsAFormatThatIsNotAutoDetected of tests/FormatDetectorTest.php of subtitle-toolbox-php.
-func TestDetectNeverReturnsAFormatThatIsNotAutoDetected(t *testing.T) {
-	t.Parallel()
-
-	fsys := os.DirFS(testfiles.Root(t))
-	err := fs.WalkDir(fsys, ".", func(p string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
-			return err
-		}
-		content, err := fs.ReadFile(fsys, p)
-		require.NoError(t, err)
-		if d, ok := stbox.Detect(content); ok && d.Container == "" {
-			assert.True(t, d.Format.IsAutoDetected(), "%s detects as %s", p, d.Format) //nolint:staticcheck // the test checks the deprecated method until v5 removes it
-		}
-		return nil
-	})
-	require.NoError(t, err)
-}
-
 // Ports testIgnoresUtf8BomAndLeadingBlankLines and testDetectsSubRipWithoutALeadingCueNumber of
 // tests/FormatDetectorTest.php of subtitle-toolbox-php.
 func TestDetectThenRead(t *testing.T) {
@@ -581,9 +562,6 @@ func FuzzDetect(f *testing.F) {
 		got := d.Format
 		if ok != (got != "") {
 			t.Fatalf("Detect returned %q and %t", got, ok)
-		}
-		if ok && !got.IsAutoDetected() { //nolint:staticcheck // the test checks the deprecated method until v5 removes it
-			t.Fatalf("Detect returned %s, which is not auto-detected", got)
 		}
 		if got == stbox.PGS {
 			return // PGS is a raw signature, so a BOM before the header hides it on purpose

@@ -49,7 +49,7 @@ func TestCavena890Files(t *testing.T) {
 			}
 
 			_, _, err = parseBytes(raw, stbox.ReadOptions{})
-			assert.ErrorIs(t, err, stbox.ErrUnknownFormat)
+			assert.ErrorIs(t, err, stbox.ErrNoFormatDetected)
 		})
 	}
 }

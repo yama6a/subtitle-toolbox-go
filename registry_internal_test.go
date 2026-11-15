@@ -149,17 +149,8 @@ func TestFactsMatchTheFunctions(t *testing.T) {
 			assert.Equal(t, f.CanRead(), !errors.Is(err, errNoReader), "CanRead")
 			_, err = writeFormat(io.Discard, &Subtitle{}, f, WriteOptions{})
 			assert.Equal(t, f.CanWrite(), !errors.Is(err, errNoWriter), "CanWrite")
-			if f.CanRead() {
-				assert.Equal(t, detected(f), f.IsAutoDetected(), "IsAutoDetected") //nolint:staticcheck // the test checks the deprecated method until v5 removes it
-			}
 		})
 	}
-}
-
-func detected(f Format) bool {
-	return slices.ContainsFunc(jsonChecks, func(c jsonCheck) bool { return c.format == f }) ||
-		slices.ContainsFunc(rawSignatures, func(s signature) bool { return s.format == f }) ||
-		slices.ContainsFunc(signatures, func(s signature) bool { return s.format == f })
 }
 
 func TestPlainTextIsWriteOnly(t *testing.T) {
@@ -189,7 +180,6 @@ func TestDetectionListsFollowTheOrder(t *testing.T) {
 	assert.True(t, isSubsequence(signatureFormats, signatureOrder),
 		"signatures %v do not follow %v", signatureFormats, signatureOrder)
 	for _, f := range slices.Concat(jsonFormats, signatureFormats) {
-		assert.True(t, f.IsAutoDetected(), "%s is in a detection list but not auto-detected", f) //nolint:staticcheck // the test checks the deprecated method until v5 removes it
 		assert.True(t, f.CanRead(), "%s is in a detection list but cannot be read", f)
 	}
 }
