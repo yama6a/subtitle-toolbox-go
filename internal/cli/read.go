@@ -169,7 +169,7 @@ func containerOfHead(head []byte) stbox.Container {
 // video file with many tracks gets the advice for trackOption.
 func (r *runner) readOther(path string, opts stbox.ReadOptions, fromOption, trackOption string) (*input, error) {
 	in, err := r.readWith(path, opts, "--"+trackOption)
-	if errors.Is(err, stbox.ErrUnknownFormat) {
+	if errors.Is(err, stbox.ErrNoFormatDetected) {
 		err = usage(unknownFormatAdvice(fromOption))
 	}
 	if err != nil {
