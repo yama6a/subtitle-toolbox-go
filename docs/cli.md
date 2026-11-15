@@ -259,12 +259,12 @@ text_1080p.sup: Cue #0 holds an image but no text, and srt needs text. Pass --oc
 
 ### OCR
 
-`--ocr` reads the text of image cues, for example from PGS or VobSub, with `ocr.Run`. `stbox convert text_1080p.sup --ocr --to srt` on a machine without Tesseract picks the glyph engine. The first cue reads `The train to Bergen leaves at 7:45.`.
+`--ocr` reads the text of image cues, for example from PGS or VobSub, with `ocr.Apply`. `stbox convert text_1080p.sup --ocr --to srt` on a machine without Tesseract picks the glyph engine. The first cue reads `The train to Bergen leaves at 7:45.`.
 
 | Option | Value | Default | Effect |
 |:--- |:--- |:--- |:--- |
 | `--ocr` | flag, turns the group on | off | |
-| `--ocr-engine ENGINE` | `tesseract` or `glyph` | Tesseract when it is installed, else glyph | `auto.Options.Engine` |
+| `--ocr-engine ENGINE` | `tesseract` or `glyph` | Tesseract when it is installed, else glyph | the CLI picks the engine, see [ocr.md](ocr.md#the-convert-command) |
 | `--ocr-language CODE` | a Tesseract model name, `deu` or `deu+eng` | `eng` | `tesseract.Options.Language`. The glyph engine ignores it |
 | `--ocr-database FILE` | a glyph database in `.nocr` format | the subtitle fonts database | `glyph.Options.Database`. It selects the glyph engine |
 
@@ -556,7 +556,7 @@ A rule option sets its field on the preset result. A flag can only turn a check 
 
 ## translate
 
-`stbox translate <input>... --engine deepl|google|openai --target-language CODE` sends the cue text to a translation service with `translation.Translate` of [translation.md](translation.md). It keeps the times and the tags, and sets the `language` metadata to the target. It is a write command, so the output rules of [Output files](#output-files) apply.
+`stbox translate <input>... --engine deepl|google|openai --target-language CODE` sends the cue text to a translation service with `translation.Apply` of [translation.md](translation.md). It keeps the times and the tags, and sets the `language` metadata to the target. It is a write command, so the output rules of [Output files](#output-files) apply.
 
 ```
 DEEPL_API_KEY=... stbox translate station.srt --engine deepl --source-language en --target-language de --to vtt

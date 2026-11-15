@@ -48,7 +48,7 @@ func Sleep(ctx context.Context, d time.Duration) error {
 
 // Post sends body as a JSON POST to endpoint with header, and sends it again after HTTP 429, 500, 502, 503 and 504.
 // It returns the last status and body. The answer may hold up to 1 MiB plus 16 bytes for each byte of body.
-func Post(ctx context.Context, client translation.HTTPClient, endpoint string, header http.Header, body []byte, wait Wait) (int, []byte, error) {
+func Post(ctx context.Context, client *http.Client, endpoint string, header http.Header, body []byte, wait Wait) (int, []byte, error) {
 	header = header.Clone()
 	if header == nil {
 		header = http.Header{}
@@ -175,9 +175,7 @@ func CheckAPIKey(option, key, emptyMsg string) error {
 }
 
 // ClientOrDefault returns c, or translation.DefaultHTTPClient() when c is nil.
-//
-//nolint:ireturn // the engines hold a translation.HTTPClient
-func ClientOrDefault(c translation.HTTPClient) translation.HTTPClient {
+func ClientOrDefault(c *http.Client) *http.Client {
 	if c == nil {
 		return translation.DefaultHTTPClient()
 	}

@@ -77,7 +77,7 @@ func TestRun(t *testing.T) {
 			s := subtitleWithImages(t)
 			engine := &ocrtest.Engine{Text: tt.text}
 
-			report, err := ocr.Run(t.Context(), s, engine, tt.language)
+			report, err := ocr.Apply(t.Context(), s, engine, tt.language)
 
 			require.NoError(t, err)
 			assert.Equal(t, []ocr.CueText{{CueIndex: 0, Text: tt.text}, {CueIndex: 3, Text: tt.text}}, report.Texts)
@@ -100,7 +100,7 @@ func TestRunWithoutImageCuesDoesNotCallTheEngine(t *testing.T) {
 	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Text"}})
 	engine := &ocrtest.Engine{}
 
-	report, err := ocr.Run(t.Context(), s, engine, "")
+	report, err := ocr.Apply(t.Context(), s, engine, "")
 
 	require.NoError(t, err)
 	assert.Empty(t, report.Texts)
@@ -152,7 +152,7 @@ func TestRunErrors(t *testing.T) {
 			defer cancel()
 			s := subtitleWithImages(t)
 
-			report, err := ocr.Run(ctx, s, tt.engine(cancel), "")
+			report, err := ocr.Apply(ctx, s, tt.engine(cancel), "")
 
 			require.ErrorIs(t, err, tt.wantIs)
 			var cueErr *ocr.CueError

@@ -51,7 +51,7 @@ func TestGoldens(t *testing.T) {
 			require.NoError(t, err)
 			e, err := glyph.New(tt.opts)
 			require.NoError(t, err)
-			_, err = ocr.Run(t.Context(), s, e, "")
+			_, err = ocr.Apply(t.Context(), s, e, "")
 			require.NoError(t, err)
 
 			var out bytes.Buffer
@@ -122,7 +122,7 @@ func TestFixingTheOCRTextKeepsTheImages(t *testing.T) {
 		Recognizer: []glyphocr.Option{glyphocr.NoLineContext()},
 	})
 	require.NoError(t, err)
-	_, err = ocr.Run(t.Context(), s, e, "")
+	_, err = ocr.Apply(t.Context(), s, e, "")
 	require.NoError(t, err)
 	report, err = fixing.Apply(s, fixing.Options{Language: "fr"})
 	require.NoError(t, err)

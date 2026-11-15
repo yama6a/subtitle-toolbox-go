@@ -354,7 +354,7 @@ func TestTesseractAccuracy(t *testing.T) {
 
 			e, err := tesseract.New(tesseract.Options{})
 			require.NoError(t, err)
-			_, err = ocr.Run(context.Background(), s, e, tt.language)
+			_, err = ocr.Apply(context.Background(), s, e, tt.language)
 			require.NoError(t, err)
 			require.Equal(t, len(drawn), s.Len())
 

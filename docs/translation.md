@@ -1,8 +1,8 @@
 # Translation
 
-`translation.Translate` translates the cue text of a subtitle with a machine translation engine. It keeps the times and the tags. It translates a sentence as a whole, also when the sentence runs over 2 cues. Example: `testdata/translation/own_station.srt` has the cues `The train to Basel leaves` and `from platform 4 at <b>10:15</b>.`. The engine gets one text, `The train to Basel leaves from platform 4 at <x1>10:15</x1>.`. The runner cuts the translation back into 2 cues in proportion to their characters, at a space, and puts `<b>` back in place of `<x1>`.
+`translation.Apply` translates the cue text of a subtitle with a machine translation engine. It keeps the times and the tags. It translates a sentence as a whole, also when the sentence runs over 2 cues. Example: `testdata/translation/own_station.srt` has the cues `The train to Basel leaves` and `from platform 4 at <b>10:15</b>.`. The engine gets one text, `The train to Basel leaves from platform 4 at <x1>10:15</x1>.`. The runner cuts the translation back into 2 cues in proportion to their characters, at a space, and puts `<b>` back in place of `<x1>`.
 
-<!-- example: edit/translation/ExampleTranslate -->
+<!-- example: edit/translation/ExampleApply -->
 ```go
 s := &model.Subtitle{}
 for i, text := range []string{"The train to Basel leaves", "from platform 4 at <b>10:15</b>."} {
@@ -11,7 +11,7 @@ for i, text := range []string{"The train to Basel leaves", "from platform 4 at <
 	s.AddCue(c)
 }
 
-report, err := translation.Translate(context.Background(), s, stationEngine{}, "en", "de", translation.Options{})
+report, err := translation.Apply(context.Background(), s, stationEngine{}, "en", "de", translation.Options{})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -34,9 +34,9 @@ A `translation.Engine` has one method. `Translate(ctx, texts, source, target)` r
 
 The engines of the library live in `edit/translation/<engine>`. Package `edit/translation` itself has no engine.
 
-## Translate
+## Apply
 
-`Translate(ctx, s, engine, source, target, opts)` does these steps.
+`Apply(ctx, s, engine, source, target, opts)` does these steps.
 
 1. It checks `opts`, the engine and the target. A nil engine, and a target that is empty after trimming space, tab, LF, CR, NUL and VT, return an `*model.InvalidArgumentError`.
 2. It copies the cues with `s.Cues()`.
@@ -48,7 +48,7 @@ The engines of the library live in `edit/translation/<engine>`. Package `edit/tr
 
 `s` changes only when every engine call succeeds. The language that the engine gets is `target` as the caller wrote it. The metadata gets the same string.
 
-`Translate` returns a `Report` with the warnings, see [Warnings](#warnings).
+`Apply` returns a `Report` with the warnings, see [Warnings](#warnings).
 
 ## Options
 
@@ -156,7 +156,7 @@ Example: a cue with `Speaker` `Fred`, the line `Hi there.` and 2 words sends `Hi
 
 ## HTTP
 
-The engines send JSON requests through `translation.HTTPClient`, an interface with the method `Do`. `*http.Client` implements it. A test points an engine at an `httptest.Server`.
+The engines send JSON requests with an `*http.Client`. A test points an engine at an `httptest.Server`, or sets a client whose `Transport` plays the answers.
 
 - **Default client**: `translation.DefaultHTTPClient()` returns a new client with a connect timeout of 10 s and a total timeout of 120 s. It uses the proxy of the environment. It follows no redirect, so a 3xx answer reaches the engine as it is and no key goes to another host.
 - **Retries**: after HTTP 429, 500, 502, 503 and 504 the request goes out again, up to 3 times, so up to 4 requests. The fourth answer returns as it is, and the engine turns its status into an error. No other status is retried. A request without a response is not retried.
@@ -171,7 +171,7 @@ This engine posts the texts as JSON and reads `{"translations": [...]}`. It take
 ```text
 type webEngine struct {
 	url    string
-	client translation.HTTPClient
+	client *http.Client
 }
 
 func (e webEngine) Translate(ctx context.Context, texts []string, source, target string) ([]string, error) {
@@ -232,7 +232,7 @@ You translate subtitle text from {source} to {target}. The user sends a JSON arr
 
 ## DeepL engine
 
-Package `edit/translation/deepl` is a client of the DeepL API v2 on `net/http`. It has no vendor SDK. Example: `deepl.New(deepl.Options{APIKey: key})` gives an engine for `translation.Translate`. The runner sends `The train to Basel leaves from platform 4 at <x1>10:15</x1>.` and DeepL answers with the German sentence and `<x1>10:15</x1>` in place.
+Package `edit/translation/deepl` is a client of the DeepL API v2 on `net/http`. It has no vendor SDK. Example: `deepl.New(deepl.Options{APIKey: key})` gives an engine for `translation.Apply`. The runner sends `The train to Basel leaves from platform 4 at <x1>10:15</x1>.` and DeepL answers with the German sentence and `<x1>10:15</x1>` in place.
 
 <!-- example: edit/translation/deepl/ExampleNew -->
 ```go
@@ -302,7 +302,7 @@ s := &model.Subtitle{}
 c := model.Cue{Start: time.Second, End: 2 * time.Second}
 c.SetText("The train leaves at <b>10:15</b>.")
 s.AddCue(c)
-if _, err := translation.Translate(context.Background(), s, engine, "en", "fr", translation.Options{}); err != nil {
+if _, err := translation.Apply(context.Background(), s, engine, "en", "fr", translation.Options{}); err != nil {
 	fmt.Println(err)
 	return
 }

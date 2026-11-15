@@ -83,16 +83,16 @@ func TestPost(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			client := &translationtest.Client{Answers: tt.answers}
+			transport := &translationtest.Transport{Answers: tt.answers}
 			var w waits
 
-			got, body, err := httppost.Post(t.Context(), client, endpoint, nil, []byte("body"), w.wait)
+			got, body, err := httppost.Post(t.Context(), transport.Client(), endpoint, nil, []byte("body"), w.wait)
 
 			require.NoError(t, err)
 			assert.Equal(t, tt.wantStatus, got)
 			assert.Equal(t, tt.wantBody, string(body))
 			assert.Equal(t, tt.wantWaits, []time.Duration(w))
-			requests := client.Requests()
+			requests := transport.Requests()
 			require.Len(t, requests, tt.wantRequests)
 			for _, r := range requests {
 				assert.Equal(t, "body", string(r.Body))
@@ -106,29 +106,29 @@ func TestPostAnswerOverTheLimit(t *testing.T) {
 	t.Parallel()
 
 	limit := 1<<20 + 16*len("body")
-	client := &translationtest.Client{Answers: []translationtest.Answer{{Status: 200, Body: bytes.Repeat([]byte("x"), limit+1)}}}
+	transport := &translationtest.Transport{Answers: []translationtest.Answer{{Status: 200, Body: bytes.Repeat([]byte("x"), limit+1)}}}
 
-	_, _, err := httppost.Post(t.Context(), client, endpoint, nil, []byte("body"), (&waits{}).wait)
+	_, _, err := httppost.Post(t.Context(), transport.Client(), endpoint, nil, []byte("body"), (&waits{}).wait)
 
 	var service *translation.ServiceError
 	require.ErrorAs(t, err, &service)
 	assert.Equal(t, 200, service.Status)
 	assert.Equal(t, "The answer from translate.test has more than 1048640 bytes.", service.Msg)
-	assert.Len(t, client.Requests(), 1)
+	assert.Len(t, transport.Requests(), 1)
 }
 
 func TestPostSendsTheHeader(t *testing.T) {
 	t.Parallel()
 
-	client := &translationtest.Client{Answers: []translationtest.Answer{{Status: 418, Header: http.Header{"X-Reply": {"1"}}, Body: []byte("teapot")}}}
+	transport := &translationtest.Transport{Answers: []translationtest.Answer{{Status: 418, Header: http.Header{"X-Reply": {"1"}}, Body: []byte("teapot")}}}
 	header := http.Header{"Authorization": {"DeepL-Auth-Key key"}, "Content-Type": {"text/plain"}}
 
-	got, body, err := httppost.Post(t.Context(), client, endpoint, header, []byte("{}"), nil)
+	got, body, err := httppost.Post(t.Context(), transport.Client(), endpoint, header, []byte("{}"), nil)
 
 	require.NoError(t, err)
 	assert.Equal(t, 418, got)
 	assert.Equal(t, "teapot", string(body))
-	requests := client.Requests()
+	requests := transport.Requests()
 	require.Len(t, requests, 1)
 	assert.Equal(t, "key", requests[0].Key)
 	assert.Equal(t, "application/json", requests[0].Header.Get("Content-Type"))
@@ -156,32 +156,32 @@ func TestPostFails(t *testing.T) {
 	t.Run("bad request URL", func(t *testing.T) {
 		t.Parallel()
 
-		client := &translationtest.Client{Answers: status(200)}
+		transport := &translationtest.Transport{Answers: status(200)}
 
-		_, _, err := httppost.Post(t.Context(), client, "http://user:secret@host/%zz", nil, []byte("{}"), nil)
+		_, _, err := httppost.Post(t.Context(), transport.Client(), "http://user:secret@host/%zz", nil, []byte("{}"), nil)
 
 		var service *translation.ServiceError
 		require.ErrorAs(t, err, &service)
 		assert.Equal(t, 0, service.Status)
 		assert.Equal(t, `The request URL is not valid: invalid URL escape "%zz".`, service.Msg)
-		assert.Empty(t, client.Requests())
+		assert.Empty(t, transport.Requests())
 	})
 
 	t.Run("context ended in the wait", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithCancel(t.Context())
-		client := &translationtest.Client{Answers: status(429)}
+		transport := &translationtest.Transport{Answers: status(429)}
 		wait := func(ctx context.Context, _ time.Duration) error {
 			cancel()
 			return ctx.Err()
 		}
 
-		_, _, err := httppost.Post(ctx, client, endpoint, nil, []byte("{}"), wait)
+		_, _, err := httppost.Post(ctx, transport.Client(), endpoint, nil, []byte("{}"), wait)
 
 		require.ErrorIs(t, err, context.Canceled)
 		require.NotErrorIs(t, err, translation.ErrService)
-		assert.Len(t, client.Requests(), 1)
+		assert.Len(t, transport.Requests(), 1)
 	})
 
 	t.Run("sleep with an ended context", func(t *testing.T) {
@@ -218,11 +218,11 @@ func TestHelpers(t *testing.T) {
 
 func BenchmarkPostAnswer(b *testing.B) {
 	for _, size := range []int{1 << 10, 1 << 20} {
-		client := &translationtest.Client{Answers: []translationtest.Answer{{Status: 200, Body: bytes.Repeat([]byte("x"), size)}}}
+		transport := &translationtest.Transport{Answers: []translationtest.Answer{{Status: 200, Body: bytes.Repeat([]byte("x"), size)}}}
 		b.Run("bytes="+strconv.Itoa(size), func(b *testing.B) {
 			b.ReportAllocs()
 			for b.Loop() {
-				_, _, err := httppost.Post(b.Context(), client, endpoint, nil, []byte("{}"), nil)
+				_, _, err := httppost.Post(b.Context(), transport.Client(), endpoint, nil, []byte("{}"), nil)
 				require.NoError(b, err)
 			}
 		})

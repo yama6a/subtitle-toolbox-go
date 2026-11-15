@@ -20,11 +20,6 @@ type Engine interface {
 	Translate(ctx context.Context, texts []string, source, target string) ([]string, error)
 }
 
-// HTTPClient sends an HTTP request. *http.Client implements it.
-type HTTPClient interface {
-	Do(req *http.Request) (*http.Response, error)
-}
-
 // Options holds the settings of Translate. The zero value joins sentences of up to 3 cues
 // and sends up to 5000 characters per engine call.
 type Options struct {

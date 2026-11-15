@@ -28,9 +28,9 @@ type request struct {
 	tags []tagPair
 }
 
-// Translate translates the cue text of s from source to target with engine and sets the language metadata to target.
+// Apply translates the cue text of s from source to target with engine and sets the language metadata to target.
 // s changes only when every engine call succeeds.
-func Translate(ctx context.Context, s *model.Subtitle, engine Engine, source, target string, opts Options) (Report, error) {
+func Apply(ctx context.Context, s *model.Subtitle, engine Engine, source, target string, opts Options) (Report, error) {
 	if err := check(engine, target, opts); err != nil {
 		return Report{}, err
 	}

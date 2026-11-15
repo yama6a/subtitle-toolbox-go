@@ -38,7 +38,7 @@ type Options struct {
 	// Prompt is the system prompt. {source} and {target} in it become the language codes. "" means DefaultPrompt.
 	Prompt string
 	// HTTPClient sends the requests. nil means translation.DefaultHTTPClient().
-	HTTPClient translation.HTTPClient
+	HTTPClient *http.Client
 }
 
 // Validate checks the options. The error matches model.ErrInvalidArgument.
@@ -83,7 +83,7 @@ func maskKey(key string) string {
 type Engine struct {
 	url     string
 	options Options
-	client  translation.HTTPClient
+	client  *http.Client
 	wait    httppost.Wait
 }
 

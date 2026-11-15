@@ -34,10 +34,10 @@ func answer(tb testing.TB, status int, file string) translationtest.Answer {
 	return translationtest.Answer{Status: status, Body: testfiles.Read(tb, "translation/"+file)}
 }
 
-func newEngine(tb testing.TB, opts Options, answers ...translationtest.Answer) (*Engine, *translationtest.Client, *[]time.Duration) {
+func newEngine(tb testing.TB, opts Options, answers ...translationtest.Answer) (*Engine, *translationtest.Transport, *[]time.Duration) {
 	tb.Helper()
-	client := &translationtest.Client{Answers: answers}
-	opts.HTTPClient = client
+	transport := &translationtest.Transport{Answers: answers}
+	opts.HTTPClient = transport.Client()
 	e, err := New(opts)
 	require.NoError(tb, err)
 	var waits []time.Duration
@@ -45,7 +45,7 @@ func newEngine(tb testing.TB, opts Options, answers ...translationtest.Answer) (
 		waits = append(waits, d)
 		return nil
 	}
-	return e, client, &waits
+	return e, transport, &waits
 }
 
 func body(tb testing.TB, r translationtest.Request) map[string]any {
@@ -136,11 +136,11 @@ func TestTranslateRequest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			e, client, _ := newEngine(t, tt.opts, translationtest.Answer{Status: 200, Body: []byte(`{"translations": [{"text": "Hallo"}]}`)})
+			e, transport, _ := newEngine(t, tt.opts, translationtest.Answer{Status: 200, Body: []byte(`{"translations": [{"text": "Hallo"}]}`)})
 			got, err := e.Translate(t.Context(), []string{"Hello"}, tt.source, tt.dest)
 			require.NoError(t, err)
 			assert.Equal(t, []string{"Hallo"}, got)
-			reqs := client.Requests()
+			reqs := transport.Requests()
 			require.Len(t, reqs, 1)
 			assert.Equal(t, tt.wantURL, reqs[0].URL)
 			assert.Equal(t, tt.wantBody, body(t, reqs[0]))
@@ -152,11 +152,11 @@ func TestTranslateRequest(t *testing.T) {
 	t.Run("body key order", func(t *testing.T) {
 		t.Parallel()
 
-		e, client, _ := newEngine(t, Options{APIKey: key}, translationtest.Answer{Status: 200, Body: []byte(`{"translations": [{"text": "a"}]}`)})
+		e, transport, _ := newEngine(t, Options{APIKey: key}, translationtest.Answer{Status: 200, Body: []byte(`{"translations": [{"text": "a"}]}`)})
 		_, err := e.Translate(t.Context(), []string{"<x1>a</x1> / b"}, "en", "de")
 		require.NoError(t, err)
 		want := `{"text":["<x1>a</x1> / b"],"target_lang":"DE","tag_handling":"xml","split_sentences":"nonewlines","source_lang":"EN"}`
-		assert.True(t, bytes.Equal([]byte(want), client.Requests()[0].Body), "body %s", client.Requests()[0].Body)
+		assert.True(t, bytes.Equal([]byte(want), transport.Requests()[0].Body), "body %s", transport.Requests()[0].Body)
 	})
 }
 
@@ -174,12 +174,12 @@ func TestTranslateChunks(t *testing.T) {
 		}
 		return translationtest.Answer{Status: 200, Body: []byte(`{"translations": [` + strings.Join(entries, ",") + `]}`)}
 	}
-	e, client, _ := newEngine(t, Options{APIKey: key}, reply(0, 50), reply(50, 100), reply(100, 120))
+	e, transport, _ := newEngine(t, Options{APIKey: key}, reply(0, 50), reply(50, 100), reply(100, 120))
 
 	got, err := e.Translate(t.Context(), texts, "en", "de")
 	require.NoError(t, err)
 	assert.Equal(t, texts, got)
-	reqs := client.Requests()
+	reqs := transport.Requests()
 	sizes := make([]int, 0, len(reqs))
 	for _, r := range reqs {
 		sizes = append(sizes, len(body(t, r)["text"].([]any)))
@@ -189,7 +189,7 @@ func TestTranslateChunks(t *testing.T) {
 	got, err = e.Translate(t.Context(), nil, "en", "de")
 	require.NoError(t, err)
 	assert.Empty(t, got)
-	assert.Len(t, client.Requests(), 3)
+	assert.Len(t, transport.Requests(), 3)
 }
 
 func TestTranslateErrors(t *testing.T) {
@@ -246,7 +246,7 @@ func TestTranslateErrors(t *testing.T) {
 func TestTranslateRetries(t *testing.T) {
 	t.Parallel()
 
-	e, client, waits := newEngine(t, Options{APIKey: key},
+	e, transport, waits := newEngine(t, Options{APIKey: key},
 		translationtest.Answer{Status: 429, Body: []byte(`{"message": "busy"}`)},
 		translationtest.Answer{Status: 503},
 		answer(t, 200, "deepl_de.json"))
@@ -259,7 +259,7 @@ func TestTranslateRetries(t *testing.T) {
 		"- Ist dieser Platz frei?\n- Ja, ist er.",
 		"<x1>Der nächste Halt ist Zürich Hauptbahnhof.</x1>",
 	}, got)
-	reqs := client.Requests()
+	reqs := transport.Requests()
 	require.Len(t, reqs, 3)
 	assert.Equal(t, reqs[0].Body, reqs[2].Body)
 	assert.Equal(t, []time.Duration{time.Second, 2 * time.Second}, *waits)
@@ -308,16 +308,16 @@ func TestTranslateWithTheRunner(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			e, client, _ := newEngine(t, Options{APIKey: key}, tt.answer)
+			e, transport, _ := newEngine(t, Options{APIKey: key}, tt.answer)
 			s := readSRT(t, tt.input)
 			before := view(s)
 
-			report, err := translation.Translate(t.Context(), s, e, "en", "de", translation.Options{})
+			report, err := translation.Apply(t.Context(), s, e, "en", "de", translation.Options{})
 			require.NoError(t, err)
 			assert.Empty(t, report.Warnings)
-			require.Len(t, client.Requests(), 1)
+			require.Len(t, transport.Requests(), 1)
 			if tt.sent != "" {
-				assert.Equal(t, tt.sent, body(t, client.Requests()[0])["text"].([]any)[0])
+				assert.Equal(t, tt.sent, body(t, transport.Requests()[0])["text"].([]any)[0])
 			}
 			got := view(s)
 			assert.Equal(t, tt.want, got)
