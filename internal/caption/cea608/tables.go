@@ -9,6 +9,8 @@ const (
 	Columns = 32
 	// MaxLines is the number of rows that a caption shows at once.
 	MaxLines = 4
+	// NullWord is the null byte pair with odd parity that fills frames without data.
+	NullWord = 0x8080
 )
 
 // white is the color index of white. Color indexes 0 to 6 select the entries of colors.

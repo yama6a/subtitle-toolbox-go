@@ -9,7 +9,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea608"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/linewrap"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
 
 // FitAction is the kind of a change that a fit made. The values print as they are.
@@ -37,7 +36,7 @@ type FitChange struct {
 // It returns the changes with the new lines.
 func fitText(lines []string, start time.Duration, index int) ([]string, []FitChange) {
 	var changes []FitChange
-	prefix := "Cue #" + strconv.Itoa(index) + " at " + timecode.Seconds(start) + " s"
+	prefix := cuePrefix(index, start)
 	lines, replaced := transliterate(lines)
 	if len(replaced) > 0 {
 		changes = append(changes, FitChange{index, Transliterated, prefix + ": replaced " + strings.Join(replaced, ", ") + "."})

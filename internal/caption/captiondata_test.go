@@ -49,7 +49,7 @@ func service1(at time.Duration, block ...byte) cea708.Frame {
 	return f
 }
 
-func TestCaptionDataCues(t *testing.T) {
+func TestCDPCues(t *testing.T) {
 	t.Parallel()
 	window1Top := []byte{0x99, 0x38, 0x0A, 0x0A, 0x00, 0x1F, 0x09, 'H', 'i'} // window 1, visible, top left, "Hi"
 	hide := []byte{0x8A, 0x02}
@@ -114,7 +114,7 @@ func TestCaptionDataCues(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			cues := caption.CaptionDataCues(tt.frames(t), tt.service, caption.CEA608Options{Channel: 1}, 5*time.Second)
+			cues := caption.CDPCues(tt.frames(t), tt.service, caption.CEA608Options{Channel: 1}, 5*time.Second)
 			var got []string
 			for _, c := range cues {
 				assert.Nil(t, c.Position.Offset)
