@@ -28,7 +28,6 @@ type Options struct {
 // because the recognizer learns the glyph heights of the stream.
 type Engine struct {
 	recognizer *glyphocr.Recognizer
-	database   *glyphocr.Database
 }
 
 var _ ocr.Engine = (*Engine)(nil)
@@ -43,13 +42,8 @@ func New(opts Options) (*Engine, error) {
 	if err != nil {
 		return nil, &model.InvalidArgumentError{Option: "glyph.Options.Recognizer", Msg: err.Error()}
 	}
-	return &Engine{recognizer: r, database: db}, nil
+	return &Engine{recognizer: r}, nil
 }
-
-// Database returns the database that the engine matches against.
-//
-// Deprecated: keep the database that you pass in Options.Database.
-func (e *Engine) Database() *glyphocr.Database { return e.database }
 
 // Recognize returns the text of im. It ignores language, and it returns ctx.Err() before it starts.
 // An image that is no PNG returns an error that matches ocr.ErrRecognize.

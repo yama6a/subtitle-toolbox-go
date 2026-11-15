@@ -143,7 +143,7 @@ fmt.Println(cue.Lines)
 | `Recognizer` | none | The options of go-glyph-ocr, passed to `glyphocr.NewRecognizer` unchanged, for example `glyphocr.ItalicSlant(0.2)` or `glyphocr.NoLineContext()` |
 
 - **Databases**: the subtitle fonts database holds 2,007 glyphs of DejaVu Sans, Liberation Sans and Noto Sans, then the Latin glyphs. It reads 98.3% of the characters of the test sets right. The Latin database alone reads 85.0%. The [go-glyph-ocr README](https://github.com/yama6a/go-glyph-ocr#readme) lists every option.
-- **One stream per engine**: the recognizer learns the glyph heights of the images it reads. Use one engine for each subtitle stream. An engine is not safe for concurrent use. Engines can share one `*glyphocr.Database`, because matching only reads it. `Engine.Database` returns it.
+- **One stream per engine**: the recognizer learns the glyph heights of the images it reads. Use one engine for each subtitle stream. An engine is not safe for concurrent use. Engines can share one `*glyphocr.Database`, because matching only reads it.
 - **Text**: the engine splits each line into words at the space characters of go-glyph-ocr. A word is italic when more than half of its characters are. Italic words in a row become one run: `<i>The wind turns north tonight.</i>`. A run ends before the first upright word: `<i>Snow</i> is expected on Friday.` Markup characters are escaped. The confidence is the mean of all characters, unknown characters counting 0. An image without ink gives no lines and a confidence of 0.
 - **Language**: ignored.
 - **Errors**: `New` returns a `*model.InvalidArgumentError` for an invalid recognizer option. `Recognize` returns the context error before it starts, and an error that matches `ErrRecognize` for an image that is no PNG.
