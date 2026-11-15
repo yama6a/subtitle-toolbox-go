@@ -9,7 +9,7 @@
 
 ## Packages
 
-A package imports only packages of a lower layer. Every layer may also import the standard library and the allowed modules of [CLAUDE.md](CLAUDE.md), which also lists the package map. `internal/apicheck/layers_test.go` holds the same table. It fails for a forbidden import and for a package without a layer, so the issue that adds a package adds its row in both places.
+A package imports only packages of a lower layer. Every layer may also import the standard library and the allowed modules of [CLAUDE.md](CLAUDE.md), which also lists the package map. `internal/repocheck/layers_test.go` holds the same table. It fails for a forbidden import and for a package without a layer, so the issue that adds a package adds its row in both places.
 
 | Layer | Packages | May import |
 |---:|:--- |:--- |
@@ -54,7 +54,7 @@ A pull request that adds a format:
 1. Adds its `Format` constant and its facts row.
 2. Sets can read, can write and auto-detected in its facts row.
 3. Sets the `read` and `write` functions of its row in `registry.go`.
-4. Inserts its matcher into `signatures` or `jsonChecks`. `TestDetectionListsFollowTheOrder` in `registry_test.go` holds the order.
+4. Inserts its matcher into `signatures` or `jsonChecks`. `TestDetectionListsFollowTheOrder` in `registry_internal_test.go` holds the order.
 5. Adds a field of its options type to the root `ReadOptions` or `WriteOptions` when the type is not empty. TSV uses the `CSV` field.
 6. Adds a compile-time shape check in the root for each of its `Read`, `Write` and `Detect`, for example `var _ readFunc[srt.ReadOptions] = srt.Read`. The generic types are:
 
@@ -81,7 +81,7 @@ A pull request that adds a format:
 - **Wording**: write "Adapted from" for the same logic written again. Write "Copied from" for verbatim code or data. Use exactly these two forms, so `grep -rn "Adapted from\|Copied from"` finds every credit.
 - **Apache-2.0**: add a line `// Changed: ...` that states what changed.
 - **Upstream test data**: a test case with data from another project names the project in its case name, for example `name: "mantas-done styles"`. A ported test case cites the upstream test method in a comment, in the same credit form.
-- **Fixtures**: every file under a `testdata` folder has a row in a `SOURCES.md` of its folder or of a parent folder, up to the `testdata` folder. A row is `| File | Source | License |`. The first cell holds a file name, a glob or a comma list of both, relative to the folder of the `SOURCES.md`, each in backticks. `TestEveryFixtureHasASourcesRow` and `TestEverySourcesRowNamesAFile` in `repo_test.go` check this.
+- **Fixtures**: every file under a `testdata` folder has a row in a `SOURCES.md` of its folder or of a parent folder, up to the `testdata` folder. A row is `| File | Source | License |`. The first cell holds a file name, a glob or a comma list of both, relative to the folder of the `SOURCES.md`, each in backticks. `TestEveryFixtureHasASourcesRow` and `TestEverySourcesRowNamesAFile` in `internal/repocheck/repo_test.go` check this.
 - **Fuzz corpus**: files under `testdata/fuzz/` are exempt. `go test -fuzz` writes them, and they are this repository's own data under MIT.
 - **Re-hosted data**: a project that re-hosts the data of another project gets a credit for the original source too. Example: the IRT EBU STL files that sandflow/ttconv took from irt-open-source/scf.
 - **Files from the PHP repository**: a `SOURCES.md` copied from yama6a/subtitle-toolbox-php keeps its rows unchanged. It gets one line under its heading: `Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5313f1583fc7e67942d514600/tests/files/<folder>, MIT. In the rows below, "this repository" means subtitle-toolbox-php.` Rows for files that are not copied are removed.
@@ -151,7 +151,7 @@ A pull request that adds a format:
 
 Every exported identifier is a promise to importers until the next major release. Reviewers check each PR against these rules. [docs/compatibility.md](docs/compatibility.md) states what a release may change.
 
-`internal/apicheck/names_test.go` checks part of the rules on exported names:
+`internal/repocheck/names_test.go` checks part of the rules on exported names:
 
 - No name starts with `Get` or `Find` (N5).
 - No name holds `Colour`, `Fps`, `Secs`, `Seconds` or `Millis` (N4 and the time rule).

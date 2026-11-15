@@ -1,4 +1,4 @@
-package stbox_test
+package repocheck
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -19,7 +20,6 @@ import (
 )
 
 const (
-	mainModule  = "github.com/yama6a/subtitle-toolbox-go/v4"
 	sourcesFile = "SOURCES.md"
 	testdataDir = "testdata"
 	fuzzDir     = "fuzz"
@@ -30,7 +30,7 @@ const (
 func TestEveryFixtureHasASourcesRow(t *testing.T) {
 	t.Parallel()
 
-	missing, err := uncredited(os.DirFS("."))
+	missing, err := uncredited(os.DirFS(moduleRoot))
 	require.NoError(t, err)
 	assert.Empty(t, missing, "Add a row for these files to a SOURCES.md in their folder or a parent folder.")
 }
@@ -38,7 +38,7 @@ func TestEveryFixtureHasASourcesRow(t *testing.T) {
 func TestEverySourcesRowNamesAFile(t *testing.T) {
 	t.Parallel()
 
-	unmatched, err := unmatchedRows(os.DirFS("."))
+	unmatched, err := unmatchedRows(os.DirFS(moduleRoot))
 	require.NoError(t, err)
 	assert.Empty(t, unmatched, "These SOURCES.md rows name no file.")
 }
@@ -48,7 +48,7 @@ func TestEveryLinkedModuleHasANotice(t *testing.T) {
 
 	modules, err := linkedModules(t.Context())
 	require.NoError(t, err)
-	notices, err := os.ReadFile(noticesFile)
+	notices, err := os.ReadFile(filepath.Join(moduleRoot, noticesFile))
 	require.NoError(t, err)
 
 	headings := map[string]bool{}
@@ -433,7 +433,9 @@ func sourcesNames(content []byte) []string {
 
 // linkedModules returns the module paths that `go list -deps ./cmd/stbox` reports, without the main module.
 func linkedModules(ctx context.Context) ([]string, error) {
-	out, err := exec.CommandContext(ctx, "go", "list", "-deps", "-f", "{{with .Module}}{{.Path}}{{end}}", "./cmd/stbox").Output()
+	cmd := exec.CommandContext(ctx, "go", "list", "-deps", "-f", "{{with .Module}}{{.Path}}{{end}}", "./cmd/stbox")
+	cmd.Dir = moduleRoot
+	out, err := cmd.Output()
 	if err != nil {
 		var exitErr *exec.ExitError
 		if errors.As(err, &exitErr) {
@@ -443,7 +445,7 @@ func linkedModules(ctx context.Context) ([]string, error) {
 	}
 	var modules []string
 	for line := range strings.Lines(string(out)) {
-		if module := strings.TrimSpace(line); module != "" && module != mainModule {
+		if module := strings.TrimSpace(line); module != "" && module != modulePath {
 			modules = append(modules, module)
 		}
 	}
