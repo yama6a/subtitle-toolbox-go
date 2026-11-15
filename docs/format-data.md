@@ -105,7 +105,7 @@ Data enters only through `SetFormatData`, which checks the fields that writers r
 
 ## An explicit alignment wins over a stored position
 
-A reader stores the alignment it read as a numpad int in the field `alignment` of its cue data. A writer writes the stored exact position only while the alignment is unchanged. Unchanged means that `alignment`, 2 when missing, equals `Cue.Position.Alignment.Numpad()`. The writers share the rule as `AlignmentUnchanged` in [internal/position](../internal/position/position.go).
+A reader stores the alignment it read as a numpad int in the field `alignment` of its cue data. A writer writes the stored exact position only while the alignment is unchanged. Unchanged means that `alignment`, 2 when missing, equals `Cue.Position.Alignment.Numpad()`. The writers share the rule as `AlignmentUnchanged` in [format/internal/position](../format/internal/position/position.go).
 
 A reader also fills `Cue.Position.Offset` for WebVTT, TTML and DCP. A writer uses the offset only for a cue that has no stored position of its own format, and only when the offset lies in the screen cell of the alignment. An explicit alignment wins here too: `TopCenter` on a cue with offset (50, 90) gives the top output of 1.x. A caller who changes only `Offset` on a read cue must also clear the format data or change the alignment.
 

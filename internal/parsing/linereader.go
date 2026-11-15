@@ -324,3 +324,12 @@ func (s *splitState) splitAtCR(data []byte, i int, atEOF bool) (int, []byte, err
 	s.lonely = j - i - 1
 	return i + 1, data[:i], nil
 }
+
+// ErrOr returns the error of l when it has one, because it ended the lines
+// and the block error may follow from that. Otherwise it returns err.
+func (l *LineReader) ErrOr(err error) error {
+	if lerr := l.Err(); lerr != nil {
+		return lerr
+	}
+	return err
+}

@@ -3,7 +3,6 @@ package srt
 import (
 	"io"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/internal/subrip"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
@@ -19,7 +18,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 		if i > 0 {
 			body = append(body, '\n')
 		}
-		body = subrip.AppendCue(body, i+1, c, common.StripTags)
+		body = appendCue(body, i+1, c, common.StripTags)
 	}
 	return WriteReport{}, writing.Write(w, model.SubRip, body, common, true)
 }

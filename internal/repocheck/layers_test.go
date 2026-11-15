@@ -35,7 +35,7 @@ var layers = map[string]layer{
 	"internal/decimal":                   layerLeaf,
 	"format/internal/formatdata":         layerModelUser,
 	"internal/grapheme":                  layerLeaf,
-	"internal/ssatag":                    layerLeaf,
+	"format/internal/ssatag":             layerLeaf,
 	"internal/textenc":                   layerLeaf,
 	"format/internal/xmlraw":             layerLeaf,
 	"format/internal/codepage":           layerLeaf,
@@ -54,10 +54,9 @@ var layers = map[string]layer{
 	"format/internal/paragraphs":         layerModelUser,
 	"markup":                             layerModel,
 	"model":                              layerModel,
-	"internal/textblock":                 layerModelUser,
-	"internal/subrip":                    layerModelUser,
-	"internal/vtt":                       layerModelUser,
-	"internal/position":                  layerModelUser,
+	"format/internal/textblock":          layerModelUser,
+	"format/internal/vtt":                layerModelUser,
+	"format/internal/position":           layerModelUser,
 	"internal/parsing":                   layerModelUser,
 	"internal/writing":                   layerModelUser,
 	"internal/caption":                   layerModelUser,
@@ -73,7 +72,6 @@ var layers = map[string]layer{
 	"container/*":                        layerContainer,
 	".":                                  layerService,
 	"stats":                              layerService,
-	"stream":                             layerService,
 	"hearingimpaired":                    layerService,
 	"speakers":                           layerService,
 	"fixing":                             layerService,
@@ -241,7 +239,7 @@ func TestCheckImports(t *testing.T) {
 		{
 			name:    "format imports layers 0 to 3 and an allowed module",
 			rel:     "format/srt",
-			imports: []string{modulePath + "/model", modulePath + "/markup", modulePath + "/internal/textblock", "golang.org/x/text/encoding"},
+			imports: []string{modulePath + "/model", modulePath + "/markup", modulePath + "/format/internal/textblock", "golang.org/x/text/encoding"},
 		},
 		{
 			name:    "format imports the allowed regexp2 v2 module",
@@ -261,8 +259,8 @@ func TestCheckImports(t *testing.T) {
 		},
 		{
 			name:    "helper on model types imports another helper",
-			rel:     "internal/subrip",
-			imports: []string{modulePath + "/internal/textblock", modulePath + "/internal/parsing", modulePath + "/model"},
+			rel:     "format/internal/vtt",
+			imports: []string{modulePath + "/format/internal/textblock", modulePath + "/internal/parsing", modulePath + "/model"},
 		},
 		{
 			name:    "CLI imports everything",
@@ -357,9 +355,9 @@ func TestCheckImports(t *testing.T) {
 		},
 		{
 			name:    "helper on model types imports a format",
-			rel:     "internal/textblock",
+			rel:     "format/internal/textblock",
 			imports: []string{modulePath + "/format/srt"},
-			want:    []string{"internal/textblock imports format/srt, which is not in a lower layer"},
+			want:    []string{"format/internal/textblock imports format/srt, which is not in a lower layer"},
 		},
 		{
 			name:    "container imports a format",

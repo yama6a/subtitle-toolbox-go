@@ -1,30 +1,30 @@
 # Streaming
 
-`stbox.Load` holds the whole file and every cue in memory. For an 80 MB SubRip file with 400,000 cues, that is the 80 MB of input plus 400,000 cue values. Package `stream` handles one cue block at a time instead. Memory stays constant, whatever the file size.
+`stbox.Load` holds the whole file and every cue in memory. For an 80 MB SubRip file with 400,000 cues, that is the 80 MB of input plus 400,000 cue values. `srt.StreamReader` and `webvtt.StreamReader` handle one cue block at a time instead. Memory stays constant, whatever the file size.
 
 Only SubRip and WebVTT stream, because their cue blocks do not depend on each other. LRC end times and ASS headers need the whole file.
 
 | Type | Constructor | Gives or takes |
 |:--- |:--- |:--- |
-| `SubRipReader` | `NewSubRipReader(r, ReadOptions)` | `Cues()`, `Warnings()` |
-| `WebVTTReader` | `NewWebVTTReader(r, ReadOptions)` | `Cues()`, `Warnings()`, `Header()` |
-| `SubRipWriter` | `NewSubRipWriter(w, common, srt.WriteOptions)` | `Write(cue)`, `Close()` |
-| `WebVTTWriter` | `NewWebVTTWriter(w, common, webvtt.WriteOptions, header)` | `Write(cue)`, `DroppedColors()`, `Close()` |
+| `srt.StreamReader` | `srt.NewStreamReader(r, srt.StreamOptions)` | `Cues()`, `Warnings()` |
+| `webvtt.StreamReader` | `webvtt.NewStreamReader(r, webvtt.StreamOptions)` | `Cues()`, `Warnings()`, `Header()` |
+| `srt.StreamWriter` | `srt.NewStreamWriter(w, common, srt.WriteOptions)` | `Write(cue)`, `Close()` |
+| `webvtt.StreamWriter` | `webvtt.NewStreamWriter(w, common, webvtt.WriteOptions, header)` | `Write(cue)`, `DroppedColors()`, `Close()` |
 
 ## Shift a SubRip file into WebVTT
 
 Read a SubRip input cue by cue, add 2 s to each cue, and write WebVTT. The program never holds more than one cue. For files, pass the `*os.File` of `show.srt` in place of the string reader. Pass the `*os.File` of `show.vtt` in place of `os.Stdout`.
 
-<!-- example: ExampleSubRipReader -->
+<!-- example: format/srt/ExampleStreamReader -->
 ```go
 input := "1\n00:00:01,000 --> 00:00:02,500\nThe ferry leaves.\n\n2\n00:00:04,000 --> 00:00:05,000\nIt is <i>late</i>.\n"
 
-w, err := stream.NewWebVTTWriter(os.Stdout, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{}, nil)
+w, err := webvtt.NewStreamWriter(os.Stdout, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{}, nil)
 if err != nil {
 	fmt.Println(err)
 	return
 }
-for c, err := range stream.NewSubRipReader(strings.NewReader(input), stream.ReadOptions{}).Cues() {
+for c, err := range srt.NewStreamReader(strings.NewReader(input), srt.StreamOptions{}).Cues() {
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -51,14 +51,14 @@ if err := w.Close(); err != nil {
 // It is <i>late</i>.
 ```
 
-- **Header copy**: to keep the header text, `STYLE` and `REGION` blocks of a WebVTT input, pass `rd.Header()` to `NewWebVTTWriter`. The header is complete once the reader yielded its first cue.
-- **Caller owns the files**: the package takes an `io.Reader` and an `io.Writer`. The caller opens and closes the files. `Close` on a writer marks it closed and leaves the `io.Writer` open.
+- **Header copy**: to keep the header text, `STYLE` and `REGION` blocks of a WebVTT input, pass `rd.Header()` to `webvtt.NewStreamWriter`. The header is complete once the reader yielded its first cue.
+- **Caller owns the files**: the readers and writers take an `io.Reader` and an `io.Writer`. The caller opens and closes the files. `Close` on a writer marks it closed and leaves the `io.Writer` open.
 
 ## UTF-16 and other encodings
 
 The readers take UTF-8, with or without a BOM. They keep the bytes of other 8-bit encodings as they are. For UTF-16, wrap the input with `golang.org/x/text`:
 
-<!-- example: ExampleWebVTTReader_utf16 -->
+<!-- example: format/webvtt/ExampleStreamReader_utf16 -->
 ```go
 utf16 := unicode.UTF16(unicode.LittleEndian, unicode.UseBOM)
 input, err := utf16.NewEncoder().String("WEBVTT\n\n00:01.000 --> 00:02.000\nThe ferry leaves.\n")
@@ -68,7 +68,7 @@ if err != nil {
 }
 
 r := transform.NewReader(strings.NewReader(input), utf16.NewDecoder())
-for c, err := range stream.NewWebVTTReader(r, stream.ReadOptions{}).Cues() {
+for c, err := range webvtt.NewStreamReader(r, webvtt.StreamOptions{}).Cues() {
 	if err != nil {
 		fmt.Println(err)
 		return

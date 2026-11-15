@@ -3,8 +3,8 @@ package sbv
 import (
 	"io"
 
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/textblock"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textblock"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
