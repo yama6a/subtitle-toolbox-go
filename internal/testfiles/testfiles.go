@@ -1,4 +1,5 @@
-// Package testfiles finds the testdata folder at the module root for tests in any package.
+// Package testfiles finds the testdata folder at the module root for tests in any package,
+// and compares test output with golden files there.
 package testfiles
 
 import (

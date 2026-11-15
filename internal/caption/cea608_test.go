@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea608"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
 

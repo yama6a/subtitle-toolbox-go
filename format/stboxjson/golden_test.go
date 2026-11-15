@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -82,10 +81,10 @@ func TestWriteGoldens(t *testing.T) {
 			got := write(t, readBytes(t, testfiles.Read(t, realDir+"/"+c.file)), c.opts)
 			path := testfiles.Path(t, realDir+"/expected/"+c.file+c.suffix)
 			if c.roundTrip {
-				golden.RoundTrip(t, input, path, got, *update)
+				testfiles.RoundTrip(t, input, path, got, *update)
 				return
 			}
-			golden.Equal(t, path, got, *update)
+			testfiles.MatchGolden(t, path, got, *update)
 		})
 	}
 }

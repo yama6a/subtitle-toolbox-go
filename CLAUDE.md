@@ -23,7 +23,7 @@ format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microd
                cavena890, ebustl, mcc, pac, scc, vobsub
 stats/ stream/ hearingimpaired/ speakers/ fixing/ profanity/ refsync/ diff/ dual/ karaoke/
                The 1.x services. A service never imports the root package
-container/<name>/ The 3.x readers of video containers, layer 4b: mkv, mp4, mpegts. They call the format readers
+container/<name>/ The 3.x readers of video containers, layer 4b: mkv, mp4, mpegts. They call the format readers. Their helpers live in container/<name>/internal: ebml (mkv), arib and teletext (mpegts)
 ocr/           The 3.x service that reads the text of image cues with an OCR engine, and ocr/ocrtest, a fake engine for tests.
                The engines are ocr/glyph and ocr/tesseract, the chooser is ocr/auto. Layers 5b and 5c, see CONTRIBUTING.md
 translation/   The service that translates cue text with a machine translation engine. Its HTTP helper is translation/internal/httppost, the engines live in translation/<engine>. Layers 5, 5b and 5c, see CONTRIBUTING.md
@@ -32,8 +32,8 @@ timing/        The 2.x service that moves cue times to shot changes and frames. 
 imaging/       The 3.x public helpers that decode and build the PNG bitmaps of image cues. Same layer rule
 hls/           The service that cuts a subtitle into HLS WebVTT segments and joins segments. Same layer rule
 resegment/     The 4.x service that splits long cues and builds cues from word timings. Same layer rule
-internal/      Helpers: repocheck, conformance, caption, cea608, cea708, codepage, markupcore, hilabels, readingspeed, teletext, linewrap, timecode, textenc, extfallback, grapheme, ssatag, intkey, stringlist, xmlraw, ebml, orderedjson, jsondata, wordgroup, paragraphs, blocks, subrip,
-               vtt, position, parsing, writing, ttmlwrite, bitmap, displayset, dvbsub, arib, dvdsub, cli, and the test helpers testfiles, golden and translationtest
+internal/      Helpers: repocheck, conformance, caption, caption/cea608, caption/cea708, codepage, markupcore, hilabels, readingspeed, linewrap, timecode, textenc, extfallback, grapheme, ssatag, intkey, stringlist, xmlraw, orderedjson, jsondata, wordgroup, paragraphs, blocks, subrip,
+               vtt, position, parsing, writing, ttmlwrite, bitmap, bitmap/displayset, bitmap/dvbsub, bitmap/dvdsub, cli, and the test helpers testfiles and translationtest
 cmd/stbox/     The CLI main. Wiring, no business logic
 testdata/      All fixtures and goldens, one folder per topic. Packages read
                them through internal/testfiles. Only fuzz corpora stay in <package>/testdata/fuzz/
@@ -87,7 +87,7 @@ make smoke   # run the smoke test on this machine's archive in dist/
 - Black-box `package x_test`. Only `*_internal_test.go` files use `package x`, for unexported helpers.
 - Fixtures come from real or upstream data, never from invented data.
 - **Read goldens**: `<folder>/real/expected/<file>.json`, Go's own. `internal/conformance/readgoldens_test.go` reads each real file and compares canonical JSON. A format issue adds its folder row and its per-file read options there. `go test ./internal/conformance -run TestReadGoldens -update` rewrites a golden that differs. Review each diff by hand.
-- **Write goldens**: Go's own, in `internal/conformance/writegoldens_test.go` or the test of a format package. A round trip without a golden must equal its input after `golden.Normalize`. The package declares `var update = flag.Bool("update", false, "rewrite the write golden files")`. `make golden` rewrites them.
+- **Write goldens**: Go's own, in `internal/conformance/writegoldens_test.go` or the test of a format package. A round trip without a golden must equal its input after `testfiles.Normalize`. The package declares `var update = flag.Bool("update", false, "rewrite the write golden files")`. `make golden` rewrites them.
 - **Fuzz targets**: `FuzzRead` in `fuzz_test.go` of each format package, `FuzzDetect` in the root package.
   - Seeds: every file of the format's testdata folders, plus the short inputs of the table tests.
   - Each input reads once strict and once lenient, with zero options. A format that cannot read without a setting sets it, for example the MicroDVD frame rate 25.

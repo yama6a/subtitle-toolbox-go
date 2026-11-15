@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea608"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/linewrap"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"

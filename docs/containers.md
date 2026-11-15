@@ -142,7 +142,7 @@ The reader skips damage without a message. The result depends on the damage.
 
 ## DVB subtitles
 
-DVB subtitles (ETSI EN 300 743) are the bitmap subtitles of European digital TV. They come as subtitle segments in MPEG-TS PES packets, and as `S_DVBSUB` blocks in Matroska. The package `internal/dvbsub` decodes the segments. Each display set that shows a pixel becomes an image cue with the format `pgs`, so OCR, the PGS writer and the text formats work on it. Lenient mode matters only for the region pixel limit below. The decoder skips damaged and unknown segments without a message.
+DVB subtitles (ETSI EN 300 743) are the bitmap subtitles of European digital TV. They come as subtitle segments in MPEG-TS PES packets, and as `S_DVBSUB` blocks in Matroska. The package `internal/bitmap/dvbsub` decodes the segments. Each display set that shows a pixel becomes an image cue with the format `pgs`, so OCR, the PGS writer and the text formats work on it. Lenient mode matters only for the region pixel limit below. The decoder skips damaged and unknown segments without a message.
 
 ```text
 tracks, err := stbox.Tracks(f, size)          // 257 dvb_subtitle deu, 258 dvb_subtitle eng "hearing impaired"
@@ -176,7 +176,7 @@ s, info, err := stbox.Load("news.ts", stbox.ReadOptions{Track: 257})
 
 ## ARIB captions
 
-ARIB STD-B24 is the caption standard of Japanese digital TV (ISDB). Brazil and most of Latin America use its ABNT NBR 15606-1 variant with Latin character sets. The package `internal/arib` decodes the caption data groups. The reader of `container/mpegts` lists and extracts the streams.
+ARIB STD-B24 is the caption standard of Japanese digital TV (ISDB). Brazil and most of Latin America use its ABNT NBR 15606-1 variant with Latin character sets. The package `container/mpegts/internal/arib` decodes the caption data groups. The reader of `container/mpegts` lists and extracts the streams.
 
 ```text
 tracks, err := stbox.Tracks(f, size)          // 304 arib_caption jpn

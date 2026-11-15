@@ -11,7 +11,7 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cea708"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea708"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )

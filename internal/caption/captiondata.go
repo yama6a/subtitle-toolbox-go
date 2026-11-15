@@ -3,8 +3,8 @@ package caption
 import (
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cea608"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cea708"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea708"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )

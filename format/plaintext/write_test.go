@@ -14,7 +14,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/sbv"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -300,7 +299,7 @@ func TestRealFiles(t *testing.T) {
 			var out bytes.Buffer
 			_, err = plaintext.Write(&out, s, model.CommonWriteOptions{}, tt.opts)
 			require.NoError(t, err)
-			golden.Equal(t, testfiles.Path(t, "plaintext/real/"+tt.file), out.Bytes(), *update)
+			testfiles.MatchGolden(t, testfiles.Path(t, "plaintext/real/"+tt.file), out.Bytes(), *update)
 		})
 	}
 }

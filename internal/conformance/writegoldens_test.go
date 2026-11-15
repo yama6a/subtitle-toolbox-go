@@ -13,7 +13,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -244,7 +243,7 @@ func TestWriteGoldens(t *testing.T) {
 				t.Parallel()
 
 				s, _ := g.read(t, file)
-				golden.RoundTrip(t, testfiles.Path(t, g.name+"/real/"+file),
+				testfiles.RoundTrip(t, testfiles.Path(t, g.name+"/real/"+file),
 					testfiles.Path(t, goldenPath(g, file, ".out."+g.format.Extensions()[0])), writeAs(t, s, g.format), *update)
 			})
 		}
@@ -255,7 +254,7 @@ func TestWriteGoldens(t *testing.T) {
 
 			g := folder(t, r.folder)
 			s, _ := g.read(t, r.file)
-			golden.Equal(t, testfiles.Path(t, goldenPath(g, r.file, ".out"+path.Ext(r.file))), writeAs(t, s, g.format), *update)
+			testfiles.MatchGolden(t, testfiles.Path(t, goldenPath(g, r.file, ".out"+path.Ext(r.file))), writeAs(t, s, g.format), *update)
 		})
 	}
 	for _, c := range conversions() {
@@ -272,7 +271,7 @@ func TestWriteGoldens(t *testing.T) {
 				opts.MicroDVD.FrameRate = stbox.FrameRate{Num: 2997, Den: 125}
 			}
 			s, _ := g.readWith(t, c.file, opts)
-			golden.Equal(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(c.to))), writeAs(t, s, c.to), *update)
+			testfiles.MatchGolden(t, testfiles.Path(t, goldenPath(g, c.file, conversionSuffix(c.to))), writeAs(t, s, c.to), *update)
 		})
 	}
 }
@@ -288,7 +287,7 @@ func TestWriteGoldenPodcastWordSegments(t *testing.T) {
 	opts := stbox.WriteOptions{Transcript: transcript.WriteOptions{Podcast: transcript.PodcastWriteOptions{WordSegments: true}}}
 	_, err := stbox.Write(&out, s, stbox.PodcastTranscript, opts)
 	require.NoError(t, err)
-	golden.Equal(t, testfiles.Path(t, goldenPath(g, file, ".out.wordsegments.json")), out.Bytes(), *update)
+	testfiles.MatchGolden(t, testfiles.Path(t, goldenPath(g, file, ".out.wordsegments.json")), out.Bytes(), *update)
 }
 
 func TestWriteGoldenSCCNonDropFrame(t *testing.T) {
@@ -299,7 +298,7 @@ func TestWriteGoldenSCCNonDropFrame(t *testing.T) {
 	var out bytes.Buffer
 	_, err := stbox.Write(&out, s, stbox.SCC, stbox.WriteOptions{SCC: scc.WriteOptions{DropFrame: stbox.DropFrameOff}})
 	require.NoError(t, err)
-	golden.Equal(t, testfiles.Path(t, goldenPath(g, "own_styled.srt", ".to.ndf.scc")), out.Bytes(), *update)
+	testfiles.MatchGolden(t, testfiles.Path(t, goldenPath(g, "own_styled.srt", ".to.ndf.scc")), out.Bytes(), *update)
 }
 
 // TestWriteGoldenMCCNewFile writes a file that holds no stored header. The test sets the header field Creation Date
@@ -327,7 +326,7 @@ func TestWriteGoldenMCCNewFile(t *testing.T) {
 			report, err := stbox.Write(&out, s, stbox.MCC, stbox.WriteOptions{MCC: tt.opts})
 			require.NoError(t, err)
 			require.NotNil(t, report.MCC)
-			golden.Equal(t, testfiles.Path(t, goldenPath(g, "own_styled.srt", tt.suffix)), out.Bytes(), *update)
+			testfiles.MatchGolden(t, testfiles.Path(t, goldenPath(g, "own_styled.srt", tt.suffix)), out.Bytes(), *update)
 		})
 	}
 }
@@ -369,7 +368,7 @@ func TestWriteEBUSTLGoldens(t *testing.T) {
 			var out bytes.Buffer
 			_, err := stbox.Write(&out, s, stbox.EBUSTL, stbox.WriteOptions{EBUSTL: ebustl.WriteOptions{FrameRate: rate}})
 			require.NoError(t, err)
-			golden.Equal(t, testfiles.Path(t, "srt/real/expected/own_styled.srt.to."+rate.String()+".stl"), out.Bytes(), *update)
+			testfiles.MatchGolden(t, testfiles.Path(t, "srt/real/expected/own_styled.srt.to."+rate.String()+".stl"), out.Bytes(), *update)
 		})
 	}
 }

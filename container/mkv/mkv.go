@@ -13,7 +13,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/ebml"
+	"github.com/yama6a/subtitle-toolbox-go/v4/container/mkv/internal/ebml"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 

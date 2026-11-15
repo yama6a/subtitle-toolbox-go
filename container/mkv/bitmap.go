@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/displayset"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/dvdsub"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap/displayset"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap/dvdsub"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"

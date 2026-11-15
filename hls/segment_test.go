@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/hls"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -279,9 +278,9 @@ func TestSegmentGoldens(t *testing.T) {
 			dir := testfiles.Path(t, "hls/expected/"+tt.folder)
 			names, contents := segments(t, r)
 			for i, name := range names {
-				golden.Equal(t, filepath.Join(dir, name), []byte(contents[i]), *update)
+				testfiles.MatchGolden(t, filepath.Join(dir, name), []byte(contents[i]), *update)
 			}
-			golden.Equal(t, filepath.Join(dir, "index.m3u8"), r.Playlist(), *update)
+			testfiles.MatchGolden(t, filepath.Join(dir, "index.m3u8"), r.Playlist(), *update)
 
 			entries, err := os.ReadDir(dir)
 			require.NoError(t, err)
