@@ -160,9 +160,9 @@ func TestReadPodcastErrors(t *testing.T) {
 		{"speaker a number", `{"segments": [{"startTime": 0, "speaker": 7, "body": "Hi"}]}`, "The field segments[0].speaker must be a string."},
 		{"body a number", `{"segments": [{"startTime": 0, "body": 7}]}`, "The field segments[0].body must be a string."},
 		{"type errors come before limit errors", `{"segments": [{"startTime": 1e12, "body": 7}]}`, "The field segments[0].body must be a string."},
-		{"start of 100000 hours", `{"segments": [{"startTime": 360000000, "body": "Hi"}]}`, "The field segments[0].startTime is not below 100000 hours."},
-		{"end of 100000 hours", `{"segments": [{"startTime": 0, "endTime": 359999999.9996, "body": "Hi"}]}`, "The field segments[0].endTime is not below 100000 hours."},
-		{"end before start", `{"segments": [{"startTime": 2, "endTime": 1.5, "body": "Hi"}]}`, "The cue ends at 1.5 s, before it starts at 2 s."},
+		{"start of 100000 hours", `{"segments": [{"startTime": 360000000, "body": "Hi"}]}`, "the field segments[0].startTime is not below 100000 hours"},
+		{"end of 100000 hours", `{"segments": [{"startTime": 0, "endTime": 359999999.9996, "body": "Hi"}]}`, "the field segments[0].endTime is not below 100000 hours"},
+		{"end before start", `{"segments": [{"startTime": 2, "endTime": 1.5, "body": "Hi"}]}`, "the cue ends at 1.5 s, before it starts at 2 s"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

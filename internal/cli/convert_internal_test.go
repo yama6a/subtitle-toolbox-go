@@ -911,7 +911,7 @@ func TestConvertChapterInputGetsNoLenientHint(t *testing.T) {
 			t.Parallel()
 
 			got := call{stdin: tt.content}.run(t, "convert", "-", "--from", tt.format, "--to", "srt")
-			assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 1: Line 1 has a NUL character. Check the encoding of the file.\n"}, got)
+			assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 1: line 1 has a NUL character. Check the encoding of the file\n"}, got)
 		})
 	}
 }

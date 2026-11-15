@@ -173,9 +173,9 @@ func withImageCueAdvice(s *stbox.Subtitle, err error, hasOCR bool) error {
 		return err
 	}
 	if !hasOCR {
-		return usage(e.Reason + " " + imageCueAdviceNoOCR)
+		return usage(advise(e.Reason, imageCueAdviceNoOCR))
 	}
-	return usage(e.Reason + " " + imageCueAdvice)
+	return usage(advise(e.Reason, imageCueAdvice))
 }
 
 // optionsFor returns the write options for output in format f. The field of a format is set only for that format,

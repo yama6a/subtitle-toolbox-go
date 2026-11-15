@@ -165,7 +165,7 @@ func ExampleSubtitle_SetFormatData() {
 	// Output:
 	// <nil>
 	// 23.976 true
-	// stbox: invalid argument: The field formatData.scc.dropFrame must be a boolean.
+	// stbox: invalid argument: the field formatData.scc.dropFrame must be a boolean
 	// [microdvd]
 }
 
@@ -179,8 +179,8 @@ func ExampleCue_SetFormatData() {
 	err = c.SetFormatData("ass", model.NewData(model.Field{Key: "text", Value: 5}))
 	fmt.Println(err)
 	// Output:
-	// stbox: invalid argument: The field formatData.srt.coordinates.x2 is missing.
-	// stbox: invalid argument: The field formatData.ass.text has the unsupported Go type int.
+	// stbox: invalid argument: the field formatData.srt.coordinates.x2 is missing
+	// stbox: invalid argument: the field formatData.ass.text has the unsupported Go type int
 }
 
 func ExampleFrameRateFromFloat() {
@@ -190,7 +190,7 @@ func ExampleFrameRateFromFloat() {
 	fmt.Println(err)
 	// Output:
 	// 2997 125 23.976 <nil>
-	// stbox: invalid argument: The frame rate must be greater than 0, got 0.
+	// stbox: invalid argument: the frame rate must be greater than 0, got 0
 }
 
 func ExamplePosition_RowOn() {
@@ -224,19 +224,19 @@ func ExampleParseTime() {
 func ExampleImage_Validate() {
 	im := model.Image{PNG: []byte("\x89PNG"), Width: 7681, Height: 1, ScreenWidth: 7681, ScreenHeight: 1}
 	fmt.Println(im.Validate())
-	// Output: stbox: invalid argument: Cannot create a cue image of 7681x1 pixels on a screen of 7681x1 pixels: an image of 7681x1 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total.
+	// Output: stbox: invalid argument: cannot create a cue image of 7681x1 pixels on a screen of 7681x1 pixels: an image of 7681x1 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total
 }
 
 func ExampleCommonWriteOptions_Validate() {
 	err := model.CommonWriteOptions{LineEnding: 2}.Validate()
 	fmt.Println(err)
 	// Output:
-	// stbox: invalid argument: CommonWriteOptions.LineEnding: The line ending 2 is unknown.
+	// stbox: invalid argument: CommonWriteOptions.LineEnding: the line ending 2 is unknown
 }
 
 func ExampleCueLimits_ValidateAt() {
 	err := model.CueLimits{MaxLinesPerCue: -1}.ValidateAt("resegment.Options.Limits")
 	fmt.Println(err)
 	// Output:
-	// stbox: invalid argument: resegment.Options.Limits.MaxLinesPerCue: The maximum characters per line and the maximum lines must be at least 1, got 42 and -1.
+	// stbox: invalid argument: resegment.Options.Limits.MaxLinesPerCue: the maximum characters per line and the maximum lines must be at least 1, got 42 and -1
 }

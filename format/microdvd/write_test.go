@@ -127,7 +127,7 @@ func TestWriteNeedsAFrameRate(t *testing.T) {
 	s := subtitle([]string{"Hello"})
 	require.NoError(t, s.SetFormatData("microdvd", model.NewData(model.Field{Key: "frameRate", Value: 0.0})))
 	_, err := microdvd.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, microdvd.WriteOptions{})
-	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "The MicroDVD frame rate must be greater than 0, got 0."}, err)
+	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "the MicroDVD frame rate must be greater than 0, got 0"}, err)
 
 	_, err = microdvd.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: model.FrameRate{Num: -1, Den: 1}})
 	require.ErrorIs(t, err, model.ErrInvalidArgument)

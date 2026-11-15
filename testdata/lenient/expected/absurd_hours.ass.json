@@ -2,7 +2,7 @@
     "name": "ASS with 20 hour digits",
     "format": "ass",
     "strict": {
-        "error": "The time \"99999999999999999999:00:04.00\" is not below 100000 hours.",
+        "error": "the time \"99999999999999999999:00:04.00\" is not below 100000 hours",
         "line": 11
     },
     "cues": [

@@ -2,7 +2,7 @@
     "name": "SubViewer 1 with a DELAY that moves a cue past the limit",
     "format": "subviewer",
     "strict": {
-        "error": "The time \"[00:00:12] with DELAY 359999990\" is not below 100000 hours.",
+        "error": "the time \"[00:00:12] with DELAY 359999990\" is not below 100000 hours",
         "line": 14
     },
     "cues": [

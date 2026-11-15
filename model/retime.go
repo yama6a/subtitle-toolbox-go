@@ -29,7 +29,7 @@ func (s *Subtitle) Shift(d time.Duration) error {
 // or when a cue would end at 100,000 hours or later.
 func (s *Subtitle) ShiftRange(d time.Duration, from, to *time.Duration) error {
 	if from != nil && to != nil && *to <= *from {
-		return invalidArgument(fmt.Sprintf("The end time of the shift must be after its start time, got %s to %s.",
+		return invalidArgument(fmt.Sprintf("the end time of the shift must be after its start time, got %s to %s",
 			timecode.Seconds(*from), timecode.Seconds(*to)))
 	}
 	return s.retime(retiming{shift: d}, func(start time.Duration) bool {
@@ -42,7 +42,7 @@ func (s *Subtitle) ShiftRange(d time.Duration, from, to *time.Duration) error {
 // or when a cue would end at 100,000 hours or later.
 func (s *Subtitle) Scale(factor float64) error {
 	if !positiveFinite(factor) {
-		return invalidArgument(fmt.Sprintf("The scale factor must be greater than 0, got %s.", timecode.Number(factor)))
+		return invalidArgument(fmt.Sprintf("the scale factor must be greater than 0, got %s", timecode.Number(factor)))
 	}
 	return s.retime(retiming{segments: []segment{{factor: factor}}}, nil)
 }
@@ -68,12 +68,12 @@ func (s *Subtitle) ConvertFrameRate(from, to FrameRate) error {
 // 100,000 hours or later.
 func (s *Subtitle) SyncByPoints(points []SyncPoint) error {
 	if len(points) == 0 {
-		return invalidArgument("The sync points must not be empty.")
+		return invalidArgument("the sync points must not be empty")
 	}
 	for i := 1; i < len(points); i++ {
 		a, b := points[i-1], points[i]
 		if b.Old <= a.Old || b.New <= a.New {
-			return invalidArgument(fmt.Sprintf("The old and new times of the sync points must both increase, got %s=%s before %s=%s.",
+			return invalidArgument(fmt.Sprintf("the old and new times of the sync points must both increase, got %s=%s before %s=%s",
 				timecode.Seconds(a.Old), timecode.Seconds(a.New), timecode.Seconds(b.Old), timecode.Seconds(b.New)))
 		}
 	}

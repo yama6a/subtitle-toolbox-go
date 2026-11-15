@@ -398,7 +398,7 @@ func TestWritesAfterCloseFail(t *testing.T) {
 		require.NoError(t, w.Close(), name)
 		err := w.Write(model.Cue{})
 		require.ErrorIs(t, err, model.ErrInvalidArgument, name)
-		assert.ErrorContains(t, err, "The writer is closed.", name)
+		assert.ErrorContains(t, err, "the writer is closed", name)
 	}
 }
 

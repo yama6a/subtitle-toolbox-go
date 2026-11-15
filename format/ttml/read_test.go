@@ -255,7 +255,7 @@ func TestParagraphEndBeforeBegin(t *testing.T) {
 
 	content := document("<div>\n"+`<p begin="5s" end="2s">x</p>`+"\n"+`<p begin="40.001s" end="10s">y</p></div>`, "", "")
 	perr := readError(t, content, false)
-	assert.Equal(t, "The cue ends at 2 s, before it starts at 5 s.", perr.Msg)
+	assert.Equal(t, "the cue ends at 2 s, before it starts at 5 s", perr.Msg)
 	assert.Equal(t, 2, perr.Line)
 
 	s, warnings := mustRead(t, content, true)

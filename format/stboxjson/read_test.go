@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
@@ -120,13 +121,13 @@ func readErrorCases() []readErrorCase {
 		{name: "comment without text", content: `{"version": 1, "comments": [{"beforeCueIndex": 0}], "cues": [` + oneCue + `]}`, msg: "The field comments[0].text must be a string.", lenientCues: 1},
 		{name: "negative comment index", content: `{"version": 1, "comments": [{"text": "Note", "beforeCueIndex": -1}], "cues": [` + oneCue + `]}`, msg: "The field comments[0].beforeCueIndex must be an integer of 0 or more.", lenientCues: 1},
 		{name: "comment index as float", content: `{"version": 1, "comments": [{"text": "Note", "beforeCueIndex": 1.0}], "cues": [` + oneCue + `]}`, msg: "The field comments[0].beforeCueIndex must be an integer of 0 or more.", lenientCues: 1},
-		{name: "start at 100000 hours", content: `{"version": 1, "cues": [` + oneCue + `, {"start": 360000000, "end": 360000001, "lines": []}]}`, msg: "The field cues[1].start is not below 100000 hours.", lenientCues: 1},
-		{name: "end at 100000 hours", content: `{"version": 1, "cues": [{"start": 1, "end": 360000000.0, "lines": []}]}`, msg: "The field cues[0].end is not below 100000 hours."},
+		{name: "start at 100000 hours", content: `{"version": 1, "cues": [` + oneCue + `, {"start": 360000000, "end": 360000001, "lines": []}]}`, msg: "the field cues[1].start is not below 100000 hours", lenientCues: 1},
+		{name: "end at 100000 hours", content: `{"version": 1, "cues": [{"start": 1, "end": 360000000.0, "lines": []}]}`, msg: "the field cues[0].end is not below 100000 hours"},
 		{name: "start of -1e20", content: `{"version": 1, "cues": [{"start": -1e20, "end": 1, "lines": []}]}`, msg: "The field cues[0].start is not above -100000 hours."},
 		{name: "end at -100000 hours", content: `{"version": 1, "cues": [{"start": -1, "end": -360000000, "lines": []}]}`, msg: "The field cues[0].end is not above -100000 hours."},
-		{name: "word timestamp at 100000 hours", content: `{"version": 1, "cues": [{"start": 1, "end": 2, "lines": ["One <100000:00:00.000>two"]}]}`, msg: `The time "100000:00:00.000" is not below 100000 hours.`},
-		{name: "word timestamp at 100000 hours in version 2 lines", content: `{"version": 2, "cues": [{"start": 1, "end": 2, "lines": ["One <100000:00:00.000>two"]}]}`, msg: `The time "100000:00:00.000" is not below 100000 hours.`},
-		{name: "end rounds to 100000 hours", content: `{"version": 1, "cues": [{"start": 1, "end": 359999999.9996, "lines": []}]}`, msg: "The field cues[0].end is not below 100000 hours."},
+		{name: "word timestamp at 100000 hours", content: `{"version": 1, "cues": [{"start": 1, "end": 2, "lines": ["One <100000:00:00.000>two"]}]}`, msg: `the time "100000:00:00.000" is not below 100000 hours`},
+		{name: "word timestamp at 100000 hours in version 2 lines", content: `{"version": 2, "cues": [{"start": 1, "end": 2, "lines": ["One <100000:00:00.000>two"]}]}`, msg: `the time "100000:00:00.000" is not below 100000 hours`},
+		{name: "end rounds to 100000 hours", content: `{"version": 1, "cues": [{"start": 1, "end": 359999999.9996, "lines": []}]}`, msg: "the field cues[0].end is not below 100000 hours"},
 		{name: "start rounds to -100000 hours", content: `{"version": 1, "cues": [{"start": -359999999.9996, "end": 1, "lines": []}]}`, msg: "The field cues[0].start is not above -100000 hours."},
 		{name: "negative end before start", content: `{"version": 1, "cues": [{"start": 5, "end": -1, "lines": ["Negative end"]}]}`, msg: "The cue ends at -1 s, before it starts at 5 s.", lenientCues: 1},
 		{name: "end before start", content: `{"version": 1, "cues": [{"start": 70, "end": 2, "lines": []}]}`, msg: "The cue ends at 2 s, before it starts at 70 s."},
@@ -181,11 +182,11 @@ func checkReadError(t *testing.T, tt readErrorCase) {
 	assert.Equal(t, tt.lenientCues, s.Len())
 	require.Len(t, warnings, 1)
 	if warnings[0].Action == model.Repaired {
-		assert.Equal(t, tt.msg+" The parser swapped the times.", warnings[0].Message)
+		assert.Equal(t, parsing.Sentence(tt.msg)+" The parser swapped the times.", warnings[0].Message)
 		return
 	}
 	assert.Equal(t, model.Skipped, warnings[0].Action)
-	assert.Equal(t, tt.msg, warnings[0].Message)
+	assert.Equal(t, parsing.Sentence(tt.msg), warnings[0].Message)
 }
 
 type numberCase struct {

@@ -229,14 +229,14 @@ func TestValidateWords(t *testing.T) {
 		msg    string
 	}{
 		{"valid", lines, []model.Word{word("The", 0, 1), word("beach", 1, 2)}, "", ""},
-		{"empty text", lines, []model.Word{word("The", 0, 1), word("beach", 1, 2), word("", 2, 3)}, "Words[2].Text", "The word text must not be empty."},
-		{"white space", lines, []model.Word{word("The", 0, 1), word("house", 1, 2), word(" beach", 2, 3)}, "Words[2].Text", `The word text must not start or end with white space, got " beach".`},
-		{"start below 0", lines, []model.Word{word("The", -1, 1)}, "Words[0].Start", "The word start must be 0 s or more and below 100000 hours, got -1 s."},
-		{"end too large", lines, []model.Word{word("The", 0, 360000000)}, "Words[0].End", "The word end must be 0 s or more and below 100000 hours, got 360000000 s."},
-		{"end before start", lines, []model.Word{word("The", 2, 1)}, "Words[0].End", "The word end 1 s must not be before the word start 2 s."},
-		{"start goes back", lines, []model.Word{word("The", 4, 5), word("beach", 3, 6)}, "Words[1].Start", "The word start 3 s must not be before the start 4 s of the word before it."},
-		{"confidence", lines, []model.Word{{Text: "The", Confidence: conf(1.5)}}, "Words[0].Confidence", "The confidence must be from 0 to 1, got 1.5."},
-		{"not in the text", lines, []model.Word{word("The", 0, 1), word("beach", 1, 2), word("The", 2, 3)}, "Words[2].Text", `The word "The" is not in the text of the cue after the word before it.`},
+		{"empty text", lines, []model.Word{word("The", 0, 1), word("beach", 1, 2), word("", 2, 3)}, "Words[2].Text", "the word text must not be empty"},
+		{"white space", lines, []model.Word{word("The", 0, 1), word("house", 1, 2), word(" beach", 2, 3)}, "Words[2].Text", `the word text must not start or end with white space, got " beach"`},
+		{"start below 0", lines, []model.Word{word("The", -1, 1)}, "Words[0].Start", "the word start must be 0 s or more and below 100000 hours, got -1 s"},
+		{"end too large", lines, []model.Word{word("The", 0, 360000000)}, "Words[0].End", "the word end must be 0 s or more and below 100000 hours, got 360000000 s"},
+		{"end before start", lines, []model.Word{word("The", 2, 1)}, "Words[0].End", "the word end 1 s must not be before the word start 2 s"},
+		{"start goes back", lines, []model.Word{word("The", 4, 5), word("beach", 3, 6)}, "Words[1].Start", "the word start 3 s must not be before the start 4 s of the word before it"},
+		{"confidence", lines, []model.Word{{Text: "The", Confidence: conf(1.5)}}, "Words[0].Confidence", "the confidence must be from 0 to 1, got 1.5"},
+		{"not in the text", lines, []model.Word{word("The", 0, 1), word("beach", 1, 2), word("The", 2, 3)}, "Words[2].Text", `the word "The" is not in the text of the cue after the word before it`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

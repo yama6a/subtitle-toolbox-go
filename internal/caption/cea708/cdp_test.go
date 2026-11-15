@@ -19,8 +19,8 @@ func TestReadCDP(t *testing.T) {
 		wantTriplets []cea708.Triplet
 		wantErr      string
 	}{
-		{name: "no identifier", cdp: "0A 96 70 0000000000", wantErr: "The data holds no caption distribution packet."},
-		{name: "6 bytes", cdp: "96 69 06 4F 43 00", wantErr: "The data holds no caption distribution packet."},
+		{name: "no identifier", cdp: "0A 96 70 0000000000", wantErr: "the data holds no caption distribution packet"},
+		{name: "6 bytes", cdp: "96 69 06 4F 43 00", wantErr: "the data holds no caption distribution packet"},
 		{name: "no sections", cdp: "96 69 07 4F 43 00 00", wantCode: 4},
 		{
 			name:     "cc_data after a time code section",
@@ -32,7 +32,7 @@ func TestReadCDP(t *testing.T) {
 				{Type: cea708.DTVCCStart, Data: [2]byte{0x41, 0x42}},
 			},
 		},
-		{name: "short cc_data", cdp: "96 69 0A 4F 43 00 00 72 F4 FC 94", wantErr: "The caption distribution packet is shorter than its 20 cc_data triplets."},
+		{name: "short cc_data", cdp: "96 69 0A 4F 43 00 00 72 F4 FC 94", wantErr: "the caption distribution packet is shorter than its 20 cc_data triplets"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

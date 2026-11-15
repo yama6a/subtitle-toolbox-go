@@ -23,7 +23,7 @@ func transparent(c uint32) bool { return c&0xFF == 0 }
 // With more, a median cut picks the colours and entry 0 is 0x00000000.
 func Reduce(pixels []uint32, maxColors int) ([]uint32, []byte, error) {
 	if maxColors < 2 || maxColors > maxPalette {
-		return nil, nil, &model.InvalidArgumentError{Msg: "The color count must be from 2 to 256, got " + strconv.Itoa(maxColors) + "."}
+		return nil, nil, &model.InvalidArgumentError{Msg: "the color count must be from 2 to 256, got " + strconv.Itoa(maxColors)}
 	}
 	colors, position := countColors(pixels)
 	entryOf := make([]byte, len(colors))

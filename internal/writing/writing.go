@@ -102,7 +102,7 @@ func SkipImageCues(s *model.Subtitle, f model.Format, common model.CommonWriteOp
 func ImageCueError(f model.Format, index int) *model.UnwritableError {
 	return &model.UnwritableError{
 		Format: f, CueIndex: index,
-		Reason: "Cue #" + strconv.Itoa(index) + " holds an image but no text, and " + string(f) + " needs text.",
+		Reason: "cue #" + strconv.Itoa(index) + " holds an image but no text, and " + string(f) + " needs text",
 	}
 }
 

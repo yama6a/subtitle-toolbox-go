@@ -73,7 +73,7 @@ func ParseTimecode(s string) (Timecode, error) {
 }
 
 func badTimecodeLabel(s string) error {
-	return invalidArgument(`The time code "` + s + `" is not HH:MM:SS:FF or HH:MM:SS;FF.`)
+	return invalidArgument(`the time code "` + s + `" is not HH:MM:SS:FF or HH:MM:SS;FF`)
 }
 
 // String returns the label, with ";" before the frames for drop-frame and ":" otherwise.
@@ -275,11 +275,11 @@ func ParseTime(s string, r FrameRate) (time.Duration, error) {
 	}
 	m := timeFrames.FindStringSubmatch(s)
 	if m == nil {
-		return 0, invalidArgument(`The timecode "` + s + `" is not h:mm:ss.mmm, m:ss.mmm or h:mm:ss:ff.`)
+		return 0, invalidArgument(`the timecode "` + s + `" is not h:mm:ss.mmm, m:ss.mmm or h:mm:ss:ff`)
 	}
 	labels := r.Labels()
 	if labels == 0 {
-		return 0, invalidArgument(`The timecode "` + s + `" counts frames and needs a frame rate.`)
+		return 0, invalidArgument(`the timecode "` + s + `" counts frames and needs a frame rate`)
 	}
 	hours := decimal.Saturated(m[1])
 	if hours >= timecode.MaxHours {
@@ -287,7 +287,7 @@ func ParseTime(s string, r FrameRate) (time.Duration, error) {
 	}
 	frames := decimal.Saturated(m[4])
 	if frames >= int64(labels) {
-		return 0, invalidArgument(`The timecode "` + s + `" has a frame number that is not below ` + strconv.Itoa(labels) + ".")
+		return 0, invalidArgument(`the timecode "` + s + `" has a frame number that is not below ` + strconv.Itoa(labels))
 	}
 	t := Timecode{Hours: int(hours), Minutes: int(decimal.Saturated(m[2])), Seconds: int(decimal.Saturated(m[3])), Frames: int(frames)}
 	d := r.ClockDuration(t).Round(time.Millisecond)
@@ -298,5 +298,5 @@ func ParseTime(s string, r FrameRate) (time.Duration, error) {
 }
 
 func timeBelowLimit(s string) error {
-	return invalidArgument(`The timecode "` + s + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours.")
+	return invalidArgument(`the timecode "` + s + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours")
 }

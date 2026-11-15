@@ -326,7 +326,7 @@ func TestValidate(t *testing.T) {
 		{"defaults", resegment.Options{}, ""},
 		{"zero gap", resegment.Options{MaxWordGap: new(time.Duration)}, ""},
 		{"negative gap", resegment.Options{MaxWordGap: &negative}, "The maximum word gap must not be negative, got -1."},
-		{"limits", resegment.Options{Limits: model.CueLimits{MaxCharactersPerLine: -1}}, "The maximum characters per line"},
+		{"limits", resegment.Options{Limits: model.CueLimits{MaxCharactersPerLine: -1}}, "the maximum characters per line"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

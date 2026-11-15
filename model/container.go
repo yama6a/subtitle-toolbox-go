@@ -50,12 +50,12 @@ type TrackError struct {
 	Tracks []Track
 }
 
-// Error returns the sentence of the error, for example "stbox: unsupported format: The MKV or WebM file has 6
-// subtitle tracks.".
+// Error returns the message of the error, for example "stbox: unsupported format: the MKV or WebM file has 6
+// subtitle tracks".
 func (e *TrackError) Error() string {
-	msg := "The " + e.Container.Label() + " file has no subtitle track."
+	msg := "the " + e.Container.Label() + " file has no subtitle track"
 	if len(e.Tracks) > 0 {
-		msg = "The " + e.Container.Label() + " file has " + strconv.Itoa(len(e.Tracks)) + " subtitle tracks."
+		msg = "the " + e.Container.Label() + " file has " + strconv.Itoa(len(e.Tracks)) + " subtitle tracks"
 	}
 	return ErrUnsupportedFormat.Error() + ": " + msg
 }

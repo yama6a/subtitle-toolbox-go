@@ -2,7 +2,7 @@
     "name": "ASS with 4 fraction digits, no fraction, and a comma or colon before the fraction",
     "format": "ass",
     "strict": {
-        "error": "The time \"0:00:03.5004\" is not valid.",
+        "error": "the time \"0:00:03.5004\" is not valid",
         "line": 12
     },
     "cues": [

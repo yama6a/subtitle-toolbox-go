@@ -160,7 +160,7 @@ func TestPrepareRejectsNULInStrictMode(t *testing.T) {
 			assert.Equal(t, model.ParseError{
 				Format: model.SubRip,
 				Line:   tt.line,
-				Msg:    "Line " + strconv.Itoa(tt.line) + " has a NUL character. Check the encoding of the file.",
+				Msg:    "line " + strconv.Itoa(tt.line) + " has a NUL character. Check the encoding of the file",
 			}, *perr)
 			assert.Nil(t, got)
 			assert.False(t, ok)
@@ -172,7 +172,7 @@ func TestPrepareRejectsNULInStrictMode(t *testing.T) {
 func TestNoCues(t *testing.T) {
 	t.Parallel()
 
-	const msg = "The file has text but no cues."
+	const msg = "the file has text but no cues"
 	found := func() (int, bool) { return 2, true }
 	tests := []struct {
 		name     string
@@ -184,7 +184,7 @@ func TestNoCues(t *testing.T) {
 		warnings []model.ParseWarning
 	}{
 		{name: "strict text without cues", textLine: found, wantErr: true},
-		{name: "lenient text without cues", lenient: true, textLine: found, warnings: []model.ParseWarning{{Message: msg, Line: 2, Block: model.NoBlock, Action: model.Skipped}}},
+		{name: "lenient text without cues", lenient: true, textLine: found, warnings: []model.ParseWarning{{Message: Sentence(msg), Line: 2, Block: model.NoBlock, Action: model.Skipped}}},
 		{name: "no text line", textLine: func() (int, bool) { return 0, false }},
 		{name: "cues", cues: 1, textLine: func() (int, bool) { panic("the hook runs only without cues") }},
 		{

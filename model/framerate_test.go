@@ -26,11 +26,11 @@ func TestFrameRateFromFloat(t *testing.T) {
 		{name: "12.5", fps: 12.5, want: model.FrameRate{Num: 25, Den: 2}},
 		{name: "0.5", fps: 0.5, want: model.FrameRate{Num: 1, Den: 2}},
 		{name: "30000/1001 as a float", fps: 30000.0 / 1001, want: model.FrameRate{Num: 2997002997002997, Den: 100000000000000}},
-		{name: "zero", fps: 0, err: "The frame rate must be greater than 0, got 0."},
-		{name: "negative", fps: -25, err: "The frame rate must be greater than 0, got -25."},
-		{name: "NaN", fps: math.NaN(), err: "The frame rate must be greater than 0, got NAN."},
-		{name: "infinity", fps: math.Inf(1), err: "The frame rate must be greater than 0, got INF."},
-		{name: "too many digits", fps: 1e300, err: "The frame rate must have at most 18 digits, got 1e+300."},
+		{name: "zero", fps: 0, err: "the frame rate must be greater than 0, got 0"},
+		{name: "negative", fps: -25, err: "the frame rate must be greater than 0, got -25"},
+		{name: "NaN", fps: math.NaN(), err: "the frame rate must be greater than 0, got NAN"},
+		{name: "infinity", fps: math.Inf(1), err: "the frame rate must be greater than 0, got INF"},
+		{name: "too many digits", fps: 1e300, err: "the frame rate must have at most 18 digits, got 1e+300"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -62,21 +62,21 @@ func TestFrameRateValidate(t *testing.T) {
 		{name: "2997/100 drop-frame", rate: model.FrameRate{Num: 2997, Den: 100, DropFrame: true}},
 		{name: "59.94 drop-frame", rate: model.FrameRate{Num: 60000, Den: 1001, DropFrame: true}},
 		{name: "2997/50 drop-frame", rate: model.FrameRate{Num: 2997, Den: 50, DropFrame: true}},
-		{name: "zero value", err: "The frame rate must be greater than 0, got 0."},
-		{name: "negative", rate: model.FrameRate{Num: -1, Den: 1}, err: "The frame rate must be greater than 0, got -1."},
-		{name: "zero denominator", rate: model.FrameRate{Num: 1}, err: "The frame rate must be greater than 0, got INF."},
+		{name: "zero value", err: "the frame rate must be greater than 0, got 0"},
+		{name: "negative", rate: model.FrameRate{Num: -1, Den: 1}, err: "the frame rate must be greater than 0, got -1"},
+		{name: "zero denominator", rate: model.FrameRate{Num: 1}, err: "the frame rate must be greater than 0, got INF"},
 		{
 			name: "exactly 30 drop-frame", rate: model.FrameRate{Num: 30, Den: 1, DropFrame: true},
-			err: "The frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got 30.",
+			err: "the frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got 30",
 		},
 		{
 			name: "29.6 drop-frame", rate: model.FrameRate{Num: 148, Den: 5, DropFrame: true},
-			err: "The frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got 29.6.",
+			err: "the frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got 29.6",
 		},
 		{name: "5994/200 drop-frame is reduced first", rate: model.FrameRate{Num: 5994, Den: 200, DropFrame: true}},
 		{
 			name: "25 drop-frame", rate: model.FrameRate{Num: 25, Den: 1, DropFrame: true},
-			err: "The frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got 25.",
+			err: "the frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got 25",
 		},
 	}
 	for _, tt := range tests {

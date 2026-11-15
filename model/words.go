@@ -52,7 +52,7 @@ func (c Cue) ValidateWords() error {
 	}
 	found := markupcore.FindWords(c.PlainText(), wordTexts(c.Words))
 	if len(found) < len(c.Words) {
-		return wordError(len(found), "Text", "The word "+strconv.Quote(c.Words[len(found)].Text)+" is not in the text of the cue after the word before it.")
+		return wordError(len(found), "Text", "the word "+strconv.Quote(c.Words[len(found)].Text)+" is not in the text of the cue after the word before it")
 	}
 	return nil
 }
@@ -60,9 +60,9 @@ func (c Cue) ValidateWords() error {
 func checkWord(i int, w Word, before *Word) error {
 	switch {
 	case w.Text == "":
-		return wordError(i, "Text", "The word text must not be empty.")
+		return wordError(i, "Text", "the word text must not be empty")
 	case strings.TrimFunc(w.Text, markupcore.IsSpace) != w.Text:
-		return wordError(i, "Text", "The word text must not start or end with white space, got "+strconv.Quote(w.Text)+".")
+		return wordError(i, "Text", "the word text must not start or end with white space, got "+strconv.Quote(w.Text))
 	}
 	return checkWordTimes(i, w, before)
 }
@@ -70,15 +70,15 @@ func checkWord(i int, w Word, before *Word) error {
 func checkWordTimes(i int, w Word, before *Word) error {
 	switch {
 	case !validWordTime(w.Start):
-		return wordError(i, "Start", "The word start must be 0 s or more and below 100000 hours, got "+timecode.Seconds(w.Start)+" s.")
+		return wordError(i, "Start", "the word start must be 0 s or more and below 100000 hours, got "+timecode.Seconds(w.Start)+" s")
 	case !validWordTime(w.End):
-		return wordError(i, "End", "The word end must be 0 s or more and below 100000 hours, got "+timecode.Seconds(w.End)+" s.")
+		return wordError(i, "End", "the word end must be 0 s or more and below 100000 hours, got "+timecode.Seconds(w.End)+" s")
 	case w.End < w.Start:
-		return wordError(i, "End", "The word end "+timecode.Seconds(w.End)+" s must not be before the word start "+timecode.Seconds(w.Start)+" s.")
+		return wordError(i, "End", "the word end "+timecode.Seconds(w.End)+" s must not be before the word start "+timecode.Seconds(w.Start)+" s")
 	case before != nil && w.Start < before.Start:
-		return wordError(i, "Start", "The word start "+timecode.Seconds(w.Start)+" s must not be before the start "+timecode.Seconds(before.Start)+" s of the word before it.")
+		return wordError(i, "Start", "the word start "+timecode.Seconds(w.Start)+" s must not be before the start "+timecode.Seconds(before.Start)+" s of the word before it")
 	case w.Confidence != nil && !(*w.Confidence >= 0 && *w.Confidence <= 1):
-		return wordError(i, "Confidence", "The confidence must be from 0 to 1, got "+timecode.Number(*w.Confidence)+".")
+		return wordError(i, "Confidence", "the confidence must be from 0 to 1, got "+timecode.Number(*w.Confidence))
 	}
 	return nil
 }

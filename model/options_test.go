@@ -47,15 +47,15 @@ func TestCommonWriteOptionsValidate(t *testing.T) {
 		{name: "valid", opts: model.CommonWriteOptions{LineEnding: model.CRLF, BOM: model.BOMRemove}},
 		{
 			name: "bad line ending", opts: model.CommonWriteOptions{LineEnding: 2},
-			wantOption: "CommonWriteOptions.LineEnding", wantMsg: "The line ending 2 is unknown.",
+			wantOption: "CommonWriteOptions.LineEnding", wantMsg: "the line ending 2 is unknown",
 		},
 		{
 			name: "bad BOM", opts: model.CommonWriteOptions{BOM: 3},
-			wantOption: "CommonWriteOptions.BOM", wantMsg: "The BOM rule 3 is unknown.",
+			wantOption: "CommonWriteOptions.BOM", wantMsg: "the BOM rule 3 is unknown",
 		},
 		{
 			name: "ValidateAt with a path", opts: model.CommonWriteOptions{BOM: 3}, path: "WriteOptions",
-			wantOption: "WriteOptions.BOM", wantMsg: "The BOM rule 3 is unknown.",
+			wantOption: "WriteOptions.BOM", wantMsg: "the BOM rule 3 is unknown",
 		},
 	}
 	for _, tt := range tests {

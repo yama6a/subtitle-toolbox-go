@@ -155,7 +155,7 @@ func TestReadErrors(t *testing.T) {
 			name:        "a time of 100000 hours",
 			content:     "100000:00:00:00 , 100000:00:01:00 , Far\n",
 			fps:         rate25,
-			wantMsg:     `The time "100000:00:00:00" is not below 100000 hours.`,
+			wantMsg:     `the time "100000:00:00:00" is not below 100000 hours`,
 			wantLine:    1,
 			wantWarning: `The time "100000:00:00:00" is not below 100000 hours.`,
 		},
@@ -163,7 +163,7 @@ func TestReadErrors(t *testing.T) {
 			name:        "an end before the start",
 			content:     "00:00:02:00 , 00:00:01:00 , Back\n",
 			fps:         rate25,
-			wantMsg:     "The cue ends at 1 s, before it starts at 2 s.",
+			wantMsg:     "the cue ends at 1 s, before it starts at 2 s",
 			wantLine:    1,
 			wantWarning: "The cue ends at 1 s, before it starts at 2 s. The parser swapped the times.",
 			wantCues:    1,
@@ -223,10 +223,10 @@ func TestOptionsValidate(t *testing.T) {
 	var rerr, werr *model.InvalidArgumentError
 	require.ErrorAs(t, sprucestl.ReadOptions{FrameRate: bad}.Validate(), &rerr)
 	assert.Equal(t, "ReadOptions.SpruceSTL.FrameRate", rerr.Option)
-	assert.Equal(t, "The frame rate must be greater than 0, got -1.", rerr.Msg)
+	assert.Equal(t, "the frame rate must be greater than 0, got -1", rerr.Msg)
 	require.ErrorAs(t, sprucestl.WriteOptions{FrameRate: bad}.Validate(), &werr)
 	assert.Equal(t, "WriteOptions.SpruceSTL.FrameRate", werr.Option)
-	assert.Equal(t, "The Spruce STL frame rate must be greater than 0, got -1.", werr.Msg)
+	assert.Equal(t, "the Spruce STL frame rate must be greater than 0, got -1", werr.Msg)
 	require.NoError(t, sprucestl.ReadOptions{}.Validate())
 	require.NoError(t, sprucestl.WriteOptions{}.Validate())
 }

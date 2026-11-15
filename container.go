@@ -16,7 +16,7 @@ type containerFile[O any] interface {
 	Extract(number int, common model.CommonReadOptions, opts O) (*Subtitle, []ParseWarning, error)
 }
 
-const notContainer = "The content is not an MKV, WebM, MP4 or MPEG-TS file."
+const notContainer = "the content is not an MKV, WebM, MP4 or MPEG-TS file"
 
 // Tracks returns the subtitle tracks of the video container in the first size bytes of r, in file order.
 // A container without subtitle tracks gives an empty list and no error. Content that is no container returns
@@ -56,7 +56,7 @@ func Tracks(r io.ReaderAt, size int64) ([]Track, error) {
 // readTrack opens the container file and extracts the track that opts names, or the only track.
 func readTrack(c Container, r io.ReaderAt, size int64, subject string, opts ReadOptions) (*Subtitle, ReadInfo, error) {
 	if opts.Format != "" {
-		return nil, ReadInfo{}, unsupported(subject + " is an " + c.Label() + " file. Read it by track.")
+		return nil, ReadInfo{}, unsupported(subject + " is an " + c.Label() + " file. Read it by track")
 	}
 	switch c {
 	case Matroska:
@@ -109,6 +109,6 @@ func pickTrack(c Container, tracks []Track, number int) (Track, error) {
 	}
 	return Track{}, &InvalidArgumentError{
 		Option: "ReadOptions.Track",
-		Msg:    "The file has no subtitle track with the number " + strconv.Itoa(number) + ".",
+		Msg:    "the file has no subtitle track with the number " + strconv.Itoa(number),
 	}
 }

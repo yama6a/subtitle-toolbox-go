@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
@@ -25,25 +26,25 @@ func TestReadErrors(t *testing.T) {
 		{
 			name:     "4 hour digits",
 			content:  string(testfiles.Read(t, "srt/exceeded_hours.srt")),
-			wantMsg:  `The time "1234:00:00,456" is not valid.`,
+			wantMsg:  `the time "1234:00:00,456" is not valid`,
 			wantLine: 2,
 		},
 		{
 			name:     "minutes of 99",
 			content:  string(testfiles.Read(t, "srt/exceeded_minutes.srt")),
-			wantMsg:  `The time "55:99:00,456" is not valid.`,
+			wantMsg:  `the time "55:99:00,456" is not valid`,
 			wantLine: 2,
 		},
 		{
 			name:     "seconds of 99",
 			content:  string(testfiles.Read(t, "srt/exceeded_seconds.srt")),
-			wantMsg:  `The time "34:00:99,123" is not valid.`,
+			wantMsg:  `the time "34:00:99,123" is not valid`,
 			wantLine: 2,
 		},
 		{
 			name:     "4 fraction digits",
 			content:  string(testfiles.Read(t, "srt/exceeded_milli_accuracy.srt")),
-			wantMsg:  `The time "34:00:00,1234" is not valid.`,
+			wantMsg:  `the time "34:00:00,1234" is not valid`,
 			wantLine: 2,
 		},
 		{
@@ -61,7 +62,7 @@ func TestReadErrors(t *testing.T) {
 		{
 			name:     "missing text and a time of 999 hours with minutes of 99",
 			content:  string(testfiles.Read(t, "srt/missing_text.srt")),
-			wantMsg:  `The time "999:99:99,999" is not valid.`,
+			wantMsg:  `the time "999:99:99,999" is not valid`,
 			wantLine: 17,
 		},
 		{
@@ -79,7 +80,7 @@ func TestReadErrors(t *testing.T) {
 		{
 			name:     "a separator without a fraction",
 			content:  "1\n00:01:39, --> 00:01:41,000\nText\n",
-			wantMsg:  `The time "00:01:39," is not valid.`,
+			wantMsg:  `the time "00:01:39," is not valid`,
 			wantLine: 2,
 		},
 		{
@@ -91,7 +92,7 @@ func TestReadErrors(t *testing.T) {
 		{
 			name:     "a cue that ends before it starts",
 			content:  "1\n00:00:03,000 --> 00:00:01,500\nText\n",
-			wantMsg:  "The cue ends at 1.5 s, before it starts at 3 s.",
+			wantMsg:  "the cue ends at 1.5 s, before it starts at 3 s",
 			wantLine: 2,
 		},
 		{
@@ -115,7 +116,7 @@ func TestReadErrors(t *testing.T) {
 		{
 			name:     "an empty end time",
 			content:  "1\n00:00:01,000 -->\nText\n",
-			wantMsg:  `The time "" is not valid.`,
+			wantMsg:  `the time "" is not valid`,
 			wantLine: 2,
 		},
 	}
@@ -265,7 +266,7 @@ func TestReadTimes(t *testing.T) {
 			t.Parallel()
 
 			content := "1\n" + tt.start + " --> " + tt.start + "\nThe ferry leaves.\n"
-			invalid := `The time "` + tt.start + `" is not valid.`
+			invalid := `the time "` + tt.start + `" is not valid`
 			if tt.strictOK {
 				s, _ := mustRead(t, content, false)
 				assert.Equal(t, tt.want, firstCue(t, s).Start)
@@ -278,7 +279,7 @@ func TestReadTimes(t *testing.T) {
 			case !tt.lenientOK:
 				assert.Zero(t, s.Len())
 				require.Len(t, warnings, 1)
-				assert.Equal(t, warningRow{invalid, 2, 0, model.Skipped}, warningRows(warnings)[0])
+				assert.Equal(t, warningRow{parsing.Sentence(invalid), 2, 0, model.Skipped}, warningRows(warnings)[0])
 			case tt.looseValue != "":
 				assert.Equal(t, tt.want, firstCue(t, s).Start)
 				msg := `Block #0 has the time "` + tt.start + `", which is not in the form hh:mm:ss,mmm. The parser read it as ` + tt.looseValue + " s."
@@ -329,7 +330,7 @@ func TestReadLooseTimes(t *testing.T) {
 			}
 
 			if !tt.strict {
-				assert.Contains(t, readError(t, content).Msg, "is not valid.")
+				assert.Contains(t, readError(t, content).Msg, "is not valid")
 				return
 			}
 			s, _ = mustRead(t, content, false)
@@ -346,10 +347,10 @@ func TestReadLenientSkipsBadTimes(t *testing.T) {
 	tests := []struct {
 		name, timing, msg string
 	}{
-		{"minutes", "00:00:01,000 --> 00:75:02,000", `The time "00:75:02,000" is not valid.`},
-		{"seconds", "00:00:01,000 --> 00:00:75,000", `The time "00:00:75,000" is not valid.`},
-		{"without hours", "00:01,000 --> 00:60,000", `The time "00:60,000" is not valid.`},
-		{"rounds to 100000 hours", "0:0:0,0 --> 99999:59:59,9995", `The time "99999:59:59,9995" is not below 100000 hours.`},
+		{"minutes", "00:00:01,000 --> 00:75:02,000", `the time "00:75:02,000" is not valid`},
+		{"seconds", "00:00:01,000 --> 00:00:75,000", `the time "00:00:75,000" is not valid`},
+		{"without hours", "00:01,000 --> 00:60,000", `the time "00:60,000" is not valid`},
+		{"rounds to 100000 hours", "0:0:0,0 --> 99999:59:59,9995", `the time "99999:59:59,9995" is not below 100000 hours`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -359,7 +360,7 @@ func TestReadLenientSkipsBadTimes(t *testing.T) {
 			s, warnings := mustRead(t, content, true)
 			assert.Equal(t, []cueRow{{2 * time.Hour, 2*time.Hour + 2*time.Second, []string{"It is late."}}}, cueRows(s))
 			require.Len(t, warnings, 1)
-			assert.Equal(t, warningRow{tt.msg, 2, 0, model.Skipped}, warningRows(warnings)[0])
+			assert.Equal(t, warningRow{parsing.Sentence(tt.msg), 2, 0, model.Skipped}, warningRows(warnings)[0])
 			_ = readError(t, content)
 		})
 	}
@@ -602,7 +603,7 @@ func TestReadArrowAfterADash(t *testing.T) {
 
 	content := "1\n00:00:01,000- --> 00:00:02,000\nText\n"
 	perr := readError(t, content)
-	assert.Equal(t, `The time "00:00:01,000-" is not valid.`, perr.Msg)
+	assert.Equal(t, `the time "00:00:01,000-" is not valid`, perr.Msg)
 	assert.Equal(t, 2, perr.Line)
 
 	_, warnings := mustRead(t, content, true)
@@ -720,7 +721,7 @@ func TestReadNUL(t *testing.T) {
 	t.Parallel()
 
 	perr := readError(t, "1\n00:00:01,000 --> 00:00:02,000\nA\x00B\n")
-	assert.Equal(t, "Line 3 has a NUL character. Check the encoding of the file.", perr.Msg)
+	assert.Equal(t, "line 3 has a NUL character. Check the encoding of the file", perr.Msg)
 
 	s, _ := mustRead(t, "1\n00:00:01,000 --> 00:00:02,000\nA\x00B\n", true)
 	assert.Equal(t, []string{"AB"}, firstCue(t, s).Lines)

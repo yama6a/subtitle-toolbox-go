@@ -31,7 +31,7 @@ fmt.Println(err)
 | `ErrNoFormatDetected` | detection found no format, see [detection.md](detection.md). Also matches `ErrUnsupportedFormat` |
 | `ErrInvalidArgument`, `*InvalidArgumentError` | an invalid option or argument, for example frame rate 0 or NaN. An unknown `ReadOptions.Encoding`. A negative `ReadOptions.Track` or `size`. A `Track` on a subtitle file, or a `Track` that no track of the video file has. A retime or `Append` that moves a cue time to 100000 h or more, for example `Scale(1e300)`. MicroDVD output without a frame rate. CSV output with frame times and no frame rate. Format data that fails its type check in a setter |
 | `ErrCueNotFound` | `RemoveCue`, `SplitCue` and `JoinCues` with an index that has no cue |
-| `ErrUnwritable`, `*UnwritableError` | the output format cannot hold the subtitle. Text that is not valid UTF-8 in a JSON format, TTML or SAMI output, which also matches `ErrInvalidUTF8`. An image cue without lines in a text format, such as `Cue #3 holds an image but no text, and srt needs text.` A stored TTML head that is not valid XML. An `ass.WriteOptions.Style` that the `Format:` line of the stored styles lacks |
+| `ErrUnwritable`, `*UnwritableError` | the output format cannot hold the subtitle. Text that is not valid UTF-8 in a JSON format, TTML or SAMI output, which also matches `ErrInvalidUTF8`. An image cue without lines in a text format, such as `cue #3 holds an image but no text, and srt needs text` A stored TTML head that is not valid XML. An `ass.WriteOptions.Style` that the `Format:` line of the stored styles lacks |
 | `ErrInvalidUTF8` | text that an output format cannot hold because it is not valid UTF-8. It is the `Err` of the `*UnwritableError`. Read the input again with its source encoding | none, part of `UnwritableContentException` 108 |
 | the `*fs.PathError` of package `os`, wrapped | a file that does not exist or cannot be read or written. Test it with `errors.Is(err, fs.ErrNotExist)` |
 
@@ -49,11 +49,11 @@ All 4 types live in package `model`. Package `stbox` aliases them under the same
 |:--- |:--- |:--- |
 | `*ParseError` | `Format`, `Line`, `Msg`, `Option`, `Err` | `srt: line 6: Msg`. No `line N: ` when `Line` is 0. `stbox` in place of the format when `Format` is "" |
 | `*UnwritableError` | `Format`, `CueIndex`, `Reason`, `Err` | `sami: Reason` |
-| `*TrackError` | `Container`, `Tracks` | `stbox: unsupported format: The MKV or WebM file has 6 subtitle tracks.` Matches `ErrUnsupportedFormat`, not `ErrNoFormatDetected`. `Tracks` is empty when the file has no subtitle track |
+| `*TrackError` | `Container`, `Tracks` | `stbox: unsupported format: the MKV or WebM file has 6 subtitle tracks` Matches `ErrUnsupportedFormat`, not `ErrNoFormatDetected`. `Tracks` is empty when the file has no subtitle track |
 | `*InvalidArgumentError` | `Option`, `Msg` | `stbox: invalid argument: WriteOptions.MicroDVD.FrameRate: Msg`. No option part when `Option` is "" |
 
 - **Cause**: `Unwrap` of `*ParseError` and `*UnwritableError` returns `Err`, for example an error of the standard library. `Error()` shows `Err` only when the message field is empty, because the message quotes the cause where it matters.
-- **Message text**: `Msg` and `Reason` hold a full English sentence. `Error()` adds a lower-case prefix in Go style. People read these messages in the CLI.
+- **Message text**: `Msg` and `Reason` follow Go style, as `staticcheck` ST1005 checks. The first letter is lower case, unless the message starts with a Go identifier such as `ReadOptions.Track`, a quoted value or a name written in capitals such as `SCC`, `MKV` or `UTF-8`. The message has no final `.`, `!` or `:`. Sentences inside a message stay as they are, with `. ` between them. Example: `The frame rate is unknown. Pass ReadOptions.MicroDVD.FrameRate.` becomes `the frame rate is unknown. Pass ReadOptions.MicroDVD.FrameRate`. `ParseWarning.Message` stays a full sentence. The CLI writes its own messages as full sentences.
 - **No identifiers in messages**: a message never names a Go identifier or a CLI flag. A missing or bad option goes in `Option` as its Go path, such as `ReadOptions.MicroDVD.FrameRate`. A sentinel in `Err` names an edit that the caller must make first.
 - **Cue index**: `UnwritableError.CueIndex` is the 0-based index of the first cue that the format cannot hold. It is -1 when no single cue causes the error.
 
@@ -73,7 +73,7 @@ All 4 types live in package `model`. Package `stbox` aliases them under the same
 | SAMI | the line of the `<SYNC` tag. `The SAMI file has no class X.` has no line |
 | MPL2, TMPlayer | the line of the error |
 | MPSub | the line of the error. A cue without text reports its timing line |
-| LRC | 0. `The file has text but no cues.` gives the first line of plain text |
+| LRC | 0. `the file has text but no cues` gives the first line of plain text |
 | CSV and TSV | the line where the row starts, also for an unclosed quote. A missing column gives the line of the header row, or 1 without a header row |
 | SubViewer | the line of the error: the header line, the timing line or the time line |
 | Spruce STL | the line of the error |

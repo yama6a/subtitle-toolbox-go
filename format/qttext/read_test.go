@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/qttext"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
@@ -443,7 +444,7 @@ func TestReadOrderedTimes(t *testing.T) {
 		_, _, err := read("{QTtext}\n[00:00:05.00]\nOne\n[00:00:01.00]\nTwo\n", model.CommonReadOptions{})
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr)
-		assert.Equal(t, &model.ParseError{Format: model.QuickTimeText, Line: 2, Msg: "The cue ends at 1 s, before it starts at 5 s."}, perr)
+		assert.Equal(t, &model.ParseError{Format: model.QuickTimeText, Line: 2, Msg: "the cue ends at 1 s, before it starts at 5 s"}, perr)
 	})
 	t.Run("lenient swaps up to 30 s", func(t *testing.T) {
 		t.Parallel()
@@ -483,18 +484,18 @@ func TestReadTimestampLimit(t *testing.T) {
 		message string
 	}{
 		{"the largest time", "{QTtext}\n[99999:59:59.999]\nx\n[99999:59:59.999]\n", true, 0, ""},
-		{"100000 hours", "{QTtext}\n[100000:00:00.00]\nx\n", false, 2, `The time "100000:00:00.00" is not below 100000 hours.`},
-		{"hours beyond the int64 range", "{QTtext}\n[99999999999999999999:00:00]\nx\n", false, 2, `The time "99999999999999999999:00:00" is not below 100000 hours.`},
+		{"100000 hours", "{QTtext}\n[100000:00:00.00]\nx\n", false, 2, `the time "100000:00:00.00" is not below 100000 hours`},
+		{"hours beyond the int64 range", "{QTtext}\n[99999999999999999999:00:00]\nx\n", false, 2, `the time "99999999999999999999:00:00" is not below 100000 hours`},
 		{"20 hour digits with zeros", "{QTtext}\n[00000000000000000001:00:00]\nx\n[00000000000000000002:00:00]\n", true, 0, ""},
-		{"rounds up to 100000 hours", "{QTtext}\n[99999:59:59.9995]\nx\n", false, 2, `The time "99999:59:59.9995" is not below 100000 hours.`},
+		{"rounds up to 100000 hours", "{QTtext}\n[99999:59:59.9995]\nx\n", false, 2, `the time "99999:59:59.9995" is not below 100000 hours`},
 		{"rounds down below 100000 hours", "{QTtext}\n[99999:59:59.9994]\nx\n[99999:59:59.9994]\n", true, 0, ""},
 		{
 			"a time scale rounds up to 100000 hours", "{QTtext}{timeScale:2000}\n[99999:59:59.1999]\nx\n", false, 2,
-			`The time "99999:59:59.1999" is not below 100000 hours.`,
+			`the time "99999:59:59.1999" is not below 100000 hours`,
 		},
 		{
 			"relative times add up to the limit", "{QTtext}{timeStamps:relative}\n[99999:00:00]\nx\n[00:59:59.999]\n[00:00:00.001]\n", false, 5,
-			`The time "00:00:00.001" is not below 100000 hours.`,
+			`the time "00:00:00.001" is not below 100000 hours`,
 		},
 		{"relative times below the limit", "{QTtext}{timeStamps:relative}\n[99999:00:00]\nx\n[00:59:59.998]\n[00:00:00.001]\n", true, 0, ""},
 	}
@@ -519,7 +520,7 @@ func TestReadTimestampLimit(t *testing.T) {
 			_, warnings := mustRead(t, tt.content, true)
 			require.NotEmpty(t, warnings)
 			last := warnings[len(warnings)-1]
-			assert.Equal(t, tt.message, last.Message)
+			assert.Equal(t, parsing.Sentence(tt.message), last.Message)
 			assert.Equal(t, tt.line, last.Line)
 			assert.Equal(t, model.NoBlock, last.Block)
 			assert.Equal(t, model.Skipped, last.Action)

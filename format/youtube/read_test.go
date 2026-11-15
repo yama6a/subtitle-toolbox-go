@@ -104,8 +104,8 @@ func TestReadXMLErrors(t *testing.T) {
 		{"text as start", `<transcript><text start="x">a</text></transcript>`, `The <text> element has no valid "start" attribute.`},
 		{"negative start", `<transcript><text start="-1">a</text></transcript>`, `The <text> element has no valid "start" attribute.`},
 		{"bad duration", `<timedtext><text t="1" d="1x">a</text></timedtext>`, `The <text> element has no valid "d" attribute.`},
-		{"start over the limit", `<transcript><text start="360000000">a</text></transcript>`, `The time "360000000" is not below 100000 hours.`},
-		{"end over the limit", `<transcript><text start="359999999" dur="2">a</text></transcript>`, `The time "2" is not below 100000 hours.`},
+		{"start over the limit", `<transcript><text start="360000000">a</text></transcript>`, `the time "360000000" is not below 100000 hours`},
+		{"end over the limit", `<transcript><text start="359999999" dur="2">a</text></transcript>`, `the time "2" is not below 100000 hours`},
 		{"text before the XML", "credit\n<transcript/>", `The file has text before the XML: "credit".`},
 	}
 	for _, tt := range tests {

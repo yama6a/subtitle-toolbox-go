@@ -238,12 +238,12 @@ func (d *Decoder) readRegion(data []byte) error {
 // fits checks the size limits for region id. ok is false when the region must not be stored. Then err is the error of
 // strict mode, or nil after a Skipped warning.
 func (d *Decoder) fits(id, width, height int) (ok bool, err error) {
-	prefix := "Cannot read region " + strconv.Itoa(id) + ": "
+	prefix := "cannot read region " + strconv.Itoa(id) + ": "
 	if reason := bitmap.SizeLimit(width, height); reason != "" {
 		return false, &model.ParseError{Msg: prefix + reason}
 	}
 	if d.regionPixels(id)+width*height > model.MaxImagePixels {
-		msg := prefix + "the regions hold more than " + strconv.Itoa(model.MaxImagePixels) + " pixels in total."
+		msg := prefix + "the regions hold more than " + strconv.Itoa(model.MaxImagePixels) + " pixels in total"
 		return false, d.st.Fail(&model.ParseError{Msg: msg}, model.NoLine, d.segments, nil)
 	}
 	return true, nil

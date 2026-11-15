@@ -12,7 +12,7 @@ func (o CEA608Options) Validate(name string) error {
 	if o.Channel < 0 || o.Channel > 2 {
 		return &model.InvalidArgumentError{
 			Option: "ReadOptions." + name + ".Channel",
-			Msg:    "The " + name + " data channel must be 1 or 2, got " + strconv.Itoa(o.Channel) + ".",
+			Msg:    "the " + name + " data channel must be 1 or 2, got " + strconv.Itoa(o.Channel),
 		}
 	}
 	switch o.RollUp {
@@ -21,7 +21,7 @@ func (o CEA608Options) Validate(name string) error {
 	default:
 		return &model.InvalidArgumentError{
 			Option: "ReadOptions." + name + ".RollUp",
-			Msg:    "The " + name + " roll-up mode " + strconv.Quote(string(o.RollUp)) + " is not screen or lines.",
+			Msg:    "the " + name + " roll-up mode " + strconv.Quote(string(o.RollUp)) + " is not screen or lines",
 		}
 	}
 }
@@ -31,7 +31,7 @@ func ValidateDropFrame(m model.DropFrameMode, name string) error {
 	if m > model.DropFrameOff {
 		return &model.InvalidArgumentError{
 			Option: "WriteOptions." + name + ".DropFrame",
-			Msg:    "The " + name + " drop-frame mode " + strconv.Itoa(int(m)) + " is unknown.",
+			Msg:    "the " + name + " drop-frame mode " + strconv.Itoa(int(m)) + " is unknown",
 		}
 	}
 	return nil

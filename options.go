@@ -153,20 +153,20 @@ func (o ReadOptions) Validate() error {
 		if _, err := textenc.Lookup(o.Encoding); err != nil {
 			return &InvalidArgumentError{
 				Option: "ReadOptions.Encoding",
-				Msg:    "The encoding " + strconv.Quote(o.Encoding) + " is unknown.",
+				Msg:    "the encoding " + strconv.Quote(o.Encoding) + " is unknown",
 			}
 		}
 	}
 	if o.LastCueDuration != nil && *o.LastCueDuration < 0 {
 		return &InvalidArgumentError{
 			Option: "ReadOptions.LastCueDuration",
-			Msg:    fmt.Sprintf("The last cue duration must be 0 or more, got %s.", *o.LastCueDuration),
+			Msg:    fmt.Sprintf("the last cue duration must be 0 or more, got %s", *o.LastCueDuration),
 		}
 	}
 	if o.Track < 0 {
 		return &InvalidArgumentError{
 			Option: "ReadOptions.Track",
-			Msg:    fmt.Sprintf("The track number must be 0 or more, got %d.", o.Track),
+			Msg:    fmt.Sprintf("the track number must be 0 or more, got %d", o.Track),
 		}
 	}
 	for _, check := range []func() error{o.SAMI.Validate, o.MicroDVD.Validate, o.CSV.Validate, o.SCC.Validate, o.MCC.Validate, o.Chapters.Validate, o.PAC.Validate, o.VobSub.Validate, o.SpruceSTL.Validate} {

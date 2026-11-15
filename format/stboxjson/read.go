@@ -521,10 +521,11 @@ func formatDataMessage(err error, prefix string) string {
 	if !errors.As(err, &iae) {
 		return ""
 	}
-	if rest, ok := strings.CutPrefix(iae.Msg, "The field "); ok && prefix != "" {
+	msg := parsing.Sentence(iae.Msg)
+	if rest, ok := strings.CutPrefix(msg, "The field "); ok && prefix != "" {
 		return "The field " + prefix + "." + rest
 	}
-	return iae.Msg
+	return msg
 }
 
 func (r *reader) cue(entry any, i int) (model.Cue, string) {
@@ -636,7 +637,7 @@ func cuePosition(c *model.Cue, d *model.Data, path string) string {
 	}
 	var iae *model.InvalidArgumentError
 	if errors.As(c.Position.Validate(), &iae) {
-		return path + validateKeys[iae.Option] + " is out of range. " + iae.Msg
+		return path + validateKeys[iae.Option] + " is out of range. " + parsing.Sentence(iae.Msg)
 	}
 	return ""
 }
@@ -756,7 +757,7 @@ func cueImage(c *model.Cue, d *model.Data, path string) string {
 	if err := im.Validate(); err != nil {
 		var iae *model.InvalidArgumentError
 		_ = errors.As(err, &iae)
-		return path + " is invalid. " + iae.Msg
+		return path + " is invalid. " + parsing.Sentence(iae.Msg)
 	}
 	c.Image = &im
 	return ""

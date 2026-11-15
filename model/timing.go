@@ -43,7 +43,7 @@ func (s *Subtitle) FixOverlaps(minGap time.Duration) error {
 // when minDuration is not above 0, when minGap is below 0, or when a cue would end at 100,000 hours or later.
 func (s *Subtitle) ExtendShortCues(minDuration, minGap time.Duration) error {
 	if minDuration <= 0 {
-		return invalidArgument(fmt.Sprintf("The minimum duration must be greater than 0, got %s.", timecode.Seconds(minDuration)))
+		return invalidArgument(fmt.Sprintf("the minimum duration must be greater than 0, got %s", timecode.Seconds(minDuration)))
 	}
 	if err := checkMinGap(minGap); err != nil {
 		return err
@@ -99,10 +99,10 @@ func (s *Subtitle) setEnds(ends []time.Duration) {
 // at 100,000 hours or later.
 func (s *Subtitle) AddLeadInOut(leadIn, leadOut, minGap time.Duration) error {
 	if leadIn < 0 {
-		return invalidArgument(fmt.Sprintf("The lead-in must not be negative, got %s.", timecode.Seconds(leadIn)))
+		return invalidArgument(fmt.Sprintf("the lead-in must not be negative, got %s", timecode.Seconds(leadIn)))
 	}
 	if leadOut < 0 {
-		return invalidArgument(fmt.Sprintf("The lead-out must not be negative, got %s.", timecode.Seconds(leadOut)))
+		return invalidArgument(fmt.Sprintf("the lead-out must not be negative, got %s", timecode.Seconds(leadOut)))
 	}
 	if err := checkMinGap(minGap); err != nil {
 		return err
@@ -208,7 +208,7 @@ func insideOtherCues(starts, ends []time.Duration) (startInside, endInside []boo
 // LimitLongCues returns an error that matches ErrInvalidArgument when maxDuration is not above 0.
 func (s *Subtitle) LimitLongCues(maxDuration time.Duration) error {
 	if maxDuration <= 0 {
-		return invalidArgument(fmt.Sprintf("The maximum duration must be greater than 0, got %s.", timecode.Seconds(maxDuration)))
+		return invalidArgument(fmt.Sprintf("the maximum duration must be greater than 0, got %s", timecode.Seconds(maxDuration)))
 	}
 	for i := range s.cues {
 		c := &s.cues[i]
@@ -222,7 +222,7 @@ func (s *Subtitle) LimitLongCues(maxDuration time.Duration) error {
 
 func checkMinGap(minGap time.Duration) error {
 	if minGap < 0 {
-		return invalidArgument(fmt.Sprintf("The minimum gap must not be negative, got %s.", timecode.Seconds(minGap)))
+		return invalidArgument(fmt.Sprintf("the minimum gap must not be negative, got %s", timecode.Seconds(minGap)))
 	}
 	return nil
 }

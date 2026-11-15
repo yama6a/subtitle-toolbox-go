@@ -419,7 +419,7 @@ func TestInfoTextWithoutCues(t *testing.T) {
 	t.Parallel()
 
 	lyrics := "[ti:Harbour walk]\nThe ferry leaves at nine.\n"
-	assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 2: The file has text but no cues.\n" + lenientHint + "\n"},
+	assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 2: the file has text but no cues\n" + lenientHint + "\n"},
 		call{stdin: lyrics}.run(t, "info", "-", "--from", "lrc"))
 	got := call{stdin: lyrics}.run(t, "info", "-", "--from", "lrc", "--lenient")
 	assert.Equal(t, 0, got.Code)

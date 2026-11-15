@@ -29,7 +29,7 @@ func TestSeconds(t *testing.T) {
 		{"not finite", `1e400`, time.Second, 0, "The field f must be a time."},
 		{"null", `null`, time.Second, 0, "The field f must be a time."},
 		{"bool", `true`, time.Second, 0, "The field f must be a time."},
-		{"100000 hours", `360000000`, time.Second, 0, "The field f is not below 100000 hours."},
+		{"100000 hours", `360000000`, time.Second, 0, "the field f is not below 100000 hours"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

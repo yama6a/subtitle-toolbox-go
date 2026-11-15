@@ -110,18 +110,18 @@ func TestReadErrors(t *testing.T) {
 		{"a letter in a time", "[1a][2]hello", 1, `The line "[1a][2]hello" is not an MPL2 cue.`},
 		{"a space between the brackets", "[1] [2]hello", 1, `The line "[1] [2]hello" is not an MPL2 cue.`},
 		{"digits that are not ASCII", "[\u0661][\u0662]hello", 1, "The line \"[\u0661][\u0662]hello\" is not an MPL2 cue."},
-		{"a start at 100000 hours", "[3600000000][3600000001]x", 1, `The time "[3600000000]" is not below 100000 hours.`},
-		{"an end at 100000 hours", "[1][3600000000]x", 1, `The time "[3600000000]" is not below 100000 hours.`},
+		{"a start at 100000 hours", "[3600000000][3600000001]x", 1, `the time "[3600000000]" is not below 100000 hours`},
+		{"an end at 100000 hours", "[1][3600000000]x", 1, `the time "[3600000000]" is not below 100000 hours`},
 		{
 			"20 digits in the start", "[99999999999999999999][1]x", 1,
-			`The time "[99999999999999999999]" is not below 100000 hours.`,
+			`the time "[99999999999999999999]" is not below 100000 hours`,
 		},
 		{
 			"20 digits in the end", "[1][99999999999999999999]x", 1,
-			`The time "[99999999999999999999]" is not below 100000 hours.`,
+			`the time "[99999999999999999999]" is not below 100000 hours`,
 		},
-		{"the start is checked before the end", "[3600000000][99999999999999999999]x", 1, `The time "[3600000000]" is not below 100000 hours.`},
-		{"an end before the start", "[20][10]x", 1, "The cue ends at 1 s, before it starts at 2 s."},
+		{"the start is checked before the end", "[3600000000][99999999999999999999]x", 1, `the time "[3600000000]" is not below 100000 hours`},
+		{"an end before the start", "[20][10]x", 1, "the cue ends at 1 s, before it starts at 2 s"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

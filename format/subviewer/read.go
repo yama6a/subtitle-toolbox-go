@@ -384,7 +384,7 @@ func (rd *reader) version2Timing(line string, number, block int) (*model.Cue, *s
 		if !rd.st.Lenient() {
 			return nil, nil, true, err
 		}
-		return nil, skip(line, number, block, err.(*model.ParseError).Msg), true, nil //nolint:errorlint,forcetypeassert // OrderedTimes fails with a *ParseError
+		return nil, skip(line, number, block, parsing.Sentence(err.(*model.ParseError).Msg)), true, nil //nolint:errorlint,forcetypeassert // OrderedTimes fails with a *ParseError
 	}
 	return &model.Cue{Start: start, End: end}, nil, true, nil
 }

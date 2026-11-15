@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
@@ -411,7 +412,7 @@ func TestReadStartPastTheLimit(t *testing.T) {
 			content := "<SAMI>\n<BODY>\n<SYNC Start=1000><P>The pool opens at seven.\n<SYNC Start=3000><P>&nbsp;\n" +
 				"<SYNC Start=" + tt.start + "><P>Towels are at the desk.\n<SYNC Start=7000><P>No running, please.\n" +
 				"<SYNC Start=9000><P>&nbsp;\n</BODY>\n</SAMI>\n"
-			msg := `The time "` + tt.digits + `" is not below 100000 hours.`
+			msg := `the time "` + tt.digits + `" is not below 100000 hours`
 			assert.Equal(t, model.ParseError{Format: model.SAMI, Line: 5, Msg: msg}, *readError(t, content))
 
 			s, warnings := mustRead(t, content, true)
@@ -420,7 +421,7 @@ func TestReadStartPastTheLimit(t *testing.T) {
 				{7 * time.Second, 9 * time.Second, []string{"No running, please."}},
 			}, cueRows(s))
 			require.Len(t, warnings, 1)
-			assert.Equal(t, warningRow{msg, 5, 2, []string{"<SYNC Start=" + tt.start + "><P>Towels are at the desk."}, model.Skipped},
+			assert.Equal(t, warningRow{parsing.Sentence(msg), 5, 2, []string{"<SYNC Start=" + tt.start + "><P>Towels are at the desk."}, model.Skipped},
 				warningRows(warnings)[0])
 		})
 	}
@@ -496,7 +497,7 @@ func TestReadNoCues(t *testing.T) {
 	t.Parallel()
 
 	content := "<SAMI>\n<HEAD><TITLE>Walk</TITLE></HEAD>\n<BODY>\n<P>The ferry leaves.</P>\n</BODY>\n</SAMI>\n"
-	assert.Equal(t, model.ParseError{Format: model.SAMI, Line: 4, Msg: "The file has text but no cues."}, *readError(t, content))
+	assert.Equal(t, model.ParseError{Format: model.SAMI, Line: 4, Msg: "the file has text but no cues"}, *readError(t, content))
 	s, warnings := mustRead(t, content, true)
 	assert.Equal(t, 0, s.Len())
 	assert.Equal(t, []warningRow{{"The file has text but no cues.", 4, model.NoBlock, nil, model.Skipped}}, warningRows(warnings))

@@ -198,7 +198,7 @@ func TestExtractRejectsABadTrackNumberAndBadOptions(t *testing.T) {
 		{
 			"a bad SCC channel on a c608 track", "ffmpeg_c608.mov", 1,
 			mp4.ExtractOptions{SCC: scc.ReadOptions{Channel: 3}},
-			"ReadOptions.SCC.Channel", "The SCC data channel must be 1 or 2, got 3.",
+			"ReadOptions.SCC.Channel", "the SCC data channel must be 1 or 2, got 3",
 		},
 		{
 			"a bad MCC service on a c708 track", "c708_track.mov", 1,

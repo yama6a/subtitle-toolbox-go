@@ -97,13 +97,13 @@ func TestApplyChecksTheTimeLimitFirst(t *testing.T) {
 			name:     "2 segments",
 			segments: []segmentResult{{from: 0, offset: 1000}, {from: 359999000000, offset: 2000}},
 			scale:    1,
-			msg:      "The retimed cue 2 would end at 360000001.5 s. Cue times must be below 100000 hours.",
+			msg:      "the retimed cue 2 would end at 360000001.5 s. Cue times must be below 100000 hours",
 		},
 		{
 			name:     "a scale and then a shift",
 			segments: []segmentResult{{offset: 60000}},
 			scale:    1.000000001,
-			msg:      "The retimed cue 2 would end at 360000059.86 s. Cue times must be below 100000 hours.",
+			msg:      "the retimed cue 2 would end at 360000059.86 s. Cue times must be below 100000 hours",
 		},
 	}
 	for _, tt := range tests {

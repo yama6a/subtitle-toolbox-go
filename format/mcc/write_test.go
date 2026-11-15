@@ -268,11 +268,11 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			"channel 3", mcc.ReadOptions{Channel: 3}.Validate(),
-			&model.InvalidArgumentError{Option: "ReadOptions.MCC.Channel", Msg: "The MCC data channel must be 1 or 2, got 3."},
+			&model.InvalidArgumentError{Option: "ReadOptions.MCC.Channel", Msg: "the MCC data channel must be 1 or 2, got 3"},
 		},
 		{
 			"roll-up mode", mcc.ReadOptions{RollUp: "rows"}.Validate(),
-			&model.InvalidArgumentError{Option: "ReadOptions.MCC.RollUp", Msg: `The MCC roll-up mode "rows" is not screen or lines.`},
+			&model.InvalidArgumentError{Option: "ReadOptions.MCC.RollUp", Msg: `the MCC roll-up mode "rows" is not screen or lines`},
 		},
 		{"29.97 as 2997/100", mcc.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 100}}.Validate(), nil},
 		{
@@ -281,7 +281,7 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			"drop-frame mode", mcc.WriteOptions{DropFrame: model.DropFrameMode(3)}.Validate(),
-			&model.InvalidArgumentError{Option: "WriteOptions.MCC.DropFrame", Msg: "The MCC drop-frame mode 3 is unknown."},
+			&model.InvalidArgumentError{Option: "WriteOptions.MCC.DropFrame", Msg: "the MCC drop-frame mode 3 is unknown"},
 		},
 	}
 	for _, tt := range tests {

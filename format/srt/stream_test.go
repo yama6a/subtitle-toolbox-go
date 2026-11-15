@@ -260,7 +260,7 @@ func TestStrictNULFailsOnItsLine(t *testing.T) {
 			t.Run(tt.name+"/"+w.name, func(t *testing.T) {
 				t.Parallel()
 
-				want := "Line " + strconv.Itoa(tt.line) + " has a NUL character. Check the encoding of the file."
+				want := "line " + strconv.Itoa(tt.line) + " has a NUL character. Check the encoding of the file"
 				rd := srt.NewStreamReader(w.wrap(strings.NewReader(tt.content)), srt.StreamOptions{})
 				_, err := collect(rd.Cues())
 				var perr *model.ParseError

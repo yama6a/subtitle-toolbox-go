@@ -95,8 +95,8 @@ func TestTimeLimitMessage(t *testing.T) {
 		end  float64
 		want string
 	}{
-		{1, 360000001.5, "The retimed cue 1 would end at 360000001.5 s. Cue times must be below 100000 hours."},
-		{12, 8e300, "The retimed cue 12 would end at 8e+300 s. Cue times must be below 100000 hours."},
+		{1, 360000001.5, "the retimed cue 1 would end at 360000001.5 s. Cue times must be below 100000 hours"},
+		{12, 8e300, "the retimed cue 12 would end at 8e+300 s. Cue times must be below 100000 hours"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.want, func(t *testing.T) {

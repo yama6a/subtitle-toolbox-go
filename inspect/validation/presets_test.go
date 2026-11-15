@@ -74,7 +74,7 @@ func TestNetflixEnglishErrors(t *testing.T) {
 		{
 			"drop-frame at 25",
 			stbox.FrameRate{Num: 25, Den: 1, DropFrame: true},
-			"The frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got 25.",
+			"the frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got 25",
 		},
 	}
 	for _, tt := range tests {

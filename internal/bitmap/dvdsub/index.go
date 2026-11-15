@@ -81,7 +81,7 @@ type parser struct {
 func ParseIndex(idx []byte) (Index, error) {
 	text := strings.Split(markupcore.NormalizeLineEnds(string(textenc.TrimUTF8BOMs(idx))), "\n")
 	if !strings.Contains(text[0], "VobSub index file") {
-		return Index{}, parseError(`The .idx content does not start with the "VobSub index file" line.`)
+		return Index{}, parseError(`the .idx content does not start with the "VobSub index file" line`)
 	}
 	var p parser
 	for _, line := range text[1:] {
@@ -114,9 +114,9 @@ func ParseHeader(private []byte) (Index, error) {
 func (p *parser) finish() (Index, error) {
 	switch {
 	case !p.hasSize:
-		return Index{}, parseError("The .idx content has no size line.")
+		return Index{}, parseError("the .idx content has no size line")
 	case !p.hasPalette && p.ix.Custom == nil:
-		return Index{}, parseError("The .idx content has no palette line.")
+		return Index{}, parseError("the .idx content has no palette line")
 	}
 	for i := range p.ix.Tracks {
 		slices.SortStableFunc(p.ix.Tracks[i].Entries, func(a, b Entry) int { return cmp.Compare(a.Time, b.Time) })
@@ -180,14 +180,14 @@ func (p *parser) parseSize(value, line string) error {
 			return nil
 		}
 	}
-	return parseError(`The .idx size line "` + line + `" is not valid.`)
+	return parseError(`the .idx size line "` + line + `" is not valid`)
 }
 
 // parseCustom reads a custom colors line. on is false for a line that turns the colours off.
 func parseCustom(value, line string) (custom [4]uint32, on bool, err error) {
 	m := customRegexp.FindStringSubmatch(value)
 	if m == nil {
-		return custom, false, parseError(`The .idx custom colors line "` + line + `" is not valid.`)
+		return custom, false, parseError(`the .idx custom colors line "` + line + `" is not valid`)
 	}
 	if state := strings.ToLower(m[1]); state != "on" && state != "1" {
 		return custom, false, nil
@@ -217,7 +217,7 @@ func parseColors(value string, count int, line string) ([]uint32, error) {
 		colors = append(colors, uint32(c))
 	}
 	if len(colors) != len(parts) || len(parts) != count {
-		return nil, parseError(`The .idx line "` + line + `" needs ` + strconv.Itoa(count) + " colors as hex RGB.")
+		return nil, parseError(`the .idx line "` + line + `" needs ` + strconv.Itoa(count) + " colors as hex RGB")
 	}
 	return colors, nil
 }
@@ -231,16 +231,16 @@ func (p *parser) parseID(value, line string) error {
 			return nil
 		}
 	}
-	return parseError(`The .idx id line "` + line + `" is not valid.`)
+	return parseError(`the .idx id line "` + line + `" is not valid`)
 }
 
 func (p *parser) parseEntry(value, line string) error {
 	if len(p.ix.Tracks) == 0 {
-		return parseError(`The .idx timestamp line "` + line + `" comes before any id line.`)
+		return parseError(`the .idx timestamp line "` + line + `" comes before any id line`)
 	}
 	m := entryRegexp.FindStringSubmatch(value)
 	if m == nil {
-		return parseError(`The .idx timestamp line "` + line + `" is not valid.`)
+		return parseError(`the .idx timestamp line "` + line + `" is not valid`)
 	}
 	d, err := parseTime(m[1], line)
 	if err != nil {
@@ -252,7 +252,7 @@ func (p *parser) parseEntry(value, line string) error {
 	}
 	d += p.delay
 	if d >= timecode.MaxTime || d <= -timecode.MaxTime {
-		return parseError(`The time "` + text + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours.")
+		return parseError(`the time "` + text + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours")
 	}
 	pos, err := strconv.ParseInt(m[2], 16, 64)
 	if err != nil {
@@ -267,11 +267,11 @@ func (p *parser) parseEntry(value, line string) error {
 func parseTime(value, line string) (time.Duration, error) {
 	m := timeRegexp.FindStringSubmatch(strings.Trim(value, markupcore.TrimSet))
 	if m == nil {
-		return 0, parseError(`The .idx time "` + line + `" is not valid.`)
+		return 0, parseError(`the .idx time "` + line + `" is not valid`)
 	}
 	hours, err := strconv.ParseInt(m[2], 10, 64)
 	if err != nil || hours >= timecode.MaxHours {
-		return 0, parseError(`The time "` + line + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours.")
+		return 0, parseError(`the time "` + line + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours")
 	}
 	minutes, _ := strconv.Atoi(m[3])
 	seconds, _ := strconv.Atoi(m[4])
@@ -279,7 +279,7 @@ func parseTime(value, line string) (time.Duration, error) {
 	d := time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute + time.Duration(seconds)*time.Second +
 		time.Duration(millis)*time.Millisecond
 	if d >= timecode.MaxTime {
-		return 0, parseError(`The time "` + line + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours.")
+		return 0, parseError(`the time "` + line + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours")
 	}
 	if m[1] == "-" {
 		d = -d

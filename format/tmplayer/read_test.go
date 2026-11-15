@@ -166,9 +166,9 @@ func TestReadErrors(t *testing.T) {
 		{"a comma without digits", "00:00:01,=x", 1, `The line "00:00:01,=x" is not a TMPlayer line.`},
 		{"a dot", "00:00:01.5:x", 1, `The line "00:00:01.5:x" is not a TMPlayer line.`},
 		{"digits that are not ASCII", "00:00:0\u0661:x", 1, "The line \"00:00:0\u0661:x\" is not a TMPlayer line."},
-		{"100000 hours", "100000:00:00:x", 1, `The time "100000:00:00" is not below 100000 hours.`},
-		{"20 digits in the hours", "99999999999999999999:00:04:x", 1, `The time "99999999999999999999:00:04" is not below 100000 hours.`},
-		{"digits as written", "000000000000000100000:59:59:x", 1, `The time "000000000000000100000:59:59" is not below 100000 hours.`},
+		{"100000 hours", "100000:00:00:x", 1, `the time "100000:00:00" is not below 100000 hours`},
+		{"20 digits in the hours", "99999999999999999999:00:04:x", 1, `the time "99999999999999999999:00:04" is not below 100000 hours`},
+		{"digits as written", "000000000000000100000:59:59:x", 1, `the time "000000000000000100000:59:59" is not below 100000 hours`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

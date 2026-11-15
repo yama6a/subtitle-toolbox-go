@@ -288,7 +288,7 @@ func TestReadDamage(t *testing.T) {
 	skipAt2 := []wantCue{{start: seconds(1), end: seconds(2)}, {start: seconds(3), end: seconds(4)}}
 	both := good(good(new(builder), ticks(1), "\x01\x01\x02\x02\x03\x03\x03\x03"), ticks(2), "\x03\x03\x03\x03\x01\x01\x02\x02").Bytes()
 	cutSet := both[:len(both)-20]
-	limitText := " pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total."
+	limitText := " pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total"
 
 	tests := []struct {
 		name    string
@@ -336,17 +336,17 @@ func TestReadDamage(t *testing.T) {
 		},
 		{
 			name: "short presentation segment", content: damaged(compositionData(header[:10]...)),
-			strict: "The presentation composition segment at 2 s is cut off.", cues: skipAt2,
+			strict: "the presentation composition segment at 2 s is cut off", cues: skipAt2,
 			warns: []model.ParseWarning{{Message: "The presentation composition segment at 2 s is cut off.", Block: 5, Action: model.Skipped}},
 		},
 		{
 			name: "cut composition object", content: damaged(compositionData(header...)),
-			strict: "The composition object 0 at 2 s is cut off.", cues: skipAt2,
+			strict: "the composition object 0 at 2 s is cut off", cues: skipAt2,
 			warns: []model.ParseWarning{{Message: "The composition object 0 at 2 s is cut off.", Block: 5, Action: model.Skipped}},
 		},
 		{
 			name: "cut cropping", content: damaged(compositionData(append(bytes.Clone(header), 0, 0, 0, 0x80, 0, 0, 0, 0, 0, 1)...)),
-			strict: "The cropping of composition object 0 at 2 s is cut off.", cues: skipAt2,
+			strict: "the cropping of composition object 0 at 2 s is cut off", cues: skipAt2,
 			warns: []model.ParseWarning{{Message: "The cropping of composition object 0 at 2 s is cut off.", Block: 5, Action: model.Skipped}},
 		},
 		{
@@ -354,30 +354,30 @@ func TestReadDamage(t *testing.T) {
 				b.presentation(ticks(2), w, h, stateEpochStart, 0, ref)
 				palette(b).segment(ticks(2), 0x15, []byte{0, 0, 0, 0xC0, 0, 0}).end(ticks(2))
 			}),
-			strict: "The first definition segment of object 0 is cut off.", cues: skipAt2,
+			strict: "the first definition segment of object 0 is cut off", cues: skipAt2,
 			warns: []model.ParseWarning{{Message: "The first definition segment of object 0 is cut off.", Block: 7, Action: model.Skipped}},
 		},
 		{
 			name: "object over the size limit", content: damaged(secondObject(7681, 1)),
-			strict: "Cannot read object 0: an image of 7681x1" + limitText, cues: skipAt2,
-			warns: []model.ParseWarning{{Message: "Cannot read object 0: an image of 7681x1" + limitText, Block: 7, Action: model.Skipped}},
+			strict: "cannot read object 0: an image of 7681x1" + limitText, cues: skipAt2,
+			warns: []model.ParseWarning{{Message: "Cannot read object 0: an image of 7681x1" + limitText + ".", Block: 7, Action: model.Skipped}},
 		},
 		{
 			name: "too few run-length pixels", content: damaged(secondObject(4, 2, 1, 1)),
-			strict: "Object 0 at 2 s has 2 pixels of run-length data, but its size of 4x2 needs 8.", cues: skipAt2,
+			strict: "object 0 at 2 s has 2 pixels of run-length data, but its size of 4x2 needs 8", cues: skipAt2,
 			warns: []model.ParseWarning{{Message: "Object 0 at 2 s has 2 pixels of run-length data, but its size of 4x2 needs 8.", Block: 8, Action: model.Skipped}},
 		},
 		{
 			name: "parts over the size limit", content: damaged(twoTop),
-			strict: "Cannot join the parts of one display set: an image of 6000x1500" + limitText, cues: skipAt2,
-			warns: []model.ParseWarning{{Message: "Cannot join the parts of one display set: an image of 6000x1500" + limitText, Block: 9, Action: model.Skipped}},
+			strict: "cannot join the parts of one display set: an image of 6000x1500" + limitText, cues: skipAt2,
+			warns: []model.ParseWarning{{Message: "Cannot join the parts of one display set: an image of 6000x1500" + limitText + ".", Block: 9, Action: model.Skipped}},
 		},
 		{
 			name: "screen of 0x0", content: damaged(func(b *builder) {
 				o := obj{id: 0, w: 2, h: 1, pixels: "\x01\x01"}
 				b.presentation(ticks(2), 0, 0, stateEpochStart, 0, o).palette(ticks(2), 0, testPalette).object(ticks(2), o, 65000).end(ticks(2))
 			}),
-			strict: "Cannot create a cue image of 2x1 pixels on a screen of 0x0 pixels: every size must be at least 1.", cues: skipAt2,
+			strict: "cannot create a cue image of 2x1 pixels on a screen of 0x0 pixels: every size must be at least 1", cues: skipAt2,
 			warns: []model.ParseWarning{{Message: "Cannot create a cue image of 2x1 pixels on a screen of 0x0 pixels: every size must be at least 1.", Block: 8, Action: model.Skipped}},
 		},
 	}
