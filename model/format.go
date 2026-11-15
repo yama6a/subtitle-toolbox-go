@@ -5,12 +5,12 @@ import "slices"
 // Format is the name of a subtitle format. Its value is the format name of the CLI.
 type Format string
 
-// The formats of the registry, in registry order.
+// The formats. Formats returns them in facts table order.
 const (
 	ASS       Format = "ass"
 	Cavena890 Format = "cavena890"
 	CSV       Format = "csv"
-	// HTMLTranscript is the HTML transcript of a podcast: a cite, a time and a p per paragraph. Detection finds it last.
+	// HTMLTranscript is the HTML transcript of a podcast: a cite, a time and a p per paragraph.
 	HTMLTranscript Format = "html"
 	ITT            Format = "itt"
 	JSON           Format = "json"
@@ -43,15 +43,15 @@ const (
 	Whisper        Format = "whisper"
 	// YouTubeTimedText is the timed text that YouTube serves: json3, srv3, srv2 and srv1.
 	YouTubeTimedText Format = "youtube"
-	// PodcastTranscript is the JSON transcript of a podcast feed. Detection finds it before Whisper JSON.
+	// PodcastTranscript is the JSON transcript of a podcast feed.
 	PodcastTranscript Format = "podcast-transcript"
-	// YouTubeChapters is a list of lines such as "0:00 Intro". Detection never finds it.
+	// YouTubeChapters is a list of lines such as "0:00 Intro".
 	YouTubeChapters Format = "youtube-chapters"
-	// FFMetadataChapters is the ;FFMETADATA1 text of FFmpeg. Detection never finds it.
+	// FFMetadataChapters is the ;FFMETADATA1 text of FFmpeg.
 	FFMetadataChapters Format = "ffmeta-chapters"
-	// OGMChapters is the simple chapter format of mkvmerge. Detection never finds it.
+	// OGMChapters is the simple chapter format of mkvmerge.
 	OGMChapters Format = "ogm-chapters"
-	// PodcastChapters is the JSON chapters file of Podcasting 2.0. Detection never finds it.
+	// PodcastChapters is the JSON chapters file of Podcasting 2.0.
 	PodcastChapters Format = "podcast-chapters"
 )
 
@@ -107,7 +107,7 @@ var formatFacts = []formatFact{
 	{format: YouTubeChapters, extensions: []string{"txt"}, canRead: true, canWrite: true},
 }
 
-// Formats returns every format of the facts table, in table order. The first row that lists an extension owns it.
+// Formats returns every format of the facts table, in facts table order. The first row that lists an extension owns it.
 func Formats() []Format {
 	formats := make([]Format, len(formatFacts))
 	for i, r := range formatFacts {
@@ -141,6 +141,8 @@ func (f Format) CanWrite() bool {
 
 // IsAutoDetected reports false for a format that loads only when the caller names it.
 // True does not mean that detection finds f by its content.
+//
+// Deprecated: use Detect, which returns only the formats that it can find. Version 5 removes this method.
 func (f Format) IsAutoDetected() bool {
 	return f.fact().autoDetected
 }

@@ -108,6 +108,16 @@ func ExampleDetect() {
 	// "" false
 }
 
+func ExampleNewData() {
+	data := stbox.NewData(
+		stbox.Field{Key: "language", Value: "en"},
+		stbox.Field{Key: "frames", Value: 25},
+	)
+	language, _ := data.String("language")
+	fmt.Println(language, data.Len())
+	// Output: en 2
+}
+
 func ExampleTracks() {
 	b, err := os.ReadFile("testdata/mkv/mkvmerge.mkv")
 	if err != nil {

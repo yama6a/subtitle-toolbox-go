@@ -342,7 +342,7 @@ func TestDetectNeverReturnsAFormatThatIsNotAutoDetected(t *testing.T) {
 		content, err := fs.ReadFile(fsys, p)
 		require.NoError(t, err)
 		if d, ok := stbox.Detect(content); ok && d.Container == "" {
-			assert.True(t, d.Format.IsAutoDetected(), "%s detects as %s", p, d.Format)
+			assert.True(t, d.Format.IsAutoDetected(), "%s detects as %s", p, d.Format) //nolint:staticcheck // the test checks the deprecated method until v5 removes it
 		}
 		return nil
 	})
@@ -582,7 +582,7 @@ func FuzzDetect(f *testing.F) {
 		if ok != (got != "") {
 			t.Fatalf("Detect returned %q and %t", got, ok)
 		}
-		if ok && !got.IsAutoDetected() {
+		if ok && !got.IsAutoDetected() { //nolint:staticcheck // the test checks the deprecated method until v5 removes it
 			t.Fatalf("Detect returned %s, which is not auto-detected", got)
 		}
 		if got == stbox.PGS {

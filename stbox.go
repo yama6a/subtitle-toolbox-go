@@ -1,7 +1,7 @@
 // Package stbox reads, edits and writes subtitles.
 //
 // It is the facade of the module. Load, Parse and Write read and write every format,
-// Detect and FormatFromPath find the format of a file, and Formats lists the registry.
+// Detect and FormatFromPath find the format of a file, and Formats lists the formats.
 // The types, constants and errors of package model appear here under the same names,
 // as aliases and copies, so most callers import only stbox. Package model documents
 // the methods of the aliased types.
@@ -78,9 +78,13 @@ type (
 	CueLimits = model.CueLimits
 	// MergeShortCuesOptions holds the settings of Subtitle.MergeShortCues.
 	MergeShortCuesOptions = model.MergeShortCuesOptions
+	// Data is the format data of one format: an ordered object of JSON-like values, where a nil *Data reads as empty.
+	Data = model.Data
+	// Field is one key and value, for NewData.
+	Field = model.Field
 )
 
-// The formats of the registry, in registry order.
+// The formats. Formats returns them in facts table order.
 const (
 	ASS           = model.ASS
 	Cavena890     = model.Cavena890
@@ -114,20 +118,20 @@ const (
 	VobSub        = model.VobSub
 	WebVTT        = model.WebVTT
 	Whisper       = model.Whisper
-	// YouTubeTimedText is the format of the timed text that YouTube serves: json3, srv3, srv2 and srv1.
+	// YouTubeTimedText is the timed text that YouTube serves: json3, srv3, srv2 and srv1.
 	YouTubeTimedText = model.YouTubeTimedText
 
-	// HTMLTranscript is the format of the Podcasting 2.0 HTML transcript.
+	// HTMLTranscript is the HTML transcript of a podcast: a cite, a time and a p per paragraph.
 	HTMLTranscript = model.HTMLTranscript
-	// PodcastTranscript is the format of the Podcasting 2.0 JSON transcript.
+	// PodcastTranscript is the JSON transcript of a podcast feed.
 	PodcastTranscript = model.PodcastTranscript
-	// YouTubeChapters is the format of the chapter lines of a YouTube description.
+	// YouTubeChapters is a list of lines such as "0:00 Intro".
 	YouTubeChapters = model.YouTubeChapters
-	// FFMetadataChapters is the format of the chapters in FFmpeg metadata text.
+	// FFMetadataChapters is the ;FFMETADATA1 text of FFmpeg.
 	FFMetadataChapters = model.FFMetadataChapters
-	// OGMChapters is the format of the simple chapter files of mkvmerge.
+	// OGMChapters is the simple chapter format of mkvmerge.
 	OGMChapters = model.OGMChapters
-	// PodcastChapters is the format of the Podcasting 2.0 JSON chapters file.
+	// PodcastChapters is the JSON chapters file of Podcasting 2.0.
 	PodcastChapters = model.PodcastChapters
 )
 
@@ -213,6 +217,12 @@ const (
 	DefaultMergeMaxGap          = model.DefaultMergeMaxGap
 )
 
+// The limits of an image: 7680 pixels per side and a 3840 x 2160 frame in total.
+const (
+	MaxImageSide   = model.MaxImageSide
+	MaxImagePixels = model.MaxImagePixels
+)
+
 // The DropFrameMode values.
 const (
 	DropFrameKeep = model.DropFrameKeep
@@ -239,6 +249,11 @@ var (
 // ParseTimecode reads the label HH:MM:SS:FF or HH:MM:SS;FF.
 func ParseTimecode(s string) (Timecode, error) {
 	return model.ParseTimecode(s)
+}
+
+// NewData returns the data of fields in their order, where a repeated key keeps its first place and its last value.
+func NewData(fields ...Field) *Data {
+	return model.NewData(fields...)
 }
 
 // ParseTime returns the time of a time string such as "00:01:02,500", "01:02.5" or, with r, "00:01:02:12".

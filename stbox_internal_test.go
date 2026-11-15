@@ -58,6 +58,73 @@ func TestEveryModelSentinelIsReexported(t *testing.T) {
 	assert.Positive(t, checked)
 }
 
+// notAliased holds the model types that the root does not alias. The root has its own ReadOptions and
+// WriteOptions, which embed these two.
+var notAliased = map[string]bool{"CommonReadOptions": true, "CommonWriteOptions": true}
+
+func TestEveryModelTypeIsAliased(t *testing.T) {
+	t.Parallel()
+
+	root := typeAliases(t, ".")
+	var checked int
+	for _, name := range exportedTypes(t, modelDir) {
+		if notAliased[name] {
+			continue
+		}
+		checked++
+		assert.Equal(t, "model."+name, root[name], "the root package has no type %s = model.%s", name, name)
+	}
+	assert.Positive(t, checked)
+}
+
+// exportedTypes returns the names of the exported types of dir.
+func exportedTypes(t *testing.T, dir string) []string {
+	t.Helper()
+
+	var out []string
+	for _, f := range parseDir(t, dir) {
+		for _, decl := range f.Decls {
+			d, ok := decl.(*ast.GenDecl)
+			if !ok || d.Tok != token.TYPE {
+				continue
+			}
+			for _, spec := range d.Specs {
+				if s, ok := spec.(*ast.TypeSpec); ok && s.Name.IsExported() {
+					out = append(out, s.Name.Name)
+				}
+			}
+		}
+	}
+	return out
+}
+
+// typeAliases maps each exported alias of dir of the form type X = pkg.Y to the text pkg.Y.
+func typeAliases(t *testing.T, dir string) map[string]string {
+	t.Helper()
+
+	out := map[string]string{}
+	for _, f := range parseDir(t, dir) {
+		for _, decl := range f.Decls {
+			d, ok := decl.(*ast.GenDecl)
+			if !ok || d.Tok != token.TYPE {
+				continue
+			}
+			for _, spec := range d.Specs {
+				s, ok := spec.(*ast.TypeSpec)
+				if !ok || !s.Assign.IsValid() {
+					continue
+				}
+				if sel, ok := s.Type.(*ast.SelectorExpr); ok {
+					if pkg, ok := sel.X.(*ast.Ident); ok {
+						out[s.Name.Name] = pkg.Name + "." + sel.Sel.Name
+					}
+				}
+			}
+		}
+	}
+	return out
+}
+
 // parseDir parses the non-test Go files of dir.
 func parseDir(t *testing.T, dir string) []*ast.File {
 	t.Helper()
