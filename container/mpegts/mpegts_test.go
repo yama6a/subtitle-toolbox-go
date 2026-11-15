@@ -485,7 +485,7 @@ func TestErrors(t *testing.T) {
 		{"an Arabic page", func() error {
 			_, _, err := open(t, arabic.bytes()).Extract(888, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 			return err
-		}, "Teletext page 888 uses the Arabic or Hebrew character set. The reader reads Latin, Cyrillic and Greek pages", isParseError},
+		}, "teletext page 888 uses the Arabic or Hebrew character set. The reader reads Latin, Cyrillic and Greek pages", isParseError},
 		{"the time limit", func() error {
 			_, _, err := open(t, timeLimitFile()).Extract(888, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 			return err
