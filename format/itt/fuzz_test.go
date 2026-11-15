@@ -3,26 +3,18 @@ package itt_test
 import (
 	"bytes"
 	"errors"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func FuzzRead(f *testing.F) {
-	entries, err := os.ReadDir(testfiles.Path(f, "itt/real"))
-	if err != nil {
-		f.Fatal(err)
-	}
-	for _, e := range entries {
-		if !e.IsDir() && e.Name() != "SOURCES.md" {
-			f.Add(testfiles.Read(f, "itt/real/"+e.Name()))
-		}
-	}
+	formattest.AddSeeds(f, "itt/real/*")
 	f.Add(testfiles.Read(f, "forced/forced_signs_2398.itt"))
 	f.Add([]byte(`<tt xmlns="http://www.w3.org/ns/ttml" ttp:frameRate="1e300" ttp:frameRateMultiplier="3 0"><body><div><p begin="1s" end="2s">a</p></div></body></tt>`))
 

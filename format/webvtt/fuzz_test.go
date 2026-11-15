@@ -4,27 +4,15 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func FuzzRead(f *testing.F) {
-	for _, pattern := range []string{"vtt/*.vtt", "vtt/real/*.vtt", "lenient/*.vtt"} {
-		paths, err := filepath.Glob(testfiles.Path(f, pattern))
-		if err != nil {
-			f.Fatal(err)
-		}
-		for _, p := range paths {
-			rel, _ := filepath.Rel(testfiles.Root(f), p)
-			f.Add(testfiles.Read(f, rel))
-		}
-	}
+	formattest.AddSeeds(f, "vtt/*.vtt", "vtt/real/*.vtt", "lenient/*.vtt")
 	for _, s := range []string{
 		"WEBVTT",
 		"WEBVTTX\n\n00:01.000 --> 00:02.000\nHi\n",
@@ -39,27 +27,16 @@ func FuzzRead(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, content []byte) {
 		for _, lenient := range []bool{false, true} {
-			s, _, err := webvtt.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, webvtt.ReadOptions{})
-			if err != nil {
-				var perr *model.ParseError
-				if !errors.Is(err, model.ErrParse) || !errors.As(err, &perr) {
-					t.Fatalf("Read(%q, lenient %t) returned %v", content, lenient, err)
-				}
+			s, warnings, err := webvtt.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, webvtt.ReadOptions{})
+			if err != nil && !errors.Is(err, model.ErrParse) {
+				t.Fatalf("Read(%q, lenient %t) returned %v", content, lenient, err)
+			}
+			if !formattest.CheckRead(t, s, warnings, err) {
 				continue
 			}
-			var last time.Duration
 			for i, c := range s.All() {
-				if i > 0 && c.Start < last {
-					t.Fatalf("Read(%q) gave cue %d at %s before %s", content, i, c.Start, last)
-				}
-				last = c.Start
 				if err := c.Position.Validate(); err != nil {
 					t.Fatalf("Read(%q) gave cue %d the position %+v: %v", content, i, c.Position, err)
-				}
-				for _, d := range []time.Duration{c.Start, c.End} {
-					if d%time.Millisecond != 0 || d < 0 || d >= timecode.MaxTime {
-						t.Fatalf("Read(%q) gave cue %d the time %s", content, i, d)
-					}
 				}
 			}
 			if _, err := webvtt.Write(io.Discard, s, model.CommonWriteOptions{}, webvtt.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {

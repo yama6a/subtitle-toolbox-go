@@ -2,30 +2,17 @@ package srt_test
 
 import (
 	"bytes"
-	"errors"
-	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func FuzzRead(f *testing.F) {
-	for _, dir := range []string{"srt", realDir, "lenient", "encoding"} {
-		entries, err := os.ReadDir(testfiles.Path(f, dir))
-		if err != nil {
-			f.Fatal(err)
-		}
-		for _, e := range entries {
-			if filepath.Ext(e.Name()) == ".srt" {
-				f.Add(testfiles.Read(f, dir+"/"+e.Name()))
-			}
-		}
-	}
+	formattest.AddSeeds(f, "srt/*.srt", "srt/real/*.srt", "lenient/*.srt", "encoding/*.srt")
 	for _, seed := range []string{
 		"1\n00:00:01,000 --> 00:00:02,000",
 		"1\n00:00:01,000 --> 00:00:0",
@@ -39,18 +26,8 @@ func FuzzRead(f *testing.F) {
 	f.Fuzz(func(t *testing.T, content []byte) {
 		for _, lenient := range []bool{false, true} {
 			s, warnings, err := srt.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, srt.ReadOptions{})
-			if err != nil {
-				var perr *model.ParseError
-				if !errors.As(err, &perr) {
-					t.Fatalf("Read returned %v, which is no *ParseError", err)
-				}
+			if !formattest.CheckRead(t, s, warnings, err) {
 				continue
-			}
-			checkCues(t, s)
-			for _, w := range warnings {
-				if w.Action != model.Skipped && w.Action != model.Repaired {
-					t.Fatalf("the warning %q has no action", w.Message)
-				}
 			}
 			var out bytes.Buffer
 			if _, err := srt.Write(&out, s, model.CommonWriteOptions{}, srt.WriteOptions{}); err != nil {

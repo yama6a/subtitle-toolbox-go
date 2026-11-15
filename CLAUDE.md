@@ -35,7 +35,7 @@ resegment/     The 4.x service that splits long cues and builds cues from word t
 internal/      Helpers that more than one top-level folder uses: caption (with caption/cea608 and caption/cea708),
                bitmap (with bitmap/displayset, bitmap/dvbsub and bitmap/dvdsub), markupcore, speakerlabel, linewrap,
                timecode, textenc, extfallback, grapheme, ssatag, intkey, orderedjson, textblock, subrip, vtt,
-               position, parsing, writing, cli, readingspeed, the test helpers testfiles and translationtest, and the
+               position, parsing, writing, cli, readingspeed, the test helpers testfiles, formattest and translationtest, and the
                test-only packages repocheck and conformance
 format/internal/ Helpers that only format packages use: codepage, formatdata, paragraphs, ttmldoc, wordgroup, xmlraw
 cmd/stbox/     The CLI main. Wiring, no business logic
@@ -97,6 +97,7 @@ make smoke   # run the smoke test on this machine's archive in dist/
   - Each input reads once strict and once lenient, with zero options. A format that cannot read without a setting sets it, for example the MicroDVD frame rate 25.
   - Checks: no panic. An error matches a sentinel or type of `errors.go` with `errors.Is` or `errors.As`. The cues are in start order. Every time is whole milliseconds and below 100000 h. Writing the result in the same format returns nil or an error that matches `ErrUnwritable`.
   - Commit each crash input under `<package>/testdata/fuzz/FuzzRead/` with its fix.
+  - `formattest.CheckRead` holds the read checks and `formattest.AddSeeds` adds the testdata seeds.
 - **Examples**: `example_test.go` in the black-box test package, one per exported entry point, each with `// Output:`. Input is an inline raw string or a file under testdata, ASCII only. Output never depends on map order, the clock or the machine.
 - **Benchmarks**: `b.Loop()`, `b.ReportAllocs()`, input built before the loop, sub-benchmark names such as `cues=20000`. `BenchmarkParse/<format>` in `bench_test.go` of the root package gets a row for each format with a reader.
 - **Growth tests**: run the operation at n and 10n, best of 3 runs each, and fail above a ratio of 30. The top-level test name holds `Growth`. The test skips unless `STBOX_GROWTH=1` is set.

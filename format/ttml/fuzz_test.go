@@ -3,28 +3,17 @@ package ttml_test
 import (
 	"bytes"
 	"errors"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func FuzzRead(f *testing.F) {
-	for _, dir := range []string{realDir, "forced", "lenient"} {
-		entries, err := os.ReadDir(testfiles.Path(f, dir))
-		if err != nil {
-			f.Fatal(err)
-		}
-		for _, e := range entries {
-			if !e.IsDir() && e.Name() != "SOURCES.md" {
-				f.Add(testfiles.Read(f, dir+"/"+e.Name()))
-			}
-		}
-	}
+	formattest.AddSeeds(f, "ttml/real/*", "forced/*", "lenient/*")
 	for _, seed := range []string{
 		document(`<div begin="10s" end="20s"><p begin="1s" end="2s" dur="5s">a<span begin="0.5s">b</span></p><p begin="30s">c</p></div>`, "", ""),
 		document(`<div><p begin="00:00:01:45" end="99999:59:59.9999">a&nbsp;&#13;</p><p begin="5s" end="2s">x</p></div>`,

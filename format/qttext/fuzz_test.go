@@ -2,34 +2,19 @@ package qttext_test
 
 import (
 	"bytes"
-	"errors"
-	"os"
-	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/qttext"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func FuzzRead(f *testing.F) {
-	for _, dir := range []string{"qttext", realDir, "lenient"} {
-		entries, err := os.ReadDir(testfiles.Path(f, dir))
-		if err != nil {
-			f.Fatal(err)
-		}
-		for _, e := range entries {
-			if filepath.Ext(e.Name()) == ".txt" {
-				f.Add(testfiles.Read(f, dir+"/"+e.Name()))
-			}
-		}
-	}
+	formattest.AddSeeds(f, "qttext/*.txt", "qttext/real/*.txt", "lenient/*.txt")
 	for _, seed := range []string{
 		"{QTtext}{timeScale:600}{timeStamps:relative}\n[00:00:01.300]\nOne\n[00:00:02.000]\n[00:00:01.000]\nTwo\n[00:00:02.000]\n",
 		"{QTtext}{timeScale:30}\n[00:00:01.45]\n{bold}One{plain} & <i>two\n[00:00:04.00]\n",
@@ -47,29 +32,8 @@ func FuzzRead(f *testing.F) {
 	f.Fuzz(func(t *testing.T, content []byte) {
 		for _, lenient := range []bool{false, true} {
 			s, warnings, err := qttext.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, qttext.ReadOptions{})
-			if err != nil {
-				var perr *model.ParseError
-				if !errors.As(err, &perr) {
-					t.Fatalf("Read returned %v, which is no *ParseError", err)
-				}
+			if !formattest.CheckRead(t, s, warnings, err) {
 				continue
-			}
-			var previous time.Duration
-			for i, c := range s.All() {
-				if i > 0 && c.Start < previous {
-					t.Fatalf("cue %d starts before cue %d", i, i-1)
-				}
-				previous = c.Start
-				for _, d := range []time.Duration{c.Start, c.End} {
-					if d%time.Millisecond != 0 || d < 0 || d >= timecode.MaxTime {
-						t.Fatalf("cue %d has the time %v", i, d)
-					}
-				}
-			}
-			for _, w := range warnings {
-				if w.Action != model.Skipped && w.Action != model.Repaired {
-					t.Fatalf("the warning %q has no action", w.Message)
-				}
 			}
 			var out bytes.Buffer
 			if _, err := qttext.Write(&out, s, model.CommonWriteOptions{}, qttext.WriteOptions{}); err != nil {

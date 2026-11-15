@@ -50,6 +50,7 @@ var layers = map[string]layer{
 	"container/mpegts/internal/teletext": layerLeaf,
 	"internal/linewrap":                  layerLeaf,
 	"internal/testfiles":                 layerLeaf,
+	"internal/formattest":                layerModelUser,
 	"internal/translationtest":           layerLeaf,
 	"internal/extfallback":               layerLeaf,
 	"format/internal/paragraphs":         layerLeaf,

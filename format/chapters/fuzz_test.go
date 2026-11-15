@@ -3,10 +3,10 @@ package chapters_test
 import (
 	"bytes"
 	"errors"
-	"os"
 	"testing"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/chapters"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -62,9 +62,7 @@ func checkChapters(t *testing.T, s *model.Subtitle) {
 func fuzzRead(f *testing.F, rd reader, wr writer, folder string, seeds ...string) {
 	f.Helper()
 
-	for _, name := range testfilesIn(f, folder) {
-		f.Add(testfiles.Read(f, name))
-	}
+	formattest.AddSeeds(f, "chapters/"+folder+"/real/*")
 	for _, seed := range seeds {
 		f.Add([]byte(seed))
 	}
@@ -83,22 +81,6 @@ func fuzzRead(f *testing.F, rd reader, wr writer, folder string, seeds ...string
 			}
 		}
 	})
-}
-
-func testfilesIn(f *testing.F, folder string) []string {
-	f.Helper()
-
-	entries, err := os.ReadDir(testfiles.Path(f, "chapters/"+folder+"/real"))
-	if err != nil {
-		f.Fatal(err)
-	}
-	var names []string
-	for _, e := range entries {
-		if !e.IsDir() && e.Name() != "SOURCES.md" {
-			names = append(names, "chapters/"+folder+"/real/"+e.Name())
-		}
-	}
-	return names
 }
 
 func FuzzReadPodcast(f *testing.F) {

@@ -15,7 +15,7 @@ A package imports only packages of a lower layer. Every layer may also import th
 |---:|:--- |:--- |
 | 0 | leaf helpers in `internal/`: `markupcore`, `linewrap`, `format/internal/paragraphs`, `timecode`, `grapheme`, `ssatag`, `intkey`, `textenc`, `format/internal/xmlraw`, `extfallback`, `format/internal/codepage`, the test helpers `testfiles` and `translationtest`, `internal/caption/cea608`, `internal/caption/cea708`, `container/mkv/internal/ebml`, `orderedjson`, `container/mpegts/internal/teletext` | other layer 0 packages |
 | 1 | `markup`, `internal/speakerlabel` | layer 0 |
-| 2 | `model` | layers 0 and 1 |
+| 2 | `model`, the test helper `internal/formattest` | layers 0 and 1 |
 | 3 | `internal/` helpers that work on model types: `textblock`, `subrip`, `vtt`, `position`, `parsing`, `writing`, `caption`, `format/internal/ttmldoc`, `bitmap`, `bitmap/displayset`, `bitmap/dvbsub`, `container/mpegts/internal/arib`, `bitmap/dvdsub`, `format/internal/formatdata`, `format/internal/wordgroup`, `readingspeed` | layers 0 to 2, and other layer 3 packages. Go rejects an import cycle |
 | 4 | `format/<name>` | layers 0 to 3. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML. Other shared code goes to `internal/` |
 | 4b | `container/<name>`, from 3.x | layers 0 to 4. A container returns cues, so it calls the format readers |

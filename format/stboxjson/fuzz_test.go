@@ -3,13 +3,11 @@ package stboxjson_test
 import (
 	"bytes"
 	"errors"
-	"os"
-	"path/filepath"
 	"reflect"
 	"testing"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -17,17 +15,7 @@ import (
 const infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
 
 func FuzzRead(f *testing.F) {
-	for _, dir := range []string{"json", realDir, "lenient"} {
-		entries, err := os.ReadDir(testfiles.Path(f, dir))
-		if err != nil {
-			f.Fatal(err)
-		}
-		for _, e := range entries {
-			if filepath.Ext(e.Name()) == ".json" {
-				f.Add(testfiles.Read(f, dir+"/"+e.Name()))
-			}
-		}
-	}
+	formattest.AddSeeds(f, "json/*.json", "json/real/*.json", "lenient/*.json")
 	for _, c := range readErrorCases() {
 		f.Add([]byte(c.content))
 	}
