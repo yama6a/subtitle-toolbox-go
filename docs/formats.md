@@ -1,6 +1,6 @@
 # Formats
 
-`Format` is a string type. Its value is the format name that the CLI takes for `--from` and `--to`. It is also the key of the format data of that format. Example: `stbox.SubRip` is `"srt"`. `stbox.Formats()` lists the formats in the order of the facts table. Each `Format` has the methods `Extensions`, `CanRead`, `CanWrite` and `IsAutoDetected`. `IsAutoDetected` is deprecated. Version 5 removes it.
+`Format` is a string type. Its value is the format name that the CLI takes for `--from` and `--to`. It is also the key of the format data of that format. Example: `stbox.SubRip` is `"srt"`. `stbox.Formats()` lists the formats in the order of the facts table. Each `Format` has the methods `Extensions`, `CanRead` and `CanWrite`.
 
 | Format | Go constant | Name | Extensions | Section |
 |:--- |:--- |:--- |:--- |:--- |
@@ -1495,7 +1495,7 @@ The cue key `stl` holds `subtitleGroupNumber`, `cumulativeStatus`, `verticalPosi
 **Report**: `WriteReport.EBUSTL` is non-nil after every write. `CharacterCodeTable` is the table, `TableChosen` is true when the writer picked it, and `Replaced` lists each character written as `?` in output order. A GSI field has its name in `Field`, a cue its index in `CueIndex`, and a comment or a GSI field has `CueIndex` -1. Example: an em dash and the guillemets in cue 0 give 3 entries.
 ## Cavena 890
 
-Cavena 890 is the binary subtitle file of the Cavena systems, which Scandinavian broadcasters use. Package `format/cavena890` reads and writes it. The format name is `cavena890`, the extension `.890`. The format has no public spec and no signature, so `Detect` never finds it. `Load` finds it by the extension `.890`. `Parse` needs `ReadOptions.Format`, and without it returns `ErrUnknownFormat`.
+Cavena 890 is the binary subtitle file of the Cavena systems, which Scandinavian broadcasters use. Package `format/cavena890` reads and writes it. The format name is `cavena890`, the extension `.890`. The format has no public spec and no signature, so `Detect` never finds it. `Load` finds it by the extension `.890`. `Parse` needs `ReadOptions.Format`, and without it returns `ErrNoFormatDetected`.
 
 A file holds a header of 388 bytes, then blocks of 128 bytes. Each block has 2 text lines of 51 bytes. Example: a block that starts with `00 10 00 00 19 00 00 64 50` is subtitle 16 from 1 s to 4 s, aligned bottom left. The frames 25 and 100 at 25 fps give the times. Its lower line `88 47 72 86 75 DF 65 98 20 E5 78 E6` reads as `<i>Gr` U+00FC U+00DF `e</i> [x]`, which is the italic word "Gruesse" with its umlaut and sharp s, then `[x]`.
 

@@ -56,54 +56,53 @@ const (
 )
 
 type formatFact struct {
-	format       Format
-	extensions   []string
-	canRead      bool
-	canWrite     bool
-	autoDetected bool
-	binary       bool
+	format     Format
+	extensions []string
+	canRead    bool
+	canWrite   bool
+	binary     bool
 }
 
 //nolint:gochecknoglobals // lookup table of the format facts
 var formatFacts = []formatFact{
-	{format: ASS, extensions: []string{"ass", "ssa"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: ASS, extensions: []string{"ass", "ssa"}, canRead: true, canWrite: true},
 	{format: Cavena890, extensions: []string{"890"}, canRead: true, canWrite: true, binary: true},
 	{format: CSV, extensions: []string{"csv"}, canRead: true, canWrite: true},
 	{format: FFMetadataChapters, extensions: []string{"ffmeta"}, canRead: true, canWrite: true},
-	{format: HTMLTranscript, extensions: []string{"html", "htm"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: HTMLTranscript, extensions: []string{"html", "htm"}, canRead: true, canWrite: true},
 	{format: ITT, extensions: []string{"itt"}, canRead: true, canWrite: true},
-	{format: JSON, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: JSON, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: AssemblyAI, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: AWSTranscribe, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: Deepgram, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: GoogleSpeech, extensions: []string{"json"}, canRead: true, canWrite: true},
-	{format: LRC, extensions: []string{"lrc"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: MCC, extensions: []string{"mcc"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: MicroDVD, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: MPSub, extensions: []string{"mpsub"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: PAC, extensions: []string{"pac", "fpc"}, canRead: true, canWrite: true, autoDetected: true, binary: true},
-	{format: PGS, extensions: []string{"sup"}, canRead: true, canWrite: true, autoDetected: true, binary: true},
-	{format: SAMI, extensions: []string{"smi", "sami"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: SBV, extensions: []string{"sbv"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: SCC, extensions: []string{"scc"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: SubRip, extensions: []string{"srt"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: EBUSTL, extensions: []string{"stl"}, canRead: true, canWrite: true, autoDetected: true, binary: true},
-	{format: SpruceSTL, extensions: []string{"stl"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: SubViewer, extensions: []string{"sub"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: DCP, extensions: []string{"xml"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: LRC, extensions: []string{"lrc"}, canRead: true, canWrite: true},
+	{format: MCC, extensions: []string{"mcc"}, canRead: true, canWrite: true},
+	{format: MicroDVD, extensions: []string{"sub"}, canRead: true, canWrite: true},
+	{format: MPSub, extensions: []string{"mpsub"}, canRead: true, canWrite: true},
+	{format: PAC, extensions: []string{"pac", "fpc"}, canRead: true, canWrite: true, binary: true},
+	{format: PGS, extensions: []string{"sup"}, canRead: true, canWrite: true, binary: true},
+	{format: SAMI, extensions: []string{"smi", "sami"}, canRead: true, canWrite: true},
+	{format: SBV, extensions: []string{"sbv"}, canRead: true, canWrite: true},
+	{format: SCC, extensions: []string{"scc"}, canRead: true, canWrite: true},
+	{format: SubRip, extensions: []string{"srt"}, canRead: true, canWrite: true},
+	{format: EBUSTL, extensions: []string{"stl"}, canRead: true, canWrite: true, binary: true},
+	{format: SpruceSTL, extensions: []string{"stl"}, canRead: true, canWrite: true},
+	{format: SubViewer, extensions: []string{"sub"}, canRead: true, canWrite: true},
+	{format: TTML, extensions: []string{"ttml", "dfxp", "xml"}, canRead: true, canWrite: true},
+	{format: DCP, extensions: []string{"xml"}, canRead: true, canWrite: true},
 	{format: TSV, extensions: []string{"tsv"}, canRead: true, canWrite: true},
-	{format: PlainText, extensions: []string{"txt"}, canWrite: true, autoDetected: true},
-	{format: MPL2, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: TMPlayer, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: QuickTimeText, extensions: []string{"txt"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: PlainText, extensions: []string{"txt"}, canWrite: true},
+	{format: MPL2, extensions: []string{"txt"}, canRead: true, canWrite: true},
+	{format: TMPlayer, extensions: []string{"txt"}, canRead: true, canWrite: true},
+	{format: QuickTimeText, extensions: []string{"txt"}, canRead: true, canWrite: true},
 	{format: VobSub, extensions: []string{"idx"}, canRead: true, binary: true},
-	{format: WebVTT, extensions: []string{"vtt"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: Whisper, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
-	{format: YouTubeTimedText, extensions: []string{"srv3", "json3", "srv1", "ytt"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: WebVTT, extensions: []string{"vtt"}, canRead: true, canWrite: true},
+	{format: Whisper, extensions: []string{"json"}, canRead: true, canWrite: true},
+	{format: YouTubeTimedText, extensions: []string{"srv3", "json3", "srv1", "ytt"}, canRead: true, canWrite: true},
 	{format: OGMChapters, extensions: []string{"txt"}, canRead: true, canWrite: true},
 	{format: PodcastChapters, extensions: []string{"json"}, canRead: true, canWrite: true},
-	{format: PodcastTranscript, extensions: []string{"json"}, canRead: true, canWrite: true, autoDetected: true},
+	{format: PodcastTranscript, extensions: []string{"json"}, canRead: true, canWrite: true},
 	{format: YouTubeChapters, extensions: []string{"txt"}, canRead: true, canWrite: true},
 }
 
@@ -137,14 +136,6 @@ func (f Format) CanRead() bool {
 // CanWrite reports whether the library has a writer for f.
 func (f Format) CanWrite() bool {
 	return f.fact().canWrite
-}
-
-// IsAutoDetected reports false for a format that loads only when the caller names it.
-// True does not mean that detection finds f by its content.
-//
-// Deprecated: use Detect, which returns only the formats that it can find. Version 5 removes this method.
-func (f Format) IsAutoDetected() bool {
-	return f.fact().autoDetected
 }
 
 // IsBinary reports whether f is a binary format. Its reader gets the raw bytes of the input with no decoding,

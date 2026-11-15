@@ -6,7 +6,7 @@ import "github.com/yama6a/subtitle-toolbox-go/v5/model"
 var (
 	ErrParse             = model.ErrParse
 	ErrUnsupportedFormat = model.ErrUnsupportedFormat
-	ErrUnknownFormat     = model.ErrUnknownFormat
+	ErrNoFormatDetected  = model.ErrNoFormatDetected
 	ErrInvalidArgument   = model.ErrInvalidArgument
 	ErrCueNotFound       = model.ErrCueNotFound
 	ErrUnwritable        = model.ErrUnwritable
