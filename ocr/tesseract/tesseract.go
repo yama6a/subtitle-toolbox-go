@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -22,6 +23,10 @@ type Engine struct {
 	scale    float64
 	noInvert bool
 	thresh   int
+
+	mu            sync.Mutex
+	languages     []string
+	languagesRead bool
 }
 
 var _ ocr.Engine = (*Engine)(nil)
