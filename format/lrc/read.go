@@ -153,9 +153,10 @@ func (rd *reader) readLines(s *model.Subtitle, lines []string) error {
 			i++
 			text = lines[i]
 		}
-		err := rd.readTimedLine(line[:loc[1]], text)
-		if err = rd.st.Fail(err, model.NoLine, i, []string{line}); err != nil {
-			return err
+		if err := rd.readTimedLine(line[:loc[1]], text); err != nil {
+			if err = rd.st.Fail(err, model.NoLine, i, []string{line}); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

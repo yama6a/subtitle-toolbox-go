@@ -105,3 +105,10 @@ func ImageCueError(f model.Format, index int) *model.UnwritableError {
 		Reason: "Cue #" + strconv.Itoa(index) + " holds an image but no text, and " + string(f) + " needs text.",
 	}
 }
+
+var lineBreaks = strings.NewReplacer("\r", " ", "\n", " ") //nolint:gochecknoglobals // a fixed replacer
+
+// OneLine returns s with each CR and each LF as a space.
+func OneLine(s string) string {
+	return lineBreaks.Replace(s)
+}

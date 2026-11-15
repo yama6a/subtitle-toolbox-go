@@ -123,17 +123,6 @@ func (s *State) OrderedTimes(start, end time.Duration, line, block int, lines []
 	return end, start, nil
 }
 
-// EndAtNextStart returns the first start after starts[i] that is later than starts[i].
-// Without one, it returns LastCueEnd of starts[i].
-func (s *State) EndAtNextStart(starts []time.Duration, i int) time.Duration {
-	for _, next := range starts[i+1:] {
-		if next > starts[i] {
-			return next
-		}
-	}
-	return s.LastCueEnd(starts[i])
-}
-
 // LastCueEnd returns the end of a last cue without an end: EndAfter of start and the last cue duration.
 func (s *State) LastCueEnd(start time.Duration) time.Duration {
 	return EndAfter(start, s.LastCueDuration())

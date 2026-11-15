@@ -30,6 +30,14 @@ func FrameRateOption(err error, option, subject string) error {
 	return &model.InvalidArgumentError{Option: option, Msg: subject + strings.TrimPrefix(aerr.Msg, "The frame rate")}
 }
 
+// ValidateFrameRate returns nil for a zero rate. Else it returns FrameRateOption of r.Validate with option and subject.
+func ValidateFrameRate(r model.FrameRate, option, subject string) error {
+	if r.IsZero() {
+		return nil
+	}
+	return FrameRateOption(r.Validate(), option, subject)
+}
+
 // BoundedTime returns d, or an error on line when d is 100000 hours or more. The error has no format,
 // so the caller passes it to Fail. A caller passes timecode.MaxTime for a time that overflows time.Duration.
 func BoundedTime(d time.Duration, text string, line int) (time.Duration, error) {
@@ -42,6 +50,11 @@ func BoundedTime(d time.Duration, text string, line int) (time.Duration, error) 
 // OverLimit returns the error on line for the time text, which is 100000 hours or more. The error has no format.
 func OverLimit(text string, line int) *model.ParseError {
 	return &model.ParseError{Line: line, Msg: `The time "` + text + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours."}
+}
+
+// InvalidTime returns the error on line for the time text that has no valid form. The error has no format.
+func InvalidTime(text string, line int) *model.ParseError {
+	return &model.ParseError{Line: line, Msg: `The time "` + text + `" is not valid.`}
 }
 
 // FrameLimit returns the first frame of fps at 100000 hours or later.

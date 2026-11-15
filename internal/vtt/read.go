@@ -636,7 +636,9 @@ func (r *Reader) time(text string, timingLine int, loose *[]looseTime) (time.Dur
 }
 
 func invalidTime(text string, line int) *model.ParseError {
-	return &model.ParseError{Format: model.WebVTT, Line: line, Msg: `The time "` + text + `" is not valid.`}
+	perr := parsing.InvalidTime(text, line)
+	perr.Format = model.WebVTT
+	return perr
 }
 
 // strictTime reads a WebVTT timestamp. Hours of 100000 or more give timecode.MaxTime, also when they overflow.

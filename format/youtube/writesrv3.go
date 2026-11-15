@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -165,7 +166,7 @@ func newPositionTable(elements []orderedjson.Value) *positionTable {
 		}
 		t.alignments[id] = model.BottomCenter
 		if ap, _ := e.Get("ap"); digitsRegexp.MatchString(scalarText(ap)) {
-			if a, valid := alignmentOf(intOf(scalarText(ap))); valid {
+			if a, valid := alignmentOf(int(decimal.Saturated(scalarText(ap)))); valid {
 				t.alignments[id] = a
 			}
 		}

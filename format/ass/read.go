@@ -16,9 +16,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-// maxHourDigits is the digit count above which a time is 100000 hours or more, whatever its other fields.
-const maxHourDigits = 6
-
 var (
 	sectionRegexp       = regexp.MustCompile(`^\[([A-Za-z][A-Za-z0-9+ ]*)\]$`)
 	timeRegexp          = regexp.MustCompile(`^(\d+):([0-5]?\d):([0-5]?\d)\.(\d{1,3})$`)
@@ -400,7 +397,7 @@ func (rd *reader) legacyStyles() bool {
 func (rd *reader) time(text string, line int, loose *[]looseTime) (time.Duration, error) {
 	t := trim(text)
 	if m := timeRegexp.FindStringSubmatch(t); m != nil {
-		return parsing.BoundedTime(clock(m[1], m[2], m[3])+fraction(m[4]), text, line)
+		return parsing.BoundedTime(timecode.HMS(m[1], m[2], m[3])+fraction(m[4]), text, line)
 	}
 	if rd.st.Lenient() {
 		if d, ok := timecode.Loose(t, ".,:", false); ok {
@@ -408,20 +405,7 @@ func (rd *reader) time(text string, line int, loose *[]looseTime) (time.Duration
 			return parsing.BoundedTime(d, text, line)
 		}
 	}
-	return 0, &model.ParseError{Line: line, Msg: `The time "` + text + `" is not valid.`}
-}
-
-// clock returns the time of the fields. Hours of more than 6 digits cannot be below 100000, so they give
-// timecode.MaxTime and the multiplication cannot wrap.
-func clock(hours, minutes, seconds string) time.Duration {
-	hours = strings.TrimLeft(hours, "0")
-	if len(hours) > maxHourDigits {
-		return timecode.MaxTime
-	}
-	h, _ := strconv.Atoi("0" + hours)
-	m, _ := strconv.Atoi(minutes)
-	s, _ := strconv.Atoi(seconds)
-	return time.Duration(h)*time.Hour + time.Duration(m)*time.Minute + time.Duration(s)*time.Second
+	return 0, parsing.InvalidTime(text, line)
 }
 
 // fraction returns the time of 1 to 3 digits after the decimal point: "5" is 500 ms and "05" is 50 ms.

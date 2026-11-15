@@ -104,7 +104,7 @@ func appendVersion1(body []byte, s *model.Subtitle, tags []tag) []byte {
 		if !validKey(t.key) {
 			continue
 		}
-		value := lineBreaks.Replace(t.value)
+		value := writing.OneLine(t.value)
 		if t.key == "DELAY" {
 			value = "0" // the reader added the delay to the times
 		}
@@ -146,7 +146,7 @@ func appendVersion2(body []byte, s *model.Subtitle, tags []tag, data *model.Data
 		if !validKey(t.key) || isBlockTag(t.key) {
 			continue
 		}
-		line := "[" + t.key + "]" + lineBreaks.Replace(t.value)
+		line := "[" + t.key + "]" + writing.OneLine(t.value)
 		if !readsAsHeader(line) {
 			line = "[" + t.key + "]"
 		}
@@ -157,7 +157,7 @@ func appendVersion2(body []byte, s *model.Subtitle, tags []tag, data *model.Data
 	}
 	body = append(body, "[END INFORMATION]\n[SUBTITLE]\n"...)
 	if style, ok := data.String("style"); ok {
-		style = strings.Trim(lineBreaks.Replace(style), markupcore.TrimSet)
+		style = strings.Trim(writing.OneLine(style), markupcore.TrimSet)
 		if isStyleLine(style) && !looksLikeTimingLine(style) {
 			body = append(body, style...)
 			body = append(body, '\n')
@@ -222,8 +222,6 @@ func guardClock(field string) string {
 	}
 	return field
 }
-
-var lineBreaks = strings.NewReplacer("\r", " ", "\n", " ") //nolint:gochecknoglobals // a fixed replacer
 
 // validKey reports whether the reader reads the tag key back as the same key: 1 or more characters without ], no
 // white space at the ends, and no lower-case ASCII letters.
