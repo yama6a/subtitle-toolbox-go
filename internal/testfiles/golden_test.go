@@ -1,4 +1,4 @@
-package golden_test
+package testfiles_test
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/golden"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
 // recorder records failures instead of failing the test.
@@ -46,7 +46,7 @@ func TestEqual(t *testing.T) {
 			path := filepath.Join(t.TempDir(), "a.out.srt")
 			require.NoError(t, os.WriteFile(path, []byte(tt.stored), 0o600))
 			r := &recorder{TB: t}
-			golden.Equal(r, path, []byte(tt.got), tt.update)
+			testfiles.MatchGolden(r, path, []byte(tt.got), tt.update)
 			assert.Equal(t, tt.wantFailed, r.failed)
 			got, err := os.ReadFile(path)
 			require.NoError(t, err)
@@ -90,7 +90,7 @@ func TestRoundTrip(t *testing.T) {
 				require.NoError(t, os.WriteFile(path, []byte(*tt.stored), 0o600))
 			}
 			r := &recorder{TB: t}
-			golden.RoundTrip(r, input, path, []byte(tt.got), tt.update)
+			testfiles.RoundTrip(r, input, path, []byte(tt.got), tt.update)
 			assert.Equal(t, tt.wantFailed, r.failed)
 			got, err := os.ReadFile(path)
 			if tt.wantGolden == nil {
@@ -117,7 +117,7 @@ func TestNormalize(t *testing.T) {
 		t.Run(fmt.Sprintf("%q", tt.in), func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, string(golden.Normalize([]byte(tt.in))))
+			assert.Equal(t, tt.want, string(testfiles.Normalize([]byte(tt.in))))
 		})
 	}
 }

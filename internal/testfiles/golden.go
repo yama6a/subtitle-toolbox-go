@@ -1,5 +1,4 @@
-// Package golden compares test output with golden files under testdata.
-package golden
+package testfiles
 
 import (
 	"bytes"
@@ -12,8 +11,8 @@ import (
 
 const utf8BOM = "\ufeff"
 
-// Equal compares got with the golden file at path. With update set, it writes got to the file first.
-func Equal(tb testing.TB, path string, got []byte, update bool) {
+// MatchGolden compares got with the golden file at path. With update set, it writes got to the file first.
+func MatchGolden(tb testing.TB, path string, got []byte, update bool) {
 	tb.Helper()
 
 	if update {

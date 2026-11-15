@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cea708"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea708"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"

@@ -5,7 +5,7 @@ import (
 
 	"github.com/asticode/go-astits"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/arib"
+	"github.com/yama6a/subtitle-toolbox-go/v4/container/mpegts/internal/arib"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 

@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
@@ -96,7 +95,7 @@ func TestSyncGolden(t *testing.T) {
 	got := call{dir: syncDir(t)}.run(t, "sync", "de.srt", "--reference", "en.srt", "--to", "srt")
 	require.Equal(t, 0, got.Code, got.Stderr)
 	assert.Equal(t, "de.srt: scale 1.04271, offset -2.3 s, score 0.89\n", got.Stderr)
-	golden.Equal(t, testfiles.Path(t, "sync/cli_sync_de_to_srt.out.srt"), []byte(got.Stdout), *update)
+	testfiles.MatchGolden(t, testfiles.Path(t, "sync/cli_sync_de_to_srt.out.srt"), []byte(got.Stdout), *update)
 }
 
 func TestSyncUsageErrors(t *testing.T) {

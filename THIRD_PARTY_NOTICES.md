@@ -489,7 +489,7 @@ SOFTWARE.
 - Licence: MIT in `LICENSE`. The source files carry an ISC-style notice. Both are below.
 - Checked at: `37dde0f32652c32aa98bf92278944d1cfb2e7354`
 - Files written for this repository in the shape of its fixtures: `testdata/mpegts/arib_japanese.ts`, which holds 3 DRCS glyph patterns of `test/sample_data/include/sample_data.h`
-- Code adapted from it: `internal/arib/decoder.go`, `render.go`, `characters.go`, `tables.go`, `drcs.go` and `glyphs_table.go`, from `src/decoder/decoder_impl.cpp`, `b24_conv_tables.hpp`, `b24_gaiji_table.hpp`, `b24_macros.hpp`, `b24_colors.cpp` and `b24_drcs_conv.cpp`. `internal/arib/glyphs_test.go` holds the 3 glyph patterns
+- Code adapted from it: `container/mpegts/internal/arib/decoder.go`, `render.go`, `characters.go`, `tables.go`, `drcs.go` and `glyphs_table.go`, from `src/decoder/decoder_impl.cpp`, `b24_conv_tables.hpp`, `b24_gaiji_table.hpp`, `b24_macros.hpp`, `b24_colors.cpp` and `b24_drcs_conv.cpp`. `container/mpegts/internal/arib/glyphs_test.go` holds the 3 glyph patterns
 - Data used: the additional kanji and symbols table, the 326 MD5 hashes of known DRCS glyphs, the 16 default macros, and 3 DRCS glyph patterns of `test/sample_data/include/sample_data.h`
 
 ```text
@@ -923,8 +923,8 @@ SOFTWARE.
   - `format/cavena890`, the reader, the writer and the variant rules, from `src/libse/SubtitleFormats/Cavena890.cs` at `a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c`
   - `hearingimpaired` and `internal/hilabels`, the hearing-impaired rules and the speaker label rule, from `src/libse/Forms/RemoveTextForHI.cs` at `5b9ee8baf08c472c7a74fbc337446b656dedabb4`
   - `fixing/replacelist.go` and `fixing/replacelistrule.go`, the OCR replace list sections and rules, from `src/libuilogic/Ocr/FixEngine/OcrFixReplaceList2.cs` at `e1b854665b40bf6e04271c2ec64084947060e632`. The `LICENSE` file at that commit is MIT
-  - `internal/cea708`, the G2 table, from `src/libse/Cea708/Cea708.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`
-  - `format/mcc`, the alias letters and the hex codec, and `internal/cea708`, the CDP codec `ReadCDP` and `WriteCDP`, from `src/libse/SubtitleFormats/MacCaption10.cs` and `src/libse/Cea708/Smpte291M.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`
+  - `internal/caption/cea708`, the G2 table, from `src/libse/Cea708/Cea708.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`
+  - `format/mcc`, the alias letters and the hex codec, and `internal/caption/cea708`, the CDP codec `ReadCDP` and `WriteCDP`, from `src/libse/SubtitleFormats/MacCaption10.cs` and `src/libse/Cea708/Smpte291M.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`
 - Text copied from it: the header text of `format/mcc`, from `src/libse/SubtitleFormats/MacCaption10.cs` at `58fad713d9c2b322784bc2fa52148e078dbc8759`. It is the notice of the MCC format by the Computer Prompting and Captioning Company. Its own terms ask every generated `.mcc` file to hold it unchanged, so the writer copies it verbatim
   - `format/pac`, the reader, the writer, the line splitter and the code page detector, from `src/libse/SubtitleFormats/Pac.cs` at `a0dfbfe65f0517ef85b1e69f1606bca93f68ac3c`
   - `format/pac/tables.go`, the 7 character tables and the Arabic marks, copied from the same file at the same commit

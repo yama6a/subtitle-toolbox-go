@@ -19,7 +19,6 @@ import (
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v4/imaging"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/golden"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
@@ -220,7 +219,7 @@ func TestVobSubToPGS(t *testing.T) {
 			var out bytes.Buffer
 			_, err = stbox.Write(&out, s, stbox.PGS, stbox.WriteOptions{})
 			require.NoError(t, err)
-			golden.Equal(t, testfiles.Path(t, g.golden+".to.sup"), out.Bytes(), *update)
+			testfiles.MatchGolden(t, testfiles.Path(t, g.golden+".to.sup"), out.Bytes(), *update)
 
 			back, _, err := stbox.Parse(bytes.NewReader(out.Bytes()), int64(out.Len()), stbox.ReadOptions{Format: stbox.PGS})
 			require.NoError(t, err)
