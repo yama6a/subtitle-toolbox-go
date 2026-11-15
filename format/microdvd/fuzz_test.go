@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -43,21 +41,4 @@ func FuzzRead(f *testing.F) {
 			}
 		}
 	})
-}
-
-func checkCues(t *testing.T, s *model.Subtitle) {
-	t.Helper()
-
-	var previous time.Duration
-	for i, c := range s.All() {
-		if i > 0 && c.Start < previous {
-			t.Fatalf("cue %d starts before cue %d", i, i-1)
-		}
-		previous = c.Start
-		for _, d := range []time.Duration{c.Start, c.End} {
-			if d%time.Millisecond != 0 || d < 0 || d >= timecode.MaxTime {
-				t.Fatalf("cue %d has the time %v", i, d)
-			}
-		}
-	}
 }

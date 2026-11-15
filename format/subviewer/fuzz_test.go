@@ -2,6 +2,7 @@ package subviewer_test
 
 import (
 	"bytes"
+	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -30,8 +31,18 @@ func FuzzRead(f *testing.F) {
 	f.Fuzz(func(t *testing.T, content []byte) {
 		for _, lenient := range []bool{false, true} {
 			s, warnings, err := subviewer.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, subviewer.ReadOptions{})
-			if !formattest.CheckRead(t, s, warnings, err) {
+			if err != nil {
+				var perr *model.ParseError
+				if !errors.As(err, &perr) {
+					t.Fatalf("Read returned %v, which is no *ParseError", err)
+				}
 				continue
+			}
+			checkCues(t, s)
+			for _, w := range warnings {
+				if w.Action != model.Skipped && w.Action != model.Repaired {
+					t.Fatalf("the warning %q has no action", w.Message)
+				}
 			}
 			for _, v := range []subviewer.Version{subviewer.V1, subviewer.V2} {
 				checkWrite(t, s, v)

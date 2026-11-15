@@ -26,18 +26,7 @@ func CheckRead(tb testing.TB, s *model.Subtitle, warnings []model.ParseWarning, 
 		}
 		return false
 	}
-	var previous time.Duration
-	for i, c := range s.All() {
-		if i > 0 && c.Start < previous {
-			tb.Fatalf("cue %d starts before cue %d", i, i-1)
-		}
-		previous = c.Start
-		for _, d := range []time.Duration{c.Start, c.End} {
-			if d%time.Millisecond != 0 || d < 0 || d >= timecode.MaxTime {
-				tb.Fatalf("cue %d has the time %v", i, d)
-			}
-		}
-	}
+	checkCues(tb, s)
 	for _, w := range warnings {
 		if w.Action != model.Skipped && w.Action != model.Repaired {
 			tb.Fatalf("the warning %q has no action", w.Message)
@@ -75,6 +64,23 @@ func AddSeeds(f *testing.F, patterns ...string) {
 		}
 		if added == 0 {
 			f.Fatalf("the seed pattern %q matches no file", pattern)
+		}
+	}
+}
+
+func checkCues(tb testing.TB, s *model.Subtitle) {
+	tb.Helper()
+
+	var previous time.Duration
+	for i, c := range s.All() {
+		if i > 0 && c.Start < previous {
+			tb.Fatalf("cue %d starts before cue %d", i, i-1)
+		}
+		previous = c.Start
+		for _, d := range []time.Duration{c.Start, c.End} {
+			if d%time.Millisecond != 0 || d < 0 || d >= timecode.MaxTime {
+				tb.Fatalf("cue %d has the time %v", i, d)
+			}
 		}
 	}
 }
