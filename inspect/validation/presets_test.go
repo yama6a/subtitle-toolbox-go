@@ -62,7 +62,7 @@ func TestNetflixEnglishGap(t *testing.T) {
 func TestNetflixEnglishErrors(t *testing.T) {
 	t.Parallel()
 
-	const zero = "The frame rate of the Netflix gap rule must be greater than 0."
+	const zero = "the frame rate of the Netflix gap rule must be greater than 0"
 	tests := []struct {
 		name string
 		rate stbox.FrameRate

@@ -22,7 +22,7 @@ func ExampleNew() {
 		fmt.Println(err)
 		return
 	}
-	got, err := engine.Translate(context.Background(), []string{"Hello", "The train leaves."}, "en", "de")
+	got, err := engine.Translate(context.Background(), []string{"Hello", "the train leaves"}, "en", "de")
 	fmt.Println(got, err)
 	fmt.Println(openai.Options{BaseURL: "http://localhost:11434/v1", Model: "llama3", APIKey: "secret", HTTPClient: &http.Client{}})
 	// Output:

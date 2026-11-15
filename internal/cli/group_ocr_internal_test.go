@@ -238,7 +238,7 @@ func TestChooseEngine(t *testing.T) {
 		{"explicit Tesseract that runs", engineTesseract, fake, engineTesseract, ""},
 		{
 			"explicit Tesseract that is missing", engineTesseract, missing, "",
-			"Cannot run OCR with Tesseract: the program \"" + missing + "\" is missing. Install Tesseract with: ",
+			"cannot run OCR with Tesseract: the program \"" + missing + "\" is missing. Install Tesseract with: ",
 		},
 	}
 	for _, tt := range tests {

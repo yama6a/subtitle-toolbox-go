@@ -54,22 +54,22 @@ func TestTranslateStatusErrors(t *testing.T) {
 	}{
 		{
 			"401 with the key in the message", 401, []byte(`{"error": {"message": "Incorrect API key provided: ` + key + `."}}`),
-			"The OpenAI-compatible service rejected the API key (HTTP 401). Incorrect API key provided: ***.",
+			"the OpenAI-compatible service rejected the API key (HTTP 401). Incorrect API key provided: ***",
 		},
 		{
 			"404 recorded", 404, testfiles.Read(t, "translation/openai_error.json"),
-			"The OpenAI-compatible service answered with HTTP 404. The model `gpt-9` does not exist or you do not have access to it.",
+			"the OpenAI-compatible service answered with HTTP 404. The model `gpt-9` does not exist or you do not have access to it",
 		},
 		{
 			"404 of Ollama", 404, []byte(`{"error": "model \"llama3\" not found, try pulling it first"}`),
-			`The OpenAI-compatible service answered with HTTP 404. model "llama3" not found, try pulling it first`,
+			`the OpenAI-compatible service answered with HTTP 404. model "llama3" not found, try pulling it first`,
 		},
-		{"a key in an error string", 400, []byte(`{"error": "bad ` + key + `"}`), "The OpenAI-compatible service answered with HTTP 400. bad ***"},
+		{"a key in an error string", 400, []byte(`{"error": "bad ` + key + `"}`), "the OpenAI-compatible service answered with HTTP 400. bad ***"},
 		{
 			"429 after the retries", 429, []byte(`{"error": {"message": "Rate limit reached"}}`),
-			"The OpenAI-compatible service got too many requests (HTTP 429). Wait and try again.",
+			"the OpenAI-compatible service got too many requests (HTTP 429). Wait and try again",
 		},
-		{"500 without JSON", 500, []byte("Internal Server Error"), "The OpenAI-compatible service answered with HTTP 500."},
+		{"500 without JSON", 500, []byte("Internal Server Error"), "the OpenAI-compatible service answered with HTTP 500"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

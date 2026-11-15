@@ -43,19 +43,19 @@ type Options struct {
 // Validate returns an error that matches model.ErrInvalidArgument when a field of o is out of range.
 func (o Options) Validate() error {
 	if o.TimeTolerance != nil && *o.TimeTolerance < 0 {
-		return invalid("TimeTolerance", "The time tolerance "+timecode.Seconds(*o.TimeTolerance)+" must not be negative.")
+		return invalid("TimeTolerance", "the time tolerance "+timecode.Seconds(*o.TimeTolerance)+" must not be negative")
 	}
 	if o.SecondaryStyle != "" && !markupcore.IsCoreTag(markupcore.TagName(o.SecondaryStyle)) {
-		return invalid("SecondaryStyle", "The secondary style "+o.SecondaryStyle+
-			` must be a core markup tag such as i or font color="#ffff00".`)
+		return invalid("SecondaryStyle", "the secondary style "+o.SecondaryStyle+
+			` must be a core markup tag such as i or font color="#ffff00"`)
 	}
 	switch o.Mode {
 	case "", ModeStack, ModeTopBottom:
 	default:
-		return invalid("Mode", `The mode "`+string(o.Mode)+`" is not stack or top-bottom.`)
+		return invalid("Mode", `the mode "`+string(o.Mode)+`" is not stack or top-bottom`)
 	}
 	if a := o.SecondaryAlignment; a != nil && *a > model.TopRight {
-		return invalid("SecondaryAlignment", "The secondary alignment "+a.String()+" is not one of the 9 alignment constants.")
+		return invalid("SecondaryAlignment", "the secondary alignment "+a.String()+" is not one of the 9 alignment constants")
 	}
 	return nil
 }

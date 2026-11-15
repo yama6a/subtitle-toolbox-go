@@ -68,7 +68,7 @@ func apply(s *model.Subtitle, opts Options, timeout time.Duration) (Report, erro
 		}
 		edit, found, ok := f.cue(c)
 		if !ok {
-			return Report{}, invalid("Words", "The word match took longer than 1 s on cue "+strconv.Itoa(i+1)+".")
+			return Report{}, invalid("Words", "the word match took longer than 1 s on cue "+strconv.Itoa(i+1))
 		}
 		edited[i], changed[i] = edit, edit.Lines != nil
 		ranges = append(ranges, found...)

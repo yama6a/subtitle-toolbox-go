@@ -60,5 +60,5 @@ func ExampleOptions_Validate() {
 	fmt.Println(err)
 	// Output:
 	// true
-	// stbox: invalid argument: hearingimpaired.Options.CustomBrackets: Each custom bracket pair must hold two non-empty strings, for example "{" and "}".
+	// stbox: invalid argument: hearingimpaired.Options.CustomBrackets: each custom bracket pair must hold two non-empty strings, for example "{" and "}"
 }

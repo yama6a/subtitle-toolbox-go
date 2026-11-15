@@ -172,7 +172,7 @@ func withAdvice(msg, option string, cause error) string {
 	case option == "WriteOptions.MicroDVD.FrameRate":
 		return advise(msg, "Pass --fps or --output-fps.")
 	case option == "hls.SegmentOptions.MediaDuration":
-		return strings.Replace(msg, "Set the mediaDuration option to segment it.", "Pass --media-duration to segment it.", 1)
+		return strings.Replace(msg, "Set the mediaDuration option to segment it", "Pass --media-duration to segment it", 1)
 	case errors.Is(cause, itt.ErrNeedsFrameRate):
 		return advise(msg, "Pass --fps or --output-fps.")
 	case isSCCLimit(cause):

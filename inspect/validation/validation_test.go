@@ -324,22 +324,22 @@ func TestRulesValidate(t *testing.T) {
 		opt   string
 		msg   string
 	}{
-		{"negative cps", validation.Rules{MaxCharactersPerSecond: -1}, "Rules.MaxCharactersPerSecond", "The limit maxCharactersPerSecond must be 0 or more, got -1."},
-		{"NaN wpm", validation.Rules{MaxWordsPerMinute: math.NaN()}, "Rules.MaxWordsPerMinute", "The limit maxWordsPerMinute must be 0 or more, got NAN."},
-		{"negative cpl", validation.Rules{MaxCharactersPerLine: -2}, "Rules.MaxCharactersPerLine", "The limit maxCharactersPerLine must be 0 or more, got -2."},
-		{"negative lines", validation.Rules{MaxLinesPerCue: -1}, "Rules.MaxLinesPerCue", "The limit maxLinesPerCue must be 0 or more, got -1."},
-		{"negative speakers", validation.Rules{MaxSpeakersPerCue: -1}, "Rules.MaxSpeakersPerCue", "The limit maxSpeakersPerCue must be 0 or more, got -1."},
-		{"negative max duration", validation.Rules{MaxDuration: -1500 * time.Millisecond}, "Rules.MaxDuration", "The limit maxDuration must be 0 or more, got -1.5."},
-		{"negative min duration", validation.Rules{MinDuration: -time.Second}, "Rules.MinDuration", "The limit minDuration must be 0 or more, got -1."},
-		{"negative min gap", validation.Rules{MinGap: -time.Second}, "Rules.MinGap", "The limit minGap must be 0 or more, got -1."},
-		{"negative duration per word", validation.Rules{MinDurationPerWord: -time.Second}, "Rules.MinDurationPerWord", "The limit minSecondsPerWord must be 0 or more, got -1."},
-		{"unknown style", validation.Rules{DialogueDashStyle: &bad}, "Rules.DialogueDashStyle", "The dialogue dash style 9 is not one of the 8 styles."},
-		{"bad class", validation.Rules{AllowedCharacters: "[z-a]"}, "Rules.AllowedCharacters", `The allowed characters "[z-a]" are not a valid character class: `},
+		{"negative cps", validation.Rules{MaxCharactersPerSecond: -1}, "Rules.MaxCharactersPerSecond", "the limit maxCharactersPerSecond must be 0 or more, got -1"},
+		{"NaN wpm", validation.Rules{MaxWordsPerMinute: math.NaN()}, "Rules.MaxWordsPerMinute", "the limit maxWordsPerMinute must be 0 or more, got NAN"},
+		{"negative cpl", validation.Rules{MaxCharactersPerLine: -2}, "Rules.MaxCharactersPerLine", "the limit maxCharactersPerLine must be 0 or more, got -2"},
+		{"negative lines", validation.Rules{MaxLinesPerCue: -1}, "Rules.MaxLinesPerCue", "the limit maxLinesPerCue must be 0 or more, got -1"},
+		{"negative speakers", validation.Rules{MaxSpeakersPerCue: -1}, "Rules.MaxSpeakersPerCue", "the limit maxSpeakersPerCue must be 0 or more, got -1"},
+		{"negative max duration", validation.Rules{MaxDuration: -1500 * time.Millisecond}, "Rules.MaxDuration", "the limit maxDuration must be 0 or more, got -1.5"},
+		{"negative min duration", validation.Rules{MinDuration: -time.Second}, "Rules.MinDuration", "the limit minDuration must be 0 or more, got -1"},
+		{"negative min gap", validation.Rules{MinGap: -time.Second}, "Rules.MinGap", "the limit minGap must be 0 or more, got -1"},
+		{"negative duration per word", validation.Rules{MinDurationPerWord: -time.Second}, "Rules.MinDurationPerWord", "the limit minSecondsPerWord must be 0 or more, got -1"},
+		{"unknown style", validation.Rules{DialogueDashStyle: &bad}, "Rules.DialogueDashStyle", "the dialogue dash style 9 is not one of the 8 styles"},
+		{"bad class", validation.Rules{AllowedCharacters: "[z-a]"}, "Rules.AllowedCharacters", `the allowed characters "[z-a]" are not a valid character class: `},
 		{
 			"POSIX class",
 			validation.Rules{AllowedCharacters: "[[:alpha:]]"},
 			"Rules.AllowedCharacters",
-			`The allowed characters "[[:alpha:]]" hold a POSIX class such as [:alpha:]. Use a Unicode class such as \p{L}.`,
+			`the allowed characters "[[:alpha:]]" hold a POSIX class such as [:alpha:]. Use a Unicode class such as \p{L}`,
 		},
 	}
 	for _, tt := range tests {

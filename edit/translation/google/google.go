@@ -34,7 +34,7 @@ type Options struct {
 
 // Validate checks the key and the base URL. The error matches model.ErrInvalidArgument.
 func (o Options) Validate() error {
-	if err := httppost.CheckAPIKey("google.Options.APIKey", o.APIKey, "The API key must not be empty. Pass the key of your Google Cloud project."); err != nil {
+	if err := httppost.CheckAPIKey("google.Options.APIKey", o.APIKey, "the API key must not be empty. Pass the key of your Google Cloud project"); err != nil {
 		return err
 	}
 	if o.BaseURL != "" {
@@ -137,7 +137,7 @@ func (e *Engine) request(ctx context.Context, texts []string, source, target str
 	}
 	if len(got) != len(texts) || len(data.Data.Translations) != len(texts) {
 		return nil, &translation.ServiceError{Status: status, Msg: fmt.Sprintf(
-			"Google Cloud Translation returned %d translations for %d texts, or an answer that is not the JSON of translate v2.",
+			"Google Cloud Translation returned %d translations for %d texts, or an answer that is not the JSON of translate v2",
 			len(data.Data.Translations), len(texts))}
 	}
 	return got, nil
@@ -148,17 +148,17 @@ func (e *Engine) statusError(status int, answer []byte) error {
 	var data errorAnswer
 	if json.Unmarshal(answer, &data) == nil {
 		if m, ok := data.Error.Message.(string); ok {
-			detail = " " + m
+			detail = httppost.Detail(m)
 		}
 	}
 	var msg string
 	switch status {
 	case http.StatusForbidden:
-		msg = "Google Cloud Translation refused the request (HTTP 403). Check the key and that the API is enabled." + detail
+		msg = "Google Cloud Translation refused the request (HTTP 403). Check the key and that the API is enabled" + detail
 	case http.StatusTooManyRequests:
-		msg = "Google Cloud Translation got too many requests (HTTP 429). Wait and try again."
+		msg = "Google Cloud Translation got too many requests (HTTP 429). Wait and try again"
 	default:
-		msg = "Google Cloud Translation answered with HTTP " + strconv.Itoa(status) + "." + detail
+		msg = "Google Cloud Translation answered with HTTP " + strconv.Itoa(status) + detail
 	}
 	return &translation.ServiceError{Status: status, Msg: httppost.Redact(msg, e.key)}
 }

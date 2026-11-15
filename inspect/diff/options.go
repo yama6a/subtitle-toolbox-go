@@ -28,7 +28,7 @@ func (o Options) Validate() error {
 	if o.TimeTolerance != nil && *o.TimeTolerance < 0 {
 		return &model.InvalidArgumentError{
 			Option: "diff.Options.TimeTolerance",
-			Msg:    "The time tolerance must not be negative, got " + timecode.Seconds(*o.TimeTolerance) + ".",
+			Msg:    "the time tolerance must not be negative, got " + timecode.Seconds(*o.TimeTolerance),
 		}
 	}
 	return nil

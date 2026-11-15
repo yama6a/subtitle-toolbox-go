@@ -47,7 +47,7 @@ type SegmentOptions struct {
 func (o SegmentOptions) Validate() error {
 	if o.SegmentDuration != 0 && o.SegmentDuration.Round(time.Millisecond) < time.Millisecond {
 		return invalid("SegmentOptions.SegmentDuration",
-			"The segment duration must be at least 0.001 s, got "+timecode.Seconds(o.SegmentDuration)+".")
+			"the segment duration must be at least 0.001 s, got "+timecode.Seconds(o.SegmentDuration))
 	}
 	if o.Map != nil {
 		if err := o.Map.Validate(); err != nil {
@@ -57,11 +57,11 @@ func (o SegmentOptions) Validate() error {
 	if p := strings.ReplaceAll(o.FileNamePattern, "%%", ""); o.FileNamePattern != "" &&
 		(strings.Count(p, "%") != 1 || !verbRegexp.MatchString(p)) {
 		return invalid("SegmentOptions.FileNamePattern",
-			`The file name pattern must hold exactly one %d and no other placeholder, got "`+o.FileNamePattern+`".`)
+			`the file name pattern must hold exactly one %d and no other placeholder, got "`+o.FileNamePattern+`"`)
 	}
 	if o.MediaDuration != 0 && o.MediaDuration.Round(time.Millisecond) < time.Millisecond {
 		return invalid("SegmentOptions.MediaDuration",
-			"The media duration must be at least 0.001 s, got "+timecode.Seconds(o.MediaDuration)+".")
+			"the media duration must be at least 0.001 s, got "+timecode.Seconds(o.MediaDuration))
 	}
 	return nil
 }
@@ -102,7 +102,7 @@ func Segment(s *model.Subtitle, opts SegmentOptions) (*Rendition, error) {
 	r.totalMS = totalMilliseconds(opts.MediaDuration, cues)
 	if r.totalMS == 0 {
 		return nil, invalid("SegmentOptions.MediaDuration",
-			"The subtitle has no cue that ends after 0 s. Set the mediaDuration option to segment it.")
+			"the subtitle has no cue that ends after 0 s. Set the mediaDuration option to segment it")
 	}
 
 	if err := r.load(s, cues, m); err != nil {

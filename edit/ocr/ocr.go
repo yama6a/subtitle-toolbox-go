@@ -33,7 +33,7 @@ type Text struct {
 func (t Text) Validate() error {
 	if c := t.Confidence; c != nil && !(*c >= 0 && *c <= 1) {
 		return &model.InvalidArgumentError{
-			Msg: "The confidence must be from 0 to 1, got " + timecode.Number(*c) + ".",
+			Msg: "the confidence must be from 0 to 1, got " + timecode.Number(*c),
 		}
 	}
 	return nil

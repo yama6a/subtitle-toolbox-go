@@ -556,17 +556,17 @@ func TestValidate(t *testing.T) {
 		{
 			"rule in both lists",
 			fixing.Options{Enable: []fixing.Rule{fixing.RuleMusicNotes}, Disable: []fixing.Rule{fixing.RuleMusicNotes}},
-			"stbox: invalid argument: fixing.Options.Enable: The rule musicNotes is in both Enable and Disable.",
+			"stbox: invalid argument: fixing.Options.Enable: the rule musicNotes is in both Enable and Disable",
 		},
 		{
 			"dash style outside the constants",
 			fixing.Options{DialogueDashStyle: model.DialogueDashStyle(8)},
-			"stbox: invalid argument: fixing.Options.DialogueDashStyle: The style DialogueDashStyle(8) is no dialogue dash style.",
+			"stbox: invalid argument: fixing.Options.DialogueDashStyle: the style DialogueDashStyle(8) is no dialogue dash style",
 		},
 		{
 			"ellipsis style outside the constants",
 			fixing.Options{Ellipsis: fixing.EllipsisStyle(2)},
-			"stbox: invalid argument: fixing.Options.Ellipsis: The style EllipsisStyle(2) is not EllipsisThreeDots or EllipsisUnicode.",
+			"stbox: invalid argument: fixing.Options.Ellipsis: the style EllipsisStyle(2) is not EllipsisThreeDots or EllipsisUnicode",
 		},
 	}
 	for _, tt := range tests {

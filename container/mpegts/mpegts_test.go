@@ -470,30 +470,30 @@ func TestErrors(t *testing.T) {
 		{"not TS", func() error {
 			_, err := mpegts.Open(strings.NewReader(strings.Repeat("x", 1000)), 1000)
 			return err
-		}, "The file is not an MPEG-TS file.", isParseError},
+		}, "the file is not an MPEG-TS file", isParseError},
 		{"a short head", func() error {
 			_, err := mpegts.Open(bytes.NewReader(ts[:376]), 376)
 			return err
-		}, "The file is not an MPEG-TS file.", isParseError},
+		}, "the file is not an MPEG-TS file", isParseError},
 		{"no track 999", func() error {
 			_, _, err := open(t, ts).Extract(999, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 			return err
-		}, "The file has no subtitle track with the number 999.", func(err error) bool {
+		}, "the file has no subtitle track with the number 999", func(err error) bool {
 			var ia *model.InvalidArgumentError
 			return errors.As(err, &ia) && ia.Option == "ReadOptions.Track"
 		}},
 		{"an Arabic page", func() error {
 			_, _, err := open(t, arabic.bytes()).Extract(888, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 			return err
-		}, "Teletext page 888 uses the Arabic or Hebrew character set. The reader reads Latin, Cyrillic and Greek pages.", isParseError},
+		}, "teletext page 888 uses the Arabic or Hebrew character set. The reader reads Latin, Cyrillic and Greek pages", isParseError},
 		{"the time limit", func() error {
 			_, _, err := open(t, timeLimitFile()).Extract(888, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 			return err
-		}, "The cue times of track 888 reach 367506034.876 s. Times must be below 100000 hours.", isParseError},
+		}, "the cue times of track 888 reach 367506034.876 s. Times must be below 100000 hours", isParseError},
 		{"a negative size", func() error {
 			_, err := mpegts.Open(bytes.NewReader(ts), -1)
 			return err
-		}, "The file is not an MPEG-TS file.", isParseError},
+		}, "the file is not an MPEG-TS file", isParseError},
 		{"a ReadAt error in Open", func() error {
 			_, err := mpegts.Open(&failingReaderAt{data: ts, from: 1}, int64(len(ts)))
 			return err

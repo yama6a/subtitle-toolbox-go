@@ -83,11 +83,11 @@ func (r *Reader) Header(at int64) (Header, bool, error) {
 	}
 	id, idLen, ok := ReadVint(buf, true)
 	if !ok {
-		return Header{}, false, errorf("The EBML element header at byte %d is not valid.", at)
+		return Header{}, false, errorf("the EBML element header at byte %d is not valid", at)
 	}
 	size, sizeLen, ok := ReadVint(buf[idLen:], false)
 	if !ok {
-		return Header{}, false, errorf("The EBML element header at byte %d is not valid.", at)
+		return Header{}, false, errorf("the EBML element header at byte %d is not valid", at)
 	}
 	h := Header{ID: uint32(id), Size: int64(size), Offset: at + int64(idLen+sizeLen)}
 	if idLen > 4 {
@@ -102,10 +102,10 @@ func (r *Reader) Header(at int64) (Header, bool, error) {
 // Bytes reads the data of h. It checks the size against the file size before it allocates.
 func (r *Reader) Bytes(h Header) ([]byte, error) {
 	if h.Size == UnknownSize {
-		return nil, errorf("The element 0x%X at byte %d has an unknown size, which only Segment and Cluster may have.", h.ID, h.Offset)
+		return nil, errorf("the element 0x%X at byte %d has an unknown size, which only Segment and Cluster may have", h.ID, h.Offset)
 	}
 	if h.Size > r.size-h.Offset {
-		return nil, errorf("The element data at byte %d needs %d bytes, but the file ends before.", h.Offset, h.Size)
+		return nil, errorf("the element data at byte %d needs %d bytes, but the file ends before", h.Offset, h.Size)
 	}
 	buf := make([]byte, h.Size)
 	n, err := r.r.ReadAt(buf, h.Offset)
@@ -113,7 +113,7 @@ func (r *Reader) Bytes(h Header) ([]byte, error) {
 		if err != nil && !errors.Is(err, io.EOF) {
 			return nil, fmt.Errorf("read EBML data at byte %d: %w", h.Offset, err)
 		}
-		return nil, errorf("The element data at byte %d needs %d bytes, but the file ends before.", h.Offset, h.Size)
+		return nil, errorf("the element data at byte %d needs %d bytes, but the file ends before", h.Offset, h.Size)
 	}
 	return buf, nil
 }
@@ -121,14 +121,14 @@ func (r *Reader) Bytes(h Header) ([]byte, error) {
 // Unsigned reads the data of h as a big endian unsigned integer. The value must be below 2^63.
 func (r *Reader) Unsigned(h Header) (uint64, error) {
 	if h.Size > 8 || h.Size < 0 {
-		return 0, errorf("The unsigned integer of the element 0x%X at byte %d is longer than 8 bytes or not below 2^63.", h.ID, h.Offset)
+		return 0, errorf("the unsigned integer of the element 0x%X at byte %d is longer than 8 bytes or not below 2^63", h.ID, h.Offset)
 	}
 	b, err := r.Bytes(h)
 	if err != nil {
 		return 0, err
 	}
 	if len(b) == 8 && b[0] >= 0x80 {
-		return 0, errorf("The unsigned integer of the element 0x%X at byte %d is longer than 8 bytes or not below 2^63.", h.ID, h.Offset)
+		return 0, errorf("the unsigned integer of the element 0x%X at byte %d is longer than 8 bytes or not below 2^63", h.ID, h.Offset)
 	}
 	var v uint64
 	for _, c := range b {
@@ -150,14 +150,14 @@ func (r *Reader) String(h Header) (string, error) {
 func (r *Reader) Children(parent Header) iter.Seq2[Header, error] {
 	return func(yield func(Header, error) bool) {
 		if parent.Size == UnknownSize {
-			yield(Header{}, errorf("The element 0x%X at byte %d has an unknown size, which only Segment and Cluster may have.", parent.ID, parent.Offset))
+			yield(Header{}, errorf("the element 0x%X at byte %d has an unknown size, which only Segment and Cluster may have", parent.ID, parent.Offset))
 			return
 		}
 		end := parent.Offset + parent.Size
 		for pos := parent.Offset; pos < end; {
 			h, ok, err := r.Header(pos)
 			if err == nil && (!ok || h.Size == UnknownSize || h.Offset+h.Size > end) {
-				err = errorf("The element at byte %d does not fit into its parent element.", pos)
+				err = errorf("the element at byte %d does not fit into its parent element", pos)
 			}
 			if err != nil {
 				yield(Header{}, err)

@@ -75,7 +75,7 @@ func TestDualUsageErrors(t *testing.T) {
 		{
 			"a secondary style that is no core tag",
 			append([]string{"dual", "--secondary-style", "em"}, pair...),
-			`The secondary style em must be a core markup tag such as i or font color="#ffff00".`,
+			`the secondary style em must be a core markup tag such as i or font color="#ffff00"`,
 		},
 		{
 			"a negative snap tolerance",

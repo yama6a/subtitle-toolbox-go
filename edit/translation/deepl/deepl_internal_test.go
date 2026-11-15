@@ -64,12 +64,12 @@ func TestValidate(t *testing.T) {
 		want string
 	}{
 		{"ok", Options{APIKey: key}, ""},
-		{"empty", Options{APIKey: ""}, "deepl.Options.APIKey: The API key must not be empty. Pass the key of your DeepL account."},
-		{"blank", Options{APIKey: " \t\n\r\x00\v"}, "deepl.Options.APIKey: The API key must not be empty. Pass the key of your DeepL account."},
-		{"space at the end", Options{APIKey: key + " "}, "deepl.Options.APIKey: The API key must not have a control character, or a space at the start or end."},
-		{"control character", Options{APIKey: "ab\x7fcd"}, "deepl.Options.APIKey: The API key must not have a control character, or a space at the start or end."},
-		{"base URL", Options{APIKey: key, BaseURL: "ftp://host"}, `deepl.Options.BaseURL: The base URL must start with http:// or https://, got "ftp://host".`},
-		{"base URL without host", Options{APIKey: key, BaseURL: "https:///x"}, `deepl.Options.BaseURL: The base URL must start with http:// or https://, got "https:///x".`},
+		{"empty", Options{APIKey: ""}, "deepl.Options.APIKey: the API key must not be empty. Pass the key of your DeepL account"},
+		{"blank", Options{APIKey: " \t\n\r\x00\v"}, "deepl.Options.APIKey: the API key must not be empty. Pass the key of your DeepL account"},
+		{"space at the end", Options{APIKey: key + " "}, "deepl.Options.APIKey: the API key must not have a control character, or a space at the start or end"},
+		{"control character", Options{APIKey: "ab\x7fcd"}, "deepl.Options.APIKey: the API key must not have a control character, or a space at the start or end"},
+		{"base URL", Options{APIKey: key, BaseURL: "ftp://host"}, `deepl.Options.BaseURL: the base URL must start with http:// or https://, got "ftp://host"`},
+		{"base URL without host", Options{APIKey: key, BaseURL: "https:///x"}, `deepl.Options.BaseURL: the base URL must start with http:// or https://, got "https:///x"`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -202,29 +202,29 @@ func TestTranslateErrors(t *testing.T) {
 		status int
 		want   string
 	}{
-		{"403", translationtest.Answer{Status: 403, Body: []byte(`{"message": "Forbidden"}`)}, 1, 403, "DeepL rejected the API key (HTTP 403). Check the key and its plan."},
-		{"429 after the retries", translationtest.Answer{Status: 429, Body: []byte(`{"message": "Too many requests"}`)}, 1, 429, "DeepL got too many requests (HTTP 429). Wait and try again."},
-		{"456", translationtest.Answer{Status: 456, Body: []byte(`{"message": "Quota exceeded"}`)}, 1, 456, "The DeepL character quota is used up (HTTP 456)."},
-		{"400 recorded", answer(t, 400, "deepl_error.json"), 1, 400, "DeepL answered with HTTP 400. Value for 'target_lang' not supported."},
+		{"403", translationtest.Answer{Status: 403, Body: []byte(`{"message": "Forbidden"}`)}, 1, 403, "DeepL rejected the API key (HTTP 403). Check the key and its plan"},
+		{"429 after the retries", translationtest.Answer{Status: 429, Body: []byte(`{"message": "Too many requests"}`)}, 1, 429, "DeepL got too many requests (HTTP 429). Wait and try again"},
+		{"456", translationtest.Answer{Status: 456, Body: []byte(`{"message": "Quota exceeded"}`)}, 1, 456, "the DeepL character quota is used up (HTTP 456)"},
+		{"400 recorded", answer(t, 400, "deepl_error.json"), 1, 400, "DeepL answered with HTTP 400. Value for 'target_lang' not supported"},
 		{"500 key in the body", translationtest.Answer{Status: 500, Body: []byte(`{"message": "Unknown key ` + key + `"}`)}, 1, 500, "DeepL answered with HTTP 500. Unknown key ***"},
-		{"418 without a message", translationtest.Answer{Status: 418, Body: []byte(`{"message": 7}`)}, 1, 418, "DeepL answered with HTTP 418."},
+		{"418 without a message", translationtest.Answer{Status: 418, Body: []byte(`{"message": 7}`)}, 1, 418, "DeepL answered with HTTP 418"},
 		{
 			"too few translations",
 			translationtest.Answer{Status: 200, Body: []byte(`{"translations": [{"text": "Hallo"}]}`)},
 			2, 200,
-			"DeepL returned 1 translations for 2 texts, or an answer that is not the JSON of /v2/translate.",
+			"DeepL returned 1 translations for 2 texts, or an answer that is not the JSON of /v2/translate",
 		},
 		{
 			"text is not a string",
 			translationtest.Answer{Status: 200, Body: []byte(`{"translations": [{"text": 5}]}`)},
 			1, 200,
-			"DeepL returned 1 translations for 1 texts, or an answer that is not the JSON of /v2/translate.",
+			"DeepL returned 1 translations for 1 texts, or an answer that is not the JSON of /v2/translate",
 		},
 		{
 			"no translations",
 			translationtest.Answer{Status: 200, Body: []byte(`<html>`)},
 			1, 200,
-			"DeepL returned 0 translations for 1 texts, or an answer that is not the JSON of /v2/translate.",
+			"DeepL returned 0 translations for 1 texts, or an answer that is not the JSON of /v2/translate",
 		},
 	}
 	for _, tt := range tests {

@@ -33,10 +33,10 @@ func (f *File) Extract(number int, common model.CommonReadOptions, _ ExtractOpti
 func (f *File) extract(number int, common model.CommonReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
 	t, ok := f.track(number)
 	if !ok {
-		return nil, nil, &model.InvalidArgumentError{Option: "ReadOptions.Track", Msg: fmt.Sprintf("The file has no subtitle track with the number %d.", number)}
+		return nil, nil, &model.InvalidArgumentError{Option: "ReadOptions.Track", Msg: fmt.Sprintf("the file has no subtitle track with the number %d", number)}
 	}
 	if t.Format == "" {
-		return nil, nil, damaged("Track %d has the codec %s. The reader extracts only %s.", number, t.CodecID, readableCodecIDs())
+		return nil, nil, damaged("track %d has the codec %s. The reader extracts only %s", number, t.CodecID, readableCodecIDs())
 	}
 	privateBudget := f.inflateCap
 	private, err := f.decode(t, t.codecPrivate, scopeCodecPriv, &privateBudget)

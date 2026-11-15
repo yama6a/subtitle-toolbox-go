@@ -61,7 +61,7 @@ func (f *File) sampleLines(w *walker, s sample) ([]string, error) {
 	length := uint64(binary.BigEndian.Uint16(head))
 	where := " of the sample of track " + strconv.Itoa(w.t.info.Number) + " at byte " + strconv.FormatUint(s.offset, 10)
 	if length > uint64(s.size)-textLengthSize {
-		return nil, parseError("The text" + where + " is longer than the sample.")
+		return nil, parseError("the text" + where + " is longer than the sample")
 	}
 	if length == 0 {
 		return nil, nil
@@ -72,7 +72,7 @@ func (f *File) sampleLines(w *walker, s sample) ([]string, error) {
 	}
 	text, ok := decodeText(raw)
 	if !ok {
-		return nil, parseError("The text" + where + " is not valid UTF-8.")
+		return nil, parseError("the text" + where + " is not valid UTF-8")
 	}
 	var runs []styleRun
 	if rest := uint64(s.size) - textLengthSize - length; rest >= boxHeaderSize {

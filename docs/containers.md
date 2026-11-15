@@ -75,7 +75,7 @@ A string stops at the first NUL byte. A string that is not valid UTF-8 becomes `
 | `c608` | SCC cues | The `cdat` boxes hold CEA-608 byte pairs of field 1. The reader ignores `cdt2` boxes, which hold field 2. `ReadOptions.SCC` picks the channel and the roll-up mode |
 | `c708` | MCC cues | Each `ccdp` box is a SMPTE 334-2 caption distribution packet. The reader decodes CEA-708 service 1, else CEA-608 field 1. `ReadOptions.MCC` picks the service |
 
-Other codecs such as `wvtt` and `stpp` fail with `Track 1 has the codec wvtt. The reader extracts only tx3g, c608, c708.` An encrypted track fails with `Track 1 has the codec tx3g and is encrypted.` A track is encrypted when its sample entry type is `encv`, `enca`, `enct` or `encs`, or when a `tx3g` entry has a `sinf` box.
+Other codecs such as `wvtt` and `stpp` fail with `track 1 has the codec wvtt. The reader extracts only tx3g, c608, c708`. An encrypted track fails with `track 1 has the codec tx3g and is encrypted`. A track is encrypted when its sample entry type is `encv`, `enca`, `enct` or `encs`, or when a `tx3g` entry has a `sinf` box.
 
 ### Times
 
@@ -83,22 +83,22 @@ The edit list moves the samples. The reader adds the length of the empty edits a
 
 Each time is an exact fraction, rounded half away from zero to whole milliseconds. Caption frames round to whole nanoseconds first, as SCC and MCC frame times do.
 
-A sample that ends at 100000 hours or later fails with `The sample of track 1 at byte 40 ends at 360000000 s. Times must be below 100000 hours.`
+A sample that ends at 100000 hours or later fails with `the sample of track 1 at byte 40 ends at 360000000 s. Times must be below 100000 hours`.
 
 ### Damage
 
-- **Not MP4**: the file has no `ftyp` box at the start. The message is `The file is not an MP4 file.`
-- **Box sizes**: a box that does not fit its parent fails with `The box "moov" at byte 28 does not fit into its parent box.` At the top level, size 0 means to the end of the file and size 1 means that a 64-bit size follows. Inside the `moov` box, mp4ff rejects both, so a `trak` box with a 64-bit size fails the open.
-- **No `moov`**: `The MP4 file has no moov box.`
+- **Not MP4**: the file has no `ftyp` box at the start. The message is `the file is not an MP4 file`.
+- **Box sizes**: a box that does not fit its parent fails with `the box "moov" at byte 28 does not fit into its parent box`. At the top level, size 0 means to the end of the file and size 1 means that a 64-bit size follows. Inside the `moov` box, mp4ff rejects both, so a `trak` box with a 64-bit size fails the open.
+- **No `moov`**: `the MP4 file has no moov box`.
 - **Sample tables**: the reader checks each count against the size of the box or the file before it allocates. A file that claims 4294967295 samples fails at once.
-- **Sample outside the file**: `A sample of track 1 at byte 1073741824 lies outside the file.`
+- **Sample outside the file**: `a sample of track 1 at byte 1073741824 lies outside the file`.
 - **mp4ff checks**: the module github.com/Eyevinn/mp4ff decodes the `moov` box and checks the exact size of each table box. A damaged table in any track, also a video track, fails the open with `The MP4 file is not valid:` and the message of mp4ff.
 
 All of these are a `*ParseError` with no format and no line.
 
 ### Fragmented files
 
-The reader does not read fragmented MP4 files, such as CMAF, DASH and HLS segments. A `moov` box with a `mvex` box, and a `moof` box before the `moov` box, fail with `The MP4 file is fragmented. The reader reads only samples in the moov box.`
+The reader does not read fragmented MP4 files, such as CMAF, DASH and HLS segments. A `moov` box with a `mvex` box, and a `moof` box before the `moov` box, fail with `the MP4 file is fragmented. The reader reads only samples in the moov box`.
 
 ## MPEG-TS and M2TS
 
@@ -109,7 +109,7 @@ tracks, err := stbox.Tracks(f, size)          // 888 dvb_teletext deu, 777 dvb_t
 s, info, err := stbox.Load("news.ts", stbox.ReadOptions{Track: 888})
 ```
 
-- **Packet size**: a transport stream has packets of 188 bytes. An M2TS file has packets of 192 bytes with a 4-byte time stamp first. The reader knows them by the sync byte `0x47` at bytes 0, 188 and 376, or at bytes 4, 196 and 388. The head must be longer than 2 packets. Anything else returns `The file is not an MPEG-TS file.`
+- **Packet size**: a transport stream has packets of 188 bytes. An M2TS file has packets of 192 bytes with a 4-byte time stamp first. The reader knows them by the sync byte `0x47` at bytes 0, 188 and 376, or at bytes 4, 196 and 388. The head must be longer than 2 packets. Anything else returns `the file is not an MPEG-TS file`.
 - **Table scan**: the reader finds the PAT and the PMT of each program in the first 33,554,432 bytes (32 MiB). A packet that starts at or after that offset ends the scan. A recording that starts at a packet has its tables much earlier. A file with a PMT further in has no track.
 - **Tracks**: `Track.Format` is `srt` and `Track.CodecID` is `dvb_teletext`. A track is a page in a teletext descriptor (tag `0x56`, or tag `0x46` for VBI teletext) of a stream of type `0x06`. Teletext type 2 is a subtitle page. Type 5 is a subtitle page for hearing impaired people, with the name `hearing impaired`. Other types are skipped. `Default` and `Forced` are false. The language is the 3 letters of the entry in lower case, or `und` when they are not 3 letters of a to z. The tracks of all programs come in the order of the PMTs, each program in descriptor order.
 - **Track numbers**: the number is the page number, for example 888 for magazine 8 and page `88`. Magazine 0 is 8. A page that an earlier track has takes `PID * 1000 + number`. Page 150 on PID 513 gives 513150. When that number is taken too, the page is skipped. `ReadOptions.Track` takes this number.
@@ -117,9 +117,9 @@ s, info, err := stbox.Load("news.ts", stbox.ReadOptions{Track: 888})
 - **Times**: a cue time is the PTS of the page minus the zero point. The zero point is the smallest first PTS of all streams of the program, as FFmpeg counts it. For each other stream the reader takes the PTS of its first packet that starts a PES packet. Example: the video of `teletext.ts` starts 0.5 s before the teletext, so the first cue of page 888 starts at 0.5 s. A PTS keeps counting past the wrap of the 33-bit clock after 26.5 hours. A PES packet without a PTS takes the last PTS. A cue time of 100,000 hours or more returns an error, as in the other containers.
 - **Cues**: each state of the page that shows text is one cue. It ends when the next state starts. The last state ends at the last PTS of the page stream, or after `ReadOptions.LastCueDuration` when no later packet follows. A state with the same lines as the one before it does not start a new cue. The `language` metadata is the track language.
 - **Teletext text**: the reader keeps the rows 1 to 23 of the page. A page with the subtitle or newsflash flag shows only the text between a Start Box and an End Box code. A colour code other than white gives `<font color="#rrggbb">` around the run. `&`, `<` and `>` are escaped. Double height, flash, background colours and mosaics are ignored.
-- **Character sets**: the reader knows Latin with 13 national option subsets, Cyrillic 1, 2 and 3, and Greek. The set comes from, in this order, packet X/28 of the page, packet M/29 of the magazine, and the language of the track. The language `pol` gives the Polish set, `rus` and `ukr` the Cyrillic sets, and `gre` the Greek set, see the group table in ETS 300 706 table 33. A page in the Arabic or Hebrew set returns the error `Teletext page 888 uses the Arabic or Hebrew character set. The reader reads Latin, Cyrillic and Greek pages.`
+- **Character sets**: the reader knows Latin with 13 national option subsets, Cyrillic 1, 2 and 3, and Greek. The set comes from, in this order, packet X/28 of the page, packet M/29 of the magazine, and the language of the track. The language `pol` gives the Polish set, `rus` and `ukr` the Cyrillic sets, and `gre` the Greek set, see the group table in ETS 300 706 table 33. A page in the Arabic or Hebrew set returns the error `teletext page 888 uses the Arabic or Hebrew character set. The reader reads Latin, Cyrillic and Greek pages`.
 - **Not read**: packet X/26 (single accented characters), the G2 set, X/27 links and page enhancement. `ReadOptions.Lenient` has no effect, and the reader adds no warning.
-- **Errors**: a damaged container returns a `*model.ParseError` with an empty `Format`. A track number that the file does not have returns an `*model.InvalidArgumentError` with `The file has no subtitle track with the number N.` A read error of the `io.ReaderAt` returns `read mpegts: ` and the cause.
+- **Errors**: a damaged container returns a `*model.ParseError` with an empty `Format`. A track number that the file does not have returns an `*model.InvalidArgumentError` with `the file has no subtitle track with the number N`. A read error of the `io.ReaderAt` returns `read mpegts: ` and the cause.
 
 ### Damaged files
 

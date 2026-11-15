@@ -47,7 +47,7 @@ func newTrack(trak *mp4.TrakBox, movieTimescale uint32) (*track, error) {
 	}
 	number := int(tkhd.TrackID)
 	if mdhd.Timescale == 0 {
-		return nil, parseError("Track " + strconv.Itoa(number) + " has a timescale of 0.")
+		return nil, parseError("track " + strconv.Itoa(number) + " has a timescale of 0")
 	}
 
 	info := model.Track{
