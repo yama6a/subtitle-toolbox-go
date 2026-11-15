@@ -156,7 +156,7 @@ Example: a cue with `Speaker` `Fred`, the line `Hi there.` and 2 words sends `Hi
 
 ## HTTP
 
-The engines send JSON requests through `translation.HTTPClient`, an interface with the method `Do`. `*http.Client` implements it. A test points an engine at an `httptest.Server`.
+The engines send JSON requests with an `*http.Client`. A test points an engine at an `httptest.Server`, or sets a client whose `Transport` plays the answers.
 
 - **Default client**: `translation.DefaultHTTPClient()` returns a new client with a connect timeout of 10 s and a total timeout of 120 s. It uses the proxy of the environment. It follows no redirect, so a 3xx answer reaches the engine as it is and no key goes to another host.
 - **Retries**: after HTTP 429, 500, 502, 503 and 504 the request goes out again, up to 3 times, so up to 4 requests. The fourth answer returns as it is, and the engine turns its status into an error. No other status is retried. A request without a response is not retried.
@@ -171,7 +171,7 @@ This engine posts the texts as JSON and reads `{"translations": [...]}`. It take
 ```text
 type webEngine struct {
 	url    string
-	client translation.HTTPClient
+	client *http.Client
 }
 
 func (e webEngine) Translate(ctx context.Context, texts []string, source, target string) ([]string, error) {

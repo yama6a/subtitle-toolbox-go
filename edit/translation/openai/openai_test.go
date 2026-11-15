@@ -55,12 +55,12 @@ func jsonArray(t *testing.T, v ...string) string {
 	return string(b)
 }
 
-func newEngine(t *testing.T, client translation.HTTPClient, opts openai.Options) *openai.Engine {
+func newEngine(t *testing.T, transport *translationtest.Transport, opts openai.Options) *openai.Engine {
 	t.Helper()
 
 	opts.BaseURL = baseURL
 	opts.Model = "llama3"
-	opts.HTTPClient = client
+	opts.HTTPClient = transport.Client()
 	e, err := openai.New(opts)
 	require.NoError(t, err)
 	return e
@@ -180,12 +180,12 @@ func TestTranslateSends(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			client := &translationtest.Client{Answers: []translationtest.Answer{ok(chat(`["Hallo"]`))}}
+			transport := &translationtest.Transport{Answers: []translationtest.Answer{ok(chat(`["Hallo"]`))}}
 
-			_, err := newEngine(t, client, tt.opts).Translate(t.Context(), []string{"Hello <x1>there</x1>/"}, tt.source, tt.target)
+			_, err := newEngine(t, transport, tt.opts).Translate(t.Context(), []string{"Hello <x1>there</x1>/"}, tt.source, tt.target)
 
 			require.NoError(t, err)
-			reqs := client.Requests()
+			reqs := transport.Requests()
 			require.Len(t, reqs, 1)
 			assert.Equal(t, "http://localhost:11434/v1/chat/completions", reqs[0].URL)
 			assert.Equal(t, "application/json", reqs[0].Header.Get("Content-Type"))
@@ -204,13 +204,13 @@ func TestTranslateSends(t *testing.T) {
 func TestTranslateNoTextsSendsNoRequest(t *testing.T) {
 	t.Parallel()
 
-	client := &translationtest.Client{Answers: []translationtest.Answer{ok(chat(`[]`))}}
+	transport := &translationtest.Transport{Answers: []translationtest.Answer{ok(chat(`[]`))}}
 
-	got, err := newEngine(t, client, openai.Options{}).Translate(t.Context(), nil, "en", "de")
+	got, err := newEngine(t, transport, openai.Options{}).Translate(t.Context(), nil, "en", "de")
 
 	require.NoError(t, err)
 	assert.Equal(t, []string{}, got)
-	assert.Empty(t, client.Requests())
+	assert.Empty(t, transport.Requests())
 }
 
 func TestTranslateAnswers(t *testing.T) {
@@ -282,11 +282,11 @@ func TestTranslateAnswers(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			client := &translationtest.Client{Answers: tt.answers}
+			transport := &translationtest.Transport{Answers: tt.answers}
 
-			got, err := newEngine(t, client, openai.Options{}).Translate(t.Context(), texts, "en", "de")
+			got, err := newEngine(t, transport, openai.Options{}).Translate(t.Context(), texts, "en", "de")
 
-			reqs := client.Requests()
+			reqs := transport.Requests()
 			assert.Len(t, reqs, tt.wantRequests)
 			if tt.wantErr != "" {
 				var se *translation.ServiceError
@@ -358,12 +358,12 @@ func TestRunnerOnOwnStation(t *testing.T) {
 
 			s, _, err := srt.Read(bytes.NewReader(testfiles.Read(t, "translation/own_station.srt")), model.CommonReadOptions{}, srt.ReadOptions{})
 			require.NoError(t, err)
-			client := &translationtest.Client{Answers: []translationtest.Answer{tt.answer}}
+			transport := &translationtest.Transport{Answers: []translationtest.Answer{tt.answer}}
 
-			report, err := translation.Apply(t.Context(), s, newEngine(t, client, openai.Options{}), "en", "de", translation.Options{})
+			report, err := translation.Apply(t.Context(), s, newEngine(t, transport, openai.Options{}), "en", "de", translation.Options{})
 
 			require.NoError(t, err)
-			assert.Len(t, client.Requests(), 1)
+			assert.Len(t, transport.Requests(), 1)
 			var warned []int
 			for _, w := range report.Warnings {
 				warned = append(warned, w.Cue)

@@ -27,5 +27,5 @@ func ExampleNew() {
 	fmt.Println(openai.Options{BaseURL: "http://localhost:11434/v1", Model: "llama3", APIKey: "secret"})
 	// Output:
 	// [Hallo Der Zug fährt ab.] <nil>
-	// {BaseURL:http://localhost:11434/v1 Model:llama3 APIKey:*** Prompt: HTTPClient:<nil>}
+	// {BaseURL:http://localhost:11434/v1 Model:llama3 APIKey:*** Prompt: HTTPClient:*http.Client}
 }
