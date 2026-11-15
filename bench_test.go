@@ -5,7 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
 )
@@ -37,7 +39,7 @@ func BenchmarkParse(b *testing.B) {
 			cues = append(cues, c)
 		}
 	}
-	s.AddCues(cues...)
+	require.NoError(b, s.AddCues(cues...))
 
 	for _, f := range []stbox.Format{stbox.SubRip, stbox.TTML, stbox.WebVTT, stbox.ASS, stbox.SAMI, stbox.MicroDVD, stbox.SBV, stbox.LRC, stbox.CSV, stbox.SCC, stbox.Whisper, stbox.PodcastTranscript, stbox.YouTubeTimedText} {
 		var content bytes.Buffer

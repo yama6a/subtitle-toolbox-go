@@ -295,8 +295,8 @@ func TestSegmentImageCues(t *testing.T) {
 	image := &model.Image{Width: 2, Height: 2, ScreenWidth: 10, ScreenHeight: 10}
 	build := func(lines ...string) *model.Subtitle {
 		var s model.Subtitle
-		s.AddCue(model.Cue{Start: ms(1000), End: ms(2000), Lines: []string{"One"}})
-		s.AddCue(model.Cue{Start: ms(3000), End: ms(4000), Lines: lines, Image: image})
+		require.NoError(t, s.AddCue(model.Cue{Start: ms(1000), End: ms(2000), Lines: []string{"One"}}))
+		require.NoError(t, s.AddCue(model.Cue{Start: ms(3000), End: ms(4000), Lines: lines, Image: image}))
 		return &s
 	}
 	t.Run("an image cue without lines fails", func(t *testing.T) {
@@ -324,4 +324,14 @@ func TestSegmentImageCues(t *testing.T) {
 		_, contents := segments(t, r)
 		assert.Contains(t, contents[0], "00:00:03.000 --> 00:00:04.000\nTwo")
 	})
+}
+
+func TestSegmentAcceptsACueThatReplaceCuesStored(t *testing.T) {
+	t.Parallel()
+
+	s := &model.Subtitle{}
+	s.ReplaceCues([]model.Cue{{Start: time.Second, End: 2 * time.Second, Lines: []string{"a"}, Position: model.Position{Row: 2}}}, nil)
+	r, err := hls.Segment(s, hls.SegmentOptions{})
+	require.NoError(t, err)
+	require.NoError(t, r.EachSegment(func(string, []byte) error { return nil }))
 }

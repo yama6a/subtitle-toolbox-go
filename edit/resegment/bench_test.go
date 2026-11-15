@@ -24,7 +24,7 @@ func bakeryCopies(tb testing.TB, copies int) *model.Subtitle {
 		for _, c := range bakery.All() {
 			c.Start += time.Duration(i) * 12 * time.Second
 			c.End += time.Duration(i) * 12 * time.Second
-			s.AddCue(c)
+			require.NoError(tb, s.AddCue(c))
 		}
 	}
 	return &s
@@ -62,7 +62,7 @@ func BenchmarkSplitLong(b *testing.B) {
 		for b.Loop() {
 			b.StopTimer()
 			var s model.Subtitle
-			s.AddCue(model.Cue{End: 3 * time.Hour, Lines: []string{words}})
+			require.NoError(b, s.AddCue(model.Cue{End: 3 * time.Hour, Lines: []string{words}}))
 			b.StartTimer()
 			_, err := resegment.SplitLong(&s, resegment.Options{})
 			require.NoError(b, err)
@@ -89,7 +89,7 @@ func benchWords(b *testing.B, run func(*model.Subtitle, resegment.Options) (rese
 	for b.Loop() {
 		b.StopTimer()
 		var s model.Subtitle
-		s.AddCue(model.Cue{End: words[len(words)-1].End, Lines: []string{text}, Words: words})
+		require.NoError(b, s.AddCue(model.Cue{End: words[len(words)-1].End, Lines: []string{text}, Words: words}))
 		b.StartTimer()
 		_, err := run(&s, resegment.Options{})
 		require.NoError(b, err)

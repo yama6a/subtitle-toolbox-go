@@ -99,7 +99,9 @@ func (rd *reader) read(content []byte, s *model.Subtitle) error {
 	if err := rd.readElement(root, nil); err != nil {
 		return err
 	}
-	parsing.AddParsed(s, rd.cues, nil)
+	if err := parsing.AddParsed(s, rd.cues, nil); err != nil {
+		return err
+	}
 	return nil
 }
 

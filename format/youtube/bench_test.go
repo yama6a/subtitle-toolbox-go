@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/youtube"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
@@ -142,7 +144,7 @@ func BenchmarkWriteChanged(b *testing.B) {
 func BenchmarkWriteJoinedTokens(b *testing.B) {
 	line := strings.Repeat(`a<font face="x">b</font>`, 80000)
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: 0, End: ms(5000), Lines: []string{line}})
+	require.NoError(b, s.AddCue(model.Cue{Start: 0, End: ms(5000), Lines: []string{line}}))
 	b.Run("tokens=160000", func(b *testing.B) {
 		b.ReportAllocs()
 		b.SetBytes(int64(len(line)))

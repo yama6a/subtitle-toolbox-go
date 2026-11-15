@@ -13,7 +13,9 @@ import (
 func ExampleWrite() {
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataLanguage, "en")
-	s.AddCue(model.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"Hello", "<i>world</i>"}})
+	if err := s.AddCue(model.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"Hello", "<i>world</i>"}}); err != nil {
+		panic(err)
+	}
 	if _, err := itt.Write(os.Stdout, s, model.CommonWriteOptions{}, itt.WriteOptions{FrameRate: model.FrameRate25}); err != nil {
 		fmt.Println(err)
 	}

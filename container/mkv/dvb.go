@@ -28,6 +28,8 @@ func (f *File) dvbSubtitle(private []byte, blocks []block, common model.CommonRe
 		}
 	}
 	s := &model.Subtitle{}
-	s.AddCues(dec.Finish(parsing.LastCueDuration(common))...)
+	if err := s.AddCues(dec.Finish(parsing.LastCueDuration(common))...); err != nil {
+		return nil, nil, err
+	}
 	return s, dec.Warnings(), nil
 }

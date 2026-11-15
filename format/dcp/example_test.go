@@ -34,7 +34,9 @@ func ExampleWrite() {
 		fmt.Println(err)
 		return
 	}
-	s.AddCue(model.Cue{Start: 5 * time.Second, End: 7125 * time.Millisecond, Lines: []string{"The ferry leaves at nine,", "from the <i>north</i> pier."}})
+	if err := s.AddCue(model.Cue{Start: 5 * time.Second, End: 7125 * time.Millisecond, Lines: []string{"The ferry leaves at nine,", "from the <i>north</i> pier."}}); err != nil {
+		panic(err)
+	}
 	if _, err := dcp.Write(os.Stdout, s, model.CommonWriteOptions{}, dcp.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}

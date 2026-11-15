@@ -179,7 +179,9 @@ func withLines(t *testing.T, s *model.Subtitle, lines ...string) *model.Subtitle
 }
 
 func withCues(s *model.Subtitle, cues ...model.Cue) *model.Subtitle {
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return s
 }
 

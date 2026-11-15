@@ -56,7 +56,9 @@ func ReadYouTube(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 		}
 		cues = append(cues, c)
 	}
-	s.AddCues(endChapters(cues, nil, opts.MediaDuration)...)
+	if err := s.AddCues(endChapters(cues, nil, opts.MediaDuration)...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 

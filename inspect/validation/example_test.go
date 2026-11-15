@@ -64,8 +64,12 @@ func ExampleNetflixEnglish() {
 
 func ExampleCheckYouTubeChapters() {
 	s := &stbox.Subtitle{}
-	s.AddCue(stbox.Cue{Start: 5 * time.Second, End: 9500 * time.Millisecond})
-	s.AddCue(stbox.Cue{Start: 9500 * time.Millisecond, End: 30 * time.Second})
+	if err := s.AddCue(stbox.Cue{Start: 5 * time.Second, End: 9500 * time.Millisecond}); err != nil {
+		panic(err)
+	}
+	if err := s.AddCue(stbox.Cue{Start: 9500 * time.Millisecond, End: 30 * time.Second}); err != nil {
+		panic(err)
+	}
 	for _, v := range validation.CheckYouTubeChapters(s) {
 		fmt.Println("cue", v.Cue, v.Rule, v.Value)
 	}

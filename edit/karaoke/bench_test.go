@@ -39,7 +39,7 @@ func BenchmarkApplyTags(b *testing.B) {
 	b.ReportAllocs()
 	for b.Loop() {
 		var s model.Subtitle
-		s.AddCue(cue)
+		require.NoError(b, s.AddCue(cue))
 		_, err := karaoke.Apply(&s, karaoke.Options{MaxWordsPerCue: 3})
 		require.NoError(b, err)
 	}
@@ -55,7 +55,7 @@ func BenchmarkApplyTooLarge(b *testing.B) {
 	b.ReportAllocs()
 	for b.Loop() {
 		var s model.Subtitle
-		s.AddCue(cue)
+		require.NoError(b, s.AddCue(cue))
 		_, err := karaoke.Apply(&s, karaoke.Options{})
 		require.Error(b, err)
 	}
@@ -70,7 +70,7 @@ func BenchmarkApply(b *testing.B) {
 			b.ReportAllocs()
 			for b.Loop() {
 				var s model.Subtitle
-				s.AddCue(cue)
+				require.NoError(b, s.AddCue(cue))
 				_, err := karaoke.Apply(&s, karaoke.Options{MaxWordsPerCue: tt.window})
 				require.NoError(b, err)
 			}

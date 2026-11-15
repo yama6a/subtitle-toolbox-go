@@ -51,7 +51,9 @@ func subtitleOf(texts ...string) *model.Subtitle {
 	for i, text := range texts {
 		c := cueOf(text)
 		c.Start, c.End = time.Duration(i)*time.Second, time.Duration(i+1)*time.Second
-		s.AddCue(c)
+		if err := s.AddCue(c); err != nil {
+			panic(err)
+		}
 	}
 	return &s
 }
@@ -309,7 +311,7 @@ func TestVoiceClassSurvivesRenameAndStyle(t *testing.T) {
 			require.NoError(t, c.SetFormatData("vtt", vttData()))
 			c.ExtractWordTags()
 			require.Equal(t, "SPEAKER_01", c.Speaker)
-			s.AddCue(c)
+			require.NoError(t, s.AddCue(c))
 
 			_, err := speakers.Apply(&s, tt.opts)
 			require.NoError(t, err)
@@ -325,12 +327,12 @@ func TestStyleKeepsWordTiming(t *testing.T) {
 	t.Parallel()
 
 	var s model.Subtitle
-	s.AddCue(model.Cue{
+	require.NoError(t, s.AddCue(model.Cue{
 		End:     2 * time.Second,
 		Speaker: "Anna",
 		Lines:   []string{"Hi there"},
 		Words:   []model.Word{{Text: "Hi", Start: time.Second, End: 1500 * time.Millisecond}, {Text: "there", Start: 1500 * time.Millisecond, End: 2 * time.Second}},
-	})
+	}))
 
 	_, err := speakers.Apply(&s, speakers.Options{Style: speakers.StylePrefix})
 	require.NoError(t, err)

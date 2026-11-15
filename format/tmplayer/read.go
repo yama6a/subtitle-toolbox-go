@@ -37,7 +37,9 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 	if err != nil {
 		return nil, nil, err
 	}
-	s.AddCues(entriesToCues(st, entries)...)
+	if err := s.AddCues(entriesToCues(st, entries)...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 

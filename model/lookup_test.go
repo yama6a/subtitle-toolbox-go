@@ -181,7 +181,7 @@ func TestLookupSeesChanges(t *testing.T) {
 		s := harbourTour(t)
 		assert.Equal(t, -1, at(s, 30))
 
-		s.AddCue(model.Cue{Start: sec(29), End: sec(31), Lines: []string{"late"}})
+		require.NoError(t, s.AddCue(model.Cue{Start: sec(29), End: sec(31), Lines: []string{"late"}}))
 
 		assert.Equal(t, 6, at(s, 30))
 	})
@@ -233,7 +233,9 @@ func largeSubtitle() *model.Subtitle {
 		}
 	}
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return s
 }
 
@@ -304,7 +306,7 @@ func TestLookupMatchesALinearScan(t *testing.T) {
 		cues[i] = model.Cue{Start: start, End: start + time.Duration(rng.IntN(60_000)-1000)*time.Millisecond}
 	}
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	require.NoError(t, s.AddCues(cues...))
 	cues = s.Cues()
 
 	for range 500 {
@@ -327,7 +329,7 @@ func TestLookupAfterEachEditMatchesALinearScan(t *testing.T) {
 	s := &model.Subtitle{}
 	for range 200 {
 		a, b := tenths(4001), tenths(4001)
-		s.AddCue(model.Cue{Start: min(a, b), End: max(a, b) + 500*time.Millisecond, Lines: []string{"cue"}})
+		require.NoError(t, s.AddCue(model.Cue{Start: min(a, b), End: max(a, b) + 500*time.Millisecond, Lines: []string{"cue"}}))
 	}
 
 	for edit := range 400 {

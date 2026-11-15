@@ -139,7 +139,7 @@ func copyOf(s *model.Subtitle) *model.Subtitle {
 		))
 		cues = append(cues, cue)
 	}
-	doc.AddCues(cues...)
+	doc.ReplaceCues(cues, nil)
 	return doc
 }
 

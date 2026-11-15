@@ -34,10 +34,12 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"First", "line"}},
 		model.Cue{Start: 5 * time.Second, End: 7400 * time.Millisecond, Lines: []string{"<i>Second</i>"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	opts := subviewer.WriteOptions{Version: subviewer.V1}
 	if _, err := subviewer.Write(os.Stdout, s, model.CommonWriteOptions{}, opts); err != nil {
 		fmt.Println(err)

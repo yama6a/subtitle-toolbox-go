@@ -26,7 +26,9 @@ func manyCues(n int) *model.Subtitle {
 		c.ExtractWordTags()
 		cues[i] = c
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return &s
 }
 
@@ -37,14 +39,18 @@ func oneLongCue(n int) *model.Subtitle {
 		b.WriteString("<v S" + strconv.Itoa(i%50) + "><i>Hello there, again.</i> ")
 	}
 	var s model.Subtitle
-	s.AddCue(model.Cue{End: time.Second, Lines: []string{b.String()}})
+	if err := s.AddCue(model.Cue{End: time.Second, Lines: []string{b.String()}}); err != nil {
+		panic(err)
+	}
 	return &s
 }
 
 // unclosedCue returns one cue of about n bytes whose style tags never close, with a change of speaker every 15 bytes.
 func unclosedCue(n int) *model.Subtitle {
 	var s model.Subtitle
-	s.AddCue(model.Cue{End: time.Second, Lines: []string{strings.Repeat("<i>x<v A>y<v B>", n/15+1)}})
+	if err := s.AddCue(model.Cue{End: time.Second, Lines: []string{strings.Repeat("<i>x<v A>y<v B>", n/15+1)}}); err != nil {
+		panic(err)
+	}
 	return &s
 }
 

@@ -24,8 +24,12 @@ func longCuePair(n int) (primary, secondary *model.Subtitle) {
 		cues = append(cues, model.Cue{Start: start, End: start + time.Second, Lines: []string{"first"}})
 		others = append(others, model.Cue{Start: start + 500*time.Millisecond, End: start + 1500*time.Millisecond, Lines: []string{"erste"}})
 	}
-	primary.AddCues(cues...)
-	secondary.AddCues(others...)
+	if err := primary.AddCues(cues...); err != nil {
+		panic(err)
+	}
+	if err := secondary.AddCues(others...); err != nil {
+		panic(err)
+	}
 	return primary, secondary
 }
 

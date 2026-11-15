@@ -17,7 +17,9 @@ func benchSubtitle() *model.Subtitle {
 	s := &model.Subtitle{}
 	for i := range benchCues {
 		start := time.Duration(i) * 2 * time.Second
-		s.AddCue(model.Cue{Start: start, End: start + 1500*time.Millisecond, Lines: []string{fmt.Sprintf("Cue number %d", i), "<i>on two lines</i>"}})
+		if err := s.AddCue(model.Cue{Start: start, End: start + 1500*time.Millisecond, Lines: []string{fmt.Sprintf("Cue number %d", i), "<i>on two lines</i>"}}); err != nil {
+			panic(err)
+		}
 	}
 	return s
 }

@@ -28,7 +28,7 @@ func BenchmarkSegment(b *testing.B) {
 			all = append(all, c)
 		}
 	}
-	input.AddCues(all...)
+	require.NoError(b, input.AddCues(all...))
 
 	b.Run("cues="+strconv.Itoa(input.Len()), func(b *testing.B) {
 		b.ReportAllocs()
@@ -64,7 +64,7 @@ func TestSegmentGrowth(t *testing.T) {
 				all = append(all, c)
 			}
 		}
-		input.AddCues(all...)
+		require.NoError(t, input.AddCues(all...))
 		fastest := time.Duration(math.MaxInt64)
 		for range 3 {
 			begin := time.Now()

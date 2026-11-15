@@ -16,7 +16,9 @@ func ExampleApply() {
 		}
 	}
 	var s model.Subtitle
-	s.AddCues(at(8, 10), at(10.292, 12), at(62.708, 65), at(67, 69.75))
+	if err := s.AddCues(at(8, 10), at(10.292, 12), at(62.708, 65), at(67, 69.75)); err != nil {
+		panic(err)
+	}
 	shots := []time.Duration{62500 * time.Millisecond, 70 * time.Second}
 
 	report, err := timing.Apply(&s, timing.Options{FrameRate: model.FrameRate{Num: 24, Den: 1}, ShotChanges: shots})

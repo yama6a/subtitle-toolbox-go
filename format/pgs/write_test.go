@@ -37,7 +37,7 @@ func writeCues(t *testing.T, cues ...model.Cue) []byte {
 	t.Helper()
 
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	require.NoError(t, s.AddCues(cues...))
 	var b bytes.Buffer
 	_, err := pgs.Write(&b, s, model.CommonWriteOptions{}, pgs.WriteOptions{})
 	require.NoError(t, err)
@@ -238,7 +238,7 @@ func TestWriteUnwritable(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCues(good, tt.cue)
+			require.NoError(t, s.AddCues(good, tt.cue))
 			var b bytes.Buffer
 			_, err := pgs.Write(&b, s, model.CommonWriteOptions{}, pgs.WriteOptions{})
 			var uerr *model.UnwritableError

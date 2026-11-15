@@ -153,7 +153,9 @@ func assemble(st *parsing.State, caps []caption, file *model.Data, wordTimes boo
 			cues = append(cues, cue)
 		}
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return nil, err
+	}
 	return s, nil
 }
 

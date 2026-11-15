@@ -111,7 +111,7 @@ func TestWriteClosesTagsThatTheCueLeavesOpen(t *testing.T) {
 
 	s, _, err := srt.Read(bytes.NewReader(testfiles.Read(t, "srt/real/own_styled.srt")), model.CommonReadOptions{}, srt.ReadOptions{})
 	require.NoError(t, err)
-	s.AddCue(model.Cue{Start: 900 * time.Second, End: 901 * time.Second, Lines: []string{`<b><font color="#ff0000">Red`, "<u>and bold</b>"}})
+	require.NoError(t, s.AddCue(model.Cue{Start: 900 * time.Second, End: 901 * time.Second, Lines: []string{`<b><font color="#ff0000">Red`, "<u>and bold</b>"}}))
 	out := write(t, s, model.CommonWriteOptions{})
 	assert.Contains(t, out, "<SYNC Start=540000><P Class=SUBTTL><i>Italics that never close</i>\n")
 	assert.Contains(t, out, "<SYNC Start=900000><P Class=SUBTTL><b><font color=\"#ff0000\">Red<br><u>and bold</b></u></font>\n")

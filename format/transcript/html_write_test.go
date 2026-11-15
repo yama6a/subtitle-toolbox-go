@@ -25,13 +25,15 @@ func writeHTML(t *testing.T, s *model.Subtitle, opts transcript.HTMLWriteOptions
 
 func htmlDialogue() *model.Subtitle {
 	s := &model.Subtitle{}
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"<v Anna><b>Hello</b>", "there."}},
 		model.Cue{Start: 2500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"<v Anna>Where are you going?"}},
 		model.Cue{Start: 4 * time.Second, End: 5 * time.Second, Lines: []string{"<v Ben>Home &amp; <00:00:04.500>bed.", "<v Anna>Why?"}},
 		model.Cue{Start: 9 * time.Second, End: 10 * time.Second, Lines: []string{"<v Anna>Fish &lt;3"}},
 		model.Cue{Start: 3725 * time.Second, End: 3727 * time.Second, Lines: []string{"No speaker."}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	return s
 }
 
@@ -80,7 +82,7 @@ func TestWriteHTMLEscapesAndClamps(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: -2 * time.Second, End: time.Second, Lines: []string{"<v Tom &amp; Jerry>Hi"}})
+	require.NoError(t, s.AddCue(model.Cue{Start: -2 * time.Second, End: time.Second, Lines: []string{"<v Tom &amp; Jerry>Hi"}}))
 	assert.Equal(t, "<cite>Tom &amp; Jerry:</cite>\n<time>0:00</time>\n<p>Hi</p>\n", writeHTML(t, s, transcript.HTMLWriteOptions{}))
 }
 

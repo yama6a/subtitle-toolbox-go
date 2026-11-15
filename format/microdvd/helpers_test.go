@@ -70,7 +70,9 @@ func subtitle(lines ...[]string) *model.Subtitle {
 	s := &model.Subtitle{}
 	for i, l := range lines {
 		start := time.Duration(2*i+1) * time.Second
-		s.AddCue(model.Cue{Start: start, End: start + time.Second, Lines: l})
+		if err := s.AddCue(model.Cue{Start: start, End: start + time.Second, Lines: l}); err != nil {
+			panic(err)
+		}
 	}
 	return s
 }

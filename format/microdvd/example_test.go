@@ -27,10 +27,12 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>Where are you?", "Home.</i>"}},
 		model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{"Fish &amp; Chips"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	_, err := microdvd.Write(os.Stdout, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 125}, WriteFrameRateLine: true})
 	if err != nil {
 		fmt.Println(err)

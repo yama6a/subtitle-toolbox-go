@@ -50,7 +50,7 @@ func TestImageCueIsCopiedAndChecked(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{End: time.Second, Image: testImage()})
+	require.NoError(t, s.AddCue(model.Cue{End: time.Second, Image: testImage()}))
 
 	got, _ := s.Cue(0)
 	got.Image.PNG[0] = 'X'

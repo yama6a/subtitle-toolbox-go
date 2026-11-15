@@ -31,7 +31,7 @@ func FuzzApply(f *testing.F) {
 		for _, mode := range []karaoke.Mode{karaoke.ModeWord, karaoke.ModeCumulative} {
 			for window := range 4 {
 				var s model.Subtitle
-				s.AddCue(c)
+				require.NoError(t, s.AddCue(c))
 				_, err := karaoke.Apply(&s, karaoke.Options{Mode: mode, MaxWordsPerCue: window})
 				require.NoError(t, err)
 				prev := time.Duration(-1 << 62)

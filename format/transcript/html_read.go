@@ -60,7 +60,9 @@ func ReadHTML(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*mode
 			cues[i].End = st.LastCueEnd(cues[i].Start)
 		}
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 

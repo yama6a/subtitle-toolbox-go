@@ -684,7 +684,9 @@ func (r *reader) addCues(s *model.Subtitle) error {
 	for i := range cues {
 		cues[i].ExtractWordTags()
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return err
+	}
 	return nil
 }
 

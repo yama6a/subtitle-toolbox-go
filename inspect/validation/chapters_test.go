@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/validation"
 )
@@ -35,7 +36,7 @@ func TestCheckYouTubeChapters(t *testing.T) {
 
 			s := subtitle()
 			for _, c := range tt.cues {
-				s.AddCue(cue(c[0], c[1]))
+				require.NoError(t, s.AddCue(cue(c[0], c[1])))
 			}
 			assert.Equal(t, tt.want, validation.CheckYouTubeChapters(s))
 		})

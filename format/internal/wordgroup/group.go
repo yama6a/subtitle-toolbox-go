@@ -113,6 +113,7 @@ func foundWords(plainText string, words []Word) []Word {
 	var texts []string
 	for _, w := range words {
 		if text := foldSpaces(w.Text); text != "" && w.Timed {
+			w.Text = text
 			timed = append(timed, w)
 			texts = append(texts, text)
 		}

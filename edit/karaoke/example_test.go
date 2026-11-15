@@ -11,7 +11,7 @@ import (
 func ExampleApply() {
 	ms := time.Millisecond
 	var s model.Subtitle
-	s.AddCue(model.Cue{
+	if err := s.AddCue(model.Cue{
 		Start: 0, End: 1600 * ms, Lines: []string{"The beach was quiet."},
 		Words: []model.Word{
 			{Text: "The", Start: 0, End: 240 * ms},
@@ -19,7 +19,9 @@ func ExampleApply() {
 			{Text: "was", Start: 710 * ms, End: 950 * ms},
 			{Text: "quiet.", Start: 950 * ms, End: 1600 * ms},
 		},
-	})
+	}); err != nil {
+		panic(err)
+	}
 	report, err := karaoke.Apply(&s, karaoke.Options{})
 	if err != nil {
 		fmt.Println(err)

@@ -62,7 +62,9 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	timeline := lr.timeline()
 	cues := caption.CDPCues(timeline, caption.CEA708Service(opts.Service, opts.CEA608Only),
 		caption.CEA608Options{Channel: opts.Channel, RollUp: opts.RollUp}, st.LastCueDuration())
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 

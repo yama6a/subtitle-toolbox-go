@@ -29,7 +29,7 @@ func repeatWithNotes(tb testing.TB, n int) []byte {
 		offset := time.Duration(i/len(cues)) * 30 * time.Second
 		c.Start += offset
 		c.End += offset
-		s.AddCue(c)
+		require.NoError(tb, s.AddCue(c))
 		require.NoError(tb, s.AddComment(comments[i%len(comments)].Text, i))
 	}
 	var out bytes.Buffer

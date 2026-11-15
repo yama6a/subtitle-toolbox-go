@@ -337,7 +337,9 @@ func buildFFMetadata(s *model.Subtitle, global *model.Data, streams []any, chapt
 			ends[i] = &ch.end
 		}
 	}
-	s.AddCues(endChapters(cues, ends, media)...)
+	if err := s.AddCues(endChapters(cues, ends, media)...); err != nil {
+		return err
+	}
 	return nil
 }
 

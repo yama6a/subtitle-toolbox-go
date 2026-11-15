@@ -131,7 +131,7 @@ func (r *Rendition) load(s *model.Subtitle, cues []model.Cue, m TimestampMap) er
 		}
 	}
 	var copied model.Subtitle
-	copied.AddCues(cues...)
+	copied.ReplaceCues(cues, nil)
 	cues = copied.Cues()
 	r.starts, r.ends = make([]int64, len(cues)), make([]int64, len(cues))
 	for i, c := range cues {
@@ -210,7 +210,7 @@ func (r *Rendition) write(cues []model.Cue) ([]byte, error) {
 	if err := s.SetFormatData(formatDataKey, r.fileData); err != nil {
 		return nil, err
 	}
-	s.AddCues(cues...)
+	s.ReplaceCues(cues, nil)
 	var buf bytes.Buffer
 	if _, err := webvtt.Write(&buf, &s, model.CommonWriteOptions{BOM: model.BOMRemove}, webvtt.WriteOptions{}); err != nil {
 		return nil, err

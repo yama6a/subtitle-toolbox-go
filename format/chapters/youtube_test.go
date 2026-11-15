@@ -106,12 +106,12 @@ func TestWriteYouTube(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCues(
+	require.NoError(t, s.AddCues(
 		model.Cue{Start: 900 * time.Millisecond, Lines: []string{"Intro"}},
 		model.Cue{Start: 3599990 * time.Millisecond, Lines: []string{"<i>Last</i> minute"}},
 		model.Cue{Start: time.Hour},
 		model.Cue{Start: 10 * time.Hour, Lines: []string{"Ten", "&amp; hours"}},
-	)
+	))
 	var buf bytes.Buffer
 	_, err := chapters.WriteYouTube(&buf, s, model.CommonWriteOptions{}, chapters.WriteOptions{})
 	require.NoError(t, err)

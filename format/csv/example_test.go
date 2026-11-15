@@ -31,14 +31,18 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	english, german := &model.Subtitle{}, &model.Subtitle{}
-	english.AddCues(
+	if err := english.AddCues(
 		model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<v Anna>Where are you going?"}},
 		model.Cue{Start: 4500 * time.Millisecond, End: 6 * time.Second, Lines: []string{"Home."}},
-	)
-	german.AddCues(
+	); err != nil {
+		panic(err)
+	}
+	if err := german.AddCues(
 		model.Cue{Start: 1200 * time.Millisecond, End: 3900 * time.Millisecond, Lines: []string{"Wohin gehst du?"}},
 		model.Cue{Start: 4400 * time.Millisecond, End: 6 * time.Second, Lines: []string{"Nach Hause."}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	opts := csv.WriteOptions{SecondText: german, SecondTextHeader: "text (de)", TimeFormat: csv.TimeSeconds}
 	_, err := csv.Write(os.Stdout, english, model.CommonWriteOptions{BOM: model.BOMRemove}, opts)
 	if err != nil {

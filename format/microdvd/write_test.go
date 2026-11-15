@@ -268,7 +268,7 @@ func TestWriteClampsNegativeTimes(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: -2 * 1000 * ms, End: 1000 * ms, Lines: []string{"Hello"}})
+	require.NoError(t, s.AddCue(model.Cue{Start: -2 * 1000 * ms, End: 1000 * ms, Lines: []string{"Hello"}}))
 	assert.Equal(t, "{0}{25}Hello\n", writeAt(t, s, 25))
 }
 
@@ -283,7 +283,7 @@ func TestWriteFrameBeyondTheIntRange(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: 359999999 * 1000 * ms, End: 359999999 * 1000 * ms, Lines: []string{"x"}})
+	require.NoError(t, s.AddCue(model.Cue{Start: 359999999 * 1000 * ms, End: 359999999 * 1000 * ms, Lines: []string{"x"}}))
 	assert.Equal(t, "{359999999000000004096}{359999999000000004096}x\n", writeAt(t, s, 1e12))
 }
 
@@ -313,7 +313,7 @@ func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCue(model.Cue{Start: 0, End: tt.end, Lines: []string{"x"}})
+			require.NoError(t, s.AddCue(model.Cue{Start: 0, End: tt.end, Lines: []string{"x"}}))
 			got := writeAt(t, s, tt.fps)
 			assert.Equal(t, tt.want, got)
 			_, _, err := read(got, false, tt.fps)

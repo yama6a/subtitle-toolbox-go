@@ -5,10 +5,12 @@ Caption files from TV often come in upper case. A CEA-608 WebVTT cue `>> GOOD MO
 <!-- example: ExampleSubtitle_ChangeCase -->
 ```go
 var s model.Subtitle
-s.AddCues(
+if err := s.AddCues(
 	model.Cue{Start: 1001 * time.Millisecond, End: 3336 * time.Millisecond, Lines: []string{">> GOOD MORNING. THE 8:15 TRAIN", "TO MAIN STREET IS LATE."}},
 	model.Cue{Start: 3503 * time.Millisecond, End: 5505 * time.Millisecond, Lines: []string{"<i>I THINK WE MISSED IT.</i>"}},
-)
+); err != nil {
+	panic(err)
+}
 
 if err := s.ChangeCase(model.CaseSentence, "en"); err != nil {
 	fmt.Println(err)
@@ -89,10 +91,12 @@ One pass runs over the cues in order. The state carries across cues and text run
 <!-- example: ExampleSubtitle_ReplaceText -->
 ```go
 var s model.Subtitle
-s.AddCues(
+if err := s.AddCues(
 	model.Cue{Start: 1 * time.Second, End: 3 * time.Second, Lines: []string{"[BELL RINGS]"}},
 	model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{"<i>Wait.....</i> [DOOR] Tom &amp; Jerry"}},
-)
+); err != nil {
+	panic(err)
+}
 
 if err := s.ReplaceText(`\s*\[[^\]]*\]`, "", model.ReplaceOptions{Regex: true}); err != nil {
 	fmt.Println(err)
@@ -147,7 +151,7 @@ Lyric videos and short captions mark the word that is sung. SubRip and WebVTT pl
 ```go
 ms := time.Millisecond
 var s model.Subtitle
-s.AddCue(model.Cue{
+if err := s.AddCue(model.Cue{
 	Start: 0, End: 1600 * ms, Lines: []string{"The beach was quiet."},
 	Words: []model.Word{
 		{Text: "The", Start: 0, End: 240 * ms},
@@ -155,7 +159,9 @@ s.AddCue(model.Cue{
 		{Text: "was", Start: 710 * ms, End: 950 * ms},
 		{Text: "quiet.", Start: 950 * ms, End: 1600 * ms},
 	},
-})
+}); err != nil {
+	panic(err)
+}
 report, err := karaoke.Apply(&s, karaoke.Options{})
 if err != nil {
 	fmt.Println(err)
@@ -434,7 +440,9 @@ if err != nil {
 }
 
 var s model.Subtitle
-s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"It gets celd."}})
+if err := s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"It gets celd."}}); err != nil {
+	panic(err)
+}
 if _, err := fixing.Apply(&s, fixing.Options{ReplaceList: l}); err != nil {
 	fmt.Println(err)
 	return

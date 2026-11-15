@@ -32,10 +32,12 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"First"}},
 		model.Cue{Start: 2500 * time.Millisecond, End: 5 * time.Second, Lines: []string{"<i>Second</i>"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	if _, err := mpsub.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}}); err != nil {
 		fmt.Println(err)
 	}

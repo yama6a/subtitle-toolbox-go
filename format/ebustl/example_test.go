@@ -27,7 +27,9 @@ func ExampleWrite() {
 	s := &model.Subtitle{}
 	c := model.Cue{Start: time.Second + 500*time.Millisecond, End: 2*time.Second + 480*time.Millisecond}
 	c.AddLine("Hello")
-	s.AddCue(c)
+	if err := s.AddCue(c); err != nil {
+		panic(err)
+	}
 	var out bytes.Buffer
 	report, err := ebustl.Write(&out, s, model.CommonWriteOptions{}, ebustl.WriteOptions{})
 	if err != nil {

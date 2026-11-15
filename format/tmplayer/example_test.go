@@ -29,10 +29,12 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Where are you?", "Home."}},
 		model.Cue{Start: 9 * time.Second, End: 11 * time.Second, Lines: []string{"<i>Sun</i>"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	if _, err := tmplayer.Write(os.Stdout, s, model.CommonWriteOptions{}, tmplayer.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}

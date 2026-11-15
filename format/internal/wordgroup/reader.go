@@ -178,6 +178,8 @@ func (r *Reader) Transcript(cues []*model.Cue, language orderedjson.Value, fileD
 	for i, c := range cues {
 		added[i] = *c
 	}
-	s.AddCues(added...)
+	if err := s.AddCues(added...); err != nil {
+		return nil, err
+	}
 	return s, nil
 }

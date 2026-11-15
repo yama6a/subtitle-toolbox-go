@@ -48,6 +48,8 @@ read:
 		return nil, nil, err
 	}
 	s := &model.Subtitle{}
-	parsing.AddParsed(s, cues, nil)
+	if err := parsing.AddParsed(s, cues, nil); err != nil {
+		return nil, nil, err
+	}
 	return s, d.Warnings(), nil
 }

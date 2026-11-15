@@ -41,7 +41,9 @@ func randomSubtitle(n int, seed uint64) *model.Subtitle {
 		t += length
 	}
 	var s model.Subtitle
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return &s
 }
 
@@ -320,7 +322,7 @@ func TestApplyWithoutSpans(t *testing.T) {
 	t.Parallel()
 
 	var zeroLength model.Subtitle
-	zeroLength.AddCue(model.Cue{Start: 5 * time.Second, End: 5 * time.Second, Lines: []string{"flash"}})
+	require.NoError(t, zeroLength.AddCue(model.Cue{Start: 5 * time.Second, End: 5 * time.Second, Lines: []string{"flash"}}))
 	tests := []struct {
 		name              string
 		target, reference *model.Subtitle
@@ -429,8 +431,8 @@ func TestApplyTimeLimit(t *testing.T) {
 	t.Parallel()
 
 	var target, reference model.Subtitle
-	target.AddCue(model.Cue{Start: 359999990 * time.Second, End: 359999999 * time.Second, Lines: []string{"late"}})
-	reference.AddCue(model.Cue{Start: 360000020 * time.Second, End: 360000029 * time.Second, Lines: []string{"later"}})
+	require.NoError(t, target.AddCue(model.Cue{Start: 359999990 * time.Second, End: 359999999 * time.Second, Lines: []string{"late"}}))
+	require.NoError(t, reference.AddCue(model.Cue{Start: 360000020 * time.Second, End: 360000029 * time.Second, Lines: []string{"later"}}))
 	before := times(&target)
 
 	_, err := refsync.Apply(&target, refsync.Options{Reference: &reference, NoScale: true})

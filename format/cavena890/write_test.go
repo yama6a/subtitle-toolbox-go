@@ -103,7 +103,7 @@ func TestWriteNewBlocks(t *testing.T) {
 					model.Field{Key: "header", Value: hex.EncodeToString(header(t, map[int]string{146: tt.language}))})
 			}
 			for i, lines := range tt.cues {
-				s.AddCue(cue(at(i), at(i+1), lines...))
+				require.NoError(t, s.AddCue(cue(at(i), at(i+1), lines...)))
 			}
 			out := write(t, s, model.CommonWriteOptions{StripTags: tt.strip})
 
@@ -150,7 +150,7 @@ func TestWriteErrors(t *testing.T) {
 				if i == tt.wantCue {
 					line = tt.lines
 				}
-				s.AddCue(cue(at(i), at(i+1), line))
+				require.NoError(t, s.AddCue(cue(at(i), at(i+1), line)))
 			}
 			_, err := cavena890.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, cavena890.WriteOptions{})
 
@@ -168,7 +168,7 @@ func TestWriteNumbersPastTheStep(t *testing.T) {
 	newCues := func(n int) *model.Subtitle {
 		s := &model.Subtitle{}
 		for i := range n {
-			s.AddCue(cue(time.Duration(i)*second, time.Duration(i+1)*second, "Cue "+strconv.Itoa(i)))
+			require.NoError(t, s.AddCue(cue(time.Duration(i)*second, time.Duration(i+1)*second, "Cue "+strconv.Itoa(i))))
 		}
 		return s
 	}
@@ -241,7 +241,7 @@ func TestWriteIgnoresBadStoredValues(t *testing.T) {
 			if tt.cue != nil {
 				require.NoError(t, c.SetFormatData("cavena890", model.NewData(tt.cue...)))
 			}
-			s.AddCue(c)
+			require.NoError(t, s.AddCue(c))
 
 			assert.Equal(t, newFile, write(t, s, model.CommonWriteOptions{}))
 		})

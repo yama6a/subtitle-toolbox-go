@@ -66,18 +66,26 @@ func Join(segments [][]byte, opts JoinOptions) (*model.Subtitle, error) {
 		if err := segment.Shift(m.Offset(start)); err != nil {
 			return nil, err
 		}
-		for _, c := range segment.All() {
-			if key := (cueKey{c.Start, c.End, strings.Join(c.TaggedLines(), "\n")}); !seen[key] {
-				seen[key] = true
-				cues = append(cues, c)
-			}
-		}
+		cues = appendNew(cues, segment, seen)
 	}
-	joined.AddCues(cues...)
+	if err := joined.AddCues(cues...); err != nil {
+		return nil, err
+	}
 	if err := joined.RemoveDuplicateCues(0); err != nil {
 		return nil, err
 	}
 	return joined, nil
+}
+
+// appendNew appends the cues of segment that seen does not hold yet, and records them in seen.
+func appendNew(cues []model.Cue, segment *model.Subtitle, seen map[cueKey]bool) []model.Cue {
+	for _, c := range segment.All() {
+		if key := (cueKey{c.Start, c.End, strings.Join(c.TaggedLines(), "\n")}); !seen[key] {
+			seen[key] = true
+			cues = append(cues, c)
+		}
+	}
+	return cues
 }
 
 // readSegment reads a segment in strict mode and returns it with its map, which is MPEGTS 0 and LOCAL 0 without a header.

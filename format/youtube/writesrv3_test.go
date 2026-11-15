@@ -119,7 +119,9 @@ func TestWriteMovedCueKeepsItsDuration(t *testing.T) {
 
 func fromAnotherFormat(cues ...model.Cue) *model.Subtitle {
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return s
 }
 

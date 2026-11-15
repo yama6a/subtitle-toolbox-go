@@ -174,11 +174,11 @@ func TestWriteAWSTranscribeFromAnotherFormat(t *testing.T) {
 
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataLanguage, "en-GB")
-	s.AddCue(model.Cue{Start: ms(1500), End: ms(3000), Lines: []string{"Good", "morning."}, Speaker: "Anna"})
-	s.AddCue(model.Cue{
+	require.NoError(t, s.AddCue(model.Cue{Start: ms(1500), End: ms(3000), Lines: []string{"Good", "morning."}, Speaker: "Anna"}))
+	require.NoError(t, s.AddCue(model.Cue{
 		Start: ms(4000), End: ms(5000), Lines: []string{"See you."}, Speaker: "Ben",
 		Words: []model.Word{{Text: "See", Start: ms(4000), End: ms(4500)}, {Text: "you.", Start: ms(4500), End: ms(5000)}},
-	})
+	}))
 	want := `{"results":{"transcripts":[{"transcript":"Good morning. See you."}],` +
 		`"speaker_labels":{"speakers":1,"segments":[{"start_time":"4.0","speaker_label":"Ben","end_time":"5.0","items":[` +
 		`{"start_time":"4.0","speaker_label":"Ben","end_time":"4.5"},{"start_time":"4.5","speaker_label":"Ben","end_time":"5.0"}]}]},` +
@@ -195,7 +195,7 @@ func TestWriteAWSTranscribeErrors(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{End: ms(1000), Lines: []string{"text"}, Speaker: "bad \xff"})
+	require.NoError(t, s.AddCue(model.Cue{End: ms(1000), Lines: []string{"text"}, Speaker: "bad \xff"}))
 	_, err := transcript.WriteAWSTranscribe(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
 	require.ErrorIs(t, err, model.ErrUnwritable)
 	require.ErrorIs(t, err, model.ErrInvalidUTF8)

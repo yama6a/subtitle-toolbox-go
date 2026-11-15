@@ -56,7 +56,9 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if lang, ok := languages[strings.ToUpper(gsi.get("LC"))]; ok {
 		s.SetMetadata(model.MetadataLanguage, lang)
 	}
-	parsing.AddParsed(s, rd.cues, rd.comments)
+	if err := parsing.AddParsed(s, rd.cues, rd.comments); err != nil {
+		return nil, nil, err
+	}
 	_ = s.SetFormatData(formatDataKey, rd.fileData(gsi, sets, opts, (len(content)-gsiSize)/ttiSize)) // the data has the shape of the schema
 	return s, st.Warnings(), nil
 }

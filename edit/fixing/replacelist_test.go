@@ -238,9 +238,9 @@ func TestReplaceListEndLinesLookAtTheNextCue(t *testing.T) {
 			next.SetText(tt.next)
 			last := model.Cue{Start: 6 * time.Second, End: 7 * time.Second}
 			last.SetText("Ask mothen")
-			s.AddCue(first)
-			s.AddCue(next)
-			s.AddCue(last)
+			require.NoError(t, s.AddCue(first))
+			require.NoError(t, s.AddCue(next))
+			require.NoError(t, s.AddCue(last))
 
 			opts := only(fixing.RuleReplaceList)
 			opts.ReplaceList = &fixing.ReplaceList{EndLines: rep(" mothen", tt.endTo)}
@@ -287,8 +287,8 @@ func TestReplaceListKeepsTheImageOfAnImageCue(t *testing.T) {
 
 	image := &model.Image{PNG: []byte{1, 2, 3}, Width: 10, Height: 10, ScreenWidth: 720, ScreenHeight: 576}
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Image: image})
-	s.AddCue(model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Lines: []string{"lt gets celd"}, Image: image})
+	require.NoError(t, s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Image: image}))
+	require.NoError(t, s.AddCue(model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Lines: []string{"lt gets celd"}, Image: image}))
 	report, err := fixing.Apply(&s, fixing.Options{
 		Language: "en", ReplaceList: &fixing.ReplaceList{WholeWords: rep("celd", "cold")},
 	})

@@ -80,12 +80,16 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if err != nil {
 		return nil, nil, err
 	}
-	return subtitleOf(st, track, units), st.Warnings(), nil
+	s, err := subtitleOf(st, track, units)
+	if err != nil {
+		return nil, nil, err
+	}
+	return s, st.Warnings(), nil
 }
 
 // subtitleOf returns the image cues of units. A unit without an image adds no cue but still ends the cue before it.
 // A cue never ends before it starts, which a stop delay below the start delay or a later unit with an earlier start would cause.
-func subtitleOf(st *parsing.State, track dvdsub.Track, units []entryUnit) *model.Subtitle {
+func subtitleOf(st *parsing.State, track dvdsub.Track, units []entryUnit) (*model.Subtitle, error) {
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataLanguage, track.ID)
 	for i, eu := range units {
@@ -96,9 +100,11 @@ func subtitleOf(st *parsing.State, track dvdsub.Track, units []entryUnit) *model
 		if i+1 < len(units) {
 			end = min(end, units[i+1].start)
 		}
-		s.AddCue(eu.unit.Cue(eu.time, end))
+		if err := s.AddCue(eu.unit.Cue(eu.time, end)); err != nil {
+			return nil, err
+		}
 	}
-	return s
+	return s, nil
 }
 
 // readUnits decodes the unit of each entry of track. A broken unit fails a strict read, and a lenient read skips it

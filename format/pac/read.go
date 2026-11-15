@@ -100,7 +100,9 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 		return nil, nil, err
 	}
 	s := &model.Subtitle{}
-	parsing.AddParsed(s, rd.cues, nil)
+	if err := parsing.AddParsed(s, rd.cues, nil); err != nil {
+		return nil, nil, err
+	}
 	_ = s.SetFormatData(formatDataKey, rd.fileData(head)) // the data has the shape of the schema
 	return s, rd.st.Warnings(), nil
 }

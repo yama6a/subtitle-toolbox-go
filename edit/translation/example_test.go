@@ -24,7 +24,9 @@ func ExampleApply() {
 	for i, text := range []string{"The train to Basel leaves", "from platform 4 at <b>10:15</b>."} {
 		c := model.Cue{Start: time.Duration(i+1) * time.Second, End: time.Duration(i+2) * time.Second}
 		c.SetText(text)
-		s.AddCue(c)
+		if err := s.AddCue(c); err != nil {
+			panic(err)
+		}
 	}
 
 	report, err := translation.Apply(context.Background(), s, stationEngine{}, "en", "de", translation.Options{})

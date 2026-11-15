@@ -30,8 +30,8 @@ func subtitleWithImages(t *testing.T) *model.Subtitle {
 	last := first.Clone()
 	last.Start, last.End = 6*time.Second, 7*time.Second
 	last.Image.X = 40
-	s.AddCue(model.Cue{Start: 5 * time.Second, End: 5500 * time.Millisecond, Lines: []string{"Text cue"}})
-	s.AddCue(last)
+	require.NoError(t, s.AddCue(model.Cue{Start: 5 * time.Second, End: 5500 * time.Millisecond, Lines: []string{"Text cue"}}))
+	require.NoError(t, s.AddCue(last))
 	return s
 }
 
@@ -97,7 +97,7 @@ func TestRunWithoutImageCuesDoesNotCallTheEngine(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Text"}})
+	require.NoError(t, s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Text"}}))
 	engine := &ocrtest.Engine{}
 
 	report, err := ocr.Apply(t.Context(), s, engine, "")

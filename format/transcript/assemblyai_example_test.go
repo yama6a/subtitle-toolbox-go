@@ -35,10 +35,12 @@ func ExampleReadAssemblyAI() {
 func ExampleWriteAssemblyAI() {
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataLanguage, "en-US")
-	s.AddCue(model.Cue{
+	if err := s.AddCue(model.Cue{
 		Start: 4 * time.Second, End: 5 * time.Second, Lines: []string{"See you."},
 		Words: []model.Word{{Text: "See", Start: 4 * time.Second, End: 4500 * time.Millisecond}, {Text: "you.", Start: 4500 * time.Millisecond, End: 5 * time.Second}},
-	})
+	}); err != nil {
+		panic(err)
+	}
 	if _, err := transcript.WriteAssemblyAI(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}

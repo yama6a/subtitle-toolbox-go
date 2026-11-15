@@ -22,7 +22,9 @@ func fixtureSpans(tb testing.TB, name string) []span {
 
 func subtitle(cues ...model.Cue) *model.Subtitle {
 	var s model.Subtitle
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return &s
 }
 

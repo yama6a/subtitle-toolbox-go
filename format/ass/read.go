@@ -110,7 +110,9 @@ func (rd *reader) read(content string) (*model.Subtitle, error) {
 	if err := s.SetFormatData(formatDataKey, rd.f.data()); err != nil {
 		return nil, fmt.Errorf("%s file data: %w", model.ASS, err)
 	}
-	parsing.AddParsed(s, rd.cues, rd.comments)
+	if err := parsing.AddParsed(s, rd.cues, rd.comments); err != nil {
+		return nil, err
+	}
 	return s, nil
 }
 
