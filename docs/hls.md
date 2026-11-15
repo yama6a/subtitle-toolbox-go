@@ -20,7 +20,7 @@ Each segment starts with a header `X-TIMESTAMP-MAP=LOCAL:00:00:00.000,MPEGTS:900
 
 `hls.Segment(s, opts)` returns a `*hls.Rendition`. It writes no segment yet. `EachSegment` writes one segment at a time and calls a function with its file name and content, so the memory does not grow with the media duration. Each call writes the segments again.
 
-<!-- example: hls/ExampleSegment -->
+<!-- example: format/hls/ExampleSegment -->
 ```go
 var s model.Subtitle
 s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"The ferry leaves at noon."}})
@@ -88,7 +88,7 @@ fmt.Print(string(r.Playlist()))
 
 `hls.Join(segments, hls.JoinOptions{})` reads the segments in playlist order and returns one subtitle. The caller passes the content of each segment. The package fetches nothing and reads no playlist.
 
-<!-- example: hls/ExampleJoin -->
+<!-- example: format/hls/ExampleJoin -->
 ```go
 segments := [][]byte{
 	[]byte("WEBVTT\nX-TIMESTAMP-MAP=LOCAL:00:00:00.000,MPEGTS:900000\n\n00:00:04.000 --> 00:00:06.000\nAll aboard.\n"),

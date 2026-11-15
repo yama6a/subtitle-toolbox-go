@@ -29,7 +29,7 @@ linters:
         - github.com/yama6a/subtitle-toolbox-go/v5/fixing
         - github.com/yama6a/subtitle-toolbox-go/v5/hearingimpaired
         - github.com/yama6a/subtitle-toolbox-go/v5/timing
-        - github.com/yama6a/subtitle-toolbox-go/v5/hls
+        - github.com/yama6a/subtitle-toolbox-go/v5/format/hls
         - github.com/yama6a/subtitle-toolbox-go/v5/validation
         - github.com/yama6a/subtitle-toolbox-go/v5/ocr
         - github.com/yama6a/subtitle-toolbox-go/v5/ocr/*

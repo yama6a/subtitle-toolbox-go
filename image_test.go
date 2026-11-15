@@ -1,4 +1,4 @@
-package imaging_test
+package stbox_test
 
 import (
 	"image"
@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/imaging"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
@@ -35,9 +35,9 @@ func TestEncodePNGThenDecodeGivesTheExactPixels(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			data, err := imaging.EncodePNG(tt.img)
+			data, err := stbox.EncodePNG(tt.img)
 			require.NoError(t, err)
-			got, err := imaging.DecodePNG(data)
+			got, err := stbox.DecodePNG(data)
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, got)
 		})
@@ -47,10 +47,10 @@ func TestEncodePNGThenDecodeGivesTheExactPixels(t *testing.T) {
 func TestDecodeChecksTheSizeOfTheImageData(t *testing.T) {
 	t.Parallel()
 
-	im, err := imaging.NewImage(image.NewNRGBA(image.Rect(0, 0, 4, 3)), 0, 0, 100, 100)
+	im, err := stbox.NewImage(image.NewNRGBA(image.Rect(0, 0, 4, 3)), 0, 0, 100, 100)
 	require.NoError(t, err)
 	im.Width = 5
-	_, err = imaging.Decode(im)
+	_, err = stbox.DecodeImage(im)
 	var invalid *model.InvalidArgumentError
 	require.ErrorAs(t, err, &invalid)
 	assert.Equal(t, "Cannot decode the image: the PNG has 4x3 pixels, but the image data says 5x3.", invalid.Msg)
@@ -59,12 +59,12 @@ func TestDecodeChecksTheSizeOfTheImageData(t *testing.T) {
 func TestEncodePNGAndNewImageReject(t *testing.T) {
 	t.Parallel()
 
-	_, err := imaging.EncodePNG(image.NewNRGBA(image.Rect(0, 0, 0, 5)))
+	_, err := stbox.EncodePNG(image.NewNRGBA(image.Rect(0, 0, 0, 5)))
 	var invalid *model.InvalidArgumentError
 	require.ErrorAs(t, err, &invalid)
 	assert.Equal(t, "Cannot encode a PNG of 0x5 pixels: the width and the height must be at least 1.", invalid.Msg)
 
-	_, err = imaging.NewImage(image.NewNRGBA(image.Rect(0, 0, 7681, 1)), 0, 0, 1920, 1080)
+	_, err = stbox.NewImage(image.NewNRGBA(image.Rect(0, 0, 7681, 1)), 0, 0, 1920, 1080)
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 }
 
@@ -73,9 +73,9 @@ func TestEncodePNGKeepsTheHighBytesOfNRGBA64(t *testing.T) {
 
 	img := image.NewNRGBA64(image.Rect(0, 0, 1, 1))
 	img.SetNRGBA64(0, 0, color.NRGBA64{R: 0x8000, A: 0x0100})
-	data, err := imaging.EncodePNG(img)
+	data, err := stbox.EncodePNG(img)
 	require.NoError(t, err)
-	got, err := imaging.DecodePNG(data)
+	got, err := stbox.DecodePNG(data)
 	require.NoError(t, err)
 	assert.Equal(t, color.NRGBA{R: 0x80, A: 0x01}, got.NRGBAAt(0, 0))
 }

@@ -21,7 +21,7 @@ type layer int
 // The layers of the table in CONTRIBUTING.md. A package imports only packages of a lower layer.
 const (
 	layerLeaf      layer = iota // 0: helpers that import no model type
-	layerModel                  // 1: model and markup
+	layerModel                  // 1: model and model/markup
 	layerModelUser              // 2: helpers that work on model types
 	layerFormat                 // 3
 	layerContainer              // 4
@@ -52,7 +52,7 @@ var layers = map[string]layer{
 	"internal/translationtest":           layerLeaf,
 	"internal/extfallback":               layerModelUser,
 	"format/internal/paragraphs":         layerModelUser,
-	"markup":                             layerModel,
+	"model/markup":                       layerModel,
 	"model":                              layerModel,
 	"format/internal/textblock":          layerModelUser,
 	"format/internal/vtt":                layerModelUser,
@@ -82,21 +82,19 @@ var layers = map[string]layer{
 	"karaoke":                            layerService,
 	"validation":                         layerService,
 	"timing":                             layerService,
-	"imaging":                            layerService,
 	"ocr":                                layerService,
 	"ocr/*":                              layerService,
 	"ocr/auto":                           layerService,
 	"translation":                        layerService,
 	"translation/internal/httppost":      layerService,
 	"translation/*":                      layerService,
-	"hls":                                layerService,
 	"resegment":                          layerService,
 	"internal/cli":                       layerCLI,
 	"cmd/stbox":                          layerCLI,
 }
 
 // profiles lists the format packages that may import another format package, because their format is a profile of it.
-var profiles = map[string]string{"format/itt": "format/ttml"}
+var profiles = map[string]string{"format/itt": "format/ttml", "format/hls": "format/webvtt"}
 
 // engineUsers lists the packages below a service folder that may import engine packages of the same service.
 var engineUsers = map[string][]string{"ocr/auto": {"ocr/glyph", "ocr/tesseract"}}
@@ -239,7 +237,7 @@ func TestCheckImports(t *testing.T) {
 		{
 			name:    "format imports layers 0 to 3 and an allowed module",
 			rel:     "format/srt",
-			imports: []string{modulePath + "/model", modulePath + "/markup", modulePath + "/format/internal/textblock", "golang.org/x/text/encoding"},
+			imports: []string{modulePath + "/model", modulePath + "/model/markup", modulePath + "/format/internal/textblock", "golang.org/x/text/encoding"},
 		},
 		{
 			name:    "format imports the allowed regexp2 v2 module",
@@ -274,9 +272,9 @@ func TestCheckImports(t *testing.T) {
 			want:    []string{"model imports ., which is not in a lower layer"},
 		},
 		{
-			name:    "model imports markup",
+			name:    "model imports model/markup",
 			rel:     "model",
-			imports: []string{modulePath + "/markup"},
+			imports: []string{modulePath + "/model/markup"},
 		},
 		{
 			name:    "format imports another format",

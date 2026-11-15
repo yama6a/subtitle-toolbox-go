@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model/markup"
 )
 
 func ExampleStripAllTags() {

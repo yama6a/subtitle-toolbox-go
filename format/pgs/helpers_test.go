@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/pgs"
-	"github.com/yama6a/subtitle-toolbox-go/v5/imaging"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
@@ -207,7 +207,7 @@ func read(t *testing.T, content []byte, common model.CommonReadOptions) (*model.
 func pixel(t *testing.T, c model.Cue, x, y int) uint32 {
 	t.Helper()
 
-	img, err := imaging.Decode(*c.Image)
+	img, err := stbox.DecodeImage(*c.Image)
 	require.NoError(t, err)
 	p := img.NRGBAAt(x, y)
 	return uint32(p.R)<<24 | uint32(p.G)<<16 | uint32(p.B)<<8 | uint32(p.A)

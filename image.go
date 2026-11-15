@@ -1,5 +1,4 @@
-// Package imaging decodes and builds the bitmaps of image cues.
-package imaging
+package stbox
 
 import (
 	"bytes"
@@ -26,8 +25,8 @@ func DecodePNG(data []byte) (*image.NRGBA, error) {
 	return img, nil
 }
 
-// Decode returns the pixels of the image of a cue. The PNG size must equal im.Width x im.Height.
-func Decode(im model.Image) (*image.NRGBA, error) {
+// DecodeImage returns the pixels of the image of a cue. The PNG size must equal im.Width x im.Height.
+func DecodeImage(im Image) (*image.NRGBA, error) {
 	img, err := DecodePNG(im.PNG)
 	if err != nil {
 		return nil, err
@@ -59,15 +58,15 @@ func EncodePNG(img image.Image) ([]byte, error) {
 
 // NewImage encodes img and places it at x, y on a screen of screenWidth x screenHeight pixels.
 // The error is an *model.InvalidArgumentError when img or the sizes break the limits of model.Image.
-func NewImage(img image.Image, x, y, screenWidth, screenHeight int) (model.Image, error) {
+func NewImage(img image.Image, x, y, screenWidth, screenHeight int) (Image, error) {
 	b := img.Bounds()
-	im := model.Image{X: x, Y: y, Width: b.Dx(), Height: b.Dy(), ScreenWidth: screenWidth, ScreenHeight: screenHeight}
+	im := Image{X: x, Y: y, Width: b.Dx(), Height: b.Dy(), ScreenWidth: screenWidth, ScreenHeight: screenHeight}
 	if err := im.Validate(); err != nil {
-		return model.Image{}, err
+		return Image{}, err
 	}
 	data, err := EncodePNG(img)
 	if err != nil {
-		return model.Image{}, err
+		return Image{}, err
 	}
 	im.PNG = data
 	return im, nil
