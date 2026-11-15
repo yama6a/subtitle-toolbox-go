@@ -17,7 +17,7 @@ Copied from https://github.com/yama6a/subtitle-toolbox-php/tree/c0adecd5375820d5
 | `temple_thai.pac` | Written for this repository by `../generate-fixtures.php`. The Thai code page | MIT |
 | `train_cyrillic.pac` | Written for this repository by `../generate-fixtures.php`. The Cyrillic code page | MIT |
 | `weather_greek.pac` | Written for this repository by `../generate-fixtures.php`. The Greek code page with accents | MIT |
-| `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name. First written by `tests/files/generate-read-goldens.php` of subtitle-toolbox-php. `go test -run TestReadGoldens -update` rewrites them | MIT |
+| `expected/*.json` | Generated for this repository. Expected parse result of the file with the same name. First written by `tests/files/generate-read-goldens.php` of subtitle-toolbox-php. `go test ./internal/conformance -run TestReadGoldens -update` rewrites them | MIT |
 | `expected/*.to.*` | Written by the Go write golden tests with -update, reviewed by hand | MIT |
 
 No permissive real PAC files are known. The script writes each file in the shape that the PAC code of Subtitle Edit reads and writes, with the character bytes of its code tables, see THIRD_PARTY_NOTICES.md.

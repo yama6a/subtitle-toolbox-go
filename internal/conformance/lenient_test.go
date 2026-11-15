@@ -1,4 +1,4 @@
-package stbox_test
+package conformance_test
 
 import (
 	"bytes"
@@ -12,8 +12,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 )
 
 // lenientRow is the expected result of a lenient and of a strict read of one fixture in testdata/lenient.
@@ -56,7 +56,7 @@ type warningRow struct {
 func TestLenientFixtures(t *testing.T) {
 	t.Parallel()
 
-	paths, err := filepath.Glob(filepath.Join("testdata", "lenient", "expected", "*.json"))
+	paths, err := filepath.Glob(testfiles.Path(t, "lenient/expected/*.json"))
 	require.NoError(t, err)
 	require.NotEmpty(t, paths)
 	for _, path := range paths {
@@ -65,8 +65,7 @@ func TestLenientFixtures(t *testing.T) {
 			t.Parallel()
 
 			row := readLenientRow(t, path)
-			content, err := os.ReadFile(filepath.Join("testdata", "lenient", file))
-			require.NoError(t, err)
+			content := testfiles.Read(t, "lenient/"+file)
 			if !row.Format.CanRead() {
 				t.Skipf("needs the %s reader", row.Format)
 			}
