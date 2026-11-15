@@ -15,10 +15,10 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/youtube"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v5/karaoke"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/karaoke"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
-	"github.com/yama6a/subtitle-toolbox-go/v5/resegment"
-	"github.com/yama6a/subtitle-toolbox-go/v5/speakers"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/resegment"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/speakers"
 )
 
 // libraryCall is the library call that a CLI call of TestConvertTranscriptOptions must equal.

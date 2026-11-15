@@ -8,7 +8,7 @@ import (
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
-	"github.com/yama6a/subtitle-toolbox-go/v5/resegment"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/resegment"
 )
 
 func structureGroup() group {

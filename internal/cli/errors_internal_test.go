@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
-	"github.com/yama6a/subtitle-toolbox-go/v5/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
 )
 
 func TestMessage(t *testing.T) {

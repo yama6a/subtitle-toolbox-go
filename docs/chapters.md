@@ -1,6 +1,6 @@
 # Chapters
 
-A chapter list names the parts of a video or a podcast episode. The library reads one into a `*model.Subtitle` whose cues are chapters. Package `format/chapters` holds the readers and writers of 4 formats: YouTube, Podcasting 2.0, FFmpeg metadata and OGM. Package `validation` holds the YouTube check.
+A chapter list names the parts of a video or a podcast episode. The library reads one into a `*model.Subtitle` whose cues are chapters. Package `format/chapters` holds the readers and writers of 4 formats: YouTube, Podcasting 2.0, FFmpeg metadata and OGM. Package `inspect/validation` holds the YouTube check.
 
 The same chapter in each format:
 

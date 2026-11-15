@@ -7,7 +7,7 @@ import (
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v5/profanity"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/profanity"
 )
 
 func maskingGroup() group {

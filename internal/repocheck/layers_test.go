@@ -20,84 +20,18 @@ type layer int
 
 // The layers of the table in CONTRIBUTING.md. A package imports only packages of a lower layer.
 const (
-	layerLeaf      layer = iota // 0: helpers that import no model type
-	layerModel                  // 1: model and model/markup
-	layerModelUser              // 2: helpers that work on model types
-	layerFormat                 // 3
-	layerContainer              // 4
-	layerService                // 5: the root, the services and the packages below a service folder
-	layerCLI                    // 6
+	layerBase      layer = iota // 0: model, model/markup and the helpers in internal folders
+	layerFormat                 // 1
+	layerContainer              // 2
+	layerTop                    // 3: the root and every package under edit/ and inspect/
+	layerCLI                    // 4
 )
-
-// layers holds the layer of each package. A key that ends in "/*" covers each package one folder below it.
-var layers = map[string]layer{
-	"internal/timecode":                  layerLeaf,
-	"internal/decimal":                   layerLeaf,
-	"format/internal/formatdata":         layerModelUser,
-	"internal/grapheme":                  layerLeaf,
-	"format/internal/ssatag":             layerLeaf,
-	"internal/textenc":                   layerLeaf,
-	"format/internal/xmlraw":             layerLeaf,
-	"format/internal/codepage":           layerLeaf,
-	"internal/caption/cea608":            layerLeaf,
-	"internal/caption/cea708":            layerLeaf,
-	"container/mkv/internal/ebml":        layerLeaf,
-	"internal/orderedjson":               layerLeaf,
-	"internal/markupcore":                layerLeaf,
-	"internal/speakerlabel":              layerLeaf,
-	"container/mpegts/internal/teletext": layerLeaf,
-	"internal/linewrap":                  layerLeaf,
-	"internal/testfiles":                 layerLeaf,
-	"internal/formattest":                layerModelUser,
-	"internal/translationtest":           layerLeaf,
-	"internal/extfallback":               layerModelUser,
-	"format/internal/paragraphs":         layerModelUser,
-	"model/markup":                       layerModel,
-	"model":                              layerModel,
-	"format/internal/textblock":          layerModelUser,
-	"format/internal/vtt":                layerModelUser,
-	"format/internal/position":           layerModelUser,
-	"internal/parsing":                   layerModelUser,
-	"internal/writing":                   layerModelUser,
-	"internal/caption":                   layerModelUser,
-	"format/internal/ttmldoc":            layerModelUser,
-	"format/internal/wordgroup":          layerModelUser,
-	"internal/bitmap":                    layerModelUser,
-	"internal/bitmap/dvdsub":             layerModelUser,
-	"internal/bitmap/displayset":         layerModelUser,
-	"container/mpegts/internal/arib":     layerModelUser,
-	"internal/bitmap/dvbsub":             layerModelUser,
-	"internal/readingspeed":              layerModelUser,
-	"format/*":                           layerFormat,
-	"container/*":                        layerContainer,
-	".":                                  layerService,
-	"stats":                              layerService,
-	"hearingimpaired":                    layerService,
-	"speakers":                           layerService,
-	"fixing":                             layerService,
-	"profanity":                          layerService,
-	"refsync":                            layerService,
-	"diff":                               layerService,
-	"dual":                               layerService,
-	"karaoke":                            layerService,
-	"validation":                         layerService,
-	"timing":                             layerService,
-	"ocr":                                layerService,
-	"ocr/*":                              layerService,
-	"ocr/auto":                           layerService,
-	"translation":                        layerService,
-	"translation/internal/httppost":      layerService,
-	"translation/*":                      layerService,
-	"resegment":                          layerService,
-	"internal/cli":                       layerCLI,
-	"cmd/stbox":                          layerCLI,
-}
 
 // profiles lists the format packages that may import another format package, because their format is a profile of it.
 var profiles = map[string]string{"format/itt": "format/ttml", "format/hls": "format/webvtt"}
 
 // engineUsers lists the packages below a service folder that may import engine packages of the same service.
-var engineUsers = map[string][]string{"ocr/auto": {"ocr/glyph", "ocr/tesseract"}}
+var engineUsers = map[string][]string{"edit/ocr/auto": {"edit/ocr/glyph", "edit/ocr/tesseract"}}
 
 // allowedModules are the modules that CLAUDE.md allows outside tests.
 var allowedModules = []string{
@@ -144,7 +78,7 @@ func TestPackageLayers(t *testing.T) {
 func checkImports(rel string, imports []string) []string {
 	own, ok := layerOf(rel)
 	if !ok {
-		return []string{rel + " has no layer. Add it to the layer table in CONTRIBUTING.md and in layers_test.go"}
+		return []string{rel + " is outside the folders of the layer table in CONTRIBUTING.md"}
 	}
 	var problems []string
 	for _, imp := range imports {
@@ -175,35 +109,65 @@ func checkImports(rel string, imports []string) []string {
 }
 
 func sameLayerAllowed(l layer, rel, dep string) bool {
-	if l == layerService {
-		return serviceImportAllowed(rel, dep)
+	switch l {
+	case layerTop:
+		return topImportAllowed(rel, dep)
+	case layerFormat, layerContainer:
+		return false
 	}
-	return l != layerFormat && l != layerContainer
+	return true
 }
 
-// serviceImportAllowed reports whether a layer 5 package may import another layer 5 package.
-// Only a package below a service folder may do so, and only for its own service.
-func serviceImportAllowed(rel, dep string) bool {
+// topImportAllowed reports whether a layer 3 package may import another layer 3 package.
+// A package may import a helper below internal/ of its own group, or its own service and the helpers of that service.
+func topImportAllowed(rel, dep string) bool {
 	if rel == "." || dep == "." {
 		return false
 	}
-	service, below, _ := strings.Cut(rel, "/")
-	depService, _, _ := strings.Cut(dep, "/")
-	if below == "" || service != depService {
+	group, _, _ := strings.Cut(rel, "/")
+	depGroup, _, _ := strings.Cut(dep, "/")
+	if group != depGroup {
+		return false
+	}
+	if strings.HasPrefix(dep, group+"/internal/") {
+		return true
+	}
+	service := servicePath(rel)
+	if rel == service || servicePath(dep) != service {
 		return false
 	}
 	return dep == service || strings.HasPrefix(dep, service+"/internal/") || slices.Contains(engineUsers[rel], dep)
 }
 
+// servicePath returns the first 2 path elements of rel, such as edit/ocr.
+func servicePath(rel string) string {
+	parts := strings.SplitN(rel, "/", 3)
+	if len(parts) < 2 {
+		return rel
+	}
+	return parts[0] + "/" + parts[1]
+}
+
 func layerOf(rel string) (layer, bool) {
-	if l, ok := layers[rel]; ok {
-		return l, true
+	parent := path.Dir(rel)
+	switch {
+	case rel == "internal/cli" || rel == "cmd/stbox":
+		return layerCLI, true
+	case rel == "." || strings.HasPrefix(rel, "edit/") || strings.HasPrefix(rel, "inspect/"):
+		return layerTop, true
+	case rel == "model" || strings.HasPrefix(rel, "model/") || strings.HasPrefix(rel, "internal/") || strings.HasPrefix(rel, "format/internal/") || isContainerInternal(rel):
+		return layerBase, true
+	case parent == "format":
+		return layerFormat, true
+	case parent == "container":
+		return layerContainer, true
 	}
-	if rel == "." {
-		return 0, false
-	}
-	l, ok := layers[path.Dir(rel)+"/*"]
-	return l, ok
+	return 0, false
+}
+
+func isContainerInternal(rel string) bool {
+	parts := strings.Split(rel, "/")
+	return len(parts) >= 4 && parts[0] == "container" && parts[2] == "internal"
 }
 
 func isStandard(imp string) bool {
@@ -235,7 +199,7 @@ func TestCheckImports(t *testing.T) {
 			imports: []string{"io", modulePath + "/format/srt", modulePath + "/model", modulePath + "/internal/textenc"},
 		},
 		{
-			name:    "format imports layers 0 to 3 and an allowed module",
+			name:    "format imports layer 0 and an allowed module",
 			rel:     "format/srt",
 			imports: []string{modulePath + "/model", modulePath + "/model/markup", modulePath + "/format/internal/textblock", "golang.org/x/text/encoding"},
 		},
@@ -251,30 +215,30 @@ func TestCheckImports(t *testing.T) {
 			want:    []string{"format/srt imports github.com/dlclark/regexp2, which is not an allowed module"},
 		},
 		{
-			name:    "leaf helper imports another leaf helper",
-			rel:     "internal/textenc",
-			imports: []string{modulePath + "/format/internal/codepage"},
-		},
-		{
-			name:    "helper on model types imports another helper",
-			rel:     "format/internal/vtt",
-			imports: []string{modulePath + "/format/internal/textblock", modulePath + "/internal/parsing", modulePath + "/model"},
-		},
-		{
-			name:    "CLI imports everything",
-			rel:     "cmd/stbox",
-			imports: []string{modulePath, modulePath + "/internal/cli", modulePath + "/stats", modulePath + "/format/srt"},
-		},
-		{
-			name:    "model imports the root",
-			rel:     "model",
-			imports: []string{modulePath},
-			want:    []string{"model imports ., which is not in a lower layer"},
+			name:    "base helper imports model and another helper",
+			rel:     "internal/parsing",
+			imports: []string{modulePath + "/model", modulePath + "/internal/textenc"},
 		},
 		{
 			name:    "model imports model/markup",
 			rel:     "model",
 			imports: []string{modulePath + "/model/markup"},
+		},
+		{
+			name:    "base helper imports a format",
+			rel:     "internal/parsing",
+			imports: []string{modulePath + "/format/srt"},
+			want:    []string{"internal/parsing imports format/srt, which is not in a lower layer"},
+		},
+		{
+			name:    "itt imports ttml",
+			rel:     "format/itt",
+			imports: []string{modulePath + "/format/ttml"},
+		},
+		{
+			name:    "hls imports webvtt",
+			rel:     "format/hls",
+			imports: []string{modulePath + "/format/webvtt"},
 		},
 		{
 			name:    "format imports another format",
@@ -283,84 +247,88 @@ func TestCheckImports(t *testing.T) {
 			want:    []string{"format/webvtt imports format/srt, which is not in a lower layer"},
 		},
 		{
-			name:    "service imports the root",
-			rel:     "stats",
-			imports: []string{modulePath},
-			want:    []string{"stats imports ., which is not in a lower layer"},
+			name:    "container imports a format",
+			rel:     "container/mkv",
+			imports: []string{modulePath + "/format/srt"},
 		},
 		{
-			name:    "engine and test helper import ocr",
-			rel:     "ocr/ocrtest",
-			imports: []string{modulePath + "/ocr", modulePath + "/model"},
+			name:    "container imports another container",
+			rel:     "container/mkv",
+			imports: []string{modulePath + "/container/mp4"},
+			want:    []string{"container/mkv imports container/mp4, which is not in a lower layer"},
 		},
 		{
-			name:    "chooser imports ocr and an engine",
-			rel:     "ocr/auto",
-			imports: []string{modulePath + "/ocr", modulePath + "/ocr/glyph"},
-		},
-		{
-			name:    "ocr imports its test helper",
-			rel:     "ocr",
-			imports: []string{modulePath + "/ocr/ocrtest"},
-			want:    []string{"ocr imports ocr/ocrtest, which is not in a lower layer"},
-		},
-		{
-			name:    "engine imports another engine",
-			rel:     "ocr/glyph",
-			imports: []string{modulePath + "/ocr/tesseract"},
-			want:    []string{"ocr/glyph imports ocr/tesseract, which is not in a lower layer"},
-		},
-		{
-			name:    "engine imports the service, its HTTP helper and model",
-			rel:     "translation/deepl",
-			imports: []string{modulePath + "/translation", modulePath + "/translation/internal/httppost", modulePath + "/model"},
-		},
-		{
-			name:    "HTTP helper imports an engine",
-			rel:     "translation/internal/httppost",
-			imports: []string{modulePath + "/translation/deepl"},
-			want:    []string{"translation/internal/httppost imports translation/deepl, which is not in a lower layer"},
-		},
-		{
-			name:    "engine imports another engine of translation",
-			rel:     "translation/deepl",
-			imports: []string{modulePath + "/translation/google"},
-			want:    []string{"translation/deepl imports translation/google, which is not in a lower layer"},
-		},
-		{
-			name:    "ocr imports an engine",
-			rel:     "ocr",
-			imports: []string{modulePath + "/ocr/glyph"},
-			want:    []string{"ocr imports ocr/glyph, which is not in a lower layer"},
-		},
-		{
-			name:    "translation imports ocr",
-			rel:     "translation",
-			imports: []string{modulePath + "/ocr"},
-			want:    []string{"translation imports ocr, which is not in a lower layer"},
-		},
-		{
-			name:    "test helper imports translation",
-			rel:     "internal/translationtest",
-			imports: []string{modulePath + "/translation"},
-			want:    []string{"internal/translationtest imports translation, which is not in a lower layer"},
+			name:    "CLI imports everything",
+			rel:     "cmd/stbox",
+			imports: []string{modulePath, modulePath + "/internal/cli", modulePath + "/inspect/stats", modulePath + "/format/srt"},
 		},
 		{
 			name:    "root imports a service",
 			rel:     ".",
-			imports: []string{modulePath + "/stats"},
-			want:    []string{". imports stats, which is not in a lower layer"},
+			imports: []string{modulePath + "/inspect/stats"},
+			want:    []string{". imports inspect/stats, which is not in a lower layer"},
 		},
 		{
-			name:    "helper on model types imports a format",
-			rel:     "format/internal/textblock",
-			imports: []string{modulePath + "/format/srt"},
-			want:    []string{"format/internal/textblock imports format/srt, which is not in a lower layer"},
+			name:    "service imports the root",
+			rel:     "inspect/stats",
+			imports: []string{modulePath},
+			want:    []string{"inspect/stats imports ., which is not in a lower layer"},
 		},
 		{
-			name:    "container imports a format",
-			rel:     "container/mkv",
-			imports: []string{modulePath + "/format/srt"},
+			name:    "service imports another service",
+			rel:     "edit/fixing",
+			imports: []string{modulePath + "/edit/speakers"},
+			want:    []string{"edit/fixing imports edit/speakers, which is not in a lower layer"},
+		},
+		{
+			name:    "edit imports inspect",
+			rel:     "edit/resegment",
+			imports: []string{modulePath + "/inspect/stats"},
+			want:    []string{"edit/resegment imports inspect/stats, which is not in a lower layer"},
+		},
+		{
+			name:    "service imports a group helper",
+			rel:     "edit/speakers",
+			imports: []string{modulePath + "/edit/internal/speakerlabel"},
+		},
+		{
+			name:    "inspect service imports its group helper",
+			rel:     "inspect/stats",
+			imports: []string{modulePath + "/inspect/internal/readingspeed"},
+		},
+		{
+			name:    "group helper imports a service",
+			rel:     "edit/internal/speakerlabel",
+			imports: []string{modulePath + "/edit/speakers"},
+			want:    []string{"edit/internal/speakerlabel imports edit/speakers, which is not in a lower layer"},
+		},
+		{
+			name:    "engine imports its service and its HTTP helper",
+			rel:     "edit/translation/deepl",
+			imports: []string{modulePath + "/edit/translation", modulePath + "/edit/translation/internal/httppost"},
+		},
+		{
+			name:    "engine imports another engine",
+			rel:     "edit/ocr/glyph",
+			imports: []string{modulePath + "/edit/ocr/tesseract"},
+			want:    []string{"edit/ocr/glyph imports edit/ocr/tesseract, which is not in a lower layer"},
+		},
+		{
+			name:    "service imports its engine",
+			rel:     "edit/ocr",
+			imports: []string{modulePath + "/edit/ocr/glyph"},
+			want:    []string{"edit/ocr imports edit/ocr/glyph, which is not in a lower layer"},
+		},
+		{
+			name:    "chooser imports the engines",
+			rel:     "edit/ocr/auto",
+			imports: []string{modulePath + "/edit/ocr", modulePath + "/edit/ocr/glyph"},
+		},
+		{
+			name:    "test helper imports a service",
+			rel:     "internal/translationtest",
+			imports: []string{modulePath + "/edit/translation"},
+			want:    []string{"internal/translationtest imports edit/translation, which is not in a lower layer"},
 		},
 		{
 			name:    "test module outside tests",
@@ -370,13 +338,13 @@ func TestCheckImports(t *testing.T) {
 		},
 		{
 			name: "package without a layer",
-			rel:  "internal/misc",
-			want: []string{"internal/misc has no layer. Add it to the layer table in CONTRIBUTING.md and in layers_test.go"},
+			rel:  "misc",
+			want: []string{"misc is outside the folders of the layer table in CONTRIBUTING.md"},
 		},
 		{
 			name: "format pattern covers one folder only",
 			rel:  "format/srt/extra",
-			want: []string{"format/srt/extra has no layer. Add it to the layer table in CONTRIBUTING.md and in layers_test.go"},
+			want: []string{"format/srt/extra is outside the folders of the layer table in CONTRIBUTING.md"},
 		},
 	}
 	for _, tt := range tests {

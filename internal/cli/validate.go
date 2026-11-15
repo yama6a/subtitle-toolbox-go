@@ -10,7 +10,7 @@ import (
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
-	"github.com/yama6a/subtitle-toolbox-go/v5/validation"
+	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/validation"
 )
 
 // defaultVideoFPS is the video frame rate of the netflix-en gap without --video-fps and --fps.

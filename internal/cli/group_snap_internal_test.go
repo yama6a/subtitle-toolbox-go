@@ -13,7 +13,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/microdvd"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
-	"github.com/yama6a/subtitle-toolbox-go/v5/timing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/timing"
 )
 
 func snapDir(t *testing.T) string {

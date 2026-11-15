@@ -2,7 +2,7 @@
 
 `translation.Translate` translates the cue text of a subtitle with a machine translation engine. It keeps the times and the tags. It translates a sentence as a whole, also when the sentence runs over 2 cues. Example: `testdata/translation/own_station.srt` has the cues `The train to Basel leaves` and `from platform 4 at <b>10:15</b>.`. The engine gets one text, `The train to Basel leaves from platform 4 at <x1>10:15</x1>.`. The runner cuts the translation back into 2 cues in proportion to their characters, at a space, and puts `<b>` back in place of `<x1>`.
 
-<!-- example: translation/ExampleTranslate -->
+<!-- example: edit/translation/ExampleTranslate -->
 ```go
 s := &model.Subtitle{}
 for i, text := range []string{"The train to Basel leaves", "from platform 4 at <b>10:15</b>."} {
@@ -32,7 +32,7 @@ fmt.Println(language, len(report.Warnings))
 
 A `translation.Engine` has one method. `Translate(ctx, texts, source, target)` returns one translation for each text, in the same order. The texts hold placeholders and entities, which the translations must keep, see [Placeholders](#placeholders). An empty `source` lets the service detect the language. A caller can plug in any translation service by implementing the interface, see [Write an engine](#write-an-engine).
 
-The engines of the library live in `translation/<engine>`. Package `translation` itself has no engine.
+The engines of the library live in `edit/translation/<engine>`. Package `edit/translation` itself has no engine.
 
 ## Translate
 
@@ -232,9 +232,9 @@ You translate subtitle text from {source} to {target}. The user sends a JSON arr
 
 ## DeepL engine
 
-Package `translation/deepl` is a client of the DeepL API v2 on `net/http`. It has no vendor SDK. Example: `deepl.New(deepl.Options{APIKey: key})` gives an engine for `translation.Translate`. The runner sends `The train to Basel leaves from platform 4 at <x1>10:15</x1>.` and DeepL answers with the German sentence and `<x1>10:15</x1>` in place.
+Package `edit/translation/deepl` is a client of the DeepL API v2 on `net/http`. It has no vendor SDK. Example: `deepl.New(deepl.Options{APIKey: key})` gives an engine for `translation.Translate`. The runner sends `The train to Basel leaves from platform 4 at <x1>10:15</x1>.` and DeepL answers with the German sentence and `<x1>10:15</x1>` in place.
 
-<!-- example: translation/deepl/ExampleNew -->
+<!-- example: edit/translation/deepl/ExampleNew -->
 ```go
 srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, `{"translations": [{"text": "Hallo <x1>Welt</x1>"}]}`)
@@ -284,9 +284,9 @@ Every message replaces the key with `***`. Example: status 500 with the body `{"
 
 ## Google Cloud Translation
 
-The package `translation/google` is a client of Cloud Translation Basic (v2) with an API key. It uses `net/http` only.
+The package `edit/translation/google` is a client of Cloud Translation Basic (v2) with an API key. It uses `net/http` only.
 
-<!-- example: translation/google/ExampleNew -->
+<!-- example: edit/translation/google/ExampleNew -->
 ```go
 server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, `{"data": {"translations": [{"translatedText": "Le train part &agrave; <x1>10:15</x1>."}]}}`)

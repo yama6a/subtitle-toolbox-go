@@ -147,7 +147,7 @@ Speech-to-text output often splits a sentence into cues of less than 1 s. Take `
 
 Broadcasters and streaming services want cue times on video frames, out of the way of shot changes, and gaps that do not flicker. At 24 fps, a cue starts at 62.708 s, 5 frames after a shot change at 62.5 s, so `timing.Apply` moves it to 62.5 s. A cue ends at 69.75 s, 6 frames before a shot change at 70 s, so it ends 2 frames before it, at 69.917 s. A gap of 7 frames between 2 cues shrinks to 2 frames. The library reads no video. The caller passes the shot change times, for example from an FFmpeg log. `stbox convert` runs the same code with the [`snap` group](cli.md#snap).
 
-<!-- example: timing/ExampleApply -->
+<!-- example: edit/timing/ExampleApply -->
 ```go
 at := func(start, end float64) model.Cue {
 	return model.Cue{
@@ -353,9 +353,9 @@ for _, c := range s.All() {
 
 ## Resegmenting
 
-Speech-to-text tools write long segments, often one per breath. A subtitle needs short cues that fit 2 lines. Package `resegment` has 2 functions. `resegment.SplitLong` splits each cue that breaks a limit. `resegment.ByWords` drops the cue boundaries and builds new cues from the timed words in `Cue.Words`.
+Speech-to-text tools write long segments, often one per breath. A subtitle needs short cues that fit 2 lines. Package `edit/resegment` has 2 functions. `resegment.SplitLong` splits each cue that breaks a limit. `resegment.ByWords` drops the cue boundaries and builds new cues from the timed words in `Cue.Words`.
 
-<!-- example: resegment/ExampleSplitLong -->
+<!-- example: edit/resegment/ExampleSplitLong -->
 ```go
 var s model.Subtitle
 s.AddCue(model.Cue{
@@ -413,7 +413,7 @@ A **piece** is the unit that a break can separate. A piece is a word of the text
 - **Not changed**: image cues and cues without words.
 - **Comments**: a comment before a source cue moves before the new cue that holds the first word of that source cue.
 
-<!-- example: resegment/ExampleByWords -->
+<!-- example: edit/resegment/ExampleByWords -->
 ```go
 var first, second model.Cue
 first.Start, first.End = 0, 2*time.Second

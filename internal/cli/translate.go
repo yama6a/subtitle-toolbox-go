@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v5/translation"
-	"github.com/yama6a/subtitle-toolbox-go/v5/translation/deepl"
-	"github.com/yama6a/subtitle-toolbox-go/v5/translation/google"
-	"github.com/yama6a/subtitle-toolbox-go/v5/translation/openai"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation/deepl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation/google"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation/openai"
 )
 
 const defaultOpenAIBaseURL = "https://api.openai.com/v1"
