@@ -58,7 +58,7 @@ func apply(s *model.Subtitle, opts Options, timeout time.Duration) (Report, erro
 	if err := opts.Validate(); err != nil {
 		return Report{}, err
 	}
-	f := filter{re: compile(opts.Words, timeout), mask: opts.maskFunc()}
+	f := filter{re: compile(opts.Words, timeout), mask: opts.masker()}
 	edited := make([]model.Cue, s.Len())
 	changed := make([]bool, s.Len())
 	var ranges []MuteRange
@@ -147,10 +147,7 @@ func quoteMeta(s string) string {
 	return b.String()
 }
 
-func (o Options) maskFunc() func(string) string {
-	if o.MaskFunc != nil {
-		return o.MaskFunc
-	}
+func (o Options) masker() func(string) string {
 	switch o.Mask {
 	case MaskFirstLetter:
 		return func(w string) string {
