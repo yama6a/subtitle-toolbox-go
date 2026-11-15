@@ -212,3 +212,17 @@ func ExampleImage_Validate() {
 	fmt.Println(im.Validate())
 	// Output: stbox: invalid argument: Cannot create a cue image of 7681x1 pixels on a screen of 7681x1 pixels: an image of 7681x1 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total.
 }
+
+func ExampleCommonWriteOptions_Validate() {
+	err := model.CommonWriteOptions{LineEnding: 2}.Validate()
+	fmt.Println(err)
+	// Output:
+	// stbox: invalid argument: CommonWriteOptions.LineEnding: The line ending 2 is unknown.
+}
+
+func ExampleCueLimits_ValidateAt() {
+	err := model.CueLimits{MaxLinesPerCue: -1}.ValidateAt("resegment.Options.Limits")
+	fmt.Println(err)
+	// Output:
+	// stbox: invalid argument: resegment.Options.Limits.MaxLinesPerCue: The maximum characters per line and the maximum lines must be at least 1, got 42 and -1.
+}

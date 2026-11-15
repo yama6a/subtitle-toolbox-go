@@ -71,7 +71,7 @@ type SubRipWriter struct {
 // NewSubRipWriter returns a writer that writes the BOM to w at once, if the options ask for it.
 // The first return value is nil when the options are invalid.
 func NewSubRipWriter(w io.Writer, common model.CommonWriteOptions, _ srt.WriteOptions) (*SubRipWriter, error) {
-	if err := validateCommon(common); err != nil {
+	if err := common.Validate(); err != nil {
 		return nil, err
 	}
 	sw := &SubRipWriter{sink: sink{w: w, f: model.SubRip, common: common}}
@@ -119,7 +119,7 @@ type WebVTTWriter struct {
 // header holds the header text, header lines, STYLE and REGION blocks, as WebVTTReader.Header gives them.
 // Nil writes the signature line only. The first return value is nil when the options are invalid.
 func NewWebVTTWriter(w io.Writer, common model.CommonWriteOptions, _ webvtt.WriteOptions, header *model.Data) (*WebVTTWriter, error) {
-	if err := validateCommon(common); err != nil {
+	if err := common.Validate(); err != nil {
 		return nil, err
 	}
 	ww := &WebVTTWriter{sink: sink{w: w, f: model.WebVTT, common: common}}
