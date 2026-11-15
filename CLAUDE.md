@@ -31,7 +31,8 @@ container/<name>/ The readers of the subtitle tracks of video files: mkv, mp4, m
 edit/             Packages that change a subtitle: hearingimpaired, speakers, fixing, profanity, refsync, dual,
                   karaoke, resegment, timing, ocr, translation. The OCR engines live in edit/ocr/<engine>
                   (glyph, tesseract, and the fake ocrtest), the translation engines in
-                  edit/translation/<engine> (deepl, google, openai). edit/internal/ holds helpers that only
+                  edit/translation/<engine> (deepl, google, openai), and the HTTP helper of the engines in
+                  edit/translation/internal/httppost. edit/internal/ holds helpers that only
                   edit/ packages use: speakerlabel
 inspect/          Packages that read subtitles and report, and never change them: stats, diff, validation.
                   inspect/internal/ holds helpers that only inspect/ packages use: readingspeed

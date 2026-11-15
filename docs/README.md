@@ -32,7 +32,7 @@ Start with the [README](../README.md) for the install steps and a first call. Ea
 | [translation.md](translation.md) | package translation: the engine interface, Apply, the placeholders, the sentence splitter, the warnings and how to write an engine |
 | [hls.md](hls.md) | package `format/hls` and `stbox hls`: the WebVTT segments, the playlist, the timestamp map and the joiner |
 | [cli.md](cli.md) | the `stbox` command: install, arguments, input and output files, `convert`, `info`, `validate`, `sync`, `diff`, `dual`, `hls`, `translate`, `formats` and exit codes |
-| [compatibility.md](compatibility.md) | what a release may change, and what stays the same for the whole 4.x line |
+| [compatibility.md](compatibility.md) | what a release may change, and what stays the same for the whole 5.x line |
 | [upgrade-2.0.md](upgrade-2.0.md) | the breaks of 2.0 with the old call and the new call, the new types, and the conversions that change output |
 | [upgrade-3.0.md](upgrade-3.0.md) | the breaks of 3.0 with the old call and the new call |
 | [upgrade-4.0.md](upgrade-4.0.md) | the breaks of 4.0 with the old call and the new call |
