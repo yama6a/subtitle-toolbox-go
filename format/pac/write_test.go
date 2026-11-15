@@ -2,7 +2,6 @@ package pac_test
 
 import (
 	"bytes"
-	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -197,15 +197,9 @@ func TestWriteIgnoresBadStoredData(t *testing.T) {
 func TestWriteFailsOnAWriterError(t *testing.T) {
 	t.Parallel()
 
-	_, err := pac.Write(failWriter{}, subtitle(t, nil, cue(0, time.Second, model.Position{}, "A")), model.CommonWriteOptions{}, pac.WriteOptions{})
-	require.ErrorIs(t, err, errFail)
+	_, err := pac.Write(formattest.ErrWriter{}, subtitle(t, nil, cue(0, time.Second, model.Position{}, "A")), model.CommonWriteOptions{}, pac.WriteOptions{})
+	require.ErrorIs(t, err, formattest.ErrWrite)
 }
-
-var errFail = errors.New("disk full")
-
-type failWriter struct{}
-
-func (failWriter) Write([]byte) (int, error) { return 0, errFail }
 
 func TestRealFilesRoundTrip(t *testing.T) {
 	t.Parallel()

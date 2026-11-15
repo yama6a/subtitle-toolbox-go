@@ -5,6 +5,7 @@ import (
 	"compress/zlib"
 	"encoding/binary"
 	"io"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -39,14 +40,12 @@ func sizeBytes(size uint64) []byte {
 	return b[8-length:]
 }
 
-func cat(parts ...[]byte) []byte { return bytes.Join(parts, nil) }
-
 func element(id uint32, data []byte) []byte {
-	return cat(idBytes(id), sizeBytes(uint64(len(data))), data)
+	return slices.Concat(idBytes(id), sizeBytes(uint64(len(data))), data)
 }
 
 func unknownSizeElement(id uint32, data []byte) []byte {
-	return cat(idBytes(id), []byte{1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}, data)
+	return slices.Concat(idBytes(id), []byte{1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}, data)
 }
 
 func uintElement(id uint32, v uint64) []byte {
@@ -58,12 +57,12 @@ func uintElement(id uint32, v uint64) []byte {
 }
 
 func ebmlHeader(docType string) []byte {
-	return element(0x1A45DFA3, cat(uintElement(0x4286, 1), uintElement(0x42F7, 1), uintElement(0x42F2, 4),
+	return element(0x1A45DFA3, slices.Concat(uintElement(0x4286, 1), uintElement(0x42F7, 1), uintElement(0x42F2, 4),
 		uintElement(0x42F3, 8), element(0x4282, []byte(docType)), uintElement(0x4287, 4), uintElement(0x4285, 2)))
 }
 
 func info(scale uint64, writingApp string) []byte {
-	return element(idInfo, cat(uintElement(0x2AD7B1, scale), element(0x4D80, []byte("fixture")), element(0x5741, []byte(writingApp))))
+	return element(idInfo, slices.Concat(uintElement(0x2AD7B1, scale), element(0x4D80, []byte("fixture")), element(0x5741, []byte(writingApp))))
 }
 
 type trackFields struct {
@@ -75,12 +74,12 @@ type trackFields struct {
 }
 
 func trackEntry(t trackFields) []byte {
-	data := cat(uintElement(0xD7, t.number), uintElement(0x73C5, t.number*1000), uintElement(0x83, t.kind), element(0x86, []byte(t.codecID)))
+	data := slices.Concat(uintElement(0xD7, t.number), uintElement(0x73C5, t.number*1000), uintElement(0x83, t.kind), element(0x86, []byte(t.codecID)))
 	if t.codecPrivate != nil {
-		data = cat(data, element(0x63A2, t.codecPrivate))
+		data = slices.Concat(data, element(0x63A2, t.codecPrivate))
 	}
 	if t.encodings != nil {
-		data = cat(data, element(0x6D80, t.encodings))
+		data = slices.Concat(data, element(0x6D80, t.encodings))
 	}
 	return element(0xAE, data)
 }
@@ -89,60 +88,60 @@ func subTrack(number uint64, codecID string) []byte {
 	return trackEntry(trackFields{number: number, kind: trackSub, codecID: codecID})
 }
 
-func tracks(entries ...[]byte) []byte { return element(idTracks, cat(entries...)) }
+func tracks(entries ...[]byte) []byte { return element(idTracks, slices.Concat(entries...)) }
 
 // compression writes a frame ContentEncoding with an algorithm: 0 zlib, 1 bzlib, 2 lzo or 3 header stripping.
 func compression(algo uint64) []byte {
-	return element(0x6240, cat(uintElement(0x5031, 0), uintElement(0x5032, 1), uintElement(0x5033, 0), element(0x5034, uintElement(0x4254, algo))))
+	return element(0x6240, slices.Concat(uintElement(0x5031, 0), uintElement(0x5032, 1), uintElement(0x5033, 0), element(0x5034, uintElement(0x4254, algo))))
 }
 
 func blockHead(track uint64, rel int16, flags byte) []byte {
-	return cat(sizeBytes(track), binary.BigEndian.AppendUint16(nil, uint16(rel)), []byte{flags})
+	return slices.Concat(sizeBytes(track), binary.BigEndian.AppendUint16(nil, uint16(rel)), []byte{flags})
 }
 
 func simpleBlock(track uint64, rel int16, data string, lacing byte) []byte {
-	return element(0xA3, cat(blockHead(track, rel, 0x80|lacing), []byte(data)))
+	return element(0xA3, slices.Concat(blockHead(track, rel, 0x80|lacing), []byte(data)))
 }
 
 // blockGroup writes a BlockGroup. A negative duration leaves the BlockDuration out.
 func blockGroup(track uint64, rel int16, data string, duration int64) []byte {
-	group := element(0xA1, cat(blockHead(track, rel, 0), []byte(data)))
+	group := element(0xA1, slices.Concat(blockHead(track, rel, 0), []byte(data)))
 	if duration >= 0 {
-		group = cat(group, uintElement(0x9B, uint64(duration)))
+		group = slices.Concat(group, uintElement(0x9B, uint64(duration)))
 	}
 	return element(0xA0, group)
 }
 
 func cluster(timestamp uint64, blocks ...[]byte) []byte {
-	return element(idCluster, cat(uintElement(0xE7, timestamp), cat(blocks...)))
+	return element(idCluster, slices.Concat(uintElement(0xE7, timestamp), slices.Concat(blocks...)))
 }
 
 // cues writes a Cues element with one point per block: time, track, cluster position and block position.
 func cues(points [][4]uint64) []byte {
 	var data []byte
 	for _, p := range points {
-		data = cat(data, element(0xBB, cat(uintElement(0xB3, p[0]),
-			element(0xB7, cat(uintElement(0xF7, p[1]), uintElement(0xF1, p[2]), uintElement(0xF0, p[3]))))))
+		data = slices.Concat(data, element(0xBB, slices.Concat(uintElement(0xB3, p[0]),
+			element(0xB7, slices.Concat(uintElement(0xF7, p[1]), uintElement(0xF1, p[2]), uintElement(0xF0, p[3]))))))
 	}
 	return element(idCues, data)
 }
 
 func frameCountTags(uid uint64, frames string) []byte {
-	return element(idTags, element(0x7373, cat(element(0x63C0, uintElement(0x63C5, uid)),
-		element(0x67C8, cat(element(0x45A3, []byte("NUMBER_OF_FRAMES")), element(0x4487, []byte(frames)))))))
+	return element(idTags, element(0x7373, slices.Concat(element(0x63C0, uintElement(0x63C5, uid)),
+		element(0x67C8, slices.Concat(element(0x45A3, []byte("NUMBER_OF_FRAMES")), element(0x4487, []byte(frames)))))))
 }
 
 // seekHead writes each position in 8 bytes, so the size of the SeekHead does not depend on the positions.
 func seekHead(positions [][2]uint64) []byte {
 	var data []byte
 	for _, p := range positions {
-		data = cat(data, element(0x4DBB, cat(element(0x53AB, idBytes(uint32(p[0]))), element(0x53AC, binary.BigEndian.AppendUint64(nil, p[1])))))
+		data = slices.Concat(data, element(0x4DBB, slices.Concat(element(0x53AB, idBytes(uint32(p[0]))), element(0x53AC, binary.BigEndian.AppendUint64(nil, p[1])))))
 	}
 	return element(0x114D9B74, data)
 }
 
 func segmentFile(docType string, segment ...[]byte) []byte {
-	return cat(ebmlHeader(docType), element(idSegment, cat(segment...)))
+	return slices.Concat(ebmlHeader(docType), element(idSegment, slices.Concat(segment...)))
 }
 
 func openFile(tb testing.TB, b []byte) *mkv.File {

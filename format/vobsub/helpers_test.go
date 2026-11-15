@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image/color"
 	"image/png"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -105,9 +106,9 @@ func (p picture) unit() []byte {
 	params = append(params, 0x04, byte(p.contrasts[3]<<4|p.contrasts[2]), byte(p.contrasts[1]<<4|p.contrasts[0]))
 	params = append(params, 0x05, byte(p.x>>4), byte(p.x&0x0F<<4|x2>>8), byte(x2), byte(p.y>>4), byte(p.y&0x0F<<4|y2>>8), byte(y2))
 	params = append(params, 0x06)
-	pixels := slicesConcat(top, bottom)
+	pixels := slices.Concat(top, bottom)
 	if p.bottomFirst {
-		pixels = slicesConcat(bottom, top)
+		pixels = slices.Concat(bottom, top)
 		params = append(params, u16(4+len(bottom), 4)...)
 	} else {
 		params = append(params, u16(4, 4+len(top))...)
@@ -129,12 +130,8 @@ func (p picture) unit() []byte {
 		control = append(control, body...)
 		offset = next
 	}
-	unit := slicesConcat(pixels, control)
-	return slicesConcat(u16(4+len(unit), 4+len(pixels)), unit)
-}
-
-func slicesConcat(parts ...[]byte) []byte {
-	return bytes.Join(parts, nil)
+	unit := slices.Concat(pixels, control)
+	return slices.Concat(u16(4+len(unit), 4+len(pixels)), unit)
 }
 
 // packet is a unit for the writer of the .sub content.
@@ -152,8 +149,8 @@ const packHeader = "\x00\x00\x01\xBA\x44\x00\x04\x00\x04\x01\x01\x89\xC3\xF8"
 
 // pes returns a private stream 1 PES packet of the sub-stream with the payload.
 func pes(substream int, payload []byte) []byte {
-	body := slicesConcat([]byte{0x81, 0x00, 0x00, byte(substream)}, payload)
-	return slicesConcat([]byte("\x00\x00\x01\xBD"), u16(len(body)), body)
+	body := slices.Concat([]byte{0x81, 0x00, 0x00, byte(substream)}, payload)
+	return slices.Concat([]byte("\x00\x00\x01\xBD"), u16(len(body)), body)
 }
 
 // program returns the .sub content of the packets and the file position of each. Each packet starts with a pack
@@ -248,6 +245,6 @@ func hex9(n int) string {
 
 // rawUnit returns a unit of one control sequence with the commands. The command FF ends the sequence.
 func rawUnit(commands ...byte) []byte {
-	body := slicesConcat(u16(0, 0), commands, []byte{0xFF})
-	return slicesConcat(u16(4+len(body), 4), body)
+	body := slices.Concat(u16(0, 0), commands, []byte{0xFF})
+	return slices.Concat(u16(4+len(body), 4), body)
 }

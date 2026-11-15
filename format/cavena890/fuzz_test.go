@@ -2,35 +2,20 @@ package cavena890_test
 
 import (
 	"bytes"
-	"errors"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/cavena890"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func FuzzRead(f *testing.F) {
-	entries, err := os.ReadDir(testfiles.Path(f, "cavena890/real"))
-	if err != nil {
-		f.Fatal(err)
-	}
-	for _, e := range entries {
-		if filepath.Ext(e.Name()) == ".890" {
-			f.Add(testfiles.Read(f, "cavena890/real/"+e.Name()))
-		}
-	}
+	formattest.AddSeeds(f, "cavena890/real/*.890")
 
 	f.Fuzz(func(t *testing.T, content []byte) {
 		for _, lenient := range []bool{false, true} {
-			s, _, err := cavena890.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, cavena890.ReadOptions{})
-			if err != nil {
-				var perr *model.ParseError
-				if !errors.As(err, &perr) {
-					t.Fatalf("Read returned %v, which is no *ParseError", err)
-				}
+			s, warnings, err := cavena890.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, cavena890.ReadOptions{})
+			if !formattest.CheckRead(t, s, warnings, err) {
 				continue
 			}
 			var out bytes.Buffer
