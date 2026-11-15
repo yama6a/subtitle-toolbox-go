@@ -4,24 +4,15 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/pgs"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func FuzzRead(f *testing.F) {
-	files, err := filepath.Glob(testfiles.Path(f, "pgs/*.sup"))
-	if err != nil {
-		f.Fatal(err)
-	}
-	for _, name := range files {
-		f.Add(testfiles.Read(f, "pgs/"+filepath.Base(name)))
-	}
+	formattest.AddSeeds(f, "pgs/*.sup")
 	valid := new(builder).end(0).Bytes()
 	f.Add(append([]byte("XG"), valid[2:]...))
 	f.Add(append(bytes.Clone(valid), "junk"...))
@@ -32,15 +23,10 @@ func FuzzRead(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, content []byte) {
 		for _, lenient := range []bool{false, true} {
-			s, _, err := pgs.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, pgs.ReadOptions{})
-			if err != nil {
-				var perr *model.ParseError
-				if !errors.As(err, &perr) {
-					t.Fatalf("Read returned %v, which is no *ParseError", err)
-				}
+			s, warnings, err := pgs.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, pgs.ReadOptions{})
+			if !formattest.CheckRead(t, s, warnings, err) {
 				continue
 			}
-			var previous time.Duration
 			for i, c := range s.All() {
 				if c.Image == nil || len(c.Lines) != 0 {
 					t.Fatalf("cue %d is no image cue without lines", i)
@@ -48,10 +34,9 @@ func FuzzRead(f *testing.F) {
 				if err := c.Image.Validate(); err != nil {
 					t.Fatalf("cue %d has an invalid image: %v", i, err)
 				}
-				if c.Start < previous || c.End < c.Start || c.Start%time.Millisecond != 0 || c.End%time.Millisecond != 0 || c.End >= timecode.MaxTime {
-					t.Fatalf("cue %d has the times %v to %v", i, c.Start, c.End)
+				if c.End < c.Start {
+					t.Fatalf("cue %d ends before it starts", i)
 				}
-				previous = c.Start
 			}
 			if _, err := pgs.Write(io.Discard, s, model.CommonWriteOptions{}, pgs.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
 				t.Fatalf("Write returned %v, which is no ErrUnwritable", err)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"slices"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -23,17 +24,17 @@ const mkvmergeApp = "mkvmerge v99.0 ('Buka') 64-bit"
 // clusters in listed. A NUMBER_OF_FRAMES tag follows them, unless frames is "". The SeekHead points to Cues and Tags.
 // replaced holds cluster data in place of cluster N.
 func cuedFile(writingApp string, listed []int, frames string, replaced map[int][]byte) []byte {
-	head := cat(info(1000000, writingApp), tracks(
+	head := slices.Concat(info(1000000, writingApp), tracks(
 		trackEntry(trackFields{number: 1, kind: trackVideo, codecID: "V_UNCOMPRESSED"}), subTrack(2, "S_TEXT/UTF8")))
 	position := uint64(len(seekHead([][2]uint64{{0x1C53BB6B, 0}, {0x1254C367, 0}})) + len(head))
 	var clusters []byte
 	var points [][4]uint64
 	for n := 1; n <= 3; n++ {
 		ts := uint64(n * 2000)
-		video := cat(uintElement(0xE7, ts), simpleBlock(1, 0, "\x00\x01", 0))
+		video := slices.Concat(uintElement(0xE7, ts), simpleBlock(1, 0, "\x00\x01", 0))
 		data := replaced[n]
 		if data == nil {
-			data = cat(video, blockGroup(2, 500, "Cue "+string(rune('0'+n))+".", 1000))
+			data = slices.Concat(video, blockGroup(2, 500, "Cue "+string(rune('0'+n))+".", 1000))
 		}
 		for _, l := range listed {
 			if l == n {
@@ -41,7 +42,7 @@ func cuedFile(writingApp string, listed []int, frames string, replaced map[int][
 			}
 		}
 		c := element(idCluster, data)
-		clusters = cat(clusters, c)
+		clusters = slices.Concat(clusters, c)
 		position += uint64(len(c))
 	}
 	cuesBytes := cues(points)
@@ -56,8 +57,8 @@ func cuedFile(writingApp string, listed []int, frames string, replaced map[int][
 func TestCuesFastPath(t *testing.T) {
 	t.Parallel()
 
-	unlisted := cat(uintElement(0xE7, 4000), element(0xA3, []byte("\x82\x00")))
-	videoOnly := cat(uintElement(0xE7, 4000), simpleBlock(1, 0, "\x00\x01", 0), simpleBlock(1, 1, "\x00\x01", 0))
+	unlisted := slices.Concat(uintElement(0xE7, 4000), element(0xA3, []byte("\x82\x00")))
+	videoOnly := slices.Concat(uintElement(0xE7, 4000), simpleBlock(1, 0, "\x00\x01", 0), simpleBlock(1, 1, "\x00\x01", 0))
 	cue := func(n int) cueRow {
 		start := time.Duration(n*2000+500) * time.Millisecond
 		return cueRow{start, start + time.Second, "Cue " + string(rune('0'+n)) + "."}
@@ -135,7 +136,7 @@ func TestExtractErrors(t *testing.T) {
 	t.Run("EBML header of another DocType", func(t *testing.T) {
 		t.Parallel()
 
-		b := cat(ebmlHeader("other"), element(idSegment, nil))
+		b := slices.Concat(ebmlHeader("other"), element(idSegment, nil))
 		_, err := mkv.Open(bytes.NewReader(b), int64(len(b)))
 		var pe *model.ParseError
 		require.ErrorAs(t, err, &pe)
@@ -203,9 +204,9 @@ func TestExtractReadsNoVideoData(t *testing.T) {
 	t.Parallel()
 
 	const videoSize = 64 << 20
-	videoHead := cat(idBytes(0xA3), sizeBytes(videoSize+4), blockHead(1, 0, 0x80))
-	cl := unknownSizeElement(idCluster, cat(uintElement(0xE7, 0)))
-	prefix := cat(ebmlHeader("matroska"), unknownSizeElement(idSegment, cat(info(1000000, "x"),
+	videoHead := slices.Concat(idBytes(0xA3), sizeBytes(videoSize+4), blockHead(1, 0, 0x80))
+	cl := unknownSizeElement(idCluster, slices.Concat(uintElement(0xE7, 0)))
+	prefix := slices.Concat(ebmlHeader("matroska"), unknownSizeElement(idSegment, slices.Concat(info(1000000, "x"),
 		tracks(trackEntry(trackFields{number: 1, kind: trackVideo, codecID: "V_UNCOMPRESSED"}), subTrack(2, "S_TEXT/UTF8")), cl, videoHead)))
 	suffix := blockGroup(2, 100, "The bus leaves soon.", 800)
 	r := &countingReader{prefix: prefix, suffix: suffix, from: int64(len(prefix)), to: int64(len(prefix)) + videoSize, filler: repeatReader{n: videoSize, v: 0x55}}
