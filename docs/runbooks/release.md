@@ -212,7 +212,7 @@ Replace `1.0.0` with the version of the release.
 
 1. Open the `release` workflow run of the merge commit.
 
-   Expected: `version`, `archives`, `image` and `release` are green, and `version` prints `next tag v1.0.0`.
+   Expected: `version`, `archives`, `image`, `image-tesseract`, `release` and `homebrew` are green, and `version` prints `next tag v1.0.0`. A red `homebrew` job with an authentication error means the secret `HOMEBREW_TAP_TOKEN` is missing or expired. It is a fine-grained token with contents write on yama6a/homebrew-tap only.
 
 2. View the release.
 
@@ -271,7 +271,15 @@ Replace `1.0.0` with the version of the release.
 
    Expected: the docs show, and the licence reads MIT. pkg.go.dev hides the docs when it does not detect a redistributable licence.
 
-9. For a major release, edit the release notes. Put a hand-written block above the generated notes. It names the formats and the commands of the line, the 3 install forms, and links `docs/compatibility.md` at the tag. For N of 2 or more, it links `docs/upgrade-N.0.md` at the tag too, and shows `go get github.com/yama6a/subtitle-toolbox-go/vN@vN.0.0`.
+9. Check the Homebrew formula.
+
+   ```bash
+   gh api repos/yama6a/homebrew-tap/contents/Formula/stbox.rb --jq .content | base64 -d | grep -c 'v1.0.0/'
+   ```
+
+   Expected: `4`. The test workflow of the tap installs and tests the formula on macOS and Linux after each update.
+
+10. For a major release, edit the release notes. Put a hand-written block above the generated notes. It names the formats and the commands of the line, the 4 install forms, and links `docs/compatibility.md` at the tag. For N of 2 or more, it links `docs/upgrade-N.0.md` at the tag too, and shows `go get github.com/yama6a/subtitle-toolbox-go/vN@vN.0.0`.
 
    Write the block to `block.md`. Then run:
 

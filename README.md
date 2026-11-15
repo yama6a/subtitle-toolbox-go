@@ -6,6 +6,12 @@ A Go library and command line tool that reads, edits and writes subtitle files.
 
 ```sh
 go get github.com/yama6a/subtitle-toolbox-go/v4
+```
+
+The command line tool `stbox`:
+
+```sh
+brew install yama6a/tap/stbox
 go install github.com/yama6a/subtitle-toolbox-go/v4/cmd/stbox@latest
 ```
 
