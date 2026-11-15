@@ -14,7 +14,7 @@ import (
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
 	"github.com/yama6a/subtitle-toolbox-go/v5/fixing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v5/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model/markup"
 	"github.com/yama6a/subtitle-toolbox-go/v5/ocr"
 	"github.com/yama6a/subtitle-toolbox-go/v5/ocr/glyph"
 )

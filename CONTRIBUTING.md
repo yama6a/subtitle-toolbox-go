@@ -14,11 +14,11 @@ A package imports only packages of a lower layer. Every layer may also import th
 | Layer | Packages | May import |
 |---:|:--- |:--- |
 | 0 | helpers that import no model type. In `internal/`: `markupcore`, `speakerlabel`, `linewrap`, `timecode`, `grapheme`, `decimal`, `textenc`, `extfallback`, `orderedjson`, `caption/cea608`, `caption/cea708`, and the test helpers `testfiles` and `translationtest`. In `format/internal/`: `codepage`, `xmlraw`, `ssatag`. Below the containers: `container/mkv/internal/ebml`, `container/mpegts/internal/teletext` | other layer 0 packages |
-| 1 | `model`, `markup` | layer 0. `model` imports `markup` |
+| 1 | `model`, `model/markup` | layer 0. `model` imports `model/markup` |
 | 2 | helpers that work on model types. In `internal/`: `parsing`, `writing`, `readingspeed`, `formattest`, `caption`, `bitmap`, `bitmap/displayset`, `bitmap/dvbsub`, `bitmap/dvdsub`. In `format/internal/`: `formatdata`, `paragraphs`, `ttmldoc`, `wordgroup`, `textblock`, `vtt`, `position`. Below the containers: `container/mpegts/internal/arib` | layers 0 to 2. Go rejects an import cycle |
-| 3 | `format/<name>` | layers 0 to 2. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML. Other shared code goes to `format/internal/` or `internal/` |
+| 3 | `format/<name>` | layers 0 to 2. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML or HLS of WebVTT. Other shared code goes to `format/internal/` or `internal/` |
 | 4 | `container/<name>` | layers 0 to 3. A container returns cues, so it calls the format readers |
-| 5 | root `stbox`, the services `stats`, `hearingimpaired`, `speakers`, `fixing`, `profanity`, `refsync`, `diff`, `dual`, `karaoke`, `validation`, `timing`, `imaging`, `hls`, `resegment`, `ocr` and `translation`, and the packages below a service folder: `ocr/glyph`, `ocr/tesseract`, `ocr/auto`, the test helper `ocr/ocrtest`, `translation/deepl`, `translation/google`, `translation/openai` and `translation/internal/httppost` | layers 0 to 4. The root and a service never import each other. A service never imports another service. A package below a service folder imports only its service and the `internal/` packages of that service. `ocr/auto` also imports the OCR engines |
+| 5 | root `stbox`, the services `stats`, `hearingimpaired`, `speakers`, `fixing`, `profanity`, `refsync`, `diff`, `dual`, `karaoke`, `validation`, `timing`, `resegment`, `ocr` and `translation`, and the packages below a service folder: `ocr/glyph`, `ocr/tesseract`, `ocr/auto`, the test helper `ocr/ocrtest`, `translation/deepl`, `translation/google`, `translation/openai` and `translation/internal/httppost` | layers 0 to 4. The root and a service never import each other. A service never imports another service. A package below a service folder imports only its service and the `internal/` packages of that service. `ocr/auto` also imports the OCR engines |
 | 6 | `internal/cli`, `cmd/stbox` | everything |
 
 ### Format packages
@@ -36,6 +36,8 @@ func Detect(content []byte) bool
 - **Files**: `<name>.go` holds the package doc, the options, the report and `Detect`. `read.go` holds `Read` and `write.go` holds `Write`.
 - **Other formats**: a reader ignores the option fields of other formats, so one `ReadOptions` value serves a batch of mixed files.
 - **Format data**: an option wins over stored format data, and stored format data wins over the format default.
+
+`format/hls` is the one exception. HLS delivers a WebVTT track as many segment files, so it has `Segment` and `Join` instead of `Read` and `Write`, and no registry row.
 
 A format package keeps its package doc, `ReadOptions`, `WriteOptions`, `WriteReport`, `Validate` and `Detect` in `<name>.go`, `Read` in `read.go` and `Write` in `write.go`. Other files hold one topic each. `chapters` and `transcript` hold several formats, so they have one file per format.
 

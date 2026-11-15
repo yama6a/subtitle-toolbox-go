@@ -15,9 +15,9 @@ This file covers how the repo is built. The GitHub issues hold the behaviour of 
 The package map.
 
 ```
-*.go           Root package stbox: the facade (Load, Parse, Write, Detect), aliases, format registry
+*.go           Root package stbox: the facade (Load, Parse, Write, Detect), aliases, format registry, PNG helpers of image cues (image.go)
 model/         Subtitle, Cue, format facts table, common options, shared errors
-markup/        Inline tag model and its helpers
+model/markup/  Inline tag model and its helpers
 format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microdvd, mpl2,
                tmplayer, mpsub, subviewer, qttext, sprucestl, dcp, lrc, csv, itt, stboxjson, plaintext, pgs, chapters, transcript, youtube,
                cavena890, ebustl, mcc, pac, scc, vobsub
@@ -29,8 +29,7 @@ ocr/           The 3.x service that reads the text of image cues with an OCR eng
 translation/   The service that translates cue text with a machine translation engine. Its HTTP helper is translation/internal/httppost, the engines live in translation/<engine>. Layer 5, see CONTRIBUTING.md
 validation/    The 2.x service that checks a subtitle against rules. It follows the same layer rule
 timing/        The 2.x service that moves cue times to shot changes and frames. Same layer rule
-imaging/       The 3.x public helpers that decode and build the PNG bitmaps of image cues. Same layer rule
-hls/           The service that cuts a subtitle into HLS WebVTT segments and joins segments. Same layer rule
+format/hls/    The package that cuts a subtitle into HLS WebVTT segments and joins segments. It has no Read and Write
 resegment/     The 4.x service that splits long cues and builds cues from word timings. Same layer rule
 internal/      Helpers that more than one top-level folder uses: caption (with caption/cea608 and caption/cea708),
                bitmap (with bitmap/displayset, bitmap/dvbsub and bitmap/dvdsub), markupcore, speakerlabel, linewrap,

@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/pgs"
-	"github.com/yama6a/subtitle-toolbox-go/v5/imaging"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
@@ -28,7 +28,7 @@ func solid(t *testing.T, start, end float64, x, y, w int, c color.NRGBA) model.C
 	for i := 0; i < len(img.Pix); i += 4 {
 		img.Pix[i], img.Pix[i+1], img.Pix[i+2], img.Pix[i+3] = c.R, c.G, c.B, c.A
 	}
-	im, err := imaging.NewImage(img, x, y, 1920, 1080)
+	im, err := stbox.NewImage(img, x, y, 1920, 1080)
 	require.NoError(t, err)
 	return model.Cue{Start: seconds(start), End: seconds(end), Image: &im}
 }
@@ -133,7 +133,7 @@ func TestWriteSegments(t *testing.T) {
 		v := byte(i / 4 * 7 % 251)
 		noise.Pix[i], noise.Pix[i+1], noise.Pix[i+2], noise.Pix[i+3] = v, v, 0, 255
 	}
-	im, err := imaging.NewImage(noise, 0, 0, 1920, 1080)
+	im, err := stbox.NewImage(noise, 0, 0, 1920, 1080)
 	require.NoError(t, err)
 	var objects []segment
 	for _, s := range segments(t, writeCues(t, model.Cue{Start: time.Second, End: 2 * time.Second, Image: &im})) {
@@ -254,7 +254,7 @@ func TestWriteUnwritable(t *testing.T) {
 func cueKey(t *testing.T, c model.Cue) []any {
 	t.Helper()
 
-	img, err := imaging.Decode(*c.Image)
+	img, err := stbox.DecodeImage(*c.Image)
 	require.NoError(t, err)
 	return []any{
 		c.Start, c.End, c.Forced, c.Position.Alignment, c.Image.X, c.Image.Y, c.Image.Width, c.Image.Height,

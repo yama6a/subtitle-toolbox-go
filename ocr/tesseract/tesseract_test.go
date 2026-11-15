@@ -23,8 +23,8 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/pgs"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v5/markup"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model/markup"
 	"github.com/yama6a/subtitle-toolbox-go/v5/ocr"
 	"github.com/yama6a/subtitle-toolbox-go/v5/ocr/tesseract"
 )

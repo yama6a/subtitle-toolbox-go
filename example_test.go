@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"image"
+	"image/color"
 	"io/fs"
 	"net/http"
 	"net/http/httptest"
@@ -949,4 +951,35 @@ func ExampleFormats() {
 	// podcast-chapters [json]
 	// podcast-transcript [json]
 	// youtube-chapters [txt]
+}
+
+func ExampleNewImage() {
+	img := image.NewNRGBA(image.Rect(0, 0, 4, 2))
+	im, err := stbox.NewImage(img, 100, 900, 1920, 1080)
+	fmt.Println(im.X, im.Y, im.Width, im.Height, im.ScreenWidth, im.ScreenHeight, err)
+	// Output: 100 900 4 2 1920 1080 <nil>
+}
+
+func ExampleEncodePNG() {
+	img := image.NewNRGBA(image.Rect(0, 0, 1, 1))
+	img.SetNRGBA(0, 0, color.NRGBA{R: 255, A: 128})
+	data, err := stbox.EncodePNG(img)
+	fmt.Println(string(data[1:4]), err)
+	// Output: PNG <nil>
+}
+
+func ExampleDecodePNG() {
+	img := image.NewNRGBA(image.Rect(0, 0, 1, 1))
+	img.SetNRGBA(0, 0, color.NRGBA{R: 255, G: 128, B: 1, A: 64})
+	data, _ := stbox.EncodePNG(img)
+	got, err := stbox.DecodePNG(data)
+	fmt.Println(got.NRGBAAt(0, 0), err)
+	// Output: {255 128 1 64} <nil>
+}
+
+func ExampleDecodeImage() {
+	im, _ := stbox.NewImage(image.NewNRGBA(image.Rect(0, 0, 3, 2)), 0, 0, 720, 576)
+	got, err := stbox.DecodeImage(im)
+	fmt.Println(got.Bounds().Dx(), got.Bounds().Dy(), err)
+	// Output: 3 2 <nil>
 }

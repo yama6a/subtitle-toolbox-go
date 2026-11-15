@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v5/hls"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/hls"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 )
 

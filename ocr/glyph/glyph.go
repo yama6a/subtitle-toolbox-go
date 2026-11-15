@@ -10,8 +10,8 @@ import (
 	glyphocr "github.com/yama6a/go-glyph-ocr"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap"
-	"github.com/yama6a/subtitle-toolbox-go/v5/markup"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model/markup"
 	"github.com/yama6a/subtitle-toolbox-go/v5/ocr"
 )
 
