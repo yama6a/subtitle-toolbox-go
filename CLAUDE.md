@@ -32,7 +32,7 @@ timing/        The 2.x service that moves cue times to shot changes and frames. 
 imaging/       The 3.x public helpers that decode and build the PNG bitmaps of image cues. Same layer rule
 hls/           The service that cuts a subtitle into HLS WebVTT segments and joins segments. Same layer rule
 resegment/     The 4.x service that splits long cues and builds cues from word timings. Same layer rule
-internal/      Helpers: repocheck, caption, cea608, cea708, codepage, markupcore, hilabels, readingspeed, teletext, linewrap, timecode, textenc, extfallback, grapheme, ssatag, intkey, stringlist, xmlraw, ebml, orderedjson, jsondata, wordgroup, paragraphs, blocks, subrip,
+internal/      Helpers: repocheck, conformance, caption, cea608, cea708, codepage, markupcore, hilabels, readingspeed, teletext, linewrap, timecode, textenc, extfallback, grapheme, ssatag, intkey, stringlist, xmlraw, ebml, orderedjson, jsondata, wordgroup, paragraphs, blocks, subrip,
                vtt, position, parsing, writing, ttmlwrite, bitmap, displayset, dvbsub, arib, dvdsub, cli, and the test helpers testfiles, golden and translationtest
 cmd/stbox/     The CLI main. Wiring, no business logic
 testdata/      All fixtures and goldens, one folder per topic. Packages read
@@ -62,7 +62,7 @@ make smoke   # run the smoke test on this machine's archive in dist/
 - **No logging in the library.** It returns warnings and reports. Only `cmd/stbox` prints, to stderr, as plain messages. No zap.
 - **Durations.** Every time is a `time.Duration`. Every parser and setter rounds it to whole milliseconds.
 - **Cue order.** A `Subtitle` always holds its cues in start order.
-- **Read goldens.** They are Go goldens. `go test -run TestReadGoldens -update` rewrites them. Review each diff by hand.
+- **Read goldens.** They are Go goldens. `go test ./internal/conformance -run TestReadGoldens -update` rewrites them. Review each diff by hand.
 - **Test text.** Right-to-left and CJK text lives in testdata files, never in Go string literals. `bidichk` and `gosmopolitan` fail on it.
 - **Regular expressions.** Use `regexp`. Use `github.com/dlclark/regexp2/v2` only where a pattern needs lookaround or back references, and for user-supplied patterns. Always set `regexp2.Regexp.MatchTimeout`, because `regexp` has no timeout and regexp2 matches can run without limit.
 - **Files.** The CLI never overwrites a file.
@@ -86,8 +86,8 @@ make smoke   # run the smoke test on this machine's archive in dist/
 - Table-driven.
 - Black-box `package x_test`. Only `*_internal_test.go` files use `package x`, for unexported helpers.
 - Fixtures come from real or upstream data, never from invented data.
-- **Read goldens**: `<folder>/real/expected/<file>.json`, Go's own. `readgoldens_test.go` reads each real file and compares canonical JSON. A format issue adds its folder row and its per-file read options there. `go test -run TestReadGoldens -update` rewrites a golden that differs. Review each diff by hand.
-- **Write goldens**: Go's own, in `writegoldens_test.go` or the test of a format package. A round trip without a golden must equal its input after `golden.Normalize`. The package declares `var update = flag.Bool("update", false, "rewrite the write golden files")`. `make golden` rewrites them.
+- **Read goldens**: `<folder>/real/expected/<file>.json`, Go's own. `internal/conformance/readgoldens_test.go` reads each real file and compares canonical JSON. A format issue adds its folder row and its per-file read options there. `go test ./internal/conformance -run TestReadGoldens -update` rewrites a golden that differs. Review each diff by hand.
+- **Write goldens**: Go's own, in `internal/conformance/writegoldens_test.go` or the test of a format package. A round trip without a golden must equal its input after `golden.Normalize`. The package declares `var update = flag.Bool("update", false, "rewrite the write golden files")`. `make golden` rewrites them.
 - **Fuzz targets**: `FuzzRead` in `fuzz_test.go` of each format package, `FuzzDetect` in the root package.
   - Seeds: every file of the format's testdata folders, plus the short inputs of the table tests.
   - Each input reads once strict and once lenient, with zero options. A format that cannot read without a setting sets it, for example the MicroDVD frame rate 25.

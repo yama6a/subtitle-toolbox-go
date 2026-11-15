@@ -6,6 +6,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -51,7 +52,7 @@ func Apply(s *model.Subtitle, opts Options) (Report, error) {
 	}
 	lo, hi := opts.offsets()
 	r := find(s, opts.Reference, params{
-		lo: seconds(lo.Milliseconds()), hi: seconds(hi.Milliseconds()),
+		lo: timecode.FloatSeconds(lo), hi: timecode.FloatSeconds(hi),
 		noScale: opts.NoScale, maxSplits: opts.MaxSplits, splitPenalty: opts.splitPenalty(),
 	})
 	if err := apply(s, r.Segments); err != nil {

@@ -10,8 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 	"github.com/yama6a/subtitle-toolbox-go/v4/translation"
 	"github.com/yama6a/subtitle-toolbox-go/v4/translation/internal/httppost"
 )
@@ -36,22 +34,11 @@ type Options struct {
 
 // Validate checks the key and the base URL. The error matches model.ErrInvalidArgument.
 func (o Options) Validate() error {
-	switch {
-	case strings.Trim(o.APIKey, markupcore.TrimSet) == "":
-		return &model.InvalidArgumentError{
-			Option: "google.Options.APIKey",
-			Msg:    "The API key must not be empty. Pass the key of your Google Cloud project.",
-		}
-	case !httppost.CleanKey(o.APIKey):
-		return &model.InvalidArgumentError{
-			Option: "google.Options.APIKey",
-			Msg:    "The API key must not have a control character, or a space at the start or end.",
-		}
-	case o.BaseURL != "" && !httppost.ValidBaseURL(o.BaseURL):
-		return &model.InvalidArgumentError{
-			Option: "google.Options.BaseURL",
-			Msg:    fmt.Sprintf("The base URL must start with http:// or https://, got %q.", o.BaseURL),
-		}
+	if err := httppost.CheckAPIKey("google.Options.APIKey", o.APIKey, "The API key must not be empty. Pass the key of your Google Cloud project."); err != nil {
+		return err
+	}
+	if o.BaseURL != "" {
+		return httppost.CheckBaseURL("google.Options.BaseURL", o.BaseURL)
 	}
 	return nil
 }
@@ -85,11 +72,7 @@ func New(opts Options) (*Engine, error) {
 	if base == "" {
 		base = defaultBaseURL
 	}
-	client := opts.HTTPClient
-	if client == nil {
-		client = translation.DefaultHTTPClient()
-	}
-	return &Engine{endpoint: strings.TrimRight(base, "/") + path, key: opts.APIKey, client: client, wait: httppost.Sleep}, nil
+	return &Engine{endpoint: strings.TrimRight(base, "/") + path, key: opts.APIKey, client: httppost.ClientOrDefault(opts.HTTPClient), wait: httppost.Sleep}, nil
 }
 
 // Translate translates the texts with format "html" and returns the answers as received.

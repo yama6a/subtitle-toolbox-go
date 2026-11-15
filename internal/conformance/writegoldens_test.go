@@ -1,4 +1,4 @@
-package stbox_test
+package conformance_test
 
 import (
 	"bytes"
@@ -8,7 +8,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ebustl"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"

@@ -827,20 +827,6 @@ func TestParseUnknownEncoding(t *testing.T) {
 	assert.Equal(t, `The encoding "CP1125" is unknown.`, aerr.Msg)
 }
 
-// readerIssue names the issue that adds the reader of each format that the encoding fixtures need.
-var readerIssue = map[stbox.Format]string{
-	stbox.SubRip:    "#20",
-	stbox.WebVTT:    "#21",
-	stbox.ASS:       "#22",
-	stbox.TTML:      "#23",
-	stbox.SAMI:      "#25",
-	stbox.SBV:       "#26",
-	stbox.MicroDVD:  "#27",
-	stbox.SubViewer: "#30",
-	stbox.CSV:       "#33",
-	"youtube":       "#102",
-}
-
 type encodingRead struct {
 	File           string   `json:"file"`
 	Encoding       string   `json:"encoding"`
@@ -906,9 +892,6 @@ func TestEncodingFixturesLoad(t *testing.T) {
 			t.Parallel()
 
 			f := stbox.Format(tt.Format)
-			if tt.Error == "" && !f.CanRead() {
-				t.Skip("needs the " + tt.Format + " reader of " + readerIssue[f])
-			}
 			path := filepath.Join("testdata", "encoding", filepath.FromSlash(tt.File))
 			opts := stbox.ReadOptions{Format: f, Encoding: tt.Encoding, Lenient: true}
 			if tt.Error != "" {

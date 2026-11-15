@@ -106,7 +106,7 @@ for _, c := range s.All() {
 // 4s 6s All aboard.
 ```
 
-- **Stream start**: cue times count from the `MPEGTS` of the first segment. `JoinOptions.StreamStart` sets another start. It must be a 33-bit value.
+- **Stream start**: cue times count from the `MPEGTS` of the first segment. `JoinOptions.StreamStart` sets another start. It must be a 33-bit value. `JoinOptions.Validate` checks it, and `Join` calls it.
 - **No map**: a segment without a header counts as `MPEGTS` 0 and `LOCAL` 0, as RFC 8216 section 3.5 says.
 - **Negative times**: a cue that lands before the stream start starts at 0.
 - **Repeats**: a cue with the same start, end and text as an earlier cue is dropped. Then `RemoveDuplicateCues(0)` joins cues with the same text that overlap or touch, so a cue that `Segment` split at a boundary is whole again.

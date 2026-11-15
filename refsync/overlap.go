@@ -5,6 +5,7 @@ import (
 	"math"
 	"slices"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -17,18 +18,12 @@ const (
 // span is a time interval in seconds that at least 1 cue covers.
 type span struct{ start, end float64 }
 
-// seconds gives the float64 of ms / 1000 for a whole number of milliseconds ms. d.Seconds() can differ in the
-// last bit.
-func seconds(ms int64) float64 {
-	return float64(ms) / 1000
-}
-
 // spans returns the cue times of s as sorted spans without overlaps, so time that 2 cues share counts once.
 func spans(s *model.Subtitle) []span {
 	var out []span
 	for _, c := range s.All() {
 		if c.End > c.Start {
-			out = append(out, span{seconds(c.Start.Milliseconds()), seconds(c.End.Milliseconds())})
+			out = append(out, span{timecode.FloatSeconds(c.Start), timecode.FloatSeconds(c.End)})
 		}
 	}
 	slices.SortFunc(out, func(a, b span) int {
@@ -83,7 +78,6 @@ func sweep(target, reference []span, offset float64, add func(i int, d float64))
 	}
 }
 
-// coarseCount returns the index of the last coarse offset from lo to hi.
 func coarseCount(lo, hi float64) int {
 	return int(math.Floor((hi-lo)/coarseStep + epsilon))
 }
@@ -161,7 +155,6 @@ func refine(target, reference []span, coarseBest, lo, hi float64) (offset, best 
 	return offset, best
 }
 
-// firstMax returns the index of the first maximum of values.
 func firstMax(values []float64) int {
 	best := 0
 	for i, v := range values {

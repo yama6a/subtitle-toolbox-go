@@ -428,4 +428,4 @@ An append caption and a window event give no cue and no warning. A caption witho
 
 ## Tests
 
-[lenient_test.go](../lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result. A row runs once its format has a reader.
+[internal/conformance/lenient_test.go](../internal/conformance/lenient_test.go) reads each fixture of [testdata/lenient](../testdata/lenient) in both modes. The file of the same name in `testdata/lenient/expected` holds the expected cues, warnings and strict result. A row runs once its format has a reader.

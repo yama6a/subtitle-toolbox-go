@@ -15,6 +15,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 	"github.com/yama6a/subtitle-toolbox-go/v4/translation"
 )
 
@@ -151,9 +153,35 @@ func JSON(v any) ([]byte, error) {
 	return bytes.TrimSuffix(buf.Bytes(), []byte("\n")), nil
 }
 
-// ValidBaseURL reports whether s matches (?i)^https?://[^/].
-func ValidBaseURL(s string) bool {
-	return baseURLRegexp.MatchString(s)
+// CheckBaseURL returns an *model.InvalidArgumentError with Option option when url does not start with
+// http:// or https:// and a host.
+func CheckBaseURL(option, url string) error {
+	if !baseURLRegexp.MatchString(url) {
+		return &model.InvalidArgumentError{Option: option, Msg: fmt.Sprintf("The base URL must start with http:// or https://, got %q.", url)}
+	}
+	return nil
+}
+
+// CheckAPIKey returns an *model.InvalidArgumentError with Option option when key is empty after the trim,
+// with emptyMsg, or when key fails CleanKey.
+func CheckAPIKey(option, key, emptyMsg string) error {
+	switch {
+	case strings.Trim(key, markupcore.TrimSet) == "":
+		return &model.InvalidArgumentError{Option: option, Msg: emptyMsg}
+	case !CleanKey(key):
+		return &model.InvalidArgumentError{Option: option, Msg: "The API key must not have a control character, or a space at the start or end."}
+	}
+	return nil
+}
+
+// ClientOrDefault returns c, or translation.DefaultHTTPClient() when c is nil.
+//
+//nolint:ireturn // the engines hold a translation.HTTPClient
+func ClientOrDefault(c translation.HTTPClient) translation.HTTPClient {
+	if c == nil {
+		return translation.DefaultHTTPClient()
+	}
+	return c
 }
 
 // CleanKey reports whether key has no byte from 0x00 to 0x1F, no 0x7F, and no space at the start or end.
