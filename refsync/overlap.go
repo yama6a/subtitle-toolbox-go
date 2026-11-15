@@ -5,6 +5,7 @@ import (
 	"math"
 	"slices"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -17,18 +18,12 @@ const (
 // span is a time interval in seconds that at least 1 cue covers.
 type span struct{ start, end float64 }
 
-// seconds gives the float64 of ms / 1000 for a whole number of milliseconds ms. d.Seconds() can differ in the
-// last bit.
-func seconds(ms int64) float64 {
-	return float64(ms) / 1000
-}
-
 // spans returns the cue times of s as sorted spans without overlaps, so time that 2 cues share counts once.
 func spans(s *model.Subtitle) []span {
 	var out []span
 	for _, c := range s.All() {
 		if c.End > c.Start {
-			out = append(out, span{seconds(c.Start.Milliseconds()), seconds(c.End.Milliseconds())})
+			out = append(out, span{timecode.FloatSeconds(c.Start), timecode.FloatSeconds(c.End)})
 		}
 	}
 	slices.SortFunc(out, func(a, b span) int {

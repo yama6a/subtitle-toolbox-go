@@ -219,7 +219,7 @@ func TestValidate(t *testing.T) {
 		{karaoke.Options{Style: "em"}, "Style", `The style em must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00".`},
 		{karaoke.Options{Style: "v"}, "Style", `The style v must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00".`},
 		{karaoke.Options{Style: `font color="a>b"`}, "Style", `The style font color="a>b" must not hold < or >. Pass the tag without its brackets, for example u.`},
-		{karaoke.Options{MaxWordsPerCue: -2}, "MaxWordsPerCue", "The maximum of -2 words per cue must be 1 or more."},
+		{karaoke.Options{MaxWordsPerCue: -2}, "MaxWordsPerCue", "The maximum of -2 words per cue must not be negative. 0 shows all words."},
 	}
 	for _, tt := range tests {
 		t.Run(tt.opt+tt.msg, func(t *testing.T) {

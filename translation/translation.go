@@ -48,13 +48,13 @@ func (o Options) Validate() error {
 	if o.MaxCuesPerSentence < 0 {
 		return &model.InvalidArgumentError{
 			Option: "translation.Options.MaxCuesPerSentence",
-			Msg:    "The maximum cues per sentence must be at least 1, got " + strconv.Itoa(o.MaxCuesPerSentence) + ".",
+			Msg:    "The maximum cues per sentence must not be negative, got " + strconv.Itoa(o.MaxCuesPerSentence) + ". 0 means " + strconv.Itoa(DefaultMaxCuesPerSentence) + ".",
 		}
 	}
 	if o.MaxCharactersPerRequest < 0 {
 		return &model.InvalidArgumentError{
 			Option: "translation.Options.MaxCharactersPerRequest",
-			Msg:    "The maximum characters per request must be at least 1, got " + strconv.Itoa(o.MaxCharactersPerRequest) + ".",
+			Msg:    "The maximum characters per request must not be negative, got " + strconv.Itoa(o.MaxCharactersPerRequest) + ". 0 means " + strconv.Itoa(DefaultMaxCharactersPerRequest) + ".",
 		}
 	}
 	return nil
