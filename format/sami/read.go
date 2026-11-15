@@ -2,7 +2,6 @@ package sami
 
 import (
 	"cmp"
-	"errors"
 	"fmt"
 	"io"
 	"regexp"
@@ -78,12 +77,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if err := opts.Validate(); err != nil {
 		return nil, nil, err
 	}
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.SAMI, err)
-	}
-	st := parsing.NewState(model.SAMI, common)
-	content, ok, err := st.Prepare(content, true)
+	st, content, ok, err := parsing.ReadText(r, model.SAMI, common, true)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -251,11 +245,7 @@ func (rd *reader) syncBlock(chunk string, index, line int) (syncBlock, bool, err
 	}
 	start, negative, err := startTime(m[1], line)
 	if err != nil {
-		var perr *model.ParseError
-		if !errors.As(err, &perr) {
-			return syncBlock{}, false, err
-		}
-		return syncBlock{}, false, rd.st.Fail(perr, line, index, lines())
+		return syncBlock{}, false, rd.st.Fail(err, line, index, lines())
 	}
 	if negative && rd.st.Lenient() {
 		rd.st.Warn("SYNC tag "+strconv.Itoa(index+1)+" has a negative Start. The parser read it as 0.",

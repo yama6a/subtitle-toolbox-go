@@ -2,8 +2,6 @@ package tmplayer
 
 import (
 	"cmp"
-	"errors"
-	"fmt"
 	"io"
 	"regexp"
 	"slices"
@@ -27,12 +25,7 @@ type entry struct {
 
 // Read reads TMPlayer and TMPlayer+ text. It expects UTF-8, as stbox.Parse passes it.
 func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.TMPlayer, err)
-	}
-	st := parsing.NewState(model.TMPlayer, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.TMPlayer, common, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -59,7 +52,7 @@ func readEntries(st *parsing.State, content string) ([]entry, error) {
 		block++
 		e, number, err := parseLine(raw, n+1)
 		if err != nil {
-			if err := failLine(st, err, n+1, block, raw); err != nil {
+			if err := st.Fail(err, n+1, block, []string{raw}); err != nil {
 				return nil, err
 			}
 			continue
@@ -72,14 +65,6 @@ func readEntries(st *parsing.State, content string) ([]entry, error) {
 		entries = append(entries, e)
 	}
 	return entries, nil
-}
-
-func failLine(st *parsing.State, err error, line, block int, raw string) error {
-	var perr *model.ParseError
-	if !errors.As(err, &perr) {
-		return err
-	}
-	return st.Fail(perr, line, block, []string{raw})
 }
 
 // entriesToCues sorts the entries by time. An entry with text becomes a cue that ends at the next entry.

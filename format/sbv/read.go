@@ -1,7 +1,6 @@
 package sbv
 
 import (
-	"fmt"
 	"io"
 	"iter"
 	"regexp"
@@ -40,12 +39,7 @@ type reader struct {
 
 // Read reads SBV text. It expects UTF-8, as stbox.Parse passes it.
 func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.SBV, err)
-	}
-	st := parsing.NewState(model.SBV, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.SBV, common, false)
 	if err != nil {
 		return nil, nil, err
 	}

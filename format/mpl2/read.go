@@ -1,8 +1,6 @@
 package mpl2
 
 import (
-	"errors"
-	"fmt"
 	"io"
 	"regexp"
 	"strconv"
@@ -21,12 +19,7 @@ var cueRegexp = regexp.MustCompile(`^\[(\d+)\]\[(\d+)\](.*)$`)
 
 // Read reads MPL2 text. It expects UTF-8, as stbox.Parse passes it.
 func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.MPL2, err)
-	}
-	st := parsing.NewState(model.MPL2, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.MPL2, common, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -43,11 +36,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 		}
 		cue, err := parseLine(st, raw, n+1, block)
 		if err != nil {
-			var perr *model.ParseError
-			if !errors.As(err, &perr) {
-				return nil, nil, err
-			}
-			if err := st.Fail(perr, n+1, block, []string{raw}); err != nil {
+			if err := st.Fail(err, n+1, block, []string{raw}); err != nil {
 				return nil, nil, err
 			}
 		} else {

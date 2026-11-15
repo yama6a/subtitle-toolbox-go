@@ -5,7 +5,6 @@
 package stboxjson
 
 import (
-	"fmt"
 	"io"
 	"strconv"
 
@@ -36,13 +35,8 @@ type WriteOptions struct {
 
 // Read reads a library JSON document of version 1 or 2 from r. A field error names the path of the field, such as cues[3].start.
 func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.JSON, err)
-	}
-	st := parsing.NewState(model.JSON, common)
 	// The JSON decoder reads each bad byte as U+FFFD in both modes, so the UTF-8 check only warns. True would fail strict reads.
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.JSON, common, false)
 	if err != nil {
 		return nil, nil, err
 	}

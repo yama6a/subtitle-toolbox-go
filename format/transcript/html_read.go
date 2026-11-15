@@ -1,7 +1,6 @@
 package transcript
 
 import (
-	"fmt"
 	"io"
 	"regexp"
 	"strconv"
@@ -36,12 +35,7 @@ type htmlParagraph struct {
 // is ignored and no html element is needed. A time and its paragraphs make one cue. Each cue ends at the next later
 // start, and the last one lasts the last cue duration. A cite names the speaker of the next paragraph.
 func ReadHTML(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.HTMLTranscript, err)
-	}
-	st := parsing.NewState(model.HTMLTranscript, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.HTMLTranscript, common, false)
 	if err != nil {
 		return nil, nil, err
 	}

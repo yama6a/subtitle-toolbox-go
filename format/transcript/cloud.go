@@ -1,7 +1,6 @@
 package transcript
 
 import (
-	"errors"
 	"math"
 	"strings"
 	"time"
@@ -18,11 +17,7 @@ import (
 
 // cloudFail passes a field error to State.Fail. Strict mode returns it, lenient mode skips the item with a warning.
 func cloudFail(st *parsing.State, err error, block int, item orderedjson.Value) error {
-	var perr *model.ParseError
-	if !errors.As(err, &perr) {
-		return err
-	}
-	return st.Fail(perr, model.NoLine, block, []string{orderedjson.Block(item)})
+	return st.Fail(err, model.NoLine, block, []string{orderedjson.Block(item)})
 }
 
 func cloudData(v orderedjson.Value) *model.Data {

@@ -1,8 +1,6 @@
 package csv
 
 import (
-	"errors"
-	"fmt"
 	"io"
 	"math"
 	"slices"
@@ -71,12 +69,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if err := opts.Validate(); err != nil {
 		return nil, nil, err
 	}
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.CSV, err)
-	}
-	st := parsing.NewState(model.CSV, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.CSV, common, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -136,11 +129,7 @@ func (rd *reader) cues(recs []record, roles layout, header *record) ([]model.Cue
 	for i, rec := range recs {
 		c, hasEnd, err := rd.cue(rec, i, roles, header, millis)
 		if err != nil {
-			var perr *model.ParseError
-			if !errors.As(err, &perr) {
-				return nil, "", err
-			}
-			if err := rd.st.Fail(perr, rec.line, i, []string{rd.join(rec.cells)}); err != nil {
+			if err := rd.st.Fail(err, rec.line, i, []string{rd.join(rec.cells)}); err != nil {
 				return nil, "", err
 			}
 			continue

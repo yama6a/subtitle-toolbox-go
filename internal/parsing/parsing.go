@@ -2,6 +2,7 @@
 package parsing
 
 import (
+	"errors"
 	"math"
 	"slices"
 	"strconv"
@@ -80,24 +81,28 @@ func (s *State) warn(msg string, line int, action model.WarningAction) {
 	s.Warn(msg, line, model.NoBlock, nil, action)
 }
 
-// Fail returns err in strict mode, with the format of the read when err has none.
-// In lenient mode it records a Skipped warning with the message of err and returns nil.
-// With line NoLine, the message ends with the line of err, so the line is not lost.
-func (s *State) Fail(err *model.ParseError, line, block int, lines []string) error {
+// Fail returns err unchanged when it holds no *model.ParseError. In strict mode it returns the parse error, with
+// the format of the read when it has none. In lenient mode it records a Skipped warning with the message of the
+// parse error and returns nil. With line NoLine, the message ends with the line of the parse error.
+func (s *State) Fail(err error, line, block int, lines []string) error {
+	var perr *model.ParseError
+	if !errors.As(err, &perr) {
+		return err
+	}
 	if !s.Lenient() {
-		if err.Format != "" {
-			return err
+		if perr.Format != "" {
+			return perr
 		}
-		withFormat := *err
+		withFormat := *perr
 		withFormat.Format = s.format
 		return &withFormat
 	}
-	msg := err.Msg
-	if msg == "" && err.Err != nil {
-		msg = err.Err.Error()
+	msg := perr.Msg
+	if msg == "" && perr.Err != nil {
+		msg = perr.Err.Error()
 	}
-	if line == model.NoLine && err.Line > 0 {
-		msg += " (line " + strconv.Itoa(err.Line) + ")"
+	if line == model.NoLine && perr.Line > 0 {
+		msg += " (line " + strconv.Itoa(perr.Line) + ")"
 	}
 	s.Warn(msg, line, block, lines, model.Skipped)
 	return nil

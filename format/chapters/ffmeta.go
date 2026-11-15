@@ -51,12 +51,7 @@ func ReadFFMetadata(r io.Reader, common model.CommonReadOptions, opts ReadOption
 	if err := opts.Validate(); err != nil {
 		return nil, nil, err
 	}
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.FFMetadataChapters, err)
-	}
-	st := parsing.NewState(model.FFMetadataChapters, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.FFMetadataChapters, common, false)
 	if err != nil {
 		return nil, nil, err
 	}

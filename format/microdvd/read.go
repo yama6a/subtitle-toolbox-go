@@ -2,7 +2,6 @@ package microdvd
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"iter"
 	"regexp"
@@ -52,12 +51,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if err := opts.Validate(); err != nil {
 		return nil, nil, err
 	}
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read %s: %w", model.MicroDVD, err)
-	}
-	st := parsing.NewState(model.MicroDVD, common)
-	content, ok, err := st.Prepare(content, false)
+	st, content, ok, err := parsing.ReadText(r, model.MicroDVD, common, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -94,11 +88,7 @@ func readCues(st *parsing.State, lines []rawLine, fps float64) ([]model.Cue, err
 			cues = append(cues, c)
 			continue
 		}
-		var perr *model.ParseError
-		if !errors.As(err, &perr) {
-			return nil, err
-		}
-		if err := st.Fail(perr, l.number, l.block, []string{l.text}); err != nil {
+		if err := st.Fail(err, l.number, l.block, []string{l.text}); err != nil {
 			return nil, err
 		}
 	}
