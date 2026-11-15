@@ -16,20 +16,20 @@ import (
 // times in whole milliseconds. It writes one utterance per cue when the source had utterances, when a cue has a
 // speaker, or when a cue has no words, because the words alone cannot hold such a cue. Else "utterances" is null, as
 // AssemblyAI writes it. A value that a cue did not change stays as the reader stored it.
-func WriteAssemblyAI(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WriteAssemblyAI(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.AssemblyAI, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	doc, err := assemblyAIDocument(s)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	body, err := encodeDocument(model.AssemblyAI, "AssemblyAI JSON", doc, false)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
-	return writing.Write(w, model.AssemblyAI, body, common, false)
+	return WriteReport{}, writing.Write(w, model.AssemblyAI, body, common, false)
 }
 
 func assemblyAIDocument(s *model.Subtitle) (orderedjson.Value, error) {

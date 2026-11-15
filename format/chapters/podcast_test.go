@@ -198,7 +198,7 @@ func TestWritePodcastRejectsBadText(t *testing.T) {
 	t.Parallel()
 
 	s := chaptersOf(model.Cue{Lines: []string{"bad \xff byte"}})
-	err := chapters.WritePodcast(&strings.Builder{}, s, model.CommonWriteOptions{}, chapters.WriteOptions{})
+	_, err := chapters.WritePodcast(&strings.Builder{}, s, model.CommonWriteOptions{}, chapters.WriteOptions{})
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	assert.ErrorIs(t, err, model.ErrInvalidUTF8)

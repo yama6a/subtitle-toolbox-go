@@ -34,7 +34,8 @@ func write(t *testing.T, s *model.Subtitle) string {
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, youtube.Write(&out, s, model.CommonWriteOptions{}, youtube.WriteOptions{}))
+	_, err := youtube.Write(&out, s, model.CommonWriteOptions{}, youtube.WriteOptions{})
+	require.NoError(t, err)
 	return out.String()
 }
 

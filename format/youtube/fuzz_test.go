@@ -36,7 +36,7 @@ func FuzzRead(f *testing.F) {
 				}
 				checkWords(t, s)
 				var out bytes.Buffer
-				if err := youtube.Write(&out, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
+				if _, err := youtube.Write(&out, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
 					if !errors.Is(err, model.ErrUnwritable) {
 						t.Fatalf("Write returned %v, which does not match ErrUnwritable", err)
 					}

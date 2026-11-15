@@ -39,7 +39,7 @@ func ExampleWriteAssemblyAI() {
 		Start: 4 * time.Second, End: 5 * time.Second, Lines: []string{"See you."},
 		Words: []model.Word{{Text: "See", Start: 4 * time.Second, End: 4500 * time.Millisecond}, {Text: "you.", Start: 4500 * time.Millisecond, End: 5 * time.Second}},
 	})
-	if err := transcript.WriteAssemblyAI(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+	if _, err := transcript.WriteAssemblyAI(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

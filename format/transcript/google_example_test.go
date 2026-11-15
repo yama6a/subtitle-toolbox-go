@@ -38,7 +38,7 @@ func ExampleWriteGoogleSpeech() {
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataLanguage, "en-US")
 	s.AddCue(model.Cue{Start: 1500 * time.Millisecond, End: 3 * time.Second, Lines: []string{"Good", "morning."}})
-	if err := transcript.WriteGoogleSpeech(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+	if _, err := transcript.WriteGoogleSpeech(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

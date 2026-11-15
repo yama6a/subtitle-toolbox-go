@@ -15,13 +15,13 @@ import (
 // WriteHTML writes s as an HTML transcript. It groups the Podcasting 2.0 segments of s, one per cue and speaker,
 // into paragraphs. A new speaker or a gap of opts.HTML.ParagraphGap after the latest end so far starts a paragraph.
 // Each paragraph has a cite when its first segment has a speaker, a time and a p.
-func WriteHTML(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+func WriteHTML(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.HTMLTranscript, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	if err := opts.HTML.Validate(); err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	segments := podcastSegments(s)
 	items := make([]paragraphs.Item[podcastSegment], len(segments))
@@ -41,7 +41,7 @@ func WriteHTML(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, 
 		b.WriteString("<time>" + shortClock(p.Start) + "</time>\n")
 		b.WriteString("<p>" + markupcore.EscapeText(strings.Join(bodies, " ")) + "</p>\n")
 	}
-	return writing.Write(w, model.HTMLTranscript, []byte(b.String()), common, false)
+	return WriteReport{}, writing.Write(w, model.HTMLTranscript, []byte(b.String()), common, false)
 }
 
 // shortClock writes d floored to whole seconds, a negative d as 0: m:ss below 1 hour, else h:mm:ss.

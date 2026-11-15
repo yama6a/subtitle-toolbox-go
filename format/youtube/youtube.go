@@ -40,6 +40,9 @@ type ReadOptions struct {
 // WriteOptions holds the settings of the YouTube timed text writer. It has no fields yet. The writer takes the variant from the file format data.
 type WriteOptions struct{}
 
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
+
 var signatureRegexp = regexp.MustCompile(xmlraw.Prolog + `<(?:timedtext|transcript)[\t\n\v\f\r />]`)
 
 // Detect reports whether content is YouTube XML: the XML prolog, then <timedtext or <transcript, then white space,

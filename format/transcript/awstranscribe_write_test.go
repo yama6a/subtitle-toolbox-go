@@ -196,7 +196,7 @@ func TestWriteAWSTranscribeErrors(t *testing.T) {
 
 	s := &model.Subtitle{}
 	s.AddCue(model.Cue{End: ms(1000), Lines: []string{"text"}, Speaker: "bad \xff"})
-	err := transcript.WriteAWSTranscribe(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
+	_, err := transcript.WriteAWSTranscribe(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
 	require.ErrorIs(t, err, model.ErrUnwritable)
 	require.ErrorIs(t, err, model.ErrInvalidUTF8)
 }

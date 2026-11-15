@@ -38,7 +38,7 @@ func ExampleWrite() {
 		fmt.Println(err)
 		return
 	}
-	if err := youtube.Write(os.Stdout, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
+	if _, err := youtube.Write(os.Stdout, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

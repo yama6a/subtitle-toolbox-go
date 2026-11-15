@@ -106,7 +106,7 @@ func BenchmarkWrite(b *testing.B) {
 			b.ReportAllocs()
 			b.SetBytes(int64(len(bm.content)))
 			for b.Loop() {
-				if err := youtube.Write(io.Discard, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
+				if _, err := youtube.Write(io.Discard, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
 					b.Fatal(err)
 				}
 			}
@@ -131,7 +131,7 @@ func BenchmarkWriteChanged(b *testing.B) {
 		b.ReportAllocs()
 		b.SetBytes(int64(len(content)))
 		for b.Loop() {
-			if err := youtube.Write(io.Discard, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
+			if _, err := youtube.Write(io.Discard, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
 				b.Fatal(err)
 			}
 		}
@@ -147,7 +147,7 @@ func BenchmarkWriteJoinedTokens(b *testing.B) {
 		b.ReportAllocs()
 		b.SetBytes(int64(len(line)))
 		for b.Loop() {
-			if err := youtube.Write(io.Discard, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
+			if _, err := youtube.Write(io.Discard, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
 				b.Fatal(err)
 			}
 		}

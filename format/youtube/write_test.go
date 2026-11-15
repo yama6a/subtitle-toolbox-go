@@ -86,7 +86,7 @@ func TestWriteRejectsInvalidUTF8(t *testing.T) {
 
 	s := read(t, `<transcript><text start="1" dur="2">a</text></transcript>`, youtube.ReadOptions{})
 	editCue(t, s, 0, func(c *model.Cue) { c.Lines = []string{"caf\xe9"} })
-	err := youtube.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, youtube.WriteOptions{})
+	_, err := youtube.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, youtube.WriteOptions{})
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	require.ErrorIs(t, err, model.ErrInvalidUTF8)

@@ -21,7 +21,7 @@ A package imports only packages of a lower layer. Every layer may also import th
 
 ### Format packages
 
-Every format package declares `ReadOptions`, `WriteOptions` and `WriteReport`, empty where the format has no options or reports nothing. Its functions always take them, so a first option or report field is a new field and never a signature change. A format without a reader has no `Read`. A format without a signature has no `Detect`.
+Every format package declares `ReadOptions`, `WriteOptions` and `WriteReport`, empty where the format has no options or reports nothing. Its functions always take them, so a first option or report field is a new field and never a signature change. A format without a reader has no `Read`. A format without a signature has no `Detect`. A package without a reader or a writer still declares all 3 types.
 
 ```go
 // Read reads UTF-8 text. The root decodes other encodings first.
