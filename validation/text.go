@@ -128,12 +128,7 @@ func (c chars) horizontal(i int) bool {
 	if !c.valid {
 		return r == ' ' || r == '\t'
 	}
-	switch {
-	case r == ' ', r == '\t', r == 0xA0, r == 0x1680, r == 0x180E, r >= 0x2000 && r <= 0x200A,
-		r == 0x202F, r == 0x205F, r == 0x3000:
-		return true
-	}
-	return false
+	return markupcore.IsHSpace(r)
 }
 
 // doubleSpaces counts the runs of 2 or more horizontal spaces with a character that is not white space on both sides.

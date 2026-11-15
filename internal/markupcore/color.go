@@ -85,11 +85,11 @@ func FontColor(attrs string) (string, bool) {
 	return m[1] + m[2] + m[3], true
 }
 
-// ColorHexWithAlpha returns a color as "#rrggbb", or as "#rrggbbaa" when it has an alpha channel, in lower case.
+// colorHexWithAlpha returns a color as "#rrggbb", or as "#rrggbbaa" when it has an alpha channel, in lower case.
 // It reads "#rgb", a value that starts with "#rrggbb" or "#rrggbbaa", "rgb(r, g, b)", "rgba(r, g, b, a)" and
 // the 18 TTML color names, in any case and with entities decoded. The alpha of rgba() is a fraction such as 0.5,
 // a percentage, or an integer from 0 to 255 as in TTML, so rgba(255, 0, 0, 1) is almost transparent.
-func ColorHexWithAlpha(color string) (string, bool) {
+func colorHexWithAlpha(color string) (string, bool) {
 	c := ASCIILower(strings.Trim(DecodeEntities(color), TrimSet))
 	if hex, ok := hexColor(c); ok {
 		return hex, true
@@ -142,10 +142,10 @@ func rgbHex(m []string) (string, bool) {
 	return hex, true
 }
 
-// ColorHex returns a color as "#rrggbb" in lower case. It reads the values of ColorHexWithAlpha and drops the alpha.
+// ColorHex returns a color as "#rrggbb" in lower case. It reads the values of colorHexWithAlpha and drops the alpha.
 // This is the one color rule of all writers.
 func ColorHex(color string) (string, bool) {
-	hex, ok := ColorHexWithAlpha(color)
+	hex, ok := colorHexWithAlpha(color)
 	if !ok {
 		return "", false
 	}
@@ -153,7 +153,7 @@ func ColorHex(color string) (string, bool) {
 }
 
 // TTMLColor returns a color for TTML output. A valid TTML color stays as written, a color name goes to lower case,
-// and ColorHexWithAlpha converts other colors.
+// and colorHexWithAlpha converts other colors.
 func TTMLColor(color string) (string, bool) {
 	if ttmlColorRegexp.MatchString(color) {
 		return color, true
@@ -162,7 +162,7 @@ func TTMLColor(color string) (string, bool) {
 	if _, ok := NamedColor(name, false); ok || name == "transparent" {
 		return name, true
 	}
-	return ColorHexWithAlpha(color)
+	return colorHexWithAlpha(color)
 }
 
 // WebVTTClassColors returns the text and background color of WebVTT classes such as ".bg_black.yellow", as

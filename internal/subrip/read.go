@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textblock"
@@ -319,10 +319,10 @@ func readCoordinates(text string) (*model.Data, bool) {
 		return nil, false
 	}
 	return model.NewData(
-		model.Field{Key: "x1", Value: intkey.DigitsToInt(m[1])},
-		model.Field{Key: "x2", Value: intkey.DigitsToInt(m[2])},
-		model.Field{Key: "y1", Value: intkey.DigitsToInt(m[3])},
-		model.Field{Key: "y2", Value: intkey.DigitsToInt(m[4])},
+		model.Field{Key: "x1", Value: decimal.Saturated(m[1])},
+		model.Field{Key: "x2", Value: decimal.Saturated(m[2])},
+		model.Field{Key: "y1", Value: decimal.Saturated(m[3])},
+		model.Field{Key: "y2", Value: decimal.Saturated(m[4])},
 	), true
 }
 

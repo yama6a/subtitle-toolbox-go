@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -81,7 +81,7 @@ func timeScale(header []string) int64 {
 	if !ok || !timecode.IsDigits(value) {
 		return 0
 	}
-	return intkey.DigitsToInt(value)
+	return decimal.Saturated(value)
 }
 
 func isRelative(header []string) bool {

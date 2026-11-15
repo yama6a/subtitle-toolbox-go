@@ -13,7 +13,7 @@ A package imports only packages of a lower layer. Every layer may also import th
 
 | Layer | Packages | May import |
 |---:|:--- |:--- |
-| 0 | helpers that import no model type. In `internal/`: `markupcore`, `speakerlabel`, `linewrap`, `timecode`, `grapheme`, `ssatag`, `intkey`, `textenc`, `extfallback`, `orderedjson`, `caption/cea608`, `caption/cea708`, and the test helpers `testfiles` and `translationtest`. In `format/internal/`: `codepage`, `paragraphs`, `xmlraw`. Below the containers: `container/mkv/internal/ebml`, `container/mpegts/internal/teletext` | other layer 0 packages |
+| 0 | helpers that import no model type. In `internal/`: `markupcore`, `speakerlabel`, `linewrap`, `timecode`, `grapheme`, `ssatag`, `decimal`, `textenc`, `extfallback`, `orderedjson`, `caption/cea608`, `caption/cea708`, and the test helpers `testfiles` and `translationtest`. In `format/internal/`: `codepage`, `paragraphs`, `xmlraw`. Below the containers: `container/mkv/internal/ebml`, `container/mpegts/internal/teletext` | other layer 0 packages |
 | 1 | `model`, `markup` | layer 0. `model` imports `markup` |
 | 2 | helpers that work on model types. In `internal/`: `textblock`, `subrip`, `vtt`, `position`, `parsing`, `writing`, `readingspeed`, `formattest`, `caption`, `bitmap`, `bitmap/displayset`, `bitmap/dvbsub`, `bitmap/dvdsub`. In `format/internal/`: `formatdata`, `ttmldoc`, `wordgroup`. Below the containers: `container/mpegts/internal/arib` | layers 0 to 2. Go rejects an import cycle |
 | 3 | `format/<name>` | layers 0 to 2. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML. Other shared code goes to `format/internal/` or `internal/` |
