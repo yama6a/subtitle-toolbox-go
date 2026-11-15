@@ -9,6 +9,7 @@ import (
 	"slices"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/container/mkv/internal/ebml"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
 
 const (
@@ -22,9 +23,7 @@ const (
 	scopeCodecPriv  = 2
 	algoZlib        = 0
 	algoHeaderStrip = 3
-	maxHours        = 100_000
 	noDuration      = -1
-	limitNanos      = int64(maxHours) * 3600 * 1_000_000_000
 )
 
 // block is one block of a track. Times are in ticks of the TimestampScale.
@@ -88,8 +87,7 @@ func (f *File) walkBlocks(t *trackEntry, budget *int64) ([]block, error) {
 // walkStep handles one element of a cluster: a Timestamp sets the cluster time, a block of the track is returned.
 func (f *File) walkStep(h ebml.Header, t *trackEntry, clusterTime *int64, budget *int64) (block, bool, error) {
 	if h.ID == idTimestamp {
-		var v uint64
-		err := f.readUint(h, &v)
+		v, err := f.r.Unsigned(h)
 		*clusterTime = int64(v)
 		return block{}, false, err
 	}
@@ -121,7 +119,7 @@ func (f *File) finishBlock(t *trackEntry, offset int64, b *block, clusterTime in
 	}
 	if !f.withinLimit(t, b) {
 		return damaged("The block of track %d at byte %d has the time %d at a TimestampScale of %d ns. Times must be below %d hours.",
-			t.Number, offset, b.start, f.scale, maxHours)
+			t.Number, offset, b.start, f.scale, timecode.MaxHours)
 	}
 	data, err := f.decode(t, b.data, scopeFrames, budget)
 	b.data = data
@@ -145,7 +143,7 @@ func (f *File) withinLimit(t *trackEntry, b *block) bool {
 	if start > math.MaxInt64-span {
 		return false
 	}
-	return start > -limitNanos && start+span < limitNanos
+	return start > -int64(timecode.MaxTime) && start+span < int64(timecode.MaxTime)
 }
 
 // nanos converts ticks to nanoseconds. It returns false on overflow.
@@ -160,62 +158,73 @@ func (f *File) nanos(ticks int64) (int64, bool) {
 func (f *File) readBlockGroup(group ebml.Header, number int) (block, bool, error) {
 	b := block{duration: noDuration}
 	found := false
-	err := f.each(group, func(c ebml.Header) error {
+	for c, err := range f.r.Children(group) {
+		if err != nil {
+			return b, found, err
+		}
 		switch c.ID {
 		case idBlock:
 			blk, ok, err := f.readBlock(c, number)
 			if err != nil || !ok {
-				return errOr(err, errStop)
+				return b, found, err
 			}
 			b.start, b.data, found = blk.start, blk.data, true
 		case idBlockDuration:
-			var v uint64
-			err := f.readUint(c, &v)
+			v, err := f.r.Unsigned(c)
+			if err != nil {
+				return b, found, err
+			}
 			b.duration = int64(v)
-			return err
 		case idBlockAdditions:
-			return f.readAdditions(c, &b.additional)
+			data, err := f.readAdditions(c)
+			if err != nil {
+				return b, found, err
+			}
+			b.additional = data
 		}
-		return nil
-	})
-	return b, found, err
-}
-
-// errOr returns err, or fallback when err is nil.
-func errOr(err, fallback error) error {
-	if err != nil {
-		return err
 	}
-	return fallback
+	return b, found, nil
 }
 
-// readAdditions reads the first BlockAdditional with the BlockAddID 1, the WebVTT side data.
-func (f *File) readAdditions(additions ebml.Header, dst *[]byte) error {
-	return f.each(additions, func(more ebml.Header) error {
+// readAdditions returns the first BlockAdditional with the BlockAddID 1, the WebVTT side data.
+func (f *File) readAdditions(additions ebml.Header) ([]byte, error) {
+	for more, err := range f.r.Children(additions) {
+		if err != nil {
+			return nil, err
+		}
 		if more.ID != idBlockMore {
-			return nil
+			continue
 		}
-		data, found, err := f.readMore(more)
-		if found {
-			*dst = data
-			return errStop
+		id, data, err := f.readMore(more)
+		if id == webVTTAddID && data != nil {
+			return data, nil
 		}
-		return err
-	})
+		if err != nil {
+			return nil, err
+		}
+	}
+	return nil, nil
 }
 
-func (f *File) readMore(more ebml.Header) (data []byte, found bool, err error) {
-	id := uint64(webVTTAddID)
-	err = f.each(more, func(c ebml.Header) error {
+// readMore returns the BlockAddID and the BlockAdditional of a BlockMore. It returns what it read before an error.
+func (f *File) readMore(more ebml.Header) (id uint64, data []byte, err error) {
+	id = webVTTAddID
+	for c, err := range f.r.Children(more) {
+		if err != nil {
+			return id, data, err
+		}
 		switch c.ID {
 		case idBlockAddID:
-			return f.readUint(c, &id)
+			if id, err = f.r.Unsigned(c); err != nil {
+				return id, data, err
+			}
 		case idBlockAdditional:
-			return f.readBytes(c, &data)
+			if data, err = f.r.Bytes(c); err != nil {
+				return id, data, err
+			}
 		}
-		return nil
-	})
-	return data, id == webVTTAddID && data != nil, err
+	}
+	return id, data, nil
 }
 
 // readBlock reads the header and the data of a SimpleBlock or Block. found is false for a block of another track, which

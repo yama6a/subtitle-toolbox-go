@@ -81,52 +81,80 @@ func (f *File) cuePositions(number int) ([]cuePosition, bool) {
 		return nil, false
 	}
 	var positions []cuePosition
-	err = f.each(cues, func(point ebml.Header) error {
-		if point.ID != idCuePoint {
-			return nil
+	for point, err := range f.r.Children(cues) {
+		if err != nil {
+			return nil, false
 		}
-		return f.each(point, func(tp ebml.Header) error {
-			if tp.ID != idCuePositions {
-				return nil
-			}
-			p, found, err := f.readCuePosition(tp, number)
-			if found {
-				positions = append(positions, p)
-			}
-			return err
-		})
-	})
+		if point.ID != idCuePoint {
+			continue
+		}
+		if positions, err = f.appendCuePositions(positions, point, number); err != nil {
+			return nil, false
+		}
+	}
 	slices.SortFunc(positions, func(a, b cuePosition) int {
 		return cmp.Or(cmp.Compare(a.cluster, b.cluster), cmp.Compare(a.relative, b.relative))
 	})
-	return slices.Compact(positions), err == nil
+	return slices.Compact(positions), true
+}
+
+func (f *File) appendCuePositions(positions []cuePosition, point ebml.Header, number int) ([]cuePosition, error) {
+	for tp, err := range f.r.Children(point) {
+		if err != nil {
+			return nil, err
+		}
+		if tp.ID != idCuePositions {
+			continue
+		}
+		p, found, err := f.readCuePosition(tp, number)
+		if err != nil {
+			return nil, err
+		}
+		if found {
+			positions = append(positions, p)
+		}
+	}
+	return positions, nil
 }
 
 // readCuePosition reads a CueTrackPositions. found is false for another track.
-func (f *File) readCuePosition(tp ebml.Header, number int) (p cuePosition, found bool, err error) {
-	var track, cluster, relative uint64
-	var hasTrack, hasCluster, hasRelative bool
-	err = f.each(tp, func(c ebml.Header) error {
-		switch c.ID {
-		case idCueTrack:
-			hasTrack = true
-			return f.readUint(c, &track)
-		case idCueCluster:
-			hasCluster = true
-			return f.readUint(c, &cluster)
-		case idCueRelative:
-			hasRelative = true
-			return f.readUint(c, &relative)
-		}
-		return nil
-	})
-	if err != nil || !hasTrack || track != uint64(number) {
+func (f *File) readCuePosition(tp ebml.Header, number int) (cuePosition, bool, error) {
+	c, err := f.readCueFields(tp)
+	if err != nil || !c.hasTrack || c.track != uint64(number) {
 		return cuePosition{}, false, err
 	}
-	if !hasCluster || !hasRelative {
+	if !c.hasCluster || !c.hasRelative {
 		return cuePosition{}, false, errIncompleteCue
 	}
-	return cuePosition{cluster: f.segmentStart + int64(cluster), relative: int64(relative)}, true, nil
+	return cuePosition{cluster: f.segmentStart + int64(c.cluster), relative: int64(c.relative)}, true, nil
+}
+
+type cueFields struct {
+	track, cluster, relative          uint64
+	hasTrack, hasCluster, hasRelative bool
+}
+
+func (f *File) readCueFields(tp ebml.Header) (c cueFields, err error) {
+	for e, err := range f.r.Children(tp) {
+		if err != nil {
+			return cueFields{}, err
+		}
+		switch e.ID {
+		case idCueTrack:
+			c.hasTrack = true
+			c.track, err = f.r.Unsigned(e)
+		case idCueCluster:
+			c.hasCluster = true
+			c.cluster, err = f.r.Unsigned(e)
+		case idCueRelative:
+			c.hasRelative = true
+			c.relative, err = f.r.Unsigned(e)
+		}
+		if err != nil {
+			return cueFields{}, err
+		}
+	}
+	return c, nil
 }
 
 // frameCount returns the NUMBER_OF_FRAMES statistics tag of the track with the TrackUID uid.
@@ -135,59 +163,82 @@ func (f *File) frameCount(uid string) (int, bool) {
 	if err != nil || !ok || tags.ID != idTags {
 		return 0, false
 	}
-	count, found := 0, false
-	err = f.each(tags, func(tag ebml.Header) error {
+	for tag, err := range f.r.Children(tags) {
+		if err != nil {
+			return 0, false
+		}
 		if tag.ID != idTag {
-			return nil
+			continue
 		}
 		n, ok, err := f.tagFrames(tag, uid)
 		if ok {
-			count, found = n, true
-			return errStop
+			return n, true
 		}
-		return err
-	})
-	return count, found && err == nil
+		if err != nil {
+			return 0, false
+		}
+	}
+	return 0, false
 }
 
 // tagFrames returns the NUMBER_OF_FRAMES count of a Tag that targets the track uid.
 func (f *File) tagFrames(tag ebml.Header, uid string) (count int, ok bool, err error) {
 	var uids []string
 	hasCount := false
-	err = f.each(tag, func(c ebml.Header) error {
+	for c, childErr := range f.r.Children(tag) {
+		if childErr != nil {
+			err = childErr
+			break
+		}
 		switch c.ID {
 		case idTargets:
-			return f.each(c, func(target ebml.Header) error {
-				if target.ID != idTagTrackUID {
-					return nil
-				}
-				var b []byte
-				err := f.readBytes(target, &b)
-				uids = append(uids, string(bytes.TrimLeft(b, "\x00")))
-				return err
-			})
+			uids, err = f.targetUIDs(c, uids)
 		case idSimpleTag:
-			if n, ok := f.numberOfFrames(c); ok && !hasCount {
-				count, hasCount = n, true
+			if !hasCount {
+				count, hasCount = f.numberOfFrames(c)
 			}
 		}
-		return nil
-	})
+		if err != nil {
+			break
+		}
+	}
 	return count, hasCount && slices.Contains(uids, uid), err
+}
+
+func (f *File) targetUIDs(targets ebml.Header, uids []string) ([]string, error) {
+	for target, err := range f.r.Children(targets) {
+		if err != nil {
+			return uids, err
+		}
+		if target.ID != idTagTrackUID {
+			continue
+		}
+		b, err := f.r.Bytes(target)
+		uids = append(uids, string(bytes.TrimLeft(b, "\x00")))
+		if err != nil {
+			return uids, err
+		}
+	}
+	return uids, nil
 }
 
 func (f *File) numberOfFrames(simpleTag ebml.Header) (int, bool) {
 	var name, value string
-	err := f.each(simpleTag, func(c ebml.Header) error {
+	for c, err := range f.r.Children(simpleTag) {
+		if err != nil {
+			return 0, false
+		}
 		switch c.ID {
 		case idTagName:
-			return f.readString(c, &name)
+			name, err = f.r.String(c)
 		case idTagString:
-			return f.readString(c, &value)
+			value, err = f.r.String(c)
 		}
-		return nil
-	})
-	if err != nil || name != "NUMBER_OF_FRAMES" {
+		if err != nil {
+			return 0, false
+		}
+	}
+	if name != "NUMBER_OF_FRAMES" {
 		return 0, false
 	}
 	n, err := strconv.ParseUint(value, 10, 31)
@@ -204,8 +255,8 @@ func (f *File) clusterStart(offset int64) (clusterInfo, bool) {
 	if err != nil || !ok || ts.ID != idTimestamp {
 		return clusterInfo{}, false
 	}
-	var v uint64
-	if f.readUint(ts, &v) != nil {
+	v, err := f.r.Unsigned(ts)
+	if err != nil {
 		return clusterInfo{}, false
 	}
 	return clusterInfo{dataOffset: cluster.Offset, time: int64(v)}, true

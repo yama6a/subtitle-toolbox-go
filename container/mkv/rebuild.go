@@ -7,8 +7,10 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
 
 var (
@@ -16,15 +18,10 @@ var (
 	vttTimestamp = regexp.MustCompile(`<(?:(\d+):)?(\d{2}):(\d{2})\.(\d{3})>`)
 )
 
-const (
-	assBlockFields = 9 // ReadOrder, Layer, Style, Name, MarginL, MarginR, MarginV, Effect and Text
-	trimSet        = " \t\n\r\x00\x0B"
-)
+const assBlockFields = 9 // ReadOrder, Layer, Style, Name, MarginL, MarginR, MarginV, Effect and Text
 
-// clock writes a time as hh:mm:ss with the separator sep before the milliseconds. The hours have at least hourDigits digits.
-func clock(ms int64, sep string, hourDigits int) string {
-	ms = max(ms, 0)
-	return fmt.Sprintf("%0*d:%02d:%02d%s%03d", hourDigits, ms/3_600_000, ms/60_000%60, ms/1000%60, sep, ms%1000)
+func timeText(d time.Duration, hourWidth int, sep byte) string {
+	return string(timecode.AppendClock(nil, d, hourWidth, sep))
 }
 
 // cueText removes the empty lines that would end the cue in a text file.
@@ -36,7 +33,7 @@ func cueText(data string) string {
 func subRipFile(blocks []timedBlock) string {
 	var b strings.Builder
 	for i, blk := range blocks {
-		fmt.Fprintf(&b, "%d\n%s --> %s\n%s\n\n", i+1, clock(blk.startMs, ",", 2), clock(blk.endMs, ",", 2), cueText(blk.data))
+		fmt.Fprintf(&b, "%d\n%s --> %s\n%s\n\n", i+1, timeText(blk.start, 2, ','), timeText(blk.end, 2, ','), cueText(blk.data))
 	}
 	return b.String()
 }
@@ -65,7 +62,7 @@ func assFile(ssa bool, codecPrivate string, blocks []timedBlock) string {
 
 // assHeader returns the header of the file and the names of the Format line of its events.
 func assHeader(ssa bool, codecPrivate string) (string, []string) {
-	header := strings.TrimRight(markupcore.NormalizeLineEnds(strings.TrimPrefix(codecPrivate, "\xEF\xBB\xBF")), trimSet) + "\n"
+	header := strings.TrimRight(markupcore.NormalizeLineEnds(strings.TrimPrefix(codecPrivate, "\xEF\xBB\xBF")), markupcore.TrimSet) + "\n"
 	format := strings.Split("Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text", ", ")
 	if ssa {
 		format[0] = "Marked"
@@ -96,9 +93,9 @@ func newAssEvent(format []string, blk timedBlock) assEvent {
 func assValue(key string, fields []string, blk timedBlock) string {
 	switch key {
 	case "start":
-		return clock(blk.startMs, ".", 1)
+		return timeText(blk.start, 1, '.')
 	case "end":
-		return clock(blk.endMs, ".", 1)
+		return timeText(blk.end, 1, '.')
 	case "marked":
 		if strings.HasPrefix(fields[1], "Marked=") {
 			return fields[1]
@@ -186,7 +183,7 @@ func leadingInt(s string) int {
 func webVTTFile(webm bool, codecPrivate string, blocks []timedBlock) string {
 	file := "WEBVTT"
 	if codecPrivate != "" {
-		file = strings.TrimRight(markupcore.NormalizeLineEnds(codecPrivate), trimSet)
+		file = strings.TrimRight(markupcore.NormalizeLineEnds(codecPrivate), markupcore.TrimSet)
 	}
 	var b strings.Builder
 	b.WriteString(file)
@@ -206,28 +203,29 @@ func webVTTCue(webm bool, blk timedBlock) string {
 	var b strings.Builder
 	b.WriteString("\n\n")
 	if strings.TrimSpace(comments) != "" {
-		b.WriteString(strings.TrimRight(comments, trimSet) + "\n\n")
+		b.WriteString(strings.TrimRight(comments, markupcore.TrimSet) + "\n\n")
 	}
 	if identifier != "" {
 		b.WriteString(identifier + "\n")
 	}
-	b.WriteString(clock(blk.startMs, ".", 2) + " --> " + clock(blk.endMs, ".", 2))
+	b.WriteString(timeText(blk.start, 2, '.') + " --> " + timeText(blk.end, 2, '.'))
 	if settings != "" {
 		b.WriteString(" " + settings)
 	}
-	b.WriteString("\n" + absoluteTimestamps(cueText(data), blk.startMs))
+	b.WriteString("\n" + absoluteTimestamps(cueText(data), blk.start))
 	return b.String()
 }
 
 // absoluteTimestamps turns the timestamps in the text, which count from the cue start, into absolute times.
-func absoluteTimestamps(text string, startMs int64) string {
+func absoluteTimestamps(text string, start time.Duration) string {
 	return vttTimestamp.ReplaceAllStringFunc(text, func(m string) string {
 		p := vttTimestamp.FindStringSubmatch(m)
 		h, _ := strconv.ParseInt(p[1], 10, 64)
 		mm, _ := strconv.ParseInt(p[2], 10, 64)
 		ss, _ := strconv.ParseInt(p[3], 10, 64)
 		ms, _ := strconv.ParseInt(p[4], 10, 64)
-		return "<" + clock(startMs+(h*3600+mm*60+ss)*1000+ms, ".", 2) + ">"
+		offset := time.Duration(min((h*3600+mm*60+ss)*1000+ms, int64(timecode.MaxTime/time.Millisecond))) * time.Millisecond
+		return "<" + timeText(start+offset, 2, '.') + ">"
 	})
 }
 
