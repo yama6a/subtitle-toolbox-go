@@ -13,15 +13,12 @@ A package imports only packages of a lower layer. Every layer may also import th
 
 | Layer | Packages | May import |
 |---:|:--- |:--- |
-| 0 | leaf helpers in `internal/`: `markupcore`, `linewrap`, `format/internal/paragraphs`, `timecode`, `grapheme`, `ssatag`, `intkey`, `textenc`, `format/internal/xmlraw`, `extfallback`, `format/internal/codepage`, the test helpers `testfiles` and `translationtest`, `internal/caption/cea608`, `internal/caption/cea708`, `container/mkv/internal/ebml`, `orderedjson`, `container/mpegts/internal/teletext` | other layer 0 packages |
-| 1 | `markup`, `internal/speakerlabel` | layer 0 |
-| 2 | `model` | layers 0 and 1 |
-| 3 | `internal/` helpers that work on model types: `textblock`, `subrip`, `vtt`, `position`, `parsing`, `writing`, `caption`, `format/internal/ttmldoc`, `bitmap`, `bitmap/displayset`, `bitmap/dvbsub`, `container/mpegts/internal/arib`, `bitmap/dvdsub`, `format/internal/formatdata`, `format/internal/wordgroup`, `readingspeed` | layers 0 to 2, and other layer 3 packages. Go rejects an import cycle |
-| 4 | `format/<name>` | layers 0 to 3. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML. Other shared code goes to `internal/` |
-| 4b | `container/<name>`, from 3.x | layers 0 to 4. A container returns cues, so it calls the format readers |
-| 5 | root `stbox` and the service packages, such as `stats`, `diff`, `validation`, `timing`, `hls`, `imaging`, `ocr` and `translation` | layers 0 to 4b. A service never imports the root. The root never imports a service |
-| 5b | packages that build on one service: `ocr/<engine>`, the test helper `ocr/ocrtest`, from 3.x, and `translation/internal/httppost` | layers 0 to 5. A 5b package never imports another 5b package |
-| 5c | packages that build on 5b packages: `ocr/auto` and `translation/<engine>` | layers 0 to 5b. A 5c package never imports another 5c package |
+| 0 | helpers that import no model type. In `internal/`: `markupcore`, `speakerlabel`, `linewrap`, `timecode`, `grapheme`, `ssatag`, `intkey`, `textenc`, `extfallback`, `orderedjson`, `caption/cea608`, `caption/cea708`, and the test helpers `testfiles` and `translationtest`. In `format/internal/`: `codepage`, `paragraphs`, `xmlraw`. Below the containers: `container/mkv/internal/ebml`, `container/mpegts/internal/teletext` | other layer 0 packages |
+| 1 | `model`, `markup` | layer 0. `model` imports `markup` |
+| 2 | helpers that work on model types. In `internal/`: `textblock`, `subrip`, `vtt`, `position`, `parsing`, `writing`, `readingspeed`, `caption`, `bitmap`, `bitmap/displayset`, `bitmap/dvbsub`, `bitmap/dvdsub`. In `format/internal/`: `formatdata`, `ttmldoc`, `wordgroup`. Below the containers: `container/mpegts/internal/arib` | layers 0 to 2. Go rejects an import cycle |
+| 3 | `format/<name>` | layers 0 to 2. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML. Other shared code goes to `format/internal/` or `internal/` |
+| 4 | `container/<name>` | layers 0 to 3. A container returns cues, so it calls the format readers |
+| 5 | root `stbox`, the services `stats`, `stream`, `hearingimpaired`, `speakers`, `fixing`, `profanity`, `refsync`, `diff`, `dual`, `karaoke`, `validation`, `timing`, `imaging`, `hls`, `resegment`, `ocr` and `translation`, and the packages below a service folder: `ocr/glyph`, `ocr/tesseract`, `ocr/auto`, the test helper `ocr/ocrtest`, `translation/deepl`, `translation/google`, `translation/openai` and `translation/internal/httppost` | layers 0 to 4. The root and a service never import each other. A service never imports another service. A package below a service folder imports only its service and the `internal/` packages of that service. `ocr/auto` also imports the OCR engines |
 | 6 | `internal/cli`, `cmd/stbox` | everything |
 
 ### Format packages
