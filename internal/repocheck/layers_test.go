@@ -32,7 +32,7 @@ const (
 // layers holds the layer of each package. A key that ends in "/*" covers each package one folder below it.
 var layers = map[string]layer{
 	"internal/timecode":                  layerLeaf,
-	"internal/intkey":                    layerLeaf,
+	"internal/decimal":                   layerLeaf,
 	"format/internal/formatdata":         layerModelUser,
 	"internal/grapheme":                  layerLeaf,
 	"internal/ssatag":                    layerLeaf,
@@ -49,7 +49,7 @@ var layers = map[string]layer{
 	"internal/linewrap":                  layerLeaf,
 	"internal/testfiles":                 layerLeaf,
 	"internal/translationtest":           layerLeaf,
-	"internal/extfallback":               layerLeaf,
+	"internal/extfallback":               layerModelUser,
 	"format/internal/paragraphs":         layerLeaf,
 	"markup":                             layerModel,
 	"model":                              layerModel,

@@ -6,6 +6,8 @@ package extfallback
 import (
 	"path/filepath"
 	"strings"
+
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // Allowed reports whether the extension of path may set the format when detection finds none. The extensions
@@ -21,10 +23,10 @@ func Allowed(path string) bool {
 }
 
 // Profile returns the format that the extension of path names when that format is a profile of the detected format:
-// "itt" for "ttml" and a .itt file. Otherwise it returns detected.
-func Profile(detected, path string) string {
-	if detected == "ttml" && strings.EqualFold(filepath.Ext(path), ".itt") {
-		return "itt"
+// ITT for TTML and a .itt file. Otherwise it returns detected.
+func Profile(detected model.Format, path string) model.Format {
+	if detected == model.TTML && strings.EqualFold(filepath.Ext(path), ".itt") {
+		return model.ITT
 	}
 	return detected
 }

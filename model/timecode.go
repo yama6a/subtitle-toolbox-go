@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 )
 
@@ -254,15 +255,15 @@ func ParseTime(s string, r FrameRate) (time.Duration, error) {
 	if labels == 0 {
 		return 0, invalidArgument(`The timecode "` + s + `" counts frames and needs a frame rate.`)
 	}
-	hours := digitsValue(m[1])
+	hours := decimal.Saturated(m[1])
 	if hours >= timecode.MaxHours {
 		return 0, timeBelowLimit(s)
 	}
-	frames := digitsValue(m[4])
+	frames := decimal.Saturated(m[4])
 	if frames >= int64(labels) {
 		return 0, invalidArgument(`The timecode "` + s + `" has a frame number that is not below ` + strconv.Itoa(labels) + ".")
 	}
-	t := Timecode{Hours: int(hours), Minutes: int(digitsValue(m[2])), Seconds: int(digitsValue(m[3])), Frames: int(frames)}
+	t := Timecode{Hours: int(hours), Minutes: int(decimal.Saturated(m[2])), Seconds: int(decimal.Saturated(m[3])), Frames: int(frames)}
 	d := r.ClockDuration(t).Round(time.Millisecond)
 	if d >= timecode.MaxTime {
 		return 0, timeBelowLimit(s)
@@ -272,16 +273,4 @@ func ParseTime(s string, r FrameRate) (time.Duration, error) {
 
 func timeBelowLimit(s string) error {
 	return invalidArgument(`The timecode "` + s + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours.")
-}
-
-// digitsValue returns the value of a string of digits, and a value above any limit for 18 digits or more.
-func digitsValue(s string) int64 {
-	for len(s) > 1 && s[0] == '0' {
-		s = s[1:]
-	}
-	if len(s) > 17 {
-		return 1 << 62
-	}
-	n, _ := strconv.ParseInt(s, 10, 64)
-	return n
 }

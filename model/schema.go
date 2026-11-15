@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
 )
 
 // valueType is one type of the type language of the format data schema.
@@ -116,7 +116,7 @@ func listOf(elem valueType) valueType {
 }
 
 func namesOf(elem valueType) valueType {
-	return namedValues(elem, func(key string) bool { return !intkey.IsIntKey(key) },
+	return namedValues(elem, func(key string) bool { return !decimal.IsCanonical(key) },
 		func(path string) string {
 			return "The field " + path + " must be an object whose keys are names, not numbers."
 		})
@@ -289,7 +289,7 @@ func childPath(v any, path string, i int) string {
 
 // keyPath returns the path of the object key at path. A key that reads as an integer gets the list form.
 func keyPath(path, key string) string {
-	if intkey.IsIntKey(key) {
+	if decimal.IsCanonical(key) {
 		return path + "[" + key + "]"
 	}
 	return path + "." + key

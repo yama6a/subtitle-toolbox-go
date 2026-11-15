@@ -127,17 +127,6 @@ func VisibleCharacters(lines []string) int {
 	return n
 }
 
-// VisibleLineLengths returns the visible length of each line that has at least 1 visible character.
-func VisibleLineLengths(lines []string) []int {
-	var lengths []int
-	for _, line := range lines {
-		if n := markupcore.VisibleLength(line); n > 0 {
-			lengths = append(lengths, n)
-		}
-	}
-	return lengths
-}
-
 // CharactersPerSecond returns characters divided by the duration in seconds, or +Inf for a duration of 0 or less.
 func CharactersPerSecond(characters int, duration time.Duration) float64 {
 	if duration <= 0 {

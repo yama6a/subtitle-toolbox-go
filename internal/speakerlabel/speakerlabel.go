@@ -1,5 +1,5 @@
-// Package speakerlabel holds the speaker label rule, such as JOHN: at the start of a line, and the helpers that edit
-// the visible text of lines.
+// Package speakerlabel holds the speaker label rule: a name such as JOHN: at the start of a line, or after its
+// dialogue dash.
 //
 // Adapted from Subtitle Edit, src/libse/Forms/RemoveTextForHI.cs
 // (https://github.com/SubtitleEdit/subtitleedit/blob/5b9ee8baf08c472c7a74fbc337446b656dedabb4/src/libse/Forms/RemoveTextForHI.cs), MIT.
@@ -15,112 +15,20 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 )
 
-// hspace is the PCRE class \h.
-const hspace = `[\t \x{A0}\x{1680}\x{180E}\x{2000}-\x{200A}\x{202F}\x{205F}\x{3000}]`
-
 // The upper case pattern has no lookahead for an upper case letter. Remove checks the captured
 // label for one instead.
 var (
-	upperLabel = regexp.MustCompile(labelPattern(`[\p{Lu}\p{N}][\p{Lu}\p{N}.'&-]*(?:` + hspace + `[\p{Lu}\p{N}.'&-]+){0,3}`))
-	anyLabel   = regexp.MustCompile(labelPattern(`\p{Lu}[\p{L}\p{N}.'&-]*(?:` + hspace + `[\p{L}\p{N}.'&-]+){0,3}`))
+	upperLabel = regexp.MustCompile(labelPattern(`[\p{Lu}\p{N}][\p{Lu}\p{N}.'&-]*(?:` + markupcore.HSpaceClass + `[\p{Lu}\p{N}.'&-]+){0,3}`))
+	anyLabel   = regexp.MustCompile(labelPattern(`\p{Lu}[\p{L}\p{N}.'&-]*(?:` + markupcore.HSpaceClass + `[\p{L}\p{N}.'&-]+){0,3}`))
 )
 
 func labelPattern(label string) string {
-	return `(?m)^` + hspace + `*(?:-` + hspace + `*)?(` + label + `)` + hspace + `*:(?:` + hspace + `+|$)`
+	return `(?m)^` + markupcore.HSpaceClass + `*(?:-` + markupcore.HSpaceClass + `*)?(` + label + `)` + markupcore.HSpaceClass + `*:(?:` + markupcore.HSpaceClass + `+|$)`
 }
 
-// IsHSpace reports whether r is horizontal white space, as the PCRE class \h.
-func IsHSpace(r rune) bool {
-	switch r {
-	case '\t', ' ', 0xA0, 0x1680, 0x180E, 0x202F, 0x205F, 0x3000:
-		return true
-	}
-	return r >= 0x2000 && r <= 0x200A
-}
-
-// Span is a byte range of the visible text.
-type Span struct{ Start, End int }
-
-// rawPlace is the place of the raw bytes of one visible byte: the line index, the offset and the length, such as
-// 5 for &amp;. An LF between lines has the line -1.
-type rawPlace struct{ line, offset, length int }
-
-// Visible is the text of lines between tags with &lt;, &gt; and &amp; decoded, the lines joined with LF.
-type Visible struct {
-	Text string
-	raw  []rawPlace
-}
-
-// VisibleOf returns the visible text of lines.
-func VisibleOf(lines []string) Visible {
-	var b strings.Builder
-	var raw []rawPlace
-	for li, line := range lines {
-		if li > 0 {
-			b.WriteByte('\n')
-			raw = append(raw, rawPlace{line: -1})
-		}
-		offset := 0
-		for k, part := range markupcore.SplitTags(line) {
-			for i := 0; k%2 == 0 && i < len(part); {
-				c, n := decodeAt(part[i:])
-				b.WriteByte(c)
-				raw = append(raw, rawPlace{li, offset + i, n})
-				i += n
-			}
-			offset += len(part)
-		}
-	}
-	return Visible{Text: b.String(), raw: raw}
-}
-
-func decodeAt(s string) (byte, int) {
-	switch {
-	case strings.HasPrefix(s, "&lt;"):
-		return '<', 4
-	case strings.HasPrefix(s, "&gt;"):
-		return '>', 4
-	case strings.HasPrefix(s, "&amp;"):
-		return '&', 5
-	}
-	return s[0], 1
-}
-
-// visibleLine returns the visible text of one line.
-func visibleLine(line string) string {
-	return VisibleOf([]string{line}).Text
-}
-
-// Cut removes the raw bytes of the visible spans from lines. Tags between them stay.
-func (v Visible) Cut(lines []string, spans []Span) []string {
-	gone := make([][]bool, len(lines))
-	for _, s := range spans {
-		for _, p := range v.raw[s.Start:s.End] {
-			if p.line < 0 {
-				continue
-			}
-			if gone[p.line] == nil {
-				gone[p.line] = make([]bool, len(lines[p.line]))
-			}
-			for k := range p.length {
-				gone[p.line][p.offset+k] = true
-			}
-		}
-	}
-	out := slices.Clone(lines)
-	for li, g := range gone {
-		if g == nil {
-			continue
-		}
-		b := make([]byte, 0, len(g))
-		for k, removed := range g {
-			if !removed {
-				b = append(b, lines[li][k])
-			}
-		}
-		out[li] = string(b)
-	}
-	return out
+// runText returns the text run of one line.
+func runText(line string) string {
+	return markupcore.TextRunsOf([]string{line}).Text
 }
 
 // Remove removes each speaker label with its colon and the spaces after it. A dash before it stays.
@@ -129,11 +37,11 @@ func Remove(lines []string, anyCase bool) []string {
 	if anyCase {
 		re = anyLabel
 	}
-	v := VisibleOf(lines)
-	var spans []Span
+	v := markupcore.TextRunsOf(lines)
+	var spans []markupcore.TextSpan
 	for _, m := range re.FindAllStringSubmatchIndex(v.Text, -1) {
 		if anyCase || strings.IndexFunc(v.Text[m[2]:m[3]], unicode.IsUpper) >= 0 {
-			spans = append(spans, Span{Start: m[2], End: m[1]})
+			spans = append(spans, markupcore.TextSpan{Start: m[2], End: m[1]})
 		}
 	}
 	return v.Cut(lines, spans)
@@ -143,7 +51,7 @@ func Remove(lines []string, anyCase bool) []string {
 // removal does. The result is cleaned like a cue line. It is the line itself, cleaned, when the line has no label.
 // A line of invalid UTF-8 has no label.
 func RemoveLabel(line string, anyCase bool) string {
-	if !utf8.ValidString(visibleLine(line)) {
+	if !utf8.ValidString(runText(line)) {
 		return markupcore.CleanLine(line)
 	}
 	lines := []string{markupcore.CleanLine(line)}
@@ -156,21 +64,9 @@ func RemoveLabel(line string, anyCase bool) string {
 
 // AfterLead skips the horizontal space at text[start:], then a dash and its horizontal space.
 func AfterLead(text string, start int) int {
-	p := SkipHSpace(text, start)
+	p := markupcore.SkipHSpace(text, start)
 	if p < len(text) && text[p] == '-' {
-		p = SkipHSpace(text, p+1)
-	}
-	return p
-}
-
-// SkipHSpace skips the horizontal space at text[p:].
-func SkipHSpace(text string, p int) int {
-	for p < len(text) {
-		r, n := utf8.DecodeRuneInString(text[p:])
-		if !IsHSpace(r) {
-			break
-		}
-		p += n
+		p = markupcore.SkipHSpace(text, p+1)
 	}
 	return p
 }
@@ -184,7 +80,7 @@ func RemoveEmptied(original, lines []string) []string {
 	dashLines := 0
 	anyRemoved := false
 	for i, line := range lines {
-		was := visibleLine(original[i]) //nolint:gosec // the caller passes slices of the same length
+		was := runText(original[i]) //nolint:gosec // the caller passes slices of the same length
 		if isDashLine(was) {
 			dashLines++
 		}
@@ -212,7 +108,7 @@ func RemoveEmptied(original, lines []string) []string {
 }
 
 func emptied(was, line string) bool {
-	t := strings.Trim(visibleLine(line), markupcore.TrimSet)
+	t := strings.Trim(runText(line), markupcore.TrimSet)
 	return strings.Trim(was, markupcore.TrimSet) != "" && (t == "" || t == "-")
 }
 
@@ -227,14 +123,14 @@ func tagsOf(line string) string {
 }
 
 func isDashLine(text string) bool {
-	p := SkipHSpace(text, 0)
+	p := markupcore.SkipHSpace(text, 0)
 	return p < len(text) && text[p] == '-'
 }
 
 func removeLastDash(lines []string) []string {
 	dash := -1
 	for i, line := range lines {
-		if isDashLine(visibleLine(line)) {
+		if isDashLine(runText(line)) {
 			if dash >= 0 {
 				return lines
 			}
@@ -244,10 +140,10 @@ func removeLastDash(lines []string) []string {
 	if dash < 0 {
 		return lines
 	}
-	v := VisibleOf(lines[dash : dash+1])
-	end := SkipHSpace(v.Text, SkipHSpace(v.Text, 0)+1)
+	v := markupcore.TextRunsOf(lines[dash : dash+1])
+	end := markupcore.SkipHSpace(v.Text, markupcore.SkipHSpace(v.Text, 0)+1)
 	out := slices.Clone(lines)
-	out[dash] = v.Cut(lines[dash:dash+1], []Span{{Start: 0, End: end}})[0]
+	out[dash] = v.Cut(lines[dash:dash+1], []markupcore.TextSpan{{Start: 0, End: end}})[0]
 	return out
 }
 
@@ -282,7 +178,7 @@ func blankTagPairAt(s string, i int) int {
 	if name == "" {
 		return 0
 	}
-	j = SkipHSpace(s, j)
+	j = markupcore.SkipHSpace(s, j)
 	if !strings.HasPrefix(s[j:], "</"+name) {
 		return 0
 	}

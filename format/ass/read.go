@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
@@ -265,7 +265,7 @@ func (rd *reader) eventLine(line string, number int) error {
 // mode drops the values of such a field.
 func (rd *reader) checkFieldNames(line string, number int) error {
 	for _, name := range rd.f.eventFormat {
-		if !intkey.IsIntKey(name) {
+		if !decimal.IsCanonical(name) {
 			continue
 		}
 		msg := `The field name "` + name + `" in the Format line of the [Events] section is a number.`
@@ -341,7 +341,7 @@ func (rd *reader) fields(ev event) (eventFields, error) {
 	}
 	f := eventFields{record: record{names: make([]string, 0, len(all.names)), values: make([]string, 0, len(all.names))}}
 	for i, name := range all.names {
-		if !intkey.IsIntKey(name) {
+		if !decimal.IsCanonical(name) {
 			f.set(name, all.values[i])
 		}
 	}

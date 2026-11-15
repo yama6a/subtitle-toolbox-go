@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
@@ -322,9 +322,9 @@ func (rd *reader) millisecondTimes(recs []record, roles layout) bool {
 		}
 		switch {
 		case start != "" && end != "":
-			durations = append(durations, intkey.DigitsToInt(end)-intkey.DigitsToInt(start))
+			durations = append(durations, decimal.Saturated(end)-decimal.Saturated(start))
 		case duration != "":
-			durations = append(durations, intkey.DigitsToInt(duration))
+			durations = append(durations, decimal.Saturated(duration))
 		}
 	}
 	if len(durations) == 0 {

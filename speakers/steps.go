@@ -69,7 +69,7 @@ func splitLabel(line string, anyCase bool) (name, rest string, ok bool) {
 	visible := markupcore.VisibleText(line)
 	label, _, _ := strings.Cut(visible[speakerlabel.AfterLead(visible, 0):], ":")
 	name = strings.Trim(label, markupcore.TrimSet)
-	if p := speakerlabel.SkipHSpace(visible, 0); p < len(visible) && visible[p] == '-' {
+	if p := markupcore.SkipHSpace(visible, 0); p < len(visible) && visible[p] == '-' {
 		rest = removeLeadingDash(rest)
 	}
 	if !strings.ContainsFunc(name, func(r rune) bool { return unicode.Is(unicode.Ll, r) }) {
@@ -87,11 +87,11 @@ func removeLeadingDash(line string) string {
 		k += 2
 	}
 	text := parts[k]
-	p := speakerlabel.SkipHSpace(text, 0)
+	p := markupcore.SkipHSpace(text, 0)
 	if p >= len(text) || text[p] != '-' {
 		return line
 	}
-	parts[k] = text[speakerlabel.SkipHSpace(text, p+1):]
+	parts[k] = text[markupcore.SkipHSpace(text, p+1):]
 	return strings.Join(parts, "")
 }
 
@@ -216,7 +216,7 @@ func dashLines(lines []string, parts []part, style model.DialogueDashStyle) {
 
 func startsWithDash(text string) bool {
 	visible := markupcore.VisibleText(text)
-	p := speakerlabel.SkipHSpace(visible, 0)
+	p := markupcore.SkipHSpace(visible, 0)
 	return p < len(visible) && visible[p] == '-'
 }
 

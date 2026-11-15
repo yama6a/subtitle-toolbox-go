@@ -22,7 +22,7 @@ func Count(s string) int {
 	for s != "" {
 		var c string
 		c, s, _, state = uniseg.FirstGraphemeClusterInString(s, state)
-		if r, _ := utf8.DecodeRuneInString(c); !IsInvisible(r) {
+		if r, _ := utf8.DecodeRuneInString(c); !isInvisible(r) {
 			n++
 		}
 	}
@@ -52,8 +52,8 @@ func Clusters(s string) iter.Seq[string] {
 	}
 }
 
-// IsInvisible reports whether r counts 0 characters.
-func IsInvisible(r rune) bool {
+// isInvisible reports whether r counts 0 characters.
+func isInvisible(r rune) bool {
 	return r == 0x00AD || r == 0x200B || r == 0xFEFF || IsBidiControl(r)
 }
 

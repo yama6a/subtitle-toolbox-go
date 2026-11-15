@@ -209,7 +209,7 @@ func (r *runner) peek(arg string) stbox.Format {
 		return r.readOptions.Format
 	}
 	if f, ok := r.detect(path); ok {
-		return stbox.Format(extfallback.Profile(string(f), path))
+		return extfallback.Profile(f, path)
 	}
 	if f, ok := stbox.FormatFromPath(arg); ok && f.CanRead() && extfallback.Allowed(arg) {
 		return f

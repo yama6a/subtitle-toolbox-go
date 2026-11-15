@@ -53,39 +53,13 @@ func detectFormat(content []byte) (Format, bool) {
 			return "", false
 		}
 	}
-	content = lfLineEnds(content)
+	content = []byte(markupcore.NormalizeLineEnds(string(content)))
 	for _, s := range signatures {
 		if s.match(content) {
 			return s.format, true
 		}
 	}
 	return "", false
-}
-
-// lfLineEnds turns each run of CRs followed by LF into one LF, and each other CR into LF.
-func lfLineEnds(content []byte) []byte {
-	if bytes.IndexByte(content, '\r') < 0 {
-		return content
-	}
-	out := make([]byte, 0, len(content))
-	for i := 0; i < len(content); i++ {
-		if content[i] != '\r' {
-			out = append(out, content[i])
-			continue
-		}
-		j := i + 1
-		for j < len(content) && content[j] == '\r' {
-			j++
-		}
-		if j < len(content) && content[j] == '\n' {
-			out = append(out, '\n')
-		} else {
-			out = append(out, bytes.Repeat([]byte{'\n'}, j-i)...)
-			j--
-		}
-		i = j
-	}
-	return out
 }
 
 // isBlank reports whether content holds nothing but UTF-8 BOMs and the bytes of markupcore.TrimSet.
