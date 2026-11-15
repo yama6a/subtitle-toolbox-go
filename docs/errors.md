@@ -19,7 +19,7 @@ fmt.Println(err)
 // Output:
 // srt 6
 // true
-// srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:05,000 => 00:00:07,000".
+// srt: line 6: block #1 has no timing line on its second line. The line is "00:00:05,000 => 00:00:07,000"
 ```
 
 ## Causes

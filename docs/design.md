@@ -40,7 +40,7 @@ A read returns its warnings in `ReadInfo.Warnings`. The `Subtitle` holds none.
 
 Each cause is a sentinel error such as `ErrParse`. Some causes also have a type with fields, such as `*ParseError`. The library has no numeric error codes. See [errors.md](errors.md).
 
-- **Messages**: a message is a full English sentence. `Error()` adds a lower-case prefix, as in `srt: line 6: Block #1 has no timing line on its second line. The line is "...".` People read these messages in the CLI.
+- **Messages**: a message starts in lower case and has no final period, as Go style asks. `Error()` adds a prefix, as in `srt: line 6: block #1 has no timing line on its second line. The line is "..."`. People read these messages in the CLI.
 - **No identifiers**: a message never names a Go identifier or a CLI flag. The `Option` field names the option.
 - **No catch-all**: no sentinel matches every library error. A caller matches the causes it handles, so errors of its own reader, such as a closed network stream, stay apart.
 - **Not chosen**: Go style messages everywhere, and an `ErrStbox` that every sentinel wraps and every error type matches.
