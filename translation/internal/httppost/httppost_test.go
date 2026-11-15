@@ -205,7 +205,7 @@ func TestHelpers(t *testing.T) {
 	for in, want := range map[string]bool{
 		"http://host": true, "HTTPS://h/path": true, "http://": false, "http:///x": false, "ftp://host": false, "host": false, "": false,
 	} {
-		assert.Equal(t, want, httppost.ValidBaseURL(in), in)
+		assert.Equal(t, want, httppost.CheckBaseURL("o", in) == nil, in)
 	}
 	for in, want := range map[string]bool{
 		"abc": true, "a b": true, "": true, " abc": false, "abc ": false, "a\nb": false, "a\x7fb": false, "a\x00b": false, "a\tb": false,

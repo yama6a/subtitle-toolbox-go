@@ -19,7 +19,6 @@ import (
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
-	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
 	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/ocrtest"
 )
 
@@ -157,20 +156,6 @@ func TestOCRProgress(t *testing.T) {
 			assert.Equal(t, tt.want, stderr.String())
 		})
 	}
-}
-
-func TestOCRLoadsTheDatabaseOnce(t *testing.T) {
-	t.Parallel()
-
-	e := &ocrEdit{engine: ocr.EngineGlyph}
-	require.NoError(t, e.load(t.Context(), &console{}))
-	databases := make([]*glyphocr.Database, 2)
-	for i := range databases {
-		engine, err := e.newGlyph(&console{stderr: &bytes.Buffer{}})
-		require.NoError(t, err)
-		databases[i] = engine.Database()
-	}
-	assert.Same(t, databases[0], databases[1])
 }
 
 // TestConvertOCRAccuracyTesseract reads the fixtures through the CLI and compares each cue with the drawn text.

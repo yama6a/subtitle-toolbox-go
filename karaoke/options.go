@@ -47,7 +47,7 @@ func (o Options) Validate() error {
 	case strings.ContainsAny(style, "<>"):
 		return invalid("Style", "The style "+style+" must not hold < or >. Pass the tag without its brackets, for example u.")
 	case o.MaxWordsPerCue < 0:
-		return invalid("MaxWordsPerCue", "The maximum of "+strconv.Itoa(o.MaxWordsPerCue)+" words per cue must be 1 or more.")
+		return invalid("MaxWordsPerCue", "The maximum of "+strconv.Itoa(o.MaxWordsPerCue)+" words per cue must not be negative. 0 shows all words.")
 	}
 	return nil
 }

@@ -43,9 +43,10 @@ type Options struct {
 
 // Validate checks the options. The error matches model.ErrInvalidArgument.
 func (o Options) Validate() error {
+	if err := httppost.CheckBaseURL("openai.Options.BaseURL", o.BaseURL); err != nil {
+		return err
+	}
 	switch {
-	case !httppost.ValidBaseURL(o.BaseURL):
-		return invalid("BaseURL", fmt.Sprintf("The base URL must start with http:// or https://, got %q.", o.BaseURL))
 	case strings.Trim(o.Model, markupcore.TrimSet) == "":
 		return invalid("Model", "The model must not be empty. Pass a model name such as gpt-4o-mini or llama3.")
 	case o.APIKey != "" && !httppost.CleanKey(o.APIKey):
@@ -93,14 +94,10 @@ func New(opts Options) (*Engine, error) {
 	if err := opts.Validate(); err != nil {
 		return nil, err
 	}
-	client := opts.HTTPClient
-	if client == nil {
-		client = translation.DefaultHTTPClient()
-	}
 	return &Engine{
 		url:     strings.TrimRight(opts.BaseURL, "/") + "/chat/completions",
 		options: opts,
-		client:  client,
+		client:  httppost.ClientOrDefault(opts.HTTPClient),
 		wait:    httppost.Sleep,
 	}, nil
 }

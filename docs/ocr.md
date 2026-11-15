@@ -34,7 +34,7 @@ An `ocr.Engine` has one method. `Recognize(ctx, im, language)` reads the PNG of 
 - `Text.Confidence` is a number from 0 to 1, or nil when the engine gives none. `Text.Validate` returns an error that matches `ErrInvalidArgument` for any other value, NaN included.
 - `language` is a Tesseract model name such as `deu` or `deu+eng`. The constants of package `ocr`, such as `ocr.German`, hold the 110 standard names. Any other string works, for example a custom model. `""` lets the engine use its own default. An engine that has no languages ignores it.
 
-An engine that fails on an image returns an error. `Run` wraps it.
+An engine that fails on an image returns an error. `Run` wraps it. An engine can return a `*RecognizeError` with a message and a cause. It matches `ErrRecognize`.
 
 ## Run
 

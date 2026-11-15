@@ -15,19 +15,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
 )
 
-// programLanguages holds the language list of one program. Its mutex also serialises the checks of that program.
-type programLanguages struct {
-	sync.Mutex
-	list []string
-	read bool
-}
-
-//nolint:gochecknoglobals // installed languages per program, read once per process
-var languages = struct {
-	sync.Mutex
-	byProgram map[string]*programLanguages
-}{byProgram: map[string]*programLanguages{}}
-
 // waitDelay is how long a killed program may keep its output pipes open, for example through a child process.
 const waitDelay = time.Second
 
@@ -116,20 +103,32 @@ func (e *Engine) RequireLanguages(ctx context.Context, language ocr.Language) er
 		missing[0] + ". The installed languages are: " + strings.Join(installed, ", ") + "."}
 }
 
-func (e *Engine) installedLanguages(ctx context.Context) ([]string, error) {
-	languages.Lock()
-	entry, ok := languages.byProgram[e.program]
-	if !ok {
-		entry = &programLanguages{}
-		languages.byProgram[e.program] = entry
-	}
-	languages.Unlock()
+// languageCache holds the installed languages of one engine. Its mutex also serialises the checks.
+type languageCache struct {
+	mu   sync.Mutex
+	list []string
+	read bool
+}
 
-	entry.Lock()
-	defer entry.Unlock()
-	if entry.read {
-		return entry.list, nil
+func (e *Engine) installedLanguages(ctx context.Context) ([]string, error) {
+	c := e.languages
+	if c == nil {
+		return e.listLanguages(ctx)
 	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.read {
+		return c.list, nil
+	}
+	list, err := e.listLanguages(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c.list, c.read = list, true
+	return list, nil
+}
+
+func (e *Engine) listLanguages(ctx context.Context) ([]string, error) {
 	if err := RequireInstalled(ctx, e.program); err != nil {
 		return nil, err
 	}
@@ -144,6 +143,5 @@ func (e *Engine) installedLanguages(ctx context.Context) ([]string, error) {
 			list = append(list, line)
 		}
 	}
-	entry.list, entry.read = list, true
 	return list, nil
 }

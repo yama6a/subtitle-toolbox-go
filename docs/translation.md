@@ -60,7 +60,7 @@ The engines of the library live in `translation/<engine>`. Package `translation`
 | `MaxCuesPerSentence` | 0 means 3 | the most cues in one text |
 | `MaxCharactersPerRequest` | 0 means 5000 | the most grapheme clusters of the encoded texts in one engine call. A longer text goes alone |
 
-`Validate` returns an error that matches `model.ErrInvalidArgument` for a limit below 0, for example `The maximum cues per sentence must be at least 1, got -1.`.
+`Validate` returns an error that matches `model.ErrInvalidArgument` for a limit below 0, for example `The maximum cues per sentence must not be negative, got -1. 0 means 3.`.
 
 ## What the runner sends
 

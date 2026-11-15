@@ -431,11 +431,11 @@ func TestTranslateErrors(t *testing.T) {
 	}{
 		{
 			name: "cues limit below 0", engine: &upperEngine{}, target: "de", opts: translation.Options{MaxCuesPerSentence: -1},
-			wantOption: "translation.Options.MaxCuesPerSentence", wantMsg: "The maximum cues per sentence must be at least 1, got -1.",
+			wantOption: "translation.Options.MaxCuesPerSentence", wantMsg: "The maximum cues per sentence must not be negative, got -1. 0 means 3.",
 		},
 		{
 			name: "characters limit below 0", engine: &upperEngine{}, target: "de", opts: translation.Options{MaxCharactersPerRequest: -5},
-			wantOption: "translation.Options.MaxCharactersPerRequest", wantMsg: "The maximum characters per request must be at least 1, got -5.",
+			wantOption: "translation.Options.MaxCharactersPerRequest", wantMsg: "The maximum characters per request must not be negative, got -5. 0 means 5000.",
 		},
 		{name: "nil engine", target: "de", wantMsg: "The translation engine is missing."},
 		{name: "empty target", engine: &upperEngine{}, target: " \t", wantMsg: "The target language is missing."},
