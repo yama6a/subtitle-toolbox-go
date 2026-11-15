@@ -6,8 +6,6 @@
 package stream
 
 import (
-	"strconv"
-
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -19,14 +17,4 @@ type ReadOptions struct {
 
 func (o ReadOptions) common() model.CommonReadOptions {
 	return model.CommonReadOptions{Lenient: o.Lenient}
-}
-
-func validateCommon(common model.CommonWriteOptions) error {
-	if common.LineEnding > model.CRLF {
-		return &model.InvalidArgumentError{Option: "CommonWriteOptions.LineEnding", Msg: "The line ending " + strconv.Itoa(int(common.LineEnding)) + " is unknown."}
-	}
-	if common.BOM > model.BOMRemove {
-		return &model.InvalidArgumentError{Option: "CommonWriteOptions.BOM", Msg: "The BOM rule " + strconv.Itoa(int(common.BOM)) + " is unknown."}
-	}
-	return nil
 }

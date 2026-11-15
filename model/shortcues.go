@@ -2,7 +2,6 @@ package model
 
 import (
 	"cmp"
-	"errors"
 	"fmt"
 	"math"
 	"regexp"
@@ -47,14 +46,18 @@ type CueLimits struct {
 }
 
 // Validate returns an error that matches ErrInvalidArgument when a limit is out of range after the defaults apply.
-func (l CueLimits) Validate() error {
-	_, err := l.resolved()
+func (l CueLimits) Validate() error { return l.ValidateAt("CueLimits") }
+
+// ValidateAt is Validate with path in place of "CueLimits" in the Option of the error,
+// for example "resegment.Options.Limits".
+func (l CueLimits) ValidateAt(path string) error {
+	_, err := l.resolved(path)
 	return err
 }
 
 // resolved returns l with the defaults in place of the zero values and the durations rounded to whole
 // milliseconds, after it checks the given values.
-func (l CueLimits) resolved() (cueLimits, error) {
+func (l CueLimits) resolved(path string) (cueLimits, error) {
 	r := cueLimits{
 		maxCharactersPerLine:   cmp.Or(l.MaxCharactersPerLine, DefaultMaxCharactersPerLine),
 		maxLinesPerCue:         cmp.Or(l.MaxLinesPerCue, DefaultMaxLinesPerCue),
@@ -65,46 +68,46 @@ func (l CueLimits) resolved() (cueLimits, error) {
 	if l.MinDuration != nil {
 		r.minDuration = *l.MinDuration
 	}
-	if err := r.check(); err != nil {
+	if err := r.check(path); err != nil {
 		return cueLimits{}, err
 	}
 	r.minDuration, r.maxDuration = r.minDuration.Round(time.Millisecond), r.maxDuration.Round(time.Millisecond)
 	return r, nil
 }
 
-func (r cueLimits) check() error {
+func (r cueLimits) check(path string) error {
 	if r.maxCharactersPerLine < 1 || r.maxLinesPerCue < 1 {
-		option := "CueLimits.MaxCharactersPerLine"
+		option := path + ".MaxCharactersPerLine"
 		if r.maxCharactersPerLine >= 1 {
-			option = "CueLimits.MaxLinesPerCue"
+			option = path + ".MaxLinesPerCue"
 		}
 		return &InvalidArgumentError{Option: option, Msg: fmt.Sprintf(
 			"The maximum characters per line and the maximum lines must be at least 1, got %d and %d.",
 			r.maxCharactersPerLine, r.maxLinesPerCue)}
 	}
 	if r.minDuration < 0 {
-		return &InvalidArgumentError{Option: "CueLimits.MinDuration", Msg: fmt.Sprintf(
+		return &InvalidArgumentError{Option: path + ".MinDuration", Msg: fmt.Sprintf(
 			"The minimum duration must not be negative, got %s.", timecode.Seconds(r.minDuration))}
 	}
-	if err := r.checkMaximums(); err != nil {
+	if err := r.checkMaximums(path); err != nil {
 		return err
 	}
 	if r.minDuration > r.maxDuration {
-		return &InvalidArgumentError{Option: "CueLimits.MinDuration", Msg: fmt.Sprintf(
+		return &InvalidArgumentError{Option: path + ".MinDuration", Msg: fmt.Sprintf(
 			"The minimum duration must not be greater than the maximum duration, got %s and %s.",
 			timecode.Seconds(r.minDuration), timecode.Seconds(r.maxDuration))}
 	}
 	return nil
 }
 
-func (r cueLimits) checkMaximums() error {
+func (r cueLimits) checkMaximums(path string) error {
 	cps := r.maxCharactersPerSecond
 	if r.maxDuration >= 0 && cps >= 0 && !math.IsNaN(cps) && !math.IsInf(cps, 0) {
 		return nil
 	}
-	option := "CueLimits.MaxDuration"
+	option := path + ".MaxDuration"
 	if r.maxDuration > 0 {
-		option = "CueLimits.MaxCharactersPerSecond"
+		option = path + ".MaxCharactersPerSecond"
 	}
 	cpsText := "no limit"
 	if cps != 0 {
@@ -147,12 +150,8 @@ func (o MergeShortCuesOptions) Validate() error {
 }
 
 func (o MergeShortCuesOptions) resolved() (shortCueMerge, error) {
-	limits, err := o.Limits.resolved()
+	limits, err := o.Limits.resolved("MergeShortCuesOptions.Limits")
 	if err != nil {
-		var e *InvalidArgumentError
-		if errors.As(err, &e) {
-			e.Option = "MergeShortCuesOptions.Limits." + strings.TrimPrefix(e.Option, "CueLimits.")
-		}
 		return shortCueMerge{}, err
 	}
 	m := shortCueMerge{limits: limits, maxGap: DefaultMergeMaxGap, opts: o}

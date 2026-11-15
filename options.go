@@ -169,33 +169,18 @@ func (o ReadOptions) Validate() error {
 			Msg:    fmt.Sprintf("The track number must be 0 or more, got %d.", o.Track),
 		}
 	}
-	for _, check := range []func() error{o.SAMI.Validate, o.MicroDVD.Validate, o.CSV.Validate, o.SCC.Validate, o.MCC.Validate, o.Chapters.Validate} {
+	for _, check := range []func() error{o.SAMI.Validate, o.MicroDVD.Validate, o.CSV.Validate, o.SCC.Validate, o.MCC.Validate, o.Chapters.Validate, o.PAC.Validate, o.VobSub.Validate, o.SpruceSTL.Validate} {
 		if err := check(); err != nil {
 			return err
 		}
 	}
-	if err := o.PAC.Validate(); err != nil {
-		return err
-	}
-	if err := o.VobSub.Validate(); err != nil {
-		return err
-	}
-	return o.SpruceSTL.Validate()
+	return nil
 }
 
 // Validate checks every field of o, also the fields of formats that a write does not use.
 func (o WriteOptions) Validate() error {
-	if o.LineEnding > CRLF {
-		return &InvalidArgumentError{
-			Option: "WriteOptions.LineEnding",
-			Msg:    "The line ending " + strconv.Itoa(int(o.LineEnding)) + " is unknown.",
-		}
-	}
-	if o.BOM > BOMRemove {
-		return &InvalidArgumentError{
-			Option: "WriteOptions.BOM",
-			Msg:    "The BOM rule " + strconv.Itoa(int(o.BOM)) + " is unknown.",
-		}
+	if err := o.common().ValidateAt("WriteOptions"); err != nil {
+		return err
 	}
 	for _, check := range []func() error{
 		o.ASS.Validate, o.MicroDVD.Validate, o.MPSub.Validate, o.PlainText.Validate, o.CSV.Validate, o.ITT.Validate,

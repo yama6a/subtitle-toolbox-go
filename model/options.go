@@ -26,6 +26,21 @@ type CommonWriteOptions struct {
 	SkipImageCues bool
 }
 
+// Validate returns an *InvalidArgumentError when LineEnding or BOM is not one of its constants.
+func (o CommonWriteOptions) Validate() error { return o.ValidateAt("CommonWriteOptions") }
+
+// ValidateAt is Validate with path in place of "CommonWriteOptions" in the Option of the error,
+// for example "WriteOptions" for the root options.
+func (o CommonWriteOptions) ValidateAt(path string) error {
+	if o.LineEnding > CRLF {
+		return &InvalidArgumentError{Option: path + ".LineEnding", Msg: "The line ending " + strconv.Itoa(int(o.LineEnding)) + " is unknown."}
+	}
+	if o.BOM > BOMRemove {
+		return &InvalidArgumentError{Option: path + ".BOM", Msg: "The BOM rule " + strconv.Itoa(int(o.BOM)) + " is unknown."}
+	}
+	return nil
+}
+
 // LineEnding is the line ending that a writer uses.
 type LineEnding uint8
 
