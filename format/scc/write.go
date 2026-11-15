@@ -3,52 +3,12 @@ package scc
 import (
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
-
-// WriteOptions holds the settings of the SCC writer.
-type WriteOptions struct {
-	// DropFrame selects the time code labels. DropFrameKeep takes the drop-frame mode that the reader stored, else drop-frame.
-	DropFrame model.DropFrameMode
-	// Fit changes the text and the timing that SCC cannot hold, in place of failing. The report lists each change.
-	Fit bool
-}
-
-// Validate returns an error that matches model.ErrInvalidArgument for an unknown drop-frame mode.
-func (o WriteOptions) Validate() error {
-	if o.DropFrame > model.DropFrameOff {
-		return &model.InvalidArgumentError{
-			Option: "WriteOptions.SCC.DropFrame",
-			Msg:    "The SCC drop-frame mode " + strconv.Itoa(int(o.DropFrame)) + " is unknown.",
-		}
-	}
-	return nil
-}
-
-// FitAction is the kind of a change that Fit made. The values are "transliterated", "wrapped", "delayed" and "dropped".
-type FitAction = caption.FitAction
-
-// The fit actions.
-const (
-	Transliterated = caption.Transliterated
-	Wrapped        = caption.Wrapped
-	Delayed        = caption.Delayed
-	Dropped        = caption.Dropped
-)
-
-// FitChange is one change that Fit made to a cue.
-type FitChange = caption.FitChange
-
-// WriteReport lists the changes of a write.
-type WriteReport struct {
-	// Changes holds each change of Fit, in cue order. It is empty without Fit.
-	Changes []FitChange
-}
 
 // Write writes s as pop-on captions on CEA-608 data channel 1. A cue that breaks a limit of SCC gives an
 // *model.UnwritableError, unless opts.Fit changes it. The error holds ErrWrapFirst or ErrSplitFirst for a cue that is

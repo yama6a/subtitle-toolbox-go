@@ -7,9 +7,6 @@ import (
 
 	"github.com/asticode/go-astits"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/container/mpegts/internal/arib"
-	"github.com/yama6a/subtitle-toolbox-go/v4/container/mpegts/internal/teletext"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -46,52 +43,6 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 	sub.AddCues(cues...)
 	sub.SetMetadata(model.MetadataLanguage, track.Language)
 	return sub, warnings, nil
-}
-
-func (f *File) teletextCues(track model.Track, s stream, number int, common model.CommonReadOptions) ([]model.Cue, error) {
-	dec := teletext.NewDecoder(s.page, number%1000, teletext.LanguageGroup(track.Language))
-	zero, last, err := f.readPES(s, dec)
-	if err != nil {
-		return nil, err
-	}
-	pages, err := dec.Finish()
-	if err != nil {
-		return nil, &model.ParseError{Msg: err.Error(), Err: err}
-	}
-	states := make([]textState, len(pages))
-	for i, p := range pages {
-		states[i] = textState{start: p.Start, lines: p.Lines}
-	}
-	lastCue := parsing.NewState(model.SubRip, common).LastCueDuration()
-	return textCues(number, states, zero, last, lastCue)
-}
-
-func (f *File) aribCues(track model.Track, s stream, number int, common model.CommonReadOptions) ([]model.Cue, []model.ParseWarning, error) {
-	dec := arib.NewDecoder(track.Language)
-	zero, last, err := f.readPES(s, dec)
-	if err != nil {
-		return nil, nil, err
-	}
-	var states []textState
-	for _, st := range dec.Finish() {
-		states = append(states, textState{start: st.Start, lines: st.Lines, alignment: st.Alignment})
-	}
-	var warnings []model.ParseWarning
-	for _, w := range dec.Warnings() {
-		ms := (max(0, w.Time-zero) + 45) / 90
-		message := fmt.Sprintf("At %d.%03d s: %s", ms/1000, ms%1000, w.Message)
-		if w.Skipped && !common.Lenient {
-			return nil, nil, &model.ParseError{Msg: message}
-		}
-		action := model.Repaired
-		if w.Skipped {
-			action = model.Skipped
-		}
-		warnings = append(warnings, model.ParseWarning{Message: message, Line: model.NoLine, Block: model.NoBlock, Action: action})
-	}
-	lastCue := parsing.NewState(model.SubRip, common).LastCueDuration()
-	cues, err := textCues(number, states, zero, last, lastCue)
-	return cues, warnings, err
 }
 
 // readPES passes each PES of s.pid to sink. It returns the zero point, which is the smallest first PTS of the

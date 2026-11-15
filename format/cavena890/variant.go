@@ -8,11 +8,10 @@ import (
 	"unicode/utf16"
 	"unicode/utf8"
 
-	"golang.org/x/text/encoding/charmap"
-
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/codepage"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"golang.org/x/text/encoding/charmap"
 )
 
 // hebrewEnds holds the characters that Subtitle Edit moves from the start to the end of a Hebrew line, and back.
@@ -320,3 +319,62 @@ func mirror(chars []string) string {
 
 //nolint:gochecknoglobals // a fixed replacer
 var brackets = strings.NewReplacer("(", ")", ")", "(", "[", "]", "]", "[")
+
+// variant is the text table of a file. Its value is the variant field of the cavena890 format data.
+type variant string
+
+const (
+	latin        variant = "latin"
+	scandinavian variant = "scandinavian"
+	hebrew       variant = "hebrew"
+	russian      variant = "russian"
+	greek        variant = "greek"
+	arabic       variant = "arabic"
+	chinese      variant = "chinese"
+)
+
+// languages maps the language code of line 1 to a variant. The Arabic code counts for line 2.
+//
+//nolint:gochecknoglobals // lookup table of the language codes of Subtitle Edit
+var languages = map[byte]variant{
+	0x07: scandinavian, 0x1E: scandinavian, 0x28: scandinavian,
+	0x8F: hebrew, 0x70: greek, 0x56: russian, 0x90: chinese, 0x91: chinese,
+}
+
+// fontPrefixes holds the font name prefix that also names a variant.
+//
+//nolint:gochecknoglobals // lookup table of the font names of Subtitle Edit
+var fontPrefixes = map[variant]string{hebrew: "HEBNOA", greek: "GREEK", russian: "KYRIL", chinese: "CCKM44"}
+
+// variantOf returns the variant of the language codes and the font names of header, in the order of Subtitle Edit.
+func variantOf(header []byte) variant {
+	language := languages[header[language1]]
+	for _, v := range [...]variant{hebrew, greek, arabic, russian, chinese, scandinavian} {
+		if names(header, language, v) {
+			return v
+		}
+	}
+	return latin
+}
+
+// names reports whether the language code of line 1 or a font name of header names v.
+func names(header []byte, language, v variant) bool {
+	fonts := [2][]byte{header[font1 : font1+fontSize], header[font2 : font2+fontSize]}
+	if v == arabic {
+		return header[language2] == arabicCode || string(fonts[0]) == "ARABIC"
+	}
+	prefix := []byte(fontPrefixes[v])
+	return language == v || len(prefix) > 0 && (bytes.HasPrefix(fonts[0], prefix) || bytes.HasPrefix(fonts[1], prefix))
+}
+
+func (v variant) known() bool {
+	switch v {
+	case latin, scandinavian, hebrew, russian, greek, arabic, chinese:
+		return true
+	}
+	return false
+}
+
+func (v variant) hasItalics() bool {
+	return v == latin || v == scandinavian || v == chinese
+}
