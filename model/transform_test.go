@@ -34,7 +34,7 @@ func readRows[T any](t *testing.T, name string) []T {
 	t.Helper()
 
 	var rows []T
-	require.NoError(t, json.Unmarshal(testfiles.Read(t, "transform-rows/"+name), &rows))
+	require.NoError(t, json.Unmarshal(testfiles.Read(t, "transforms/rows/"+name), &rows))
 	require.NotEmpty(t, rows)
 	return rows
 }

@@ -236,14 +236,14 @@ func TestLineWrapFixtures(t *testing.T) {
 		in, want string
 		edit     func(testing.TB, *model.Subtitle)
 	}{
-		{name: "dialogue turns keep their lines", in: "fixes/own_dialogue_dashes.srt", want: "fixes/own_dialogue_dashes_wrapped.srt", edit: wrap(42)},
+		{name: "dialogue turns keep their lines", in: "timing-and-wrapping/own_dialogue_dashes.srt", want: "timing-and-wrapping/own_dialogue_dashes_wrapped.srt", edit: wrap(42)},
 		{
-			name: "dialogue turns unwrap", in: "fixes/own_dialogue_turns_wrapped.srt", want: "fixes/own_dialogue_turns_unwrapped.srt",
+			name: "dialogue turns unwrap", in: "timing-and-wrapping/own_dialogue_turns_wrapped.srt", want: "timing-and-wrapping/own_dialogue_turns_unwrapped.srt",
 			edit: func(_ testing.TB, s *model.Subtitle) { s.UnwrapLines() },
 		},
-		{name: "Simplified Chinese at the Netflix limit", in: "fixes/own_zh_long_lines.srt", want: "fixes/own_zh_long_lines_wrapped.srt", edit: wrap(16)},
-		{name: "Japanese at the Netflix limit", in: "fixes/own_ja_long_lines.srt", want: "fixes/own_ja_long_lines_wrapped.srt", edit: wrap(13)},
-		{name: "dialogue turns after CJK sentence ends", in: "fixes/own_cjk_dialogue.srt", want: "fixes/own_cjk_dialogue_wrapped.srt", edit: wrap(16)},
+		{name: "Simplified Chinese at the Netflix limit", in: "timing-and-wrapping/own_zh_long_lines.srt", want: "timing-and-wrapping/own_zh_long_lines_wrapped.srt", edit: wrap(16)},
+		{name: "Japanese at the Netflix limit", in: "timing-and-wrapping/own_ja_long_lines.srt", want: "timing-and-wrapping/own_ja_long_lines_wrapped.srt", edit: wrap(13)},
+		{name: "dialogue turns after CJK sentence ends", in: "timing-and-wrapping/own_cjk_dialogue.srt", want: "timing-and-wrapping/own_cjk_dialogue_wrapped.srt", edit: wrap(16)},
 		{
 			name: "right-to-left fix then wrap", in: "transforms/own_rtl_long.srt", want: "transforms/own_rtl_long_wrapped.srt",
 			edit: func(tb testing.TB, s *model.Subtitle) {
@@ -280,11 +280,11 @@ func TestUnwrapLinesUndoesTheCJKWrap(t *testing.T) {
 		name string
 		cpl  int
 	}{
-		{name: "fixes/own_zh_long_lines.srt", cpl: 16},
-		{name: "fixes/own_ja_long_lines.srt", cpl: 13},
+		{name: "timing-and-wrapping/own_zh_long_lines.srt", cpl: 16},
+		{name: "timing-and-wrapping/own_ja_long_lines.srt", cpl: 13},
 	}
 	for _, tt := range tests {
-		t.Run(strings.TrimPrefix(tt.name, "fixes/"), func(t *testing.T) {
+		t.Run(strings.TrimPrefix(tt.name, "timing-and-wrapping/"), func(t *testing.T) {
 			t.Parallel()
 
 			wrapped := readSubRip(t, tt.name)

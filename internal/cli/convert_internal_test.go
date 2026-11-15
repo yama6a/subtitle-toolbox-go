@@ -370,14 +370,14 @@ func TestConvertTiming(t *testing.T) {
 	t.Parallel()
 
 	dir := fixtureDir(t, map[string]string{
-		"asr.srt": "fixes/own_asr_tight_timing.srt", "long.srt": "fixes/own_long_cues.srt",
-		"overlaps.srt": "fixes/own_overlaps_and_short_cues.srt",
+		"asr.srt": "timing-and-wrapping/own_asr_tight_timing.srt", "long.srt": "timing-and-wrapping/own_long_cues.srt",
+		"overlaps.srt": "timing-and-wrapping/own_overlaps_and_short_cues.srt",
 	})
 	lead := func(in, out, gap time.Duration) func(s *stbox.Subtitle) error {
 		return func(s *stbox.Subtitle) error { return s.AddLeadInOut(in, out, gap) }
 	}
 	asr := func(edit func(s *stbox.Subtitle) error) string {
-		return libraryOutput(t, "fixes/own_asr_tight_timing.srt", stbox.SubRip, stbox.WriteOptions{}, edit)
+		return libraryOutput(t, "timing-and-wrapping/own_asr_tight_timing.srt", stbox.SubRip, stbox.WriteOptions{}, edit)
 	}
 	tests := []struct {
 		name  string
@@ -388,21 +388,21 @@ func TestConvertTiming(t *testing.T) {
 		{
 			"lead-in and lead-out",
 			[]string{"asr.srt", "--timing-lead-in", "0.2", "--timing-lead-out", "00:00:00.300", "--timing-min-gap", "0.083"},
-			asr(lead(200*time.Millisecond, 300*time.Millisecond, 83*time.Millisecond)), "fixes/own_asr_tight_timing_lead.srt",
+			asr(lead(200*time.Millisecond, 300*time.Millisecond, 83*time.Millisecond)), "timing-and-wrapping/own_asr_tight_timing_lead.srt",
 		},
 		{"lead-out alone", []string{"asr.srt", "--timing-lead-out", "0.5"}, asr(lead(0, 500*time.Millisecond, 0)), ""},
 		{"lead-in with a gap", []string{"asr.srt", "--timing-lead-in", "0.5", "--timing-min-gap", "0.1"}, asr(lead(500*time.Millisecond, 0, 100*time.Millisecond)), ""},
 		{
 			"max duration",
 			[]string{"long.srt", "--timing-max-duration", "7"},
-			libraryOutput(t, "fixes/own_long_cues.srt", stbox.SubRip, stbox.WriteOptions{}, func(s *stbox.Subtitle) error { return s.LimitLongCues(7 * time.Second) }),
-			"fixes/own_long_cues_limited.srt",
+			libraryOutput(t, "timing-and-wrapping/own_long_cues.srt", stbox.SubRip, stbox.WriteOptions{}, func(s *stbox.Subtitle) error { return s.LimitLongCues(7 * time.Second) }),
+			"timing-and-wrapping/own_long_cues_limited.srt",
 		},
 		{
 			"max duration as a time code",
 			[]string{"long.srt", "--timing-max-duration", "00:00:07,000"},
-			libraryOutput(t, "fixes/own_long_cues.srt", stbox.SubRip, stbox.WriteOptions{}, func(s *stbox.Subtitle) error { return s.LimitLongCues(7 * time.Second) }),
-			"fixes/own_long_cues_limited.srt",
+			libraryOutput(t, "timing-and-wrapping/own_long_cues.srt", stbox.SubRip, stbox.WriteOptions{}, func(s *stbox.Subtitle) error { return s.LimitLongCues(7 * time.Second) }),
+			"timing-and-wrapping/own_long_cues_limited.srt",
 		},
 		{
 			"max duration runs last",
@@ -414,12 +414,12 @@ func TestConvertTiming(t *testing.T) {
 			// Ported from the "timing fixes" row of tests/Cli/ApplicationConvertTest.php of subtitle-toolbox-php.
 			"timing fixes",
 			[]string{"overlaps.srt", "--timing-fix-overlaps", "--timing-min-duration", "0.833", "--timing-min-gap", "0.083", "--structure-wrap", "--structure-max-cpl", "42"},
-			libraryOutput(t, "fixes/own_overlaps_and_short_cues.srt", stbox.SubRip, stbox.WriteOptions{}, all(
+			libraryOutput(t, "timing-and-wrapping/own_overlaps_and_short_cues.srt", stbox.SubRip, stbox.WriteOptions{}, all(
 				func(s *stbox.Subtitle) error { return s.WrapLines(42, 2) },
 				func(s *stbox.Subtitle) error { return s.FixOverlaps(83 * time.Millisecond) },
 				func(s *stbox.Subtitle) error { return s.ExtendShortCues(833*time.Millisecond, 83*time.Millisecond) },
 			)),
-			"fixes/own_overlaps_and_short_cues_fixed.srt",
+			"timing-and-wrapping/own_overlaps_and_short_cues_fixed.srt",
 		},
 		{
 			"min duration as a time code",
@@ -452,7 +452,7 @@ func TestConvertStructure(t *testing.T) {
 
 	dir := fixtureDir(t, map[string]string{
 		"speech.srt": "short-cues/own_speech_to_text.srt", "duplicates.srt": "editing/own_duplicate_cues.srt",
-		"turns.srt": "fixes/own_dialogue_turns_wrapped.srt",
+		"turns.srt": "timing-and-wrapping/own_dialogue_turns_wrapped.srt",
 	})
 	merged := call{dir: dir}.run(t, "convert", "speech.srt", "--to", "srt", "-o", "-", "--structure-merge-short")
 	assert.Equal(t, result{Stdout: libraryOutput(t, "short-cues/own_speech_to_text.srt", stbox.SubRip, stbox.WriteOptions{},
@@ -471,7 +471,7 @@ func TestConvertStructure(t *testing.T) {
 	assert.Equal(t, result{Stdout: sameTime}, call{dir: dir}.run(t, "convert", "duplicates.srt", "--structure-merge-same-time"))
 
 	// The help lists unwrap, merge short, wrap, merge duplicates and merge same time. The run order differs.
-	runOrder := libraryOutput(t, "fixes/own_dialogue_turns_wrapped.srt", stbox.SubRip, stbox.WriteOptions{}, all(
+	runOrder := libraryOutput(t, "timing-and-wrapping/own_dialogue_turns_wrapped.srt", stbox.SubRip, stbox.WriteOptions{}, all(
 		func(s *stbox.Subtitle) error { s.UnwrapLines(); return nil },
 		func(s *stbox.Subtitle) error { return s.MergeSameTimeCues(0) },
 		func(s *stbox.Subtitle) error {
@@ -482,7 +482,7 @@ func TestConvertStructure(t *testing.T) {
 	))
 	assert.Equal(t, result{Stdout: runOrder}, call{dir: dir}.run(t, "convert", "turns.srt", "--structure-merge-duplicates",
 		"--structure-wrap", "--structure-merge-short", "--structure-merge-same-time", "--structure-unwrap", "--structure-max-cpl", "30"))
-	unwrapped := libraryOutput(t, "fixes/own_dialogue_turns_wrapped.srt", stbox.SubRip, stbox.WriteOptions{},
+	unwrapped := libraryOutput(t, "timing-and-wrapping/own_dialogue_turns_wrapped.srt", stbox.SubRip, stbox.WriteOptions{},
 		func(s *stbox.Subtitle) error { s.UnwrapLines(); return nil })
 	assert.Equal(t, result{Stdout: unwrapped}, call{dir: dir}.run(t, "convert", "turns.srt", "--structure-unwrap"))
 }

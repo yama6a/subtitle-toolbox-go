@@ -336,7 +336,7 @@ func TestMergeShortCuesKeepsOneRightToLeftEmbedding(t *testing.T) {
 		} `json:"cues"`
 		Want []string `json:"want"`
 	}
-	require.NoError(t, json.Unmarshal(testfiles.Read(t, "short-cue-rows/rtl.json"), &row))
+	require.NoError(t, json.Unmarshal(testfiles.Read(t, "short-cues/rows/rtl.json"), &row))
 	s := &model.Subtitle{}
 	for _, c := range row.Cues {
 		s.AddCue(model.Cue{Start: sec(c.Start), End: sec(c.End), Lines: []string{c.Text}})

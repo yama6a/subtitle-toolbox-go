@@ -24,7 +24,7 @@ func readDetected(t *testing.T) map[string]detected {
 	t.Helper()
 
 	var want map[string]detected
-	require.NoError(t, json.Unmarshal(testfiles.Read(t, "encoding-detection/detected.json"), &want))
+	require.NoError(t, json.Unmarshal(testfiles.Read(t, "encoding/detection/detected.json"), &want))
 	return want
 }
 
