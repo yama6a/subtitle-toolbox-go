@@ -24,5 +24,5 @@ All files here are written for this repository. They hold no third-party text.
 | `latin1_unclosed_italic.srt` | Written for this repository in Windows-1252: one cue with an `<i>` tag without its end tag | MIT |
 | `rtl-dialogue.srt` | Written for this repository in the shape of a Hebrew and Arabic SubRip file after `fixRightToLeft()`: no BOM, LF, U+202B and U+202C around each line, `<i>` tags, dialogue dashes without a space, a minus sign at a line start and a line with U+200F before the dash | MIT |
 | `rtl-dialogue.fixed.srt` | `CommonErrorFixer` output for `rtl-dialogue.srt`, language `he` | MIT |
-| `cjk-dialogue.fixed.srt` | `CommonErrorFixer` output for `../fixes/own_cjk_dialogue.srt`, language `zh`, with `dialogueOnOneLine` | MIT |
+| `cjk-dialogue.fixed.srt` | `CommonErrorFixer` output for `../timing-and-wrapping/own_cjk_dialogue.srt`, language `zh`, with `dialogueOnOneLine` | MIT |
 | `rule-rows.json` | The rows of the `ruleCases` provider of `tests/Fixing/CommonErrorFixerTest.php` in this repository whose text is not ASCII, as the name, the rule, the language and the lines before and after | MIT |
