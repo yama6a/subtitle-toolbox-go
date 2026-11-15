@@ -107,6 +107,15 @@ var formatFacts = []formatFact{
 	{format: YouTubeChapters, extensions: []string{"txt"}, canRead: true, canWrite: true},
 }
 
+// Formats returns every format of the facts table, in table order. The first row that lists an extension owns it.
+func Formats() []Format {
+	formats := make([]Format, len(formatFacts))
+	for i, r := range formatFacts {
+		formats[i] = r.format
+	}
+	return formats
+}
+
 func (f Format) fact() formatFact {
 	i := slices.IndexFunc(formatFacts, func(r formatFact) bool { return r.format == f })
 	if i < 0 {

@@ -47,15 +47,11 @@ func TestUnsupportedFormatMessages(t *testing.T) {
 		case f.CanRead():
 		case f.CanWrite():
 			tt.wantRead = "The format " + string(f) + " can be written but not read."
-		default:
-			tt.wantRead = "The format " + string(f) + " cannot be read."
 		}
 		switch {
 		case f.CanWrite():
 		case f.CanRead():
 			tt.wantWrite = "The format " + string(f) + " can be read but not written."
-		default:
-			tt.wantWrite = "The format " + string(f) + " cannot be written."
 		}
 		tests = append(tests, tt)
 	}

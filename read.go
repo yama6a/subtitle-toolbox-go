@@ -125,18 +125,17 @@ func parseContent(content []byte, path string, open openFunc, opts ReadOptions) 
 	if opts.Format == "" {
 		return parseDetected(content, path, open, opts)
 	}
-	row, err := readable(opts.Format)
-	if err != nil {
+	if err := readable(opts.Format); err != nil {
 		return nil, ReadInfo{}, err
 	}
 	if opts.Format.IsBinary() {
-		return readBinary(row, content, path, open, opts)
+		return readBinary(opts.Format, content, path, open, opts)
 	}
 	text, err := decode(content, opts)
 	if err != nil {
 		return nil, ReadInfo{}, err
 	}
-	return read(row, text, opts)
+	return read(opts.Format, text, opts)
 }
 
 func decode(content []byte, opts ReadOptions) (textenc.Decoded, error) {
@@ -171,26 +170,25 @@ func parseDetected(content []byte, path string, open openFunc, opts ReadOptions)
 	if empty {
 		return &Subtitle{}, readInfo(f, text, nil, opts), nil
 	}
-	row, err := readable(f)
-	if err != nil {
+	if err := readable(f); err != nil {
 		return nil, ReadInfo{}, err
 	}
 	if f.IsBinary() {
-		return readBinary(row, content, path, open, opts)
+		return readBinary(f, content, path, open, opts)
 	}
-	return read(row, text, opts)
+	return read(f, text, opts)
 }
 
 // readBinary reads the raw bytes of a binary format. VobSub reads 2 files, so it first finds the other one.
-func readBinary(row formatFuncs, content []byte, path string, open openFunc, opts ReadOptions) (*Subtitle, ReadInfo, error) {
+func readBinary(f Format, content []byte, path string, open openFunc, opts ReadOptions) (*Subtitle, ReadInfo, error) {
 	text := textenc.Decoded{Text: content}
-	if row.format == VobSub && open != nil {
+	if f == VobSub && open != nil {
 		var err error
 		if text, opts, err = pairedVobSub(content, path, open, opts); err != nil {
 			return nil, ReadInfo{}, err
 		}
 	}
-	return read(row, text, opts)
+	return read(f, text, opts)
 }
 
 // pairedVobSub returns the .sub content, and opts with the .idx content, of the VobSub pair of path. content is the
@@ -269,17 +267,8 @@ func binaryFormat(content []byte, path string) (Format, bool) {
 // binaryExtension reports whether every format that lists the extension of path is binary. ".890" is.
 // ".stl" is not one, because Spruce STL lists it too. A .stl file with no binary signature goes through the text path.
 func binaryExtension(path string) bool {
-	ext := extension(path)
-	found := false
-	for _, row := range registry {
-		if slices.Contains(row.format.Extensions(), ext) {
-			if !row.format.IsBinary() {
-				return false
-			}
-			found = true
-		}
-	}
-	return found
+	formats := formatsOfExtension(extension(path))
+	return len(formats) > 0 && !slices.ContainsFunc(formats, func(f Format) bool { return !f.IsBinary() })
 }
 
 // formatOf returns the format of text by detection, else by the extension of path. empty reports that text is
@@ -330,12 +319,12 @@ func formatOfExtension(path string) (Format, bool) {
 	return f, ok && f.CanRead()
 }
 
-func read(row formatFuncs, text textenc.Decoded, opts ReadOptions) (*Subtitle, ReadInfo, error) {
-	s, warnings, err := row.read(bytes.NewReader(text.Text), opts.common(), opts)
+func read(f Format, text textenc.Decoded, opts ReadOptions) (*Subtitle, ReadInfo, error) {
+	s, warnings, err := readFormat(f, bytes.NewReader(text.Text), opts)
 	if err != nil {
 		return nil, ReadInfo{}, err
 	}
-	return s, readInfo(row.format, text, warnings, opts), nil
+	return s, readInfo(f, text, warnings, opts), nil
 }
 
 func readInfo(f Format, text textenc.Decoded, warnings []ParseWarning, opts ReadOptions) ReadInfo {
@@ -349,17 +338,14 @@ func decodeWarning(msg string) ParseWarning {
 	return ParseWarning{Message: msg, Line: NoLine, Block: NoBlock, Action: Repaired}
 }
 
-func readable(f Format) (formatFuncs, error) {
-	row, ok := lookup(f)
+func readable(f Format) error {
 	switch {
-	case !ok:
-		return formatFuncs{}, unknownFormat(f)
-	case row.read != nil:
-		return row, nil
-	case row.write != nil:
-		return formatFuncs{}, unsupported("The format " + string(f) + " can be written but not read.")
+	case !slices.Contains(Formats(), f):
+		return notAFormat(f)
+	case f.CanRead():
+		return nil
 	default:
-		return formatFuncs{}, unsupported("The format " + string(f) + " cannot be read.")
+		return unsupported("The format " + string(f) + " can be written but not read.")
 	}
 }
 
@@ -369,20 +355,16 @@ func Write(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteReport, 
 	if err := opts.Validate(); err != nil {
 		return WriteReport{}, err
 	}
-	row, ok := lookup(f)
 	switch {
-	case !ok:
-		return WriteReport{}, unknownFormat(f)
-	case row.write != nil:
-		return row.write(w, s, opts.common(), opts)
-	case row.read != nil:
+	case !slices.Contains(Formats(), f):
+		return WriteReport{}, notAFormat(f)
+	case !f.CanWrite():
 		return WriteReport{}, unsupported("The format " + string(f) + " can be read but not written.")
-	default:
-		return WriteReport{}, unsupported("The format " + string(f) + " cannot be written.")
 	}
+	return writeFormat(w, s, f, opts)
 }
 
-func unknownFormat(f Format) error {
+func notAFormat(f Format) error {
 	return unsupported("The format " + strconv.Quote(string(f)) + " is unknown.")
 }
 
