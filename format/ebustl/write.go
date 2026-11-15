@@ -92,7 +92,7 @@ func newWriter(s *model.Subtitle, file *model.Data, common model.CommonWriteOpti
 	if !slices.Contains([]string{"00", "01", "02", "03", "04"}, gsi["CCT"]) {
 		return nil, nil, WriteReport{}, &model.InvalidArgumentError{Msg: `The character code table "` + gsi["CCT"] + `" is not 00, 01, 02, 03 or 04.`}
 	}
-	storedRate := storedFrameRate(gsi["DFC"])
+	storedRate, _ := frameRateOf(gsi["DFC"])
 	rate := cmp.Or(opts.FrameRate, storedRate, model.FrameRate25)
 	gsi["DFC"] = "STL25.01"
 	if rate.Equal(model.FrameRate30) {
@@ -130,14 +130,15 @@ func storedGSI(file *model.Data) map[string]string {
 	return gsi
 }
 
-func storedFrameRate(dfc string) model.FrameRate {
+// frameRateOf returns the frame rate of a GSI disk format code, and false for a code other than STL25.01 and STL30.01.
+func frameRateOf(dfc string) (model.FrameRate, bool) {
 	switch dfc {
 	case "STL25.01":
-		return model.FrameRate25
+		return model.FrameRate25, true
 	case "STL30.01":
-		return model.FrameRate30
+		return model.FrameRate30, true
 	default:
-		return model.FrameRate{}
+		return model.FrameRate{}, false
 	}
 }
 
@@ -427,7 +428,7 @@ func (wr *writer) encode(text string, cueIndex int) []byte {
 func encodeWith(cct, text string) ([]byte, []rune) {
 	table := textTable(cct)
 	if table == nil {
-		return codepage.EncodeISO6937Replaced(text)
+		return codepage.EncodeISO6937(text)
 	}
 	var replaced []rune
 	out := make([]byte, 0, len(text))

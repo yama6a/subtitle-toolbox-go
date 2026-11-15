@@ -63,7 +63,7 @@ func (f *File) decodeTrack(t *trackEntry, private []byte, blocks []block, common
 	case "S_VOBSUB":
 		return f.readVobSub(t, private, blocks, common)
 	case codecDVB:
-		return f.dvbSubtitle(t, private, blocks, common)
+		return f.dvbSubtitle(private, blocks, common)
 	}
 	return parseRebuilt(t, string(private), f.timedBlocks(blocks, t, common), common)
 }
@@ -113,7 +113,7 @@ func (f *File) end(blocks []block, i int, t *trackEntry, common model.CommonRead
 		next, _ := f.nanos(blocks[i+1].start)
 		return roundToMillisecond(next)
 	}
-	return parsing.EndAfter(roundToMillisecond(startNs), parsing.NewState(t.Format, common).LastCueDuration()).Truncate(time.Millisecond)
+	return parsing.EndAfter(roundToMillisecond(startNs), parsing.LastCueDuration(common)).Truncate(time.Millisecond)
 }
 
 // roundToMillisecond rounds ns half up. Duration.Round would round a negative time away from zero.

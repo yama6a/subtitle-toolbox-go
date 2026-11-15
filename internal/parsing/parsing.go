@@ -42,10 +42,15 @@ func (s *State) Lenient() bool {
 
 // LastCueDuration returns the length of a last cue without an end, 5 s when the option is nil.
 func (s *State) LastCueDuration() time.Duration {
-	if s.common.LastCueDuration == nil {
+	return LastCueDuration(s.common)
+}
+
+// LastCueDuration returns the length of a last cue without an end, 5 s when the option is nil.
+func LastCueDuration(common model.CommonReadOptions) time.Duration {
+	if common.LastCueDuration == nil {
 		return defaultLastCueDuration
 	}
-	return *s.common.LastCueDuration
+	return *common.LastCueDuration
 }
 
 // Warnings returns a copy of the warnings of the read, in read order.

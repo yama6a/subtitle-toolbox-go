@@ -18,10 +18,7 @@ const (
 
 // addTeletext lists the teletext subtitle pages of the elementary streams of one program.
 func (f *File) addTeletext(streams []*astits.PMTElementaryStream) {
-	pids := make([]uint16, len(streams))
-	for i, es := range streams {
-		pids[i] = es.ElementaryPID
-	}
+	pids := elementaryPIDs(streams)
 	for _, es := range streams {
 		if es.StreamType != astits.StreamTypePrivateData {
 			continue
@@ -86,6 +83,6 @@ func (f *File) teletextCues(track model.Track, s stream, number int, common mode
 	for i, p := range pages {
 		states[i] = textState{start: p.Start, lines: p.Lines}
 	}
-	lastCue := parsing.NewState(model.SubRip, common).LastCueDuration()
+	lastCue := parsing.LastCueDuration(common)
 	return textCues(number, states, zero, last, lastCue)
 }

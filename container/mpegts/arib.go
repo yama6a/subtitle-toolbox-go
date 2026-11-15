@@ -8,16 +8,14 @@ import (
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/container/mpegts/internal/arib"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 // addCaptionStreams adds the ARIB caption streams of one program. A PID that two programs share keeps its last
 // program and its first place.
 func addCaptionStreams(captions []stream, streams []*astits.PMTElementaryStream) []stream {
-	pids := make([]uint16, len(streams))
-	for i, es := range streams {
-		pids[i] = es.ElementaryPID
-	}
+	pids := elementaryPIDs(streams)
 	for _, es := range streams {
 		if es.StreamType != astits.StreamTypePrivateData || !isCaption(es.ElementaryStreamDescriptors) {
 			continue
@@ -118,7 +116,7 @@ func (f *File) aribCues(track model.Track, s stream, number int, common model.Co
 	}
 	var warnings []model.ParseWarning
 	for _, w := range dec.Warnings() {
-		ms := (max(0, w.Time-zero) + 45) / 90
+		ms := timecode.PTSMilliseconds(w.Time - zero)
 		message := fmt.Sprintf("At %d.%03d s: %s", ms/1000, ms%1000, w.Message)
 		if w.Skipped && !common.Lenient {
 			return nil, nil, &model.ParseError{Msg: message}
@@ -129,7 +127,7 @@ func (f *File) aribCues(track model.Track, s stream, number int, common model.Co
 		}
 		warnings = append(warnings, model.ParseWarning{Message: message, Line: model.NoLine, Block: model.NoBlock, Action: action})
 	}
-	lastCue := parsing.NewState(model.SubRip, common).LastCueDuration()
+	lastCue := parsing.LastCueDuration(common)
 	cues, err := textCues(number, states, zero, last, lastCue)
 	return cues, warnings, err
 }

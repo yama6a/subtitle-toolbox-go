@@ -78,18 +78,25 @@ type Decoder struct {
 	st          *parsing.State
 	segments    int // count of the segments that Add has read, for the block of a warning
 
-	// image is the rendered page. imageValid is false after a change of the regions, the CLUTs or the page.
-	image      model.Image
-	imageOK    bool
-	imageValid bool
+	// image is the rendered page. imageCurrent is false after the page changes.
+	image        model.Image
+	hasImage     bool
+	imageCurrent bool
 }
 
 // NewDecoder reads the segments of the composition page and the ancillary page.
-// all reads every page, for a Matroska track without page numbers.
 // Lenient mode of common skips a region that would exceed the pixel limit and records a Skipped warning.
-func NewDecoder(compositionPage, ancillaryPage int, all bool, common model.CommonReadOptions) *Decoder {
+func NewDecoder(compositionPage, ancillaryPage int, common model.CommonReadOptions) *Decoder {
+	d := NewAllPagesDecoder(common)
+	d.pages = [2]int{compositionPage, ancillaryPage}
+	d.all = false
+	return d
+}
+
+// NewAllPagesDecoder reads the segments of every page, for a Matroska track without page numbers.
+func NewAllPagesDecoder(common model.CommonReadOptions) *Decoder {
 	return &Decoder{
-		pages: [2]int{compositionPage, ancillaryPage}, all: all, st: parsing.NewState("", common),
+		all: true, st: parsing.NewState("", common),
 		width: defaultWidth, height: defaultHeight, version: -1,
 		regions: map[int]*region{}, cluts: map[int]*clut{},
 	}
@@ -188,7 +195,7 @@ func (d *Decoder) readPage(data []byte, start, end time.Duration, hasEnd bool) {
 		return
 	}
 	d.version = version
-	d.imageValid = false
+	d.imageCurrent = false
 	if data[1]>>2&0x03 != 0 {
 		clear(d.regions)
 		clear(d.cluts)
@@ -212,7 +219,7 @@ func (d *Decoder) readRegion(data []byte) error {
 	if ok, err := d.fits(id, width, height); !ok {
 		return err
 	}
-	d.imageValid = false
+	d.imageCurrent = false
 	r := &region{width: width, height: height, depth: depth, clut: int(data[7]), objects: regionObjects(data)}
 	if old := d.regions[id]; old != nil && old.width == width && old.height == height && flags&0x08 == 0 {
 		r.pixels = old.pixels
@@ -296,7 +303,7 @@ func regionObjects(data []byte) []objectRef {
 }
 
 func (d *Decoder) readCLUT(data []byte) {
-	d.imageValid = false
+	d.imageCurrent = false
 	id := 0
 	if len(data) > 0 {
 		id = int(data[0])
@@ -315,7 +322,7 @@ func (d *Decoder) readObject(data []byte) {
 	if len(data) < 7 || data[2]>>2&0x03 != 0 {
 		return
 	}
-	d.imageValid = false
+	d.imageCurrent = false
 	id := int(binary.BigEndian.Uint16(data))
 	nonModifying := data[2]&0x02 != 0
 	topLength, bottomLength := int(binary.BigEndian.Uint16(data[3:])), int(binary.BigEndian.Uint16(data[5:]))
@@ -338,7 +345,7 @@ func (d *Decoder) readDisplay(data []byte) {
 	if len(data) < 5 {
 		return
 	}
-	d.imageValid = false
+	d.imageCurrent = false
 	d.width, d.height = int(binary.BigEndian.Uint16(data[1:]))+1, int(binary.BigEndian.Uint16(data[3:]))+1
 	d.left, d.top = 0, 0
 	if data[0]&0x08 != 0 && len(data) >= 13 {
@@ -387,14 +394,14 @@ func (d *Decoder) endCue(end time.Duration) {
 
 // rendered returns the image of the page, and renders it again only after a change.
 func (d *Decoder) rendered() (model.Image, bool, error) {
-	if !d.imageValid {
+	if !d.imageCurrent {
 		im, ok, err := d.render()
 		if err != nil {
 			return model.Image{}, false, err
 		}
-		d.image, d.imageOK, d.imageValid = im, ok, true
+		d.image, d.hasImage, d.imageCurrent = im, ok, true
 	}
-	return d.image, d.imageOK, nil
+	return d.image, d.hasImage, nil
 }
 
 // render returns the image of the page. ok is false when no region shows a pixel.

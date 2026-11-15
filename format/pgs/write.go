@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap/displayset"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -23,20 +24,12 @@ const (
 	maxShown            = 2
 	frameRateCode       = 0x10
 
-	segmentPalette      = 0x14
-	segmentObject       = 0x15
-	segmentPresentation = 0x16
-	segmentWindow       = 0x17
-	segmentEnd          = 0x80
+	stateNormal   = 0x00
+	sequenceFirst = 0x80
+	sequenceLast  = 0x40
 
-	stateNormal     = 0x00
-	stateEpochStart = 0x80
-	flagForced      = 0x40
-	sequenceFirst   = 0x80
-	sequenceLast    = 0x40
-
-	objectHeader      = 4
-	firstObjectHeader = objectHeader + 3
+	objectHeader        = 4
+	firstFragmentHeader = objectHeader + 3 // object ID, version, sequence flag and the 3-byte data length
 )
 
 // Write writes the image cues of s as a PGS (.sup) stream. Each cue becomes a display set that shows it and one that
@@ -56,8 +49,8 @@ type yccKey struct {
 	rgb    uint32
 }
 
-// bitmapOf holds the decoded PNG of a cue as palette pixels, or as RGBA pixels when the PNG has no palette.
-type bitmapOf struct {
+// decodedImage holds the decoded PNG of a cue as palette pixels, or as RGBA pixels when the PNG has no palette.
+type decodedImage struct {
 	indexed *bitmap.Indexed
 	pixels  bitmap.Pixels
 }
@@ -65,7 +58,7 @@ type bitmapOf struct {
 // shownCue is a cue on the screen. End is in ticks of 90 kHz.
 type shownCue struct {
 	image  model.Image
-	bitmap bitmapOf
+	bitmap decodedImage
 	forced bool
 	end    int64
 }
@@ -131,8 +124,8 @@ func checkCue(i int, c model.Cue) (start, end int64, err error) {
 	return start, end, nil
 }
 
-func decode(i int, c model.Cue) (bitmapOf, error) {
-	var bm bitmapOf
+func decode(i int, c model.Cue) (decodedImage, error) {
+	var bm decodedImage
 	ix, ok, err := bitmap.DecodeIndexedPNG(c.Image.PNG)
 	if err == nil && !ok {
 		bm.pixels, err = bitmap.DecodePNG(c.Image.PNG)
@@ -140,14 +133,14 @@ func decode(i int, c model.Cue) (bitmapOf, error) {
 	if err != nil {
 		u := unwritable(i, c, "the PNG does not decode.")
 		u.Err = err
-		return bitmapOf{}, u
+		return decodedImage{}, u
 	}
 	w, h := bm.pixels.Width, bm.pixels.Height
 	if ok {
 		bm.indexed, w, h = &ix, ix.Width, ix.Height
 	}
 	if w != c.Image.Width || h != c.Image.Height {
-		return bitmapOf{}, unwritable(i, c, "the PNG has "+strconv.Itoa(w)+"x"+strconv.Itoa(h)+" pixels, but the image data says "+
+		return decodedImage{}, unwritable(i, c, "the PNG has "+strconv.Itoa(w)+"x"+strconv.Itoa(h)+" pixels, but the image data says "+
 			strconv.Itoa(c.Image.Width)+"x"+strconv.Itoa(c.Image.Height)+".")
 	}
 	return bm, nil
@@ -188,7 +181,7 @@ func (e *encoder) show(shown []shownCue, pts int64) {
 		}
 		flags := byte(0)
 		if c.forced {
-			flags = flagForced
+			flags = displayset.FlagForced
 		}
 		refs = binary.BigEndian.AppendUint16(refs, uint16(id))
 		refs = append(refs, byte(windowID), flags)
@@ -199,19 +192,19 @@ func (e *encoder) show(shown []shownCue, pts int64) {
 		offset += size
 	}
 
-	e.segment(pts, segmentPresentation, append(e.presentation(first, stateEpochStart, len(shown)), refs...))
-	e.segment(pts, segmentWindow, windowData(windows))
-	e.segment(pts, segmentPalette, e.paletteData(palette, bitmap.MatrixFor(first.ScreenHeight)))
+	e.segment(pts, displayset.SegmentComposition, append(e.presentation(first, displayset.StateEpochStart, len(shown)), refs...))
+	e.segment(pts, displayset.SegmentWindow, windowData(windows))
+	e.segment(pts, displayset.SegmentPalette, e.paletteData(palette, bitmap.MatrixFor(first.ScreenHeight)))
 	for _, o := range objects {
 		e.out.Write(o)
 	}
-	e.segment(pts, segmentEnd, nil)
+	e.segment(pts, displayset.SegmentEnd, nil)
 }
 
 func (e *encoder) clear(shown []shownCue, pts int64) {
-	e.segment(pts, segmentPresentation, e.presentation(shown[0].image, stateNormal, 0))
-	e.segment(pts, segmentWindow, windowData(windowsOf(shown)))
-	e.segment(pts, segmentEnd, nil)
+	e.segment(pts, displayset.SegmentComposition, e.presentation(shown[0].image, stateNormal, 0))
+	e.segment(pts, displayset.SegmentWindow, windowData(windowsOf(shown)))
+	e.segment(pts, displayset.SegmentEnd, nil)
 }
 
 func (e *encoder) presentation(im model.Image, state byte, objects int) []byte {
@@ -308,7 +301,7 @@ func objectSegments(pts int64, id, width, height int, rle []byte) []byte {
 	for first, rest := true, data; first || len(rest) > 0; first = false {
 		limit := maxSegmentData - objectHeader
 		if first {
-			limit = maxSegmentData - firstObjectHeader
+			limit = maxSegmentData - firstFragmentHeader
 		}
 		n := min(limit, len(rest))
 		seq := byte(0)
@@ -324,7 +317,7 @@ func objectSegments(pts int64, id, width, height int, rle []byte) []byte {
 			b = append(b, byte(len(data)>>16))
 			b = binary.BigEndian.AppendUint16(b, uint16(len(data)&0xFFFF))
 		}
-		writeSegment(&out, pts, segmentObject, append(b, rest[:n]...))
+		writeSegment(&out, pts, displayset.SegmentObject, append(b, rest[:n]...))
 		rest = rest[n:]
 	}
 	return out.Bytes()

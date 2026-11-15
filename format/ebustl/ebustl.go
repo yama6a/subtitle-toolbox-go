@@ -24,9 +24,6 @@ const (
 	maxTextBlocks        = 0xF1
 	maxColumns           = 99
 	textFieldSize        = ttiSize - ttiHeaderSize
-	newRow               = 0x8A
-	italicsOn            = 0x80
-	underlineOn          = 0x82
 	userDataBlock        = 0xFE
 )
 

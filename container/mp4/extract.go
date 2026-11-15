@@ -37,7 +37,7 @@ func (f *File) Extract(number int, common model.CommonReadOptions, opts ExtractO
 		return nil, nil, err
 	}
 
-	lastCueDuration := parsing.NewState(t.info.Format, common).LastCueDuration()
+	lastCueDuration := parsing.LastCueDuration(common)
 	var cues []model.Cue
 	switch t.info.CodecID {
 	case codecC608:
