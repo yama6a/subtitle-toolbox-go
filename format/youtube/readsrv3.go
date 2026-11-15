@@ -2,11 +2,11 @@ package youtube
 
 import (
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
@@ -104,20 +104,11 @@ func readHead(root *xmlraw.Node, file *model.Data) (map[string]style, map[string
 			case name == "pen":
 				pens[id] = xmlPenStyle(func(n string) string { v, _ := attr(def, n); return v })
 			case name == "wp" && digitsRegexp.MatchString(ap):
-				anchors[id] = intOf(ap)
+				anchors[id] = int(decimal.Saturated(ap))
 			}
 		}
 	}
 	return pens, anchors
-}
-
-// intOf parses digits, and gives a large value for a number that does not fit.
-func intOf(digits string) int {
-	n, err := strconv.Atoi(digits)
-	if err != nil {
-		return 1 << 30
-	}
-	return n
 }
 
 func readParagraph(p *xmlraw.Node, pens map[string]style, anchors map[string]int) (caption, *model.ParseError) {

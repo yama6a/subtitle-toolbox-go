@@ -27,11 +27,7 @@ var defaultHeader = []string{
 	"{timestamps:absolute} {language:0}",
 }
 
-//nolint:gochecknoglobals // fixed pattern and replacer
-var (
-	styleTagRegexp = regexp.MustCompile(`^<(/?)([biuBIU])>$`)
-	lineBreaks     = strings.NewReplacer("\r", " ", "\n", " ")
-)
+var styleTagRegexp = regexp.MustCompile(`^<(/?)([biuBIU])>$`)
 
 type writer struct {
 	body      []byte
@@ -111,7 +107,7 @@ func (wr *writer) cues(s *model.Subtitle, paired bool) {
 func writableHeader(stored []string) []string {
 	var header []string
 	for _, line := range stored {
-		if line = lineBreaks.Replace(line); !isTimestampLine(line) {
+		if line = writing.OneLine(line); !isTimestampLine(line) {
 			header = append(header, line)
 		}
 	}

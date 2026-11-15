@@ -22,10 +22,7 @@ type ReadOptions struct {
 
 // Validate returns an error that matches model.ErrInvalidArgument for a frame rate that fails model.FrameRate.Validate.
 func (o ReadOptions) Validate() error {
-	if o.FrameRate.IsZero() {
-		return nil
-	}
-	return parsing.FrameRateOption(o.FrameRate.Validate(), "ReadOptions.MicroDVD.FrameRate", "The frame rate")
+	return parsing.ValidateFrameRate(o.FrameRate, "ReadOptions.MicroDVD.FrameRate", "The frame rate")
 }
 
 // WriteReport holds what the writer reports. It has no fields yet.
@@ -41,10 +38,7 @@ type WriteOptions struct {
 
 // Validate returns an error that matches model.ErrInvalidArgument for a frame rate that fails model.FrameRate.Validate.
 func (o WriteOptions) Validate() error {
-	if o.FrameRate.IsZero() {
-		return nil
-	}
-	return parsing.FrameRateOption(o.FrameRate.Validate(), "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate")
+	return parsing.ValidateFrameRate(o.FrameRate, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate")
 }
 
 var signatureRegexp = regexp.MustCompile(`\A\{\d+\}\{\d*\}`)

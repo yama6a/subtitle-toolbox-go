@@ -240,11 +240,11 @@ func (rd *Reader) time(text string, line int, loose *[]looseTime) (time.Duration
 	// A last field of 1 digit without a fraction is a time that the end of the file cut off.
 	cutOff := len(text) >= 2 && text[len(text)-2] == ':' && isDigit(text[len(text)-1])
 	if !rd.st.Lenient() || cutOff {
-		return 0, invalidTime(text, line)
+		return 0, parsing.InvalidTime(text, line)
 	}
 	d, ok := timecode.Loose(text, ",.:", true)
 	if !ok {
-		return 0, invalidTime(text, line)
+		return 0, parsing.InvalidTime(text, line)
 	}
 	if d >= timecode.MaxTime {
 		return parsing.BoundedTime(d, text, line)
@@ -253,10 +253,6 @@ func (rd *Reader) time(text string, line int, loose *[]looseTime) (time.Duration
 		*loose = append(*loose, looseTime{text: text, d: d})
 	}
 	return d, nil
-}
-
-func invalidTime(text string, line int) *model.ParseError {
-	return &model.ParseError{Line: line, Msg: `The time "` + text + `" is not valid.`}
 }
 
 func containsTime(loose []looseTime, text string) bool {

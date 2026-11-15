@@ -52,7 +52,6 @@ var (
 	breakRegexp     = regexp.MustCompile(`^[ \t]*\|[ \t]*$`)
 	tagRegexp       = regexp.MustCompile(`(?i)^<(/?)([biu])>$`)
 	caretRegexp     = regexp.MustCompile(`\^([BIU])`)
-	lineEnds        = strings.NewReplacer("\r", " ", "\n", " ") //nolint:gochecknoglobals // a fixed replacer
 )
 
 // Write writes s as Spruce STL. A stored header, command or trailer line with CR or LF writes those characters as
@@ -142,7 +141,7 @@ func outputRate(opts WriteOptions, file *model.Data) (model.FrameRate, error) {
 // skips a line that the reader would not read as that kind of line: only a header line may be blank or a // comment,
 // and every other line must be a $ command.
 func appendStored(body []byte, line string, st *style, isHeader bool) []byte {
-	line = lineEnds.Replace(line)
+	line = writing.OneLine(line)
 	trimmed := strings.Trim(line, markupcore.TrimSet)
 	isCommand := strings.HasPrefix(trimmed, "$")
 	isHeaderOnly := trimmed == "" || strings.HasPrefix(trimmed, "//")

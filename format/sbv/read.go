@@ -21,8 +21,6 @@ const (
 	// looseTime is a time of the loose timing line: any hour digits, 1 or 2 minute and second digits, and a
 	// fraction of 1 to 4 digits after ".", "," or ":".
 	looseTime = `(\d+):([0-5]?\d):([0-5]?\d)[.,:](\d{1,4})`
-	// maxHourDigits is the digit count above which a time is 100000 hours or more, whatever its other fields.
-	maxHourDigits = 6
 )
 
 var (
@@ -147,28 +145,17 @@ func strictDuration(text string, line int) (time.Duration, error) {
 	text = strings.Trim(text, markupcore.TrimSet)
 	m := timeRegexp.FindStringSubmatch(text)
 	if m == nil {
-		return 0, &model.ParseError{Line: line, Msg: `The time "` + text + `" is not valid.`}
+		return 0, parsing.InvalidTime(text, line)
 	}
-	return parsing.BoundedTime(clock(m[1], m[2], m[3], atoi(m[4])), text, line)
+	return parsing.BoundedTime(timecode.HMS(m[1], m[2], m[3])+time.Duration(atoi(m[4]))*time.Millisecond, text, line)
 }
 
 // looseDuration reads the hour, minute, second and fraction digits of a loose time. The fraction rounds half up
 // to whole milliseconds.
 func looseDuration(fields []string, line int) (time.Duration, error) {
 	tenthsOfMillis := atoi(fields[3] + strings.Repeat("0", 4-len(fields[3])))
-	d := clock(fields[0], fields[1], fields[2], (tenthsOfMillis+5)/10)
+	d := timecode.HMS(fields[0], fields[1], fields[2]) + time.Duration((tenthsOfMillis+5)/10)*time.Millisecond
 	return parsing.BoundedTime(d, fields[0]+":"+fields[1]+":"+fields[2]+"."+fields[3], line)
-}
-
-// clock returns the time of the fields. Hours of more than 6 digits cannot be below 100000, so they give
-// timecode.MaxTime and the multiplication cannot wrap.
-func clock(hours, minutes, seconds string, millis int) time.Duration {
-	hours = strings.TrimLeft(hours, "0")
-	if len(hours) > maxHourDigits {
-		return timecode.MaxTime
-	}
-	return time.Duration(atoi(hours))*time.Hour + time.Duration(atoi(minutes))*time.Minute +
-		time.Duration(atoi(seconds))*time.Second + time.Duration(millis)*time.Millisecond
 }
 
 // atoi reads a string of at most 9 digits.

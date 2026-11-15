@@ -440,7 +440,7 @@ func (rd *reader) closeOpenEnds(cues []model.Cue, open []int) {
 	slices.Sort(starts)
 	for _, i := range open {
 		j, _ := slices.BinarySearch(starts, cues[i].Start)
-		cues[i].End = rd.st.EndAtNextStart(starts, j)
+		cues[i].End = endAtNextStart(rd.st, starts, j)
 	}
 }
 
@@ -496,4 +496,15 @@ func (rd *reader) join(cells []string) string {
 
 func trim(s string) string {
 	return strings.Trim(s, markupcore.TrimSet)
+}
+
+// endAtNextStart returns the first start after starts[i] that is later than starts[i].
+// Without one, it returns LastCueEnd of starts[i].
+func endAtNextStart(st *parsing.State, starts []time.Duration, i int) time.Duration {
+	for _, next := range starts[i+1:] {
+		if next > starts[i] {
+			return next
+		}
+	}
+	return st.LastCueEnd(starts[i])
 }

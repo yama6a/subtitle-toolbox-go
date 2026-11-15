@@ -274,7 +274,7 @@ func version1Time(m []string, delay int64, line string, number int) (time.Durati
 	minutes, _ := strconv.Atoi(m[2])
 	seconds, _ := strconv.Atoi(m[3])
 	if minutes > 59 || seconds > 59 {
-		return 0, &model.ParseError{Line: number, Msg: `The time "` + line + `" is not valid.`}
+		return 0, parsing.InvalidTime(line, number)
 	}
 	total := int64(hours)*3600 + int64(minutes)*60 + int64(seconds) + min(max(delay, -2*maxSeconds), 2*maxSeconds)
 	if total > -maxSeconds && total < maxSeconds {

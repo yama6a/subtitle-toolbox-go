@@ -85,11 +85,9 @@ func appendHeader(body []byte, s *model.Subtitle, fps float64) []byte {
 func appendKey(body []byte, key, value string) []byte {
 	body = append(body, key...)
 	body = append(body, '=')
-	body = append(body, lineBreaks.Replace(value)...)
+	body = append(body, writing.OneLine(value)...)
 	return append(body, '\n')
 }
-
-var lineBreaks = strings.NewReplacer("\r", " ", "\n", " ") //nolint:gochecknoglobals // a fixed replacer
 
 // isHeaderKey reports whether key is 1 or more ASCII capitals, the only keys that the reader reads as headers.
 func isHeaderKey(key string) bool {
