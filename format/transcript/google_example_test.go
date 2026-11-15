@@ -40,7 +40,7 @@ func ExampleWriteGoogleSpeech() {
 	if err := s.AddCue(model.Cue{Start: 1500 * time.Millisecond, End: 3 * time.Second, Lines: []string{"Good", "morning."}}); err != nil {
 		panic(err)
 	}
-	if err := transcript.WriteGoogleSpeech(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+	if _, err := transcript.WriteGoogleSpeech(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

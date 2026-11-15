@@ -37,7 +37,7 @@ func FuzzReadWhisper(f *testing.F) {
 				}
 				checkWords(t, s)
 				var out bytes.Buffer
-				if err := transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+				if _, err := transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 					if !errors.Is(err, model.ErrUnwritable) {
 						t.Fatalf("WriteWhisper returned %v, which does not match ErrUnwritable", err)
 					}

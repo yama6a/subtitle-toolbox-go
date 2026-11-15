@@ -63,10 +63,10 @@ func ReadYouTube(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 }
 
 // WriteYouTube writes one line per chapter: the start as m:ss or h:mm:ss, a space and the title. Ends are lost.
-func WriteYouTube(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WriteYouTube(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.YouTubeChapters, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	var body []byte
 	for _, c := range s.All() {
@@ -81,7 +81,7 @@ func WriteYouTube(w io.Writer, s *model.Subtitle, common model.CommonWriteOption
 		body = append(body, strings.TrimRight(line, markupcore.TrimSet)...)
 		body = append(body, '\n')
 	}
-	return writing.Write(w, model.YouTubeChapters, body, common, false)
+	return WriteReport{}, writing.Write(w, model.YouTubeChapters, body, common, false)
 }
 
 func (f timeFields) duration() (time.Duration, bool) {

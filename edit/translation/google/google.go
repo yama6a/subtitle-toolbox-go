@@ -29,7 +29,7 @@ type Options struct {
 	// BaseURL is the scheme and host of the service. "" means https://translation.googleapis.com.
 	BaseURL string
 	// HTTPClient sends the requests. nil means translation.DefaultHTTPClient().
-	HTTPClient translation.HTTPClient
+	HTTPClient *http.Client
 }
 
 // Validate checks the key and the base URL. The error matches model.ErrInvalidArgument.
@@ -57,7 +57,7 @@ func (o Options) GoString() string {
 type Engine struct {
 	endpoint string
 	key      string
-	client   translation.HTTPClient
+	client   *http.Client
 	wait     httppost.Wait
 }
 

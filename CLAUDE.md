@@ -25,7 +25,7 @@ inspect/stats/ edit/hearingimpaired/ edit/speakers/ edit/fixing/ edit/profanity/
                The 1.x services. A service never imports the root package
 container/<name>/ The 3.x readers of video containers: mkv, mp4, mpegts. They call the format readers. Their helpers live in container/<name>/internal: ebml (mkv), arib and teletext (mpegts)
 edit/ocr/      The 3.x service that reads the text of image cues with an OCR engine, and edit/ocr/ocrtest, a fake engine for tests.
-               The engines are edit/ocr/glyph and edit/ocr/tesseract, the chooser is edit/ocr/auto
+               The engines are edit/ocr/glyph and edit/ocr/tesseract
 edit/translation/ The service that translates cue text with a machine translation engine. Its HTTP helper is edit/translation/internal/httppost, the engines live in edit/translation/<engine>
 inspect/validation/ The 2.x service that checks a subtitle against rules
 edit/timing/   The 2.x service that moves cue times to shot changes and frames

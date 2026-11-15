@@ -91,7 +91,7 @@ func BenchmarkWriteWhisper(b *testing.B) {
 			b.ReportAllocs()
 			b.SetBytes(int64(len(bm.content)))
 			for b.Loop() {
-				if err := transcript.WriteWhisper(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+				if _, err := transcript.WriteWhisper(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 					b.Fatal(err)
 				}
 			}

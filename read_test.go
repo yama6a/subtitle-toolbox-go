@@ -125,7 +125,7 @@ func TestParseUnsupportedFormat(t *testing.T) {
 
 			s, info, err := parseBytes([]byte("1\nHello\n"), stbox.ReadOptions{Format: f})
 			require.ErrorIs(t, err, stbox.ErrUnsupportedFormat)
-			require.NotErrorIs(t, err, stbox.ErrUnknownFormat)
+			require.NotErrorIs(t, err, stbox.ErrNoFormatDetected)
 			assert.Nil(t, s)
 			assert.Zero(t, info)
 		})
@@ -148,7 +148,7 @@ func TestParseNoFormatFound(t *testing.T) {
 			t.Parallel()
 
 			s, info, err := parseBytes([]byte(tt.content), stbox.ReadOptions{})
-			require.ErrorIs(t, err, stbox.ErrUnknownFormat)
+			require.ErrorIs(t, err, stbox.ErrNoFormatDetected)
 			require.ErrorIs(t, err, stbox.ErrUnsupportedFormat)
 			assert.Nil(t, s)
 			assert.Zero(t, info)
@@ -199,10 +199,10 @@ func TestLoadWithoutFormat(t *testing.T) {
 		{name: "SubRip in a file without extension", file: "trip", content: srt, want: stbox.SubRip},
 		{name: "extension fallback", file: "film.srt", content: []byte("plain words"), want: stbox.SubRip, wantErr: stbox.ErrParse},
 		{name: "extension fallback in upper case", file: "film.VTT", content: []byte("plain words"), want: stbox.WebVTT, wantErr: stbox.ErrParse},
-		{name: "no fallback for .json", file: "film.json", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
-		{name: "JSON of no format in a .json file", file: "speech.json", content: []byte(`{"words": []}`), wantErr: stbox.ErrUnknownFormat},
-		{name: "no fallback for .txt", file: "film.txt", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
-		{name: "no fallback for .ffmeta", file: "film.ffmeta", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
+		{name: "no fallback for .json", file: "film.json", content: []byte("plain words"), wantErr: stbox.ErrNoFormatDetected},
+		{name: "JSON of no format in a .json file", file: "speech.json", content: []byte(`{"words": []}`), wantErr: stbox.ErrNoFormatDetected},
+		{name: "no fallback for .txt", file: "film.txt", content: []byte("plain words"), wantErr: stbox.ErrNoFormatDetected},
+		{name: "no fallback for .ffmeta", file: "film.ffmeta", content: []byte("plain words"), wantErr: stbox.ErrNoFormatDetected},
 		{name: "extension fallback for ASS", file: "film.ass", content: []byte("plain words"), want: stbox.ASS, wantErr: stbox.ErrParse},
 		{name: "extension fallback for MicroDVD", file: "film.sub", content: []byte("plain words"), want: stbox.MicroDVD, wantErr: stbox.ErrParse},
 		{name: "extension fallback for SAMI", file: "film.smi", content: []byte("plain words"), want: stbox.SAMI, wantErr: stbox.ErrParse},
@@ -220,8 +220,8 @@ func TestLoadWithoutFormat(t *testing.T) {
 		{name: "TTML content in a .itt file is iTT", file: "film.itt", content: itt, want: stbox.ITT},
 		{name: "TTML content in a .ttml file", file: "film.ttml", content: itt, want: stbox.TTML},
 		{name: "blank .itt file", file: "film.itt", content: []byte("\n"), want: stbox.ITT},
-		{name: "unknown extension", file: "film.xyz", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
-		{name: "no extension", file: "film", content: []byte("plain words"), wantErr: stbox.ErrUnknownFormat},
+		{name: "unknown extension", file: "film.xyz", content: []byte("plain words"), wantErr: stbox.ErrNoFormatDetected},
+		{name: "no extension", file: "film", content: []byte("plain words"), wantErr: stbox.ErrNoFormatDetected},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -291,7 +291,7 @@ func TestLoadEmptyFile(t *testing.T) {
 
 			s, info, err := stbox.Load(writeTemp(t, tt.file, []byte(tt.content)), stbox.ReadOptions{})
 			if tt.want == "" {
-				require.ErrorIs(t, err, stbox.ErrUnknownFormat)
+				require.ErrorIs(t, err, stbox.ErrNoFormatDetected)
 				require.EqualError(t, err, unknownFormatMessage)
 				return
 			}
@@ -314,7 +314,7 @@ func TestReadEmptyContent(t *testing.T) {
 
 	for _, content := range []string{"", " \n", "\xEF\xBB\xBF"} {
 		s, info, err := parseBytes([]byte(content), stbox.ReadOptions{})
-		require.ErrorIs(t, err, stbox.ErrUnknownFormat, "%q", content)
+		require.ErrorIs(t, err, stbox.ErrNoFormatDetected, "%q", content)
 		require.EqualError(t, err, unknownFormatMessage)
 		assert.Nil(t, s)
 		assert.Zero(t, info)
@@ -424,7 +424,7 @@ func TestBinaryFormatRead(t *testing.T) {
 		{name: "Load of an empty .stl file", file: "show.stl", content: nil},
 		{name: "Load by extension when the code page field is spaces", file: "show.stl", content: spaced, cues: want.Len()},
 		{name: "Load of SubRip content named .stl", file: "show.stl", content: testfiles.Read(t, "srt/real/own_styled.srt"), cues: -1},
-		{name: "Parse when the code page field is spaces", content: spaced, wantErr: stbox.ErrUnknownFormat},
+		{name: "Parse when the code page field is spaces", content: spaced, wantErr: stbox.ErrNoFormatDetected},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -586,7 +586,7 @@ func TestParseDoesNotDetectCSV(t *testing.T) {
 		_, ok := stbox.Detect(content)
 		assert.False(t, ok)
 		_, _, err := parseBytes(content, stbox.ReadOptions{})
-		require.ErrorIs(t, err, stbox.ErrUnknownFormat)
+		require.ErrorIs(t, err, stbox.ErrNoFormatDetected)
 	}
 }
 

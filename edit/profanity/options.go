@@ -17,8 +17,6 @@ type Options struct {
 	Words []string
 	// Mask is how Apply writes a match. "" acts as MaskStars.
 	Mask Mask
-	// MaskFunc writes each match when it is set, and Mask does not count. Apply escapes its result as text.
-	MaskFunc func(word string) string
 	// Padding widens each mute range on both sides.
 	Padding time.Duration
 }

@@ -50,7 +50,7 @@ func translatedByLibrary(t *testing.T, engine translation.Engine, source, target
 
 	s, _, err := stbox.Load(testfiles.Path(t, "translation/own_station.srt"), stbox.ReadOptions{})
 	require.NoError(t, err)
-	_, err = translation.Translate(t.Context(), s, engine, source, target, translation.Options{})
+	_, err = translation.Apply(t.Context(), s, engine, source, target, translation.Options{})
 	require.NoError(t, err)
 	var buf bytes.Buffer
 	_, err = stbox.Write(&buf, s, f, stbox.WriteOptions{})

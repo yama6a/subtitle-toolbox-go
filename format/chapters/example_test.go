@@ -34,7 +34,7 @@ func ExampleWriteYouTube() {
 	if err := s.AddCue(model.Cue{Start: 3600e9, Lines: []string{"Main part"}}); err != nil {
 		panic(err)
 	}
-	if err := chapters.WriteYouTube(os.Stdout, s, model.CommonWriteOptions{}, chapters.WriteOptions{}); err != nil {
+	if _, err := chapters.WriteYouTube(os.Stdout, s, model.CommonWriteOptions{}, chapters.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:
@@ -65,7 +65,7 @@ func ExampleWritePodcast() {
 	if err := s.AddCue(model.Cue{Start: 168 * time.Second, End: 300 * time.Second, Lines: []string{"Hearing aids"}}); err != nil {
 		panic(err)
 	}
-	if err := chapters.WritePodcast(os.Stdout, s, model.CommonWriteOptions{}, chapters.WriteOptions{}); err != nil {
+	if _, err := chapters.WritePodcast(os.Stdout, s, model.CommonWriteOptions{}, chapters.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:
@@ -108,7 +108,7 @@ func ExampleWriteFFMetadata() {
 	if err := s.AddCue(model.Cue{End: 168 * time.Second, Lines: []string{"Intro"}}); err != nil {
 		panic(err)
 	}
-	if err := chapters.WriteFFMetadata(os.Stdout, s, model.CommonWriteOptions{}, chapters.WriteOptions{}); err != nil {
+	if _, err := chapters.WriteFFMetadata(os.Stdout, s, model.CommonWriteOptions{}, chapters.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:
@@ -144,7 +144,7 @@ func ExampleWriteOGM() {
 	if err := s.AddCue(model.Cue{Start: 168 * time.Second, Lines: []string{"Hearing aids"}}); err != nil {
 		panic(err)
 	}
-	if err := chapters.WriteOGM(os.Stdout, s, model.CommonWriteOptions{}, chapters.WriteOptions{}); err != nil {
+	if _, err := chapters.WriteOGM(os.Stdout, s, model.CommonWriteOptions{}, chapters.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

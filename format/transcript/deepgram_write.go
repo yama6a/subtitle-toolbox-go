@@ -17,20 +17,20 @@ import (
 // transcript and the words of its cues, and the paragraphs when the source had them. It writes one utterance per
 // cue when the source had utterances, or when a cue outside paragraphs has no words, because the words alone cannot
 // hold such a cue. A value that a cue did not change stays as the reader stored it.
-func WriteDeepgram(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WriteDeepgram(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.Deepgram, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	doc, err := deepgramDocument(s)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	body, err := encodeDocument(model.Deepgram, "Deepgram JSON", doc, false)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
-	return writing.Write(w, model.Deepgram, body, common, false)
+	return WriteReport{}, writing.Write(w, model.Deepgram, body, common, false)
 }
 
 // deepgramEntry is the written form of one cue.

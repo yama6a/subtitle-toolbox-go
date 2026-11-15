@@ -138,23 +138,23 @@ func boundedField(v orderedjson.Value, path string) (time.Duration, error) {
 
 // WritePodcast writes a Podcasting 2.0 chapters file as pretty JSON. A chapter has an endTime only when its end is
 // not the start of the next chapter.
-func WritePodcast(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WritePodcast(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.PodcastChapters, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	document, err := podcastDocument(s)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	body, err := orderedjson.Encode(document, true)
 	switch {
 	case errors.Is(err, orderedjson.ErrInvalidUTF8):
-		return &model.UnwritableError{Format: model.PodcastChapters, CueIndex: -1, Reason: orderedjson.MalformedUTF8Reason, Err: model.ErrInvalidUTF8}
+		return WriteReport{}, &model.UnwritableError{Format: model.PodcastChapters, CueIndex: -1, Reason: orderedjson.MalformedUTF8Reason, Err: model.ErrInvalidUTF8}
 	case err != nil:
-		return &model.UnwritableError{Format: model.PodcastChapters, CueIndex: -1, Reason: orderedjson.NotFiniteReason}
+		return WriteReport{}, &model.UnwritableError{Format: model.PodcastChapters, CueIndex: -1, Reason: orderedjson.NotFiniteReason}
 	}
-	return writing.Write(w, model.PodcastChapters, body, common, false)
+	return WriteReport{}, writing.Write(w, model.PodcastChapters, body, common, false)
 }
 
 func podcastDocument(s *model.Subtitle) (orderedjson.Value, error) {

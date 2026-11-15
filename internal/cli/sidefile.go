@@ -26,7 +26,7 @@ func (r *runner) readSideFile(path string, track int, trackOption string) (*stbo
 	if err != nil {
 		err = trackFailure(err, trackOption)
 		msg := path + ": " + message(err)
-		if errors.Is(err, stbox.ErrUnknownFormat) {
+		if errors.Is(err, stbox.ErrNoFormatDetected) {
 			msg = path + ": " + sideFileUnknownFormat
 		}
 		if !opts.Lenient && wantsLenientHint(err) {

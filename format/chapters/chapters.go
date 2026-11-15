@@ -25,6 +25,9 @@ type ReadOptions struct {
 // WriteOptions holds the write settings of the chapter formats. It has no fields yet.
 type WriteOptions struct{}
 
+// WriteReport holds what the chapter writers report. It has no fields yet.
+type WriteReport struct{}
+
 // Validate returns a *model.InvalidArgumentError when MediaDuration is negative.
 func (o ReadOptions) Validate() error {
 	if o.MediaDuration < 0 {

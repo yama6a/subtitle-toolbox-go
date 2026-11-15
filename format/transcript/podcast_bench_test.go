@@ -72,7 +72,7 @@ func BenchmarkWritePodcast(b *testing.B) {
 		b.Run(fmt.Sprintf("words=%d word segments=%t", podcastBenchSegments, opts.WordSegments), func(b *testing.B) {
 			b.ReportAllocs()
 			for b.Loop() {
-				if err := transcript.WritePodcast(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{Podcast: opts}); err != nil {
+				if _, err := transcript.WritePodcast(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{Podcast: opts}); err != nil {
 					b.Fatal(err)
 				}
 			}

@@ -40,7 +40,7 @@ func ExampleWriteWhisper() {
 	if err := s.AddCue(model.Cue{Start: 1500 * time.Millisecond, End: 3 * time.Second, Lines: []string{"Guten", "Morgen."}, Speaker: "Anna"}); err != nil {
 		panic(err)
 	}
-	if err := transcript.WriteWhisper(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+	if _, err := transcript.WriteWhisper(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:
@@ -81,7 +81,7 @@ func ExampleWritePodcast() {
 		panic(err)
 	}
 	opts := transcript.WriteOptions{Podcast: transcript.PodcastWriteOptions{PrettyPrint: true}}
-	if err := transcript.WritePodcast(os.Stdout, s, model.CommonWriteOptions{}, opts); err != nil {
+	if _, err := transcript.WritePodcast(os.Stdout, s, model.CommonWriteOptions{}, opts); err != nil {
 		fmt.Println(err)
 	}
 	// Output:
@@ -137,7 +137,7 @@ func ExampleWriteHTML() {
 	if err := s.AddCue(model.Cue{Start: 3725 * time.Second, End: 3727 * time.Second, Lines: []string{"Fish & chips."}}); err != nil {
 		panic(err)
 	}
-	if err := transcript.WriteHTML(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+	if _, err := transcript.WriteHTML(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

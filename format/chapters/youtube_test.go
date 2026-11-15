@@ -113,7 +113,8 @@ func TestWriteYouTube(t *testing.T) {
 		model.Cue{Start: 10 * time.Hour, Lines: []string{"Ten", "&amp; hours"}},
 	))
 	var buf bytes.Buffer
-	require.NoError(t, chapters.WriteYouTube(&buf, s, model.CommonWriteOptions{}, chapters.WriteOptions{}))
+	_, err := chapters.WriteYouTube(&buf, s, model.CommonWriteOptions{}, chapters.WriteOptions{})
+	require.NoError(t, err)
 	assert.Equal(t, "0:00 Intro\n59:59 Last minute\n1:00:00\n10:00:00 Ten & hours\n", buf.String())
 }
 
@@ -127,7 +128,8 @@ func TestYouTubeRealFiles(t *testing.T) {
 			first, _, err := chapters.ReadYouTube(bytes.NewReader(testfiles.Read(t, "chapters/youtube/real/"+name)), model.CommonReadOptions{}, chapters.ReadOptions{})
 			require.NoError(t, err)
 			var buf bytes.Buffer
-			require.NoError(t, chapters.WriteYouTube(&buf, first, model.CommonWriteOptions{}, chapters.WriteOptions{}))
+			_, err = chapters.WriteYouTube(&buf, first, model.CommonWriteOptions{}, chapters.WriteOptions{})
+			require.NoError(t, err)
 			second, _, err := chapters.ReadYouTube(&buf, model.CommonReadOptions{}, chapters.ReadOptions{})
 			require.NoError(t, err)
 			require.Equal(t, first.Len(), second.Len())

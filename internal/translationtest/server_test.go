@@ -80,10 +80,10 @@ func TestServer(t *testing.T) {
 	}
 }
 
-func TestClient(t *testing.T) {
+func TestTransport(t *testing.T) {
 	t.Parallel()
 
-	client := &translationtest.Client{Answers: []translationtest.Answer{
+	transport := &translationtest.Transport{Answers: []translationtest.Answer{
 		{Status: 429, Header: http.Header{"Retry-After": {"1"}}, Body: []byte("busy")},
 		{Status: 200, Body: []byte("ok")},
 	}}
@@ -92,7 +92,7 @@ func TestClient(t *testing.T) {
 		req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://translate.test"+google, bytes.NewReader([]byte("{}")))
 		require.NoError(t, err)
 		req.Header.Set("X-Goog-Api-Key", "secret")
-		resp, err := client.Do(req)
+		resp, err := transport.RoundTrip(req)
 		require.NoError(t, err)
 		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
@@ -101,7 +101,7 @@ func TestClient(t *testing.T) {
 	}
 
 	assert.Equal(t, []string{"429 Too Many Requests busy", "200 OK ok", "200 OK ok"}, got)
-	requests := client.Requests()
+	requests := transport.Requests()
 	require.Len(t, requests, 3)
 	assert.Equal(t, "secret", requests[2].Key)
 	assert.Equal(t, google, requests[2].Path)

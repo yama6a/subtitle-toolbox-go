@@ -27,11 +27,11 @@ func recordWaits(e *Engine) *[]time.Duration {
 func TestTranslateRetriesAfterHTTP429(t *testing.T) {
 	t.Parallel()
 
-	client := &translationtest.Client{Answers: []translationtest.Answer{
+	transport := &translationtest.Transport{Answers: []translationtest.Answer{
 		{Status: 429, Body: []byte(`{}`)},
 		{Status: 200, Body: []byte(`{"choices":[{"message":{"content":"[\"Hallo\"]"}}]}`)},
 	}}
-	e, err := New(Options{BaseURL: "http://localhost:11434/v1", Model: "llama3", HTTPClient: client})
+	e, err := New(Options{BaseURL: "http://localhost:11434/v1", Model: "llama3", HTTPClient: transport.Client()})
 	require.NoError(t, err)
 	waits := recordWaits(e)
 
@@ -40,7 +40,7 @@ func TestTranslateRetriesAfterHTTP429(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, []string{"Hallo"}, got)
 	assert.Equal(t, []time.Duration{time.Second}, *waits)
-	assert.Len(t, client.Requests(), 2)
+	assert.Len(t, transport.Requests(), 2)
 }
 
 func TestTranslateStatusErrors(t *testing.T) {
@@ -75,8 +75,8 @@ func TestTranslateStatusErrors(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			client := &translationtest.Client{Answers: []translationtest.Answer{{Status: tt.status, Body: tt.body}}}
-			e, err := New(Options{BaseURL: "http://localhost:11434/v1", Model: "llama3", APIKey: key, HTTPClient: client})
+			transport := &translationtest.Transport{Answers: []translationtest.Answer{{Status: tt.status, Body: tt.body}}}
+			e, err := New(Options{BaseURL: "http://localhost:11434/v1", Model: "llama3", APIKey: key, HTTPClient: transport.Client()})
 			require.NoError(t, err)
 			recordWaits(e)
 

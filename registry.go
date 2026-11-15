@@ -233,9 +233,11 @@ func writeFormat(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteRe
 	case CSV:
 		return writeCSV(w, s, common, opts)
 	case FFMetadataChapters:
-		return WriteReport{}, chapters.WriteFFMetadata(w, s, common, chapters.WriteOptions{})
+		_, err := chapters.WriteFFMetadata(w, s, common, chapters.WriteOptions{})
+		return WriteReport{}, err
 	case HTMLTranscript:
-		return WriteReport{}, transcript.WriteHTML(w, s, common, opts.Transcript)
+		_, err := transcript.WriteHTML(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case ITT:
 		_, err := itt.Write(w, s, common, opts.ITT)
 		return WriteReport{}, err
@@ -243,13 +245,17 @@ func writeFormat(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteRe
 		_, err := stboxjson.Write(w, s, common, opts.JSON)
 		return WriteReport{}, err
 	case AssemblyAI:
-		return WriteReport{}, transcript.WriteAssemblyAI(w, s, common, opts.Transcript)
+		_, err := transcript.WriteAssemblyAI(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case AWSTranscribe:
-		return WriteReport{}, transcript.WriteAWSTranscribe(w, s, common, opts.Transcript)
+		_, err := transcript.WriteAWSTranscribe(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case Deepgram:
-		return WriteReport{}, transcript.WriteDeepgram(w, s, common, opts.Transcript)
+		_, err := transcript.WriteDeepgram(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case GoogleSpeech:
-		return WriteReport{}, transcript.WriteGoogleSpeech(w, s, common, opts.Transcript)
+		_, err := transcript.WriteGoogleSpeech(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case LRC:
 		_, err := lrc.Write(w, s, common, lrc.WriteOptions{})
 		return WriteReport{}, err
@@ -327,17 +333,23 @@ func writeFormat(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteRe
 		}
 		return WriteReport{WebVTT: &report}, nil
 	case Whisper:
-		return WriteReport{}, transcript.WriteWhisper(w, s, common, opts.Transcript)
+		_, err := transcript.WriteWhisper(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case YouTubeTimedText:
-		return WriteReport{}, youtube.Write(w, s, common, youtube.WriteOptions{})
+		_, err := youtube.Write(w, s, common, youtube.WriteOptions{})
+		return WriteReport{}, err
 	case OGMChapters:
-		return WriteReport{}, chapters.WriteOGM(w, s, common, chapters.WriteOptions{})
+		_, err := chapters.WriteOGM(w, s, common, chapters.WriteOptions{})
+		return WriteReport{}, err
 	case PodcastChapters:
-		return WriteReport{}, chapters.WritePodcast(w, s, common, chapters.WriteOptions{})
+		_, err := chapters.WritePodcast(w, s, common, chapters.WriteOptions{})
+		return WriteReport{}, err
 	case PodcastTranscript:
-		return WriteReport{}, transcript.WritePodcast(w, s, common, opts.Transcript)
+		_, err := transcript.WritePodcast(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case YouTubeChapters:
-		return WriteReport{}, chapters.WriteYouTube(w, s, common, chapters.WriteOptions{})
+		_, err := chapters.WriteYouTube(w, s, common, chapters.WriteOptions{})
+		return WriteReport{}, err
 	}
 	return WriteReport{}, errNoWriter
 }

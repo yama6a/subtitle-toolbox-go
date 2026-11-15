@@ -384,7 +384,8 @@ func TestReadWhisperWordWithOddSpaceHoldsAPlainSpace(t *testing.T) {
 
 			var out bytes.Buffer
 			s := readWhisper(t, content, withWords)
-			require.NoError(t, transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}))
+			_, err := transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
+			require.NoError(t, err)
 			again, _ := readWhisper(t, out.String(), withWords).Cue(0)
 			assert.Equal(t, want, again.Words)
 		})

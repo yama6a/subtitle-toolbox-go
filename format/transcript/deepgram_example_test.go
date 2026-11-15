@@ -37,7 +37,7 @@ func ExampleWriteDeepgram() {
 	if err := s.AddCue(model.Cue{Start: 1500 * time.Millisecond, End: 3 * time.Second, Lines: []string{"Guten", "Morgen."}, Speaker: "1"}); err != nil {
 		panic(err)
 	}
-	if err := transcript.WriteDeepgram(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+	if _, err := transcript.WriteDeepgram(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

@@ -17,6 +17,12 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
+// WriteOptions holds the settings of a VobSub writer. VobSub has no writer, so it has no fields.
+type WriteOptions struct{}
+
+// WriteReport holds what a VobSub writer reports. VobSub has no writer, so it has no fields.
+type WriteReport struct{}
+
 // ReadOptions holds the settings of the VobSub reader.
 type ReadOptions struct {
 	// IDX is the content of the .idx file as UTF-8. It is a string, so stbox.ReadOptions stays comparable. stbox.Load and stbox.LoadFS fill it from the file next to the .sub file.

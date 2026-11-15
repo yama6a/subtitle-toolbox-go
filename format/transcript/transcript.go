@@ -19,3 +19,6 @@ type WriteOptions struct {
 	// HTML holds the settings of the HTML transcript writer.
 	HTML HTMLWriteOptions
 }
+
+// WriteReport holds what the transcript writers report. It has no fields yet.
+type WriteReport struct{}

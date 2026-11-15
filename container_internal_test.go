@@ -8,13 +8,15 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 type fakeFile struct{ tracks []Track }
 
 func (f fakeFile) Tracks() []Track { return f.tracks }
 
-func (f fakeFile) Extract(int, ReadOptions) (*Subtitle, []ParseWarning, error) {
+func (f fakeFile) Extract(int, model.CommonReadOptions, struct{}) (*Subtitle, []ParseWarning, error) {
 	s := &Subtitle{}
 	if err := s.AddCue(Cue{Start: 0, End: 1000000000, Lines: []string{"Hello"}}); err != nil {
 		panic(err)
@@ -62,7 +64,7 @@ func TestReadTrack(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, info, err := extractTrack(Matroska, fakeFile{tt.tracks}, tt.opts)
+			s, info, err := extractTrack(fakeFile{tt.tracks}, Matroska, tt.opts, struct{}{})
 			if tt.wantErr != "" {
 				require.EqualError(t, err, tt.wantErr)
 				assert.Nil(t, s)
@@ -75,7 +77,7 @@ func TestReadTrack(t *testing.T) {
 					assert.Len(t, te.Tracks, tt.wantTracks)
 					assert.Equal(t, Matroska, te.Container)
 					require.ErrorIs(t, err, ErrUnsupportedFormat)
-					require.NotErrorIs(t, err, ErrUnknownFormat)
+					require.NotErrorIs(t, err, ErrNoFormatDetected)
 				case *InvalidArgumentError:
 					require.ErrorAs(t, err, &ie)
 					assert.Equal(t, "ReadOptions.Track", ie.Option)
@@ -158,7 +160,7 @@ func TestTrackInputErrors(t *testing.T) {
 			err := tt.call()
 			require.EqualError(t, err, tt.want)
 			require.ErrorIs(t, err, tt.is)
-			assert.NotErrorIs(t, err, ErrUnknownFormat)
+			assert.NotErrorIs(t, err, ErrNoFormatDetected)
 		})
 	}
 }

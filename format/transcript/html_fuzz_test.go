@@ -30,7 +30,7 @@ func FuzzReadHTML(f *testing.F) {
 			}
 			checkWords(t, s)
 			var out bytes.Buffer
-			if err := transcript.WriteHTML(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+			if _, err := transcript.WriteHTML(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 				if !errors.Is(err, model.ErrUnwritable) {
 					t.Fatalf("WriteHTML returned %v, which does not match ErrUnwritable", err)
 				}

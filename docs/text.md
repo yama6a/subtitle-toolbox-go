@@ -512,7 +512,6 @@ fmt.Println(profanity.FFmpegVolumeFilter(report.MuteRanges))
 | `MaskFirstLetter` | `first-letter` | `What the h***?`. `HELL no` gives `H*** no` |
 | `MaskRemove` | `remove` | `What the ?` |
 | `MaskNone` | `none` | unchanged. Only the report has the ranges |
-| `MaskFunc` set | none | the text that the function returns for the matched word, escaped as text: `<hell>` gives `&lt;hell&gt;` |
 
 - **Word list**: the caller passes the words. The module ships no list, because the words depend on the language and the audience.
 - **Word**: one word or a phrase with spaces, such as `son of a`. A `*` at the end matches any ending: `damn*` matches `damned` and `damnit`, not `condemn`. `Validate` rejects an empty list, an empty word, white space at the start or end, a `*` before the end and invalid UTF-8.

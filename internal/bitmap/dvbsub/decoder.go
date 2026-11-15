@@ -61,8 +61,8 @@ type cueRecord struct {
 
 // Decoder turns the segments of one DVB subtitle service into image cues.
 type Decoder struct {
-	pages   [2]int
-	all     bool
+	pages   [2]int // composition page and ancillary page
+	all     bool   // read every page, for a Matroska track without page numbers
 	width   int
 	height  int
 	left    int
@@ -87,16 +87,21 @@ type Decoder struct {
 // NewDecoder reads the segments of the composition page and the ancillary page.
 // Lenient mode of common skips a region that would exceed the pixel limit and records a Skipped warning.
 func NewDecoder(compositionPage, ancillaryPage int, common model.CommonReadOptions) *Decoder {
-	d := NewAllPagesDecoder(common)
+	d := newDecoder(common)
 	d.pages = [2]int{compositionPage, ancillaryPage}
-	d.all = false
 	return d
 }
 
 // NewAllPagesDecoder reads the segments of every page, for a Matroska track without page numbers.
 func NewAllPagesDecoder(common model.CommonReadOptions) *Decoder {
+	d := newDecoder(common)
+	d.all = true
+	return d
+}
+
+func newDecoder(common model.CommonReadOptions) *Decoder {
 	return &Decoder{
-		all: true, st: parsing.NewState("", common),
+		st:    parsing.NewState("", common),
 		width: defaultWidth, height: defaultHeight, version: -1,
 		regions: map[int]*region{}, cluts: map[int]*clut{},
 	}

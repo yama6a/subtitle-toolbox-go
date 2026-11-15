@@ -60,7 +60,7 @@ func TestWriteVersions(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.ReplaceCues([]model.Cue{tt.cue}, nil)
+			require.NoError(t, s.AddCue(tt.cue))
 			assert.Equal(t, tt.want, writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{Version: tt.version}))
 		})
 	}

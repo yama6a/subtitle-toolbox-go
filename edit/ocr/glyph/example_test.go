@@ -20,7 +20,7 @@ func ExampleNew() {
 		fmt.Println(err)
 		return
 	}
-	if _, err := ocr.Run(context.Background(), s, engine, ""); err != nil {
+	if _, err := ocr.Apply(context.Background(), s, engine, ""); err != nil {
 		fmt.Println(err)
 		return
 	}

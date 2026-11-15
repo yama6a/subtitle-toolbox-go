@@ -31,20 +31,20 @@ type podcastSegment struct {
 
 // WritePodcast writes s to w as a Podcasting 2.0 JSON transcript. It writes one segment per cue and speaker, or
 // one segment per word of Cue.Words with opts.Podcast.WordSegments. A cue time below 0 counts as 0.
-func WritePodcast(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) error {
+func WritePodcast(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.PodcastTranscript, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	doc, err := podcastDocument(s, opts.Podcast)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	body, err := encodeDocument(model.PodcastTranscript, "Podcasting 2.0 transcript JSON", doc, opts.Podcast.PrettyPrint)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
-	return writing.Write(w, model.PodcastTranscript, body, common, false)
+	return WriteReport{}, writing.Write(w, model.PodcastTranscript, body, common, false)
 }
 
 func podcastDocument(s *model.Subtitle, opts PodcastWriteOptions) (orderedjson.Value, error) {

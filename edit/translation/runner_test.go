@@ -151,7 +151,7 @@ func TestTranslateOwnStation(t *testing.T) {
 			require.NoError(t, s.AddComment("Station announcements", 3))
 			engine := &upperEngine{drop: tt.drop}
 
-			report, err := translation.Translate(t.Context(), s, engine, "en", "de", translation.Options{})
+			report, err := translation.Apply(t.Context(), s, engine, "en", "de", translation.Options{})
 
 			require.NoError(t, err)
 			assert.Equal(t, []call{{
@@ -268,7 +268,7 @@ func TestTranslateSends(t *testing.T) {
 			}
 			engine := &upperEngine{}
 
-			_, err := translation.Translate(t.Context(), s, engine, "en", "de", tt.opts)
+			_, err := translation.Apply(t.Context(), s, engine, "en", "de", tt.opts)
 
 			require.NoError(t, err)
 			got := make([][]string, 0, len(engine.calls))
@@ -292,7 +292,7 @@ func TestTranslateWords(t *testing.T) {
 	require.NoError(t, s.AddCue(model.Cue{Start: 4 * time.Second, End: 5 * time.Second, Lines: []string{"\u266a"}, Words: noteWords}))
 	engine := &upperEngine{}
 
-	_, err := translation.Translate(t.Context(), s, engine, "en", "de", translation.Options{})
+	_, err := translation.Apply(t.Context(), s, engine, "en", "de", translation.Options{})
 
 	require.NoError(t, err)
 	require.Len(t, engine.calls, 1)
@@ -392,7 +392,7 @@ func TestTranslateFills(t *testing.T) {
 				engine = fixedEngine(tt.answers)
 			}
 
-			report, err := translation.Translate(t.Context(), s, engine, "de", "en", translation.Options{})
+			report, err := translation.Apply(t.Context(), s, engine, "de", "en", translation.Options{})
 
 			require.NoError(t, err)
 			got := lines(s)
@@ -462,7 +462,7 @@ func TestTranslateErrors(t *testing.T) {
 				cancel()
 			}
 
-			report, err := translation.Translate(ctx, s, tt.engine, "en", tt.target, tt.opts)
+			report, err := translation.Apply(ctx, s, tt.engine, "en", tt.target, tt.opts)
 
 			require.Error(t, err)
 			assert.Empty(t, report.Warnings)
@@ -502,7 +502,7 @@ func TestTranslateContextEndsInTheCall(t *testing.T) {
 	})
 	s := fromTexts("one.")
 
-	_, err := translation.Translate(ctx, s, engine, "en", "de", translation.Options{})
+	_, err := translation.Apply(ctx, s, engine, "en", "de", translation.Options{})
 
 	require.ErrorIs(t, err, context.Canceled)
 	var service *translation.ServiceError
@@ -525,7 +525,7 @@ func BenchmarkTranslate(b *testing.B) {
 				b.ReportAllocs()
 				for b.Loop() {
 					s := fromTexts(texts...)
-					_, err := translation.Translate(b.Context(), s, &upperEngine{}, "en", "de", translation.Options{MaxCharactersPerRequest: limit})
+					_, err := translation.Apply(b.Context(), s, &upperEngine{}, "en", "de", translation.Options{MaxCharactersPerRequest: limit})
 					require.NoError(b, err)
 				}
 			})
@@ -540,7 +540,7 @@ func BenchmarkRestoreEmptyPairs(b *testing.B) {
 			b.Run("unit="+strconv.Quote(unit)+"/pairs="+strconv.Itoa(pairs), func(b *testing.B) {
 				b.ReportAllocs()
 				for b.Loop() {
-					_, err := translation.Translate(b.Context(), fromTexts(text), &upperEngine{}, "en", "de", translation.Options{})
+					_, err := translation.Apply(b.Context(), fromTexts(text), &upperEngine{}, "en", "de", translation.Options{})
 					require.NoError(b, err)
 				}
 			})

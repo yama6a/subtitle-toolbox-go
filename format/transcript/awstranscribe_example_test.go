@@ -41,7 +41,7 @@ func ExampleWriteAWSTranscribe() {
 	}); err != nil {
 		panic(err)
 	}
-	if err := transcript.WriteAWSTranscribe(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+	if _, err := transcript.WriteAWSTranscribe(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

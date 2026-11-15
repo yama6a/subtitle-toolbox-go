@@ -14,15 +14,6 @@ import (
 // Language is a Tesseract model name. Any string works, for example a custom model or "deu+eng".
 type Language string
 
-// EngineName names a built-in engine. The engine chooser of package ocr/auto reads it.
-type EngineName string
-
-// The names of the built-in engines.
-const (
-	EngineTesseract EngineName = "tesseract"
-	EngineGlyph     EngineName = "glyph"
-)
-
 // Engine reads the text of one cue image.
 type Engine interface {
 	// Recognize returns the text of im. language is a Tesseract model name such as "deu" or "deu+eng",
@@ -99,13 +90,13 @@ func (e *RecognizeError) Unwrap() error { return e.Err }
 // Is reports whether target is ErrRecognize.
 func (e *RecognizeError) Is(target error) bool { return target == ErrRecognize }
 
-// Run sets the lines of every image cue without lines to the text that engine reads, and keeps the images.
+// Apply sets the lines of every image cue without lines to the text that engine reads, and keeps the images.
 // Each cue gets the cleaned lines of the text, without the empty ones. The report holds the text as the engine
-// returned it. Run calls the engine for one cue at a time, in cue order, and passes language unchanged.
+// returned it. Apply calls the engine for one cue at a time, in cue order, and passes language unchanged.
 //
 // An error of the engine or of Text.Validate returns a *CueError. Cues read before it keep their new lines,
-// and the returned report lists them. A cancelled ctx stops Run before the next cue and returns its error, also when the engine failed because of the cancel.
-func Run(ctx context.Context, s *model.Subtitle, engine Engine, language Language) (Report, error) {
+// and the returned report lists them. A cancelled ctx stops Apply before the next cue and returns its error, also when the engine failed because of the cancel.
+func Apply(ctx context.Context, s *model.Subtitle, engine Engine, language Language) (Report, error) {
 	var report Report
 	for i := range s.Len() {
 		cue, _ := s.Cue(i)

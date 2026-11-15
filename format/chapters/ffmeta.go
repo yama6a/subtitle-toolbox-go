@@ -345,10 +345,10 @@ func buildFFMetadata(s *model.Subtitle, global *model.Data, streams []any, chapt
 
 // WriteFFMetadata writes the ;FFMETADATA1 text of FFmpeg. It takes the global tags, the stream tags, the time base
 // and the other chapter tags from the format data "ffmeta-chapters".
-func WriteFFMetadata(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WriteFFMetadata(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.FFMetadataChapters, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	fileData, _ := s.FormatData(ffmetaKey)
 	var b strings.Builder
@@ -368,7 +368,7 @@ func WriteFFMetadata(w io.Writer, s *model.Subtitle, common model.CommonWriteOpt
 		}
 		num, den, ok := splitTimeBase(timeBase)
 		if !ok {
-			return &model.UnwritableError{
+			return WriteReport{}, &model.UnwritableError{
 				Format: model.FFMetadataChapters, CueIndex: i,
 				Reason: "The stored time base " + timeBase + " has a number beyond 9223372036854775807.",
 			}
@@ -386,7 +386,7 @@ func WriteFFMetadata(w io.Writer, s *model.Subtitle, common model.CommonWriteOpt
 		}
 		writeTags(&b, tags)
 	}
-	return writing.Write(w, model.FFMetadataChapters, []byte(b.String()), common, false)
+	return WriteReport{}, writing.Write(w, model.FFMetadataChapters, []byte(b.String()), common, false)
 }
 
 type tag struct{ key, value string }

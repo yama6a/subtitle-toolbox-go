@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/v5/container/mkv"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/pgs"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/vobsub"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
@@ -57,7 +58,7 @@ func TestExtractPGS(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, warnings, err := f.Extract(tt.track, model.CommonReadOptions{})
+			s, warnings, err := f.Extract(tt.track, model.CommonReadOptions{}, mkv.ExtractOptions{})
 			require.NoError(t, err)
 			assert.Empty(t, warnings)
 			lang, _ := s.Metadata(model.MetadataLanguage)
@@ -88,7 +89,7 @@ func TestExtractPGSBlocks(t *testing.T) {
 	t.Run("a block at 14 hours keeps its time", func(t *testing.T) {
 		t.Parallel()
 
-		s, _, err := openFile(t, pgsFile(14*3600*1000, simpleBlock(2, 0, string(set), 0))).Extract(2, model.CommonReadOptions{})
+		s, _, err := openFile(t, pgsFile(14*3600*1000, simpleBlock(2, 0, string(set), 0))).Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 		require.NoError(t, err)
 		require.Len(t, s.Cues(), 1)
 		assert.Equal(t, 14*time.Hour, s.Cues()[0].Start)
@@ -98,7 +99,7 @@ func TestExtractPGSBlocks(t *testing.T) {
 	t.Run("a cut segment fails a strict read", func(t *testing.T) {
 		t.Parallel()
 
-		_, _, err := openFile(t, cut).Extract(2, model.CommonReadOptions{})
+		_, _, err := openFile(t, cut).Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 		var pe *model.ParseError
 		require.ErrorAs(t, err, &pe)
 		assert.Regexp(t, `^The block of track 2 at byte \d+ holds a PGS segment that is cut off\.$`, pe.Msg)
@@ -106,7 +107,7 @@ func TestExtractPGSBlocks(t *testing.T) {
 	t.Run("a cut segment ends a lenient read with a warning", func(t *testing.T) {
 		t.Parallel()
 
-		s, warnings, err := openFile(t, cut).Extract(2, model.CommonReadOptions{Lenient: true})
+		s, warnings, err := openFile(t, cut).Extract(2, model.CommonReadOptions{Lenient: true}, mkv.ExtractOptions{})
 		require.NoError(t, err)
 		assert.Len(t, s.Cues(), 1)
 		require.Len(t, warnings, 1)
@@ -124,14 +125,14 @@ func TestExtractVobSub(t *testing.T) {
 	f := openTestdata(t, "vobsub.mkv")
 	require.Len(t, ref.Cues(), 5)
 
-	s3, _, err := f.Extract(3, model.CommonReadOptions{})
+	s3, _, err := f.Extract(3, model.CommonReadOptions{}, mkv.ExtractOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, ref.Cues(), s3.Cues())
 	lang, _ := s3.Metadata(model.MetadataLanguage)
 	assert.Equal(t, "eng", lang)
 
 	// Track 4 has the units of track 3 in blocks of 1500 ms. A unit without a stop command ends with its block.
-	s4, _, err := f.Extract(4, model.CommonReadOptions{})
+	s4, _, err := f.Extract(4, model.CommonReadOptions{}, mkv.ExtractOptions{})
 	require.NoError(t, err)
 	want := ref.Cues()
 	want[2].End = 10500 * time.Millisecond
@@ -151,7 +152,7 @@ func TestExtractVobSubErrors(t *testing.T) {
 	t.Run("a header without a palette", func(t *testing.T) {
 		t.Parallel()
 
-		_, _, err := openFile(t, vobFile("size: 720x576\n")).Extract(2, model.CommonReadOptions{})
+		_, _, err := openFile(t, vobFile("size: 720x576\n")).Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 		var pe *model.ParseError
 		require.ErrorAs(t, err, &pe)
 		assert.Equal(t, model.ParseError{Format: model.VobSub, Msg: "The .idx content has no palette line."}, *pe)
@@ -161,7 +162,7 @@ func TestExtractVobSubErrors(t *testing.T) {
 	t.Run("a broken unit fails a strict read", func(t *testing.T) {
 		t.Parallel()
 
-		_, _, err := openFile(t, broken).Extract(2, model.CommonReadOptions{})
+		_, _, err := openFile(t, broken).Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 		var pe *model.ParseError
 		require.ErrorAs(t, err, &pe)
 		assert.Equal(t, model.VobSub, pe.Format)
@@ -169,7 +170,7 @@ func TestExtractVobSubErrors(t *testing.T) {
 	t.Run("a broken unit is skipped in a lenient read", func(t *testing.T) {
 		t.Parallel()
 
-		s, warnings, err := openFile(t, broken).Extract(2, model.CommonReadOptions{Lenient: true})
+		s, warnings, err := openFile(t, broken).Extract(2, model.CommonReadOptions{Lenient: true}, mkv.ExtractOptions{})
 		require.NoError(t, err)
 		assert.Empty(t, s.Cues())
 		require.Len(t, warnings, 1)

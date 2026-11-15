@@ -1,8 +1,8 @@
 # OCR
 
-OCR (optical character recognition) fills the lines of image cues, so a Blu-ray or DVD subtitle can become SubRip or WebVTT. Example: a subtitle has an image cue at 1 s without lines. `ocr.Run(ctx, s, engine, "")` calls the engine for that cue and sets its lines to `Next stop: Bergen`. The image stays.
+OCR (optical character recognition) fills the lines of image cues, so a Blu-ray or DVD subtitle can become SubRip or WebVTT. Example: a subtitle has an image cue at 1 s without lines. `ocr.Apply(ctx, s, engine, "")` calls the engine for that cue and sets its lines to `Next stop: Bergen`. The image stays.
 
-<!-- example: edit/ocr/ExampleRun -->
+<!-- example: edit/ocr/ExampleApply -->
 ```go
 s := &model.Subtitle{}
 if err := s.AddCue(model.Cue{
@@ -14,7 +14,7 @@ if err := s.AddCue(model.Cue{
 }
 engine := &ocrtest.Engine{Text: ocr.Text{Lines: []string{"Next stop: Bergen"}}}
 
-report, err := ocr.Run(context.Background(), s, engine, ocr.English)
+report, err := ocr.Apply(context.Background(), s, engine, ocr.English)
 if err != nil {
 	fmt.Println(err)
 	return
@@ -36,16 +36,16 @@ An `ocr.Engine` has one method. `Recognize(ctx, im, language)` reads the PNG of 
 - `Text.Confidence` is a number from 0 to 1, or nil when the engine gives none. `Text.Validate` returns an error that matches `ErrInvalidArgument` for any other value, NaN included.
 - `language` is a Tesseract model name such as `deu` or `deu+eng`. The constants of package `edit/ocr`, such as `ocr.German`, hold the 110 standard names. Any other string works, for example a custom model. `""` lets the engine use its own default. An engine that has no languages ignores it.
 
-An engine that fails on an image returns an error. `Run` wraps it. An engine can return a `*RecognizeError` with a message and a cause. It matches `ErrRecognize`.
+An engine that fails on an image returns an error. `Apply` wraps it. An engine can return a `*RecognizeError` with a message and a cause. It matches `ErrRecognize`.
 
-## Run
+## Apply
 
-`Run` visits the cues in order. It calls the engine for each cue that has an image and no lines, one cue at a time. It skips text cues and image cues that already have lines. A subtitle without such a cue never calls the engine.
+`Apply` visits the cues in order. It calls the engine for each cue that has an image and no lines, one cue at a time. It skips text cues and image cues that already have lines. A subtitle without such a cue never calls the engine.
 
 - **Lines**: each cue gets the lines of the text, cleaned as `Cue.AddLine` cleans them. Empty lines are dropped. The image stays.
-- **Language**: `Run` passes it to the engine unchanged.
+- **Language**: `Apply` passes it to the engine unchanged.
 - **Report**: `Report.Texts` lists `CueText` values in cue order. Each holds the cue index and the text as the engine returned it, with empty lines and the confidence.
-- **Cancel**: `Run` checks `ctx.Err()` before each engine call and returns it wrapped.
+- **Cancel**: `Apply` checks `ctx.Err()` before each engine call and returns it wrapped.
 - **Errors**: an error of the engine, or a `Text` that fails `Validate`, returns a `*CueError` with the cue index. It matches `ErrRecognize` and wraps the cause. Cues read before the error keep their new lines, and the returned report lists them.
 
 ## An engine for an OCR web service
@@ -83,7 +83,7 @@ func (e webEngine) Recognize(ctx context.Context, im model.Image, language ocr.L
 
 ## PGS files
 
-`stbox.Load` reads a Blu-ray `.sup` file as image cues without lines, see [formats.md](formats.md#pgs). `Run` then fills their lines. Each display set that shows objects is one cue, with its bitmap as a PNG in `Cue.Image`. A display set that shows 2 objects gives one cue with one image, so the engine reads both lines together. The forced flag of the objects is `Cue.Forced`, so a caller can pick the forced cues of a track before it runs OCR.
+`stbox.Load` reads a Blu-ray `.sup` file as image cues without lines, see [formats.md](formats.md#pgs). `Apply` then fills their lines. Each display set that shows objects is one cue, with its bitmap as a PNG in `Cue.Image`. A display set that shows 2 objects gives one cue with one image, so the engine reads both lines together. The forced flag of the objects is `Cue.Forced`, so a caller can pick the forced cues of a track before it runs OCR.
 
 ## PGS colour reduction
 
@@ -128,7 +128,7 @@ if err != nil {
 	fmt.Println(err)
 	return
 }
-if _, err := ocr.Run(context.Background(), s, engine, ""); err != nil {
+if _, err := ocr.Apply(context.Background(), s, engine, ""); err != nil {
 	fmt.Println(err)
 	return
 }
@@ -145,18 +145,14 @@ fmt.Println(cue.Lines)
 | `Recognizer` | none | The options of go-glyph-ocr, passed to `glyphocr.NewRecognizer` unchanged, for example `glyphocr.ItalicSlant(0.2)` or `glyphocr.NoLineContext()` |
 
 - **Databases**: the subtitle fonts database holds 2,007 glyphs of DejaVu Sans, Liberation Sans and Noto Sans, then the Latin glyphs. It reads 98.3% of the characters of the test sets right. The Latin database alone reads 85.0%. The [go-glyph-ocr README](https://github.com/yama6a/go-glyph-ocr#readme) lists every option.
-- **One stream per engine**: the recognizer learns the glyph heights of the images it reads. Use one engine for each subtitle stream. An engine is not safe for concurrent use. Engines can share one `*glyphocr.Database`, because matching only reads it. `Engine.Database` returns it.
+- **One stream per engine**: the recognizer learns the glyph heights of the images it reads. Use one engine for each subtitle stream. An engine is not safe for concurrent use. Engines can share one `*glyphocr.Database`, because matching only reads it.
 - **Text**: the engine splits each line into words at the space characters of go-glyph-ocr. A word is italic when more than half of its characters are. Italic words in a row become one run: `<i>The wind turns north tonight.</i>`. A run ends before the first upright word: `<i>Snow</i> is expected on Friday.` Markup characters are escaped. The confidence is the mean of all characters, unknown characters counting 0. An image without ink gives no lines and a confidence of 0.
 - **Language**: ignored.
 - **Errors**: `New` returns a `*model.InvalidArgumentError` for an invalid recognizer option. `Recognize` returns the context error before it starts, and an error that matches `ErrRecognize` for an image that is no PNG.
 
-## Choosing an engine
-
-Package `edit/ocr/auto` picks an engine. `auto.Choose(ctx, auto.Options{})` returns `ocr.EngineTesseract` when the `tesseract` program runs, else `ocr.EngineGlyph`. An explicit `Options.Engine` wins. An explicit Tesseract that is missing returns the `*InvalidArgumentError` with the install hint of `tesseract.RequireInstalled`. `auto.New` builds the chosen engine with its default options. `Options.TesseractProgram` sets the program.
-
 ## The convert command
 
-`stbox convert film.sup --ocr --to srt` runs `Run` with the chosen engine. The `ocr` option group is described in [cli.md](cli.md#ocr). `--ocr-database FILE` loads a `.nocr` file once per run and selects the glyph engine.
+`stbox convert film.sup --ocr --to srt` runs `Apply` with the chosen engine. Without `--ocr-engine`, convert picks Tesseract when the `tesseract` program runs, else the glyph engine. The `ocr` option group is described in [cli.md](cli.md#ocr). `--ocr-database FILE` loads a `.nocr` file once per run and selects the glyph engine.
 
 ## VobSub input
 

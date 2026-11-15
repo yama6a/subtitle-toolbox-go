@@ -18,7 +18,8 @@ func writePodcast(t *testing.T, s *model.Subtitle, common model.CommonWriteOptio
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, transcript.WritePodcast(&out, s, common, transcript.WriteOptions{Podcast: opts}))
+	_, err := transcript.WritePodcast(&out, s, common, transcript.WriteOptions{Podcast: opts})
+	require.NoError(t, err)
 	return out.String()
 }
 
@@ -185,7 +186,7 @@ func TestWritePodcastUnwritable(t *testing.T) {
 	s := &model.Subtitle{}
 	require.NoError(t, s.AddCue(model.Cue{Start: 0, End: time.Second, Lines: []string{"bad \xff byte"}}))
 	var out bytes.Buffer
-	err := transcript.WritePodcast(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
+	_, err := transcript.WritePodcast(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
 	require.ErrorIs(t, err, model.ErrUnwritable)
 	assert.ErrorIs(t, err, model.ErrInvalidUTF8)
 }

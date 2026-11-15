@@ -16,12 +16,12 @@ A package imports only packages of a lower layer. Every layer may also import th
 | 0 | `model`, `model/markup`, and every package under `internal/`, `format/internal/` and `container/<name>/internal/`, except `internal/cli` | other layer 0 packages. Go rejects an import cycle |
 | 1 | `format/<name>` | layer 0. A format package imports another format package only when its format is a profile of the other: iTT of TTML, HLS of WebVTT |
 | 2 | `container/<name>` | layers 0 and 1. A container returns cues, so it calls the format readers |
-| 3 | root `stbox`, and every package under `edit/` and `inspect/` | layers 0 to 2. The root and these packages never import each other. A package under `edit/<name>/` imports another `edit/` package only when it is `edit/<name>` itself or sits below `edit/<name>/internal/` or `edit/internal/`. The service `edit/<name>` imports no package below it. `edit/ocr/auto` also imports the OCR engines. The same rules hold for `inspect/` |
+| 3 | root `stbox`, and every package under `edit/` and `inspect/` | layers 0 to 2. The root and these packages never import each other. A package under `edit/<name>/` imports another `edit/` package only when it is `edit/<name>` itself or sits below `edit/<name>/internal/` or `edit/internal/`. The service `edit/<name>` imports no package below it. The same rules hold for `inspect/` |
 | 4 | `internal/cli`, `cmd/stbox` | everything |
 
 ### Format packages
 
-Every format package declares `ReadOptions`, `WriteOptions` and `WriteReport`, empty where the format has no options or reports nothing. Its functions always take them, so a first option or report field is a new field and never a signature change. A format without a reader has no `Read`. A format without a signature has no `Detect`.
+Every format package declares `ReadOptions`, `WriteOptions` and `WriteReport`, empty where the format has no options or reports nothing. Its functions always take them, so a first option or report field is a new field and never a signature change. A format without a reader has no `Read`. A format without a signature has no `Detect`. A package without a reader or a writer still declares all 3 types.
 
 ```go
 // Read reads UTF-8 text. The root decodes other encodings first.
@@ -39,20 +39,33 @@ func Detect(content []byte) bool
 
 A format package keeps its package doc, `ReadOptions`, `WriteOptions`, `WriteReport`, `Validate` and `Detect` in `<name>.go`, `Read` in `read.go` and `Write` in `write.go`. Other files hold one topic each. `chapters` and `transcript` hold several formats, so they have one file per format.
 
+### Container packages
+
+Every container package declares `ExtractOptions`, empty when it has no options. A first option is a new field and never a signature change.
+
+```go
+func Open(r io.ReaderAt, size int64) (*File, error)
+// Tracks returns the subtitle tracks in file order.
+func (f *File) Tracks() []model.Track
+func (f *File) Extract(number int, common model.CommonReadOptions, opts ExtractOptions) (*model.Subtitle, []model.ParseWarning, error)
+```
+
+- **Track number**: a number that is no subtitle track returns an `*model.InvalidArgumentError` with `Option: "ReadOptions.Track"`.
+
 ### Format registry
 
 The registry is written by hand, and no package registers itself in `init()`. The facts table lists the formats. The first row that lists an extension owns it in `FormatFromPath`. A new format inserts its row after every row whose extension it shares and must not take.
 
 | Table | File | Holds |
 |:--- |:--- |:--- |
-| facts | `model/format.go` | extensions, can read, can write, auto-detected, binary. The `Format` methods read it |
+| facts | `model/format.go` | extensions, can read, can write, binary. The `Format` methods read it |
 | functions | `registry.go` | the read and write switch, `readFormat` and `writeFormat` |
 | detection lists | `registry.go` | the JSON checks and the signatures, in detection order. First match wins |
 
 A pull request that adds a format:
 
 1. Adds its `Format` constant and its facts row.
-2. Sets can read, can write and auto-detected in its facts row.
+2. Sets can read and can write in its facts row.
 3. Adds its `case` to `readFormat` and `writeFormat` in `registry.go`.
 4. Inserts its matcher into `signatures` or `jsonChecks`. `TestDetectionListsFollowTheOrder` in `registry_internal_test.go` holds the order.
 5. Adds a field of its options type to the root `ReadOptions` or `WriteOptions` when the type is not empty. TSV uses the `CSV` field.

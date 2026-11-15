@@ -41,7 +41,7 @@ func ExampleWriteAssemblyAI() {
 	}); err != nil {
 		panic(err)
 	}
-	if err := transcript.WriteAssemblyAI(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+	if _, err := transcript.WriteAssemblyAI(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

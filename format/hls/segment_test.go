@@ -325,3 +325,13 @@ func TestSegmentImageCues(t *testing.T) {
 		assert.Contains(t, contents[0], "00:00:03.000 --> 00:00:04.000\nTwo")
 	})
 }
+
+func TestSegmentAcceptsACueThatReplaceCuesStored(t *testing.T) {
+	t.Parallel()
+
+	s := &model.Subtitle{}
+	s.ReplaceCues([]model.Cue{{Start: time.Second, End: 2 * time.Second, Lines: []string{"a"}, Position: model.Position{Row: 2}}}, nil)
+	r, err := hls.Segment(s, hls.SegmentOptions{})
+	require.NoError(t, err)
+	require.NoError(t, r.EachSegment(func(string, []byte) error { return nil }))
+}

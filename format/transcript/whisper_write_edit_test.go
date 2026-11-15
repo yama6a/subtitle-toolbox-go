@@ -194,7 +194,8 @@ func TestWriteWhisperFromAnotherFormat(t *testing.T) {
 		Words: []model.Word{{Text: "Bis", Start: ms(4000), End: ms(4500)}, {Text: "bald.", Start: ms(4500), End: ms(5000)}},
 	}))
 	var out bytes.Buffer
-	require.NoError(t, transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}))
+	_, err := transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
+	require.NoError(t, err)
 	want := `{"text":" Guten Morgen. Bis bald.","segments":[{"id":0,"start":1.5,"end":3.0,"text":" Guten Morgen.","speaker":"Anna"},` +
 		`{"id":1,"start":4.0,"end":5.0,"text":" Bis bald.","words":[{"word":" Bis","start":4.0,"end":4.5,"probability":1.0},` +
 		`{"word":" bald.","start":4.5,"end":5.0,"probability":1.0}]}],"language":"de"}`
@@ -229,7 +230,8 @@ func TestWriteWhisperShapeAndLanguage(t *testing.T) {
 			data, _ := formatdata.FromJSON(parseJSON(t, tt.data)).(*model.Data)
 			require.NoError(t, s.SetFormatData("whisper", data))
 			var out bytes.Buffer
-			require.NoError(t, transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}))
+			_, err := transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
+			require.NoError(t, err)
 			assert.Equal(t, tt.want, out.String())
 		})
 	}
@@ -242,7 +244,7 @@ func TestWriteWhisperErrors(t *testing.T) {
 		t.Parallel()
 
 		s := readWhisper(t, `{"segments": [{"start": 0, "end": 1, "text": "Hi", "avg_logprob": 1e400}]}`, transcript.ReadOptions{})
-		err := transcript.WriteWhisper(&bytes.Buffer{}, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
+		_, err := transcript.WriteWhisper(&bytes.Buffer{}, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
 		var uerr *model.UnwritableError
 		require.ErrorAs(t, err, &uerr)
 		assert.Equal(t, "Whisper JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded.", uerr.Reason)
@@ -253,14 +255,15 @@ func TestWriteWhisperErrors(t *testing.T) {
 		s := &model.Subtitle{}
 		require.NoError(t, s.AddCue(model.Cue{End: ms(1), Lines: []string{"a"}}))
 		require.NoError(t, s.SetFormatData("whisper", model.NewData(model.Field{Key: "x", Value: "a\xffb"})))
-		err := transcript.WriteWhisper(&bytes.Buffer{}, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
+		_, err := transcript.WriteWhisper(&bytes.Buffer{}, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
 		require.ErrorIs(t, err, model.ErrInvalidUTF8)
 	})
 	t.Run("an empty subtitle", func(t *testing.T) {
 		t.Parallel()
 
 		var out bytes.Buffer
-		require.NoError(t, transcript.WriteWhisper(&out, &model.Subtitle{}, model.CommonWriteOptions{}, transcript.WriteOptions{}))
+		_, err := transcript.WriteWhisper(&out, &model.Subtitle{}, model.CommonWriteOptions{}, transcript.WriteOptions{})
+		require.NoError(t, err)
 		assert.JSONEq(t, `{"text":"","segments":[]}`, out.String())
 	})
 }

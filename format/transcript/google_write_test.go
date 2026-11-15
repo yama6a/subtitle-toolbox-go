@@ -111,7 +111,7 @@ func TestWriteGoogleSpeechDiarized(t *testing.T) {
 
 		s := googleFormat.parseFile(t, "restaurant_v2_diarization.json", transcript.ReadOptions{})
 		editCue(t, s, 2, func(c *model.Cue) { c.Lines = []string{"Around seven o'clock please"} })
-		err := transcript.WriteGoogleSpeech(&bytes.Buffer{}, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
+		_, err := transcript.WriteGoogleSpeech(&bytes.Buffer{}, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
 		var uerr *model.UnwritableError
 		require.ErrorAs(t, err, &uerr)
 		assert.Equal(t, 2, uerr.CueIndex)

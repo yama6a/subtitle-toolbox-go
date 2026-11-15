@@ -88,7 +88,7 @@ func TestExtractTextTracks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, warnings, err := f.Extract(tt.track, model.CommonReadOptions{})
+			s, warnings, err := f.Extract(tt.track, model.CommonReadOptions{}, mkv.ExtractOptions{})
 			require.NoError(t, err)
 			assert.Empty(t, warnings)
 			assert.Equal(t, tt.want, write(t, s, tt.format))
@@ -147,7 +147,7 @@ func TestExtractFixtures(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, _, err := openTestdata(t, tt.file).Extract(tt.track, model.CommonReadOptions{})
+			s, _, err := openTestdata(t, tt.file).Extract(tt.track, model.CommonReadOptions{}, mkv.ExtractOptions{})
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, cueRows(s))
 		})
@@ -172,7 +172,7 @@ func TestLastCueDuration(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, _, err := openFile(t, file).Extract(1, tt.opts)
+			s, _, err := openFile(t, file).Extract(1, tt.opts, mkv.ExtractOptions{})
 			require.NoError(t, err)
 			assert.Equal(t, []cueRow{{time.Second, 2 * time.Second, "Platform 4."}, {3 * time.Second, tt.end, "Mind the gap."}}, cueRows(s))
 		})
@@ -205,7 +205,7 @@ func TestBuilderRules(t *testing.T) {
 			t.Parallel()
 
 			f := openFile(t, segmentFile("matroska", tracks(tt.track), cluster(0, tt.block)))
-			s, warnings, err := f.Extract(1, model.CommonReadOptions{})
+			s, warnings, err := f.Extract(1, model.CommonReadOptions{}, mkv.ExtractOptions{})
 			require.NoError(t, err)
 			assert.Empty(t, warnings)
 			assert.Equal(t, []cueRow{tt.want}, cueRows(s))
@@ -233,7 +233,7 @@ func TestTimeLimit(t *testing.T) {
 			t.Parallel()
 
 			f := openFile(t, segmentFile("matroska", info(tt.scale, "x"), tracks(subTrack(2, tt.codec)), tt.cluster))
-			_, _, err := f.Extract(2, model.CommonReadOptions{})
+			_, _, err := f.Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 			var pe *model.ParseError
 			require.ErrorAs(t, err, &pe)
 			assert.Empty(t, pe.Format)
@@ -331,7 +331,7 @@ func TestBrokenFiles(t *testing.T) {
 			f, err := mkv.Open(bytes.NewReader(tt.file), int64(len(tt.file)))
 			if err == nil {
 				for _, track := range f.Tracks() {
-					if _, _, err = f.Extract(track.Number, model.CommonReadOptions{}); err != nil {
+					if _, _, err = f.Extract(track.Number, model.CommonReadOptions{}, mkv.ExtractOptions{}); err != nil {
 						break
 					}
 				}

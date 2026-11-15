@@ -341,3 +341,12 @@ func TestRoundTrip(t *testing.T) {
 	}
 	assert.Equal(t, []string{"00:59:56:12", "01:01:36:09", "01:59:52:24", "02:01:32:21"}, labels)
 }
+
+func TestWriteAcceptsACueThatReplaceCuesStored(t *testing.T) {
+	t.Parallel()
+
+	s := subtitle(t, []string{"frameRate", "25"})
+	s.ReplaceCues([]model.Cue{{Start: time.Second, End: 2 * time.Second, Lines: []string{"a"}, Position: model.Position{Row: 2}}}, nil)
+	_, err := itt.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, itt.WriteOptions{})
+	require.NoError(t, err)
+}

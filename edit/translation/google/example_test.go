@@ -29,7 +29,7 @@ func ExampleNew() {
 	if err := s.AddCue(c); err != nil {
 		panic(err)
 	}
-	if _, err := translation.Translate(context.Background(), s, engine, "en", "fr", translation.Options{}); err != nil {
+	if _, err := translation.Apply(context.Background(), s, engine, "en", "fr", translation.Options{}); err != nil {
 		fmt.Println(err)
 		return
 	}

@@ -7,55 +7,13 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v5/container/mkv"
 	"github.com/yama6a/subtitle-toolbox-go/v5/container/mp4"
 	"github.com/yama6a/subtitle-toolbox-go/v5/container/mpegts"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
-// containerFile is an open container file. Each container has an adapter type for the file type of its package.
-type containerFile interface {
+// containerFile is an open container file. O is the ExtractOptions type of its package.
+type containerFile[O any] interface {
 	Tracks() []Track
-	Extract(number int, opts ReadOptions) (*Subtitle, []ParseWarning, error)
-}
-
-type matroskaFile struct{ *mkv.File }
-
-func (f matroskaFile) Extract(number int, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return f.File.Extract(number, opts.common())
-}
-
-type mp4File struct{ *mp4.File }
-
-func (f mp4File) Extract(number int, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return f.File.Extract(number, opts.common(), mp4.ExtractOptions{SCC: opts.SCC, MCC: opts.MCC})
-}
-
-type mpegtsFile struct{ *mpegts.File }
-
-func (f mpegtsFile) Extract(number int, opts ReadOptions) (*Subtitle, []ParseWarning, error) {
-	return f.File.Extract(number, opts.common())
-}
-
-// openContainer opens the file of container c.
-func openContainer(c Container, r io.ReaderAt, size int64) (containerFile, error) { //nolint:ireturn // the 3 file types differ
-	switch c {
-	case Matroska:
-		f, err := mkv.Open(r, size)
-		if err != nil {
-			return nil, err
-		}
-		return matroskaFile{f}, nil
-	case MP4:
-		f, err := mp4.Open(r, size)
-		if err != nil {
-			return nil, err
-		}
-		return mp4File{f}, nil
-	case MPEGTS:
-		f, err := mpegts.Open(r, size)
-		if err != nil {
-			return nil, err
-		}
-		return mpegtsFile{f}, nil
-	}
-	return nil, unsupported(notContainer)
+	Extract(number int, common model.CommonReadOptions, opts O) (*Subtitle, []ParseWarning, error)
 }
 
 const notContainer = "The content is not an MKV, WebM, MP4 or MPEG-TS file."
@@ -72,11 +30,27 @@ func Tracks(r io.ReaderAt, size int64) ([]Track, error) {
 	if !ok {
 		return nil, unsupported(notContainer)
 	}
-	f, err := openContainer(c, r, size)
-	if err != nil {
-		return nil, err
+	switch c {
+	case Matroska:
+		f, err := mkv.Open(r, size)
+		if err != nil {
+			return nil, err
+		}
+		return f.Tracks(), nil
+	case MP4:
+		f, err := mp4.Open(r, size)
+		if err != nil {
+			return nil, err
+		}
+		return f.Tracks(), nil
+	case MPEGTS:
+		f, err := mpegts.Open(r, size)
+		if err != nil {
+			return nil, err
+		}
+		return f.Tracks(), nil
 	}
-	return f.Tracks(), nil
+	return nil, unsupported(notContainer)
 }
 
 // readTrack opens the container file and extracts the track that opts names, or the only track.
@@ -84,20 +58,36 @@ func readTrack(c Container, r io.ReaderAt, size int64, subject string, opts Read
 	if opts.Format != "" {
 		return nil, ReadInfo{}, unsupported(subject + " is an " + c.Label() + " file. Read it by track.")
 	}
-	f, err := openContainer(c, r, size)
-	if err != nil {
-		return nil, ReadInfo{}, err
+	switch c {
+	case Matroska:
+		f, err := mkv.Open(r, size)
+		if err != nil {
+			return nil, ReadInfo{}, err
+		}
+		return extractTrack(f, c, opts, mkv.ExtractOptions{})
+	case MP4:
+		f, err := mp4.Open(r, size)
+		if err != nil {
+			return nil, ReadInfo{}, err
+		}
+		return extractTrack(f, c, opts, mp4.ExtractOptions{SCC: opts.SCC, MCC: opts.MCC})
+	case MPEGTS:
+		f, err := mpegts.Open(r, size)
+		if err != nil {
+			return nil, ReadInfo{}, err
+		}
+		return extractTrack(f, c, opts, mpegts.ExtractOptions{})
 	}
-	return extractTrack(c, f, opts)
+	return nil, ReadInfo{}, unsupported(notContainer)
 }
 
-// extractTrack extracts the track that opts names from the open file f, or its only track.
-func extractTrack(c Container, f containerFile, opts ReadOptions) (*Subtitle, ReadInfo, error) {
+// extractTrack picks the track that opts names, or the only track, and extracts it with extract.
+func extractTrack[O any](f containerFile[O], c Container, opts ReadOptions, extract O) (*Subtitle, ReadInfo, error) {
 	track, err := pickTrack(c, f.Tracks(), opts.Track)
 	if err != nil {
 		return nil, ReadInfo{}, err
 	}
-	s, warnings, err := f.Extract(track.Number, opts)
+	s, warnings, err := f.Extract(track.Number, opts.common(), extract)
 	if err != nil {
 		return nil, ReadInfo{}, err
 	}

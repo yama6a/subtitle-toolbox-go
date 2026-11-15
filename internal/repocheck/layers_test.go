@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"path"
 	"path/filepath"
-	"slices"
 	"strings"
 	"testing"
 
@@ -29,9 +28,6 @@ const (
 
 // profiles lists the format packages that may import another format package, because their format is a profile of it.
 var profiles = map[string]string{"format/itt": "format/ttml", "format/hls": "format/webvtt"}
-
-// engineUsers lists the packages below a service folder that may import engine packages of the same service.
-var engineUsers = map[string][]string{"edit/ocr/auto": {"edit/ocr/glyph", "edit/ocr/tesseract"}}
 
 // allowedModules are the modules that CLAUDE.md allows outside tests.
 var allowedModules = []string{
@@ -138,7 +134,7 @@ func topImportAllowed(rel, dep string) bool {
 	if rel == service || servicePath(dep) != service {
 		return false
 	}
-	return dep == service || strings.HasPrefix(dep, service+"/internal/") || slices.Contains(engineUsers[rel], dep)
+	return dep == service || strings.HasPrefix(dep, service+"/internal/")
 }
 
 // servicePath returns the first 2 path elements of rel, such as edit/ocr.
@@ -320,11 +316,6 @@ func TestCheckImports(t *testing.T) {
 			rel:     "edit/ocr",
 			imports: []string{modulePath + "/edit/ocr/glyph"},
 			want:    []string{"edit/ocr imports edit/ocr/glyph, which is not in a lower layer"},
-		},
-		{
-			name:    "chooser imports the engines",
-			rel:     "edit/ocr/auto",
-			imports: []string{modulePath + "/edit/ocr", modulePath + "/edit/ocr/glyph"},
 		},
 		{
 			name:    "test helper imports a service",

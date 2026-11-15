@@ -85,15 +85,15 @@ func ogmStart(line string, number int) (time.Duration, error) {
 }
 
 // WriteOGM writes the simple chapter format of mkvmerge. Ends are lost.
-func WriteOGM(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WriteOGM(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.OGMChapters, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	var b strings.Builder
 	for i, c := range s.All() {
 		fmt.Fprintf(&b, "CHAPTER%02d=%s\nCHAPTER%02dNAME=%s\n", i+1, markupcore.CoreTimestamp(c.Start), i+1,
 			strings.Join(markupcore.PlainLines(c.Lines), " "))
 	}
-	return writing.Write(w, model.OGMChapters, []byte(b.String()), common, false)
+	return WriteReport{}, writing.Write(w, model.OGMChapters, []byte(b.String()), common, false)
 }
