@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/v5/container/mpegts"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
@@ -34,7 +35,7 @@ func TestARIBReadGoldens(t *testing.T) {
 		t.Run(tt.golden, func(t *testing.T) {
 			t.Parallel()
 
-			s, _, err := open(t, fixture(t, tt.file)).Extract(304, model.CommonReadOptions{})
+			s, _, err := open(t, fixture(t, tt.file)).Extract(304, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 			require.NoError(t, err)
 			var got bytes.Buffer
 			require.NoError(t, tt.write(&got, s))
@@ -99,7 +100,7 @@ func TestARIBTracks(t *testing.T) {
 		})
 	}
 
-	s, _, err := open(t, clash.bytes()).Extract(304000, model.CommonReadOptions{})
+	s, _, err := open(t, clash.bytes()).Extract(304000, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, []cueRow{cue(0, 5, "\uFF21")}, cuesOf(s))
 }
@@ -107,7 +108,7 @@ func TestARIBTracks(t *testing.T) {
 func TestARIBWarningsAndJunk(t *testing.T) {
 	t.Parallel()
 
-	_, warnings, err := open(t, fixture(t, "arib_japanese.ts")).Extract(304, model.CommonReadOptions{Lenient: true})
+	_, warnings, err := open(t, fixture(t, "arib_japanese.ts")).Extract(304, model.CommonReadOptions{Lenient: true}, mpegts.ExtractOptions{})
 	require.NoError(t, err)
 	require.Len(t, warnings, 1)
 	assert.Equal(t, model.Repaired, warnings[0].Action)
@@ -127,12 +128,12 @@ func TestARIBScreenLimit(t *testing.T) {
 	w.packets(304, pes(0xBD, 90000, aribStatement(codes), 5))
 	f := open(t, w.bytes())
 
-	_, _, err := f.Extract(304, model.CommonReadOptions{})
+	_, _, err := f.Extract(304, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 	var pe *model.ParseError
 	require.ErrorAs(t, err, &pe)
 	assert.Equal(t, "At 0.000 s: The caption screen holds more than 4096 characters. The reader dropped the characters past that.", pe.Msg)
 
-	s, warnings, err := f.Extract(304, model.CommonReadOptions{Lenient: true})
+	s, warnings, err := f.Extract(304, model.CommonReadOptions{Lenient: true}, mpegts.ExtractOptions{})
 	require.NoError(t, err)
 	assert.Len(t, s.Cues(), 1)
 	require.Len(t, warnings, 1)

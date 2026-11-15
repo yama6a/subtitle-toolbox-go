@@ -21,8 +21,11 @@ type timedBlock struct {
 	additional string
 }
 
+// ExtractOptions holds the settings of Extract. Matroska has none yet.
+type ExtractOptions struct{}
+
 // Extract reads all blocks of the subtitle track with the TrackNumber number.
-func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
+func (f *File) Extract(number int, common model.CommonReadOptions, _ ExtractOptions) (*model.Subtitle, []model.ParseWarning, error) {
 	s, warnings, err := f.extract(number, common)
 	return s, warnings, wrap(err)
 }

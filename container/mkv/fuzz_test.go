@@ -21,7 +21,7 @@ func FuzzOpen(f *testing.F) {
 		}
 		for _, track := range file.Tracks() {
 			for _, lenient := range []bool{false, true} {
-				s, warnings, err := file.Extract(track.Number, model.CommonReadOptions{Lenient: lenient})
+				s, warnings, err := file.Extract(track.Number, model.CommonReadOptions{Lenient: lenient}, mkv.ExtractOptions{})
 				formattest.CheckRead(t, s, warnings, err)
 			}
 		}
