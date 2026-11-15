@@ -78,7 +78,6 @@ func sweep(target, reference []span, offset float64, add func(i int, d float64))
 	}
 }
 
-// coarseCount returns the index of the last coarse offset from lo to hi.
 func coarseCount(lo, hi float64) int {
 	return int(math.Floor((hi-lo)/coarseStep + epsilon))
 }
@@ -156,7 +155,6 @@ func refine(target, reference []span, coarseBest, lo, hi float64) (offset, best 
 	return offset, best
 }
 
-// firstMax returns the index of the first maximum of values.
 func firstMax(values []float64) int {
 	best := 0
 	for i, v := range values {
