@@ -2,6 +2,8 @@
 
 `stbox` reads, converts and checks subtitle files from the shell. Example: `stbox convert season1 --to vtt --output-dir out` reads every subtitle file of `season1/` and writes `out/<name>.vtt` for each. It never overwrites a file, prints one report line per file and a summary, and exits 3 when one file failed.
 
+[examples-cli.md](examples-cli.md) shows common tasks, one per section, with the output of each command.
+
 ## Install
 
 | Form | Needs | Example |
