@@ -101,6 +101,8 @@ func replaceFunc(re *regexp2.Regexp, text string, fn func(string) string) string
 }
 
 // fix runs the rule r on lines. A fix returns lines, or a new slice when it changes a line.
+//
+//nolint:cyclop // one case per rule, and the exhaustive linter needs them all
 func (f *fixer) fix(r Rule, lines []string) []string {
 	switch r {
 	case RuleAdCues:

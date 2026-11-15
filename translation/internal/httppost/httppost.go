@@ -175,6 +175,8 @@ func CheckAPIKey(option, key, emptyMsg string) error {
 }
 
 // ClientOrDefault returns c, or translation.DefaultHTTPClient() when c is nil.
+//
+//nolint:ireturn // the engines hold a translation.HTTPClient
 func ClientOrDefault(c translation.HTTPClient) translation.HTTPClient {
 	if c == nil {
 		return translation.DefaultHTTPClient()
