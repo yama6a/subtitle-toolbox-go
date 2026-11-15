@@ -631,3 +631,27 @@ func TestDetectContainer(t *testing.T) {
 func nestedJSON(n int) string {
 	return `{"version": 1, "cues": [], "x": ` + strings.Repeat("[", n) + strings.Repeat("]", n) + "}"
 }
+
+// A PGS header holds a 32-bit PTS and DTS, so byte 10 moves when Detect trims white space or changes CR LF to LF.
+func TestDetectReadsPGSFromTheRawBytes(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		content []byte
+		want    stbox.Format
+	}{
+		{name: "fixture", content: testfiles.Read(t, "pgs/shapes_576p.sup"), want: stbox.PGS},
+		{name: "CR LF in the PTS", content: []byte("PG\r\n\r\n\x00\x00\x00\x00\x16\x00\x00"), want: stbox.PGS},
+		{name: "BOM before the header", content: append([]byte("\xEF\xBB\xBF"), testfiles.Read(t, "pgs/shapes_576p.sup")...)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			d, ok := stbox.Detect(tt.content)
+			assert.Equal(t, tt.want != "", ok)
+			assert.Equal(t, tt.want, d.Format)
+		})
+	}
+}
