@@ -51,7 +51,7 @@ var layers = map[string]layer{
 	"internal/formattest":                layerModelUser,
 	"internal/translationtest":           layerLeaf,
 	"internal/extfallback":               layerModelUser,
-	"format/internal/paragraphs":         layerLeaf,
+	"format/internal/paragraphs":         layerModelUser,
 	"markup":                             layerModel,
 	"model":                              layerModel,
 	"internal/textblock":                 layerModelUser,

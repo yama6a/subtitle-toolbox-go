@@ -3,7 +3,6 @@ package stream
 import (
 	"fmt"
 	"io"
-	"slices"
 	"strings"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
@@ -112,7 +111,6 @@ type WebVTTWriter struct {
 	cw        vtt.Writer
 	n         int
 	hasBlocks bool
-	dropped   []webvtt.DroppedColor
 }
 
 // NewWebVTTWriter returns a writer that writes the BOM and the header to w at once.
@@ -123,12 +121,7 @@ func NewWebVTTWriter(w io.Writer, common model.CommonWriteOptions, _ webvtt.Writ
 		return nil, err
 	}
 	ww := &WebVTTWriter{sink: sink{w: w, f: model.WebVTT, common: common}}
-	ww.cw = vtt.Writer{
-		StripTags: common.StripTags,
-		OnDroppedColor: func(cueIndex int, color, message string) {
-			ww.dropped = append(ww.dropped, webvtt.DroppedColor{CueIndex: cueIndex, Color: color, Message: message})
-		},
-	}
+	ww.cw = vtt.Writer{StripTags: common.StripTags}
 	prefix := vtt.Header(header) + "\n\n"
 	if blocks := vtt.FileBlocks(header); len(blocks) > 0 {
 		prefix += strings.Join(blocks, "\n\n") + "\n"
@@ -163,7 +156,11 @@ func (w *WebVTTWriter) Write(c model.Cue) error {
 // DroppedColors returns the font colors that no WebVTT color class has, so the output dropped them,
 // for the cues written so far.
 func (w *WebVTTWriter) DroppedColors() []webvtt.DroppedColor {
-	return slices.Clone(w.dropped)
+	var dropped []webvtt.DroppedColor //nolint:prealloc // a write without dropped colors reports nil
+	for _, d := range w.cw.Dropped {
+		dropped = append(dropped, webvtt.DroppedColor(d))
+	}
+	return dropped
 }
 
 // Close marks the writer closed. It does not close the io.Writer, which the caller owns.

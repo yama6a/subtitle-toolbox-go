@@ -16,15 +16,13 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 	if err != nil {
 		return WriteReport{}, err
 	}
-	var report WriteReport
-	cw := &vtt.Writer{
-		StripTags: common.StripTags,
-		OnDroppedColor: func(cueIndex int, color, message string) {
-			report.DroppedColors = append(report.DroppedColors, DroppedColor{CueIndex: cueIndex, Color: color, Message: message})
-		},
-	}
+	cw := &vtt.Writer{StripTags: common.StripTags}
 	if err := writing.Write(w, model.WebVTT, []byte(document(cw, s)), common, true); err != nil {
 		return WriteReport{}, err
+	}
+	var report WriteReport
+	for _, d := range cw.Dropped {
+		report.DroppedColors = append(report.DroppedColors, DroppedColor(d))
 	}
 	return report, nil
 }

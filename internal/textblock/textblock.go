@@ -7,6 +7,9 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 var (
@@ -20,6 +23,8 @@ var (
 type Rules struct {
 	IsTimingLine  func(line string) bool
 	HasCueNumbers bool
+	// IsOtherBlock marks a block that is no cue text, such as a WebVTT NOTE block. Nil marks none.
+	IsOtherBlock func(lines []string) bool
 }
 
 // Block is a run of non-empty lines and the 1-based number of its first line.
@@ -28,31 +33,30 @@ type Block struct {
 	Lines []string
 }
 
-// HasTimingLine reports whether a line of lines is a timing line.
-func (r Rules) HasTimingLine(lines []string) bool {
+// hasTimingLine reports whether a line of lines is a timing line.
+func (r Rules) hasTimingLine(lines []string) bool {
 	return slices.ContainsFunc(lines, r.IsTimingLine)
 }
 
-// IsCueTextBlock reports whether lines are cue text: no timing line, and no cue number or time on the first line.
+// isCueTextBlock reports whether lines are cue text: no timing line, and no cue number or time on the first line.
 // A first line that looks like a broken time keeps the block apart, so the reader still skips it with a warning.
-func (r Rules) IsCueTextBlock(lines []string) bool {
-	return !r.HasTimingLine(lines) &&
+func (r Rules) isCueTextBlock(lines []string) bool {
+	return !r.hasTimingLine(lines) &&
 		(!r.HasCueNumbers || !IsNumeric(lines[0])) &&
 		!brokenTimeRegexp.MatchString(lines[0]) && !strings.Contains(lines[0], "->")
 }
 
 // JoinCueTextBlocks joins a block of cue text to the block before it when that block has a timing line,
-// so an empty line inside the cue text does not end the cue. It calls onJoin with the 0-based number of the
-// joined block, the first line of the cue text and its lines. isOther marks a block that is no cue text,
-// such as a WebVTT NOTE block. A nil isOther marks none.
-func JoinCueTextBlocks(blocks iter.Seq[Block], r Rules, isOther func(lines []string) bool, onJoin func(block, line int, lines []string)) iter.Seq[Block] {
+// so an empty line inside the cue text does not end the cue. In lenient mode it warns JoinWarning for each join,
+// as Repaired, with the 0-based number of the joined block and the lines of the cue text.
+func JoinCueTextBlocks(blocks iter.Seq[Block], r Rules, st *parsing.State) iter.Seq[Block] {
 	return func(yield func(Block) bool) {
 		var pending *Block
 		index := 0
 		for b := range blocks {
-			if pending != nil && r.joins(pending.Lines, b.Lines, isOther) {
-				if onJoin != nil {
-					onJoin(index, b.Line, b.Lines)
+			if pending != nil && r.joins(pending.Lines, b.Lines) {
+				if st.Lenient() {
+					st.Warn(JoinWarning(index, b.Line), b.Line, index, b.Lines, model.Repaired)
 				}
 				pending.Lines = append(pending.Lines, b.Lines...)
 				continue
@@ -71,8 +75,8 @@ func JoinCueTextBlocks(blocks iter.Seq[Block], r Rules, isOther func(lines []str
 	}
 }
 
-func (r Rules) joins(pending, lines []string, isOther func(lines []string) bool) bool {
-	return r.IsCueTextBlock(lines) && (isOther == nil || !isOther(lines)) && r.HasTimingLine(pending)
+func (r Rules) joins(pending, lines []string) bool {
+	return r.isCueTextBlock(lines) && (r.IsOtherBlock == nil || !r.IsOtherBlock(lines)) && r.hasTimingLine(pending)
 }
 
 // JoinWarning returns the lenient warning of a join by JoinCueTextBlocks.

@@ -34,7 +34,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		items = append(items, paragraphs.Item[string]{Start: c.Start, End: c.End, Value: strings.Join(lines, lineSeparator(opts.KeepLineBreaks))})
 	}
 	blocks := make([]string, 0, len(items))
-	for _, p := range paragraphs.ByGap(items, opts.gap(), nil) {
+	for _, p := range paragraphs.ByGap(items, paragraphs.Gap(opts.ParagraphGap)) {
 		var b strings.Builder
 		if opts.WithTimes {
 			seconds := max(p.Start, 0) / time.Second

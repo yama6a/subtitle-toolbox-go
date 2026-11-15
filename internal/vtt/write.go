@@ -30,12 +30,19 @@ var (
 	spanClassRegexp       = regexp.MustCompile(`(?i)</?((?:strong|b|u|i|v|lang|c|ruby|rt)\.[^\t\n\v\f\r >]*)`)
 )
 
+// DroppedColor is a font color that no WebVTT color class has.
+type DroppedColor struct {
+	CueIndex int
+	Color    string
+	Message  string
+}
+
 // Writer writes the blocks of a WebVTT file.
 type Writer struct {
 	// StripTags writes the cue text without markup.
 	StripTags bool
-	// OnDroppedColor is called for each font color that no WebVTT color class has. It may be nil.
-	OnDroppedColor func(cueIndex int, color, message string)
+	// Dropped holds each font color that no WebVTT color class has, in the order of the calls to CueBlock.
+	Dropped []DroppedColor
 }
 
 // Header returns the signature line and the header text lines of file, without a line end at the end.
@@ -219,10 +226,12 @@ func (w *Writer) text(c model.Cue, i int) string {
 		var dropped []string
 		text, dropped = markupcore.FontToWebVTTColors(text)
 		for _, color := range dropped {
-			if w.OnDroppedColor != nil {
-				w.OnDroppedColor(i, color, "Cue #"+strconv.Itoa(i)+" at "+timecode.Seconds(c.Start)+` s: dropped the color "`+color+
-					`", because WebVTT has classes for 8 colors only.`)
-			}
+			w.Dropped = append(w.Dropped, DroppedColor{
+				CueIndex: i,
+				Color:    color,
+				Message: "Cue #" + strconv.Itoa(i) + " at " + timecode.Seconds(c.Start) + ` s: dropped the color "` + color +
+					`", because WebVTT has classes for 8 colors only.`,
+			})
 		}
 		text = keepSpanTags(text)
 	}

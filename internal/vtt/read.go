@@ -277,10 +277,7 @@ func (r *Reader) numberedBlocks(lines iter.Seq[line]) iter.Seq[textblock.Block] 
 	if !r.st.Lenient() {
 		return split
 	}
-	onJoin := func(block, line int, lines []string) {
-		r.st.Warn(textblock.JoinWarning(block, line), line, block, lines, model.Repaired)
-	}
-	return textblock.JoinCueTextBlocks(split, textblock.Rules{IsTimingLine: hasArrow}, isOtherBlock, onJoin)
+	return textblock.JoinCueTextBlocks(split, textblock.Rules{IsTimingLine: hasArrow, IsOtherBlock: isOtherBlock}, r.st)
 }
 
 func isOtherBlock(lines []string) bool {

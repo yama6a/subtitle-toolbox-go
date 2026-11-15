@@ -4,15 +4,12 @@ import (
 	"math"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/paragraphs"
 )
 
 // NoParagraphBreaks is the ParagraphGap that writes all cues as one paragraph. It has the value of
 // plaintext.NoParagraphBreaks.
 const NoParagraphBreaks = time.Duration(math.MaxInt64)
-
-const defaultParagraphGap = 2 * time.Second
 
 // HTMLWriteOptions holds the settings of the HTML transcript writer.
 type HTMLWriteOptions struct {
@@ -22,20 +19,7 @@ type HTMLWriteOptions struct {
 
 // Validate returns an error that matches model.ErrInvalidArgument for a negative paragraph gap.
 func (o HTMLWriteOptions) Validate() error {
-	if o.ParagraphGap != nil && *o.ParagraphGap < 0 {
-		return &model.InvalidArgumentError{
-			Option: "WriteOptions.Transcript.HTML.ParagraphGap",
-			Msg:    "The paragraph gap must be 0 or more seconds, got " + timecode.Seconds(*o.ParagraphGap) + ".",
-		}
-	}
-	return nil
-}
-
-func (o HTMLWriteOptions) gap() time.Duration {
-	if o.ParagraphGap == nil {
-		return defaultParagraphGap
-	}
-	return *o.ParagraphGap
+	return paragraphs.ValidateGap(o.ParagraphGap, "WriteOptions.Transcript.HTML.ParagraphGap")
 }
 
 // DetectHTML reports whether content starts with "<" after any white space, and holds the start tags <cite and

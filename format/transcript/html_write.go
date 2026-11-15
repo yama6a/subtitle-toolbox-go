@@ -26,12 +26,11 @@ func WriteHTML(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, 
 	segments := podcastSegments(s)
 	items := make([]paragraphs.Item[podcastSegment], len(segments))
 	for i, seg := range segments {
-		items[i] = paragraphs.Item[podcastSegment]{Start: seg.start, End: seg.end, Value: seg}
+		items[i] = paragraphs.Item[podcastSegment]{Start: seg.start, End: seg.end, Value: seg, NewParagraph: i > 0 && segments[i-1].speaker != seg.speaker}
 	}
-	newSpeaker := func(previous, seg podcastSegment) bool { return previous.speaker != seg.speaker }
 
 	var b strings.Builder
-	for _, p := range paragraphs.ByGap(items, opts.HTML.gap(), newSpeaker) {
+	for _, p := range paragraphs.ByGap(items, paragraphs.Gap(opts.HTML.ParagraphGap)) {
 		if name := p.Values[0].speaker; name != "" {
 			b.WriteString("<cite>" + markupcore.EscapeText(name) + ":</cite>\n")
 		}
