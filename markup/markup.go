@@ -36,9 +36,8 @@ func HasVisibleText(lines []string) bool {
 }
 
 // VisibleLength returns the number of characters of PlainText after trimming space, tab, LF, CR, NUL and VT.
-// A character is a grapheme cluster, counted as
-// grapheme.Count does. The soft hyphen, the zero-width space, the BOM and the bidi controls count 0.
-// Invalid UTF-8 counts its bytes.
+// A character is an extended grapheme cluster of UAX #29.
+// The soft hyphen, the zero-width space, the BOM and the bidi controls count 0. Invalid UTF-8 counts its bytes.
 func VisibleLength(text string) int {
 	return markupcore.VisibleLength(text)
 }

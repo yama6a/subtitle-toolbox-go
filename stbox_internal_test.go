@@ -59,7 +59,7 @@ func TestEveryModelSentinelIsReexported(t *testing.T) {
 }
 
 // notAliased holds the model types that the root does not alias. The root has its own ReadOptions and
-// WriteOptions, which embed these two.
+// WriteOptions, which hold the same fields as these two.
 var notAliased = map[string]bool{"CommonReadOptions": true, "CommonWriteOptions": true}
 
 func TestEveryModelTypeIsAliased(t *testing.T) {
