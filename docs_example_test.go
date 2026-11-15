@@ -4,43 +4,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
 )
-
-func ExampleParse_shiftToWebVTT() {
-	german := "1\n00:00:03,500 --> 00:00:06,000\nGuten Morgen.\n\n2\n00:00:07,000 --> 00:00:09,000\nWie geht es Ihnen?\n"
-
-	r := strings.NewReader(german)
-	s, info, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(info.Format, s.Len()) // srt 2
-
-	if err := s.Shift(-2500 * time.Millisecond); err != nil {
-		fmt.Println(err)
-		return
-	}
-	if _, err := stbox.Write(os.Stdout, s, stbox.WebVTT, stbox.WriteOptions{BOM: stbox.BOMRemove}); err != nil {
-		fmt.Println(err)
-	}
-	// Output:
-	// srt 2
-	// WEBVTT
-	//
-	// 1
-	// 00:00:01.000 --> 00:00:03.500
-	// Guten Morgen.
-	//
-	// 2
-	// 00:00:04.500 --> 00:00:06.500
-	// Wie geht es Ihnen?
-}
 
 func ExampleParse_encoding() {
 	latin1 := []byte("1\n00:00:01,000 --> 00:00:02,000\nCaf\xe9 au lait\n")

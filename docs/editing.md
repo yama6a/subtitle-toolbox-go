@@ -471,7 +471,7 @@ for _, c := range result.All() {
 // <i>Wohin gehst du?</i>
 ```
 
-The primary subtitle sets the times. The secondary subtitle is the second language. `FromPair` returns a new subtitle and changes neither input.
+The primary subtitle is the first language. The secondary subtitle is the second language. In stack mode, a joined cue starts at the earlier start and ends at the later end of its cues. `FromPair` returns a new subtitle and changes neither input.
 
 | `Mode` | CLI value | Result |
 |:--- |:--- |:--- |

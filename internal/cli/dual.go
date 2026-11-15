@@ -38,7 +38,7 @@ func (*dualCommand) details() string {
 
 func (*dualCommand) options() []option {
 	files := []option{
-		valueOption("primary", "FILE", "The subtitle whose cues set the times, or - for standard input."),
+		valueOption("primary", "FILE", "The subtitle in the first language, or - for standard input. In stack mode, a cue that joins secondary lines starts at the earlier start and ends at the later end."),
 		valueOption("secondary", "FILE", "The subtitle in the second language."),
 		valueOption("mode", "MODE", "stack or top-bottom. Default: "+string(dual.ModeStack)+"."),
 		valueOption("secondary-style", "TAG", `Tag around each secondary line: b, i, u, s or 'font color="#ffff00"'. Default: none.`),

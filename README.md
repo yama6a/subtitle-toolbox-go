@@ -20,21 +20,12 @@ go install github.com/yama6a/subtitle-toolbox-go/v4/cmd/stbox@latest
 
 ## Usage
 
-A German SubRip file starts 2.5 s too late. This code reads it, moves every cue 2.5 s earlier and writes WebVTT. `stbox.Load` reads a file from a path in the same way.
+This code reads a SubRip file and writes it as WebVTT for an HTML5 video player. `Load` detects the format and the encoding.
 
-<!-- example: ExampleParse_shiftToWebVTT -->
+<!-- example: ExampleLoad_toWebVTT -->
 ```go
-german := "1\n00:00:03,500 --> 00:00:06,000\nGuten Morgen.\n\n2\n00:00:07,000 --> 00:00:09,000\nWie geht es Ihnen?\n"
-
-r := strings.NewReader(german)
-s, info, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
+s, _, err := stbox.Load("testdata/dual/station_en.srt", stbox.ReadOptions{})
 if err != nil {
-	fmt.Println(err)
-	return
-}
-fmt.Println(info.Format, s.Len()) // srt 2
-
-if err := s.Shift(-2500 * time.Millisecond); err != nil {
 	fmt.Println(err)
 	return
 }
@@ -42,23 +33,38 @@ if _, err := stbox.Write(os.Stdout, s, stbox.WebVTT, stbox.WriteOptions{BOM: stb
 	fmt.Println(err)
 }
 // Output:
-// srt 2
 // WEBVTT
 //
 // 1
-// 00:00:01.000 --> 00:00:03.500
-// Guten Morgen.
+// 00:00:01.000 --> 00:00:04.000
+// The train to Hamburg leaves from platform 4.
 //
 // 2
-// 00:00:04.500 --> 00:00:06.500
-// Wie geht es Ihnen?
+// 00:00:04.500 --> 00:00:07.250
+// It is ten minutes late today.
+//
+// 3
+// 00:00:08.000 --> 00:00:11.000
+// The bakery next to the station opens at six.
+// They sell fresh rolls.
+//
+// 4
+// 00:00:12.000 --> 00:00:13.500
+// <i>Rain is coming.</i>
+//
+// 5
+// 00:00:16.000 --> 00:00:19.000
+// Take an umbrella with you.
 ```
 
-WebVTT output starts with a UTF-8 BOM by default. `BOMRemove` leaves it out. The same change from the shell:
+The same conversion from the shell:
 
 ```sh
-stbox convert film.de.srt --to vtt --shift -2.5 -o film.de.vtt
+stbox convert station.en.srt --to vtt --no-bom -o station.en.vtt
 ```
+
+- [docs/examples-library.md](docs/examples-library.md) shows real tasks in Go, such as a retime, a sync, a validation, an OCR run and a translation.
+- [docs/examples-cli.md](docs/examples-cli.md) shows the same tasks with `stbox`, with the output of each command.
 
 ## Requirements
 
@@ -128,7 +134,7 @@ stbox formats                                      # names and extensions for --
 - No command overwrites a file.
 - When detection fails, pass `--from`.
 
-[docs/cli.md](docs/cli.md) lists the commands, the options and the exit codes.
+[docs/cli.md](docs/cli.md) lists the commands, the options and the exit codes. [docs/examples-cli.md](docs/examples-cli.md) shows one task per section.
 
 ## API
 
@@ -177,6 +183,8 @@ Every 4.x release keeps the API, the option defaults and the conversion output. 
 - [docs/subtitle.md](docs/subtitle.md): `Subtitle` and `Cue`
 - [docs/editing.md](docs/editing.md): retiming, timing fixes, cue structure and line wrapping
 - [docs/errors.md](docs/errors.md): the errors and the exit codes
+- [docs/examples-library.md](docs/examples-library.md): real tasks in Go, such as a sync, a validation and a translation
+- [docs/examples-cli.md](docs/examples-cli.md): the same tasks with `stbox`
 - [docs/cli.md](docs/cli.md): the `stbox` command
 
 ## Development
