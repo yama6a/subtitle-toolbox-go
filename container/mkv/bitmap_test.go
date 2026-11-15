@@ -102,7 +102,7 @@ func TestExtractPGSBlocks(t *testing.T) {
 		_, _, err := openFile(t, cut).Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 		var pe *model.ParseError
 		require.ErrorAs(t, err, &pe)
-		assert.Regexp(t, `^The block of track 2 at byte \d+ holds a PGS segment that is cut off\.$`, pe.Msg)
+		assert.Regexp(t, `^the block of track 2 at byte \d+ holds a PGS segment that is cut off$`, pe.Msg)
 	})
 	t.Run("a cut segment ends a lenient read with a warning", func(t *testing.T) {
 		t.Parallel()

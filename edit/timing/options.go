@@ -42,7 +42,7 @@ func DefaultSnapWindow(r model.FrameRate) int {
 // Validate returns an *model.InvalidArgumentError for a frame rate that is not valid and for a negative frame count.
 func (o Options) Validate() error {
 	if o.FrameRate.Num <= 0 || o.FrameRate.Den <= 0 {
-		return invalid("FrameRate", "The frame rate of the video must be greater than 0.")
+		return invalid("FrameRate", "the frame rate of the video must be greater than 0")
 	}
 	if err := o.FrameRate.Validate(); err != nil {
 		return invalid("FrameRate", message(err))
@@ -56,7 +56,7 @@ func (o Options) Validate() error {
 		{"MinDurationFrames", "minimum duration", o.MinDurationFrames},
 	} {
 		if c.value != nil && *c.value < 0 {
-			return invalid(c.field, "The "+c.name+" must not be negative, got "+strconv.Itoa(*c.value)+".")
+			return invalid(c.field, "the "+c.name+" must not be negative, got "+strconv.Itoa(*c.value))
 		}
 	}
 	return nil

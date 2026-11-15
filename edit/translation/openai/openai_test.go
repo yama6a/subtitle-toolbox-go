@@ -83,7 +83,7 @@ func userTexts(t *testing.T, r translationtest.Request) []string {
 func TestValidate(t *testing.T) {
 	t.Parallel()
 
-	const apiKeyMsg = "The API key must not be empty, have a control character, or a space at the start or end. Leave it empty for a service without a key."
+	const apiKeyMsg = "the API key must not be empty, have a control character, or a space at the start or end. Leave it empty for a service without a key"
 	good := openai.Options{BaseURL: "https://api.openai.com/v1", Model: "gpt-4o-mini"}
 	tests := []struct {
 		name   string
@@ -95,22 +95,22 @@ func TestValidate(t *testing.T) {
 		{"valid with key and prompt", func(o *openai.Options) { o.APIKey = key; o.Prompt = "x" }, "", ""},
 		{
 			"base URL without a scheme", func(o *openai.Options) { o.BaseURL = "localhost:11434/v1" }, "openai.Options.BaseURL",
-			`The base URL must start with http:// or https://, got "localhost:11434/v1".`,
+			`the base URL must start with http:// or https://, got "localhost:11434/v1"`,
 		},
 		{
 			"base URL without a host", func(o *openai.Options) { o.BaseURL = "http:///v1" }, "openai.Options.BaseURL",
-			`The base URL must start with http:// or https://, got "http:///v1".`,
+			`the base URL must start with http:// or https://, got "http:///v1"`,
 		},
 		{
 			"empty model", func(o *openai.Options) { o.Model = " \t" }, "openai.Options.Model",
-			"The model must not be empty. Pass a model name such as gpt-4o-mini or llama3.",
+			"the model must not be empty. Pass a model name such as gpt-4o-mini or llama3",
 		},
 		{"blank key", func(o *openai.Options) { o.APIKey = " " }, "openai.Options.APIKey", apiKeyMsg},
 		{"key with a space at the end", func(o *openai.Options) { o.APIKey = "k " }, "openai.Options.APIKey", apiKeyMsg},
 		{"key with a control character", func(o *openai.Options) { o.APIKey = "k\x7f" }, "openai.Options.APIKey", apiKeyMsg},
 		{
 			"blank prompt", func(o *openai.Options) { o.Prompt = "\n" }, "openai.Options.Prompt",
-			"The prompt must not be empty. Leave it empty for the built-in prompt.",
+			"the prompt must not be empty. Leave it empty for the built-in prompt",
 		},
 	}
 	for _, tt := range tests {
@@ -263,19 +263,19 @@ func TestTranslateAnswers(t *testing.T) {
 			"empty content and reasoning",
 			[]translationtest.Answer{ok(empty)},
 			nil, 2,
-			`The model "llama3" did not answer with a JSON array that holds 1 string for 1 text.`,
+			`the model "llama3" did not answer with a JSON array that holds 1 string for 1 text`,
 		},
 		{
 			"a fallback answer without an array",
 			[]translationtest.Answer{ok(chat("Hallo"))},
 			nil, 2,
-			`The model "llama3" did not answer with a JSON array that holds 1 string for 1 text.`,
+			`the model "llama3" did not answer with a JSON array that holds 1 string for 1 text`,
 		},
 		{
 			"no JSON body",
 			[]translationtest.Answer{ok([]byte("<html>Welcome</html>"))},
 			nil, 2,
-			`The model "llama3" did not answer with a JSON array that holds 1 string for 1 text.`,
+			`the model "llama3" did not answer with a JSON array that holds 1 string for 1 text`,
 		},
 	}
 	for _, tt := range tests {

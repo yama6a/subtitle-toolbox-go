@@ -40,7 +40,7 @@ const netflixMinDuration = 5 * time.Second / 6
 // patch release that fixes a number that differs from its source.
 func NetflixEnglish(r model.FrameRate) (Rules, error) {
 	if err := r.Validate(); err != nil {
-		msg := "The frame rate of the Netflix gap rule must be greater than 0."
+		msg := "the frame rate of the Netflix gap rule must be greater than 0"
 		if e, ok := errors.AsType[*model.InvalidArgumentError](err); ok && r.Num > 0 && r.Den > 0 {
 			msg = e.Msg
 		}

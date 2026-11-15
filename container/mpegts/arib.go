@@ -3,6 +3,7 @@ package mpegts
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/asticode/go-astits"
 
@@ -119,7 +120,8 @@ func (f *File) aribCues(track model.Track, s stream, number int, common model.Co
 		ms := timecode.PTSMilliseconds(w.Time - zero)
 		message := fmt.Sprintf("At %d.%03d s: %s", ms/1000, ms%1000, w.Message)
 		if w.Skipped && !common.Lenient {
-			return nil, nil, &model.ParseError{Msg: message}
+			sentence := strings.TrimSuffix(w.Message, ".")
+			return nil, nil, &model.ParseError{Msg: fmt.Sprintf("at %d.%03d s: %s", ms/1000, ms%1000, strings.ToLower(sentence[:1])+sentence[1:])}
 		}
 		action := model.Repaired
 		if w.Skipped {

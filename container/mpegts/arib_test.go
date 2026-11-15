@@ -131,7 +131,7 @@ func TestARIBScreenLimit(t *testing.T) {
 	_, _, err := f.Extract(304, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 	var pe *model.ParseError
 	require.ErrorAs(t, err, &pe)
-	assert.Equal(t, "At 0.000 s: The caption screen holds more than 4096 characters. The reader dropped the characters past that.", pe.Msg)
+	assert.Equal(t, "at 0.000 s: the caption screen holds more than 4096 characters. The reader dropped the characters past that", pe.Msg)
 
 	s, warnings, err := f.Extract(304, model.CommonReadOptions{Lenient: true}, mpegts.ExtractOptions{})
 	require.NoError(t, err)

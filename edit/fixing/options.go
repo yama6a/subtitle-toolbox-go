@@ -62,17 +62,17 @@ func (o Options) Validate() error {
 	}
 	for _, r := range o.Enable {
 		if slices.Contains(o.Disable, r) {
-			return invalid("Enable", "The rule "+string(r)+" is in both Enable and Disable.")
+			return invalid("Enable", "the rule "+string(r)+" is in both Enable and Disable")
 		}
 	}
 	if err := o.validateReplaceList(); err != nil {
 		return err
 	}
 	if o.DialogueDashStyle.Text() == "" {
-		return invalid("DialogueDashStyle", "The style "+o.DialogueDashStyle.String()+" is no dialogue dash style.")
+		return invalid("DialogueDashStyle", "the style "+o.DialogueDashStyle.String()+" is no dialogue dash style")
 	}
 	if o.Ellipsis > EllipsisUnicode {
-		return invalid("Ellipsis", "The style "+o.Ellipsis.String()+" is not EllipsisThreeDots or EllipsisUnicode.")
+		return invalid("Ellipsis", "the style "+o.Ellipsis.String()+" is not EllipsisThreeDots or EllipsisUnicode")
 	}
 	return nil
 }
@@ -80,7 +80,7 @@ func (o Options) Validate() error {
 func (o Options) validateReplaceList() error {
 	if o.ReplaceList == nil {
 		if slices.Contains(o.Enable, RuleReplaceList) {
-			return invalid("Enable", "The rule replaceList needs a replace list.")
+			return invalid("Enable", "the rule replaceList needs a replace list")
 		}
 		return nil
 	}

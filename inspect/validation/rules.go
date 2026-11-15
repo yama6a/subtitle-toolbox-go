@@ -153,7 +153,7 @@ func (r Rules) prepare() (*regexp2.Regexp, error) {
 	if s := r.DialogueDashStyle; s != nil && s.Text() == "" {
 		return nil, &model.InvalidArgumentError{
 			Option: "Rules.DialogueDashStyle",
-			Msg:    "The dialogue dash style " + strconv.Itoa(int(*s)) + " is not one of the 8 styles.",
+			Msg:    "the dialogue dash style " + strconv.Itoa(int(*s)) + " is not one of the 8 styles",
 		}
 	}
 	if !isClass(r.AllowedCharacters) {
@@ -165,7 +165,7 @@ func (r Rules) prepare() (*regexp2.Regexp, error) {
 func limitError(rule Rule, field, got string) error {
 	return &model.InvalidArgumentError{
 		Option: "Rules." + field,
-		Msg:    "The limit " + string(rule) + " must be 0 or more, got " + got + ".",
+		Msg:    "the limit " + string(rule) + " must be 0 or more, got " + got,
 	}
 }
 
@@ -177,8 +177,8 @@ func compileClass(class string) (*regexp2.Regexp, error) {
 	if strings.Contains(class, "[:") {
 		return nil, &model.InvalidArgumentError{
 			Option: "Rules.AllowedCharacters",
-			Msg: `The allowed characters "` + class + `" hold a POSIX class such as [:alpha:]. ` +
-				`Use a Unicode class such as \p{L}.`,
+			Msg: `the allowed characters "` + class + `" hold a POSIX class such as [:alpha:]. ` +
+				`Use a Unicode class such as \p{L}`,
 		}
 	}
 	re, err := regexp2.Compile("^(?:"+class+")$", regexp2.None)
@@ -186,8 +186,8 @@ func compileClass(class string) (*regexp2.Regexp, error) {
 		reason, _, _ := strings.Cut(strings.TrimPrefix(err.Error(), "error parsing regexp: "), " in `")
 		return nil, &model.InvalidArgumentError{
 			Option: "Rules.AllowedCharacters",
-			Msg: `The allowed characters "` + class + `" are not a valid character class: ` +
-				strings.TrimSuffix(reason, ".") + ".",
+			Msg: `the allowed characters "` + class + `" are not a valid character class: ` +
+				strings.TrimSuffix(reason, "."),
 		}
 	}
 	re.MatchTimeout = matchTimeout

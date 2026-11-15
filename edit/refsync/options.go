@@ -45,17 +45,17 @@ type Options struct {
 // Validate returns an error that matches model.ErrInvalidArgument when a field of o is out of range.
 func (o Options) Validate() error {
 	if o.Reference == nil {
-		return invalid("Reference", "The reference subtitle is missing.")
+		return invalid("Reference", "the reference subtitle is missing")
 	}
 	if err := checkOffsets(o.offsets()); err != nil {
 		return err
 	}
 	if o.MaxSplits < 0 || o.MaxSplits > MaxSplits {
-		return invalid("MaxSplits", fmt.Sprintf("The maximum number of splits must be from 0 to %d, got %d.",
+		return invalid("MaxSplits", fmt.Sprintf("the maximum number of splits must be from 0 to %d, got %d",
 			MaxSplits, o.MaxSplits))
 	}
 	if p := o.splitPenalty(); !(p >= 0) || math.IsInf(p, 1) {
-		return invalid("SplitPenalty", "The split penalty must be a finite number of 0 or more, got "+timecode.Number(p)+".")
+		return invalid("SplitPenalty", "the split penalty must be a finite number of 0 or more, got "+timecode.Number(p))
 	}
 	return nil
 }
@@ -66,16 +66,16 @@ func checkOffsets(lo, hi time.Duration) error {
 		d           time.Duration
 	}{{"MinOffset", "minimum", lo}, {"MaxOffset", "maximum", hi}} {
 		if bound.d < -MaxOffset || bound.d > MaxOffset {
-			return invalid(bound.field, fmt.Sprintf("The %s offset must be from -%d to %d seconds, got %s.",
+			return invalid(bound.field, fmt.Sprintf("the %s offset must be from -%d to %d seconds, got %s",
 				bound.name, MaxOffset/time.Second, MaxOffset/time.Second, timecode.Seconds(bound.d)))
 		}
 	}
 	if lo > hi {
-		return invalid("MinOffset", fmt.Sprintf("The minimum offset must not be greater than the maximum offset, got %s and %s.",
+		return invalid("MinOffset", fmt.Sprintf("the minimum offset must not be greater than the maximum offset, got %s and %s",
 			timecode.Seconds(lo), timecode.Seconds(hi)))
 	}
 	if hi-lo > MaxOffsetRange {
-		return invalid("MaxOffset", fmt.Sprintf("The minimum and the maximum offset must be at most %d seconds apart, got %s and %s.",
+		return invalid("MaxOffset", fmt.Sprintf("the minimum and the maximum offset must be at most %d seconds apart, got %s and %s",
 			MaxOffsetRange/time.Second, timecode.Seconds(lo), timecode.Seconds(hi)))
 	}
 	return nil

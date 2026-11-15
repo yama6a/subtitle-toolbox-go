@@ -351,7 +351,7 @@ func TestValidate(t *testing.T) {
 	t.Parallel()
 
 	bad := func(w string) string {
-		return "A profanity word must be a non-empty UTF-8 string with a * only at the end, got " + w + "."
+		return "a profanity word must be a non-empty UTF-8 string with a * only at the end, got " + w
 	}
 	tests := []struct {
 		name   string
@@ -359,7 +359,7 @@ func TestValidate(t *testing.T) {
 		option string
 		msg    string
 	}{
-		{"empty list", profanity.Options{}, "Words", "The profanity word list is empty."},
+		{"empty list", profanity.Options{}, "Words", "the profanity word list is empty"},
 		{"empty word", profanity.Options{Words: []string{""}}, "Words", bad("''")},
 		{"star in the middle", profanity.Options{Words: []string{"f*ck"}}, "Words", bad("'f*ck'")},
 		{"only a star", profanity.Options{Words: []string{"*"}}, "Words", bad("'*'")},
@@ -374,8 +374,8 @@ func TestValidate(t *testing.T) {
 		{"quote and backslash", profanity.Options{Words: []string{`it's\ `}}, "Words", bad(`'it\'s\\ '`)},
 		{"invalid UTF-8", profanity.Options{Words: []string{"h\xe9ll"}}, "Words", bad("'h\xe9ll'")},
 		{"bad word before empty list", profanity.Options{Words: []string{"ok", "*"}, Padding: -1}, "Words", bad("'*'")},
-		{"negative padding", profanity.Options{Words: []string{"hell"}, Padding: -100 * time.Millisecond}, "Padding", "The padding must not be negative, got -0.1."},
-		{"unknown mask", profanity.Options{Words: []string{"hell"}, Mask: "firstLetter"}, "Mask", `The mask "firstLetter" is not stars, first-letter, remove or none.`},
+		{"negative padding", profanity.Options{Words: []string{"hell"}, Padding: -100 * time.Millisecond}, "Padding", "the padding must not be negative, got -0.1"},
+		{"unknown mask", profanity.Options{Words: []string{"hell"}, Mask: "firstLetter"}, "Mask", `the mask "firstLetter" is not stars, first-letter, remove or none`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

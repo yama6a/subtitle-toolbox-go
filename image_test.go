@@ -53,7 +53,7 @@ func TestDecodeChecksTheSizeOfTheImageData(t *testing.T) {
 	_, err = stbox.DecodeImage(im)
 	var invalid *model.InvalidArgumentError
 	require.ErrorAs(t, err, &invalid)
-	assert.Equal(t, "Cannot decode the image: the PNG has 4x3 pixels, but the image data says 5x3.", invalid.Msg)
+	assert.Equal(t, "cannot decode the image: the PNG has 4x3 pixels, but the image data says 5x3", invalid.Msg)
 }
 
 func TestEncodePNGAndNewImageReject(t *testing.T) {
@@ -62,7 +62,7 @@ func TestEncodePNGAndNewImageReject(t *testing.T) {
 	_, err := stbox.EncodePNG(image.NewNRGBA(image.Rect(0, 0, 0, 5)))
 	var invalid *model.InvalidArgumentError
 	require.ErrorAs(t, err, &invalid)
-	assert.Equal(t, "Cannot encode a PNG of 0x5 pixels: the width and the height must be at least 1.", invalid.Msg)
+	assert.Equal(t, "cannot encode a PNG of 0x5 pixels: the width and the height must be at least 1", invalid.Msg)
 
 	_, err = stbox.NewImage(image.NewNRGBA(image.Rect(0, 0, 7681, 1)), 0, 0, 1920, 1080)
 	require.ErrorIs(t, err, model.ErrInvalidArgument)

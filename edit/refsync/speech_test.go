@@ -49,8 +49,8 @@ func TestSpeechFromSilenceLog(t *testing.T) {
 		logLine + "silence_start: 4.25\r" +
 		logLine + "silence_end: 6 | silence_duration: 1.75\n"
 	const (
-		order   = " is out of order. The silence_start and silence_end lines must alternate."
-		channel = "Cannot read a silencedetect log with one line per channel. Run silencedetect without mono."
+		order   = " is out of order. The silence_start and silence_end lines must alternate"
+		channel = "cannot read a silencedetect log with one line per channel. Run silencedetect without mono"
 	)
 	tests := []struct {
 		name     string
@@ -72,13 +72,13 @@ func TestSpeechFromSilenceLog(t *testing.T) {
 			duration: 10*time.Second + 400*time.Microsecond, want: spans(0, 1),
 		},
 		{name: "a line per channel", log: "Press [q] to stop\n" + logLine + "channel: 0 | silence_start: 1.5\n", duration: 10 * time.Second, line: 2, msg: channel},
-		{name: "an end first", log: logLine + "silence_end: 1.5 | silence_duration: 1.5\n", duration: 10 * time.Second, line: 1, msg: "The line silence_end" + order},
-		{name: "2 starts", log: logLine + "silence_start: 1\n" + logLine + "silence_start: 2\n", duration: 10 * time.Second, line: 2, msg: "The line silence_start" + order},
-		{name: "2 CR before LF end 1 line", log: logLine + "silence_start: 1\r\r\n" + logLine + "silence_start: 2\r\r\n", duration: 10 * time.Second, line: 2, msg: "The line silence_start" + order},
-		{name: "no duration", log: "", invalid: true, msg: "The media duration must be greater than 0, got 0."},
-		{name: "a duration below 0.5 ms", log: "", duration: 400 * time.Microsecond, invalid: true, msg: "The media duration must be greater than 0, got 0.0004."},
-		{name: "a duration of 100000 hours", log: "", duration: 100000 * time.Hour, invalid: true, msg: "The media duration must be below 100000 hours, got 360000000."},
-		{name: "a duration that rounds to 100000 hours", log: "", duration: 100000*time.Hour - 400*time.Microsecond, invalid: true, msg: "The media duration must be below 100000 hours, got 359999999.9996."},
+		{name: "an end first", log: logLine + "silence_end: 1.5 | silence_duration: 1.5\n", duration: 10 * time.Second, line: 1, msg: "the line silence_end" + order},
+		{name: "2 starts", log: logLine + "silence_start: 1\n" + logLine + "silence_start: 2\n", duration: 10 * time.Second, line: 2, msg: "the line silence_start" + order},
+		{name: "2 CR before LF end 1 line", log: logLine + "silence_start: 1\r\r\n" + logLine + "silence_start: 2\r\r\n", duration: 10 * time.Second, line: 2, msg: "the line silence_start" + order},
+		{name: "no duration", log: "", invalid: true, msg: "the media duration must be greater than 0, got 0"},
+		{name: "a duration below 0.5 ms", log: "", duration: 400 * time.Microsecond, invalid: true, msg: "the media duration must be greater than 0, got 0.0004"},
+		{name: "a duration of 100000 hours", log: "", duration: 100000 * time.Hour, invalid: true, msg: "the media duration must be below 100000 hours, got 360000000"},
+		{name: "a duration that rounds to 100000 hours", log: "", duration: 100000*time.Hour - 400*time.Microsecond, invalid: true, msg: "the media duration must be below 100000 hours, got 359999999.9996"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -127,10 +127,10 @@ func TestSpeechFromIntervals(t *testing.T) {
 		{name: "sorted", in: spans(5.5, 7, 1, 2.25, 3, 4), want: spans(1, 2.25, 3, 4, 5.5, 7)},
 		{name: "none", in: nil, want: nil},
 		{name: "a zero length interval stays", in: spans(2, 2), want: spans(2, 2)},
-		{name: "the end is before the start", in: spans(1, 2, 2, 1), msg: "Interval 1 must have a start of 0 or more and an end at or after its start and below 100000 hours, got 2 and 1."},
-		{name: "a negative start", in: spans(-1, 2), msg: "Interval 0 must have a start of 0 or more and an end at or after its start and below 100000 hours, got -1 and 2."},
-		{name: "an end of 100000 hours", in: []refsync.Interval{{End: 100000 * time.Hour}}, msg: "Interval 0 must have a start of 0 or more and an end at or after its start and below 100000 hours, got 0 and 360000000."},
-		{name: "an end that rounds to 100000 hours", in: []refsync.Interval{{End: 100000*time.Hour - 400*time.Microsecond}}, msg: "Interval 0 must have"},
+		{name: "the end is before the start", in: spans(1, 2, 2, 1), msg: "interval 1 must have a start of 0 or more and an end at or after its start and below 100000 hours, got 2 and 1"},
+		{name: "a negative start", in: spans(-1, 2), msg: "interval 0 must have a start of 0 or more and an end at or after its start and below 100000 hours, got -1 and 2"},
+		{name: "an end of 100000 hours", in: []refsync.Interval{{End: 100000 * time.Hour}}, msg: "interval 0 must have a start of 0 or more and an end at or after its start and below 100000 hours, got 0 and 360000000"},
+		{name: "an end that rounds to 100000 hours", in: []refsync.Interval{{End: 100000*time.Hour - 400*time.Microsecond}}, msg: "interval 0 must have"},
 		{name: "times round to whole ms", in: []refsync.Interval{{Start: 1400 * time.Microsecond, End: 2600 * time.Microsecond}}, want: spans(0.001, 0.003)},
 	}
 	for _, tt := range tests {

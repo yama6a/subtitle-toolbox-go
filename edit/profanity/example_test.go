@@ -68,5 +68,5 @@ func ExampleOptions_Validate() {
 	fmt.Println(err)
 	// Output:
 	// true
-	// stbox: invalid argument: profanity.Options.Words: A profanity word must be a non-empty UTF-8 string with a * only at the end, got 'f*ck'.
+	// stbox: invalid argument: profanity.Options.Words: a profanity word must be a non-empty UTF-8 string with a * only at the end, got 'f*ck'
 }

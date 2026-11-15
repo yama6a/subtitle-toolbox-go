@@ -40,14 +40,14 @@ func BBCColors() []string {
 // DialogueDashStyle is not one of the 8 constants, or a color is not of the form "#rrggbb".
 func (o Options) Validate() error {
 	if o.Style > StyleColors {
-		return &model.InvalidArgumentError{Option: "speakers.Options.Style", Msg: "The speaker style must be one of the Style constants, got " + o.Style.String() + "."}
+		return &model.InvalidArgumentError{Option: "speakers.Options.Style", Msg: "the speaker style must be one of the Style constants, got " + o.Style.String()}
 	}
 	if o.DialogueDashStyle.Text() == "" {
-		return &model.InvalidArgumentError{Option: "speakers.Options.DialogueDashStyle", Msg: "The dialogue dash style must be one of the 8 constants, got " + o.DialogueDashStyle.String() + "."}
+		return &model.InvalidArgumentError{Option: "speakers.Options.DialogueDashStyle", Msg: "the dialogue dash style must be one of the 8 constants, got " + o.DialogueDashStyle.String()}
 	}
 	for _, c := range o.Colors {
 		if !colorPattern.MatchString(c) {
-			return &model.InvalidArgumentError{Option: "speakers.Options.Colors", Msg: `The speaker colors must be a list of colors such as "#ffff00", got ` + strconv.Quote(c) + "."}
+			return &model.InvalidArgumentError{Option: "speakers.Options.Colors", Msg: `the speaker colors must be a list of colors such as "#ffff00", got ` + strconv.Quote(c)}
 		}
 	}
 	return nil

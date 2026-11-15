@@ -180,13 +180,13 @@ func TestTranslateServiceFailures(t *testing.T) {
 			openAI:  true,
 			wantKey: "bad-request",
 			contains: []string{
-				"stdin: The OpenAI-compatible service answered with HTTP 400.", "gpt-9",
+				"stdin: the OpenAI-compatible service answered with HTTP 400", "gpt-9",
 			},
 		},
 		{
 			name:   "deepl rejects the key",
 			words:  []string{"-", "--engine", "deepl", "--api-key", "forbidden", "--target-language", "de"},
-			stderr: "stdin: DeepL rejected the API key (HTTP 403). Check the key and its plan.\n",
+			stderr: "stdin: DeepL rejected the API key (HTTP 403). Check the key and its plan\n",
 			noKey:  "forbidden", wantKey: "forbidden",
 		},
 	}
@@ -225,7 +225,7 @@ func TestTranslateKeepGoingAndClosedPort(t *testing.T) {
 	got := translateCall(t, dir, srv.URL, "", map[string]string{"DEEPL_API_KEY": "forbidden"},
 		"latin1.srt", "second.srt", "--engine", "deepl", "--target-language", "de", "--encoding", "Windows-1252",
 		"--output-dir", "out", "--keep-going")
-	failure := "DeepL rejected the API key (HTTP 403). Check the key and its plan.\n"
+	failure := "DeepL rejected the API key (HTTP 403). Check the key and its plan\n"
 	assert.Equal(t, result{
 		Code: exitFile, Stdout: "2 files: 0 succeeded, 2 failed.\n",
 		Stderr: "latin1.srt: " + failure + "second.srt: " + failure,
@@ -236,7 +236,7 @@ func TestTranslateKeepGoingAndClosedPort(t *testing.T) {
 	got = translateCall(t, dir, translationtest.ClosedURL(t), "", map[string]string{"DEEPL_API_KEY": "secret-key"},
 		"latin1.srt", "--engine", "deepl", "--target-language", "de", "--encoding", "Windows-1252")
 	assert.Equal(t, exitFile, got.Code)
-	assert.Contains(t, got.Stderr, "latin1.srt: The request to 127.0.0.1 failed: ")
+	assert.Contains(t, got.Stderr, "latin1.srt: the request to 127.0.0.1 failed: ")
 	assert.NotContains(t, got.Stderr, "secret-key")
 }
 
@@ -263,7 +263,7 @@ func TestTranslateUsageErrors(t *testing.T) {
 		return append([]string{"own_station.srt", "--engine", name, "--target-language", "fr"}, more...)
 	}
 	const noKey = "Pass --api-key or set the environment variable DEEPL_API_KEY."
-	const badKey = "The API key must not have a control character, or a space at the start or end."
+	const badKey = "the API key must not have a control character, or a space at the start or end"
 	deepl := map[string]string{"DEEPL_API_KEY": "k"}
 	tests := []struct {
 		name  string
@@ -302,13 +302,13 @@ func TestTranslateUsageErrors(t *testing.T) {
 			"openai with a model of spaces",
 			map[string]string{"OPENAI_MODEL": " "},
 			engine("openai"),
-			"The model must not be empty. Pass a model name such as gpt-4o-mini or llama3.",
+			"the model must not be empty. Pass a model name such as gpt-4o-mini or llama3",
 		},
 		{
 			"openai with a bad base URL",
 			map[string]string{"OPENAI_MODEL": "m", "OPENAI_BASE_URL": "localhost:11434/v1"},
 			engine("openai"),
-			`The base URL must start with http:// or https://, got "localhost:11434/v1".`,
+			`the base URL must start with http:// or https://, got "localhost:11434/v1"`,
 		},
 		{
 			"2 inputs without a key come first", nil, []string{"a.srt", "b.srt", "--engine", "deepl", "--target-language", "fr"}, noKey,

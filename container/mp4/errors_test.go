@@ -29,16 +29,16 @@ func TestOpenErrors(t *testing.T) {
 		content []byte
 		want    string
 	}{
-		{"fewer than 8 bytes", []byte("ftyp"), "The file is not an MP4 file."},
-		{"bytes 4 to 7 are not ftyp", []byte("RIFF\x00\x00\x00\x00WAVEfmt "), "The file is not an MP4 file."},
-		{"a top-level box that does not fit", cat(ftyp(), u32(4096), []byte("moov")), `The box "moov" at byte 28 does not fit into its parent box.`},
-		{"a box type that is not printable", cat(ftyp(), u32(4096), []byte{0, 1, 2, 3}), "The box 0x00010203 at byte 28 does not fit into its parent box."},
-		{"a box size below its header", cat(ftyp(), u32(7), []byte("free")), `The box "free" at byte 28 does not fit into its parent box.`},
-		{"a 64-bit size without its 8 bytes", cat(ftyp(), u32(1), []byte("free")), `The box "free" at byte 28 does not fit into its parent box.`},
-		{"no moov box", cat(ftyp(), box("mdat", []byte("abc"))), "The MP4 file has no moov box."},
+		{"fewer than 8 bytes", []byte("ftyp"), "the file is not an MP4 file"},
+		{"bytes 4 to 7 are not ftyp", []byte("RIFF\x00\x00\x00\x00WAVEfmt "), "the file is not an MP4 file"},
+		{"a top-level box that does not fit", cat(ftyp(), u32(4096), []byte("moov")), `the box "moov" at byte 28 does not fit into its parent box`},
+		{"a box type that is not printable", cat(ftyp(), u32(4096), []byte{0, 1, 2, 3}), "the box 0x00010203 at byte 28 does not fit into its parent box"},
+		{"a box size below its header", cat(ftyp(), u32(7), []byte("free")), `the box "free" at byte 28 does not fit into its parent box`},
+		{"a 64-bit size without its 8 bytes", cat(ftyp(), u32(1), []byte("free")), `the box "free" at byte 28 does not fit into its parent box`},
+		{"no moov box", cat(ftyp(), box("mdat", []byte("abc"))), "the MP4 file has no moov box"},
 		{"a moof box before the moov box", cat(ftyp(), box("moof")), fragmentedMessage},
 		{"an mvex box in the moov box", fragmented, fragmentedMessage},
-		{"a track with a timescale of 0", single(trackSpec{zeroTime: true}, textSample("Hi")), "Track 1 has a timescale of 0."},
+		{"a track with a timescale of 0", single(trackSpec{zeroTime: true}, textSample("Hi")), "track 1 has a timescale of 0"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -55,7 +55,7 @@ func TestOpenErrors(t *testing.T) {
 	}
 }
 
-const fragmentedMessage = "The MP4 file is fragmented. The reader reads only samples in the moov box."
+const fragmentedMessage = "the MP4 file is fragmented. The reader reads only samples in the moov box"
 
 func TestOpenReportsMp4ffErrors(t *testing.T) {
 	t.Parallel()
@@ -78,7 +78,7 @@ func TestOpenReportsMp4ffErrors(t *testing.T) {
 			_, err := mp4.Open(bytes.NewReader(tt.content), int64(len(tt.content)))
 			var pe *model.ParseError
 			require.ErrorAs(t, err, &pe)
-			assert.Contains(t, pe.Msg, "The MP4 file is not valid: ")
+			assert.Contains(t, pe.Msg, "the MP4 file is not valid: ")
 			assert.Error(t, pe.Err)
 		})
 	}
@@ -109,61 +109,61 @@ func TestExtractErrors(t *testing.T) {
 	}{
 		{
 			name: "an unread codec", content: single(trackSpec{entry: box("wvtt", zeros(6), u16(1))}, text),
-			want: "Track 1 has the codec wvtt. The reader extracts only tx3g, c608, c708.",
+			want: "track 1 has the codec wvtt. The reader extracts only tx3g, c608, c708",
 		},
 		{
 			name: "an encrypted codec", content: testfiles.Read(t, "mp4/text_tracks.mp4"), number: 5,
-			want: "Track 5 has the codec enct and is encrypted.",
+			want: "track 5 has the codec enct and is encrypted",
 		},
 		{
 			name: "a tx3g entry with a sinf box", content: single(trackSpec{entry: tx3gEntry(box("sinf", box("frma", []byte("tx3g"))))}, text),
-			want: "Track 1 has the codec tx3g and is encrypted.",
+			want: "track 1 has the codec tx3g and is encrypted",
 		},
-		{name: "a sample outside the file", content: outside(20), want: "A sample of track 1 at byte 1073741824 lies outside the file."},
-		{name: "a 1-byte sample outside the file", content: outside(1), want: "A sample of track 1 at byte 1073741824 lies outside the file."},
+		{name: "a sample outside the file", content: outside(20), want: "a sample of track 1 at byte 1073741824 lies outside the file"},
+		{name: "a 1-byte sample outside the file", content: outside(1), want: "a sample of track 1 at byte 1073741824 lies outside the file"},
 		{
 			name: "an stts box with fewer samples than the size box", content: broken("stts", fullBox("stts", 0, 0, u32(0))),
-			want: "The stts box of track 1 has fewer samples than the sample size box.",
+			want: "the stts box of track 1 has fewer samples than the sample size box",
 		},
-		{name: "no stts box", content: broken("stts", []byte{}), want: "Track 1 has no stts box."},
-		{name: "no stsc box", content: broken("stsc", []byte{}), want: "Track 1 has no stsc box."},
-		{name: "no stco and no co64 box", content: broken("stco", []byte{}), want: "Track 1 has no stco box."},
-		{name: "no stsz and no stz2 box", content: broken("stsz", []byte{}), want: "Track 1 has no stsz or stz2 box."},
+		{name: "no stts box", content: broken("stts", []byte{}), want: "track 1 has no stts box"},
+		{name: "no stsc box", content: broken("stsc", []byte{}), want: "track 1 has no stsc box"},
+		{name: "no stco and no co64 box", content: broken("stco", []byte{}), want: "track 1 has no stco box"},
+		{name: "no stsz and no stz2 box", content: broken("stsz", []byte{}), want: "track 1 has no stsz or stz2 box"},
 		{
 			name: "an stsz sample size that does not fit the file", content: broken("stsz", fullBox("stsz", 0, 0, u32(1000), u32(5000))),
-			want: "The stsz box of track 1 holds 5000 samples of 1000 bytes, which do not fit into the file.",
+			want: "the stsz box of track 1 holds 5000 samples of 1000 bytes, which do not fit into the file",
 		},
 		{
 			name: "a stz2 box with a field size of 3 bits", content: broken("stsz", fullBox("stz2", 0, 0, []byte{0, 0, 0, 3}, u32(1), []byte{0})),
-			want: "The stz2 box of track 1 is not valid.",
+			want: "the stz2 box of track 1 is not valid",
 		},
 		{
 			name: "a stz2 box with fewer sizes than its count", content: broken("stsz", fullBox("stz2", 0, 0, []byte{0, 0, 0, 0x10}, u32(2), []byte{0, 5})),
-			want: "The stz2 box of track 1 is not valid.",
+			want: "the stz2 box of track 1 is not valid",
 		},
 		{
 			name: "a stz2 box without a count", content: broken("stsz", fullBox("stz2", 0, 0, []byte{0, 0, 0, 0x10})),
-			want: "The stz2 box of track 1 is not valid.",
+			want: "the stz2 box of track 1 is not valid",
 		},
 		{
 			name: "a text longer than its sample", content: single(trackSpec{}, longer), sample: longer,
-			want: "The text of the sample of track 1 at byte %d is longer than the sample.",
+			want: "the text of the sample of track 1 at byte %d is longer than the sample",
 		},
 		{
 			name: "a text that is not UTF-8", content: single(trackSpec{}, notUTF8), sample: notUTF8,
-			want: "The text of the sample of track 1 at byte %d is not valid UTF-8.",
+			want: "the text of the sample of track 1 at byte %d is not valid UTF-8",
 		},
 		{
 			name: "UTF-16 text with an odd number of bytes", content: single(trackSpec{}, oddUTF16), sample: oddUTF16,
-			want: "The text of the sample of track 1 at byte %d is not valid UTF-8.",
+			want: "the text of the sample of track 1 at byte %d is not valid UTF-8",
 		},
 		{
 			name: "a sample that ends at 100000 hours", content: single(trackSpec{timescale: 1, samples: []sampleSpec{{360000000, text}}}, nil), sample: text,
-			want: "The sample of track 1 at byte %d ends at 360000000 s. Times must be below 100000 hours.",
+			want: "the sample of track 1 at byte %d ends at 360000000 s. Times must be below 100000 hours",
 		},
 		{
 			name: "a ccdp box that is no packet", content: single(trackSpec{entry: c708, handler: "clcp"}, badPacket), sample: badPacket,
-			want: "The sample of track 1 at byte %d holds a ccdp box that is not valid. The data holds no caption distribution packet.",
+			want: "the sample of track 1 at byte %d holds a ccdp box that is not valid: the data holds no caption distribution packet",
 		},
 	}
 	for _, tt := range tests {
@@ -194,7 +194,7 @@ func TestExtractRejectsABadTrackNumberAndBadOptions(t *testing.T) {
 		option string
 		msg    string
 	}{
-		{"a video track", "text_tracks.mp4", 1, mp4.ExtractOptions{}, "ReadOptions.Track", "The file has no subtitle track with the number 1."},
+		{"a video track", "text_tracks.mp4", 1, mp4.ExtractOptions{}, "ReadOptions.Track", "the file has no subtitle track with the number 1"},
 		{
 			"a bad SCC channel on a c608 track", "ffmpeg_c608.mov", 1,
 			mp4.ExtractOptions{SCC: scc.ReadOptions{Channel: 3}},

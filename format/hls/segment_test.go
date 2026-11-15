@@ -201,16 +201,16 @@ func TestSegmentErrors(t *testing.T) {
 		option string
 		msg    string
 	}{
-		{"segment duration below 1 ms", ferry(), hls.SegmentOptions{SegmentDuration: 400 * time.Microsecond}, "hls.SegmentOptions.SegmentDuration", "The segment duration must be at least 0.001 s, got 0.0004."},
-		{"negative segment duration", ferry(), hls.SegmentOptions{SegmentDuration: -time.Second}, "hls.SegmentOptions.SegmentDuration", "The segment duration must be at least 0.001 s, got -1."},
-		{"media duration below 1 ms", ferry(), hls.SegmentOptions{MediaDuration: 100 * time.Microsecond}, "hls.SegmentOptions.MediaDuration", "The media duration must be at least 0.001 s, got 0.0001."},
-		{"map with a negative LOCAL time", ferry(), hls.SegmentOptions{Map: &hls.TimestampMap{Local: -time.Second}}, "hls.TimestampMap.Local", "The LOCAL time must not be negative, got -1."},
-		{"map with MPEGTS 2^33", ferry(), hls.SegmentOptions{Map: &hls.TimestampMap{MPEGTS: hls.MPEGTSWrap}}, "hls.TimestampMap.MPEGTS", "The MPEGTS value must be a 33-bit timestamp from 0 to 8589934591, got 8589934592."},
-		{"pattern without a verb", ferry(), hls.SegmentOptions{FileNamePattern: "sub.vtt"}, "hls.SegmentOptions.FileNamePattern", `The file name pattern must hold exactly one %d and no other placeholder, got "sub.vtt".`},
-		{"pattern with %s", ferry(), hls.SegmentOptions{FileNamePattern: "%s%d.vtt"}, "hls.SegmentOptions.FileNamePattern", `The file name pattern must hold exactly one %d and no other placeholder, got "%s%d.vtt".`},
-		{"pattern with 2 verbs", ferry(), hls.SegmentOptions{FileNamePattern: "%d_%d.vtt"}, "hls.SegmentOptions.FileNamePattern", `The file name pattern must hold exactly one %d and no other placeholder, got "%d_%d.vtt".`},
-		{"pattern with a flag", ferry(), hls.SegmentOptions{FileNamePattern: "%-3d.vtt"}, "hls.SegmentOptions.FileNamePattern", `The file name pattern must hold exactly one %d and no other placeholder, got "%-3d.vtt".`},
-		{"empty subtitle", &model.Subtitle{}, hls.SegmentOptions{}, "hls.SegmentOptions.MediaDuration", "The subtitle has no cue that ends after 0 s. Set the mediaDuration option to segment it."},
+		{"segment duration below 1 ms", ferry(), hls.SegmentOptions{SegmentDuration: 400 * time.Microsecond}, "hls.SegmentOptions.SegmentDuration", "the segment duration must be at least 0.001 s, got 0.0004"},
+		{"negative segment duration", ferry(), hls.SegmentOptions{SegmentDuration: -time.Second}, "hls.SegmentOptions.SegmentDuration", "the segment duration must be at least 0.001 s, got -1"},
+		{"media duration below 1 ms", ferry(), hls.SegmentOptions{MediaDuration: 100 * time.Microsecond}, "hls.SegmentOptions.MediaDuration", "the media duration must be at least 0.001 s, got 0.0001"},
+		{"map with a negative LOCAL time", ferry(), hls.SegmentOptions{Map: &hls.TimestampMap{Local: -time.Second}}, "hls.TimestampMap.Local", "the LOCAL time must not be negative, got -1"},
+		{"map with MPEGTS 2^33", ferry(), hls.SegmentOptions{Map: &hls.TimestampMap{MPEGTS: hls.MPEGTSWrap}}, "hls.TimestampMap.MPEGTS", "the MPEGTS value must be a 33-bit timestamp from 0 to 8589934591, got 8589934592"},
+		{"pattern without a verb", ferry(), hls.SegmentOptions{FileNamePattern: "sub.vtt"}, "hls.SegmentOptions.FileNamePattern", `the file name pattern must hold exactly one %d and no other placeholder, got "sub.vtt"`},
+		{"pattern with %s", ferry(), hls.SegmentOptions{FileNamePattern: "%s%d.vtt"}, "hls.SegmentOptions.FileNamePattern", `the file name pattern must hold exactly one %d and no other placeholder, got "%s%d.vtt"`},
+		{"pattern with 2 verbs", ferry(), hls.SegmentOptions{FileNamePattern: "%d_%d.vtt"}, "hls.SegmentOptions.FileNamePattern", `the file name pattern must hold exactly one %d and no other placeholder, got "%d_%d.vtt"`},
+		{"pattern with a flag", ferry(), hls.SegmentOptions{FileNamePattern: "%-3d.vtt"}, "hls.SegmentOptions.FileNamePattern", `the file name pattern must hold exactly one %d and no other placeholder, got "%-3d.vtt"`},
+		{"empty subtitle", &model.Subtitle{}, hls.SegmentOptions{}, "hls.SegmentOptions.MediaDuration", "the subtitle has no cue that ends after 0 s. Set the mediaDuration option to segment it"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

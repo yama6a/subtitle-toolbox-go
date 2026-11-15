@@ -59,7 +59,7 @@ func Post(ctx context.Context, client *http.Client, endpoint string, header http
 	for attempt := 1; ; attempt++ {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
 		if err != nil {
-			return 0, nil, &translation.ServiceError{Msg: "The request URL is not valid: " + reason(err) + "."}
+			return 0, nil, &translation.ServiceError{Msg: "the request URL is not valid: " + reason(err)}
 		}
 		req.Header = header.Clone()
 		resp, err := client.Do(req)
@@ -74,7 +74,7 @@ func Post(ctx context.Context, client *http.Client, endpoint string, header http
 		if int64(len(answer)) > limit {
 			return 0, nil, &translation.ServiceError{
 				Status: resp.StatusCode,
-				Msg:    "The answer from " + req.URL.Hostname() + " has more than " + strconv.FormatInt(limit, 10) + " bytes.",
+				Msg:    "the answer from " + req.URL.Hostname() + " has more than " + strconv.FormatInt(limit, 10) + " bytes",
 			}
 		}
 		if !retryable(resp.StatusCode) || attempt == maxAttempts {
@@ -99,7 +99,7 @@ func failure(ctx context.Context, req *http.Request, status int, err error) erro
 	}
 	return &translation.ServiceError{
 		Status: status,
-		Msg:    "The request to " + req.URL.Hostname() + " failed: " + reason(err) + ".",
+		Msg:    "the request to " + req.URL.Hostname() + " failed: " + reason(err),
 		Err:    err,
 	}
 }
@@ -157,7 +157,7 @@ func JSON(v any) ([]byte, error) {
 // http:// or https:// and a host.
 func CheckBaseURL(option, url string) error {
 	if !baseURLRegexp.MatchString(url) {
-		return &model.InvalidArgumentError{Option: option, Msg: fmt.Sprintf("The base URL must start with http:// or https://, got %q.", url)}
+		return &model.InvalidArgumentError{Option: option, Msg: fmt.Sprintf("the base URL must start with http:// or https://, got %q", url)}
 	}
 	return nil
 }
@@ -169,7 +169,7 @@ func CheckAPIKey(option, key, emptyMsg string) error {
 	case strings.Trim(key, markupcore.TrimSet) == "":
 		return &model.InvalidArgumentError{Option: option, Msg: emptyMsg}
 	case !CleanKey(key):
-		return &model.InvalidArgumentError{Option: option, Msg: "The API key must not have a control character, or a space at the start or end."}
+		return &model.InvalidArgumentError{Option: option, Msg: "the API key must not have a control character, or a space at the start or end"}
 	}
 	return nil
 }
@@ -193,6 +193,15 @@ func CleanKey(key string) bool {
 		}
 	}
 	return true
+}
+
+// Detail returns the text of a service answer as the end of an error message: ". " and the text without its final
+// period. An empty text returns "".
+func Detail(text string) string {
+	if text == "" {
+		return ""
+	}
+	return ". " + strings.TrimSuffix(text, ".")
 }
 
 // Redact replaces each key in msg with ***. An empty key returns msg unchanged.

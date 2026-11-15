@@ -48,25 +48,25 @@ func TestValidate(t *testing.T) {
 			"empty",
 			Options{APIKey: " \t\n\r\x00\v"},
 			"google.Options.APIKey",
-			"The API key must not be empty. Pass the key of your Google Cloud project.",
+			"the API key must not be empty. Pass the key of your Google Cloud project",
 		},
 		{
 			"space at the end",
 			Options{APIKey: "key "},
 			"google.Options.APIKey",
-			"The API key must not have a control character, or a space at the start or end.",
+			"the API key must not have a control character, or a space at the start or end",
 		},
 		{
 			"control character",
 			Options{APIKey: "ke\x7fy"},
 			"google.Options.APIKey",
-			"The API key must not have a control character, or a space at the start or end.",
+			"the API key must not have a control character, or a space at the start or end",
 		},
 		{
 			"base URL",
 			Options{APIKey: "key", BaseURL: "ftp://host"},
 			"google.Options.BaseURL",
-			`The base URL must start with http:// or https://, got "ftp://host".`,
+			`the base URL must start with http:// or https://, got "ftp://host"`,
 		},
 	}
 	for _, tt := range tests {
@@ -191,32 +191,32 @@ func TestTranslateErrors(t *testing.T) {
 	}{
 		{
 			"403", 403, `{"error": {"code": 403, "message": "Cloud Translation API has not been used in project 1."}}`,
-			"translation: Google Cloud Translation refused the request (HTTP 403). Check the key and that the API is enabled. Cloud Translation API has not been used in project 1.",
+			"translation: Google Cloud Translation refused the request (HTTP 403). Check the key and that the API is enabled. Cloud Translation API has not been used in project 1",
 		},
 		{
 			"429 after the retries", 429, `{"error": {"message": "Quota exceeded"}}`,
-			"translation: Google Cloud Translation got too many requests (HTTP 429). Wait and try again.",
+			"translation: Google Cloud Translation got too many requests (HTTP 429). Wait and try again",
 		},
 		{
 			"400 recorded", 400, recordedError,
-			"translation: Google Cloud Translation answered with HTTP 400. API key not valid. Please pass a valid API key.",
+			"translation: Google Cloud Translation answered with HTTP 400. API key not valid. Please pass a valid API key",
 		},
 		{
 			"400 key in the message", 400, `{"error": {"message": "Bad key ` + key + `"}}`,
 			"translation: Google Cloud Translation answered with HTTP 400. Bad key ***",
 		},
-		{"418 without a message", 418, `{"error": "x"}`, "translation: Google Cloud Translation answered with HTTP 418."},
+		{"418 without a message", 418, `{"error": "x"}`, "translation: Google Cloud Translation answered with HTTP 418"},
 		{
 			"not JSON", 200, "<html>",
-			"translation: Google Cloud Translation returned 0 translations for 1 texts, or an answer that is not the JSON of translate v2.",
+			"translation: Google Cloud Translation returned 0 translations for 1 texts, or an answer that is not the JSON of translate v2",
 		},
 		{
 			"too few", 200, `{"data": {"translations": []}}`,
-			"translation: Google Cloud Translation returned 0 translations for 1 texts, or an answer that is not the JSON of translate v2.",
+			"translation: Google Cloud Translation returned 0 translations for 1 texts, or an answer that is not the JSON of translate v2",
 		},
 		{
 			"not a string", 200, `{"data": {"translations": [{"translatedText": 5}]}}`,
-			"translation: Google Cloud Translation returned 1 translations for 1 texts, or an answer that is not the JSON of translate v2.",
+			"translation: Google Cloud Translation returned 1 translations for 1 texts, or an answer that is not the JSON of translate v2",
 		},
 	}
 	for _, tt := range tests {

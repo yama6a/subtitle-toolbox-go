@@ -21,7 +21,7 @@ func TestShotChangeReaders(t *testing.T) {
 		}
 		return out
 	}
-	const bad = "The shot change time %q is not valid. Use seconds or hh:mm:ss.mmm."
+	const bad = "the shot change time %q is not valid. Use seconds or hh:mm:ss.mmm"
 	tests := []struct {
 		name     string
 		read     func([]byte) ([]time.Duration, error)

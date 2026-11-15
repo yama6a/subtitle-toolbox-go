@@ -25,11 +25,11 @@ func TestParseTimestampMap(t *testing.T) {
 		{"lower case names", "X-TIMESTAMP-MAP=mpegts:5,local:00:01.000", hls.TimestampMap{MPEGTS: 5, Local: ms(1000)}, ""},
 		{"3 hour digits", "X-TIMESTAMP-MAP=LOCAL:100:00:00.500,MPEGTS:0", hls.TimestampMap{Local: 100*time.Hour + ms(500)}, ""},
 		{"2^33 parses and fails Validate", "X-TIMESTAMP-MAP=LOCAL:00:00.000,MPEGTS:8589934592", hls.TimestampMap{MPEGTS: hls.MPEGTSWrap}, ""},
-		{"another header", "WEBVTT", hls.TimestampMap{}, `The line "WEBVTT" does not start with X-TIMESTAMP-MAP=.`},
-		{"no MPEGTS", "X-TIMESTAMP-MAP=LOCAL:00:00:00.000", hls.TimestampMap{}, `The X-TIMESTAMP-MAP header "X-TIMESTAMP-MAP=LOCAL:00:00:00.000" needs a LOCAL cue time and an integer MPEGTS value.`},
-		{"a LOCAL time with 1 minute digit", "X-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:0:00.000", hls.TimestampMap{}, `The X-TIMESTAMP-MAP header "X-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:0:00.000" needs a LOCAL cue time and an integer MPEGTS value.`},
-		{"a negative MPEGTS", "X-TIMESTAMP-MAP=MPEGTS:-1,LOCAL:00:00.000", hls.TimestampMap{}, `The X-TIMESTAMP-MAP header "X-TIMESTAMP-MAP=MPEGTS:-1,LOCAL:00:00.000" needs a LOCAL cue time and an integer MPEGTS value.`},
-		{"a LOCAL time at 100000 hours", "X-TIMESTAMP-MAP=MPEGTS:0,LOCAL:100000:00:00.000", hls.TimestampMap{}, `The X-TIMESTAMP-MAP header "X-TIMESTAMP-MAP=MPEGTS:0,LOCAL:100000:00:00.000" needs a LOCAL cue time and an integer MPEGTS value.`},
+		{"another header", "WEBVTT", hls.TimestampMap{}, `the line "WEBVTT" does not start with X-TIMESTAMP-MAP=`},
+		{"no MPEGTS", "X-TIMESTAMP-MAP=LOCAL:00:00:00.000", hls.TimestampMap{}, `the X-TIMESTAMP-MAP header "X-TIMESTAMP-MAP=LOCAL:00:00:00.000" needs a LOCAL cue time and an integer MPEGTS value`},
+		{"a LOCAL time with 1 minute digit", "X-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:0:00.000", hls.TimestampMap{}, `the X-TIMESTAMP-MAP header "X-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:0:00.000" needs a LOCAL cue time and an integer MPEGTS value`},
+		{"a negative MPEGTS", "X-TIMESTAMP-MAP=MPEGTS:-1,LOCAL:00:00.000", hls.TimestampMap{}, `the X-TIMESTAMP-MAP header "X-TIMESTAMP-MAP=MPEGTS:-1,LOCAL:00:00.000" needs a LOCAL cue time and an integer MPEGTS value`},
+		{"a LOCAL time at 100000 hours", "X-TIMESTAMP-MAP=MPEGTS:0,LOCAL:100000:00:00.000", hls.TimestampMap{}, `the X-TIMESTAMP-MAP header "X-TIMESTAMP-MAP=MPEGTS:0,LOCAL:100000:00:00.000" needs a LOCAL cue time and an integer MPEGTS value`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -59,9 +59,9 @@ func TestTimestampMapValidate(t *testing.T) {
 		wantMsg string
 	}{
 		{"largest MPEGTS", hls.TimestampMap{MPEGTS: hls.MPEGTSWrap - 1}, "", ""},
-		{"MPEGTS 2^33", hls.TimestampMap{MPEGTS: hls.MPEGTSWrap}, "hls.TimestampMap.MPEGTS", "The MPEGTS value must be a 33-bit timestamp from 0 to 8589934591, got 8589934592."},
-		{"negative MPEGTS", hls.TimestampMap{MPEGTS: -1}, "hls.TimestampMap.MPEGTS", "The MPEGTS value must be a 33-bit timestamp from 0 to 8589934591, got -1."},
-		{"negative LOCAL", hls.TimestampMap{Local: -1500 * time.Millisecond}, "hls.TimestampMap.Local", "The LOCAL time must not be negative, got -1.5."},
+		{"MPEGTS 2^33", hls.TimestampMap{MPEGTS: hls.MPEGTSWrap}, "hls.TimestampMap.MPEGTS", "the MPEGTS value must be a 33-bit timestamp from 0 to 8589934591, got 8589934592"},
+		{"negative MPEGTS", hls.TimestampMap{MPEGTS: -1}, "hls.TimestampMap.MPEGTS", "the MPEGTS value must be a 33-bit timestamp from 0 to 8589934591, got -1"},
+		{"negative LOCAL", hls.TimestampMap{Local: -1500 * time.Millisecond}, "hls.TimestampMap.Local", "the LOCAL time must not be negative, got -1.5"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

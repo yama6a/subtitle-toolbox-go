@@ -65,10 +65,10 @@ func check(engine Engine, target string, opts Options) error {
 		return err
 	}
 	if engine == nil {
-		return &model.InvalidArgumentError{Msg: "The translation engine is missing."}
+		return &model.InvalidArgumentError{Msg: "the translation engine is missing"}
 	}
 	if strings.Trim(target, markupcore.TrimSet) == "" {
-		return &model.InvalidArgumentError{Msg: "The target language is missing."}
+		return &model.InvalidArgumentError{Msg: "the target language is missing"}
 	}
 	return nil
 }
@@ -91,7 +91,7 @@ func callEngine(ctx context.Context, engine Engine, batch []request, source, tar
 		return nil, err
 	}
 	if len(got) != len(texts) {
-		return nil, &ServiceError{Msg: fmt.Sprintf("The translation engine must return one string per text, got %d values for %d texts.", len(got), len(texts))}
+		return nil, &ServiceError{Msg: fmt.Sprintf("the translation engine must return one string per text, got %d values for %d texts", len(got), len(texts))}
 	}
 	return got, nil
 }

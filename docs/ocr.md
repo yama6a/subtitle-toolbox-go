@@ -109,7 +109,7 @@ engine, err := tesseract.New(tesseract.Options{Language: ocr.German})
 - **Container image**: `ghcr.io/yama6a/subtitle-toolbox-go:<version>-tesseract` holds `tesseract` and the fast models of every language. It reads every language with no install step. See [cli.md](cli.md#install).
 - **Checks**: `Recognize` and `RequireLanguages` first check that the program runs and that the data of every part of the language is installed. A failure is an `*InvalidArgumentError` with an install hint, for example `apt install tesseract-ocr` for Debian and Ubuntu, `apk add tesseract-ocr tesseract-ocr-data-eng` for Alpine, `dnf install tesseract` for Fedora and `brew install tesseract` for macOS. `Installed(ctx, program)` reports whether the program runs.
 - **Text**: the words of one TSV line become one line, escaped as core markup. Tesseract reports no italic, so the lines hold no `<i>` tags. The confidence is the mean word confidence from 0 to 1.
-- **Errors**: a program that exits with a code other than 0, or that cannot start, gives an error that matches `ErrRecognize`. A program that cannot start gives its start error, such as `Cannot start Tesseract for the cue image at 7, 9: REASON.`
+- **Errors**: a program that exits with a code other than 0, or that cannot start, gives an error that matches `ErrRecognize`. A program that cannot start gives its start error, such as `cannot start Tesseract for the cue image at 7, 9: REASON`.
 - **Tests**: tests with a fake program run everywhere. `TestTesseractAccuracy` needs a real Tesseract with `eng` and `rus` data. It skips without one, unless `STBOX_REQUIRE_TESSERACT=1` is set. The CI job `tesseract` sets it.
 
 ## Glyph engine

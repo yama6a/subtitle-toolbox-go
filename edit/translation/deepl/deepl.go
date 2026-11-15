@@ -36,7 +36,7 @@ type Options struct {
 
 // Validate checks the key and the base URL. The error matches model.ErrInvalidArgument.
 func (o Options) Validate() error {
-	if err := httppost.CheckAPIKey("deepl.Options.APIKey", o.APIKey, "The API key must not be empty. Pass the key of your DeepL account."); err != nil {
+	if err := httppost.CheckAPIKey("deepl.Options.APIKey", o.APIKey, "the API key must not be empty. Pass the key of your DeepL account"); err != nil {
 		return err
 	}
 	if o.BaseURL != "" {
@@ -127,7 +127,7 @@ func (e *Engine) request(ctx context.Context, texts []string, source, target str
 	}
 	got, count := parseTranslations(answer)
 	if got == nil || len(got) != len(texts) {
-		return nil, e.serviceError(status, fmt.Sprintf("DeepL returned %d translations for %d texts, or an answer that is not the JSON of /v2/translate.", count, len(texts)))
+		return nil, e.serviceError(status, fmt.Sprintf("DeepL returned %d translations for %d texts, or an answer that is not the JSON of /v2/translate", count, len(texts)))
 	}
 	return got, nil
 }
@@ -139,18 +139,18 @@ func (e *Engine) serviceError(status int, msg string) error {
 func (e *Engine) statusError(status int, answer []byte) error {
 	switch status {
 	case http.StatusForbidden:
-		return e.serviceError(status, "DeepL rejected the API key (HTTP 403). Check the key and its plan.")
+		return e.serviceError(status, "DeepL rejected the API key (HTTP 403). Check the key and its plan")
 	case http.StatusTooManyRequests:
-		return e.serviceError(status, "DeepL got too many requests (HTTP 429). Wait and try again.")
+		return e.serviceError(status, "DeepL got too many requests (HTTP 429). Wait and try again")
 	case 456:
-		return e.serviceError(status, "The DeepL character quota is used up (HTTP 456).")
+		return e.serviceError(status, "the DeepL character quota is used up (HTTP 456)")
 	}
-	msg := "DeepL answered with HTTP " + strconv.Itoa(status) + "."
+	msg := "DeepL answered with HTTP " + strconv.Itoa(status)
 	var body struct {
 		Message *string `json:"message"`
 	}
 	if json.Unmarshal(answer, &body) == nil && body.Message != nil {
-		msg += " " + *body.Message
+		msg += httppost.Detail(*body.Message)
 	}
 	return e.serviceError(status, msg)
 }

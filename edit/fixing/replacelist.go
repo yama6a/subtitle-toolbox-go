@@ -46,10 +46,10 @@ type ReplaceList struct {
 func (l *ReplaceList) Validate() error {
 	for _, r := range l.RegularExpressions {
 		if r.From == "" {
-			return invalid("ReplaceList", `The regular expression "" is not valid: the pattern is empty.`)
+			return invalid("ReplaceList", `the regular expression "" is not valid: the pattern is empty`)
 		}
 		if _, err := regexp2.Compile(r.From, regexp2.None); err != nil {
-			return invalid("ReplaceList", `The regular expression "`+r.From+`" is not valid: `+err.Error()+".")
+			return invalid("ReplaceList", `the regular expression "`+r.From+`" is not valid: `+err.Error())
 		}
 	}
 	return nil
@@ -204,13 +204,13 @@ func charsetReader(label string, input io.Reader) (io.Reader, error) {
 }
 
 func notValid(err error, line int) error {
-	const prefix = "The OCR replace list is not valid XML: "
+	const prefix = "the OCR replace list is not valid XML: "
 	if se, ok := errors.AsType[*xml.SyntaxError](err); ok {
-		return &model.ParseError{Line: se.Line, Msg: prefix + se.Msg + ".", Err: err}
+		return &model.ParseError{Line: se.Line, Msg: prefix + se.Msg, Err: err}
 	}
-	msg := "the document has no root element."
+	msg := "the document has no root element"
 	if !errors.Is(err, io.EOF) {
-		msg = err.Error() + "."
+		msg = err.Error()
 	}
 	return &model.ParseError{Line: line, Msg: prefix + msg, Err: err}
 }

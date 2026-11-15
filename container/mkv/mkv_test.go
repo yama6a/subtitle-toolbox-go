@@ -237,7 +237,7 @@ func TestTimeLimit(t *testing.T) {
 			var pe *model.ParseError
 			require.ErrorAs(t, err, &pe)
 			assert.Empty(t, pe.Format)
-			assert.Regexp(t, fmt.Sprintf(`^The block of track 2 at byte \d+ has the time %s at a TimestampScale of %d ns\. Times must be below 100000 hours\.$`, tt.time, tt.scale), pe.Msg)
+			assert.Regexp(t, fmt.Sprintf(`^the block of track 2 at byte \d+ has the time %s at a TimestampScale of %d ns\. Times must be below 100000 hours$`, tt.time, tt.scale), pe.Msg)
 		})
 	}
 }
@@ -270,58 +270,58 @@ func TestBrokenFiles(t *testing.T) {
 	}{
 		{
 			"cluster timestamp of more than 8 bytes", testfiles.Read(t, "mkv/huge_timestamp.mkv"),
-			"The unsigned integer of the element 0xE7 at byte 1562 is longer than 8 bytes or not below 2^63.",
+			"the unsigned integer of the element 0xE7 at byte 1562 is longer than 8 bytes or not below 2^63",
 		},
 		{
 			"laced block", brokenFile(cluster(0, simpleBlock(2, 0, "\x01\x02ab", lacingXiph)), nil, trackFields{}, 0),
-			"A block of track 2 uses lacing, which subtitle tracks do not use.",
+			"a block of track 2 uses lacing, which subtitle tracks do not use",
 		},
 		{
 			"block header too short", brokenFile(cluster(0, element(0xA3, []byte("\x82\x00"))), nil, trackFields{}, 0),
-			"The block header at byte 86 is not valid.",
+			"the block header at byte 86 is not valid",
 		},
 		{
 			"child larger than its parent", brokenFile(nil, tracks(element(0xAE, slices.Concat(uintElement(0xD7, 2), []byte("\x86\x85ab")))), trackFields{}, 0),
-			"The element at byte 55 does not fit into its parent element.",
+			"the element at byte 55 does not fit into its parent element",
 		},
 		{
 			"unknown size outside Segment and Cluster", brokenFile(nil, unknownSizeElement(idTracks, nil), trackFields{}, 0),
-			"The element 0x1654AE6B at byte 57 has an unknown size, which only Segment and Cluster may have.",
+			"the element 0x1654AE6B at byte 57 has an unknown size, which only Segment and Cluster may have",
 		},
 		{
 			"no Tracks element", brokenFile(nil, info(1000000, "x"), trackFields{}, 0),
-			"The file has no Tracks element.",
+			"the file has no Tracks element",
 		},
 		{
 			"zlib data that does not inflate",
 			brokenFile(cluster(0, blockGroup(2, 0, "not zlib", 1000)), nil, trackFields{encodings: compression(0)}, 0),
-			"The zlib data of track 2 is not valid or inflates to more than 64 MB.",
+			"the zlib data of track 2 is not valid or inflates to more than 64 MB",
 		},
 		{
 			"encrypted track", brokenFile(cluster(0, blockGroup(2, 0, "secret", 1000)), nil, trackFields{encodings: encrypted}, 0),
-			"Track 2 uses encryption or a compression other than zlib and header stripping.",
+			"track 2 uses encryption or a compression other than zlib and header stripping",
 		},
 		{
 			"bzlib compression", brokenFile(cluster(0, blockGroup(2, 0, "x", 1000)), nil, trackFields{encodings: compression(1)}, 0),
-			"Track 2 uses encryption or a compression other than zlib and header stripping.",
+			"track 2 uses encryption or a compression other than zlib and header stripping",
 		},
 		{
 			"invalid element header in a cluster", brokenFile(slices.Concat(cluster(0), []byte{0, 0, 0, 0}), nil, trackFields{}, 0),
-			"The EBML element header at byte 84 is not valid.",
+			"the EBML element header at byte 84 is not valid",
 		},
 		{
 			"block data cut by the file end",
 			brokenFile(cluster(0, blockGroup(2, 0, "The ferry leaves at noon.", 1000)), nil, trackFields{}, 10),
-			"The element data at byte 92 needs 25 bytes, but the file ends before.",
+			"the element data at byte 92 needs 25 bytes, but the file ends before",
 		},
 		{
 			"CodecPrivate of 2^40 bytes", brokenFile(nil, hugeCodecPrivate(), trackFields{}, 0),
-			"The element data at byte 89 needs 1099511627776 bytes, but the file ends before.",
+			"the element data at byte 89 needs 1099511627776 bytes, but the file ends before",
 		},
 		{
 			"zlib block that inflates past 64 MB",
 			brokenFile(cluster(0, blockGroup(2, 0, string(zlibFilled(t, 0, 64<<20+1)), 1000)), nil, trackFields{encodings: compression(0)}, 0),
-			"The zlib data of track 2 is not valid or inflates to more than 64 MB.",
+			"the zlib data of track 2 is not valid or inflates to more than 64 MB",
 		},
 	}
 	for _, tt := range tests {

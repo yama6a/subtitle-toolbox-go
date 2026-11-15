@@ -193,7 +193,7 @@ func TestTrackReadFailures(t *testing.T) {
 		{
 			"encrypted track",
 			[]string{"convert", "text_tracks.mp4", "--track", "5", "--to", "srt", "-o", "-"},
-			result{Code: exitFile, Stderr: "text_tracks.mp4: Track 5 has the codec enct and is encrypted.\n" + lenientHint + "\n"},
+			result{Code: exitFile, Stderr: "text_tracks.mp4: track 5 has the codec enct and is encrypted\n" + lenientHint + "\n"},
 		},
 		{
 			"sync reference",

@@ -138,13 +138,13 @@ func TestHlsChecksBeforeTheRead(t *testing.T) {
 		{
 			"--mpegts of 2^33", nil,
 			[]string{"talk.vtt", "--output-dir", "new", "--mpegts", "8589934592"},
-			"The MPEGTS value must be a 33-bit timestamp from 0 to 8589934591, got 8589934592.",
+			"the MPEGTS value must be a 33-bit timestamp from 0 to 8589934591, got 8589934592",
 		},
 		{"--media-duration 0", nil, []string{"talk.vtt", "--output-dir", "new", "--media-duration", "0"}, "The option --media-duration must be greater than 0."},
 		{
 			"--pattern without %d", nil,
 			[]string{"talk.vtt", "--output-dir", "new", "--pattern", "part.vtt"},
-			`The file name pattern must hold exactly one %d and no other placeholder, got "part.vtt".`,
+			`the file name pattern must hold exactly one %d and no other placeholder, got "part.vtt"`,
 		},
 		{"--keep-going", nil, []string{"talk.vtt", "--output-dir", "new", "--keep-going"}, "Unknown option --keep-going."},
 	}
@@ -232,7 +232,7 @@ func TestHlsFailures(t *testing.T) {
 		dir := hlsDir(t, map[string]string{"empty.vtt": "WEBVTT\n"})
 		before := snapshot(t, dir)
 		got := call{dir: dir}.run(t, "hls", "empty.vtt", "--output-dir", "out")
-		assert.Equal(t, result{Code: exitFile, Stderr: "empty.vtt: The subtitle has no cue that ends after 0 s. Pass --media-duration to segment it.\n"}, got)
+		assert.Equal(t, result{Code: exitFile, Stderr: "empty.vtt: the subtitle has no cue that ends after 0 s. Pass --media-duration to segment it\n"}, got)
 		assert.Equal(t, before, snapshot(t, dir))
 	})
 

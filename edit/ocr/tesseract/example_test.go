@@ -10,5 +10,5 @@ func ExampleNew() {
 	_, err := tesseract.New(tesseract.Options{Scale: 0.5})
 	fmt.Println(err)
 	// Output:
-	// stbox: invalid argument: tesseract.Options.Scale: The scale must be from 1 to 8, got 0.5.
+	// stbox: invalid argument: tesseract.Options.Scale: the scale must be from 1 to 8, got 0.5
 }

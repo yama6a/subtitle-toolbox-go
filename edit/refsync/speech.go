@@ -31,11 +31,11 @@ func SpeechFromSilenceLog(log []byte, mediaDuration time.Duration) (*model.Subti
 	duration := mediaDuration.Round(time.Millisecond)
 	switch {
 	case duration <= 0:
-		return nil, &model.InvalidArgumentError{Msg: "The media duration must be greater than 0, got " +
-			timecode.Number(mediaDuration.Seconds()) + "."}
+		return nil, &model.InvalidArgumentError{Msg: "the media duration must be greater than 0, got " +
+			timecode.Number(mediaDuration.Seconds())}
 	case duration >= timecode.MaxTime:
-		return nil, &model.InvalidArgumentError{Msg: "The media duration must be below 100000 hours, got " +
-			timecode.Number(mediaDuration.Seconds()) + "."}
+		return nil, &model.InvalidArgumentError{Msg: "the media duration must be below 100000 hours, got " +
+			timecode.Number(mediaDuration.Seconds())}
 	}
 	limit := duration.Seconds()
 	var intervals []Interval
@@ -47,13 +47,13 @@ func SpeechFromSilenceLog(log []byte, mediaDuration time.Duration) (*model.Subti
 			continue
 		}
 		if strings.Contains(line, "channel:") {
-			return nil, &model.ParseError{Line: n + 1, Msg: "Cannot read a silencedetect log with one line per channel. " +
-				"Run silencedetect without mono."}
+			return nil, &model.ParseError{Line: n + 1, Msg: "cannot read a silencedetect log with one line per channel. " +
+				"Run silencedetect without mono"}
 		}
 		kind := m[1]
 		if (kind == "start") == silent {
-			return nil, &model.ParseError{Line: n + 1, Msg: "The line silence_" + kind +
-				" is out of order. The silence_start and silence_end lines must alternate."}
+			return nil, &model.ParseError{Line: n + 1, Msg: "the line silence_" + kind +
+				" is out of order. The silence_start and silence_end lines must alternate"}
 		}
 		seconds, _ := strconv.ParseFloat(m[2], 64)
 		at := max(last, time.Duration(math.Round(min(max(seconds, 0), limit)*1000))*time.Millisecond)
@@ -79,9 +79,9 @@ func SpeechFromIntervals(intervals []Interval) (*model.Subtitle, error) {
 	for i, iv := range intervals {
 		iv.Start, iv.End = iv.Start.Round(time.Millisecond), iv.End.Round(time.Millisecond)
 		if iv.Start < 0 || iv.End < iv.Start || iv.End >= timecode.MaxTime {
-			return nil, &model.InvalidArgumentError{Msg: "Interval " + strconv.Itoa(i) +
+			return nil, &model.InvalidArgumentError{Msg: "interval " + strconv.Itoa(i) +
 				" must have a start of 0 or more and an end at or after its start and below 100000 hours, got " +
-				timecode.Number(iv.Start.Seconds()) + " and " + timecode.Number(iv.End.Seconds()) + "."}
+				timecode.Number(iv.Start.Seconds()) + " and " + timecode.Number(iv.End.Seconds())}
 		}
 		cues[i] = model.Cue{Start: iv.Start, End: iv.End}
 	}

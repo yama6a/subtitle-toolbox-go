@@ -48,7 +48,7 @@ func (o Options) resolve() (settings, error) {
 	if s.maxGap < 0 {
 		return s, &model.InvalidArgumentError{
 			Option: "resegment.Options.MaxWordGap",
-			Msg:    "The maximum word gap must not be negative, got " + timecode.Seconds(s.maxGap) + ".",
+			Msg:    "the maximum word gap must not be negative, got " + timecode.Seconds(s.maxGap),
 		}
 	}
 	s.minDur, s.maxDur = s.minDur.Round(time.Millisecond), s.maxDur.Round(time.Millisecond)

@@ -68,7 +68,7 @@ func (e *Engine) Recognize(ctx context.Context, im model.Image, language ocr.Lan
 
 	pixels, err := bitmap.DecodePNG(im.PNG)
 	if err != nil {
-		return ocr.Text{}, &ocr.RecognizeError{Msg: "Cannot read the cue image at " + at + ": " + err.Error(), Err: err}
+		return ocr.Text{}, &ocr.RecognizeError{Msg: "cannot read the cue image at " + at + ": " + err.Error(), Err: err}
 	}
 	scale := e.scale
 	if scale == 0 {
@@ -89,7 +89,7 @@ func (e *Engine) Recognize(ctx context.Context, im model.Image, language ocr.Lan
 		if ctx.Err() != nil {
 			return ocr.Text{}, err
 		}
-		return ocr.Text{}, &ocr.RecognizeError{Msg: "Cannot start Tesseract for the cue image at " + at + ": " + err.Error(), Err: err}
+		return ocr.Text{}, &ocr.RecognizeError{Msg: "cannot start Tesseract for the cue image at " + at + ": " + err.Error(), Err: err}
 	}
 	if exit != 0 {
 		return ocr.Text{}, &ocr.RecognizeError{Msg: "Tesseract exits with code " + strconv.Itoa(exit) + " for the cue image at " + at + ": " + strings.TrimSpace(stderr)}
