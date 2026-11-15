@@ -1,4 +1,4 @@
-package apicheck
+package repocheck
 
 import (
 	"errors"

@@ -3,12 +3,14 @@ package stbox_test
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -789,4 +791,152 @@ func ExampleLoad_diff() {
 	// added: new cue 13
 	// + 00:00:39.000 --> 00:00:40.000
 	//   The doors open on the left.
+}
+
+func ExampleParse_encoding() {
+	latin1 := []byte("1\n00:00:01,000 --> 00:00:02,000\nCaf\xe9 au lait\n")
+
+	r := bytes.NewReader(latin1)
+	s, info, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(info.SourceEncoding, s.Len()) // Windows-1252 1
+
+	_, info, err = stbox.Parse(r, r.Size(), stbox.ReadOptions{Encoding: "cp1250"})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(info.SourceEncoding) // cp1250, as the caller wrote it
+	// Output:
+	// Windows-1252 1
+	// cp1250
+}
+
+func ExampleParse_error() {
+	content := "1\n00:00:01,000 --> 00:00:04,000\nHello\n\n2\n00:00:05,000 => 00:00:07,000\nWorld\n"
+
+	r := strings.NewReader(content)
+	_, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{Format: stbox.SubRip})
+	var perr *stbox.ParseError
+	if errors.As(err, &perr) {
+		fmt.Println(perr.Format, perr.Line)
+	}
+	fmt.Println(errors.Is(err, stbox.ErrParse))
+	fmt.Println(err)
+	// Output:
+	// srt 6
+	// true
+	// srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:05,000 => 00:00:07,000".
+}
+
+func ExampleWrite_lineEnding() {
+	srt := "1\n00:00:01,000 --> 00:00:02,000\nHello\n"
+
+	r := strings.NewReader(srt)
+	s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	var out bytes.Buffer
+	_, err = stbox.Write(&out, s, stbox.WebVTT, stbox.WriteOptions{LineEnding: stbox.CRLF})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("%q\n", out.String())
+	// Output:
+	// "\ufeffWEBVTT\r\n\r\n1\r\n00:00:01.000 --> 00:00:02.000\r\nHello\r\n"
+}
+
+func ExampleWord() {
+	c := stbox.Cue{
+		End:   5 * time.Second,
+		Lines: []string{"The beach"},
+		Words: []stbox.Word{
+			{Text: "The", Start: 0, End: 240 * time.Millisecond},
+			{Text: "beach", Start: 240 * time.Millisecond, End: time.Second},
+		},
+	}
+	fmt.Println(c.TaggedLines())
+	// Output: [<00:00:00.000>The <00:00:00.240>beach]
+}
+
+func ExampleEncodings() {
+	names := stbox.Encodings()
+	fmt.Println(names[:4])
+	fmt.Println(slices.Contains(names, "Windows-1252"), slices.Contains(names, "CP1125"))
+	// Output:
+	// [UTF-8 UTF-16LE UTF-16BE UTF-16]
+	// true false
+}
+
+func ExampleReadOptions_Validate() {
+	err := stbox.ReadOptions{LastCueDuration: new(-time.Second)}.Validate()
+	fmt.Println(errors.Is(err, stbox.ErrInvalidArgument))
+	fmt.Println(err)
+	// Output:
+	// true
+	// stbox: invalid argument: ReadOptions.LastCueDuration: The last cue duration must be 0 or more, got -1s.
+}
+
+func ExampleFormatFromPath() {
+	for _, path := range []string{"movie.SUB", "notes.txt", "clip.xml", "movie"} {
+		f, ok := stbox.FormatFromPath(path)
+		fmt.Printf("%s: %q %t\n", path, f, ok)
+	}
+	// Output:
+	// movie.SUB: "microdvd" true
+	// notes.txt: "txt" true
+	// clip.xml: "ttml" true
+	// movie: "" false
+}
+
+func ExampleFormats() {
+	for _, f := range stbox.Formats() {
+		fmt.Println(f, f.Extensions())
+	}
+	// Output:
+	// ass [ass ssa]
+	// cavena890 [890]
+	// csv [csv]
+	// ffmeta-chapters [ffmeta]
+	// html [html htm]
+	// itt [itt]
+	// json [json]
+	// assemblyai [json]
+	// aws-transcribe [json]
+	// deepgram [json]
+	// google-speech [json]
+	// lrc [lrc]
+	// mcc [mcc]
+	// microdvd [sub]
+	// mpsub [mpsub]
+	// pac [pac fpc]
+	// pgs [sup]
+	// sami [smi sami]
+	// sbv [sbv]
+	// scc [scc]
+	// srt [srt]
+	// stl [stl]
+	// spruce-stl [stl]
+	// subviewer [sub]
+	// ttml [ttml dfxp xml]
+	// dcp [xml]
+	// tsv [tsv]
+	// txt [txt]
+	// mpl2 [txt]
+	// tmplayer [txt]
+	// qttext [txt]
+	// vobsub [idx]
+	// vtt [vtt]
+	// whisper [json]
+	// youtube [srv3 json3 srv1 ytt]
+	// ogm-chapters [txt]
+	// podcast-chapters [json]
+	// podcast-transcript [json]
+	// youtube-chapters [txt]
 }
