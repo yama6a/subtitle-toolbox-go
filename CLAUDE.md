@@ -15,33 +15,35 @@ This file covers how the repo is built. The GitHub issues hold the behaviour of 
 The package map.
 
 ```
-*.go           Root package stbox: the facade (Load, Parse, Write, Detect), aliases, format registry, PNG helpers of image cues (image.go)
-model/         Subtitle, Cue, format facts table, common options, shared errors
-model/markup/  Inline tag model and its helpers
-format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microdvd, mpl2,
-               tmplayer, mpsub, subviewer, qttext, sprucestl, dcp, lrc, csv, itt, stboxjson, plaintext, pgs, chapters, transcript, youtube,
-               cavena890, ebustl, mcc, pac, scc, vobsub
-inspect/stats/ edit/hearingimpaired/ edit/speakers/ edit/fixing/ edit/profanity/ edit/refsync/ inspect/diff/ edit/dual/ edit/karaoke/
-               The 1.x services. A service never imports the root package
-container/<name>/ The 3.x readers of video containers: mkv, mp4, mpegts. They call the format readers. Their helpers live in container/<name>/internal: ebml (mkv), arib and teletext (mpegts)
-edit/ocr/      The 3.x service that reads the text of image cues with an OCR engine, and edit/ocr/ocrtest, a fake engine for tests.
-               The engines are edit/ocr/glyph and edit/ocr/tesseract
-edit/translation/ The service that translates cue text with a machine translation engine. Its HTTP helper is edit/translation/internal/httppost, the engines live in edit/translation/<engine>
-inspect/validation/ The 2.x service that checks a subtitle against rules
-edit/timing/   The 2.x service that moves cue times to shot changes and frames
-format/hls/    The package that cuts a subtitle into HLS WebVTT segments and joins segments. It has no Read and Write
-edit/resegment/ The 4.x service that splits long cues and builds cues from word timings
-internal/      Helpers that more than one top-level folder uses: caption (with caption/cea608 and caption/cea708),
-               bitmap (with bitmap/displayset, bitmap/dvbsub and bitmap/dvdsub), markupcore, linewrap,
-               timecode, textenc, extfallback, grapheme, decimal, orderedjson,
-               parsing, writing, cli, the test helpers testfiles, formattest and translationtest, and the
-               test-only packages repocheck and conformance
-edit/internal/ Helper speakerlabel, used by edit/hearingimpaired and edit/speakers
-inspect/internal/ Helper readingspeed, used by inspect/stats and inspect/validation
-format/internal/ Helpers that only format packages use: codepage, formatdata, paragraphs, ttmldoc, wordgroup, xmlraw, ssatag, textblock, vtt, position
-cmd/stbox/     The CLI main. Wiring, no business logic
-testdata/      All fixtures and goldens, one folder per topic. Packages read
-               them through internal/testfiles. Only fuzz corpora stay in <package>/testdata/fuzz/
+*.go              Root package stbox: Load, Parse, Write, Detect, Tracks, the image helpers, the options,
+                  the format registry, and aliases of the model types
+model/            Subtitle, Cue, the format facts table, common options, shared errors
+model/markup/     The helpers for the inline tags of cue text
+format/<name>/    One package per subtitle format: srt, webvtt, ass, ttml, sami, sbv, microdvd, mpl2, tmplayer,
+                  mpsub, subviewer, qttext, sprucestl, dcp, lrc, csv, itt, stboxjson, plaintext, pgs, chapters,
+                  transcript, youtube, cavena890, ebustl, mcc, pac, scc, vobsub. srt and webvtt also hold the
+                  stream readers and writers. hls cuts a subtitle into HLS WebVTT segments and joins them
+format/internal/  Helpers that only format packages use: codepage, formatdata, paragraphs, ttmldoc, wordgroup,
+                  xmlraw, ssatag, textblock, vtt, position
+container/<name>/ The readers of the subtitle tracks of video files: mkv, mp4, mpegts. They call the format
+                  readers. Their own helpers live in container/<name>/internal/: ebml (mkv), arib and teletext
+                  (mpegts)
+edit/             Packages that change a subtitle: hearingimpaired, speakers, fixing, profanity, refsync, dual,
+                  karaoke, resegment, timing, ocr, translation. The OCR engines live in edit/ocr/<engine>
+                  (glyph, tesseract, and the fake ocrtest), the translation engines in
+                  edit/translation/<engine> (deepl, google, openai), and the HTTP helper of the engines in
+                  edit/translation/internal/httppost. edit/internal/ holds helpers that only
+                  edit/ packages use: speakerlabel
+inspect/          Packages that read subtitles and report, and never change them: stats, diff, validation.
+                  inspect/internal/ holds helpers that only inspect/ packages use: readingspeed
+internal/         Helpers that more than one top-level folder uses: caption (with caption/cea608 and
+                  caption/cea708), bitmap (with bitmap/displayset, bitmap/dvbsub and bitmap/dvdsub),
+                  markupcore, linewrap, timecode, textenc, extfallback, grapheme, decimal, orderedjson, parsing,
+                  writing, the test helpers testfiles, formattest and translationtest, and the test-only
+                  packages repocheck and conformance. internal/cli holds the commands of the CLI
+cmd/stbox/        The CLI main. Wiring, no business logic
+testdata/         All fixtures and goldens, one folder per topic. Packages read them through
+                  internal/testfiles. Only fuzz corpora stay in <package>/testdata/fuzz/
 ```
 
 ## Commands

@@ -35,7 +35,7 @@ func Detect(content []byte) bool
 - **Other formats**: a reader ignores the option fields of other formats, so one `ReadOptions` value serves a batch of mixed files.
 - **Format data**: an option wins over stored format data, and stored format data wins over the format default.
 
-`format/hls` is the one exception. HLS delivers a WebVTT track as many segment files, so it has `Segment` and `Join` instead of `Read` and `Write`, and no registry row.
+`format/hls` is the one exception. HLS delivers a WebVTT track as many segment files, so it has `Segment` and `Join` instead of `Read` and `Write`, and no registry row. It declares none of the 3 format types.
 
 A format package keeps its package doc, `ReadOptions`, `WriteOptions`, `WriteReport`, `Validate` and `Detect` in `<name>.go`, `Read` in `read.go` and `Write` in `write.go`. Other files hold one topic each. `chapters` and `transcript` hold several formats, so they have one file per format.
 
@@ -202,7 +202,7 @@ Its exception table names the rule and the reason for each exception.
 | N12 | A service is one package with `Apply(s *model.Subtitle, opts Options) (Report, error)`, or a few functions. It changes the subtitle in place | `hearingimpaired.Apply(s, hearingimpaired.Options{})` |
 | N13 | Plain data uses exported fields: options, reports, results, `Comment`. A type whose values must keep an invariant hides the field and offers methods | `Subtitle` keeps its cues in start order, so its cue list is not an exported field |
 | N14 | Code that users must not call goes in `internal/` or stays unexported. No exported "for internal use" identifiers | `format/internal/textblock`, `internal/textenc` |
-| N15 | Export an interface only when users implement it. Return concrete types, as the `ireturn` linter wants | OCR engine (3.x), translation engine and HTTP client (4.x) |
+| N15 | Export an interface only when users implement it. Return concrete types, as the `ireturn` linter wants | `ocr.Engine`, `translation.Engine` |
 | N16 | A function that starts a process or a network request takes `ctx context.Context` first. A file read does not | `edit/ocr/tesseract`, `edit/translation/deepl` |
 | N17 | Bad input and bad options return an error. A panic is a library bug. No `Must` functions | a fuzz target checks every parser |
 | N18 | No mutable package state and no `init`. A lookup table at package level carries `//nolint:gochecknoglobals // <reason>` | the format registry |

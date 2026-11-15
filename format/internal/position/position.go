@@ -29,7 +29,7 @@ func OffsetFits(a model.Alignment, o *model.Offset) bool {
 	return column(Round(o.X)) == a.Column() && row(Round(o.Y)) == a.Row()
 }
 
-// DefaultAnchor returns the point where the 1.x TTML region of a puts its anchor: 10 %, 50 % or 90 % on each axis.
+// DefaultAnchor returns the point where the TTML region of a puts its anchor: 10 %, 50 % or 90 % on each axis.
 // A reader stores no offset for this point, because it says no more than the alignment.
 func DefaultAnchor(a model.Alignment) model.Offset {
 	return model.Offset{X: [...]float64{10, 50, 90}[a.Column()-1], Y: [...]float64{90, 50, 10}[a.Row()]}

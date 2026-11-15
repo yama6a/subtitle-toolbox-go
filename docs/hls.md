@@ -1,6 +1,6 @@
 # HLS subtitles
 
-HTTP Live Streaming (HLS) delivers a subtitle track as WebVTT segment files that an `.m3u8` media playlist lists. Package `hls` cuts a subtitle into such segments and joins downloaded segments into one subtitle. Example: `stbox hls film.srt --output-dir subs --segment 6` writes `subs/sub0.vtt`, `subs/sub1.vtt` and more, and `subs/subs.m3u8` with one `#EXTINF:6.000,` line per segment.
+HTTP Live Streaming (HLS) delivers a subtitle track as WebVTT segment files that an `.m3u8` media playlist lists. Package `format/hls` cuts a subtitle into such segments and joins downloaded segments into one subtitle. Example: `stbox hls film.srt --output-dir subs --segment 6` writes `subs/sub0.vtt`, `subs/sub1.vtt` and more, and `subs/subs.m3u8` with one `#EXTINF:6.000,` line per segment.
 
 ## Timestamp map
 

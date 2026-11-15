@@ -49,7 +49,7 @@ Text outside tags holds `&`, `<` and `>` as `&amp;`, `&lt;` and `&gt;`.
 
 ## Helpers
 
-Package `markup` holds the public helpers. They help in an OCR engine, a text change of your own, or a reader for a format that the library does not have. The helpers that only the format packages need live in `internal/markupcore`, so they stay out of the API.
+Package `model/markup` holds the public helpers. They help in an OCR engine, a text change of your own, or a reader for a format that the library does not have. The helpers that only the format packages need live in `internal/markupcore`, so they stay out of the API.
 
 <!-- example: model/markup/Example -->
 ```go
@@ -68,7 +68,7 @@ fmt.Println(markup.HasVisibleText([]string{"<i></i>", " "}))
 // false
 ```
 
-- **Word timestamps**: `Cue.ExtractWordTags` moves them out of the lines into `Cue.Words`, and `Cue.TaggedLines` puts them back. The package `markup` has no helper for them.
+- **Word timestamps**: `Cue.ExtractWordTags` moves them out of the lines into `Cue.Words`, and `Cue.TaggedLines` puts them back. The package `model/markup` has no helper for them.
 - **Visible length**: `VisibleLength` counts the characters of the text without tags, with entities decoded and trimmed. U+00A0 is not trimmed. A character is a grapheme cluster of UAX #29, so `Cafe` plus U+0301 counts 4 and a thumbs-up with a skin tone counts 1. The soft hyphen U+00AD, the zero-width space U+200B, the BOM U+FEFF and the bidi controls count 0. Invalid UTF-8 counts its bytes. [grapheme.go](../internal/grapheme/grapheme.go) names the Unicode version.
 
 ## Word timestamps and voices
