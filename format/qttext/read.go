@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
@@ -210,7 +210,7 @@ func (rd *reader) time(m []string, line int) (time.Duration, error) {
 	text, fraction := m[0][1:len(m[0])-1], m[4]
 	var units int64
 	if rd.scale > 0 && fraction != "" {
-		units = intkey.DigitsToInt(fraction)
+		units = decimal.Saturated(fraction)
 		if units >= rd.scale {
 			msg := fmt.Sprintf("The timestamp %q counts %s units, but the time scale is %d per second.", m[0], fraction, rd.scale)
 			if !rd.st.Lenient() {
@@ -220,11 +220,11 @@ func (rd *reader) time(m []string, line int) (time.Duration, error) {
 		}
 	}
 
-	hours := intkey.DigitsToInt(m[1])
+	hours := decimal.Saturated(m[1])
 	if hours >= timecode.MaxHours {
 		return parsing.BoundedTime(timecode.MaxTime, text, line)
 	}
-	ms := ((hours*60+intkey.DigitsToInt(m[2]))*60 + intkey.DigitsToInt(m[3])) * 1000
+	ms := ((hours*60+decimal.Saturated(m[2]))*60 + decimal.Saturated(m[3])) * 1000
 	switch {
 	case fraction == "":
 	case rd.scale == 0:

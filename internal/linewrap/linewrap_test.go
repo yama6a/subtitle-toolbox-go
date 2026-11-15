@@ -274,8 +274,6 @@ func TestVisibleCharacters(t *testing.T) {
 
 	assert.Equal(t, 4, linewrap.VisibleCharacters([]string{"<i>ab</i>", "c&amp;"}))
 	assert.Equal(t, 0, linewrap.VisibleCharacters(nil))
-	assert.Equal(t, []int{5, 3}, linewrap.VisibleLineLengths([]string{"<i>Hello</i>", "<b></b>", "", "a b"}))
-	assert.Empty(t, linewrap.VisibleLineLengths([]string{"<b></b>"}))
 }
 
 // Adapted from testCharactersPerSecondIsInfiniteWithoutDuration in tests/LineWrapperTest.php of subtitle-toolbox-php.

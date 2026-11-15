@@ -49,7 +49,6 @@ func FuzzEmbedRightToLeft(f *testing.F) {
 		if twice := markupcore.EmbedRightToLeft(once); twice != once {
 			t.Fatalf("EmbedRightToLeft(%q) = %q, then %q", s, once, twice)
 		}
-		markupcore.HasRightToLeftLetter(s)
 		markupcore.HoldsRightToLeftEmbedding([]string{s, once})
 	})
 }

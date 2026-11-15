@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/extfallback"
+	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func TestAllowed(t *testing.T) {
@@ -39,16 +40,18 @@ func TestProfile(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		detected, path, want string
+		detected model.Format
+		path     string
+		want     model.Format
 	}{
-		{"ttml", "film.itt", "itt"},
-		{"ttml", "FILM.ITT", "itt"},
-		{"ttml", "film.ttml", "ttml"},
-		{"ttml", "", "ttml"},
-		{"srt", "film.itt", "srt"},
+		{model.TTML, "film.itt", model.ITT},
+		{model.TTML, "FILM.ITT", model.ITT},
+		{model.TTML, "film.ttml", model.TTML},
+		{model.TTML, "", model.TTML},
+		{model.SubRip, "film.itt", model.SubRip},
 	}
 	for _, tt := range tests {
-		t.Run(tt.detected+" "+tt.path, func(t *testing.T) {
+		t.Run(string(tt.detected)+" "+tt.path, func(t *testing.T) {
 			t.Parallel()
 
 			assert.Equal(t, tt.want, extfallback.Profile(tt.detected, tt.path))

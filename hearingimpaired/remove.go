@@ -12,14 +12,14 @@ import (
 // removeFromLines removes the annotations that opts selects from the lines of one cue, and the lines that they
 // emptied. Lines whose visible text is not valid UTF-8 stay as they are.
 func removeFromLines(lines []string, opts Options) []string {
-	if !utf8.ValidString(speakerlabel.VisibleOf(lines).Text) {
+	if !utf8.ValidString(markupcore.TextRunsOf(lines).Text) {
 		return lines
 	}
 	out := lines
 	pairs := opts.brackets()
 	for {
-		v := speakerlabel.VisibleOf(out)
-		var spans []speakerlabel.Span
+		v := markupcore.TextRunsOf(out)
+		var spans []markupcore.TextSpan
 		for _, p := range pairs {
 			for _, s := range bracketMatches(v.Text, p) {
 				spans = append(spans, widen(v.Text, s))
@@ -50,7 +50,7 @@ func (o Options) brackets() []BracketPair {
 
 // widen adds the spaces and tabs after s when a line break, a space or a tab comes before it. Then it adds
 // the spaces and tabs before s when the text ends after s or a line break or punctuation follows.
-func widen(text string, s speakerlabel.Span) speakerlabel.Span {
+func widen(text string, s markupcore.TextSpan) markupcore.TextSpan {
 	if s.Start == 0 || strings.IndexByte("\n \t", text[s.Start-1]) >= 0 {
 		s.End = len(text) - len(strings.TrimLeft(text[s.End:], " \t"))
 	}
@@ -62,12 +62,12 @@ func widen(text string, s speakerlabel.Span) speakerlabel.Span {
 
 // bracketMatches returns each p.Open that no backslash follows, up to the next p.Close and an optional colon,
 // with no p.Open between them.
-func bracketMatches(text string, p BracketPair) []speakerlabel.Span {
-	var out []speakerlabel.Span
+func bracketMatches(text string, p BracketPair) []markupcore.TextSpan {
+	var out []markupcore.TextSpan
 	for i := 0; i < len(text); {
 		if strings.HasPrefix(text[i:], p.Open) && !strings.HasPrefix(text[i+len(p.Open):], `\`) {
 			if end, ok := closeOf(text, i+len(p.Open), p); ok {
-				out = append(out, speakerlabel.Span{Start: i, End: end})
+				out = append(out, markupcore.TextSpan{Start: i, End: end})
 				i = end
 				continue
 			}
@@ -101,8 +101,8 @@ func removeMusic(lines []string, opts Options) []string {
 	if !opts.Lyrics && opts.KeepMusicLines {
 		return lines
 	}
-	v := speakerlabel.VisibleOf(lines)
-	var spans []speakerlabel.Span
+	v := markupcore.TextRunsOf(lines)
+	var spans []markupcore.TextSpan
 	if opts.Lyrics {
 		spans = lyricsSpans(v.Text)
 	}
@@ -110,8 +110,8 @@ func removeMusic(lines []string, opts Options) []string {
 }
 
 // lyricsSpans pairs the music symbols in order: the first with the second, the third with the fourth.
-func lyricsSpans(text string) []speakerlabel.Span {
-	var spans []speakerlabel.Span
+func lyricsSpans(text string) []markupcore.TextSpan {
+	var spans []markupcore.TextSpan
 	open := -1
 	for i := 0; i < len(text); {
 		n := symbolAt(text, i)
@@ -121,7 +121,7 @@ func lyricsSpans(text string) []speakerlabel.Span {
 		case open < 0:
 			open = i
 		default:
-			spans = append(spans, widen(text, speakerlabel.Span{Start: open, End: i + n}))
+			spans = append(spans, widen(text, markupcore.TextSpan{Start: open, End: i + n}))
 			open = -1
 		}
 		i += n
@@ -129,8 +129,8 @@ func lyricsSpans(text string) []speakerlabel.Span {
 	return spans
 }
 
-func musicLineSpans(text string, opts Options) []speakerlabel.Span {
-	var spans []speakerlabel.Span
+func musicLineSpans(text string, opts Options) []markupcore.TextSpan {
+	var spans []markupcore.TextSpan
 	for start := 0; start <= len(text); {
 		end := len(text)
 		if k := strings.IndexByte(text[start:], '\n'); k >= 0 {
@@ -139,7 +139,7 @@ func musicLineSpans(text string, opts Options) []speakerlabel.Span {
 		line := text[:end]
 		if (opts.Lyrics && (startsWithSymbol(line, start) || endsWithSymbol(line, start))) ||
 			(!opts.KeepMusicLines && onlySymbols(line, start)) {
-			spans = append(spans, widen(text, speakerlabel.Span{Start: start, End: end}))
+			spans = append(spans, widen(text, markupcore.TextSpan{Start: start, End: end}))
 		}
 		start = end + 1
 	}
@@ -176,7 +176,7 @@ func endsWithSymbol(line string, start int) bool {
 	p := len(line)
 	for p > start {
 		r, n := utf8.DecodeLastRuneInString(line[start:p])
-		if !speakerlabel.IsHSpace(r) {
+		if !markupcore.IsHSpace(r) {
 			break
 		}
 		p -= n
@@ -194,7 +194,7 @@ func onlySymbols(line string, start int) bool {
 		n := symbolAt(line, p)
 		if n == 0 {
 			var r rune
-			if r, n = utf8.DecodeRuneInString(line[p:]); !speakerlabel.IsHSpace(r) {
+			if r, n = utf8.DecodeRuneInString(line[p:]); !markupcore.IsHSpace(r) {
 				return false
 			}
 		}

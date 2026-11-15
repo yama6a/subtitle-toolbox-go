@@ -5,8 +5,6 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
-
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/grapheme"
 )
 
 const (
@@ -22,9 +20,9 @@ var (
 	markRemover      = strings.NewReplacer(rightToLeftEmbedding, "", popFormatting, "") //nolint:gochecknoglobals // a replacer holds no state
 )
 
-// HasRightToLeftLetter reports whether the visible text of line holds a letter
+// hasRightToLeftLetter reports whether the visible text of line holds a letter
 // of the Arabic, Hebrew, Syriac, Thaana or N'Ko script. Invalid UTF-8 holds none.
-func HasRightToLeftLetter(line string) bool {
+func hasRightToLeftLetter(line string) bool {
 	text := VisibleText(line)
 	if !utf8.ValidString(text) {
 		return false
@@ -47,7 +45,7 @@ func EmbedRightToLeft(line string) string {
 		return line
 	}
 	text := markRemover.Replace(line)
-	if assDrawingRegexp.MatchString(text) || !HasRightToLeftLetter(text) {
+	if assDrawingRegexp.MatchString(text) || !hasRightToLeftLetter(text) {
 		return line
 	}
 
@@ -67,11 +65,6 @@ func HoldsRightToLeftEmbedding(lines []string) bool {
 		}
 	}
 	return false
-}
-
-// IsBidiControl reports whether r is one of the bidi controls that RemoveBidiControls removes.
-func IsBidiControl(r rune) bool {
-	return grapheme.IsBidiControl(r)
 }
 
 // splitLeadingPunctuation splits a middle such as "- ?text  " into the dash part "- ", the punctuation run "?", the

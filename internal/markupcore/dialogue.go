@@ -5,6 +5,8 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/grapheme"
 )
 
 const (
@@ -48,7 +50,7 @@ func SplitLeadingBidiControls(text string) (controls, rest string) {
 	if !utf8.ValidString(text) {
 		return "", text
 	}
-	i := strings.IndexFunc(text, func(r rune) bool { return !IsBidiControl(r) })
+	i := strings.IndexFunc(text, func(r rune) bool { return !grapheme.IsBidiControl(r) })
 	if i < 0 {
 		i = len(text)
 	}
@@ -61,7 +63,7 @@ func RemoveBidiControls(text string) string {
 	var b strings.Builder
 	copied := 0
 	for i, r := range text {
-		if IsBidiControl(r) {
+		if grapheme.IsBidiControl(r) {
 			b.WriteString(text[copied:i])
 			copied = i + utf8.RuneLen(r)
 		}

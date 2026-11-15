@@ -1,14 +1,14 @@
-package intkey_test
+package decimal_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
 )
 
-func TestIsIntKey(t *testing.T) {
+func TestIsCanonical(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -41,19 +41,19 @@ func TestIsIntKey(t *testing.T) {
 		t.Run(tt.key, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, intkey.IsIntKey(tt.key))
+			assert.Equal(t, tt.want, decimal.IsCanonical(tt.key))
 		})
 	}
 }
 
-func BenchmarkIsIntKey(b *testing.B) {
+func BenchmarkIsCanonical(b *testing.B) {
 	keys := []string{"sectionOrder", "scriptInfo", "12345", "9223372036854775808"}
 	for _, key := range keys {
 		b.Run("key="+key, func(b *testing.B) {
 			b.ReportAllocs()
 
 			for b.Loop() {
-				intkey.IsIntKey(key)
+				decimal.IsCanonical(key)
 			}
 		})
 	}

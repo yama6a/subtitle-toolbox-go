@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/intkey"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
@@ -223,7 +223,7 @@ func decodeBase64(s string) ([]byte, bool) {
 
 // keyPath returns the path of key in the object at path. A key that reads as an integer gets the list form.
 func keyPath(path, key string) string {
-	if intkey.IsIntKey(key) {
+	if decimal.IsCanonical(key) {
 		return path + "[" + key + "]"
 	}
 	return path + "." + key

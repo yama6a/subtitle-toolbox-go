@@ -34,7 +34,7 @@ hls/           The service that cuts a subtitle into HLS WebVTT segments and joi
 resegment/     The 4.x service that splits long cues and builds cues from word timings. Same layer rule
 internal/      Helpers that more than one top-level folder uses: caption (with caption/cea608 and caption/cea708),
                bitmap (with bitmap/displayset, bitmap/dvbsub and bitmap/dvdsub), markupcore, speakerlabel, linewrap,
-               timecode, textenc, extfallback, grapheme, ssatag, intkey, orderedjson, textblock, subrip, vtt,
+               timecode, textenc, extfallback, grapheme, ssatag, decimal, orderedjson, textblock, subrip, vtt,
                position, parsing, writing, cli, readingspeed, the test helpers testfiles and translationtest, and the
                test-only packages repocheck and conformance
 format/internal/ Helpers that only format packages use: codepage, formatdata, paragraphs, ttmldoc, wordgroup, xmlraw
