@@ -36,6 +36,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 func Detect(content []byte) bool
 ```
 
+- **Files**: `<name>.go` holds the package doc, the options, the report and `Detect`. `read.go` holds `Read` and `write.go` holds `Write`.
 - **Other formats**: a reader ignores the option fields of other formats, so one `ReadOptions` value serves a batch of mixed files.
 - **Format data**: an option wins over stored format data, and stored format data wins over the format default.
 
