@@ -2,7 +2,7 @@ package cli
 
 import (
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
-	"github.com/yama6a/subtitle-toolbox-go/v5/karaoke"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/karaoke"
 )
 
 func karaokeGroup() group {

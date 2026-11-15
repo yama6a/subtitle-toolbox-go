@@ -21,21 +21,23 @@ model/markup/  Inline tag model and its helpers
 format/<name>/ One package per format: srt, webvtt, ass, ttml, sami, sbv, microdvd, mpl2,
                tmplayer, mpsub, subviewer, qttext, sprucestl, dcp, lrc, csv, itt, stboxjson, plaintext, pgs, chapters, transcript, youtube,
                cavena890, ebustl, mcc, pac, scc, vobsub
-stats/ hearingimpaired/ speakers/ fixing/ profanity/ refsync/ diff/ dual/ karaoke/
+inspect/stats/ edit/hearingimpaired/ edit/speakers/ edit/fixing/ edit/profanity/ edit/refsync/ inspect/diff/ edit/dual/ edit/karaoke/
                The 1.x services. A service never imports the root package
-container/<name>/ The 3.x readers of video containers, layer 4: mkv, mp4, mpegts. They call the format readers. Their helpers live in container/<name>/internal: ebml (mkv), arib and teletext (mpegts)
-ocr/           The 3.x service that reads the text of image cues with an OCR engine, and ocr/ocrtest, a fake engine for tests.
-               The engines are ocr/glyph and ocr/tesseract, the chooser is ocr/auto. Layer 5, see CONTRIBUTING.md
-translation/   The service that translates cue text with a machine translation engine. Its HTTP helper is translation/internal/httppost, the engines live in translation/<engine>. Layer 5, see CONTRIBUTING.md
-validation/    The 2.x service that checks a subtitle against rules. It follows the same layer rule
-timing/        The 2.x service that moves cue times to shot changes and frames. Same layer rule
+container/<name>/ The 3.x readers of video containers: mkv, mp4, mpegts. They call the format readers. Their helpers live in container/<name>/internal: ebml (mkv), arib and teletext (mpegts)
+edit/ocr/      The 3.x service that reads the text of image cues with an OCR engine, and edit/ocr/ocrtest, a fake engine for tests.
+               The engines are edit/ocr/glyph and edit/ocr/tesseract, the chooser is edit/ocr/auto
+edit/translation/ The service that translates cue text with a machine translation engine. Its HTTP helper is edit/translation/internal/httppost, the engines live in edit/translation/<engine>
+inspect/validation/ The 2.x service that checks a subtitle against rules
+edit/timing/   The 2.x service that moves cue times to shot changes and frames
 format/hls/    The package that cuts a subtitle into HLS WebVTT segments and joins segments. It has no Read and Write
-resegment/     The 4.x service that splits long cues and builds cues from word timings. Same layer rule
+edit/resegment/ The 4.x service that splits long cues and builds cues from word timings
 internal/      Helpers that more than one top-level folder uses: caption (with caption/cea608 and caption/cea708),
-               bitmap (with bitmap/displayset, bitmap/dvbsub and bitmap/dvdsub), markupcore, speakerlabel, linewrap,
+               bitmap (with bitmap/displayset, bitmap/dvbsub and bitmap/dvdsub), markupcore, linewrap,
                timecode, textenc, extfallback, grapheme, decimal, orderedjson,
-               parsing, writing, cli, readingspeed, the test helpers testfiles, formattest and translationtest, and the
+               parsing, writing, cli, the test helpers testfiles, formattest and translationtest, and the
                test-only packages repocheck and conformance
+edit/internal/ Helper speakerlabel, used by edit/hearingimpaired and edit/speakers
+inspect/internal/ Helper readingspeed, used by inspect/stats and inspect/validation
 format/internal/ Helpers that only format packages use: codepage, formatdata, paragraphs, ttmldoc, wordgroup, xmlraw, ssatag, textblock, vtt, position
 cmd/stbox/     The CLI main. Wiring, no business logic
 testdata/      All fixtures and goldens, one folder per topic. Packages read

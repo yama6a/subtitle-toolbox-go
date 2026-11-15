@@ -2,7 +2,7 @@
 
 OCR (optical character recognition) fills the lines of image cues, so a Blu-ray or DVD subtitle can become SubRip or WebVTT. Example: a subtitle has an image cue at 1 s without lines. `ocr.Run(ctx, s, engine, "")` calls the engine for that cue and sets its lines to `Next stop: Bergen`. The image stays.
 
-<!-- example: ocr/ExampleRun -->
+<!-- example: edit/ocr/ExampleRun -->
 ```go
 s := &model.Subtitle{}
 s.AddCue(model.Cue{
@@ -32,7 +32,7 @@ An `ocr.Engine` has one method. `Recognize(ctx, im, language)` reads the PNG of 
 
 - `Text.Lines` holds plain text or core markup, such as `<i>Hello</i>`.
 - `Text.Confidence` is a number from 0 to 1, or nil when the engine gives none. `Text.Validate` returns an error that matches `ErrInvalidArgument` for any other value, NaN included.
-- `language` is a Tesseract model name such as `deu` or `deu+eng`. The constants of package `ocr`, such as `ocr.German`, hold the 110 standard names. Any other string works, for example a custom model. `""` lets the engine use its own default. An engine that has no languages ignores it.
+- `language` is a Tesseract model name such as `deu` or `deu+eng`. The constants of package `edit/ocr`, such as `ocr.German`, hold the 110 standard names. Any other string works, for example a custom model. `""` lets the engine use its own default. An engine that has no languages ignores it.
 
 An engine that fails on an image returns an error. `Run` wraps it. An engine can return a `*RecognizeError` with a message and a cause. It matches `ErrRecognize`.
 
@@ -48,7 +48,7 @@ An engine that fails on an image returns an error. `Run` wraps it. An engine can
 
 ## An engine for an OCR web service
 
-This engine posts the PNG of each cue to a service and reads a JSON answer such as `{"lines": ["Next stop: Bergen"]}`. The source is `ocr/engine_example_test.go`, where `ExampleEngine` runs it against a test server.
+This engine posts the PNG of each cue to a service and reads a JSON answer such as `{"lines": ["Next stop: Bergen"]}`. The source is `edit/ocr/engine_example_test.go`, where `ExampleEngine` runs it against a test server.
 
 ```text
 type webEngine struct {
@@ -89,7 +89,7 @@ func (e webEngine) Recognize(ctx context.Context, im model.Image, language ocr.L
 
 ## Tesseract
 
-Package `ocr/tesseract` reads cue images with the `tesseract` program. It runs one process per image through `os/exec`, so the library needs no cgo. Example: for a 1920x1080 cue the engine draws the image as dark text on white with a 10-pixel border, writes it as a PGM file and runs `tesseract <file> stdout -l deu --psm 6 -c tessedit_create_tsv=1`. It builds the lines from the TSV word rows.
+Package `edit/ocr/tesseract` reads cue images with the `tesseract` program. It runs one process per image through `os/exec`, so the library needs no cgo. Example: for a 1920x1080 cue the engine draws the image as dark text on white with a 10-pixel border, writes it as a PGM file and runs `tesseract <file> stdout -l deu --psm 6 -c tessedit_create_tsv=1`. It builds the lines from the TSV word rows.
 
 ```text
 engine, err := tesseract.New(tesseract.Options{Language: ocr.German})
@@ -112,11 +112,11 @@ engine, err := tesseract.New(tesseract.Options{Language: ocr.German})
 
 ## Glyph engine
 
-Package `ocr/glyph` reads cue images with [go-glyph-ocr](https://github.com/yama6a/go-glyph-ocr), a pure Go engine. It needs no Tesseract and no cgo, so it works in the distroless image. Example: `glyph.New(glyph.Options{})` reads the first cue of `text_1080p.sup` as `The train to Bergen leaves at 7:45.`.
+Package `edit/ocr/glyph` reads cue images with [go-glyph-ocr](https://github.com/yama6a/go-glyph-ocr), a pure Go engine. It needs no Tesseract and no cgo, so it works in the distroless image. Example: `glyph.New(glyph.Options{})` reads the first cue of `text_1080p.sup` as `The train to Bergen leaves at 7:45.`.
 
-<!-- example: ocr/glyph/ExampleNew -->
+<!-- example: edit/ocr/glyph/ExampleNew -->
 ```go
-s, _, err := stbox.Load("../../testdata/pgs/text_1080p.sup", stbox.ReadOptions{})
+s, _, err := stbox.Load("../../../testdata/pgs/text_1080p.sup", stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -150,7 +150,7 @@ fmt.Println(cue.Lines)
 
 ## Choosing an engine
 
-Package `ocr/auto` picks an engine. `auto.Choose(ctx, auto.Options{})` returns `ocr.EngineTesseract` when the `tesseract` program runs, else `ocr.EngineGlyph`. An explicit `Options.Engine` wins. An explicit Tesseract that is missing returns the `*InvalidArgumentError` with the install hint of `tesseract.RequireInstalled`. `auto.New` builds the chosen engine with its default options. `Options.TesseractProgram` sets the program.
+Package `edit/ocr/auto` picks an engine. `auto.Choose(ctx, auto.Options{})` returns `ocr.EngineTesseract` when the `tesseract` program runs, else `ocr.EngineGlyph`. An explicit `Options.Engine` wins. An explicit Tesseract that is missing returns the `*InvalidArgumentError` with the install hint of `tesseract.RequireInstalled`. `auto.New` builds the chosen engine with its default options. `Options.TesseractProgram` sets the program.
 
 ## The convert command
 
@@ -162,6 +162,6 @@ A VobSub read gives image cues, so OCR can read DVD subtitles. See [VobSub in fo
 
 ## Tests
 
-Package `ocr/ocrtest` holds `Engine`, a fake that returns the same `Text` for every image and records each call with its image and language.
+Package `edit/ocr/ocrtest` holds `Engine`, a fake that returns the same `Text` for every image and records each call with its image and language.
 
-`ocr/glyph` reads the PGS and VobSub fixtures and compares the SubRip output with `pgs/text_1080p.ocr.srt` and `vobsub/text-pal.ocr.srt`. With the Latin database and no line context it reads the I and l errors that `fixing` repairs, as `fixing/text_1080p.ocr.srt` and `fixing/text-pal.ocr.srt` keep them.
+`edit/ocr/glyph` reads the PGS and VobSub fixtures and compares the SubRip output with `pgs/text_1080p.ocr.srt` and `vobsub/text-pal.ocr.srt`. With the Latin database and no line context it reads the I and l errors that `fixing` repairs, as `fixing/text_1080p.ocr.srt` and `fixing/text-pal.ocr.srt` keep them.

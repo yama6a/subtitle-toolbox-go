@@ -9,17 +9,15 @@
 
 ## Packages
 
-A package imports only packages of a lower layer. Every layer may also import the standard library and the allowed modules of [CLAUDE.md](CLAUDE.md), which also lists the package map. `internal/repocheck/layers_test.go` holds the same table. It fails for a forbidden import and for a package without a layer, so the issue that adds a package adds its row in both places.
+A package imports only packages of a lower layer. Every layer may also import the standard library and the allowed modules of [CLAUDE.md](CLAUDE.md), which also lists the package map. `internal/repocheck/layers_test.go` states the same rules by folder. It fails for a forbidden import and for a package outside these folders.
 
 | Layer | Packages | May import |
 |---:|:--- |:--- |
-| 0 | helpers that import no model type. In `internal/`: `markupcore`, `speakerlabel`, `linewrap`, `timecode`, `grapheme`, `decimal`, `textenc`, `extfallback`, `orderedjson`, `caption/cea608`, `caption/cea708`, and the test helpers `testfiles` and `translationtest`. In `format/internal/`: `codepage`, `xmlraw`, `ssatag`. Below the containers: `container/mkv/internal/ebml`, `container/mpegts/internal/teletext` | other layer 0 packages |
-| 1 | `model`, `model/markup` | layer 0. `model` imports `model/markup` |
-| 2 | helpers that work on model types. In `internal/`: `parsing`, `writing`, `readingspeed`, `formattest`, `caption`, `bitmap`, `bitmap/displayset`, `bitmap/dvbsub`, `bitmap/dvdsub`. In `format/internal/`: `formatdata`, `paragraphs`, `ttmldoc`, `wordgroup`, `textblock`, `vtt`, `position`. Below the containers: `container/mpegts/internal/arib` | layers 0 to 2. Go rejects an import cycle |
-| 3 | `format/<name>` | layers 0 to 2. A format package imports another format package only when its format is a profile of the other, for example iTT of TTML or HLS of WebVTT. Other shared code goes to `format/internal/` or `internal/` |
-| 4 | `container/<name>` | layers 0 to 3. A container returns cues, so it calls the format readers |
-| 5 | root `stbox`, the services `stats`, `hearingimpaired`, `speakers`, `fixing`, `profanity`, `refsync`, `diff`, `dual`, `karaoke`, `validation`, `timing`, `resegment`, `ocr` and `translation`, and the packages below a service folder: `ocr/glyph`, `ocr/tesseract`, `ocr/auto`, the test helper `ocr/ocrtest`, `translation/deepl`, `translation/google`, `translation/openai` and `translation/internal/httppost` | layers 0 to 4. The root and a service never import each other. A service never imports another service. A package below a service folder imports only its service and the `internal/` packages of that service. `ocr/auto` also imports the OCR engines |
-| 6 | `internal/cli`, `cmd/stbox` | everything |
+| 0 | `model`, `model/markup`, and every package under `internal/`, `format/internal/` and `container/<name>/internal/`, except `internal/cli` | other layer 0 packages. Go rejects an import cycle |
+| 1 | `format/<name>` | layer 0. A format package imports another format package only when its format is a profile of the other: iTT of TTML, HLS of WebVTT |
+| 2 | `container/<name>` | layers 0 and 1. A container returns cues, so it calls the format readers |
+| 3 | root `stbox`, and every package under `edit/` and `inspect/` | layers 0 to 2. The root and these packages never import each other. A package under `edit/<name>/` imports another `edit/` package only when it is `edit/<name>` itself or sits below `edit/<name>/internal/` or `edit/internal/`. The service `edit/<name>` imports no package below it. `edit/ocr/auto` also imports the OCR engines. The same rules hold for `inspect/` |
+| 4 | `internal/cli`, `cmd/stbox` | everything |
 
 ### Format packages
 
@@ -192,7 +190,7 @@ Its exception table names the rule and the reason for each exception.
 | N13 | Plain data uses exported fields: options, reports, results, `Comment`. A type whose values must keep an invariant hides the field and offers methods | `Subtitle` keeps its cues in start order, so its cue list is not an exported field |
 | N14 | Code that users must not call goes in `internal/` or stays unexported. No exported "for internal use" identifiers | `format/internal/textblock`, `internal/textenc` |
 | N15 | Export an interface only when users implement it. Return concrete types, as the `ireturn` linter wants | OCR engine (3.x), translation engine and HTTP client (4.x) |
-| N16 | A function that starts a process or a network request takes `ctx context.Context` first. A file read does not | `ocr/tesseract`, `translation/deepl` |
+| N16 | A function that starts a process or a network request takes `ctx context.Context` first. A file read does not | `edit/ocr/tesseract`, `edit/translation/deepl` |
 | N17 | Bad input and bad options return an error. A panic is a library bug. No `Must` functions | a fuzz target checks every parser |
 | N18 | No mutable package state and no `init`. A lookup table at package level carries `//nolint:gochecknoglobals // <reason>` | the format registry |
 | N19 | An options struct with a field that can hold an invalid value has `Validate() error`. Every entry point calls it before it reads or writes | `ReadOptions.Validate()` returns an error that matches `ErrInvalidArgument` |

@@ -11,17 +11,17 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
-	"github.com/yama6a/subtitle-toolbox-go/v5/diff"
-	"github.com/yama6a/subtitle-toolbox-go/v5/dual"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/dual"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/profanity"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/refsync"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/resegment"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/timing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/hls"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/diff"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
-	"github.com/yama6a/subtitle-toolbox-go/v5/ocr"
-	"github.com/yama6a/subtitle-toolbox-go/v5/profanity"
-	"github.com/yama6a/subtitle-toolbox-go/v5/refsync"
-	"github.com/yama6a/subtitle-toolbox-go/v5/resegment"
-	"github.com/yama6a/subtitle-toolbox-go/v5/timing"
 )
 
 // summaryCommand is a command with a name and a summary only, for the layout of the global help.

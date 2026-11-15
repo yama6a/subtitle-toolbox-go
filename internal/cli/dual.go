@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
-	"github.com/yama6a/subtitle-toolbox-go/v5/dual"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/dual"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 

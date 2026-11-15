@@ -22,22 +22,22 @@ linters:
         - github.com/yama6a/subtitle-toolbox-go/v5/format/*
         - github.com/yama6a/subtitle-toolbox-go/v5
         - github.com/yama6a/subtitle-toolbox-go/v5/model
-        - github.com/yama6a/subtitle-toolbox-go/v5/refsync
-        - github.com/yama6a/subtitle-toolbox-go/v5/dual
-        - github.com/yama6a/subtitle-toolbox-go/v5/profanity
-        - github.com/yama6a/subtitle-toolbox-go/v5/diff
-        - github.com/yama6a/subtitle-toolbox-go/v5/fixing
-        - github.com/yama6a/subtitle-toolbox-go/v5/hearingimpaired
-        - github.com/yama6a/subtitle-toolbox-go/v5/timing
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/refsync
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/dual
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/profanity
+        - github.com/yama6a/subtitle-toolbox-go/v5/inspect/diff
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/fixing
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/hearingimpaired
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/timing
         - github.com/yama6a/subtitle-toolbox-go/v5/format/hls
-        - github.com/yama6a/subtitle-toolbox-go/v5/validation
-        - github.com/yama6a/subtitle-toolbox-go/v5/ocr
-        - github.com/yama6a/subtitle-toolbox-go/v5/ocr/*
-        - github.com/yama6a/subtitle-toolbox-go/v5/resegment
-        - github.com/yama6a/subtitle-toolbox-go/v5/speakers
-        - github.com/yama6a/subtitle-toolbox-go/v5/karaoke
-        - github.com/yama6a/subtitle-toolbox-go/v5/translation
-        - github.com/yama6a/subtitle-toolbox-go/v5/translation/*
+        - github.com/yama6a/subtitle-toolbox-go/v5/inspect/validation
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr/*
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/resegment
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/speakers
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/karaoke
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/translation
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/translation/*
   exclusions:
     rules:
       # Test helpers and test doubles pass errors on unchanged, such as io.EOF and the fs.PathError that names a file.

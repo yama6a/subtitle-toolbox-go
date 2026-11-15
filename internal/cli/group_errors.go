@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
-	"github.com/yama6a/subtitle-toolbox-go/v5/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/fixing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 )
 

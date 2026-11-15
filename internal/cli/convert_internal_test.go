@@ -14,13 +14,13 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
-	"github.com/yama6a/subtitle-toolbox-go/v5/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/profanity"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v5/hearingimpaired"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
-	"github.com/yama6a/subtitle-toolbox-go/v5/profanity"
 )
 
 // fixtureDir returns a new directory with the CLI fixtures and copies of the testdata files in files, which maps a

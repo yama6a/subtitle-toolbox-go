@@ -4,7 +4,7 @@ import (
 	"unicode/utf8"
 
 	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
-	"github.com/yama6a/subtitle-toolbox-go/v5/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/hearingimpaired"
 )
 
 func sdhGroup() group {

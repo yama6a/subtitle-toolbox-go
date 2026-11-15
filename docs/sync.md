@@ -4,7 +4,7 @@ A German SubRip file for a 25 fps release runs late and drifts against a 23.976 
 
 ## Sync to a reference subtitle
 
-<!-- example: refsync/ExampleApply -->
+<!-- example: edit/refsync/ExampleApply -->
 ```go
 at := func(start, end float64, text string) model.Cue {
 	return model.Cue{
@@ -71,7 +71,7 @@ The user runs FFmpeg. This command writes the silences of the audio:
 ffmpeg -i movie.mkv -af silencedetect=noise=-30dB:d=0.4 -f null - 2> silence.log
 ```
 
-<!-- example: refsync/ExampleSpeechFromSilenceLog -->
+<!-- example: edit/refsync/ExampleSpeechFromSilenceLog -->
 ```go
 log := []byte("[silencedetect @ 0x1] silence_start: 0\n" +
 	"[silencedetect @ 0x1] silence_end: 2.5 | silence_duration: 2.5\n" +
