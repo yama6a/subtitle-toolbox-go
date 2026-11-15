@@ -64,19 +64,19 @@ func readTrack(c Container, r io.ReaderAt, size int64, subject string, opts Read
 		if err != nil {
 			return nil, ReadInfo{}, err
 		}
-		return extractTrack[mkv.ExtractOptions](f, c, opts, mkv.ExtractOptions{})
+		return extractTrack(f, c, opts, mkv.ExtractOptions{})
 	case MP4:
 		f, err := mp4.Open(r, size)
 		if err != nil {
 			return nil, ReadInfo{}, err
 		}
-		return extractTrack[mp4.ExtractOptions](f, c, opts, mp4.ExtractOptions{SCC: opts.SCC, MCC: opts.MCC})
+		return extractTrack(f, c, opts, mp4.ExtractOptions{SCC: opts.SCC, MCC: opts.MCC})
 	case MPEGTS:
 		f, err := mpegts.Open(r, size)
 		if err != nil {
 			return nil, ReadInfo{}, err
 		}
-		return extractTrack[mpegts.ExtractOptions](f, c, opts, mpegts.ExtractOptions{})
+		return extractTrack(f, c, opts, mpegts.ExtractOptions{})
 	}
 	return nil, ReadInfo{}, unsupported(notContainer)
 }
