@@ -173,7 +173,7 @@ func (t *translateCommand) checkInputs(r *runner, inputs []string) error {
 func (*translateCommand) loadSideFiles(context.Context, *runner) error { return nil }
 
 func (t *translateCommand) process(ctx context.Context, r *runner, in *input) error {
-	rep, err := translation.Translate(ctx, in.sub, t.engine, t.source, t.target, translation.Options{})
+	rep, err := translation.Apply(ctx, in.sub, t.engine, t.source, t.target, translation.Options{})
 	if err != nil {
 		return err
 	}

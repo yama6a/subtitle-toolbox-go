@@ -360,7 +360,7 @@ func TestRunnerOnOwnStation(t *testing.T) {
 			require.NoError(t, err)
 			client := &translationtest.Client{Answers: []translationtest.Answer{tt.answer}}
 
-			report, err := translation.Translate(t.Context(), s, newEngine(t, client, openai.Options{}), "en", "de", translation.Options{})
+			report, err := translation.Apply(t.Context(), s, newEngine(t, client, openai.Options{}), "en", "de", translation.Options{})
 
 			require.NoError(t, err)
 			assert.Len(t, client.Requests(), 1)

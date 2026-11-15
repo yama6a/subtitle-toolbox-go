@@ -19,7 +19,7 @@ func (stationEngine) Translate(_ context.Context, texts []string, _, _ string) (
 	return out, nil
 }
 
-func ExampleTranslate() {
+func ExampleApply() {
 	s := &model.Subtitle{}
 	for i, text := range []string{"The train to Basel leaves", "from platform 4 at <b>10:15</b>."} {
 		c := model.Cue{Start: time.Duration(i+1) * time.Second, End: time.Duration(i+2) * time.Second}
@@ -27,7 +27,7 @@ func ExampleTranslate() {
 		s.AddCue(c)
 	}
 
-	report, err := translation.Translate(context.Background(), s, stationEngine{}, "en", "de", translation.Options{})
+	report, err := translation.Apply(context.Background(), s, stationEngine{}, "en", "de", translation.Options{})
 	if err != nil {
 		fmt.Println(err)
 		return

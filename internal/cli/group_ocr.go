@@ -139,7 +139,7 @@ func (e *ocrEdit) apply(ctx context.Context, s *stbox.Subtitle, c *console, labe
 			return nil, err
 		}
 	}
-	_, err := ocr.Run(ctx, s, &progress{engine: engine, c: c, label: label, total: total}, "")
+	_, err := ocr.Apply(ctx, s, &progress{engine: engine, c: c, label: label, total: total}, "")
 	return s, err
 }
 

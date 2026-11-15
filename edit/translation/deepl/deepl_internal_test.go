@@ -312,7 +312,7 @@ func TestTranslateWithTheRunner(t *testing.T) {
 			s := readSRT(t, tt.input)
 			before := view(s)
 
-			report, err := translation.Translate(t.Context(), s, e, "en", "de", translation.Options{})
+			report, err := translation.Apply(t.Context(), s, e, "en", "de", translation.Options{})
 			require.NoError(t, err)
 			assert.Empty(t, report.Warnings)
 			require.Len(t, client.Requests(), 1)

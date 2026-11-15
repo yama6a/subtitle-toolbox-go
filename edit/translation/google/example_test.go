@@ -27,7 +27,7 @@ func ExampleNew() {
 	c := model.Cue{Start: time.Second, End: 2 * time.Second}
 	c.SetText("The train leaves at <b>10:15</b>.")
 	s.AddCue(c)
-	if _, err := translation.Translate(context.Background(), s, engine, "en", "fr", translation.Options{}); err != nil {
+	if _, err := translation.Apply(context.Background(), s, engine, "en", "fr", translation.Options{}); err != nil {
 		fmt.Println(err)
 		return
 	}

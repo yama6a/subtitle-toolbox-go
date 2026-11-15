@@ -247,7 +247,7 @@ func TestTranslateWithTheRunner(t *testing.T) {
 	require.NoError(t, err)
 	s := readSRT(t, "translation/own_station.srt")
 
-	report, err := translation.Translate(context.Background(), s, e, "", "fr", translation.Options{})
+	report, err := translation.Apply(context.Background(), s, e, "", "fr", translation.Options{})
 
 	require.NoError(t, err)
 	assert.Empty(t, report.Warnings)
@@ -274,7 +274,7 @@ func TestTranslateDecodesEntitiesOnce(t *testing.T) {
 	s := readSRT(t, "translation/own_entities.srt")
 	before := lines(s)
 
-	_, err = translation.Translate(context.Background(), s, e, "en", "fr", translation.Options{})
+	_, err = translation.Apply(context.Background(), s, e, "en", "fr", translation.Options{})
 
 	require.NoError(t, err)
 	assert.Equal(t, before, lines(s))

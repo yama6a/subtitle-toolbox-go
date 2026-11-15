@@ -444,7 +444,7 @@ func ExampleLoad_ocr() {
 		fmt.Println(err)
 		return
 	}
-	if _, err := ocr.Run(context.Background(), s, engine, ocr.English); err != nil {
+	if _, err := ocr.Apply(context.Background(), s, engine, ocr.English); err != nil {
 		fmt.Println(err)
 		return
 	}
@@ -565,7 +565,7 @@ func ExampleLoad_translate() {
 		fmt.Println(err)
 		return
 	}
-	if _, err := translation.Translate(context.Background(), s, engine, "en", "de", translation.Options{}); err != nil {
+	if _, err := translation.Apply(context.Background(), s, engine, "en", "de", translation.Options{}); err != nil {
 		fmt.Println(err)
 		return
 	}

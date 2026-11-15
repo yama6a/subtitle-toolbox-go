@@ -10,7 +10,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
-func ExampleRun() {
+func ExampleApply() {
 	s := &model.Subtitle{}
 	s.AddCue(model.Cue{
 		Start: time.Second,
@@ -19,7 +19,7 @@ func ExampleRun() {
 	})
 	engine := &ocrtest.Engine{Text: ocr.Text{Lines: []string{"Next stop: Bergen"}}}
 
-	report, err := ocr.Run(context.Background(), s, engine, ocr.English)
+	report, err := ocr.Apply(context.Background(), s, engine, ocr.English)
 	if err != nil {
 		fmt.Println(err)
 		return
