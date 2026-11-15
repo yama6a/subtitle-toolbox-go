@@ -26,21 +26,21 @@ type Options struct {
 func (o Options) Validate() error {
 	for _, w := range o.Words {
 		if !validWord(w) {
-			return invalid("Words", "A profanity word must be a non-empty UTF-8 string with a * only at the end, got "+
-				quoteString(w)+".")
+			return invalid("Words", "a profanity word must be a non-empty UTF-8 string with a * only at the end, got "+
+				quoteString(w))
 		}
 	}
 	if len(o.Words) == 0 {
-		return invalid("Words", "The profanity word list is empty.")
+		return invalid("Words", "the profanity word list is empty")
 	}
 	if o.Padding < 0 {
-		return invalid("Padding", "The padding must not be negative, got "+timecode.Seconds(o.Padding)+".")
+		return invalid("Padding", "the padding must not be negative, got "+timecode.Seconds(o.Padding))
 	}
 	switch o.Mask {
 	case "", MaskStars, MaskFirstLetter, MaskRemove, MaskNone:
 		return nil
 	default:
-		return invalid("Mask", "The mask "+strconv.Quote(string(o.Mask))+" is not stars, first-letter, remove or none.")
+		return invalid("Mask", "the mask "+strconv.Quote(string(o.Mask))+" is not stars, first-letter, remove or none")
 	}
 }
 

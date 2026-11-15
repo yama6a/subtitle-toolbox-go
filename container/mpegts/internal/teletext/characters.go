@@ -67,7 +67,7 @@ func LanguageGroup(language string) int {
 }
 
 func errRightToLeft(page int) error {
-	return errors.New("Teletext page " + strconv.Itoa(page) + " uses the Arabic or Hebrew character set. The reader reads Latin, Cyrillic and Greek pages.")
+	return errors.New("teletext page " + strconv.Itoa(page) + " uses the Arabic or Hebrew character set. The reader reads Latin, Cyrillic and Greek pages")
 }
 
 // g0 returns the characters from 0x20 to 0x7F of the G0 set of a group and a national option.

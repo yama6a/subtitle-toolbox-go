@@ -32,8 +32,8 @@ func DecodeImage(im Image) (*image.NRGBA, error) {
 		return nil, err
 	}
 	if b := img.Bounds(); b.Dx() != im.Width || b.Dy() != im.Height {
-		return nil, &model.InvalidArgumentError{Msg: "Cannot decode the image: the PNG has " + strconv.Itoa(b.Dx()) + "x" + strconv.Itoa(b.Dy()) +
-			" pixels, but the image data says " + strconv.Itoa(im.Width) + "x" + strconv.Itoa(im.Height) + "."}
+		return nil, &model.InvalidArgumentError{Msg: "cannot decode the image: the PNG has " + strconv.Itoa(b.Dx()) + "x" + strconv.Itoa(b.Dy()) +
+			" pixels, but the image data says " + strconv.Itoa(im.Width) + "x" + strconv.Itoa(im.Height)}
 	}
 	return img, nil
 }
@@ -43,15 +43,15 @@ func DecodeImage(im Image) (*image.NRGBA, error) {
 func EncodePNG(img image.Image) ([]byte, error) {
 	b := img.Bounds()
 	if b.Dx() < 1 || b.Dy() < 1 {
-		return nil, &model.InvalidArgumentError{Msg: "Cannot encode a PNG of " + strconv.Itoa(b.Dx()) + "x" + strconv.Itoa(b.Dy()) +
-			" pixels: the width and the height must be at least 1."}
+		return nil, &model.InvalidArgumentError{Msg: "cannot encode a PNG of " + strconv.Itoa(b.Dx()) + "x" + strconv.Itoa(b.Dy()) +
+			" pixels: the width and the height must be at least 1"}
 	}
 	if _, ok := img.(*image.Paletted); !ok {
 		img = nrgbaOf(img)
 	}
 	var buf bytes.Buffer
 	if err := png.Encode(&buf, img); err != nil {
-		return nil, &model.InvalidArgumentError{Msg: "Cannot encode a PNG: " + err.Error() + "."}
+		return nil, &model.InvalidArgumentError{Msg: "cannot encode a PNG: " + err.Error()}
 	}
 	return buf.Bytes(), nil
 }

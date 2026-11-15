@@ -472,12 +472,12 @@ func TestOptionsValidate(t *testing.T) {
 		opts dual.Options
 		msg  string
 	}{
-		{"a negative tolerance", dual.Options{TimeTolerance: tolerance(-100 * time.Millisecond)}, "The time tolerance -0.1 must not be negative."},
-		{"an unknown tag", dual.Options{SecondaryStyle: "c.yellow"}, `The secondary style c.yellow must be a core markup tag such as i or font color="#ffff00".`},
-		{"a tag that is no core tag", dual.Options{SecondaryStyle: "em"}, `The secondary style em must be a core markup tag such as i or font color="#ffff00".`},
-		{"only white space", dual.Options{SecondaryStyle: "  "}, `The secondary style    must be a core markup tag such as i or font color="#ffff00".`},
-		{"an unknown mode", dual.Options{Mode: "topBottom"}, `The mode "topBottom" is not stack or top-bottom.`},
-		{"an alignment outside the grid", dual.Options{SecondaryAlignment: alignment(9)}, "The secondary alignment Alignment(9) is not one of the 9 alignment constants."},
+		{"a negative tolerance", dual.Options{TimeTolerance: tolerance(-100 * time.Millisecond)}, "the time tolerance -0.1 must not be negative"},
+		{"an unknown tag", dual.Options{SecondaryStyle: "c.yellow"}, `the secondary style c.yellow must be a core markup tag such as i or font color="#ffff00"`},
+		{"a tag that is no core tag", dual.Options{SecondaryStyle: "em"}, `the secondary style em must be a core markup tag such as i or font color="#ffff00"`},
+		{"only white space", dual.Options{SecondaryStyle: "  "}, `the secondary style    must be a core markup tag such as i or font color="#ffff00"`},
+		{"an unknown mode", dual.Options{Mode: "topBottom"}, `the mode "topBottom" is not stack or top-bottom`},
+		{"an alignment outside the grid", dual.Options{SecondaryAlignment: alignment(9)}, "the secondary alignment Alignment(9) is not one of the 9 alignment constants"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

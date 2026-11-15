@@ -110,12 +110,12 @@ func TestTesseractOptionsValidate(t *testing.T) {
 		opts tesseract.Options
 		want string
 	}{
-		{"mode 14", tesseract.Options{PageSegmentationMode: mode(14)}, "tesseract.Options.PageSegmentationMode: The page segmentation mode must be from 0 to 13, got 14."},
-		{"mode -1", tesseract.Options{PageSegmentationMode: mode(-1)}, "tesseract.Options.PageSegmentationMode: The page segmentation mode must be from 0 to 13, got -1."},
-		{"scale 0.5", tesseract.Options{Scale: 0.5}, "tesseract.Options.Scale: The scale must be from 1 to 8, got 0.5."},
-		{"scale 9", tesseract.Options{Scale: 9}, "tesseract.Options.Scale: The scale must be from 1 to 8, got 9."},
-		{"threshold 256", tesseract.Options{Threshold: 256}, "tesseract.Options.Threshold: The threshold must be from 1 to 255, got 256."},
-		{"threshold -1", tesseract.Options{Threshold: -1}, "tesseract.Options.Threshold: The threshold must be from 1 to 255, got -1."},
+		{"mode 14", tesseract.Options{PageSegmentationMode: mode(14)}, "tesseract.Options.PageSegmentationMode: the page segmentation mode must be from 0 to 13, got 14"},
+		{"mode -1", tesseract.Options{PageSegmentationMode: mode(-1)}, "tesseract.Options.PageSegmentationMode: the page segmentation mode must be from 0 to 13, got -1"},
+		{"scale 0.5", tesseract.Options{Scale: 0.5}, "tesseract.Options.Scale: the scale must be from 1 to 8, got 0.5"},
+		{"scale 9", tesseract.Options{Scale: 9}, "tesseract.Options.Scale: the scale must be from 1 to 8, got 9"},
+		{"threshold 256", tesseract.Options{Threshold: 256}, "tesseract.Options.Threshold: the threshold must be from 1 to 255, got 256"},
+		{"threshold -1", tesseract.Options{Threshold: -1}, "tesseract.Options.Threshold: the threshold must be from 1 to 255, got -1"},
 		{"mode 0 is legal", tesseract.Options{PageSegmentationMode: mode(0), Scale: 8, Threshold: 255}, ""},
 		{"zero value", tesseract.Options{}, ""},
 	}
@@ -216,7 +216,7 @@ func TestTesseractRecognizeErrors(t *testing.T) {
 		},
 		{
 			name: "missing language", program: scripts.fake, language: "fra+deu+rus", wantInvalid: true,
-			wantMsg: `Cannot run OCR with Tesseract in the language "fra+deu+rus": the language data of fra, rus is missing. Install it, for example with apt install tesseract-ocr-fra. The installed languages are: deu, eng, osd.`,
+			wantMsg: `cannot run OCR with Tesseract in the language "fra+deu+rus": the language data of fra, rus is missing. Install it, for example with apt install tesseract-ocr-fra. The installed languages are: deu, eng, osd`,
 		},
 		{
 			name: "failing program", program: scripts.loggedFail, wantRecog: true, logFile: "logged-fail.path",
@@ -224,7 +224,7 @@ func TestTesseractRecognizeErrors(t *testing.T) {
 		},
 		{
 			name: "broken PNG", program: scripts.fake, wantRecog: true, wantInvalid: true, image: model.Image{PNG: []byte("no png"), X: 7, Y: 9},
-			wantMsg: "Cannot read the cue image at 7, 9:",
+			wantMsg: "cannot read the cue image at 7, 9:",
 		},
 		{name: "success removes the file", program: scripts.logged, logFile: "logged.path"},
 	}

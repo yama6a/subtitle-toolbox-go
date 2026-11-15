@@ -134,15 +134,15 @@ func TestSyncUsageErrors(t *testing.T) {
 		},
 		{
 			"offsets reversed", slices.Concat(sync, []string{"--min-offset", "10", "--max-offset", "-10"}),
-			"The minimum offset must not be greater than the maximum offset, got 10 and -10.",
+			"the minimum offset must not be greater than the maximum offset, got 10 and -10",
 		},
 		{
 			"offset beyond a day", slices.Concat(sync, []string{"--min-offset", "-90000"}),
-			"The minimum offset must be from -86400 to 86400 seconds, got -90000.",
+			"the minimum offset must be from -86400 to 86400 seconds, got -90000",
 		},
 		{
 			"offsets too far apart", slices.Concat(sync, []string{"--min-offset", "-3600", "--max-offset", "3600.5"}),
-			"The minimum and the maximum offset must be at most 7200 seconds apart, got -3600 and 3600.5.",
+			"the minimum and the maximum offset must be at most 7200 seconds apart, got -3600 and 3600.5",
 		},
 		{
 			"bad offset", slices.Concat(sync, []string{"--max-offset", "soon"}),
@@ -252,8 +252,8 @@ func TestSyncToTheSpeech(t *testing.T) {
 		log  string
 		want string
 	}{
-		{"a mono log", logLine + "channel: 0 | silence_start: 1.5\n", "Error: bad.log: line 1: Cannot read a silencedetect log with one line per channel. Run silencedetect without mono.\n"},
-		{"a log out of order", logLine + "silence_end: 1.5\n", "Error: bad.log: line 1: The line silence_end is out of order. The silence_start and silence_end lines must alternate.\n"},
+		{"a mono log", logLine + "channel: 0 | silence_start: 1.5\n", "Error: bad.log: line 1: cannot read a silencedetect log with one line per channel. Run silencedetect without mono\n"},
+		{"a log out of order", logLine + "silence_end: 1.5\n", "Error: bad.log: line 1: the line silence_end is out of order. The silence_start and silence_end lines must alternate\n"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

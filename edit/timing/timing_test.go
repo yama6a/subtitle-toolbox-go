@@ -212,16 +212,16 @@ func TestValidate(t *testing.T) {
 		option string
 		msg    string
 	}{
-		{"zero rate", timing.Options{}, "timing.Options.FrameRate", "The frame rate of the video must be greater than 0."},
+		{"zero rate", timing.Options{}, "timing.Options.FrameRate", "the frame rate of the video must be greater than 0"},
 		{
 			"drop-frame at 24",
 			timing.Options{FrameRate: model.FrameRate{Num: 24, Den: 1, DropFrame: true}},
 			"timing.Options.FrameRate",
 			"the frame rate must be 30000/1001, 2997/100, 60000/1001 or 2997/50 for drop-frame time codes, got 24",
 		},
-		{"window", timing.Options{FrameRate: r, SnapWindowFrames: ptr(-1)}, "timing.Options.SnapWindowFrames", "The snap window must not be negative, got -1."},
-		{"gap", timing.Options{FrameRate: r, MinGapFrames: ptr(-2)}, "timing.Options.MinGapFrames", "The minimum gap must not be negative, got -2."},
-		{"duration", timing.Options{FrameRate: r, MinDurationFrames: ptr(-3)}, "timing.Options.MinDurationFrames", "The minimum duration must not be negative, got -3."},
+		{"window", timing.Options{FrameRate: r, SnapWindowFrames: ptr(-1)}, "timing.Options.SnapWindowFrames", "the snap window must not be negative, got -1"},
+		{"gap", timing.Options{FrameRate: r, MinGapFrames: ptr(-2)}, "timing.Options.MinGapFrames", "the minimum gap must not be negative, got -2"},
+		{"duration", timing.Options{FrameRate: r, MinDurationFrames: ptr(-3)}, "timing.Options.MinDurationFrames", "the minimum duration must not be negative, got -3"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

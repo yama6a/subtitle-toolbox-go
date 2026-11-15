@@ -113,7 +113,7 @@ func TestPostAnswerOverTheLimit(t *testing.T) {
 	var service *translation.ServiceError
 	require.ErrorAs(t, err, &service)
 	assert.Equal(t, 200, service.Status)
-	assert.Equal(t, "The answer from translate.test has more than 1048640 bytes.", service.Msg)
+	assert.Equal(t, "the answer from translate.test has more than 1048640 bytes", service.Msg)
 	assert.Len(t, transport.Requests(), 1)
 }
 
@@ -146,7 +146,7 @@ func TestPostFails(t *testing.T) {
 		_, _, err := httppost.Post(t.Context(), translation.DefaultHTTPClient(), target, nil, []byte("{}"), httppost.Sleep)
 
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "translation: The request to 127.0.0.1 failed: ")
+		assert.Contains(t, err.Error(), "translation: the request to 127.0.0.1 failed: ")
 		assert.NotContains(t, err.Error(), "secret-key")
 		require.ErrorIs(t, err, translation.ErrService)
 		var uerr *url.Error
@@ -163,7 +163,7 @@ func TestPostFails(t *testing.T) {
 		var service *translation.ServiceError
 		require.ErrorAs(t, err, &service)
 		assert.Equal(t, 0, service.Status)
-		assert.Equal(t, `The request URL is not valid: invalid URL escape "%zz".`, service.Msg)
+		assert.Equal(t, `the request URL is not valid: invalid URL escape "%zz"`, service.Msg)
 		assert.Empty(t, transport.Requests())
 	})
 

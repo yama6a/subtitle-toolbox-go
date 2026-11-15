@@ -384,7 +384,7 @@ func TestValidate(t *testing.T) {
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
 			var aerr *model.InvalidArgumentError
 			require.ErrorAs(t, err, &aerr)
-			assert.Equal(t, `Each custom bracket pair must hold two non-empty strings, for example "{" and "}".`, aerr.Msg)
+			assert.Equal(t, `each custom bracket pair must hold two non-empty strings, for example "{" and "}"`, aerr.Msg)
 			require.ErrorIs(t, applyErr, model.ErrInvalidArgument)
 			require.ErrorIs(t, isErr, model.ErrInvalidArgument)
 			assert.Equal(t, hearingimpaired.Report{}, report)

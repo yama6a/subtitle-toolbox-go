@@ -307,7 +307,7 @@ func (c *checker) classMatches(ch string) (bool, error) {
 	if err != nil {
 		return false, &model.InvalidArgumentError{
 			Option: "Rules.AllowedCharacters",
-			Msg:    `The match of the allowed characters "` + c.rules.AllowedCharacters + `" took more than ` + matchTimeout.String() + ".",
+			Msg:    `the match of the allowed characters "` + c.rules.AllowedCharacters + `" took more than ` + matchTimeout.String(),
 		}
 	}
 	if c.cache == nil {

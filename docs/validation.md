@@ -209,11 +209,11 @@ The gap depends on `r`. `DropFrame` does not change it.
 
 | Case | Message |
 |:--- |:--- |
-| a number limit below 0, or NaN | `The limit maxCharactersPerSecond must be 0 or more, got -1.` |
-| a time limit below 0 | `The limit minDuration must be 0 or more, got -1.5.` The number is in seconds |
-| a dialogue dash style that is none of the 8 constants | `The dialogue dash style 9 is not one of the 8 styles.` |
-| a class that regexp2 rejects | `The allowed characters "[z-a]" are not a valid character class: REASON.` |
-| a class with `[:` | `The allowed characters "X" hold a POSIX class such as [:alpha:]. Use a Unicode class such as \p{L}.` |
+| a number limit below 0, or NaN | `the limit maxCharactersPerSecond must be 0 or more, got -1`. |
+| a time limit below 0 | `the limit minDuration must be 0 or more, got -1.5`. The number is in seconds |
+| a dialogue dash style that is none of the 8 constants | `the dialogue dash style 9 is not one of the 8 styles`. |
+| a class that regexp2 rejects | `the allowed characters "[z-a]" are not a valid character class: REASON`. |
+| a class with `[:` | `the allowed characters "X" hold a POSIX class such as [:alpha:]. Use a Unicode class such as \p{L}`. |
 
 ## Command line
 

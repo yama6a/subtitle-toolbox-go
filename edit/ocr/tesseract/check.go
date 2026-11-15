@@ -58,10 +58,10 @@ func installed(ctx context.Context, program string) (bool, error) {
 	return err == nil && exit == 0 && strings.HasPrefix(strings.TrimLeft(stdout+stderr, " \t\r\n"), "tesseract"), nil
 }
 
-const missingProgram = "Cannot run OCR with Tesseract: the program \"%s\" is missing. Install Tesseract with: " +
+const missingProgram = "cannot run OCR with Tesseract: the program \"%s\" is missing. Install Tesseract with: " +
 	"apt install tesseract-ocr (Debian, Ubuntu), apk add tesseract-ocr tesseract-ocr-data-eng (Alpine), " +
 	"dnf install tesseract (Fedora), brew install tesseract (macOS), " +
-	"or the installer from https://github.com/UB-Mannheim/tesseract/wiki (Windows)."
+	"or the installer from https://github.com/UB-Mannheim/tesseract/wiki (Windows)"
 
 // RequireInstalled returns an *model.InvalidArgumentError with an install hint when program does not run as Tesseract.
 // An empty program means "tesseract". A cancelled ctx returns its error.
@@ -98,9 +98,9 @@ func (e *Engine) RequireLanguages(ctx context.Context, language ocr.Language) er
 	if len(missing) == 0 {
 		return nil
 	}
-	return &model.InvalidArgumentError{Msg: "Cannot run OCR with Tesseract in the language \"" + string(language) +
+	return &model.InvalidArgumentError{Msg: "cannot run OCR with Tesseract in the language \"" + string(language) +
 		"\": the language data of " + strings.Join(missing, ", ") + " is missing. Install it, for example with apt install tesseract-ocr-" +
-		missing[0] + ". The installed languages are: " + strings.Join(installed, ", ") + "."}
+		missing[0] + ". The installed languages are: " + strings.Join(installed, ", ")}
 }
 
 // languageCache holds the installed languages of one engine. Its mutex also serialises the checks.

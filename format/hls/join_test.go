@@ -163,7 +163,7 @@ func TestJoinErrors(t *testing.T) {
 			[][]byte{[]byte("WEBVTT\n\n")},
 			hls.JoinOptions{StreamStart: new(int64(hls.MPEGTSWrap))},
 			model.ErrInvalidArgument,
-			"The stream start must be a 33-bit timestamp from 0 to 8589934591, got 8589934592.",
+			"the stream start must be a 33-bit timestamp from 0 to 8589934591, got 8589934592",
 		},
 	}
 	for _, tt := range tests {

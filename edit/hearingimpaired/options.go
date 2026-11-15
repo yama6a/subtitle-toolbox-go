@@ -34,7 +34,7 @@ func (o Options) Validate() error {
 		if p.Open == "" || p.Close == "" {
 			return &model.InvalidArgumentError{
 				Option: "hearingimpaired.Options.CustomBrackets",
-				Msg:    `Each custom bracket pair must hold two non-empty strings, for example "{" and "}".`,
+				Msg:    `each custom bracket pair must hold two non-empty strings, for example "{" and "}"`,
 			}
 		}
 	}

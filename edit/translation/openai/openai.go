@@ -48,11 +48,11 @@ func (o Options) Validate() error {
 	}
 	switch {
 	case strings.Trim(o.Model, markupcore.TrimSet) == "":
-		return invalid("Model", "The model must not be empty. Pass a model name such as gpt-4o-mini or llama3.")
+		return invalid("Model", "the model must not be empty. Pass a model name such as gpt-4o-mini or llama3")
 	case o.APIKey != "" && !httppost.CleanKey(o.APIKey):
-		return invalid("APIKey", "The API key must not be empty, have a control character, or a space at the start or end. Leave it empty for a service without a key.")
+		return invalid("APIKey", "the API key must not be empty, have a control character, or a space at the start or end. Leave it empty for a service without a key")
 	case o.Prompt != "" && strings.Trim(o.Prompt, markupcore.TrimSet) == "":
-		return invalid("Prompt", "The prompt must not be empty. Leave it empty for the built-in prompt.")
+		return invalid("Prompt", "the prompt must not be empty. Leave it empty for the built-in prompt")
 	}
 	return nil
 }
@@ -138,7 +138,7 @@ func (e *Engine) Translate(ctx context.Context, texts []string, source, target s
 			return nil, err
 		}
 		if one == nil {
-			return nil, e.fail(0, fmt.Sprintf("The model %q did not answer with a JSON array that holds 1 string for 1 text.", e.options.Model))
+			return nil, e.fail(0, fmt.Sprintf("the model %q did not answer with a JSON array that holds 1 string for 1 text", e.options.Model))
 		}
 		out = append(out, one[0])
 	}
@@ -180,19 +180,19 @@ func (e *Engine) statusError(status int, answer []byte) error {
 	detail := ""
 	switch v := data.Error.(type) {
 	case string:
-		detail = " " + v
+		detail = httppost.Detail(v)
 	case map[string]any:
 		if m, ok := v["message"].(string); ok {
-			detail = " " + m
+			detail = httppost.Detail(m)
 		}
 	}
 	switch status {
 	case http.StatusUnauthorized:
-		return e.fail(status, "The OpenAI-compatible service rejected the API key (HTTP 401)."+detail)
+		return e.fail(status, "the OpenAI-compatible service rejected the API key (HTTP 401)"+detail)
 	case http.StatusTooManyRequests:
-		return e.fail(status, "The OpenAI-compatible service got too many requests (HTTP 429). Wait and try again.")
+		return e.fail(status, "the OpenAI-compatible service got too many requests (HTTP 429). Wait and try again")
 	}
-	return e.fail(status, "The OpenAI-compatible service answered with HTTP "+strconv.Itoa(status)+"."+detail)
+	return e.fail(status, "the OpenAI-compatible service answered with HTTP "+strconv.Itoa(status)+detail)
 }
 
 func (e *Engine) fail(status int, msg string) error {

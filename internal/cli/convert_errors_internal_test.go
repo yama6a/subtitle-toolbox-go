@@ -160,7 +160,7 @@ func TestConvertReplaceListFileErrorsStopBeforeAnyOutput(t *testing.T) {
 		{"missing file", "missing.xml", "Error: missing.xml: The file does not exist.\n"},
 		{
 			"broken XML", "bad.xml",
-			"Error: bad.xml: line 2: The OCR replace list is not valid XML: element <WholeWords> closed by </ReplaceList>.\n",
+			"Error: bad.xml: line 2: the OCR replace list is not valid XML: element <WholeWords> closed by </ReplaceList>\n",
 		},
 	}
 	for _, tt := range tests {

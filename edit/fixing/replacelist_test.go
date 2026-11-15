@@ -116,7 +116,7 @@ func TestReadReplaceListFailsForInvalidXML(t *testing.T) {
 			require.True(t, ok)
 			assert.Empty(t, pe.Format)
 			assert.Equal(t, tt.line, pe.Line)
-			assert.True(t, strings.HasPrefix(pe.Msg, "The OCR replace list is not valid XML: "), pe.Msg)
+			assert.True(t, strings.HasPrefix(pe.Msg, "the OCR replace list is not valid XML: "), pe.Msg)
 		})
 	}
 }
@@ -127,14 +127,14 @@ func TestReplaceListValidate(t *testing.T) {
 	opts := fixing.Options{ReplaceList: &fixing.ReplaceList{RegularExpressions: rep("[", "")}}
 	err := opts.Validate()
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
-	assert.Contains(t, err.Error(), `fixing.Options.ReplaceList: The regular expression "[" is not valid: `)
+	assert.Contains(t, err.Error(), `fixing.Options.ReplaceList: the regular expression "[" is not valid: `)
 
 	opts = fixing.Options{ReplaceList: &fixing.ReplaceList{RegularExpressions: rep("", "-")}}
 	require.ErrorIs(t, opts.Validate(), model.ErrInvalidArgument)
 
 	err = fixing.Options{Enable: []fixing.Rule{fixing.RuleReplaceList}}.Validate()
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
-	assert.Contains(t, err.Error(), "The rule replaceList needs a replace list.")
+	assert.Contains(t, err.Error(), "the rule replaceList needs a replace list")
 }
 
 func TestReplaceListRuleAppliesEachSection(t *testing.T) {
@@ -277,7 +277,7 @@ func TestReplaceListTimeoutLeavesTheSubtitleUnchanged(t *testing.T) {
 	opts := fixing.Options{Language: "en", ReplaceList: &fixing.ReplaceList{RegularExpressions: rep(`^(a+)+$`, "")}}
 	_, err := fixing.Apply(s, opts)
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
-	assert.Contains(t, err.Error(), `The regular expression "^(a+)+$" took longer than 1 s on cue 2.`)
+	assert.Contains(t, err.Error(), `the regular expression "^(a+)+$" took longer than 1 s on cue 2`)
 	assert.Less(t, time.Since(start), 3500*time.Millisecond)
 	assert.Equal(t, []string{"lt's", slow + "<i>" + slow + "</i>" + slow + "<b>" + slow + "</b>"}, texts(s))
 }

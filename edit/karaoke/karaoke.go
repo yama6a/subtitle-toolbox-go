@@ -103,9 +103,9 @@ func Apply(s *model.Subtitle, opts Options) (Report, error) {
 }
 
 func tooLarge(i int, c model.Cue) error {
-	return &model.InvalidArgumentError{Msg: "The word cues of cue " + strconv.Itoa(i+1) +
+	return &model.InvalidArgumentError{Msg: "the word cues of cue " + strconv.Itoa(i+1) +
 		" at " + timecode.Seconds(c.Start) + " s would bring the line text of the new cues above " + strconv.Itoa(maxLineBytes>>20) +
-		" MiB. Split the cue first with resegment.SplitLong, or set MaxWordsPerCue."}
+		" MiB. Split the cue first with resegment.SplitLong, or set MaxWordsPerCue"}
 }
 
 func plan(c model.Cue, opts Options) cuePlan {

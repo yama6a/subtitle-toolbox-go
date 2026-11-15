@@ -62,7 +62,7 @@ The engines of the library live in `edit/translation/<engine>`. Package `edit/tr
 | `MaxCuesPerSentence` | 0 means 3 | the most cues in one text |
 | `MaxCharactersPerRequest` | 0 means 5000 | the most grapheme clusters of the encoded texts in one engine call. A longer text goes alone |
 
-`Validate` returns an error that matches `model.ErrInvalidArgument` for a limit below 0, for example `The maximum cues per sentence must not be negative, got -1. 0 means 3.`.
+`Validate` returns an error that matches `model.ErrInvalidArgument` for a limit below 0, for example `the maximum cues per sentence must not be negative, got -1. 0 means 3`.
 
 ## What the runner sends
 
@@ -140,13 +140,13 @@ Each piece reopens the tags that are open at its start. The output is at most `M
 | Case | Error |
 |:--- |:--- |
 | a limit below 0 | `*model.InvalidArgumentError` with `Option` `translation.Options.MaxCuesPerSentence` or `translation.Options.MaxCharactersPerRequest` |
-| nil engine, empty target | `*model.InvalidArgumentError` with an empty `Option`: `The translation engine is missing.` and `The target language is missing.` |
-| the engine returns a wrong number of strings | `*translation.ServiceError` with `Status` 0: `The translation engine must return one string per text, got 1 values for 2 texts.` |
+| nil engine, empty target | `*model.InvalidArgumentError` with an empty `Option`: `the translation engine is missing` or `the target language is missing`. |
+| the engine returns a wrong number of strings | `*translation.ServiceError` with `Status` 0: `the translation engine must return one string per text, got 1 values for 2 texts`. |
 | the engine returns an error | that error, unchanged |
 | `ctx` ended | an error that wraps `ctx.Err()`, with the prefix `translation: `. It is no `*ServiceError` |
-| no response from the service | `*ServiceError` with `Status` 0 and the `*url.Error` as cause: `The request to 127.0.0.1 failed: REASON.` |
-| the request URL is not valid | `*ServiceError` with `Status` 0: `The request URL is not valid: REASON.` The URL stays out of the message, because it can hold a password |
-| the answer is too large | `*ServiceError` with the status: `The answer from HOST has more than N bytes.` |
+| no response from the service | `*ServiceError` with `Status` 0 and the `*url.Error` as cause: `the request to 127.0.0.1 failed: REASON`. |
+| the request URL is not valid | `*ServiceError` with `Status` 0: `the request URL is not valid: REASON`. The URL stays out of the message, because it can hold a password |
+| the answer is too large | `*ServiceError` with the status: `the answer from HOST has more than N bytes`. |
 
 Every `*ServiceError` matches `translation.ErrService` with `errors.Is`. A `ctx` error is no `*ServiceError`, so a caller can tell an interrupt from a service failure. `Report` is empty on every error, and `s` does not change.
 
@@ -229,8 +229,8 @@ You translate subtitle text from {source} to {target}. The user sends a JSON arr
 - **Prompt**: `{source}` and `{target}` in it become the language codes in one pass. An empty source becomes `the language of the text`. Example: `Translate {source} into {target} for children.` with source empty and target `de-CH` gives `Translate the language of the text into de-CH for children.`
 - **Request**: the user message holds all texts of one call as a JSON array. No text sends no request.
 - **Answer**: the engine reads the first of `content`, `reasoning` and `reasoning_content` of `choices[0].message` that has text. A thinking model on Ollama can leave `content` empty. It removes each `<think>...</think>` block, and reads the text from the first `[` to the last `]`. That text must be a JSON array of as many strings as the call has texts. Text around the array and a code block do not matter. The HTTP size bound limits the answer.
-- **Fallback**: an answer without such an array makes the engine send each text in a request of its own. Each of these answers must be an array of 1 string. Else the engine returns a `*ServiceError` with `The model "M" did not answer with a JSON array that holds 1 string for 1 text.`
-- **Status**: a status other than 200 returns a `*ServiceError` with the status, and no fallback follows. 401 gives `The OpenAI-compatible service rejected the API key (HTTP 401).`, 429 after the retries gives `The OpenAI-compatible service got too many requests (HTTP 429). Wait and try again.`, and any other status gives `The OpenAI-compatible service answered with HTTP N.` The message adds the `error.message` of the answer, or its `error` when that is a string.
+- **Fallback**: an answer without such an array makes the engine send each text in a request of its own. Each of these answers must be an array of 1 string. Else the engine returns a `*ServiceError` with `the model "M" did not answer with a JSON array that holds 1 string for 1 text`.
+- **Status**: a status other than 200 returns a `*ServiceError` with the status, and no fallback follows. 401 gives `the OpenAI-compatible service rejected the API key (HTTP 401)`, 429 after the retries gives `the OpenAI-compatible service got too many requests (HTTP 429). Wait and try again`, and any other status gives `the OpenAI-compatible service answered with HTTP N`. The message adds the `error.message` of the answer, or its `error` when that is a string.
 
 ## DeepL engine
 
@@ -276,11 +276,11 @@ fmt.Println(got[0])
 
 | Status | Error message of the `*translation.ServiceError` |
 |:--- |:--- |
-| 403 | `DeepL rejected the API key (HTTP 403). Check the key and its plan.` |
-| 429, after the retries | `DeepL got too many requests (HTTP 429). Wait and try again.` |
-| 456 | `The DeepL character quota is used up (HTTP 456).` |
-| other, not 200 | `DeepL answered with HTTP N.` and a space and the `message` of the JSON body, when it is a string |
-| 200 with a wrong count, or a `text` that is no string | `DeepL returned N translations for M texts, or an answer that is not the JSON of /v2/translate.` |
+| 403 | `DeepL rejected the API key (HTTP 403). Check the key and its plan`. |
+| 429, after the retries | `DeepL got too many requests (HTTP 429). Wait and try again`. |
+| 456 | `the DeepL character quota is used up (HTTP 456)`. |
+| other, not 200 | `DeepL answered with HTTP N`, then `. ` and the `message` of the JSON body, when it is a string |
+| 200 with a wrong count, or a `text` that is no string | `DeepL returned N translations for M texts, or an answer that is not the JSON of /v2/translate`. |
 
 Every message replaces the key with `***`. Example: status 500 with the body `{"message": "Unknown key KEY"}` gives `DeepL answered with HTTP 500. Unknown key ***`.
 
@@ -330,6 +330,6 @@ fmt.Println(s.Cues()[0].Lines)
 
 | Status | Message |
 |:--- |:--- |
-| 403 | `Google Cloud Translation refused the request (HTTP 403). Check the key and that the API is enabled.` and the `error.message` of the answer |
-| 429, after 4 attempts | `Google Cloud Translation got too many requests (HTTP 429). Wait and try again.` |
-| other | `Google Cloud Translation answered with HTTP N.` and the `error.message` of the answer |
+| 403 | `Google Cloud Translation refused the request (HTTP 403). Check the key and that the API is enabled`, then `. ` and the `error.message` of the answer |
+| 429, after 4 attempts | `Google Cloud Translation got too many requests (HTTP 429). Wait and try again`. |
+| other | `Google Cloud Translation answered with HTTP N`, then `. ` and the `error.message` of the answer |

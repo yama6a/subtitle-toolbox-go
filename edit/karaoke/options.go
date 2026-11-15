@@ -43,11 +43,11 @@ func (o Options) Validate() error {
 	style := o.style()
 	switch {
 	case !markupcore.IsStyleTag(markupcore.TagName(style)):
-		return invalid("Style", "The style "+style+` must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00".`)
+		return invalid("Style", "the style "+style+` must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00"`)
 	case strings.ContainsAny(style, "<>"):
-		return invalid("Style", "The style "+style+" must not hold < or >. Pass the tag without its brackets, for example u.")
+		return invalid("Style", "the style "+style+" must not hold < or >. Pass the tag without its brackets, for example u")
 	case o.MaxWordsPerCue < 0:
-		return invalid("MaxWordsPerCue", "The maximum of "+strconv.Itoa(o.MaxWordsPerCue)+" words per cue must not be negative. 0 shows all words.")
+		return invalid("MaxWordsPerCue", "the maximum of "+strconv.Itoa(o.MaxWordsPerCue)+" words per cue must not be negative. 0 shows all words")
 	}
 	return nil
 }

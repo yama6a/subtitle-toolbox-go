@@ -46,7 +46,7 @@ type TimestampMap struct {
 func ParseTimestampMap(line string) (TimestampMap, error) {
 	body, ok := strings.CutPrefix(strings.TrimSpace(line), HeaderName+"=")
 	if !ok {
-		return TimestampMap{}, parseError(`The line "` + line + `" does not start with ` + HeaderName + "=.")
+		return TimestampMap{}, parseError(`the line "` + line + `" does not start with ` + HeaderName + "=")
 	}
 	attributes := map[string]string{}
 	for attribute := range strings.SplitSeq(body, ",") {
@@ -56,7 +56,7 @@ func ParseTimestampMap(line string) (TimestampMap, error) {
 	ticks, okTicks := parseTicks(attributes["MPEGTS"])
 	local, okLocal := timecode.Clock(attributes["LOCAL"])
 	if !okTicks || !okLocal || !localRegexp.MatchString(attributes["LOCAL"]) {
-		return TimestampMap{}, parseError("The " + HeaderName + ` header "` + line + `" needs a LOCAL cue time and an integer MPEGTS value.`)
+		return TimestampMap{}, parseError("the " + HeaderName + ` header "` + line + `" needs a LOCAL cue time and an integer MPEGTS value`)
 	}
 	return TimestampMap{MPEGTS: ticks, Local: local}, nil
 }
@@ -108,11 +108,11 @@ func isMapLine(line string) bool {
 // negative.
 func (m TimestampMap) Validate() error {
 	if m.MPEGTS < 0 || m.MPEGTS >= MPEGTSWrap {
-		return invalid("TimestampMap.MPEGTS", "The MPEGTS value must be a 33-bit timestamp from 0 to "+
-			strconv.FormatInt(MPEGTSWrap-1, 10)+", got "+strconv.FormatInt(m.MPEGTS, 10)+".")
+		return invalid("TimestampMap.MPEGTS", "the MPEGTS value must be a 33-bit timestamp from 0 to "+
+			strconv.FormatInt(MPEGTSWrap-1, 10)+", got "+strconv.FormatInt(m.MPEGTS, 10))
 	}
 	if m.Local < 0 {
-		return invalid("TimestampMap.Local", "The LOCAL time must not be negative, got "+timecode.Seconds(m.Local)+".")
+		return invalid("TimestampMap.Local", "the LOCAL time must not be negative, got "+timecode.Seconds(m.Local))
 	}
 	return nil
 }

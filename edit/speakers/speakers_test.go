@@ -442,11 +442,11 @@ func TestValidate(t *testing.T) {
 	}{
 		{"zero", speakers.Options{}, ""},
 		{"valid colors", speakers.Options{Colors: []string{"#FFFF00", "#00ff00"}}, ""},
-		{"color name", speakers.Options{Colors: []string{"yellow"}}, `stbox: invalid argument: speakers.Options.Colors: The speaker colors must be a list of colors such as "#ffff00", got "yellow".`},
-		{"short color", speakers.Options{Colors: []string{"#ff0"}}, `stbox: invalid argument: speakers.Options.Colors: The speaker colors must be a list of colors such as "#ffff00", got "#ff0".`},
-		{"empty color", speakers.Options{Colors: []string{"#ffff00", ""}}, `stbox: invalid argument: speakers.Options.Colors: The speaker colors must be a list of colors such as "#ffff00", got "".`},
-		{"dash style", speakers.Options{DialogueDashStyle: model.DialogueDashStyle(8)}, "stbox: invalid argument: speakers.Options.DialogueDashStyle: The dialogue dash style must be one of the 8 constants, got DialogueDashStyle(8)."},
-		{"style", speakers.Options{Style: speakers.Style(4)}, "stbox: invalid argument: speakers.Options.Style: The speaker style must be one of the Style constants, got Style(4)."},
+		{"color name", speakers.Options{Colors: []string{"yellow"}}, `stbox: invalid argument: speakers.Options.Colors: the speaker colors must be a list of colors such as "#ffff00", got "yellow"`},
+		{"short color", speakers.Options{Colors: []string{"#ff0"}}, `stbox: invalid argument: speakers.Options.Colors: the speaker colors must be a list of colors such as "#ffff00", got "#ff0"`},
+		{"empty color", speakers.Options{Colors: []string{"#ffff00", ""}}, `stbox: invalid argument: speakers.Options.Colors: the speaker colors must be a list of colors such as "#ffff00", got ""`},
+		{"dash style", speakers.Options{DialogueDashStyle: model.DialogueDashStyle(8)}, "stbox: invalid argument: speakers.Options.DialogueDashStyle: the dialogue dash style must be one of the 8 constants, got DialogueDashStyle(8)"},
+		{"style", speakers.Options{Style: speakers.Style(4)}, "stbox: invalid argument: speakers.Options.Style: the speaker style must be one of the Style constants, got Style(4)"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

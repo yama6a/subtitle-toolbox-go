@@ -118,7 +118,7 @@ func (f *File) finishBlock(t *trackEntry, offset int64, b *block, clusterTime in
 		b.start += clusterTime
 	}
 	if !f.withinLimit(t, b) {
-		return damaged("The block of track %d at byte %d has the time %d at a TimestampScale of %d ns. Times must be below %d hours.",
+		return damaged("the block of track %d at byte %d has the time %d at a TimestampScale of %d ns. Times must be below %d hours",
 			t.Number, offset, b.start, f.scale, timecode.MaxHours)
 	}
 	data, err := f.decode(t, b.data, scopeFrames, budget)
@@ -236,13 +236,13 @@ func (f *File) readBlock(h ebml.Header, number int) (b block, found bool, err er
 	}
 	blockTrack, n, ok := ebml.ReadVint(head, false)
 	if !ok || len(head) < n+blockHeaderTail {
-		return block{}, false, damaged("The block header at byte %d is not valid.", h.Offset)
+		return block{}, false, damaged("the block header at byte %d is not valid", h.Offset)
 	}
 	if blockTrack != uint64(number) {
 		return block{}, false, nil
 	}
 	if head[n+2]&lacingMask != 0 {
-		return block{}, false, damaged("A block of track %d uses lacing, which subtitle tracks do not use.", number)
+		return block{}, false, damaged("a block of track %d uses lacing, which subtitle tracks do not use", number)
 	}
 	dataStart := int64(n + blockHeaderTail)
 	data, err := f.r.Bytes(ebml.Header{ID: h.ID, Size: h.Size - dataStart, Offset: h.Offset + dataStart})
@@ -261,7 +261,7 @@ func (f *File) decode(t *trackEntry, data []byte, scope uint64, budget *int64) (
 			continue
 		}
 		if e.kind != 0 || (e.algo != algoZlib && e.algo != algoHeaderStrip) {
-			return nil, damaged("Track %d uses encryption or a compression other than zlib and header stripping.", t.Number)
+			return nil, damaged("track %d uses encryption or a compression other than zlib and header stripping", t.Number)
 		}
 		if e.algo == algoHeaderStrip {
 			data = slices.Concat(e.settings, data)
@@ -269,10 +269,10 @@ func (f *File) decode(t *trackEntry, data []byte, scope uint64, budget *int64) (
 		}
 		inflated, err := inflate(data)
 		if err != nil {
-			return nil, damaged("The zlib data of track %d is not valid or inflates to more than %d MB.", t.Number, maxInflatedSize>>20)
+			return nil, damaged("the zlib data of track %d is not valid or inflates to more than %d MB", t.Number, maxInflatedSize>>20)
 		}
 		if *budget -= int64(len(inflated)); *budget < 0 {
-			return nil, damaged("The zlib data of track %d inflates to more than %d MB in total.", t.Number, f.inflateCap>>20)
+			return nil, damaged("the zlib data of track %d inflates to more than %d MB in total", t.Number, f.inflateCap>>20)
 		}
 		data = inflated
 	}

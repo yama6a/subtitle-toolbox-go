@@ -174,7 +174,7 @@ func TestConvertTranscriptUsageErrors(t *testing.T) {
 		{
 			"style em",
 			[]string{"--karaoke", "--karaoke-style", "em"},
-			`The style em must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00".`,
+			`the style em must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00"`,
 		},
 		{
 			"style empty",

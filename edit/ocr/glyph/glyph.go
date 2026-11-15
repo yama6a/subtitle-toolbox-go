@@ -54,7 +54,7 @@ func (e *Engine) Recognize(ctx context.Context, im model.Image, _ ocr.Language) 
 	pixels, err := bitmap.DecodePNG(im.PNG)
 	if err != nil {
 		return ocr.Text{}, &ocr.RecognizeError{
-			Msg: "The recognizer fails on the cue image at " + strconv.Itoa(im.X) + ", " + strconv.Itoa(im.Y) + ": " + err.Error(),
+			Msg: "the recognizer fails on the cue image at " + strconv.Itoa(im.X) + ", " + strconv.Itoa(im.Y) + ": " + err.Error(),
 			Err: err,
 		}
 	}

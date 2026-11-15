@@ -24,7 +24,7 @@ func (f *File) Extract(number int, common model.CommonReadOptions, _ ExtractOpti
 	if i < 0 {
 		return nil, nil, &model.InvalidArgumentError{
 			Option: "ReadOptions.Track",
-			Msg:    fmt.Sprintf("The file has no subtitle track with the number %d.", number),
+			Msg:    fmt.Sprintf("the file has no subtitle track with the number %d", number),
 		}
 	}
 	track, s := f.tracks[i], f.streams[i]

@@ -20,8 +20,8 @@ type JoinOptions struct {
 // Validate returns an error that matches model.ErrInvalidArgument when StreamStart is below 0 or at MPEGTSWrap or above.
 func (o JoinOptions) Validate() error {
 	if s := o.StreamStart; s != nil && (*s < 0 || *s >= MPEGTSWrap) {
-		return invalid("JoinOptions.StreamStart", "The stream start must be a 33-bit timestamp from 0 to "+
-			strconv.FormatInt(MPEGTSWrap-1, 10)+", got "+strconv.FormatInt(*s, 10)+".")
+		return invalid("JoinOptions.StreamStart", "the stream start must be a 33-bit timestamp from 0 to "+
+			strconv.FormatInt(MPEGTSWrap-1, 10)+", got "+strconv.FormatInt(*s, 10))
 	}
 	return nil
 }

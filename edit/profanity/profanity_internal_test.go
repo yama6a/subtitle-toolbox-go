@@ -22,6 +22,6 @@ func TestApplyTimeoutChangesNothing(t *testing.T) {
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 	var aerr *model.InvalidArgumentError
 	require.ErrorAs(t, err, &aerr)
-	assert.Equal(t, "The word match took longer than 1 s on cue 1.", aerr.Msg)
+	assert.Equal(t, "the word match took longer than 1 s on cue 1", aerr.Msg)
 	assert.Equal(t, [][]string{{"hell", "x"}, {"Go to hell."}}, [][]string{s.Cues()[0].Lines, s.Cues()[1].Lines})
 }

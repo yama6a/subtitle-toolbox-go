@@ -99,7 +99,7 @@ func TestRecognizeErrors(t *testing.T) {
 		wantIs  error
 		lines   int
 	}{
-		{"no PNG", t.Context(), []byte("no png"), "The recognizer fails on the cue image at 3, 4: ", ocr.ErrRecognize, 0},
+		{"no PNG", t.Context(), []byte("no png"), "the recognizer fails on the cue image at 3, 4: ", ocr.ErrRecognize, 0},
 		{"cancelled context", cancelled, blank.Bytes(), "context canceled", context.Canceled, 0},
 		{"transparent image", t.Context(), blank.Bytes(), "", nil, 0},
 	}

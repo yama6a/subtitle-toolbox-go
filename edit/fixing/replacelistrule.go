@@ -109,8 +109,8 @@ func (r *listRunner) replaceRegexes(f *fixer, text string) string {
 		}
 		out, err := re.Replace(text, r.list.RegularExpressions[i].To, -1, -1)
 		if err != nil {
-			f.err = invalid("ReplaceList", `The regular expression "`+r.list.RegularExpressions[i].From+
-				`" took longer than 1 s on cue `+strconv.Itoa(f.cue+1)+".")
+			f.err = invalid("ReplaceList", `the regular expression "`+r.list.RegularExpressions[i].From+
+				`" took longer than 1 s on cue `+strconv.Itoa(f.cue+1))
 			return text
 		}
 		text = out

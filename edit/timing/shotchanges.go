@@ -87,6 +87,6 @@ func sorted(times []time.Duration) []time.Duration {
 func badShotChange(line int, text string) error {
 	return &model.ParseError{
 		Line: line,
-		Msg:  `The shot change time "` + text + `" is not valid. Use seconds or hh:mm:ss.mmm.`,
+		Msg:  `the shot change time "` + text + `" is not valid. Use seconds or hh:mm:ss.mmm`,
 	}
 }

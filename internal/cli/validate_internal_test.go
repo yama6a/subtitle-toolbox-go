@@ -262,11 +262,11 @@ func TestValidateUsageErrors(t *testing.T) {
 			"--video-fps sets the frame rate of the netflix-en gap rule. Pass --preset netflix-en, or leave out --video-fps.",
 		},
 		{"bad video-fps", []string{"trip.srt", "--preset", "netflix-en", "--video-fps", "0"}, "The option --video-fps must be greater than 0."},
-		{"invalid class", []string{"-", "--allowed-characters", "[z-a]"}, `The allowed characters "[z-a]" are not a valid character class: [z-a] range in reverse order.`},
+		{"invalid class", []string{"-", "--allowed-characters", "[z-a]"}, `the allowed characters "[z-a]" are not a valid character class: [z-a] range in reverse order`},
 		{
 			"POSIX class",
 			[]string{"-", "--allowed-characters", "[[:alpha:]]"},
-			`The allowed characters "[[:alpha:]]" hold a POSIX class such as [:alpha:]. Use a Unicode class such as \p{L}.`,
+			`the allowed characters "[[:alpha:]]" hold a POSIX class such as [:alpha:]. Use a Unicode class such as \p{L}`,
 		},
 		{
 			"dash style",

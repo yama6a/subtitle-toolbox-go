@@ -511,8 +511,8 @@ func TestOptionsValidate(t *testing.T) {
 		{"zero value", diff.Options{}, ""},
 		{"zero tolerance", diff.Options{TimeTolerance: tolerance(0)}, ""},
 		{"large tolerance", diff.Options{TimeTolerance: tolerance(time.Hour)}, ""},
-		{"negative tolerance", diff.Options{TimeTolerance: tolerance(-100 * time.Millisecond)}, "The time tolerance must not be negative, got -0.1."},
-		{"negative tolerance of one millisecond", diff.Options{TimeTolerance: tolerance(-time.Millisecond)}, "The time tolerance must not be negative, got -0.001."},
+		{"negative tolerance", diff.Options{TimeTolerance: tolerance(-100 * time.Millisecond)}, "the time tolerance must not be negative, got -0.1"},
+		{"negative tolerance of one millisecond", diff.Options{TimeTolerance: tolerance(-time.Millisecond)}, "the time tolerance must not be negative, got -0.001"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -182,9 +182,9 @@ func TestTextValidate(t *testing.T) {
 		{name: "none"},
 		{name: "zero", confidence: new(0.0)},
 		{name: "one", confidence: new(1.0)},
-		{name: "above one", confidence: new(1.5), want: "stbox: invalid argument: The confidence must be from 0 to 1, got 1.5."},
-		{name: "below zero", confidence: new(-0.1), want: "stbox: invalid argument: The confidence must be from 0 to 1, got -0.1."},
-		{name: "not a number", confidence: new(math.NaN()), want: "stbox: invalid argument: The confidence must be from 0 to 1, got NAN."},
+		{name: "above one", confidence: new(1.5), want: "stbox: invalid argument: the confidence must be from 0 to 1, got 1.5"},
+		{name: "below zero", confidence: new(-0.1), want: "stbox: invalid argument: the confidence must be from 0 to 1, got -0.1"},
+		{name: "not a number", confidence: new(math.NaN()), want: "stbox: invalid argument: the confidence must be from 0 to 1, got NAN"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

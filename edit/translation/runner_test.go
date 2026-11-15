@@ -434,14 +434,14 @@ func TestTranslateErrors(t *testing.T) {
 	}{
 		{
 			name: "cues limit below 0", engine: &upperEngine{}, target: "de", opts: translation.Options{MaxCuesPerSentence: -1},
-			wantOption: "translation.Options.MaxCuesPerSentence", wantMsg: "The maximum cues per sentence must not be negative, got -1. 0 means 3.",
+			wantOption: "translation.Options.MaxCuesPerSentence", wantMsg: "the maximum cues per sentence must not be negative, got -1. 0 means 3",
 		},
 		{
 			name: "characters limit below 0", engine: &upperEngine{}, target: "de", opts: translation.Options{MaxCharactersPerRequest: -5},
-			wantOption: "translation.Options.MaxCharactersPerRequest", wantMsg: "The maximum characters per request must not be negative, got -5. 0 means 5000.",
+			wantOption: "translation.Options.MaxCharactersPerRequest", wantMsg: "the maximum characters per request must not be negative, got -5. 0 means 5000",
 		},
-		{name: "nil engine", target: "de", wantMsg: "The translation engine is missing."},
-		{name: "empty target", engine: &upperEngine{}, target: " \t", wantMsg: "The target language is missing."},
+		{name: "nil engine", target: "de", wantMsg: "the translation engine is missing"},
+		{name: "empty target", engine: &upperEngine{}, target: " \t", wantMsg: "the target language is missing"},
 		{
 			name:   "wrong answer count",
 			engine: fixedEngine{"Eins."},
@@ -482,7 +482,7 @@ func TestTranslateErrors(t *testing.T) {
 			if errors.Is(tt.wantIs, translation.ErrService) {
 				require.ErrorAs(t, err, &service)
 				assert.Equal(t, 0, service.Status)
-				assert.Equal(t, "translation: The translation engine must return one string per text, got 1 values for 2 texts.", err.Error())
+				assert.Equal(t, "translation: the translation engine must return one string per text, got 1 values for 2 texts", err.Error())
 			}
 			assert.Equal(t, [][]string{{"one."}, {"two."}}, lines(s))
 			_, ok := s.Metadata(model.MetadataLanguage)

@@ -101,8 +101,8 @@ func TestExtractErrors(t *testing.T) {
 		track int
 		want  string
 	}{
-		{"codec without a reader", aribFile, 2, "Track 2 has the codec S_ARIBSUB. The reader extracts only S_TEXT/UTF8, S_TEXT/ASS, S_TEXT/SSA, " +
-			"S_TEXT/WEBVTT, S_HDMV/PGS, S_VOBSUB, S_DVBSUB, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."},
+		{"codec without a reader", aribFile, 2, "track 2 has the codec S_ARIBSUB. The reader extracts only S_TEXT/UTF8, S_TEXT/ASS, S_TEXT/SSA, " +
+			"S_TEXT/WEBVTT, S_HDMV/PGS, S_VOBSUB, S_DVBSUB, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -121,7 +121,7 @@ func TestExtractErrors(t *testing.T) {
 		_, _, err := openTestdata(t, "text_tracks.mkv").Extract(1, model.CommonReadOptions{}, mkv.ExtractOptions{})
 		var ie *model.InvalidArgumentError
 		require.ErrorAs(t, err, &ie)
-		assert.Equal(t, "The file has no subtitle track with the number 1.", ie.Msg)
+		assert.Equal(t, "the file has no subtitle track with the number 1", ie.Msg)
 		assert.Equal(t, "ReadOptions.Track", ie.Option)
 	})
 	t.Run("not Matroska", func(t *testing.T) {
@@ -131,7 +131,7 @@ func TestExtractErrors(t *testing.T) {
 		_, err := mkv.Open(bytes.NewReader(b), int64(len(b)))
 		var pe *model.ParseError
 		require.ErrorAs(t, err, &pe)
-		assert.Equal(t, "The file is not a Matroska or WebM file.", pe.Msg)
+		assert.Equal(t, "the file is not a Matroska or WebM file", pe.Msg)
 	})
 	t.Run("EBML header of another DocType", func(t *testing.T) {
 		t.Parallel()
@@ -140,7 +140,7 @@ func TestExtractErrors(t *testing.T) {
 		_, err := mkv.Open(bytes.NewReader(b), int64(len(b)))
 		var pe *model.ParseError
 		require.ErrorAs(t, err, &pe)
-		assert.Equal(t, "The file is not a Matroska or WebM file.", pe.Msg)
+		assert.Equal(t, "the file is not a Matroska or WebM file", pe.Msg)
 	})
 }
 
@@ -267,5 +267,5 @@ func TestTrackInflateCap(t *testing.T) {
 	_, _, err = f.Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 	var pe *model.ParseError
 	require.ErrorAs(t, err, &pe)
-	assert.Equal(t, "The zlib data of track 2 inflates to more than 3 MB in total.", pe.Msg)
+	assert.Equal(t, "the zlib data of track 2 inflates to more than 3 MB in total", pe.Msg)
 }
