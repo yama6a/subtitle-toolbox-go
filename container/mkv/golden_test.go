@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yama6a/subtitle-toolbox-go/v5/container/mkv"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
@@ -50,7 +51,7 @@ func TestReadGoldens(t *testing.T) {
 		t.Run(tt.golden, func(t *testing.T) {
 			t.Parallel()
 
-			s, warnings, err := openTestdata(t, tt.file).Extract(tt.track, model.CommonReadOptions{})
+			s, warnings, err := openTestdata(t, tt.file).Extract(tt.track, model.CommonReadOptions{}, mkv.ExtractOptions{})
 			require.NoError(t, err)
 			assert.Empty(t, warnings)
 			assert.Equal(t, string(testfiles.Read(t, "mkv/expected/"+tt.golden)), write(t, s, tt.format))

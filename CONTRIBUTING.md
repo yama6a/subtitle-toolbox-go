@@ -39,6 +39,19 @@ func Detect(content []byte) bool
 
 A format package keeps its package doc, `ReadOptions`, `WriteOptions`, `WriteReport`, `Validate` and `Detect` in `<name>.go`, `Read` in `read.go` and `Write` in `write.go`. Other files hold one topic each. `chapters` and `transcript` hold several formats, so they have one file per format.
 
+### Container packages
+
+Every container package declares `ExtractOptions`, empty when it has no options. A first option is a new field and never a signature change.
+
+```go
+func Open(r io.ReaderAt, size int64) (*File, error)
+// Tracks returns the subtitle tracks in file order.
+func (f *File) Tracks() []model.Track
+func (f *File) Extract(number int, common model.CommonReadOptions, opts ExtractOptions) (*model.Subtitle, []model.ParseWarning, error)
+```
+
+- **Track number**: a number that is no subtitle track returns an `*model.InvalidArgumentError` with `Option: "ReadOptions.Track"`.
+
 ### Format registry
 
 The registry is written by hand, and no package registers itself in `init()`. The facts table lists the formats. The first row that lists an extension owns it in `FormatFromPath`. A new format inserts its row after every row whose extension it shares and must not take.

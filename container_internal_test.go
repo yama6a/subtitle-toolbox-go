@@ -8,13 +8,15 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 type fakeFile struct{ tracks []Track }
 
 func (f fakeFile) Tracks() []Track { return f.tracks }
 
-func (f fakeFile) Extract(int, ReadOptions) (*Subtitle, []ParseWarning, error) {
+func (f fakeFile) Extract(int, model.CommonReadOptions, struct{}) (*Subtitle, []ParseWarning, error) {
 	s := &Subtitle{}
 	s.AddCue(Cue{Start: 0, End: 1000000000, Lines: []string{"Hello"}})
 	return s, []ParseWarning{{Message: "repaired", Line: NoLine, Block: NoBlock, Action: Repaired}}, nil
@@ -60,7 +62,7 @@ func TestReadTrack(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, info, err := extractTrack(Matroska, fakeFile{tt.tracks}, tt.opts)
+			s, info, err := extractTrack(fakeFile{tt.tracks}, Matroska, tt.opts, struct{}{})
 			if tt.wantErr != "" {
 				require.EqualError(t, err, tt.wantErr)
 				assert.Nil(t, s)
