@@ -166,7 +166,7 @@ func withAdvice(msg, option string, cause error) string {
 	case option == "ReadOptions.MicroDVD.FrameRate":
 		// The advice replaces the sentences after the first, which name the library settings.
 		first, _, _ := strings.Cut(msg, ". ")
-		return strings.TrimSuffix(first, ".") + ". Pass --fps or --input-fps, start the file with {1}{1}<fps>, or pass --lenient for 23.976 fps."
+		return first + ". Pass --fps or --input-fps, start the file with {1}{1}<fps>, or pass --lenient for 23.976 fps."
 	case option == "ReadOptions.CSV.FrameRate":
 		return advise(msg, "Pass --fps or --input-fps.")
 	case option == "WriteOptions.MicroDVD.FrameRate":
@@ -186,7 +186,7 @@ func withAdvice(msg, option string, cause error) string {
 
 // advise appends the advice sentence to the message of a library error, which has no final period.
 func advise(msg, advice string) string {
-	return strings.TrimSuffix(msg, ".") + ". " + advice
+	return msg + ". " + advice
 }
 
 func isSCCLimit(err error) bool {

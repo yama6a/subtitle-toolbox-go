@@ -91,7 +91,7 @@ The parse step checks UTF-8 after decoding. A bad byte is a byte outside a valid
 
 | Formats | Strict | Lenient |
 |:--- |:--- |:--- |
-| TTML, SAMI, iTT, YouTube XML | `*ParseError`: `the content is not valid UTF-8. The first bad byte is at offset N. Set the source encoding of the file`. | each bad byte becomes U+FFFD. `Repaired` warning with the same text plus ` The parser read the bad bytes as U+FFFD.` |
+| TTML, SAMI, iTT, YouTube XML | `*ParseError`: `the content is not valid UTF-8. The first bad byte is at offset N. Set the source encoding of the file`. | each bad byte becomes U+FFFD. `Repaired` warning with that text written as a sentence, plus ` The parser read the bad bytes as U+FFFD.` |
 | every other text format | the bytes stay, no warning | the bytes stay. `Repaired` warning with the first message |
 | JSON formats | each bad byte becomes U+FFFD while decoding | the same, plus the `Repaired` warning |
 
