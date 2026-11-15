@@ -16,7 +16,7 @@ A package imports only packages of a lower layer. Every layer may also import th
 | 0 | `model`, `model/markup`, and every package under `internal/`, `format/internal/` and `container/<name>/internal/`, except `internal/cli` | other layer 0 packages. Go rejects an import cycle |
 | 1 | `format/<name>` | layer 0. A format package imports another format package only when its format is a profile of the other: iTT of TTML, HLS of WebVTT |
 | 2 | `container/<name>` | layers 0 and 1. A container returns cues, so it calls the format readers |
-| 3 | root `stbox`, and every package under `edit/` and `inspect/` | layers 0 to 2. The root and these packages never import each other. A package under `edit/<name>/` imports another `edit/` package only when it is `edit/<name>` itself or sits below `edit/<name>/internal/` or `edit/internal/`. The service `edit/<name>` imports no package below it. `edit/ocr/auto` also imports the OCR engines. The same rules hold for `inspect/` |
+| 3 | root `stbox`, and every package under `edit/` and `inspect/` | layers 0 to 2. The root and these packages never import each other. A package under `edit/<name>/` imports another `edit/` package only when it is `edit/<name>` itself or sits below `edit/<name>/internal/` or `edit/internal/`. The service `edit/<name>` imports no package below it. The same rules hold for `inspect/` |
 | 4 | `internal/cli`, `cmd/stbox` | everything |
 
 ### Format packages
