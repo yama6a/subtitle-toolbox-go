@@ -2,7 +2,6 @@ package subviewer_test
 
 import (
 	"bytes"
-	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -10,7 +9,6 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -31,19 +29,10 @@ func FuzzRead(f *testing.F) {
 	f.Fuzz(func(t *testing.T, content []byte) {
 		for _, lenient := range []bool{false, true} {
 			s, warnings, err := subviewer.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, subviewer.ReadOptions{})
-			if err != nil {
-				var perr *model.ParseError
-				if !errors.As(err, &perr) {
-					t.Fatalf("Read returned %v, which is no *ParseError", err)
-				}
+			if !formattest.CheckRead(t, s, warnings, err) {
 				continue
 			}
-			checkCues(t, s)
-			for _, w := range warnings {
-				if w.Action != model.Skipped && w.Action != model.Repaired {
-					t.Fatalf("the warning %q has no action", w.Message)
-				}
-			}
+			checkEnds(t, s)
 			for _, v := range []subviewer.Version{subviewer.V1, subviewer.V2} {
 				checkWrite(t, s, v)
 			}
@@ -51,20 +40,10 @@ func FuzzRead(f *testing.F) {
 	})
 }
 
-func checkCues(t *testing.T, s *model.Subtitle) {
+func checkEnds(t *testing.T, s *model.Subtitle) {
 	t.Helper()
 
-	var previous time.Duration
 	for i, c := range s.All() {
-		if i > 0 && c.Start < previous {
-			t.Fatalf("cue %d starts before cue %d", i, i-1)
-		}
-		previous = c.Start
-		for _, d := range []time.Duration{c.Start, c.End} {
-			if d%time.Millisecond != 0 || d <= -timecode.MaxTime || d >= timecode.MaxTime {
-				t.Fatalf("cue %d has the time %v", i, d)
-			}
-		}
 		if c.End < c.Start {
 			t.Fatalf("cue %d is %v", i, c)
 		}

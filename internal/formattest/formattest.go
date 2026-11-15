@@ -14,8 +14,9 @@ import (
 )
 
 // CheckRead fails tb when a read breaks the fuzz rules of CLAUDE.md: err must hold a *model.ParseError, the cues
-// of s are in start order, each start and end is whole milliseconds, 0 or more and below timecode.MaxTime, and
-// each warning is Skipped or Repaired. It returns false when err is not nil, so the caller skips the write checks.
+// of s are in start order, each start and end is whole milliseconds above -timecode.MaxTime and below
+// timecode.MaxTime, and each warning is Skipped or Repaired. A time may be negative, as model.Cue allows. It
+// returns false when err is not nil, so the caller skips the write checks.
 func CheckRead(tb testing.TB, s *model.Subtitle, warnings []model.ParseWarning, err error) bool {
 	tb.Helper()
 
@@ -78,7 +79,7 @@ func checkCues(tb testing.TB, s *model.Subtitle) {
 		}
 		previous = c.Start
 		for _, d := range []time.Duration{c.Start, c.End} {
-			if d%time.Millisecond != 0 || d < 0 || d >= timecode.MaxTime {
+			if d%time.Millisecond != 0 || d <= -timecode.MaxTime || d >= timecode.MaxTime {
 				tb.Fatalf("cue %d has the time %v", i, d)
 			}
 		}

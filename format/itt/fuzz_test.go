@@ -4,12 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -20,25 +18,9 @@ func FuzzRead(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, content []byte) {
 		for _, lenient := range []bool{false, true} {
-			s, _, err := itt.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, itt.ReadOptions{})
-			if err != nil {
-				var perr *model.ParseError
-				if !errors.As(err, &perr) {
-					t.Fatalf("Read returned %v, which is no *ParseError", err)
-				}
+			s, warnings, err := itt.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: lenient}, itt.ReadOptions{})
+			if !formattest.CheckRead(t, s, warnings, err) {
 				continue
-			}
-			var previous time.Duration
-			for i, c := range s.All() {
-				if i > 0 && c.Start < previous {
-					t.Fatalf("cue %d starts before cue %d", i, i-1)
-				}
-				previous = c.Start
-				for _, d := range []time.Duration{c.Start, c.End} {
-					if d%time.Millisecond != 0 || d >= timecode.MaxTime || d <= -timecode.MaxTime {
-						t.Fatalf("cue %d has the time %v", i, d)
-					}
-				}
 			}
 			var out bytes.Buffer
 			_, err = itt.Write(&out, s, model.CommonWriteOptions{}, itt.WriteOptions{FrameRate: model.FrameRate25})
