@@ -277,7 +277,14 @@ Replace `1.0.0` with the version of the release.
    gh api repos/yama6a/homebrew-tap/contents/Formula/stbox.rb --jq .content | base64 -d | grep -c 'v1.0.0/'
    ```
 
-   Expected: `4`. The test workflow of the tap installs and tests the formula on macOS and Linux after each update.
+   Expected: `4`. The `bottle` workflow of the tap runs after the `homebrew` job. It builds a bottle on macOS arm64, macOS Intel, Linux x86_64 and Linux arm64. It publishes them as the release `stbox-1.0.0` of yama6a/homebrew-tap. Then it commits the formula with its bottle block to main. Check the bottle block and the run.
+
+   ```bash
+   gh api repos/yama6a/homebrew-tap/contents/Formula/stbox.rb --jq .content | base64 -d | grep -c 'sha256 cellar'
+   gh run list -R yama6a/homebrew-tap --workflow bottle --limit 1
+   ```
+
+   Expected: `4` bottle lines and a green run. The `verify` jobs install the formula from main and check that Homebrew pours a bottle. A red `build` job leaves the branch `bottle/stbox-1.0.0` in the tap, and the formula on main stays at the old release.
 
 10. For a major release, edit the release notes. Put a hand-written block above the generated notes. It names the formats and the commands of the line, the 4 install forms, and links `docs/compatibility.md` at the tag. For N of 2 or more, it links `docs/upgrade-N.0.md` at the tag too, and shows `go get github.com/yama6a/subtitle-toolbox-go/vN@vN.0.0`.
 
