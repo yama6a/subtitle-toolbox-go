@@ -9,7 +9,7 @@ import (
 )
 
 // InvalidUTF8Reason is the reason of the error that a writer returns for text that is not valid UTF-8.
-const InvalidUTF8Reason = "The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding."
+const InvalidUTF8Reason = "the output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding"
 
 var (
 	lineBreakRegexp = regexp.MustCompile(`\r\n?|\n`)
@@ -51,12 +51,12 @@ func SkipLeadingText(content string, start *regexp.Regexp) (repaired, skipped st
 }
 
 // LeadingText returns the line where the text skipped by SkipLeadingText starts, its lines, and the message
-// "The file has text before the XML: ...".
+// "the file has text before the XML: ...".
 func LeadingText(content, skipped string) (line int, lines []string, msg string) {
 	before, _, _ := strings.Cut(content, skipped)
 	line = 1 + strings.Count(before, "\n")
 	lines = strings.Split(eolRegexp.ReplaceAllLiteralString(skipped, "\n"), "\n")
-	return line, lines, "The file has text before the XML: \"" + lines[0] + "\"."
+	return line, lines, "the file has text before the XML: \"" + lines[0] + "\""
 }
 
 // Text returns s without the characters that XML 1.0 forbids: the C0 controls except tab, LF and CR, U+FFFE and

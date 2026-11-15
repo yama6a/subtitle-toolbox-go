@@ -105,11 +105,11 @@ func TestReadErrors(t *testing.T) {
 		line    int
 		msg     string
 	}{
-		{"a line without times", "[1][2]ok\n\nhello", 3, `The line "hello" is not an MPL2 cue.`},
-		{"one time only", "[1]hello", 1, `The line "[1]hello" is not an MPL2 cue.`},
-		{"a letter in a time", "[1a][2]hello", 1, `The line "[1a][2]hello" is not an MPL2 cue.`},
-		{"a space between the brackets", "[1] [2]hello", 1, `The line "[1] [2]hello" is not an MPL2 cue.`},
-		{"digits that are not ASCII", "[\u0661][\u0662]hello", 1, "The line \"[\u0661][\u0662]hello\" is not an MPL2 cue."},
+		{"a line without times", "[1][2]ok\n\nhello", 3, `the line "hello" is not an MPL2 cue`},
+		{"one time only", "[1]hello", 1, `the line "[1]hello" is not an MPL2 cue`},
+		{"a letter in a time", "[1a][2]hello", 1, `the line "[1a][2]hello" is not an MPL2 cue`},
+		{"a space between the brackets", "[1] [2]hello", 1, `the line "[1] [2]hello" is not an MPL2 cue`},
+		{"digits that are not ASCII", "[\u0661][\u0662]hello", 1, "the line \"[\u0661][\u0662]hello\" is not an MPL2 cue"},
 		{"a start at 100000 hours", "[3600000000][3600000001]x", 1, `the time "[3600000000]" is not below 100000 hours`},
 		{"an end at 100000 hours", "[1][3600000000]x", 1, `the time "[3600000000]" is not below 100000 hours`},
 		{
@@ -159,7 +159,7 @@ func TestBrokenFile(t *testing.T) {
 
 	content := string(testfiles.Read(t, "mpl2/lenient/broken.txt"))
 	perr := readError(t, content)
-	assert.Equal(t, `The line "Downloaded from a subtitle site" is not an MPL2 cue.`, perr.Msg)
+	assert.Equal(t, `the line "Downloaded from a subtitle site" is not an MPL2 cue`, perr.Msg)
 	assert.Equal(t, 1, perr.Line)
 
 	s, warnings := mustRead(t, content, true)

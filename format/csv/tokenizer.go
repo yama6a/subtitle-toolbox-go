@@ -117,7 +117,7 @@ func (t *tokenizer) quoted(i int, lenient bool) (int, error) {
 		return next, nil
 	}
 	if !lenient {
-		return 0, &model.ParseError{Format: model.CSV, Line: t.start, Msg: "A quoted CSV cell has no closing quote."}
+		return 0, &model.ParseError{Format: model.CSV, Line: t.start, Msg: "a quoted CSV cell has no closing quote"}
 	}
 	lineStart := strings.LastIndexAny(t.content[:i], "\r\n") + 1
 	end := len(t.content)

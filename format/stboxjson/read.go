@@ -207,7 +207,7 @@ func decodeBinaryObject(d *model.Data, path string) (any, string) {
 	if s, ok := d.String("base64"); ok && d.Len() == 1 {
 		b, ok := decodeBase64(s)
 		if !ok {
-			return nil, "The field " + path + ".base64 must be valid base64."
+			return nil, "the field " + path + ".base64 must be valid base64"
 		}
 		return string(b), ""
 	}
@@ -297,7 +297,7 @@ func checkBound(i int, key string, n number, ok bool) string {
 		return ""
 	}
 	if n.f < 0 {
-		return "The field " + cuePath(i) + "." + key + " is not above -" + strconv.Itoa(timecode.MaxHours) + " hours."
+		return "the field " + cuePath(i) + "." + key + " is not above -" + strconv.Itoa(timecode.MaxHours) + " hours"
 	}
 	_, err := parsing.BoundedField(timecode.MaxTime, cuePath(i)+"."+key)
 	return message(err)
@@ -306,11 +306,11 @@ func checkBound(i int, key string, n number, ok bool) string {
 // orderTimes compares the float values, where parsing.State.OrderedTimes compares durations.
 // Lenient mode swaps the times of a reversed cue that then lasts parsing.MaxSwappedDuration or less.
 func (r *reader) orderTimes(cue *model.Data, i int, start, end number) string {
-	msg := "The cue ends at " + timecode.Number(end.f) + " s, before it starts at " + timecode.Number(start.f) + " s."
+	msg := "the cue ends at " + timecode.Number(end.f) + " s, before it starts at " + timecode.Number(start.f) + " s"
 	if !r.st.Lenient() || start.f-end.f > parsing.MaxSwappedDuration.Seconds() {
 		return msg
 	}
-	r.st.Warn(msg+" The parser swapped the times.", model.NoLine, i, []string{encodeEntry(cue)}, model.Repaired)
+	r.st.Warn(parsing.Sentence(msg)+" The parser swapped the times.", model.NoLine, i, []string{encodeEntry(cue)}, model.Repaired)
 	cue.Set("start", end.text)
 	cue.Set("end", start.text)
 	return ""
@@ -411,7 +411,7 @@ func (r *reader) subtitle(root *model.Data, skipped map[int]bool) (*model.Subtit
 	}
 	list, ok := root.List("cues")
 	if !ok {
-		return nil, parseError("The field cues must be a list.")
+		return nil, parseError("the field cues must be a list")
 	}
 	cues, err := r.cues(list, skipped)
 	if err != nil {
@@ -456,10 +456,10 @@ func (r *reader) cues(list []any, skipped map[int]bool) ([]model.Cue, error) {
 func checkVersion(root *model.Data) error {
 	version, ok := root.Get("version")
 	if !ok {
-		return parseError("The field version is missing.")
+		return parseError("the field version is missing")
 	}
 	if n, ok := integer(version); !ok || n != 1 && n != Version {
-		return parseError("The field version must be 1 or 2.")
+		return parseError("the field version must be 1 or 2")
 	}
 	return nil
 }
@@ -480,7 +480,7 @@ func object(d *model.Data, key string) (*model.Data, bool) {
 func (r *reader) metadata(s *model.Subtitle, root *model.Data) error {
 	metadata, ok := object(root, "metadata")
 	if !ok {
-		return parseError("The field metadata must be an object.")
+		return parseError("the field metadata must be an object")
 	}
 	for _, key := range metadata.Keys() {
 		v, _ := metadata.Get(key)
@@ -488,7 +488,7 @@ func (r *reader) metadata(s *model.Subtitle, root *model.Data) error {
 			s.SetMetadata(key, text)
 			continue
 		}
-		if err := r.fail("The field metadata."+key+" must be a string.", model.NoBlock, model.NewData(model.Field{Key: key, Value: v})); err != nil {
+		if err := r.fail("the field metadata."+key+" must be a string", model.NoBlock, model.NewData(model.Field{Key: key, Value: v})); err != nil {
 			return err
 		}
 	}
@@ -498,11 +498,11 @@ func (r *reader) metadata(s *model.Subtitle, root *model.Data) error {
 func (r *reader) formatData(s *model.Subtitle, root *model.Data) error {
 	fd, ok := object(root, "formatData")
 	if !ok {
-		return parseError("The field formatData must be an object.")
+		return parseError("the field formatData must be an object")
 	}
 	for _, key := range fd.Keys() {
 		v, _ := fd.Get(key)
-		msg := "The field formatData." + key + " must be an object."
+		msg := "the field formatData." + key + " must be an object"
 		if data, ok := v.(*model.Data); ok {
 			msg = formatDataMessage(s.SetFormatData(key, toModelData(data)), "")
 		}
@@ -521,18 +521,18 @@ func formatDataMessage(err error, prefix string) string {
 	if !errors.As(err, &iae) {
 		return ""
 	}
-	msg := parsing.Sentence(iae.Msg)
-	if rest, ok := strings.CutPrefix(msg, "The field "); ok && prefix != "" {
-		return "The field " + prefix + "." + rest
+	msg := iae.Msg
+	if rest, ok := strings.CutPrefix(msg, "the field "); ok && prefix != "" {
+		return "the field " + prefix + "." + rest
 	}
 	return msg
 }
 
 func (r *reader) cue(entry any, i int) (model.Cue, string) {
-	path := "The field " + cuePath(i)
+	path := "the field " + cuePath(i)
 	d, ok := asObject(entry).(*model.Data)
 	if !ok {
-		return model.Cue{}, path + " must be an object."
+		return model.Cue{}, path + " must be an object"
 	}
 	var c model.Cue
 	checks := []func(*model.Cue, *model.Data, string) string{cueTimes, cueLines, cueSettings, cuePosition, cueForced}
@@ -566,7 +566,7 @@ func cueTimes(c *model.Cue, d *model.Data, path string) string {
 	}{{"start", &c.Start}, {"end", &c.End}} {
 		n, ok := finite(d.Get(t.key))
 		if !ok {
-			return path + "." + t.key + " must be a number."
+			return path + "." + t.key + " must be a number"
 		}
 		*t.to, _ = milliseconds(n) // checkBound accepted the time
 	}
@@ -576,12 +576,12 @@ func cueTimes(c *model.Cue, d *model.Data, path string) string {
 func cueLines(c *model.Cue, d *model.Data, path string) string {
 	lines, ok := d.List("lines")
 	if !ok {
-		return path + ".lines must be a list."
+		return path + ".lines must be a list"
 	}
 	c.Lines = make([]string, len(lines))
 	for j, line := range lines {
 		if c.Lines[j], ok = line.(string); !ok {
-			return path + ".lines[" + strconv.Itoa(j) + "] must be a string."
+			return path + ".lines[" + strconv.Itoa(j) + "] must be a string"
 		}
 	}
 	return ""
@@ -593,12 +593,12 @@ func cueSettings(c *model.Cue, d *model.Data, path string) string {
 	case string:
 		c.ID = id
 	default:
-		return path + ".identifier must be a string or null."
+		return path + ".identifier must be a string or null"
 	}
 	if v, _ := d.Get("alignment"); v != nil {
 		n, ok := integer(v)
 		if !ok || n < 1 || n > 9 {
-			return path + ".alignment must be an integer from 1 to 9 or null."
+			return path + ".alignment must be an integer from 1 to 9 or null"
 		}
 		c.Position.Alignment, _ = model.AlignmentFromNumpad(int(n))
 	}
@@ -619,7 +619,7 @@ func cuePosition(c *model.Cue, d *model.Data, path string) string {
 	path += ".position"
 	obj, ok := v.(*model.Data)
 	if !ok {
-		return path + " must be an object or null."
+		return path + " must be an object or null"
 	}
 	for _, f := range []struct {
 		key string
@@ -637,7 +637,7 @@ func cuePosition(c *model.Cue, d *model.Data, path string) string {
 	}
 	var iae *model.InvalidArgumentError
 	if errors.As(c.Position.Validate(), &iae) {
-		return path + validateKeys[iae.Option] + " is out of range. " + parsing.Sentence(iae.Msg)
+		return path + validateKeys[iae.Option] + " is out of range. " + parsing.Capitalize(iae.Msg)
 	}
 	return ""
 }
@@ -650,7 +650,7 @@ func optionalInt(d *model.Data, key string, to *int, path string) string {
 	}
 	n, ok := integer(v)
 	if !ok || n < math.MinInt32 || n > math.MaxInt32 {
-		return path + "." + key + " must be an integer or null."
+		return path + "." + key + " must be an integer or null"
 	}
 	*to = int(n)
 	return ""
@@ -663,7 +663,7 @@ func positionGrid(g *model.Grid, d *model.Data, path string) string {
 	}
 	obj, ok := v.(*model.Data)
 	if !ok {
-		return path + ".grid must be an object or null."
+		return path + ".grid must be an object or null"
 	}
 	for _, f := range []struct {
 		key string
@@ -683,7 +683,7 @@ func positionOffset(p *model.Position, d *model.Data, path string) string {
 	}
 	obj, ok := v.(*model.Data)
 	if !ok {
-		return path + ".offset must be an object or null."
+		return path + ".offset must be an object or null"
 	}
 	var o model.Offset
 	for _, f := range []struct {
@@ -692,7 +692,7 @@ func positionOffset(p *model.Position, d *model.Data, path string) string {
 	}{{"x", &o.X}, {"y", &o.Y}} {
 		n, ok := finite(obj.Get(f.key))
 		if !ok {
-			return path + ".offset." + f.key + " must be a finite number."
+			return path + ".offset." + f.key + " must be a finite number"
 		}
 		*f.to = n.f
 	}
@@ -706,7 +706,7 @@ func cueForced(c *model.Cue, d *model.Data, path string) string {
 	case bool:
 		c.Forced = forced
 	default:
-		return path + ".forced must be a boolean."
+		return path + ".forced must be a boolean"
 	}
 	return ""
 }
@@ -714,17 +714,17 @@ func cueForced(c *model.Cue, d *model.Data, path string) string {
 func cueFormatData(c *model.Cue, d *model.Data, i int) string {
 	fd, ok := object(d, "formatData")
 	if !ok {
-		return "The field " + cuePath(i) + ".formatData must be an object."
+		return "the field " + cuePath(i) + ".formatData must be an object"
 	}
 	for _, key := range fd.Keys() {
 		v, _ := fd.Get(key)
 		obj, ok := v.(*model.Data)
 		if !ok {
-			return "The field " + cuePath(i) + ".formatData." + key + " must be an object."
+			return "the field " + cuePath(i) + ".formatData." + key + " must be an object"
 		}
 		if key == imageKey {
 			if msg := cueImage(c, obj, cuePath(i)+".formatData.image"); msg != "" {
-				return "The field " + msg
+				return "the field " + msg
 			}
 			continue
 		}
@@ -752,12 +752,12 @@ func cueImage(c *model.Cue, d *model.Data, path string) string {
 	case bool:
 		c.Forced = c.Forced || forced
 	default:
-		return path + ".forced must be a boolean."
+		return path + ".forced must be a boolean"
 	}
 	if err := im.Validate(); err != nil {
 		var iae *model.InvalidArgumentError
 		_ = errors.As(err, &iae)
-		return path + " is invalid. " + parsing.Sentence(iae.Msg)
+		return path + " is invalid. " + parsing.Capitalize(iae.Msg)
 	}
 	c.Image = &im
 	return ""
@@ -778,13 +778,13 @@ func imageFields(im *model.Image, d *model.Data, path string) string {
 		v, _ := d.Get(f.key)
 		n, ok := integer(v)
 		if !ok || n < math.MinInt32 || n > math.MaxInt32 {
-			return path + "." + f.key + " must be an integer."
+			return path + "." + f.key + " must be an integer"
 		}
 		*f.to = int(n)
 	}
 	png, ok := d.String("png")
 	if !ok {
-		return path + ".png must be a string."
+		return path + ".png must be a string"
 	}
 	im.PNG = []byte(png)
 	return ""
@@ -805,7 +805,7 @@ func (r *reader) comments(s *model.Subtitle, root *model.Data, skipped map[int]b
 	v, _ := root.Get("comments")
 	list, ok := v.([]any)
 	if !ok && v != nil {
-		return parseError("The field comments must be a list.")
+		return parseError("the field comments must be a list")
 	}
 	skippedCues := slices.Sorted(maps.Keys(skipped))
 	var comments []model.Comment
@@ -830,19 +830,19 @@ func (r *reader) comments(s *model.Subtitle, root *model.Data, skipped map[int]b
 }
 
 func comment(entry any, i int) (string, int64, string) {
-	path := "The field comments[" + strconv.Itoa(i) + "]"
+	path := "the field comments[" + strconv.Itoa(i) + "]"
 	d, ok := asObject(entry).(*model.Data)
 	if !ok {
-		return "", 0, path + " must be an object."
+		return "", 0, path + " must be an object"
 	}
 	text, ok := d.String("text")
 	if !ok {
-		return "", 0, path + ".text must be a string."
+		return "", 0, path + ".text must be a string"
 	}
 	v, _ := d.Get("beforeCueIndex")
 	before, ok := integer(v)
 	if !ok || before < 0 {
-		return "", 0, path + ".beforeCueIndex must be an integer of 0 or more."
+		return "", 0, path + ".beforeCueIndex must be an integer of 0 or more"
 	}
 	return text, before, ""
 }

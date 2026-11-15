@@ -79,7 +79,7 @@ func TestWriteVersionErrors(t *testing.T) {
 		opts stboxjson.WriteOptions
 		want string
 	}{
-		{"version 3", beachCue(), stboxjson.WriteOptions{Version: 3}, "The library JSON version must be 0, 1 or 2, got 3."},
+		{"version 3", beachCue(), stboxjson.WriteOptions{Version: 3}, "the library JSON version must be 0, 1 or 2, got 3"},
 		{"NaN confidence", nan, stboxjson.WriteOptions{}, infOrNaN},
 		{"bad UTF-8 in a word", badUTF8, stboxjson.WriteOptions{}, "Malformed UTF-8"},
 	}

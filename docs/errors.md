@@ -53,7 +53,7 @@ All 4 types live in package `model`. Package `stbox` aliases them under the same
 | `*InvalidArgumentError` | `Option`, `Msg` | `stbox: invalid argument: WriteOptions.MicroDVD.FrameRate: Msg`. No option part when `Option` is "" |
 
 - **Cause**: `Unwrap` of `*ParseError` and `*UnwritableError` returns `Err`, for example an error of the standard library. `Error()` shows `Err` only when the message field is empty, because the message quotes the cause where it matters.
-- **Message text**: `Msg` and `Reason` follow Go style, as `staticcheck` ST1005 checks. The first letter is lower case, unless the message starts with a Go identifier such as `ReadOptions.Track`, a quoted value or a name written in capitals such as `SCC`, `MKV` or `UTF-8`. The message has no final `.`, `!` or `:`. Sentences inside a message stay as they are, with `. ` between them. Example: `The frame rate is unknown. Pass ReadOptions.MicroDVD.FrameRate.` becomes `the frame rate is unknown. Pass ReadOptions.MicroDVD.FrameRate`. `ParseWarning.Message` stays a full sentence. The CLI writes its own messages as full sentences.
+- **Message text**: `Msg` and `Reason` follow Go style, as `staticcheck` ST1005 checks. The first letter is lower case, unless the message starts with a Go identifier such as `ReadOptions.Track`, a quoted value or a name written in capitals such as `SCC`, `MKV` or `UTF-8`. The message has no final `.`, `!` or `:`. Sentences inside a message stay as they are, with `. ` between them. Example: `the frame rate is unknown. Pass ReadOptions.MicroDVD.FrameRate` becomes `the frame rate is unknown. Pass ReadOptions.MicroDVD.FrameRate`. `ParseWarning.Message` stays a full sentence. The CLI writes its own messages as full sentences.
 - **No identifiers in messages**: a message never names a Go identifier or a CLI flag. A missing or bad option goes in `Option` as its Go path, such as `ReadOptions.MicroDVD.FrameRate`. A sentinel in `Err` names an edit that the caller must make first.
 - **Cue index**: `UnwritableError.CueIndex` is the 0-based index of the first cue that the format cannot hold. It is -1 when no single cue causes the error.
 
@@ -70,7 +70,7 @@ All 4 types live in package `model`. Package `stbox` aliases them under the same
 | library JSON | 0 |
 | ASS and SSA | the line of the error: the event line, or the `Format:` line for a field name that is a number. A file without `[Events]` and `[Script Info]` gives 0 |
 | MicroDVD | the line of the error. A missing or bad frame rate gives 0 |
-| SAMI | the line of the `<SYNC` tag. `The SAMI file has no class X.` has no line |
+| SAMI | the line of the `<SYNC` tag. `the SAMI file has no class X` has no line |
 | MPL2, TMPlayer | the line of the error |
 | MPSub | the line of the error. A cue without text reports its timing line |
 | LRC | 0. `the file has text but no cues` gives the first line of plain text |

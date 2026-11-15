@@ -215,7 +215,7 @@ func (r *reader) offsetTime(base float64, n *xmlraw.Node, attr string) (float64,
 func (r *reader) boundedExpression(expression string) (float64, *model.ParseError) {
 	secs, ok := r.clock.seconds(expression)
 	if !ok {
-		return 0, r.parseError(model.NoLine, "The time expression \""+expression+"\" is not valid.")
+		return 0, r.parseError(model.NoLine, "the time expression \""+expression+"\" is not valid")
 	}
 	return r.bounded(secs, expression, model.NoLine)
 }
@@ -223,7 +223,7 @@ func (r *reader) boundedExpression(expression string) (float64, *model.ParseErro
 // bounded returns secs when the time rounds to whole milliseconds below 100000 hours in size.
 func (r *reader) bounded(secs float64, text string, line int) (float64, *model.ParseError) {
 	if !(math.Abs(secs) < timecode.MaxTime.Seconds()) || timecode.FromSeconds(math.Abs(secs)) >= timecode.MaxTime {
-		return 0, r.parseError(line, "The time \""+text+"\" is not below "+strconv.Itoa(timecode.MaxHours)+" hours.")
+		return 0, r.parseError(line, "the time \""+text+"\" is not below "+strconv.Itoa(timecode.MaxHours)+" hours")
 	}
 	return secs, nil
 }

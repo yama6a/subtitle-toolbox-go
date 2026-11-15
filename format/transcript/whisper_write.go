@@ -41,11 +41,11 @@ func encodeDocument(f model.Format, name string, doc orderedjson.Value, pretty b
 	if err == nil {
 		return body, nil
 	}
-	reason := name + " cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
+	reason := name + " cannot hold the subtitle: Inf and NaN cannot be JSON encoded"
 	var cause error
 	if errors.Is(err, orderedjson.ErrInvalidUTF8) {
 		reason = name + " cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. " +
-			"Read a file in another encoding with its source encoding."
+			"Read a file in another encoding with its source encoding"
 		cause = model.ErrInvalidUTF8
 	}
 	return nil, &model.UnwritableError{Format: f, CueIndex: -1, Reason: reason, Err: cause}
@@ -60,7 +60,7 @@ func whisperDocument(s *model.Subtitle) (orderedjson.Value, error) {
 	if d, ok := s.FormatData(whisperKey); ok {
 		var err error
 		if file, err = formatdata.ToJSON(d); err != nil {
-			return file, &model.UnwritableError{Format: model.Whisper, CueIndex: -1, Reason: "The Whisper format data is no JSON.", Err: err}
+			return file, &model.UnwritableError{Format: model.Whisper, CueIndex: -1, Reason: "the Whisper format data is no JSON", Err: err}
 		}
 	}
 	shape := writtenShape(file)

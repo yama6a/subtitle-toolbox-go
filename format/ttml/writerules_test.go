@@ -426,7 +426,7 @@ func TestStoredHeadThatIsNoHead(t *testing.T) {
 			s := subtitleOf(cue(0, time.Second, "x"))
 			require.NoError(t, s.SetFormatData("ttml", model.NewData(model.Field{Key: "head", Value: tt.head})))
 			uerr := writeError(t, s)
-			assert.Equal(t, "The stored TTML head is not a well-formed <head> element.", uerr.Reason)
+			assert.Equal(t, "the stored TTML head is not a well-formed <head> element", uerr.Reason)
 			assert.Equal(t, -1, uerr.CueIndex)
 			assert.Equal(t, tt.syntax, uerr.Err != nil)
 		})

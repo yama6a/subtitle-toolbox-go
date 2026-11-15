@@ -2,7 +2,7 @@
     "name": "TTML with paragraphs without an end",
     "format": "ttml",
     "strict": {
-        "error": "The paragraph that begins at 1s has no end time.",
+        "error": "the paragraph that begins at 1s has no end time",
         "line": 5
     },
     "cues": [

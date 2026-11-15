@@ -107,16 +107,16 @@ func TestReadJSON3Errors(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct{ name, content, want string }{
-		{"not JSON", `{"events": [`, "The content is not valid JSON:"},
-		{"no events", `{"pens": []}`, `The JSON has no "events" list.`},
-		{"events as an object", `{"events": {"0": {"tStartMs": 0}}}`, `The JSON has no "events" list.`},
-		{"start as text", `{"events": [{"tStartMs": "0"}]}`, "The field events[0].tStartMs must be a number."},
-		{"an event that is no object", `{"events": [{"tStartMs": 0}, 5]}`, "The field events[1].tStartMs must be a number."},
-		{"negative start", `{"events": [{"tStartMs": -1}]}`, "The field events[0].tStartMs must be a number."},
+		{"not JSON", `{"events": [`, "the content is not valid JSON:"},
+		{"no events", `{"pens": []}`, `the JSON has no "events" list`},
+		{"events as an object", `{"events": {"0": {"tStartMs": 0}}}`, `the JSON has no "events" list`},
+		{"start as text", `{"events": [{"tStartMs": "0"}]}`, "the field events[0].tStartMs must be a number"},
+		{"an event that is no object", `{"events": [{"tStartMs": 0}, 5]}`, "the field events[1].tStartMs must be a number"},
+		{"negative start", `{"events": [{"tStartMs": -1}]}`, "the field events[0].tStartMs must be a number"},
 		{"start over the limit", `{"events": [{"tStartMs": 360000000000}]}`, "the field events[0].tStartMs is not below 100000 hours"},
-		{"duration as text", `{"events": [{"tStartMs": 0, "dDurationMs": "1"}]}`, "The field events[0].dDurationMs must be a number."},
+		{"duration as text", `{"events": [{"tStartMs": 0, "dDurationMs": "1"}]}`, "the field events[0].dDurationMs must be a number"},
 		{"end over the limit", `{"events": [{"tStartMs": 359999999999, "dDurationMs": 2}]}`, "the field events[0].dDurationMs is not below 100000 hours"},
-		{"offset as text", `{"events": [{"tStartMs": 0, "segs": [{"utf8": "a", "tOffsetMs": "5"}]}]}`, "The field events[0].segs[0].tOffsetMs must be a number."},
+		{"offset as text", `{"events": [{"tStartMs": 0, "segs": [{"utf8": "a", "tOffsetMs": "5"}]}]}`, "the field events[0].segs[0].tOffsetMs must be a number"},
 		{"offset over the limit", `{"events": [{"tStartMs": 359999999999, "segs": [{"utf8": "a", "tOffsetMs": 2}]}]}`, "the field events[0].segs[0].tOffsetMs is not below 100000 hours"},
 	}
 	for _, tt := range tests {

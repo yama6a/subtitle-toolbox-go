@@ -2,7 +2,7 @@
     "name": "WebVTT with text before the first cue",
     "format": "vtt",
     "strict": {
-        "error": "Block #1 is not a WebVTT cue, comment, style or region. The line is \"Downloaded from www.example.org\".",
+        "error": "block #1 is not a WebVTT cue, comment, style or region. The line is \"Downloaded from www.example.org\"",
         "line": 3
     },
     "cues": [

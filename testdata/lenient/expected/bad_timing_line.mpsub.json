@@ -2,7 +2,7 @@
     "name": "MPSub without a FORMAT line, with a bad timing line and a truncated last cue",
     "format": "mpsub",
     "strict": {
-        "error": "The line \"1 x\" is not a header, a comment or a timing line.",
+        "error": "the line \"1 x\" is not a header, a comment or a timing line",
         "line": 7
     },
     "cues": [

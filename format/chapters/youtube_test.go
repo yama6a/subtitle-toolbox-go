@@ -99,7 +99,7 @@ func TestReadYouTubeOptions(t *testing.T) {
 	var ia *model.InvalidArgumentError
 	require.ErrorAs(t, err, &ia)
 	assert.Equal(t, "ReadOptions.Chapters.MediaDuration", ia.Option)
-	assert.Equal(t, "The media duration must be 0 or more seconds, got -1.", ia.Msg)
+	assert.Equal(t, "the media duration must be 0 or more seconds, got -1", ia.Msg)
 }
 
 func TestWriteYouTube(t *testing.T) {

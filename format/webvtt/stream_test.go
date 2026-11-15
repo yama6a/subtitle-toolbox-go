@@ -350,8 +350,8 @@ func TestStrictWebVTTReaderReportsTheLineOfTheError(t *testing.T) {
 		msg     string
 		line    int
 	}{
-		{"without WEBVTT", "\n\nThe ferry leaves.\n", "The file does not start with WEBVTT.", 3},
-		{"arrow in the header", webVTTInputs["arrow in the header"], "The WEBVTT header has no empty line before the first cue.", 2},
+		{"without WEBVTT", "\n\nThe ferry leaves.\n", "the file does not start with WEBVTT", 3},
+		{"arrow in the header", webVTTInputs["arrow in the header"], "the WEBVTT header has no empty line before the first cue", 2},
 		{"bad block", webVTTInputs["bad block"], "", 3},
 	}
 	for _, tt := range tests {
@@ -375,7 +375,7 @@ func TestLenientWebVTTReaderWithoutTheSignatureStillFails(t *testing.T) {
 	cues, err := collect(rd.Cues())
 	var perr *model.ParseError
 	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, "The file does not start with WEBVTT.", perr.Msg)
+	assert.Equal(t, "the file does not start with WEBVTT", perr.Msg)
 	assert.Empty(t, cues)
 }
 

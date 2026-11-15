@@ -76,5 +76,5 @@ func ExampleDetect() {
 func ExampleReadOptions_Validate() {
 	fmt.Println(sami.ReadOptions{LanguageClass: " "}.Validate())
 	// Output:
-	// stbox: invalid argument: ReadOptions.SAMI.LanguageClass: The language class must not be empty.
+	// stbox: invalid argument: ReadOptions.SAMI.LanguageClass: the language class must not be empty
 }

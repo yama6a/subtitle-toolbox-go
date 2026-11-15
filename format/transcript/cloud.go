@@ -59,7 +59,7 @@ func cloudFileData(s *model.Subtitle, f model.Format) (orderedjson.Value, error)
 	}
 	v, err := formatdata.ToJSON(d)
 	if err != nil {
-		return v, &model.UnwritableError{Format: f, CueIndex: -1, Reason: "The " + string(f) + " format data is no JSON.", Err: err}
+		return v, &model.UnwritableError{Format: f, CueIndex: -1, Reason: "the " + string(f) + " format data is no JSON", Err: err}
 	}
 	if v.Kind() != orderedjson.Object {
 		return orderedjson.ObjectOf(), nil

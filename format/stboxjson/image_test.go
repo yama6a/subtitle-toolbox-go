@@ -39,12 +39,12 @@ func TestReadBadImage(t *testing.T) {
 	tests := []struct {
 		name, data, msg string
 	}{
-		{"missing size", `{"png": "x"}`, "The field cues[0].formatData.image.x must be an integer."},
-		{"png number", `{"png": 1, "x": 0, "y": 0, "width": 2, "height": 1, "screenWidth": 10, "screenHeight": 10}`, "The field cues[0].formatData.image.png must be a string."},
-		{"forced number", `{` + imageFields + `, "forced": 1}`, "The field cues[0].formatData.image.forced must be a boolean."},
+		{"missing size", `{"png": "x"}`, "the field cues[0].formatData.image.x must be an integer"},
+		{"png number", `{"png": 1, "x": 0, "y": 0, "width": 2, "height": 1, "screenWidth": 10, "screenHeight": 10}`, "the field cues[0].formatData.image.png must be a string"},
+		{"forced number", `{` + imageFields + `, "forced": 1}`, "the field cues[0].formatData.image.forced must be a boolean"},
 		{
 			"zero width", `{"png": "x", "x": 0, "y": 0, "width": 0, "height": 1, "screenWidth": 10, "screenHeight": 10}`,
-			"The field cues[0].formatData.image is invalid. Cannot create a cue image of 0x1 pixels on a screen of 10x10 pixels: every size must be at least 1.",
+			"the field cues[0].formatData.image is invalid. Cannot create a cue image of 0x1 pixels on a screen of 10x10 pixels: every size must be at least 1",
 		},
 	}
 	for _, tt := range tests {

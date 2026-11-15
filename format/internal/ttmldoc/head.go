@@ -12,7 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
-const badHead = "The stored TTML head is not a well-formed <head> element."
+const badHead = "the stored TTML head is not a well-formed <head> element"
 
 // load binds the prefixes of the output, parses the stored head inside a <tt> with the output declarations, and
 // reads the IDs, agents and forced regions of the head.

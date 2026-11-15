@@ -2,7 +2,7 @@
     "name": "TTML with HTML entities",
     "format": "ttml",
     "strict": {
-        "error": "The file is not well-formed XML.",
+        "error": "the file is not well-formed XML",
         "line": null
     },
     "cues": [

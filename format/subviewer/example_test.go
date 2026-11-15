@@ -73,7 +73,7 @@ func ExampleWriteOptions_Validate() {
 	fmt.Println(subviewer.WriteOptions{Version: subviewer.Version(3)}.Validate())
 	// Output:
 	// <nil>
-	// stbox: invalid argument: WriteOptions.SubViewer.Version: The SubViewer version must be 1 or 2, got 3.
+	// stbox: invalid argument: WriteOptions.SubViewer.Version: the SubViewer version must be 1 or 2, got 3
 }
 
 func ExampleDetect() {

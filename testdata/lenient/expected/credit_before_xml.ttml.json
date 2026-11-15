@@ -2,7 +2,7 @@
     "name": "TTML with a credit line before the XML declaration",
     "format": "ttml",
     "strict": {
-        "error": "The file has text before the XML: \"Subtitles by the harbour film club\".",
+        "error": "the file has text before the XML: \"Subtitles by the harbour film club\"",
         "line": 1
     },
     "cues": [

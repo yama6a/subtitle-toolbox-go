@@ -91,7 +91,7 @@ func (rd *reader) read(content string) (*model.Subtitle, error) {
 	}
 	// An editor can save an empty project without [Events], so [Script Info] alone gives an empty subtitle.
 	if !rd.hasSection(eventsSection) && !rd.hasSection(scriptInfoSection) {
-		return nil, &model.ParseError{Format: model.ASS, Msg: "The subtitle has no [Events] section."}
+		return nil, &model.ParseError{Format: model.ASS, Msg: "the subtitle has no [Events] section"}
 	}
 	if rd.f.eventFormat == nil {
 		rd.f.eventFormat = rd.defaultEventFormat()
@@ -257,11 +257,11 @@ func (rd *reader) checkFieldNames(line string, number int) error {
 		if !decimal.IsCanonical(name) {
 			continue
 		}
-		msg := `The field name "` + name + `" in the Format line of the [Events] section is a number.`
+		msg := `the field name "` + name + `" in the Format line of the [Events] section is a number`
 		if !rd.st.Lenient() {
 			return &model.ParseError{Format: model.ASS, Line: number, Msg: msg}
 		}
-		rd.st.Warn(msg+" The parser dropped the values of this field.", number, model.NoBlock, []string{line}, model.Repaired)
+		rd.st.Warn(parsing.Sentence(msg)+" The parser dropped the values of this field.", number, model.NoBlock, []string{line}, model.Repaired)
 	}
 	return nil
 }
@@ -326,7 +326,7 @@ func (rd *reader) fields(ev event) (eventFields, error) {
 	}
 	all, ok := combine(ev.format, value, false)
 	if !ok {
-		return eventFields{}, &model.ParseError{Line: ev.number, Msg: `The line "` + ev.line + `" has fewer fields than the Format line of the [Events] section.`}
+		return eventFields{}, &model.ParseError{Line: ev.number, Msg: `the line "` + ev.line + `" has fewer fields than the Format line of the [Events] section`}
 	}
 	f := eventFields{record: record{names: make([]string, 0, len(all.names)), values: make([]string, 0, len(all.names))}}
 	for i, name := range all.names {
@@ -339,7 +339,7 @@ func (rd *reader) fields(ev event) (eventFields, error) {
 	f.end, okEnd = f.key("End")
 	f.text, okText = f.key("Text")
 	if !okStart || !okEnd || !okText {
-		return eventFields{}, &model.ParseError{Line: ev.number, Msg: "The Format line of the [Events] section needs the fields Start, End and Text."}
+		return eventFields{}, &model.ParseError{Line: ev.number, Msg: "the Format line of the [Events] section needs the fields Start, End and Text"}
 	}
 	for _, k := range []string{f.start, f.end} {
 		v, _ := f.get(k)

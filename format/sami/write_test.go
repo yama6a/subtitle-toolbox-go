@@ -259,7 +259,7 @@ func TestWriteInvalidUTF8(t *testing.T) {
 			require.ErrorIs(t, err, model.ErrUnwritable)
 			assert.Equal(t, model.UnwritableError{
 				Format: model.SAMI, CueIndex: tt.cue, Err: model.ErrInvalidUTF8,
-				Reason: "The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding.",
+				Reason: "the output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding",
 			}, *uerr)
 			assert.Zero(t, out.Len())
 		})

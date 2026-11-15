@@ -37,7 +37,7 @@ func (o WriteOptions) Validate() error {
 	}
 	return &model.InvalidArgumentError{
 		Option: "WriteOptions.MPSub.FrameRate",
-		Msg:    "The MPSub frame rate must be a positive integer, got " + timecode.Number(f.Float64()) + ".",
+		Msg:    "the MPSub frame rate must be a positive integer, got " + timecode.Number(f.Float64()),
 	}
 }
 

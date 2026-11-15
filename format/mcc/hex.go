@@ -50,12 +50,12 @@ func decodeHex(text string) ([]byte, string) {
 		}
 		if aliases[c] == "" || half >= 0 {
 			r, _ := utf8.DecodeRuneInString(text[i:])
-			return nil, "The MCC data has the invalid character " + strconv.Quote(string(r)) + " at position " + strconv.Itoa(i+1) + "."
+			return nil, "the MCC data has the invalid character " + strconv.Quote(string(r)) + " at position " + strconv.Itoa(i+1)
 		}
 		out = append(out, aliases[c]...)
 	}
 	if half >= 0 {
-		return nil, "The MCC data ends with half a byte."
+		return nil, "the MCC data ends with half a byte"
 	}
 	return out, ""
 }

@@ -60,7 +60,7 @@ func ExampleWriteOptions_Validate() {
 	fmt.Println(mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 100}}.Validate())
 	// Output:
 	// <nil>
-	// stbox: invalid argument: WriteOptions.MPSub.FrameRate: The MPSub frame rate must be a positive integer, got 29.97.
+	// stbox: invalid argument: WriteOptions.MPSub.FrameRate: the MPSub frame rate must be a positive integer, got 29.97
 }
 
 func ExampleDetect() {

@@ -439,16 +439,16 @@ func TestInvalidFiles(t *testing.T) {
 		msg     string
 		line    int
 	}{
-		{"no events section", "[V4+ Styles]\nFormat: Name\n", "The subtitle has no [Events] section.", 0},
+		{"no events section", "[V4+ Styles]\nFormat: Name\n", "the subtitle has no [Events] section", 0},
 		{
 			"too few fields", eventsHeader + "Dialogue: 0,0:00:01.00,0:00:02.00\n",
-			`The line "Dialogue: 0,0:00:01.00,0:00:02.00" has fewer fields than the Format line of the [Events] section.`, 3,
+			`the line "Dialogue: 0,0:00:01.00,0:00:02.00" has fewer fields than the Format line of the [Events] section`, 3,
 		},
 		{"invalid time", eventsHeader + "Dialogue: 0,1.00,0:00:02.00,Default,,0,0,0,,a\n", `the time "1.00" is not valid`, 3},
-		{"no text column", "[Events]\nFormat: Start, End\nDialogue: 0:00:01.00,0:00:02.00\n", "The Format line of the [Events] section needs the fields Start, End and Text.", 3},
+		{"no text column", "[Events]\nFormat: Start, End\nDialogue: 0:00:01.00,0:00:02.00\n", "the Format line of the [Events] section needs the fields Start, End and Text", 3},
 		{"minutes of 75", eventsHeader + "Dialogue: 0,0:75:02.00,0:00:02.00,Default,,0,0,0,,a\n", `the time "0:75:02.00" is not valid`, 3},
 		{"20 hour digits", eventsHeader + "Dialogue: 0,99999999999999999999:00:01.00,0:00:02.00,Default,,0,0,0,,a\n", `the time "99999999999999999999:00:01.00" is not below 100000 hours`, 3},
-		{"numeric field name", "[Events]\nFormat: Start, End, -5, Text\nDialogue: 0:00:01.00,0:00:02.00,x,a\n", `The field name "-5" in the Format line of the [Events] section is a number.`, 2},
+		{"numeric field name", "[Events]\nFormat: Start, End, -5, Text\nDialogue: 0:00:01.00,0:00:02.00,x,a\n", `the field name "-5" in the Format line of the [Events] section is a number`, 2},
 		{"ends before it starts", eventsHeader + "Dialogue: 0,0:00:03.00,0:00:02.00,Default,,0,0,0,,a\n", "the cue ends at 2 s, before it starts at 3 s", 3},
 		{"text but no cues", "[Events]\nhello\n", "the file has text but no cues", 2},
 	}
@@ -465,7 +465,7 @@ func TestInvalidFiles(t *testing.T) {
 	_, _, err := read(t, "[V4+ Styles]\nFormat: Name, Fontname\nStyle: Default,Arial\n", true)
 	var perr *model.ParseError
 	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, "The subtitle has no [Events] section.", perr.Msg)
+	assert.Equal(t, "the subtitle has no [Events] section", perr.Msg)
 }
 
 func TestFieldNamesThatLookLikeNumbers(t *testing.T) {

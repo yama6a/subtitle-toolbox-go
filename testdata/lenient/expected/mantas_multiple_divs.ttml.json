@@ -2,7 +2,7 @@
     "name": "TTML with a paragraph that begins after its timed div ends",
     "format": "ttml",
     "strict": {
-        "error": "The paragraph begins at 3.887s, but its parent ends at 2.423s.",
+        "error": "the paragraph begins at 3.887s, but its parent ends at 2.423s",
         "line": 12
     },
     "cues": [

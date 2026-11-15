@@ -16,7 +16,7 @@ import (
 
 const (
 	defaultClass = "SUBTTL"
-	invalidUTF8  = "The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding."
+	invalidUTF8  = "the output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding"
 )
 
 var (

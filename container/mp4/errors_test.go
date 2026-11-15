@@ -203,7 +203,7 @@ func TestExtractRejectsABadTrackNumberAndBadOptions(t *testing.T) {
 		{
 			"a bad MCC service on a c708 track", "c708_track.mov", 1,
 			mp4.ExtractOptions{MCC: mcc.ReadOptions{Service: 64}},
-			"ReadOptions.MCC.Service", "The CEA-708 service must be from 1 to 63, got 64.",
+			"ReadOptions.MCC.Service", "the CEA-708 service must be from 1 to 63, got 64",
 		},
 	}
 	for _, tt := range tests {

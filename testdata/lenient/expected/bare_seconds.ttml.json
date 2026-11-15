@@ -2,7 +2,7 @@
     "name": "TTML with bare seconds of an Apple Music lyrics file",
     "format": "ttml",
     "strict": {
-        "error": "The time expression \"1:30.640\" is not valid.",
+        "error": "the time expression \"1:30.640\" is not valid",
         "line": null
     },
     "cues": [

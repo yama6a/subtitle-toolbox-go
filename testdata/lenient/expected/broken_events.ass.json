@@ -2,7 +2,7 @@
     "name": "ASS without a Format line, with a short event and a bad time",
     "format": "ass",
     "strict": {
-        "error": "The line \"Dialogue: 0,0:00:04.00,0:00:06.00,Default\" has fewer fields than the Format line of the [Events] section.",
+        "error": "the line \"Dialogue: 0,0:00:04.00,0:00:06.00,Default\" has fewer fields than the Format line of the [Events] section",
         "line": 11
     },
     "cues": [

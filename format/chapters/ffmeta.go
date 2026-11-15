@@ -60,7 +60,7 @@ func ReadFFMetadata(r io.Reader, common model.CommonReadOptions, opts ReadOption
 		return s, st.Warnings(), nil
 	}
 	if !strings.HasPrefix(string(content), ";FFMETADATA") {
-		return nil, nil, parseError(model.FFMetadataChapters, 1, "The content does not start with the ;FFMETADATA header.")
+		return nil, nil, parseError(model.FFMetadataChapters, 1, "the content does not start with the ;FFMETADATA header")
 	}
 	global, streams, chapters, err := readSections(logicalLines(physicalLines(string(content))))
 	if err != nil {
@@ -139,7 +139,7 @@ func readChapterTimes(lines []logicalLine, i int, previousEnd time.Duration) (ch
 	if n, d, line, ok := timeBaseLine(lines, i+1); ok {
 		var valid bool
 		if num, den, valid = parseTimeBase(n, d); !valid {
-			return times, i, parseError(model.FFMetadataChapters, line, "The chapter time base "+n+"/"+d+" is not valid.")
+			return times, i, parseError(model.FFMetadataChapters, line, "the chapter time base "+n+"/"+d+" is not valid")
 		}
 		times.timeBase = strconv.FormatInt(num, 10) + "/" + strconv.FormatInt(den, 10)
 		i++
@@ -370,7 +370,7 @@ func WriteFFMetadata(w io.Writer, s *model.Subtitle, common model.CommonWriteOpt
 		if !ok {
 			return WriteReport{}, &model.UnwritableError{
 				Format: model.FFMetadataChapters, CueIndex: i,
-				Reason: "The stored time base " + timeBase + " has a number beyond 9223372036854775807.",
+				Reason: "the stored time base " + timeBase + " has a number beyond 9223372036854775807",
 			}
 		}
 		fmt.Fprintf(&b, "[CHAPTER]\nTIMEBASE=%s\nSTART=%d\nEND=%d\n", timeBase, timeTicks(c.Start, num, den), timeTicks(c.End, num, den))

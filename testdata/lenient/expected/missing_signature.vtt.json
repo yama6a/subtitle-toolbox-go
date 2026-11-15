@@ -2,7 +2,7 @@
     "name": "WebVTT without the WEBVTT line",
     "format": "vtt",
     "strict": {
-        "error": "The file does not start with WEBVTT.",
+        "error": "the file does not start with WEBVTT",
         "line": 1
     },
     "cues": [

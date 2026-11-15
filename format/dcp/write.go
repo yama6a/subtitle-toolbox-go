@@ -123,7 +123,7 @@ func writeDocument(s *model.Subtitle) ([]byte, error) {
 		return nil, wr.err
 	}
 	if _, err := xmlraw.Parse(strings.NewReader(out), xmlraw.ParseOptions{}); err != nil {
-		return nil, &model.UnwritableError{Format: model.DCP, CueIndex: -1, Reason: "The formatter wrote XML that is not well-formed."}
+		return nil, &model.UnwritableError{Format: model.DCP, CueIndex: -1, Reason: "the formatter wrote XML that is not well-formed"}
 	}
 	return []byte(out), nil
 }

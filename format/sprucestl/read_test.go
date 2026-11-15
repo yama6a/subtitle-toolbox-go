@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
@@ -138,18 +139,18 @@ func TestReadErrors(t *testing.T) {
 		{
 			name:        "a line that is no subtitle",
 			content:     "00:00:01:00 , 00:00:02:00 , One\n00:00:03:00 . 00:00:04:00 , Two\n00:00:05:00 , 00:00:06:00 , Three\n",
-			wantMsg:     `The line "00:00:03:00 . 00:00:04:00 , Two" is no Spruce STL subtitle, command or comment.`,
+			wantMsg:     `the line "00:00:03:00 . 00:00:04:00 , Two" is no Spruce STL subtitle, command or comment`,
 			wantLine:    2,
-			wantWarning: `The line "00:00:03:00 . 00:00:04:00 , Two" is no Spruce STL subtitle, command or comment.`,
+			wantWarning: `the line "00:00:03:00 . 00:00:04:00 , Two" is no Spruce STL subtitle, command or comment`,
 			wantCues:    2,
 		},
 		{
 			name:        "a frame number at the frame rate",
 			content:     "00:00:01:25 , 00:00:02:00 , Late\n",
 			fps:         rate25,
-			wantMsg:     `The frame number in "00:00:01:25" is not below the frame rate of 25 fps.`,
+			wantMsg:     `the frame number in "00:00:01:25" is not below the frame rate of 25 fps`,
 			wantLine:    1,
-			wantWarning: `The frame number in "00:00:01:25" is not below the frame rate of 25 fps.`,
+			wantWarning: `the frame number in "00:00:01:25" is not below the frame rate of 25 fps`,
 		},
 		{
 			name:        "a time of 100000 hours",
@@ -184,7 +185,7 @@ func TestReadErrors(t *testing.T) {
 			assert.Equal(t, tt.wantCues, s.Len())
 			var got *model.ParseWarning
 			for _, w := range warnings {
-				if w.Message == tt.wantWarning {
+				if w.Message == parsing.Sentence(tt.wantWarning) {
 					got = &w
 				}
 			}

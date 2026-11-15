@@ -188,12 +188,12 @@ func TestReadTimeErrors(t *testing.T) {
 		{
 			// Ports testFramesNeedAFrameRate of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.
 			name: "frames need a frame rate", content: "start,end,text\n00:00:01:12,00:00:02:00,a\n",
-			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `The time "00:00:01:12" counts frames and needs a frame rate.`, Option: "ReadOptions.CSV.FrameRate"},
+			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `the time "00:00:01:12" counts frames and needs a frame rate`, Option: "ReadOptions.CSV.FrameRate"},
 		},
 		{
 			// Ports testABadTimeNamesTheLine of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.
 			name: "a bad time names the line after a quoted line break", content: "start,end,text\n1,2,\"a\nb\"\nsoon,3,c\n",
-			want: &model.ParseError{Format: model.CSV, Line: 4, Msg: `The time "soon" is not seconds, h:mm:ss.mmm, m:ss.mmm, hh:mm:ss,mmm or hh:mm:ss:ff.`},
+			want: &model.ParseError{Format: model.CSV, Line: 4, Msg: `the time "soon" is not seconds, h:mm:ss.mmm, m:ss.mmm, hh:mm:ss,mmm or hh:mm:ss:ff`},
 		},
 		{
 			// Ports testATimeOf100000HoursNamesTheLimit of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.
@@ -222,15 +222,15 @@ func TestReadTimeErrors(t *testing.T) {
 		},
 		{
 			name: "a negative time", content: "start,end,text\n-1,4,a\n",
-			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `The time "-1" is not seconds, h:mm:ss.mmm, m:ss.mmm, hh:mm:ss,mmm or hh:mm:ss:ff.`},
+			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `the time "-1" is not seconds, h:mm:ss.mmm, m:ss.mmm, hh:mm:ss,mmm or hh:mm:ss:ff`},
 		},
 		{
 			name: "one-digit minutes", content: "start,end,text\n00:00:1,00:0:2,a\n",
-			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `The time "00:0:2" is not seconds, h:mm:ss.mmm, m:ss.mmm, hh:mm:ss,mmm or hh:mm:ss:ff.`},
+			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `the time "00:0:2" is not seconds, h:mm:ss.mmm, m:ss.mmm, hh:mm:ss,mmm or hh:mm:ss:ff`},
 		},
 		{
 			name: "an empty start", content: "start,end,text\n,2,a\n",
-			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `The time "" is not seconds, h:mm:ss.mmm, m:ss.mmm, hh:mm:ss,mmm or hh:mm:ss:ff.`},
+			want: &model.ParseError{Format: model.CSV, Line: 2, Msg: `the time "" is not seconds, h:mm:ss.mmm, m:ss.mmm, hh:mm:ss,mmm or hh:mm:ss:ff`},
 		},
 		{
 			name: "an end before the start", content: "start,end,text\n1:2.5,00:00:5,a\n",
@@ -312,7 +312,7 @@ func TestReadUnclosedQuote(t *testing.T) {
 		model.Repaired,
 	}}, warningRows(warnings))
 
-	assert.Equal(t, &model.ParseError{Format: model.CSV, Line: 2, Msg: "A quoted CSV cell has no closing quote."}, readError(t, content, strict, csv.ReadOptions{}))
+	assert.Equal(t, &model.ParseError{Format: model.CSV, Line: 2, Msg: "a quoted CSV cell has no closing quote"}, readError(t, content, strict, csv.ReadOptions{}))
 	// Ports testAnOpenQuoteThrows of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.
 	assert.Equal(t, 2, readError(t, "start,end,text\n1,2,\"open\n", strict, csv.ReadOptions{}).Line)
 }
@@ -338,7 +338,7 @@ func TestReadRowsBeforeTheHeader(t *testing.T) {
 		model.Skipped,
 	}}, warningRows(warnings))
 
-	assert.Equal(t, &model.ParseError{Format: model.CSV, Line: 1, Msg: `The table has no column "start" for start.`}, readError(t, content, strict, csv.ReadOptions{}))
+	assert.Equal(t, &model.ParseError{Format: model.CSV, Line: 1, Msg: `the table has no column "start" for start`}, readError(t, content, strict, csv.ReadOptions{}))
 
 	_, warnings = mustRead(t, "note\nstart,end,text\n1,2,a\n", lenient, csv.ReadOptions{})
 	assert.Equal(t, []string{"The table has 1 row before the header row."}, messages(warnings))
@@ -357,45 +357,45 @@ func TestReadColumnErrors(t *testing.T) {
 		{
 			// Ports testLenientModeKeepsTheMissingColumnErrorWithoutAHeaderRow of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.
 			name: "lenient mode keeps the missing column error", content: "note\nstart,end\n1,2\n", common: lenient,
-			want: &model.ParseError{Format: model.CSV, Line: 1, Msg: `The table has no column "start" for start.`},
+			want: &model.ParseError{Format: model.CSV, Line: 1, Msg: `the table has no column "start" for start`},
 		},
 		{
 			// Ports testColumnOptionsTurnOffHeaderSynonyms of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.
 			name: "a layout turns the synonyms off", content: "Start Time,Stop,Subtitle\n1,2,a\n",
 			opts: csv.ReadOptions{Columns: csv.Columns{End: csv.ColumnNamed("Stop")}},
-			want: &model.ParseError{Format: model.CSV, Line: 1, Msg: `The table has no column "start" for start.`},
+			want: &model.ParseError{Format: model.CSV, Line: 1, Msg: `the table has no column "start" for start`},
 		},
 		{
 			// Ports testAMissingColumnThrows of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.
 			name: "a missing mapped column", content: "start,end,text\n1,2,a\n",
 			opts: csv.ReadOptions{Columns: csv.Columns{Speaker: csv.ColumnNamed("Character")}},
-			want: &model.ParseError{Format: model.CSV, Line: 1, Msg: `The table has no column "Character" for speaker.`},
+			want: &model.ParseError{Format: model.CSV, Line: 1, Msg: `the table has no column "Character" for speaker`},
 		},
 		{
 			// Ports testATableWithoutTextThrows of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.
 			name: "a table without text", content: "start,end\n1,2\n",
-			want: &model.ParseError{Format: model.CSV, Line: 1, Msg: `The table has no column "text" for text.`},
+			want: &model.ParseError{Format: model.CSV, Line: 1, Msg: `the table has no column "text" for text`},
 		},
 		{
 			name: "an index beyond the header", content: "start,end,text\n1,2,a\n",
 			opts: csv.ReadOptions{Columns: csv.Columns{Start: csv.ColumnAt(7)}},
-			want: &model.ParseError{Format: model.CSV, Line: 1, Msg: `The table has no column "7" for start.`},
+			want: &model.ParseError{Format: model.CSV, Line: 1, Msg: `the table has no column "7" for start`},
 		},
 		{
 			name: "an index beyond the column limit", content: "a,1,2\n", common: lenient,
 			opts: csv.ReadOptions{Columns: csv.Columns{Start: csv.ColumnAt(5000), Text: csv.ColumnAt(0), NoHeader: true}},
-			want: &model.ParseError{Format: model.CSV, Line: 1, Msg: `The table has no column "5000" for start.`},
+			want: &model.ParseError{Format: model.CSV, Line: 1, Msg: `the table has no column "5000" for start`},
 		},
 		{
 			name: "the header line after blank rows", content: "\n\nstart,end\n1,2\n",
-			want: &model.ParseError{Format: model.CSV, Line: 3, Msg: `The table has no column "text" for text.`},
+			want: &model.ParseError{Format: model.CSV, Line: 3, Msg: `the table has no column "text" for text`},
 		},
 		{
 			// Ports testATableWithMoreThan1000ColumnsThrowsAParsingException of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.
 			name:    "1001 columns",
 			content: "start,end,text," + strings.Repeat("c,", 996) + "c997\n1,2,a\n3,4,b," + strings.Repeat("c,", 996) + "c997,extra\n",
 			common:  lenient,
-			want:    &model.ParseError{Format: model.CSV, Line: 3, Msg: "The table has 1001 columns. The limit is 1000."},
+			want:    &model.ParseError{Format: model.CSV, Line: 3, Msg: "the table has 1001 columns. The limit is 1000"},
 		},
 	}
 	for _, tt := range tests {

@@ -38,7 +38,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		if !ok {
 			return WriteReport{}, &model.InvalidArgumentError{
 				Option: "WriteOptions.MicroDVD.FrameRate",
-				Msg:    "MicroDVD output needs the frame rate of the video.",
+				Msg:    "MicroDVD output needs the frame rate of the video",
 			}
 		}
 		var err error

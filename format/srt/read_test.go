@@ -50,13 +50,13 @@ func TestReadErrors(t *testing.T) {
 		{
 			name:     "missing cue number",
 			content:  string(testfiles.Read(t, "srt/missing_cue_number.srt")),
-			wantMsg:  `Block #3 has no cue number on its first line. The line is "01:01:01,000 --> 80:00:00,800".`,
+			wantMsg:  `block #3 has no cue number on its first line. The line is "01:01:01,000 --> 80:00:00,800"`,
 			wantLine: 13,
 		},
 		{
 			name:     "missing timing line",
 			content:  string(testfiles.Read(t, "srt/missing_timestamps.srt")),
-			wantMsg:  `Block #2 has no timing line on its second line. The line is "Minutes and seconds and milliseconds".`,
+			wantMsg:  `block #2 has no timing line on its second line. The line is "Minutes and seconds and milliseconds"`,
 			wantLine: 10,
 		},
 		{
@@ -68,13 +68,13 @@ func TestReadErrors(t *testing.T) {
 		{
 			name:     "a block with only a cue number",
 			content:  "1\n00:00:01,000 --> 00:00:02,000\nFirst\n\n2",
-			wantMsg:  "Block #1 has no timing line on its second line.",
+			wantMsg:  "block #1 has no timing line on its second line",
 			wantLine: 5,
 		},
 		{
 			name:     "incomplete coordinates",
 			content:  "1\n00:00:01,000 --> 00:00:04,000 X1:100 X2:600\nText\n",
-			wantMsg:  `The text "X1:100 X2:600" after the end time is not valid.`,
+			wantMsg:  `the text "X1:100 X2:600" after the end time is not valid`,
 			wantLine: 2,
 		},
 		{
@@ -86,7 +86,7 @@ func TestReadErrors(t *testing.T) {
 		{
 			name:     "unknown text after cue settings",
 			content:  "1\n00:00:01,000 --> 00:00:03,500 align:start region:top\nText\n",
-			wantMsg:  `The text "region:top" after the end time is not valid.`,
+			wantMsg:  `the text "region:top" after the end time is not valid`,
 			wantLine: 2,
 		},
 		{
@@ -98,19 +98,19 @@ func TestReadErrors(t *testing.T) {
 		{
 			name:     "a long cue number line is cut in the quote",
 			content:  "Downloaded from a site with a very long name that goes on and on\n00:00:01,000 --> 00:00:02,000\n",
-			wantMsg:  `Block #0 has no cue number on its first line. The line is "Downloaded from a site with a very long name that goes on...".`,
+			wantMsg:  `block #0 has no cue number on its first line. The line is "Downloaded from a site with a very long name that goes on..."`,
 			wantLine: 1,
 		},
 		{
 			name:     "a block of full-width digits and a colon after a cue stays apart",
 			content:  "1\n00:00:01,000 --> 00:00:02,000\nOne\n\n\uff11\uff12\uff1a\uff13\uff14 text\n",
-			wantMsg:  "Block #1 has no cue number on its first line. The line is \"\uff11\uff12\uff1a\uff13\uff14 text\".",
+			wantMsg:  "block #1 has no cue number on its first line. The line is \"\uff11\uff12\uff1a\uff13\uff14 text\"",
 			wantLine: 5,
 		},
 		{
 			name:     "a block of digits, an ideographic space and a colon after a cue stays apart",
 			content:  "1\n00:00:01,000 --> 00:00:02,000\nOne\n\n12\u3000:34 x\n",
-			wantMsg:  "Block #1 has no cue number on its first line. The line is \"12\u3000:34 x\".",
+			wantMsg:  "block #1 has no cue number on its first line. The line is \"12\u3000:34 x\"",
 			wantLine: 5,
 		},
 		{
@@ -581,7 +581,7 @@ func TestReadArrows(t *testing.T) {
 				assert.Equal(t, first, cueRows(s)[0])
 			} else {
 				perr := readError(t, content)
-				assert.Equal(t, `Block #0 has no timing line on its second line. The line is "`+strings.ReplaceAll(tt.timing, "\t", " ")+`".`, perr.Msg)
+				assert.Equal(t, `block #0 has no timing line on its second line. The line is "`+strings.ReplaceAll(tt.timing, "\t", " ")+`"`, perr.Msg)
 			}
 
 			s, warnings := mustRead(t, content, true)

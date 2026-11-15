@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
 	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
@@ -165,8 +166,8 @@ func TestReadInvalidFiles(t *testing.T) {
 	t.Parallel()
 
 	const (
-		tooShort  = "An EBU STL file starts with a GSI block of 1024 bytes."
-		blockSize = "The TTI blocks of an EBU STL file must have 128 bytes each."
+		tooShort  = "an EBU STL file starts with a GSI block of 1024 bytes"
+		blockSize = "the TTI blocks of an EBU STL file must have 128 bytes each"
 	)
 	partial := bytes.Repeat([]byte{0x8F}, 100)
 	badCode := ttiBlock(tti{tco: [4]byte{0, 0, 2, 25}, tci: [4]byte{0, 0, 1, 5}})
@@ -184,18 +185,18 @@ func TestReadInvalidFiles(t *testing.T) {
 		{
 			name: "partial TTI block", content: append(gsiBlock(nil), partial...), strictError: blockSize,
 			warnings: []model.ParseWarning{{
-				Message: blockSize, Line: model.NoLine, Block: 0, Lines: []string{hex.EncodeToString(partial)}, Action: model.Skipped,
+				Message: parsing.Sentence(blockSize), Line: model.NoLine, Block: 0, Lines: []string{hex.EncodeToString(partial)}, Action: model.Skipped,
 			}},
 		},
 		{
 			name: "disk format code", content: gsiBlock(map[string]string{"DFC": "STL24.01"}),
-			strictError:  `The disk format code "STL24.01" is not STL25.01 or STL30.01.`,
-			lenientError: `The disk format code "STL24.01" is not STL25.01 or STL30.01.`,
+			strictError:  `the disk format code "STL24.01" is not STL25.01 or STL30.01`,
+			lenientError: `the disk format code "STL24.01" is not STL25.01 or STL30.01`,
 		},
 		{
 			name: "character code table", content: gsiBlock(map[string]string{"CCT": "05"}),
-			strictError:  `The character code table "05" is not 00, 01, 02, 03 or 04.`,
-			lenientError: `The character code table "05" is not 00, 01, 02, 03 or 04.`,
+			strictError:  `the character code table "05" is not 00, 01, 02, 03 or 04`,
+			lenientError: `the character code table "05" is not 00, 01, 02, 03 or 04`,
 		},
 		{
 			name: "frame above the frame rate", content: append(gsiBlock(nil), badCode...), strictCues: 1,

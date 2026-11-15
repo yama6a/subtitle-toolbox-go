@@ -117,8 +117,8 @@ func (rd *reader) timing(text string, index, line int) (start, end time.Duration
 	}
 	first, second, found := strings.Cut(text, ",")
 	if !found || strings.Contains(second, ",") {
-		return 0, 0, false, &model.ParseError{Line: line, Msg: "Block #" + strconv.Itoa(index) +
-			" has no timing line on its first line. The line is " + parsing.Quote(text) + "."}
+		return 0, 0, false, &model.ParseError{Line: line, Msg: "block #" + strconv.Itoa(index) +
+			" has no timing line on its first line. The line is " + parsing.Quote(text)}
 	}
 	if start, err = strictDuration(first, line); err != nil {
 		return 0, 0, false, err

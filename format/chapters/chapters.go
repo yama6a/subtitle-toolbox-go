@@ -33,7 +33,7 @@ func (o ReadOptions) Validate() error {
 	if o.MediaDuration < 0 {
 		return &model.InvalidArgumentError{
 			Option: "ReadOptions.Chapters.MediaDuration",
-			Msg:    fmt.Sprintf("The media duration must be 0 or more seconds, got %s.", timecode.Seconds(o.MediaDuration)),
+			Msg:    fmt.Sprintf("the media duration must be 0 or more seconds, got %s", timecode.Seconds(o.MediaDuration)),
 		}
 	}
 	return nil

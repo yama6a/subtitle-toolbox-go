@@ -51,7 +51,7 @@ func (o ReadOptions) Validate() error {
 	if o.Service < 0 || o.Service > maxService {
 		return &model.InvalidArgumentError{
 			Option: "ReadOptions.MCC.Service",
-			Msg:    "The CEA-708 service must be from 1 to 63, got " + strconv.Itoa(o.Service) + ".",
+			Msg:    "the CEA-708 service must be from 1 to 63, got " + strconv.Itoa(o.Service),
 		}
 	}
 	return caption.CEA608Options{Channel: o.Channel, RollUp: o.RollUp}.Validate("MCC")
@@ -74,8 +74,8 @@ func (o WriteOptions) Validate() error {
 		if _, ok := rateNear(o.FrameRate); !ok {
 			return &model.InvalidArgumentError{
 				Option: "WriteOptions.MCC.FrameRate",
-				Msg: "The MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got " +
-					o.FrameRate.String() + ".",
+				Msg: "the MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got " +
+					o.FrameRate.String(),
 			}
 		}
 	}

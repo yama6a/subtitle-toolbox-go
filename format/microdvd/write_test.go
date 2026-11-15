@@ -121,7 +121,7 @@ func TestWriteNeedsAFrameRate(t *testing.T) {
 
 	for _, opts := range []microdvd.WriteOptions{{}, {WriteFrameRateLine: true}} {
 		_, err := microdvd.Write(&bytes.Buffer{}, subtitle([]string{"Hello"}), model.CommonWriteOptions{}, opts)
-		assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "MicroDVD output needs the frame rate of the video."}, err)
+		assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "MicroDVD output needs the frame rate of the video"}, err)
 	}
 
 	s := subtitle([]string{"Hello"})

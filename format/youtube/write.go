@@ -167,8 +167,8 @@ func (xw *xmlWriter) text(fields orderedjson.Value, c model.Cue) string {
 
 const (
 	malformedUTF8 = "JSON cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. " +
-		"Read a file in another encoding with its source encoding."
-	infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
+		"Read a file in another encoding with its source encoding"
+	infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded"
 )
 
 func writeJSON3(w io.Writer, doc orderedjson.Value, common model.CommonWriteOptions) error {

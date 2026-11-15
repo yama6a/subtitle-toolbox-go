@@ -174,7 +174,7 @@ func (v variant) encode(line string, stripTags bool, cueIndex int) ([]byte, erro
 	if len(out) > textSize {
 		return nil, &model.UnwritableError{
 			Format: model.Cavena890, CueIndex: cueIndex,
-			Reason: fmt.Sprintf("Cavena 890 holds %d bytes per line, got %d for \"%s\".", textSize, len(out), line),
+			Reason: fmt.Sprintf("Cavena 890 holds %d bytes per line, got %d for \"%s\"", textSize, len(out), line),
 		}
 	}
 	pad := byte(filler)

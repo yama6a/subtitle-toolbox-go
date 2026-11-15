@@ -116,15 +116,21 @@ func (s *State) Fail(err error, line, block int, lines []string) error {
 	return nil
 }
 
+// Capitalize returns msg with its first letter in upper case. A message that follows an earlier sentence of an
+// error message starts this way.
+func Capitalize(msg string) string {
+	r, size := utf8.DecodeRuneInString(msg)
+	if size == 0 {
+		return msg
+	}
+	return string(unicode.ToUpper(r)) + msg[size:]
+}
+
 // Sentence returns the message of an error as the sentence of a warning: the first letter in upper case and a final
 // period. A lenient read records the sentence, because ParseWarning.Message is a full sentence.
 func Sentence(msg string) string {
-	if msg == "" {
-		return msg
-	}
-	r, size := utf8.DecodeRuneInString(msg)
-	msg = string(unicode.ToUpper(r)) + msg[size:]
-	if !strings.HasSuffix(msg, ".") {
+	msg = Capitalize(msg)
+	if msg != "" && !strings.HasSuffix(msg, ".") {
 		msg += "."
 	}
 	return msg

@@ -20,7 +20,7 @@ func cueSpeaker(c *model.Cue, d *model.Data, path string) string {
 	case string:
 		c.Speaker = markupcore.CleanLine(speaker)
 	default:
-		return path + ".speaker must be a string."
+		return path + ".speaker must be a string"
 	}
 	return ""
 }
@@ -33,14 +33,14 @@ func cueWords(c *model.Cue, d *model.Data, path string) string {
 	path += ".words"
 	list, ok := v.([]any)
 	if !ok {
-		return path + " must be a list."
+		return path + " must be a list"
 	}
 	c.Words = make([]model.Word, len(list))
 	for i, item := range list {
 		itemPath := path + "[" + strconv.Itoa(i) + "]"
 		obj, ok := item.(*model.Data)
 		if !ok {
-			return itemPath + " must be an object."
+			return itemPath + " must be an object"
 		}
 		if msg := word(&c.Words[i], obj, itemPath); msg != "" {
 			return msg
@@ -52,7 +52,7 @@ func cueWords(c *model.Cue, d *model.Data, path string) string {
 func word(w *model.Word, d *model.Data, path string) string {
 	text, _ := d.String("text")
 	if text == "" {
-		return path + ".text must be a string that is not empty."
+		return path + ".text must be a string that is not empty"
 	}
 	w.Text = text
 	if msg := wordTimes(w, d, path); msg != "" {
@@ -68,11 +68,11 @@ func wordTimes(w *model.Word, d *model.Data, path string) string {
 	}{{"start", &w.Start}, {"end", &w.End}} {
 		n, ok := finite(d.Get(t.key))
 		if !ok || n.f < 0 {
-			return path + "." + t.key + " must be a time of 0 or more."
+			return path + "." + t.key + " must be a time of 0 or more"
 		}
 		d, ok := milliseconds(n)
 		if !ok {
-			return path + "." + t.key + " is not below " + strconv.Itoa(timecode.MaxHours) + " hours."
+			return path + "." + t.key + " is not below " + strconv.Itoa(timecode.MaxHours) + " hours"
 		}
 		*t.to = d
 	}
@@ -86,7 +86,7 @@ func wordConfidence(w *model.Word, d *model.Data, path string) string {
 	}
 	n, ok := finite(v, true)
 	if !ok || !(n.f >= 0 && n.f <= 1) {
-		return path + ".confidence must be a number from 0 to 1."
+		return path + ".confidence must be a number from 0 to 1"
 	}
 	w.Confidence = &n.f
 	return ""
@@ -109,7 +109,7 @@ func validateWords(c *model.Cue, path string) string {
 		return ""
 	}
 	i, _, _ := strings.Cut(strings.TrimPrefix(iae.Option, "Words"), "].")
-	return path + ".words" + i + "] is not in the text of the cue after the word before it."
+	return path + ".words" + i + "] is not in the text of the cue after the word before it"
 }
 
 func wordMessage(err error, path string) string {
@@ -118,7 +118,7 @@ func wordMessage(err error, path string) string {
 		return ""
 	}
 	i, name, _ := strings.Cut(strings.TrimPrefix(iae.Option, "Words"), "].")
-	return path + ".words" + i + "]." + strings.ToLower(name[:1]) + name[1:] + " is invalid. " + parsing.Sentence(iae.Msg)
+	return path + ".words" + i + "]." + strings.ToLower(name[:1]) + name[1:] + " is invalid. " + parsing.Capitalize(iae.Msg)
 }
 
 // restoreTaggedLines gives c the tag layout that formatData.vtt.taggedLines holds. It works on a copy of c that reads

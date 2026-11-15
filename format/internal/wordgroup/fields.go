@@ -15,7 +15,7 @@ import (
 // A missing field is the null Value. The error has no format, so State.Fail adds it.
 func Seconds(v orderedjson.Value, path string, unit time.Duration) (time.Duration, error) {
 	if !validTime(v) {
-		return 0, &model.ParseError{Msg: "The field " + path + " must be a time."}
+		return 0, &model.ParseError{Msg: "the field " + path + " must be a time"}
 	}
 	d, ok := v.Duration(unit)
 	if !ok {
@@ -47,7 +47,7 @@ func Text(object orderedjson.Value, key, path string) (string, error) {
 	v, _ := object.Get(key)
 	s, ok := v.AsString()
 	if !ok {
-		return "", &model.ParseError{Msg: "The field " + path + "." + key + " must be a string."}
+		return "", &model.ParseError{Msg: "the field " + path + "." + key + " must be a string"}
 	}
 	return s, nil
 }

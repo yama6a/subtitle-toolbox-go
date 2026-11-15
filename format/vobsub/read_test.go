@@ -212,11 +212,11 @@ func TestReadSelectsTheTrack(t *testing.T) {
 		{name: "language without case, first match", opts: vobsub.ReadOptions{Language: "dE"}, language: "de", x: 10, start: 2 * time.Second},
 		{name: "index and language", opts: vobsub.ReadOptions{Index: new(2), Language: "de"}, language: "DE", x: 20, start: 3 * time.Second},
 		{name: "an empty id is a language", opts: vobsub.ReadOptions{Index: new(3)}, language: "", x: 30, start: 4 * time.Second},
-		{name: "no track with the index", opts: vobsub.ReadOptions{Index: new(9)}, wantErr: "vobsub: The .idx content has no track with index 9."},
-		{name: "no track with the language", opts: vobsub.ReadOptions{Language: "fr"}, wantErr: `vobsub: The .idx content has no track with language "fr".`},
+		{name: "no track with the index", opts: vobsub.ReadOptions{Index: new(9)}, wantErr: "vobsub: the .idx content has no track with index 9"},
+		{name: "no track with the language", opts: vobsub.ReadOptions{Language: "fr"}, wantErr: `vobsub: the .idx content has no track with language "fr"`},
 		{
 			name: "no track with both", opts: vobsub.ReadOptions{Index: new(0), Language: "de"},
-			wantErr: `vobsub: The .idx content has no track with index 0 and language "de".`,
+			wantErr: `vobsub: the .idx content has no track with index 0 and language "de"`,
 		},
 	}
 	for _, tt := range tests {
@@ -247,16 +247,16 @@ func TestReadOptionsErrors(t *testing.T) {
 		opts vobsub.ReadOptions
 		want model.InvalidArgumentError
 	}{
-		{"no IDX", vobsub.ReadOptions{}, model.InvalidArgumentError{Option: "ReadOptions.VobSub.IDX", Msg: "VobSub needs the .idx content. Set ReadOptions.VobSub.IDX."}},
+		{"no IDX", vobsub.ReadOptions{}, model.InvalidArgumentError{Option: "ReadOptions.VobSub.IDX", Msg: "VobSub needs the .idx content. Set ReadOptions.VobSub.IDX"}},
 		{
 			"negative index",
 			vobsub.ReadOptions{IDX: "x", Index: new(-1)},
-			model.InvalidArgumentError{Option: "ReadOptions.VobSub.Index", Msg: "The track index must be 0 or more, got -1."},
+			model.InvalidArgumentError{Option: "ReadOptions.VobSub.Index", Msg: "the track index must be 0 or more, got -1"},
 		},
 		{
 			"blank language",
 			vobsub.ReadOptions{IDX: "x", Language: " \t"},
-			model.InvalidArgumentError{Option: "ReadOptions.VobSub.Language", Msg: "The language must not be empty."},
+			model.InvalidArgumentError{Option: "ReadOptions.VobSub.Language", Msg: "the language must not be empty"},
 		},
 	}
 	for _, tt := range tests {
@@ -287,7 +287,7 @@ func TestReadReportsBrokenUnits(t *testing.T) {
 	}{
 		{
 			"filepos past the content", goodSub, len(goodSub) + 0x100,
-			"The filepos 000000" + strconv.FormatInt(int64(len(goodSub)+0x100), 16) + " of timestamp 1.000 is outside the .sub content of " + strconv.Itoa(len(goodSub)) + " bytes.",
+			"the filepos 000000" + strconv.FormatInt(int64(len(goodSub)+0x100), 16) + " of timestamp 1.000 is outside the .sub content of " + strconv.Itoa(len(goodSub)) + " bytes",
 		},
 		{
 			"no start code", zeros, 0,

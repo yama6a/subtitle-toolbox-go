@@ -20,12 +20,12 @@ func (rd *reader) readJSON(content []byte) (*model.Subtitle, error) {
 	root, err := orderedjson.Decode(content)
 	if err != nil {
 		return nil, &model.ParseError{
-			Format: model.YouTubeTimedText, Msg: "The content is not valid JSON: " + err.Error() + ".", Err: err,
+			Format: model.YouTubeTimedText, Msg: "the content is not valid JSON: " + err.Error(), Err: err,
 		}
 	}
 	events, _ := root.Get("events")
 	if events.Kind() != orderedjson.Array {
-		return nil, rd.parseError(model.NoLine, `The JSON has no "events" list.`)
+		return nil, rd.parseError(model.NoLine, `the JSON has no "events" list`)
 	}
 	pens, _ := root.Get("pens")
 	positions, _ := root.Get("wpWinPositions")
@@ -69,7 +69,7 @@ func jsonTime(object orderedjson.Value, key, path string, optional bool) (time.D
 		return 0, nil
 	}
 	if f, ok := v.AsFloat64(); !ok || f < 0 {
-		return 0, &model.ParseError{Msg: "The field " + path + " must be a number."}
+		return 0, &model.ParseError{Msg: "the field " + path + " must be a number"}
 	}
 	d, ok := v.Duration(time.Millisecond)
 	if !ok {

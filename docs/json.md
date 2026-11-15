@@ -29,7 +29,7 @@ The writer writes version 2 and the reader reads versions 1 and 2. Version 2 hol
 | `cues[].lines` | list of strings | required. Version 1: the reader cleans each line as `Cue.AddLine` does, then moves word timestamps and a whole-cue voice into `Words` and `Speaker` with `ExtractWordTags`. Version 2: the lines are as stored | core markup. Version 2 writes `Cue.Lines`, without word timestamp tags and without the whole-cue voice tag. Version 1 writes `Cue.TaggedLines()`, with both, and its vtt cue data leaves out `voiceClass` and `voiceEnd`, because the tags hold them |
 | `cues[].identifier` | string or null | optional | always. `null` for no identifier |
 | `cues[].alignment` | integer 1 to 9, or null | optional. Missing and `null` mean 2 | `null` for bottom center, else the numpad value. `alignment` stays the only place of the alignment |
-| `cues[].position` | object or null | optional. A bad value fails with its path, such as `The field cues[3].position.row is out of range.` The checks are those of `Position.Validate` | only when the cue has a row, a column or an offset, and the position is valid |
+| `cues[].position` | object or null | optional. A bad value fails with its path, such as `the field cues[3].position.row is out of range`. The checks are those of `Position.Validate` | only when the cue has a row, a column or an offset, and the position is valid |
 | `cues[].position.row`, `.column` | integer or null | optional. 1-based, 0 or missing means none | `row`, `column` and `grid` together, when `Row` or `Column` is set |
 | `cues[].position.grid` | object `{rows, columns}` or null | optional. Each value is an integer | as above |
 | `cues[].position.offset` | object `{x, y}` or null | optional. Both are numbers from 0 to 100, in percent of the video | only when set |
@@ -47,7 +47,7 @@ The writer writes version 2 and the reader reads versions 1 and 2. Version 2 hol
 - **Lists for objects**: `metadata`, `formatData`, the data of one format and `cues[].formatData` may be JSON lists. A list reads as an object with the keys `"0"`, `"1"` and so on. `cues`, `lines` and `comments` must be JSON lists.
 - **Numbers in format data**: a literal without `.`, `e` and `E` that fits an int64 reads as an integer. Every other literal reads as a float. The writer adds `.0` to a float without a fraction, so `4.0` stays a float and `4` an integer.
 - **Times**: a time that rounds to 100000 hours or more fails, as in every reader. A word timestamp tag of 100000 hours or more in a line fails too, in both versions. A time that rounds to -100000 hours or less fails too, because `time.Duration` cannot hold it. Negative times above that bound read and write as they are. A cue that ends before it starts fails, also with negative times, and lenient mode swaps it as in [lenient-parsing.md](lenient-parsing.md).
-- **Errors**: a read error names the path of the bad field, such as `The field cues[3].start must be a number.` A bad word names its path, such as `The field cues[3].words[0].confidence must be a number from 0 to 1.` and `The field cues[3].words[2] is not in the text of the cue after the word before it.` Lenient mode skips a bad cue, metadata value, format data entry or comment. Invalid JSON and a bad `version`, `metadata`, `formatData`, `cues` or `comments` field fail in both modes.
+- **Errors**: a read error names the path of the bad field, such as `the field cues[3].start must be a number`. A bad word names its path, such as `the field cues[3].words[0].confidence must be a number from 0 to 1` and `the field cues[3].words[2] is not in the text of the cue after the word before it`. Lenient mode skips a bad cue, metadata value, format data entry or comment. Invalid JSON and a bad `version`, `metadata`, `formatData`, `cues` or `comments` field fail in both modes.
 - **Depth**: 511 lists and objects inside each other read. One more fails.
 
 ## Warnings
@@ -67,7 +67,7 @@ A lenient read gives one warning per skipped or repaired entry. A strict read gi
 
 The writer writes each format data string that is not valid UTF-8 as `{"base64": "..."}`, at any depth. It uses the standard alphabet with padding. The PNG bytes of an image cue are the main case.
 
-The key `formatData.image` of a cue maps to `Cue.Image`. It holds `png`, `x`, `y`, `width`, `height`, `screenWidth`, `screenHeight` and `forced`. The reader sets `Cue.Forced` when `cues[].forced` or `image.forced` is true. The reader checks the image with `Image.Validate`, and an error names the field, for example `The field cues[3].formatData.image.width must be an integer.` An empty `image` object is no image, and the reader ignores keys of `image` that it does not know. With `OmitFormatData`, the image is not written.
+The key `formatData.image` of a cue maps to `Cue.Image`. It holds `png`, `x`, `y`, `width`, `height`, `screenWidth`, `screenHeight` and `forced`. The reader sets `Cue.Forced` when `cues[].forced` or `image.forced` is true. The reader checks the image with `Image.Validate`, and an error names the field, for example `the field cues[3].formatData.image.width must be an integer`. An empty `image` object is no image, and the reader ignores keys of `image` that it does not know. With `OmitFormatData`, the image is not written.
 
 The reader decodes each object whose only key is `base64` with a string value. It accepts missing padding and skips spaces, tabs, CR and LF.
 
@@ -75,7 +75,7 @@ Text outside format data must be valid UTF-8. That text is the cue lines and ide
 
 ## Version
 
-`stboxjson.Version` is 2, the newest version. The reader reads versions 1 and 2. Any other `version` fails with `The field version must be 1 or 2.`, so a reader of 4.0 rejects version 3.
+`stboxjson.Version` is 2, the newest version. The reader reads versions 1 and 2. Any other `version` fails with `the field version must be 1 or 2`, so a reader of 4.0 rejects version 3.
 
 `WriteOptions.Version` picks the version to write. 0 and 2 write version 2. 1 writes version 1, with the word timestamps and the speaker as tags in the lines. Version 1 loses the end and the confidence of each word. The writer returns an `*InvalidArgumentError` for another value.
 

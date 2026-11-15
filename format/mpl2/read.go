@@ -53,7 +53,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 func parseLine(st *parsing.State, raw string, line, block int) (model.Cue, error) {
 	m := cueRegexp.FindStringSubmatch(raw)
 	if m == nil {
-		return model.Cue{}, &model.ParseError{Line: line, Msg: `The line "` + raw + `" is not an MPL2 cue.`}
+		return model.Cue{}, &model.ParseError{Line: line, Msg: `the line "` + raw + `" is not an MPL2 cue`}
 	}
 	start, err := tenths(m[1], line)
 	if err != nil {

@@ -167,11 +167,11 @@ func TestStyleOptionErrors(t *testing.T) {
 		style string
 		msg   string
 	}{
-		{"unknown field", "Fontsize=48,Bogus=1", `The ASS style field "Bogus" does not exist. Use one of: ` + fields + "."},
-		{"the Name field", "Name=Other", `The ASS style field "Name" does not exist. Use one of: ` + fields + "."},
-		{"pair without =", "Fontsize=48,Bold", `The ASS style "Fontsize=48,Bold" must hold Field=Value pairs such as Fontsize=48, got "Bold".`},
-		{"empty pair", "Fontsize=48,", `The ASS style "Fontsize=48," must hold Field=Value pairs such as Fontsize=48, got "".`},
-		{"line break in a value", "Fontname=A\nB", `The ASS style "Fontname=A` + "\n" + `B" must hold Field=Value pairs such as Fontsize=48, got "Fontname=A` + "\n" + `B".`},
+		{"unknown field", "Fontsize=48,Bogus=1", `the ASS style field "Bogus" does not exist. Use one of: ` + fields},
+		{"the Name field", "Name=Other", `the ASS style field "Name" does not exist. Use one of: ` + fields},
+		{"pair without =", "Fontsize=48,Bold", `the ASS style "Fontsize=48,Bold" must hold Field=Value pairs such as Fontsize=48, got "Bold"`},
+		{"empty pair", "Fontsize=48,", `the ASS style "Fontsize=48," must hold Field=Value pairs such as Fontsize=48, got ""`},
+		{"line break in a value", "Fontname=A\nB", `the ASS style "Fontname=A` + "\n" + `B" must hold Field=Value pairs such as Fontsize=48, got "Fontname=A` + "\n" + `B"`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -192,9 +192,9 @@ func TestStyleOptionErrors(t *testing.T) {
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	require.ErrorIs(t, err, model.ErrUnwritable)
-	assert.Equal(t, "The Format line of the styles has no field Underline. It holds: Name, Fontname, Fontsize, PrimaryColour, "+
+	assert.Equal(t, "the Format line of the styles has no field Underline. It holds: Name, Fontname, Fontsize, PrimaryColour, "+
 		"SecondaryColour, TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, "+
-		"MarginV, AlphaLevel, Encoding.", uerr.Reason)
+		"MarginV, AlphaLevel, Encoding", uerr.Reason)
 	assert.Equal(t, model.ASS, uerr.Format)
 }
 
@@ -235,7 +235,7 @@ func TestKaraokeTagValidate(t *testing.T) {
 	var aerr *model.InvalidArgumentError
 	require.ErrorAs(t, err, &aerr)
 	assert.Equal(t, "WriteOptions.ASS.KaraokeTag", aerr.Option)
-	assert.Equal(t, `The ASS karaoke tag "kx" is unknown. Use one of: k, kf, ko.`, aerr.Msg)
+	assert.Equal(t, `the ASS karaoke tag "kx" is unknown. Use one of: k, kf, ko`, aerr.Msg)
 
 	assert.Equal(t, "k", ass.KaraokeTag("").String())
 	assert.Equal(t, "kf", ass.KaraokeFill.String())

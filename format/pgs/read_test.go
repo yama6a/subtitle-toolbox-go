@@ -300,38 +300,38 @@ func TestReadDamage(t *testing.T) {
 		{name: "empty input"},
 		{
 			name: "no magic bytes", content: append([]byte("XG"), valid[2:]...),
-			strict: "The segment at byte 0 does not start with the PG magic bytes.",
+			strict: "the segment at byte 0 does not start with the PG magic bytes",
 			warns:  []model.ParseWarning{{Message: "The segment at byte 0 does not start with the PG magic bytes.", Action: model.Skipped}},
 		},
 		{
 			name: "one byte of the magic", content: []byte("P"),
-			strict: "The segment at byte 0 does not start with the PG magic bytes.",
+			strict: "the segment at byte 0 does not start with the PG magic bytes",
 			warns:  []model.ParseWarning{{Message: "The segment at byte 0 does not start with the PG magic bytes.", Action: model.Skipped}},
 		},
 		{
 			name: "garbage after a display set", content: append(bytes.Clone(valid), "junk"...),
-			strict: "The segment at byte 13 does not start with the PG magic bytes.",
+			strict: "the segment at byte 13 does not start with the PG magic bytes",
 			warns:  []model.ParseWarning{{Message: "The segment at byte 13 does not start with the PG magic bytes.", Block: 1, Action: model.Skipped}},
 		},
 		{
 			name: "cut header", content: []byte("PG\x00\x00"),
-			strict: "The segment header at byte 0 is cut off.",
+			strict: "the segment header at byte 0 is cut off",
 			warns:  []model.ParseWarning{{Message: "The segment header at byte 0 is cut off.", Action: model.Skipped}},
 		},
 		{
 			name: "cut segment data", content: new(builder).palette(0, 0, testPalette).Bytes()[:44],
-			strict: "The segment at byte 0 has 32 bytes of data, but the file ends before.",
+			strict: "the segment at byte 0 has 32 bytes of data, but the file ends before",
 			warns:  []model.ParseWarning{{Message: "The segment at byte 0 has 32 bytes of data, but the file ends before.", Action: model.Skipped}},
 		},
 		{
 			name: "cut fixture keeps the cues before the damage", content: testfiles.Read(t, "pgs/shapes_576p.sup")[:1400],
-			strict: "The segment header at byte 1398 is cut off.",
+			strict: "the segment header at byte 1398 is cut off",
 			cues:   []wantCue{{start: 500 * time.Millisecond, end: 3 * time.Second}},
 			warns:  []model.ParseWarning{{Message: "The segment header at byte 1398 is cut off.", Block: 8, Action: model.Skipped}},
 		},
 		{
 			name: "cut display set ends the shown cue and shows nothing", content: cutSet,
-			strict: "The segment at byte 202 has 22 bytes of data, but the file ends before.", cues: []wantCue{{start: seconds(1), end: seconds(2)}},
+			strict: "the segment at byte 202 has 22 bytes of data, but the file ends before", cues: []wantCue{{start: seconds(1), end: seconds(2)}},
 			warns: []model.ParseWarning{{Message: "The segment at byte 202 has 22 bytes of data, but the file ends before.", Block: 6, Action: model.Skipped}},
 		},
 		{

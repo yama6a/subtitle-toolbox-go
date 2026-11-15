@@ -181,27 +181,27 @@ func TestReadErrors(t *testing.T) {
 	}{
 		{
 			"text before the first timing line", "[SUBTITLE]\nHello\n00:00:01.00,00:00:02.00\nWorld\n", 2,
-			`The line "Hello" is neither a header tag nor a timing line.`,
+			`the line "Hello" is neither a header tag nor a timing line`,
 		},
 		{
 			"a bad time", "00:00:01.00,00:00:03.00\nOne\n\n00:00:04.00,00:00:0x.00\nTwo\n", 4,
-			`The timing line "00:00:04.00,00:00:0x.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.`,
+			`the timing line "00:00:04.00,00:00:0x.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff`,
 		},
 		{
 			"minutes of 60 or more", "00:00:01.00,00:60:03.00\nOne\n", 1,
-			`The timing line "00:00:01.00,00:60:03.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.`,
+			`the timing line "00:00:01.00,00:60:03.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff`,
 		},
 		{
 			"4 fraction digits", "00:00:01.5000,00:00:03.0000\nOne\n", 1,
-			`The timing line "00:00:01.5000,00:00:03.0000" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.`,
+			`the timing line "00:00:01.5000,00:00:03.0000" is not in the form hh:mm:ss.ff,hh:mm:ss.ff`,
 		},
 		{
 			"6 hour digits", "100000:00:01.00,00:00:03.00\nOne\n", 1,
-			`The timing line "100000:00:01.00,00:00:03.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.`,
+			`the timing line "100000:00:01.00,00:00:03.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff`,
 		},
 		{
 			"one field is a time", "Hello,00:00:03.00\nOne\n", 1,
-			`The timing line "Hello,00:00:03.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.`,
+			`the timing line "Hello,00:00:03.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff`,
 		},
 		{
 			"the cue ends before it starts", "00:00:05.00,00:00:03.00\nOne\n", 1,
@@ -209,11 +209,11 @@ func TestReadErrors(t *testing.T) {
 		},
 		{
 			"a header line without a bracket in version 1", "Ferry times\n" + script + "[00:00:02]\nHello\n", 1,
-			`The line "Ferry times" is not a SubViewer 1 header tag.`,
+			`the line "Ferry times" is not a SubViewer 1 header tag`,
 		},
 		{
 			"a header line with an empty tag in version 1", "[]x\n" + script, 1,
-			`The line "[]x" is not a SubViewer 1 header tag.`,
+			`the line "[]x" is not a SubViewer 1 header tag`,
 		},
 		{
 			"a time of 60 minutes in version 1", script + "[00:60:02]\nHello\n", 2,

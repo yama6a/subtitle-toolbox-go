@@ -160,7 +160,7 @@ func (p *prepass) checkUTF8(chunk []byte, last bool) {
 			}
 			p.seenBad = true
 			if p.st.Lenient() {
-				w := newWarning(badUTF8Message(start+i), model.NoLine, model.NoBlock, nil, model.Repaired)
+				w := newWarning(Sentence(badUTF8Message(start+i)), model.NoLine, model.NoBlock, nil, model.Repaired)
 				p.st.badUTF8 = &w
 			}
 			return

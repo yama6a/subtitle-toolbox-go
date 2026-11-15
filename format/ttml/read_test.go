@@ -135,7 +135,7 @@ func TestInvalidTimeExpression(t *testing.T) {
 			t.Parallel()
 
 			perr := readError(t, document(`<div><p begin="`+tt.expression+`" end="2s">x</p></div>`, "", ""), false)
-			assert.Equal(t, `The time expression "`+tt.expression+`" is not valid.`, perr.Msg)
+			assert.Equal(t, `the time expression "`+tt.expression+`" is not valid`, perr.Msg)
 			assert.Equal(t, model.NoLine, perr.Line)
 		})
 	}
@@ -145,9 +145,9 @@ func TestTimeLimit(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct{ name, p, want string }{
-		{"expression alone", `<p begin="100000:00:00" end="1s">x</p>`, `The time "100000:00:00" is not below 100000 hours.`},
-		{"expression that rounds up", `<p begin="99999:59:59.9999" end="1s">x</p>`, `The time "99999:59:59.9999" is not below 100000 hours.`},
-		{"offset in hours", `<p begin="1s" end="100000h">x</p>`, `The time "100000h" is not below 100000 hours.`},
+		{"expression alone", `<p begin="100000:00:00" end="1s">x</p>`, `the time "100000:00:00" is not below 100000 hours`},
+		{"expression that rounds up", `<p begin="99999:59:59.9999" end="1s">x</p>`, `the time "99999:59:59.9999" is not below 100000 hours`},
+		{"offset in hours", `<p begin="1s" end="100000h">x</p>`, `the time "100000h" is not below 100000 hours`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -158,7 +158,7 @@ func TestTimeLimit(t *testing.T) {
 	}
 
 	perr := readError(t, document(`<div begin="99999h">`+"\n"+`<p begin="3600s" end="3601s">x</p></div>`, "", ""), false)
-	assert.Equal(t, `The time "3600s" is not below 100000 hours.`, perr.Msg, "the sum with the parent offset")
+	assert.Equal(t, `the time "3600s" is not below 100000 hours`, perr.Msg, "the sum with the parent offset")
 	assert.Equal(t, 2, perr.Line)
 	c := paragraphCue(t, `<p begin="99999:59:59.9994" end="99999:59:59.9994">x</p>`, "", "")
 	assert.Equal(t, sec(359999999.999), c.Start)
@@ -245,7 +245,7 @@ func TestParagraphWithoutEnd(t *testing.T) {
 	t.Parallel()
 
 	perr := readError(t, document("<div>\n"+`<p begin="1.25s">x</p></div>`, "", ""), false)
-	assert.Equal(t, "The paragraph that begins at 1.25s has no end time.", perr.Msg)
+	assert.Equal(t, "the paragraph that begins at 1.25s has no end time", perr.Msg)
 	assert.Equal(t, 2, perr.Line)
 }
 
@@ -638,7 +638,7 @@ func TestExternalEntityIsNotLoaded(t *testing.T) {
 
 	content := "<?xml version=\"1.0\"?>\n<!DOCTYPE tt [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]>\n" +
 		`<tt xmlns="http://www.w3.org/ns/ttml"><body><div><p begin="0s" end="1s">a&xxe;b</p></div></body></tt>`
-	assert.Equal(t, "The file is not well-formed XML.", readError(t, content, false).Msg)
+	assert.Equal(t, "the file is not well-formed XML", readError(t, content, false).Msg)
 
 	s, _ := mustRead(t, content, true)
 	assert.Equal(t, []cueRow{{0, sec(1), "a&amp;xxe;b"}}, cueRows(s))
@@ -648,10 +648,10 @@ func TestInvalidFile(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct{ name, content, want string }{
-		{"not well-formed", `<tt xmlns="http://www.w3.org/ns/ttml"><body>`, "The file is not well-formed XML."},
-		{"other root", "<html><body/></html>", "The root element is not a TTML <tt> element."},
-		{"other namespace", `<tt xmlns="urn:example"/>`, "The root element is not a TTML <tt> element."},
-		{"undeclared prefix on the root", `<x:tt/>`, "The root element is not a TTML <tt> element."},
+		{"not well-formed", `<tt xmlns="http://www.w3.org/ns/ttml"><body>`, "the file is not well-formed XML"},
+		{"other root", "<html><body/></html>", "the root element is not a TTML <tt> element"},
+		{"other namespace", `<tt xmlns="urn:example"/>`, "the root element is not a TTML <tt> element"},
+		{"undeclared prefix on the root", `<x:tt/>`, "the root element is not a TTML <tt> element"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -669,7 +669,7 @@ func TestInvalidUTF8(t *testing.T) {
 
 	content := document(`<div><p end="1s">caf`+"\xe9"+`</p></div>`, "", "")
 	perr := readError(t, content, false)
-	assert.Contains(t, perr.Msg, "The content is not valid UTF-8.")
+	assert.Contains(t, perr.Msg, "the content is not valid UTF-8.")
 
 	s, warnings := mustRead(t, content, true)
 	assert.Equal(t, []cueRow{{0, sec(1), "caf\ufffd"}}, cueRows(s))
