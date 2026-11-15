@@ -17,6 +17,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/transform"
 
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
 	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
@@ -334,4 +336,97 @@ var optionSets = []struct {
 	{"BOM", model.CommonWriteOptions{BOM: model.BOMAdd}},
 	{"strip tags", model.CommonWriteOptions{StripTags: true}},
 	{"CRLF without BOM", model.CommonWriteOptions{LineEnding: model.CRLF, BOM: model.BOMRemove}},
+}
+
+// Ported from tests/Parsers/ParseErrorLineNumbersTest.php, brokenStreams.
+func TestStrictWebVTTReaderReportsTheLineOfTheError(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		content string
+		msg     string
+		line    int
+	}{
+		{"without WEBVTT", "\n\nThe ferry leaves.\n", "The file does not start with WEBVTT.", 3},
+		{"arrow in the header", webVTTInputs["arrow in the header"], "The WEBVTT header has no empty line before the first cue.", 2},
+		{"bad block", webVTTInputs["bad block"], "", 3},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := collect(webvtt.NewStreamReader(strings.NewReader(tt.content), webvtt.StreamOptions{}).Cues())
+			var perr *model.ParseError
+			require.ErrorAs(t, err, &perr)
+			assert.Equal(t, tt.line, perr.Line)
+			assert.Equal(t, model.WebVTT, perr.Format)
+			assert.Contains(t, perr.Msg, tt.msg)
+		})
+	}
+}
+
+func TestLenientWebVTTReaderWithoutTheSignatureStillFails(t *testing.T) {
+	t.Parallel()
+
+	rd := webvtt.NewStreamReader(bytes.NewReader(testfiles.Read(t, "lenient/bad_timestamp.srt")), webvtt.StreamOptions{Lenient: true})
+	cues, err := collect(rd.Cues())
+	var perr *model.ParseError
+	require.ErrorAs(t, err, &perr)
+	assert.Equal(t, "The file does not start with WEBVTT.", perr.Msg)
+	assert.Empty(t, cues)
+}
+
+func TestReadersReadUTF16ThroughATransformReader(t *testing.T) {
+	t.Parallel()
+
+	raw := testfiles.Read(t, "encoding/notepad-utf-16le.vtt")
+	decoded, err := io.ReadAll(transform.NewReader(bytes.NewReader(raw), unicode.UTF16(unicode.LittleEndian, unicode.UseBOM).NewDecoder()))
+	require.NoError(t, err)
+	s, _, err := webvtt.Read(bytes.NewReader(decoded), model.CommonReadOptions{}, webvtt.ReadOptions{})
+	require.NoError(t, err)
+
+	rd := webvtt.NewStreamReader(transform.NewReader(bytes.NewReader(raw), unicode.UTF16(unicode.LittleEndian, unicode.UseBOM).NewDecoder()), webvtt.StreamOptions{})
+	cues, err := collect(rd.Cues())
+	require.NoError(t, err)
+	assert.Equal(t, cuesOf(s), inStartOrder(cues))
+}
+
+// Ported from tests/Streaming/StreamWriterTest.php, testCopiesTheWebVttHeaderFromReaderToWriter.
+func TestCopiesTheWebVTTHeaderFromReaderToWriter(t *testing.T) {
+	t.Parallel()
+
+	rd := webvtt.NewStreamReader(bytes.NewReader(testfiles.Read(t, "vtt/real/w3c_regions.vtt")), webvtt.StreamOptions{})
+	var out bytes.Buffer
+	var w *webvtt.StreamWriter
+	for c, err := range rd.Cues() {
+		require.NoError(t, err)
+		if w == nil {
+			var err error
+			w, err = webvtt.NewStreamWriter(&out, model.CommonWriteOptions{}, webvtt.WriteOptions{}, rd.Header())
+			require.NoError(t, err)
+		}
+		require.NoError(t, w.Write(c))
+	}
+	require.NoError(t, w.Close())
+
+	copied := webvtt.NewStreamReader(&out, webvtt.StreamOptions{})
+	_, err := collect(copied.Cues())
+	require.NoError(t, err)
+	assert.Equal(t, rd.Header(), copied.Header())
+	regions, _ := copied.Header().List("regions")
+	assert.NotEmpty(t, regions)
+}
+
+func TestDroppedColorsReturnsACopy(t *testing.T) {
+	t.Parallel()
+
+	w, err := webvtt.NewStreamWriter(&bytes.Buffer{}, model.CommonWriteOptions{}, webvtt.WriteOptions{}, nil)
+	require.NoError(t, err)
+	var c model.Cue
+	c.SetText(`<font color="#123456">Hi</font>`)
+	require.NoError(t, w.Write(c))
+	got := w.DroppedColors()
+	got[0].Color = "changed"
+	assert.True(t, slices.ContainsFunc(w.DroppedColors(), func(d webvtt.DroppedColor) bool { return d.Color == "#123456" }))
 }

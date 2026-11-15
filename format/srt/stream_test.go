@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"iter"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"testing/iotest"
@@ -227,4 +228,177 @@ var optionSets = []struct {
 	{"BOM", model.CommonWriteOptions{BOM: model.BOMAdd}},
 	{"strip tags", model.CommonWriteOptions{StripTags: true}},
 	{"CRLF without BOM", model.CommonWriteOptions{LineEnding: model.CRLF, BOM: model.BOMRemove}},
+}
+
+func TestReadersKeepTheFileOrder(t *testing.T) {
+	t.Parallel()
+
+	content := "1\n00:00:05,000 --> 00:00:06,000\nLate\n\n2\n00:00:01,000 --> 00:00:02,000\nEarly\n"
+	cues, err := collect(srt.NewStreamReader(strings.NewReader(content), srt.StreamOptions{}).Cues())
+	require.NoError(t, err)
+	require.Len(t, cues, 2)
+	assert.Equal(t, "Late", cues[0].Text())
+	assert.Equal(t, "Early", cues[1].Text())
+}
+
+func TestStrictNULFailsOnItsLine(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		content string
+		line    int
+	}{
+		{"in the text", "1\n00:00:01,000 --> 00:00:02,000\nOne\n\n2\n00:00:03,000 --> 00:00:04,000\nThe fer\x00ry leaves.\n", 7},
+		{"between CR and LF", "1\r\x00\n00:00:01,000 --> 00:00:02,000\r\x00\nOne\r\x00\n", 2},
+		{"after a BOM and a Ctrl-Z", bom + "1\x1a\n\x00", 2},
+	}
+	for _, tt := range tests {
+		for _, w := range wraps {
+			t.Run(tt.name+"/"+w.name, func(t *testing.T) {
+				t.Parallel()
+
+				want := "Line " + strconv.Itoa(tt.line) + " has a NUL character. Check the encoding of the file."
+				rd := srt.NewStreamReader(w.wrap(strings.NewReader(tt.content)), srt.StreamOptions{})
+				_, err := collect(rd.Cues())
+				var perr *model.ParseError
+				require.ErrorAs(t, err, &perr)
+				assert.Equal(t, tt.line, perr.Line)
+				assert.Equal(t, want, perr.Msg)
+
+				_, _, fullErr := srt.Read(strings.NewReader(tt.content), model.CommonReadOptions{}, srt.ReadOptions{})
+				require.ErrorAs(t, fullErr, &perr)
+				assert.Equal(t, want, perr.Msg)
+			})
+		}
+	}
+}
+
+func TestInvalidUTF8OffsetCountsTheBytesBeforeTheBadByte(t *testing.T) {
+	t.Parallel()
+
+	content := bom + "1\n00:00:01,000 --> 00:00:02,000\nOne\n\n2\n00:00:03,000 --> 00:00:04,000\nT\xc3\xa9\xffo\n"
+	rd := srt.NewStreamReader(iotest.OneByteReader(strings.NewReader(content)), srt.StreamOptions{Lenient: true})
+	_, err := collect(rd.Cues())
+	require.NoError(t, err)
+	want := strings.Index(content, "\xff")
+	require.Positive(t, want)
+	assert.Contains(t, rd.Warnings()[0].Message, "offset "+strconv.Itoa(want)+".")
+}
+
+func TestWarningsGrowWhileTheLoopRuns(t *testing.T) {
+	t.Parallel()
+
+	content := "1\n00:00:01,000 --> 00:00:02,000\nOne\n\n2\nbad\n\n3\n00:00:03,000 --> 00:00:04,000\nThree\n"
+	rd := srt.NewStreamReader(strings.NewReader(content), srt.StreamOptions{Lenient: true})
+	var counts []int
+	for _, err := range rd.Cues() {
+		require.NoError(t, err)
+		counts = append(counts, len(rd.Warnings()))
+	}
+	assert.Equal(t, []int{0, 1}, counts)
+}
+
+func TestCuesYieldsNothingTheSecondTime(t *testing.T) {
+	t.Parallel()
+
+	rd := srt.NewStreamReader(strings.NewReader(subRipInputs["BOM and CRLF"]), srt.StreamOptions{})
+	cues, err := collect(rd.Cues())
+	require.NoError(t, err)
+	assert.Len(t, cues, 2)
+	cues, err = collect(rd.Cues())
+	require.NoError(t, err)
+	assert.Empty(t, cues)
+}
+
+func TestBreakingOutOfTheLoopStopsTheRead(t *testing.T) {
+	t.Parallel()
+
+	var content strings.Builder
+	for i := range 20000 {
+		content.WriteString(strconv.Itoa(i+1) + "\n00:00:01,000 --> 00:00:02,000\nLine number " + strconv.Itoa(i) + "\n\n")
+	}
+	counter := &countingReader{r: strings.NewReader(content.String())}
+	for _, err := range srt.NewStreamReader(counter, srt.StreamOptions{}).Cues() {
+		require.NoError(t, err)
+		break
+	}
+	assert.Less(t, counter.n, content.Len()/4)
+}
+
+func TestReadErrorEndsTheSequenceAfterTheCuesBeforeIt(t *testing.T) {
+	t.Parallel()
+
+	boom := errors.New("disk gone")
+	r := io.MultiReader(strings.NewReader("1\n00:00:01,000 --> 00:00:02,000\nOne\n\n2\n00:00:03,000 --> 00:00:04,000\nTwo\n\n3\n00:00"), errReader{boom})
+	cues, err := collect(srt.NewStreamReader(r, srt.StreamOptions{}).Cues())
+	require.ErrorIs(t, err, boom)
+	assert.Len(t, cues, 2)
+}
+
+func TestReadersRoundTripThroughWriters(t *testing.T) {
+	t.Parallel()
+
+	var out bytes.Buffer
+	w, err := srt.NewStreamWriter(&out, model.CommonWriteOptions{}, srt.WriteOptions{})
+	require.NoError(t, err)
+	require.NoError(t, w.Write(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"A"}}))
+	require.NoError(t, w.Close())
+	cues, err := collect(srt.NewStreamReader(&out, srt.StreamOptions{}).Cues())
+	require.NoError(t, err)
+	require.Len(t, cues, 1)
+	assert.Equal(t, "A", cues[0].Text())
+}
+
+func TestAStrictNULDropsTheBlockThatItCut(t *testing.T) {
+	t.Parallel()
+
+	content := "1\n00:00:01,000 --> 00:00:02,000\nHello\nWor\x00ld\n"
+	cues, err := collect(srt.NewStreamReader(strings.NewReader(content), srt.StreamOptions{}).Cues())
+	var perr *model.ParseError
+	require.ErrorAs(t, err, &perr)
+	assert.Equal(t, 4, perr.Line)
+	assert.Empty(t, cues)
+
+	content = "1\n00:00:01,000 --> 00:00:02,000\nOne\n\n2\n00:00:03,000 --> 00:00:04,000\nHello\nWor\x00ld\n"
+	cues, err = collect(srt.NewStreamReader(strings.NewReader(content), srt.StreamOptions{}).Cues())
+	require.ErrorAs(t, err, &perr)
+	require.Len(t, cues, 1)
+	assert.Equal(t, "One", cues[0].Text())
+}
+
+func TestCloseLeavesTheCallersWriterOpen(t *testing.T) {
+	t.Parallel()
+
+	spy := &closeSpy{}
+	w, err := srt.NewStreamWriter(spy, model.CommonWriteOptions{}, srt.WriteOptions{})
+	require.NoError(t, err)
+	require.NoError(t, w.Close())
+	require.NoError(t, w.Close())
+	assert.False(t, spy.closed)
+}
+
+type closeSpy struct {
+	bytes.Buffer
+	closed bool
+}
+
+func (c *closeSpy) Close() error {
+	c.closed = true
+	return nil
+}
+
+type errReader struct{ err error }
+
+func (e errReader) Read([]byte) (int, error) { return 0, e.err }
+
+type countingReader struct {
+	r io.Reader
+	n int
+}
+
+func (c *countingReader) Read(b []byte) (int, error) {
+	n, err := c.r.Read(b)
+	c.n += n
+	return n, err
 }
