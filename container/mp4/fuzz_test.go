@@ -2,10 +2,7 @@ package mp4_test
 
 import (
 	"bytes"
-	"os"
-	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -13,22 +10,12 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-const timeLimit = 100000 * time.Hour
-
 func FuzzOpen(f *testing.F) {
-	matches, err := filepath.Glob(filepath.Join(testfiles.Path(f, "mp4"), "*.mp4"))
-	require.NoError(f, err)
-	movs, err := filepath.Glob(filepath.Join(testfiles.Path(f, "mp4"), "*.mov"))
-	require.NoError(f, err)
-	for _, name := range append(matches, movs...) {
-		content, err := os.ReadFile(name)
-		require.NoError(f, err)
-		f.Add(content)
-	}
+	formattest.AddSeeds(f, "mp4/*.mp4", "mp4/*.mov")
 	f.Add(single(trackSpec{}, textSample("Hi")))
 
 	f.Fuzz(func(t *testing.T, content []byte) {
@@ -38,18 +25,14 @@ func FuzzOpen(f *testing.F) {
 			return
 		}
 		for _, track := range file.Tracks() {
-			s, _, err := file.Extract(track.Number, model.CommonReadOptions{}, mp4.ExtractOptions{})
-			if err != nil {
-				require.ErrorIs(t, err, model.ErrParse)
+			s, warnings, err := file.Extract(track.Number, model.CommonReadOptions{}, mp4.ExtractOptions{})
+			if !formattest.CheckRead(t, s, warnings, err) {
 				continue
 			}
-			var previous time.Duration
-			for _, c := range s.Cues() {
-				require.GreaterOrEqual(t, c.Start, previous)
-				previous = c.Start
-				require.Zero(t, c.Start%time.Millisecond)
-				require.Zero(t, c.End%time.Millisecond)
-				require.Less(t, c.End, timeLimit)
+			for i, c := range s.All() {
+				if c.Start < 0 {
+					t.Fatalf("cue %d has a negative start", i)
+				}
 			}
 			var out bytes.Buffer
 			var werr error

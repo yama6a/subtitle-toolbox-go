@@ -3,6 +3,7 @@ package mkv_test
 import (
 	"bytes"
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -156,7 +157,7 @@ func TestExtractFixtures(t *testing.T) {
 func TestLastCueDuration(t *testing.T) {
 	t.Parallel()
 
-	file := cat(ebmlHeader("matroska"), unknownSizeElement(idSegment, cat(info(1000000, "x"), tracks(subTrack(1, "S_TEXT/UTF8")),
+	file := slices.Concat(ebmlHeader("matroska"), unknownSizeElement(idSegment, slices.Concat(info(1000000, "x"), tracks(subTrack(1, "S_TEXT/UTF8")),
 		cluster(0, blockGroup(1, 1000, "Platform 4.", 1000), simpleBlock(1, 3000, "Mind the gap.", 0)))))
 	d := 1005 * time.Millisecond
 	tests := []struct {
@@ -243,10 +244,10 @@ func TestTimeLimit(t *testing.T) {
 
 func hugeCodecPrivate() []byte {
 	declared := uint64(1) << 40
-	entry := cat(uintElement(0xD7, 2), uintElement(0x83, trackSub), element(0x86, []byte("S_TEXT/UTF8")),
+	entry := slices.Concat(uintElement(0xD7, 2), uintElement(0x83, trackSub), element(0x86, []byte("S_TEXT/UTF8")),
 		idBytes(0x63A2), sizeBytes(declared), []byte("abc"))
-	entry = cat(idBytes(0xAE), sizeBytes(declared+uint64(len(entry))), entry)
-	return cat(idBytes(idTracks), sizeBytes(declared+uint64(len(entry))), entry)
+	entry = slices.Concat(idBytes(0xAE), sizeBytes(declared+uint64(len(entry))), entry)
+	return slices.Concat(idBytes(idTracks), sizeBytes(declared+uint64(len(entry))), entry)
 }
 
 func TestBrokenFiles(t *testing.T) {
@@ -261,7 +262,7 @@ func TestBrokenFiles(t *testing.T) {
 		file := segmentFile("matroska", trackElement, clusters)
 		return file[:len(file)-cut]
 	}
-	encrypted := element(0x6240, cat(uintElement(0x5031, 0), uintElement(0x5032, 1), uintElement(0x5033, 1), element(0x5035, nil)))
+	encrypted := element(0x6240, slices.Concat(uintElement(0x5031, 0), uintElement(0x5032, 1), uintElement(0x5033, 1), element(0x5035, nil)))
 	tests := []struct {
 		name string
 		file []byte
@@ -280,7 +281,7 @@ func TestBrokenFiles(t *testing.T) {
 			"The block header at byte 86 is not valid.",
 		},
 		{
-			"child larger than its parent", brokenFile(nil, tracks(element(0xAE, cat(uintElement(0xD7, 2), []byte("\x86\x85ab")))), trackFields{}, 0),
+			"child larger than its parent", brokenFile(nil, tracks(element(0xAE, slices.Concat(uintElement(0xD7, 2), []byte("\x86\x85ab")))), trackFields{}, 0),
 			"The element at byte 55 does not fit into its parent element.",
 		},
 		{
@@ -305,7 +306,7 @@ func TestBrokenFiles(t *testing.T) {
 			"Track 2 uses encryption or a compression other than zlib and header stripping.",
 		},
 		{
-			"invalid element header in a cluster", brokenFile(cat(cluster(0), []byte{0, 0, 0, 0}), nil, trackFields{}, 0),
+			"invalid element header in a cluster", brokenFile(slices.Concat(cluster(0), []byte{0, 0, 0, 0}), nil, trackFields{}, 0),
 			"The EBML element header at byte 84 is not valid.",
 		},
 		{

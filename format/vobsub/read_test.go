@@ -2,6 +2,7 @@ package vobsub_test
 
 import (
 	"bytes"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -295,19 +296,19 @@ func TestReadReportsBrokenUnits(t *testing.T) {
 			"unit cut off at the end of the content", cutSub[:31], 0,
 			"The .sub content has no complete subtitle packet at filepos 000000000. It ends or has no MPEG start code at byte 31.",
 		},
-		{"pack header without the MPEG-2 marker", slicesConcat([]byte("\x00\x00\x01\xBA"), zeros), 0, "The .sub content has no MPEG-2 pack header at byte 0."},
+		{"pack header without the MPEG-2 marker", slices.Concat([]byte("\x00\x00\x01\xBA"), zeros), 0, "The .sub content has no MPEG-2 pack header at byte 0."},
 		{
-			"program end before the unit is complete", slicesConcat([]byte("\x00\x00\x01\xB9"), zeros), 0,
+			"program end before the unit is complete", slices.Concat([]byte("\x00\x00\x01\xB9"), zeros), 0,
 			"The .sub content ends at byte 0 before the subtitle packet at filepos 000000000 is complete.",
 		},
-		{"packet longer than the content", slicesConcat([]byte(packHeader), []byte("\x00\x00\x01\xBD\xFF\xFF"), zeros), 0, "The .sub packet at byte 14 is longer than the content."},
+		{"packet longer than the content", slices.Concat([]byte(packHeader), []byte("\x00\x00\x01\xBD\xFF\xFF"), zeros), 0, "The .sub packet at byte 14 is longer than the content."},
 		{
-			"control sequence offset below 4", pesOf(slicesConcat(u16(10, 2), make([]byte, 6))), 0,
+			"control sequence offset below 4", pesOf(slices.Concat(u16(10, 2), make([]byte, 6))), 0,
 			"The subtitle packet of 10 bytes has no valid control sequence offset.",
 		},
 		{"command past the end of the unit", pesOf(cutCommand), 0, "The subtitle packet ends inside command 03."},
 		{
-			"bitmap past the end of the unit", pesOf(rawUnit(slicesConcat(area, []byte{0x06, 0xFF, 0xFF, 0xFF, 0xFF, start})...)), 0,
+			"bitmap past the end of the unit", pesOf(rawUnit(slices.Concat(area, []byte{0x06, 0xFF, 0xFF, 0xFF, 0xFF, start})...)), 0,
 			"The bitmap of the subtitle packet ends before line 0 is complete.",
 		},
 		{
@@ -337,7 +338,7 @@ func TestReadReportsBrokenUnits(t *testing.T) {
 }
 
 // cutCommand is a unit whose SET_COLOR command has 1 of its 2 argument bytes.
-var cutCommand = slicesConcat(u16(10, 4), u16(0, 0), []byte{0x03, 0x01})
+var cutCommand = slices.Concat(u16(10, 4), u16(0, 0), []byte{0x03, 0x01})
 
 // pesOf returns the .sub content of a unit in one packet.
 func pesOf(unit []byte) []byte {
