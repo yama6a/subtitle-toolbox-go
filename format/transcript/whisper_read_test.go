@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"testing/iotest"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -404,10 +405,6 @@ func TestReadWhisperWithoutWordTimestampsKeepsTheWords(t *testing.T) {
 func TestReadWhisperReadError(t *testing.T) {
 	t.Parallel()
 
-	_, _, err := transcript.ReadWhisper(errReader{}, model.CommonReadOptions{}, transcript.ReadOptions{})
+	_, _, err := transcript.ReadWhisper(iotest.ErrReader(errors.New("boom")), model.CommonReadOptions{}, transcript.ReadOptions{})
 	require.Error(t, err)
 }
-
-type errReader struct{}
-
-func (errReader) Read([]byte) (int, error) { return 0, errors.New("boom") }

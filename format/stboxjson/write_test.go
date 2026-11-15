@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -305,17 +306,11 @@ func TestWriteErrors(t *testing.T) {
 	}
 }
 
-type failingWriter struct{}
-
-var errDiskFull = errors.New("disk full")
-
-func (failingWriter) Write([]byte) (int, error) { return 0, errDiskFull }
-
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	_, err := stboxjson.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
-	require.ErrorIs(t, err, errDiskFull)
+	_, err := stboxjson.Write(formattest.ErrWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
+	require.ErrorIs(t, err, formattest.ErrWrite)
 }
 
 func TestWritePrettyNests(t *testing.T) {

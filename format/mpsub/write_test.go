@@ -1,7 +1,6 @@
 package mpsub_test
 
 import (
-	"errors"
 	"strconv"
 	"testing"
 	"time"
@@ -10,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -117,7 +117,7 @@ func TestWrite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := write(t, subtitle(tt.cues...), model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: rate(tt.fps)})
+			got := write(t, formattest.Subtitle(tt.cues...), model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: rate(tt.fps)})
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -163,7 +163,7 @@ func TestWriteHeader(t *testing.T) {
 func TestWriteHeaderAlwaysReadsBack(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(cue(0, time.Second, "x"))
+	s := formattest.Subtitle(cue(0, time.Second, "x"))
 	s.SetMetadata(model.MetadataTitle, "A\nB")
 	s.SetMetadata(model.MetadataAuthor, "C\r\nD\rE")
 	require.NoError(t, s.SetFormatData("mpsub", model.NewData(
@@ -191,7 +191,7 @@ func TestWriteHeaderAlwaysReadsBack(t *testing.T) {
 func TestWriteHeaderValueWithACommentIsLossy(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(cue(0, time.Second, "x"))
+	s := formattest.Subtitle(cue(0, time.Second, "x"))
 	s.SetMetadata(model.MetadataTitle, "Part #2")
 	back, _ := mustRead(t, writeBare(t, s), false)
 	assert.Equal(t, map[string]string{"title": "Part"}, back.AllMetadata())
@@ -200,7 +200,7 @@ func TestWriteHeaderValueWithACommentIsLossy(t *testing.T) {
 func TestWriteOutputOptions(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(cue(0, time.Second, "Hello", "World"))
+	s := formattest.Subtitle(cue(0, time.Second, "Hello", "World"))
 	body := header + "\n0 1\nHello\nWorld\n"
 	assert.Equal(t, "\xEF\xBB\xBF"+body, write(t, s, model.CommonWriteOptions{}, mpsub.WriteOptions{}))
 	assert.Equal(t, body, write(t, s, model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{}))
@@ -234,7 +234,7 @@ func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := write(t, subtitle(cue(0, tt.end, "x")), model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: rate(tt.fps)})
+			got := write(t, formattest.Subtitle(cue(0, tt.end, "x")), model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: rate(tt.fps)})
 			assert.Contains(t, got, tt.want)
 			_, _, err := read(got, false)
 			require.NoError(t, err)
@@ -246,7 +246,7 @@ func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
 			t.Parallel()
 
 			for _, end := range []time.Duration{limit - 1*ms, limit - 2*ms, limit - 499*ms, limit - 500*ms, limit - 501*ms} {
-				got := write(t, subtitle(cue(end-ms, end, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: rate(fps)})
+				got := write(t, formattest.Subtitle(cue(end-ms, end, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: rate(fps)})
 				s, _, err := read(got, false)
 				require.NoError(t, err, "end %v in %q", end, got)
 				require.Equal(t, 1, s.Len())
@@ -260,7 +260,7 @@ func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
 func TestWriteFrameBeyondTheIntRange(t *testing.T) {
 	t.Parallel()
 
-	got := write(t, subtitle(cue(0, 359999999*time.Second, "x")), model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 1e12, Den: 1}})
+	got := write(t, formattest.Subtitle(cue(0, 359999999*time.Second, "x")), model.CommonWriteOptions{BOM: model.BOMRemove}, mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 1e12, Den: 1}})
 	assert.Contains(t, got, "\n0 359999999000000004096\nx\n")
 }
 
@@ -276,7 +276,7 @@ func TestFramesRoundTripWithinHalfAFrame(t *testing.T) {
 				start := time.Duration(i*1234+17) * ms
 				cues = append(cues, cue(start, start+time.Duration(i%7*311+5)*ms, "x"))
 			}
-			s := subtitle(cues...)
+			s := formattest.Subtitle(cues...)
 			back, _ := mustRead(t, write(t, s, model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: rate(fps)}), false)
 			require.Equal(t, s.Len(), back.Len())
 			half := time.Duration(float64(time.Second) / fps / 2)
@@ -329,19 +329,15 @@ func TestValidate(t *testing.T) {
 func TestWriteChecksTheOptions(t *testing.T) {
 	t.Parallel()
 
-	var out failingWriter
-	_, err := mpsub.Write(out, subtitle(cue(0, time.Second, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 100}})
+	var out formattest.ErrWriter
+	_, err := mpsub.Write(out, formattest.Subtitle(cue(0, time.Second, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 100}})
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 }
-
-type failingWriter struct{}
-
-func (failingWriter) Write([]byte) (int, error) { return 0, errors.New("disk full") }
 
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	_, err := mpsub.Write(failingWriter{}, subtitle(cue(0, time.Second, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{})
+	_, err := mpsub.Write(formattest.ErrWriter{}, formattest.Subtitle(cue(0, time.Second, "x")), model.CommonWriteOptions{}, mpsub.WriteOptions{})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "disk full")
 }

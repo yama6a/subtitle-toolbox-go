@@ -12,6 +12,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -93,7 +94,7 @@ func TestCuesFromOtherFormatsGetTheDefaultHeader(t *testing.T) {
 
 	top := cue(3004*ms, 4996*ms, "Top")
 	top.Position.Alignment = model.TopCenter
-	s := subtitle(t, cue(time.Second, 2500*ms, "<i>Hello</i>", "world"), top)
+	s := formattest.Subtitle(cue(time.Second, 2500*ms, "<i>Hello</i>", "world"), top)
 	assert.Equal(t, defaultHeader+
 		`Dialogue: 0,0:00:01.00,0:00:02.50,Default,,0,0,0,,{\i1}Hello{\i0}\Nworld`+"\n"+
 		`Dialogue: 0,0:00:03.00,0:00:05.00,Default,,0,0,0,,{\an8}Top`+"\n",
@@ -105,7 +106,7 @@ func TestCuesFromOtherFormatsGetTheDefaultHeader(t *testing.T) {
 func TestStyleOptionChangesTheFieldsOfTheDefaultStyle(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(t, cue(time.Second, 2500*ms, "Hello"))
+	s := formattest.Subtitle(cue(time.Second, 2500*ms, "Hello"))
 	header := strings.Replace(strings.Replace(defaultHeader, ",1,1,0,2,", ",1,2,0,2,", 1), ",Arial,16,", ",Roboto,48,", 1)
 	assert.Equal(t, header+"Dialogue: 0,0:00:01.00,0:00:02.50,Default,,0,0,0,,Hello\n",
 		writeStyle(t, s, "Fontname=Roboto, fontsize = 48,Outline=2"))
@@ -116,7 +117,7 @@ func TestStyleOptionChangesTheFieldsOfTheDefaultStyle(t *testing.T) {
 func TestStyleOptionSetsTheLookOfCuesWithoutResetTags(t *testing.T) {
 	t.Parallel()
 
-	got := writeStyle(t, subtitle(t, cue(time.Second, 2*time.Second, "Hello"), cue(3*time.Second, 4*time.Second, "<i>Hello</i> world")), "Italic=-1,Alignment=8")
+	got := writeStyle(t, formattest.Subtitle(cue(time.Second, 2*time.Second, "Hello"), cue(3*time.Second, 4*time.Second, "<i>Hello</i> world")), "Italic=-1,Alignment=8")
 	assert.Contains(t, got, "Style: Default,Arial,16,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,-1,0,0,100,100,0,0,1,1,0,8,")
 	assert.Contains(t, got, "Dialogue: 0,0:00:01.00,0:00:02.00,Default,,0,0,0,,Hello\n")
 	assert.Contains(t, got, `Dialogue: 0,0:00:03.00,0:00:04.00,Default,,0,0,0,,{\i1}Hello{\i0} world`+"\n")
@@ -212,7 +213,7 @@ func TestStyleOptionValues(t *testing.T) {
 			t.Parallel()
 
 			require.NoError(t, ass.WriteOptions{Style: tt.style}.Validate())
-			assert.Contains(t, writeStyle(t, subtitle(t, cue(time.Second, 2*time.Second, "a")), tt.style), tt.want)
+			assert.Contains(t, writeStyle(t, formattest.Subtitle(cue(time.Second, 2*time.Second, "a")), tt.style), tt.want)
 		})
 	}
 }
@@ -272,7 +273,7 @@ func TestCoreMarkupBecomesOverrideTags(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(t, cue(time.Second, 2*time.Second, tt.lines...))
+			s := formattest.Subtitle(cue(time.Second, 2*time.Second, tt.lines...))
 			assert.Equal(t, defaultHeader+"Dialogue: 0,0:00:01.00,0:00:02.00,Default,"+tt.who+",0,0,0,,"+tt.text+"\n", writeDefault(t, s))
 		})
 	}
@@ -297,7 +298,7 @@ func TestWordTimestampsBecomeKaraokeTags(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(t, cue(10*time.Second, 12*time.Second, tt.line))
+			s := formattest.Subtitle(cue(10*time.Second, 12*time.Second, tt.line))
 			assert.Equal(t, defaultHeader+"Dialogue: 0,0:00:10.00,0:00:12.00,Default,,0,0,0,,"+tt.text+"\n", writeDefault(t, s))
 		})
 	}
@@ -306,7 +307,7 @@ func TestWordTimestampsBecomeKaraokeTags(t *testing.T) {
 func TestKaraokeTagOption(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(t, cue(10*time.Second, 12*time.Second, "Ka<00:00:10.300>ra"))
+	s := formattest.Subtitle(cue(10*time.Second, 12*time.Second, "Ka<00:00:10.300>ra"))
 	for _, tt := range []struct {
 		tag  ass.KaraokeTag
 		want string
@@ -388,7 +389,7 @@ func TestStripTagsKeepsTheSpeaker(t *testing.T) {
 func TestTitleAndNewCommentsAreWritten(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(t, cue(time.Second, 2*time.Second, "a"))
+	s := formattest.Subtitle(cue(time.Second, 2*time.Second, "a"))
 	s.SetMetadata(model.MetadataTitle, "Bakery\nnews")
 	require.NoError(t, s.AddComment("first", 0))
 	require.NoError(t, s.AddComment("last\nline", 1))
@@ -418,7 +419,7 @@ func TestStoredCommentEventIsUsedOnce(t *testing.T) {
 func TestTimesAreRoundedToCentiseconds(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(t, cue(3599996*ms, 36000004*ms, "a"), cue(-time.Second, 5*ms, "b"), cue(1005*ms, 1015*ms, "c"))
+	s := formattest.Subtitle(cue(3599996*ms, 36000004*ms, "a"), cue(-time.Second, 5*ms, "b"), cue(1005*ms, 1015*ms, "c"))
 	got := writeDefault(t, s)
 	assert.Contains(t, got, "Dialogue: 0,0:00:01.01,0:00:01.02,Default,,0,0,0,,c\n", "half a centisecond rounds away from zero")
 	assert.Contains(t, got, "Dialogue: 0,0:00:00.00,0:00:00.01,Default,,0,0,0,,b\n")
@@ -478,7 +479,7 @@ func TestUnchangedRule(t *testing.T) {
 func TestSectionOrder(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(t, cue(time.Second, 2*time.Second, "a"))
+	s := formattest.Subtitle(cue(time.Second, 2*time.Second, "a"))
 	require.NoError(t, s.SetFormatData("ass", model.NewData(
 		model.Field{Key: "sectionOrder", Value: []any{"Fonts", "Fonts", "Graphics"}},
 		model.Field{Key: "scriptInfo", Value: []any{}},
@@ -492,7 +493,7 @@ func TestSectionOrder(t *testing.T) {
 func TestWriteOptionsOfOutput(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(t, cue(time.Second, 2*time.Second, "a"))
+	s := formattest.Subtitle(cue(time.Second, 2*time.Second, "a"))
 	got := write(t, s, model.CommonWriteOptions{LineEnding: model.CRLF, BOM: model.BOMRemove}, ass.WriteOptions{})
 	assert.True(t, strings.HasPrefix(got, "[Script Info]\r\nScriptType: v4.00+\r\n"))
 	assert.True(t, strings.HasSuffix(got, ",a\r\n"))
@@ -501,9 +502,9 @@ func TestWriteOptionsOfOutput(t *testing.T) {
 func TestWriteError(t *testing.T) {
 	t.Parallel()
 
-	_, err := ass.Write(errWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, ass.WriteOptions{})
+	_, err := ass.Write(formattest.ErrWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, ass.WriteOptions{})
 
-	require.ErrorIs(t, err, errRead)
+	require.ErrorIs(t, err, formattest.ErrWrite)
 }
 
 // Ports the ASS row of tests/Formatters/RubyFallbackTest.php of subtitle-toolbox-php.
@@ -531,7 +532,7 @@ func TestNamesWithQuotes(t *testing.T) {
 	assert.Contains(t, written, `,Default,Sam "Ace" Reed,0,0,0,,Then I'll take the "seeded" loaf.`)
 
 	for _, strip := range []bool{false, true} {
-		out := write(t, subtitle(t, cue(time.Second, 2*time.Second, "<v O'Neil>We're out of rye."), cue(3*time.Second, 4*time.Second, `<v Mo "Baker>Two rolls.`)),
+		out := write(t, formattest.Subtitle(cue(time.Second, 2*time.Second, "<v O'Neil>We're out of rye."), cue(3*time.Second, 4*time.Second, `<v Mo "Baker>Two rolls.`)),
 			model.CommonWriteOptions{StripTags: strip}, ass.WriteOptions{})
 		assert.Contains(t, out, ",O'Neil,0,0,0,,We're out of rye.\n")
 		assert.Contains(t, out, `,Mo "Baker,0,0,0,,Two rolls.`+"\n")
@@ -559,7 +560,7 @@ func TestFontColorsSurviveARoundTrip(t *testing.T) {
 		t.Run(tt.line, func(t *testing.T) {
 			t.Parallel()
 
-			back, _ := mustRead(t, writeDefault(t, subtitle(t, cue(time.Second, 2*time.Second, tt.line))), false)
+			back, _ := mustRead(t, writeDefault(t, formattest.Subtitle(cue(time.Second, 2*time.Second, tt.line))), false)
 			assert.Equal(t, tt.want, cueAt(t, back, 0).Text())
 		})
 	}
@@ -593,7 +594,7 @@ func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := writeDefault(t, subtitle(t, cue(tt.start, tt.end, "x")))
+			got := writeDefault(t, formattest.Subtitle(cue(tt.start, tt.end, "x")))
 			assert.Contains(t, got, tt.want)
 			_, _, err := read(t, got, false)
 			require.NoError(t, err)
@@ -619,7 +620,7 @@ func TestKaraokeStaysBelowTheTimeLimit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(t, cue(limit-time.Second, limit-1*ms, tt.line))
+			s := formattest.Subtitle(cue(limit-time.Second, limit-1*ms, tt.line))
 			got := writeDefault(t, s)
 			assert.Contains(t, got, ",Default,,0,0,0,,"+tt.text+"\n")
 			_, _, err := read(t, got, false)
@@ -694,7 +695,7 @@ func TestCueWithoutTaggedSourceKeepsItsStoredText(t *testing.T) {
 	// A cue read from library JSON version 2 has plain lines, words and the stored cue data, but no tagged source.
 	rebuilt := model.Cue{Start: read.Start, End: read.End, Lines: read.Lines, Speaker: read.Speaker, Words: read.Words}
 	require.NoError(t, rebuilt.SetFormatData("ass", data))
-	out := subtitle(t, rebuilt)
+	out := formattest.Subtitle(rebuilt)
 	require.NoError(t, out.SetFormatData("ass", fileData(t, s)))
 
 	assert.Contains(t, write(t, out, model.CommonWriteOptions{}, ass.WriteOptions{}), line+"\n")

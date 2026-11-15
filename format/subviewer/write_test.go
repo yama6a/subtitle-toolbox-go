@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -37,7 +38,7 @@ func TestWrite(t *testing.T) {
 	}{
 		{
 			"SubViewer 2 by default",
-			withMetadata(subtitle(
+			withMetadata(formattest.Subtitle(
 				cue(1500*ms, 4004*ms, "<b>Fresh bread</b>", "every day"),
 				cue(3725006*ms, 3727995*ms, "Closed on Sunday"),
 			), model.MetadataTitle, "Bakery"),
@@ -49,28 +50,28 @@ func TestWrite(t *testing.T) {
 		},
 		{
 			"SubViewer 1 with the version option",
-			withMetadata(subtitle(cue(1500*ms, 4400*ms, "Fresh bread", "every day")), model.MetadataAuthor, "Jane Doe"),
+			withMetadata(formattest.Subtitle(cue(1500*ms, 4400*ms, "Fresh bread", "every day")), model.MetadataAuthor, "Jane Doe"),
 			v1,
 			"[TITLE]\n[AUTHOR]\nJane Doe\n[SOURCE]\n[PRG]\n[FILEPATH]\n[DELAY]\n0\n[CD TRACK]\n0\n[BEGIN]\n" + script +
 				"[00:00:02]\nFresh bread|every day\n[00:00:04]\n\n" + tail1,
 		},
 		{
 			"markup is removed, entities decoded and cues without text skipped",
-			subtitle(cue(time.Second, 2*time.Second, "<i>Tea &amp; cake &lt;3</i>"), cue(3*time.Second, 4*time.Second, "<i> </i>")),
+			formattest.Subtitle(cue(time.Second, 2*time.Second, "<i>Tea &amp; cake &lt;3</i>"), cue(3*time.Second, 4*time.Second, "<i> </i>")),
 			subviewer.WriteOptions{},
 			info2 + "00:00:01.00,00:00:02.00\nTea & cake <3\n",
 		},
 		{
 			"SubViewer 1 skips cues without text",
-			subtitle(cue(time.Second, 2*time.Second, "<i> </i>"), cue(3*time.Second, 4*time.Second, "B")),
+			formattest.Subtitle(cue(time.Second, 2*time.Second, "<i> </i>"), cue(3*time.Second, 4*time.Second, "B")),
 			v1,
 			head1 + "[00:00:03]\nB\n[00:00:04]\n\n" + tail1,
 		},
-		{"SubViewer 2 without cues", subtitle(), v2, info2},
-		{"SubViewer 1 without cues", subtitle(), v1, head1 + tail1},
+		{"SubViewer 2 without cues", formattest.Subtitle(), v2, info2},
+		{"SubViewer 1 without cues", formattest.Subtitle(), v1, head1 + tail1},
 		{
 			"a cue without text between two cues leaves one empty line in SubViewer 2",
-			subtitle(cue(time.Second, 2*time.Second, "A"), cue(3*time.Second, 4*time.Second), cue(5*time.Second, 6*time.Second, "C")),
+			formattest.Subtitle(cue(time.Second, 2*time.Second, "A"), cue(3*time.Second, 4*time.Second), cue(5*time.Second, 6*time.Second, "C")),
 			v2,
 			info2 + "00:00:01.00,00:00:02.00\nA\n\n00:00:05.00,00:00:06.00\nC\n",
 		},
@@ -152,9 +153,9 @@ func TestStoredVersion(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(cue(time.Second, 2*time.Second, "A"))
+			s := formattest.Subtitle(cue(time.Second, 2*time.Second, "A"))
 			require.NoError(t, s.SetFormatData("subviewer", model.NewData(model.Field{Key: "version", Value: tt.version})))
-			want := write(t, subtitle(cue(time.Second, 2*time.Second, "A")), subviewer.WriteOptions{Version: tt.want})
+			want := write(t, formattest.Subtitle(cue(time.Second, 2*time.Second, "A")), subviewer.WriteOptions{Version: tt.want})
 			assert.Equal(t, want, write(t, s, subviewer.WriteOptions{}))
 		})
 	}
@@ -164,7 +165,7 @@ func TestStoredHeaderAndDefaults(t *testing.T) {
 	t.Parallel()
 
 	withHeader := func(header any) *model.Subtitle {
-		s := subtitle(cue(time.Second, 2*time.Second, "A"))
+		s := formattest.Subtitle(cue(time.Second, 2*time.Second, "A"))
 		require.NoError(t, s.SetFormatData("subviewer", model.NewData(model.Field{Key: "header", Value: header})))
 		return s
 	}
@@ -191,7 +192,7 @@ func TestStoredHeaderAndDefaults(t *testing.T) {
 			"an empty header has no default tags", withHeader([]any{}), v2,
 			"[INFORMATION]\n[TITLE]\n[AUTHOR]\n[END INFORMATION]\n[SUBTITLE]\n00:00:01.00,00:00:02.00\nA\n",
 		},
-		{"no header gives the default tags", subtitle(cue(time.Second, 2*time.Second, "A")), v2, info2 + "00:00:01.00,00:00:02.00\nA\n"},
+		{"no header gives the default tags", formattest.Subtitle(cue(time.Second, 2*time.Second, "A")), v2, info2 + "00:00:01.00,00:00:02.00\nA\n"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -243,7 +244,7 @@ func TestHeaderReadsBack(t *testing.T) {
 			t.Run(tt.name+" in version "+version.String(), func(t *testing.T) {
 				t.Parallel()
 
-				s := subtitle(cue(time.Second, 2*time.Second, "A"))
+				s := formattest.Subtitle(cue(time.Second, 2*time.Second, "A"))
 				require.NoError(t, s.SetFormatData("subviewer", model.NewData(model.Field{Key: "header", Value: model.NewData(model.Field{Key: tt.key, Value: tt.value})})))
 				back, warnings := mustRead(t, write(t, s, subviewer.WriteOptions{Version: version}), false)
 				assert.Empty(t, warnings)
@@ -278,7 +279,7 @@ func TestMetadataReadsBack(t *testing.T) {
 			t.Run(tt.name+" in version "+version.String(), func(t *testing.T) {
 				t.Parallel()
 
-				s := withMetadata(subtitle(cue(time.Second, 2*time.Second, "A")), model.MetadataTitle, tt.title)
+				s := withMetadata(formattest.Subtitle(cue(time.Second, 2*time.Second, "A")), model.MetadataTitle, tt.title)
 				back, _ := mustRead(t, write(t, s, subviewer.WriteOptions{Version: version}), false)
 				want := map[string]string{"title": tt.want}
 				if version == subviewer.V2 && (tt.name == "a style tag in SubViewer 2" || tt.name == "a timing look-alike in SubViewer 2") {
@@ -311,7 +312,7 @@ func TestStyleLine(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(cue(time.Second, 2*time.Second, "A"))
+			s := formattest.Subtitle(cue(time.Second, 2*time.Second, "A"))
 			require.NoError(t, s.SetFormatData("subviewer", model.NewData(model.Field{Key: "header", Value: []any{}})))
 			d, _ := s.FormatData("subviewer")
 			d.Set("style", tt.style)
@@ -348,7 +349,7 @@ func TestTimesRoundAndStopBelowTheLimit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(cue(tt.start, tt.end, "A"))
+			s := formattest.Subtitle(cue(tt.start, tt.end, "A"))
 			out := write(t, s, v1)
 			assert.Contains(t, out, tt.want1+"\nA\n")
 			out = write(t, s, v2)
@@ -363,7 +364,7 @@ func TestTimesRoundAndStopBelowTheLimit(t *testing.T) {
 func TestLineEndingAndBOM(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(cue(time.Second, 2*time.Second, "A"))
+	s := formattest.Subtitle(cue(time.Second, 2*time.Second, "A"))
 	var out bytes.Buffer
 	_, err := subviewer.Write(&out, s, model.CommonWriteOptions{}, v2)
 	require.NoError(t, err)
@@ -390,7 +391,7 @@ func TestValidate(t *testing.T) {
 	assert.Equal(t, "The SubViewer version must be 1 or 2, got 3.", aerr.Msg)
 
 	var out bytes.Buffer
-	_, err = subviewer.Write(&out, subtitle(), model.CommonWriteOptions{}, subviewer.WriteOptions{Version: subviewer.Version(200)})
+	_, err = subviewer.Write(&out, formattest.Subtitle(), model.CommonWriteOptions{}, subviewer.WriteOptions{Version: subviewer.Version(200)})
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
 	assert.Empty(t, out.String())
 }

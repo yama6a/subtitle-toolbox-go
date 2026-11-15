@@ -1,7 +1,6 @@
 package ttml_test
 
 import (
-	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -10,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -449,17 +449,11 @@ func TestStoredNamespacesAsListOrObject(t *testing.T) {
 	}
 }
 
-var errWrite = errors.New("disk full")
-
-type failingWriter struct{}
-
-func (failingWriter) Write([]byte) (int, error) { return 0, errWrite }
-
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	_, err := ttml.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, ttml.WriteOptions{})
-	require.ErrorIs(t, err, errWrite)
+	_, err := ttml.Write(formattest.ErrWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, ttml.WriteOptions{})
+	require.ErrorIs(t, err, formattest.ErrWrite)
 }
 
 // The new elements take the prefixes and declarations that libxml gives them when it inserts them into the head.

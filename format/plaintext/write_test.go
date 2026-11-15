@@ -2,7 +2,6 @@ package plaintext_test
 
 import (
 	"bytes"
-	"errors"
 	"flag"
 	"strings"
 	"testing"
@@ -14,6 +13,7 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/plaintext"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/sbv"
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -21,12 +21,6 @@ import (
 var update = flag.Bool("update", false, "rewrite the write golden files")
 
 const ms = time.Millisecond
-
-func subtitle(cues ...model.Cue) *model.Subtitle {
-	s := &model.Subtitle{}
-	s.AddCues(cues...)
-	return s
-}
 
 func cue(start, end time.Duration, lines ...string) model.Cue {
 	return model.Cue{Start: start, End: end, Lines: lines}
@@ -42,7 +36,7 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions, opt
 }
 
 func walk() *model.Subtitle {
-	return subtitle(
+	return formattest.Subtitle(
 		cue(time.Second, 2*time.Second, "<v Mara><b>Hello</b>", "world."),
 		cue(2500*ms, 4*time.Second, "Where are you  going?"),
 		cue(6*time.Second, 7*time.Second, `<font color="#ff0000">Home</font> &amp; <00:00:06.500>bed.`, "  "),
@@ -99,7 +93,7 @@ func TestWriteOptions(t *testing.T) {
 func TestGapCountsFromTheLatestEnd(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(cue(0, 10*time.Second, "Long"), cue(time.Second, 2*time.Second, "Short"), cue(11*time.Second, 12*time.Second, "Overlapped"))
+	s := formattest.Subtitle(cue(0, 10*time.Second, "Long"), cue(time.Second, 2*time.Second, "Short"), cue(11*time.Second, 12*time.Second, "Overlapped"))
 	assert.Equal(t, "Long Short Overlapped\n", write(t, s, model.CommonWriteOptions{}, plaintext.WriteOptions{}))
 }
 
@@ -115,16 +109,16 @@ func TestCuesWithoutText(t *testing.T) {
 		want string
 	}{
 		{name: "no cues", s: &model.Subtitle{}},
-		{name: "empty tag pair and no lines", s: subtitle(cue(time.Second, 2*time.Second, "<i></i>"), cue(3*time.Second, 4*time.Second)), want: ""},
-		{name: "white space only", s: subtitle(cue(time.Second, 2*time.Second, " \t", "&#32;", "<b> </b>")), want: ""},
+		{name: "empty tag pair and no lines", s: formattest.Subtitle(cue(time.Second, 2*time.Second, "<i></i>"), cue(3*time.Second, 4*time.Second)), want: ""},
+		{name: "white space only", s: formattest.Subtitle(cue(time.Second, 2*time.Second, " \t", "&#32;", "<b> </b>")), want: ""},
 		{
 			name: "a skipped cue does not take part in the paragraphs",
-			s:    subtitle(cue(0, time.Second, "A"), cue(time.Second, 20*time.Second), cue(3*time.Second, 4*time.Second, "B")),
+			s:    formattest.Subtitle(cue(0, time.Second, "A"), cue(time.Second, 20*time.Second), cue(3*time.Second, 4*time.Second, "B")),
 			want: "A\n\nB\n",
 		},
 		{
 			name: "a skipped cue does not start a paragraph with times",
-			s:    subtitle(cue(0, time.Second, "<i></i>"), cue(5*time.Second, 6*time.Second, "B")),
+			s:    formattest.Subtitle(cue(0, time.Second, "<i></i>"), cue(5*time.Second, 6*time.Second, "B")),
 			opts: plaintext.WriteOptions{WithTimes: true},
 			want: "[00:00:05] B\n",
 		},
@@ -163,7 +157,7 @@ func TestLines(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, write(t, subtitle(cue(0, time.Second, tt.lines...)), model.CommonWriteOptions{}, tt.opts))
+			assert.Equal(t, tt.want, write(t, formattest.Subtitle(cue(0, time.Second, tt.lines...)), model.CommonWriteOptions{}, tt.opts))
 		})
 	}
 }
@@ -188,7 +182,7 @@ func TestParagraphStartTime(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := subtitle(cue(tt.start, tt.start+time.Second, "A"))
+			s := formattest.Subtitle(cue(tt.start, tt.start+time.Second, "A"))
 			assert.Equal(t, tt.want, write(t, s, model.CommonWriteOptions{}, plaintext.WriteOptions{WithTimes: true}))
 		})
 	}
@@ -215,7 +209,7 @@ func TestParagraphGap(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, write(t, subtitle(tt.cues...), model.CommonWriteOptions{}, plaintext.WriteOptions{ParagraphGap: tt.gap}))
+			assert.Equal(t, tt.want, write(t, formattest.Subtitle(tt.cues...), model.CommonWriteOptions{}, plaintext.WriteOptions{ParagraphGap: tt.gap}))
 		})
 	}
 }
@@ -263,17 +257,11 @@ func TestValidate(t *testing.T) {
 	}
 }
 
-var errDisk = errors.New("disk gone")
-
-type errWriter struct{}
-
-func (errWriter) Write([]byte) (int, error) { return 0, errDisk }
-
 func TestWriteFailsOnWriterError(t *testing.T) {
 	t.Parallel()
 
-	_, err := plaintext.Write(errWriter{}, walk(), model.CommonWriteOptions{}, plaintext.WriteOptions{})
-	require.ErrorIs(t, err, errDisk)
+	_, err := plaintext.Write(formattest.ErrWriter{}, walk(), model.CommonWriteOptions{}, plaintext.WriteOptions{})
+	require.ErrorIs(t, err, formattest.ErrWrite)
 	assert.Contains(t, err.Error(), "txt")
 }
 

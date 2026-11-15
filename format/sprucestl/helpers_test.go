@@ -54,12 +54,6 @@ func cueRows(s *model.Subtitle) []cueRow {
 	return out
 }
 
-func subtitle(cues ...model.Cue) *model.Subtitle {
-	s := &model.Subtitle{}
-	s.AddCues(cues...)
-	return s
-}
-
 func cue(start, end time.Duration, lines ...string) model.Cue {
 	return model.Cue{Start: start, End: end, Lines: lines}
 }

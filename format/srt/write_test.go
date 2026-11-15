@@ -2,7 +2,6 @@ package srt_test
 
 import (
 	"bytes"
-	"errors"
 	"testing"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -130,7 +130,7 @@ func TestWriteCues(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, write(t, subtitle(t, tt.cues...), model.CommonWriteOptions{StripTags: tt.stripTags}))
+			assert.Equal(t, tt.want, write(t, formattest.Subtitle(tt.cues...), model.CommonWriteOptions{StripTags: tt.stripTags}))
 		})
 	}
 }
@@ -138,7 +138,7 @@ func TestWriteCues(t *testing.T) {
 func TestWriteOptions(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(t, model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"One", "Two"}})
+	s := formattest.Subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"One", "Two"}})
 	tests := []struct {
 		name   string
 		common model.CommonWriteOptions
@@ -235,23 +235,17 @@ func TestReadWrite(t *testing.T) {
 	}
 }
 
-type failingWriter struct{}
-
-var errDiskFull = errors.New("disk full")
-
-func (failingWriter) Write([]byte) (int, error) { return 0, errDiskFull }
-
 func TestWriteError(t *testing.T) {
 	t.Parallel()
 
-	_, err := srt.Write(failingWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, srt.WriteOptions{})
-	require.ErrorIs(t, err, errDiskFull)
+	_, err := srt.Write(formattest.ErrWriter{}, &model.Subtitle{}, model.CommonWriteOptions{}, srt.WriteOptions{})
+	require.ErrorIs(t, err, formattest.ErrWrite)
 }
 
 func TestWriteThenReadKeepsTheCues(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(t,
+	s := formattest.Subtitle(
 		model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"<b>One</b> &amp; two"}, Position: model.Position{Alignment: model.TopLeft}},
 		model.Cue{Start: 3 * time.Second, End: 4 * time.Second},
 	)
@@ -282,7 +276,7 @@ func TestWriteStaysAtTheLargestTimeThatTheReaderReads(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := write(t, subtitle(t, model.Cue{Start: tt.start, End: tt.end, Lines: []string{"x"}}), model.CommonWriteOptions{})
+			got := write(t, formattest.Subtitle(model.Cue{Start: tt.start, End: tt.end, Lines: []string{"x"}}), model.CommonWriteOptions{})
 			assert.Contains(t, got, tt.want)
 			_, _, err := read(t, got, false)
 			require.NoError(t, err)

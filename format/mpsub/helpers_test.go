@@ -83,12 +83,6 @@ func warningRows(warnings []model.ParseWarning) []warningRow {
 	return rows
 }
 
-func subtitle(cues ...model.Cue) *model.Subtitle {
-	s := &model.Subtitle{}
-	s.AddCues(cues...)
-	return s
-}
-
 // fileData returns the stored mpsub format data as a map.
 func fileData(s *model.Subtitle) map[string]any {
 	d, _ := s.FormatData("mpsub")

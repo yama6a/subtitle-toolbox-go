@@ -77,12 +77,6 @@ func warningRows(warnings []model.ParseWarning) []warningRow {
 	return rows
 }
 
-func subtitle(cues ...model.Cue) *model.Subtitle {
-	s := &model.Subtitle{}
-	s.AddCues(cues...)
-	return s
-}
-
 // fileData returns the lrc file data of s as a JSON-like value, or nil.
 func fileData(t *testing.T, s *model.Subtitle) map[string]any {
 	t.Helper()

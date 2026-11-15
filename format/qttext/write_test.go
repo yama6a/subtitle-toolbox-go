@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/qttext"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
@@ -32,7 +33,7 @@ func TestWriteSubtitleEditShapeForANewFile(t *testing.T) {
 	}{
 		{
 			"mantas-done Subtitle Edit shape",
-			subtitle(
+			formattest.Subtitle(
 				cue(137440*ms, 140375*ms, "The ferry leaves at nine,", "from the north pier."),
 				cue(3740476*ms, 3742501*ms, "Tickets at the kiosk."),
 			),
@@ -54,7 +55,7 @@ func TestWriteSubtitleEditShapeForANewFile(t *testing.T) {
 func TestWriteStylesAsDescriptors(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(
+	s := formattest.Subtitle(
 		cue(time.Second, 2*time.Second, "<i>Sung</i> and <b>loud</b>", `<font color="red">red</font> &amp; plain`),
 		cue(3*time.Second, 4*time.Second, "<i>Sung</i>"),
 		cue(5*time.Second, 6*time.Second, "<i>Sung <u>loud</u></i>"),
@@ -312,7 +313,7 @@ func TestWriteText(t *testing.T) {
 func TestWriteOutputOptions(t *testing.T) {
 	t.Parallel()
 
-	s := subtitle(cue(0, time.Second, "A"))
+	s := formattest.Subtitle(cue(0, time.Second, "A"))
 	plain := write(t, s, model.CommonWriteOptions{})
 	assert.False(t, strings.HasPrefix(plain, "\xEF\xBB\xBF"))
 	assert.Equal(t, "\xEF\xBB\xBF"+plain, write(t, s, model.CommonWriteOptions{BOM: model.BOMAdd}))
@@ -454,7 +455,7 @@ func TestWriteRelativeTimestampsTakeTheDifferenceFromTheReader(t *testing.T) {
 func TestWriteReturnsTheWriterError(t *testing.T) {
 	t.Parallel()
 
-	_, err := qttext.Write(errWriter{}, subtitle(cue(0, time.Second, "A")), model.CommonWriteOptions{}, qttext.WriteOptions{})
+	_, err := qttext.Write(formattest.ErrWriter{}, formattest.Subtitle(cue(0, time.Second, "A")), model.CommonWriteOptions{}, qttext.WriteOptions{})
 	require.Error(t, err)
-	assert.ErrorIs(t, err, errWrite)
+	assert.ErrorIs(t, err, formattest.ErrWrite)
 }

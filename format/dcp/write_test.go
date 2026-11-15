@@ -9,12 +9,13 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/dcp"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
 func newFile() *model.Subtitle {
-	s := subtitle(
+	s := formattest.Subtitle(
 		model.Cue{Start: 5 * time.Second, End: 7125 * ms, Lines: []string{"The ferry leaves at nine,", "from the <i>north</i> pier."}},
 		model.Cue{Start: 8500 * ms, End: 10 * time.Second, Lines: []string{"HARBOUR"}, Position: model.Position{Alignment: model.TopLeft}},
 	)
@@ -140,7 +141,7 @@ func TestWrite(t *testing.T) {
 		},
 		{
 			name: "a time just below the limit stops at the last unit, so the file reads back",
-			s:    subtitle(model.Cue{Start: timecode.MaxValidTime - time.Second, End: timecode.MaxValidTime, Lines: []string{"x"}}),
+			s:    formattest.Subtitle(model.Cue{Start: timecode.MaxValidTime - time.Second, End: timecode.MaxValidTime, Lines: []string{"x"}}),
 			want: []string{`TimeIn="99999:59:59:00" TimeOut="99999:59:59:23"`},
 		},
 	}
@@ -178,7 +179,7 @@ func TestRoundTripKeepsWhatWasWritten(t *testing.T) {
 	t.Parallel()
 
 	for name, s := range map[string]*model.Subtitle{
-		"new file": subtitle(
+		"new file": formattest.Subtitle(
 			model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"<b>Bold</b> and <u>under</u>", `<font color="#ffff00">yellow</font>`}, Position: model.Position{Alignment: model.MiddleRight}},
 			model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Lines: []string{"top"}, Position: model.Position{Alignment: model.TopLeft, Offset: &model.Offset{X: 10, Y: 12.5}}},
 		),
@@ -223,7 +224,7 @@ func TestAlignedCueWithoutOffsetReadsBackWithoutOffset(t *testing.T) {
 	t.Parallel()
 
 	for _, a := range []model.Alignment{model.TopLeft, model.BottomRight, model.MiddleLeft, model.TopCenter} {
-		s := subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"x"}, Position: model.Position{Alignment: a}})
+		s := formattest.Subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"x"}, Position: model.Position{Alignment: a}})
 		got := cueRows(mustRead(t, write(t, s)))
 		assert.Equal(t, []cueRow{{Start: time.Second, End: 2 * time.Second, Lines: []string{"x"}, Alignment: a}}, got, a.String())
 	}

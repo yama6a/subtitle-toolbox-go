@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yama6a/subtitle-toolbox-go/v4/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
@@ -32,12 +33,12 @@ func TestWrite(t *testing.T) {
 	}{
 		{
 			name: "a new file gets the default header and 25 fps",
-			s:    subtitle(cue(137400*ms, 140360*ms, "The bakery opens at seven,", "every day of the week.")),
+			s:    formattest.Subtitle(cue(137400*ms, 140360*ms, "The bakery opens at seven,", "every day of the week.")),
 			want: defaultHeader + "00:02:17:10 , 00:02:20:09 , The bakery opens at seven,|every day of the week.\n",
 		},
 		{
 			name: "toggles for bold, italics and underline",
-			s:    subtitle(cue(time.Second, 2*time.Second, "<i>Over the water,</i>", `<i>the <b>gulls</b></i> <u>fly</u> &amp; <font color="red">sing</font>`)),
+			s:    formattest.Subtitle(cue(time.Second, 2*time.Second, "<i>Over the water,</i>", `<i>the <b>gulls</b></i> <u>fly</u> &amp; <font color="red">sing</font>`)),
 			want: defaultHeader + "00:00:01:00 , 00:00:02:00 , ^IOver the water,|the ^Bgulls ^B^I^Ufly^U & sing\n",
 		},
 		{
@@ -63,52 +64,52 @@ func TestWrite(t *testing.T) {
 		},
 		{
 			name: "a frame at the frame rate rolls up",
-			s:    subtitle(cue(time.Second, 2990*ms, "One")),
+			s:    formattest.Subtitle(cue(time.Second, 2990*ms, "One")),
 			opts: sprucestl.WriteOptions{FrameRate: rate25},
 			want: defaultHeader + "00:00:01:00 , 00:00:03:00 , One\n",
 		},
 		{
 			name: "the last time below 100000 hours stops at the last frame",
-			s:    subtitle(cue(timeNearLimit, timeNearLimit, "One")),
+			s:    formattest.Subtitle(cue(timeNearLimit, timeNearLimit, "One")),
 			opts: sprucestl.WriteOptions{FrameRate: rate25},
 			want: defaultHeader + "99999:59:59:24 , 99999:59:59:24 , One\n",
 		},
 		{
 			name: "a | and a toggle look-alike in the text",
-			s:    subtitle(cue(time.Second, 2*time.Second, "Rock | Pop", "^Bold ^Italic ^Underline", "a^<i>B</i>", `x^<font color="red">Bold</font>`)),
+			s:    formattest.Subtitle(cue(time.Second, 2*time.Second, "Rock | Pop", "^Bold ^Italic ^Underline", "a^<i>B</i>", `x^<font color="red">Bold</font>`)),
 			want: defaultHeader + "00:00:01:00 , 00:00:02:00 , Rock \u00a6 Pop|^\u2060Bold ^\u2060Italic ^\u2060Underline|a^^IB|^Ix^\u2060Bold\n",
 		},
 		{
 			name: "a line break inside a line",
-			s:    subtitle(cue(time.Second, 2*time.Second, "a\nb", "c&#10;d")),
+			s:    formattest.Subtitle(cue(time.Second, 2*time.Second, "a\nb", "c&#10;d")),
 			want: defaultHeader + "00:00:01:00 , 00:00:02:00 , a|b|c|d\n",
 		},
 		{
 			name: "a stored header, command and trailer line with CR or LF",
-			s: withFileData(subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"One"}}),
+			s: withFileData(formattest.Subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"One"}}),
 				model.NewData(model.Field{Key: "header", Value: []any{"$A = 1\r\n$B = 2"}}, model.Field{Key: "trailer", Value: []any{"$C = 3\n"}})),
 			want: "$A = 1  $B = 2\n00:00:01:00 , 00:00:02:00 , One\n$C = 3 \n",
 		},
 		{
 			name: "stored lines that the reader would not read as that kind are skipped",
-			s: withFileData(subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"One"}}),
+			s: withFileData(formattest.Subtitle(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"One"}}),
 				model.NewData(model.Field{Key: "header", Value: []any{"Hello", "//c", "", "00:00:01:00 , 00:00:02:00 , Two"}}, model.Field{Key: "trailer", Value: []any{"//x", "$T = 1"}})),
 			want: "//c\n\n00:00:01:00 , 00:00:02:00 , One\n$T = 1\n",
 		},
 		{
 			name: "frame 24 stays at 24.4 fps",
-			s:    subtitle(cue(time.Second, 1984*ms, "One"), cue(2*time.Second, 2999*ms, "Two")),
+			s:    formattest.Subtitle(cue(time.Second, 1984*ms, "One"), cue(2*time.Second, 2999*ms, "Two")),
 			opts: sprucestl.WriteOptions{FrameRate: model.FrameRate{Num: 122, Den: 5}},
 			want: defaultHeader + "00:00:01:00 , 00:00:01:24 , One\n00:00:02:00 , 00:00:02:24 , Two\n",
 		},
 		{
 			name: "an empty stored header writes no header",
-			s:    withFileData(subtitle(cue(time.Second, 2*time.Second, "One")), model.NewData(model.Field{Key: "header", Value: []any{}})),
+			s:    withFileData(formattest.Subtitle(cue(time.Second, 2*time.Second, "One")), model.NewData(model.Field{Key: "header", Value: []any{}})),
 			want: "00:00:01:00 , 00:00:02:00 , One\n",
 		},
 		{
 			name: "a stored separator and line break that do not match the shape fall back",
-			s: withFileData(subtitle(cue(time.Second, 2*time.Second, "One", "Two")),
+			s: withFileData(formattest.Subtitle(cue(time.Second, 2*time.Second, "One", "Two")),
 				model.NewData(model.Field{Key: "header", Value: []any{}}, model.Field{Key: "separator", Value: ";"}, model.Field{Key: "lineBreak", Value: "||"})),
 			want: "00:00:01:00 , 00:00:02:00 , One|Two\n",
 		},
@@ -159,13 +160,13 @@ func TestWriteKeepsTheLineEndOfACRLFFile(t *testing.T) {
 func TestWriteChecksTheFrameRate(t *testing.T) {
 	t.Parallel()
 
-	s := withFileData(subtitle(cue(time.Second, 2*time.Second, "One")), model.NewData(model.Field{Key: "frameRate", Value: -1.0}))
+	s := withFileData(formattest.Subtitle(cue(time.Second, 2*time.Second, "One")), model.NewData(model.Field{Key: "frameRate", Value: -1.0}))
 	err := writeErr(s, sprucestl.WriteOptions{})
 	var aerr *model.InvalidArgumentError
 	require.ErrorAs(t, err, &aerr)
 	assert.Equal(t, "WriteOptions.SpruceSTL.FrameRate", aerr.Option)
 	assert.Equal(t, "The Spruce STL frame rate must be greater than 0, got -1.", aerr.Msg)
-	require.ErrorAs(t, writeErr(subtitle(), sprucestl.WriteOptions{FrameRate: model.FrameRate{Num: 0, Den: 1}}), &aerr)
+	require.ErrorAs(t, writeErr(formattest.Subtitle(), sprucestl.WriteOptions{FrameRate: model.FrameRate{Num: 0, Den: 1}}), &aerr)
 }
 
 func withLines(t *testing.T, s *model.Subtitle, lines ...string) *model.Subtitle {
@@ -200,9 +201,9 @@ func writeErr(s *model.Subtitle, opts sprucestl.WriteOptions) error {
 func TestWriteRejectsAFrameRateAbove100(t *testing.T) {
 	t.Parallel()
 
-	err := writeErr(subtitle(cue(time.Second, 2*time.Second, "One")), sprucestl.WriteOptions{FrameRate: model.FrameRate{Num: 101, Den: 1}})
+	err := writeErr(formattest.Subtitle(cue(time.Second, 2*time.Second, "One")), sprucestl.WriteOptions{FrameRate: model.FrameRate{Num: 101, Den: 1}})
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	assert.Contains(t, uerr.Reason, "WriteOptions.SpruceSTL.FrameRate")
-	require.NoError(t, writeErr(subtitle(cue(time.Second, 2*time.Second, "One")), sprucestl.WriteOptions{FrameRate: model.FrameRate{Num: 100, Den: 1}}))
+	require.NoError(t, writeErr(formattest.Subtitle(cue(time.Second, 2*time.Second, "One")), sprucestl.WriteOptions{FrameRate: model.FrameRate{Num: 100, Den: 1}}))
 }

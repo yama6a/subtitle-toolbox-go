@@ -118,14 +118,6 @@ func warningRows(warnings []model.ParseWarning) []warningRow {
 	return rows
 }
 
-func subtitle(t *testing.T, cues ...model.Cue) *model.Subtitle {
-	t.Helper()
-
-	s := &model.Subtitle{}
-	s.AddCues(cues...)
-	return s
-}
-
 func cue(start, end time.Duration, lines ...string) model.Cue {
 	return model.Cue{Start: start, End: end, Lines: lines}
 }
@@ -187,11 +179,3 @@ func str(t *testing.T, d *model.Data, key string) string {
 }
 
 var errRead = errors.New("disk gone")
-
-type errReader struct{}
-
-func (errReader) Read([]byte) (int, error) { return 0, errRead }
-
-type errWriter struct{}
-
-func (errWriter) Write([]byte) (int, error) { return 0, errRead }

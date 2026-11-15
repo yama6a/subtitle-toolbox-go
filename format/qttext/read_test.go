@@ -3,6 +3,7 @@ package qttext_test
 import (
 	"strings"
 	"testing"
+	"testing/iotest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
@@ -569,7 +570,7 @@ func TestReadKeepsInvalidUTF8(t *testing.T) {
 func TestReadReturnsTheReaderError(t *testing.T) {
 	t.Parallel()
 
-	_, _, err := qttext.Read(errReader{}, model.CommonReadOptions{}, qttext.ReadOptions{})
+	_, _, err := qttext.Read(iotest.ErrReader(errRead), model.CommonReadOptions{}, qttext.ReadOptions{})
 	require.Error(t, err)
 	assert.ErrorIs(t, err, errRead)
 }

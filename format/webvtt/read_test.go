@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"testing/iotest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
@@ -624,14 +625,10 @@ func TestReadBlankContent(t *testing.T) {
 	}
 }
 
-type errReader struct{}
-
-func (errReader) Read([]byte) (int, error) { return 0, os.ErrClosed }
-
 func TestReadReaderError(t *testing.T) {
 	t.Parallel()
 
-	_, _, err := webvtt.Read(errReader{}, model.CommonReadOptions{}, webvtt.ReadOptions{})
+	_, _, err := webvtt.Read(iotest.ErrReader(os.ErrClosed), model.CommonReadOptions{}, webvtt.ReadOptions{})
 	require.ErrorIs(t, err, os.ErrClosed)
 }
 
