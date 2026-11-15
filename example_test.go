@@ -227,13 +227,71 @@ func ExampleLoad_syncToSpeech() {
 	// scale 1.04271, offset -2.3s, score 0.78
 }
 
-func ExampleLoad_cleanUp() {
-	s, _, err := stbox.Load("testdata/examples/downloaded.srt", stbox.ReadOptions{})
+func ExampleLoad_removeHearingImpaired() {
+	s, _, err := stbox.Load("testdata/hearing-impaired/own_sdh.srt", stbox.ReadOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	if _, err := hearingimpaired.Apply(s, hearingimpaired.Options{}); err != nil {
+		fmt.Println(err)
+		return
+	}
+	if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stbox.BOMRemove}); err != nil {
+		fmt.Println(err)
+	}
+	// Output:
+	// 1
+	// 00:00:03,500 --> 00:00:06,000
+	// The train to the coast
+	// is late again.
+	//
+	// 2
+	// 00:00:06,500 --> 00:00:09,000
+	// - Look at the snow!
+	// - Tickets, please.
+	//
+	// 3
+	// 00:00:12,500 --> 00:00:15,000
+	// Is the bakery open?
+	//
+	// 4
+	// 00:00:15,500 --> 00:00:18,000
+	// Baker: We open at six.
+	//
+	// 5
+	// 00:00:18,500 --> 00:00:21,000
+	// <i>The bread is still warm.</i>
+	//
+	// 6
+	// 00:00:21,500 --> 00:00:24,000
+	// Two loaves, please.
+	//
+	// 7
+	// 00:00:24,500 --> 00:00:27,000
+	// ♪ Rain on the window ♪
+	//
+	// 8
+	// 00:00:27,500 --> 00:00:30,000
+	// Note: the last train leaves at 11:40.
+	//
+	// 9
+	// 00:00:33,500 --> 00:00:36,000
+	// Fish &amp; chips {chuckles} for two.
+	//
+	// 10
+	// 00:00:36,500 --> 00:00:39,000
+	// Sit down, please.
+	//
+	// 11
+	// 00:00:39,500 --> 00:00:42,000
+	// - # The wheels go round #
+	// - It stopped raining.
+}
+
+func ExampleLoad_fixErrors() {
+	s, _, err := stbox.Load("testdata/fixing/web-errors.srt", stbox.ReadOptions{})
+	if err != nil {
 		fmt.Println(err)
 		return
 	}
@@ -250,22 +308,56 @@ func ExampleLoad_cleanUp() {
 	}
 	// Output:
 	// 1
-	// 00:00:03,500 --> 00:00:06,500
-	// It's late again, isn't it?
+	// 00:00:01,000 --> 00:00:03,200
+	// Hello <i>there</i>, how was the trip?
 	//
 	// 2
-	// 00:00:07,000 --> 00:00:10,000
-	// - Look at the harbour!
-	// - Hold on tight.
+	// 00:00:03,600 --> 00:00:06,000
+	// We landed late. It was cold, but dry.
 	//
 	// 3
-	// 00:00:10,500 --> 00:00:15,000
-	// The crossing takes forty minutes, so
-	// I'll bring a book and a warm coat.
+	// 00:00:06,400 --> 00:00:09,000
+	// <i>The station was closed,
+	// so we walked.</i>
 	//
 	// 4
-	// 00:00:15,500 --> 00:00:18,000
-	// Tickets, please.
+	// 00:00:09,400 --> 00:00:11,000
+	// Take the second exit.
+	//
+	// 5
+	// 00:00:11,400 --> 00:00:13,500
+	// - Did you call?
+	// - Not yet.
+	//
+	// 6
+	// 00:00:13,900 --> 00:00:16,000
+	// I waited... and waited...
+	//
+	// 7
+	// 00:00:16,400 --> 00:00:19,000
+	// The fare was 1.5 euros,
+	// e.g. on www.example.com.
+	//
+	// 8
+	// 00:00:19,400 --> 00:00:21,000
+	// Quiet, please!
+	//
+	// 9
+	// 00:00:21,400 --> 00:00:23,000
+	// Gate 4 is open now.
+	//
+	// 10
+	// 00:00:23,400 --> 00:00:25,500
+	// Mr. Berg is here. So am I.
+	//
+	// 11
+	// 00:00:25,900 --> 00:00:28,000
+	// <font color="#ffff00">Next stop:
+	// the harbour</font>
+	//
+	// 12
+	// 00:00:28,400 --> 00:00:30,000
+	// This line has no errors.
 }
 
 func ExampleTracks_extract() {

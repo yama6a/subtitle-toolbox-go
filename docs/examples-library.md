@@ -166,7 +166,7 @@ fmt.Printf("scale %.5f, offset %s, score %.2f\n", report.Scale, report.Offset, r
 
 ## Check a file against broadcast or streaming rules
 
-A delivery spec limits the characters per line, the reading speed, the cue length and the gap between cues. A preset holds the limits of a spec. `validation.NetflixEnglish` holds the Netflix English rules, and `validation.BBC` holds the BBC rules. `Check` returns one `Violation` for each broken rule. `v.Cue` counts from 0, so the code prints `v.Cue+1`. `validation.BBC()` returns the BBC rules in the same way. [validation.md](validation.md) lists the 19 rules.
+A delivery spec limits the characters per line, the reading speed, the cue length and the gap between cues. A preset holds the limits of a spec. `validation.NetflixEnglish` holds the Netflix English rules, and `validation.BBC` holds the BBC rules. `Check` returns one `Violation` for each broken rule. `v.Cue` counts from 0, so the code prints `v.Cue+1`. [validation.md](validation.md) lists the 19 rules.
 
 <!-- example: ExampleLoad_validate -->
 ```go
@@ -198,16 +198,77 @@ for _, v := range violations {
 
 ## Clean up a subtitle
 
-A subtitle from a download site has hearing-impaired annotations, OCR typos and long lines. Three calls fix them in order. `hearingimpaired.Apply` removes `[FERRY HORN BLOWS]`, `(sighs)`, `[gasps]` and `CAPTAIN:`. It removes a cue that has no text left. `fixing.Apply` fixes `lt's` to `It's`, `l'll` to `I'll` and the spaces before a comma and a question mark. `WrapLines` breaks lines longer than 42 characters. See [text.md](text.md) and [editing.md](editing.md#line-wrapping).
+A subtitle from the web has hearing-impaired annotations, such as `[TRAIN WHISTLE BLOWS]`, `(sighs)` and `CONDUCTOR:`. `hearingimpaired.Apply` removes them. It also removes a cue that has no text left. The labels in lower case, such as `Baker:`, stay.
 
-<!-- example: ExampleLoad_cleanUp -->
+<!-- example: ExampleLoad_removeHearingImpaired -->
 ```go
-s, _, err := stbox.Load("testdata/examples/downloaded.srt", stbox.ReadOptions{})
+s, _, err := stbox.Load("testdata/hearing-impaired/own_sdh.srt", stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
 }
 if _, err := hearingimpaired.Apply(s, hearingimpaired.Options{}); err != nil {
+	fmt.Println(err)
+	return
+}
+if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stbox.BOMRemove}); err != nil {
+	fmt.Println(err)
+}
+// Output:
+// 1
+// 00:00:03,500 --> 00:00:06,000
+// The train to the coast
+// is late again.
+//
+// 2
+// 00:00:06,500 --> 00:00:09,000
+// - Look at the snow!
+// - Tickets, please.
+//
+// 3
+// 00:00:12,500 --> 00:00:15,000
+// Is the bakery open?
+//
+// 4
+// 00:00:15,500 --> 00:00:18,000
+// Baker: We open at six.
+//
+// 5
+// 00:00:18,500 --> 00:00:21,000
+// <i>The bread is still warm.</i>
+//
+// 6
+// 00:00:21,500 --> 00:00:24,000
+// Two loaves, please.
+//
+// 7
+// 00:00:24,500 --> 00:00:27,000
+// ♪ Rain on the window ♪
+//
+// 8
+// 00:00:27,500 --> 00:00:30,000
+// Note: the last train leaves at 11:40.
+//
+// 9
+// 00:00:33,500 --> 00:00:36,000
+// Fish &amp; chips {chuckles} for two.
+//
+// 10
+// 00:00:36,500 --> 00:00:39,000
+// Sit down, please.
+//
+// 11
+// 00:00:39,500 --> 00:00:42,000
+// - # The wheels go round #
+// - It stopped raining.
+```
+
+A second file has typos from a bad download: `Quiet , please !`, `We landed late.It was cold,but dry.` and `-Did you call?`. `fixing.Apply` fixes the spacing, the dashes, the dots and the tags. `Language` sets the language rules. `WrapLines` breaks the lines that are longer than 42 characters, such as the fare in cue 7. See [text.md](text.md) and [editing.md](editing.md#line-wrapping).
+
+<!-- example: ExampleLoad_fixErrors -->
+```go
+s, _, err := stbox.Load("testdata/fixing/web-errors.srt", stbox.ReadOptions{})
+if err != nil {
 	fmt.Println(err)
 	return
 }
@@ -224,22 +285,56 @@ if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stb
 }
 // Output:
 // 1
-// 00:00:03,500 --> 00:00:06,500
-// It's late again, isn't it?
+// 00:00:01,000 --> 00:00:03,200
+// Hello <i>there</i>, how was the trip?
 //
 // 2
-// 00:00:07,000 --> 00:00:10,000
-// - Look at the harbour!
-// - Hold on tight.
+// 00:00:03,600 --> 00:00:06,000
+// We landed late. It was cold, but dry.
 //
 // 3
-// 00:00:10,500 --> 00:00:15,000
-// The crossing takes forty minutes, so
-// I'll bring a book and a warm coat.
+// 00:00:06,400 --> 00:00:09,000
+// <i>The station was closed,
+// so we walked.</i>
 //
 // 4
-// 00:00:15,500 --> 00:00:18,000
-// Tickets, please.
+// 00:00:09,400 --> 00:00:11,000
+// Take the second exit.
+//
+// 5
+// 00:00:11,400 --> 00:00:13,500
+// - Did you call?
+// - Not yet.
+//
+// 6
+// 00:00:13,900 --> 00:00:16,000
+// I waited... and waited...
+//
+// 7
+// 00:00:16,400 --> 00:00:19,000
+// The fare was 1.5 euros,
+// e.g. on www.example.com.
+//
+// 8
+// 00:00:19,400 --> 00:00:21,000
+// Quiet, please!
+//
+// 9
+// 00:00:21,400 --> 00:00:23,000
+// Gate 4 is open now.
+//
+// 10
+// 00:00:23,400 --> 00:00:25,500
+// Mr. Berg is here. So am I.
+//
+// 11
+// 00:00:25,900 --> 00:00:28,000
+// <font color="#ffff00">Next stop:
+// the harbour</font>
+//
+// 12
+// 00:00:28,400 --> 00:00:30,000
+// This line has no errors.
 ```
 
 ## Extract a subtitle track from an MKV or MP4 file
@@ -390,7 +485,7 @@ if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stb
 
 ## Turn a Whisper transcript into readable subtitles
 
-The first segment of this file runs 11.8 s and holds 3 sentences. A viewer cannot read that in one cue. `WordTimestamps` keeps the time of each word. `resegment.ByWords` builds new cues from the words. Each cue holds one sentence, or what fits 2 lines of 42 characters. A pause of 0.6 s ends a cue. It becomes 3 cues. See [editing.md](editing.md#resegmenting) and [transcripts.md](transcripts.md).
+The first segment of this file runs 11.8 s and holds 3 sentences, and it becomes 3 cues. A viewer cannot read that in one cue. `WordTimestamps` keeps the time of each word. `resegment.ByWords` builds new cues from the words. Each cue holds one sentence, or what fits 2 lines of 42 characters. A pause of 0.6 s ends a cue. See [editing.md](editing.md#resegmenting) and [transcripts.md](transcripts.md).
 
 <!-- example: ExampleLoad_resegment -->
 ```go
