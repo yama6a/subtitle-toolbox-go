@@ -124,17 +124,15 @@ func (f *File) readPrelude() error {
 }
 
 func (f *File) docType(header ebml.Header) (string, error) {
-	var docType string
-	err := f.each(header, func(c ebml.Header) error {
-		if c.ID != idDocType {
-			return nil
+	for c, err := range f.r.Children(header) {
+		if err != nil {
+			return "", err
 		}
-		if err := f.readString(c, &docType); err != nil {
-			return err
+		if c.ID == idDocType {
+			return f.r.String(c)
 		}
-		return errStop
-	})
-	return docType, err
+	}
+	return "", nil
 }
 
 func (f *File) findSegment(from int64) (ebml.Header, bool, error) {
@@ -222,44 +220,66 @@ func (f *File) elementAt(positions map[uint64]int64, id uint64) (ebml.Header, bo
 
 // readSeekHead adds the positions of the SeekHead to positions. The first entry per ID wins.
 func (f *File) readSeekHead(seekHead ebml.Header, positions map[uint64]int64) error {
-	return f.each(seekHead, func(seek ebml.Header) error {
-		if seek.ID != idSeek {
-			return nil
+	for seek, err := range f.r.Children(seekHead) {
+		if err != nil {
+			return err
 		}
-		var id, position uint64
-		var hasID, hasPosition bool
-		err := f.each(seek, func(c ebml.Header) error {
-			switch c.ID {
-			case idSeekID:
-				hasID = true
-				return f.readUint(c, &id)
-			case idSeekPosition:
-				hasPosition = true
-				return f.readUint(c, &position)
-			}
-			return nil
-		})
-		if _, seen := positions[id]; err == nil && hasID && hasPosition && !seen {
+		if seek.ID != idSeek {
+			continue
+		}
+		id, position, ok, err := f.readSeek(seek)
+		if err != nil {
+			return err
+		}
+		if _, seen := positions[id]; ok && !seen {
 			positions[id] = int64(position)
 		}
-		return err
-	})
+	}
+	return nil
+}
+
+// readSeek reads a Seek entry. ok is false when the entry lacks the ID or the position.
+func (f *File) readSeek(seek ebml.Header) (id, position uint64, ok bool, err error) {
+	var hasID, hasPosition bool
+	for c, err := range f.r.Children(seek) {
+		if err != nil {
+			return 0, 0, false, err
+		}
+		switch c.ID {
+		case idSeekID:
+			hasID = true
+			if id, err = f.r.Unsigned(c); err != nil {
+				return 0, 0, false, err
+			}
+		case idSeekPosition:
+			hasPosition = true
+			if position, err = f.r.Unsigned(c); err != nil {
+				return 0, 0, false, err
+			}
+		}
+	}
+	return id, position, hasID && hasPosition, nil
 }
 
 func (f *File) readInfo(info ebml.Header) error {
-	return f.each(info, func(c ebml.Header) error {
-		switch c.ID {
-		case idTimestampScale:
-			var v uint64
-			err := f.readUint(c, &v)
-			f.scale = int64(v)
-			return err
-		case idWritingApp:
-			var s string
-			err := f.readString(c, &s)
-			f.mkvmerge = strings.HasPrefix(s, mkvmergeWritingApp)
+	for c, err := range f.r.Children(info) {
+		if err != nil {
 			return err
 		}
-		return nil
-	})
+		switch c.ID {
+		case idTimestampScale:
+			v, err := f.r.Unsigned(c)
+			if err != nil {
+				return err
+			}
+			f.scale = int64(v)
+		case idWritingApp:
+			s, err := f.r.String(c)
+			if err != nil {
+				return err
+			}
+			f.mkvmerge = strings.HasPrefix(s, mkvmergeWritingApp)
+		}
+	}
+	return nil
 }

@@ -12,17 +12,13 @@ import (
 	"github.com/yama6a/subtitle-toolbox-go/v4/model"
 )
 
-const (
-	codecDVB           = "S_DVBSUB"
-	unreadCodecMessage = "Track %d has the codec %s. The reader extracts only S_TEXT/UTF8, S_TEXT/ASS, S_TEXT/SSA, " +
-		"S_TEXT/WEBVTT, S_HDMV/PGS, S_VOBSUB, S_DVBSUB, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."
-)
+const codecDVB = "S_DVBSUB"
 
-// timedBlock is a block with its times in whole milliseconds.
+// timedBlock is a block with its times rounded to whole milliseconds.
 type timedBlock struct {
-	startMs, endMs int64
-	data           string
-	additional     string
+	start, end time.Duration
+	data       string
+	additional string
 }
 
 // Extract reads all blocks of the subtitle track with the TrackNumber number.
@@ -34,10 +30,10 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 func (f *File) extract(number int, common model.CommonReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
 	t, ok := f.track(number)
 	if !ok {
-		return nil, nil, &model.InvalidArgumentError{Msg: fmt.Sprintf("The file has no subtitle track with the number %d.", number)}
+		return nil, nil, &model.InvalidArgumentError{Option: "ReadOptions.Track", Msg: fmt.Sprintf("The file has no subtitle track with the number %d.", number)}
 	}
 	if t.Format == "" {
-		return nil, nil, damaged(unreadCodecMessage, number, t.CodecID)
+		return nil, nil, damaged("Track %d has the codec %s. The reader extracts only %s.", number, t.CodecID, readableCodecIDs())
 	}
 	privateBudget := f.inflateCap
 	private, err := f.decode(t, t.codecPrivate, scopeCodecPriv, &privateBudget)
@@ -99,29 +95,28 @@ func (f *File) timedBlocks(blocks []block, t *trackEntry, common model.CommonRea
 	out := make([]timedBlock, len(blocks))
 	for i, b := range blocks {
 		startNs, _ := f.nanos(b.start)
-		start := milliseconds(startNs)
-		out[i] = timedBlock{startMs: start, endMs: f.endMs(blocks, i, t, common), data: string(b.data), additional: string(b.additional)}
+		out[i] = timedBlock{start: roundToMillisecond(startNs), end: f.end(blocks, i, t, common), data: string(b.data), additional: string(b.additional)}
 	}
 	return out
 }
 
-func (f *File) endMs(blocks []block, i int, t *trackEntry, common model.CommonReadOptions) int64 {
+func (f *File) end(blocks []block, i int, t *trackEntry, common model.CommonReadOptions) time.Duration {
 	b := blocks[i]
 	startNs, _ := f.nanos(b.start)
 	switch {
 	case b.duration != noDuration:
 		d, _ := f.nanos(b.duration)
-		return milliseconds(startNs + d)
+		return roundToMillisecond(startNs + d)
 	case t.defaultDuration != noDuration:
-		return milliseconds(startNs + t.defaultDuration)
+		return roundToMillisecond(startNs + t.defaultDuration)
 	case i+1 < len(blocks):
 		next, _ := f.nanos(blocks[i+1].start)
-		return milliseconds(next)
+		return roundToMillisecond(next)
 	}
-	start := time.Duration(milliseconds(startNs)) * time.Millisecond
-	return int64(parsing.EndAfter(start, parsing.NewState(t.Format, common).LastCueDuration()) / time.Millisecond)
+	return parsing.EndAfter(roundToMillisecond(startNs), parsing.NewState(t.Format, common).LastCueDuration()).Truncate(time.Millisecond)
 }
 
-func milliseconds(ns int64) int64 {
-	return (ns + 500_000) / 1_000_000
+// roundToMillisecond rounds ns half up. Duration.Round would round a negative time away from zero.
+func roundToMillisecond(ns int64) time.Duration {
+	return time.Duration((ns+500_000)/1_000_000) * time.Millisecond
 }

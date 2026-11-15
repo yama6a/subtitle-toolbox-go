@@ -32,21 +32,27 @@ type trackEntry struct {
 }
 
 func (f *File) readTracks(tracks ebml.Header) error {
-	return f.each(tracks, func(entry ebml.Header) error {
+	for entry, err := range f.r.Children(tracks) {
+		if err != nil {
+			return err
+		}
 		if entry.ID != idTrackEntry {
-			return nil
+			continue
 		}
 		t, ok, err := f.readTrackEntry(entry)
-		if err != nil || !ok {
+		if err != nil {
 			return err
+		}
+		if !ok {
+			continue
 		}
 		if i := slices.IndexFunc(f.tracks, func(o trackEntry) bool { return o.Number == t.Number }); i >= 0 {
 			f.tracks[i] = t
 		} else {
 			f.tracks = append(f.tracks, t)
 		}
-		return nil
-	})
+	}
+	return nil
 }
 
 // entryReader reads the children of a TrackEntry.
@@ -66,8 +72,13 @@ func (f *File) readTrackEntry(entry ebml.Header) (trackEntry, bool, error) {
 	e := entryReader{f: f, t: trackEntry{defaultDuration: noDuration}}
 	e.t.Container = model.Matroska
 	e.t.Default = true
-	if err := f.each(entry, e.child); err != nil {
-		return trackEntry{}, false, err
+	for c, err := range f.r.Children(entry) {
+		if err != nil {
+			return trackEntry{}, false, err
+		}
+		if err := e.child(c); err != nil {
+			return trackEntry{}, false, err
+		}
 	}
 	if e.kind != trackTypeSubtitle || !e.hasNumber || e.number > math.MaxInt32 {
 		return trackEntry{}, false, nil
@@ -85,75 +96,89 @@ func (f *File) readTrackEntry(entry ebml.Header) (trackEntry, bool, error) {
 	return e.t, true, nil
 }
 
-func (e *entryReader) child(c ebml.Header) error {
+func (e *entryReader) child(c ebml.Header) (err error) {
+	r := e.f.r
 	switch c.ID {
 	case idTrackNumber:
 		e.hasNumber = true
-		return e.f.readUint(c, &e.number)
+		e.number, err = r.Unsigned(c)
 	case idTrackType:
-		return e.f.readUint(c, &e.kind)
+		e.kind, err = r.Unsigned(c)
 	case idTrackUID:
 		var b []byte
-		err := e.f.readBytes(c, &b)
+		b, err = r.Bytes(c)
 		e.t.uid = strings.TrimLeft(string(b), "\x00")
-		return err
 	case idCodecID:
-		return e.f.readString(c, &e.t.CodecID)
+		e.t.CodecID, err = r.String(c)
 	case idCodecPrivate:
-		return e.f.readBytes(c, &e.t.codecPrivate)
+		e.t.codecPrivate, err = r.Bytes(c)
 	case idLanguage:
 		e.hasLang = true
-		return e.f.readString(c, &e.language)
+		e.language, err = r.String(c)
 	case idLanguageBCP47:
 		e.hasBCP47 = true
-		return e.f.readString(c, &e.bcp47)
+		e.bcp47, err = r.String(c)
 	case idName:
-		return e.f.readString(c, &e.t.Name)
+		e.t.Name, err = r.String(c)
+	default:
+		err = e.flags(c)
 	}
-	return e.flags(c)
+	return err
 }
 
-func (e *entryReader) flags(c ebml.Header) error {
+func (e *entryReader) flags(c ebml.Header) (err error) {
 	var v uint64
 	switch c.ID {
 	case idFlagDefault:
-		err := e.f.readUint(c, &v)
+		v, err = e.f.r.Unsigned(c)
 		e.t.Default = v != 0
-		return err
 	case idFlagForced:
-		err := e.f.readUint(c, &v)
+		v, err = e.f.r.Unsigned(c)
 		e.t.Forced = v != 0
-		return err
 	case idDefaultDuration:
-		err := e.f.readUint(c, &v)
+		v, err = e.f.r.Unsigned(c)
 		e.t.defaultDuration = int64(v)
-		return err
 	case idEncodings:
-		var err error
 		e.t.encodings, err = e.f.readEncodings(c)
-		return err
 	}
-	return nil
+	return err
+}
+
+// readableCodecs lists the codecs that Extract reads, in the order of the error message, with the format of each.
+//
+//nolint:gochecknoglobals // lookup table of the codecs
+var readableCodecs = []struct {
+	id     string
+	format model.Format
+}{
+	{"S_TEXT/UTF8", model.SubRip},
+	{"S_TEXT/ASS", model.ASS},
+	{"S_TEXT/SSA", model.ASS},
+	{"S_TEXT/WEBVTT", model.WebVTT},
+	{"S_HDMV/PGS", model.PGS},
+	{"S_VOBSUB", model.VobSub},
+	{codecDVB, model.PGS},
+	{"D_WEBVTT/SUBTITLES", model.WebVTT},
+	{"D_WEBVTT/CAPTIONS", model.WebVTT},
+	{"D_WEBVTT/DESCRIPTIONS", model.WebVTT},
 }
 
 // codecFormat returns the format that Extract reads from a codec, "" for a codec it cannot read.
 func codecFormat(codecID string) model.Format {
-	switch codecID {
-	case "S_TEXT/UTF8":
-		return model.SubRip
-	case "S_TEXT/ASS", "S_TEXT/SSA":
-		return model.ASS
-	case "S_TEXT/WEBVTT", "D_WEBVTT/SUBTITLES", "D_WEBVTT/CAPTIONS", "D_WEBVTT/DESCRIPTIONS":
-		return model.WebVTT
-	case "S_HDMV/PGS":
-		return model.PGS
-	case "S_VOBSUB":
-		return model.VobSub
-	case codecDVB:
-		return model.PGS
-	default:
-		return ""
+	for _, c := range readableCodecs {
+		if c.id == codecID {
+			return c.format
+		}
 	}
+	return ""
+}
+
+func readableCodecIDs() string {
+	ids := make([]string, len(readableCodecs))
+	for i, c := range readableCodecs {
+		ids[i] = c.id
+	}
+	return strings.Join(ids, ", ")
 }
 
 // readEncodings returns the content encodings in decoding order, the highest order first.
@@ -163,41 +188,61 @@ func (f *File) readEncodings(encodings ebml.Header) ([]encoding, error) {
 		encoding
 	}
 	var list []ordered
-	err := f.each(encodings, func(e ebml.Header) error {
+	for e, err := range f.r.Children(encodings) {
+		if err != nil {
+			return nil, err
+		}
 		if e.ID != idEncoding {
-			return nil
+			continue
 		}
 		o := ordered{encoding: encoding{scope: 1}}
-		err := f.each(e, func(c ebml.Header) error { return f.readEncodingField(c, &o.order, &o.encoding) })
+		for c, err := range f.r.Children(e) {
+			if err != nil {
+				return nil, err
+			}
+			if err := f.readEncodingField(c, &o.order, &o.encoding); err != nil {
+				return nil, err
+			}
+		}
 		list = append(list, o)
-		return err
-	})
+	}
 	slices.SortStableFunc(list, func(a, b ordered) int { return cmp.Compare(b.order, a.order) })
 	out := make([]encoding, len(list))
 	for i, o := range list {
 		out[i] = o.encoding
 	}
-	return out, err
+	return out, nil
 }
 
-func (f *File) readEncodingField(c ebml.Header, order *uint64, e *encoding) error {
+func (f *File) readEncodingField(c ebml.Header, order *uint64, e *encoding) (err error) {
 	switch c.ID {
 	case idEncodingOrder:
-		return f.readUint(c, order)
+		*order, err = f.r.Unsigned(c)
 	case idEncodingScope:
-		return f.readUint(c, &e.scope)
+		e.scope, err = f.r.Unsigned(c)
 	case idEncodingType:
-		return f.readUint(c, &e.kind)
+		e.kind, err = f.r.Unsigned(c)
 	case idCompression:
-		return f.each(c, func(c ebml.Header) error {
-			switch c.ID {
-			case idCompAlgo:
-				return f.readUint(c, &e.algo)
-			case idCompSettings:
-				return f.readBytes(c, &e.settings)
+		err = f.readCompression(c, e)
+	}
+	return err
+}
+
+func (f *File) readCompression(compression ebml.Header, e *encoding) error {
+	for c, err := range f.r.Children(compression) {
+		if err != nil {
+			return err
+		}
+		switch c.ID {
+		case idCompAlgo:
+			if e.algo, err = f.r.Unsigned(c); err != nil {
+				return err
 			}
-			return nil
-		})
+		case idCompSettings:
+			if e.settings, err = f.r.Bytes(c); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
