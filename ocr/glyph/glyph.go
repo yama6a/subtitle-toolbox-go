@@ -47,6 +47,8 @@ func New(opts Options) (*Engine, error) {
 }
 
 // Database returns the database that the engine matches against.
+//
+// Deprecated: keep the database that you pass in Options.Database.
 func (e *Engine) Database() *glyphocr.Database { return e.database }
 
 // Recognize returns the text of im. It ignores language, and it returns ctx.Err() before it starts.
