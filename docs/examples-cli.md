@@ -1,23 +1,8 @@
 # Command line examples
 
-Each section is one task, done with the `stbox` command. The output is the real output of `stbox` on the test fixtures of this repository. A long output is shortened, and a line with `...` marks the cut. [examples-library.md](examples-library.md) does the same tasks in Go. [cli.md](cli.md) lists every option.
+Each section is one task, done with the `stbox` command. The output comes from a real run. A long output is cut, and a line with `...` marks the cut. [examples-library.md](examples-library.md) does the same tasks in Go. [cli.md](cli.md) lists every option.
 
-Every example reads a copy of a fixture under the name in the first column.
-
-| File | Fixture in `testdata` |
-|:--- |:--- |
-| `station.en.srt`, `station.de.srt` | `dual/station_en.srt`, `dual/station_de.srt` |
-| `trip.srt` | `cli/trip.srt` |
-| `bakery.en.srt`, `bakery.de.srt` | `sync/own_reference_en.srt`, `sync/own_target_de_25fps.srt` |
-| `silence.log` | `sync/own_ffmpeg_silencedetect.log` |
-| `ferry.mkv` | `mkv/mkvmerge.mkv` |
-| `film.sup` | `pgs/text_1080p.sup` |
-| `talk.json` | `resegmenting/own_whisper_long_segments.json` |
-| `platform.srt` | `translation/own_station.srt` |
-| `episode_v1.srt`, `episode_v2.srt` | `diff/own_original.srt`, `diff/own_edited.srt` |
-| `season1/` | `dual/station_de.srt`, `dual/station_en.srt` and `dual/station_stack.vtt` |
-
-No command overwrites a file. Output files such as `-o out.vtt` must not exist. Every command that writes SubRip or WebVTT here has `--no-bom`, so the output holds no UTF-8 BOM.
+No command overwrites a file. An output file such as `-o station.en.vtt` must not exist. Every command here that writes SubRip or WebVTT has `--no-bom`, so the output holds no UTF-8 BOM.
 
 ## Convert SubRip to WebVTT for an HTML5 video player
 
@@ -68,7 +53,7 @@ Der Zug nach Hamburg fährt von Gleis 4.
 
 ## Fix drift from a PAL speed-up
 
-A subtitle was timed for a 25 fps release, and the video runs at 23.976 fps. `--from-fps` is the frame rate that the subtitle fits now. `--to-fps` is the frame rate of the video. Both need each other.
+A subtitle was timed for a 25 fps release, and the video runs at 23.976 fps. `--from-fps` is the frame rate that the subtitle fits now. `--to-fps` is the frame rate of the video. Pass both or neither.
 
 ```sh
 stbox convert bakery.de.srt --from-fps 25 --to-fps 23.976 --no-bom -o bakery.de.23976.srt
@@ -88,7 +73,7 @@ Die Bäckerei öffnet jeden Morgen um sechs.
 
 ## Sync a subtitle to a reference subtitle
 
-When the file is late and also drifts, `stbox sync` finds the scale and the offset against a file of the same film that is in sync. The text of the cues does not matter, so the reference can be in another language.
+The file is late and also drifts. `stbox sync` finds the scale and the offset against a file of the same film that is in sync. The text of the cues does not matter, so the reference can be in another language.
 
 ```sh
 stbox sync bakery.de.srt --reference bakery.en.srt --no-bom -o bakery.de.synced.srt
@@ -151,26 +136,30 @@ A rule option overrides the preset, for example `--max-cpl 40`. `--json` prints 
 
 ## Clean up a subtitle
 
-One `convert` call removes hearing-impaired annotations, fixes common errors and wraps long lines. `--sdh` removes `[BELL RINGS]`, `ANNA:` and `(sighs)`. `--errors-fix` fixes typos such as a spaced question mark. `--structure-wrap` breaks lines at `--structure-max-cpl` characters.
+One `convert` call removes hearing-impaired annotations, fixes common errors and wraps long lines. `--sdh` removes `[FERRY HORN BLOWS]`, `(sighs)`, `[gasps]` and `CAPTAIN:`, and a cue that has no text left. `--errors-fix` fixes `lt's` to `It's`, `l'll` to `I'll` and the spaces before punctuation. It needs `--language`, or language metadata in the file. `--structure-wrap` breaks lines longer than 42 characters.
 
 ```sh
-stbox convert trip.srt --sdh --errors-fix --structure-wrap --structure-max-cpl 24 --no-bom
+stbox convert downloaded.srt --sdh --errors-fix --language en --structure-wrap --no-bom
 ```
 
 ```text
 1
-00:00:01,000 --> 00:00:03,000
-<i>The train</i>
-<i>leaves at noon.</i>
+00:00:03,500 --> 00:00:06,500
+It's late again, isn't it?
 
 2
-00:00:02,500 --> 00:00:05,000
-We need two tickets for
-the long ride to the coast.
+00:00:07,000 --> 00:00:10,000
+- Look at the harbour!
+- Hold on tight.
 
 3
-00:00:06,000 --> 00:00:06,400
-Too late.
+00:00:10,500 --> 00:00:15,000
+The crossing takes forty minutes, so
+I'll bring a book and a warm coat.
+
+4
+00:00:15,500 --> 00:00:18,000
+Tickets, please.
 ```
 
 ## Extract a subtitle track from an MKV or MP4 file
@@ -234,7 +223,7 @@ Fresh bread is ready by seven.
 
 ## Turn a Whisper transcript into readable subtitles
 
-Whisper writes one long segment per breath. `--structure-resegment` builds new cues from the word times. Each cue holds one sentence, or what fits `--structure-max-lines` lines of `--structure-max-cpl` characters. `stbox` detects Whisper JSON from its content.
+`--structure-resegment` builds new cues from the word times. Each cue holds one sentence, or what fits `--structure-max-lines` lines of `--structure-max-cpl` characters. `stbox` detects Whisper JSON from its content.
 
 ```sh
 stbox convert talk.json --structure-resegment --to srt --no-bom -o talk.srt
@@ -275,7 +264,7 @@ This page shows no output, because the command needs a key and the network. The 
 
 ## Build dual subtitles for language learners
 
-`stbox dual` puts the lines of a second language under each cue of the first. `--primary` sets the times. `--secondary-style i` sets the second language in italics.
+`stbox dual` puts the lines of a second language under the cue of the first language that it overlaps most. A joined cue starts at the earlier start and ends at the later end of its cues. `--secondary-style i` sets the second language in italics.
 
 ```sh
 stbox dual --primary station.en.srt --secondary station.de.srt --secondary-style i --no-bom -o station.dual.srt

@@ -96,45 +96,32 @@ fmt.Println("after: ", first.Start)
 
 ## Sync a subtitle to a reference subtitle
 
-A German file is late, and it also drifts against the 23.976 fps video. An English file for the same video is in sync. `refsync.Apply` compares the cue times of both files and ignores the text. It finds the scale and the offset and retimes the German file. The score is the share of time that both files cover, from 0 to 1.
+A German file is late, and it also drifts against the 23.976 fps video. An English file for the same video is in sync. `refsync.Apply` compares the cue times of both files and ignores the text. It finds the scale and the offset, and it retimes the German file. The score is the share of time that both files cover, from 0 to 1.
 
-<!-- example: refsync/ExampleApply -->
+<!-- example: ExampleLoad_syncToReference -->
 ```go
-at := func(start, end float64, text string) model.Cue {
-	return model.Cue{
-		Start: time.Duration(start * float64(time.Second)), End: time.Duration(end * float64(time.Second)),
-		Lines: []string{text},
-	}
-}
-var english, german model.Subtitle
-english.AddCues(
-	at(10, 12.5, "Where is the station?"),
-	at(20, 23, "Turn left at the bakery."),
-	at(31, 33, "Thank you."),
-	at(45, 47.5, "The last train leaves at ten."),
-)
-german.AddCues(
-	at(10.79, 13.188, "Wo ist der Bahnhof?"),
-	at(20.381, 23.258, "Links an der Ecke."),
-	at(30.93, 32.848, "Danke."),
-	at(44.357, 46.755, "Der letzte Zug geht um zehn."),
-)
-
-r, err := refsync.Apply(&german, refsync.Options{Reference: &english})
+german, _, err := stbox.Load("testdata/sync/own_target_de_25fps.srt", stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
 }
-fmt.Printf("scale %.5f, offset %s, score %.2f\n", r.Scale, r.Offset, r.Score)
-for _, c := range german.All() {
-	fmt.Println(c.Start, c.End, c.Text())
+english, _, err := stbox.Load("testdata/sync/own_reference_en.srt", stbox.ReadOptions{})
+if err != nil {
+	fmt.Println(err)
+	return
 }
+
+report, err := refsync.Apply(german, refsync.Options{Reference: english})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+fmt.Printf("scale %.5f, offset %s, score %.2f\n", report.Scale, report.Offset, report.Score)
+first, _ := german.Cue(0)
+fmt.Println("first cue:", first.Start)
 // Output:
-// scale 1.04271, offset -1.25s, score 1.00
-// 10.001s 12.501s Wo ist der Bahnhof?
-// 20.001s 23.001s Links an der Ecke.
-// 31.001s 33.001s Danke.
-// 45.001s 47.502s Der letzte Zug geht um zehn.
+// scale 1.04271, offset -2.3s, score 0.89
+// first cue: 1m17.715s
 ```
 
 The sync can also split at an ad break. See [sync.md](sync.md#splits).
@@ -179,21 +166,15 @@ fmt.Printf("scale %.5f, offset %s, score %.2f\n", report.Scale, report.Offset, r
 
 ## Check a file against broadcast or streaming rules
 
-A delivery spec limits the characters per line, the reading speed, the cue length and the gap between cues. A preset holds the limits of a spec. `validation.NetflixEnglish` holds the Netflix English rules, and `validation.BBC` holds the BBC rules. `Check` returns one `Violation` for each broken rule. `v.Cue` counts from 0, so the code prints `v.Cue+1`. [validation.md](validation.md) lists the 19 rules.
+A delivery spec limits the characters per line, the reading speed, the cue length and the gap between cues. A preset holds the limits of a spec. `validation.NetflixEnglish` holds the Netflix English rules, and `validation.BBC` holds the BBC rules. `Check` returns one `Violation` for each broken rule. `v.Cue` counts from 0, so the code prints `v.Cue+1`. `validation.BBC()` returns the BBC rules in the same way. [validation.md](validation.md) lists the 19 rules.
 
-The code parses a string. Use `stbox.Load` for a file.
-
-<!-- example: validation/ExampleNetflixEnglish -->
+<!-- example: ExampleLoad_validate -->
 ```go
-const content = "1\n00:00:01,000 --> 00:00:03,000\n<i>The train leaves at noon.</i>\n\n" +
-	"2\n00:00:02,500 --> 00:00:02,900\nANNA: We need two tickets for the long ride to the coast.\n"
-r := strings.NewReader(content)
-s, _, err := stbox.Parse(r, r.Size(), stbox.ReadOptions{})
+s, _, err := stbox.Load("testdata/cli/trip.srt", stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
 }
-
 rules, err := validation.NetflixEnglish(stbox.FrameRate23976)
 if err != nil {
 	fmt.Println(err)
@@ -209,18 +190,19 @@ for _, v := range violations {
 }
 // Output:
 // cue 2 maxCharactersPerLine 57
-// cue 2 maxCharactersPerSecond 142.5
-// cue 2 minDuration 0.4
+// cue 2 maxCharactersPerSecond 27.6
 // cue 2 noOverlap 0.5
+// cue 3 maxCharactersPerSecond 42.5
+// cue 3 minDuration 0.4
 ```
 
 ## Clean up a subtitle
 
-A subtitle from the web has hearing-impaired annotations, OCR typos and long lines. Three calls fix them in order. `hearingimpaired.Apply` removes `[BELL RINGS]`, `ANNA:` and `(sighs)`, and a cue with no text left goes. `fixing.Apply` fixes common errors such as a spaced question mark and `l` for `I`. `WrapLines` breaks each line at 24 characters. See [text.md](text.md) and [editing.md](editing.md#line-wrapping).
+A subtitle from a download site has hearing-impaired annotations, OCR typos and long lines. Three calls fix them in order. `hearingimpaired.Apply` removes `[FERRY HORN BLOWS]`, `(sighs)`, `[gasps]` and `CAPTAIN:`. It removes a cue that has no text left. `fixing.Apply` fixes `lt's` to `It's`, `l'll` to `I'll` and the spaces before a comma and a question mark. `WrapLines` breaks lines longer than 42 characters. See [text.md](text.md) and [editing.md](editing.md#line-wrapping).
 
 <!-- example: ExampleLoad_cleanUp -->
 ```go
-s, _, err := stbox.Load("testdata/cli/trip.srt", stbox.ReadOptions{})
+s, _, err := stbox.Load("testdata/examples/downloaded.srt", stbox.ReadOptions{})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -233,7 +215,7 @@ if _, err := fixing.Apply(s, fixing.Options{Language: "en"}); err != nil {
 	fmt.Println(err)
 	return
 }
-if err := s.WrapLines(24, 2); err != nil {
+if err := s.WrapLines(42, 2); err != nil {
 	fmt.Println(err)
 	return
 }
@@ -242,23 +224,27 @@ if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stb
 }
 // Output:
 // 1
-// 00:00:01,000 --> 00:00:03,000
-// <i>The train</i>
-// <i>leaves at noon.</i>
+// 00:00:03,500 --> 00:00:06,500
+// It's late again, isn't it?
 //
 // 2
-// 00:00:02,500 --> 00:00:05,000
-// We need two tickets for
-// the long ride to the coast.
+// 00:00:07,000 --> 00:00:10,000
+// - Look at the harbour!
+// - Hold on tight.
 //
 // 3
-// 00:00:06,000 --> 00:00:06,400
-// Too late.
+// 00:00:10,500 --> 00:00:15,000
+// The crossing takes forty minutes, so
+// I'll bring a book and a warm coat.
+//
+// 4
+// 00:00:15,500 --> 00:00:18,000
+// Tickets, please.
 ```
 
 ## Extract a subtitle track from an MKV or MP4 file
 
-A video file can hold several subtitle tracks. `Tracks` lists them. `ReadOptions.Track` picks one by its number. `Parse` and `Load` read MKV, WebM, MP4, MOV and MPEG-TS the same way as a subtitle file. The code reads an MKV file with an English SubRip track and a German ASS track. See [containers.md](containers.md).
+A video file can hold several subtitle tracks. `Tracks` lists them. `ReadOptions.Track` picks one by its number. The code picks the English track by its language. `Parse` and `Load` read MKV, WebM, MP4, MOV and MPEG-TS the same way as a subtitle file. The code reads an MKV file with an English SubRip track and a German ASS track. See [containers.md](containers.md).
 
 <!-- example: ExampleTracks_extract -->
 ```go
@@ -279,11 +265,15 @@ if err != nil {
 	fmt.Println(err)
 	return
 }
+track := 0
 for _, t := range tracks {
-	fmt.Println("track", t.Number, t.Format)
+	fmt.Println("track", t.Number, t.Language, t.Format)
+	if t.Language == "en" {
+		track = t.Number
+	}
 }
 
-s, _, err := stbox.Parse(f, info.Size(), stbox.ReadOptions{Track: 2})
+s, _, err := stbox.Parse(f, info.Size(), stbox.ReadOptions{Track: track})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -292,8 +282,8 @@ if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stb
 	fmt.Println(err)
 }
 // Output:
-// track 2 srt
-// track 3 ass
+// track 2 en srt
+// track 3 de ass
 // 1
 // 00:00:01,200 --> 00:00:03,800
 // The ferry to the island leaves at nine.
@@ -400,7 +390,7 @@ if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stb
 
 ## Turn a Whisper transcript into readable subtitles
 
-Whisper writes one long segment per breath, often with 3 sentences. A viewer cannot read that. `WordTimestamps` keeps the time of each word. `resegment.ByWords` builds new cues from the words. Each cue holds one sentence, or what fits 2 lines of 42 characters, and a pause of 0.6 s ends a cue. The first segment of this file runs 11.8 s and becomes 3 cues. See [editing.md](editing.md#resegmenting) and [transcripts.md](transcripts.md).
+The first segment of this file runs 11.8 s and holds 3 sentences. A viewer cannot read that in one cue. `WordTimestamps` keeps the time of each word. `resegment.ByWords` builds new cues from the words. Each cue holds one sentence, or what fits 2 lines of 42 characters. A pause of 0.6 s ends a cue. It becomes 3 cues. See [editing.md](editing.md#resegmenting) and [transcripts.md](transcripts.md).
 
 <!-- example: ExampleLoad_resegment -->
 ```go
@@ -449,9 +439,9 @@ if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stb
 
 ## Translate a subtitle with DeepL
 
-`translation.Translate` sends the text of the cues to an engine and puts the translation back. The times stay. Tags such as `<i>` and `<b>` stay in place. The first sentence of this file runs over 2 cues. It goes out as one text, and the translation splits again over the same 2 cues. The code prints these 2 cues.
+`translation.Translate` sends the text of the cues to an engine and puts the translation back. The times stay. Tags such as `<i>` and `<b>` stay in place. The first sentence of this file runs over 2 cues. It goes out as one text. The translation splits again over the same 2 cues, and the code prints them.
 
-The test starts a local server that answers with a saved DeepL response, so it needs no key and no network. With a real key, leave out `BaseURL` and pass `APIKey: os.Getenv("DEEPL_API_KEY")`. See [translation.md](translation.md).
+The test starts a local server that answers with a saved DeepL response. So it needs no key and no network. With a real key, leave out `BaseURL` and pass `APIKey: os.Getenv("DEEPL_API_KEY")`. See [translation.md](translation.md).
 
 <!-- example: ExampleLoad_translate -->
 ```go
@@ -474,7 +464,10 @@ if _, err := translation.Translate(context.Background(), s, engine, "en", "de", 
 	fmt.Println(err)
 	return
 }
-for _, c := range s.Cues()[:2] {
+for i, c := range s.All() {
+	if i == 2 {
+		break
+	}
 	fmt.Println(c.Start, c.Text())
 }
 // Output:
@@ -484,7 +477,7 @@ for _, c := range s.Cues()[:2] {
 
 ## Build dual subtitles for language learners
 
-A learner wants the English line and the German line on screen together. `dual.FromPair` puts each German cue under the English cue that it overlaps most. The English times win. Here the 2 German cues at 7.9 s and 9.6 s sit under one English cue, and `SecondaryStyle` sets the German lines in italics. `ModeTopBottom` shows the second language at the top of the screen instead. See [editing.md](editing.md#dual-subtitles).
+A learner wants the English line and the German line on screen together. `dual.FromPair` puts each German cue under the English cue that it overlaps most. A joined cue starts at the earlier start and ends at the later end of its cues. Cue 5 below starts at 13.2 s, because the German cue starts then, so it overlaps cue 4. `SecondaryStyle` sets the German lines in italics. `ModeTopBottom` shows the second language at the top of the screen instead. See [editing.md](editing.md#dual-subtitles).
 
 <!-- example: ExampleLoad_dual -->
 ```go
@@ -540,42 +533,78 @@ if _, err := stbox.Write(os.Stdout, both, stbox.SubRip, stbox.WriteOptions{BOM: 
 
 ## Compare two versions of a subtitle
 
-A translator sends back a corrected file. `diff.Compare` pairs the cues of both files and lists each cue that was added, removed or changed. `diff.Text` prints the result as text. See [compare.md](compare.md).
+A translator sends back a corrected file. `diff.Compare` pairs the cues of both files and lists each cue that was added, removed or changed. `diff.Text` prints the list as text. See [compare.md](compare.md).
 
-<!-- example: diff/ExampleText -->
+<!-- example: ExampleLoad_diff -->
 ```go
-var v1, v2 model.Subtitle
-v1.AddCues(
-	model.Cue{Start: 1 * time.Second, End: 3 * time.Second, Lines: []string{"The train is late."}},
-	model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{"The next stop is Milbrook."}},
-	model.Cue{Start: 8 * time.Second, End: 9 * time.Second, Lines: []string{"Thank you."}},
-)
-v2.AddCues(
-	model.Cue{Start: 0, End: 500 * time.Millisecond, Lines: []string{"Welcome."}},
-	model.Cue{Start: 1 * time.Second, End: 3 * time.Second, Lines: []string{"The train is late."}},
-	model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{"The next stop is Millbrook."}},
-)
-
-differences, err := diff.Compare(&v1, &v2, diff.Options{})
+v1, _, err := stbox.Load("testdata/diff/own_original.srt", stbox.ReadOptions{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+v2, _, err := stbox.Load("testdata/diff/own_edited.srt", stbox.ReadOptions{})
+if err != nil {
+	fmt.Println(err)
+	return
+}
+differences, err := diff.Compare(v1, v2, diff.Options{})
 if err != nil {
 	fmt.Println(err)
 	return
 }
 fmt.Print(diff.Text(differences))
 // Output:
-// added: new cue 1
-// + 00:00:00.000 --> 00:00:00.500
-//   Welcome.
+// timing changed: old cue 2, new cue 2
+// - 00:00:04.000 --> 00:00:06.200
+//   This train calls at all stations
+//   to the harbour.
+// + 00:00:04.250 --> 00:00:06.450
+//   This train calls at all stations
+//   to the harbour.
 //
-// text changed: old cue 2, new cue 3
-// - 00:00:04.000 --> 00:00:06.000
+// text changed: old cue 4, new cue 4
+// - 00:00:10.500 --> 00:00:13.000
 //   The next stop is Milbrook.
-// + 00:00:04.000 --> 00:00:06.000
+// + 00:00:10.500 --> 00:00:13.000
 //   The next stop is Millbrook.
 //
-// removed: old cue 3
-// - 00:00:08.000 --> 00:00:09.000
+// text and timing changed: old cue 6, new cue 6
+// - 00:00:17.000 --> 00:00:21.000
+//   Tickets are on sale in coach three. Cards and coins are fine.
+// + 00:00:17.000 --> 00:00:19.000
+//   Tickets are on sale in coach three.
+//
+// added: new cue 7
+// + 00:00:19.000 --> 00:00:21.000
+//   Cards and coins are fine.
+//
+// removed: old cue 8
+// - 00:00:25.000 --> 00:00:26.500
 //   Thank you.
+//
+// text and timing changed: old cue 9, new cue 9
+// - 00:00:28.000 --> 00:00:30.500
+//   Rain is likley later today.
+// + 00:00:28.000 --> 00:00:31.000
+//   Rain is likely later today.
+//
+// text changed: old cue 10, new cue 10
+// - 00:00:31.000 --> 00:00:33.000
+//   <i>Mind the gap.</i>
+// + 00:00:31.001 --> 00:00:33.000
+//   Mind the gap.
+//
+// text changed: old cue 11, new cue 11
+// - 00:00:34.000 --> 00:00:36.500
+//   Bicycles go in the last coach,
+//   next to the luggage rack.
+// + 00:00:34.000 --> 00:00:36.500
+//   Bicycles go in the last coach, next
+//   to the luggage rack.
+//
+// added: new cue 13
+// + 00:00:39.000 --> 00:00:40.000
+//   The doors open on the left.
 ```
 
 ## Walk a folder and report statistics
@@ -585,7 +614,7 @@ A folder holds subtitle files in mixed formats. `Load` detects the format of eac
 <!-- example: ExampleDetect_folder -->
 ```go
 err := filepath.WalkDir("testdata/dual", func(path string, d fs.DirEntry, err error) error {
-	if err != nil || d.IsDir() || filepath.Ext(path) == ".md" {
+	if err != nil || d.IsDir() {
 		return err
 	}
 	s, info, err := stbox.Load(path, stbox.ReadOptions{})
@@ -602,6 +631,7 @@ if err != nil {
 	fmt.Println(err)
 }
 // Output:
+// SOURCES.md skipped: stbox: unsupported format: no format detected: Format detection found no subtitle format.
 // station_de.srt                 srt  6 cues, 32 words, 31.5 characters per line
 // station_en.srt                 srt  5 cues, 35 words, 30.0 characters per line
 // station_stack.ass              ass  6 cues, 67 words, 30.8 characters per line
@@ -615,7 +645,7 @@ if err != nil {
 
 ## Create a subtitle from scratch
 
-A program that makes captions, such as a tour script or a quiz, builds the cues itself. `AddCues` keeps the cues in start order. A string in `Lines` is one line of the cue. See [subtitle.md](subtitle.md).
+A program that makes captions, such as a tour script, builds the cues itself. `AddCues` keeps the cues in start order. A string in `Lines` is one line of the cue. See [subtitle.md](subtitle.md).
 
 <!-- example: ExampleSubtitle_fromScratch -->
 ```go

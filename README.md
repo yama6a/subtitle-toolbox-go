@@ -56,14 +56,14 @@ if _, err := stbox.Write(os.Stdout, s, stbox.WebVTT, stbox.WriteOptions{BOM: stb
 // Take an umbrella with you.
 ```
 
-The same change from the shell:
+The same conversion from the shell:
 
 ```sh
 stbox convert station.en.srt --to vtt --no-bom -o station.en.vtt
 ```
 
-- [docs/examples-library.md](docs/examples-library.md) has 14 tasks in Go. Examples are a retime, a sync, a validation, an OCR run and a translation.
-- [docs/examples-cli.md](docs/examples-cli.md) has the same tasks with `stbox`, with the output of each command.
+- [docs/examples-library.md](docs/examples-library.md) shows real tasks in Go, such as a retime, a sync, a validation, an OCR run and a translation.
+- [docs/examples-cli.md](docs/examples-cli.md) shows the same tasks with `stbox`, with the output of each command.
 
 ## Requirements
 

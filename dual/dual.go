@@ -10,7 +10,8 @@ import (
 
 // FromPair returns a new subtitle with the cues of primary and secondary. Neither input changes.
 //
-// The primary cues set the times. The result gets the metadata, the comments and the file format data of primary.
+// A primary cue that joins secondary cues starts at the earliest start and ends at the latest end of its cues.
+// The result gets the metadata, the comments and the file format data of primary.
 // When both inputs have the language metadata, the language is the two joined by "+", for example "en+de".
 // A secondary cue that stays a cue of its own keeps its times, lines, alignment and forced flag, but not its ID
 // or its file format data, because they belong to the format of secondary.
