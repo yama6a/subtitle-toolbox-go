@@ -5,10 +5,10 @@ go 1.27.4
 require (
 	github.com/Eyevinn/mp4ff v0.63.0
 	github.com/asticode/go-astits v1.17.0
-	github.com/dlclark/regexp2/v2 v2.13.0
+	github.com/dlclark/regexp2/v2 v2.13.1
 	github.com/rivo/uniseg v0.4.7
 	github.com/stretchr/testify v1.12.1
-	github.com/yama6a/go-glyph-ocr v1.0.1
+	github.com/yama6a/go-glyph-ocr v1.0.2
 	golang.org/x/text v0.44.0
 )
 
