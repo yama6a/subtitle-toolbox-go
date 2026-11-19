@@ -4,17 +4,42 @@ A Go library and command line tool that reads, edits and writes subtitle files.
 
 ## Install
 
-```sh
-go get github.com/yama6a/subtitle-toolbox-go/v5
-```
+The command line tool `stbox` installs in one line. Each line below takes the latest release.
 
-The command line tool `stbox`. Homebrew installs a bottle, a prebuilt package, so it needs no Xcode. `brew upgrade` updates it. The install script works on Linux and macOS without Homebrew. Run it again to update.
+Homebrew, on macOS and Linux. It installs a bottle, a prebuilt package, so it needs no Xcode. `brew upgrade stbox` updates it.
 
 ```sh
 brew install yama6a/tap/stbox
-brew upgrade stbox
+```
+
+Debian and Ubuntu. Run the line again to update.
+
+```sh
+curl -fsSLo /tmp/stbox.deb "https://github.com/yama6a/subtitle-toolbox-go/releases/latest/download/stbox_$(dpkg --print-architecture).deb" && sudo apt install -y /tmp/stbox.deb
+```
+
+Fedora and RHEL. Run the line again to update. On openSUSE, use `sudo zypper install` with the same URL.
+
+```sh
+sudo dnf install -y "https://github.com/yama6a/subtitle-toolbox-go/releases/latest/download/stbox.$(uname -m).rpm"
+```
+
+The install script works on Linux and macOS without a package manager. Run it again to update.
+
+```sh
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/yama6a/subtitle-toolbox-go/main/install.sh)"
+```
+
+`go install`, for the command from source.
+
+```sh
 go install github.com/yama6a/subtitle-toolbox-go/v5/cmd/stbox@latest
+```
+
+The library.
+
+```sh
+go get github.com/yama6a/subtitle-toolbox-go/v5
 ```
 
 [docs/cli.md](docs/cli.md#install) shows how to install the command from a release archive or from the container image.

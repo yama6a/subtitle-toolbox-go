@@ -9,6 +9,8 @@
 | Form | Needs | Example |
 |:--- |:--- |:--- |
 | Homebrew formula `yama6a/tap/stbox` | Homebrew on macOS or Linux | `brew install yama6a/tap/stbox`, then `brew upgrade stbox` for a new release |
+| deb package `stbox_ARCH.deb` | Debian or Ubuntu, `sudo` | `curl -fsSLo /tmp/stbox.deb "https://github.com/yama6a/subtitle-toolbox-go/releases/latest/download/stbox_$(dpkg --print-architecture).deb" && sudo apt install -y /tmp/stbox.deb`, and the same line again for a new release |
+| rpm package `stbox.ARCH.rpm` | Fedora, RHEL or openSUSE, `sudo` | `sudo dnf install -y "https://github.com/yama6a/subtitle-toolbox-go/releases/latest/download/stbox.$(uname -m).rpm"`, and the same line again for a new release. openSUSE: `sudo zypper install` with the same URL |
 | install script `install.sh` | `curl` and `tar`, and `sudo` for the link | `bash -c "$(curl -fsSL https://raw.githubusercontent.com/yama6a/subtitle-toolbox-go/main/install.sh)" _ vX.Y.Z` |
 | archive on the GitHub release | nothing | `curl -fsSLO https://github.com/yama6a/subtitle-toolbox-go/releases/download/vX.Y.Z/stbox_X.Y.Z_linux_amd64.tar.gz` |
 | `go install` | Go of the `go` line in `go.mod` | `go install github.com/yama6a/subtitle-toolbox-go/v5/cmd/stbox@latest` |
@@ -18,12 +20,13 @@
 - **Version**: X.Y.Z is the version of a release, such as 4.21.0. The archive names, the image tag and `stbox --version` show `X.Y.Z`. The git tag is `vX.Y.Z`. The image also has the tags `X.Y`, `X` and `latest`.
 - **Tesseract image**: the tags are `X.Y.Z-tesseract`, `X.Y-tesseract`, `X-tesseract` and `tesseract`. It runs the same `stbox` and adds the `tesseract` program with the fast models of every language. It is about 400 MB larger. See [ocr.md](ocr.md#tesseract).
 - **Archives**: `stbox_X.Y.Z_OS_ARCH.tar.gz` for linux and darwin, `stbox_X.Y.Z_windows_ARCH.zip` for windows. Each holds `stbox`, `LICENSE`, `README.md` and `THIRD_PARTY_NOTICES.md`.
-- **Checksums**: `sha256sum --ignore-missing -c stbox_X.Y.Z_checksums.txt`.
+- **Packages**: `stbox_amd64.deb`, `stbox_arm64.deb`, `stbox.x86_64.rpm` and `stbox.aarch64.rpm` carry no version in their names, so `releases/latest/download/<name>` always serves the newest release. Each installs `/usr/bin/stbox` and puts `LICENSE` and `THIRD_PARTY_NOTICES.md` in `/usr/share/doc/stbox/`. Tesseract is a weak dependency. `apt` and `dnf` install the recommended Tesseract package by default. Skip it with `apt install --no-install-recommends` or `dnf install --setopt=install_weak_deps=False`.
+- **Checksums**: `sha256sum --ignore-missing -c stbox_X.Y.Z_checksums.txt` checks the archives and the packages.
 - **Install script**: [install.sh](../install.sh) installs the latest release, or the release in its argument, for linux and darwin on amd64 and arm64. It checks the SHA-256 checksum, writes `~/.stbox/stbox`, and links it as `/usr/local/bin/stbox` with `sudo` when the link is missing or points elsewhere. Run it again to update.
 - **Homebrew**: the formula installs the darwin or linux archive of the release. Each release updates it in [yama6a/homebrew-tap](https://github.com/yama6a/homebrew-tap). The Tesseract engine needs `brew install tesseract` too.
 - **macOS**: the binaries are not notarized. macOS blocks a binary that a browser or `curl` downloaded until the user runs `xattr -d com.apple.quarantine stbox`. A Homebrew install needs no such step.
 - **Image**: the tool runs in `/work`, so mount the files there. `--user` makes the tool write files that the user owns. Without it, the tool runs as user 65532 and cannot write to most mounted folders.
-- **Platforms**: archives for linux, darwin and windows on amd64 and arm64. The image is for linux/amd64 and linux/arm64.
+- **Platforms**: archives for linux, darwin and windows on amd64 and arm64. Packages for linux on amd64 and arm64. The image is for linux/amd64 and linux/arm64.
 
 ## Calls
 

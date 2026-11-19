@@ -1,4 +1,5 @@
 /.build/*.yaml
+!/.build/nfpm.yaml
 /.build/govulncheck.sh
 /bin/
 /dist/

@@ -21,6 +21,12 @@
       datasourceTemplate: "go",
       versioningTemplate: "gomod",
     },
+    // The nfpm version in release.yaml sits under a "renovate:" comment.
+    {
+      customType: "regex",
+      managerFilePatterns: ["/^\\.github/workflows/release\\.yaml$/"],
+      matchStrings: ["# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n\\s+\\w+: (?<currentValue>v\\S+)"],
+    },
   ],
 
   packageRules: [],

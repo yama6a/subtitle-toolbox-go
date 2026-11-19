@@ -26,7 +26,7 @@ The `release` workflow releases on every merge to `main` whose pull request carr
    gh release view v1.2.4 -R yama6a/subtitle-toolbox-go --json assets --jq '.assets[].name'
    ```
 
-   Expected: 7 names, the 6 archives and `stbox_1.2.4_checksums.txt`.
+   Expected: 11 names, the 6 archives, `stbox_amd64.deb`, `stbox_arm64.deb`, `stbox.x86_64.rpm`, `stbox.aarch64.rpm` and `stbox_1.2.4_checksums.txt`.
 
 5. Do the steps of [After any release](#after-any-release).
 
@@ -212,7 +212,9 @@ Replace `1.0.0` with the version of the release.
 
 1. Open the `release` workflow run of the merge commit.
 
-   Expected: `version`, `archives`, `image`, `image-tesseract`, `release` and `homebrew` are green, and `version` prints `next tag v1.0.0`. A red `homebrew` job with an authentication error means the secret `HOMEBREW_TAP_TOKEN` is missing or expired. It is a fine-grained token with contents write on yama6a/homebrew-tap only.
+   Expected: `version`, `archives`, `image`, `image-tesseract`, `release`, `homebrew`, `deb` and `rpm` are green, and `version` prints `next tag v1.0.0`. A red `homebrew` job with an authentication error means the secret `HOMEBREW_TAP_TOKEN` is missing or expired. It is a fine-grained token with contents write on yama6a/homebrew-tap only.
+
+   The `deb` job installs `stbox_amd64.deb` from the `latest/download` URL on Ubuntu. The `rpm` job installs `stbox.x86_64.rpm` from the same kind of URL in a Fedora container. Each runs `stbox --version`.
 
 2. View the release.
 
@@ -220,7 +222,7 @@ Replace `1.0.0` with the version of the release.
    gh release view v1.0.0 -R yama6a/subtitle-toolbox-go
    ```
 
-   Expected: 6 archives and `stbox_1.0.0_checksums.txt`.
+   Expected: 6 archives, 4 packages and `stbox_1.0.0_checksums.txt`, 11 assets in all.
 
 3. Download one archive and the checksum file. Check them, extract the archive and run the binary.
 
@@ -295,7 +297,7 @@ Replace `1.0.0` with the version of the release.
 
     Expected: `stbox 1.0.0 installed to ...` and then `1.0.0`.
 
-11. For a major release, edit the release notes. Put a hand-written block above the generated notes. It names the formats and the commands of the line, the 5 install forms, and links `docs/compatibility.md` at the tag. For N of 2 or more, it links `docs/upgrade-N.0.md` at the tag too, and shows `go get github.com/yama6a/subtitle-toolbox-go/vN@vN.0.0`.
+11. For a major release, edit the release notes. Put a hand-written block above the generated notes. It names the formats and the commands of the line, the 7 install forms, and links `docs/compatibility.md` at the tag. For N of 2 or more, it links `docs/upgrade-N.0.md` at the tag too, and shows `go get github.com/yama6a/subtitle-toolbox-go/vN@vN.0.0`.
 
    Write the block to `block.md`. Then run:
 

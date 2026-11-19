@@ -1,0 +1,26 @@
+# The deb and rpm package of stbox. .build/linux-packages.sh sets VERSION and ARCH (amd64 or arm64) and runs nfpm in the folder of the binary.
+name: stbox
+arch: ${ARCH}
+platform: linux
+version: ${VERSION}
+maintainer: yama6a <yama6a@users.noreply.github.com>
+homepage: https://github.com/yama6a/subtitle-toolbox-go
+description: Read, edit and write subtitle files
+license: MIT
+section: utils
+contents:
+  - src: stbox
+    dst: /usr/bin/stbox
+    file_info:
+      mode: 0755
+  - src: THIRD_PARTY_NOTICES.md
+    dst: /usr/share/doc/stbox/THIRD_PARTY_NOTICES.md
+  - src: LICENSE
+    dst: /usr/share/doc/stbox/LICENSE
+overrides:
+  deb:
+    recommends:
+      - tesseract-ocr
+  rpm:
+    recommends:
+      - tesseract

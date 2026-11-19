@@ -1,5 +1,5 @@
 # Releases on every merge to main: the archives and the image first, then the tag and the
-# GitHub release with the archives attached, so a tag always has every artifact.
+# GitHub release with the archives and the deb and rpm packages attached, so a tag always has every artifact.
 name: release
 
 on:
@@ -39,6 +39,25 @@ jobs:
         env:
           VERSION: ${{ needs.version.outputs.version }}
         run: make dist VERSION="$VERSION"
+      # nfpm is a build tool, so it stays out of go.mod. The job installs the release binary and checks its sum.
+      - name: Install nfpm
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # renovate: datasource=github-releases depName=goreleaser/nfpm
+          NFPM_VERSION: v2.49.0
+        run: |
+          gh api -H 'Accept: application/vnd.github.raw' 'repos/yama6a/gha/contents/scripts/retry.sh?ref=v2' > "$RUNNER_TEMP/retry.sh"
+          source "$RUNNER_TEMP/retry.sh"
+          mkdir "$RUNNER_TEMP/nfpm"
+          retry_release_download goreleaser/nfpm "$NFPM_VERSION" "$RUNNER_TEMP/nfpm" "nfpm_${NFPM_VERSION#v}_Linux_arm64.tar.gz" checksums.txt
+          cd "$RUNNER_TEMP/nfpm"
+          sha256sum --ignore-missing -c checksums.txt
+          tar -xzf "nfpm_${NFPM_VERSION#v}_Linux_arm64.tar.gz" nfpm
+          echo "$PWD" >> "$GITHUB_PATH"
+      - name: Build the deb and rpm packages
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: .build/linux-packages.sh "$VERSION" dist
       # The runner is linux/arm64, so that archive is the one it can run.
       - name: Smoke-test the linux/arm64 binary
         env:
@@ -114,6 +133,10 @@ jobs:
             dist/stbox_${{ needs.version.outputs.version }}_darwin_arm64.tar.gz
             dist/stbox_${{ needs.version.outputs.version }}_windows_amd64.zip
             dist/stbox_${{ needs.version.outputs.version }}_windows_arm64.zip
+            dist/stbox_amd64.deb
+            dist/stbox_arm64.deb
+            dist/stbox.x86_64.rpm
+            dist/stbox.aarch64.rpm
             dist/stbox_${{ needs.version.outputs.version }}_checksums.txt
 
   # Pushes the Homebrew formula of the new release to the branch bottle/stbox-<version> of yama6a/homebrew-tap.
@@ -156,3 +179,36 @@ jobs:
           git add Formula/stbox.rb
           git commit -m "Update stbox to $VERSION"
           git push --force origin "bottle/stbox-$VERSION"
+
+  # The next 2 jobs install the package from the latest/download URL of the README, so they check the URL too.
+  deb:
+    needs: [version, release]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Install the deb package
+        run: |
+          curl -fsSLo /tmp/stbox.deb "https://github.com/yama6a/subtitle-toolbox-go/releases/latest/download/stbox_$(dpkg --print-architecture).deb"
+          sudo apt-get update
+          sudo apt install -y /tmp/stbox.deb
+      - name: Check the version
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: test "$(stbox --version)" = "$VERSION"
+
+  rpm:
+    needs: [version, release]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Install the rpm package in a Fedora container
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          docker run --rm -e VERSION fedora:latest@sha256:a7d72ba2745b100a3351087472e5ee7b2450af7cf331e7673007e3817612839c bash -euc '
+            dnf install -y "https://github.com/yama6a/subtitle-toolbox-go/releases/latest/download/stbox.$(uname -m).rpm"
+            test "$(stbox --version)" = "$VERSION"'
