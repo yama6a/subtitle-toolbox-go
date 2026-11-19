@@ -348,7 +348,7 @@ This page shows no output, because the command needs a key and the network. The 
 
 ## Build dual subtitles for language learners
 
-`stbox dual` puts the lines of a second language under the cue of the first language that it overlaps most. A joined cue starts at the earlier start and ends at the later end of its cues. `--secondary-style i` sets the second language in italics.
+`stbox dual` puts the lines of a second language under the cue of the first language that it overlaps most. A joined cue keeps the times of the cue of the first language, so no 2 cues overlap. `--secondary-style i` sets the second language in italics.
 
 ```sh
 stbox dual --primary station.en.srt --secondary station.de.srt --secondary-style i --no-bom -o station.dual.srt
@@ -367,7 +367,7 @@ The train to Hamburg leaves from platform 4.
 <i>Der Zug nach Hamburg fährt von Gleis 4.</i>
 
 2
-00:00:04,400 --> 00:00:07,400
+00:00:04,500 --> 00:00:07,250
 It is ten minutes late today.
 <i>Er hat heute zehn Minuten Verspätung.</i>
 ...

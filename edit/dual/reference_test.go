@@ -50,8 +50,6 @@ func naiveStack(primary, secondary *model.Subtitle) []got {
 	for i, group := range partners {
 		for _, c := range group {
 			cues[i].Lines = append(cues[i].Lines, c.Lines...)
-			cues[i].Start = min(cues[i].Start, c.Start)
-			cues[i].End = max(cues[i].End, c.End)
 		}
 	}
 	all := slices.Concat(cues, unpaired)

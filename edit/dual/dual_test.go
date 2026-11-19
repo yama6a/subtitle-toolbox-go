@@ -42,21 +42,21 @@ func TestFromPairExamples(t *testing.T) {
 			[]row{{0, 2, "first"}, {2, 4, "second"}},
 			[]row{{1.5, 2.5, "between"}},
 			dual.Options{},
-			[]got{bottom(0, 2.5, "first\nbetween"), bottom(2, 4, "second")},
+			[]got{bottom(0, 2, "first\nbetween"), bottom(2, 4, "second")},
 		},
 		{
 			"stack takes the first primary cue when the float overlaps differ in the last bit",
 			[]row{{0, 1, "first"}, {1.2, 2.2, "second"}},
 			[]row{{0, 3, "between"}},
 			dual.Options{},
-			[]got{bottom(0, 3, "first\nbetween"), bottom(1.2, 2.2, "second")},
+			[]got{bottom(0, 1, "first\nbetween"), bottom(1.2, 2.2, "second")},
 		},
 		{
 			"stack takes the primary cue with the larger overlap",
 			[]row{{0, 2, "first"}, {2, 4, "second"}},
 			[]row{{1.5, 3.5, "between"}},
 			dual.Options{},
-			[]got{bottom(0, 2, "first"), bottom(1.5, 4, "second\nbetween")},
+			[]got{bottom(0, 2, "first"), bottom(2, 4, "second\nbetween")},
 		},
 		{
 			"stack keeps touching cues apart",
@@ -66,11 +66,11 @@ func TestFromPairExamples(t *testing.T) {
 			[]got{bottom(0, 2, "first"), bottom(2, 3, "after")},
 		},
 		{
-			"stack joins several secondary cues in start order",
+			"stack joins several secondary cues in start order and keeps the primary times",
 			[]row{{0, 10, "first"}},
 			[]row{{1, 2, "a"}, {3, 11, "b"}, {-1, 4, "c"}},
 			dual.Options{SecondaryStyle: "b"},
-			[]got{bottom(-1, 11, "first\n<b>c</b>\n<b>a</b>\n<b>b</b>")},
+			[]got{bottom(0, 10, "first\n<b>c</b>\n<b>a</b>\n<b>b</b>")},
 		},
 		{
 			"stack finds a partner behind a long primary cue",
@@ -373,7 +373,8 @@ func TestFromPairKeepsThePrimaryCueData(t *testing.T) {
 	assert.Equal(t, model.TopLeft, got.Position.Alignment)
 	assert.True(t, got.Forced)
 	assert.Equal(t, []string{"ass"}, got.FormatDataKeys())
-	assert.Equal(t, 3*time.Second, got.End)
+	assert.Equal(t, time.Duration(0), got.Start)
+	assert.Equal(t, 2*time.Second, got.End)
 }
 
 func TestFromPairSecondaryCuesLoseIDAndFormatData(t *testing.T) {
