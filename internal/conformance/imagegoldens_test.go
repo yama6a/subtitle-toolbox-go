@@ -265,6 +265,9 @@ func subtitleOfCues(t *testing.T, comment int, cues ...stbox.Cue) *stbox.Subtitl
 	s := &stbox.Subtitle{}
 	require.NoError(t, s.AddCues(cues...))
 	require.NoError(t, s.AddComment("note", comment))
+	// DCP writes the clock as IssueDate when none is set, so 2 writes that span a second boundary differ.
+	header := stbox.NewData(stbox.Field{Key: "IssueDate", Value: "2026-10-12T00:00:00"})
+	require.NoError(t, s.SetFormatData("dcp", stbox.NewData(stbox.Field{Key: "header", Value: header})))
 	return s
 }
 
