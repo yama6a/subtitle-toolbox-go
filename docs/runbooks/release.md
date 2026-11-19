@@ -286,7 +286,16 @@ Replace `1.0.0` with the version of the release.
 
    Expected: `4` bottle lines and a green run. The `verify` jobs install the formula from main and check that Homebrew pours a bottle. A red `build` job leaves the branch `bottle/stbox-1.0.0` in the tap, and the formula on main stays at the old release.
 
-10. For a major release, edit the release notes. Put a hand-written block above the generated notes. It names the formats and the commands of the line, the 4 install forms, and links `docs/compatibility.md` at the tag. For N of 2 or more, it links `docs/upgrade-N.0.md` at the tag too, and shows `go get github.com/yama6a/subtitle-toolbox-go/vN@vN.0.0`.
+10. Check the install script.
+
+    ```bash
+    bash -c "$(curl -fsSL https://raw.githubusercontent.com/yama6a/subtitle-toolbox-go/main/install.sh)" _ v1.0.0
+    ~/.stbox/stbox --version
+    ```
+
+    Expected: `stbox 1.0.0 installed to ...` and then `1.0.0`.
+
+11. For a major release, edit the release notes. Put a hand-written block above the generated notes. It names the formats and the commands of the line, the 5 install forms, and links `docs/compatibility.md` at the tag. For N of 2 or more, it links `docs/upgrade-N.0.md` at the tag too, and shows `go get github.com/yama6a/subtitle-toolbox-go/vN@vN.0.0`.
 
    Write the block to `block.md`. Then run:
 

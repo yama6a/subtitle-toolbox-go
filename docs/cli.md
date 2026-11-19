@@ -9,6 +9,7 @@
 | Form | Needs | Example |
 |:--- |:--- |:--- |
 | Homebrew formula `yama6a/tap/stbox` | Homebrew on macOS or Linux | `brew install yama6a/tap/stbox`, then `brew upgrade stbox` for a new release |
+| install script `install.sh` | `curl` and `tar`, and `sudo` for the link | `bash -c "$(curl -fsSL https://raw.githubusercontent.com/yama6a/subtitle-toolbox-go/main/install.sh)" _ vX.Y.Z` |
 | archive on the GitHub release | nothing | `curl -fsSLO https://github.com/yama6a/subtitle-toolbox-go/releases/download/vX.Y.Z/stbox_X.Y.Z_linux_amd64.tar.gz` |
 | `go install` | Go of the `go` line in `go.mod` | `go install github.com/yama6a/subtitle-toolbox-go/v5/cmd/stbox@latest` |
 | image `ghcr.io/yama6a/subtitle-toolbox-go` | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:X.Y.Z convert in.srt --to vtt -o out.vtt` |
@@ -18,6 +19,7 @@
 - **Tesseract image**: the tags are `X.Y.Z-tesseract`, `X.Y-tesseract`, `X-tesseract` and `tesseract`. It runs the same `stbox` and adds the `tesseract` program with the fast models of every language. It is about 400 MB larger. See [ocr.md](ocr.md#tesseract).
 - **Archives**: `stbox_X.Y.Z_OS_ARCH.tar.gz` for linux and darwin, `stbox_X.Y.Z_windows_ARCH.zip` for windows. Each holds `stbox`, `LICENSE`, `README.md` and `THIRD_PARTY_NOTICES.md`.
 - **Checksums**: `sha256sum --ignore-missing -c stbox_X.Y.Z_checksums.txt`.
+- **Install script**: [install.sh](../install.sh) installs the latest release, or the release in its argument, for linux and darwin on amd64 and arm64. It checks the SHA-256 checksum, writes `~/.stbox/stbox`, and links it as `/usr/local/bin/stbox` with `sudo` when the link is missing or points elsewhere. Run it again to update.
 - **Homebrew**: the formula installs the darwin or linux archive of the release. Each release updates it in [yama6a/homebrew-tap](https://github.com/yama6a/homebrew-tap). The Tesseract engine needs `brew install tesseract` too.
 - **macOS**: the binaries are not notarized. macOS blocks a binary that a browser or `curl` downloaded until the user runs `xattr -d com.apple.quarantine stbox`. A Homebrew install needs no such step.
 - **Image**: the tool runs in `/work`, so mount the files there. `--user` makes the tool write files that the user owns. Without it, the tool runs as user 65532 and cannot write to most mounted folders.
