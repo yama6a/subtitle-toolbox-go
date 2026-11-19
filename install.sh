@@ -58,6 +58,7 @@ mkdir -p "$install_dir"
 tar -xzf "$tmp/$archive" -C "$install_dir" stbox
 
 if [[ "$(readlink "$link" 2> /dev/null || true)" != "$install_dir/stbox" ]]; then
+  sudo mkdir -p "$(dirname "$link")"
   sudo ln -sf "$install_dir/stbox" "$link"
 fi
 
