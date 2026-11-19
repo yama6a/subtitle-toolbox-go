@@ -567,7 +567,7 @@ for i, c := range s.All() {
 
 ## Build dual subtitles for language learners
 
-A learner wants the English line and the German line on screen together. `dual.FromPair` puts each German cue under the English cue that it overlaps most. A joined cue starts at the earlier start and ends at the later end of its cues. Cue 5 below starts at 13.2 s, because the German cue starts then, so it overlaps cue 4. `SecondaryStyle` sets the German lines in italics. `ModeTopBottom` shows the second language at the top of the screen instead. See [editing.md](editing.md#dual-subtitles).
+A learner wants the English line and the German line on screen together. `dual.FromPair` puts each German cue under the English cue that it overlaps most. A joined cue keeps the times of the English cue. Cue 5 below keeps 16 s to 19 s, although its German line starts at 13.2 s. So no 2 cues overlap. `SecondaryStyle` sets the German lines in italics. `ModeTopBottom` shows the second language at the top of the screen instead. See [editing.md](editing.md#dual-subtitles).
 
 <!-- example: ExampleLoad_dual -->
 ```go
@@ -596,12 +596,12 @@ if _, err := stbox.Write(os.Stdout, both, stbox.SubRip, stbox.WriteOptions{BOM: 
 // <i>Der Zug nach Hamburg fährt von Gleis 4.</i>
 //
 // 2
-// 00:00:04,400 --> 00:00:07,400
+// 00:00:04,500 --> 00:00:07,250
 // It is ten minutes late today.
 // <i>Er hat heute zehn Minuten Verspätung.</i>
 //
 // 3
-// 00:00:07,900 --> 00:00:11,100
+// 00:00:08,000 --> 00:00:11,000
 // The bakery next to the station opens at six.
 // They sell fresh rolls.
 // <i>Die Bäckerei am Bahnhof öffnet um sechs.</i>
@@ -612,7 +612,7 @@ if _, err := stbox.Write(os.Stdout, both, stbox.SubRip, stbox.WriteOptions{BOM: 
 // <i>Rain is coming.</i>
 //
 // 5
-// 00:00:13,200 --> 00:00:19,000
+// 00:00:16,000 --> 00:00:19,000
 // Take an umbrella with you.
 // <i>Morgen scheint wieder die Sonne.</i>
 //

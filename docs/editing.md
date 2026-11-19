@@ -493,7 +493,7 @@ for _, c := range result.All() {
 // <i>Wohin gehst du?</i>
 ```
 
-The primary subtitle is the first language. The secondary subtitle is the second language. In stack mode, a joined cue starts at the earlier start and ends at the later end of its cues. `FromPair` returns a new subtitle and changes neither input.
+The primary subtitle is the first language. The secondary subtitle is the second language. In stack mode, a joined cue keeps the start and the end of the primary cue, so joined cues do not overlap. `FromPair` returns a new subtitle and changes neither input.
 
 | `Mode` | CLI value | Result |
 |:--- |:--- |:--- |
@@ -512,8 +512,8 @@ The primary subtitle is the first language. The secondary subtitle is the second
 ### Stack
 
 - **Partner**: the primary cue with the largest overlap, which is the earlier end minus the later start. The overlap must be above 0, so cues that only touch stay apart. The first primary cue wins a tie.
-- **Example**: the primary cues `first` from 0 s to 2 s and `second` from 2 s to 4 s, and the secondary cue `between` from 1.5 s to 2.5 s. Both overlaps are 0.5 s, so `between` joins `first`, which then runs from 0 s to 2.5 s.
-- **Joined cue**: the lines of its partners come after its own lines, in start order of the partners. It runs from the earliest start to the latest end of the group. It keeps its ID, alignment, forced flag and format data.
+- **Example**: the primary cues `first` from 0 s to 2 s and `second` from 2 s to 4 s, and the secondary cue `between` from 1.5 s to 2.5 s. Both overlaps are 0.5 s, so `between` joins `first`, which keeps 0 s to 2 s. `between` shows only until 2 s.
+- **Joined cue**: the lines of its partners come after its own lines, in start order of the partners. It keeps its start and end. It keeps its ID, alignment, forced flag and format data.
 - **No partner**: the secondary cue stays a cue of its own.
 
 ### Top-bottom

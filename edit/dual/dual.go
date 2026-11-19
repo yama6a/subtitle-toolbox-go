@@ -10,7 +10,7 @@ import (
 
 // FromPair returns a new subtitle with the cues of primary and secondary. Neither input changes.
 //
-// A primary cue that joins secondary cues starts at the earliest start and ends at the latest end of its cues.
+// A primary cue that joins secondary cues keeps its start and end, so joined cues do not overlap.
 // The result gets the metadata, the comments and the file format data of primary.
 // When both inputs have the language metadata, the language is the two joined by "+", for example "en+de".
 // A secondary cue that stays a cue of its own keeps its times, lines, alignment and forced flag, but not its ID
@@ -71,8 +71,6 @@ func stack(lookup *model.Subtitle, primary, secondary []model.Cue) []model.Cue {
 				joined.Lines, joined.Speaker, joined.Words = joined.TaggedLines(), "", nil
 			}
 			joined.Lines = append(joined.Lines, c.TaggedLines()...)
-			joined.Start = min(joined.Start, c.Start)
-			joined.End = max(joined.End, c.End)
 		}
 	}
 	for p := range joinedCues {
