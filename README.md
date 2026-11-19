@@ -24,12 +24,6 @@ Fedora and RHEL. Run the line again to update. On openSUSE, use `sudo zypper ins
 sudo dnf install -y "https://github.com/yama6a/subtitle-toolbox-go/releases/latest/download/stbox.$(uname -m).rpm"
 ```
 
-Arch Linux, from the AUR. `yay -Syu` updates it. Any AUR helper works.
-
-```sh
-yay -S stbox-bin
-```
-
 The install script works on Linux and macOS without a package manager. Run it again to update.
 
 ```sh

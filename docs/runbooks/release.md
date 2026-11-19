@@ -212,9 +212,9 @@ Replace `1.0.0` with the version of the release.
 
 1. Open the `release` workflow run of the merge commit.
 
-   Expected: `version`, `archives`, `image`, `image-tesseract`, `release`, `homebrew`, `deb`, `rpm` and `aur` are green, and `version` prints `next tag v1.0.0`. A red `homebrew` job with an authentication error means the secret `HOMEBREW_TAP_TOKEN` is missing or expired. It is a fine-grained token with contents write on yama6a/homebrew-tap only.
+   Expected: `version`, `archives`, `image`, `image-tesseract`, `release`, `homebrew`, `deb` and `rpm` are green, and `version` prints `next tag v1.0.0`. A red `homebrew` job with an authentication error means the secret `HOMEBREW_TAP_TOKEN` is missing or expired. It is a fine-grained token with contents write on yama6a/homebrew-tap only.
 
-   The `deb` job installs `stbox_amd64.deb` from the `latest/download` URL on Ubuntu. The `rpm` job installs `stbox.x86_64.rpm` from the same kind of URL in a Fedora container. Each runs `stbox --version`. The `aur` job builds the PKGBUILD in an Arch container and runs `stbox --version`. It then pushes the PKGBUILD to the AUR. When the secret `AUR_SSH_PRIVATE_KEY` is empty, it prints a notice and skips the push.
+   The `deb` job installs `stbox_amd64.deb` from the `latest/download` URL on Ubuntu. The `rpm` job installs `stbox.x86_64.rpm` from the same kind of URL in a Fedora container. Each runs `stbox --version`.
 
 2. View the release.
 
@@ -297,15 +297,7 @@ Replace `1.0.0` with the version of the release.
 
     Expected: `stbox 1.0.0 installed to ...` and then `1.0.0`.
 
-11. Check the AUR package, when the secret `AUR_SSH_PRIVATE_KEY` is set.
-
-    ```bash
-    curl -fsS 'https://aur.archlinux.org/rpc/v5/info?arg[]=stbox-bin' | jq -r '.results[0].Version'
-    ```
-
-    Expected: `1.0.0-1`.
-
-12. For a major release, edit the release notes. Put a hand-written block above the generated notes. It names the formats and the commands of the line, the 8 install forms, and links `docs/compatibility.md` at the tag. For N of 2 or more, it links `docs/upgrade-N.0.md` at the tag too, and shows `go get github.com/yama6a/subtitle-toolbox-go/vN@vN.0.0`.
+11. For a major release, edit the release notes. Put a hand-written block above the generated notes. It names the formats and the commands of the line, the 7 install forms, and links `docs/compatibility.md` at the tag. For N of 2 or more, it links `docs/upgrade-N.0.md` at the tag too, and shows `go get github.com/yama6a/subtitle-toolbox-go/vN@vN.0.0`.
 
    Write the block to `block.md`. Then run:
 
@@ -314,25 +306,6 @@ Replace `1.0.0` with the version of the release.
    cat block.md generated.md > notes.md
    gh release edit v1.0.0 -R yama6a/subtitle-toolbox-go --notes-file notes.md
    ```
-
-## AUR setup
-
-The `aur` job pushes the package `stbox-bin` to the AUR. Do this once.
-
-1. Create an account on aur.archlinux.org.
-2. Create an SSH key pair without a passphrase, and add the public key to the account under "My Account".
-
-   ```bash
-   ssh-keygen -t ed25519 -N '' -f aur_key -C stbox-aur
-   ```
-
-3. Add the private key as the repository secret `AUR_SSH_PRIVATE_KEY`.
-
-   ```bash
-   gh secret set AUR_SSH_PRIVATE_KEY -R yama6a/subtitle-toolbox-go < aur_key
-   ```
-
-The first push of the next release creates the package. Until the secret exists, the job tests the PKGBUILD and skips the push.
 
 ## Gotchas
 
