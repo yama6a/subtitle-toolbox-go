@@ -10,10 +10,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 type cueTimes struct {
@@ -69,7 +69,7 @@ func readFixture(tb testing.TB, name string) *model.Subtitle {
 		cues = append(cues, model.Cue{Start: fixtureTime(tb, fields[0]), End: fixtureTime(tb, fields[2]), Lines: lines[1:]})
 	}
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	require.NoError(tb, s.AddCues(cues...))
 	return s
 }
 
@@ -381,7 +381,7 @@ func TestEditsMoveWords(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCue(model.Cue{Start: 0, End: 5 * time.Second, Lines: []string{"one two"}, Words: []model.Word{word("one", 1, 2)}})
+			require.NoError(t, s.AddCue(model.Cue{Start: 0, End: 5 * time.Second, Lines: []string{"one two"}, Words: []model.Word{word("one", 1, 2)}}))
 			got, err := tt.edit(s)
 			require.NoError(t, err)
 			c, _ := got.Cue(0)
@@ -394,7 +394,7 @@ func TestScaleStopsAtAWordThatReachesTheTimeLimit(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: 0, End: sec(1), Lines: []string{"far"}, Words: []model.Word{word("far", 0, 99999*3600)}})
+	require.NoError(t, s.AddCue(model.Cue{Start: 0, End: sec(1), Lines: []string{"far"}, Words: []model.Word{word("far", 0, 99999*3600)}}))
 	require.ErrorIs(t, s.Scale(2), model.ErrInvalidArgument)
 	c, _ := s.Cue(0)
 	assert.Equal(t, sec(99999*3600), c.Words[0].End)
@@ -413,134 +413,134 @@ func TestRetimeErrors(t *testing.T) {
 			retime: func(s *model.Subtitle) error {
 				return s.ShiftRange(2*time.Second, new(600*time.Second), new(600*time.Second))
 			},
-			want: "The end time of the shift must be after its start time, got 600 to 600.",
+			want: "the end time of the shift must be after its start time, got 600 to 600",
 		},
 		{
 			name: "shift range with an end before the start",
 			retime: func(s *model.Subtitle) error {
 				return s.ShiftRange(2*time.Second, new(900*time.Second), new(600*time.Second))
 			},
-			want: "The end time of the shift must be after its start time, got 900 to 600.",
+			want: "the end time of the shift must be after its start time, got 900 to 600",
 		},
 		{
 			name:   "shift range with fractions",
 			retime: func(s *model.Subtitle) error { return s.ShiftRange(time.Second, new(sec(2.5)), new(sec(1.5))) },
-			want:   "The end time of the shift must be after its start time, got 2.5 to 1.5.",
+			want:   "the end time of the shift must be after its start time, got 2.5 to 1.5",
 		},
 		{
 			name:   "scale by 0",
 			retime: func(s *model.Subtitle) error { return s.Scale(0) },
-			want:   "The scale factor must be greater than 0, got 0.",
+			want:   "the scale factor must be greater than 0, got 0",
 		},
 		{
 			name:   "scale by a negative factor",
 			retime: func(s *model.Subtitle) error { return s.Scale(-1.5) },
-			want:   "The scale factor must be greater than 0, got -1.5.",
+			want:   "the scale factor must be greater than 0, got -1.5",
 		},
 		{
 			name:   "scale by NaN",
 			retime: func(s *model.Subtitle) error { return s.Scale(math.NaN()) },
-			want:   "The scale factor must be greater than 0, got NAN.",
+			want:   "the scale factor must be greater than 0, got NAN",
 		},
 		{
 			name:   "scale by infinity",
 			retime: func(s *model.Subtitle) error { return s.Scale(math.Inf(1)) },
-			want:   "The scale factor must be greater than 0, got INF.",
+			want:   "the scale factor must be greater than 0, got INF",
 		},
 		{
 			name: "frame rate 0",
 			retime: func(s *model.Subtitle) error {
 				return s.ConvertFrameRate(model.FrameRate{Num: 25, Den: 1}, model.FrameRate{Num: 0, Den: 1})
 			},
-			want: "The frame rate must be greater than 0, got 0.",
+			want: "the frame rate must be greater than 0, got 0",
 		},
 		{
 			name: "frame rate not set",
 			retime: func(s *model.Subtitle) error {
 				return s.ConvertFrameRate(model.FrameRate{}, model.FrameRate{Num: 25, Den: 1})
 			},
-			want: "The frame rate must be greater than 0, got 0.",
+			want: "the frame rate must be greater than 0, got 0",
 		},
 		{
 			name: "frame rate with a zero denominator",
 			retime: func(s *model.Subtitle) error {
 				return s.ConvertFrameRate(model.FrameRate{Num: 25, Den: 0}, model.FrameRate{Num: 25, Den: 1})
 			},
-			want: "The frame rate must be greater than 0, got INF.",
+			want: "the frame rate must be greater than 0, got INF",
 		},
 		{
 			name:   "no sync points",
 			retime: func(s *model.Subtitle) error { return s.SyncByPoints(nil) },
-			want:   "The sync points must not be empty.",
+			want:   "the sync points must not be empty",
 		},
 		{
 			name:   "an empty list of sync points",
 			retime: func(s *model.Subtitle) error { return s.SyncByPoints([]model.SyncPoint{}) },
-			want:   "The sync points must not be empty.",
+			want:   "the sync points must not be empty",
 		},
 		{
 			name: "same old times",
 			retime: func(s *model.Subtitle) error {
 				return s.SyncByPoints([]model.SyncPoint{{Old: sec(10), New: sec(12)}, {Old: sec(10), New: sec(15)}})
 			},
-			want: "The old and new times of the sync points must both increase, got 10=12 before 10=15.",
+			want: "the old and new times of the sync points must both increase, got 10=12 before 10=15",
 		},
 		{
 			name: "old times reverse",
 			retime: func(s *model.Subtitle) error {
 				return s.SyncByPoints([]model.SyncPoint{{Old: sec(600), New: sec(610)}, {Old: sec(10), New: sec(12)}})
 			},
-			want: "The old and new times of the sync points must both increase, got 600=610 before 10=12.",
+			want: "the old and new times of the sync points must both increase, got 600=610 before 10=12",
 		},
 		{
 			name: "new times reverse",
 			retime: func(s *model.Subtitle) error {
 				return s.SyncByPoints([]model.SyncPoint{{Old: sec(10), New: sec(20)}, {Old: sec(30), New: sec(15)}})
 			},
-			want: "The old and new times of the sync points must both increase, got 10=20 before 30=15.",
+			want: "the old and new times of the sync points must both increase, got 10=20 before 30=15",
 		},
 		{
 			name: "same new times",
 			retime: func(s *model.Subtitle) error {
 				return s.SyncByPoints([]model.SyncPoint{{Old: sec(10), New: sec(12)}, {Old: sec(20), New: sec(30)}, {Old: sec(40), New: sec(30)}})
 			},
-			want: "The old and new times of the sync points must both increase, got 20=30 before 40=30.",
+			want: "the old and new times of the sync points must both increase, got 20=30 before 40=30",
 		},
 		{
 			name:   "scale beyond the time limit",
 			retime: func(s *model.Subtitle) error { return s.Scale(1e300) },
-			want:   "The retimed cue 1 would end at 8e+300 s. Cue times must be below 100000 hours.",
+			want:   "the retimed cue 1 would end at 8e+300 s. Cue times must be below 100000 hours",
 		},
 		{
 			name: "frame rate beyond the time limit",
 			retime: func(s *model.Subtitle) error {
 				return s.ConvertFrameRate(model.FrameRate{Num: 1, Den: 1}, model.FrameRate{Num: 1, Den: 1e18})
 			},
-			want: "The retimed cue 1 would end at 8e+18 s. Cue times must be below 100000 hours.",
+			want: "the retimed cue 1 would end at 8e+18 s. Cue times must be below 100000 hours",
 		},
 		{
 			name:   "shift beyond the time limit",
 			retime: func(s *model.Subtitle) error { return s.Shift(360000000 * time.Second) },
-			want:   "The retimed cue 1 would end at 360000008 s. Cue times must be below 100000 hours.",
+			want:   "the retimed cue 1 would end at 360000008 s. Cue times must be below 100000 hours",
 		},
 		{
 			name: "shift from a time beyond the time limit",
 			retime: func(s *model.Subtitle) error {
 				return s.ShiftRange(359998500*time.Second, new(1000*time.Second), nil)
 			},
-			want: "The retimed cue 5 would end at 360000003 s. Cue times must be below 100000 hours.",
+			want: "the retimed cue 5 would end at 360000003 s. Cue times must be below 100000 hours",
 		},
 		{
 			name:   "shift by the largest duration",
 			retime: func(s *model.Subtitle) error { return s.Shift(math.MaxInt64) },
-			want:   "The retimed cue 1 would end at 9223372044.8548 s. Cue times must be below 100000 hours.",
+			want:   "the retimed cue 1 would end at 9223372044.8548 s. Cue times must be below 100000 hours",
 		},
 		{
 			name: "sync by 2 points beyond the time limit",
 			retime: func(s *model.Subtitle) error {
 				return s.SyncByPoints([]model.SyncPoint{{Old: sec(5), New: sec(5)}, {Old: sec(10), New: sec(2000000)}})
 			},
-			want: "The retimed cue 4 would end at 478798808 s. Cue times must be below 100000 hours.",
+			want: "the retimed cue 4 would end at 478798808 s. Cue times must be below 100000 hours",
 		},
 	}
 	for _, tt := range tests {
@@ -580,7 +580,7 @@ func TestRetimeChecksTheTimeLimitAfterRounding(t *testing.T) {
 
 	var argErr *model.InvalidArgumentError
 	require.ErrorAs(t, err, &argErr)
-	assert.Equal(t, "The retimed cue 1 would end at 360000000 s. Cue times must be below 100000 hours.", argErr.Msg)
+	assert.Equal(t, "the retimed cue 1 would end at 360000000 s. Cue times must be below 100000 hours", argErr.Msg)
 	assert.Equal(t, secs([2]float64{1, 2}), times(s))
 }
 
@@ -596,7 +596,7 @@ func TestSyncByPointsWithDifferencesBeyondTheDurationRange(t *testing.T) {
 		err := s.SyncByPoints([]model.SyncPoint{{Old: -far, New: far}})
 		var argErr *model.InvalidArgumentError
 		require.ErrorAs(t, err, &argErr)
-		assert.Equal(t, "The retimed cue 1 would end at 10000000002 s. Cue times must be below 100000 hours.", argErr.Msg)
+		assert.Equal(t, "the retimed cue 1 would end at 10000000002 s. Cue times must be below 100000 hours", argErr.Msg)
 		assert.Equal(t, secs([2]float64{1, 2}), times(s))
 	})
 	t.Run("1 point far back", func(t *testing.T) {

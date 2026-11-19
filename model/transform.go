@@ -10,8 +10,8 @@ import (
 
 	"github.com/dlclark/regexp2/v2"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model/markup"
 )
 
 // regexTimeout limits each match of a user pattern, because regexp2 backtracks and can run without end.
@@ -95,7 +95,7 @@ func (s *Subtitle) MapLines(fn func(line string, c Cue) string) {
 // replacement, and a match that takes longer than 1 s. On an error the subtitle stays unchanged.
 func (s *Subtitle) ReplaceText(search, replace string, opts ReplaceOptions) error {
 	if search == "" {
-		return invalidArgument("The search text must not be empty.")
+		return invalidArgument("the search text must not be empty")
 	}
 	replaceRun, err := newReplacer(search, replace, opts)
 	if err != nil {
@@ -117,7 +117,7 @@ func (s *Subtitle) ReplaceText(search, replace string, opts ReplaceOptions) erro
 			return out
 		})
 		if runErr != nil {
-			return invalidArgument(fmt.Sprintf("The regular expression %s took longer than 1 s on cue %d.", quote(search), i+1))
+			return invalidArgument(fmt.Sprintf("the regular expression %s took longer than 1 s on cue %d", quote(search), i+1))
 		}
 	}
 	s.EditLines(func(i int, _ Cue) ([]string, bool) { return edited[i], true }, nil)
@@ -141,11 +141,11 @@ func newRegexReplacer(search, replace string, ignoreCase bool) (func(string) (st
 	}
 	re, err := regexp2.Compile(search, options, regexp2.OptionMaintainCaptureOrder())
 	if err != nil {
-		return nil, invalidArgument(fmt.Sprintf("The regular expression %s is not valid: %v.", quote(search), err))
+		return nil, invalidArgument(fmt.Sprintf("the regular expression %s is not valid: %v", quote(search), err))
 	}
 	re.MatchTimeout = regexTimeout
 	if _, err := re.Replace("", replace, -1, -1); err != nil {
-		return nil, invalidArgument(fmt.Sprintf("The replacement %s is not valid: %v.", quote(replace), err))
+		return nil, invalidArgument(fmt.Sprintf("the replacement %s is not valid: %v", quote(replace), err))
 	}
 	return func(text string) (string, error) {
 		if !utf8.ValidString(text) {

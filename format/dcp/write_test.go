@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/dcp"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/dcp"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func newFile() *model.Subtitle {
@@ -210,14 +210,14 @@ func TestWriteErrors(t *testing.T) {
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	assert.Equal(t, 1, uerr.CueIndex)
-	assert.Equal(t, "The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding.", uerr.Reason)
+	assert.Equal(t, "the output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding", uerr.Reason)
 	require.ErrorIs(t, err, model.ErrInvalidUTF8)
 
 	broken := newFile()
 	require.NoError(t, broken.SetFormatData("dcp", model.NewData(model.Field{Key: "header", Value: model.NewData(model.Field{Key: "Bad Name", Value: "x"})})))
 	_, err = dcp.Write(&out, broken, model.CommonWriteOptions{}, dcp.WriteOptions{})
 	require.ErrorAs(t, err, &uerr)
-	assert.Equal(t, "The formatter wrote XML that is not well-formed.", uerr.Reason)
+	assert.Equal(t, "the formatter wrote XML that is not well-formed", uerr.Reason)
 }
 
 func TestAlignedCueWithoutOffsetReadsBackWithoutOffset(t *testing.T) {

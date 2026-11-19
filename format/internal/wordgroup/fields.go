@@ -5,17 +5,17 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Seconds reads the time v times unit, rounded to whole milliseconds. v is a number or a numeric string.
 // A missing field is the null Value. The error has no format, so State.Fail adds it.
 func Seconds(v orderedjson.Value, path string, unit time.Duration) (time.Duration, error) {
 	if !validTime(v) {
-		return 0, &model.ParseError{Msg: "The field " + path + " must be a time."}
+		return 0, &model.ParseError{Msg: "the field " + path + " must be a time"}
 	}
 	d, ok := v.Duration(unit)
 	if !ok {
@@ -47,7 +47,7 @@ func Text(object orderedjson.Value, key, path string) (string, error) {
 	v, _ := object.Get(key)
 	s, ok := v.AsString()
 	if !ok {
-		return "", &model.ParseError{Msg: "The field " + path + "." + key + " must be a string."}
+		return "", &model.ParseError{Msg: "the field " + path + "." + key + " must be a string"}
 	}
 	return s, nil
 }

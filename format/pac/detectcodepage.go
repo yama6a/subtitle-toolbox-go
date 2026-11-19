@@ -6,7 +6,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textenc"
 )
 
 // Adapted from Subtitle Edit, src/libse/SubtitleFormats/Pac.cs
@@ -160,7 +160,7 @@ func detectCodePage(lines [][]run) (CodePage, string) {
 	k := newContest(candidates, lines, doubleBytes)
 	top, best := k.top()
 	if best == noFit {
-		return candidates[0], "No code page gives text in its script."
+		return candidates[0], "no code page gives text in its script"
 	}
 	// Korean and Japanese read as Chinese give Han characters, but Chinese read as them rarely gives kana or Hangul.
 	kanaOrHangul := slices.DeleteFunc(slices.Clone(top), func(c CodePage) bool { return c != Korean && c != Japanese })
@@ -179,7 +179,7 @@ func byScore(top []CodePage, decodings map[CodePage]string) (CodePage, string) {
 	for i, c := range top {
 		names[i] = string(c)
 	}
-	unclear := "These code pages fit: " + strings.Join(names, ", ") + "."
+	unclear := "these code pages fit: " + strings.Join(names, ", ")
 	scores := make([]float64, len(top))
 	for i, c := range top {
 		languages, ok := latinLanguages[c]

@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 type reader struct {
@@ -56,7 +56,9 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if lang, ok := languages[strings.ToUpper(gsi.get("LC"))]; ok {
 		s.SetMetadata(model.MetadataLanguage, lang)
 	}
-	parsing.AddParsed(s, rd.cues, rd.comments)
+	if err := parsing.AddParsed(s, rd.cues, rd.comments); err != nil {
+		return nil, nil, err
+	}
 	_ = s.SetFormatData(formatDataKey, rd.fileData(gsi, sets, opts, (len(content)-gsiSize)/ttiSize)) // the data has the shape of the schema
 	return s, st.Warnings(), nil
 }
@@ -66,11 +68,11 @@ func newReader(st *parsing.State, gsi gsiValues, opts ReadOptions) (*reader, err
 	rd := &reader{st: st, cct: gsi.get("CCT"), groups: map[byte]bool{}}
 	rate, ok := frameRateOf(gsi.get("DFC"))
 	if !ok {
-		return nil, &model.ParseError{Format: model.EBUSTL, Msg: `The disk format code "` + gsi.get("DFC") + `" is not STL25.01 or STL30.01.`}
+		return nil, &model.ParseError{Format: model.EBUSTL, Msg: `the disk format code "` + gsi.get("DFC") + `" is not STL25.01 or STL30.01`}
 	}
 	rd.rate = rate
 	if !slices.Contains([]string{"00", "01", "02", "03", "04"}, rd.cct) {
-		return nil, &model.ParseError{Format: model.EBUSTL, Msg: `The character code table "` + rd.cct + `" is not 00, 01, 02, 03 or 04.`}
+		return nil, &model.ParseError{Format: model.EBUSTL, Msg: `the character code table "` + rd.cct + `" is not 00, 01, 02, 03 or 04`}
 	}
 	if opts.SubtractStartOfProgramme {
 		rd.offset = startOfProgramme(rd.rate, gsi.get("TCP"))
@@ -123,7 +125,7 @@ func nonNil(l []any) []any {
 // and a lenient read cuts it.
 func cutIncompleteBlock(st *parsing.State, content []byte) ([]byte, error) {
 	if len(content) < gsiSize {
-		return nil, &model.ParseError{Format: model.EBUSTL, Msg: "An EBU STL file starts with a GSI block of 1024 bytes."}
+		return nil, &model.ParseError{Format: model.EBUSTL, Msg: "an EBU STL file starts with a GSI block of 1024 bytes"}
 	}
 	partial := (len(content) - gsiSize) % ttiSize
 	if partial == 0 {
@@ -131,7 +133,7 @@ func cutIncompleteBlock(st *parsing.State, content []byte) ([]byte, error) {
 	}
 	complete := (len(content) - gsiSize) / ttiSize
 	cut := gsiSize + complete*ttiSize
-	err := st.Fail(&model.ParseError{Format: model.EBUSTL, Msg: "The TTI blocks of an EBU STL file must have 128 bytes each."},
+	err := st.Fail(&model.ParseError{Format: model.EBUSTL, Msg: "the TTI blocks of an EBU STL file must have 128 bytes each"},
 		model.NoLine, complete, []string{hex.EncodeToString(content[cut:])})
 	if err != nil {
 		return nil, err

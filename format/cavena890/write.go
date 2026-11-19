@@ -8,9 +8,9 @@ import (
 	"slices"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Write writes s as Cavena 890. A new file gets the Latin table and the header of Subtitle Edit. A file that Read
@@ -84,7 +84,7 @@ func nextNumber(previous, stored, cueIndex int) (int, error) {
 	case previous+1 <= maxNumber:
 		return previous + 1, nil
 	}
-	return 0, &model.UnwritableError{Format: model.Cavena890, CueIndex: cueIndex, Reason: "Cavena 890 allows subtitle numbers up to 65535."}
+	return 0, &model.UnwritableError{Format: model.Cavena890, CueIndex: cueIndex, Reason: "Cavena 890 allows subtitle numbers up to 65535"}
 }
 
 // blocksOf returns the stored blocks of an unchanged cue with the new times and alignment, or new blocks of 2 lines

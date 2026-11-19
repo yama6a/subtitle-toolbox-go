@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func writeString(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions, opts stboxjson.WriteOptions) string {
@@ -57,7 +57,7 @@ func TestWriteDocuments(t *testing.T) {
 				s := &model.Subtitle{}
 				s.SetMetadata(model.MetadataTitle, "Big Buck Bunny")
 				s.SetMetadata(model.MetadataLanguage, "en")
-				s.AddCue(model.Cue{Start: ms(1500), End: ms(4000), Lines: []string{"Hello", "<i>world</i>"}, ID: "intro", Position: model.Position{Alignment: model.TopCenter}})
+				require.NoError(t, s.AddCue(model.Cue{Start: ms(1500), End: ms(4000), Lines: []string{"Hello", "<i>world</i>"}, ID: "intro", Position: model.Position{Alignment: model.TopCenter}}))
 				require.NoError(t, s.AddComment("Translated by Jane Doe", 0))
 				return s
 			},
@@ -82,8 +82,8 @@ func TestWriteDocuments(t *testing.T) {
 				t.Helper()
 				s := &model.Subtitle{}
 				setFormatData(t, s, "ass", model.Field{Key: "title", Value: "Bakery"})
-				s.AddCue(cueWithData(t, model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Rain"}}, "vtt",
-					model.Field{Key: "settings", Value: "line:0"}))
+				require.NoError(t, s.AddCue(cueWithData(t, model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Rain"}}, "vtt",
+					model.Field{Key: "settings", Value: "line:0"})))
 				return s
 			},
 			opts: stboxjson.WriteOptions{OmitFormatData: true},
@@ -99,7 +99,7 @@ func TestWriteDocuments(t *testing.T) {
 				setFormatData(t, s, "vtt", model.Field{Key: "z", Value: "last"}, model.Field{Key: "a", Value: "first"})
 				setFormatData(t, s, "ass", model.Field{Key: "x", Value: int64(1)})
 				c := cueWithData(t, model.Cue{}, "vtt", model.Field{Key: "line", Value: "0"})
-				s.AddCue(cueWithData(t, c, "ass", model.Field{Key: "text", Value: "x"}))
+				require.NoError(t, s.AddCue(cueWithData(t, c, "ass", model.Field{Key: "text", Value: "x"})))
 				return s
 			},
 			want: `{"version":2,"metadata":{"a":"1","b":"2"},"comments":[],"formatData":{"ass":{"x":1},"vtt":{"z":"last","a":"first"}},` +
@@ -132,10 +132,10 @@ func TestWritesBinaryFormatDataAsBase64(t *testing.T) {
 	s := &model.Subtitle{}
 	setFormatData(t, s, "ass", model.Field{Key: "title", Value: "B\u00e4ckerei"}, model.Field{Key: "png", Value: "png"},
 		model.Field{Key: "deep", Value: []any{model.NewData(model.Field{Key: "bytes", Value: "\xff\xfe"})}})
-	s.AddCue(model.Cue{
+	require.NoError(t, s.AddCue(model.Cue{
 		Start: time.Second, End: 2 * time.Second, Forced: true,
 		Image: &model.Image{PNG: []byte(png), X: 1, Y: 2, Width: 3, Height: 4, ScreenWidth: 720, ScreenHeight: 576},
-	})
+	}))
 
 	got := writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
 	assert.Contains(t, got, `"ass":{"title":"B`+"\u00e4"+`ckerei","png":"png","deep":[{"bytes":{"base64":"//4="}}]}`)
@@ -191,7 +191,7 @@ func TestWriteCueFields(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCue(tt.cue)
+			s.ReplaceCues([]model.Cue{tt.cue}, nil)
 			got := writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
 			assert.Equal(t, `{"version":2,"metadata":{},"comments":[],"formatData":{},"cues":[`+tt.want+`]}`, got)
 		})
@@ -235,7 +235,7 @@ func TestWriteOutputOptions(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Lines: []string{"<b>Bold</b>"}})
+	require.NoError(t, s.AddCue(model.Cue{Lines: []string{"<b>Bold</b>"}}))
 	compact := writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
 	assert.Equal(t, compact, writeString(t, s, model.CommonWriteOptions{StripTags: true}, stboxjson.WriteOptions{}))
 	assert.Equal(t, "\ufeff"+compact, writeString(t, s, model.CommonWriteOptions{BOM: model.BOMAdd}, stboxjson.WriteOptions{}))
@@ -249,12 +249,12 @@ func TestWriteErrors(t *testing.T) {
 	t.Parallel()
 
 	const (
-		malformed = "JSON cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. Read a file in another encoding with its source encoding."
-		infOrNaN  = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
+		malformed = "JSON cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. Read a file in another encoding with its source encoding"
+		infOrNaN  = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded"
 	)
 	twoCues := func(second model.Cue) *model.Subtitle {
 		s := &model.Subtitle{}
-		s.AddCues(model.Cue{Lines: []string{"Fine"}}, second)
+		require.NoError(t, s.AddCues(model.Cue{Lines: []string{"Fine"}}, second))
 		return s
 	}
 	withData := func(key string, value any) *model.Subtitle {
@@ -284,7 +284,7 @@ func TestWriteErrors(t *testing.T) {
 		{"infinite cue data", twoCues(cueWithData(t, model.Cue{Start: time.Second}, "custom", model.Field{Key: "value", Value: math.Inf(-1)})), infOrNaN, 1},
 		{"line before infinite file data", func() *model.Subtitle {
 			s := withData("value", math.Inf(1))
-			s.AddCue(model.Cue{Lines: []string{"\xff"}})
+			require.NoError(t, s.AddCue(model.Cue{Lines: []string{"\xff"}}))
 			return s
 		}(), malformed, 0},
 	}

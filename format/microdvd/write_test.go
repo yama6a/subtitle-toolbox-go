@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func writeAt(t *testing.T, s *model.Subtitle, fps float64) string {
@@ -121,13 +121,13 @@ func TestWriteNeedsAFrameRate(t *testing.T) {
 
 	for _, opts := range []microdvd.WriteOptions{{}, {WriteFrameRateLine: true}} {
 		_, err := microdvd.Write(&bytes.Buffer{}, subtitle([]string{"Hello"}), model.CommonWriteOptions{}, opts)
-		assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "MicroDVD output needs the frame rate of the video."}, err)
+		assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "MicroDVD output needs the frame rate of the video"}, err)
 	}
 
 	s := subtitle([]string{"Hello"})
 	require.NoError(t, s.SetFormatData("microdvd", model.NewData(model.Field{Key: "frameRate", Value: 0.0})))
 	_, err := microdvd.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, microdvd.WriteOptions{})
-	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "The MicroDVD frame rate must be greater than 0, got 0."}, err)
+	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "the MicroDVD frame rate must be greater than 0, got 0"}, err)
 
 	_, err = microdvd.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: model.FrameRate{Num: -1, Den: 1}})
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
@@ -268,7 +268,7 @@ func TestWriteClampsNegativeTimes(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: -2 * 1000 * ms, End: 1000 * ms, Lines: []string{"Hello"}})
+	require.NoError(t, s.AddCue(model.Cue{Start: -2 * 1000 * ms, End: 1000 * ms, Lines: []string{"Hello"}}))
 	assert.Equal(t, "{0}{25}Hello\n", writeAt(t, s, 25))
 }
 
@@ -283,7 +283,7 @@ func TestWriteFrameBeyondTheIntRange(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: 359999999 * 1000 * ms, End: 359999999 * 1000 * ms, Lines: []string{"x"}})
+	require.NoError(t, s.AddCue(model.Cue{Start: 359999999 * 1000 * ms, End: 359999999 * 1000 * ms, Lines: []string{"x"}}))
 	assert.Equal(t, "{359999999000000004096}{359999999000000004096}x\n", writeAt(t, s, 1e12))
 }
 
@@ -313,7 +313,7 @@ func TestWriteStaysBelowTheTimeLimit(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCue(model.Cue{Start: 0, End: tt.end, Lines: []string{"x"}})
+			require.NoError(t, s.AddCue(model.Cue{Start: 0, End: tt.end, Lines: []string{"x"}}))
 			got := writeAt(t, s, tt.fps)
 			assert.Equal(t, tt.want, got)
 			_, _, err := read(got, false, tt.fps)

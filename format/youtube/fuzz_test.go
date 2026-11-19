@@ -5,10 +5,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/youtube"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func FuzzRead(f *testing.F) {
@@ -36,7 +36,7 @@ func FuzzRead(f *testing.F) {
 				}
 				checkWords(t, s)
 				var out bytes.Buffer
-				if err := youtube.Write(&out, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
+				if _, err := youtube.Write(&out, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
 					if !errors.Is(err, model.ErrUnwritable) {
 						t.Fatalf("Write returned %v, which does not match ErrUnwritable", err)
 					}

@@ -26,10 +26,12 @@ A cue across the range end moves as a whole, because its start decides.
 <!-- example: ExampleSubtitle_ShiftRange -->
 ```go
 var s model.Subtitle
-s.AddCues(
+if err := s.AddCues(
 	model.Cue{Start: 10 * time.Second, End: 12 * time.Second, Lines: []string{"intro"}},
 	model.Cue{Start: 20 * time.Second, End: 22 * time.Second, Lines: []string{"scene"}},
-)
+); err != nil {
+	panic(err)
+}
 
 if err := s.ShiftRange(1500*time.Millisecond, new(15*time.Second), nil); err != nil {
 	fmt.Println(err)
@@ -53,11 +55,13 @@ A **sync point** is a pair of an old time and a new time. 2 neighbouring points 
 <!-- example: ExampleSubtitle_SyncByPoints -->
 ```go
 var s model.Subtitle
-s.AddCues(
+if err := s.AddCues(
 	model.Cue{Start: 10 * time.Second, End: 12 * time.Second, Lines: []string{"first"}},
 	model.Cue{Start: 300 * time.Second, End: 302 * time.Second, Lines: []string{"middle"}},
 	model.Cue{Start: 1200 * time.Second, End: 1202 * time.Second, Lines: []string{"last"}},
-)
+); err != nil {
+	panic(err)
+}
 
 err := s.SyncByPoints([]model.SyncPoint{
 	{Old: 10 * time.Second, New: 12 * time.Second},
@@ -106,10 +110,12 @@ Speech-to-text tools and old editors write cues that overlap, flash for 0.3 s, o
 <!-- example: ExampleSubtitle_AddLeadInOut -->
 ```go
 var s model.Subtitle
-s.AddCues(
+if err := s.AddCues(
 	model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Is the ferry running today?"}},
 	model.Cue{Start: 2100 * time.Millisecond, End: 3 * time.Second, Lines: []string{"Only the morning one."}},
-)
+); err != nil {
+	panic(err)
+}
 
 if err := s.AddLeadInOut(200*time.Millisecond, 300*time.Millisecond, 40*time.Millisecond); err != nil {
 	fmt.Println(err)
@@ -147,7 +153,7 @@ Speech-to-text output often splits a sentence into cues of less than 1 s. Take `
 
 Broadcasters and streaming services want cue times on video frames, out of the way of shot changes, and gaps that do not flicker. At 24 fps, a cue starts at 62.708 s, 5 frames after a shot change at 62.5 s, so `timing.Apply` moves it to 62.5 s. A cue ends at 69.75 s, 6 frames before a shot change at 70 s, so it ends 2 frames before it, at 69.917 s. A gap of 7 frames between 2 cues shrinks to 2 frames. The library reads no video. The caller passes the shot change times, for example from an FFmpeg log. `stbox convert` runs the same code with the [`snap` group](cli.md#snap).
 
-<!-- example: timing/ExampleApply -->
+<!-- example: edit/timing/ExampleApply -->
 ```go
 at := func(start, end float64) model.Cue {
 	return model.Cue{
@@ -156,7 +162,9 @@ at := func(start, end float64) model.Cue {
 	}
 }
 var s model.Subtitle
-s.AddCues(at(8, 10), at(10.292, 12), at(62.708, 65), at(67, 69.75))
+if err := s.AddCues(at(8, 10), at(10.292, 12), at(62.708, 65), at(67, 69.75)); err != nil {
+	panic(err)
+}
 shots := []time.Duration{62500 * time.Millisecond, 70 * time.Second}
 
 report, err := timing.Apply(&s, timing.Options{FrameRate: model.FrameRate{Num: 24, Den: 1}, ShotChanges: shots})
@@ -244,11 +252,15 @@ A film comes as `film_part1.srt` and `film_part2.srt`. `part1.Append(part2, 3130
 <!-- example: ExampleSubtitle_Append -->
 ```go
 var part1 model.Subtitle
-part1.AddCue(model.Cue{Start: 4200 * time.Millisecond, End: 7450 * time.Millisecond, Lines: []string{"The ferry leaves at seven."}})
+if err := part1.AddCue(model.Cue{Start: 4200 * time.Millisecond, End: 7450 * time.Millisecond, Lines: []string{"The ferry leaves at seven."}}); err != nil {
+	panic(err)
+}
 _ = part1.AddComment("End of part one", 1)
 
 var part2 model.Subtitle
-part2.AddCue(model.Cue{Start: 1250 * time.Millisecond, End: 4 * time.Second, Lines: []string{"PART TWO"}})
+if err := part2.AddCue(model.Cue{Start: 1250 * time.Millisecond, End: 4 * time.Second, Lines: []string{"PART TWO"}}); err != nil {
+	panic(err)
+}
 
 if err := part1.Append(&part2, 3130*time.Second); err != nil {
 	fmt.Println(err)
@@ -314,10 +326,12 @@ Subtitle guidelines limit a line to a number of visible characters, often 42, an
 <!-- example: ExampleSubtitle_WrapLines -->
 ```go
 var s model.Subtitle
-s.AddCues(
+if err := s.AddCues(
 	model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<i>This is a very long subtitle line that does not fit on the screen</i>"}},
 	model.Cue{Start: 5 * time.Second, End: 7 * time.Second, Lines: []string{"- Are you coming with us to the coast tonight?", "- Yes."}},
-)
+); err != nil {
+	panic(err)
+}
 
 if err := s.WrapLines(42, 2); err != nil {
 	fmt.Println(err)
@@ -353,15 +367,17 @@ for _, c := range s.All() {
 
 ## Resegmenting
 
-Speech-to-text tools write long segments, often one per breath. A subtitle needs short cues that fit 2 lines. Package `resegment` has 2 functions. `resegment.SplitLong` splits each cue that breaks a limit. `resegment.ByWords` drops the cue boundaries and builds new cues from the timed words in `Cue.Words`.
+Speech-to-text tools write long segments, often one per breath. A subtitle needs short cues that fit 2 lines. Package `edit/resegment` has 2 functions. `resegment.SplitLong` splits each cue that breaks a limit. `resegment.ByWords` drops the cue boundaries and builds new cues from the timed words in `Cue.Words`.
 
-<!-- example: resegment/ExampleSplitLong -->
+<!-- example: edit/resegment/ExampleSplitLong -->
 ```go
 var s model.Subtitle
-s.AddCue(model.Cue{
+if err := s.AddCue(model.Cue{
 	Start: 0, End: 11800 * time.Millisecond,
 	Lines: []string{"Welcome to the city library tour. The library opens at nine and closes at six every weekday. Please keep your voices down."},
-})
+}); err != nil {
+	panic(err)
+}
 
 report, err := resegment.SplitLong(&s, resegment.Options{})
 if err != nil {
@@ -413,7 +429,7 @@ A **piece** is the unit that a break can separate. A piece is a word of the text
 - **Not changed**: image cues and cues without words.
 - **Comments**: a comment before a source cue moves before the new cue that holds the first word of that source cue.
 
-<!-- example: resegment/ExampleByWords -->
+<!-- example: edit/resegment/ExampleByWords -->
 ```go
 var first, second model.Cue
 first.Start, first.End = 0, 2*time.Second
@@ -430,7 +446,9 @@ second.Words = []model.Word{
 	{Text: "five.", Start: 3 * time.Second, End: 4 * time.Second},
 }
 var s model.Subtitle
-s.AddCues(first, second)
+if err := s.AddCues(first, second); err != nil {
+	panic(err)
+}
 
 if _, err := resegment.ByWords(&s, resegment.Options{}); err != nil {
 	fmt.Println(err)
@@ -453,8 +471,12 @@ A language learner watches a film with the English and the German subtitle at on
 <!-- example: ExampleFromPair -->
 ```go
 var english, german model.Subtitle
-english.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Where are you going?"}})
-german.AddCue(model.Cue{Start: 1200 * time.Millisecond, End: 3900 * time.Millisecond, Lines: []string{"Wohin gehst du?"}})
+if err := english.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Where are you going?"}}); err != nil {
+	panic(err)
+}
+if err := german.AddCue(model.Cue{Start: 1200 * time.Millisecond, End: 3900 * time.Millisecond, Lines: []string{"Wohin gehst du?"}}); err != nil {
+	panic(err)
+}
 
 result, err := dual.FromPair(&english, &german, dual.Options{SecondaryStyle: "i"})
 if err != nil {
@@ -503,8 +525,12 @@ The primary subtitle is the first language. The secondary subtitle is the second
 <!-- example: ExampleFromPair_topBottom -->
 ```go
 var english, german model.Subtitle
-english.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Where are you going?"}})
-german.AddCue(model.Cue{Start: 1250 * time.Millisecond, End: 3700 * time.Millisecond, Lines: []string{"Wohin gehst du?"}})
+if err := english.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"Where are you going?"}}); err != nil {
+	panic(err)
+}
+if err := german.AddCue(model.Cue{Start: 1250 * time.Millisecond, End: 3700 * time.Millisecond, Lines: []string{"Wohin gehst du?"}}); err != nil {
+	panic(err)
+}
 
 result, err := dual.FromPair(&english, &german, dual.Options{Mode: dual.ModeTopBottom})
 if err != nil {

@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleSubtitle_ConvertFrameRate() {
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: 100 * time.Second, End: 102500 * time.Millisecond, Lines: []string{"Hello"}})
+	if err := s.AddCue(model.Cue{Start: 100 * time.Second, End: 102500 * time.Millisecond, Lines: []string{"Hello"}}); err != nil {
+		panic(err)
+	}
 
 	if err := s.ConvertFrameRate(model.FrameRate{Num: 25, Den: 1}, model.FrameRate{Num: 2997, Den: 125}); err != nil {
 		fmt.Println(err)
@@ -23,11 +25,13 @@ func ExampleSubtitle_ConvertFrameRate() {
 
 func ExampleSubtitle_SyncByPoints() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 10 * time.Second, End: 12 * time.Second, Lines: []string{"first"}},
 		model.Cue{Start: 300 * time.Second, End: 302 * time.Second, Lines: []string{"middle"}},
 		model.Cue{Start: 1200 * time.Second, End: 1202 * time.Second, Lines: []string{"last"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 
 	err := s.SyncByPoints([]model.SyncPoint{
 		{Old: 10 * time.Second, New: 12 * time.Second},
@@ -50,10 +54,12 @@ func ExampleSubtitle_SyncByPoints() {
 
 func ExampleSubtitle_ShiftRange() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 10 * time.Second, End: 12 * time.Second, Lines: []string{"intro"}},
 		model.Cue{Start: 20 * time.Second, End: 22 * time.Second, Lines: []string{"scene"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 
 	if err := s.ShiftRange(1500*time.Millisecond, new(15*time.Second), nil); err != nil {
 		fmt.Println(err)

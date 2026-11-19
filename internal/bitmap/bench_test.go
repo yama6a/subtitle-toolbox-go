@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap"
 )
 
 // BenchmarkReduce replaces a heap limit test. `make bench` prints the allocated bytes of each size.

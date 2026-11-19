@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func cueLines(s *model.Subtitle) [][]string {
@@ -25,7 +25,9 @@ func cueLines(s *model.Subtitle) [][]string {
 
 func oneCue(lines ...string) *model.Subtitle {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: lines})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: lines}); err != nil {
+		panic(err)
+	}
 	return s
 }
 
@@ -130,9 +132,9 @@ func TestWrapLinesLimits(t *testing.T) {
 		cpl, max int
 		want     string
 	}{
-		{name: "0 characters", cpl: 0, max: 2, want: "got 0 and 2."},
-		{name: "0 lines", cpl: 42, max: 0, want: "got 42 and 0."},
-		{name: "negative", cpl: -1, max: -5, want: "got -1 and -5."},
+		{name: "0 characters", cpl: 0, max: 2, want: "got 0 and 2"},
+		{name: "0 lines", cpl: 42, max: 0, want: "got 42 and 0"},
+		{name: "negative", cpl: -1, max: -5, want: "got -1 and -5"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -141,7 +143,7 @@ func TestWrapLinesLimits(t *testing.T) {
 			s := oneCue("This is a very long subtitle line that does not fit on the screen")
 			err := s.WrapLines(tt.cpl, tt.max)
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
-			require.EqualError(t, err, "stbox: invalid argument: The maximum characters per line and the maximum lines must be at least 1, "+tt.want)
+			require.EqualError(t, err, "stbox: invalid argument: the maximum characters per line and the maximum lines must be at least 1, "+tt.want)
 			assert.Equal(t, [][]string{{"This is a very long subtitle line that does not fit on the screen"}}, cueLines(s))
 		})
 	}
@@ -152,14 +154,14 @@ func TestUnwrapLines(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCues(
+	require.NoError(t, s.AddCues(
 		model.Cue{Start: 1 * time.Second, End: 2 * time.Second, Lines: []string{"<i>Please take a seat,</i>", "the meeting starts."}},
 		model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Lines: []string{"One line"}},
 		model.Cue{Start: 5 * time.Second, End: 6 * time.Second},
 		model.Cue{Start: 7 * time.Second, End: 8 * time.Second, Lines: []string{"- Are you coming?", "- Yes, in a minute,", "I promise you."}},
 		model.Cue{Start: 9 * time.Second, End: 10 * time.Second, Lines: []string{"Who is there?", "- Only me."}},
 		model.Cue{Start: 11 * time.Second, End: 12 * time.Second, Lines: []string{"- It is very cold tonight.", "-20 degrees, they said."}},
-	)
+	))
 
 	s.UnwrapLines()
 

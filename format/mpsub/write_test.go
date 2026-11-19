@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -302,11 +302,11 @@ func TestValidate(t *testing.T) {
 		{"25", model.FrameRate{Num: 25, Den: 1}, ""},
 		{"50/2 is whole", model.FrameRate{Num: 50, Den: 2}, ""},
 		{"a large whole rate", model.FrameRate{Num: 1e15, Den: 1}, ""},
-		{"29.97", model.FrameRate{Num: 2997, Den: 100}, "The MPSub frame rate must be a positive integer, got 29.97."},
-		{"0.5", model.FrameRate{Num: 1, Den: 2}, "The MPSub frame rate must be a positive integer, got 0.5."},
-		{"negative", model.FrameRate{Num: -1, Den: 1}, "The MPSub frame rate must be a positive integer, got -1."},
-		{"zero frames", model.FrameRate{Num: 0, Den: 1}, "The MPSub frame rate must be a positive integer, got 0."},
-		{"zero seconds", model.FrameRate{Num: 25, Den: 0}, "The MPSub frame rate must be a positive integer, got 0."},
+		{"29.97", model.FrameRate{Num: 2997, Den: 100}, "the MPSub frame rate must be a positive integer, got 29.97"},
+		{"0.5", model.FrameRate{Num: 1, Den: 2}, "the MPSub frame rate must be a positive integer, got 0.5"},
+		{"negative", model.FrameRate{Num: -1, Den: 1}, "the MPSub frame rate must be a positive integer, got -1"},
+		{"zero frames", model.FrameRate{Num: 0, Den: 1}, "the MPSub frame rate must be a positive integer, got 0"},
+		{"zero seconds", model.FrameRate{Num: 25, Den: 0}, "the MPSub frame rate must be a positive integer, got 0"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

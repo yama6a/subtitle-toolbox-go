@@ -9,12 +9,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func writeDefault(t *testing.T, s *model.Subtitle) string {
@@ -167,11 +167,11 @@ func TestStyleOptionErrors(t *testing.T) {
 		style string
 		msg   string
 	}{
-		{"unknown field", "Fontsize=48,Bogus=1", `The ASS style field "Bogus" does not exist. Use one of: ` + fields + "."},
-		{"the Name field", "Name=Other", `The ASS style field "Name" does not exist. Use one of: ` + fields + "."},
-		{"pair without =", "Fontsize=48,Bold", `The ASS style "Fontsize=48,Bold" must hold Field=Value pairs such as Fontsize=48, got "Bold".`},
-		{"empty pair", "Fontsize=48,", `The ASS style "Fontsize=48," must hold Field=Value pairs such as Fontsize=48, got "".`},
-		{"line break in a value", "Fontname=A\nB", `The ASS style "Fontname=A` + "\n" + `B" must hold Field=Value pairs such as Fontsize=48, got "Fontname=A` + "\n" + `B".`},
+		{"unknown field", "Fontsize=48,Bogus=1", `the ASS style field "Bogus" does not exist. Use one of: ` + fields},
+		{"the Name field", "Name=Other", `the ASS style field "Name" does not exist. Use one of: ` + fields},
+		{"pair without =", "Fontsize=48,Bold", `the ASS style "Fontsize=48,Bold" must hold Field=Value pairs such as Fontsize=48, got "Bold"`},
+		{"empty pair", "Fontsize=48,", `the ASS style "Fontsize=48," must hold Field=Value pairs such as Fontsize=48, got ""`},
+		{"line break in a value", "Fontname=A\nB", `the ASS style "Fontname=A` + "\n" + `B" must hold Field=Value pairs such as Fontsize=48, got "Fontname=A` + "\n" + `B"`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -192,9 +192,9 @@ func TestStyleOptionErrors(t *testing.T) {
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	require.ErrorIs(t, err, model.ErrUnwritable)
-	assert.Equal(t, "The Format line of the styles has no field Underline. It holds: Name, Fontname, Fontsize, PrimaryColour, "+
+	assert.Equal(t, "the Format line of the styles has no field Underline. It holds: Name, Fontname, Fontsize, PrimaryColour, "+
 		"SecondaryColour, TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, "+
-		"MarginV, AlphaLevel, Encoding.", uerr.Reason)
+		"MarginV, AlphaLevel, Encoding", uerr.Reason)
 	assert.Equal(t, model.ASS, uerr.Format)
 }
 
@@ -235,7 +235,7 @@ func TestKaraokeTagValidate(t *testing.T) {
 	var aerr *model.InvalidArgumentError
 	require.ErrorAs(t, err, &aerr)
 	assert.Equal(t, "WriteOptions.ASS.KaraokeTag", aerr.Option)
-	assert.Equal(t, `The ASS karaoke tag "kx" is unknown. Use one of: k, kf, ko.`, aerr.Msg)
+	assert.Equal(t, `the ASS karaoke tag "kx" is unknown. Use one of: k, kf, ko`, aerr.Msg)
 
 	assert.Equal(t, "k", ass.KaraokeTag("").String())
 	assert.Equal(t, "kf", ass.KaraokeFill.String())
@@ -430,7 +430,7 @@ func TestDefaultFieldValues(t *testing.T) {
 	t.Parallel()
 
 	s, _ := mustRead(t, "[Events]\nFormat: Marked, Start, End, Text\nDialogue: Marked=1,0:00:01.00,0:00:02.00,a\n", false)
-	s.AddCue(cue(3*time.Second, 4*time.Second, "b"))
+	require.NoError(t, s.AddCue(cue(3*time.Second, 4*time.Second, "b")))
 	data := fileData(t, s).Clone()
 	data.Set("eventFormat", []any{"Marked", "Layer", "Start", "End", "Style", "Name", "MarginL", "MarginR", "MarginV", "Effect", "Text"})
 	require.NoError(t, s.SetFormatData("ass", data))

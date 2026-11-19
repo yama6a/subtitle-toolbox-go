@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 var (
@@ -60,7 +60,9 @@ func ReadHTML(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*mode
 			cues[i].End = st.LastCueEnd(cues[i].Start)
 		}
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 
@@ -146,11 +148,11 @@ func htmlLines(inner string) []string {
 
 func (p htmlParagraph) start() (time.Duration, *model.ParseError) {
 	if !p.hasTime {
-		return 0, &model.ParseError{Line: p.line, Msg: "The paragraph has no <time>."}
+		return 0, &model.ParseError{Line: p.line, Msg: "the paragraph has no <time>"}
 	}
 	m := htmlTimeRegexp.FindStringSubmatch(p.timeText)
 	if m == nil {
-		return 0, &model.ParseError{Line: p.timeLine, Msg: `The time "` + p.timeText + `" is not valid.`}
+		return 0, &model.ParseError{Line: p.timeLine, Msg: `the time "` + p.timeText + `" is not valid`}
 	}
 	hours, minutes := strings.TrimLeft(m[1], "0"), strings.TrimLeft(m[2], "0")
 	if len(hours) > maxClockDigits || len(minutes) > maxClockDigits {

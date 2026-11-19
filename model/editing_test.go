@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 type cueSpec struct {
@@ -23,7 +23,9 @@ func subtitleOf(specs ...cueSpec) *model.Subtitle {
 		cues[i].SetText(c.Text)
 	}
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return s
 }
 
@@ -801,7 +803,7 @@ func TestCueEditingErrors(t *testing.T) {
 				return s.Append(readFixture(t, "editing/film_part2.srt"), 100000*time.Hour)
 			},
 			sentinel: model.ErrInvalidArgument,
-			want:     "stbox: invalid argument: The retimed cue 1 would end at 360000004 s. Cue times must be below 100000 hours.",
+			want:     "stbox: invalid argument: the retimed cue 1 would end at 360000004 s. Cue times must be below 100000 hours",
 		},
 		{
 			name: "append with the last cue beyond the time limit",
@@ -809,7 +811,7 @@ func TestCueEditingErrors(t *testing.T) {
 				return s.Append(readFixture(t, "editing/film_part2.srt"), 100000*time.Hour-100*time.Second)
 			},
 			sentinel: model.ErrInvalidArgument,
-			want:     "stbox: invalid argument: The retimed cue 3 would end at 360000663 s. Cue times must be below 100000 hours.",
+			want:     "stbox: invalid argument: the retimed cue 3 would end at 360000663 s. Cue times must be below 100000 hours",
 		},
 		{
 			name: "slice with the start after the end",
@@ -818,91 +820,91 @@ func TestCueEditingErrors(t *testing.T) {
 				return err
 			},
 			sentinel: model.ErrInvalidArgument,
-			want:     "stbox: invalid argument: The slice start 5 must not be after the slice end 4.",
+			want:     "stbox: invalid argument: the slice start 5 must not be after the slice end 4",
 		},
 		{
 			name:     "split cue 9",
 			edit:     func(s *model.Subtitle) error { return s.SplitCue(9, 3*time.Second, 1) },
 			sentinel: model.ErrCueNotFound,
-			want:     "stbox: cue not found: Cannot split cue 9: the cue does not exist.",
+			want:     "stbox: cue not found: cannot split cue 9: the cue does not exist",
 		},
 		{
 			name:     "split cue -1",
 			edit:     func(s *model.Subtitle) error { return s.SplitCue(-1, 3*time.Second, 1) },
 			sentinel: model.ErrCueNotFound,
-			want:     "stbox: cue not found: Cannot split cue -1: the cue does not exist.",
+			want:     "stbox: cue not found: cannot split cue -1: the cue does not exist",
 		},
 		{
 			name:     "split at the cue end",
 			edit:     func(s *model.Subtitle) error { return s.SplitCue(2, 12500*time.Millisecond, 1) },
 			sentinel: model.ErrInvalidArgument,
-			want:     "stbox: invalid argument: Cannot split cue 2 at 12.5: the time must be after the cue start 6.5 and before the cue end 12.5.",
+			want:     "stbox: invalid argument: cannot split cue 2 at 12.5: the time must be after the cue start 6.5 and before the cue end 12.5",
 		},
 		{
 			name:     "split at the cue start",
 			edit:     func(s *model.Subtitle) error { return s.SplitCue(2, 6500*time.Millisecond, 1) },
 			sentinel: model.ErrInvalidArgument,
-			want:     "stbox: invalid argument: Cannot split cue 2 at 6.5: the time must be after the cue start 6.5 and before the cue end 12.5.",
+			want:     "stbox: invalid argument: cannot split cue 2 at 6.5: the time must be after the cue start 6.5 and before the cue end 12.5",
 		},
 		{
 			name:     "split after the last line",
 			edit:     func(s *model.Subtitle) error { return s.SplitCue(2, 9*time.Second, 2) },
 			sentinel: model.ErrInvalidArgument,
-			want:     "stbox: invalid argument: Cannot split cue 2 after line 2: the cue has 2 lines.",
+			want:     "stbox: invalid argument: cannot split cue 2 after line 2: the cue has 2 lines",
 		},
 		{
 			name:     "split after line 0",
 			edit:     func(s *model.Subtitle) error { return s.SplitCue(2, 9*time.Second, 0) },
 			sentinel: model.ErrInvalidArgument,
-			want:     "stbox: invalid argument: Cannot split cue 2 after line 0: the cue has 2 lines.",
+			want:     "stbox: invalid argument: cannot split cue 2 after line 0: the cue has 2 lines",
 		},
 		{
 			name:     "split a cue of 1 line",
 			edit:     func(s *model.Subtitle) error { return s.SplitCue(0, 2*time.Second, 1) },
 			sentinel: model.ErrInvalidArgument,
-			want:     "stbox: invalid argument: Cannot split cue 0 after line 1: the cue has 1 lines.",
+			want:     "stbox: invalid argument: cannot split cue 0 after line 1: the cue has 1 lines",
 		},
 		{
 			name:     "join cues 0 to 9",
 			edit:     func(s *model.Subtitle) error { return s.JoinCues(0, 9) },
 			sentinel: model.ErrCueNotFound,
-			want:     "stbox: cue not found: Cannot join cue 9: the cue does not exist.",
+			want:     "stbox: cue not found: cannot join cue 9: the cue does not exist",
 		},
 		{
 			name:     "join cues -1 to 2",
 			edit:     func(s *model.Subtitle) error { return s.JoinCues(-1, 2) },
 			sentinel: model.ErrCueNotFound,
-			want:     "stbox: cue not found: Cannot join cue -1: the cue does not exist.",
+			want:     "stbox: cue not found: cannot join cue -1: the cue does not exist",
 		},
 		{
 			name:     "join cues 9 to 2",
 			edit:     func(s *model.Subtitle) error { return s.JoinCues(9, 2) },
 			sentinel: model.ErrCueNotFound,
-			want:     "stbox: cue not found: Cannot join cue 9: the cue does not exist.",
+			want:     "stbox: cue not found: cannot join cue 9: the cue does not exist",
 		},
 		{
 			name:     "join cues 1 to 1",
 			edit:     func(s *model.Subtitle) error { return s.JoinCues(1, 1) },
 			sentinel: model.ErrInvalidArgument,
-			want:     "stbox: invalid argument: Cannot join cues 1 to 1: the first index must be lower than the last index.",
+			want:     "stbox: invalid argument: cannot join cues 1 to 1: the first index must be lower than the last index",
 		},
 		{
 			name:     "join cues 2 to 1",
 			edit:     func(s *model.Subtitle) error { return s.JoinCues(2, 1) },
 			sentinel: model.ErrInvalidArgument,
-			want:     "stbox: invalid argument: Cannot join cues 2 to 1: the first index must be lower than the last index.",
+			want:     "stbox: invalid argument: cannot join cues 2 to 1: the first index must be lower than the last index",
 		},
 		{
 			name:     "remove duplicates with a negative maximum gap",
 			edit:     func(s *model.Subtitle) error { return s.RemoveDuplicateCues(-100 * time.Millisecond) },
 			sentinel: model.ErrInvalidArgument,
-			want:     "stbox: invalid argument: The maximum gap must be 0 or more seconds, got -0.1.",
+			want:     "stbox: invalid argument: the maximum gap must be 0 or more seconds, got -0.1",
 		},
 		{
 			name:     "merge same-time cues with a negative tolerance",
 			edit:     func(s *model.Subtitle) error { return s.MergeSameTimeCues(-100 * time.Millisecond) },
 			sentinel: model.ErrInvalidArgument,
-			want:     "stbox: invalid argument: The time tolerance must be 0 or more seconds, got -0.1.",
+			want:     "stbox: invalid argument: the time tolerance must be 0 or more seconds, got -0.1",
 		},
 	}
 	for _, tt := range tests {
@@ -934,7 +936,7 @@ func pairs(tb testing.TB, n int, linesOf func(i int) string) *model.Subtitle {
 		cues[i] = model.Cue{Start: start, End: start + time.Second, Lines: []string{linesOf(i)}}
 	}
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	require.NoError(tb, s.AddCues(cues...))
 	for i := range n {
 		require.NoError(tb, s.AddComment(fmt.Sprintf("note %d", i), i))
 	}
@@ -1047,7 +1049,7 @@ func TestEditsCarryWords(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCues(tt.cues...)
+			require.NoError(t, s.AddCues(tt.cues...))
 			require.NoError(t, tt.edit(s))
 			assert.Equal(t, tt.want, timesAndLines(s))
 		})
@@ -1058,12 +1060,12 @@ func TestTaggedLinesKeepWordsAndSpeaker(t *testing.T) {
 	t.Parallel()
 
 	join := &model.Subtitle{}
-	join.AddCues(wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(1, 2, "", []string{"there"}, word("there", 1, 2)))
+	require.NoError(t, join.AddCues(wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(1, 2, "", []string{"there"}, word("there", 1, 2))))
 	require.NoError(t, join.JoinCues(0, 1))
 	joined, _ := join.Cue(0)
 
 	merge := &model.Subtitle{}
-	merge.AddCues(wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(0, 1, "", []string{"Bye"}, word("Bye", 0.5, 1)))
+	require.NoError(t, merge.AddCues(wordCueAt(0, 1, "Anna", []string{"Hi"}, word("Hi", 0, 1)), wordCueAt(0, 1, "", []string{"Bye"}, word("Bye", 0.5, 1))))
 	require.NoError(t, merge.MergeSameTimeCues(0))
 	merged, _ := merge.Cue(0)
 

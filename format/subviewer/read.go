@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -67,7 +67,9 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 		return nil, nil, err
 	}
 	_ = s.SetFormatData(formatDataKey, data) // the data has the shape of the schema
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 
@@ -150,7 +152,7 @@ func (rd *reader) version1Header(lines []string) (int64, error) {
 		}
 		tag, rest, ok := splitTag(line)
 		if !ok {
-			err := &model.ParseError{Line: i + 1, Msg: `The line "` + line + `" is not a SubViewer 1 header tag.`}
+			err := &model.ParseError{Line: i + 1, Msg: `the line "` + line + `" is not a SubViewer 1 header tag`}
 			if err := rd.st.Fail(err, i+1, 0, []string{line}); err != nil {
 				return 0, err
 			}
@@ -369,7 +371,7 @@ func (rd *reader) version2Timing(line string, number, block int) (*model.Cue, *s
 	} else if !looksLikeTimingLine(line) {
 		return nil, nil, false, nil
 	} else if !rd.st.Lenient() {
-		err := &model.ParseError{Line: number, Msg: `The timing line "` + line + `" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.`}
+		err := &model.ParseError{Line: number, Msg: `the timing line "` + line + `" is not in the form hh:mm:ss.ff,hh:mm:ss.ff`}
 		return nil, nil, true, rd.st.Fail(err, number, block, []string{line})
 	} else if loose, ok := rd.looseTimes(line, number, block); ok {
 		start, end = loose[0], loose[1]
@@ -382,7 +384,7 @@ func (rd *reader) version2Timing(line string, number, block int) (*model.Cue, *s
 		if !rd.st.Lenient() {
 			return nil, nil, true, err
 		}
-		return nil, skip(line, number, block, err.(*model.ParseError).Msg), true, nil //nolint:errorlint,forcetypeassert // OrderedTimes fails with a *ParseError
+		return nil, skip(line, number, block, parsing.Sentence(err.(*model.ParseError).Msg)), true, nil //nolint:errorlint,forcetypeassert // OrderedTimes fails with a *ParseError
 	}
 	return &model.Cue{Start: start, End: end}, nil, true, nil
 }
@@ -437,7 +439,7 @@ func isBlockTag(tag string) bool {
 func (rd *reader) version2Header(line string, number int) error {
 	tag, rest, ok := splitTag(line)
 	if !ok {
-		err := &model.ParseError{Line: number, Msg: `The line "` + line + `" is neither a header tag nor a timing line.`}
+		err := &model.ParseError{Line: number, Msg: `the line "` + line + `" is neither a header tag nor a timing line`}
 		return rd.st.Fail(err, number, 0, []string{line})
 	}
 	tag = asciiUpper(strings.Trim(tag, markupcore.TrimSet))

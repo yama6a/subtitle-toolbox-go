@@ -10,7 +10,7 @@
 |:--- |:--- |:--- |
 | Homebrew formula `yama6a/tap/stbox` | Homebrew on macOS or Linux | `brew install yama6a/tap/stbox`, then `brew upgrade stbox` for a new release |
 | archive on the GitHub release | nothing | `curl -fsSLO https://github.com/yama6a/subtitle-toolbox-go/releases/download/vX.Y.Z/stbox_X.Y.Z_linux_amd64.tar.gz` |
-| `go install` | Go of the `go` line in `go.mod` | `go install github.com/yama6a/subtitle-toolbox-go/v4/cmd/stbox@latest` |
+| `go install` | Go of the `go` line in `go.mod` | `go install github.com/yama6a/subtitle-toolbox-go/v5/cmd/stbox@latest` |
 | image `ghcr.io/yama6a/subtitle-toolbox-go` | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:X.Y.Z convert in.srt --to vtt -o out.vtt` |
 | image `ghcr.io/yama6a/subtitle-toolbox-go` with Tesseract | Docker or another container runtime | `docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/yama6a/subtitle-toolbox-go:X.Y.Z-tesseract convert film.sup --ocr --ocr-engine tesseract --ocr-language rus --to srt -o film.srt` |
 
@@ -140,7 +140,7 @@ movie.mkv: The MKV or WebM file has 2 subtitle tracks. Pass --track N with one o
 ```
 
 - **Track text**: each track line joins the codec, the language, the name as a JSON string, `default` and `forced`. It leaves out the parts that are empty or false.
-- **Wrong number**: a number that no track has fails with `The file has no subtitle track with the number 9.`. `--track` on a file that is no video file fails with `Only MKV, WebM, MP4 and MPEG-TS files have tracks.` Both exit 3.
+- **Wrong number**: a number that no track has fails with `the file has no subtitle track with the number 9`. `--track` on a file that is no video file fails with `only MKV, WebM, MP4 and MPEG-TS files have tracks`. Both exit 3.
 - **Output names**: the output format is the track format when `--to` is absent. A SubRip track of `movie.mkv` with `--output-dir out` writes `out/movie.srt`, and an MP4 `c608` track writes SCC.
 
 ### VobSub input
@@ -213,7 +213,7 @@ The edits run in this order, whatever the order of the flags. A group runs only 
 | `--structure-max-word-gap SECONDS` | positive time | 0.6 | needs `--structure-resegment`: `Pass --structure-resegment with --structure-max-word-gap.` |
 | `--structure-split-long` | flag | | calls `resegment.SplitLong` with the limits. It does not turn on word timestamps |
 | `--karaoke` | flag | | turns on word timestamps. Calls `karaoke.Apply` |
-| `--karaoke-style TAG` | `b`, `i`, `u`, `s` or `font color="#rrggbb"` | `u` | needs `--karaoke`: `Pass --karaoke with --karaoke-style.`. A wrong tag fails with the library message, for example `The style em must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00".` An empty tag gives `The option --karaoke-style needs a tag, for example u or font color="#ffff00".` |
+| `--karaoke-style TAG` | `b`, `i`, `u`, `s` or `font color="#rrggbb"` | `u` | needs `--karaoke`: `Pass --karaoke with --karaoke-style.`. A wrong tag fails with the library message, for example `the style em must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00"`. An empty tag gives `The option --karaoke-style needs a tag, for example u or font color="#ffff00".`. |
 
 - **Limits**: `--structure-max-cpl` and `--structure-max-lines` need one of `--structure-wrap`, `--structure-resegment`, `--structure-merge-short` or `--structure-split-long`.
 - **Check order** of `structure`: the `--structure-max-word-gap` rule, the `--structure-max-cpl` rule, the `--structure-max-lines` rule, the value of `--structure-max-word-gap`, then the values of `--structure-max-cpl` and `--structure-max-lines`.
@@ -259,12 +259,12 @@ text_1080p.sup: Cue #0 holds an image but no text, and srt needs text. Pass --oc
 
 ### OCR
 
-`--ocr` reads the text of image cues, for example from PGS or VobSub, with `ocr.Run`. `stbox convert text_1080p.sup --ocr --to srt` on a machine without Tesseract picks the glyph engine. The first cue reads `The train to Bergen leaves at 7:45.`.
+`--ocr` reads the text of image cues, for example from PGS or VobSub, with `ocr.Apply`. `stbox convert text_1080p.sup --ocr --to srt` on a machine without Tesseract picks the glyph engine. The first cue reads `The train to Bergen leaves at 7:45.`.
 
 | Option | Value | Default | Effect |
 |:--- |:--- |:--- |:--- |
 | `--ocr` | flag, turns the group on | off | |
-| `--ocr-engine ENGINE` | `tesseract` or `glyph` | Tesseract when it is installed, else glyph | `auto.Options.Engine` |
+| `--ocr-engine ENGINE` | `tesseract` or `glyph` | Tesseract when it is installed, else glyph | the CLI picks the engine, see [ocr.md](ocr.md#the-convert-command) |
 | `--ocr-language CODE` | a Tesseract model name, `deu` or `deu+eng` | `eng` | `tesseract.Options.Language`. The glyph engine ignores it |
 | `--ocr-database FILE` | a glyph database in `.nocr` format | the subtitle fonts database | `glyph.Options.Database`. It selects the glyph engine |
 
@@ -323,7 +323,7 @@ text_1080p.sup: Cue #0 holds an image but no text, and srt needs text. Pass --oc
 | `--mute-padding SECONDS` | a time of 0 or more | 0 | `Options.Padding` |
 
 - **Checks**: every option except `--mask-words` needs it: `Pass --mask-words with --mute-edl.` Then `--mask`, then `-` as a mute file: `The option --mute-edl needs a file path.`, then `--mute-padding`.
-- **Word file**: one word per line. A leading UTF-8 BOM goes. CR LF, LF and CR end a line. Each line is trimmed, and empty lines go. The tool reads the file once, after the checks of the arguments. A missing file stops the run with exit 3: `Error: words.txt: The file does not exist.` An empty list or a bad word fails the option checks, so the run exits 2 with the help hint: `A profanity word must be a non-empty UTF-8 string with a * only at the end, got 'a*b'.`
+- **Word file**: one word per line. A leading UTF-8 BOM goes. CR LF, LF and CR end a line. Each line is trimmed, and empty lines go. The tool reads the file once, after the checks of the arguments. A missing file stops the run with exit 3: `Error: words.txt: The file does not exist.` An empty list or a bad word fails the option checks, so the run exits 2 with the help hint: `a profanity word must be a non-empty UTF-8 string with a * only at the end, got 'a*b'`.
 - **One input**: the mute files hold the ranges of one input. With 2 or more inputs, `--mute-edl` and `--mute-filter` fail: `--mute-edl and --mute-filter take one input file, got 2.`
 - **Mute files**: they join the output checks. Each must not exist, must not be a file that the command reads, such as the word file, and must differ from the subtitle output and from each other: `The --mute-filter file radio.mute is also the output of --mute-edl.`
 - **Write**: the mute files come after the subtitle output, each with its report line such as `radio.vtt -> radio.edl`. A file that is not empty ends with LF. Without a match both files are empty, 0 bytes.
@@ -556,7 +556,7 @@ A rule option sets its field on the preset result. A flag can only turn a check 
 
 ## translate
 
-`stbox translate <input>... --engine deepl|google|openai --target-language CODE` sends the cue text to a translation service with `translation.Translate` of [translation.md](translation.md). It keeps the times and the tags, and sets the `language` metadata to the target. It is a write command, so the output rules of [Output files](#output-files) apply.
+`stbox translate <input>... --engine deepl|google|openai --target-language CODE` sends the cue text to a translation service with `translation.Apply` of [translation.md](translation.md). It keeps the times and the tags, and sets the `language` metadata to the target. It is a write command, so the output rules of [Output files](#output-files) apply.
 
 ```
 DEEPL_API_KEY=... stbox translate station.srt --engine deepl --source-language en --target-language de --to vtt
@@ -575,7 +575,7 @@ OPENAI_MODEL=llama3 OPENAI_BASE_URL=http://localhost:11434/v1 stbox translate st
 | `OPENAI_MODEL` | `openai` | The model name. Required |
 | `OPENAI_BASE_URL` | `openai` | The base URL. Default `https://api.openai.com/v1` |
 
-- **Key rules**: a key of only white space gives `The API key is empty. Pass --api-key or set DEEPL_API_KEY.`. A key with a control character, or a space at the start or end, gives the message of the engine, for example `The API key must not have a control character, or a space at the start or end.`. The key never appears in a message, a warning or the help.
+- **Key rules**: a key of only white space gives `The API key is empty. Pass --api-key or set DEEPL_API_KEY.` A key with a control character, or a space at the start or end, gives the message of the engine, for example `the API key must not have a control character, or a space at the start or end`. The key never appears in a message, a warning or the help.
 - **Warnings**: each warning of the run goes to stderr as `LABEL: cue N: MESSAGE`, for example `station.srt: cue 3: The engine dropped or changed a placeholder tag. The cue has no tags.`.
 - **Failure**: a service error fails the input with exit 3 and the message `LABEL: MESSAGE`, for example `stdin: DeepL rejected the API key (HTTP 403). Check the key and its plan.`. `--keep-going` goes on with the next input. Ctrl-C stops the request in flight.
 

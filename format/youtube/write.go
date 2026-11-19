@@ -10,12 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const xmlDeclaration = `<?xml version="1.0" encoding="utf-8" ?>`
@@ -25,10 +25,10 @@ var attrNameRegexp = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_.-]*$`)
 // Write writes s to w in the variant that the format field of the file format data names. It writes srv3 for a
 // subtitle from another format. A caption that the user did not edit keeps the bytes of its source, except for the
 // white space before the XML declaration and the indent of json3.
-func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.YouTubeTimedText, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	cues := s.Cues()
 	stored := make([]orderedjson.Value, len(cues))
@@ -47,16 +47,16 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 	case variantSrv2:
 		body = xw.srv2(cues, stored)
 	case variantJSON3:
-		return writeJSON3(w, json3Document(cues, stored, file), common)
+		return WriteReport{}, writeJSON3(w, json3Document(cues, stored, file), common)
 	default:
 		body = xw.srv3(cues, stored, file)
 	}
 	if xw.invalid {
-		return &model.UnwritableError{
+		return WriteReport{}, &model.UnwritableError{
 			Format: model.YouTubeTimedText, CueIndex: -1, Reason: xmlraw.InvalidUTF8Reason, Err: model.ErrInvalidUTF8,
 		}
 	}
-	return writing.Write(w, model.YouTubeTimedText, []byte(body), common, false)
+	return WriteReport{}, writing.Write(w, model.YouTubeTimedText, []byte(body), common, false)
 }
 
 // storedObject returns the format data as a JSON object, an empty one for none.
@@ -167,8 +167,8 @@ func (xw *xmlWriter) text(fields orderedjson.Value, c model.Cue) string {
 
 const (
 	malformedUTF8 = "JSON cannot hold the subtitle: Malformed UTF-8 characters, possibly incorrectly encoded. " +
-		"Read a file in another encoding with its source encoding."
-	infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
+		"Read a file in another encoding with its source encoding"
+	infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded"
 )
 
 func writeJSON3(w io.Writer, doc orderedjson.Value, common model.CommonWriteOptions) error {

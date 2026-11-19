@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestSeconds(t *testing.T) {
@@ -24,12 +24,12 @@ func TestSeconds(t *testing.T) {
 		{"number", `1.5`, time.Second, ms(1500), ""},
 		{"numeric string", `"2.0"`, time.Second, ms(2000), ""},
 		{"unit", `1500`, time.Millisecond, ms(1500), ""},
-		{"negative", `-1`, time.Second, 0, "The field f must be a time."},
-		{"not numeric", `"abc"`, time.Second, 0, "The field f must be a time."},
-		{"not finite", `1e400`, time.Second, 0, "The field f must be a time."},
-		{"null", `null`, time.Second, 0, "The field f must be a time."},
-		{"bool", `true`, time.Second, 0, "The field f must be a time."},
-		{"100000 hours", `360000000`, time.Second, 0, "The field f is not below 100000 hours."},
+		{"negative", `-1`, time.Second, 0, "the field f must be a time"},
+		{"not numeric", `"abc"`, time.Second, 0, "the field f must be a time"},
+		{"not finite", `1e400`, time.Second, 0, "the field f must be a time"},
+		{"null", `null`, time.Second, 0, "the field f must be a time"},
+		{"bool", `true`, time.Second, 0, "the field f must be a time"},
+		{"100000 hours", `360000000`, time.Second, 0, "the field f is not below 100000 hours"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -53,7 +53,7 @@ func TestText(t *testing.T) {
 		_, err := wordgroup.Text(parseJSON(t, js), "t", "p[0]")
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr, js)
-		assert.Equal(t, "The field p[0].t must be a string.", perr.Msg)
+		assert.Equal(t, "the field p[0].t must be a string", perr.Msg)
 	}
 	got, err := wordgroup.Text(parseJSON(t, `{"t": "x"}`), "t", "p")
 	require.NoError(t, err)
@@ -150,14 +150,14 @@ func TestCueWords(t *testing.T) {
 			[]model.Word{{Text: "a", Start: ms(100), End: ms(200)}, {Text: "c", Start: ms(300), End: ms(400)}},
 		},
 		{
-			"no-break space in a word", "a b c",
+			"no-break space in a word becomes a plain space", "a b c",
 			[]wordgroup.Word{word("a\u00a0b", 100, 200), word("c", 300, 400)},
-			[]model.Word{{Text: "a\u00a0b", Start: ms(100), End: ms(200)}, {Text: "c", Start: ms(300), End: ms(400)}},
+			[]model.Word{{Text: "a b", Start: ms(100), End: ms(200)}, {Text: "c", Start: ms(300), End: ms(400)}},
 		},
 		{
-			"em space around a word", "a b c",
+			"em space in and around a word becomes a plain space and is trimmed", "a b c",
 			[]wordgroup.Word{word("a\u2003b\u2003", 100, 200), word("c", 300, 400)},
-			[]model.Word{{Text: "a\u2003b\u2003", Start: ms(100), End: ms(200)}, {Text: "c", Start: ms(300), End: ms(400)}},
+			[]model.Word{{Text: "a b", Start: ms(100), End: ms(200)}, {Text: "c", Start: ms(300), End: ms(400)}},
 		},
 		{
 			"confidence is copied", "a",

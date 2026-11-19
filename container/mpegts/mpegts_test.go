@@ -16,8 +16,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/container/mpegts"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/container/mpegts"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestTracks(t *testing.T) {
@@ -81,7 +81,7 @@ func TestTeletextPages(t *testing.T) {
 		t.Run(fmt.Sprint(tt.number), func(t *testing.T) {
 			t.Parallel()
 
-			s, _, err := open(t, ts).Extract(tt.number, model.CommonReadOptions{})
+			s, _, err := open(t, ts).Extract(tt.number, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, cuesOf(s))
 		})
@@ -470,30 +470,30 @@ func TestErrors(t *testing.T) {
 		{"not TS", func() error {
 			_, err := mpegts.Open(strings.NewReader(strings.Repeat("x", 1000)), 1000)
 			return err
-		}, "The file is not an MPEG-TS file.", isParseError},
+		}, "the file is not an MPEG-TS file", isParseError},
 		{"a short head", func() error {
 			_, err := mpegts.Open(bytes.NewReader(ts[:376]), 376)
 			return err
-		}, "The file is not an MPEG-TS file.", isParseError},
+		}, "the file is not an MPEG-TS file", isParseError},
 		{"no track 999", func() error {
-			_, _, err := open(t, ts).Extract(999, model.CommonReadOptions{})
+			_, _, err := open(t, ts).Extract(999, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 			return err
-		}, "The file has no subtitle track with the number 999.", func(err error) bool {
+		}, "the file has no subtitle track with the number 999", func(err error) bool {
 			var ia *model.InvalidArgumentError
 			return errors.As(err, &ia) && ia.Option == "ReadOptions.Track"
 		}},
 		{"an Arabic page", func() error {
-			_, _, err := open(t, arabic.bytes()).Extract(888, model.CommonReadOptions{})
+			_, _, err := open(t, arabic.bytes()).Extract(888, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 			return err
-		}, "Teletext page 888 uses the Arabic or Hebrew character set. The reader reads Latin, Cyrillic and Greek pages.", isParseError},
+		}, "teletext page 888 uses the Arabic or Hebrew character set. The reader reads Latin, Cyrillic and Greek pages", isParseError},
 		{"the time limit", func() error {
-			_, _, err := open(t, timeLimitFile()).Extract(888, model.CommonReadOptions{})
+			_, _, err := open(t, timeLimitFile()).Extract(888, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 			return err
-		}, "The cue times of track 888 reach 367506034.876 s. Times must be below 100000 hours.", isParseError},
+		}, "the cue times of track 888 reach 367506034.876 s. Times must be below 100000 hours", isParseError},
 		{"a negative size", func() error {
 			_, err := mpegts.Open(bytes.NewReader(ts), -1)
 			return err
-		}, "The file is not an MPEG-TS file.", isParseError},
+		}, "the file is not an MPEG-TS file", isParseError},
 		{"a ReadAt error in Open", func() error {
 			_, err := mpegts.Open(&failingReaderAt{data: ts, from: 1}, int64(len(ts)))
 			return err
@@ -501,7 +501,7 @@ func TestErrors(t *testing.T) {
 		{"a ReadAt error in Extract", func() error {
 			f, err := mpegts.Open(&failingReaderAt{data: ts, from: 3}, int64(len(ts)))
 			require.NoError(t, err)
-			_, _, err = f.Extract(888, model.CommonReadOptions{})
+			_, _, err = f.Extract(888, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 			return err
 		}, "read mpegts: disk gone", func(err error) bool { return errors.Is(err, errDisk) }},
 	}
@@ -534,7 +534,7 @@ func FuzzOpen(f *testing.F) {
 			return
 		}
 		for _, tr := range file.Tracks() {
-			_, _, _ = file.Extract(tr.Number, model.CommonReadOptions{})
+			_, _, _ = file.Extract(tr.Number, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 		}
 	})
 }
@@ -551,7 +551,7 @@ func ExampleOpen() {
 		return
 	}
 	track := f.Tracks()[0]
-	s, _, err := f.Extract(track.Number, model.CommonReadOptions{})
+	s, _, err := f.Extract(track.Number, model.CommonReadOptions{}, mpegts.ExtractOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return

@@ -4,16 +4,20 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleSubtitle_Append() {
 	var part1 model.Subtitle
-	part1.AddCue(model.Cue{Start: 4200 * time.Millisecond, End: 7450 * time.Millisecond, Lines: []string{"The ferry leaves at seven."}})
+	if err := part1.AddCue(model.Cue{Start: 4200 * time.Millisecond, End: 7450 * time.Millisecond, Lines: []string{"The ferry leaves at seven."}}); err != nil {
+		panic(err)
+	}
 	_ = part1.AddComment("End of part one", 1)
 
 	var part2 model.Subtitle
-	part2.AddCue(model.Cue{Start: 1250 * time.Millisecond, End: 4 * time.Second, Lines: []string{"PART TWO"}})
+	if err := part2.AddCue(model.Cue{Start: 1250 * time.Millisecond, End: 4 * time.Second, Lines: []string{"PART TWO"}}); err != nil {
+		panic(err)
+	}
 
 	if err := part1.Append(&part2, 3130*time.Second); err != nil {
 		fmt.Println(err)

@@ -6,8 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/stretchr/testify/require"
+
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/youtube"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // The inputs hold about 1 MB. The benchmarks have no time limit, so a rise from linear to quadratic cost shows in
@@ -106,7 +108,7 @@ func BenchmarkWrite(b *testing.B) {
 			b.ReportAllocs()
 			b.SetBytes(int64(len(bm.content)))
 			for b.Loop() {
-				if err := youtube.Write(io.Discard, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
+				if _, err := youtube.Write(io.Discard, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
 					b.Fatal(err)
 				}
 			}
@@ -131,7 +133,7 @@ func BenchmarkWriteChanged(b *testing.B) {
 		b.ReportAllocs()
 		b.SetBytes(int64(len(content)))
 		for b.Loop() {
-			if err := youtube.Write(io.Discard, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
+			if _, err := youtube.Write(io.Discard, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
 				b.Fatal(err)
 			}
 		}
@@ -142,12 +144,12 @@ func BenchmarkWriteChanged(b *testing.B) {
 func BenchmarkWriteJoinedTokens(b *testing.B) {
 	line := strings.Repeat(`a<font face="x">b</font>`, 80000)
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: 0, End: ms(5000), Lines: []string{line}})
+	require.NoError(b, s.AddCue(model.Cue{Start: 0, End: ms(5000), Lines: []string{line}}))
 	b.Run("tokens=160000", func(b *testing.B) {
 		b.ReportAllocs()
 		b.SetBytes(int64(len(line)))
 		for b.Loop() {
-			if err := youtube.Write(io.Discard, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
+			if _, err := youtube.Write(io.Discard, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
 				b.Fatal(err)
 			}
 		}

@@ -1,0 +1,66 @@
+package fixing_test
+
+import (
+	"bytes"
+	"os"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
+)
+
+func FuzzApply(f *testing.F) {
+	entries, err := os.ReadDir(testfiles.Path(f, "fixing"))
+	if err != nil {
+		f.Fatal(err)
+	}
+	for _, e := range entries {
+		if strings.HasSuffix(e.Name(), ".srt") {
+			f.Add(testfiles.Read(f, "fixing/"+e.Name()))
+		}
+	}
+	for _, seed := range []string{
+		"1\n00:00:01,000 --> 00:00:02,000\n<i>Hi. - Hello.\nlt's |t 0nly\n\n2\n00:00:00,500 --> 00:00:03,000\n# i think #",
+		"1\n00:00:01,000 --> 00:00:02,000\nWell. . . Really ?.\nStop.Now  -Hi\n\n2\n00:00:02,000 --> 00:00:03,000\nyts",
+		"1\n00:00:01,000 --> 00:00:02,000\n\xe9t\xe9 |\n</b>caf\xe9 l'm",
+	} {
+		f.Add([]byte(seed))
+	}
+	all := fixing.Options{Language: "en", Enable: fixing.OptionalRules(), Ellipsis: fixing.EllipsisUnicode}
+
+	f.Fuzz(func(t *testing.T, content []byte) {
+		for _, opts := range []fixing.Options{{}, all, {Language: "fr"}, {Language: "tr", Enable: fixing.OptionalRules()}} {
+			s, _, err := srt.Read(bytes.NewReader(content), model.CommonReadOptions{Lenient: true}, srt.ReadOptions{})
+			if err != nil {
+				t.Skip()
+			}
+
+			_, err = fixing.Apply(s, opts)
+			require.NoError(t, err)
+			cues := s.Cues()
+			for i, c := range cues {
+				require.False(t, i > 0 && c.Start < cues[i-1].Start, "cue %d starts before cue %d", i, i-1)
+			}
+		}
+	})
+}
+
+func FuzzReadReplaceList(f *testing.F) {
+	f.Add(testfiles.Read(f, "fixing/user_OCRFixReplaceList.xml"))
+	f.Add([]byte("<L><WholeWords><Word from='a' to='b' /></WholeWords><RegularExpressions><RegEx find='(a' replaceWith='$1' /></RegularExpressions></L>"))
+	f.Add([]byte("<L>\n<WholeWords></L>"))
+	f.Add([]byte{})
+
+	f.Fuzz(func(t *testing.T, content []byte) {
+		l, err := fixing.ReadReplaceList(bytes.NewReader(content))
+		if err != nil {
+			return
+		}
+		require.NoError(t, l.Validate())
+	})
+}

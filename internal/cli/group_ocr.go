@@ -3,15 +3,21 @@ package cli
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"strconv"
 
 	glyphocr "github.com/yama6a/go-glyph-ocr"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
-	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/auto"
-	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/glyph"
-	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/tesseract"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr/glyph"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr/tesseract"
+)
+
+// The values of --ocr-engine.
+const (
+	engineTesseract = "tesseract"
+	engineGlyph     = "glyph"
 )
 
 // progressStep is the number of images between 2 progress lines.
@@ -42,17 +48,17 @@ func buildOCR(a *args) (edit, error) {
 	if !a.Has("ocr") {
 		return nil, nil //nolint:nilnil // a nil edit means the group is off
 	}
-	name, _, err := a.Choice("ocr-engine", string(ocr.EngineTesseract), string(ocr.EngineGlyph))
+	name, _, err := a.Choice("ocr-engine", engineTesseract, engineGlyph)
 	if err != nil {
 		return nil, err
 	}
-	e := &ocrEdit{engine: ocr.EngineName(name)}
+	e := &ocrEdit{engine: name}
 	if path, ok := a.Value("ocr-database"); ok {
 		e.databasePath, e.hasDatabase = path, true
-		if e.engine == ocr.EngineTesseract {
+		if e.engine == engineTesseract {
 			return nil, usage("Pass --ocr-engine glyph with --ocr-database.")
 		}
-		e.engine = ocr.EngineGlyph
+		e.engine = engineGlyph
 	}
 	language, _ := a.Value("ocr-language")
 	e.language = ocr.Language(language)
@@ -63,7 +69,7 @@ func buildOCR(a *args) (edit, error) {
 // ocrEdit runs OCR on the image cues without lines. load chooses the engine and reads the database once per run.
 type ocrEdit struct {
 	// engine is the engine that the options ask for, "" for the default.
-	engine       ocr.EngineName
+	engine       string
 	language     ocr.Language
 	hasLanguage  bool
 	databasePath string
@@ -87,11 +93,11 @@ func (e *ocrEdit) sideFiles() []string {
 // load picks the engine and checks it, before any input is read. A missing Tesseract or a missing language
 // is a usage error. A database that go-glyph-ocr rejects is a *fileError.
 func (e *ocrEdit) load(ctx context.Context, c *console) error {
-	chosen, err := auto.Choose(ctx, auto.Options{Engine: e.engine})
+	chosen, err := chooseEngine(ctx, e.engine, "")
 	if err != nil {
 		return checkError(ctx, err)
 	}
-	if chosen == ocr.EngineTesseract {
+	if chosen == engineTesseract {
 		if e.tesseract, err = tesseract.New(tesseract.Options{Language: e.language}); err != nil {
 			return usage(message(err))
 		}
@@ -112,6 +118,28 @@ func (e *ocrEdit) load(ctx context.Context, c *console) error {
 		return &fileError{msg: e.databasePath + ": " + err.Error()}
 	}
 	return nil
+}
+
+// chooseEngine returns the engine of --ocr-engine. For "" it returns engineTesseract when program runs as
+// Tesseract, else engineGlyph. An empty program means "tesseract". A missing Tesseract that --ocr-engine asks
+// for returns the error of tesseract.RequireInstalled. A cancelled ctx returns its error.
+func chooseEngine(ctx context.Context, name, program string) (string, error) {
+	switch name {
+	case engineGlyph:
+		return engineGlyph, nil
+	case engineTesseract:
+		if err := tesseract.RequireInstalled(ctx, program); err != nil {
+			return "", err
+		}
+		return engineTesseract, nil
+	}
+	if tesseract.Installed(ctx, program) {
+		return engineTesseract, nil
+	}
+	if err := ctx.Err(); err != nil {
+		return "", fmt.Errorf("ocr: %w", err)
+	}
+	return engineGlyph, nil
 }
 
 // checkError returns the error of ctx unchanged, so an interrupt gives exit code 130. Any other error is a usage error.
@@ -139,7 +167,7 @@ func (e *ocrEdit) apply(ctx context.Context, s *stbox.Subtitle, c *console, labe
 			return nil, err
 		}
 	}
-	_, err := ocr.Run(ctx, s, &progress{engine: engine, c: c, label: label, total: total}, "")
+	_, err := ocr.Apply(ctx, s, &progress{engine: engine, c: c, label: label, total: total}, "")
 	return s, err
 }
 

@@ -8,11 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const defaultSecondTextHeader = "text2"
@@ -129,15 +128,15 @@ func resolve(file *model.Data, opts WriteOptions) (settings, error) {
 	}
 	if set.fps == 0 {
 		if fps, ok := file.Number("frameRate"); ok {
-			rate, err := model.FrameRateFromFloat(fps)
+			rate, err := model.FrameRateFromFloatFor(fps, "WriteOptions.CSV.FrameRate", "the frame rate")
 			if err != nil {
-				return settings{}, parsing.FrameRateOption(err, "WriteOptions.CSV.FrameRate", "The frame rate")
+				return settings{}, err
 			}
 			set.fps = rate.Float64()
 		}
 	}
 	if set.timeFormat == TimeFrames && set.fps == 0 {
-		return settings{}, invalid("WriteOptions.CSV.FrameRate", "The time format hh:mm:ss:ff needs a frame rate.")
+		return settings{}, invalid("WriteOptions.CSV.FrameRate", "the time format hh:mm:ss:ff needs a frame rate")
 	}
 	return set, nil
 }

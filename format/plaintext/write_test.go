@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/sbv"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/sbv"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 var update = flag.Bool("update", false, "rewrite the write golden files")
@@ -229,11 +229,11 @@ func TestValidate(t *testing.T) {
 		{name: "no paragraph breaks", gap: new(plaintext.NoParagraphBreaks)},
 		{
 			name: "minus 1 s", gap: new(-time.Second),
-			want: &model.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "The paragraph gap must be 0 or more seconds, got -1."},
+			want: &model.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "the paragraph gap must be 0 or more seconds, got -1"},
 		},
 		{
 			name: "minus 1 ms", gap: new(-ms),
-			want: &model.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "The paragraph gap must be 0 or more seconds, got -0.001."},
+			want: &model.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "the paragraph gap must be 0 or more seconds, got -0.001"},
 		},
 	}
 	for _, tt := range tests {

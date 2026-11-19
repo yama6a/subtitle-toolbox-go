@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/vobsub"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleRead() {
@@ -43,5 +43,5 @@ func ExampleReadOptions_Validate() {
 	index := -1
 	fmt.Println(vobsub.ReadOptions{Index: &index}.Validate())
 	// Output:
-	// stbox: invalid argument: ReadOptions.VobSub.Index: The track index must be 0 or more, got -1.
+	// stbox: invalid argument: ReadOptions.VobSub.Index: the track index must be 0 or more, got -1
 }

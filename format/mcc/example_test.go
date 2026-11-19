@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleRead() {
@@ -41,7 +41,9 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"Hello!"}})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"Hello!"}}); err != nil {
+		panic(err)
+	}
 	var out strings.Builder
 	report, err := mcc.Write(&out, s, model.CommonWriteOptions{}, mcc.WriteOptions{FrameRate: model.FrameRate25})
 	if err != nil {

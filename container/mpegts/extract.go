@@ -7,7 +7,7 @@ import (
 
 	"github.com/asticode/go-astits"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const ptsRange = 1 << 33
@@ -15,13 +15,16 @@ const ptsRange = 1 << 33
 // pesSink gets the data of each PES packet of a track. The teletext and ARIB decoders are sinks.
 type pesSink interface{ Add(data []byte, pts int64) }
 
+// ExtractOptions holds the settings of Extract. MPEG-TS has none yet.
+type ExtractOptions struct{}
+
 // Extract reads the track that has the given number from the start of the file. Lenient mode matters only for an ARIB screen of more than 4096 characters. The warnings are those of the ARIB decoder.
-func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
+func (f *File) Extract(number int, common model.CommonReadOptions, _ ExtractOptions) (*model.Subtitle, []model.ParseWarning, error) {
 	i := slices.IndexFunc(f.tracks, func(t model.Track) bool { return t.Number == number })
 	if i < 0 {
 		return nil, nil, &model.InvalidArgumentError{
 			Option: "ReadOptions.Track",
-			Msg:    fmt.Sprintf("The file has no subtitle track with the number %d.", number),
+			Msg:    fmt.Sprintf("the file has no subtitle track with the number %d", number),
 		}
 	}
 	track, s := f.tracks[i], f.streams[i]
@@ -40,7 +43,9 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 		return nil, nil, err
 	}
 	sub := &model.Subtitle{}
-	sub.AddCues(cues...)
+	if err := sub.AddCues(cues...); err != nil {
+		return nil, nil, err
+	}
 	sub.SetMetadata(model.MetadataLanguage, track.Language)
 	return sub, warnings, nil
 }

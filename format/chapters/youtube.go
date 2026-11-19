@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // capDigits stops digit counting above the 100000 hours limit, so long digit runs cannot overflow.
@@ -56,15 +56,17 @@ func ReadYouTube(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 		}
 		cues = append(cues, c)
 	}
-	s.AddCues(endChapters(cues, nil, opts.MediaDuration)...)
+	if err := s.AddCues(endChapters(cues, nil, opts.MediaDuration)...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 
 // WriteYouTube writes one line per chapter: the start as m:ss or h:mm:ss, a space and the title. Ends are lost.
-func WriteYouTube(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WriteYouTube(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.YouTubeChapters, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	var body []byte
 	for _, c := range s.All() {
@@ -79,7 +81,7 @@ func WriteYouTube(w io.Writer, s *model.Subtitle, common model.CommonWriteOption
 		body = append(body, strings.TrimRight(line, markupcore.TrimSet)...)
 		body = append(body, '\n')
 	}
-	return writing.Write(w, model.YouTubeChapters, body, common, false)
+	return WriteReport{}, writing.Write(w, model.YouTubeChapters, body, common, false)
 }
 
 func (f timeFields) duration() (time.Duration, bool) {

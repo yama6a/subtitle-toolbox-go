@@ -13,14 +13,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/hearingimpaired"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
-	"github.com/yama6a/subtitle-toolbox-go/v4/profanity"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/profanity"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // fixtureDir returns a new directory with the CLI fixtures and copies of the testdata files in files, which maps a
@@ -911,7 +911,7 @@ func TestConvertChapterInputGetsNoLenientHint(t *testing.T) {
 			t.Parallel()
 
 			got := call{stdin: tt.content}.run(t, "convert", "-", "--from", tt.format, "--to", "srt")
-			assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 1: Line 1 has a NUL character. Check the encoding of the file.\n"}, got)
+			assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 1: line 1 has a NUL character. Check the encoding of the file\n"}, got)
 		})
 	}
 }

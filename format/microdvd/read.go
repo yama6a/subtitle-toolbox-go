@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // lenientFrameRate is the default of mantas-done/subtitles, pysubs2 and subtitle_it, 2997/125 and not 24000/1001.
@@ -75,7 +75,9 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if err != nil {
 		return nil, nil, err
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 
@@ -123,8 +125,8 @@ func frameRate(st *parsing.State, lines []rawLine, option float64) (fps float64,
 	default:
 		return 0, nil, false, &model.ParseError{
 			Format: model.MicroDVD,
-			Msg: "The frame rate is unknown. Start the file with {1}{1}<fps>, set the frame rate, or read the file in " +
-				"lenient mode for " + timecode.Number(lenientFrameRate) + " fps.",
+			Msg: "the frame rate is unknown. Start the file with {1}{1}<fps>, set the frame rate, or read the file in " +
+				"lenient mode for " + timecode.Number(lenientFrameRate) + " fps",
 			Option: frameRateOption,
 		}
 	}
@@ -187,7 +189,7 @@ func frameNumber(s string) (digits, rest string, ok bool) {
 func readCue(st *parsing.State, l rawLine, fps float64) (model.Cue, error) {
 	shape, ok := parseCueShape(l.text)
 	if !ok {
-		return model.Cue{}, &model.ParseError{Line: l.number, Msg: `The line "` + l.text + `" is not a MicroDVD cue.`}
+		return model.Cue{}, &model.ParseError{Line: l.number, Msg: `the line "` + l.text + `" is not a MicroDVD cue`}
 	}
 	start, err := frameTime(shape.start, fps, l.number)
 	if err != nil {

@@ -4,8 +4,9 @@ import (
 	"errors"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
 )
 
 //nolint:gochecknoglobals // the option names of the ass group, in the order of the --to ass message
@@ -39,7 +40,7 @@ func assWriteOptions(a *args) (ass.WriteOptions, bool, error) {
 	if err := opts.Validate(); err != nil {
 		var aerr *stbox.InvalidArgumentError
 		if errors.As(err, &aerr) {
-			return ass.WriteOptions{}, false, usage("The option --ass-style is not valid. " + aerr.Msg)
+			return ass.WriteOptions{}, false, usage("The option --ass-style is not valid. " + parsing.Sentence(aerr.Msg))
 		}
 		return ass.WriteOptions{}, false, err
 	}

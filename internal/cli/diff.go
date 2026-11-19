@@ -5,10 +5,10 @@ import (
 	"slices"
 	"strconv"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/diff"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/diff"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // diffCommand lists the differences between an old and a new subtitle file.

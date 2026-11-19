@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestEncodeThenDecodeGivesTheExactPixels(t *testing.T) {
@@ -112,7 +112,7 @@ func TestReduce(t *testing.T) {
 		_, _, err := bitmap.Reduce(many, n)
 		var invalid *model.InvalidArgumentError
 		require.ErrorAs(t, err, &invalid)
-		assert.Equal(t, "The color count must be from 2 to 256, got "+strconv.Itoa(n)+".", invalid.Msg)
+		assert.Equal(t, "the color count must be from 2 to 256, got "+strconv.Itoa(n), invalid.Msg)
 	}
 }
 
@@ -230,7 +230,7 @@ func TestImageOf(t *testing.T) {
 	_, err := bitmap.ImageOf([]bitmap.Part{part(0, 0, 4000, 1, 1, 1), part(4000, 0, 4000, 1, 1, 1)}, 1920, 1080)
 	var parse *model.ParseError
 	require.ErrorAs(t, err, &parse)
-	assert.Equal(t, "Cannot join the parts of one display set: an image of 8000x1 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total.", parse.Msg)
+	assert.Equal(t, "cannot join the parts of one display set: an image of 8000x1 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total", parse.Msg)
 }
 
 func TestImageOfRepeatsItsBytesWhenOnlyUnusedPaletteEntriesChange(t *testing.T) {

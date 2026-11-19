@@ -12,10 +12,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 )
 
-// Request is one request that a Server or a Client got.
+// Request is one request that a Server or a Transport got.
 type Request struct {
 	URL    string // the full URL
 	Path   string // for example "/v2/translate"
@@ -113,36 +113,47 @@ func (s *Server) Requests() []Request {
 	return append([]Request(nil), s.requests...)
 }
 
-// Answer is one canned answer of a Client.
+// Answer is one canned answer of a Transport.
 type Answer struct {
 	Status int
 	Header http.Header
 	Body   []byte
 }
 
-// Client is an HTTP client that records each request and plays Answers in order.
+// Transport is an http.RoundTripper that records each request and plays Answers in order.
 // Request k gets Answers[min(k, len(Answers)-1)]. Answers must hold at least one answer. It is safe for concurrent use.
-type Client struct {
+type Transport struct {
 	Answers []Answer
 
 	mu       sync.Mutex
 	requests []Request
 }
 
-// Do records req and returns the next answer. It never returns an error.
-func (c *Client) Do(req *http.Request) (*http.Response, error) {
+var _ http.RoundTripper = (*Transport)(nil)
+
+// Client returns an *http.Client that sends through t and follows no redirect, as translation.DefaultHTTPClient
+// does, so a 3xx answer reaches the engine as it is.
+func (t *Transport) Client() *http.Client {
+	return &http.Client{
+		Transport:     t,
+		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+	}
+}
+
+// RoundTrip records req and returns the next answer. It never returns an error.
+func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	var body []byte
 	if req.Body != nil {
 		body, _ = io.ReadAll(req.Body)
 		_ = req.Body.Close()
 	}
-	c.mu.Lock()
-	k := len(c.requests)
-	c.requests = append(c.requests, Request{
+	t.mu.Lock()
+	k := len(t.requests)
+	t.requests = append(t.requests, Request{
 		URL: req.URL.String(), Path: req.URL.Path, Key: keyOf(req.URL.Path, req.Header), Header: req.Header.Clone(), Body: body,
 	})
-	a := c.Answers[min(k, len(c.Answers)-1)]
-	c.mu.Unlock()
+	a := t.Answers[min(k, len(t.Answers)-1)]
+	t.mu.Unlock()
 
 	header := a.Header.Clone()
 	if header == nil {
@@ -158,10 +169,10 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 }
 
 // Requests returns a copy of the requests in arrival order.
-func (c *Client) Requests() []Request {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	return append([]Request(nil), c.requests...)
+func (t *Transport) Requests() []Request {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return append([]Request(nil), t.requests...)
 }
 
 // ClosedURL returns http://127.0.0.1:PORT for a port that no server listens on.

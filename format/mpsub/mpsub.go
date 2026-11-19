@@ -8,8 +8,8 @@ package mpsub
 import (
 	"bytes"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const formatDataKey = string(model.MPSub)
@@ -37,7 +37,7 @@ func (o WriteOptions) Validate() error {
 	}
 	return &model.InvalidArgumentError{
 		Option: "WriteOptions.MPSub.FrameRate",
-		Msg:    "The MPSub frame rate must be a positive integer, got " + timecode.Number(f.Float64()) + ".",
+		Msg:    "the MPSub frame rate must be a positive integer, got " + timecode.Number(f.Float64()),
 	}
 }
 

@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -30,7 +30,7 @@ func (o ReadOptions) Validate() error {
 	if o.LanguageClass != "" && strings.Trim(o.LanguageClass, markupcore.TrimSet) == "" {
 		return &model.InvalidArgumentError{
 			Option: "ReadOptions.SAMI.LanguageClass",
-			Msg:    "The language class must not be empty.",
+			Msg:    "the language class must not be empty",
 		}
 	}
 	return nil

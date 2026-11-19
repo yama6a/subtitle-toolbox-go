@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/cli"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/cli"
 )
 
 func TestBinaryPrintsWhatRunPrints(t *testing.T) {

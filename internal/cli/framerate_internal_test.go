@@ -9,14 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 )
 
 const (
 	framesOutput     = "{25}{75}Hello from the frames.\n{100}{150}{y:i}Second line.\n"
 	framesAt23976    = "{24}{72}Hello from the frames.\n{96}{144}{y:i}Second line.\n"
-	unknownRate      = "frames.sub: The frame rate is unknown. Pass --fps or --input-fps, start the file with {1}{1}<fps>, or pass --lenient for 23.976 fps.\n"
+	unknownRate      = "frames.sub: the frame rate is unknown. Pass --fps or --input-fps, start the file with {1}{1}<fps>, or pass --lenient for 23.976 fps.\n"
 	noOutputRate     = "trip.srt: MicroDVD output needs the frame rate of the video. Pass --fps or --output-fps.\n"
 	framesAt25Header = "1\n00:00:01,000 --> 00:00:03,000\nHello from the frames.\n"
 )
@@ -132,7 +132,7 @@ func TestStoredFrameRateOfZero(t *testing.T) {
 	dir := newDir(t)
 	content := `{"version":1,"formatData":{"microdvd":{"frameRate":0}},"cues":[{"start":1,"end":2,"lines":["Hello"]}]}`
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "f0.json"), []byte(content), 0o600))
-	assert.Equal(t, result{Code: exitFile, Stderr: "f0.json: The MicroDVD frame rate must be greater than 0, got 0. Pass --fps or --output-fps.\n"},
+	assert.Equal(t, result{Code: exitFile, Stderr: "f0.json: the MicroDVD frame rate must be greater than 0, got 0. Pass --fps or --output-fps.\n"},
 		call{dir: dir}.run(t, "convert", "f0.json", "--to", "microdvd", "-o", "-"))
 	assert.Equal(t, result{Stdout: "{25}{50}Hello\n"}, call{dir: dir}.run(t, "convert", "f0.json", "--to", "microdvd", "-o", "-", "--output-fps", "25"))
 }

@@ -6,15 +6,14 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"unicode"
-	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
-const notWellFormed = "The file is not well-formed XML."
+const notWellFormed = "the file is not well-formed XML"
 
 var (
 	xmlStartRegexp  = xmlraw.StartRegexp(rootPattern) //nolint:gochecknoglobals // a compiled pattern
@@ -67,10 +66,10 @@ func (r *reader) recoverDocument(content string, firstErr error) (*xmlraw.Node, 
 	msg, line := "", model.NoLine
 	var serr *xmlraw.SyntaxError
 	if errors.As(firstErr, &serr) {
-		msg = " " + upperFirst(strings.TrimRight(serr.Msg, ". \n")) + "."
+		msg = " " + parsing.Capitalize(strings.TrimRight(serr.Msg, ". \n")) + "."
 		line = serr.Line
 	}
-	r.st.Warn(notWellFormed+msg+" The parser repaired it.", line, model.NoBlock, nil, model.Repaired)
+	r.st.Warn(parsing.Sentence(notWellFormed)+msg+" The parser repaired it.", line, model.NoBlock, nil, model.Repaired)
 	return doc, nil
 }
 
@@ -83,7 +82,7 @@ func (r *reader) skipTextBeforeXML(content, skipped string) error {
 	if !r.st.Lenient() {
 		return r.parseError(line, msg)
 	}
-	r.st.Warn(msg+" The parser skipped it.", line, model.NoBlock, lines, model.Repaired)
+	r.st.Warn(parsing.Sentence(msg)+" The parser skipped it.", line, model.NoBlock, lines, model.Repaired)
 	return nil
 }
 
@@ -135,12 +134,4 @@ func closeBreaks(s string) string {
 		}
 		return tag[:len(tag)-1] + "/>"
 	})
-}
-
-func upperFirst(s string) string {
-	r, size := utf8.DecodeRuneInString(s)
-	if r == utf8.RuneError {
-		return s
-	}
-	return string(unicode.ToUpper(r)) + s[size:]
 }

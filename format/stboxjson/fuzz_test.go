@@ -6,12 +6,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
-const infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded."
+const infOrNaN = "JSON cannot hold the subtitle: Inf and NaN cannot be JSON encoded"
 
 func FuzzRead(f *testing.F) {
 	formattest.AddSeeds(f, "json/*.json", "json/real/*.json", "lenient/*.json")

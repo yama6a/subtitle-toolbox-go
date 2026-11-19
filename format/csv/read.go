@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/decimal"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // millisecondsMedian is the smallest median cue duration, read as seconds, of a table of whole numbers that the
@@ -114,7 +114,9 @@ func (rd *reader) read(content string) (*model.Subtitle, error) {
 	for i := range cues {
 		cues[i].ExtractWordTags()
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return nil, err
+	}
 	_ = s.SetFormatData(formatDataKey, rd.fileData(header, recs, roles, timeFormat)) // the data has the shape of the schema
 	return s, nil
 }
@@ -163,7 +165,7 @@ func (rd *reader) records(content string) ([]record, error) {
 		if len(r.cells) > maxColumns {
 			return nil, &model.ParseError{
 				Format: model.CSV, Line: r.line,
-				Msg: "The table has " + strconv.Itoa(len(r.cells)) + " columns. The limit is " + strconv.Itoa(maxColumns) + ".",
+				Msg: "the table has " + strconv.Itoa(len(r.cells)) + " columns. The limit is " + strconv.Itoa(maxColumns),
 			}
 		}
 	}
@@ -207,7 +209,7 @@ func (rd *reader) resolveRoles(header *record) (layout, error) {
 			out = append(out, roleIndex{r.name, index})
 		case needed(c, r.name):
 			return nil, &model.ParseError{
-				Format: model.CSV, Line: line, Msg: `The table has no column "` + columnName(c, r.name) + `" for ` + r.name + ".",
+				Format: model.CSV, Line: line, Msg: `the table has no column "` + columnName(c, r.name) + `" for ` + r.name,
 			}
 		}
 	}

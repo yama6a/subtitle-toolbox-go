@@ -13,9 +13,9 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Adapted from Subtitle Edit, src/libse/SubtitleFormats/Pac.cs
@@ -85,7 +85,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 		return nil, nil, fmt.Errorf("read %s: %w", model.PAC, err)
 	}
 	if !bytes.HasPrefix(content, header) {
-		return nil, nil, &model.ParseError{Format: model.PAC, Msg: "A PAC file starts with the byte 01h and 19 zero bytes."}
+		return nil, nil, &model.ParseError{Format: model.PAC, Msg: "a PAC file starts with the byte 01h and 19 zero bytes"}
 	}
 	rd := &reader{st: parsing.NewState(model.PAC, common)}
 	if err := rd.splitRecords(content); err != nil {
@@ -100,7 +100,9 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 		return nil, nil, err
 	}
 	s := &model.Subtitle{}
-	parsing.AddParsed(s, rd.cues, nil)
+	if err := parsing.AddParsed(s, rd.cues, nil); err != nil {
+		return nil, nil, err
+	}
 	_ = s.SetFormatData(formatDataKey, rd.fileData(head)) // the data has the shape of the schema
 	return s, rd.st.Warnings(), nil
 }
@@ -161,7 +163,7 @@ func (rd *reader) splitRecords(content []byte) error {
 		end := offset + offsetText - 1 + le16(content, offset+offsetLength)
 		if mark < recordMark || mark > lastRecordMark || end > len(content) || end < offset+offsetText {
 			rd.footer = content[offset:]
-			return rd.st.Fail(&model.ParseError{Format: model.PAC, Msg: "The PAC record at byte " + strconv.Itoa(offset) + " is not complete."},
+			return rd.st.Fail(&model.ParseError{Format: model.PAC, Msg: "the PAC record at byte " + strconv.Itoa(offset) + " is not complete"},
 				model.NoLine, len(rd.records), []string{hex.EncodeToString(rd.footer)})
 		}
 		rd.records = append(rd.records, content[offset:end])
@@ -169,7 +171,7 @@ func (rd *reader) splitRecords(content []byte) error {
 	}
 	rd.footer = content[offset:]
 	if len(rd.footer) > 0 && rd.footer[0] != endBlock {
-		return rd.st.Fail(&model.ParseError{Format: model.PAC, Msg: "The byte at " + strconv.Itoa(offset) + " is neither a PAC record nor the end block."},
+		return rd.st.Fail(&model.ParseError{Format: model.PAC, Msg: "the byte at " + strconv.Itoa(offset) + " is neither a PAC record nor the end block"},
 			model.NoLine, len(rd.records), []string{hex.EncodeToString(rd.footer)})
 	}
 	return nil
@@ -195,11 +197,11 @@ func (rd *reader) chooseCodePage(option CodePage) (CodePage, error) {
 	if reason == "" {
 		return c, nil
 	}
-	msg := "The code page of the PAC file is not clear. " + reason + " Set the code page of the file, for example ISO-8859-7 for Greek."
+	msg := "the code page of the PAC file is not clear. " + parsing.Capitalize(reason) + ". Set the code page of the file, for example ISO-8859-7 for Greek"
 	if !rd.st.Lenient() {
 		return CodePageAuto, &model.ParseError{Format: model.PAC, Msg: msg}
 	}
-	rd.st.Warn(msg+" The parser read it as "+string(c)+".", model.NoLine, model.NoBlock, nil, model.Repaired)
+	rd.st.Warn(parsing.Sentence(msg)+" The parser read it as "+string(c)+".", model.NoLine, model.NoBlock, nil, model.Repaired)
 	return c, nil
 }
 
@@ -220,7 +222,7 @@ func (rd *reader) addCue(index int, rec []byte) error {
 	start, okStart := rd.time(rec[offsetTimeIn:])
 	end, okEnd := rd.time(rec[offsetTimeOut:])
 	if !okStart || !okEnd {
-		return rd.st.Fail(&model.ParseError{Format: model.PAC, Msg: "Subtitle number " + strconv.Itoa(le16(rec, offsetNumber)) + " has a time code that is not valid."},
+		return rd.st.Fail(&model.ParseError{Format: model.PAC, Msg: "subtitle number " + strconv.Itoa(le16(rec, offsetNumber)) + " has a time code that is not valid"},
 			model.NoLine, index, []string{hex.EncodeToString(rec)})
 	}
 	lines := rd.allLines[index]

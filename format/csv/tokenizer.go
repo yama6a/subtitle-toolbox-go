@@ -3,7 +3,7 @@ package csv
 import (
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // record is one row of a table: the 1-based line of its start, its cells and the indexes of its quoted cells.
@@ -117,7 +117,7 @@ func (t *tokenizer) quoted(i int, lenient bool) (int, error) {
 		return next, nil
 	}
 	if !lenient {
-		return 0, &model.ParseError{Format: model.CSV, Line: t.start, Msg: "A quoted CSV cell has no closing quote."}
+		return 0, &model.ParseError{Format: model.CSV, Line: t.start, Msg: "a quoted CSV cell has no closing quote"}
 	}
 	lineStart := strings.LastIndexAny(t.content[:i], "\r\n") + 1
 	end := len(t.content)

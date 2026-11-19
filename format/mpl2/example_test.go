@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpl2"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mpl2"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleRead() {
@@ -27,7 +27,9 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCues(model.Cue{Start: 1240 * time.Millisecond, End: 4460 * time.Millisecond, Lines: []string{"Where are you?", "<i>Home.</i>"}})
+	if err := s.AddCues(model.Cue{Start: 1240 * time.Millisecond, End: 4460 * time.Millisecond, Lines: []string{"Where are you?", "<i>Home.</i>"}}); err != nil {
+		panic(err)
+	}
 	if _, err := mpl2.Write(os.Stdout, s, model.CommonWriteOptions{}, mpl2.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}

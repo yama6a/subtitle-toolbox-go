@@ -1,16 +1,15 @@
 package parsing
 
 import (
-	"errors"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -20,22 +19,12 @@ const (
 
 var wordTimestamp = regexp.MustCompile(markupcore.WordTimestampPattern)
 
-// FrameRateOption returns nil for a nil err. Else it returns the *InvalidArgumentError of FrameRate.Validate or
-// FrameRateFromFloat with option set and subject in place of the leading "The frame rate" of the message.
-func FrameRateOption(err error, option, subject string) error {
-	var aerr *model.InvalidArgumentError
-	if !errors.As(err, &aerr) {
-		return err
-	}
-	return &model.InvalidArgumentError{Option: option, Msg: subject + strings.TrimPrefix(aerr.Msg, "The frame rate")}
-}
-
-// ValidateFrameRate returns nil for a zero rate. Else it returns FrameRateOption of r.Validate with option and subject.
+// ValidateFrameRate returns nil for a zero rate. Else it returns the error of r.ValidateFor with option and subject.
 func ValidateFrameRate(r model.FrameRate, option, subject string) error {
 	if r.IsZero() {
 		return nil
 	}
-	return FrameRateOption(r.Validate(), option, subject)
+	return r.ValidateFor(option, subject)
 }
 
 // BoundedTime returns d, or an error on line when d is 100000 hours or more. The error has no format,
@@ -49,12 +38,12 @@ func BoundedTime(d time.Duration, text string, line int) (time.Duration, error) 
 
 // OverLimit returns the error on line for the time text, which is 100000 hours or more. The error has no format.
 func OverLimit(text string, line int) *model.ParseError {
-	return &model.ParseError{Line: line, Msg: `The time "` + text + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours."}
+	return &model.ParseError{Line: line, Msg: `the time "` + text + `" is not below ` + strconv.Itoa(timecode.MaxHours) + " hours"}
 }
 
 // InvalidTime returns the error on line for the time text that has no valid form. The error has no format.
 func InvalidTime(text string, line int) *model.ParseError {
-	return &model.ParseError{Line: line, Msg: `The time "` + text + `" is not valid.`}
+	return &model.ParseError{Line: line, Msg: `the time "` + text + `" is not valid`}
 }
 
 // FrameLimit returns the first frame of fps at 100000 hours or later.
@@ -72,7 +61,7 @@ func FrameLimit(fps model.FrameRate) int64 {
 // BoundedField returns d, or an error when the time d of the JSON field path is 100000 hours or more.
 func BoundedField(d time.Duration, path string) (time.Duration, error) {
 	if d >= timecode.MaxTime {
-		return 0, &model.ParseError{Msg: "The field " + path + " is not below " + strconv.Itoa(timecode.MaxHours) + " hours."}
+		return 0, &model.ParseError{Msg: "the field " + path + " is not below " + strconv.Itoa(timecode.MaxHours) + " hours"}
 	}
 	return d, nil
 }

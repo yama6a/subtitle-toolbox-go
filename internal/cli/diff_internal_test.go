@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 )
 
 // diffDir returns a directory with the CLI fixtures and the two versions of the diff fixtures as v1.srt and v2.srt.
@@ -79,7 +79,7 @@ func TestDiffUsageErrors(t *testing.T) {
 			[]string{"diff", "old/*", "trip.srt"},
 			"The diff command takes one old file, got 2.",
 		},
-		{"an unknown encoding", []string{"diff", "trip.srt", "shop.vtt", "--encoding", "CP1125"}, `The encoding "CP1125" is unknown.`},
+		{"an unknown encoding", []string{"diff", "trip.srt", "shop.vtt", "--encoding", "CP1125"}, `the encoding "CP1125" is unknown`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -214,7 +214,7 @@ func TestDiffFileFailures(t *testing.T) {
 			"new file in the wrong format",
 			[]string{"diff", "trip.srt", "shop.vtt", "--new-from", "srt"},
 			"",
-			"shop.vtt: line 1: Block #0 has no cue number on its first line. The line is \"WEBVTT\".\n" + lenientHint + "\n",
+			"shop.vtt: line 1: block #0 has no cue number on its first line. The line is \"WEBVTT\"\n" + lenientHint + "\n",
 		},
 		{
 			"broken new file in JSON",
@@ -252,14 +252,14 @@ func TestDiffReadOptionsApplyToBothFiles(t *testing.T) {
 		t.Parallel()
 
 		got := call{dir: dir}.run(t, "diff", "broken.srt", "broken.srt", "--lenient")
-		assert.Equal(t, result{Stderr: brokenMessage + " (skipped)\n" + brokenMessage + " (skipped)\n"}, got)
+		assert.Equal(t, result{Stderr: brokenWarning + " (skipped)\n" + brokenWarning + " (skipped)\n"}, got)
 	})
 	t.Run("lenient JSON lists the warnings of both files", func(t *testing.T) {
 		t.Parallel()
 
 		got := call{dir: dir}.run(t, "diff", "broken.srt", "trip.srt", "--lenient", "--json")
 		assert.Equal(t, exitResult, got.Code)
-		assert.Equal(t, brokenMessage+" (skipped)\n", got.Stderr)
+		assert.Equal(t, brokenWarning+" (skipped)\n", got.Stderr)
 		assert.Contains(t, got.Stdout, `        "oldWarnings": [
             {
                 "lineNumber": 6,

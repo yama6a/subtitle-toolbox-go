@@ -2,7 +2,7 @@
     "name": "SubViewer 2 with text before the header and a bad time line",
     "format": "subviewer",
     "strict": {
-        "error": "The line \"Downloaded from a subtitle site\" is neither a header tag nor a timing line.",
+        "error": "the line \"Downloaded from a subtitle site\" is neither a header tag nor a timing line",
         "line": 1
     },
     "cues": [

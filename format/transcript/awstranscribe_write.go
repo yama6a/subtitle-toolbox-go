@@ -8,31 +8,31 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // WriteAWSTranscribe writes s to w as the JSON of an Amazon Transcribe batch job. It writes the transcript, one item
 // for each word and punctuation mark, and the speaker segments when a cue has a speaker. It writes one audio segment
 // for each cue when the source had them, or when a cue has no words, because the items alone cannot hold such a cue.
 // A value that a cue did not change stays as the reader stored it.
-func WriteAWSTranscribe(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WriteAWSTranscribe(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.AWSTranscribe, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	doc, err := awsDocument(s)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	body, err := encodeDocument(model.AWSTranscribe, "Amazon Transcribe JSON", doc, false)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
-	return writing.Write(w, model.AWSTranscribe, body, common, false)
+	return WriteReport{}, writing.Write(w, model.AWSTranscribe, body, common, false)
 }
 
 func awsDocument(s *model.Subtitle) (orderedjson.Value, error) {

@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Ports testFrameRateUsesOnlyTheLeadingInteger, testWindowsLineEndingsAndMissingTrailingNewlineAreAccepted,
@@ -199,6 +199,7 @@ func TestReadErrors(t *testing.T) {
 	t.Parallel()
 
 	const limit = `" is not below 100000 hours.`
+	const strictLimit = `" is not below 100000 hours`
 	tests := []struct {
 		name    string
 		content string
@@ -210,133 +211,133 @@ func TestReadErrors(t *testing.T) {
 	}{
 		{
 			"unknown FORMAT value",
-			"FORMAT=PAL\n\n1 2\nHello\n", 1, `The FORMAT value "PAL" is not known.`,
+			"FORMAT=PAL\n\n1 2\nHello\n", 1, `the FORMAT value "PAL" is not known`,
 			[]cueRow{{time.Second, 3 * time.Second, []string{"Hello"}}},
 			[]warningRow{{`The FORMAT value "PAL" is not known.`, 1, 0, []string{"FORMAT=PAL"}, model.Skipped}},
 		},
 		{
 			"FORMAT in lower case",
-			"FORMAT=time\n\n1 2\nHello\n", 1, `The FORMAT value "time" is not known.`,
+			"FORMAT=time\n\n1 2\nHello\n", 1, `the FORMAT value "time" is not known`,
 			[]cueRow{{time.Second, 3 * time.Second, []string{"Hello"}}},
 			[]warningRow{{`The FORMAT value "time" is not known.`, 1, 0, []string{"FORMAT=time"}, model.Skipped}},
 		},
 		{
 			"empty FORMAT value",
-			"FORMAT=\n\n1 2\nHello\n", 1, `The FORMAT value "" is not known.`,
+			"FORMAT=\n\n1 2\nHello\n", 1, `the FORMAT value "" is not known`,
 			[]cueRow{{time.Second, 3 * time.Second, []string{"Hello"}}},
 			[]warningRow{{`The FORMAT value "" is not known.`, 1, 0, []string{"FORMAT="}, model.Skipped}},
 		},
 		{
 			"a frame rate of 0",
-			"FORMAT=0\n\n1 2\nHello\n", 1, `The frame rate "0" is not valid.`,
+			"FORMAT=0\n\n1 2\nHello\n", 1, `the frame rate "0" is not valid`,
 			[]cueRow{{time.Second, 3 * time.Second, []string{"Hello"}}},
 			[]warningRow{{`The frame rate "0" is not valid.`, 1, 0, []string{"FORMAT=0"}, model.Skipped}},
 		},
 		{
 			"a frame rate that starts with 0",
-			"FORMAT=0.5\n\n1 2\nHello\n", 1, `The frame rate "0.5" is not valid.`,
+			"FORMAT=0.5\n\n1 2\nHello\n", 1, `the frame rate "0.5" is not valid`,
 			[]cueRow{{time.Second, 3 * time.Second, []string{"Hello"}}},
 			[]warningRow{{`The frame rate "0.5" is not valid.`, 1, 0, []string{"FORMAT=0.5"}, model.Skipped}},
 		},
 		{
 			"a bad FORMAT keeps the unit before it",
-			"FORMAT=25\nFORMAT=PAL\n\n25 25\nHello\n", 2, `The FORMAT value "PAL" is not known.`,
+			"FORMAT=25\nFORMAT=PAL\n\n25 25\nHello\n", 2, `the FORMAT value "PAL" is not known`,
 			[]cueRow{{time.Second, 2 * time.Second, []string{"Hello"}}},
 			[]warningRow{{`The FORMAT value "PAL" is not known.`, 2, 0, []string{"FORMAT=PAL"}, model.Skipped}},
 		},
 		{
 			"a bad FORMAT after a cue has the block count of the timing lines so far",
-			"FORMAT=TIME\n\n1 1\nA\n\nFORMAT=x\n", 6, `The FORMAT value "x" is not known.`,
+			"FORMAT=TIME\n\n1 1\nA\n\nFORMAT=x\n", 6, `the FORMAT value "x" is not known`,
 			[]cueRow{{time.Second, 2 * time.Second, []string{"A"}}},
 			[]warningRow{{`The FORMAT value "x" is not known.`, 6, 1, []string{"FORMAT=x"}, model.Skipped}},
 		},
 		{
 			"a line that is no header, comment or timing line",
-			"FORMAT=TIME\n\n00:00:01,000\nHello\nmore\n\n1 2\nOK\n", 3, `The line "00:00:01,000" is not a header, a comment or a timing line.`,
+			"FORMAT=TIME\n\n00:00:01,000\nHello\nmore\n\n1 2\nOK\n", 3, `the line "00:00:01,000" is not a header, a comment or a timing line`,
 			[]cueRow{{time.Second, 3 * time.Second, []string{"OK"}}},
 			[]warningRow{{`The line "00:00:01,000" is not a header, a comment or a timing line.`, 3, 0, []string{"00:00:01,000"}, model.Skipped}},
 		},
 		{
 			"a header in lower case",
-			"format=25\n\n1 2\nHello\n", 1, `The line "format=25" is not a header, a comment or a timing line.`,
+			"format=25\n\n1 2\nHello\n", 1, `the line "format=25" is not a header, a comment or a timing line`,
 			[]cueRow{{time.Second, 3 * time.Second, []string{"Hello"}}},
 			[]warningRow{{`The line "format=25" is not a header, a comment or a timing line.`, 1, 0, []string{"format=25"}, model.Skipped}},
 		},
 		{
 			"a plus sign",
-			"FORMAT=TIME\n\n+1 2\nHello\n", 3, `The line "+1 2" is not a header, a comment or a timing line.`,
+			"FORMAT=TIME\n\n+1 2\nHello\n", 3, `the line "+1 2" is not a header, a comment or a timing line`,
 			nil,
 			[]warningRow{{`The line "+1 2" is not a header, a comment or a timing line.`, 3, 0, []string{"+1 2"}, model.Skipped}},
 		},
 		{
 			"an exponent",
-			"FORMAT=TIME\n\n1e3 2\nHello\n", 3, `The line "1e3 2" is not a header, a comment or a timing line.`,
+			"FORMAT=TIME\n\n1e3 2\nHello\n", 3, `the line "1e3 2" is not a header, a comment or a timing line`,
 			nil,
 			[]warningRow{{`The line "1e3 2" is not a header, a comment or a timing line.`, 3, 0, []string{"1e3 2"}, model.Skipped}},
 		},
 		{
 			"a number without digits after the dot",
-			"FORMAT=TIME\n\n1. 2\nHello\n", 3, `The line "1. 2" is not a header, a comment or a timing line.`,
+			"FORMAT=TIME\n\n1. 2\nHello\n", 3, `the line "1. 2" is not a header, a comment or a timing line`,
 			nil,
 			[]warningRow{{`The line "1. 2" is not a header, a comment or a timing line.`, 3, 0, []string{"1. 2"}, model.Skipped}},
 		},
 		{
 			"a comma as decimal separator",
-			"FORMAT=TIME\n\n1,5 2\nHello\n", 3, `The line "1,5 2" is not a header, a comment or a timing line.`,
+			"FORMAT=TIME\n\n1,5 2\nHello\n", 3, `the line "1,5 2" is not a header, a comment or a timing line`,
 			nil,
 			[]warningRow{{`The line "1,5 2" is not a header, a comment or a timing line.`, 3, 0, []string{"1,5 2"}, model.Skipped}},
 		},
 		{
 			"three numbers",
-			"FORMAT=TIME\n\n1 2 3\nHello\n", 3, `The line "1 2 3" is not a header, a comment or a timing line.`,
+			"FORMAT=TIME\n\n1 2 3\nHello\n", 3, `the line "1 2 3" is not a header, a comment or a timing line`,
 			nil,
 			[]warningRow{{`The line "1 2 3" is not a header, a comment or a timing line.`, 3, 0, []string{"1 2 3"}, model.Skipped}},
 		},
 		{
 			"one number",
-			"FORMAT=TIME\n\n1\nHello\n", 3, `The line "1" is not a header, a comment or a timing line.`,
+			"FORMAT=TIME\n\n1\nHello\n", 3, `the line "1" is not a header, a comment or a timing line`,
 			nil,
 			[]warningRow{{`The line "1" is not a header, a comment or a timing line.`, 3, 0, []string{"1"}, model.Skipped}},
 		},
 		{
 			"a non-breaking space between the numbers",
-			"FORMAT=TIME\n\n1 2\nHello\n", 3, "The line \"1 2\" is not a header, a comment or a timing line.",
+			"FORMAT=TIME\n\n1 2\nHello\n", 3, "the line \"1 2\" is not a header, a comment or a timing line",
 			nil,
 			[]warningRow{{"The line \"1 2\" is not a header, a comment or a timing line.", 3, 0, []string{"1 2"}, model.Skipped}},
 		},
 		{
 			"a negative duration",
-			"FORMAT=TIME\n\n1 -2\nHello\n\n1 1\nOK\n", 3, `The timing line "1 -2" has a negative duration.`,
+			"FORMAT=TIME\n\n1 -2\nHello\n\n1 1\nOK\n", 3, `the timing line "1 -2" has a negative duration`,
 			[]cueRow{{time.Second, 2 * time.Second, []string{"OK"}}},
 			[]warningRow{{`The timing line "1 -2" has a negative duration.`, 3, 0, []string{"1 -2"}, model.Skipped}},
 		},
 		{
 			"a cue without text lines before another cue",
-			"FORMAT=TIME\n\n1 2\n\n3 4\nHello\n", 3, "The cue has no text lines.",
+			"FORMAT=TIME\n\n1 2\n\n3 4\nHello\n", 3, "the cue has no text lines",
 			[]cueRow{{6 * time.Second, 10 * time.Second, []string{"Hello"}}},
 			[]warningRow{{"The cue has no text lines.", 3, 0, []string{"1 2"}, model.Skipped}},
 		},
 		{
 			"a cue without text lines at the file end",
-			"FORMAT=TIME\n\n1 2", 3, "The cue has no text lines.",
+			"FORMAT=TIME\n\n1 2", 3, "the cue has no text lines",
 			nil,
 			[]warningRow{{"The cue has no text lines.", 3, 0, []string{"1 2"}, model.Skipped}},
 		},
 		{
 			"a cue without text lines at the file end with a line end",
-			"FORMAT=TIME\n\n1 2\n", 3, "The cue has no text lines.",
+			"FORMAT=TIME\n\n1 2\n", 3, "the cue has no text lines",
 			nil,
 			[]warningRow{{"The cue has no text lines.", 3, 0, []string{"1 2"}, model.Skipped}},
 		},
 		{
 			"a start at 100000 hours",
-			"FORMAT=TIME\n\n360000000 1\nx\n\n1 1\nOK\n", 3, `The time "360000000 1` + limit,
+			"FORMAT=TIME\n\n360000000 1\nx\n\n1 1\nOK\n", 3, `the time "360000000 1` + strictLimit,
 			[]cueRow{{time.Second, 2 * time.Second, []string{"OK"}}},
 			[]warningRow{{`The time "360000000 1` + limit, 3, 0, []string{"360000000 1"}, model.Skipped}},
 		},
 		{
 			"an end at 100000 hours",
-			"FORMAT=TIME\n\n1 359999999\nx\n\n1 1\nOK\n", 3, `The time "1 359999999` + limit,
+			"FORMAT=TIME\n\n1 359999999\nx\n\n1 1\nOK\n", 3, `the time "1 359999999` + strictLimit,
 			[]cueRow{{time.Second, 2 * time.Second, []string{"OK"}}},
 			[]warningRow{{`The time "1 359999999` + limit, 3, 0, []string{"1 359999999"}, model.Skipped}},
 		},
@@ -475,7 +476,7 @@ func TestAWaitOf100000HoursFailsOrSkipsTheCue(t *testing.T) {
 
 	content := "FORMAT=TIME\n\n1 2\nThe pool opens at seven.\n\n360000000 2\nTowels are at the desk.\n\n4 2\nNo running, please.\n"
 	perr := readError(t, content)
-	assert.Equal(t, `The time "360000000 2" is not below 100000 hours.`, perr.Msg)
+	assert.Equal(t, `the time "360000000 2" is not below 100000 hours`, perr.Msg)
 	assert.Equal(t, 6, perr.Line)
 
 	s, warnings := mustRead(t, content, true)
@@ -535,7 +536,7 @@ func TestReadTimeLimit(t *testing.T) {
 				return
 			}
 			perr := readError(t, tt.content)
-			assert.Equal(t, `The time "`+tt.errLine+`" is not below 100000 hours.`, perr.Msg)
+			assert.Equal(t, `the time "`+tt.errLine+`" is not below 100000 hours`, perr.Msg)
 			before, _, found := strings.Cut(tt.content, tt.errLine)
 			require.True(t, found)
 			assert.Equal(t, strings.Count(before, "\n")+1, perr.Line)

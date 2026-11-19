@@ -12,11 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/pgs"
-	"github.com/yama6a/subtitle-toolbox-go/v4/imaging"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/pgs"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // solid returns an image cue of one colour that is w x h pixels at x, y of a 1920x1080 screen.
@@ -28,7 +28,7 @@ func solid(t *testing.T, start, end float64, x, y, w int, c color.NRGBA) model.C
 	for i := 0; i < len(img.Pix); i += 4 {
 		img.Pix[i], img.Pix[i+1], img.Pix[i+2], img.Pix[i+3] = c.R, c.G, c.B, c.A
 	}
-	im, err := imaging.NewImage(img, x, y, 1920, 1080)
+	im, err := stbox.NewImage(img, x, y, 1920, 1080)
 	require.NoError(t, err)
 	return model.Cue{Start: seconds(start), End: seconds(end), Image: &im}
 }
@@ -37,7 +37,7 @@ func writeCues(t *testing.T, cues ...model.Cue) []byte {
 	t.Helper()
 
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	require.NoError(t, s.AddCues(cues...))
 	var b bytes.Buffer
 	_, err := pgs.Write(&b, s, model.CommonWriteOptions{}, pgs.WriteOptions{})
 	require.NoError(t, err)
@@ -133,7 +133,7 @@ func TestWriteSegments(t *testing.T) {
 		v := byte(i / 4 * 7 % 251)
 		noise.Pix[i], noise.Pix[i+1], noise.Pix[i+2], noise.Pix[i+3] = v, v, 0, 255
 	}
-	im, err := imaging.NewImage(noise, 0, 0, 1920, 1080)
+	im, err := stbox.NewImage(noise, 0, 0, 1920, 1080)
 	require.NoError(t, err)
 	var objects []segment
 	for _, s := range segments(t, writeCues(t, model.Cue{Start: time.Second, End: 2 * time.Second, Image: &im})) {
@@ -205,7 +205,7 @@ func TestWriteUnwritable(t *testing.T) {
 		edit(&c)
 		return c
 	}
-	const head = "Cannot write cue "
+	const head = "cannot write cue "
 	tests := []struct {
 		name   string
 		cue    model.Cue
@@ -214,23 +214,23 @@ func TestWriteUnwritable(t *testing.T) {
 		{
 			"text cue",
 			model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"a"}},
-			head + "1 to 2 as PGS: the cue holds no image, and PGS output cannot hold text.",
+			head + "1 to 2 as PGS: the cue holds no image, and PGS output cannot hold text",
 		},
 		{
 			"size mismatch", with(func(c *model.Cue) { c.Image.Width = 3 }),
-			head + "1.5 to 3 as PGS: the PNG has 2x2 pixels, but the image data says 3x2.",
+			head + "1.5 to 3 as PGS: the PNG has 2x2 pixels, but the image data says 3x2",
 		},
 		{
 			"negative x", with(func(c *model.Cue) { c.Image.X = -1 }),
-			head + "1.5 to 3 as PGS: the image position and size must be from 0 to 65535.",
+			head + "1.5 to 3 as PGS: the image position and size must be from 0 to 65535",
 		},
 		{
 			"negative start", with(func(c *model.Cue) { c.Start = -500 * time.Millisecond }),
-			head + "-0.5 to 3 as PGS: a time stamp must be from 0 to 4294967295 ticks of 90 kHz.",
+			head + "-0.5 to 3 as PGS: a time stamp must be from 0 to 4294967295 ticks of 90 kHz",
 		},
 		{
 			"not a PNG", with(func(c *model.Cue) { c.Image.PNG = []byte("text") }),
-			head + "1.5 to 3 as PGS: the PNG does not decode.",
+			head + "1.5 to 3 as PGS: the PNG does not decode",
 		},
 	}
 	for _, tt := range tests {
@@ -238,7 +238,7 @@ func TestWriteUnwritable(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCues(good, tt.cue)
+			require.NoError(t, s.AddCues(good, tt.cue))
 			var b bytes.Buffer
 			_, err := pgs.Write(&b, s, model.CommonWriteOptions{}, pgs.WriteOptions{})
 			var uerr *model.UnwritableError
@@ -254,7 +254,7 @@ func TestWriteUnwritable(t *testing.T) {
 func cueKey(t *testing.T, c model.Cue) []any {
 	t.Helper()
 
-	img, err := imaging.Decode(*c.Image)
+	img, err := stbox.DecodeImage(*c.Image)
 	require.NoError(t, err)
 	return []any{
 		c.Start, c.End, c.Forced, c.Position.Alignment, c.Image.X, c.Image.Y, c.Image.Width, c.Image.Height,

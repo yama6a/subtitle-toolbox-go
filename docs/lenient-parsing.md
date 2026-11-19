@@ -2,7 +2,7 @@
 
 A subtitle download is often broken in one place. Example: `bad_timestamp.srt` has the end time `00:00:0G,000` in cue 2.
 
-- **Strict mode**, the default: `stbox.Parse` returns a `*ParseError` with `Line` 6 and the message `The time "00:00:0G,000" is not valid.`.
+- **Strict mode**, the default: `stbox.Parse` returns a `*ParseError` with `Line` 6 and the message `the time "00:00:0G,000" is not valid`.
 - **Lenient mode**, `ReadOptions{Lenient: true}`: the reader skips cue 2, reads the other 3 cues and returns a nil error. `ReadInfo.Warnings` holds one **parse warning** per problem.
 
 ## Parse warnings

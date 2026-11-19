@@ -1,9 +1,9 @@
 package mkv
 
 import (
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap/dvdsub"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap/dvdsub"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // readVobSub decodes each block as one subpicture unit with the colours of the .idx header in CodecPrivate.
@@ -27,7 +27,9 @@ func (f *File) readVobSub(t *trackEntry, private []byte, blocks []block, common 
 		if u.Image == nil {
 			continue
 		}
-		s.AddCue(u.Cue(b.start, b.end))
+		if err := s.AddCue(u.Cue(b.start, b.end)); err != nil {
+			return nil, nil, err
+		}
 	}
 	return s, st.Warnings(), nil
 }

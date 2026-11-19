@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 var blockEndBytes = make([]byte, blockEnd) //nolint:gochecknoglobals // 4 zero bytes
@@ -25,7 +25,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 		return nil, nil, fmt.Errorf("read %s: %w", model.Cavena890, err)
 	}
 	if len(content) < headerSize {
-		return nil, nil, &model.ParseError{Format: model.Cavena890, Msg: fmt.Sprintf("A Cavena 890 file starts with a header of %d bytes.", headerSize)}
+		return nil, nil, &model.ParseError{Format: model.Cavena890, Msg: fmt.Sprintf("a Cavena 890 file starts with a header of %d bytes", headerSize)}
 	}
 	st := parsing.NewState(model.Cavena890, common)
 	header, body := content[:headerSize], content[headerSize:]
@@ -35,7 +35,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 		body = append(bytes.Clone(body), blockEndBytes...)
 	} else if rest := len(body) % blockSize; rest != 0 {
 		complete := len(body) / blockSize
-		err := st.Fail(&model.ParseError{Format: model.Cavena890, Msg: fmt.Sprintf("The blocks of a Cavena 890 file have %d bytes each.", blockSize)},
+		err := st.Fail(&model.ParseError{Format: model.Cavena890, Msg: fmt.Sprintf("the blocks of a Cavena 890 file have %d bytes each", blockSize)},
 			model.NoLine, complete, []string{hex.EncodeToString(body[complete*blockSize:])})
 		if err != nil {
 			return nil, nil, err
@@ -48,7 +48,9 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 		cues = append(cues, cue(blocks, v))
 	}
 	s := &model.Subtitle{}
-	parsing.AddParsed(s, cues, nil)
+	if err := parsing.AddParsed(s, cues, nil); err != nil {
+		return nil, nil, err
+	}
 	_ = s.SetFormatData(formatDataKey, model.NewData( // the data has the shape that the writer reads
 		model.Field{Key: "variant", Value: string(v)},
 		model.Field{Key: "header", Value: hex.EncodeToString(header)},

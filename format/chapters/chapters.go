@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // ReadOptions holds the read settings of the chapter formats.
@@ -25,12 +25,15 @@ type ReadOptions struct {
 // WriteOptions holds the write settings of the chapter formats. It has no fields yet.
 type WriteOptions struct{}
 
+// WriteReport holds what the chapter writers report. It has no fields yet.
+type WriteReport struct{}
+
 // Validate returns a *model.InvalidArgumentError when MediaDuration is negative.
 func (o ReadOptions) Validate() error {
 	if o.MediaDuration < 0 {
 		return &model.InvalidArgumentError{
 			Option: "ReadOptions.Chapters.MediaDuration",
-			Msg:    fmt.Sprintf("The media duration must be 0 or more seconds, got %s.", timecode.Seconds(o.MediaDuration)),
+			Msg:    fmt.Sprintf("the media duration must be 0 or more seconds, got %s", timecode.Seconds(o.MediaDuration)),
 		}
 	}
 	return nil

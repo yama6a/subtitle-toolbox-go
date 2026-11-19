@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -146,19 +146,19 @@ func TestReadErrors(t *testing.T) {
 		// both is true when lenient mode fails too. Else lenient mode skips the subtitle or the text.
 		both bool
 	}{
-		{"image subtitle", smpteReel(`<Subtitle TimeIn="00:00:01:00" TimeOut="00:00:02:00"><Image Valign="bottom">urn:uuid:1</Image></Subtitle>`), 1, "The subtitle at 00:00:01:00 is an image. The parser reads only text subtitles.", false},
-		{"frame at the rate", smpteReel(`<Subtitle TimeIn="00:00:01:25" TimeOut="00:00:02:00"><Text>x</Text></Subtitle>`), 1, `The time "00:00:01:25" is not a DCP time code at 25 units per second.`, false},
-		{"Interop tick at 250", interopReel(`<Subtitle TimeIn="00:00:01:250" TimeOut="00:00:02:000"><Text>x</Text></Subtitle>`), 1, `The time "00:00:01:250" is not a DCP time code at 250 units per second.`, false},
-		{"decimal time in SMPTE", smpteReel(`<Subtitle TimeIn="00:00:01.5" TimeOut="00:00:02:00"><Text>x</Text></Subtitle>`), 1, `The time "00:00:01.5" is not a DCP time code at 25 units per second.`, false},
-		{"time at 100000 hours", smpteReel(`<Subtitle TimeIn="100000:00:00:00" TimeOut="100000:00:01:00"><Text>x</Text></Subtitle>`), 1, `The time "100000:00:00:00" is not below 100000 hours.`, false},
-		{"huge hours", smpteReel(`<Subtitle TimeIn="99999999999999999999:00:00:00" TimeOut="0:0:1:0"><Text>x</Text></Subtitle>`), 1, `The time "99999999999999999999:00:00:00" is not below 100000 hours.`, false},
-		{"end before start", smpteReel(`<Subtitle TimeIn="00:01:00:00" TimeOut="00:00:01:00"><Text>x</Text></Subtitle>`), 1, "The cue ends at 1 s, before it starts at 60 s.", false},
-		{"line of a later subtitle", smpteReel(good + "\n" + `<Subtitle TimeIn="x" TimeOut="y"/>`), 2, `The time "x" is not a DCP time code at 25 units per second.`, false},
-		{"text before the XML", "Credits\n" + smpteReel(good), 1, `The file has text before the XML: "Credits".`, false},
-		{"other root", `<tt xmlns="x"/>`, 0, "The root element must be <DCSubtitle> or <SubtitleReel>, not <tt>.", true},
-		{"prefixed other root", `<d:Root xmlns:d="x"/>`, 0, "The root element must be <DCSubtitle> or <SubtitleReel>, not <d:Root>.", true},
-		{"malformed XML", `<DCSubtitle><Subtitle></DCSubtitle>`, 0, "The content is not well-formed XML.", true},
-		{"invalid UTF-8", "<DCSubtitle><!-- \xff --></DCSubtitle>", 0, "The content is not well-formed XML.", true},
+		{"image subtitle", smpteReel(`<Subtitle TimeIn="00:00:01:00" TimeOut="00:00:02:00"><Image Valign="bottom">urn:uuid:1</Image></Subtitle>`), 1, "the subtitle at 00:00:01:00 is an image. The parser reads only text subtitles", false},
+		{"frame at the rate", smpteReel(`<Subtitle TimeIn="00:00:01:25" TimeOut="00:00:02:00"><Text>x</Text></Subtitle>`), 1, `the time "00:00:01:25" is not a DCP time code at 25 units per second`, false},
+		{"Interop tick at 250", interopReel(`<Subtitle TimeIn="00:00:01:250" TimeOut="00:00:02:000"><Text>x</Text></Subtitle>`), 1, `the time "00:00:01:250" is not a DCP time code at 250 units per second`, false},
+		{"decimal time in SMPTE", smpteReel(`<Subtitle TimeIn="00:00:01.5" TimeOut="00:00:02:00"><Text>x</Text></Subtitle>`), 1, `the time "00:00:01.5" is not a DCP time code at 25 units per second`, false},
+		{"time at 100000 hours", smpteReel(`<Subtitle TimeIn="100000:00:00:00" TimeOut="100000:00:01:00"><Text>x</Text></Subtitle>`), 1, `the time "100000:00:00:00" is not below 100000 hours`, false},
+		{"huge hours", smpteReel(`<Subtitle TimeIn="99999999999999999999:00:00:00" TimeOut="0:0:1:0"><Text>x</Text></Subtitle>`), 1, `the time "99999999999999999999:00:00:00" is not below 100000 hours`, false},
+		{"end before start", smpteReel(`<Subtitle TimeIn="00:01:00:00" TimeOut="00:00:01:00"><Text>x</Text></Subtitle>`), 1, "the cue ends at 1 s, before it starts at 60 s", false},
+		{"line of a later subtitle", smpteReel(good + "\n" + `<Subtitle TimeIn="x" TimeOut="y"/>`), 2, `the time "x" is not a DCP time code at 25 units per second`, false},
+		{"text before the XML", "Credits\n" + smpteReel(good), 1, `the file has text before the XML: "Credits"`, false},
+		{"other root", `<tt xmlns="x"/>`, 0, "the root element must be <DCSubtitle> or <SubtitleReel>, not <tt>", true},
+		{"prefixed other root", `<d:Root xmlns:d="x"/>`, 0, "the root element must be <DCSubtitle> or <SubtitleReel>, not <d:Root>", true},
+		{"malformed XML", `<DCSubtitle><Subtitle></DCSubtitle>`, 0, "the content is not well-formed XML", true},
+		{"invalid UTF-8", "<DCSubtitle><!-- \xff --></DCSubtitle>", 0, "the content is not well-formed XML", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

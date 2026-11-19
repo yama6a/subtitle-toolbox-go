@@ -13,9 +13,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ebustl"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func writeSubtitle(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions, opts ebustl.WriteOptions) ([]byte, ebustl.WriteReport) {
@@ -34,7 +34,9 @@ func newSubtitle(lines ...string) *model.Subtitle {
 	for i, l := range lines {
 		c := model.Cue{Start: time.Duration(i+1) * time.Second, End: time.Duration(i+2) * time.Second}
 		c.SetText(strings.ReplaceAll(l, "|", "\n"))
-		s.AddCue(c)
+		if err := s.AddCue(c); err != nil {
+			panic(err)
+		}
 	}
 	return s
 }
@@ -210,7 +212,7 @@ func TestWritePositions(t *testing.T) {
 				c.AddLine("x")
 			}
 			s := &model.Subtitle{}
-			s.AddCue(c)
+			require.NoError(t, s.AddCue(c))
 			if tt.gsi != nil {
 				data := model.NewData()
 				gsi := model.NewData()
@@ -365,19 +367,19 @@ func TestWriteInvalidInput(t *testing.T) {
 	}{
 		{
 			name: "frame rate 24", s: newSubtitle("a"), opts: ebustl.WriteOptions{FrameRate: model.FrameRate{Num: 24, Den: 1}},
-			want: "The EBU STL formatter writes 25 or 30 fps, got 24.", option: "WriteOptions.EBUSTL.FrameRate",
+			want: "the EBU STL formatter writes 25 or 30 fps, got 24", option: "WriteOptions.EBUSTL.FrameRate",
 		},
 		{
 			name: "stored table 05", s: withData(newSubtitle("a"), table("05")),
-			want: `The character code table "05" is not 00, 01, 02, 03 or 04.`,
+			want: `the character code table "05" is not 00, 01, 02, 03 or 04`,
 		},
 		{
 			name: "too many blocks in cue 1", s: newSubtitle("a", strings.Repeat("a", 112*242)),
-			want: "The cue text needs more than 241 TTI blocks.", cueIndex: 1,
+			want: "the cue text needs more than 241 TTI blocks", cueIndex: 1,
 		},
 		{
 			name: "subtitle number 65536", s: withData(newSubtitle("a", "b"), first),
-			want: "EBU STL allows subtitle numbers up to 65535.", cueIndex: -1,
+			want: "EBU STL allows subtitle numbers up to 65535", cueIndex: -1,
 		},
 		{name: "subtitle number 65535 is the last one", s: withData(newSubtitle("a"), first)},
 	}

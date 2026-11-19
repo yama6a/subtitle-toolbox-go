@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 var update = flag.Bool("update", false, "rewrite the write golden files")
@@ -148,5 +148,5 @@ func TestReadFailsForADropFrameString(t *testing.T) {
 		model.CommonReadOptions{}, stboxjson.ReadOptions{})
 	var perr *model.ParseError
 	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, "The field formatData.scc.dropFrame must be a boolean.", perr.Msg)
+	assert.Equal(t, "the field formatData.scc.dropFrame must be a boolean", perr.Msg)
 }

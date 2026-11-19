@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/chapters"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/chapters"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestReadOGM(t *testing.T) {
@@ -56,14 +56,14 @@ func TestReadOGMErrors(t *testing.T) {
 		wantMsg  string
 		wantLine int
 	}{
-		{"name first", "CHAPTER01NAME=Intro\n", `The line "CHAPTER01NAME=Intro" is not a CHAPTERxx= line.`, 1},
-		{"no fraction", "CHAPTER01=00:00:00\n", `The line "CHAPTER01=00:00:00" is not a CHAPTERxx= line.`, 1},
-		{"minute 60", "CHAPTER01=00:60:00.000\n", `The line "CHAPTER01=00:60:00.000" has a minute or second above 59.`, 1},
-		{"second 60", "CHAPTER01=00:00:60.000\n", `The line "CHAPTER01=00:00:60.000" has a minute or second above 59.`, 1},
-		{"100000 hours", "CHAPTER01=100000:00:00.000\n", `The time "CHAPTER01=100000:00:00.000" is not below 100000 hours.`, 1},
-		{"hours beyond int64", "CHAPTER01=99999999999999999999:00:00.000\n", `The time "CHAPTER01=99999999999999999999:00:00.000" is not below 100000 hours.`, 1},
-		{"two times", "CHAPTER01=00:00:00.000\n\nCHAPTER02=00:01:00.000\n", `The line "CHAPTER02=00:01:00.000" is not a CHAPTERxxNAME= line.`, 3},
-		{"name without digits", "CHAPTER01=00:00:00.000\nCHAPTERNAME=x\n", `The line "CHAPTERNAME=x" is not a CHAPTERxxNAME= line.`, 2},
+		{"name first", "CHAPTER01NAME=Intro\n", `the line "CHAPTER01NAME=Intro" is not a CHAPTERxx= line`, 1},
+		{"no fraction", "CHAPTER01=00:00:00\n", `the line "CHAPTER01=00:00:00" is not a CHAPTERxx= line`, 1},
+		{"minute 60", "CHAPTER01=00:60:00.000\n", `the line "CHAPTER01=00:60:00.000" has a minute or second above 59`, 1},
+		{"second 60", "CHAPTER01=00:00:60.000\n", `the line "CHAPTER01=00:00:60.000" has a minute or second above 59`, 1},
+		{"100000 hours", "CHAPTER01=100000:00:00.000\n", `the time "CHAPTER01=100000:00:00.000" is not below 100000 hours`, 1},
+		{"hours beyond int64", "CHAPTER01=99999999999999999999:00:00.000\n", `the time "CHAPTER01=99999999999999999999:00:00.000" is not below 100000 hours`, 1},
+		{"two times", "CHAPTER01=00:00:00.000\n\nCHAPTER02=00:01:00.000\n", `the line "CHAPTER02=00:01:00.000" is not a CHAPTERxxNAME= line`, 3},
+		{"name without digits", "CHAPTER01=00:00:00.000\nCHAPTERNAME=x\n", `the line "CHAPTERNAME=x" is not a CHAPTERxxNAME= line`, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

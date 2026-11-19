@@ -1,6 +1,6 @@
 # Chapters
 
-A chapter list names the parts of a video or a podcast episode. The library reads one into a `*model.Subtitle` whose cues are chapters. Package `format/chapters` holds the readers and writers of 4 formats: YouTube, Podcasting 2.0, FFmpeg metadata and OGM. Package `validation` holds the YouTube check.
+A chapter list names the parts of a video or a podcast episode. The library reads one into a `*model.Subtitle` whose cues are chapters. Package `format/chapters` holds the readers and writers of 4 formats: YouTube, Podcasting 2.0, FFmpeg metadata and OGM. Package `inspect/validation` holds the YouTube check.
 
 The same chapter in each format:
 
@@ -33,7 +33,7 @@ Example: chapters at 0 s, 168 s and 7200 s end at 168 s, 7200 s and 7200 s. With
 |:--- |:--- |:--- |:--- |
 | `ReadOptions.Chapters.MediaDuration` | `time.Duration` | 0, unknown | where a last chapter without its own end ends |
 
-- **Validate**: a negative `MediaDuration` fails with `The media duration must be 0 or more seconds, got -1.` and the option name `ReadOptions.Chapters.MediaDuration`.
+- **Validate**: a negative `MediaDuration` fails with `the media duration must be 0 or more seconds, got -1` and the option name `ReadOptions.Chapters.MediaDuration`.
 - **Lenient mode**: the chapter readers ignore `ReadOptions.Lenient` for their own lines. Every error of the 4 formats fails the same way in both modes. The text pre-pass still honours it, so a NUL byte fails a strict read and reads with `Lenient`. The CLI prints no `--lenient` hint after a failed chapter read.
 - **Write**: `chapters.WriteOptions` has no fields.
 
@@ -85,12 +85,12 @@ The reader decodes the file as [json.md](json.md) does, so a list needs a JSON a
 
 | Input | Error |
 |:--- |:--- |
-| not JSON | `The content is not valid JSON: Syntax error.` |
-| a root that is not an object | `The JSON root must be an object.` |
-| no `chapters` array | `The JSON has no "chapters" list.` |
-| `startTime` is missing, a string such as `"1:00"`, negative or `1e400`, or the chapter is no object | `The field chapters[0].startTime must be a number.` |
-| `endTime` is present, not null and not such a number | `The field chapters[0].endTime must be a number.` |
-| a time of 100000 hours or more | `The field chapters[0].startTime is not below 100000 hours.` |
+| not JSON | `the content is not valid JSON: Syntax error` |
+| a root that is not an object | `the JSON root must be an object` |
+| no `chapters` array | `the JSON has no "chapters" list` |
+| `startTime` is missing, a string such as `"1:00"`, negative or `1e400`, or the chapter is no object | `the field chapters[0].startTime must be a number` |
+| `endTime` is present, not null and not such a number | `the field chapters[0].endTime must be a number` |
+| a time of 100000 hours or more | `the field chapters[0].startTime is not below 100000 hours` |
 
 - **Times**: seconds, rounded to whole milliseconds. The chapters are sorted by start and get their ends from the end rule, with `endTime` as the end that the file gives.
 - **Title**: `title` when it is a string, escaped.
@@ -130,12 +130,12 @@ The format name is `ffmeta-chapters` (`stbox.FFMetadataChapters`). It is the `;F
 
 ### Read
 
-- **Header**: the content must start with `;FFMETADATA`, else `The content does not start with the ;FFMETADATA header.` on line 1.
+- **Header**: the content must start with `;FFMETADATA`, else `the content does not start with the ;FFMETADATA header` on line 1.
 - **Lines**: CR LF and CR become LF. A line that ends with an odd number of backslashes continues on the next line, joined with LF, except the last line of the file. An empty line and a line that starts with `;` or `#` are dropped.
 - **Sections**: tags before a section are global tags. `[STREAM]` starts a stream with its own tags. `[CHAPTER]` starts a chapter. The line must match exactly.
 - **Chapter times**: only the lines right after `[CHAPTER]`, in this order, as FFmpeg reads them: `TIMEBASE=N/D`, `START=ticks` and `END=ticks`. Each is optional. Text after the digits is ignored. A later `START=` line is a normal tag.
-- **Time base**: without `TIMEBASE` it is `1/1000000000`, which is nanoseconds. A 0 in `N` or `D`, or a number beyond 64 bits, fails with `The chapter time base 0/1000 is not valid.` and its line.
-- **Start and end**: the ticks times N / D seconds, rounded half away from zero to whole milliseconds. A chapter without `START` starts at the `END` of the chapter before, when that one had an `END`, else at 0. A time of 100000 hours or more, also a number beyond 64 bits, fails with `The time "START=360000000000" is not below 100000 hours.` and its line. A negative time of -100000 hours or less, also a number beyond 64 bits, becomes -359999999.999 s, because `time.Duration` cannot hold more.
+- **Time base**: without `TIMEBASE` it is `1/1000000000`, which is nanoseconds. A 0 in `N` or `D`, or a number beyond 64 bits, fails with `the chapter time base 0/1000 is not valid` and its line.
+- **Start and end**: the ticks times N / D seconds, rounded half away from zero to whole milliseconds. A chapter without `START` starts at the `END` of the chapter before, when that one had an `END`, else at 0. A time of 100000 hours or more, also a number beyond 64 bits, fails with `the time "START=360000000000" is not below 100000 hours` and its line. A negative time of -100000 hours or less, also a number beyond 64 bits, becomes -359999999.999 s, because `time.Duration` cannot hold more.
 - **Tags**: `KEY=VALUE`, split at the first `=` that no backslash escapes. A backslash before any character stands for that character, in key and value. A line without such an `=` is ignored. A repeated key replaces the value and keeps the place of the first one.
 - **Title**: the `title` tag of the chapter, escaped. A title with LF gives several lines.
 - **Metadata**: the global tags `title`, `author`, `artist`, `album` and `language`.
@@ -176,7 +176,7 @@ CHAPTER02NAME=Hearing aids
 - **Time line**: `CHAPTER`, digits, `=`, then hours, minutes and seconds as digits with `:` between them, then `.` or `,` and 1 to 9 digits. White space is allowed around each separator. Text after the digits is ignored. The fraction digits are a decimal fraction, so nanoseconds are allowed and round to milliseconds.
 - **Name line**: the next line that is not empty must be `CHAPTER`, digits, `NAME`, `=` and the name. The name is escaped and trimmed.
 - **Last line**: a time line at the end of the file without a name line is dropped without an error. The chapter numbers are not checked and not kept.
-- **Errors**: `The line "L" is not a CHAPTERxx= line.`, `The line "L" is not a CHAPTERxxNAME= line.`, `The line "L" has a minute or second above 59.` and `The time "L" is not below 100000 hours.`, each with its line.
+- **Errors**: `the line "L" is not a CHAPTERxx= line`, `the line "L" is not a CHAPTERxxNAME= line`, `the line "L" has a minute or second above 59` and `the time "L" is not below 100000 hours`, each with its line.
 - **Format data and metadata**: none.
 
 ### Write

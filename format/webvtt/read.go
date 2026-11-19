@@ -5,9 +5,9 @@ import (
 	"io"
 	"sort"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/vtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/vtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Read reads WebVTT text. It expects UTF-8, as stbox.Parse passes it.
@@ -71,7 +71,9 @@ func read(st *parsing.State, content string) (*model.Subtitle, error) {
 		comments[i].CuesBefore = sort.SearchInts(kept, c.CuesBefore)
 	}
 	s := &model.Subtitle{}
-	parsing.AddParsed(s, cues, comments)
+	if err := parsing.AddParsed(s, cues, comments); err != nil {
+		return nil, err
+	}
 	if err := s.SetFormatData(string(model.WebVTT), rd.File()); err != nil {
 		return nil, fmt.Errorf("%s file data: %w", model.WebVTT, err)
 	}

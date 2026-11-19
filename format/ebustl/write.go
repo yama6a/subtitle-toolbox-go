@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/codepage"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/codepage"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // set holds the TTI blocks of one subtitle or comment.
@@ -65,7 +65,7 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	var tti []byte
 	for _, st := range sets {
 		if number > maxSubtitleNumber {
-			return WriteReport{}, &model.UnwritableError{Format: model.EBUSTL, CueIndex: -1, Reason: "EBU STL allows subtitle numbers up to " + strconv.Itoa(maxSubtitleNumber) + "."}
+			return WriteReport{}, &model.UnwritableError{Format: model.EBUSTL, CueIndex: -1, Reason: "EBU STL allows subtitle numbers up to " + strconv.Itoa(maxSubtitleNumber)}
 		}
 		for _, b := range st.blocks {
 			binary.LittleEndian.PutUint16(b[ttiSN:], uint16(number))
@@ -90,7 +90,7 @@ func newWriter(s *model.Subtitle, file *model.Data, common model.CommonWriteOpti
 		gsi["CCT"] = report.CharacterCodeTable
 	}
 	if !slices.Contains([]string{"00", "01", "02", "03", "04"}, gsi["CCT"]) {
-		return nil, nil, WriteReport{}, &model.InvalidArgumentError{Msg: `The character code table "` + gsi["CCT"] + `" is not 00, 01, 02, 03 or 04.`}
+		return nil, nil, WriteReport{}, &model.InvalidArgumentError{Msg: `the character code table "` + gsi["CCT"] + `" is not 00, 01, 02, 03 or 04`}
 	}
 	storedRate, _ := frameRateOf(gsi["DFC"])
 	rate := cmp.Or(opts.FrameRate, storedRate, model.FrameRate25)
@@ -384,7 +384,7 @@ func (wr *writer) textBlocks(text []byte, h header, cueIndex int) ([][]byte, err
 	if len(fields) > maxTextBlocks {
 		return nil, &model.UnwritableError{
 			Format: model.EBUSTL, CueIndex: cueIndex,
-			Reason: "The cue text needs more than " + strconv.Itoa(maxTextBlocks) + " TTI blocks.",
+			Reason: "the cue text needs more than " + strconv.Itoa(maxTextBlocks) + " TTI blocks",
 		}
 	}
 	blocks := make([][]byte, len(fields))

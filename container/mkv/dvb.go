@@ -4,9 +4,9 @@ import (
 	"encoding/binary"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap/dvbsub"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap/dvbsub"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // dvbSubtitle decodes the blocks of an S_DVBSUB track. CodecPrivate of 4 bytes or more holds the composition page and
@@ -28,6 +28,8 @@ func (f *File) dvbSubtitle(private []byte, blocks []block, common model.CommonRe
 		}
 	}
 	s := &model.Subtitle{}
-	s.AddCues(dec.Finish(parsing.LastCueDuration(common))...)
+	if err := s.AddCues(dec.Finish(parsing.LastCueDuration(common))...); err != nil {
+		return nil, nil, err
+	}
 	return s, dec.Warnings(), nil
 }

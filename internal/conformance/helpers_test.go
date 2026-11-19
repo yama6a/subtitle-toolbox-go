@@ -1,10 +1,10 @@
-// Package conformance runs the readers and writers of every format over testdata through the stbox facade.
+// Package conformance runs the readers and writers of every format over testdata through the stbox facade and the stream readers and writers.
 package conformance_test
 
 import (
 	"bytes"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
 )
 
 // parseBytes reads content with stbox.Parse.

@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/sprucestl"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const defaultHeader = "$FontName = Arial\n$FontSize = 42\n$HorzAlign = Center\n$VertAlign = Bottom\n$XOffset = 0\n$YOffset = 0\n" +
@@ -165,7 +165,7 @@ func TestWriteChecksTheFrameRate(t *testing.T) {
 	var aerr *model.InvalidArgumentError
 	require.ErrorAs(t, err, &aerr)
 	assert.Equal(t, "WriteOptions.SpruceSTL.FrameRate", aerr.Option)
-	assert.Equal(t, "The Spruce STL frame rate must be greater than 0, got -1.", aerr.Msg)
+	assert.Equal(t, "the Spruce STL frame rate must be greater than 0, got -1", aerr.Msg)
 	require.ErrorAs(t, writeErr(formattest.Subtitle(), sprucestl.WriteOptions{FrameRate: model.FrameRate{Num: 0, Den: 1}}), &aerr)
 }
 
@@ -179,7 +179,9 @@ func withLines(t *testing.T, s *model.Subtitle, lines ...string) *model.Subtitle
 }
 
 func withCues(s *model.Subtitle, cues ...model.Cue) *model.Subtitle {
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return s
 }
 

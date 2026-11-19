@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/extfallback"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/extfallback"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textenc"
 )
 
 // read reads one input with the read options of the call and prints its warnings. info lists the tracks of a
@@ -169,7 +169,7 @@ func containerOfHead(head []byte) stbox.Container {
 // video file with many tracks gets the advice for trackOption.
 func (r *runner) readOther(path string, opts stbox.ReadOptions, fromOption, trackOption string) (*input, error) {
 	in, err := r.readWith(path, opts, "--"+trackOption)
-	if errors.Is(err, stbox.ErrUnknownFormat) {
+	if errors.Is(err, stbox.ErrNoFormatDetected) {
 		err = usage(unknownFormatAdvice(fromOption))
 	}
 	if err != nil {

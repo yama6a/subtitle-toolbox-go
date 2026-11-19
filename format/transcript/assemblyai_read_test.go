@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 var assemblyAIFormat = cloudFormat{folder: "assemblyai", read: transcript.ReadAssemblyAI, write: transcript.WriteAssemblyAI}
@@ -111,26 +111,26 @@ func TestReadAssemblyAIErrors(t *testing.T) {
 	assemblyAIFormat.testBroken(t, []cloudBroken{
 		{
 			"text", `{"words": [{"text": null}, {"text": "there", "start": 1000, "end": 2000}]}`,
-			"The field words[0].text must be a string.",
+			"the field words[0].text must be a string",
 			[]string{"1-2 there"},
 			0,
 		},
 		{
 			"start", `{"words": [{"text": "hi", "start": -1, "end": 5}, {"text": "there", "start": 1000, "end": 2000}]}`,
-			"The field words[0].start must be a time.",
+			"the field words[0].start must be a time",
 			[]string{"1-2 there"},
 			0,
 		},
 		{
 			"utterance", `{"words": [], "utterances": [{"start": 0, "text": "Hi"}, {"start": 1000, "end": 2000, "text": "Bye"}]}`,
-			"The field utterances[0].end must be a time.",
+			"the field utterances[0].end must be a time",
 			[]string{"1-2 Bye"},
 			0,
 		},
 		{
 			"a word of an utterance keeps the cue",
 			`{"utterances": [{"start": 0, "end": 1000, "text": "Hi", "words": [{"text": "Hi", "start": "x"}]}, {"start": 1000, "end": 2000, "text": "Bye"}]}`,
-			"The field utterances[0].words[0].start must be a time.",
+			"the field utterances[0].words[0].start must be a time",
 			[]string{"0-1 Hi", "1-2 Bye"},
 			0,
 		},
@@ -140,6 +140,6 @@ func TestReadAssemblyAIErrors(t *testing.T) {
 		_, _, err := transcript.ReadAssemblyAI(strings.NewReader(content), model.CommonReadOptions{Lenient: true}, transcript.ReadOptions{})
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr, content)
-		assert.Equal(t, `The JSON has no "words" or "utterances" list.`, perr.Msg)
+		assert.Equal(t, `the JSON has no "words" or "utterances" list`, perr.Msg)
 	}
 }

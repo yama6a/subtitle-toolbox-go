@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Adapted from tests/FixesTest.php of subtitle-toolbox-php.
@@ -152,7 +152,7 @@ func TestAddLeadInOutCreatesNoOverlapAndNoNegativeStart(t *testing.T) {
 			cues[i] = model.Cue{Start: start, End: start + ms(1500), Lines: []string{fmt.Sprintf("text%d", i)}}
 		}
 		s := &model.Subtitle{}
-		s.AddCues(cues...)
+		require.NoError(t, s.AddCues(cues...))
 		before := byText(s)
 		minGap := ms(100)
 
@@ -221,53 +221,53 @@ func TestTimingFixArgumentErrors(t *testing.T) {
 	}{
 		{
 			"overlaps with a negative gap", func(s *model.Subtitle) error { return s.FixOverlaps(-time.Second) },
-			"The minimum gap must not be negative, got -1.",
+			"the minimum gap must not be negative, got -1",
 		},
 		{
 			"extend with a negative gap", func(s *model.Subtitle) error { return s.ExtendShortCues(time.Second, -100*time.Millisecond) },
-			"The minimum gap must not be negative, got -0.1.",
+			"the minimum gap must not be negative, got -0.1",
 		},
 		{
 			"extend with a zero duration", func(s *model.Subtitle) error { return s.ExtendShortCues(0, 0) },
-			"The minimum duration must be greater than 0, got 0.",
+			"the minimum duration must be greater than 0, got 0",
 		},
 		{
 			"extend with a negative duration", func(s *model.Subtitle) error { return s.ExtendShortCues(-time.Second, -time.Second) },
-			"The minimum duration must be greater than 0, got -1.",
+			"the minimum duration must be greater than 0, got -1",
 		},
 		{
 			"negative lead-in", func(s *model.Subtitle) error { return s.AddLeadInOut(-100*time.Millisecond, 0, 0) },
-			"The lead-in must not be negative, got -0.1.",
+			"the lead-in must not be negative, got -0.1",
 		},
 		{
 			"negative lead-out", func(s *model.Subtitle) error { return s.AddLeadInOut(0, -time.Second, 0) },
-			"The lead-out must not be negative, got -1.",
+			"the lead-out must not be negative, got -1",
 		},
 		{
 			"lead with a negative gap", func(s *model.Subtitle) error {
 				return s.AddLeadInOut(200*time.Millisecond, 200*time.Millisecond, -time.Second)
 			},
-			"The minimum gap must not be negative, got -1.",
+			"the minimum gap must not be negative, got -1",
 		},
 		{
 			"extend to the time limit", func(s *model.Subtitle) error { return s.ExtendShortCues(200000*time.Hour, 0) },
-			"The retimed cue 2 would end at 720000005.1 s. Cue times must be below 100000 hours.",
+			"the retimed cue 2 would end at 720000005.1 s. Cue times must be below 100000 hours",
 		},
 		{
 			"extend beyond time.Duration", func(s *model.Subtitle) error { return s.ExtendShortCues(math.MaxInt64, 0) },
-			"The retimed cue 2 would end at 9223372041.9548 s. Cue times must be below 100000 hours.",
+			"the retimed cue 2 would end at 9223372041.9548 s. Cue times must be below 100000 hours",
 		},
 		{
 			"lead-out to the time limit", func(s *model.Subtitle) error { return s.AddLeadInOut(time.Second, 200000*time.Hour, 0) },
-			"The retimed cue 2 would end at 720000005.3 s. Cue times must be below 100000 hours.",
+			"the retimed cue 2 would end at 720000005.3 s. Cue times must be below 100000 hours",
 		},
 		{
 			"zero maximum duration", func(s *model.Subtitle) error { return s.LimitLongCues(0) },
-			"The maximum duration must be greater than 0, got 0.",
+			"the maximum duration must be greater than 0, got 0",
 		},
 		{
 			"negative maximum duration", func(s *model.Subtitle) error { return s.LimitLongCues(-7 * time.Second) },
-			"The maximum duration must be greater than 0, got -7.",
+			"the maximum duration must be greater than 0, got -7",
 		},
 	}
 	for _, tt := range tests {

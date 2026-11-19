@@ -13,9 +13,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestLastCueDuration(t *testing.T) {
@@ -77,9 +77,9 @@ func TestEndAfter(t *testing.T) {
 func TestFrameRateOption(t *testing.T) {
 	t.Parallel()
 
-	require.NoError(t, parsing.FrameRateOption(nil, "X", "The frame rate"))
-	err := parsing.FrameRateOption(model.FrameRate{Num: -1, Den: 1}.Validate(), "X", "The CSV frame rate")
-	assert.Equal(t, &model.InvalidArgumentError{Option: "X", Msg: "The CSV frame rate must be greater than 0, got -1."}, err)
+	require.NoError(t, parsing.ValidateFrameRate(model.FrameRate{}, "X", "the frame rate"))
+	err := parsing.ValidateFrameRate(model.FrameRate{Num: -1, Den: 1}, "X", "the CSV frame rate")
+	assert.Equal(t, &model.InvalidArgumentError{Option: "X", Msg: "the CSV frame rate must be greater than 0, got -1"}, err)
 }
 
 func TestEachStateStartsWithoutWarnings(t *testing.T) {
@@ -112,7 +112,7 @@ func TestFail(t *testing.T) {
 		{name: "an error of another kind passes through", err: errors.New("disk full"), line: 3, block: 1, plain: true},
 		{
 			name:    "the line argument",
-			err:     &model.ParseError{Format: model.SubRip, Line: 6, Msg: `The time "00:00:0G,000" is not valid.`},
+			err:     &model.ParseError{Format: model.SubRip, Line: 6, Msg: `the time "00:00:0G,000" is not valid`},
 			line:    6,
 			block:   1,
 			lines:   lines,
@@ -213,7 +213,7 @@ func TestFailAddsTheFormatInStrictMode(t *testing.T) {
 
 	err = parsing.NewState(model.WebVTT, model.CommonReadOptions{}).Fail(perr, 3, 1, nil)
 	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, `vtt: line 3: The time "100000:00:00.000" is not below 100000 hours.`, err.Error())
+	assert.Equal(t, `vtt: line 3: the time "100000:00:00.000" is not below 100000 hours`, err.Error())
 }
 
 func TestWarnRecordsInBothModes(t *testing.T) {
@@ -265,7 +265,7 @@ func TestOrderedTimes(t *testing.T) {
 	}{
 		{name: "in order", start: 1000 * ms, end: 2000 * ms, wantStart: 1000 * ms, wantEnd: 2000 * ms},
 		{name: "end equals start", start: 2000 * ms, end: 2000 * ms, wantStart: 2000 * ms, wantEnd: 2000 * ms},
-		{name: "strict", start: 5000 * ms, end: 3000 * ms, wantErr: "The cue ends at 3 s, before it starts at 5 s."},
+		{name: "strict", start: 5000 * ms, end: 3000 * ms, wantErr: "the cue ends at 3 s, before it starts at 5 s"},
 		{
 			name: "lenient swaps", start: 5000 * ms, end: 3000 * ms, lenient: true, wantStart: 3000 * ms, wantEnd: 5000 * ms,
 			warning: "The cue ends at 3 s, before it starts at 5 s. The parser swapped the times.",
@@ -274,9 +274,9 @@ func TestOrderedTimes(t *testing.T) {
 			name: "lenient swaps at 30 s", start: 31500 * ms, end: 1500 * ms, lenient: true, wantStart: 1500 * ms, wantEnd: 31500 * ms,
 			warning: "The cue ends at 1.5 s, before it starts at 31.5 s. The parser swapped the times.",
 		},
-		{name: "lenient fails at 30.001 s", start: 30001 * ms, end: 0, lenient: true, wantErr: "The cue ends at 0 s, before it starts at 30.001 s."},
-		{name: "lenient without swap", start: 5000 * ms, end: 3000 * ms, lenient: true, noSwap: true, wantErr: "The cue ends at 3 s, before it starts at 5 s."},
-		{name: "fractions", start: 2 * ms, end: ms, wantErr: "The cue ends at 0.001 s, before it starts at 0.002 s."},
+		{name: "lenient fails at 30.001 s", start: 30001 * ms, end: 0, lenient: true, wantErr: "the cue ends at 0 s, before it starts at 30.001 s"},
+		{name: "lenient without swap", start: 5000 * ms, end: 3000 * ms, lenient: true, noSwap: true, wantErr: "the cue ends at 3 s, before it starts at 5 s"},
+		{name: "fractions", start: 2 * ms, end: ms, wantErr: "the cue ends at 0.001 s, before it starts at 0.002 s"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -315,8 +315,8 @@ func TestBoundedTime(t *testing.T) {
 	}{
 		{name: "0", d: 0, text: "00:00:00,000"},
 		{name: "99999:59:59.999", d: below, text: "99999:59:59.999"},
-		{name: "100000:00:00.000", d: timecode.MaxTime, text: "100000:00:00.000", wantErr: `The time "100000:00:00.000" is not below 100000 hours.`},
-		{name: "20 hour digits", d: timecode.MaxTime, text: "99999999999999999999:00:04.000", wantErr: `The time "99999999999999999999:00:04.000" is not below 100000 hours.`},
+		{name: "100000:00:00.000", d: timecode.MaxTime, text: "100000:00:00.000", wantErr: `the time "100000:00:00.000" is not below 100000 hours`},
+		{name: "20 hour digits", d: timecode.MaxTime, text: "99999999999999999999:00:04.000", wantErr: `the time "99999999999999999999:00:04.000" is not below 100000 hours`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -345,7 +345,7 @@ func TestBoundedField(t *testing.T) {
 	_, err = parsing.BoundedField(timecode.MaxTime, "cues[1].start")
 	var perr *model.ParseError
 	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, model.ParseError{Msg: "The field cues[1].start is not below 100000 hours."}, *perr)
+	assert.Equal(t, model.ParseError{Msg: "the field cues[1].start is not below 100000 hours"}, *perr)
 }
 
 func TestCheckWordTimestamps(t *testing.T) {
@@ -363,17 +363,17 @@ func TestCheckWordTimestamps(t *testing.T) {
 		{
 			name:    "100000 hours",
 			lines:   []string{"The pool", "opens <100000:00:00.000>at seven."},
-			wantErr: `The time "100000:00:00.000" is not below 100000 hours.`,
+			wantErr: `the time "100000:00:00.000" is not below 100000 hours`,
 		},
 		{
 			name:    "20 hour digits",
 			lines:   []string{"The pool opens <00:00:02.000>at <99999999999999999999:00:05.000>seven."},
-			wantErr: `The time "99999999999999999999:00:05.000" is not below 100000 hours.`,
+			wantErr: `the time "99999999999999999999:00:05.000" is not below 100000 hours`,
 		},
 		{
 			name:    "the first bad timestamp",
 			lines:   []string{"<100001:00:00.000>The <100000:00:00.000>pool"},
-			wantErr: `The time "100001:00:00.000" is not below 100000 hours.`,
+			wantErr: `the time "100001:00:00.000" is not below 100000 hours`,
 		},
 	}
 	for _, tt := range tests {
@@ -489,7 +489,7 @@ func TestAddParsed(t *testing.T) {
 			t.Parallel()
 
 			sub := &model.Subtitle{}
-			parsing.AddParsed(sub, tt.cues, tt.comments)
+			require.NoError(t, parsing.AddParsed(sub, tt.cues, tt.comments))
 			var texts []string
 			for _, c := range sub.All() {
 				texts = append(texts, c.Text())

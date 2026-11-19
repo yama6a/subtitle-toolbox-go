@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const benchCues = 20000
@@ -17,7 +17,9 @@ func benchSubtitle() *model.Subtitle {
 	s := &model.Subtitle{}
 	for i := range benchCues {
 		start := time.Duration(i) * 2 * time.Second
-		s.AddCue(model.Cue{Start: start, End: start + 1500*time.Millisecond, Lines: []string{fmt.Sprintf("Cue number %d", i), "<i>on two lines</i>"}})
+		if err := s.AddCue(model.Cue{Start: start, End: start + 1500*time.Millisecond, Lines: []string{fmt.Sprintf("Cue number %d", i), "<i>on two lines</i>"}}); err != nil {
+			panic(err)
+		}
 	}
 	return s
 }

@@ -6,7 +6,7 @@ package ebustl
 import (
 	"bytes"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const formatDataKey = string(model.EBUSTL)
@@ -40,7 +40,7 @@ func (o WriteOptions) Validate() error {
 	}
 	return &model.InvalidArgumentError{
 		Option: writeFrameRateOption,
-		Msg:    "The EBU STL formatter writes 25 or 30 fps, got " + o.FrameRate.String() + ".",
+		Msg:    "the EBU STL formatter writes 25 or 30 fps, got " + o.FrameRate.String(),
 	}
 }
 

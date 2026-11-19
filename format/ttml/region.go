@@ -4,10 +4,10 @@ import (
 	"math"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/ttmldoc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/position"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/position"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/ttmldoc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // alignment returns the alignment of a region and a text alignment. Start and end depend on the text direction,

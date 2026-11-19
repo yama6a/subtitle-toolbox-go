@@ -3,7 +3,7 @@ package itt
 import (
 	"errors"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // ErrNeedsFrameRate matches the error of a write that has no frame rate in WriteOptions.FrameRate and none stored

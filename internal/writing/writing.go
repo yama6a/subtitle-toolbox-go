@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Finish converts the LF output of a writer to the line ending and then applies the BOM rule.
@@ -102,7 +102,7 @@ func SkipImageCues(s *model.Subtitle, f model.Format, common model.CommonWriteOp
 func ImageCueError(f model.Format, index int) *model.UnwritableError {
 	return &model.UnwritableError{
 		Format: f, CueIndex: index,
-		Reason: "Cue #" + strconv.Itoa(index) + " holds an image but no text, and " + string(f) + " needs text.",
+		Reason: "cue #" + strconv.Itoa(index) + " holds an image but no text, and " + string(f) + " needs text",
 	}
 }
 

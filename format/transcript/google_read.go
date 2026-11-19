@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const googleKey = string(model.GoogleSpeech)
@@ -33,7 +33,7 @@ func ReadGoogleSpeech(r io.Reader, common model.CommonReadOptions, opts ReadOpti
 	}
 	list := cloudGet(response, "results")
 	if list.Kind() != orderedjson.Array {
-		return nil, nil, &model.ParseError{Format: model.GoogleSpeech, Msg: `The JSON has no "results" list.`}
+		return nil, nil, &model.ParseError{Format: model.GoogleSpeech, Msg: `the JSON has no "results" list`}
 	}
 	results := list.Items()
 	rd := &googleReader{st: st, cues: wordgroup.NewReader(st, wordgroup.Options{
@@ -292,5 +292,5 @@ func googleFirstAlternative(result orderedjson.Value, path string) (orderedjson.
 		}
 	case orderedjson.Bool, orderedjson.Number, orderedjson.String:
 	}
-	return orderedjson.Value{}, &model.ParseError{Msg: "The field " + path + ".alternatives must be a list of objects."}
+	return orderedjson.Value{}, &model.ParseError{Msg: "the field " + path + ".alternatives must be a list of objects"}
 }

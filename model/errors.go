@@ -10,10 +10,12 @@ import (
 var (
 	ErrParse             = errors.New("stbox: cannot parse the content")
 	ErrUnsupportedFormat = errors.New("stbox: unsupported format")
-	ErrUnknownFormat     = fmt.Errorf("%w: no format detected", ErrUnsupportedFormat)
-	ErrInvalidArgument   = errors.New("stbox: invalid argument")
-	ErrCueNotFound       = errors.New("stbox: cue not found")
-	ErrUnwritable        = errors.New("stbox: the format cannot hold the content")
+	// ErrNoFormatDetected is the error of a read without a format when neither detection nor the file
+	// extension finds one. It also matches ErrUnsupportedFormat.
+	ErrNoFormatDetected = fmt.Errorf("%w: no format detected", ErrUnsupportedFormat)
+	ErrInvalidArgument  = errors.New("stbox: invalid argument")
+	ErrCueNotFound      = errors.New("stbox: cue not found")
+	ErrUnwritable       = errors.New("stbox: the format cannot hold the content")
 	// ErrInvalidUTF8 is the Err of an *UnwritableError for text that is not valid UTF-8. Read the input again
 	// with its source encoding first.
 	ErrInvalidUTF8 = errors.New("stbox: text is not valid UTF-8")
@@ -40,7 +42,7 @@ type ParseError struct {
 	Err error
 }
 
-// Error returns the format, the line and the message, for example "srt: line 6: Block #1 has no timing line ...".
+// Error returns the format, the line and the message, for example "srt: line 6: block #1 has no timing line".
 func (e *ParseError) Error() string {
 	s := prefix(e.Format)
 	if e.Line > 0 {
@@ -67,7 +69,7 @@ type UnwritableError struct {
 	Err error
 }
 
-// Error returns the format and the reason, for example "sami: The output cannot hold text that is not valid UTF-8. ...".
+// Error returns the format and the reason, for example "sami: the output cannot hold text that is not valid UTF-8. ...".
 func (e *UnwritableError) Error() string {
 	return prefix(e.Format) + message(e.Reason, e.Err)
 }
@@ -86,7 +88,7 @@ type InvalidArgumentError struct {
 	Msg string
 }
 
-// Error returns the option and the message, for example "stbox: invalid argument: WriteOptions.MicroDVD.FrameRate: ...".
+// Error returns the option and the message, for example "stbox: invalid argument: WriteOptions.MicroDVD.FrameRate: the frame rate must be greater than 0, got 0".
 func (e *InvalidArgumentError) Error() string {
 	s := ErrInvalidArgument.Error() + ": "
 	if e.Option != "" {

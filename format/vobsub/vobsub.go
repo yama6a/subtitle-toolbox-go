@@ -11,11 +11,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap/dvdsub"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap/dvdsub"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
+
+// WriteOptions holds the settings of a VobSub writer. VobSub has no writer, so it has no fields.
+type WriteOptions struct{}
+
+// WriteReport holds what a VobSub writer reports. VobSub has no writer, so it has no fields.
+type WriteReport struct{}
 
 // ReadOptions holds the settings of the VobSub reader.
 type ReadOptions struct {
@@ -33,11 +39,11 @@ func (o ReadOptions) Validate() error {
 	if o.Index != nil && *o.Index < 0 {
 		return &model.InvalidArgumentError{
 			Option: "ReadOptions.VobSub.Index",
-			Msg:    "The track index must be 0 or more, got " + strconv.Itoa(*o.Index) + ".",
+			Msg:    "the track index must be 0 or more, got " + strconv.Itoa(*o.Index),
 		}
 	}
 	if o.Language != "" && strings.Trim(o.Language, markupcore.TrimSet) == "" {
-		return &model.InvalidArgumentError{Option: "ReadOptions.VobSub.Language", Msg: "The language must not be empty."}
+		return &model.InvalidArgumentError{Option: "ReadOptions.VobSub.Language", Msg: "the language must not be empty"}
 	}
 	return nil
 }
@@ -53,7 +59,7 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if opts.IDX == "" {
 		return nil, nil, &model.InvalidArgumentError{
 			Option: "ReadOptions.VobSub.IDX",
-			Msg:    "VobSub needs the .idx content. Set ReadOptions.VobSub.IDX.",
+			Msg:    "VobSub needs the .idx content. Set ReadOptions.VobSub.IDX",
 		}
 	}
 	sub, err := io.ReadAll(r)
@@ -74,12 +80,16 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if err != nil {
 		return nil, nil, err
 	}
-	return subtitleOf(st, track, units), st.Warnings(), nil
+	s, err := subtitleOf(st, track, units)
+	if err != nil {
+		return nil, nil, err
+	}
+	return s, st.Warnings(), nil
 }
 
 // subtitleOf returns the image cues of units. A unit without an image adds no cue but still ends the cue before it.
 // A cue never ends before it starts, which a stop delay below the start delay or a later unit with an earlier start would cause.
-func subtitleOf(st *parsing.State, track dvdsub.Track, units []entryUnit) *model.Subtitle {
+func subtitleOf(st *parsing.State, track dvdsub.Track, units []entryUnit) (*model.Subtitle, error) {
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataLanguage, track.ID)
 	for i, eu := range units {
@@ -90,9 +100,11 @@ func subtitleOf(st *parsing.State, track dvdsub.Track, units []entryUnit) *model
 		if i+1 < len(units) {
 			end = min(end, units[i+1].start)
 		}
-		s.AddCue(eu.unit.Cue(eu.time, end))
+		if err := s.AddCue(eu.unit.Cue(eu.time, end)); err != nil {
+			return nil, err
+		}
 	}
-	return s
+	return s, nil
 }
 
 // readUnits decodes the unit of each entry of track. A broken unit fails a strict read, and a lenient read skips it
@@ -133,16 +145,16 @@ func selectTrack(ix dvdsub.Index, opts ReadOptions) (dvdsub.Track, error) {
 		wanted = append(wanted, `language "`+opts.Language+`"`)
 	}
 	if len(wanted) == 0 {
-		return dvdsub.Track{}, &model.ParseError{Format: model.VobSub, Msg: `The .idx content has no "id:" line.`}
+		return dvdsub.Track{}, &model.ParseError{Format: model.VobSub, Msg: `the .idx content has no "id:" line`}
 	}
-	return dvdsub.Track{}, &model.ParseError{Format: model.VobSub, Msg: "The .idx content has no track with " + strings.Join(wanted, " and ") + "."}
+	return dvdsub.Track{}, &model.ParseError{Format: model.VobSub, Msg: "the .idx content has no track with " + strings.Join(wanted, " and ")}
 }
 
 // readEntry reads and decodes the unit at the file position of e. Every error is a *model.ParseError.
 func readEntry(sub []byte, e dvdsub.Entry, track int, ix dvdsub.Index) (dvdsub.Unit, error) {
 	if e.FilePos >= int64(len(sub)) {
 		return dvdsub.Unit{}, &model.ParseError{Format: model.VobSub, Msg: fmt.Sprintf(
-			"The filepos %09x of timestamp %.3f is outside the .sub content of %d bytes.", e.FilePos, e.Time.Seconds(), len(sub))}
+			"the filepos %09x of timestamp %.3f is outside the .sub content of %d bytes", e.FilePos, e.Time.Seconds(), len(sub))}
 	}
 	data, err := dvdsub.ReadUnit(sub, e.FilePos, track)
 	if err != nil {

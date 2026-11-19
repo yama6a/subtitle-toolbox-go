@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"image"
+	"image/color"
 	"io/fs"
 	"net/http"
 	"net/http/httptest"
@@ -14,20 +16,20 @@ import (
 	"strings"
 	"time"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/diff"
-	"github.com/yama6a/subtitle-toolbox-go/v4/dual"
-	"github.com/yama6a/subtitle-toolbox-go/v4/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/hearingimpaired"
-	"github.com/yama6a/subtitle-toolbox-go/v4/ocr"
-	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/glyph"
-	"github.com/yama6a/subtitle-toolbox-go/v4/refsync"
-	"github.com/yama6a/subtitle-toolbox-go/v4/resegment"
-	"github.com/yama6a/subtitle-toolbox-go/v4/stats"
-	"github.com/yama6a/subtitle-toolbox-go/v4/translation"
-	"github.com/yama6a/subtitle-toolbox-go/v4/translation/deepl"
-	"github.com/yama6a/subtitle-toolbox-go/v4/validation"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/dual"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/hearingimpaired"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr/glyph"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/refsync"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/resegment"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/translation/deepl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/diff"
+	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/stats"
+	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/validation"
 )
 
 func ExampleLoad() {
@@ -72,10 +74,12 @@ func ExampleParse() {
 
 func ExampleWrite() {
 	s := &stbox.Subtitle{}
-	s.AddCues(
+	if err := s.AddCues(
 		stbox.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"<i>Fish &amp; Chips</i>"}},
 		stbox.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"<c.yellow>Now</c> open"}, Position: stbox.Position{Alignment: stbox.TopCenter}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	_, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stbox.BOMRemove})
 	if err != nil {
 		fmt.Println(err)
@@ -442,7 +446,7 @@ func ExampleLoad_ocr() {
 		fmt.Println(err)
 		return
 	}
-	if _, err := ocr.Run(context.Background(), s, engine, ocr.English); err != nil {
+	if _, err := ocr.Apply(context.Background(), s, engine, ocr.English); err != nil {
 		fmt.Println(err)
 		return
 	}
@@ -563,7 +567,7 @@ func ExampleLoad_translate() {
 		fmt.Println(err)
 		return
 	}
-	if _, err := translation.Translate(context.Background(), s, engine, "en", "de", translation.Options{}); err != nil {
+	if _, err := translation.Apply(context.Background(), s, engine, "en", "de", translation.Options{}); err != nil {
 		fmt.Println(err)
 		return
 	}
@@ -648,7 +652,7 @@ func ExampleDetect_folder() {
 		fmt.Println(err)
 	}
 	// Output:
-	// SOURCES.md skipped: stbox: unsupported format: no format detected: Format detection found no subtitle format.
+	// SOURCES.md skipped: stbox: unsupported format: no format detected: format detection found no subtitle format
 	// station_de.srt                 srt  6 cues, 32 words, 31.5 characters per line
 	// station_en.srt                 srt  5 cues, 35 words, 30.0 characters per line
 	// station_stack.ass              ass  6 cues, 67 words, 30.8 characters per line
@@ -662,10 +666,12 @@ func ExampleDetect_folder() {
 
 func ExampleSubtitle_fromScratch() {
 	s := &stbox.Subtitle{}
-	s.AddCues(
+	if err := s.AddCues(
 		stbox.Cue{Start: 2 * time.Second, End: 5 * time.Second, Lines: []string{"Welcome to the harbour tour."}},
 		stbox.Cue{Start: 5500 * time.Millisecond, End: 9 * time.Second, Lines: []string{"Our first stop is the", "old lighthouse."}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stbox.BOMRemove}); err != nil {
 		fmt.Println(err)
 	}
@@ -839,7 +845,7 @@ func ExampleParse_error() {
 	// Output:
 	// srt 6
 	// true
-	// srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:05,000 => 00:00:07,000".
+	// srt: line 6: block #1 has no timing line on its second line. The line is "00:00:05,000 => 00:00:07,000"
 }
 
 func ExampleWrite_lineEnding() {
@@ -890,7 +896,7 @@ func ExampleReadOptions_Validate() {
 	fmt.Println(err)
 	// Output:
 	// true
-	// stbox: invalid argument: ReadOptions.LastCueDuration: The last cue duration must be 0 or more, got -1s.
+	// stbox: invalid argument: ReadOptions.LastCueDuration: the last cue duration must be 0 or more, got -1s
 }
 
 func ExampleFormatFromPath() {
@@ -949,4 +955,35 @@ func ExampleFormats() {
 	// podcast-chapters [json]
 	// podcast-transcript [json]
 	// youtube-chapters [txt]
+}
+
+func ExampleNewImage() {
+	img := image.NewNRGBA(image.Rect(0, 0, 4, 2))
+	im, err := stbox.NewImage(img, 100, 900, 1920, 1080)
+	fmt.Println(im.X, im.Y, im.Width, im.Height, im.ScreenWidth, im.ScreenHeight, err)
+	// Output: 100 900 4 2 1920 1080 <nil>
+}
+
+func ExampleEncodePNG() {
+	img := image.NewNRGBA(image.Rect(0, 0, 1, 1))
+	img.SetNRGBA(0, 0, color.NRGBA{R: 255, A: 128})
+	data, err := stbox.EncodePNG(img)
+	fmt.Println(string(data[1:4]), err)
+	// Output: PNG <nil>
+}
+
+func ExampleDecodePNG() {
+	img := image.NewNRGBA(image.Rect(0, 0, 1, 1))
+	img.SetNRGBA(0, 0, color.NRGBA{R: 255, G: 128, B: 1, A: 64})
+	data, _ := stbox.EncodePNG(img)
+	got, err := stbox.DecodePNG(data)
+	fmt.Println(got.NRGBAAt(0, 0), err)
+	// Output: {255 128 1 64} <nil>
+}
+
+func ExampleDecodeImage() {
+	im, _ := stbox.NewImage(image.NewNRGBA(image.Rect(0, 0, 3, 2)), 0, 0, 720, 576)
+	got, err := stbox.DecodeImage(im)
+	fmt.Println(got.Bounds().Dx(), got.Bounds().Dy(), err)
+	// Output: 3 2 <nil>
 }

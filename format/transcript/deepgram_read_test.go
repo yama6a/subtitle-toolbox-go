@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 var deepgramFormat = cloudFormat{folder: "deepgram", read: transcript.ReadDeepgram, write: transcript.WriteDeepgram}
@@ -117,36 +117,36 @@ func TestReadDeepgramErrors(t *testing.T) {
 	words := func(list string) string {
 		return `{"results": {"channels": [{"alternatives": [{"words": [` + list + `]}]}]}}`
 	}
-	prefix := "The field results.channels[0].alternatives[0].words[0]"
+	prefix := "the field results.channels[0].alternatives[0].words[0]"
 	deepgramFormat.testBroken(t, []cloudBroken{
 		{
 			"end", words(`{"word": "hi", "start": 0}, {"word": "there", "start": 1, "end": 2}`),
-			prefix + ".end must be a time.",
+			prefix + ".end must be a time",
 			[]string{"1-2 there"},
 			0,
 		},
 		{
 			"start", words(`{"word": "hi", "start": "x", "end": 1}, {"word": "there", "start": 1, "end": 2}`),
-			prefix + ".start must be a time.",
+			prefix + ".start must be a time",
 			[]string{"1-2 there"},
 			0,
 		},
 		{
 			"text", words(`{"word": 5, "start": 0, "end": 1}, {"word": "there", "start": 1, "end": 2}`),
-			prefix + ".word must be a string.",
+			prefix + ".word must be a string",
 			[]string{"1-2 there"},
 			0,
 		},
 		{
 			"punctuated text", words(`{"word": "x", "punctuated_word": 5, "start": 0, "end": 1}, {"word": "there", "start": 1, "end": 2}`),
-			prefix + ".punctuated_word must be a string.",
+			prefix + ".punctuated_word must be a string",
 			[]string{"1-2 there"},
 			0,
 		},
 		{
 			"utterance",
 			`{"results": {"channels": [], "utterances": [{"start": 0, "transcript": "Hi"}, {"start": 1, "end": 2, "transcript": "Bye"}]}}`,
-			"The field results.utterances[0].end must be a time.",
+			"the field results.utterances[0].end must be a time",
 			[]string{"1-2 Bye"},
 			0,
 		},
@@ -156,7 +156,7 @@ func TestReadDeepgramErrors(t *testing.T) {
 		_, _, err := transcript.ReadDeepgram(strings.NewReader(content), model.CommonReadOptions{Lenient: true}, transcript.ReadOptions{})
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr, content)
-		assert.Equal(t, `The JSON has no "results.channels" list.`, perr.Msg)
+		assert.Equal(t, `the JSON has no "results.channels" list`, perr.Msg)
 	}
 }
 

@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 var (
@@ -117,7 +117,9 @@ func (rd *reader) read(s *model.Subtitle) error {
 	if err != nil {
 		return err
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return err
+	}
 	return rd.st.NoCues(len(cues), rd.textLine)
 }
 
@@ -240,7 +242,7 @@ func (rd *reader) syncBlock(chunk string, index, line int) (syncBlock, bool, err
 		m = startRegexp.FindStringSubmatch(tag)
 	}
 	if m == nil {
-		err := &model.ParseError{Line: line, Msg: "SYNC tag " + strconv.Itoa(index+1) + " has no valid Start attribute."}
+		err := &model.ParseError{Line: line, Msg: "SYNC tag " + strconv.Itoa(index+1) + " has no valid Start attribute"}
 		return syncBlock{}, false, rd.st.Fail(err, line, index, lines())
 	}
 	start, negative, err := startTime(m[1], line)
@@ -301,7 +303,7 @@ func optionClass(want string, classes styleClasses, used names) (string, bool, e
 	if name, ok := used.written[key]; ok {
 		return name, true, nil
 	}
-	return "", false, &model.ParseError{Format: model.SAMI, Msg: "The SAMI file has no class " + want + "."}
+	return "", false, &model.ParseError{Format: model.SAMI, Msg: "the SAMI file has no class " + want}
 }
 
 // chooseDefaultClass picks the class without the option. False for matched means that no <P> class is in STYLE.

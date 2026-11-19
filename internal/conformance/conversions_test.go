@@ -12,13 +12,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 )
 
 type structureTextCase struct {
@@ -194,11 +194,11 @@ func TestWriteCueTextThatReadsAsStructure(t *testing.T) {
 				t.Parallel()
 
 				s := &stbox.Subtitle{}
-				s.AddCues(
+				require.NoError(t, s.AddCues(
 					stbox.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"A"}},
 					stbox.Cue{Start: 3 * time.Second, End: 4 * time.Second, Lines: tt.lines},
 					stbox.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"C"}},
-				)
+				))
 				var out bytes.Buffer
 				_, err := stbox.Write(&out, s, w.format, w.opts)
 				require.NoError(t, err)
@@ -246,7 +246,7 @@ func TestOffsetRoundTrip(t *testing.T) {
 			c := stbox.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"One"}}
 			c.Position = stbox.Position{Alignment: tt.alignment, Offset: &tt.offset}
 			s := &stbox.Subtitle{}
-			s.AddCues(c)
+			require.NoError(t, s.AddCues(c))
 
 			var out bytes.Buffer
 			_, err := stbox.Write(&out, s, tt.format, stbox.WriteOptions{})

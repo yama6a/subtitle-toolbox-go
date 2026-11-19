@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleRead() {
@@ -27,10 +27,12 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>Where are you?", "Home.</i>"}},
 		model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{"Fish &amp; Chips"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	_, err := microdvd.Write(os.Stdout, s, model.CommonWriteOptions{}, microdvd.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 125}, WriteFrameRateLine: true})
 	if err != nil {
 		fmt.Println(err)
@@ -52,7 +54,7 @@ func ExampleDetect() {
 func ExampleReadOptions_Validate() {
 	fmt.Println(microdvd.ReadOptions{FrameRate: model.FrameRate{Num: -1, Den: 1}}.Validate())
 	// Output:
-	// stbox: invalid argument: ReadOptions.MicroDVD.FrameRate: The frame rate must be greater than 0, got -1.
+	// stbox: invalid argument: ReadOptions.MicroDVD.FrameRate: the frame rate must be greater than 0, got -1
 }
 
 func ExampleWriteOptions_Validate() {

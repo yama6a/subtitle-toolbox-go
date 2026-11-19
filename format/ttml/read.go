@@ -11,12 +11,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/ttmldoc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/ttmldoc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 //nolint:gochecknoglobals // the timing attributes of TTML
@@ -110,7 +110,7 @@ func (r *reader) read(content string, s *model.Subtitle) error {
 	r.root, _ = doc.Root()
 	r.ns = r.root.NamespaceURI()
 	if ttmldoc.LocalName(r.root) != "tt" || !slices.Contains([]string{ttmldoc.NSTTML, ttmldoc.NSDFXP, ttmldoc.NSDFXP200604, ""}, r.ns) {
-		return r.parseError(model.NoLine, "The root element is not a TTML <tt> element.")
+		return r.parseError(model.NoLine, "the root element is not a TTML <tt> element")
 	}
 	if r.clock, err = r.readClock(); err != nil {
 		return err
@@ -197,20 +197,20 @@ func (r *reader) guessFrameRate() (float64, bool, error) {
 	if label == 0 {
 		return 30, false, nil
 	}
-	msg := "The frame label " + strconv.FormatInt(label, 10) + " in \"" + expression +
-		"\" is not below the default frame rate of 30, and the file has no ttp:frameRate."
+	msg := "the frame label " + strconv.FormatInt(label, 10) + " in \"" + expression +
+		"\" is not below the default frame rate of 30, and the file has no ttp:frameRate"
 	if !r.st.Lenient() {
 		return 0, false, r.parseError(line, msg)
 	}
 	if label >= 60 {
-		r.st.Warn(msg+" The parser read the last field as hundredths of a second.", line, model.NoBlock, nil, model.Repaired)
+		r.st.Warn(parsing.Sentence(msg)+" The parser read the last field as hundredths of a second.", line, model.NoBlock, nil, model.Repaired)
 		return 30, true, nil
 	}
 	guess := 60
 	if label < 50 {
 		guess = 50
 	}
-	r.st.Warn(msg+" The parser read the frames at "+strconv.Itoa(guess)+" fps.", line, model.NoBlock, nil, model.Repaired)
+	r.st.Warn(parsing.Sentence(msg)+" The parser read the frames at "+strconv.Itoa(guess)+" fps.", line, model.NoBlock, nil, model.Repaired)
 	return float64(guess), false, nil
 }
 
@@ -272,7 +272,7 @@ func (r *reader) readContainer(container *xmlraw.Node, parent scope, divAttribut
 			return err
 		}
 		iv = parent.interval
-		r.st.Warn(err.Msg+" The parser ignored the timing of the "+ttmldoc.LocalName(container)+".", container.Line, model.NoBlock, nil, model.Repaired)
+		r.st.Warn(parsing.Sentence(err.Msg)+" The parser ignored the timing of the "+ttmldoc.LocalName(container)+".", container.Line, model.NoBlock, nil, model.Repaired)
 	}
 	sc := r.containerScope(container, parent, iv)
 	if ttmldoc.IsElement(container, r.ns, "div") {
@@ -385,7 +385,7 @@ func (r *reader) paragraphInterval(p *xmlraw.Node, sc scope) (interval, *model.P
 // absoluteInterval reads the times of a paragraph without the offset of its parent. Some files give the times of a
 // paragraph in a timed div as absolute times, so the paragraph begins after the div ends.
 func (r *reader) absoluteInterval(p *xmlraw.Node, begin, parentEnd float64) (interval, *model.ParseError) {
-	msg := "The paragraph begins at " + timecode.Number(round3(begin)) + "s, but its parent ends at " + timecode.Number(round3(parentEnd)) + "s."
+	msg := "the paragraph begins at " + timecode.Number(round3(begin)) + "s, but its parent ends at " + timecode.Number(round3(parentEnd)) + "s"
 	absolute := interval{}
 	if _, ok := ttmldoc.PlainAttr(p, "begin"); ok {
 		var err *model.ParseError
@@ -396,7 +396,7 @@ func (r *reader) absoluteInterval(p *xmlraw.Node, begin, parentEnd float64) (int
 	if !r.st.Lenient() || !absolute.hasEnd || absolute.end <= absolute.begin {
 		return interval{}, r.parseError(p.Line, msg)
 	}
-	r.st.Warn(msg+" The parser read its times as absolute: "+timecode.Number(round3(absolute.begin))+"s to "+
+	r.st.Warn(parsing.Sentence(msg)+" The parser read its times as absolute: "+timecode.Number(round3(absolute.begin))+"s to "+
 		timecode.Number(round3(absolute.end))+"s.", p.Line, r.paragraph, xmlLines(p), model.Repaired)
 	return absolute, nil
 }
@@ -495,7 +495,7 @@ func (r *reader) paragraphEnd(p *xmlraw.Node, iv interval, runs []run) (interval
 		return spans, false, nil
 	}
 	if !r.st.Lenient() {
-		return interval{}, false, r.parseError(p.Line, "The paragraph that begins at "+timecode.Number(iv.begin)+"s has no end time.")
+		return interval{}, false, r.parseError(p.Line, "the paragraph that begins at "+timecode.Number(iv.begin)+"s has no end time")
 	}
 	return interval{begin: iv.begin, end: iv.begin, hasEnd: true}, true, nil
 }
@@ -670,7 +670,7 @@ func (r *reader) endOpenParagraphs(begin time.Duration) {
 func (r *reader) addCues(s *model.Subtitle) error {
 	for _, open := range r.open {
 		r.removed[open.cue] = true
-		msg := "The paragraph that begins at " + timecode.Seconds(r.cues[open.cue].Start) + "s has no end time."
+		msg := "the paragraph that begins at " + timecode.Seconds(r.cues[open.cue].Start) + "s has no end time"
 		if err := r.st.Fail(r.parseError(open.line, msg), open.line, open.paragraph, open.lines); err != nil {
 			return err
 		}
@@ -684,7 +684,9 @@ func (r *reader) addCues(s *model.Subtitle) error {
 	for i := range cues {
 		cues[i].ExtractWordTags()
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return err
+	}
 	return nil
 }
 

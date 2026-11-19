@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -67,8 +67,8 @@ func ReadUnit(sub []byte, filePos int64, track int) ([]byte, error) {
 // streamCode returns the stream code of the packet at position, which needs a start code and 6 header bytes.
 func streamCode(sub []byte, position int, filePos int64) (byte, error) {
 	if position+pesHeaderSize > len(sub) || string(sub[position:position+3]) != mpegStartCode {
-		return 0, parseError(fmt.Sprintf("The .sub content has no complete subtitle packet at filepos %09x. "+
-			"It ends or has no MPEG start code at byte %d.", filePos, position))
+		return 0, parseError(fmt.Sprintf("the .sub content has no complete subtitle packet at filepos %09x. "+
+			"It ends or has no MPEG start code at byte %d", filePos, position))
 	}
 	return sub[position+3], nil
 }
@@ -76,7 +76,7 @@ func streamCode(sub []byte, position int, filePos int64) (byte, error) {
 // skipPack returns the position after the pack header at position.
 func skipPack(sub []byte, position int) (int, error) {
 	if position+packHeaderSize > len(sub) || sub[position+4]&mpeg2MarkerMask != mpeg2Marker {
-		return 0, parseError("The .sub content has no MPEG-2 pack header at byte " + strconv.Itoa(position) + ".")
+		return 0, parseError("the .sub content has no MPEG-2 pack header at byte " + strconv.Itoa(position))
 	}
 	return position + packHeaderSize + int(sub[position+packStuffingOffset]&packStuffingMask), nil
 }
@@ -85,12 +85,12 @@ func skipPack(sub []byte, position int) (int, error) {
 // the program end, is an error, because the unit is not complete.
 func packetEnd(sub []byte, position int, code byte, filePos int64) (int, error) {
 	if code < firstStream {
-		return 0, parseError(fmt.Sprintf("The .sub content ends at byte %d before the subtitle packet at filepos %09x is complete.",
+		return 0, parseError(fmt.Sprintf("the .sub content ends at byte %d before the subtitle packet at filepos %09x is complete",
 			position, filePos))
 	}
 	end := position + pesHeaderSize + int(binary.BigEndian.Uint16(sub[position+4:]))
 	if end > len(sub) {
-		return 0, parseError("The .sub packet at byte " + strconv.Itoa(position) + " is longer than the content.")
+		return 0, parseError("the .sub packet at byte " + strconv.Itoa(position) + " is longer than the content")
 	}
 	return end, nil
 }
@@ -199,7 +199,7 @@ func (d *decoder) runSequences() error {
 		sequence = int(binary.BigEndian.Uint16(d.unit[2:]))
 	}
 	if sequence < 4 || sequence+4 > size {
-		return parseError("The subtitle packet of " + strconv.Itoa(size) + " bytes has no valid control sequence offset.")
+		return parseError("the subtitle packet of " + strconv.Itoa(size) + " bytes has no valid control sequence offset")
 	}
 	for {
 		delay := int64(binary.BigEndian.Uint16(d.unit[sequence:]))
@@ -233,7 +233,7 @@ func (d *decoder) runSequence(position int, delay time.Duration) error {
 		}
 		argSize := argumentSize(command)
 		if position+argSize > size {
-			return parseError(fmt.Sprintf("The subtitle packet ends inside command %02x.", command))
+			return parseError(fmt.Sprintf("the subtitle packet ends inside command %02x", command))
 		}
 		if command == cmdColorChange {
 			argSize = size
@@ -311,7 +311,7 @@ func (d *decoder) decodeImage(colors [4]uint32, ix Index) (*model.Image, error) 
 	x, y := d.area[0], d.area[2]
 	width, height := d.area[1]-x+1, d.area[3]-y+1
 	if reason := bitmap.SizeLimit(width, height); reason != "" {
-		return nil, parseError("Cannot read the subtitle packet: " + reason)
+		return nil, parseError("cannot read the subtitle packet: " + reason)
 	}
 	pixels := make([]uint32, width*height)
 	for i := range pixels {
@@ -360,7 +360,7 @@ func (d *decoder) readCode(nibble *int, row int) (int, error) {
 	code := 0
 	for _, limit := range [...]int{0x4, 0x10, 0x40, 0x100} {
 		if *nibble >= len(d.unit)*2 {
-			return 0, parseError("The bitmap of the subtitle packet ends before line " + strconv.Itoa(row) + " is complete.")
+			return 0, parseError("the bitmap of the subtitle packet ends before line " + strconv.Itoa(row) + " is complete")
 		}
 		b := int(d.unit[*nibble>>1])
 		if *nibble&1 == 0 {

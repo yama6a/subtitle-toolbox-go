@@ -9,13 +9,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const bom = "\ufeff"
@@ -164,8 +164,8 @@ func TestWriteRejectedStoredValueKeepsTheTable(t *testing.T) {
 	t.Parallel()
 
 	for _, field := range []struct{ key, value, msg string }{
-		{"timeFormat", "hh:mm:ss;fff", `The field formatData.csv.timeFormat must be one of "seconds", "hh:mm:ss.mmm", "hh:mm:ss,mmm", "hh:mm:ss:ff", "milliseconds".`},
-		{"delimiter", "|", `The field formatData.csv.delimiter must be one of ",", ";", "\t".`},
+		{"timeFormat", "hh:mm:ss;fff", `the field formatData.csv.timeFormat must be one of "seconds", "hh:mm:ss.mmm", "hh:mm:ss,mmm", "hh:mm:ss:ff", "milliseconds"`},
+		{"delimiter", "|", `the field formatData.csv.delimiter must be one of ",", ";", "\t"`},
 	} {
 		t.Run(field.key, func(t *testing.T) {
 			t.Parallel()
@@ -277,7 +277,7 @@ func TestWriteBilingualTable(t *testing.T) {
 		model.CommonReadOptions{}, srt.ReadOptions{})
 	require.NoError(t, err)
 	en := english()
-	en.AddCue(model.Cue{Start: 6500 * ms, End: 8 * time.Second, Lines: []string{"Right now."}})
+	require.NoError(t, en.AddCue(model.Cue{Start: 6500 * ms, End: 8 * time.Second, Lines: []string{"Right now."}}))
 	assert.Equal(t, "start,end,speaker,text,text (de)\n"+
 		"00:00:01.000,00:00:04.000,Anna,Where are you going?,Wohin gehst du?\n"+
 		"00:00:04.500,00:00:06.000,Ben,\"Home.\nNow.\",Nach Hause. Jetzt.\n"+
@@ -366,14 +366,14 @@ func TestWriteFrameRateErrors(t *testing.T) {
 
 	// Ports testFramesWithoutAFrameRateThrow of tests/Formatters/CsvFormatterTest.php of subtitle-toolbox-php.
 	_, err := csv.Write(&bytes.Buffer{}, english(), model.CommonWriteOptions{}, csv.WriteOptions{TimeFormat: csv.TimeFrames})
-	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.CSV.FrameRate", Msg: "The time format hh:mm:ss:ff needs a frame rate."}, err)
+	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.CSV.FrameRate", Msg: "the time format hh:mm:ss:ff needs a frame rate"}, err)
 
 	s, _ := mustRead(t, "start,end,text\n1,2,a\n", strict, csv.ReadOptions{})
 	d := fileData(t, s)
 	d.Set("frameRate", int64(0))
 	require.NoError(t, s.SetFormatData("csv", d))
 	_, err = csv.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, csv.WriteOptions{})
-	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.CSV.FrameRate", Msg: "The frame rate must be greater than 0, got 0."}, err)
+	assert.Equal(t, &model.InvalidArgumentError{Option: "WriteOptions.CSV.FrameRate", Msg: "the frame rate must be greater than 0, got 0"}, err)
 	_, err = csv.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, csv.WriteOptions{FrameRate: model.FrameRate{Num: 25, Den: 1}})
 	require.NoError(t, err)
 }

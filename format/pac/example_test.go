@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/pac"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleRead() {
@@ -24,7 +24,9 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{End: 1500000000, Lines: []string{"Fresh <i>rolls</i>"}})
+	if err := s.AddCue(model.Cue{End: 1500000000, Lines: []string{"Fresh <i>rolls</i>"}}); err != nil {
+		panic(err)
+	}
 	var out bytes.Buffer
 	if _, err := pac.Write(&out, s, model.CommonWriteOptions{}, pac.WriteOptions{}); err != nil {
 		fmt.Println(err)

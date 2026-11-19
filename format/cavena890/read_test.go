@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestReadFields(t *testing.T) {
@@ -122,9 +122,9 @@ func TestReadInvalidFiles(t *testing.T) {
 		cues    []string
 		rest    string
 	}{
-		{name: "short header", file: make([]byte, 100), wantErr: "A Cavena 890 file starts with a header of 388 bytes."},
-		{name: "short header in lenient mode", file: make([]byte, 100), lenient: true, wantErr: "A Cavena 890 file starts with a header of 388 bytes."},
-		{name: "incomplete block", file: partial, wantErr: "The blocks of a Cavena 890 file have 128 bytes each."},
+		{name: "short header", file: make([]byte, 100), wantErr: "a Cavena 890 file starts with a header of 388 bytes"},
+		{name: "short header in lenient mode", file: make([]byte, 100), lenient: true, wantErr: "a Cavena 890 file starts with a header of 388 bytes"},
+		{name: "incomplete block", file: partial, wantErr: "the blocks of a Cavena 890 file have 128 bytes each"},
 		{name: "incomplete block in lenient mode", file: partial, lenient: true, cues: []string{"One"}, rest: hex.EncodeToString(partial[388+128:])},
 		{name: "short end", file: append(header(t, nil), block(16, 0x54, "", "One")[:124]...), cues: []string{"One"}},
 	}

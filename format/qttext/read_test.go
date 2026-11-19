@@ -10,9 +10,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/qttext"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/qttext"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Ports the time rows of docs/formats.md and testReadsOtherTimeScalesAndDecimalFractionsWithoutATimeScale,
@@ -344,7 +345,7 @@ func TestReadNeedsQtTextFirst(t *testing.T) {
 		_, _, err := read(content, model.CommonReadOptions{})
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr)
-		assert.Equal(t, &model.ParseError{Format: model.QuickTimeText, Line: 1, Msg: "The file does not start with {QTtext}."}, perr)
+		assert.Equal(t, &model.ParseError{Format: model.QuickTimeText, Line: 1, Msg: "the file does not start with {QTtext}"}, perr)
 
 		s, warnings := mustRead(t, content, true)
 		assert.Equal(t, []warningRow{{
@@ -374,7 +375,7 @@ func TestReadFractionAtTheTimeScale(t *testing.T) {
 	var perr *model.ParseError
 	require.ErrorAs(t, err, &perr)
 	assert.Equal(t, &model.ParseError{
-		Format: model.QuickTimeText, Line: 2, Msg: `The timestamp "[00:00:01.45]" counts 45 units, but the time scale is 30 per second.`,
+		Format: model.QuickTimeText, Line: 2, Msg: `the timestamp "[00:00:01.45]" counts 45 units, but the time scale is 30 per second`,
 	}, perr)
 
 	s, warnings := mustRead(t, content, true)
@@ -400,19 +401,19 @@ func TestReadFractionBeyondTheTimeScale(t *testing.T) {
 			"exactly the time scale",
 			"{QTtext}{timeScale:30}\n[00:00:01.30]\nOne\n[00:00:04.00]\n",
 			[]cueRow{{2 * time.Second, 4 * time.Second, "One"}},
-			`The timestamp "[00:00:01.30]" counts 30 units, but the time scale is 30 per second.`,
+			`the timestamp "[00:00:01.30]" counts 30 units, but the time scale is 30 per second`,
 		},
 		{
 			"leading zeros show in the message",
 			"{QTtext}{timeScale:30}\n[00:00:01.0045]\nOne\n[00:00:04.00]\n",
 			[]cueRow{{2500 * ms, 4 * time.Second, "One"}},
-			`The timestamp "[00:00:01.0045]" counts 0045 units, but the time scale is 30 per second.`,
+			`the timestamp "[00:00:01.0045]" counts 0045 units, but the time scale is 30 per second`,
 		},
 		{
 			"a fraction beyond the int64 range",
 			"{QTtext}{timeScale:1000}\n[00:00:01.99999999999999999999]\nOne\n[00:00:04.00]\n",
 			nil,
-			`The timestamp "[00:00:01.99999999999999999999]" counts 99999999999999999999 units, but the time scale is 1000 per second.`,
+			`the timestamp "[00:00:01.99999999999999999999]" counts 99999999999999999999 units, but the time scale is 1000 per second`,
 		},
 	}
 	for _, tt := range tests {
@@ -426,7 +427,7 @@ func TestReadFractionBeyondTheTimeScale(t *testing.T) {
 
 			s, warnings := mustRead(t, tt.content, true)
 			require.NotEmpty(t, warnings)
-			assert.Equal(t, tt.message+" The parser added them to the seconds.", warnings[0].Message)
+			assert.Equal(t, parsing.Sentence(tt.message)+" The parser added them to the seconds.", warnings[0].Message)
 			if tt.want != nil {
 				assert.Equal(t, tt.want, cueRows(s))
 			}
@@ -443,7 +444,7 @@ func TestReadOrderedTimes(t *testing.T) {
 		_, _, err := read("{QTtext}\n[00:00:05.00]\nOne\n[00:00:01.00]\nTwo\n", model.CommonReadOptions{})
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr)
-		assert.Equal(t, &model.ParseError{Format: model.QuickTimeText, Line: 2, Msg: "The cue ends at 1 s, before it starts at 5 s."}, perr)
+		assert.Equal(t, &model.ParseError{Format: model.QuickTimeText, Line: 2, Msg: "the cue ends at 1 s, before it starts at 5 s"}, perr)
 	})
 	t.Run("lenient swaps up to 30 s", func(t *testing.T) {
 		t.Parallel()
@@ -483,18 +484,18 @@ func TestReadTimestampLimit(t *testing.T) {
 		message string
 	}{
 		{"the largest time", "{QTtext}\n[99999:59:59.999]\nx\n[99999:59:59.999]\n", true, 0, ""},
-		{"100000 hours", "{QTtext}\n[100000:00:00.00]\nx\n", false, 2, `The time "100000:00:00.00" is not below 100000 hours.`},
-		{"hours beyond the int64 range", "{QTtext}\n[99999999999999999999:00:00]\nx\n", false, 2, `The time "99999999999999999999:00:00" is not below 100000 hours.`},
+		{"100000 hours", "{QTtext}\n[100000:00:00.00]\nx\n", false, 2, `the time "100000:00:00.00" is not below 100000 hours`},
+		{"hours beyond the int64 range", "{QTtext}\n[99999999999999999999:00:00]\nx\n", false, 2, `the time "99999999999999999999:00:00" is not below 100000 hours`},
 		{"20 hour digits with zeros", "{QTtext}\n[00000000000000000001:00:00]\nx\n[00000000000000000002:00:00]\n", true, 0, ""},
-		{"rounds up to 100000 hours", "{QTtext}\n[99999:59:59.9995]\nx\n", false, 2, `The time "99999:59:59.9995" is not below 100000 hours.`},
+		{"rounds up to 100000 hours", "{QTtext}\n[99999:59:59.9995]\nx\n", false, 2, `the time "99999:59:59.9995" is not below 100000 hours`},
 		{"rounds down below 100000 hours", "{QTtext}\n[99999:59:59.9994]\nx\n[99999:59:59.9994]\n", true, 0, ""},
 		{
 			"a time scale rounds up to 100000 hours", "{QTtext}{timeScale:2000}\n[99999:59:59.1999]\nx\n", false, 2,
-			`The time "99999:59:59.1999" is not below 100000 hours.`,
+			`the time "99999:59:59.1999" is not below 100000 hours`,
 		},
 		{
 			"relative times add up to the limit", "{QTtext}{timeStamps:relative}\n[99999:00:00]\nx\n[00:59:59.999]\n[00:00:00.001]\n", false, 5,
-			`The time "00:00:00.001" is not below 100000 hours.`,
+			`the time "00:00:00.001" is not below 100000 hours`,
 		},
 		{"relative times below the limit", "{QTtext}{timeStamps:relative}\n[99999:00:00]\nx\n[00:59:59.998]\n[00:00:00.001]\n", true, 0, ""},
 	}
@@ -519,7 +520,7 @@ func TestReadTimestampLimit(t *testing.T) {
 			_, warnings := mustRead(t, tt.content, true)
 			require.NotEmpty(t, warnings)
 			last := warnings[len(warnings)-1]
-			assert.Equal(t, tt.message, last.Message)
+			assert.Equal(t, parsing.Sentence(tt.message), last.Message)
 			assert.Equal(t, tt.line, last.Line)
 			assert.Equal(t, model.NoBlock, last.Block)
 			assert.Equal(t, model.Skipped, last.Action)

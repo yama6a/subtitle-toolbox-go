@@ -3,10 +3,10 @@ package mp4
 import (
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // ExtractOptions holds the format options that caption tracks use.
@@ -26,7 +26,7 @@ func (f *File) Extract(number int, common model.CommonReadOptions, opts ExtractO
 	if t == nil {
 		return nil, nil, &model.InvalidArgumentError{
 			Option: "ReadOptions.Track",
-			Msg:    "The file has no subtitle track with the number " + strconv.Itoa(number) + ".",
+			Msg:    "the file has no subtitle track with the number " + strconv.Itoa(number),
 		}
 	}
 	if err := t.checkExtractable(opts); err != nil {
@@ -51,7 +51,9 @@ func (f *File) Extract(number int, common model.CommonReadOptions, opts ExtractO
 		return nil, nil, err
 	}
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return nil, nil, err
+	}
 	s.SetMetadata(model.MetadataLanguage, t.info.Language)
 	return s, nil, nil
 }
@@ -60,14 +62,14 @@ func (f *File) Extract(number int, common model.CommonReadOptions, opts ExtractO
 func (t *track) checkExtractable(opts ExtractOptions) error {
 	n := strconv.Itoa(t.info.Number)
 	if t.encrypted {
-		return parseError("Track " + n + " has the codec " + t.info.CodecID + " and is encrypted.")
+		return parseError("track " + n + " has the codec " + t.info.CodecID + " and is encrypted")
 	}
 	if t.info.CodecID == "" {
-		return parseError("Track " + n + " has no sample entry.")
+		return parseError("track " + n + " has no sample entry")
 	}
 	if t.info.Format == "" {
-		return parseError("Track " + n + " has the codec " + t.info.CodecID + ". The reader extracts only " +
-			codecTx3g + ", " + codecC608 + ", " + codecC708 + ".")
+		return parseError("track " + n + " has the codec " + t.info.CodecID + ". The reader extracts only " +
+			codecTx3g + ", " + codecC608 + ", " + codecC708)
 	}
 	switch t.info.CodecID {
 	case codecC608:

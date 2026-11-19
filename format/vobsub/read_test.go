@@ -11,8 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/vobsub"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // box returns rows of the pixel value v.
@@ -211,11 +212,11 @@ func TestReadSelectsTheTrack(t *testing.T) {
 		{name: "language without case, first match", opts: vobsub.ReadOptions{Language: "dE"}, language: "de", x: 10, start: 2 * time.Second},
 		{name: "index and language", opts: vobsub.ReadOptions{Index: new(2), Language: "de"}, language: "DE", x: 20, start: 3 * time.Second},
 		{name: "an empty id is a language", opts: vobsub.ReadOptions{Index: new(3)}, language: "", x: 30, start: 4 * time.Second},
-		{name: "no track with the index", opts: vobsub.ReadOptions{Index: new(9)}, wantErr: "vobsub: The .idx content has no track with index 9."},
-		{name: "no track with the language", opts: vobsub.ReadOptions{Language: "fr"}, wantErr: `vobsub: The .idx content has no track with language "fr".`},
+		{name: "no track with the index", opts: vobsub.ReadOptions{Index: new(9)}, wantErr: "vobsub: the .idx content has no track with index 9"},
+		{name: "no track with the language", opts: vobsub.ReadOptions{Language: "fr"}, wantErr: `vobsub: the .idx content has no track with language "fr"`},
 		{
 			name: "no track with both", opts: vobsub.ReadOptions{Index: new(0), Language: "de"},
-			wantErr: `vobsub: The .idx content has no track with index 0 and language "de".`,
+			wantErr: `vobsub: the .idx content has no track with index 0 and language "de"`,
 		},
 	}
 	for _, tt := range tests {
@@ -246,16 +247,16 @@ func TestReadOptionsErrors(t *testing.T) {
 		opts vobsub.ReadOptions
 		want model.InvalidArgumentError
 	}{
-		{"no IDX", vobsub.ReadOptions{}, model.InvalidArgumentError{Option: "ReadOptions.VobSub.IDX", Msg: "VobSub needs the .idx content. Set ReadOptions.VobSub.IDX."}},
+		{"no IDX", vobsub.ReadOptions{}, model.InvalidArgumentError{Option: "ReadOptions.VobSub.IDX", Msg: "VobSub needs the .idx content. Set ReadOptions.VobSub.IDX"}},
 		{
 			"negative index",
 			vobsub.ReadOptions{IDX: "x", Index: new(-1)},
-			model.InvalidArgumentError{Option: "ReadOptions.VobSub.Index", Msg: "The track index must be 0 or more, got -1."},
+			model.InvalidArgumentError{Option: "ReadOptions.VobSub.Index", Msg: "the track index must be 0 or more, got -1"},
 		},
 		{
 			"blank language",
 			vobsub.ReadOptions{IDX: "x", Language: " \t"},
-			model.InvalidArgumentError{Option: "ReadOptions.VobSub.Language", Msg: "The language must not be empty."},
+			model.InvalidArgumentError{Option: "ReadOptions.VobSub.Language", Msg: "the language must not be empty"},
 		},
 	}
 	for _, tt := range tests {
@@ -286,34 +287,34 @@ func TestReadReportsBrokenUnits(t *testing.T) {
 	}{
 		{
 			"filepos past the content", goodSub, len(goodSub) + 0x100,
-			"The filepos 000000" + strconv.FormatInt(int64(len(goodSub)+0x100), 16) + " of timestamp 1.000 is outside the .sub content of " + strconv.Itoa(len(goodSub)) + " bytes.",
+			"the filepos 000000" + strconv.FormatInt(int64(len(goodSub)+0x100), 16) + " of timestamp 1.000 is outside the .sub content of " + strconv.Itoa(len(goodSub)) + " bytes",
 		},
 		{
 			"no start code", zeros, 0,
-			"The .sub content has no complete subtitle packet at filepos 000000000. It ends or has no MPEG start code at byte 0.",
+			"the .sub content has no complete subtitle packet at filepos 000000000. It ends or has no MPEG start code at byte 0",
 		},
 		{
 			"unit cut off at the end of the content", cutSub[:31], 0,
-			"The .sub content has no complete subtitle packet at filepos 000000000. It ends or has no MPEG start code at byte 31.",
+			"the .sub content has no complete subtitle packet at filepos 000000000. It ends or has no MPEG start code at byte 31",
 		},
-		{"pack header without the MPEG-2 marker", slices.Concat([]byte("\x00\x00\x01\xBA"), zeros), 0, "The .sub content has no MPEG-2 pack header at byte 0."},
+		{"pack header without the MPEG-2 marker", slices.Concat([]byte("\x00\x00\x01\xBA"), zeros), 0, "the .sub content has no MPEG-2 pack header at byte 0"},
 		{
 			"program end before the unit is complete", slices.Concat([]byte("\x00\x00\x01\xB9"), zeros), 0,
-			"The .sub content ends at byte 0 before the subtitle packet at filepos 000000000 is complete.",
+			"the .sub content ends at byte 0 before the subtitle packet at filepos 000000000 is complete",
 		},
-		{"packet longer than the content", slices.Concat([]byte(packHeader), []byte("\x00\x00\x01\xBD\xFF\xFF"), zeros), 0, "The .sub packet at byte 14 is longer than the content."},
+		{"packet longer than the content", slices.Concat([]byte(packHeader), []byte("\x00\x00\x01\xBD\xFF\xFF"), zeros), 0, "the .sub packet at byte 14 is longer than the content"},
 		{
 			"control sequence offset below 4", pesOf(slices.Concat(u16(10, 2), make([]byte, 6))), 0,
-			"The subtitle packet of 10 bytes has no valid control sequence offset.",
+			"the subtitle packet of 10 bytes has no valid control sequence offset",
 		},
-		{"command past the end of the unit", pesOf(cutCommand), 0, "The subtitle packet ends inside command 03."},
+		{"command past the end of the unit", pesOf(cutCommand), 0, "the subtitle packet ends inside command 03"},
 		{
 			"bitmap past the end of the unit", pesOf(rawUnit(slices.Concat(area, []byte{0x06, 0xFF, 0xFF, 0xFF, 0xFF, start})...)), 0,
-			"The bitmap of the subtitle packet ends before line 0 is complete.",
+			"the bitmap of the subtitle packet ends before line 0 is complete",
 		},
 		{
 			"image over the size limit", pesOf(rawUnit(0x05, 0x00, 0x0F, 0xFF, 0x00, 0x0F, 0xFF, 0x06, 0, 0, 0, 0, start)), 0,
-			"Cannot read the subtitle packet: an image of 4096x4096 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total.",
+			"cannot read the subtitle packet: an image of 4096x4096 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total",
 		},
 	}
 	for _, tt := range tests {
@@ -332,7 +333,7 @@ func TestReadReportsBrokenUnits(t *testing.T) {
 			s, warnings, err := vobsub.Read(bytes.NewReader(tt.sub), model.CommonReadOptions{Lenient: true}, vobsub.ReadOptions{IDX: string(idx)})
 			require.NoError(t, err)
 			assert.Zero(t, s.Len())
-			assert.Equal(t, []model.ParseWarning{{Message: tt.want, Line: model.NoLine, Block: 0, Action: model.Skipped}}, warnings)
+			assert.Equal(t, []model.ParseWarning{{Message: parsing.Sentence(tt.want), Line: model.NoLine, Block: 0, Action: model.Skipped}}, warnings)
 		})
 	}
 }

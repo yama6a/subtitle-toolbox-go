@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // googleOperationFields are the members of a long-running operation that stay around the response.
@@ -22,20 +22,20 @@ var googleOperationFields = []string{"name", "metadata", "done", "error"} //noli
 // as the source has them, V1 without a source. It writes one result per cue. A source with speaker diarization gives
 // one result with all words and their speakers. A long-running operation of the source stays around the response.
 // A value that a cue did not change stays as the reader stored it.
-func WriteGoogleSpeech(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WriteGoogleSpeech(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.GoogleSpeech, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	doc, err := googleDocument(s)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	body, err := encodeDocument(model.GoogleSpeech, "Google Speech-to-Text JSON", doc, false)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
-	return writing.Write(w, model.GoogleSpeech, body, common, false)
+	return WriteReport{}, writing.Write(w, model.GoogleSpeech, body, common, false)
 }
 
 func googleDocument(s *model.Subtitle) (orderedjson.Value, error) {
@@ -181,9 +181,9 @@ func (g *googleWriter) diarized(cues []*model.Cue, data []orderedjson.Value, sou
 		if len(e.words) == 0 {
 			return source, &model.UnwritableError{
 				Format: model.GoogleSpeech, CueIndex: i,
-				Reason: "A Google Speech-to-Text result with speaker diarization holds cues only through their words. Cue #" +
+				Reason: "a Google Speech-to-Text result with speaker diarization holds cues only through their words. Cue #" +
 					strconv.Itoa(i) + " at " + timecode.Seconds(c.Start) + " s has no words. " +
-					"Read the file with word timestamps before you change the number of words.",
+					"Read the file with word timestamps before you change the number of words",
 			}
 		}
 		texts = append(texts, e.text)

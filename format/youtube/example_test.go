@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/youtube"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleRead() {
@@ -38,7 +38,7 @@ func ExampleWrite() {
 		fmt.Println(err)
 		return
 	}
-	if err := youtube.Write(os.Stdout, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
+	if _, err := youtube.Write(os.Stdout, s, model.CommonWriteOptions{}, youtube.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

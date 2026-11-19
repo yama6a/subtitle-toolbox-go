@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea608"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/caption"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/caption/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 var (
@@ -46,7 +46,9 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if dropFrame != nil {
 		_ = s.SetFormatData(formatDataKey, model.NewData(model.Field{Key: "dropFrame", Value: *dropFrame})) // the data has the shape of the schema
 	}
-	s.AddCues(caption.CEA608Cues(codeLines, caption.CEA608Options{Channel: opts.Channel, RollUp: opts.RollUp}, st.LastCueDuration())...)
+	if err := s.AddCues(caption.CEA608Cues(codeLines, caption.CEA608Options{Channel: opts.Channel, RollUp: opts.RollUp}, st.LastCueDuration())...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 
@@ -65,7 +67,7 @@ func readCodeLines(st *parsing.State, content string) ([]cea608.CodeLine, *bool,
 		line := n + 1
 		if block == 0 {
 			if raw != header {
-				return nil, nil, &model.ParseError{Format: model.SCC, Line: line, Msg: `An SCC file must start with the line "` + header + `".`}
+				return nil, nil, &model.ParseError{Format: model.SCC, Line: line, Msg: `an SCC file must start with the line "` + header + `"`}
 			}
 			continue
 		}
@@ -99,7 +101,7 @@ func readCodeLines(st *parsing.State, content string) ([]cea608.CodeLine, *bool,
 func matchCodeLine(st *parsing.State, raw string, line, block int) (m []string, start int64, err error) {
 	m = codeLineRegexp.FindStringSubmatch(raw)
 	if m == nil {
-		err = st.Fail(&model.ParseError{Line: line, Msg: `The SCC line "` + raw + `" does not start with a time code.`}, line, block, []string{raw})
+		err = st.Fail(&model.ParseError{Line: line, Msg: `the SCC line "` + raw + `" does not start with a time code`}, line, block, []string{raw})
 		return nil, 0, err
 	}
 	dropFrame := m[4] == ";"
@@ -129,7 +131,7 @@ func startFrame(m []string, dropFrame bool) int64 {
 // so the later pairs of the line keep their frames.
 func readBytePair(st *parsing.State, pair string, line, block int, raw string) (uint16, error) {
 	if !bytePairRegexp.MatchString(pair) {
-		err := st.Fail(&model.ParseError{Line: line, Msg: `The SCC line has the invalid byte pair "` + pair + `".`}, line, block, []string{raw})
+		err := st.Fail(&model.ParseError{Line: line, Msg: `the SCC line has the invalid byte pair "` + pair + `"`}, line, block, []string{raw})
 		return cea608.NullWord, err
 	}
 	word, _ := strconv.ParseUint(pair, 16, 16) // four hex digits

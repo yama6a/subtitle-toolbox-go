@@ -33,10 +33,10 @@ func (o CommonWriteOptions) Validate() error { return o.ValidateAt("CommonWriteO
 // for example "WriteOptions" for the root options.
 func (o CommonWriteOptions) ValidateAt(path string) error {
 	if o.LineEnding > CRLF {
-		return &InvalidArgumentError{Option: path + ".LineEnding", Msg: "The line ending " + strconv.Itoa(int(o.LineEnding)) + " is unknown."}
+		return &InvalidArgumentError{Option: path + ".LineEnding", Msg: "the line ending " + strconv.Itoa(int(o.LineEnding)) + " is unknown"}
 	}
 	if o.BOM > BOMRemove {
-		return &InvalidArgumentError{Option: path + ".BOM", Msg: "The BOM rule " + strconv.Itoa(int(o.BOM)) + " is unknown."}
+		return &InvalidArgumentError{Option: path + ".BOM", Msg: "the BOM rule " + strconv.Itoa(int(o.BOM)) + " is unknown"}
 	}
 	return nil
 }

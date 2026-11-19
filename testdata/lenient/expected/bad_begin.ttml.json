@@ -2,7 +2,7 @@
     "name": "TTML with a bad begin time and a paragraph without end",
     "format": "ttml",
     "strict": {
-        "error": "The time expression \"00:00:0x.000\" is not valid.",
+        "error": "the time expression \"00:00:0x.000\" is not valid",
         "line": null
     },
     "cues": [

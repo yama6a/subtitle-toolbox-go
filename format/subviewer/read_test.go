@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const script = "******** START SCRIPT ********\n"
@@ -181,63 +181,63 @@ func TestReadErrors(t *testing.T) {
 	}{
 		{
 			"text before the first timing line", "[SUBTITLE]\nHello\n00:00:01.00,00:00:02.00\nWorld\n", 2,
-			`The line "Hello" is neither a header tag nor a timing line.`,
+			`the line "Hello" is neither a header tag nor a timing line`,
 		},
 		{
 			"a bad time", "00:00:01.00,00:00:03.00\nOne\n\n00:00:04.00,00:00:0x.00\nTwo\n", 4,
-			`The timing line "00:00:04.00,00:00:0x.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.`,
+			`the timing line "00:00:04.00,00:00:0x.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff`,
 		},
 		{
 			"minutes of 60 or more", "00:00:01.00,00:60:03.00\nOne\n", 1,
-			`The timing line "00:00:01.00,00:60:03.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.`,
+			`the timing line "00:00:01.00,00:60:03.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff`,
 		},
 		{
 			"4 fraction digits", "00:00:01.5000,00:00:03.0000\nOne\n", 1,
-			`The timing line "00:00:01.5000,00:00:03.0000" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.`,
+			`the timing line "00:00:01.5000,00:00:03.0000" is not in the form hh:mm:ss.ff,hh:mm:ss.ff`,
 		},
 		{
 			"6 hour digits", "100000:00:01.00,00:00:03.00\nOne\n", 1,
-			`The timing line "100000:00:01.00,00:00:03.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.`,
+			`the timing line "100000:00:01.00,00:00:03.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff`,
 		},
 		{
 			"one field is a time", "Hello,00:00:03.00\nOne\n", 1,
-			`The timing line "Hello,00:00:03.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.`,
+			`the timing line "Hello,00:00:03.00" is not in the form hh:mm:ss.ff,hh:mm:ss.ff`,
 		},
 		{
 			"the cue ends before it starts", "00:00:05.00,00:00:03.00\nOne\n", 1,
-			"The cue ends at 3 s, before it starts at 5 s.",
+			"the cue ends at 3 s, before it starts at 5 s",
 		},
 		{
 			"a header line without a bracket in version 1", "Ferry times\n" + script + "[00:00:02]\nHello\n", 1,
-			`The line "Ferry times" is not a SubViewer 1 header tag.`,
+			`the line "Ferry times" is not a SubViewer 1 header tag`,
 		},
 		{
 			"a header line with an empty tag in version 1", "[]x\n" + script, 1,
-			`The line "[]x" is not a SubViewer 1 header tag.`,
+			`the line "[]x" is not a SubViewer 1 header tag`,
 		},
 		{
 			"a time of 60 minutes in version 1", script + "[00:60:02]\nHello\n", 2,
-			`The time "[00:60:02]" is not valid.`,
+			`the time "[00:60:02]" is not valid`,
 		},
 		{
 			"a time of 60 seconds in version 1", script + "[00:00:60]\nHello\n", 2,
-			`The time "[00:00:60]" is not valid.`,
+			`the time "[00:00:60]" is not valid`,
 		},
 		{
 			"the cue ends before it starts in version 1", script + "[00:00:05]\nHello\n[00:00:03]\n", 2,
-			"The cue ends at 3 s, before it starts at 5 s.",
+			"the cue ends at 3 s, before it starts at 5 s",
 		},
 		{
 			"a delay beyond the limit", "[DELAY]\n359999990\n" + script + "[00:00:12]\nHello\n", 4,
-			`The time "[00:00:12] with DELAY 359999990" is not below 100000 hours.`,
+			`the time "[00:00:12] with DELAY 359999990" is not below 100000 hours`,
 		},
 		{
 			"a delay beyond the int64 range", "[DELAY]99999999999999999999\n" + script + "[00:00:12]\nHello\n", 3,
-			`The time "[00:00:12] with DELAY 9223372036854775807" is not below 100000 hours.`,
+			`the time "[00:00:12] with DELAY 9223372036854775807" is not below 100000 hours`,
 		},
 		{
 			"a negative delay beyond the limit", "[DELAY]-99999999999999999999\n" + script + "[00:00:12]\nHello\n", 3,
-			`The time "[00:00:12] with DELAY -9223372036854775808" is not below 100000 hours.`,
+			`the time "[00:00:12] with DELAY -9223372036854775808" is not below 100000 hours`,
 		},
 	}
 	for _, tt := range tests {

@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -70,7 +70,9 @@ func subtitle(lines ...[]string) *model.Subtitle {
 	s := &model.Subtitle{}
 	for i, l := range lines {
 		start := time.Duration(2*i+1) * time.Second
-		s.AddCue(model.Cue{Start: start, End: start + time.Second, Lines: l})
+		if err := s.AddCue(model.Cue{Start: start, End: start + time.Second, Lines: l}); err != nil {
+			panic(err)
+		}
 	}
 	return s
 }

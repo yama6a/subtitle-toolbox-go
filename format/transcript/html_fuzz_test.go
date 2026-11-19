@@ -5,9 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func FuzzReadHTML(f *testing.F) {
@@ -30,7 +30,7 @@ func FuzzReadHTML(f *testing.F) {
 			}
 			checkWords(t, s)
 			var out bytes.Buffer
-			if err := transcript.WriteHTML(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+			if _, err := transcript.WriteHTML(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 				if !errors.Is(err, model.ErrUnwritable) {
 					t.Fatalf("WriteHTML returned %v, which does not match ErrUnwritable", err)
 				}

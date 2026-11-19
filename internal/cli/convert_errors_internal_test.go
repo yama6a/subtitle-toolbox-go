@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/fixing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/fixing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 )
 
 // Ported from tests/Cli/BinaryEditTest.php of subtitle-toolbox-php.
@@ -160,7 +160,7 @@ func TestConvertReplaceListFileErrorsStopBeforeAnyOutput(t *testing.T) {
 		{"missing file", "missing.xml", "Error: missing.xml: The file does not exist.\n"},
 		{
 			"broken XML", "bad.xml",
-			"Error: bad.xml: line 2: The OCR replace list is not valid XML: element <WholeWords> closed by </ReplaceList>.\n",
+			"Error: bad.xml: line 2: the OCR replace list is not valid XML: element <WholeWords> closed by </ReplaceList>\n",
 		},
 	}
 	for _, tt := range tests {

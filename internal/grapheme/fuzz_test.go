@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/grapheme"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/grapheme"
 )
 
 func FuzzCount(f *testing.F) {

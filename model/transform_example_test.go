@@ -5,15 +5,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleSubtitle_ChangeCase() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 1001 * time.Millisecond, End: 3336 * time.Millisecond, Lines: []string{">> GOOD MORNING. THE 8:15 TRAIN", "TO MAIN STREET IS LATE."}},
 		model.Cue{Start: 3503 * time.Millisecond, End: 5505 * time.Millisecond, Lines: []string{"<i>I THINK WE MISSED IT.</i>"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 
 	if err := s.ChangeCase(model.CaseSentence, "en"); err != nil {
 		fmt.Println(err)
@@ -31,10 +33,12 @@ func ExampleSubtitle_ChangeCase() {
 
 func ExampleSubtitle_ReplaceText() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 1 * time.Second, End: 3 * time.Second, Lines: []string{"[BELL RINGS]"}},
 		model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{"<i>Wait.....</i> [DOOR] Tom &amp; Jerry"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 
 	if err := s.ReplaceText(`\s*\[[^\]]*\]`, "", model.ReplaceOptions{Regex: true}); err != nil {
 		fmt.Println(err)
@@ -58,7 +62,9 @@ func ExampleSubtitle_ReplaceText() {
 
 func ExampleSubtitle_StripFormatting() {
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{`<v Fred><b><i>Run</i></b>, <font color="#ff0000">now</font> &amp; hide!`}})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{`<v Fred><b><i>Run</i></b>, <font color="#ff0000">now</font> &amp; hide!`}}); err != nil {
+		panic(err)
+	}
 
 	s.StripFormatting(model.StripOptions{KeepTags: []string{"i"}})
 
@@ -69,7 +75,9 @@ func ExampleSubtitle_StripFormatting() {
 
 func ExampleSubtitle_MapText() {
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>Fish &amp; chips</i> for two"}})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>Fish &amp; chips</i> for two"}}); err != nil {
+		panic(err)
+	}
 
 	s.MapText(func(text string, _ model.Cue) string {
 		return strings.ReplaceAll(text, "&", "and")
@@ -82,7 +90,9 @@ func ExampleSubtitle_MapText() {
 
 func ExampleSubtitle_MapLines() {
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"Hello", "<i>world</i>"}})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"Hello", "<i>world</i>"}}); err != nil {
+		panic(err)
+	}
 
 	s.MapLines(func(line string, _ model.Cue) string {
 		return `<font color="#ffff00">` + line + "</font>"
@@ -96,7 +106,9 @@ func ExampleSubtitle_MapLines() {
 
 func ExampleSubtitle_FixRightToLeft() {
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>!\u05e9\u05dc\u05d5\u05dd</i>", "Hello!"}})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>!\u05e9\u05dc\u05d5\u05dd</i>", "Hello!"}}); err != nil {
+		panic(err)
+	}
 
 	s.FixRightToLeft()
 	fmt.Printf("%+q\n", s.Cues()[0].Lines)
@@ -110,11 +122,13 @@ func ExampleSubtitle_FixRightToLeft() {
 
 func ExampleSubtitle_EditLines() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 1 * time.Second, End: 2 * time.Second, Lines: []string{"Hi"}},
 		model.Cue{Start: 2 * time.Second, End: 3 * time.Second, Lines: []string{"(MUSIC)"}},
 		model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Lines: []string{"Bye"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	_ = s.AddComment("Scene 2", 1)
 
 	removed := s.EditLines(func(_ int, c model.Cue) ([]string, bool) {
@@ -131,10 +145,12 @@ func ExampleSubtitle_EditLines() {
 
 func ExampleSubtitle_WrapLines() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<i>This is a very long subtitle line that does not fit on the screen</i>"}},
 		model.Cue{Start: 5 * time.Second, End: 7 * time.Second, Lines: []string{"- Are you coming with us to the coast tonight?", "- Yes."}},
-	)
+	); err != nil {
+		panic(err)
+	}
 
 	if err := s.WrapLines(42, 2); err != nil {
 		fmt.Println(err)
@@ -154,7 +170,9 @@ func ExampleSubtitle_WrapLines() {
 
 func ExampleSubtitle_UnwrapLines() {
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"- Are you coming?", "- Yes, in a minute,", "I promise you."}})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"- Are you coming?", "- Yes, in a minute,", "I promise you."}}); err != nil {
+		panic(err)
+	}
 
 	s.UnwrapLines()
 

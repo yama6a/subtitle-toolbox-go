@@ -5,9 +5,9 @@ import (
 	"slices"
 	"strings"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
 )
 
 const stdinArg = "-"

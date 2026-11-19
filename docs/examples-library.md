@@ -1,6 +1,6 @@
 # Library examples
 
-Each section is one task that a developer has, with code that runs as written. A test runs every block and checks the printed output. The code shows the body of a function and leaves out the imports. Add the root package `stbox "github.com/yama6a/subtitle-toolbox-go/v4"` and every other package that the code names.
+Each section is one task that a developer has, with code that runs as written. A test runs every block and checks the printed output. The code shows the body of a function and leaves out the imports. Add the root package `stbox "github.com/yama6a/subtitle-toolbox-go/v5"` and every other package that the code names.
 
 The file paths point into the `testdata` folder of this repository. Replace them with your own files. [examples-cli.md](examples-cli.md) does the same tasks with the `stbox` command.
 
@@ -403,7 +403,7 @@ if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stb
 
 ## Read Blu-ray or DVD image subtitles with OCR
 
-A Blu-ray stores subtitles as PGS images in a `.sup` file. A DVD stores them as VobSub images, which `Load` reads from the `.idx` file next to its `.sub` file. `Load` gives cues that hold an image and no text. `ocr.Run` reads the text of each image with an engine. The `glyph` engine is written in Go and needs no program on the machine. The `tesseract` engine needs the `tesseract` program and reads more languages. See [ocr.md](ocr.md).
+A Blu-ray stores subtitles as PGS images in a `.sup` file. A DVD stores them as VobSub images, which `Load` reads from the `.idx` file next to its `.sub` file. `Load` gives cues that hold an image and no text. `ocr.Apply` reads the text of each image with an engine. The `glyph` engine is written in Go and needs no program on the machine. The `tesseract` engine needs the `tesseract` program and reads more languages. See [ocr.md](ocr.md).
 
 <!-- example: ExampleLoad_ocr -->
 ```go
@@ -417,7 +417,7 @@ if err != nil {
 	fmt.Println(err)
 	return
 }
-if _, err := ocr.Run(context.Background(), s, engine, ocr.English); err != nil {
+if _, err := ocr.Apply(context.Background(), s, engine, ocr.English); err != nil {
 	fmt.Println(err)
 	return
 }
@@ -529,7 +529,7 @@ if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stb
 
 ## Translate a subtitle with DeepL
 
-`translation.Translate` sends the text of the cues to an engine and puts the translation back. The times stay. Tags such as `<i>` and `<b>` stay in place. The first sentence of this file runs over 2 cues. It goes out as one text. The translation splits again over the same 2 cues, and the code prints them.
+`translation.Apply` sends the text of the cues to an engine and puts the translation back. The times stay. Tags such as `<i>` and `<b>` stay in place. The first sentence of this file runs over 2 cues. It goes out as one text. The translation splits again over the same 2 cues, and the code prints them.
 
 The test starts a local server that answers with a saved DeepL response. So it needs no key and no network. With a real key, leave out `BaseURL` and pass `APIKey: os.Getenv("DEEPL_API_KEY")`. See [translation.md](translation.md).
 
@@ -550,7 +550,7 @@ if err != nil {
 	fmt.Println(err)
 	return
 }
-if _, err := translation.Translate(context.Background(), s, engine, "en", "de", translation.Options{}); err != nil {
+if _, err := translation.Apply(context.Background(), s, engine, "en", "de", translation.Options{}); err != nil {
 	fmt.Println(err)
 	return
 }
@@ -721,7 +721,7 @@ if err != nil {
 	fmt.Println(err)
 }
 // Output:
-// SOURCES.md skipped: stbox: unsupported format: no format detected: Format detection found no subtitle format.
+// SOURCES.md skipped: stbox: unsupported format: no format detected: format detection found no subtitle format
 // station_de.srt                 srt  6 cues, 32 words, 31.5 characters per line
 // station_en.srt                 srt  5 cues, 35 words, 30.0 characters per line
 // station_stack.ass              ass  6 cues, 67 words, 30.8 characters per line
@@ -740,10 +740,12 @@ A program that makes captions, such as a tour script, builds the cues itself. `A
 <!-- example: ExampleSubtitle_fromScratch -->
 ```go
 s := &stbox.Subtitle{}
-s.AddCues(
+if err := s.AddCues(
 	stbox.Cue{Start: 2 * time.Second, End: 5 * time.Second, Lines: []string{"Welcome to the harbour tour."}},
 	stbox.Cue{Start: 5500 * time.Millisecond, End: 9 * time.Second, Lines: []string{"Our first stop is the", "old lighthouse."}},
-)
+); err != nil {
+	panic(err)
+}
 if _, err := stbox.Write(os.Stdout, s, stbox.SubRip, stbox.WriteOptions{BOM: stbox.BOMRemove}); err != nil {
 	fmt.Println(err)
 }

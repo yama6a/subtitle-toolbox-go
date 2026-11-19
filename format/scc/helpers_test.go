@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const header = "Scenarist_SCC V1.0\n\n"

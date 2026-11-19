@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestEntryNormalization(t *testing.T) {
@@ -91,10 +91,10 @@ func TestEntryNormalization(t *testing.T) {
 			want.Start, want.End, want.Lines = tt.wantStart, tt.wantEnd, tt.wantLines
 
 			for name, add := range map[string]func(*model.Subtitle){
-				"AddCue":  func(s *model.Subtitle) { s.AddCue(in) },
-				"AddCues": func(s *model.Subtitle) { s.AddCues(in) },
+				"AddCue":  func(s *model.Subtitle) { require.NoError(t, s.AddCue(in)) },
+				"AddCues": func(s *model.Subtitle) { require.NoError(t, s.AddCues(in)) },
 				"SetCue": func(s *model.Subtitle) {
-					s.AddCue(model.Cue{})
+					require.NoError(t, s.AddCue(model.Cue{}))
 					require.NoError(t, s.SetCue(0, in))
 				},
 				"ReplaceCues": func(s *model.Subtitle) { s.ReplaceCues([]model.Cue{in}, nil) },
@@ -128,7 +128,7 @@ func TestAddCueSortsByStart(t *testing.T) {
 
 			one := &model.Subtitle{}
 			for i, tm := range tt.times {
-				one.AddCue(model.Cue{Start: sec(tm[0]), End: sec(tm[1]), Lines: []string{fmt.Sprintf("text%d", i)}})
+				require.NoError(t, one.AddCue(model.Cue{Start: sec(tm[0]), End: sec(tm[1]), Lines: []string{fmt.Sprintf("text%d", i)}}))
 			}
 			assert.Equal(t, tt.want, texts(one))
 			assert.Equal(t, tt.want, texts(fromTimes(tt.times...)))
@@ -140,7 +140,7 @@ func TestAddCuesGoAfterStoredCuesWithTheSameStart(t *testing.T) {
 	t.Parallel()
 
 	s := fromTimes([2]float64{1, 2}, [2]float64{3, 4})
-	s.AddCues(model.Cue{Start: sec(3), Lines: []string{"added"}}, model.Cue{Start: sec(1), Lines: []string{"added first"}})
+	require.NoError(t, s.AddCues(model.Cue{Start: sec(3), Lines: []string{"added"}}, model.Cue{Start: sec(1), Lines: []string{"added first"}}))
 
 	assert.Equal(t, []string{"text0", "added first", "text1", "added"}, texts(s))
 }
@@ -203,7 +203,7 @@ func TestAddCuesKeepsCommentsWithTheirCues(t *testing.T) {
 
 			s := fromTimes(tt.stored...)
 			require.NoError(t, s.AddComment("c", tt.comment))
-			s.AddCues(tt.added...)
+			require.NoError(t, s.AddCues(tt.added...))
 
 			assert.Equal(t, tt.wantText, texts(s))
 			assert.Equal(t, tt.want, s.Comments())
@@ -232,11 +232,11 @@ func TestSetCueGivesTheOrderOfAStableSort(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCues(
+			require.NoError(t, s.AddCues(
 				model.Cue{Start: sec(1), Lines: []string{"A"}},
 				model.Cue{Start: sec(2), Lines: []string{"B"}},
 				model.Cue{Start: sec(3), Lines: []string{"C"}},
-			)
+			))
 			c, ok := s.Cue(tt.index)
 			require.True(t, ok)
 			c.Start = sec(tt.start)
@@ -297,7 +297,7 @@ func TestSetCueMovesACommentWithItsCue(t *testing.T) {
 
 			s := &model.Subtitle{}
 			for i, text := range []string{"A", "B", "C", "D"} {
-				s.AddCue(model.Cue{Start: sec(float64(i + 1)), Lines: []string{text}})
+				require.NoError(t, s.AddCue(model.Cue{Start: sec(float64(i + 1)), Lines: []string{text}}))
 				if i > 0 {
 					require.NoError(t, s.AddComment("before "+text, i))
 				}
@@ -322,7 +322,7 @@ func TestRandomSetCueCallsGiveTheOrderOfAStableSort(t *testing.T) {
 	for round := range 300 {
 		s := &model.Subtitle{}
 		for i := range 1 + rng.IntN(40) {
-			s.AddCue(model.Cue{Start: time.Duration(rng.IntN(21)) * time.Second, End: 30 * time.Second, ID: fmt.Sprintf("cue%d", i)})
+			require.NoError(t, s.AddCue(model.Cue{Start: time.Duration(rng.IntN(21)) * time.Second, End: 30 * time.Second, ID: fmt.Sprintf("cue%d", i)}))
 		}
 		for i, c := range s.All() {
 			require.NoError(t, s.AddComment(c.ID, i))
@@ -359,7 +359,7 @@ func TestAddCueBeforeTheLastCueKeepsTheComments(t *testing.T) {
 	}
 	require.NoError(t, s.AddComment("far after the end", 9))
 
-	s.AddCue(model.Cue{Start: sec(3), Lines: []string{"new"}})
+	require.NoError(t, s.AddCue(model.Cue{Start: sec(3), Lines: []string{"new"}}))
 
 	assert.Equal(t, []string{"text0", "text1", "new", "text2"}, texts(s))
 	assert.Equal(t, []model.Comment{
@@ -388,7 +388,7 @@ func TestSetCueMovesTheCommentsWithTheCue(t *testing.T) {
 		{Text: "End of recording", BeforeCue: 6},
 	}, s.Comments())
 
-	s.AddCue(model.Cue{Start: sec(25), End: sec(26), Lines: []string{"Thank you for joining the tour."}})
+	require.NoError(t, s.AddCue(model.Cue{Start: sec(25), End: sec(26), Lines: []string{"Thank you for joining the tour."}}))
 
 	assert.Equal(t, []time.Duration{sec(1), sec(4), sec(6.5), sec(15), sec(18), sec(19), sec(25)}, starts(s))
 	assert.Equal(t, model.Comment{Text: "The guide speaks from here", BeforeCue: 5}, s.Comments()[3])
@@ -568,7 +568,7 @@ func TestComments(t *testing.T) {
 		require.ErrorIs(t, err, model.ErrInvalidArgument)
 		var argErr *model.InvalidArgumentError
 		require.ErrorAs(t, err, &argErr)
-		assert.Equal(t, model.InvalidArgumentError{Msg: "The cue index of a comment must not be negative, got -1."}, *argErr)
+		assert.Equal(t, model.InvalidArgumentError{Msg: "the cue index of a comment must not be negative, got -1"}, *argErr)
 		assert.Empty(t, s.Comments())
 	})
 
@@ -589,11 +589,11 @@ func TestReplaceCues(t *testing.T) {
 		t.Helper()
 
 		s := &model.Subtitle{}
-		s.AddCues(
+		require.NoError(t, s.AddCues(
 			model.Cue{Start: sec(1), Lines: []string{"A"}},
 			model.Cue{Start: sec(2), Lines: []string{"B"}},
 			model.Cue{Start: sec(3), Lines: []string{"C"}},
-		)
+		))
 		require.NoError(t, s.AddComment("before B", 1))
 		require.NoError(t, s.AddComment("before C", 2))
 		require.NoError(t, s.AddComment("at the end", 3))
@@ -760,7 +760,7 @@ func TestAllIteratesASnapshot(t *testing.T) {
 	for i, c := range s.All() {
 		indexes = append(indexes, i)
 		got = append(got, c.Text())
-		s.AddCue(model.Cue{Start: 0, Lines: []string{"new"}})
+		require.NoError(t, s.AddCue(model.Cue{Start: 0, Lines: []string{"new"}}))
 		if i == 0 {
 			require.NoError(t, s.RemoveCue(s.Len()-1))
 		}
@@ -830,4 +830,35 @@ func TestZeroValueIsAnEmptySubtitle(t *testing.T) {
 
 func containsText(c model.Cue, sub string) bool {
 	return strings.Contains(c.Text(), sub)
+}
+
+func TestAddCueAndAddCuesCheckTheCueAsSetCueDoes(t *testing.T) {
+	t.Parallel()
+
+	badImage := testImage()
+	badImage.Width = 0
+	tests := []struct {
+		name string
+		bad  model.Cue
+	}{
+		{"position", model.Cue{End: time.Second, Lines: []string{"bad"}, Position: model.Position{Row: 3}}},
+		{"image", model.Cue{End: time.Second, Image: badImage}},
+		{"words", model.Cue{End: time.Second, Lines: []string{"bad"}, Words: []model.Word{{Text: "missing", End: time.Second}}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			good := model.Cue{Start: 2 * time.Second, End: 3 * time.Second, Lines: []string{"good"}}
+			build := func() *model.Subtitle { return fromTimes([2]float64{1, 2}) }
+
+			s := build()
+			require.ErrorIs(t, s.AddCue(tt.bad), model.ErrInvalidArgument)
+			assert.Equal(t, build().Cues(), s.Cues())
+
+			s = build()
+			require.ErrorIs(t, s.AddCues(good, tt.bad, good), model.ErrInvalidArgument)
+			assert.Equal(t, build().Cues(), s.Cues())
+		})
+	}
 }

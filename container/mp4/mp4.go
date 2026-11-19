@@ -14,13 +14,13 @@ import (
 	"github.com/Eyevinn/mp4ff/bits"
 	"github.com/Eyevinn/mp4ff/mp4"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
 	boxHeaderSize      = 8
 	largeBoxHeaderSize = 16
-	fragmentedMessage  = "The MP4 file is fragmented. The reader reads only samples in the moov box."
+	fragmentedMessage  = "the MP4 file is fragmented. The reader reads only samples in the moov box"
 )
 
 // File is an open MP4 or MOV file. It holds the decoded moov box and reads samples on demand.
@@ -71,14 +71,14 @@ func (f *File) Tracks() []model.Track {
 func readMoov(r io.ReaderAt, size int64) (*mp4.MoovBox, error) {
 	total := uint64(max(size, 0))
 	if total < boxHeaderSize {
-		return nil, parseError("The file is not an MP4 file.")
+		return nil, parseError("the file is not an MP4 file")
 	}
 	signature, err := readAt(r, 0, boxHeaderSize)
 	if err != nil {
 		return nil, err
 	}
 	if string(signature[4:]) != "ftyp" {
-		return nil, parseError("The file is not an MP4 file.")
+		return nil, parseError("the file is not an MP4 file")
 	}
 	for pos := uint64(0); total-pos >= boxHeaderSize; {
 		typ, boxSize, headerLen, err := readBoxHeader(r, pos, total)
@@ -93,7 +93,7 @@ func readMoov(r io.ReaderAt, size int64) (*mp4.MoovBox, error) {
 		}
 		pos += boxSize
 	}
-	return nil, parseError("The MP4 file has no moov box.")
+	return nil, parseError("the MP4 file has no moov box")
 }
 
 // readBoxHeader returns the type, the size and the header length of the box at pos. It fails for a box that does
@@ -111,8 +111,8 @@ func readBoxHeader(r io.ReaderAt, pos, total uint64) (typ string, boxSize, heade
 		boxSize = total - pos
 	}
 	if boxSize < headerLen || boxSize > total-pos {
-		return "", 0, 0, parseError("The box " + typeName(head[4:8]) + " at byte " + strconv.FormatUint(pos, 10) +
-			" does not fit into its parent box.")
+		return "", 0, 0, parseError("the box " + typeName(head[4:8]) + " at byte " + strconv.FormatUint(pos, 10) +
+			" does not fit into its parent box")
 	}
 	return string(head[4:8]), boxSize, headerLen, nil
 }
@@ -128,7 +128,7 @@ func decodeMoov(r io.ReaderAt, pos, boxSize, headerLen uint64) (*mp4.MoovBox, er
 	header := mp4.BoxHeader{Name: "moov", Size: boxSize - headerLen + boxHeaderSize, Hdrlen: boxHeaderSize}
 	box, err := mp4.DecodeMoovSR(header, pos+headerLen-boxHeaderSize, bits.NewFixedSliceReader(payload))
 	if err != nil {
-		return nil, &model.ParseError{Msg: "The MP4 file is not valid: " + err.Error() + ".", Err: err}
+		return nil, &model.ParseError{Msg: "the MP4 file is not valid: " + err.Error(), Err: err}
 	}
 	return box.(*mp4.MoovBox), nil //nolint:forcetypeassert // DecodeMoovSR returns a *MoovBox
 }

@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const deepgramKey = string(model.Deepgram)
@@ -30,7 +30,7 @@ func ReadDeepgram(r io.Reader, common model.CommonReadOptions, opts ReadOptions)
 	results, _ := root.Get("results")
 	channels := cloudGet(results, "channels")
 	if results.Kind() != orderedjson.Object || channels.Kind() != orderedjson.Array {
-		return nil, nil, &model.ParseError{Format: model.Deepgram, Msg: `The JSON has no "results.channels" list.`}
+		return nil, nil, &model.ParseError{Format: model.Deepgram, Msg: `the JSON has no "results.channels" list`}
 	}
 	rd := &deepgramReader{st: st, fileSize: counted.n, cues: wordgroup.NewReader(st, wordgroup.Options{
 		WordTimestamps: opts.WordTimestamps, SpeakerVoices: opts.SpeakerVoices,
@@ -167,8 +167,8 @@ func (rd *deepgramReader) paragraphCues(paragraphs []orderedjson.Value, words []
 				continue
 			}
 			if rd.copied += size; rd.copied > rd.limit {
-				return nil, &model.ParseError{Format: model.Deepgram, Msg: "The sentences copy more than " + strconv.Itoa(rd.limit) +
-					" bytes of paragraph data into the cues. Each cue of a sentence holds a copy of its paragraph."}
+				return nil, &model.ParseError{Format: model.Deepgram, Msg: "the sentences copy more than " + strconv.Itoa(rd.limit) +
+					" bytes of paragraph data into the cues. Each cue of a sentence holds a copy of its paragraph"}
 			}
 			between := wordgroup.Between(words, &index, start, end)
 			data := deepgramSentenceData(sentence, channel, paragraph, rest, between, hasSpeaker)

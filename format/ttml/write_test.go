@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -62,7 +62,9 @@ func cue(start, end time.Duration, lines ...string) model.Cue {
 
 func subtitleOf(cues ...model.Cue) *model.Subtitle {
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return s
 }
 
@@ -365,7 +367,7 @@ func TestTextThatIsNotUTF8IsUnwritable(t *testing.T) {
 
 			uerr := writeError(t, tt.s())
 			require.ErrorIs(t, uerr, model.ErrInvalidUTF8)
-			assert.Equal(t, "The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding.", uerr.Reason)
+			assert.Equal(t, "the output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding", uerr.Reason)
 			assert.Equal(t, tt.cueIndex, uerr.CueIndex)
 		})
 	}

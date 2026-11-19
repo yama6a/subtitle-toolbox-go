@@ -9,11 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
-	"github.com/yama6a/subtitle-toolbox-go/v4/timing"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/timing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func snapDir(t *testing.T) string {
@@ -76,7 +76,7 @@ func TestConvertSnap(t *testing.T) {
 		{
 			"broken file",
 			[]string{"--video-fps", "24", "--snap-shot-changes", "bad2.txt"},
-			result{Code: exitFile, Stderr: "Error: bad2.txt: line 3: The shot change time \"00:01:2x\" is not valid. Use seconds or hh:mm:ss.mmm.\n"},
+			result{Code: exitFile, Stderr: "Error: bad2.txt: line 3: the shot change time \"00:01:2x\" is not valid. Use seconds or hh:mm:ss.mmm\n"},
 		},
 		{
 			"directory as file",

@@ -10,10 +10,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/pac"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const header = "0100000000000000000000000000000000000000"
@@ -29,7 +29,7 @@ func subtitle(t *testing.T, fileData *model.Data, cues ...model.Cue) *model.Subt
 	t.Helper()
 
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	require.NoError(t, s.AddCues(cues...))
 	if fileData != nil {
 		require.NoError(t, s.SetFormatData("pac", fileData))
 	}
@@ -146,11 +146,11 @@ func TestWriteRejects(t *testing.T) {
 		index  int
 	}{
 		{
-			name: "number 65536", index: 1, reason: "PAC allows subtitle numbers up to 65535.",
+			name: "number 65536", index: 1, reason: "PAC allows subtitle numbers up to 65535",
 			s: subtitle(t, fileData(65535), cue(0, time.Second, model.Position{}, "A"), cue(time.Second, 2*time.Second, model.Position{}, "B")),
 		},
 		{
-			name: "text of 65535 bytes", index: 0, reason: "PAC allows cue text of up to 65534 bytes.",
+			name: "text of 65535 bytes", index: 0, reason: "PAC allows cue text of up to 65534 bytes",
 			s: subtitle(t, nil, cue(0, time.Second, model.Position{}, string(bytes.Repeat([]byte("a"), 65535)))),
 		},
 	}

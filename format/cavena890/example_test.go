@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/cavena890"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/cavena890"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<i>Grüße</i> [x]"}})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"<i>Grüße</i> [x]"}}); err != nil {
+		panic(err)
+	}
 
 	var out bytes.Buffer
 	if _, err := cavena890.Write(&out, s, model.CommonWriteOptions{}, cavena890.WriteOptions{}); err != nil {

@@ -9,11 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Ports testRealFileRoundTrips of tests/Formatters/SamiFormatterTest.php of subtitle-toolbox-php.
@@ -111,7 +111,7 @@ func TestWriteClosesTagsThatTheCueLeavesOpen(t *testing.T) {
 
 	s, _, err := srt.Read(bytes.NewReader(testfiles.Read(t, "srt/real/own_styled.srt")), model.CommonReadOptions{}, srt.ReadOptions{})
 	require.NoError(t, err)
-	s.AddCue(model.Cue{Start: 900 * time.Second, End: 901 * time.Second, Lines: []string{`<b><font color="#ff0000">Red`, "<u>and bold</b>"}})
+	require.NoError(t, s.AddCue(model.Cue{Start: 900 * time.Second, End: 901 * time.Second, Lines: []string{`<b><font color="#ff0000">Red`, "<u>and bold</b>"}}))
 	out := write(t, s, model.CommonWriteOptions{})
 	assert.Contains(t, out, "<SYNC Start=540000><P Class=SUBTTL><i>Italics that never close</i>\n")
 	assert.Contains(t, out, "<SYNC Start=900000><P Class=SUBTTL><b><font color=\"#ff0000\">Red<br><u>and bold</b></u></font>\n")
@@ -259,7 +259,7 @@ func TestWriteInvalidUTF8(t *testing.T) {
 			require.ErrorIs(t, err, model.ErrUnwritable)
 			assert.Equal(t, model.UnwritableError{
 				Format: model.SAMI, CueIndex: tt.cue, Err: model.ErrInvalidUTF8,
-				Reason: "The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding.",
+				Reason: "the output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding",
 			}, *uerr)
 			assert.Zero(t, out.Len())
 		})

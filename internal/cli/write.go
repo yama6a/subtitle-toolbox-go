@@ -6,10 +6,10 @@ import (
 	"slices"
 	"strconv"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ebustl"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
 )
 
 // lineEndings maps the values of --line-ending to the library values. The first entry is the default.
@@ -173,9 +173,9 @@ func withImageCueAdvice(s *stbox.Subtitle, err error, hasOCR bool) error {
 		return err
 	}
 	if !hasOCR {
-		return usage(e.Reason + " " + imageCueAdviceNoOCR)
+		return usage(advise(e.Reason, imageCueAdviceNoOCR))
 	}
-	return usage(e.Reason + " " + imageCueAdvice)
+	return usage(advise(e.Reason, imageCueAdvice))
 }
 
 // optionsFor returns the write options for output in format f. The field of a format is set only for that format,

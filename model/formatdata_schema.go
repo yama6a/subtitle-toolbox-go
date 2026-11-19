@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/decimal"
 )
 
 // valueType is one type of the type language of the format data schema.
@@ -118,14 +118,14 @@ func listOf(elem valueType) valueType {
 func namesOf(elem valueType) valueType {
 	return namedValues(elem, func(key string) bool { return !decimal.IsCanonical(key) },
 		func(path string) string {
-			return "The field " + path + " must be an object whose keys are names, not numbers."
+			return "the field " + path + " must be an object whose keys are names, not numbers"
 		})
 }
 
 func keysOf(names []string, elem valueType) valueType {
 	return namedValues(elem, func(key string) bool { return slices.Contains(names, key) },
 		func(path string) string {
-			return "The field " + path + " must hold only the keys " + strings.Join(names, ", ") + "."
+			return "the field " + path + " must hold only the keys " + strings.Join(names, ", ")
 		})
 }
 
@@ -159,7 +159,7 @@ func objectOf(fields ...schemaField) valueType {
 			item, ok := d.Get(f.name)
 			if !ok {
 				if f.required {
-					return "The field " + path + "." + f.name + " is missing."
+					return "the field " + path + "." + f.name + " is missing"
 				}
 				continue
 			}
@@ -182,7 +182,7 @@ func (t valueType) check(v any, path string) string {
 	case t.nullable && v == nil:
 		return ""
 	case !t.accepts(v):
-		return "The field " + path + " must be " + t.desc + "."
+		return "the field " + path + " must be " + t.desc
 	case t.inner != nil:
 		return t.inner(v, path)
 	default:
@@ -190,8 +190,8 @@ func (t valueType) check(v any, path string) string {
 	}
 }
 
-// checkFormatData returns messages that all start with "The field formatData.KEY", because the library JSON
-// reader puts "cues[N]." after "The field " for cue data.
+// checkFormatData returns messages that all start with "the field formatData.KEY", because the library JSON
+// reader puts "cues[N]." after "the field " for cue data.
 func checkFormatData(schema map[string]valueType, key string, d *Data) error {
 	path := "formatData." + key
 	if msg := checkGoTypes(d, path); msg != "" {
@@ -218,7 +218,7 @@ func checkGoTypes(v any, path string) string {
 	for i := len(steps) - 1; i >= 0; i-- {
 		path = steps[i].appendTo(path)
 	}
-	return "The field " + path + problem
+	return "the field " + path + problem
 }
 
 // childStep is the step from a list or object to its item i. The path text of the step is built only for a message.
@@ -247,12 +247,12 @@ func findBadValue(v any, steps *[]childStep, open map[any]struct{}) string {
 		}
 		vals, _ = items(v)
 	default:
-		return fmt.Sprintf(" has the unsupported Go type %T.", v)
+		return fmt.Sprintf(" has the unsupported Go type %T", v)
 	}
 
 	id := identity(v)
 	if _, ok := open[id]; ok {
-		return " holds itself."
+		return " holds itself"
 	}
 	open[id] = struct{}{}
 	defer delete(open, id)

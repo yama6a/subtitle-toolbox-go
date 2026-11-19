@@ -4,10 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Ports testARoundTripKeepsTheDataOfTheSource of tests/Formatters/DeepgramFormatterTest.php of subtitle-toolbox-php.
@@ -141,11 +142,11 @@ func TestWriteDeepgramFromAnotherFormat(t *testing.T) {
 
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataLanguage, "de")
-	s.AddCue(model.Cue{Start: ms(1500), End: ms(3000), Lines: []string{"Guten", "Morgen."}, Speaker: "1"})
-	s.AddCue(model.Cue{
+	require.NoError(t, s.AddCue(model.Cue{Start: ms(1500), End: ms(3000), Lines: []string{"Guten", "Morgen."}, Speaker: "1"}))
+	require.NoError(t, s.AddCue(model.Cue{
 		Start: ms(4000), End: ms(5000), Lines: []string{"Bis bald."},
 		Words: []model.Word{{Text: "Bis", Start: ms(4000), End: ms(4500)}, {Text: "bald.", Start: ms(4500), End: ms(5000)}},
-	})
+	}))
 	want := `{"results":{"channels":[{"alternatives":[{"transcript":"Guten Morgen. Bis bald.","words":[` +
 		`{"word":"bis","start":4.0,"end":4.5,"confidence":1.0,"punctuated_word":"Bis"},` +
 		`{"word":"bald","start":4.5,"end":5.0,"confidence":1.0,"punctuated_word":"bald."}]}],"detected_language":"de"}],` +
@@ -162,10 +163,10 @@ func TestWriteDeepgramKeepsTheEndAndConfidenceOfAWord(t *testing.T) {
 
 	conf := 0.93
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{
+	require.NoError(t, s.AddCue(model.Cue{
 		End: ms(1000), Lines: []string{"beach"},
 		Words: []model.Word{{Text: "beach", Start: ms(100), End: ms(650), Confidence: &conf}},
-	})
+	}))
 	doc := deepgramFormat.output(t, s)
 	assert.JSONEq(t, `{"word":"beach","start":0.1,"end":0.65,"confidence":0.93,"punctuated_word":"beach"}`,
 		compact(t, doc, "results", "channels", 0, "alternatives", 0, "words", 0))

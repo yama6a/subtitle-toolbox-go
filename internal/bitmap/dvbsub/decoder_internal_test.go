@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func segment(typ byte, page int, payload ...byte) []byte {
@@ -274,14 +274,14 @@ func TestCues(t *testing.T) {
 		err := NewDecoder(1, 1, model.CommonReadOptions{}).Add(regionSeg(1, 8000, 10, 2, 0, 0, -1), 0, 0, false)
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr)
-		assert.Equal(t, "Cannot read region 1: an image of 8000x10 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total.", perr.Msg)
+		assert.Equal(t, "cannot read region 1: an image of 8000x10 pixels is larger than the limit of 7680 pixels per side and 8294400 pixels in total", perr.Msg)
 	})
 }
 
 func TestPixelLimits(t *testing.T) {
 	t.Parallel()
 
-	const totalLimit = "the regions hold more than 8294400 pixels in total."
+	const totalLimit = "the regions hold more than 8294400 pixels in total"
 
 	t.Run("regions that hold more than the pixel limit in total fail in strict mode", func(t *testing.T) {
 		t.Parallel()
@@ -293,7 +293,7 @@ func TestPixelLimits(t *testing.T) {
 		err := NewDecoder(1, 1, model.CommonReadOptions{}).Add(data, 0, 0, false)
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr)
-		assert.Equal(t, "Cannot read region 1: "+totalLimit, perr.Msg)
+		assert.Equal(t, "cannot read region 1: "+totalLimit, perr.Msg)
 	})
 
 	t.Run("lenient mode skips the region and warns", func(t *testing.T) {
@@ -304,7 +304,7 @@ func TestPixelLimits(t *testing.T) {
 		require.NoError(t, d.Add(data, 0, 0, false))
 		assert.Len(t, d.regions, 1)
 		require.Len(t, d.Warnings(), 1)
-		assert.Equal(t, "Cannot read region 1: "+totalLimit, d.Warnings()[0].Message)
+		assert.Equal(t, "Cannot read region 1: "+totalLimit+".", d.Warnings()[0].Message)
 		assert.Equal(t, model.Skipped, d.Warnings()[0].Action)
 	})
 

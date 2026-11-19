@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func limits(l model.CueLimits) model.MergeShortCuesOptions {
@@ -259,8 +259,8 @@ func TestMergeShortCuesWalksTheCuesInTimeOrder(t *testing.T) {
 	t.Parallel()
 
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: 500 * time.Millisecond, End: time.Second, Lines: []string{"two"}})
-	s.AddCue(model.Cue{Start: 0, End: 500 * time.Millisecond, Lines: []string{"One"}})
+	require.NoError(t, s.AddCue(model.Cue{Start: 500 * time.Millisecond, End: time.Second, Lines: []string{"two"}}))
+	require.NoError(t, s.AddCue(model.Cue{Start: 0, End: 500 * time.Millisecond, Lines: []string{"One"}}))
 
 	require.NoError(t, s.MergeShortCues(model.MergeShortCuesOptions{}))
 
@@ -339,7 +339,7 @@ func TestMergeShortCuesKeepsOneRightToLeftEmbedding(t *testing.T) {
 	require.NoError(t, json.Unmarshal(testfiles.Read(t, "short-cues/rows/rtl.json"), &row))
 	s := &model.Subtitle{}
 	for _, c := range row.Cues {
-		s.AddCue(model.Cue{Start: sec(c.Start), End: sec(c.End), Lines: []string{c.Text}})
+		require.NoError(t, s.AddCue(model.Cue{Start: sec(c.Start), End: sec(c.End), Lines: []string{c.Text}}))
 	}
 	s.FixRightToLeft()
 
@@ -425,44 +425,44 @@ func TestCueLimitsValidate(t *testing.T) {
 		{name: "minimum duration equal to the maximum", limits: model.CueLimits{MinDuration: new(2 * time.Second), MaxDuration: 2 * time.Second}},
 		{
 			name: "negative characters per line", limits: model.CueLimits{MaxCharactersPerLine: -1}, option: "CueLimits.MaxCharactersPerLine",
-			want: "The maximum characters per line and the maximum lines must be at least 1, got -1 and 2.",
+			want: "the maximum characters per line and the maximum lines must be at least 1, got -1 and 2",
 		},
 		{
 			name: "negative lines", limits: model.CueLimits{MaxLinesPerCue: -3}, option: "CueLimits.MaxLinesPerCue",
-			want: "The maximum characters per line and the maximum lines must be at least 1, got 42 and -3.",
+			want: "the maximum characters per line and the maximum lines must be at least 1, got 42 and -3",
 		},
 		{
 			name: "negative minimum duration", limits: model.CueLimits{MinDuration: new(-time.Millisecond)}, option: "CueLimits.MinDuration",
-			want: "The minimum duration must not be negative, got -0.001.",
+			want: "the minimum duration must not be negative, got -0.001",
 		},
 		{
 			name: "negative maximum duration", limits: model.CueLimits{MaxDuration: -time.Second}, option: "CueLimits.MaxDuration",
-			want: "The maximum duration and the maximum characters per second must be greater than 0, got -1 and no limit.",
+			want: "the maximum duration and the maximum characters per second must be greater than 0, got -1 and no limit",
 		},
 		{
 			name: "negative characters per second", limits: model.CueLimits{MaxCharactersPerSecond: -1}, option: "CueLimits.MaxCharactersPerSecond",
-			want: "The maximum duration and the maximum characters per second must be greater than 0, got 7 and -1.",
+			want: "the maximum duration and the maximum characters per second must be greater than 0, got 7 and -1",
 		},
 		{
 			name: "NaN characters per second", limits: model.CueLimits{MaxCharactersPerSecond: math.NaN()}, option: "CueLimits.MaxCharactersPerSecond",
-			want: "The maximum duration and the maximum characters per second must be greater than 0, got 7 and NAN.",
+			want: "the maximum duration and the maximum characters per second must be greater than 0, got 7 and NAN",
 		},
 		{
 			name: "infinite characters per second", limits: model.CueLimits{MaxCharactersPerSecond: math.Inf(1)}, option: "CueLimits.MaxCharactersPerSecond",
-			want: "The maximum duration and the maximum characters per second must be greater than 0, got 7 and INF.",
+			want: "the maximum duration and the maximum characters per second must be greater than 0, got 7 and INF",
 		},
 		{
 			name: "minimum duration above the default maximum", limits: model.CueLimits{MinDuration: new(8 * time.Second)}, option: "CueLimits.MinDuration",
-			want: "The minimum duration must not be greater than the maximum duration, got 8 and 7.",
+			want: "the minimum duration must not be greater than the maximum duration, got 8 and 7",
 		},
 		{
 			name: "default minimum duration above the maximum", limits: model.CueLimits{MaxDuration: 500 * time.Millisecond}, option: "CueLimits.MinDuration",
-			want: "The minimum duration must not be greater than the maximum duration, got 1 and 0.5.",
+			want: "the minimum duration must not be greater than the maximum duration, got 1 and 0.5",
 		},
 		{
 			name: "ValidateAt with a path", limits: model.CueLimits{MaxDuration: -time.Second}, path: "resegment.Options.Limits",
 			option: "resegment.Options.Limits.MaxDuration",
-			want:   "The maximum duration and the maximum characters per second must be greater than 0, got -1 and no limit.",
+			want:   "the maximum duration and the maximum characters per second must be greater than 0, got -1 and no limit",
 		},
 	}
 	for _, tt := range tests {
@@ -495,15 +495,15 @@ func TestMergeShortCuesOptionsValidate(t *testing.T) {
 		{name: "maximum gap of 0", opts: model.MergeShortCuesOptions{MaxGap: new(time.Duration(0))}},
 		{
 			name: "limits", opts: limits(model.CueLimits{MaxDuration: -time.Second}), option: "MergeShortCuesOptions.Limits.MaxDuration",
-			want: "The maximum duration and the maximum characters per second must be greater than 0, got -1 and no limit.",
+			want: "the maximum duration and the maximum characters per second must be greater than 0, got -1 and no limit",
 		},
 		{
 			name: "negative maximum gap", opts: model.MergeShortCuesOptions{MaxGap: new(-time.Millisecond)}, option: "MergeShortCuesOptions.MaxGap",
-			want: "The maximum gap must not be negative, got -0.001.",
+			want: "the maximum gap must not be negative, got -0.001",
 		},
 		{
 			name: "negative minimum characters", opts: model.MergeShortCuesOptions{MinCharacters: -1}, option: "MergeShortCuesOptions.MinCharacters",
-			want: "The minimum characters must not be negative, got -1.",
+			want: "the minimum characters must not be negative, got -1",
 		},
 	}
 	for _, tt := range tests {
@@ -545,7 +545,7 @@ func wordsEvery600ms(tb testing.TB, n int) *model.Subtitle {
 		cues[i] = model.Cue{Start: start, End: start + 500*time.Millisecond, Lines: []string{fmt.Sprintf("word%d", i)}}
 	}
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	require.NoError(tb, s.AddCues(cues...))
 	for i := range n {
 		require.NoError(tb, s.AddComment(fmt.Sprintf("note %d", i), i))
 	}

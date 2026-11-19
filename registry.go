@@ -9,37 +9,37 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/cavena890"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/chapters"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/dcp"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ebustl"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/lrc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpl2"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/pac"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/pgs"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/qttext"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/sbv"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/sprucestl"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/tmplayer"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/cavena890"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/chapters"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/dcp"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/lrc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mpl2"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/pgs"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/qttext"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/sbv"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/tmplayer"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/vobsub"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/youtube"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 type jsonCheck struct {
@@ -233,9 +233,11 @@ func writeFormat(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteRe
 	case CSV:
 		return writeCSV(w, s, common, opts)
 	case FFMetadataChapters:
-		return WriteReport{}, chapters.WriteFFMetadata(w, s, common, chapters.WriteOptions{})
+		_, err := chapters.WriteFFMetadata(w, s, common, chapters.WriteOptions{})
+		return WriteReport{}, err
 	case HTMLTranscript:
-		return WriteReport{}, transcript.WriteHTML(w, s, common, opts.Transcript)
+		_, err := transcript.WriteHTML(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case ITT:
 		_, err := itt.Write(w, s, common, opts.ITT)
 		return WriteReport{}, err
@@ -243,13 +245,17 @@ func writeFormat(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteRe
 		_, err := stboxjson.Write(w, s, common, opts.JSON)
 		return WriteReport{}, err
 	case AssemblyAI:
-		return WriteReport{}, transcript.WriteAssemblyAI(w, s, common, opts.Transcript)
+		_, err := transcript.WriteAssemblyAI(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case AWSTranscribe:
-		return WriteReport{}, transcript.WriteAWSTranscribe(w, s, common, opts.Transcript)
+		_, err := transcript.WriteAWSTranscribe(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case Deepgram:
-		return WriteReport{}, transcript.WriteDeepgram(w, s, common, opts.Transcript)
+		_, err := transcript.WriteDeepgram(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case GoogleSpeech:
-		return WriteReport{}, transcript.WriteGoogleSpeech(w, s, common, opts.Transcript)
+		_, err := transcript.WriteGoogleSpeech(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case LRC:
 		_, err := lrc.Write(w, s, common, lrc.WriteOptions{})
 		return WriteReport{}, err
@@ -327,17 +333,23 @@ func writeFormat(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteRe
 		}
 		return WriteReport{WebVTT: &report}, nil
 	case Whisper:
-		return WriteReport{}, transcript.WriteWhisper(w, s, common, opts.Transcript)
+		_, err := transcript.WriteWhisper(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case YouTubeTimedText:
-		return WriteReport{}, youtube.Write(w, s, common, youtube.WriteOptions{})
+		_, err := youtube.Write(w, s, common, youtube.WriteOptions{})
+		return WriteReport{}, err
 	case OGMChapters:
-		return WriteReport{}, chapters.WriteOGM(w, s, common, chapters.WriteOptions{})
+		_, err := chapters.WriteOGM(w, s, common, chapters.WriteOptions{})
+		return WriteReport{}, err
 	case PodcastChapters:
-		return WriteReport{}, chapters.WritePodcast(w, s, common, chapters.WriteOptions{})
+		_, err := chapters.WritePodcast(w, s, common, chapters.WriteOptions{})
+		return WriteReport{}, err
 	case PodcastTranscript:
-		return WriteReport{}, transcript.WritePodcast(w, s, common, opts.Transcript)
+		_, err := transcript.WritePodcast(w, s, common, opts.Transcript)
+		return WriteReport{}, err
 	case YouTubeChapters:
-		return WriteReport{}, chapters.WriteYouTube(w, s, common, chapters.WriteOptions{})
+		_, err := chapters.WriteYouTube(w, s, common, chapters.WriteOptions{})
+		return WriteReport{}, err
 	}
 	return WriteReport{}, errNoWriter
 }
@@ -349,7 +361,7 @@ func readPAC(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*Su
 		if !ok {
 			return nil, nil, &InvalidArgumentError{
 				Option: "ReadOptions.Encoding",
-				Msg:    "PAC files have no code page for the encoding " + strconv.Quote(opts.Encoding) + ".",
+				Msg:    "PAC files have no code page for the encoding " + strconv.Quote(opts.Encoding),
 			}
 		}
 		pacOpts.CodePage = codePage

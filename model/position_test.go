@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestPositionRowOn(t *testing.T) {
@@ -98,7 +98,7 @@ func TestSetCueValidatesThePosition(t *testing.T) {
 	t.Parallel()
 
 	var s model.Subtitle
-	s.AddCue(model.Cue{Lines: []string{"a"}})
+	require.NoError(t, s.AddCue(model.Cue{Lines: []string{"a"}}))
 	offset := &model.Offset{X: 50, Y: 10}
 	require.NoError(t, s.SetCue(0, model.Cue{Lines: []string{"a"}, Position: model.Position{Offset: offset}}))
 	offset.Y = 20

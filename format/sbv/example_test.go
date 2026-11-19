@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/sbv"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/sbv"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleRead() {
@@ -29,10 +29,12 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"<i>Fish &amp; Chips</i>"}},
 		model.Cue{Start: 5 * time.Second, End: 6 * time.Second, Lines: []string{"On the menu"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	_, err := sbv.Write(os.Stdout, s, model.CommonWriteOptions{}, sbv.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)

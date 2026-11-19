@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleReadAWSTranscribe() {
@@ -35,11 +35,13 @@ func ExampleReadAWSTranscribe() {
 
 func ExampleWriteAWSTranscribe() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{
+	if err := s.AddCue(model.Cue{
 		Start: 4 * time.Second, End: 5 * time.Second, Lines: []string{"See you."}, Speaker: "Ben",
 		Words: []model.Word{{Text: "See", Start: 4 * time.Second, End: 4500 * time.Millisecond}, {Text: "you.", Start: 4500 * time.Millisecond, End: 5 * time.Second}},
-	})
-	if err := transcript.WriteAWSTranscribe(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+	}); err != nil {
+		panic(err)
+	}
+	if _, err := transcript.WriteAWSTranscribe(os.Stdout, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
 	// Output:

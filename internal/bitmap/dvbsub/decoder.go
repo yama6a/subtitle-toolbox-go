@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -61,8 +61,8 @@ type cueRecord struct {
 
 // Decoder turns the segments of one DVB subtitle service into image cues.
 type Decoder struct {
-	pages   [2]int
-	all     bool
+	pages   [2]int // composition page and ancillary page
+	all     bool   // read every page, for a Matroska track without page numbers
 	width   int
 	height  int
 	left    int
@@ -87,16 +87,21 @@ type Decoder struct {
 // NewDecoder reads the segments of the composition page and the ancillary page.
 // Lenient mode of common skips a region that would exceed the pixel limit and records a Skipped warning.
 func NewDecoder(compositionPage, ancillaryPage int, common model.CommonReadOptions) *Decoder {
-	d := NewAllPagesDecoder(common)
+	d := newDecoder(common)
 	d.pages = [2]int{compositionPage, ancillaryPage}
-	d.all = false
 	return d
 }
 
 // NewAllPagesDecoder reads the segments of every page, for a Matroska track without page numbers.
 func NewAllPagesDecoder(common model.CommonReadOptions) *Decoder {
+	d := newDecoder(common)
+	d.all = true
+	return d
+}
+
+func newDecoder(common model.CommonReadOptions) *Decoder {
 	return &Decoder{
-		all: true, st: parsing.NewState("", common),
+		st:    parsing.NewState("", common),
 		width: defaultWidth, height: defaultHeight, version: -1,
 		regions: map[int]*region{}, cluts: map[int]*clut{},
 	}
@@ -233,12 +238,12 @@ func (d *Decoder) readRegion(data []byte) error {
 // fits checks the size limits for region id. ok is false when the region must not be stored. Then err is the error of
 // strict mode, or nil after a Skipped warning.
 func (d *Decoder) fits(id, width, height int) (ok bool, err error) {
-	prefix := "Cannot read region " + strconv.Itoa(id) + ": "
+	prefix := "cannot read region " + strconv.Itoa(id) + ": "
 	if reason := bitmap.SizeLimit(width, height); reason != "" {
 		return false, &model.ParseError{Msg: prefix + reason}
 	}
 	if d.regionPixels(id)+width*height > model.MaxImagePixels {
-		msg := prefix + "the regions hold more than " + strconv.Itoa(model.MaxImagePixels) + " pixels in total."
+		msg := prefix + "the regions hold more than " + strconv.Itoa(model.MaxImagePixels) + " pixels in total"
 		return false, d.st.Fail(&model.ParseError{Msg: msg}, model.NoLine, d.segments, nil)
 	}
 	return true, nil

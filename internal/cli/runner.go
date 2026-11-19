@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strconv"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
 )
 
 // isInterrupt reports whether err is the error of the cancelled ctx, so the run stops with exit code 130.
@@ -186,7 +186,7 @@ func (r *runner) processInput(ctx context.Context, fc fileCommand, arg string) (
 
 // message returns the CLI text of err, with the name of the option that sets the input format.
 func (r *runner) message(err error) string {
-	if r.fromOption != "" && errors.Is(err, stbox.ErrUnknownFormat) {
+	if r.fromOption != "" && errors.Is(err, stbox.ErrNoFormatDetected) {
 		return unknownFormatAdvice(r.fromOption)
 	}
 	return message(err)

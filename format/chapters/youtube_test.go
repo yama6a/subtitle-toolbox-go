@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/chapters"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/chapters"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 type chapter struct {
@@ -99,21 +99,22 @@ func TestReadYouTubeOptions(t *testing.T) {
 	var ia *model.InvalidArgumentError
 	require.ErrorAs(t, err, &ia)
 	assert.Equal(t, "ReadOptions.Chapters.MediaDuration", ia.Option)
-	assert.Equal(t, "The media duration must be 0 or more seconds, got -1.", ia.Msg)
+	assert.Equal(t, "the media duration must be 0 or more seconds, got -1", ia.Msg)
 }
 
 func TestWriteYouTube(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCues(
+	require.NoError(t, s.AddCues(
 		model.Cue{Start: 900 * time.Millisecond, Lines: []string{"Intro"}},
 		model.Cue{Start: 3599990 * time.Millisecond, Lines: []string{"<i>Last</i> minute"}},
 		model.Cue{Start: time.Hour},
 		model.Cue{Start: 10 * time.Hour, Lines: []string{"Ten", "&amp; hours"}},
-	)
+	))
 	var buf bytes.Buffer
-	require.NoError(t, chapters.WriteYouTube(&buf, s, model.CommonWriteOptions{}, chapters.WriteOptions{}))
+	_, err := chapters.WriteYouTube(&buf, s, model.CommonWriteOptions{}, chapters.WriteOptions{})
+	require.NoError(t, err)
 	assert.Equal(t, "0:00 Intro\n59:59 Last minute\n1:00:00\n10:00:00 Ten & hours\n", buf.String())
 }
 
@@ -127,7 +128,8 @@ func TestYouTubeRealFiles(t *testing.T) {
 			first, _, err := chapters.ReadYouTube(bytes.NewReader(testfiles.Read(t, "chapters/youtube/real/"+name)), model.CommonReadOptions{}, chapters.ReadOptions{})
 			require.NoError(t, err)
 			var buf bytes.Buffer
-			require.NoError(t, chapters.WriteYouTube(&buf, first, model.CommonWriteOptions{}, chapters.WriteOptions{}))
+			_, err = chapters.WriteYouTube(&buf, first, model.CommonWriteOptions{}, chapters.WriteOptions{})
+			require.NoError(t, err)
 			second, _, err := chapters.ReadYouTube(&buf, model.CommonReadOptions{}, chapters.ReadOptions{})
 			require.NoError(t, err)
 			require.Equal(t, first.Len(), second.Len())

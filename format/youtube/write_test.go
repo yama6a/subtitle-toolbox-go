@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/youtube"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Ports the round trips of tests/Formatters/YouTubeTimedTextFormatterTest.php of subtitle-toolbox-php. An XML
@@ -86,11 +86,11 @@ func TestWriteRejectsInvalidUTF8(t *testing.T) {
 
 	s := read(t, `<transcript><text start="1" dur="2">a</text></transcript>`, youtube.ReadOptions{})
 	editCue(t, s, 0, func(c *model.Cue) { c.Lines = []string{"caf\xe9"} })
-	err := youtube.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, youtube.WriteOptions{})
+	_, err := youtube.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, youtube.WriteOptions{})
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	require.ErrorIs(t, err, model.ErrInvalidUTF8)
-	assert.Equal(t, "The output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding.", uerr.Reason)
+	assert.Equal(t, "the output cannot hold text that is not valid UTF-8. Read a file in another encoding with its source encoding", uerr.Reason)
 }
 
 // Each source stays as it is after a read and a write without an edit.

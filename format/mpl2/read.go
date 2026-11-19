@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const tenth = 100 * time.Millisecond
@@ -44,14 +44,16 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 		}
 		block++
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 
 func parseLine(st *parsing.State, raw string, line, block int) (model.Cue, error) {
 	m := cueRegexp.FindStringSubmatch(raw)
 	if m == nil {
-		return model.Cue{}, &model.ParseError{Line: line, Msg: `The line "` + raw + `" is not an MPL2 cue.`}
+		return model.Cue{}, &model.ParseError{Line: line, Msg: `the line "` + raw + `" is not an MPL2 cue`}
 	}
 	start, err := tenths(m[1], line)
 	if err != nil {

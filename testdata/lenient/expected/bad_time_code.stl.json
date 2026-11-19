@@ -2,7 +2,7 @@
     "name": "EBU STL with frame 30 in a 25 fps time code out and a cut last block",
     "format": "stl",
     "strict": {
-        "error": "The TTI blocks of an EBU STL file must have 128 bytes each."
+        "error": "the TTI blocks of an EBU STL file must have 128 bytes each"
     },
     "cues": [
         {

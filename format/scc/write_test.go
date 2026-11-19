@@ -11,10 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func cue(start, end float64, lines ...string) model.Cue {
@@ -23,7 +23,9 @@ func cue(start, end float64, lines ...string) model.Cue {
 
 func subtitle(cues ...model.Cue) *model.Subtitle {
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return s
 }
 
@@ -97,43 +99,43 @@ func TestWriteLimits(t *testing.T) {
 			"5 lines",
 			[]model.Cue{cue(1, 2, "Hi"), cue(3, 4, "1", "2", "3", "4", "5")},
 			false,
-			"scc: Cue #1 at 3 s has 5 lines, but SCC allows 4. Wrap the lines to 4 lines of 32 characters first.", scc.ErrWrapFirst,
+			"scc: cue #1 at 3 s has 5 lines, but SCC allows 4. Wrap the lines to 4 lines of 32 characters first", scc.ErrWrapFirst,
 		},
 		{
 			"33 characters in a styled line",
 			[]model.Cue{cue(1, 2, "<i>"+strings.Repeat("a", 33)+"</i>")},
 			false,
-			"scc: Cue #0 at 1 s has a line with 33 characters, but SCC allows 32. Wrap the lines to 4 lines of 32 characters first.", scc.ErrWrapFirst,
+			"scc: cue #0 at 1 s has a line with 33 characters, but SCC allows 32. Wrap the lines to 4 lines of 32 characters first", scc.ErrWrapFirst,
 		},
 		{
 			"text that wrapping cannot fit",
 			[]model.Cue{cue(1, 8, bakery)},
 			false,
-			"scc: Cue #0 at 1 s has a line with 139 characters, but SCC allows 32. Split the cue into cues of 4 lines of 32 characters, then wrap the lines.", scc.ErrSplitFirst,
+			"scc: cue #0 at 1 s has a line with 139 characters, but SCC allows 32. Split the cue into cues of 4 lines of 32 characters, then wrap the lines", scc.ErrSplitFirst,
 		},
 		{
 			"character without a code",
 			[]model.Cue{cue(1, 2, han)},
 			false,
-			`scc: Cue #0 at 1 s has the character "` + han + `", which CEA-608 cannot show.`, nil,
+			`scc: cue #0 at 1 s has the character "` + han + `", which CEA-608 cannot show`, nil,
 		},
 		{
 			"fit keeps the failure for text that does not wrap",
 			[]model.Cue{cue(1, 8, bakery)},
 			true,
-			"scc: Cue #0 at 1 s has a line with 139 characters, but SCC allows 32. Split the cue into cues of 4 lines of 32 characters, then wrap the lines.", scc.ErrSplitFirst,
+			"scc: cue #0 at 1 s has a line with 139 characters, but SCC allows 32. Split the cue into cues of 4 lines of 32 characters, then wrap the lines", scc.ErrSplitFirst,
 		},
 		{
 			"fit keeps the failure for a character without replacement",
 			[]model.Cue{cue(1, 2, "Š"+han)},
 			true,
-			`scc: Cue #0 at 1 s has the character "` + han + `", which CEA-608 cannot show.`, nil,
+			`scc: cue #0 at 1 s has the character "` + han + `", which CEA-608 cannot show`, nil,
 		},
 		{
 			"fit ends a long CJK cue with the split hint",
 			[]model.Cue{cue(1, 8, cjk)},
 			true,
-			"scc: Cue #0 at 1 s has a line with 341 characters, but SCC allows 32. Split the cue into cues of 4 lines of 32 characters, then wrap the lines.", scc.ErrSplitFirst,
+			"scc: cue #0 at 1 s has a line with 341 characters, but SCC allows 32. Split the cue into cues of 4 lines of 32 characters, then wrap the lines", scc.ErrSplitFirst,
 		},
 	}
 	for _, tt := range tests {

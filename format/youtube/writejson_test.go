@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/youtube"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func decodeJSON(t *testing.T, s string) orderedjson.Value {
@@ -95,6 +95,6 @@ func TestWriteJSON3RejectsInvalidUTF8(t *testing.T) {
 
 	s := read(t, json3Hello, youtube.ReadOptions{})
 	editCue(t, s, 0, func(c *model.Cue) { c.Lines = []string{"caf\xe9"} })
-	err := youtube.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, youtube.WriteOptions{})
+	_, err := youtube.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, youtube.WriteOptions{})
 	require.ErrorIs(t, err, model.ErrInvalidUTF8)
 }

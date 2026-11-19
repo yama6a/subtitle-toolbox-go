@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/chapters"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/chapters"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestReadFFMetadata(t *testing.T) {
@@ -89,12 +89,12 @@ func TestReadFFMetadataErrors(t *testing.T) {
 		wantMsg  string
 		wantLine int
 	}{
-		{"no header", "[CHAPTER]\nSTART=0\n", "The content does not start with the ;FFMETADATA header.", 1},
-		{"zero time base", ";FFMETADATA1\n\n[CHAPTER]\nTIMEBASE=1/0\nSTART=0\n", "The chapter time base 1/0 is not valid.", 4},
-		{"time base beyond int64", ";FFMETADATA1\n[CHAPTER]\nTIMEBASE=99999999999999999999/1000\n", "The chapter time base 99999999999999999999/1000 is not valid.", 3},
-		{"100000 hours", ";FFMETADATA1\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=360000000000\n", `The time "START=360000000000" is not below 100000 hours.`, 4},
-		{"end of 1e20 ns", ";FFMETADATA1\n[CHAPTER]\nSTART=0\nEND=100000000000000000000\n", `The time "END=100000000000000000000" is not below 100000 hours.`, 4},
-		{"line after a continued line", ";FFMETADATA1\ntitle=a\\\nb\n[CHAPTER]\nTIMEBASE=0/1\n", "The chapter time base 0/1 is not valid.", 5},
+		{"no header", "[CHAPTER]\nSTART=0\n", "the content does not start with the ;FFMETADATA header", 1},
+		{"zero time base", ";FFMETADATA1\n\n[CHAPTER]\nTIMEBASE=1/0\nSTART=0\n", "the chapter time base 1/0 is not valid", 4},
+		{"time base beyond int64", ";FFMETADATA1\n[CHAPTER]\nTIMEBASE=99999999999999999999/1000\n", "the chapter time base 99999999999999999999/1000 is not valid", 3},
+		{"100000 hours", ";FFMETADATA1\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=360000000000\n", `the time "START=360000000000" is not below 100000 hours`, 4},
+		{"end of 1e20 ns", ";FFMETADATA1\n[CHAPTER]\nSTART=0\nEND=100000000000000000000\n", `the time "END=100000000000000000000" is not below 100000 hours`, 4},
+		{"line after a continued line", ";FFMETADATA1\ntitle=a\\\nb\n[CHAPTER]\nTIMEBASE=0/1\n", "the chapter time base 0/1 is not valid", 5},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -155,12 +155,12 @@ func TestWriteFFMetadata(t *testing.T) {
 
 		c := model.Cue{Start: time.Second, End: 2 * time.Second}
 		require.NoError(t, c.SetFormatData("ffmeta-chapters", model.NewData(model.Field{Key: "timeBase", Value: "1/99999999999999999999"})))
-		err := chapters.WriteFFMetadata(&strings.Builder{}, chaptersOf(c), model.CommonWriteOptions{}, chapters.WriteOptions{})
+		_, err := chapters.WriteFFMetadata(&strings.Builder{}, chaptersOf(c), model.CommonWriteOptions{}, chapters.WriteOptions{})
 
 		var uerr *model.UnwritableError
 		require.ErrorAs(t, err, &uerr)
 		assert.Equal(t, 0, uerr.CueIndex)
-		assert.Equal(t, "The stored time base 1/99999999999999999999 has a number beyond 9223372036854775807.", uerr.Reason)
+		assert.Equal(t, "the stored time base 1/99999999999999999999 has a number beyond 9223372036854775807", uerr.Reason)
 	})
 }
 

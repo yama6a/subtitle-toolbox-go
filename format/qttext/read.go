@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/decimal"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/decimal"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 type sample struct {
@@ -57,7 +57,9 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 	if err := setFileData(s, header, paired); err != nil {
 		return nil, nil, err
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 
@@ -89,11 +91,11 @@ func checkHeader(st *parsing.State, header []string) error {
 	if len(header) > 0 && headerRegexp.MatchString(header[0]) {
 		return nil
 	}
-	const msg = "The file does not start with {QTtext}."
+	const msg = "the file does not start with {QTtext}"
 	if !st.Lenient() {
 		return &model.ParseError{Format: model.QuickTimeText, Line: 1, Msg: msg}
 	}
-	st.Warn(msg+" The parser read it as QuickTime text.", 1, model.NoBlock, nil, model.Repaired)
+	st.Warn(parsing.Sentence(msg)+" The parser read it as QuickTime text.", 1, model.NoBlock, nil, model.Repaired)
 	return nil
 }
 
@@ -201,11 +203,11 @@ func (rd *reader) time(m []string, line int) (time.Duration, error) {
 	if rd.scale > 0 && fraction != "" {
 		units = decimal.Saturated(fraction)
 		if units >= rd.scale {
-			msg := fmt.Sprintf("The timestamp %q counts %s units, but the time scale is %d per second.", m[0], fraction, rd.scale)
+			msg := fmt.Sprintf("the timestamp %q counts %s units, but the time scale is %d per second", m[0], fraction, rd.scale)
 			if !rd.st.Lenient() {
 				return 0, &model.ParseError{Line: line, Msg: msg}
 			}
-			rd.st.Warn(msg+" The parser added them to the seconds.", line, model.NoBlock, []string{m[0]}, model.Repaired)
+			rd.st.Warn(parsing.Sentence(msg)+" The parser added them to the seconds.", line, model.NoBlock, []string{m[0]}, model.Repaired)
 		}
 	}
 

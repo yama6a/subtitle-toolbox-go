@@ -8,8 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/stretchr/testify/require"
+
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -34,7 +36,7 @@ func FuzzSubtitleOps(f *testing.F) {
 			at := time.Duration(a-64) * 100 * time.Millisecond
 			switch op {
 			case opAddCue:
-				s.AddCue(model.Cue{Start: at, End: at + time.Duration(b)*time.Millisecond})
+				require.NoError(t, s.AddCue(model.Cue{Start: at, End: at + time.Duration(b)*time.Millisecond}))
 			case opSetCue:
 				if s.Len() > 0 {
 					_ = s.SetCue(b%s.Len(), model.Cue{Start: at, End: at + time.Second})
@@ -161,7 +163,7 @@ func FuzzChangeCase(f *testing.F) {
 		for _, mode := range []model.CaseMode{model.CaseUpper, model.CaseLower, model.CaseSentence} {
 			for _, language := range []string{"", "tr"} {
 				s := &model.Subtitle{}
-				s.AddCues(model.Cue{End: time.Second, Lines: []string{line}}, model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{line}})
+				require.NoError(t, s.AddCues(model.Cue{End: time.Second, Lines: []string{line}}, model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{line}}))
 				before := tagsOf(s)
 				if err := s.ChangeCase(mode, language); err != nil {
 					t.Fatalf("ChangeCase(%q, %q) of %q: %v", mode, language, line, err)

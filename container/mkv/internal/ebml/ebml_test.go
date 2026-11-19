@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/container/mkv/internal/ebml"
+	"github.com/yama6a/subtitle-toolbox-go/v5/container/mkv/internal/ebml"
 )
 
 func TestReadVint(t *testing.T) {
@@ -89,52 +89,52 @@ func TestBrokenElements(t *testing.T) {
 	}{
 		{
 			"ID with first byte 0", "\x00\xA3", func(r *ebml.Reader) error { _, _, err := r.Header(0); return err },
-			"The EBML element header at byte 0 is not valid.",
+			"the EBML element header at byte 0 is not valid",
 		},
 		{
 			"size with first byte 0", "\xA3\x00\x81", func(r *ebml.Reader) error { _, _, err := r.Header(0); return err },
-			"The EBML element header at byte 0 is not valid.",
+			"the EBML element header at byte 0 is not valid",
 		},
 		{
 			"size cut by the file end", "\xA3\x40", func(r *ebml.Reader) error { _, _, err := r.Header(0); return err },
-			"The EBML element header at byte 0 is not valid.",
+			"the EBML element header at byte 0 is not valid",
 		},
 		{"data cut by the file end", "\x86\x8BS_TEXT", func(r *ebml.Reader) error {
 			h, _, err := r.Header(0)
 			require.NoError(t, err)
 			_, err = r.String(h)
 			return err
-		}, "The element data at byte 2 needs 11 bytes, but the file ends before."},
+		}, "the element data at byte 2 needs 11 bytes, but the file ends before"},
 		{"data of 2^40 bytes", "\xA3\x01\x00\x01\x00\x00\x00\x00\x00", func(r *ebml.Reader) error {
 			h, _, err := r.Header(0)
 			require.NoError(t, err)
 			_, err = r.Bytes(h)
 			return err
-		}, "The element data at byte 9 needs 1099511627776 bytes, but the file ends before."},
+		}, "the element data at byte 9 needs 1099511627776 bytes, but the file ends before"},
 		{"unsigned of 2^63", "\xE7\x88\x80\x00\x00\x00\x00\x00\x00\x00", func(r *ebml.Reader) error {
 			h, _, _ := r.Header(0)
 			_, err := r.Unsigned(h)
 			return err
-		}, "The unsigned integer of the element 0xE7 at byte 2 is longer than 8 bytes or not below 2^63."},
+		}, "the unsigned integer of the element 0xE7 at byte 2 is longer than 8 bytes or not below 2^63"},
 		{"unsigned of 9 bytes", "\xE7\x89\x00\x00\x00\x00\x00\x00\x00\x00\x01", func(r *ebml.Reader) error {
 			h, _, _ := r.Header(0)
 			_, err := r.Unsigned(h)
 			return err
-		}, "The unsigned integer of the element 0xE7 at byte 2 is longer than 8 bytes or not below 2^63."},
+		}, "the unsigned integer of the element 0xE7 at byte 2 is longer than 8 bytes or not below 2^63"},
 		{"master element of unknown size", "\x1F\x43\xB6\x75\x01\xFF\xFF\xFF\xFF\xFF\xFF\xFF", func(r *ebml.Reader) error {
 			h, _, _ := r.Header(0)
 			for _, err := range r.Children(h) {
 				return err
 			}
 			return nil
-		}, "The element 0x1F43B675 at byte 12 has an unknown size, which only Segment and Cluster may have."},
+		}, "the element 0x1F43B675 at byte 12 has an unknown size, which only Segment and Cluster may have"},
 		{"child larger than its parent", "\x18\x53\x80\x67\x83\x86\x85ab", func(r *ebml.Reader) error {
 			h, _, _ := r.Header(0)
 			for _, err := range r.Children(h) {
 				return err
 			}
 			return nil
-		}, "The element at byte 5 does not fit into its parent element."},
+		}, "the element at byte 5 does not fit into its parent element"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

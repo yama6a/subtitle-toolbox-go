@@ -2,7 +2,7 @@
     "name": "SBV with a bad timestamp",
     "format": "sbv",
     "strict": {
-        "error": "The time \"0:00:0G.000\" is not valid.",
+        "error": "the time \"0:00:0G.000\" is not valid",
         "line": 4
     },
     "cues": [

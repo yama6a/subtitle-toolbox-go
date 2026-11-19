@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 )
 
 var update = flag.Bool("update", false, "rewrite the write golden files")
@@ -419,7 +419,7 @@ func TestInfoTextWithoutCues(t *testing.T) {
 	t.Parallel()
 
 	lyrics := "[ti:Harbour walk]\nThe ferry leaves at nine.\n"
-	assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 2: The file has text but no cues.\n" + lenientHint + "\n"},
+	assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 2: the file has text but no cues\n" + lenientHint + "\n"},
 		call{stdin: lyrics}.run(t, "info", "-", "--from", "lrc"))
 	got := call{stdin: lyrics}.run(t, "info", "-", "--from", "lrc", "--lenient")
 	assert.Equal(t, 0, got.Code)
@@ -430,7 +430,7 @@ func TestInfoQuickTimeTextWithoutItsHeader(t *testing.T) {
 	t.Parallel()
 
 	content := "[00:00:01.00]\nHello\n[00:00:02.00]\n"
-	assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 1: The file does not start with {QTtext}.\n" + lenientHint + "\n"},
+	assert.Equal(t, result{Code: exitFile, Stderr: "stdin: line 1: the file does not start with {QTtext}\n" + lenientHint + "\n"},
 		call{stdin: content}.run(t, "info", "-", "--from", "qttext"))
 	got := call{stdin: content}.run(t, "info", "-", "--from", "qttext", "--lenient")
 	assert.Equal(t, 0, got.Code)

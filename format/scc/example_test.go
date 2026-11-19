@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleRead() {
@@ -30,7 +30,9 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"Hello!"}})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"Hello!"}}); err != nil {
+		panic(err)
+	}
 	report, err := scc.Write(os.Stdout, s, model.CommonWriteOptions{}, scc.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)
@@ -57,5 +59,5 @@ func ExampleDetect() {
 func ExampleReadOptions_Validate() {
 	fmt.Println(scc.ReadOptions{Channel: 3}.Validate())
 	// Output:
-	// stbox: invalid argument: ReadOptions.SCC.Channel: The SCC data channel must be 1 or 2, got 3.
+	// stbox: invalid argument: ReadOptions.SCC.Channel: the SCC data channel must be 1 or 2, got 3
 }

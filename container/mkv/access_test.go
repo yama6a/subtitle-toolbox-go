@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/container/mkv"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/container/mkv"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const mkvmergeApp = "mkvmerge v99.0 ('Buka') 64-bit"
@@ -84,7 +84,7 @@ func TestCuesFastPath(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, _, err := openFile(t, tt.file).Extract(2, model.CommonReadOptions{})
+			s, _, err := openFile(t, tt.file).Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, cueRows(s))
 		})
@@ -101,14 +101,14 @@ func TestExtractErrors(t *testing.T) {
 		track int
 		want  string
 	}{
-		{"codec without a reader", aribFile, 2, "Track 2 has the codec S_ARIBSUB. The reader extracts only S_TEXT/UTF8, S_TEXT/ASS, S_TEXT/SSA, " +
-			"S_TEXT/WEBVTT, S_HDMV/PGS, S_VOBSUB, S_DVBSUB, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS."},
+		{"codec without a reader", aribFile, 2, "track 2 has the codec S_ARIBSUB. The reader extracts only S_TEXT/UTF8, S_TEXT/ASS, S_TEXT/SSA, " +
+			"S_TEXT/WEBVTT, S_HDMV/PGS, S_VOBSUB, S_DVBSUB, D_WEBVTT/SUBTITLES, D_WEBVTT/CAPTIONS, D_WEBVTT/DESCRIPTIONS"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			_, _, err := openFile(t, tt.file).Extract(tt.track, model.CommonReadOptions{})
+			_, _, err := openFile(t, tt.file).Extract(tt.track, model.CommonReadOptions{}, mkv.ExtractOptions{})
 			var pe *model.ParseError
 			require.ErrorAs(t, err, &pe)
 			assert.Equal(t, tt.want, pe.Msg)
@@ -118,10 +118,10 @@ func TestExtractErrors(t *testing.T) {
 	t.Run("a video track", func(t *testing.T) {
 		t.Parallel()
 
-		_, _, err := openTestdata(t, "text_tracks.mkv").Extract(1, model.CommonReadOptions{})
+		_, _, err := openTestdata(t, "text_tracks.mkv").Extract(1, model.CommonReadOptions{}, mkv.ExtractOptions{})
 		var ie *model.InvalidArgumentError
 		require.ErrorAs(t, err, &ie)
-		assert.Equal(t, "The file has no subtitle track with the number 1.", ie.Msg)
+		assert.Equal(t, "the file has no subtitle track with the number 1", ie.Msg)
 		assert.Equal(t, "ReadOptions.Track", ie.Option)
 	})
 	t.Run("not Matroska", func(t *testing.T) {
@@ -131,7 +131,7 @@ func TestExtractErrors(t *testing.T) {
 		_, err := mkv.Open(bytes.NewReader(b), int64(len(b)))
 		var pe *model.ParseError
 		require.ErrorAs(t, err, &pe)
-		assert.Equal(t, "The file is not a Matroska or WebM file.", pe.Msg)
+		assert.Equal(t, "the file is not a Matroska or WebM file", pe.Msg)
 	})
 	t.Run("EBML header of another DocType", func(t *testing.T) {
 		t.Parallel()
@@ -140,7 +140,7 @@ func TestExtractErrors(t *testing.T) {
 		_, err := mkv.Open(bytes.NewReader(b), int64(len(b)))
 		var pe *model.ParseError
 		require.ErrorAs(t, err, &pe)
-		assert.Equal(t, "The file is not a Matroska or WebM file.", pe.Msg)
+		assert.Equal(t, "the file is not a Matroska or WebM file", pe.Msg)
 	})
 }
 
@@ -158,7 +158,7 @@ func TestWebVTTCodecs(t *testing.T) {
 		formats = append(formats, tr.Format)
 	}
 	assert.Equal(t, []model.Format{model.WebVTT, model.WebVTT, model.WebVTT, ""}, formats)
-	s, _, err := f.Extract(2, model.CommonReadOptions{})
+	s, _, err := f.Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, "WEBVTT\n\n1\n00:00:01.000 --> 00:00:03.000 line:90%\nThe gate closes in five minutes.\n", write(t, s, model.WebVTT))
 }
@@ -214,7 +214,7 @@ func TestExtractReadsNoVideoData(t *testing.T) {
 
 	f, err := mkv.Open(r, size)
 	require.NoError(t, err)
-	s, _, err := f.Extract(2, model.CommonReadOptions{})
+	s, _, err := f.Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, []cueRow{{100 * time.Millisecond, 900 * time.Millisecond, "The bus leaves soon."}}, cueRows(s))
 	assert.LessOrEqual(t, r.inRange.Load(), int64(11))
@@ -234,7 +234,7 @@ func ExampleFile_Extract() {
 	for _, t := range f.Tracks() {
 		fmt.Println(t.Number, t.CodecID, t.Format, t.Language)
 	}
-	s, _, err := f.Extract(2, model.CommonReadOptions{})
+	s, _, err := f.Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -260,12 +260,12 @@ func TestTrackInflateCap(t *testing.T) {
 
 	f := openFile(t, file)
 	f.SetInflateCap(4 << 20)
-	_, _, err := f.Extract(2, model.CommonReadOptions{})
+	_, _, err := f.Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 	require.NoError(t, err)
 
 	f.SetInflateCap(3 << 20)
-	_, _, err = f.Extract(2, model.CommonReadOptions{})
+	_, _, err = f.Extract(2, model.CommonReadOptions{}, mkv.ExtractOptions{})
 	var pe *model.ParseError
 	require.ErrorAs(t, err, &pe)
-	assert.Equal(t, "The zlib data of track 2 inflates to more than 3 MB in total.", pe.Msg)
+	assert.Equal(t, "the zlib data of track 2 inflates to more than 3 MB in total", pe.Msg)
 }

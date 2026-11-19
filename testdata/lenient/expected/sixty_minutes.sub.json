@@ -2,7 +2,7 @@
     "name": "SubViewer 2 with minutes and seconds of 60 or more",
     "format": "subviewer",
     "strict": {
-        "error": "The timing line \"00:00:04.00,00:75:06.00\" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.",
+        "error": "the timing line \"00:00:04.00,00:75:06.00\" is not in the form hh:mm:ss.ff,hh:mm:ss.ff",
         "line": 16
     },
     "cues": [

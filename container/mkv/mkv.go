@@ -11,8 +11,8 @@ import (
 	"math"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/container/mkv/internal/ebml"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/container/mkv/internal/ebml"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // File is an open Matroska or WebM file.
@@ -43,7 +43,7 @@ func damaged(format string, args ...any) error {
 }
 
 func unknownSize(h ebml.Header) error {
-	return damaged("The element 0x%X at byte %d has an unknown size, which only Segment and Cluster may have.", h.ID, h.Offset)
+	return damaged("the element 0x%X at byte %d has an unknown size, which only Segment and Cluster may have", h.ID, h.Offset)
 }
 
 // wrap turns the structure errors of the EBML reader into parse errors.
@@ -84,7 +84,7 @@ func (f *File) readHeaders() error {
 		return err
 	}
 	if !scan.hasTracks {
-		return damaged("The file has no Tracks element.")
+		return damaged("the file has no Tracks element")
 	}
 	if scan.hasInfo {
 		if err := f.readInfo(scan.info); err != nil {
@@ -101,7 +101,7 @@ func (f *File) readPrelude() error {
 		return err
 	}
 	if !ok || h.ID != idEBML {
-		return damaged("The file is not a Matroska or WebM file.")
+		return damaged("the file is not a Matroska or WebM file")
 	}
 	docType, err := f.docType(h)
 	if err != nil {
@@ -112,7 +112,7 @@ func (f *File) readPrelude() error {
 		return err
 	}
 	if !ok || (docType != "matroska" && docType != "webm") {
-		return damaged("The file is not a Matroska or WebM file.")
+		return damaged("the file is not a Matroska or WebM file")
 	}
 	f.segmentStart = segment.Offset
 	f.segmentEnd = math.MaxInt64

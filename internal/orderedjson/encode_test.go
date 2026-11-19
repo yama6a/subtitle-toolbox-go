@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
 )
 
 func TestEncodeStrings(t *testing.T) {

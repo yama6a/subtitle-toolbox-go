@@ -5,10 +5,12 @@ Caption files from TV often come in upper case. A CEA-608 WebVTT cue `>> GOOD MO
 <!-- example: ExampleSubtitle_ChangeCase -->
 ```go
 var s model.Subtitle
-s.AddCues(
+if err := s.AddCues(
 	model.Cue{Start: 1001 * time.Millisecond, End: 3336 * time.Millisecond, Lines: []string{">> GOOD MORNING. THE 8:15 TRAIN", "TO MAIN STREET IS LATE."}},
 	model.Cue{Start: 3503 * time.Millisecond, End: 5505 * time.Millisecond, Lines: []string{"<i>I THINK WE MISSED IT.</i>"}},
-)
+); err != nil {
+	panic(err)
+}
 
 if err := s.ChangeCase(model.CaseSentence, "en"); err != nil {
 	fmt.Println(err)
@@ -89,10 +91,12 @@ One pass runs over the cues in order. The state carries across cues and text run
 <!-- example: ExampleSubtitle_ReplaceText -->
 ```go
 var s model.Subtitle
-s.AddCues(
+if err := s.AddCues(
 	model.Cue{Start: 1 * time.Second, End: 3 * time.Second, Lines: []string{"[BELL RINGS]"}},
 	model.Cue{Start: 4 * time.Second, End: 6 * time.Second, Lines: []string{"<i>Wait.....</i> [DOOR] Tom &amp; Jerry"}},
-)
+); err != nil {
+	panic(err)
+}
 
 if err := s.ReplaceText(`\s*\[[^\]]*\]`, "", model.ReplaceOptions{Regex: true}); err != nil {
 	fmt.Println(err)
@@ -143,11 +147,11 @@ Lyric videos and short captions mark the word that is sung. SubRip and WebVTT pl
 - **Cue data**: each word cue keeps `Position`, `Forced`, `Speaker` and the format data. Only the first keeps `ID`. A comment before a cue moves before its first word cue.
 - **Size limit**: each word cue repeats the whole text of the cue, so the output grows with words times text. `Apply` fails with an `*InvalidArgumentError` when the new cues would hold more than 64 MiB of line text. The message names the cue. Split the cue first with `resegment.SplitLong`, or set `MaxWordsPerCue`.
 
-<!-- example: karaoke/ExampleApply -->
+<!-- example: edit/karaoke/ExampleApply -->
 ```go
 ms := time.Millisecond
 var s model.Subtitle
-s.AddCue(model.Cue{
+if err := s.AddCue(model.Cue{
 	Start: 0, End: 1600 * ms, Lines: []string{"The beach was quiet."},
 	Words: []model.Word{
 		{Text: "The", Start: 0, End: 240 * ms},
@@ -155,7 +159,9 @@ s.AddCue(model.Cue{
 		{Text: "was", Start: 710 * ms, End: 950 * ms},
 		{Text: "quiet.", Start: 950 * ms, End: 1600 * ms},
 	},
-})
+}); err != nil {
+	panic(err)
+}
 report, err := karaoke.Apply(&s, karaoke.Options{})
 if err != nil {
 	fmt.Println(err)
@@ -212,7 +218,7 @@ A **dialogue dash** is a hyphen-minus, U+2010, U+2013 or U+2014 at the start of 
 
 Subtitles for the deaf and hard of hearing (SDH) carry text that a hearing viewer does not need. `hearingimpaired.Apply(s, opts)` removes it. The cue `- [gasps] No!` + LF + `- MARY: Yes.` becomes `- No!` + LF + `- Yes.`, and the cue `[DOOR SLAMS]` goes.
 
-<!-- example: hearingimpaired/ExampleApply -->
+<!-- example: edit/hearingimpaired/ExampleApply -->
 ```go
 const content = "1\n00:00:01,000 --> 00:00:03,000\n[DOOR SLAMS]\n\n" +
 	"2\n00:00:03,500 --> 00:00:06,000\n- [gasps] No!\n- MARY: Yes.\n\n" +
@@ -304,7 +310,7 @@ How each format shows a speaker:
 
 OCR of PGS and VobSub cues reads `It's` as `lt's`. Files from the web have spaces before `?`, tags that never close and `-Hi.` without a space. `fixing.Apply(s, opts)` fixes such errors in one call and returns each change for review. `fixing.Preview(s, opts)` returns the same report and changes nothing.
 
-<!-- example: fixing/ExampleApply -->
+<!-- example: edit/fixing/ExampleApply -->
 ```go
 const content = "1\n00:00:01,000 --> 00:00:03,000\nlt's late. l'm here, l'll go.\n\n" +
 	"2\n00:00:03,500 --> 00:00:06,000\n-Really ?\n-Yes.\n"
@@ -424,7 +430,7 @@ Off by default. It writes the first letter of a line in upper case when the line
 
 An OCR replace list is a table of known OCR misreads and their fixes, in the XML format of [Subtitle Edit](https://github.com/SubtitleEdit/subtitleedit), for example `eng_OCRFixReplaceList_User.xml`. `fixing.ReadReplaceList(r)` reads one, and `fixing.ReplaceList` holds one built in code. The package ships no list. With the list entry `<Word from="celd" to="cold" />`, the line `lt gets celd oD deck'` becomes `It gets cold on deck.` together with entries for `oD` and ` deck'` and the `ocrLowercaseL` rule.
 
-<!-- example: fixing/ExampleReadReplaceList -->
+<!-- example: edit/fixing/ExampleReadReplaceList -->
 ```go
 const list = `<ReplaceList><WholeWords><Word from="celd" to="cold" /></WholeWords></ReplaceList>`
 l, err := fixing.ReadReplaceList(strings.NewReader(list))
@@ -434,7 +440,9 @@ if err != nil {
 }
 
 var s model.Subtitle
-s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"It gets celd."}})
+if err := s.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"It gets celd."}}); err != nil {
+	panic(err)
+}
 if _, err := fixing.Apply(&s, fixing.Options{ReplaceList: l}); err != nil {
 	fmt.Println(err)
 	return
@@ -467,7 +475,7 @@ fmt.Println(c.Text())
 
 Family and broadcast versions mask swear words in the subtitles and mute them in the audio. `profanity.Apply(s, opts)` masks the words of `opts.Words` in the cue text and returns the **mute ranges**: the time spans of the audio that hold a match. `EDL` and `FFmpegVolumeFilter` write the ranges for a player or for FFmpeg.
 
-<!-- example: profanity/ExampleApply -->
+<!-- example: edit/profanity/ExampleApply -->
 ```go
 const content = "WEBVTT\n\n00:01:02.000 --> 00:01:04.000\n" +
 	"<00:01:02.000>What <00:01:02.300>the <00:01:02.480>hell <00:01:02.800>is this?\n"
@@ -504,7 +512,6 @@ fmt.Println(profanity.FFmpegVolumeFilter(report.MuteRanges))
 | `MaskFirstLetter` | `first-letter` | `What the h***?`. `HELL no` gives `H*** no` |
 | `MaskRemove` | `remove` | `What the ?` |
 | `MaskNone` | `none` | unchanged. Only the report has the ranges |
-| `MaskFunc` set | none | the text that the function returns for the matched word, escaped as text: `<hell>` gives `&lt;hell&gt;` |
 
 - **Word list**: the caller passes the words. The module ships no list, because the words depend on the language and the audience.
 - **Word**: one word or a phrase with spaces, such as `son of a`. A `*` at the end matches any ending: `damn*` matches `damned` and `damnit`, not `condemn`. `Validate` rejects an empty list, an empty word, white space at the start or end, a `*` before the end and invalid UTF-8.

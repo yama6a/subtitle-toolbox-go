@@ -240,7 +240,7 @@
         "warnings": [
             "The content is not valid UTF-8. The first bad byte is at offset 265. Set the source encoding of the file. The parser read the bad bytes as U+FFFD."
         ],
-        "strictError": "The content is not valid UTF-8. The first bad byte is at offset 265. Set the source encoding of the file."
+        "strictError": "the content is not valid UTF-8. The first bad byte is at offset 265. Set the source encoding of the file"
     },
     {
         "file": "invalid-utf-8/one-bad-byte.smi",
@@ -277,7 +277,7 @@
         "warnings": [
             "The content is not valid UTF-8. The first bad byte is at offset 140. Set the source encoding of the file. The parser read the bad bytes as U+FFFD."
         ],
-        "strictError": "The content is not valid UTF-8. The first bad byte is at offset 140. Set the source encoding of the file."
+        "strictError": "the content is not valid UTF-8. The first bad byte is at offset 140. Set the source encoding of the file"
     },
     {
         "file": "invalid-utf-8/one-bad-byte.srv1",
@@ -314,7 +314,7 @@
         "warnings": [
             "The content is not valid UTF-8. The first bad byte is at offset 240. Set the source encoding of the file. The parser read the bad bytes as U+FFFD."
         ],
-        "strictError": "The content is not valid UTF-8. The first bad byte is at offset 240. Set the source encoding of the file."
+        "strictError": "the content is not valid UTF-8. The first bad byte is at offset 240. Set the source encoding of the file"
     },
     {
         "file": "invalid-utf-8/one-bad-byte.ttml",
@@ -355,8 +355,8 @@
     {
         "file": "japanese-cp932.ass",
         "encoding": "Windows-1252",
-        "error": "Cannot convert the content from Windows-1252 to UTF-8.",
-        "strictError": "Cannot convert the content from Windows-1252 to UTF-8."
+        "error": "cannot convert the content from Windows-1252 to UTF-8",
+        "strictError": "cannot convert the content from Windows-1252 to UTF-8"
     },
     {
         "file": "japanese-euc-jp.srt",
@@ -389,8 +389,8 @@
     {
         "file": "japanese-shift_jis.srt",
         "encoding": "Windows-1252",
-        "error": "Cannot convert the content from Windows-1252 to UTF-8.",
-        "strictError": "Cannot convert the content from Windows-1252 to UTF-8."
+        "error": "cannot convert the content from Windows-1252 to UTF-8",
+        "strictError": "cannot convert the content from Windows-1252 to UTF-8"
     },
     {
         "file": "korean-cp949.smi",

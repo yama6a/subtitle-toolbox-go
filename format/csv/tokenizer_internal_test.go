@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Ports testSplitsRecords of tests/Parsers/CsvTokenizerTest.php of subtitle-toolbox-php.
@@ -46,7 +46,7 @@ func TestRecordsStrictUnclosedQuote(t *testing.T) {
 	t.Parallel()
 
 	_, _, err := records("a,b\nc,\"d,e\nf,g\n", ',', false)
-	assert.Equal(t, &model.ParseError{Format: model.CSV, Line: 2, Msg: "A quoted CSV cell has no closing quote."}, err)
+	assert.Equal(t, &model.ParseError{Format: model.CSV, Line: 2, Msg: "a quoted CSV cell has no closing quote"}, err)
 }
 
 // Ports testLenientModeEndsAnUnclosedQuoteAtTheLineEnd of tests/Parsers/CsvTokenizerTest.php of subtitle-toolbox-php.

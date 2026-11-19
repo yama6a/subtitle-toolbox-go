@@ -27,7 +27,7 @@ fmt.Println(info.SourceEncoding) // cp1250, as the caller wrote it
 
 ## Supported names
 
-`ReadOptions.Encoding` takes a name of this table, compared without case. `stbox.Encodings()` returns the canonical names. Another name fails `ReadOptions.Validate` with `The encoding "CP1125" is unknown.`
+`ReadOptions.Encoding` takes a name of this table, compared without case. `stbox.Encodings()` returns the canonical names. Another name fails `ReadOptions.Validate` with `the encoding "CP1125" is unknown`.
 
 | Canonical name | Also accepted |
 |:--- |:--- |
@@ -65,7 +65,7 @@ The first rule that matches wins.
 7. Valid UTF-8 without a NUL byte stays UTF-8 for every `Encoding`. A pure ASCII file read with `Windows-1252` reports UTF-8.
 8. Else the content decodes with `Encoding`.
 
-A byte that the encoding does not define fails the read in both modes with a `*ParseError`: `Cannot convert the content from Windows-1252 to UTF-8.` The decoders of `golang.org/x/text` write U+FFFD for such a byte. The reader turns that U+FFFD into the failure, and also a C1 control from a Windows code page, because Microsoft leaves those bytes undefined.
+A byte that the encoding does not define fails the read in both modes with a `*ParseError`: `cannot convert the content from Windows-1252 to UTF-8`. The decoders of `golang.org/x/text` write U+FFFD for such a byte. The reader turns that U+FFFD into the failure, and also a C1 control from a Windows code page, because Microsoft leaves those bytes undefined.
 
 ## Code page detection
 
@@ -91,7 +91,7 @@ The parse step checks UTF-8 after decoding. A bad byte is a byte outside a valid
 
 | Formats | Strict | Lenient |
 |:--- |:--- |:--- |
-| TTML, SAMI, iTT, YouTube XML | `*ParseError`: `The content is not valid UTF-8. The first bad byte is at offset N. Set the source encoding of the file.` | each bad byte becomes U+FFFD. `Repaired` warning with the same text plus ` The parser read the bad bytes as U+FFFD.` |
+| TTML, SAMI, iTT, YouTube XML | `*ParseError`: `the content is not valid UTF-8. The first bad byte is at offset N. Set the source encoding of the file`. | each bad byte becomes U+FFFD. `Repaired` warning with that text written as a sentence, plus ` The parser read the bad bytes as U+FFFD.` |
 | every other text format | the bytes stay, no warning | the bytes stay. `Repaired` warning with the first message |
 | JSON formats | each bad byte becomes U+FFFD while decoding | the same, plus the `Repaired` warning |
 
@@ -129,4 +129,4 @@ The library decodes with the WHATWG tables of `golang.org/x/text`. glibc iconv r
 | KOI8-U | `AE`, `BE` | U+255D, U+256C | U+045E, U+040E |
 
 - **Names**: only the names of the table above work. `CP1125`, for example, fails.
-- **Test files**: `chinese-gbk.srt` read with `Encoding: "Big5"` holds `C8 A5`. The library fails with `Cannot convert the content from Big5 to UTF-8.` The x/text table has no entry for these pairs.
+- **Test files**: `chinese-gbk.srt` read with `Encoding: "Big5"` holds `C8 A5`. The library fails with `cannot convert the content from Big5 to UTF-8`. The x/text table has no entry for these pairs.

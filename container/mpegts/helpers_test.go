@@ -8,9 +8,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/container/mpegts"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/container/mpegts"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 type cueRow struct {
@@ -46,7 +46,7 @@ func open(tb testing.TB, ts []byte) *mpegts.File {
 func extract(tb testing.TB, ts []byte, number int, opts model.CommonReadOptions) []cueRow {
 	tb.Helper()
 
-	s, warnings, err := open(tb, ts).Extract(number, opts)
+	s, warnings, err := open(tb, ts).Extract(number, opts, mpegts.ExtractOptions{})
 	require.NoError(tb, err)
 	require.Empty(tb, warnings)
 	return cuesOf(s)

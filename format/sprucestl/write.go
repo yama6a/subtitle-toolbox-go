@@ -8,11 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // defaultHeader holds the commands that DVD Studio Pro can need to import a file, and an empty line.
@@ -77,8 +76,8 @@ func write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 	if frameLimit(rate) > maxFrameLimit {
 		return WriteReport{}, &model.UnwritableError{
 			Format: model.SpruceSTL, CueIndex: -1,
-			Reason: writeFrameRateOption + ": The frame number has 2 digits, so the Spruce STL frame rate must not be above " +
-				strconv.Itoa(maxFrameLimit) + " fps, got " + timecode.Number(rate.Float64()) + ".",
+			Reason: writeFrameRateOption + ": the frame number has 2 digits, so the Spruce STL frame rate must not be above " +
+				strconv.Itoa(maxFrameLimit) + " fps, got " + timecode.Number(rate.Float64()),
 		}
 	}
 	separator := storedOr(file, "separator", separatorRegexp, defaultSeparator)
@@ -133,8 +132,7 @@ func outputRate(opts WriteOptions, file *model.Data) (model.FrameRate, error) {
 	if !ok {
 		return model.FrameRate{Num: 25, Den: 1}, nil
 	}
-	rate, err := model.FrameRateFromFloat(stored)
-	return rate, parsing.FrameRateOption(err, writeFrameRateOption, "The Spruce STL frame rate")
+	return model.FrameRateFromFloatFor(stored, writeFrameRateOption, "the Spruce STL frame rate")
 }
 
 // appendStored writes a stored header, command or trailer line, with CR and LF as spaces, and applies it to st. It

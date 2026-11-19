@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -211,7 +211,7 @@ func (d *Decoder) readComposition(pts int64, data []byte) error {
 // state clears the palettes, objects and windows first.
 func (d *Decoder) parseComposition(t time.Duration, data []byte) (*composition, string) {
 	if len(data) < compositionHeader {
-		return nil, "The presentation composition segment at " + timecode.Seconds(t) + " s is cut off."
+		return nil, "the presentation composition segment at " + timecode.Seconds(t) + " s is cut off"
 	}
 	if data[7]&StateEpochStart != 0 {
 		clear(d.palettes)
@@ -228,7 +228,7 @@ func (d *Decoder) parseComposition(t time.Duration, data []byte) (*composition, 
 	pos := compositionHeader
 	for i := range int(data[10]) {
 		if len(data) < pos+compositionObject {
-			return nil, "The composition object " + strconv.Itoa(i) + " at " + timecode.Seconds(t) + " s is cut off."
+			return nil, "the composition object " + strconv.Itoa(i) + " at " + timecode.Seconds(t) + " s is cut off"
 		}
 		ref := reference{
 			id:       binary.BigEndian.Uint16(data[pos:]),
@@ -241,7 +241,7 @@ func (d *Decoder) parseComposition(t time.Duration, data []byte) (*composition, 
 		pos += compositionObject
 		if ref.cropped {
 			if len(data) < pos+cropping {
-				return nil, "The cropping of composition object " + strconv.Itoa(i) + " at " + timecode.Seconds(t) + " s is cut off."
+				return nil, "the cropping of composition object " + strconv.Itoa(i) + " at " + timecode.Seconds(t) + " s is cut off"
 			}
 			ref.crop = window{
 				int(binary.BigEndian.Uint16(data[pos:])), int(binary.BigEndian.Uint16(data[pos+2:])),
@@ -296,11 +296,11 @@ func (d *Decoder) readObject(data []byte) error {
 	var damage string
 	switch {
 	case len(data) < firstObjectHeader:
-		damage = "The first definition segment of object " + strconv.Itoa(int(id)) + " is cut off."
+		damage = "the first definition segment of object " + strconv.Itoa(int(id)) + " is cut off"
 	default:
 		w, h := int(binary.BigEndian.Uint16(data[7:])), int(binary.BigEndian.Uint16(data[9:]))
 		if reason := bitmap.SizeLimit(w, h); reason != "" {
-			damage = "Cannot read object " + strconv.Itoa(int(id)) + ": " + reason
+			damage = "cannot read object " + strconv.Itoa(int(id)) + ": " + reason
 			break
 		}
 		d.objects[id] = &object{width: w, height: h, rle: slices.Clone(data[firstObjectHeader:])}
@@ -400,9 +400,9 @@ func (d *Decoder) part(c *composition, ref reference, colors *[256]uint32) (part
 	size := obj.width * obj.height
 	indexes, got := decodeRLE(obj.rle, size)
 	if got < size {
-		return bitmap.Part{}, false, "Object " + strconv.Itoa(int(ref.id)) + " at " + timecode.Seconds(c.time) + " s has " + strconv.Itoa(got) +
+		return bitmap.Part{}, false, "object " + strconv.Itoa(int(ref.id)) + " at " + timecode.Seconds(c.time) + " s has " + strconv.Itoa(got) +
 			" pixels of run-length data, but its size of " + strconv.Itoa(obj.width) + "x" + strconv.Itoa(obj.height) +
-			" needs " + strconv.Itoa(size) + "."
+			" needs " + strconv.Itoa(size)
 	}
 	part = a.p
 	part.Indexes = make([]byte, 0, part.Width*part.Height)

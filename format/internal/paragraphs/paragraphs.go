@@ -4,8 +4,8 @@ package paragraphs
 import (
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Item is a value with the time range of its cue.
@@ -39,7 +39,7 @@ func ValidateGap(gap *time.Duration, option string) error {
 	if gap != nil && *gap < 0 {
 		return &model.InvalidArgumentError{
 			Option: option,
-			Msg:    "The paragraph gap must be 0 or more seconds, got " + timecode.Seconds(*gap) + ".",
+			Msg:    "the paragraph gap must be 0 or more seconds, got " + timecode.Seconds(*gap),
 		}
 	}
 	return nil

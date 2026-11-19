@@ -10,11 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func readSRT(t *testing.T, name string) *model.Subtitle {
@@ -123,7 +123,7 @@ func TestWriteOutput(t *testing.T) {
 
 	oneCue := func() *model.Subtitle {
 		s := &model.Subtitle{}
-		s.AddCue(model.Cue{Start: 61 * time.Second, End: 62 * time.Second, Lines: []string{"BUS 7"}})
+		require.NoError(t, s.AddCue(model.Cue{Start: 61 * time.Second, End: 62 * time.Second, Lines: []string{"BUS 7"}}))
 		return s
 	}
 	stored := func(name string) func(t *testing.T) *model.Subtitle {
@@ -241,7 +241,7 @@ func TestWriteReport(t *testing.T) {
 	assert.Equal(t, sccReport.Changes, report.Changes)
 
 	cjk := &model.Subtitle{}
-	cjk.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{string(testfiles.Read(t, "scc/fit/own_long_cjk.txt"))}})
+	require.NoError(t, cjk.AddCue(model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{string(testfiles.Read(t, "scc/fit/own_long_cjk.txt"))}}))
 	_, err = mcc.Write(&bytes.Buffer{}, cjk, model.CommonWriteOptions{}, mcc.WriteOptions{})
 	assert.ErrorIs(t, err, model.ErrUnwritable)
 }
@@ -255,7 +255,7 @@ func TestHeaderTextMatchesTheMCCNotice(t *testing.T) {
 func TestValidate(t *testing.T) {
 	t.Parallel()
 
-	rates := "The MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got "
+	rates := "the MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got "
 	tests := []struct {
 		name    string
 		err     error
@@ -264,24 +264,24 @@ func TestValidate(t *testing.T) {
 		{"service 63", mcc.ReadOptions{Service: 63}.Validate(), nil},
 		{
 			"service 64", mcc.ReadOptions{Service: 64}.Validate(),
-			&model.InvalidArgumentError{Option: "ReadOptions.MCC.Service", Msg: "The CEA-708 service must be from 1 to 63, got 64."},
+			&model.InvalidArgumentError{Option: "ReadOptions.MCC.Service", Msg: "the CEA-708 service must be from 1 to 63, got 64"},
 		},
 		{
 			"channel 3", mcc.ReadOptions{Channel: 3}.Validate(),
-			&model.InvalidArgumentError{Option: "ReadOptions.MCC.Channel", Msg: "The MCC data channel must be 1 or 2, got 3."},
+			&model.InvalidArgumentError{Option: "ReadOptions.MCC.Channel", Msg: "the MCC data channel must be 1 or 2, got 3"},
 		},
 		{
 			"roll-up mode", mcc.ReadOptions{RollUp: "rows"}.Validate(),
-			&model.InvalidArgumentError{Option: "ReadOptions.MCC.RollUp", Msg: `The MCC roll-up mode "rows" is not screen or lines.`},
+			&model.InvalidArgumentError{Option: "ReadOptions.MCC.RollUp", Msg: `the MCC roll-up mode "rows" is not screen or lines`},
 		},
 		{"29.97 as 2997/100", mcc.WriteOptions{FrameRate: model.FrameRate{Num: 2997, Den: 100}}.Validate(), nil},
 		{
 			"48 fps", mcc.WriteOptions{FrameRate: model.FrameRate{Num: 48, Den: 1}}.Validate(),
-			&model.InvalidArgumentError{Option: "WriteOptions.MCC.FrameRate", Msg: rates + "48."},
+			&model.InvalidArgumentError{Option: "WriteOptions.MCC.FrameRate", Msg: rates + "48"},
 		},
 		{
 			"drop-frame mode", mcc.WriteOptions{DropFrame: model.DropFrameMode(3)}.Validate(),
-			&model.InvalidArgumentError{Option: "WriteOptions.MCC.DropFrame", Msg: "The MCC drop-frame mode 3 is unknown."},
+			&model.InvalidArgumentError{Option: "WriteOptions.MCC.DropFrame", Msg: "the MCC drop-frame mode 3 is unknown"},
 		},
 	}
 	for _, tt := range tests {

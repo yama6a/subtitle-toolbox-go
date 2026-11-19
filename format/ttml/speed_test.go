@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // TestDuplicateCueIDsGrowth writes cues that all have the ID c1, which come out as c1, c1_2, c1_3 and so on.
@@ -24,7 +24,7 @@ func TestDuplicateCueIDsGrowth(t *testing.T) {
 	best := func(n int) time.Duration {
 		s := &model.Subtitle{}
 		for i := range n {
-			s.AddCue(model.Cue{Start: time.Duration(i) * time.Second, End: time.Duration(i)*time.Second + time.Second, Lines: []string{"x"}, ID: "c1"})
+			require.NoError(t, s.AddCue(model.Cue{Start: time.Duration(i) * time.Second, End: time.Duration(i)*time.Second + time.Second, Lines: []string{"x"}, ID: "c1"}))
 		}
 		fastest := time.Duration(1<<63 - 1)
 		for range 3 {
@@ -44,7 +44,7 @@ func BenchmarkWriteSpeakers(b *testing.B) {
 	s := &model.Subtitle{}
 	for i := range 16000 {
 		at := time.Duration(i) * time.Second
-		s.AddCue(model.Cue{Start: at, End: at + time.Second, Lines: []string{"x"}, Speaker: "Speaker " + strconv.Itoa(i)})
+		require.NoError(b, s.AddCue(model.Cue{Start: at, End: at + time.Second, Lines: []string{"x"}, Speaker: "Speaker " + strconv.Itoa(i)}))
 	}
 	b.ResetTimer()
 	for range b.N {

@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/cavena890"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/cavena890"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const second = time.Second
@@ -61,7 +61,9 @@ func cue(start, end time.Duration, lines ...string) model.Cue {
 
 func subtitle(cues ...model.Cue) *model.Subtitle {
 	s := &model.Subtitle{}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		panic(err)
+	}
 	return s
 }
 

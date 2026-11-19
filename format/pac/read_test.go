@@ -8,8 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/pac"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestReadCodePage(t *testing.T) {
@@ -57,7 +58,7 @@ func TestReadCodePage(t *testing.T) {
 				return
 			}
 			require.Len(t, warnings, 1)
-			assert.Equal(t, tt.warning, warnings[0].Message)
+			assert.Equal(t, parsing.Sentence(tt.warning), warnings[0].Message)
 			assert.Equal(t, model.Repaired, warnings[0].Action)
 		})
 	}
@@ -69,8 +70,8 @@ func TestReadStrictCodePageError(t *testing.T) {
 	_, _, err := pac.Read(bytes.NewReader(file("\xC3\xC4")), model.CommonReadOptions{}, pac.ReadOptions{})
 	var perr *model.ParseError
 	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, "The code page of the PAC file is not clear. No code page gives text in its script. "+
-		"Set the code page of the file, for example ISO-8859-7 for Greek.", perr.Msg)
+	assert.Equal(t, "the code page of the PAC file is not clear. No code page gives text in its script. "+
+		"Set the code page of the file, for example ISO-8859-7 for Greek", perr.Msg)
 }
 
 func TestReadInvalidFiles(t *testing.T) {
@@ -92,17 +93,17 @@ func TestReadInvalidFiles(t *testing.T) {
 		block      int
 		blockStart string
 	}{
-		{name: "short header", content: []byte{1, 0, 0}, strict: "A PAC file starts with the byte 01h and 19 zero bytes."},
-		{name: "length runs past the file", content: with(32, 0xFF, 0), strict: "The PAC record at byte 20 is not complete.", warning: "The PAC record at byte 20 is not complete."},
-		{name: "length below 1", content: with(32, 0, 0), strict: "The PAC record at byte 20 is not complete.", warning: "The PAC record at byte 20 is not complete."},
-		{name: "mark below 60h", content: with(23, 0x50), strict: "The PAC record at byte 20 is not complete.", warning: "The PAC record at byte 20 is not complete."},
-		{name: "mark above 67h", content: with(23, 0x68), strict: "The PAC record at byte 20 is not complete.", warning: "The PAC record at byte 20 is not complete."},
+		{name: "short header", content: []byte{1, 0, 0}, strict: "a PAC file starts with the byte 01h and 19 zero bytes"},
+		{name: "length runs past the file", content: with(32, 0xFF, 0), strict: "the PAC record at byte 20 is not complete", warning: "the PAC record at byte 20 is not complete"},
+		{name: "length below 1", content: with(32, 0, 0), strict: "the PAC record at byte 20 is not complete", warning: "the PAC record at byte 20 is not complete"},
+		{name: "mark below 60h", content: with(23, 0x50), strict: "the PAC record at byte 20 is not complete", warning: "the PAC record at byte 20 is not complete"},
+		{name: "mark above 67h", content: with(23, 0x68), strict: "the PAC record at byte 20 is not complete", warning: "the PAC record at byte 20 is not complete"},
 		{
-			name: "end block", content: with(len(valid)-len(footer), 7), strict: "The byte at 43 is neither a PAC record nor the end block.",
-			warning: "The byte at 43 is neither a PAC record nor the end block.", cues: 1, block: 1,
+			name: "end block", content: with(len(valid)-len(footer), 7), strict: "the byte at 43 is neither a PAC record nor the end block",
+			warning: "the byte at 43 is neither a PAC record nor the end block", cues: 1, block: 1,
 		},
-		{name: "minute 60", content: with(24, number(60)...), strict: "Subtitle number 0 has a time code that is not valid.", warning: "Subtitle number 0 has a time code that is not valid.", block: 0},
-		{name: "second 60", content: with(26, number(6000)...), strict: "Subtitle number 0 has a time code that is not valid.", warning: "Subtitle number 0 has a time code that is not valid.", block: 0},
+		{name: "minute 60", content: with(24, number(60)...), strict: "subtitle number 0 has a time code that is not valid", warning: "subtitle number 0 has a time code that is not valid", block: 0},
+		{name: "second 60", content: with(26, number(6000)...), strict: "subtitle number 0 has a time code that is not valid", warning: "subtitle number 0 has a time code that is not valid", block: 0},
 		{name: "frame 25 at 25 fps", content: with(28, number(0)...), strict: "", cues: 1},
 	}
 	for _, tt := range tests {
@@ -123,7 +124,7 @@ func TestReadInvalidFiles(t *testing.T) {
 			s, warnings := read(t, tt.content, true, pac.ReadOptions{})
 			assert.Equal(t, tt.cues, s.Len())
 			require.Len(t, warnings, 1)
-			assert.Equal(t, tt.warning, warnings[0].Message)
+			assert.Equal(t, parsing.Sentence(tt.warning), warnings[0].Message)
 			assert.Equal(t, model.Skipped, warnings[0].Action)
 			assert.Equal(t, model.NoLine, warnings[0].Line)
 			assert.Equal(t, tt.block, warnings[0].Block)

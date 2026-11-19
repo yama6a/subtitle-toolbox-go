@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // The JSON shapes of the Whisper tools. The reader stores the shape as the format field of the file format data.
@@ -19,18 +17,6 @@ const (
 )
 
 const whisperKey = string(model.Whisper)
-
-// DetectWhisper reports whether content is a JSON object with a segments list or a transcription list.
-//
-// Deprecated: use stbox.Detect.
-func DetectWhisper(content []byte) bool {
-	content = bytes.TrimLeft(textenc.TrimUTF8BOMs(content), markupcore.TrimSet)
-	root, err := orderedjson.Decode(content)
-	if err != nil || root.Kind() != orderedjson.Object {
-		return false
-	}
-	return isList(root, "segments") || isList(root, "transcription")
-}
 
 // DetectWhisperJSON checks the top-level keys of an object. It reports whether segments or
 // transcription is an array.

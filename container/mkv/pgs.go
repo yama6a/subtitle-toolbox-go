@@ -4,9 +4,9 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap/displayset"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap/displayset"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -30,7 +30,7 @@ read:
 				size = pgsSegmentHeader + int(binary.BigEndian.Uint16(data[1:]))
 			}
 			if size == 0 || size > len(data) {
-				msg := fmt.Sprintf("The block of track %d at byte %d holds a PGS segment that is cut off.", t.Number, b.offset)
+				msg := fmt.Sprintf("the block of track %d at byte %d holds a PGS segment that is cut off", t.Number, b.offset)
 				if err := d.Skip(&model.ParseError{Format: model.PGS, Msg: msg}); err != nil {
 					return nil, nil, err
 				}
@@ -48,6 +48,8 @@ read:
 		return nil, nil, err
 	}
 	s := &model.Subtitle{}
-	parsing.AddParsed(s, cues, nil)
+	if err := parsing.AddParsed(s, cues, nil); err != nil {
+		return nil, nil, err
+	}
 	return s, d.Warnings(), nil
 }

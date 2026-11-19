@@ -12,8 +12,8 @@ import (
 	"bytes"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const formatDataKey = string(model.PAC)
@@ -96,7 +96,7 @@ func (o ReadOptions) Validate() error {
 	if o.CodePage != CodePageAuto && !o.CodePage.known() {
 		return &model.InvalidArgumentError{
 			Option: "ReadOptions.PAC.CodePage",
-			Msg:    "The PAC code page " + strconv.Quote(string(o.CodePage)) + " is unknown.",
+			Msg:    "the PAC code page " + strconv.Quote(string(o.CodePage)) + " is unknown",
 		}
 	}
 	return nil

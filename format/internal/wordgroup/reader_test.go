@@ -7,10 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func newReader(lenient bool, opts wordgroup.Options) (*wordgroup.Reader, *parsing.State) {
@@ -159,7 +159,7 @@ func TestReaderLists(t *testing.T) {
 		_, err := r.Utterances(bad, "u", "text", time.Second, readWords(r))
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr)
-		assert.Equal(t, "The field u[0].words[0].s must be a time.", perr.Msg)
+		assert.Equal(t, "the field u[0].words[0].s must be a time", perr.Msg)
 	})
 }
 

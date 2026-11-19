@@ -8,8 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // The tests in this file port tests/Parsers/LenientTtmlTest.php of subtitle-toolbox-php, then add rows of their own.
@@ -32,7 +33,7 @@ func TestMalformedXMLIsRepaired(t *testing.T) {
 	}, warningRows(warnings)[0])
 
 	perr := readError(t, content, false)
-	assert.Equal(t, "The file is not well-formed XML.", perr.Msg)
+	assert.Equal(t, "the file is not well-formed XML", perr.Msg)
 	assert.Equal(t, model.NoLine, perr.Line)
 }
 
@@ -137,9 +138,9 @@ func TestTTMLThatCannotBeRepairedFails(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct{ name, content, want string }{
-		{"no markup", "Subtitles & captions", "The file is not well-formed XML."},
-		{"an HTML root", "<html><body><p>Hello<br></body></html>", "The root element is not a TTML <tt> element."},
-		{"no root element", "<?xml version=\"1.0\"?>\n<!-- empty -->", "The file is not well-formed XML."},
+		{"no markup", "Subtitles & captions", "the file is not well-formed XML"},
+		{"an HTML root", "<html><body><p>Hello<br></body></html>", "the root element is not a TTML <tt> element"},
+		{"no root element", "<?xml version=\"1.0\"?>\n<!-- empty -->", "the file is not well-formed XML"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -177,12 +178,12 @@ func TestTextBeforeTheXML(t *testing.T) {
 			t.Parallel()
 
 			perr := readError(t, tt.content, false)
-			assert.Equal(t, `The file has text before the XML: "`+tt.wantLines[0]+`".`, perr.Msg)
+			assert.Equal(t, `the file has text before the XML: "`+tt.wantLines[0]+`"`, perr.Msg)
 			assert.Equal(t, tt.wantLine, perr.Line)
 
 			s, warnings := mustRead(t, tt.content, true)
 			require.NotEmpty(t, warnings)
-			assert.Equal(t, warningRow{tt.wantLine, model.NoBlock, model.Repaired, perr.Msg + " The parser skipped it."}, warningRows(warnings)[0])
+			assert.Equal(t, warningRow{tt.wantLine, model.NoBlock, model.Repaired, parsing.Sentence(perr.Msg) + " The parser skipped it."}, warningRows(warnings)[0])
 			assert.Equal(t, tt.wantLines, warnings[0].Lines)
 			c, _ := s.Cue(0)
 			assert.Equal(t, sec(tt.wantStart), c.Start)
@@ -196,7 +197,7 @@ func TestTextBeforeTheXML(t *testing.T) {
 func TestTextWithoutXMLStart(t *testing.T) {
 	t.Parallel()
 
-	assert.Equal(t, "The file is not well-formed XML.", readError(t, "Credit <ttx>", false).Msg)
+	assert.Equal(t, "the file is not well-formed XML", readError(t, "Credit <ttx>", false).Msg)
 }
 
 func TestParagraphAfterItsTimedDivWithoutOwnEnd(t *testing.T) {
@@ -208,7 +209,7 @@ func TestParagraphAfterItsTimedDivWithoutOwnEnd(t *testing.T) {
 	assert.Equal(t, []warningRow{{2, 0, model.Skipped, "The paragraph begins at 7s, but its parent ends at 6s."}}, warningRows(warnings))
 
 	perr := readError(t, content, false)
-	assert.Equal(t, "The paragraph begins at 7s, but its parent ends at 6s.", perr.Msg)
+	assert.Equal(t, "the paragraph begins at 7s, but its parent ends at 6s", perr.Msg)
 	assert.Equal(t, 2, perr.Line)
 }
 
@@ -242,7 +243,7 @@ func TestLooseTimeExpressions(t *testing.T) {
 			}},
 				warningRows(warnings))
 
-			assert.Equal(t, `The time expression "`+tt.begin+`" is not valid.`, readError(t, content, false).Msg)
+			assert.Equal(t, `the time expression "`+tt.begin+`" is not valid`, readError(t, content, false).Msg)
 		})
 	}
 }
@@ -270,7 +271,7 @@ func TestBareSecondsOfAnAppleMusicFile(t *testing.T) {
 		`The time expression "19.764" is not valid. The parser read it as 19.764s.`,
 	})
 
-	assert.Contains(t, readError(t, content, false).Msg, "is not valid.")
+	assert.Contains(t, readError(t, content, false).Msg, "is not valid")
 }
 
 func TestBareSecondsOnAParagraphWithADuration(t *testing.T) {
@@ -291,7 +292,7 @@ func TestDivWithABadTime(t *testing.T) {
 		`The time expression "soon" is not valid. The parser ignored the timing of the div.`,
 	}}, warningRows(warnings))
 
-	assert.Equal(t, `The time expression "soon" is not valid.`, readError(t, content, false).Msg)
+	assert.Equal(t, `the time expression "soon" is not valid`, readError(t, content, false).Msg)
 
 	_, warnings = mustRead(t, bare+"\n"+`<body end="later"><div><p begin="1s" end="2s">Text</p></div></body></tt>`, true)
 	assert.Equal(t, []warningRow{{
@@ -331,6 +332,7 @@ func TestFrameRateGuess(t *testing.T) {
 			assert.Equal(t, []warningRow{{2, model.NoBlock, model.Repaired, tt.warning}}, warningRows(warnings))
 			perr := readError(t, content, false)
 			strictMsg, _, _ := strings.Cut(tt.warning, " The parser")
+			strictMsg = strings.ToLower(strictMsg[:1]) + strings.TrimSuffix(strictMsg[1:], ".")
 			assert.Equal(t, strictMsg, perr.Msg)
 			assert.Equal(t, 2, perr.Line)
 		})

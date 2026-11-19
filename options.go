@@ -5,27 +5,27 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/chapters"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ebustl"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/pac"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/sprucestl"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/chapters"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ebustl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/pac"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/vobsub"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/youtube"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // ReadOptions holds the settings of a read. The zero value reads with the defaults.
@@ -153,20 +153,20 @@ func (o ReadOptions) Validate() error {
 		if _, err := textenc.Lookup(o.Encoding); err != nil {
 			return &InvalidArgumentError{
 				Option: "ReadOptions.Encoding",
-				Msg:    "The encoding " + strconv.Quote(o.Encoding) + " is unknown.",
+				Msg:    "the encoding " + strconv.Quote(o.Encoding) + " is unknown",
 			}
 		}
 	}
 	if o.LastCueDuration != nil && *o.LastCueDuration < 0 {
 		return &InvalidArgumentError{
 			Option: "ReadOptions.LastCueDuration",
-			Msg:    fmt.Sprintf("The last cue duration must be 0 or more, got %s.", *o.LastCueDuration),
+			Msg:    fmt.Sprintf("the last cue duration must be 0 or more, got %s", *o.LastCueDuration),
 		}
 	}
 	if o.Track < 0 {
 		return &InvalidArgumentError{
 			Option: "ReadOptions.Track",
-			Msg:    fmt.Sprintf("The track number must be 0 or more, got %d.", o.Track),
+			Msg:    fmt.Sprintf("the track number must be 0 or more, got %d", o.Track),
 		}
 	}
 	for _, check := range []func() error{o.SAMI.Validate, o.MicroDVD.Validate, o.CSV.Validate, o.SCC.Validate, o.MCC.Validate, o.Chapters.Validate, o.PAC.Validate, o.VobSub.Validate, o.SpruceSTL.Validate} {

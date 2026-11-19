@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const utf8BOM = "\ufeff"
@@ -184,8 +184,8 @@ func outputSubtitle(t *testing.T, f Format) *Subtitle {
 	}
 	s := &Subtitle{}
 	s.SetMetadata(MetadataTitle, "Cafe")
-	s.AddCue(Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: lines})
-	s.AddCue(Cue{Start: 5 * time.Second, End: 7250 * time.Millisecond, Lines: []string{"Second cue"}})
+	require.NoError(t, s.AddCue(Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: lines}))
+	require.NoError(t, s.AddCue(Cue{Start: 5 * time.Second, End: 7250 * time.Millisecond, Lines: []string{"Second cue"}}))
 	require.NoError(t, s.AddComment("Note", 1))
 	if f == DCP {
 		header := model.NewData(model.Field{Key: "IssueDate", Value: "2026-10-12T00:00:00"})
@@ -231,8 +231,8 @@ func TestNegativeTimesAreWrittenAsZero(t *testing.T) {
 			t.Parallel()
 
 			negative, zero := &Subtitle{}, &Subtitle{}
-			negative.AddCues(Cue{Start: -2500 * time.Millisecond, End: -1500 * time.Millisecond, Lines: []string{"One"}}, Cue{Start: -500 * time.Millisecond, End: time.Second, Lines: []string{"Two"}})
-			zero.AddCues(Cue{Lines: []string{"One"}}, Cue{End: time.Second, Lines: []string{"Two"}})
+			require.NoError(t, negative.AddCues(Cue{Start: -2500 * time.Millisecond, End: -1500 * time.Millisecond, Lines: []string{"One"}}, Cue{Start: -500 * time.Millisecond, End: time.Second, Lines: []string{"Two"}}))
+			require.NoError(t, zero.AddCues(Cue{Lines: []string{"One"}}, Cue{End: time.Second, Lines: []string{"Two"}}))
 			assert.Equal(t, writeString(t, f, zero, WriteOptions{}), writeString(t, f, negative, WriteOptions{}))
 		})
 	}

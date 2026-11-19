@@ -2,7 +2,7 @@
     "name": "SAMI with a SYNC tag without a Start time",
     "format": "sami",
     "strict": {
-        "error": "SYNC tag 3 has no valid Start attribute.",
+        "error": "SYNC tag 3 has no valid Start attribute",
         "line": 14
     },
     "cues": [

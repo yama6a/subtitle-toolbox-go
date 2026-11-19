@@ -11,7 +11,7 @@ import (
 
 	"github.com/Eyevinn/mp4ff/mp4"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 )
 
 // sample is a sample with its position in the file and its times in seconds.
@@ -79,7 +79,7 @@ func newWalker(t *track, fileSize int64) (*walker, error) {
 }
 
 func (w *walker) missing(box string) error {
-	return parseError("Track " + strconv.Itoa(w.t.info.Number) + " has no " + box + " box.")
+	return parseError("track " + strconv.Itoa(w.t.info.Number) + " has no " + box + " box")
 }
 
 func (w *walker) readSizes(children []mp4.Box) error {
@@ -100,8 +100,8 @@ func (w *walker) readStsz(stsz *mp4.StszBox) error {
 		return nil
 	}
 	if uint64(stsz.SampleNumber)*uint64(stsz.SampleUniformSize) > w.fileSize {
-		return parseError("The stsz box of track " + strconv.Itoa(w.t.info.Number) + " holds " + strconv.FormatUint(uint64(stsz.SampleNumber), 10) +
-			" samples of " + strconv.FormatUint(uint64(stsz.SampleUniformSize), 10) + " bytes, which do not fit into the file.")
+		return parseError("the stsz box of track " + strconv.Itoa(w.t.info.Number) + " holds " + strconv.FormatUint(uint64(stsz.SampleNumber), 10) +
+			" samples of " + strconv.FormatUint(uint64(stsz.SampleUniformSize), 10) + " bytes, which do not fit into the file")
 	}
 	w.count, w.uniform = stsz.SampleNumber, stsz.SampleUniformSize
 	return nil
@@ -121,7 +121,7 @@ func (w *walker) readStz2(payload []byte) error {
 }
 
 func (w *walker) badStz2() error {
-	return parseError("The stz2 box of track " + strconv.Itoa(w.t.info.Number) + " is not valid.")
+	return parseError("the stz2 box of track " + strconv.Itoa(w.t.info.Number) + " is not valid")
 }
 
 func (w *walker) sizeOf(i uint32) uint32 {
@@ -181,8 +181,8 @@ func (w *walker) next() (sample, bool, error) {
 			continue
 		}
 		if s.end.Cmp(new(big.Rat).SetInt64(int64(timecode.MaxHours)*3600)) >= 0 {
-			return sample{}, false, parseError("The sample of track " + strconv.Itoa(w.t.info.Number) + " at byte " +
-				strconv.FormatUint(s.offset, 10) + " ends at " + decimals(s.end) + " s. Times must be below " + strconv.Itoa(timecode.MaxHours) + " hours.")
+			return sample{}, false, parseError("the sample of track " + strconv.Itoa(w.t.info.Number) + " at byte " +
+				strconv.FormatUint(s.offset, 10) + " ends at " + decimals(s.end) + " s. Times must be below " + strconv.Itoa(timecode.MaxHours) + " hours")
 		}
 		s.start = w.seconds(startTicks)
 		if s.start.Sign() < 0 {
@@ -197,8 +197,8 @@ func (w *walker) next() (sample, bool, error) {
 func (w *walker) nextDelta() error {
 	for w.left == 0 {
 		if w.deltaAt >= len(w.deltas) {
-			return parseError("The stts box of track " + strconv.Itoa(w.t.info.Number) +
-				" has fewer samples than the sample size box.")
+			return parseError("the stts box of track " + strconv.Itoa(w.t.info.Number) +
+				" has fewer samples than the sample size box")
 		}
 		w.left, w.delta = w.deltaCounts[w.deltaAt], w.deltas[w.deltaAt]
 		w.deltaAt++
@@ -240,8 +240,8 @@ func (w *walker) seconds(ticks *big.Int) *big.Rat {
 // outside reports whether the sample does not lie inside the file.
 func (w *walker) outside(s sample) error {
 	if s.offset > w.fileSize || uint64(s.size) > w.fileSize-s.offset {
-		return parseError("A sample of track " + strconv.Itoa(w.t.info.Number) + " at byte " +
-			strconv.FormatUint(s.offset, 10) + " lies outside the file.")
+		return parseError("a sample of track " + strconv.Itoa(w.t.info.Number) + " at byte " +
+			strconv.FormatUint(s.offset, 10) + " lies outside the file")
 	}
 	return nil
 }

@@ -6,38 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
 )
-
-func TestDetectPodcast(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name    string
-		content string
-		want    bool
-	}{
-		{"start and body", `{"segments": [{"startTime": 0, "body": "Hi"}]}`, true},
-		{"body first, values null", `{"segments": [{"body": null, "startTime": null}]}`, true},
-		{"a BOM and white space first", "\xEF\xBB\xBF\r\n\t" + `{"segments": [{"startTime": 0, "body": "Hi"}]}`, true},
-		{"only the first item counts", `{"segments": [{"startTime": 0, "body": "Hi"}, 5]}`, true},
-		{"no body", `{"segments": [{"startTime": 0}]}`, false},
-		{"Whisper segment", `{"segments": [{"start": 0, "end": 1, "text": "Hi"}]}`, false},
-		{"first item no object", `{"segments": [5, {"startTime": 0, "body": "Hi"}]}`, false},
-		{"empty list", `{"segments": []}`, false},
-		{"an object as list", `{"segments": {"0": {"startTime": 0, "body": "Hi"}}}`, false},
-		{"a list as root", `[{"segments": []}]`, false},
-		{"invalid JSON", `{"segments": [`, false},
-		{"empty", ``, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			assert.Equal(t, tt.want, transcript.DetectPodcast([]byte(tt.content)))
-		})
-	}
-}
 
 func TestDetectPodcastJSON(t *testing.T) {
 	t.Parallel()

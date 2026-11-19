@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Part is one indexed bitmap and its place on the screen.
@@ -49,12 +49,12 @@ func ImageOf(parts []Part, screenWidth, screenHeight int) (model.Image, error) {
 
 func checkParts(parts []Part) error {
 	if len(parts) == 0 {
-		return joinError("there is no part.")
+		return joinError("there is no part")
 	}
 	for _, p := range parts {
 		if p.Width < 1 || p.Height < 1 || len(p.Indexes) != p.Width*p.Height {
 			return joinError("a part of " + strconv.Itoa(p.Width) + "x" + strconv.Itoa(p.Height) +
-				" pixels holds " + strconv.Itoa(len(p.Indexes)) + " indexes.")
+				" pixels holds " + strconv.Itoa(len(p.Indexes)) + " indexes")
 		}
 	}
 	return nil
@@ -92,7 +92,7 @@ func draw(canvas Pixels, p Part, x, y int, blend bool) {
 }
 
 func joinError(msg string) error {
-	return &model.ParseError{Msg: "Cannot join the parts of one display set: " + msg}
+	return &model.ParseError{Msg: "cannot join the parts of one display set: " + msg}
 }
 
 // over draws src over below with the straight-alpha "source over" operator, in integers.

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/linewrap"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/linewrap"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 )
 
 // The defaults of CueLimits and MergeShortCuesOptions. The line, lines and maximum duration defaults are the
@@ -82,19 +82,19 @@ func (r cueLimits) check(path string) error {
 			option = path + ".MaxLinesPerCue"
 		}
 		return &InvalidArgumentError{Option: option, Msg: fmt.Sprintf(
-			"The maximum characters per line and the maximum lines must be at least 1, got %d and %d.",
+			"the maximum characters per line and the maximum lines must be at least 1, got %d and %d",
 			r.maxCharactersPerLine, r.maxLinesPerCue)}
 	}
 	if r.minDuration < 0 {
 		return &InvalidArgumentError{Option: path + ".MinDuration", Msg: fmt.Sprintf(
-			"The minimum duration must not be negative, got %s.", timecode.Seconds(r.minDuration))}
+			"the minimum duration must not be negative, got %s", timecode.Seconds(r.minDuration))}
 	}
 	if err := r.checkMaximums(path); err != nil {
 		return err
 	}
 	if r.minDuration > r.maxDuration {
 		return &InvalidArgumentError{Option: path + ".MinDuration", Msg: fmt.Sprintf(
-			"The minimum duration must not be greater than the maximum duration, got %s and %s.",
+			"the minimum duration must not be greater than the maximum duration, got %s and %s",
 			timecode.Seconds(r.minDuration), timecode.Seconds(r.maxDuration))}
 	}
 	return nil
@@ -114,7 +114,7 @@ func (r cueLimits) checkMaximums(path string) error {
 		cpsText = timecode.Number(cps)
 	}
 	return &InvalidArgumentError{Option: option, Msg: fmt.Sprintf(
-		"The maximum duration and the maximum characters per second must be greater than 0, got %s and %s.",
+		"the maximum duration and the maximum characters per second must be greater than 0, got %s and %s",
 		timecode.Seconds(r.maxDuration), cpsText)}
 }
 
@@ -160,11 +160,11 @@ func (o MergeShortCuesOptions) resolved() (shortCueMerge, error) {
 	}
 	if m.maxGap < 0 {
 		return m, &InvalidArgumentError{Option: "MergeShortCuesOptions.MaxGap", Msg: fmt.Sprintf(
-			"The maximum gap must not be negative, got %s.", timecode.Seconds(m.maxGap))}
+			"the maximum gap must not be negative, got %s", timecode.Seconds(m.maxGap))}
 	}
 	if o.MinCharacters < 0 {
 		return m, &InvalidArgumentError{Option: "MergeShortCuesOptions.MinCharacters", Msg: fmt.Sprintf(
-			"The minimum characters must not be negative, got %d.", o.MinCharacters)}
+			"the minimum characters must not be negative, got %d", o.MinCharacters)}
 	}
 	m.maxGap = m.maxGap.Round(time.Millisecond)
 	return m, nil

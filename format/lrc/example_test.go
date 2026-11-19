@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/lrc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/lrc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleRead() {
@@ -33,10 +33,12 @@ func ExampleRead() {
 func ExampleWrite() {
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataArtist, "Station Choir")
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"<i>First</i> line"}},
 		model.Cue{Start: 3 * time.Second, End: 5 * time.Second, Lines: []string{"<00:00:03.000>Slow <00:00:03.550>river"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	_, err := lrc.Write(os.Stdout, s, model.CommonWriteOptions{BOM: model.BOMRemove}, lrc.WriteOptions{})
 	if err != nil {
 		fmt.Println(err)

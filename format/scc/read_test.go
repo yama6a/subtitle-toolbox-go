@@ -8,9 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const popOnHello = header +
@@ -152,9 +153,9 @@ func TestValidate(t *testing.T) {
 	}{
 		{"zero", scc.ReadOptions{}, nil},
 		{"channel 2 and lines", scc.ReadOptions{Channel: 2, RollUp: scc.RollUpLines}, nil},
-		{"channel 3", scc.ReadOptions{Channel: 3}, &model.InvalidArgumentError{Option: "ReadOptions.SCC.Channel", Msg: "The SCC data channel must be 1 or 2, got 3."}},
-		{"channel -1", scc.ReadOptions{Channel: -1}, &model.InvalidArgumentError{Option: "ReadOptions.SCC.Channel", Msg: "The SCC data channel must be 1 or 2, got -1."}},
-		{"unknown roll-up", scc.ReadOptions{RollUp: "rows"}, &model.InvalidArgumentError{Option: "ReadOptions.SCC.RollUp", Msg: `The SCC roll-up mode "rows" is not screen or lines.`}},
+		{"channel 3", scc.ReadOptions{Channel: 3}, &model.InvalidArgumentError{Option: "ReadOptions.SCC.Channel", Msg: "the SCC data channel must be 1 or 2, got 3"}},
+		{"channel -1", scc.ReadOptions{Channel: -1}, &model.InvalidArgumentError{Option: "ReadOptions.SCC.Channel", Msg: "the SCC data channel must be 1 or 2, got -1"}},
+		{"unknown roll-up", scc.ReadOptions{RollUp: "rows"}, &model.InvalidArgumentError{Option: "ReadOptions.SCC.RollUp", Msg: `the SCC roll-up mode "rows" is not screen or lines`}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -181,11 +182,11 @@ func TestReadInvalidFiles(t *testing.T) {
 		line    int
 		msg     string
 	}{
-		{"no header", "\n00:00:01:00\t942c 942c\n", 2, `An SCC file must start with the line "Scenarist_SCC V1.0".`},
-		{"other header", "Scenarist_SCC V2.0\n\n00:00:01:00\t942c 942c\n", 1, `An SCC file must start with the line "Scenarist_SCC V1.0".`},
-		{"no time code", "Scenarist_SCC V1.0\n\n942c 942c\n", 3, `The SCC line "942c 942c" does not start with a time code.`},
-		{"short byte pair", "Scenarist_SCC V1.0\n\n00:00:01:00\t942c 94c\n", 3, `The SCC line has the invalid byte pair "94c".`},
-		{"byte pair not hex", "Scenarist_SCC V1.0\r\n\r\n00:00:01:00\t942c\n\n00:00:02:00\t94zz\n", 5, `The SCC line has the invalid byte pair "94zz".`},
+		{"no header", "\n00:00:01:00\t942c 942c\n", 2, `an SCC file must start with the line "Scenarist_SCC V1.0"`},
+		{"other header", "Scenarist_SCC V2.0\n\n00:00:01:00\t942c 942c\n", 1, `an SCC file must start with the line "Scenarist_SCC V1.0"`},
+		{"no time code", "Scenarist_SCC V1.0\n\n942c 942c\n", 3, `the SCC line "942c 942c" does not start with a time code`},
+		{"short byte pair", "Scenarist_SCC V1.0\n\n00:00:01:00\t942c 94c\n", 3, `the SCC line has the invalid byte pair "94c"`},
+		{"byte pair not hex", "Scenarist_SCC V1.0\r\n\r\n00:00:01:00\t942c\n\n00:00:02:00\t94zz\n", 5, `the SCC line has the invalid byte pair "94zz"`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -206,13 +207,13 @@ func TestReadTimeLimit(t *testing.T) {
 		clean bool
 		msg   string
 	}{
-		{"non-drop 6-digit hour", "100001:00:00:00\t942c 942c", false, `The time "100001:00:00:00" is not below 100000 hours.`},
-		{"non-drop label below 100000 hours", "99999:59:59:00\t942c 942c", false, `The time "99999:59:59:00" is not below 100000 hours.`},
+		{"non-drop 6-digit hour", "100001:00:00:00\t942c 942c", false, `the time "100001:00:00:00" is not below 100000 hours`},
+		{"non-drop label below 100000 hours", "99999:59:59:00\t942c 942c", false, `the time "99999:59:59:00" is not below 100000 hours`},
 		{"non-drop time below the limit", "99900:00:00:00\t942c 942c", true, ""},
 		{"drop-frame label 100000 below the limit", "100000:05:58;29\t942c 942c", true, ""},
-		{"drop-frame label 100000 at the limit", "100000:06:00;29\t942c 942c", false, `The time "100000:06:00;29" is not below 100000 hours.`},
-		{"drop-frame label below the limit, last byte pair at it", "100000:05:59;29\t9420 9420 94ae 94ae 9452 9452 c8e9 942f 942f", false, `The time "100000:05:59;29" is not below 100000 hours.`},
-		{"drop-frame 999999 hours", "999999:59:59;29\t942c 942c", false, `The time "999999:59:59;29" is not below 100000 hours.`},
+		{"drop-frame label 100000 at the limit", "100000:06:00;29\t942c 942c", false, `the time "100000:06:00;29" is not below 100000 hours`},
+		{"drop-frame label below the limit, last byte pair at it", "100000:05:59;29\t9420 9420 94ae 94ae 9452 9452 c8e9 942f 942f", false, `the time "100000:05:59;29" is not below 100000 hours`},
+		{"drop-frame 999999 hours", "999999:59:59;29\t942c 942c", false, `the time "999999:59:59;29" is not below 100000 hours`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -229,7 +230,7 @@ func TestReadTimeLimit(t *testing.T) {
 			}
 			assert.Equal(t, &model.ParseError{Format: model.SCC, Line: 5, Msg: tt.msg}, strictErr)
 			assert.Equal(t, []model.ParseWarning{{
-				Message: tt.msg, Line: 5, Block: 2, Lines: []string{tt.line}, Action: model.Skipped,
+				Message: parsing.Sentence(tt.msg), Line: 5, Block: 2, Lines: []string{tt.line}, Action: model.Skipped,
 			}}, warnings)
 		})
 	}
@@ -260,7 +261,7 @@ func TestReadLenient(t *testing.T) {
 		}}, warnings)
 
 		_, _, err := read(t, cut, model.CommonReadOptions{}, scc.ReadOptions{})
-		assert.Equal(t, &model.ParseError{Format: model.SCC, Line: 35, Msg: `The SCC line has the invalid byte pair "9".`}, err)
+		assert.Equal(t, &model.ParseError{Format: model.SCC, Line: 35, Msg: `the SCC line has the invalid byte pair "9"`}, err)
 	})
 	t.Run("bad pair and cut-off time code", func(t *testing.T) {
 		t.Parallel()
@@ -275,6 +276,6 @@ func TestReadLenient(t *testing.T) {
 		t.Parallel()
 
 		_, _, err := read(t, "00:00:01:00\t942c 942c\n", lenient, scc.ReadOptions{})
-		assert.Equal(t, &model.ParseError{Format: model.SCC, Line: 1, Msg: `An SCC file must start with the line "Scenarist_SCC V1.0".`}, err)
+		assert.Equal(t, &model.ParseError{Format: model.SCC, Line: 1, Msg: `an SCC file must start with the line "Scenarist_SCC V1.0"`}, err)
 	})
 }

@@ -4,7 +4,7 @@ A German SubRip file for a 25 fps release runs late and drifts against a 23.976 
 
 ## Sync to a reference subtitle
 
-<!-- example: refsync/ExampleApply -->
+<!-- example: edit/refsync/ExampleApply -->
 ```go
 at := func(start, end float64, text string) model.Cue {
 	return model.Cue{
@@ -13,18 +13,22 @@ at := func(start, end float64, text string) model.Cue {
 	}
 }
 var english, german model.Subtitle
-english.AddCues(
+if err := english.AddCues(
 	at(10, 12.5, "Where is the station?"),
 	at(20, 23, "Turn left at the bakery."),
 	at(31, 33, "Thank you."),
 	at(45, 47.5, "The last train leaves at ten."),
-)
-german.AddCues(
+); err != nil {
+	panic(err)
+}
+if err := german.AddCues(
 	at(10.79, 13.188, "Wo ist der Bahnhof?"),
 	at(20.381, 23.258, "Links an der Ecke."),
 	at(30.93, 32.848, "Danke."),
 	at(44.357, 46.755, "Der letzte Zug geht um zehn."),
-)
+); err != nil {
+	panic(err)
+}
 
 r, err := refsync.Apply(&german, refsync.Options{Reference: &english})
 if err != nil {
@@ -71,7 +75,7 @@ The user runs FFmpeg. This command writes the silences of the audio:
 ffmpeg -i movie.mkv -af silencedetect=noise=-30dB:d=0.4 -f null - 2> silence.log
 ```
 
-<!-- example: refsync/ExampleSpeechFromSilenceLog -->
+<!-- example: edit/refsync/ExampleSpeechFromSilenceLog -->
 ```go
 log := []byte("[silencedetect @ 0x1] silence_start: 0\n" +
 	"[silencedetect @ 0x1] silence_end: 2.5 | silence_duration: 2.5\n" +
@@ -111,7 +115,7 @@ at := func(start, end float64, text string) model.Cue {
 	}
 }
 var englishTV, german model.Subtitle
-englishTV.AddCues(
+if err := englishTV.AddCues(
 	at(10, 12.5, "Where is the station?"),
 	at(20, 23, "Turn left at the bakery."),
 	at(31, 33, "Thank you."),
@@ -120,8 +124,10 @@ englishTV.AddCues(
 	at(221, 224, "Yes, please sit down."),
 	at(232, 234, "Where are you going?"),
 	at(246, 248.5, "To my sister in the north."),
-)
-german.AddCues(
+); err != nil {
+	panic(err)
+}
+if err := german.AddCues(
 	at(12, 14.5, "Wo ist der Bahnhof?"),
 	at(22, 25, "Links an der Ecke."),
 	at(33, 35, "Danke."),
@@ -130,7 +136,9 @@ german.AddCues(
 	at(73, 76, "Ja, bitte setzen Sie sich."),
 	at(84, 86, "Wohin fahren Sie?"),
 	at(98, 100.5, "Zu meiner Schwester im Norden."),
-)
+); err != nil {
+	panic(err)
+}
 
 r, err := refsync.Apply(&german, refsync.Options{
 	Reference: &englishTV,

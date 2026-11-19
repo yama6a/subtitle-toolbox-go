@@ -2,7 +2,7 @@
     "name": "YouTube srv3 with a credit line before the XML declaration",
     "format": "youtube",
     "strict": {
-        "error": "The file has text before the XML: \"Captions by the harbour film club\".",
+        "error": "the file has text before the XML: \"Captions by the harbour film club\"",
         "line": 1
     },
     "cues": [

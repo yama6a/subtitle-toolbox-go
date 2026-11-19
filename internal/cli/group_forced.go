@@ -1,7 +1,7 @@
 package cli
 
 import (
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
 )
 
 func forcedGroup() group {

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const podcastBenchSegments = 16000
@@ -72,7 +72,7 @@ func BenchmarkWritePodcast(b *testing.B) {
 		b.Run(fmt.Sprintf("words=%d word segments=%t", podcastBenchSegments, opts.WordSegments), func(b *testing.B) {
 			b.ReportAllocs()
 			for b.Loop() {
-				if err := transcript.WritePodcast(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{Podcast: opts}); err != nil {
+				if _, err := transcript.WritePodcast(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{Podcast: opts}); err != nil {
 					b.Fatal(err)
 				}
 			}

@@ -2,7 +2,7 @@
     "name": "SBV with text before the first cue",
     "format": "sbv",
     "strict": {
-        "error": "The time \"Auto-generated\" is not valid.",
+        "error": "the time \"Auto-generated\" is not valid",
         "line": 1
     },
     "cues": [

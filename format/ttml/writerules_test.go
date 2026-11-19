@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ttml"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ttml"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // styledRoot is a root start tag that declares tts and ttm, without its closing >.
@@ -426,7 +426,7 @@ func TestStoredHeadThatIsNoHead(t *testing.T) {
 			s := subtitleOf(cue(0, time.Second, "x"))
 			require.NoError(t, s.SetFormatData("ttml", model.NewData(model.Field{Key: "head", Value: tt.head})))
 			uerr := writeError(t, s)
-			assert.Equal(t, "The stored TTML head is not a well-formed <head> element.", uerr.Reason)
+			assert.Equal(t, "the stored TTML head is not a well-formed <head> element", uerr.Reason)
 			assert.Equal(t, -1, uerr.CueIndex)
 			assert.Equal(t, tt.syntax, uerr.Err != nil)
 		})

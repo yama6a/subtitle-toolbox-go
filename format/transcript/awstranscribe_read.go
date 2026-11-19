@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const awsKey = string(model.AWSTranscribe)
@@ -29,7 +29,7 @@ func ReadAWSTranscribe(r io.Reader, common model.CommonReadOptions, opts ReadOpt
 	results, _ := root.Get("results")
 	items, _ := results.Get("items")
 	if results.Kind() != orderedjson.Object || items.Kind() != orderedjson.Array {
-		return nil, nil, &model.ParseError{Format: model.AWSTranscribe, Msg: `The JSON has no "results.items" list.`}
+		return nil, nil, &model.ParseError{Format: model.AWSTranscribe, Msg: `the JSON has no "results.items" list`}
 	}
 	rd := &awsReader{st: st, cues: wordgroup.NewReader(st, wordgroup.Options{
 		WordTimestamps: opts.WordTimestamps, SpeakerVoices: opts.SpeakerVoices,

@@ -10,15 +10,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/karaoke"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
-	"github.com/yama6a/subtitle-toolbox-go/v4/resegment"
-	"github.com/yama6a/subtitle-toolbox-go/v4/speakers"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/karaoke"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/resegment"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/speakers"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/youtube"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // libraryCall is the library call that a CLI call of TestConvertTranscriptOptions must equal.
@@ -174,7 +174,7 @@ func TestConvertTranscriptUsageErrors(t *testing.T) {
 		{
 			"style em",
 			[]string{"--karaoke", "--karaoke-style", "em"},
-			`The style em must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00".`,
+			`the style em must be one of the core markup tags b, i, u, s or font, for example u or font color="#ffff00"`,
 		},
 		{
 			"style empty",

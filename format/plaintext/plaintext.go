@@ -8,11 +8,14 @@ import (
 	"math"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/paragraphs"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/paragraphs"
 )
 
 // NoParagraphBreaks is the ParagraphGap that writes all cues as one paragraph.
 const NoParagraphBreaks = time.Duration(math.MaxInt64)
+
+// ReadOptions holds the settings of a plain text reader. Plain text has no reader, so it has no fields.
+type ReadOptions struct{}
 
 // WriteReport holds what the writer reports. It has no fields yet.
 type WriteReport struct{}

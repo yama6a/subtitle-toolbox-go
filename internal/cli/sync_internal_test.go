@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 )
 
 // syncDir returns a directory with the CLI fixtures and the sync fixtures as de.srt, en.srt and tv.srt.
@@ -134,15 +134,15 @@ func TestSyncUsageErrors(t *testing.T) {
 		},
 		{
 			"offsets reversed", slices.Concat(sync, []string{"--min-offset", "10", "--max-offset", "-10"}),
-			"The minimum offset must not be greater than the maximum offset, got 10 and -10.",
+			"the minimum offset must not be greater than the maximum offset, got 10 and -10",
 		},
 		{
 			"offset beyond a day", slices.Concat(sync, []string{"--min-offset", "-90000"}),
-			"The minimum offset must be from -86400 to 86400 seconds, got -90000.",
+			"the minimum offset must be from -86400 to 86400 seconds, got -90000",
 		},
 		{
 			"offsets too far apart", slices.Concat(sync, []string{"--min-offset", "-3600", "--max-offset", "3600.5"}),
-			"The minimum and the maximum offset must be at most 7200 seconds apart, got -3600 and 3600.5.",
+			"the minimum and the maximum offset must be at most 7200 seconds apart, got -3600 and 3600.5",
 		},
 		{
 			"bad offset", slices.Concat(sync, []string{"--max-offset", "soon"}),
@@ -179,7 +179,8 @@ func TestSyncUsageErrors(t *testing.T) {
 func TestSyncReferenceFailures(t *testing.T) {
 	t.Parallel()
 
-	broken := `broken.srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000".`
+	broken := `broken.srt: line 6: block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000"`
+	brokenWarning := `broken.srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000".`
 	tests := []struct {
 		name  string
 		words []string
@@ -219,7 +220,7 @@ func TestSyncReferenceFailures(t *testing.T) {
 
 		got := call{dir: syncDir(t)}.run(t, "sync", "de.srt", "--reference", "broken.srt", "--lenient")
 		assert.Equal(t, 0, got.Code)
-		assert.True(t, strings.HasPrefix(got.Stderr, broken+" (skipped)\nde.srt: scale "), got.Stderr)
+		assert.True(t, strings.HasPrefix(got.Stderr, brokenWarning+" (skipped)\nde.srt: scale "), got.Stderr)
 	})
 
 	t.Run("--from does not apply to the reference", func(t *testing.T) {
@@ -251,8 +252,8 @@ func TestSyncToTheSpeech(t *testing.T) {
 		log  string
 		want string
 	}{
-		{"a mono log", logLine + "channel: 0 | silence_start: 1.5\n", "Error: bad.log: line 1: Cannot read a silencedetect log with one line per channel. Run silencedetect without mono.\n"},
-		{"a log out of order", logLine + "silence_end: 1.5\n", "Error: bad.log: line 1: The line silence_end is out of order. The silence_start and silence_end lines must alternate.\n"},
+		{"a mono log", logLine + "channel: 0 | silence_start: 1.5\n", "Error: bad.log: line 1: cannot read a silencedetect log with one line per channel. Run silencedetect without mono\n"},
+		{"a log out of order", logLine + "silence_end: 1.5\n", "Error: bad.log: line 1: the line silence_end is out of order. The silence_start and silence_end lines must alternate\n"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

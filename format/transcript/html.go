@@ -4,7 +4,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/paragraphs"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/paragraphs"
 )
 
 // NoParagraphBreaks is the ParagraphGap that writes all cues as one paragraph. It has the value of

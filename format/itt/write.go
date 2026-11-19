@@ -5,11 +5,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/ttmldoc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/ttmldoc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 //nolint:gochecknoglobals // the fixed Apple head
@@ -139,7 +139,7 @@ func copyOf(s *model.Subtitle) *model.Subtitle {
 		))
 		cues = append(cues, cue)
 	}
-	doc.AddCues(cues...)
+	doc.ReplaceCues(cues, nil)
 	return doc
 }
 

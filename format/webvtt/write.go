@@ -4,9 +4,9 @@ import (
 	"io"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/vtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/vtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Write writes s as WebVTT and returns what the output leaves out. A cue line that reads as an empty line, such as a

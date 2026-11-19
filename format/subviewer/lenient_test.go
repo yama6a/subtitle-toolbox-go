@@ -7,12 +7,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
-const timingForm = "is not in the form hh:mm:ss.ff,hh:mm:ss.ff."
+const timingForm = "is not in the form hh:mm:ss.ff,hh:mm:ss.ff"
 
 // Ports testSubViewerKeepsTheTextOfTheSkippedCueInTheWarning of tests/Parsers/LenientSubViewerTest.php of
 // subtitle-toolbox-php.
@@ -41,13 +41,13 @@ func TestLenientReadsALooseTimingLineOnlyInLenientMode(t *testing.T) {
 				{1500 * ms, 3 * time.Second, []string{"Hello"}},
 			}, cueRows(s))
 			assert.Equal(t, []warningRow{{
-				`The timing line "` + line + `" ` + timingForm + " The parser read it as 1.5 s to 3 s.", 4, 1, []string{line}, model.Repaired,
+				`The timing line "` + line + `" ` + timingForm + ". The parser read it as 1.5 s to 3 s.", 4, 1, []string{line}, model.Repaired,
 			}}, warningRows(warnings))
 			assert.Contains(t, write(t, s, subviewer.WriteOptions{}), "00:00:01.50,00:00:03.00\nHello")
 
 			err := readError(t, content)
 			assert.Equal(t, 4, err.Line)
-			assert.Equal(t, `The timing line "`+line+`" `+timingForm, err.Msg)
+			assert.Equal(t, `the timing line "`+line+`" `+timingForm, err.Msg)
 		})
 	}
 }
@@ -120,7 +120,7 @@ func TestLenientVersion2(t *testing.T) {
 			"99999:59:59,99999:59:59.9994\nOne\n",
 			[]cueRow{{99999*time.Hour + 59*time.Minute + 59*time.Second, 99999*time.Hour + 59*time.Minute + 59*time.Second + 999*ms, []string{"One"}}},
 			[]warningRow{{
-				`The timing line "99999:59:59,99999:59:59.9994" ` + timingForm + " The parser read it as 359999999 s to 359999999.999 s.", 1, 0,
+				`The timing line "99999:59:59,99999:59:59.9994" ` + timingForm + ". The parser read it as 359999999 s to 359999999.999 s.", 1, 0,
 				[]string{"99999:59:59,99999:59:59.9994"},
 				model.Repaired,
 			}},

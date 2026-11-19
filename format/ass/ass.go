@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const formatDataKey = string(model.ASS)
@@ -55,7 +55,7 @@ func (o WriteOptions) Validate() error {
 	default:
 		return &model.InvalidArgumentError{
 			Option: "WriteOptions.ASS.KaraokeTag",
-			Msg:    "The ASS karaoke tag " + strconv.Quote(string(o.KaraokeTag)) + " is unknown. Use one of: k, kf, ko.",
+			Msg:    "the ASS karaoke tag " + strconv.Quote(string(o.KaraokeTag)) + " is unknown. Use one of: k, kf, ko",
 		}
 	}
 	if o.Style == "" {

@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // fromTexts builds a subtitle with one cue per text, cue i from i s to i+1 s, as TestSubtitles::fromTexts of
@@ -25,7 +25,9 @@ func fromTexts(texts ...string) *model.Subtitle {
 	s := &model.Subtitle{}
 	for i, text := range texts {
 		start := time.Duration(i) * time.Second
-		s.AddCue(model.Cue{Start: start, End: start + time.Second, Lines: strings.Split(text, "\n")})
+		if err := s.AddCue(model.Cue{Start: start, End: start + time.Second, Lines: strings.Split(text, "\n")}); err != nil {
+			panic(err)
+		}
 	}
 	return s
 }
@@ -132,10 +134,10 @@ func TestSentenceCaseGap(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCues(
+			require.NoError(t, s.AddCues(
 				model.Cue{Start: 0, End: time.Second, Lines: []string{"WAIT FOR"}},
 				model.Cue{Start: tt.start, End: tt.start + time.Second, Lines: []string{"ME"}},
-			)
+			))
 			require.NoError(t, s.ChangeCase(model.CaseSentence, ""))
 			assert.Equal(t, []string{"Wait for", tt.want}, texts(s))
 		})
@@ -154,7 +156,7 @@ func TestChangeCaseRejectsAnUnknownMode(t *testing.T) {
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
 			var invalid *model.InvalidArgumentError
 			require.ErrorAs(t, err, &invalid)
-			assert.Equal(t, `The case mode "`+string(mode)+`" is not upper, lower or sentence.`, invalid.Msg)
+			assert.Equal(t, `the case mode "`+string(mode)+`" is not upper, lower or sentence`, invalid.Msg)
 			assert.Equal(t, []string{"Hi"}, texts(s))
 		})
 	}
@@ -304,15 +306,15 @@ func TestReplaceTextErrors(t *testing.T) {
 		opts            model.ReplaceOptions
 		msg             string
 	}{
-		{name: "empty search", opts: model.ReplaceOptions{}, msg: "The search text must not be empty."},
-		{name: "empty regex", opts: model.ReplaceOptions{Regex: true}, msg: "The search text must not be empty."},
+		{name: "empty search", opts: model.ReplaceOptions{}, msg: "the search text must not be empty"},
+		{name: "empty regex", opts: model.ReplaceOptions{Regex: true}, msg: "the search text must not be empty"},
 		{
 			name: "invalid regex", search: "(", opts: model.ReplaceOptions{Regex: true},
-			msg: "The regular expression \"(\" is not valid: error parsing regexp: missing closing ) in `(`.",
+			msg: "the regular expression \"(\" is not valid: error parsing regexp: missing closing ) in `(`",
 		},
 		{
 			name: "group number too large in the replacement", search: "(a)", replace: "$99999999999", opts: model.ReplaceOptions{Regex: true},
-			msg: "The replacement \"$99999999999\" is not valid: error parsing regexp: capture group number out of range in `$99999999999`.",
+			msg: "the replacement \"$99999999999\" is not valid: error parsing regexp: capture group number out of range in `$99999999999`",
 		},
 	}
 	for _, tt := range tests {
@@ -351,7 +353,7 @@ func TestReplaceTextTimeoutChangesNothing(t *testing.T) {
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
 			var invalid *model.InvalidArgumentError
 			require.ErrorAs(t, err, &invalid)
-			assert.Equal(t, `The regular expression "`+tt.pattern+`" took longer than 1 s on cue 2.`, invalid.Msg)
+			assert.Equal(t, `the regular expression "`+tt.pattern+`" took longer than 1 s on cue 2`, invalid.Msg)
 			assert.Equal(t, tt.texts, texts(s))
 		})
 	}
@@ -362,7 +364,7 @@ func TestReplaceTextRemovesEmptiedCues(t *testing.T) {
 	t.Parallel()
 
 	s := fromTexts("first", "<i>[MUSIC]</i>", "[DOOR]\n[MUSIC]", "last")
-	s.AddCue(model.Cue{Start: 10 * time.Second, End: 11 * time.Second})
+	require.NoError(t, s.AddCue(model.Cue{Start: 10 * time.Second, End: 11 * time.Second}))
 	require.NoError(t, s.AddComment("before music", 1))
 	require.NoError(t, s.AddComment("before door", 2))
 	require.NoError(t, s.AddComment("before last", 3))
@@ -743,7 +745,7 @@ func TestStripFormattingKeepsWordsAndClearsSpeaker(t *testing.T) {
 			t.Parallel()
 
 			var s model.Subtitle
-			s.AddCue(model.Cue{End: time.Second, Lines: []string{"<i>Hi</i> there"}, Speaker: "Anna", Words: []model.Word{{Text: "there", Start: 500 * time.Millisecond, End: time.Second}}})
+			require.NoError(t, s.AddCue(model.Cue{End: time.Second, Lines: []string{"<i>Hi</i> there"}, Speaker: "Anna", Words: []model.Word{{Text: "there", Start: 500 * time.Millisecond, End: time.Second}}}))
 			s.StripFormatting(model.StripOptions{KeepTags: tt.keep})
 			c, _ := s.Cue(0)
 			assert.Equal(t, tt.wantSpeaker, c.Speaker)

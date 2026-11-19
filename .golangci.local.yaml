@@ -17,27 +17,27 @@ linters:
       # The translation runner passes the errors of the engines on unchanged, because the CLI messages read their types.
       # The OCR packages pass the errors of the engines on unchanged, because the CLI messages read their types.
       ignore-package-globs:
-        - github.com/yama6a/subtitle-toolbox-go/v4/internal/*
-        - github.com/yama6a/subtitle-toolbox-go/v4/container/*
-        - github.com/yama6a/subtitle-toolbox-go/v4/format/*
-        - github.com/yama6a/subtitle-toolbox-go/v4
-        - github.com/yama6a/subtitle-toolbox-go/v4/model
-        - github.com/yama6a/subtitle-toolbox-go/v4/refsync
-        - github.com/yama6a/subtitle-toolbox-go/v4/dual
-        - github.com/yama6a/subtitle-toolbox-go/v4/profanity
-        - github.com/yama6a/subtitle-toolbox-go/v4/diff
-        - github.com/yama6a/subtitle-toolbox-go/v4/fixing
-        - github.com/yama6a/subtitle-toolbox-go/v4/hearingimpaired
-        - github.com/yama6a/subtitle-toolbox-go/v4/timing
-        - github.com/yama6a/subtitle-toolbox-go/v4/hls
-        - github.com/yama6a/subtitle-toolbox-go/v4/validation
-        - github.com/yama6a/subtitle-toolbox-go/v4/ocr
-        - github.com/yama6a/subtitle-toolbox-go/v4/ocr/*
-        - github.com/yama6a/subtitle-toolbox-go/v4/resegment
-        - github.com/yama6a/subtitle-toolbox-go/v4/speakers
-        - github.com/yama6a/subtitle-toolbox-go/v4/karaoke
-        - github.com/yama6a/subtitle-toolbox-go/v4/translation
-        - github.com/yama6a/subtitle-toolbox-go/v4/translation/*
+        - github.com/yama6a/subtitle-toolbox-go/v5/internal/*
+        - github.com/yama6a/subtitle-toolbox-go/v5/container/*
+        - github.com/yama6a/subtitle-toolbox-go/v5/format/*
+        - github.com/yama6a/subtitle-toolbox-go/v5
+        - github.com/yama6a/subtitle-toolbox-go/v5/model
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/refsync
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/dual
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/profanity
+        - github.com/yama6a/subtitle-toolbox-go/v5/inspect/diff
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/fixing
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/hearingimpaired
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/timing
+        - github.com/yama6a/subtitle-toolbox-go/v5/format/hls
+        - github.com/yama6a/subtitle-toolbox-go/v5/inspect/validation
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr/*
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/resegment
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/speakers
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/karaoke
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/translation
+        - github.com/yama6a/subtitle-toolbox-go/v5/edit/translation/*
   exclusions:
     rules:
       # Test helpers and test doubles pass errors on unchanged, such as io.EOF and the fs.PathError that names a file.

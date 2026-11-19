@@ -11,7 +11,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // LineReader reads the lines of a stream. The text pre-pass of Prepare runs on the bytes before the
@@ -160,7 +160,7 @@ func (p *prepass) checkUTF8(chunk []byte, last bool) {
 			}
 			p.seenBad = true
 			if p.st.Lenient() {
-				w := newWarning(badUTF8Message(start+i), model.NoLine, model.NoBlock, nil, model.Repaired)
+				w := newWarning(Sentence(badUTF8Message(start+i)), model.NoLine, model.NoBlock, nil, model.Repaired)
 				p.st.badUTF8 = &w
 			}
 			return
@@ -323,4 +323,13 @@ func (s *splitState) splitAtCR(data []byte, i int, atEOF bool) (int, []byte, err
 	s.scanned = 0
 	s.lonely = j - i - 1
 	return i + 1, data[:i], nil
+}
+
+// ErrOr returns the error of l when it has one, because it ended the lines
+// and the block error may follow from that. Otherwise it returns err.
+func (l *LineReader) ErrOr(err error) error {
+	if lerr := l.Err(); lerr != nil {
+		return lerr
+	}
+	return err
 }

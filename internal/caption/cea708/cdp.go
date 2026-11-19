@@ -25,7 +25,7 @@ const (
 )
 
 // ErrNoCDP means the data has no CDP identifier or is shorter than the 7 byte header.
-var ErrNoCDP = errors.New("The data holds no caption distribution packet.") //nolint:revive,staticcheck // the sentence is the message of the MCC parse error
+var ErrNoCDP = errors.New("the data holds no caption distribution packet")
 
 // ReadCDP returns the frame rate code and the valid triplets of field 1 and of DTVCC data of a CDP.
 // It reads the first cc_data section after the optional time code section. A CDP without cc_data has no triplets.
@@ -52,7 +52,7 @@ func ReadCDP(cdp []byte) (rateCode int, triplets []Triplet, err error) {
 func readTriplets(section []byte) ([]Triplet, error) {
 	count := int(section[0] & 0x1F)
 	if 1+3*count > len(section) {
-		return nil, errors.New("The caption distribution packet is shorter than its " + strconv.Itoa(count) + " cc_data triplets.")
+		return nil, errors.New("the caption distribution packet is shorter than its " + strconv.Itoa(count) + " cc_data triplets")
 	}
 	var triplets []Triplet
 	for at := 1; count > 0; count, at = count-1, at+3 {

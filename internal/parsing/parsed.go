@@ -5,7 +5,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // ParsedComment is a comment and the count of cues before it in the file.
@@ -17,7 +17,7 @@ type ParsedComment struct {
 
 // AddParsed adds cues, in file order, to s, which holds no cues yet. Each comment stays before the cue
 // that followed it in the file, also when that cue moves in the start order.
-func AddParsed(s *model.Subtitle, cues []model.Cue, comments []ParsedComment) {
+func AddParsed(s *model.Subtitle, cues []model.Cue, comments []ParsedComment) error {
 	order := make([]int, len(cues))
 	for i := range order {
 		order[i] = i
@@ -31,7 +31,9 @@ func AddParsed(s *model.Subtitle, cues []model.Cue, comments []ParsedComment) {
 		sorted[i] = cues[fileIndex]
 		position[fileIndex] = i
 	}
-	s.AddCues(sorted...)
+	if err := s.AddCues(sorted...); err != nil {
+		return err
+	}
 
 	placed := make([]model.Comment, len(comments))
 	for i, c := range comments {
@@ -45,4 +47,5 @@ func AddParsed(s *model.Subtitle, cues []model.Cue, comments []ParsedComment) {
 	for _, c := range placed {
 		_ = s.AddComment(c.Text, c.BeforeCue) // BeforeCue is never negative, and AddComment fails only for that
 	}
+	return nil
 }

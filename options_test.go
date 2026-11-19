@@ -9,15 +9,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mpsub"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/plaintext"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mpsub"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/plaintext"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 )
 
 // Ports testANegativeLastCueDurationThrows of tests/ReadOptionsTest.php of subtitle-toolbox-php.
@@ -40,30 +40,30 @@ func TestReadOptionsValidate(t *testing.T) {
 			opts: stbox.ReadOptions{MicroDVD: microdvd.ReadOptions{FrameRate: stbox.FrameRate{Num: -1, Den: 1}}},
 			wantErr: &stbox.InvalidArgumentError{
 				Option: "ReadOptions.MicroDVD.FrameRate",
-				Msg:    "The frame rate must be greater than 0, got -1.",
+				Msg:    "the frame rate must be greater than 0, got -1",
 			},
 		},
 		{
 			name:    "MCC service 64",
 			opts:    stbox.ReadOptions{MCC: mcc.ReadOptions{Service: 64}},
-			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.MCC.Service", Msg: "The CEA-708 service must be from 1 to 63, got 64."},
+			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.MCC.Service", Msg: "the CEA-708 service must be from 1 to 63, got 64"},
 		},
 		{
 			name:    "SCC channel 3",
 			opts:    stbox.ReadOptions{SCC: scc.ReadOptions{Channel: 3}},
-			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.SCC.Channel", Msg: "The SCC data channel must be 1 or 2, got 3."},
+			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.SCC.Channel", Msg: "the SCC data channel must be 1 or 2, got 3"},
 		},
 		{
 			name:    "unknown encoding",
 			opts:    stbox.ReadOptions{Encoding: "CP1125"},
-			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.Encoding", Msg: `The encoding "CP1125" is unknown.`},
+			wantErr: &stbox.InvalidArgumentError{Option: "ReadOptions.Encoding", Msg: `the encoding "CP1125" is unknown`},
 		},
 		{
 			name: "negative last cue duration",
 			opts: stbox.ReadOptions{LastCueDuration: new(-time.Second)},
 			wantErr: &stbox.InvalidArgumentError{
 				Option: "ReadOptions.LastCueDuration",
-				Msg:    "The last cue duration must be 0 or more, got -1s.",
+				Msg:    "the last cue duration must be 0 or more, got -1s",
 			},
 		},
 		{
@@ -71,7 +71,7 @@ func TestReadOptionsValidate(t *testing.T) {
 			opts: stbox.ReadOptions{LastCueDuration: new(-time.Millisecond)},
 			wantErr: &stbox.InvalidArgumentError{
 				Option: "ReadOptions.LastCueDuration",
-				Msg:    "The last cue duration must be 0 or more, got -1ms.",
+				Msg:    "the last cue duration must be 0 or more, got -1ms",
 			},
 		},
 	}
@@ -97,60 +97,60 @@ func TestWriteOptionsValidate(t *testing.T) {
 		{
 			name:    "unknown line ending",
 			opts:    stbox.WriteOptions{LineEnding: stbox.LineEnding(2)},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.LineEnding", Msg: "The line ending 2 is unknown."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.LineEnding", Msg: "the line ending 2 is unknown"},
 		},
 		{
 			name:    "unknown BOM rule",
 			opts:    stbox.WriteOptions{BOM: stbox.BOM(3)},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.BOM", Msg: "The BOM rule 3 is unknown."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.BOM", Msg: "the BOM rule 3 is unknown"},
 		},
 		{
 			name: "MCC frame rate 48",
 			opts: stbox.WriteOptions{MCC: mcc.WriteOptions{FrameRate: stbox.FrameRate{Num: 48, Den: 1}}},
 			wantErr: &stbox.InvalidArgumentError{
 				Option: "WriteOptions.MCC.FrameRate",
-				Msg:    "The MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got 48.",
+				Msg:    "the MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got 48",
 			},
 		},
 		{
 			name:    "unknown SCC drop-frame mode",
 			opts:    stbox.WriteOptions{SCC: scc.WriteOptions{DropFrame: stbox.DropFrameMode(3)}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.SCC.DropFrame", Msg: "The SCC drop-frame mode 3 is unknown."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.SCC.DropFrame", Msg: "the SCC drop-frame mode 3 is unknown"},
 		},
 		{name: "MicroDVD frame rate", opts: stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}, WriteFrameRateLine: true}}},
 		{
 			name:    "MicroDVD frame rate with a zero denominator",
 			opts:    stbox.WriteOptions{MicroDVD: microdvd.WriteOptions{FrameRate: stbox.FrameRate{Num: 25}}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "The MicroDVD frame rate must be greater than 0, got INF."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.MicroDVD.FrameRate", Msg: "the MicroDVD frame rate must be greater than 0, got INF"},
 		},
 		{name: "MPSub frame rate", opts: stbox.WriteOptions{MPSub: mpsub.WriteOptions{FrameRate: stbox.FrameRate{Num: 25, Den: 1}}}},
 		{
 			name:    "MPSub frame rate 29.97",
 			opts:    stbox.WriteOptions{MPSub: mpsub.WriteOptions{FrameRate: stbox.FrameRate{Num: 2997, Den: 100}}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.MPSub.FrameRate", Msg: "The MPSub frame rate must be a positive integer, got 29.97."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.MPSub.FrameRate", Msg: "the MPSub frame rate must be a positive integer, got 29.97"},
 		},
 		{name: "plain text paragraph gap 0", opts: stbox.WriteOptions{PlainText: plaintext.WriteOptions{ParagraphGap: new(time.Duration(0))}}},
 		{
 			name:    "plain text paragraph gap -1 s",
 			opts:    stbox.WriteOptions{PlainText: plaintext.WriteOptions{ParagraphGap: new(-time.Second)}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "The paragraph gap must be 0 or more seconds, got -1."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.PlainText.ParagraphGap", Msg: "the paragraph gap must be 0 or more seconds, got -1"},
 		},
 		{name: "JSON version 1", opts: stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: 1}}},
 		{
 			name:    "JSON version 3",
 			opts:    stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: 3}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.JSON.Version", Msg: "The library JSON version must be 0, 1 or 2, got 3."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.JSON.Version", Msg: "the library JSON version must be 0, 1 or 2, got 3"},
 		},
 		{
 			name:    "JSON version -1",
 			opts:    stbox.WriteOptions{JSON: stboxjson.WriteOptions{Version: -1}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.JSON.Version", Msg: "The library JSON version must be 0, 1 or 2, got -1."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.JSON.Version", Msg: "the library JSON version must be 0, 1 or 2, got -1"},
 		},
 		{name: "SubViewer 1", opts: stbox.WriteOptions{SubViewer: subviewer.WriteOptions{Version: subviewer.V1}}},
 		{
 			name:    "SubViewer version 3",
 			opts:    stbox.WriteOptions{SubViewer: subviewer.WriteOptions{Version: subviewer.Version(3)}},
-			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.SubViewer.Version", Msg: "The SubViewer version must be 1 or 2, got 3."},
+			wantErr: &stbox.InvalidArgumentError{Option: "WriteOptions.SubViewer.Version", Msg: "the SubViewer version must be 1 or 2, got 3"},
 		},
 	}
 	for _, tt := range tests {

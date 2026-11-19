@@ -9,9 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const multiLanguage = "multi_language.smi"
@@ -40,7 +41,7 @@ func TestReadOptionsValidate(t *testing.T) {
 			}
 			var aerr *model.InvalidArgumentError
 			require.ErrorAs(t, err, &aerr)
-			assert.Equal(t, model.InvalidArgumentError{Option: "ReadOptions.SAMI.LanguageClass", Msg: "The language class must not be empty."}, *aerr)
+			assert.Equal(t, model.InvalidArgumentError{Option: "ReadOptions.SAMI.LanguageClass", Msg: "the language class must not be empty"}, *aerr)
 			_, _, err = read(t, "<SAMI>", model.CommonReadOptions{}, sami.ReadOptions{LanguageClass: tt.class})
 			require.ErrorIs(t, err, model.ErrInvalidArgument)
 		})
@@ -78,7 +79,7 @@ func TestReadLanguageClass(t *testing.T) {
 			sami.ReadOptions{LanguageClass: "DECC"})
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr)
-		assert.Equal(t, model.ParseError{Format: model.SAMI, Msg: "The SAMI file has no class DECC."}, *perr)
+		assert.Equal(t, model.ParseError{Format: model.SAMI, Msg: "the SAMI file has no class DECC"}, *perr)
 	}
 }
 
@@ -378,11 +379,11 @@ func TestReadSyncWithoutStart(t *testing.T) {
 		want       model.ParseError
 	}{
 		{"End only", "<SYNC Start=0><P Class=ENCC>one\n<SYNC End=1000><P Class=ENCC>two\n", model.ParseError{
-			Format: model.SAMI, Line: 4, Msg: "SYNC tag 2 has no valid Start attribute.",
+			Format: model.SAMI, Line: 4, Msg: "SYNC tag 2 has no valid Start attribute",
 		}},
-		{"no attribute", "<SYNC>The ferry leaves.\n", model.ParseError{Format: model.SAMI, Line: 3, Msg: "SYNC tag 1 has no valid Start attribute."}},
-		{"no >", "<SYNC Start=1000", model.ParseError{Format: model.SAMI, Line: 3, Msg: "SYNC tag 1 has no valid Start attribute."}},
-		{"Start after >", "<SYNC><P Start=1000>x", model.ParseError{Format: model.SAMI, Line: 3, Msg: "SYNC tag 1 has no valid Start attribute."}},
+		{"no attribute", "<SYNC>The ferry leaves.\n", model.ParseError{Format: model.SAMI, Line: 3, Msg: "SYNC tag 1 has no valid Start attribute"}},
+		{"no >", "<SYNC Start=1000", model.ParseError{Format: model.SAMI, Line: 3, Msg: "SYNC tag 1 has no valid Start attribute"}},
+		{"Start after >", "<SYNC><P Start=1000>x", model.ParseError{Format: model.SAMI, Line: 3, Msg: "SYNC tag 1 has no valid Start attribute"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -411,7 +412,7 @@ func TestReadStartPastTheLimit(t *testing.T) {
 			content := "<SAMI>\n<BODY>\n<SYNC Start=1000><P>The pool opens at seven.\n<SYNC Start=3000><P>&nbsp;\n" +
 				"<SYNC Start=" + tt.start + "><P>Towels are at the desk.\n<SYNC Start=7000><P>No running, please.\n" +
 				"<SYNC Start=9000><P>&nbsp;\n</BODY>\n</SAMI>\n"
-			msg := `The time "` + tt.digits + `" is not below 100000 hours.`
+			msg := `the time "` + tt.digits + `" is not below 100000 hours`
 			assert.Equal(t, model.ParseError{Format: model.SAMI, Line: 5, Msg: msg}, *readError(t, content))
 
 			s, warnings := mustRead(t, content, true)
@@ -420,7 +421,7 @@ func TestReadStartPastTheLimit(t *testing.T) {
 				{7 * time.Second, 9 * time.Second, []string{"No running, please."}},
 			}, cueRows(s))
 			require.Len(t, warnings, 1)
-			assert.Equal(t, warningRow{msg, 5, 2, []string{"<SYNC Start=" + tt.start + "><P>Towels are at the desk."}, model.Skipped},
+			assert.Equal(t, warningRow{parsing.Sentence(msg), 5, 2, []string{"<SYNC Start=" + tt.start + "><P>Towels are at the desk."}, model.Skipped},
 				warningRows(warnings)[0])
 		})
 	}
@@ -461,12 +462,12 @@ func TestReadInvalidUTF8(t *testing.T) {
 	t.Parallel()
 
 	content := "<SAMI>\n<BODY>\n<SYNC Start=0><P Class=KRCC>\xbf\xc0\xb4\xc3\n</BODY>\n</SAMI>\n"
-	const msg = "The content is not valid UTF-8. The first bad byte is at offset 42. Set the source encoding of the file."
+	const msg = "the content is not valid UTF-8. The first bad byte is at offset 42. Set the source encoding of the file"
 	assert.Equal(t, model.ParseError{Format: model.SAMI, Msg: msg}, *readError(t, content))
 
 	s, warnings := mustRead(t, content, true)
 	assert.Equal(t, [][]string{{"\uFFFD\uFFFD\uFFFD\uFFFD"}}, lines(s))
-	assert.Equal(t, []warningRow{{msg + " The parser read the bad bytes as U+FFFD.", model.NoLine, model.NoBlock, nil, model.Repaired}},
+	assert.Equal(t, []warningRow{{parsing.Sentence(msg) + " The parser read the bad bytes as U+FFFD.", model.NoLine, model.NoBlock, nil, model.Repaired}},
 		warningRows(warnings))
 }
 
@@ -496,7 +497,7 @@ func TestReadNoCues(t *testing.T) {
 	t.Parallel()
 
 	content := "<SAMI>\n<HEAD><TITLE>Walk</TITLE></HEAD>\n<BODY>\n<P>The ferry leaves.</P>\n</BODY>\n</SAMI>\n"
-	assert.Equal(t, model.ParseError{Format: model.SAMI, Line: 4, Msg: "The file has text but no cues."}, *readError(t, content))
+	assert.Equal(t, model.ParseError{Format: model.SAMI, Line: 4, Msg: "the file has text but no cues"}, *readError(t, content))
 	s, warnings := mustRead(t, content, true)
 	assert.Equal(t, 0, s.Len())
 	assert.Equal(t, []warningRow{{"The file has text but no cues.", 4, model.NoBlock, nil, model.Skipped}}, warningRows(warnings))

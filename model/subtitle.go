@@ -9,7 +9,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 )
 
 // The named metadata keys. Other keys are free.
@@ -84,20 +84,25 @@ func (s *Subtitle) All() iter.Seq2[int, Cue] {
 }
 
 // AddCue adds a rounded and cleaned copy of c after the cues that start at or before c.
-// Each comment stays before its cue.
-func (s *Subtitle) AddCue(c Cue) {
-	s.AddCues(c)
+// Each comment stays before its cue. It returns an error that matches ErrInvalidArgument when c.Position fails
+// Position.Validate, c.Image fails Image.Validate, or the words fail ValidateWords. On an error s stays unchanged.
+func (s *Subtitle) AddCue(c Cue) error {
+	return s.AddCues(c)
 }
 
-// AddCues adds rounded and cleaned copies of cues and sorts all cues once with a stable sort, so an added cue
-// goes after the stored cues with the same start. Each comment stays before its cue.
-func (s *Subtitle) AddCues(cues ...Cue) {
+// AddCues adds rounded and cleaned copies of cues, as AddCue does, and sorts all cues once with a stable sort,
+// so an added cue goes after the stored cues with the same start. Each comment stays before its cue.
+// It checks every cue first and returns the error of the first cue that fails. On an error s stays unchanged.
+func (s *Subtitle) AddCues(cues ...Cue) error {
 	if len(cues) == 0 {
-		return
+		return nil
 	}
 	added := make([]Cue, len(cues))
 	for i, c := range cues {
-		added[i] = c.normalized()
+		var err error
+		if added[i], err = checkedCue(c); err != nil {
+			return err
+		}
 	}
 
 	n := len(s.cues)
@@ -107,15 +112,33 @@ func (s *Subtitle) AddCues(cues ...Cue) {
 		for k := len(s.comments) - 1; k >= 0 && s.comments[k].BeforeCue >= n; k-- {
 			s.comments[k].BeforeCue = len(s.cues)
 		}
-		return
+		return nil
 	}
 
 	if len(added) == 1 {
 		s.insert(added[0])
-		return
+		return nil
 	}
 
 	s.place(append(s.cues, added...), s.commentAnchors())
+	return nil
+}
+
+// checkedCue validates c and returns its rounded and cleaned copy.
+func checkedCue(c Cue) (Cue, error) {
+	if err := c.Position.Validate(); err != nil {
+		return Cue{}, err
+	}
+	if c.Image != nil {
+		if err := c.Image.Validate(); err != nil {
+			return Cue{}, err
+		}
+	}
+	c = c.normalized()
+	if err := c.ValidateWords(); err != nil {
+		return Cue{}, err
+	}
+	return c, nil
 }
 
 // commentAnchors returns, for each comment, the index of the cue it comes before, or -1 for a comment after the last cue.
@@ -173,16 +196,8 @@ func (s *Subtitle) SetCue(i int, c Cue) error {
 	if i < 0 || i >= len(s.cues) {
 		return cueNotFound(i, len(s.cues))
 	}
-	if err := c.Position.Validate(); err != nil {
-		return err
-	}
-	if c.Image != nil {
-		if err := c.Image.Validate(); err != nil {
-			return err
-		}
-	}
-	c = c.normalized()
-	if err := c.ValidateWords(); err != nil {
+	c, err := checkedCue(c)
+	if err != nil {
 		return err
 	}
 	s.cues[i] = c
@@ -362,7 +377,7 @@ func (s *Subtitle) CueIndexAt(t time.Duration) (int, bool) {
 // the cues with Start < to and End > from. It returns an error that matches ErrInvalidArgument when from is after to.
 func (s *Subtitle) CuesBetween(from, to time.Duration) ([]int, error) {
 	if from > to {
-		return nil, invalidArgument(fmt.Sprintf("The range start %s must not be after the range end %s.", timecode.Seconds(from), timecode.Seconds(to)))
+		return nil, invalidArgument(fmt.Sprintf("the range start %s must not be after the range end %s", timecode.Seconds(from), timecode.Seconds(to)))
 	}
 	return s.lookup().overlapping(from, to, false), nil
 }
@@ -420,7 +435,7 @@ func (s *Subtitle) Comments() []Comment {
 // as is and means after the last cue. It returns an error that matches ErrInvalidArgument for a negative index.
 func (s *Subtitle) AddComment(text string, beforeCue int) error {
 	if beforeCue < 0 {
-		return invalidArgument(fmt.Sprintf("The cue index of a comment must not be negative, got %d.", beforeCue))
+		return invalidArgument(fmt.Sprintf("the cue index of a comment must not be negative, got %d", beforeCue))
 	}
 	s.comments = append(s.comments, Comment{Text: text, BeforeCue: beforeCue})
 	if n := len(s.comments); n > 1 && s.comments[n-2].BeforeCue > beforeCue {

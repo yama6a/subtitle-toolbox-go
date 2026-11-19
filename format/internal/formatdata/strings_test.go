@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/formatdata"
 )
 
 func TestStrings(t *testing.T) {

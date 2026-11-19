@@ -1,17 +1,19 @@
 # Translation
 
-`translation.Translate` translates the cue text of a subtitle with a machine translation engine. It keeps the times and the tags. It translates a sentence as a whole, also when the sentence runs over 2 cues. Example: `testdata/translation/own_station.srt` has the cues `The train to Basel leaves` and `from platform 4 at <b>10:15</b>.`. The engine gets one text, `The train to Basel leaves from platform 4 at <x1>10:15</x1>.`. The runner cuts the translation back into 2 cues in proportion to their characters, at a space, and puts `<b>` back in place of `<x1>`.
+`translation.Apply` translates the cue text of a subtitle with a machine translation engine. It keeps the times and the tags. It translates a sentence as a whole, also when the sentence runs over 2 cues. Example: `testdata/translation/own_station.srt` has the cues `The train to Basel leaves` and `from platform 4 at <b>10:15</b>.`. The engine gets one text, `The train to Basel leaves from platform 4 at <x1>10:15</x1>.`. The runner cuts the translation back into 2 cues in proportion to their characters, at a space, and puts `<b>` back in place of `<x1>`.
 
-<!-- example: translation/ExampleTranslate -->
+<!-- example: edit/translation/ExampleApply -->
 ```go
 s := &model.Subtitle{}
 for i, text := range []string{"The train to Basel leaves", "from platform 4 at <b>10:15</b>."} {
 	c := model.Cue{Start: time.Duration(i+1) * time.Second, End: time.Duration(i+2) * time.Second}
 	c.SetText(text)
-	s.AddCue(c)
+	if err := s.AddCue(c); err != nil {
+		panic(err)
+	}
 }
 
-report, err := translation.Translate(context.Background(), s, stationEngine{}, "en", "de", translation.Options{})
+report, err := translation.Apply(context.Background(), s, stationEngine{}, "en", "de", translation.Options{})
 if err != nil {
 	fmt.Println(err)
 	return
@@ -32,11 +34,11 @@ fmt.Println(language, len(report.Warnings))
 
 A `translation.Engine` has one method. `Translate(ctx, texts, source, target)` returns one translation for each text, in the same order. The texts hold placeholders and entities, which the translations must keep, see [Placeholders](#placeholders). An empty `source` lets the service detect the language. A caller can plug in any translation service by implementing the interface, see [Write an engine](#write-an-engine).
 
-The engines of the library live in `translation/<engine>`. Package `translation` itself has no engine.
+The engines of the library live in `edit/translation/<engine>`. Package `edit/translation` itself has no engine.
 
-## Translate
+## Apply
 
-`Translate(ctx, s, engine, source, target, opts)` does these steps.
+`Apply(ctx, s, engine, source, target, opts)` does these steps.
 
 1. It checks `opts`, the engine and the target. A nil engine, and a target that is empty after trimming space, tab, LF, CR, NUL and VT, return an `*model.InvalidArgumentError`.
 2. It copies the cues with `s.Cues()`.
@@ -48,7 +50,7 @@ The engines of the library live in `translation/<engine>`. Package `translation`
 
 `s` changes only when every engine call succeeds. The language that the engine gets is `target` as the caller wrote it. The metadata gets the same string.
 
-`Translate` returns a `Report` with the warnings, see [Warnings](#warnings).
+`Apply` returns a `Report` with the warnings, see [Warnings](#warnings).
 
 ## Options
 
@@ -60,7 +62,7 @@ The engines of the library live in `translation/<engine>`. Package `translation`
 | `MaxCuesPerSentence` | 0 means 3 | the most cues in one text |
 | `MaxCharactersPerRequest` | 0 means 5000 | the most grapheme clusters of the encoded texts in one engine call. A longer text goes alone |
 
-`Validate` returns an error that matches `model.ErrInvalidArgument` for a limit below 0, for example `The maximum cues per sentence must not be negative, got -1. 0 means 3.`.
+`Validate` returns an error that matches `model.ErrInvalidArgument` for a limit below 0, for example `the maximum cues per sentence must not be negative, got -1. 0 means 3`.
 
 ## What the runner sends
 
@@ -138,13 +140,13 @@ Each piece reopens the tags that are open at its start. The output is at most `M
 | Case | Error |
 |:--- |:--- |
 | a limit below 0 | `*model.InvalidArgumentError` with `Option` `translation.Options.MaxCuesPerSentence` or `translation.Options.MaxCharactersPerRequest` |
-| nil engine, empty target | `*model.InvalidArgumentError` with an empty `Option`: `The translation engine is missing.` and `The target language is missing.` |
-| the engine returns a wrong number of strings | `*translation.ServiceError` with `Status` 0: `The translation engine must return one string per text, got 1 values for 2 texts.` |
+| nil engine, empty target | `*model.InvalidArgumentError` with an empty `Option`: `the translation engine is missing` or `the target language is missing`. |
+| the engine returns a wrong number of strings | `*translation.ServiceError` with `Status` 0: `the translation engine must return one string per text, got 1 values for 2 texts`. |
 | the engine returns an error | that error, unchanged |
 | `ctx` ended | an error that wraps `ctx.Err()`, with the prefix `translation: `. It is no `*ServiceError` |
-| no response from the service | `*ServiceError` with `Status` 0 and the `*url.Error` as cause: `The request to 127.0.0.1 failed: REASON.` |
-| the request URL is not valid | `*ServiceError` with `Status` 0: `The request URL is not valid: REASON.` The URL stays out of the message, because it can hold a password |
-| the answer is too large | `*ServiceError` with the status: `The answer from HOST has more than N bytes.` |
+| no response from the service | `*ServiceError` with `Status` 0 and the `*url.Error` as cause: `the request to 127.0.0.1 failed: REASON`. |
+| the request URL is not valid | `*ServiceError` with `Status` 0: `the request URL is not valid: REASON`. The URL stays out of the message, because it can hold a password |
+| the answer is too large | `*ServiceError` with the status: `the answer from HOST has more than N bytes`. |
 
 Every `*ServiceError` matches `translation.ErrService` with `errors.Is`. A `ctx` error is no `*ServiceError`, so a caller can tell an interrupt from a service failure. `Report` is empty on every error, and `s` does not change.
 
@@ -156,7 +158,7 @@ Example: a cue with `Speaker` `Fred`, the line `Hi there.` and 2 words sends `Hi
 
 ## HTTP
 
-The engines send JSON requests through `translation.HTTPClient`, an interface with the method `Do`. `*http.Client` implements it. A test points an engine at an `httptest.Server`.
+The engines send JSON requests with an `*http.Client`. A test points an engine at an `httptest.Server`, or sets a client whose `Transport` plays the answers.
 
 - **Default client**: `translation.DefaultHTTPClient()` returns a new client with a connect timeout of 10 s and a total timeout of 120 s. It uses the proxy of the environment. It follows no redirect, so a 3xx answer reaches the engine as it is and no key goes to another host.
 - **Retries**: after HTTP 429, 500, 502, 503 and 504 the request goes out again, up to 3 times, so up to 4 requests. The fourth answer returns as it is, and the engine turns its status into an error. No other status is retried. A request without a response is not retried.
@@ -171,7 +173,7 @@ This engine posts the texts as JSON and reads `{"translations": [...]}`. It take
 ```text
 type webEngine struct {
 	url    string
-	client translation.HTTPClient
+	client *http.Client
 }
 
 func (e webEngine) Translate(ctx context.Context, texts []string, source, target string) ([]string, error) {
@@ -227,14 +229,14 @@ You translate subtitle text from {source} to {target}. The user sends a JSON arr
 - **Prompt**: `{source}` and `{target}` in it become the language codes in one pass. An empty source becomes `the language of the text`. Example: `Translate {source} into {target} for children.` with source empty and target `de-CH` gives `Translate the language of the text into de-CH for children.`
 - **Request**: the user message holds all texts of one call as a JSON array. No text sends no request.
 - **Answer**: the engine reads the first of `content`, `reasoning` and `reasoning_content` of `choices[0].message` that has text. A thinking model on Ollama can leave `content` empty. It removes each `<think>...</think>` block, and reads the text from the first `[` to the last `]`. That text must be a JSON array of as many strings as the call has texts. Text around the array and a code block do not matter. The HTTP size bound limits the answer.
-- **Fallback**: an answer without such an array makes the engine send each text in a request of its own. Each of these answers must be an array of 1 string. Else the engine returns a `*ServiceError` with `The model "M" did not answer with a JSON array that holds 1 string for 1 text.`
-- **Status**: a status other than 200 returns a `*ServiceError` with the status, and no fallback follows. 401 gives `The OpenAI-compatible service rejected the API key (HTTP 401).`, 429 after the retries gives `The OpenAI-compatible service got too many requests (HTTP 429). Wait and try again.`, and any other status gives `The OpenAI-compatible service answered with HTTP N.` The message adds the `error.message` of the answer, or its `error` when that is a string.
+- **Fallback**: an answer without such an array makes the engine send each text in a request of its own. Each of these answers must be an array of 1 string. Else the engine returns a `*ServiceError` with `the model "M" did not answer with a JSON array that holds 1 string for 1 text`.
+- **Status**: a status other than 200 returns a `*ServiceError` with the status, and no fallback follows. 401 gives `the OpenAI-compatible service rejected the API key (HTTP 401)`, 429 after the retries gives `the OpenAI-compatible service got too many requests (HTTP 429). Wait and try again`, and any other status gives `the OpenAI-compatible service answered with HTTP N`. The message adds the `error.message` of the answer, or its `error` when that is a string.
 
 ## DeepL engine
 
-Package `translation/deepl` is a client of the DeepL API v2 on `net/http`. It has no vendor SDK. Example: `deepl.New(deepl.Options{APIKey: key})` gives an engine for `translation.Translate`. The runner sends `The train to Basel leaves from platform 4 at <x1>10:15</x1>.` and DeepL answers with the German sentence and `<x1>10:15</x1>` in place.
+Package `edit/translation/deepl` is a client of the DeepL API v2 on `net/http`. It has no vendor SDK. Example: `deepl.New(deepl.Options{APIKey: key})` gives an engine for `translation.Apply`. The runner sends `The train to Basel leaves from platform 4 at <x1>10:15</x1>.` and DeepL answers with the German sentence and `<x1>10:15</x1>` in place.
 
-<!-- example: translation/deepl/ExampleNew -->
+<!-- example: edit/translation/deepl/ExampleNew -->
 ```go
 srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, `{"translations": [{"text": "Hallo <x1>Welt</x1>"}]}`)
@@ -274,19 +276,19 @@ fmt.Println(got[0])
 
 | Status | Error message of the `*translation.ServiceError` |
 |:--- |:--- |
-| 403 | `DeepL rejected the API key (HTTP 403). Check the key and its plan.` |
-| 429, after the retries | `DeepL got too many requests (HTTP 429). Wait and try again.` |
-| 456 | `The DeepL character quota is used up (HTTP 456).` |
-| other, not 200 | `DeepL answered with HTTP N.` and a space and the `message` of the JSON body, when it is a string |
-| 200 with a wrong count, or a `text` that is no string | `DeepL returned N translations for M texts, or an answer that is not the JSON of /v2/translate.` |
+| 403 | `DeepL rejected the API key (HTTP 403). Check the key and its plan`. |
+| 429, after the retries | `DeepL got too many requests (HTTP 429). Wait and try again`. |
+| 456 | `the DeepL character quota is used up (HTTP 456)`. |
+| other, not 200 | `DeepL answered with HTTP N`, then `. ` and the `message` of the JSON body, when it is a string |
+| 200 with a wrong count, or a `text` that is no string | `DeepL returned N translations for M texts, or an answer that is not the JSON of /v2/translate`. |
 
 Every message replaces the key with `***`. Example: status 500 with the body `{"message": "Unknown key KEY"}` gives `DeepL answered with HTTP 500. Unknown key ***`.
 
 ## Google Cloud Translation
 
-The package `translation/google` is a client of Cloud Translation Basic (v2) with an API key. It uses `net/http` only.
+The package `edit/translation/google` is a client of Cloud Translation Basic (v2) with an API key. It uses `net/http` only.
 
-<!-- example: translation/google/ExampleNew -->
+<!-- example: edit/translation/google/ExampleNew -->
 ```go
 server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, `{"data": {"translations": [{"translatedText": "Le train part &agrave; <x1>10:15</x1>."}]}}`)
@@ -301,8 +303,10 @@ if err != nil {
 s := &model.Subtitle{}
 c := model.Cue{Start: time.Second, End: 2 * time.Second}
 c.SetText("The train leaves at <b>10:15</b>.")
-s.AddCue(c)
-if _, err := translation.Translate(context.Background(), s, engine, "en", "fr", translation.Options{}); err != nil {
+if err := s.AddCue(c); err != nil {
+	panic(err)
+}
+if _, err := translation.Apply(context.Background(), s, engine, "en", "fr", translation.Options{}); err != nil {
 	fmt.Println(err)
 	return
 }
@@ -326,6 +330,6 @@ fmt.Println(s.Cues()[0].Lines)
 
 | Status | Message |
 |:--- |:--- |
-| 403 | `Google Cloud Translation refused the request (HTTP 403). Check the key and that the API is enabled.` and the `error.message` of the answer |
-| 429, after 4 attempts | `Google Cloud Translation got too many requests (HTTP 429). Wait and try again.` |
-| other | `Google Cloud Translation answered with HTTP N.` and the `error.message` of the answer |
+| 403 | `Google Cloud Translation refused the request (HTTP 403). Check the key and that the API is enabled`, then `. ` and the `error.message` of the answer |
+| 429, after 4 attempts | `Google Cloud Translation got too many requests (HTTP 429). Wait and try again`. |
+| other | `Google Cloud Translation answered with HTTP N`, then `. ` and the `error.message` of the answer |

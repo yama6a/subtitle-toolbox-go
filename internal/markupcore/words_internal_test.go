@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 )
 
 // removeWordTagsByPasses removes the word timestamp tags with one full scan per nesting level.

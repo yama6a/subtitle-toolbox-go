@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -69,7 +69,9 @@ func Read(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*model
 	if err := s.SetFormatData(formatDataKey, rd.fileData()); err != nil {
 		return nil, nil, err
 	}
-	parsing.AddParsed(s, rd.cues, rd.comments)
+	if err := parsing.AddParsed(s, rd.cues, rd.comments); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 
@@ -135,7 +137,7 @@ func (rd *reader) line(number int, line string) error {
 	}
 	isCommand, isComment := strings.HasPrefix(trimmed, "$"), strings.HasPrefix(trimmed, "//")
 	if trimmed != "" && !isCommand && !isComment {
-		err := &model.ParseError{Line: number, Msg: "The line " + parsing.Quote(trimmed) + " is no Spruce STL subtitle, command or comment."}
+		err := &model.ParseError{Line: number, Msg: "the line " + parsing.Quote(trimmed) + " is no Spruce STL subtitle, command or comment"}
 		return rd.st.Fail(err, number, model.NoBlock, []string{line})
 	}
 	rd.style.apply(line)
@@ -190,8 +192,8 @@ func (rd *reader) time(fields [4]string, line int) (time.Duration, error) {
 	text := strings.Join(fields[:], ":")
 	frames := atoi(fields[3])
 	if frames >= frameLimit(rd.rate) {
-		return 0, &model.ParseError{Line: line, Msg: `The frame number in "` + text + `" is not below the frame rate of ` +
-			timecode.Number(rd.rate.Float64()) + " fps."}
+		return 0, &model.ParseError{Line: line, Msg: `the frame number in "` + text + `" is not below the frame rate of ` +
+			timecode.Number(rd.rate.Float64()) + " fps"}
 	}
 	hours, err := strconv.Atoi(fields[0])
 	if err != nil {

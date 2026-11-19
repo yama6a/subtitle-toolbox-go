@@ -1,0 +1,148 @@
+package textblock
+
+import (
+	"errors"
+	"iter"
+	"strconv"
+	"strings"
+
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
+)
+
+const utf8BOM = "\ufeff"
+
+// SplitAtEmptyLines yields the runs of non-empty lines. The keys of lines are 0-based line numbers, and each
+// block holds the 1-based number of its first line. Each line loses its leading BOMs, so joined files work.
+// Then each run of tabs and each run of spaces becomes 1 space, and the line is trimmed. A line that is then
+// empty ends a block.
+func SplitAtEmptyLines(lines iter.Seq2[int, string]) iter.Seq[Block] {
+	return func(yield func(Block) bool) {
+		var b Block
+		for n, line := range lines {
+			line = CleanLine(line)
+			if line != "" {
+				if b.Lines == nil {
+					b.Line = n + 1
+				}
+				b.Lines = append(b.Lines, line)
+				continue
+			}
+			if b.Lines != nil {
+				if !yield(b) {
+					return
+				}
+				b = Block{}
+			}
+		}
+		if b.Lines != nil {
+			yield(b)
+		}
+	}
+}
+
+// splitAtTimingLines splits lines before each timing line. With cue numbers, a numeric line just before a
+// timing line goes with it, unless that line is the timing line before. The Line of each part is its 0-based
+// offset in lines.
+func (r Rules) splitAtTimingLines(lines []string) []Block {
+	starts := r.partStarts(lines)
+	parts := make([]Block, 0, len(starts))
+	for i, start := range starts {
+		end := len(lines)
+		if i+1 < len(starts) {
+			end = starts[i+1]
+		}
+		parts = append(parts, Block{Line: start, Lines: lines[start:end:end]})
+	}
+	return parts
+}
+
+// partStarts returns 0 and the offset of each later part, in ascending order.
+func (r Rules) partStarts(lines []string) []int {
+	starts := []int{0}
+	lastTiming := -1
+	for i, line := range lines {
+		if !r.IsTimingLine(line) {
+			continue
+		}
+		start := i
+		if r.HasCueNumbers && i > 0 && IsNumeric(lines[i-1]) && i-1 > lastTiming {
+			start = i - 1
+		}
+		if start > 0 {
+			starts = append(starts, start)
+		}
+		lastTiming = i
+	}
+	return starts
+}
+
+// splitWarning returns the lenient warning of a split by splitAtTimingLines.
+func splitWarning(block, line int) string {
+	return "Block #" + strconv.Itoa(block) + " has no empty line before line " + strconv.Itoa(line) +
+		". The parser split the block there."
+}
+
+// ReadParts returns the cues of the parts of block b, number index. In lenient mode it warns for each part after
+// the first. A part that parse fails on goes to st.Fail, which returns nil in lenient mode so that the read goes
+// on. Any other error ends the read. parse reads the lines of one part, which starts on the 1-based line.
+func (r Rules) ReadParts(st *parsing.State, b Block, index int, parse func(lines []string, index, line int) (model.Cue, error)) ([]model.Cue, error) {
+	parts := r.splitAtTimingLines(b.Lines)
+	if st.Lenient() {
+		for _, part := range parts[1:] {
+			line := b.Line + part.Line
+			st.Warn(splitWarning(index, line), line, index, b.Lines, model.Repaired)
+		}
+	}
+	cues := make([]model.Cue, 0, len(parts))
+	for _, part := range parts {
+		line := b.Line + part.Line
+		c, err := parse(part.Lines, index, line)
+		if err == nil {
+			cues = append(cues, c)
+			continue
+		}
+		var perr *model.ParseError
+		if errors.As(err, &perr) && perr.Line > 0 {
+			line = perr.Line
+		}
+		if err := st.Fail(err, line, index, part.Lines); err != nil {
+			return nil, err
+		}
+	}
+	return cues, nil
+}
+
+// CleanLine returns line as SplitAtEmptyLines reads it: without leading BOMs, with each run of tabs and each run of
+// spaces as 1 space, and trimmed. A writer tests its text lines in this form.
+func CleanLine(line string) string {
+	return strings.Trim(CollapseSpaces(trimBOMs(line)), markupcore.TrimSet)
+}
+
+func trimBOMs(s string) string {
+	for strings.HasPrefix(s, utf8BOM) {
+		s = s[len(utf8BOM):]
+	}
+	return s
+}
+
+// CollapseSpaces turns each run of spaces and tabs into 1 space.
+func CollapseSpaces(s string) string {
+	if !strings.Contains(s, "\t") && !strings.Contains(s, "  ") {
+		return s
+	}
+	var b strings.Builder
+	b.Grow(len(s))
+	for i := range len(s) {
+		c := s[i]
+		if c == '\t' {
+			c = ' '
+		}
+		if c == ' ' && i > 0 && (s[i-1] == ' ' || s[i-1] == '\t') {
+			continue
+		}
+		b.WriteByte(c)
+	}
+	return b.String()
+}

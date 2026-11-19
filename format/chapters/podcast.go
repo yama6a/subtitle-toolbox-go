@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -44,17 +44,17 @@ func ReadPodcast(r io.Reader, common model.CommonReadOptions, opts ReadOptions) 
 func readPodcastDocument(s *model.Subtitle, content []byte, opts ReadOptions) error {
 	root, err := orderedjson.Decode(content)
 	if err != nil {
-		return &model.ParseError{Format: model.PodcastChapters, Msg: "The content is not valid JSON: " + err.Error() + ".", Err: err}
+		return &model.ParseError{Format: model.PodcastChapters, Msg: "the content is not valid JSON: " + err.Error(), Err: err}
 	}
 	if root.Kind() == orderedjson.Array && len(root.Items()) == 0 {
 		root = orderedjson.ObjectOf()
 	}
 	if root.Kind() != orderedjson.Object {
-		return parseError(model.PodcastChapters, 0, "The JSON root must be an object.")
+		return parseError(model.PodcastChapters, 0, "the JSON root must be an object")
 	}
 	list, _ := root.Get("chapters")
 	if list.Kind() != orderedjson.Array {
-		return parseError(model.PodcastChapters, 0, `The JSON has no "chapters" list.`)
+		return parseError(model.PodcastChapters, 0, `the JSON has no "chapters" list`)
 	}
 	cues := make([]model.Cue, len(list.Items()))
 	ends := make([]*time.Duration, len(list.Items()))
@@ -63,14 +63,20 @@ func readPodcastDocument(s *model.Subtitle, content []byte, opts ReadOptions) er
 			return err
 		}
 	}
-	s.AddCues(endChapters(cues, ends, opts.MediaDuration)...)
+	if err := s.AddCues(endChapters(cues, ends, opts.MediaDuration)...); err != nil {
+		return err
+	}
+	setPodcastMetadata(s, root)
+	data, _ := formatdata.FromJSON(root.Without("chapters", "title", "author")).(*model.Data)
+	return s.SetFormatData(string(model.PodcastChapters), data)
+}
+
+func setPodcastMetadata(s *model.Subtitle, root orderedjson.Value) {
 	for _, m := range [...]struct{ field, key string }{{"title", model.MetadataTitle}, {"author", model.MetadataAuthor}} {
 		if text, ok := stringMember(root, m.field); ok {
 			s.SetMetadata(m.key, text)
 		}
 	}
-	data, _ := formatdata.FromJSON(root.Without("chapters", "title", "author")).(*model.Data)
-	return s.SetFormatData(string(model.PodcastChapters), data)
 }
 
 // podcastChapter reads chapter i. It returns the cue and the end that the chapter gives, or nil.
@@ -80,10 +86,10 @@ func podcastChapter(i int, chapter orderedjson.Value) (model.Cue, *time.Duration
 	endValue, hasEnd := chapter.Get("endTime")
 	hasEnd = hasEnd && endValue.Kind() != orderedjson.Null
 	if !isTime(startValue) {
-		return model.Cue{}, nil, parseError(model.PodcastChapters, 0, "The field "+path+"startTime must be a number.")
+		return model.Cue{}, nil, parseError(model.PodcastChapters, 0, "the field "+path+"startTime must be a number")
 	}
 	if hasEnd && !isTime(endValue) {
-		return model.Cue{}, nil, parseError(model.PodcastChapters, 0, "The field "+path+"endTime must be a number.")
+		return model.Cue{}, nil, parseError(model.PodcastChapters, 0, "the field "+path+"endTime must be a number")
 	}
 	start, err := boundedField(startValue, path+"startTime")
 	if err != nil {
@@ -125,30 +131,30 @@ func isTime(v orderedjson.Value) bool {
 func boundedField(v orderedjson.Value, path string) (time.Duration, error) {
 	d, ok := v.Duration(time.Second)
 	if !ok {
-		return 0, parseError(model.PodcastChapters, 0, "The field "+path+" is not below "+strconv.Itoa(timecode.MaxHours)+" hours.")
+		return 0, parseError(model.PodcastChapters, 0, "the field "+path+" is not below "+strconv.Itoa(timecode.MaxHours)+" hours")
 	}
 	return d, nil
 }
 
 // WritePodcast writes a Podcasting 2.0 chapters file as pretty JSON. A chapter has an endTime only when its end is
 // not the start of the next chapter.
-func WritePodcast(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WritePodcast(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.PodcastChapters, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	document, err := podcastDocument(s)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	body, err := orderedjson.Encode(document, true)
 	switch {
 	case errors.Is(err, orderedjson.ErrInvalidUTF8):
-		return &model.UnwritableError{Format: model.PodcastChapters, CueIndex: -1, Reason: orderedjson.MalformedUTF8Reason, Err: model.ErrInvalidUTF8}
+		return WriteReport{}, &model.UnwritableError{Format: model.PodcastChapters, CueIndex: -1, Reason: orderedjson.MalformedUTF8Reason, Err: model.ErrInvalidUTF8}
 	case err != nil:
-		return &model.UnwritableError{Format: model.PodcastChapters, CueIndex: -1, Reason: orderedjson.NotFiniteReason}
+		return WriteReport{}, &model.UnwritableError{Format: model.PodcastChapters, CueIndex: -1, Reason: orderedjson.NotFiniteReason}
 	}
-	return writing.Write(w, model.PodcastChapters, body, common, false)
+	return WriteReport{}, writing.Write(w, model.PodcastChapters, body, common, false)
 }
 
 func podcastDocument(s *model.Subtitle) (orderedjson.Value, error) {

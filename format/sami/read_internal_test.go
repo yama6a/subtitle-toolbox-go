@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 )
 
 // regexpTextLine is the plain regular expression form of textLine. It takes quadratic time on many <HEAD tags without an

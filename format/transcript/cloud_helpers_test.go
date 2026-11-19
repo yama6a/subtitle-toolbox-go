@@ -13,18 +13,19 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // cloudFormat is one of the cloud speech-to-text formats with its testdata folder.
 type cloudFormat struct {
 	folder string
 	read   func(io.Reader, model.CommonReadOptions, transcript.ReadOptions) (*model.Subtitle, []model.ParseWarning, error)
-	write  func(io.Writer, *model.Subtitle, model.CommonWriteOptions, transcript.WriteOptions) error
+	write  func(io.Writer, *model.Subtitle, model.CommonWriteOptions, transcript.WriteOptions) (transcript.WriteReport, error)
 }
 
 func (f cloudFormat) parse(t *testing.T, content string, opts transcript.ReadOptions) *model.Subtitle {
@@ -46,7 +47,8 @@ func (f cloudFormat) output(t *testing.T, s *model.Subtitle) orderedjson.Value {
 	t.Helper()
 
 	var out bytes.Buffer
-	require.NoError(t, f.write(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}))
+	_, err := f.write(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
+	require.NoError(t, err)
 	v, err := orderedjson.Decode(out.Bytes())
 	require.NoError(t, err)
 	return v
@@ -119,7 +121,7 @@ func (f cloudFormat) testBroken(t *testing.T, tests []cloudBroken) {
 			s, warnings, err := f.read(strings.NewReader(tt.content), model.CommonReadOptions{Lenient: true}, transcript.ReadOptions{})
 			require.NoError(t, err)
 			assert.Equal(t, tt.cues, describe(s))
-			assert.Equal(t, []string{fmt.Sprintf("%s|%d|%s", tt.message, tt.block, model.Skipped)}, cloudWarnings(warnings))
+			assert.Equal(t, []string{fmt.Sprintf("%s|%d|%s", parsing.Sentence(tt.message), tt.block, model.Skipped)}, cloudWarnings(warnings))
 		})
 	}
 }
@@ -142,7 +144,7 @@ func cloudFuzz(f *testing.F, cf cloudFormat, seeds ...string) {
 				}
 				checkWords(t, s)
 				var out bytes.Buffer
-				if err := cf.write(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
+				if _, err := cf.write(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil && !errors.Is(err, model.ErrUnwritable) {
 					t.Fatalf("the writer returned %v, which does not match ErrUnwritable", err)
 				}
 			}
@@ -172,7 +174,7 @@ func cloudBench(b *testing.B, f cloudFormat, name, content string) {
 		b.ReportAllocs()
 		b.SetBytes(int64(len(content)))
 		for b.Loop() {
-			if err := f.write(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+			if _, err := f.write(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 				b.Fatal(err)
 			}
 		}

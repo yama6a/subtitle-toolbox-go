@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textblock"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/textblock"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -57,7 +57,9 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 		cues = append(cues, parsed...)
 		index++
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 
@@ -115,8 +117,8 @@ func (rd *reader) timing(text string, index, line int) (start, end time.Duration
 	}
 	first, second, found := strings.Cut(text, ",")
 	if !found || strings.Contains(second, ",") {
-		return 0, 0, false, &model.ParseError{Line: line, Msg: "Block #" + strconv.Itoa(index) +
-			" has no timing line on its first line. The line is " + parsing.Quote(text) + "."}
+		return 0, 0, false, &model.ParseError{Line: line, Msg: "block #" + strconv.Itoa(index) +
+			" has no timing line on its first line. The line is " + parsing.Quote(text)}
 	}
 	if start, err = strictDuration(first, line); err != nil {
 		return 0, 0, false, err

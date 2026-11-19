@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/stboxjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/vtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/vtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/stboxjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func confidence(f float64) *float64 { return &f }
@@ -60,7 +60,7 @@ func TestWriteVersions(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCue(tt.cue)
+			require.NoError(t, s.AddCue(tt.cue))
 			assert.Equal(t, tt.want, writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{Version: tt.version}))
 		})
 	}
@@ -79,7 +79,7 @@ func TestWriteVersionErrors(t *testing.T) {
 		opts stboxjson.WriteOptions
 		want string
 	}{
-		{"version 3", beachCue(), stboxjson.WriteOptions{Version: 3}, "The library JSON version must be 0, 1 or 2, got 3."},
+		{"version 3", beachCue(), stboxjson.WriteOptions{Version: 3}, "the library JSON version must be 0, 1 or 2, got 3"},
 		{"NaN confidence", nan, stboxjson.WriteOptions{}, infOrNaN},
 		{"bad UTF-8 in a word", badUTF8, stboxjson.WriteOptions{}, "Malformed UTF-8"},
 	}
@@ -88,7 +88,7 @@ func TestWriteVersionErrors(t *testing.T) {
 			t.Parallel()
 
 			s := &model.Subtitle{}
-			s.AddCue(tt.cue)
+			s.ReplaceCues([]model.Cue{tt.cue}, nil)
 			_, err := stboxjson.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, tt.opts)
 			require.Error(t, err)
 			assert.Contains(t, err.Error(), tt.want)
@@ -106,7 +106,7 @@ func TestVersion2KeepsTheTaggedLinesOfWebVTT(t *testing.T) {
 	require.NoError(t, c.SetFormatData("vtt", model.NewData(model.Field{Key: "align", Value: "start"})))
 	vtt.ExtractWords(&c)
 	s := &model.Subtitle{}
-	s.AddCue(c)
+	require.NoError(t, s.AddCue(c))
 	out := writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{})
 	assert.Contains(t, out, `"formatData":{"vtt":{"align":"start","taggedLines":["`+youtubeLine+`"]}}`)
 	assert.NotContains(t, writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{Version: 1}), "taggedLines")
@@ -118,7 +118,7 @@ func TestVersion2KeepsTheTaggedLinesOfWebVTT(t *testing.T) {
 	edited, _ := s.Cue(0)
 	edited.Words[1].Start += time.Second
 	s2 := &model.Subtitle{}
-	s2.AddCue(edited)
+	require.NoError(t, s2.AddCue(edited))
 	assert.NotContains(t, writeString(t, s2, model.CommonWriteOptions{}, stboxjson.WriteOptions{}), "taggedLines")
 }
 
@@ -163,7 +163,7 @@ func TestVersion2RoundTrip(t *testing.T) {
 	s := &model.Subtitle{}
 	c := beachCue()
 	require.NoError(t, c.SetFormatData("vtt", model.NewData(model.Field{Key: "voiceClass", Value: "loud"}, model.Field{Key: "voiceEnd", Value: true})))
-	s.AddCue(c)
+	require.NoError(t, s.AddCue(c))
 	out := writeString(t, s, model.CommonWriteOptions{}, stboxjson.WriteOptions{PrettyPrint: true})
 
 	got := mustRead(t, out, false)

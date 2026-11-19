@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 var lineRegexp = regexp.MustCompile(`^(\d+):([0-5]\d):([0-5]\d)(?:,(\d+))?[:=](.*)$`)
@@ -37,7 +37,9 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 	if err != nil {
 		return nil, nil, err
 	}
-	s.AddCues(entriesToCues(st, entries)...)
+	if err := s.AddCues(entriesToCues(st, entries)...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 
@@ -88,7 +90,7 @@ func entriesToCues(st *parsing.State, entries []entry) []model.Cue {
 func parseLine(raw string, line int) (entry, int64, error) {
 	m := lineRegexp.FindStringSubmatch(raw)
 	if m == nil {
-		return entry{}, 0, &model.ParseError{Line: line, Msg: `The line "` + raw + `" is not a TMPlayer line.`}
+		return entry{}, 0, &model.ParseError{Line: line, Msg: `the line "` + raw + `" is not a TMPlayer line`}
 	}
 	// A digit run too long for int64 counts as the limit. The check comes before the multiplication, so no time wraps.
 	hours, _ := strconv.ParseInt(m[1], 10, 64)

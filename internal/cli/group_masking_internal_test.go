@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/profanity"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/profanity"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 )
 
 func maskDir(t *testing.T) string {
@@ -176,7 +176,7 @@ func TestConvertWordFile(t *testing.T) {
 func TestConvertMaskingUsageErrors(t *testing.T) {
 	t.Parallel()
 
-	bad := "A profanity word must be a non-empty UTF-8 string with a * only at the end, got "
+	bad := "a profanity word must be a non-empty UTF-8 string with a * only at the end, got "
 	tests := []struct {
 		name  string
 		words []string
@@ -204,10 +204,10 @@ func TestConvertMaskingUsageErrors(t *testing.T) {
 		{"edl is the input", []string{"radio.vtt", "--to", "srt", "-o", "out.srt", "--mask-words", "words.txt", "--mute-edl", "radio.vtt"}, "The --mute-edl file radio.vtt is a file that the command reads. Pass another output file or directory."},
 		{"filter is the word file", []string{"radio.vtt", "--to", "srt", "-o", "out.srt", "--mask-words", "words.txt", "--mute-filter", "./words.txt"}, "The --mute-filter file ./words.txt is a file that the command reads. Pass another output file or directory."},
 		{"output is the word file", []string{"radio.vtt", "--to", "srt", "-o", "list", "--mask-words", "list"}, "The output list is a file that the command reads. Pass another output file or directory."},
-		{"empty word file", []string{"radio.vtt", "--mask-words", "empty.txt", "--mute-edl", "new.edl"}, "The profanity word list is empty."},
-		{"bad word", []string{"radio.vtt", "--mask-words", "bad.txt"}, bad + "'a*b'."},
-		{"bad word after a good one", []string{"radio.vtt", "--mask-words", "late.txt"}, bad + "'*'."},
-		{"invalid UTF-8", []string{"radio.vtt", "--mask-words", "latin1.txt"}, bad + "'h\xe9ll'."},
+		{"empty word file", []string{"radio.vtt", "--mask-words", "empty.txt", "--mute-edl", "new.edl"}, "the profanity word list is empty"},
+		{"bad word", []string{"radio.vtt", "--mask-words", "bad.txt"}, bad + "'a*b'"},
+		{"bad word after a good one", []string{"radio.vtt", "--mask-words", "late.txt"}, bad + "'*'"},
+		{"invalid UTF-8", []string{"radio.vtt", "--mask-words", "latin1.txt"}, bad + "'h\xe9ll'"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

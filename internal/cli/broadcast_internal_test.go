@@ -10,14 +10,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/microdvd"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/sprucestl"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/microdvd"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/sprucestl"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -30,7 +30,7 @@ ferry.srt: Cue #2 at 4.3 s shows at 5.172 s. The frames before its start cannot 
 ferry.srt: Cue #3 at 5 s is left out. Its caption data needs the frames up to 5.839 s, but the cue ends at 5.4 s. (dropped)
 `
 	wrapAdvice = "Pass --structure-wrap --structure-max-cpl 32 --structure-max-lines 4."
-	mccRates   = "The MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got 12."
+	mccRates   = "the MCC formatter accepts the frame rates 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60, got 12"
 )
 
 var broadcastFiles = map[string]string{
@@ -59,7 +59,8 @@ func TestBroadcastCalls(t *testing.T) {
 	rate25 := model.FrameRate{Num: 25, Den: 1}
 	rollUpLines := stbox.ReadOptions{SCC: scc.ReadOptions{RollUp: scc.RollUpLines}}
 	broken := "Scenarist_SCC V1.0\n\n00:00:01:00\tzz\n"
-	brokenMsg := `broken.scc: line 3: The SCC line has the invalid byte pair "zz".`
+	brokenMsg := `broken.scc: line 3: the SCC line has the invalid byte pair "zz"`
+	brokenWarning := `broken.scc: line 3: The SCC line has the invalid byte pair "zz".`
 	emDash := "1\n00:00:01,000 --> 00:00:02,000\nA \u2014 \u0416 \u00ab x\n"
 	five := "1\n00:00:01,000 --> 00:00:03,000\n1\n2\n3\n4\n5\n"
 	one := "1\n00:00:01,000 --> 00:00:03,000\nHi\n"
@@ -154,7 +155,7 @@ func TestBroadcastCalls(t *testing.T) {
 			[]string{"convert", "ferry.srt", "--to", "scc", "-o", "-"},
 			"", nil,
 			func(*testing.T) result {
-				return result{Code: exitFile, Stderr: "ferry.srt: Cue #0 at 1 s has a line with 46 characters, but SCC allows 32. " + wrapAdvice + "\n"}
+				return result{Code: exitFile, Stderr: "ferry.srt: cue #0 at 1 s has a line with 46 characters, but SCC allows 32. " + wrapAdvice + "\n"}
 			},
 		},
 		{
@@ -198,7 +199,7 @@ func TestBroadcastCalls(t *testing.T) {
 			},
 			"", nil,
 			func(*testing.T) result {
-				return result{Code: exitFile, Stderr: "bakery.stl: Cue #4 at 36014 s has a line with 38 characters, but SCC allows 32. " +
+				return result{Code: exitFile, Stderr: "bakery.stl: cue #4 at 36014 s has a line with 38 characters, but SCC allows 32. " +
 					"Pass --structure-split-long --structure-wrap --structure-max-cpl 32 --structure-max-lines 4.\n"}
 			},
 		},
@@ -211,7 +212,7 @@ func TestBroadcastCalls(t *testing.T) {
 				return result{
 					Code:   exitFile,
 					Stdout: "one.srt -> out/one.scc\n2 files: 1 succeeded, 1 failed.\n",
-					Stderr: "five.srt: Cue #0 at 1 s has 5 lines, but SCC allows 4. " + wrapAdvice + "\n",
+					Stderr: "five.srt: cue #0 at 1 s has 5 lines, but SCC allows 4. " + wrapAdvice + "\n",
 				}
 			},
 		},
@@ -228,7 +229,7 @@ func TestBroadcastCalls(t *testing.T) {
 			"",
 			map[string]string{"broken.scc": broken},
 			func(*testing.T) result {
-				return result{Stdout: "\ufeff", Stderr: brokenMsg + " (skipped)\n"}
+				return result{Stdout: "\ufeff", Stderr: brokenWarning + " (skipped)\n"}
 			},
 		},
 		{
@@ -266,7 +267,7 @@ func TestBroadcastCalls(t *testing.T) {
 			[]string{"convert", "trip.srt", "--to", "itt", "--output-fps", "12", "-o", "-"},
 			"", nil,
 			func(*testing.T) result {
-				return usageResult("convert", "The ITT formatter accepts the frame rates 23.976, 24, 25, 29.97 and 30, got 12.")
+				return usageResult("convert", "the ITT formatter accepts the frame rates 23.976, 24, 25, 29.97 and 30, got 12")
 			},
 		},
 		{

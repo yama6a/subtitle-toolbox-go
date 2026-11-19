@@ -100,8 +100,6 @@ Whisper is the speech-to-text model of OpenAI. 6 tools write its result as JSON 
 | Write options | none |
 | Detection | [JSON check 3](detection.md#json-checks): `segments` or `transcription` is an array. `.json` belongs to the library JSON in `FormatFromPath`, so name the format with `--from whisper` or `ReadOptions.Format` when the content does not decide |
 
-`DetectWhisper` and `DetectPodcast` are deprecated. Use `stbox.Detect`.
-
 ### Shapes
 
 The reader stores the shape as the `format` member of the file format data `whisper`. It checks the rows in this order:
@@ -115,7 +113,7 @@ The reader stores the shape as the `format` member of the file format data `whis
 
 ### Read
 
-- **Lists**: `segments` that is an array takes the segment path. Else `transcription` that is an array takes the whisper.cpp path. Else the read fails with `The JSON has no "segments" or "transcription" list.` in both modes. A list must be a JSON array. An object with the keys `"0"` and `"1"` is no list.
+- **Lists**: `segments` that is an array takes the segment path. Else `transcription` that is an array takes the whisper.cpp path. Else the read fails with `the JSON has no "segments" or "transcription" list` in both modes. A list must be a JSON array. An object with the keys `"0"` and `"1"` is no list.
 - **Cues**: a segment whose trimmed text is empty gives no cue and no warning. A long segment stays one cue.
 - **Language**: `language`, else `result.language`. A string is looked up in lower case ASCII in the 112 names of `whisper/tokenizer.py`. A hit gives the code, so `english` gives `en` and `castilian` gives `es`. A miss keeps the string.
 - **File data**: `{"format": SHAPE}`, then every top-level member except `segments`, `transcription`, `words`, `word_segments`, `text` and `format`.
@@ -126,13 +124,13 @@ A field error fails the segment. Strict mode returns the error. Lenient mode ski
 
 | Field | Error |
 |:--- |:--- |
-| a `start` or `end` that is no finite number, also a segment that is no object | `The field segments[0].start must be a number.` A numeric string is no number |
-| a time below 0 | `The field segments[0].start must be a time of 0 or more.` |
-| a time of 100000 hours or more after the rounding to whole milliseconds | `The field segments[0].start is not below 100000 hours.` |
-| a `text` that is no string | `The field segments[0].text must be a string.` |
-| the same checks for `offsets.from` and `offsets.to` of a whisper.cpp item, in milliseconds | `The field transcription[0].offsets.to must be a number.` |
-| a word `start` of 100000 hours or more | `The field segments[0].words[1].start is not below 100000 hours.`, or `The field words[3].start ...` for a top-level word. It fails the whole segment |
-| a token start of 100000 hours or more | `The field transcription[0].tokens[4].offsets.from is not below 100000 hours.` |
+| a `start` or `end` that is no finite number, also a segment that is no object | `the field segments[0].start must be a number`. A numeric string is no number |
+| a time below 0 | `the field segments[0].start must be a time of 0 or more` |
+| a time of 100000 hours or more after the rounding to whole milliseconds | `the field segments[0].start is not below 100000 hours` |
+| a `text` that is no string | `the field segments[0].text must be a string` |
+| the same checks for `offsets.from` and `offsets.to` of a whisper.cpp item, in milliseconds | `the field transcription[0].offsets.to must be a number` |
+| a word `start` of 100000 hours or more | `the field segments[0].words[1].start is not below 100000 hours`, or `The field words[3].start ...` for a top-level word. It fails the whole segment |
+| a token start of 100000 hours or more | `the field transcription[0].tokens[4].offsets.from is not below 100000 hours` |
 
 **Top-level words.** The OpenAI API lists the words of all segments in `words`. The last segment takes all the words that are left. Any other segment takes the next words while their middle is at most its end. The middle of a word is `(start + end) / 2` in seconds. A word without times has the middle minus infinity, so it goes to the current segment. A segment that fails before this step takes no words, so the next segment gets them.
 
@@ -182,22 +180,20 @@ A podcast feed links a transcript per episode with the `<podcast:transcript>` ta
 | Write options | `transcript.PodcastWriteOptions` in `WriteOptions.Podcast`: `WordSegments` and `PrettyPrint` |
 | Detection | [JSON check 2](detection.md#json-checks): `segments` is an array whose first item is an object with the keys `startTime` and `body`. `.json` belongs to the library JSON in `FormatFromPath`, so output needs `--to podcast-transcript` |
 
-`DetectWhisper` and `DetectPodcast` are deprecated. Use `stbox.Detect`.
-
 ### Podcast read
 
-- **Segments**: `segments` must be an array. Else the read fails with `The JSON has no "segments" list.` in both modes.
+- **Segments**: `segments` must be an array. Else the read fails with `the JSON has no "segments" list` in both modes.
 - **File data**: the top-level members except `segments`, such as `version`, under the key `podcast-transcript`.
 - **Segment fields**: a field error fails the segment. Strict mode returns the error. Lenient mode skips the segment with a `Skipped` warning without a line, with the segment as block text. The checks run in the order of the table.
 
 | Field | Rule | Error |
 |:--- |:--- |:--- |
-| the segment | an object | `The field segments[0] must be an object.` |
-| `startTime` | a finite number of 0 or more. A string such as `"0:01"` fails | `The field segments[0].startTime must be a number.` |
-| `endTime` | missing, null, or the same rule | `The field segments[0].endTime must be a number.` |
-| `speaker`, `body` | missing, null, or a string | `The field segments[0].speaker must be a string.` |
-| times | below 100000 hours after the rounding to whole milliseconds | `The field segments[0].startTime is not below 100000 hours.` |
-| order | a segment with an end must not end before it starts. Lenient mode swaps the times when the segment then lasts 30 s or less | `The cue ends at 1.5 s, before it starts at 2 s.` |
+| the segment | an object | `the field segments[0] must be an object` |
+| `startTime` | a finite number of 0 or more. A string such as `"0:01"` fails | `the field segments[0].startTime must be a number`. |
+| `endTime` | missing, null, or the same rule | `the field segments[0].endTime must be a number` |
+| `speaker`, `body` | missing, null, or a string | `the field segments[0].speaker must be a string` |
+| times | below 100000 hours after the rounding to whole milliseconds | `the field segments[0].startTime is not below 100000 hours` |
+| order | a segment with an end must not end before it starts. Lenient mode swaps the times when the segment then lasts 30 s or less | `the cue ends at 1.5 s, before it starts at 2 s` |
 
 - **Text**: the speaker is trimmed. In the body, each run of space, tab, CR and LF becomes one space, then the body is trimmed.
 - **Missing end**: a segment without `endTime` ends at the first later start among the segments after it in the file. Without one, it ends at its start plus the last cue duration, 5 s by default. A segment with an empty body counts for this rule. Then the reader drops each segment with an empty body, without a warning.
@@ -255,11 +251,11 @@ The first character after the BOM and white space decides the variant. `{` is js
 | `<transcript>` | `srv1` | `<text start="s" dur="s">` in seconds |
 | `<timedtext>` with a `<body>` child | `srv3` | `<p t="ms" d="ms">` |
 | `<timedtext>` without `<body>` | `srv2` | `<text t="ms" d="ms">` |
-| another root | error | `The root element must be <timedtext> or <transcript>, not <NAME>.` |
+| another root | error | `the root element must be <timedtext> or <transcript>, not <NAME>`. |
 
-- **XML text before the root**: strict mode returns `The file has text before the XML: "LINE".` with its line. Lenient mode skips it with a `Repaired` warning. XML that does not parse returns `The content is not well-formed XML.` in both modes.
+- **XML text before the root**: strict mode returns `the file has text before the XML: "LINE"` with its line. Lenient mode skips it with a `Repaired` warning. XML that does not parse returns `the content is not well-formed XML` in both modes.
 - **Bad UTF-8**: the XML variants follow TTML, see [encodings.md](encodings.md). json3 reads each bad byte as U+FFFD.
-- **Times**: a time attribute is a number or a numeric string, finite and 0 or more, and the cue time must be below 100000 hours. Else `The <p> element has no valid "t" attribute.` or `The time "T" is not below 100000 hours.` A json3 field must be a JSON number: `The field events[0].tStartMs must be a number.` or `The field events[0].tStartMs is not below 100000 hours.` The same rules hold for `dDurationMs`, `tOffsetMs`, `d` and the `t` of an `<s>` span.
+- **Times**: a time attribute is a number or a numeric string, finite and 0 or more, and the cue time must be below 100000 hours. Else `the <p> element has no valid "t" attribute` or `the time "T" is not below 100000 hours`. A json3 field must be a JSON number: `the field events[0].tStartMs must be a number` or `the field events[0].tStartMs is not below 100000 hours`. The same rules hold for `dDurationMs`, `tOffsetMs`, `d` and the `t` of an `<s>` span.
 - **Captions**: srv1 and srv2 give one caption per child element of the root, of any name. srv3 gives one per `<p>`. json3 gives one per event. A json3 event without `segs` and with an `id` is a window event, and a srv3 `<w>` is a window. Both go to the file format data and give no caption.
 - **Text**: srv1, srv2 and srv3 decode the text once more with the HTML5 entity table, so `&amp;#39;` gives `'`. json3 text stays as it is. A json3 `utf8` that is no string reads as empty text. A comment or a processing instruction inside a `<p>` gives no text. Each line of a segment is written with its style, see below.
 - **Style**: a srv3 span takes the pen of its `p` attribute, else the pen of its paragraph. A json3 segment takes `pPenId`, else the pen of its event. The pen gives the color as `#rrggbb`, bold, italic and underline. Other pen fields are lost.
@@ -314,9 +310,9 @@ The reader has no HTML parser. It scans the content for `<cite>`, `<time>` and `
 
 | Check | Error | Line |
 |:--- |:--- |:--- |
-| the paragraph has a time | `The paragraph has no <time>.` | the paragraph line |
-| the time is `h:mm:ss`, `m:ss` or `mm:ss`, with an optional fraction after `.` or `,`. Seconds go up to 59, minutes have any digits | `The time "soon" is not valid.` | the line of the `<time>` |
-| the time, rounded to milliseconds, is below 100000 hours | `The time "99999999999999999999:00:04" is not below 100000 hours.` | the line of the `<time>` |
+| the paragraph has a time | `the paragraph has no <time>` | the paragraph line |
+| the time is `h:mm:ss`, `m:ss` or `mm:ss`, with an optional fraction after `.` or `,`. Seconds go up to 59, minutes have any digits | `the time "soon" is not valid` | the line of the `<time>` |
+| the time, rounded to milliseconds, is below 100000 hours | `the time "99999999999999999999:00:04" is not below 100000 hours` | the line of the `<time>` |
 
 A failure follows the strict and lenient rules of [lenient-parsing.md](lenient-parsing.md). Lenient mode skips the paragraph with a `Skipped` warning. The block is the paragraph index and the block text is the time text, or the first line when there is no time.
 
@@ -328,7 +324,7 @@ Each paragraph is `<cite>NAME:</cite>`, when its first segment has a speaker, th
 
 | Option | Zero value | Meaning |
 |:--- |:--- |:--- |
-| `ParagraphGap` | nil: 2 s | a gap of this length or more starts a new paragraph. 0 starts one at every segment. `transcript.NoParagraphBreaks` never starts one. A negative gap fails with `The paragraph gap must be 0 or more seconds, got -1.` |
+| `ParagraphGap` | nil: 2 s | a gap of this length or more starts a new paragraph. 0 starts one at every segment. `transcript.NoParagraphBreaks` never starts one. A negative gap fails with `the paragraph gap must be 0 or more seconds, got -1`. |
 
 The cues `<v Anna><b>Hello</b>` and `there.` (1 to 2 s), `<v Anna>Where are you going?` (2.5 to 4 s), `<v Ben>Home &amp; bed.` and `<v Anna>Why?` (4 to 5 s), `<v Anna>Fish &lt;3` (9 to 10 s) and `No speaker.` (3725 to 3727 s) write:
 
@@ -368,7 +364,7 @@ Amazon Transcribe returns a batch transcript as JSON with one item for each word
 
 ### Read
 
-- **Lists**: `results` must be an object and `results.items` a JSON array. Else the read fails with `The JSON has no "results.items" list.` in both modes. `audio_segments` counts when it is an array with items. An object with the keys `"0"` and `"1"` is no list.
+- **Lists**: `results` must be an object and `results.items` a JSON array. Else the read fails with `the JSON has no "results.items" list` in both modes. `audio_segments` counts when it is an array with items. An object with the keys `"0"` and `"1"` is no list.
 - **Words**: a pronunciation item makes a word. A punctuation item joins the word before it without a space. Punctuation before the first word waits and joins the first word in front. So the item U+00BF, the word `Vienes` and the item `?` give the word U+00BF followed by `Vienes?`.
 - **Cues with audio segments**: one cue for each segment. Its words are the words of the item ids in the segment `items` list. The integer 5 and the string `"5"` name the same item, and `"05"` is another id. An id that names no word is ignored. A word that an earlier segment, or the same segment, already named belongs to that segment, so each word is copied into the cue data once.
 - **Cues without audio segments**: the words group into cues by the [grouping rules](#grouping-words-into-cues).
@@ -381,10 +377,10 @@ A field error fails the item or the segment. Strict mode returns the error. Leni
 
 | Field | Error |
 |:--- |:--- |
-| an item without a string `alternatives[0].content`, also an item that is no object | `The field results.items[0].alternatives[0].content must be a string.` |
-| a pronunciation item with a `start_time` or `end_time` that is no number or numeric string of 0 or more | `The field results.items[0].start_time must be a time.` |
-| a time of 100000 hours or more | `The field results.items[0].start_time is not below 100000 hours.` |
-| a segment with a bad `start_time`, `end_time` or `transcript` | `The field results.audio_segments[0].transcript must be a string.` |
+| an item without a string `alternatives[0].content`, also an item that is no object | `the field results.items[0].alternatives[0].content must be a string` |
+| a pronunciation item with a `start_time` or `end_time` that is no number or numeric string of 0 or more | `the field results.items[0].start_time must be a time` |
+| a time of 100000 hours or more | `the field results.items[0].start_time is not below 100000 hours` |
+| a segment with a bad `start_time`, `end_time` or `transcript` | `the field results.audio_segments[0].transcript must be a string` |
 
 **Words.** Each word gives one entry of `Cue.Words`. `Text` is the content of its items joined. `Start` and `End` come from the pronunciation item. `Confidence` is `alternatives[0].confidence` of the pronunciation item, when it is a number or numeric string from 0 to 1.
 
@@ -438,9 +434,9 @@ Deepgram returns the transcript of a recording as JSON. Each audio channel has a
 
 ### Read
 
-- **Lists**: `results` must be an object and `results.channels` a JSON array. Else the read fails with `The JSON has no "results.channels" list.` in both modes. An object with the keys `"0"` and `"1"` is no list.
+- **Lists**: `results` must be an object and `results.channels` a JSON array. Else the read fails with `the JSON has no "results.channels" list` in both modes. An object with the keys `"0"` and `"1"` is no list.
 - **Utterances**: when `results.utterances` is an array with items, each utterance gives one cue. The channels are not read. The cue data is the whole utterance.
-- **Paragraphs**: a channel whose first alternative has `paragraphs.paragraphs` gives one cue for each sentence. The cue data of each sentence holds a copy of its paragraph. The copies of a file together may not pass 4 times the size of the file plus 1 MiB. Past that, the read fails in both modes with `The sentences copy more than N bytes of paragraph data into the cues.`. The speaker is the `speaker` of the paragraph. The words of a cue are the words whose middle lies between the start and the end of the sentence. The cue data is the sentence members, then `channel`, `speaker`, `paragraph` without `sentences`, and `words`.
+- **Paragraphs**: a channel whose first alternative has `paragraphs.paragraphs` gives one cue for each sentence. The cue data of each sentence holds a copy of its paragraph. The copies of a file together may not pass 4 times the size of the file plus 1 MiB. Past that, the read fails in both modes with `the sentences copy more than N bytes of paragraph data into the cues`. The speaker is the `speaker` of the paragraph. The words of a cue are the words whose middle lies between the start and the end of the sentence. The cue data is the sentence members, then `channel`, `speaker`, `paragraph` without `sentences`, and `words`.
 - **Words only**: the words of a channel group into cues by the [grouping rules](#grouping-words-into-cues). The cue data is `{"channel": N, "words": [...]}`.
 - **Channels**: only a channel whose `alternatives[0]` is an object gives cues. The cues of all channels are sorted by start, so channel 1 can come before channel 0.
 - **Language**: `results.channels[0].detected_language`.
@@ -457,9 +453,9 @@ A field error fails the word, the utterance or the sentence. Strict mode returns
 
 | Field | Error |
 |:--- |:--- |
-| a word `start` or `end` that is no time | `The field results.channels[0].alternatives[0].words[0].end must be a time.` |
-| a word text that is no string | `The field results.channels[0].alternatives[0].words[0].punctuated_word must be a string.` |
-| an utterance or sentence with a bad `start`, `end` or text | `The field results.utterances[0].end must be a time.` |
+| a word `start` or `end` that is no time | `the field results.channels[0].alternatives[0].words[0].end must be a time` |
+| a word text that is no string | `the field results.channels[0].alternatives[0].words[0].punctuated_word must be a string` |
+| an utterance or sentence with a bad `start`, `end` or text | `the field results.utterances[0].end must be a time` |
 
 ### Write
 
@@ -514,7 +510,7 @@ A plain number is a time for the reader and no duration for the writer. So a res
 ### Read
 
 - **Operation**: a top-level `response` that is an object is unwrapped. The other top-level members, such as `name`, `metadata` and `done`, go first into the file data.
-- **Lists**: `results` must be a JSON array. Else the read fails with `The JSON has no "results" list.` in both modes. An object with the keys `"0"` and `"1"` is no list.
+- **Lists**: `results` must be a JSON array. Else the read fails with `the JSON has no "results" list` in both modes. An object with the keys `"0"` and `"1"` is no list.
 - **Diarized**: the last result is diarized when a word of its first alternative has a `speakerLabel` that is not null, or a `speakerTag` that is not 0, `""`, `"0"`, false or null. Each diarized result repeats the words of the results before it, so the last one holds all words. The words group into cues by the [grouping rules](#grouping-words-into-cues). The file data then holds `results` with the last result without its transcript and words.
 - **Other files**: one cue for each result. A result without words starts where the result before it ended, and ends at its result end. A result with words runs from its first word to its last word. The cue data is the result without `alternatives`, then the members of the first alternative.
 - **Language**: the first `languageCode` of the results that is a string and not empty.
@@ -531,11 +527,11 @@ A field error fails the word or the result. Strict mode returns the error. Lenie
 
 | Field | Error |
 |:--- |:--- |
-| a word time that is no duration or no time | `The field results[0].alternatives[0].words[0].startTime must be a time.` |
-| a time of 100000 hours or more | `The field results[0].alternatives[0].words[0].startTime is not below 100000 hours.` |
-| a result end that is no time, for a result without words | `The field results[0].resultEndTime must be a time.` |
-| a first alternative that is no object | `The field results[0].alternatives must be a list of objects.` |
-| a transcript that is no string | `The field results[0].alternatives[0].transcript must be a string.` |
+| a word time that is no duration or no time | `the field results[0].alternatives[0].words[0].startTime must be a time` |
+| a time of 100000 hours or more | `the field results[0].alternatives[0].words[0].startTime is not below 100000 hours` |
+| a result end that is no time, for a result without words | `the field results[0].resultEndTime must be a time` |
+| a first alternative that is no object | `the field results[0].alternatives must be a list of objects` |
+| a transcript that is no string | `the field results[0].alternatives[0].transcript must be a string` |
 
 ### Write
 
@@ -547,7 +543,7 @@ The writer uses V2 names when a stored result or a cue has a `resultEndOffset`, 
 - **Text**: the stored transcript when it equals the cue text. A leading space of the stored transcript stays.
 - **Words**: the writer applies the rules of [reuse of source words](#reuse-of-source-words). No result gives `[]`. A new word is `{"startTime", "endTime", "word"}`, with `startOffset` and `endOffset` in V2, and `confidence` when a stored word of the cue has one.
 - **Typed values**: a reused word gets `Word.End` in its end member and `Word.Confidence` in `confidence`, when it has the member and the value differs.
-- **Diarized source**: one result with all words of all cues. Each word gets `speakerLabel` with the cue speaker in V2, or `speakerTag` in V1. A V1 speaker of the digits 0 to 9 only is an integer, unless it is too large for one. A cue without words fails with an `UnwritableError` that names the cue, such as `Cue #2 at 8.24 s has no words.`
+- **Diarized source**: one result with all words of all cues. Each word gets `speakerLabel` with the cue speaker in V2, or `speakerTag` in V1. A V1 speaker of the digits 0 to 9 only is an integer, unless it is too large for one. A cue without words fails with an `UnwritableError` that names the cue, such as `cue #2 at 8.24 s has no words`.
 
 2 cues from another format with the language `en-US`, `<v Anna>Good` / `morning.` from 1.5 to 3 s, and `See you.` from 4 to 5 s with 2 words, write:
 
@@ -576,7 +572,7 @@ AssemblyAI returns a transcript as JSON with times in milliseconds: a list of `w
 
 ### Read
 
-- **Lists**: `utterances` counts when it is an array with items. Without utterances, `words` must be an array. Else the read fails with `The JSON has no "words" or "utterances" list.` in both modes. `"utterances": null` falls back to the words. An object with the keys `"0"` and `"1"` is no list.
+- **Lists**: `utterances` counts when it is an array with items. Without utterances, `words` must be an array. Else the read fails with `the JSON has no "words" or "utterances" list` in both modes. `"utterances": null` falls back to the words. An object with the keys `"0"` and `"1"` is no list.
 - **Utterances**: one cue for each utterance, with the text of `text`. The cue data is the whole utterance.
 - **Words only**: the words group into cues by the [grouping rules](#grouping-words-into-cues). The cue data is `{"words": [...]}`.
 - **Language**: `language_code` when it is a string that is not empty. The part after the first `_` is upper-cased in ASCII and joins with `-`. So `en_us` gives `en-US`, `en_au` gives `en-AU` and `de` stays `de`.
@@ -593,9 +589,9 @@ A field error fails the word or the utterance. Strict mode returns the error. Le
 
 | Field | Error |
 |:--- |:--- |
-| a word `start` or `end` that is no time | `The field words[0].start must be a time.`, or `utterances[0].words[0].start` inside an utterance |
-| a word `text` that is no string | `The field words[0].text must be a string.` |
-| an utterance with a bad `start`, `end` or `text` | `The field utterances[0].end must be a time.` |
+| a word `start` or `end` that is no time | `the field words[0].start must be a time`, or `utterances[0].words[0].start` inside an utterance |
+| a word `text` that is no string | `the field words[0].text must be a string` |
+| an utterance with a bad `start`, `end` or `text` | `the field utterances[0].end must be a time` |
 
 ### Write
 

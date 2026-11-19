@@ -10,12 +10,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 )
 
 const (
-	brokenMessage = `broken.srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000".`
+	brokenMessage = `broken.srt: line 6: block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000"`
+	brokenWarning = `broken.srt: line 6: Block #1 has no timing line on its second line. The line is "00:00:03,000 => 00:00:04,000".`
 	bom           = "\xEF\xBB\xBF"
 )
 
@@ -40,8 +41,8 @@ func TestUsageErrors(t *testing.T) {
 		{"bom and no bom", []string{"convert", "trip.srt", "--to", "vtt", "--bom", "--no-bom"}, "Pass only one of --bom and --no-bom."},
 		{"output and output dir", []string{"convert", "trip.srt", "--to", "vtt", "-o", "a.vtt", "--output-dir", "out"}, "Pass only one of --output and --output-dir."},
 		{"value given twice", []string{"convert", "trip.srt", "--to", "vtt", "--to", "srt"}, "The option --to is given twice."},
-		{"unknown encoding", []string{"convert", "trip.srt", "--to", "srt", "--encoding", "CP1125"}, `The encoding "CP1125" is unknown. Known encodings: ` + strings.Join(stbox.Encodings(), ", ") + "."},
-		{"info unknown encoding", []string{"info", "trip.srt", "--encoding", "CP1125"}, `The encoding "CP1125" is unknown. Known encodings: ` + strings.Join(stbox.Encodings(), ", ") + "."},
+		{"unknown encoding", []string{"convert", "trip.srt", "--to", "srt", "--encoding", "CP1125"}, `the encoding "CP1125" is unknown. Known encodings: ` + strings.Join(stbox.Encodings(), ", ") + "."},
+		{"info unknown encoding", []string{"info", "trip.srt", "--encoding", "CP1125"}, `the encoding "CP1125" is unknown. Known encodings: ` + strings.Join(stbox.Encodings(), ", ") + "."},
 		{"info unknown option", []string{"info", "trip.srt", "--to", "vtt"}, "Unknown option --to."},
 	}
 	for _, tt := range tests {
@@ -277,7 +278,7 @@ func TestLenientEncodingLineEndingAndBOMOptions(t *testing.T) {
 	assert.Equal(t,
 		result{
 			Stdout: "1\r\n00:00:01,000 --> 00:00:02,000\r\nFirst cue.\r\n\r\n2\r\n00:00:05,000 --> 00:00:06,000\r\nLast cue.\r\n",
-			Stderr: brokenMessage + " (skipped)\n",
+			Stderr: brokenWarning + " (skipped)\n",
 		},
 		call{dir: dir}.run(t, "convert", "broken.srt", "--to", "srt", "-o", "-", "--lenient", "--line-ending", "crlf", "--no-bom"))
 

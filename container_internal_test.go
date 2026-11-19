@@ -8,15 +8,19 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 type fakeFile struct{ tracks []Track }
 
 func (f fakeFile) Tracks() []Track { return f.tracks }
 
-func (f fakeFile) Extract(int, ReadOptions) (*Subtitle, []ParseWarning, error) {
+func (f fakeFile) Extract(int, model.CommonReadOptions, struct{}) (*Subtitle, []ParseWarning, error) {
 	s := &Subtitle{}
-	s.AddCue(Cue{Start: 0, End: 1000000000, Lines: []string{"Hello"}})
+	if err := s.AddCue(Cue{Start: 0, End: 1000000000, Lines: []string{"Hello"}}); err != nil {
+		panic(err)
+	}
 	return s, []ParseWarning{{Message: "repaired", Line: NoLine, Block: NoBlock, Action: Repaired}}, nil
 }
 
@@ -44,23 +48,23 @@ func TestReadTrack(t *testing.T) {
 		{name: "the second of 3 tracks", tracks: fakeTracks(1, 2, 3), opts: ReadOptions{Track: 2}, wantTrack: 2},
 		{
 			name: "no track", wantType: &TrackError{Container: Matroska},
-			wantErr: "stbox: unsupported format: The MKV or WebM file has no subtitle track.",
+			wantErr: "stbox: unsupported format: the MKV or WebM file has no subtitle track",
 		},
 		{
 			name: "6 tracks", tracks: fakeTracks(1, 2, 3, 4, 5, 6), wantTracks: 6, wantType: &TrackError{},
-			wantErr: "stbox: unsupported format: The MKV or WebM file has 6 subtitle tracks.",
+			wantErr: "stbox: unsupported format: the MKV or WebM file has 6 subtitle tracks",
 		},
 		{
 			name: "a track that does not exist", tracks: fakeTracks(1, 2), opts: ReadOptions{Track: 7},
 			wantType: &InvalidArgumentError{},
-			wantErr:  "stbox: invalid argument: ReadOptions.Track: The file has no subtitle track with the number 7.",
+			wantErr:  "stbox: invalid argument: ReadOptions.Track: the file has no subtitle track with the number 7",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			s, info, err := extractTrack(Matroska, fakeFile{tt.tracks}, tt.opts)
+			s, info, err := extractTrack(fakeFile{tt.tracks}, Matroska, tt.opts, struct{}{})
 			if tt.wantErr != "" {
 				require.EqualError(t, err, tt.wantErr)
 				assert.Nil(t, s)
@@ -73,7 +77,7 @@ func TestReadTrack(t *testing.T) {
 					assert.Len(t, te.Tracks, tt.wantTracks)
 					assert.Equal(t, Matroska, te.Container)
 					require.ErrorIs(t, err, ErrUnsupportedFormat)
-					require.NotErrorIs(t, err, ErrUnknownFormat)
+					require.NotErrorIs(t, err, ErrNoFormatDetected)
 				case *InvalidArgumentError:
 					require.ErrorAs(t, err, &ie)
 					assert.Equal(t, "ReadOptions.Track", ie.Option)
@@ -102,9 +106,9 @@ func TestTrackInputErrors(t *testing.T) {
 	require.NoError(t, os.WriteFile(mp4Path, mp4, 0o600))
 	srtPath := filepath.Join(dir, "a.srt")
 	require.NoError(t, os.WriteFile(srtPath, srt, 0o600))
-	const noTrackSize = "stbox: invalid argument: The size must be 0 or more, got -1."
-	const notContainerMsg = "stbox: unsupported format: The content is not an MKV, WebM, MP4 or MPEG-TS file."
-	const onlyContainers = "stbox: invalid argument: ReadOptions.Track: Only MKV, WebM, MP4 and MPEG-TS files have tracks."
+	const noTrackSize = "stbox: invalid argument: the size must be 0 or more, got -1"
+	const notContainerMsg = "stbox: unsupported format: the content is not an MKV, WebM, MP4 or MPEG-TS file"
+	const onlyContainers = "stbox: invalid argument: ReadOptions.Track: only MKV, WebM, MP4 and MPEG-TS files have tracks"
 
 	tests := []struct {
 		name string
@@ -127,7 +131,7 @@ func TestTrackInputErrors(t *testing.T) {
 		{"a negative track", func() error {
 			_, _, err := Parse(bytes.NewReader(srt), int64(len(srt)), ReadOptions{Track: -1})
 			return err
-		}, "stbox: invalid argument: ReadOptions.Track: The track number must be 0 or more, got -1.", ErrInvalidArgument},
+		}, "stbox: invalid argument: ReadOptions.Track: the track number must be 0 or more, got -1", ErrInvalidArgument},
 		{"Parse of an empty reader with a size", func() error {
 			_, _, err := Parse(bytes.NewReader(nil), 5, ReadOptions{Track: 1})
 			return err
@@ -143,11 +147,11 @@ func TestTrackInputErrors(t *testing.T) {
 		{"Parse of MP4 with a format", func() error {
 			_, _, err := Parse(bytes.NewReader(mp4), int64(len(mp4)), ReadOptions{Format: SubRip})
 			return err
-		}, "stbox: unsupported format: The content is an MP4 file. Read it by track.", ErrUnsupportedFormat},
+		}, "stbox: unsupported format: the content is an MP4 file. Read it by track", ErrUnsupportedFormat},
 		{"Load of MP4 with a format", func() error {
 			_, _, err := Load(mp4Path, ReadOptions{Format: SubRip})
 			return err
-		}, "stbox: unsupported format: " + mp4Path + " is an MP4 file. Read it by track.", ErrUnsupportedFormat},
+		}, "stbox: unsupported format: " + mp4Path + " is an MP4 file. Read it by track", ErrUnsupportedFormat},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -156,7 +160,7 @@ func TestTrackInputErrors(t *testing.T) {
 			err := tt.call()
 			require.EqualError(t, err, tt.want)
 			require.ErrorIs(t, err, tt.is)
-			assert.NotErrorIs(t, err, ErrUnknownFormat)
+			assert.NotErrorIs(t, err, ErrNoFormatDetected)
 		})
 	}
 }

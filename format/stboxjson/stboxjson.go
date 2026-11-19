@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Version is the newest library JSON version. The reader reads versions 1 and 2. The writer writes it by default.
@@ -37,7 +37,7 @@ func (o WriteOptions) Validate() error {
 	if o.Version < 0 || o.Version > Version {
 		return &model.InvalidArgumentError{
 			Option: "WriteOptions.JSON.Version",
-			Msg:    "The library JSON version must be 0, 1 or 2, got " + strconv.Itoa(o.Version) + ".",
+			Msg:    "the library JSON version must be 0, 1 or 2, got " + strconv.Itoa(o.Version),
 		}
 	}
 	return nil

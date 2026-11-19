@@ -8,11 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 var fontTagRegexp = regexp.MustCompile(`(?i)</?font\b`)
@@ -39,12 +38,12 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, opts
 		if !ok {
 			return WriteReport{}, &model.InvalidArgumentError{
 				Option: "WriteOptions.MicroDVD.FrameRate",
-				Msg:    "MicroDVD output needs the frame rate of the video.",
+				Msg:    "MicroDVD output needs the frame rate of the video",
 			}
 		}
 		var err error
-		if rate, err = model.FrameRateFromFloat(stored); err != nil {
-			return WriteReport{}, parsing.FrameRateOption(err, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate")
+		if rate, err = model.FrameRateFromFloatFor(stored, "WriteOptions.MicroDVD.FrameRate", "the MicroDVD frame rate"); err != nil {
+			return WriteReport{}, err
 		}
 	}
 	fps := rate.Float64()

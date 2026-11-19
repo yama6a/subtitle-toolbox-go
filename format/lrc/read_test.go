@@ -8,9 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Ports testEndTimeIsNextCueStartIncludingCentiseconds, testOffsetMakesLyricsShowEarlier,
@@ -398,11 +399,11 @@ func TestReadHugeOffset(t *testing.T) {
 		block   int
 		line    string
 	}{
-		{"beyond int64", "[offset:-99999999999999999999]\n[00:12.00]x\n", `The time "[00:12.00]" is not below 100000 hours.`, 1, "[00:12.00]x"},
-		{"at the limit", "[offset:-359999988000]\n[00:12.00]x\n", `The time "[00:12.00]" is not below 100000 hours.`, 1, "[00:12.00]x"},
-		{"a word time", "[offset:-359999988000]\n[00:01.00]x <00:12.00>y\n", `The time "<00:12.00>" is not below 100000 hours.`, 1, "[00:01.00]x <00:12.00>y"},
-		{"spaces in the tag", "[offset:-359999988000]\n[ 00:12.00\t]x\n", `The time "[ 00:12.00 ]" is not below 100000 hours.`, 1, "[ 00:12.00 ]x"},
-		{"the text on the next line", "[offset:-359999988000]\n[00:12.00]\nx\n", `The time "[00:12.00]" is not below 100000 hours.`, 2, "[00:12.00]"},
+		{"beyond int64", "[offset:-99999999999999999999]\n[00:12.00]x\n", `the time "[00:12.00]" is not below 100000 hours`, 1, "[00:12.00]x"},
+		{"at the limit", "[offset:-359999988000]\n[00:12.00]x\n", `the time "[00:12.00]" is not below 100000 hours`, 1, "[00:12.00]x"},
+		{"a word time", "[offset:-359999988000]\n[00:01.00]x <00:12.00>y\n", `the time "<00:12.00>" is not below 100000 hours`, 1, "[00:01.00]x <00:12.00>y"},
+		{"spaces in the tag", "[offset:-359999988000]\n[ 00:12.00\t]x\n", `the time "[ 00:12.00 ]" is not below 100000 hours`, 1, "[ 00:12.00 ]x"},
+		{"the text on the next line", "[offset:-359999988000]\n[00:12.00]\nx\n", `the time "[00:12.00]" is not below 100000 hours`, 2, "[00:12.00]"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -415,7 +416,7 @@ func TestReadHugeOffset(t *testing.T) {
 
 			s, warnings := mustRead(t, tt.content, true)
 			assert.Zero(t, s.Len())
-			assert.Equal(t, []warningRow{{tt.msg, model.NoLine, tt.block, []string{tt.line}, model.Skipped}}, warningRows(warnings))
+			assert.Equal(t, []warningRow{{parsing.Sentence(tt.msg), model.NoLine, tt.block, []string{tt.line}, model.Skipped}}, warningRows(warnings))
 		})
 	}
 
@@ -433,7 +434,7 @@ func TestReadTextWithoutCues(t *testing.T) {
 	_, _, err := read(content, model.CommonReadOptions{})
 	var perr *model.ParseError
 	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, model.ParseError{Format: model.LRC, Line: 3, Msg: "The file has text but no cues."}, *perr)
+	assert.Equal(t, model.ParseError{Format: model.LRC, Line: 3, Msg: "the file has text but no cues"}, *perr)
 
 	s, warnings := mustRead(t, content, true)
 	assert.Zero(t, s.Len())

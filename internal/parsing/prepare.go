@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -71,19 +71,19 @@ func (s *State) checkUTF8(content []byte, replaces bool) ([]byte, error) {
 	switch {
 	case !replaces:
 		if s.Lenient() {
-			s.warn(msg, model.NoLine, model.Repaired)
+			s.warn(Sentence(msg), model.NoLine, model.Repaired)
 		}
 		return content, nil
 	case !s.Lenient():
 		return nil, &model.ParseError{Format: s.format, Msg: msg}
 	default:
-		s.warn(msg+" The parser read the bad bytes as U+FFFD.", model.NoLine, model.Repaired)
+		s.warn(Sentence(msg)+" The parser read the bad bytes as U+FFFD.", model.NoLine, model.Repaired)
 		return textenc.ReplaceInvalidUTF8(content), nil
 	}
 }
 
 func badUTF8Message(offset int) string {
-	return textenc.InvalidUTF8WarningPrefix + " The first bad byte is at offset " + strconv.Itoa(offset) + ". Set the source encoding of the file."
+	return "the content is not valid UTF-8. The first bad byte is at offset " + strconv.Itoa(offset) + ". Set the source encoding of the file"
 }
 
 func controlsMessage(line int) string {
@@ -94,7 +94,7 @@ func nulError(f model.Format, line int) *model.ParseError {
 	return &model.ParseError{
 		Format: f,
 		Line:   line,
-		Msg:    "Line " + strconv.Itoa(line) + " has a NUL character. Check the encoding of the file.",
+		Msg:    "line " + strconv.Itoa(line) + " has a NUL character. Check the encoding of the file",
 	}
 }
 

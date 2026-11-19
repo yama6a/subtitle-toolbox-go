@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestReadOptionsValidate(t *testing.T) {
@@ -28,28 +28,28 @@ func TestReadOptionsValidate(t *testing.T) {
 		},
 		{
 			name: "negative index", opts: csv.ReadOptions{Columns: csv.Columns{Start: csv.ColumnAt(-1)}},
-			option: "ReadOptions.CSV.Columns.Start", msg: "The column index of start must be 0 or more, got -1.",
+			option: "ReadOptions.CSV.Columns.Start", msg: "the column index of start must be 0 or more, got -1",
 		},
 		{
 			name: "negative ID index", opts: csv.ReadOptions{Columns: csv.Columns{ID: csv.ColumnAt(-2), Start: csv.ColumnAt(-1)}},
-			option: "ReadOptions.CSV.Columns.ID", msg: "The column index of identifier must be 0 or more, got -2.",
+			option: "ReadOptions.CSV.Columns.ID", msg: "the column index of identifier must be 0 or more, got -2",
 		},
 		{
 			// Ports testColumnsWithoutAHeaderNeedIndexes of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.
 			name: "no header without a text index", opts: csv.ReadOptions{Columns: csv.Columns{Start: csv.ColumnAt(0), NoHeader: true}},
-			option: "ReadOptions.CSV.Columns.Text", msg: "A table without a header row needs a column index for text.",
+			option: "ReadOptions.CSV.Columns.Text", msg: "a table without a header row needs a column index for text",
 		},
 		{
 			name:   "no header with a name",
 			opts:   csv.ReadOptions{Columns: csv.Columns{Start: csv.ColumnAt(0), Text: csv.ColumnAt(1), Duration: csv.ColumnNamed("Length"), NoHeader: true}},
-			option: "ReadOptions.CSV.Columns.Duration", msg: "A table without a header row needs a column index for duration.",
+			option: "ReadOptions.CSV.Columns.Duration", msg: "a table without a header row needs a column index for duration",
 		},
 		{
 			// Ports testRejectsAnUnknownDelimiter of tests/Parsers/CsvParserTest.php of subtitle-toolbox-php.
 			name: "pipe delimiter", opts: csv.ReadOptions{Delimiter: "|"},
-			option: "ReadOptions.CSV.Delimiter", msg: `The CSV delimiter must be ",", ";" or a tab.`,
+			option: "ReadOptions.CSV.Delimiter", msg: `the CSV delimiter must be ",", ";" or a tab`,
 		},
-		{name: "negative frame rate", opts: csv.ReadOptions{FrameRate: model.FrameRate{Num: -1, Den: 1}}, option: "ReadOptions.CSV.FrameRate", msg: "The frame rate must be greater than 0, got -1."},
+		{name: "negative frame rate", opts: csv.ReadOptions{FrameRate: model.FrameRate{Num: -1, Den: 1}}, option: "ReadOptions.CSV.FrameRate", msg: "the frame rate must be greater than 0, got -1"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -82,13 +82,13 @@ func TestWriteOptionsValidate(t *testing.T) {
 		{
 			// Ports testRejectsAnInvalidDelimiterWhenTheOptionsAreCreated of tests/Formatters/CsvFormatterTest.php of subtitle-toolbox-php.
 			name: "pipe delimiter", opts: csv.WriteOptions{Delimiter: "|"},
-			option: "WriteOptions.CSV.Delimiter", msg: `The CSV delimiter must be ",", ";" or a tab.`,
+			option: "WriteOptions.CSV.Delimiter", msg: `the CSV delimiter must be ",", ";" or a tab`,
 		},
 		{
 			name: "unknown time format", opts: csv.WriteOptions{TimeFormat: "hh:mm:ss;fff"}, option: "WriteOptions.CSV.TimeFormat",
-			msg: `The CSV time format must be seconds, hh:mm:ss.mmm, hh:mm:ss,mmm, hh:mm:ss:ff or milliseconds, got "hh:mm:ss;fff".`,
+			msg: `the CSV time format must be seconds, hh:mm:ss.mmm, hh:mm:ss,mmm, hh:mm:ss:ff or milliseconds, got "hh:mm:ss;fff"`,
 		},
-		{name: "negative frame rate", opts: csv.WriteOptions{FrameRate: model.FrameRate{Num: -1, Den: 1}}, option: "WriteOptions.CSV.FrameRate", msg: "The CSV frame rate must be greater than 0, got -1."},
+		{name: "negative frame rate", opts: csv.WriteOptions{FrameRate: model.FrameRate{Num: -1, Den: 1}}, option: "WriteOptions.CSV.FrameRate", msg: "the CSV frame rate must be greater than 0, got -1"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

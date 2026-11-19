@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleCue_ExtractWordTags() {
@@ -47,5 +47,5 @@ func ExampleCue_PlainText() {
 func ExampleCue_ValidateWords() {
 	c := model.Cue{Lines: []string{"Hi there"}, Words: []model.Word{{Text: "there"}, {Text: "Hi"}}}
 	fmt.Println(c.ValidateWords())
-	// Output: stbox: invalid argument: Words[1].Text: The word "Hi" is not in the text of the cue after the word before it.
+	// Output: stbox: invalid argument: Words[1].Text: the word "Hi" is not in the text of the cue after the word before it
 }

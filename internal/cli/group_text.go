@@ -1,9 +1,9 @@
 package cli
 
 import (
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
-	"github.com/yama6a/subtitle-toolbox-go/v4/speakers"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/speakers"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func textGroup() group {

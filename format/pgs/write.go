@@ -8,11 +8,11 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/bitmap/displayset"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/bitmap/displayset"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -101,24 +101,24 @@ func (e *encoder) encode(s *model.Subtitle) error {
 func unwritable(i int, c model.Cue, reason string) *model.UnwritableError {
 	return &model.UnwritableError{
 		Format: model.PGS, CueIndex: i,
-		Reason: "Cannot write cue " + timecode.Seconds(c.Start) + " to " + timecode.Seconds(c.End) + " as PGS: " + reason,
+		Reason: "cannot write cue " + timecode.Seconds(c.Start) + " to " + timecode.Seconds(c.End) + " as PGS: " + reason,
 	}
 }
 
 // checkCue returns the start and end of c in ticks of 90 kHz.
 func checkCue(i int, c model.Cue) (start, end int64, err error) {
 	if c.Image == nil {
-		return 0, 0, unwritable(i, c, "the cue holds no image, and PGS output cannot hold text.")
+		return 0, 0, unwritable(i, c, "the cue holds no image, and PGS output cannot hold text")
 	}
 	start = c.Start.Milliseconds() * ticksPerMillisecond
 	end = max(start, c.End.Milliseconds()*ticksPerMillisecond)
 	if start < 0 || start > maxPTS || end < 0 || end > maxPTS {
-		return 0, 0, unwritable(i, c, "a time stamp must be from 0 to "+strconv.Itoa(maxPTS)+" ticks of 90 kHz.")
+		return 0, 0, unwritable(i, c, "a time stamp must be from 0 to "+strconv.Itoa(maxPTS)+" ticks of 90 kHz")
 	}
 	im := c.Image
 	for _, v := range [...]int{im.X, im.Y, im.Width, im.Height, im.ScreenWidth, im.ScreenHeight} {
 		if v < 0 || v > maxField {
-			return 0, 0, unwritable(i, c, "the image position and size must be from 0 to "+strconv.Itoa(maxField)+".")
+			return 0, 0, unwritable(i, c, "the image position and size must be from 0 to "+strconv.Itoa(maxField))
 		}
 	}
 	return start, end, nil
@@ -131,7 +131,7 @@ func decode(i int, c model.Cue) (decodedImage, error) {
 		bm.pixels, err = bitmap.DecodePNG(c.Image.PNG)
 	}
 	if err != nil {
-		u := unwritable(i, c, "the PNG does not decode.")
+		u := unwritable(i, c, "the PNG does not decode")
 		u.Err = err
 		return decodedImage{}, u
 	}
@@ -141,7 +141,7 @@ func decode(i int, c model.Cue) (decodedImage, error) {
 	}
 	if w != c.Image.Width || h != c.Image.Height {
 		return decodedImage{}, unwritable(i, c, "the PNG has "+strconv.Itoa(w)+"x"+strconv.Itoa(h)+" pixels, but the image data says "+
-			strconv.Itoa(c.Image.Width)+"x"+strconv.Itoa(c.Image.Height)+".")
+			strconv.Itoa(c.Image.Width)+"x"+strconv.Itoa(c.Image.Height))
 	}
 	return bm, nil
 }

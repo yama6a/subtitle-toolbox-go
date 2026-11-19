@@ -8,8 +8,8 @@ package csv
 import (
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const formatDataKey = string(model.CSV)
@@ -127,10 +127,10 @@ func (c Columns) validate() error {
 		col := c.column(r.name)
 		option := "ReadOptions.CSV.Columns." + r.field
 		if col.isIndex && col.index < 0 {
-			return invalid(option, "The column index of "+r.name+" must be 0 or more, got "+strconv.Itoa(col.index)+".")
+			return invalid(option, "the column index of "+r.name+" must be 0 or more, got "+strconv.Itoa(col.index))
 		}
 		if c.NoHeader && !col.isIndex && (col.isName || r.name == "start" || r.name == "text") {
-			return invalid(option, "A table without a header row needs a column index for "+r.name+".")
+			return invalid(option, "a table without a header row needs a column index for "+r.name)
 		}
 	}
 	return nil
@@ -155,7 +155,7 @@ func (o ReadOptions) Validate() error {
 	if err := checkDelimiter(o.Delimiter, "ReadOptions.CSV.Delimiter"); err != nil {
 		return err
 	}
-	return parsing.ValidateFrameRate(o.FrameRate, "ReadOptions.CSV.FrameRate", "The frame rate")
+	return parsing.ValidateFrameRate(o.FrameRate, "ReadOptions.CSV.FrameRate", "the frame rate")
 }
 
 // WriteReport holds what the writer reports. It has no fields yet.
@@ -186,10 +186,10 @@ func (o WriteOptions) Validate() error {
 	switch o.TimeFormat {
 	case TimeFormatDefault, TimeSeconds, TimeDot, TimeComma, TimeFrames, TimeMilliseconds:
 	default:
-		return invalid("WriteOptions.CSV.TimeFormat", "The CSV time format must be seconds, hh:mm:ss.mmm, hh:mm:ss,mmm, "+
-			"hh:mm:ss:ff or milliseconds, got "+strconv.Quote(string(o.TimeFormat))+".")
+		return invalid("WriteOptions.CSV.TimeFormat", "the CSV time format must be seconds, hh:mm:ss.mmm, hh:mm:ss,mmm, "+
+			"hh:mm:ss:ff or milliseconds, got "+strconv.Quote(string(o.TimeFormat)))
 	}
-	return parsing.ValidateFrameRate(o.FrameRate, "WriteOptions.CSV.FrameRate", "The CSV frame rate")
+	return parsing.ValidateFrameRate(o.FrameRate, "WriteOptions.CSV.FrameRate", "the CSV frame rate")
 }
 
 func checkDelimiter(d Delimiter, option string) error {
@@ -197,7 +197,7 @@ func checkDelimiter(d Delimiter, option string) error {
 	case DelimiterDefault, Comma, Semicolon, Tab:
 		return nil
 	default:
-		return invalid(option, `The CSV delimiter must be ",", ";" or a tab.`)
+		return invalid(option, `the CSV delimiter must be ",", ";" or a tab`)
 	}
 }
 

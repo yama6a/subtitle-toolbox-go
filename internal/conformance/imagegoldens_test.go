@@ -16,11 +16,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/vobsub"
-	"github.com/yama6a/subtitle-toolbox-go/v4/imaging"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/vobsub"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 )
 
 // imageGolden is a row of the pixel golden table. The golden JSON and the PNG of its first cue lie next to the fixture
@@ -101,7 +100,7 @@ func imageGoldenCues(t *testing.T, s *stbox.Subtitle) []imageGoldenCue {
 	cues := make([]imageGoldenCue, 0, s.Len())
 	for _, c := range s.All() {
 		require.NotNil(t, c.Image)
-		img, err := imaging.Decode(*c.Image)
+		img, err := stbox.DecodeImage(*c.Image)
 		require.NoError(t, err)
 		cues = append(cues, imageGoldenCue{
 			Start:        timecode.FloatSeconds(c.Start),
@@ -160,7 +159,7 @@ func TestImageGoldenPNGShowsThePixelsOfTheFirstCue(t *testing.T) {
 			t.Parallel()
 
 			first := g.expected(t)[0]
-			img, err := imaging.DecodePNG(testfiles.Read(t, g.golden+".png"))
+			img, err := stbox.DecodePNG(testfiles.Read(t, g.golden+".png"))
 			require.NoError(t, err)
 			assert.Equal(t, [3]any{first.Width, first.Height, first.RGBASha256}, [3]any{img.Rect.Dx(), img.Rect.Dy(), rgbaHash(img)})
 		})
@@ -193,10 +192,10 @@ func TestEveryImageGoldenFileHasACase(t *testing.T) {
 func TestImageGoldenCuesDescribeABuiltImageCue(t *testing.T) {
 	t.Parallel()
 
-	im, err := imaging.NewImage(image.NewNRGBA(image.Rect(0, 0, 1, 1)), 10, 20, 1920, 1080)
+	im, err := stbox.NewImage(image.NewNRGBA(image.Rect(0, 0, 1, 1)), 10, 20, 1920, 1080)
 	require.NoError(t, err)
 	s := &stbox.Subtitle{}
-	s.AddCue(stbox.Cue{Start: 1500 * time.Millisecond, End: 2 * time.Second, Image: &im, Forced: true, Position: stbox.Position{Alignment: stbox.TopCenter}})
+	require.NoError(t, s.AddCue(stbox.Cue{Start: 1500 * time.Millisecond, End: 2 * time.Second, Image: &im, Forced: true, Position: stbox.Position{Alignment: stbox.TopCenter}}))
 
 	assert.Equal(t, []imageGoldenCue{{
 		Start: 1.5, End: 2, X: 10, Y: 20, Width: 1, Height: 1, ScreenWidth: 1920, ScreenHeight: 1080, Forced: true, Alignment: "TopCenter",
@@ -230,9 +229,9 @@ func TestVobSubToPGS(t *testing.T) {
 				assert.Equal(t, c.End, d.End, "end of cue %d", i)
 				assert.Equal(t, [6]int{c.Image.X, c.Image.Y, c.Image.Width, c.Image.Height, c.Image.ScreenWidth, c.Image.ScreenHeight},
 					[6]int{d.Image.X, d.Image.Y, d.Image.Width, d.Image.Height, d.Image.ScreenWidth, d.Image.ScreenHeight}, "place of cue %d", i)
-				want, err := imaging.Decode(*c.Image)
+				want, err := stbox.DecodeImage(*c.Image)
 				require.NoError(t, err)
-				got, err := imaging.Decode(*d.Image)
+				got, err := stbox.DecodeImage(*d.Image)
 				require.NoError(t, err)
 				for p := range want.Pix {
 					delta := 1.0
@@ -264,7 +263,7 @@ func subtitleOfCues(t *testing.T, comment int, cues ...stbox.Cue) *stbox.Subtitl
 	t.Helper()
 
 	s := &stbox.Subtitle{}
-	s.AddCues(cues...)
+	require.NoError(t, s.AddCues(cues...))
 	require.NoError(t, s.AddComment("note", comment))
 	return s
 }
@@ -297,7 +296,7 @@ func TestWritersHandleImageCues(t *testing.T) {
 			require.ErrorAs(t, err, &uerr)
 			assert.Equal(t, 1, uerr.CueIndex)
 			assert.Equal(t, f, uerr.Format)
-			assert.Equal(t, "Cue #1 holds an image but no text, and "+string(f)+" needs text.", uerr.Reason)
+			assert.Equal(t, "cue #1 holds an image but no text, and "+string(f)+" needs text", uerr.Reason)
 
 			got, err = writeBytes(t, withImages, f, stbox.WriteOptions{SkipImageCues: true})
 			want, wantErr := writeBytes(t, skipped, f, stbox.WriteOptions{})

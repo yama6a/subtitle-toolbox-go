@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea608"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/linewrap"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/caption/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/linewrap"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 )
 
 // FitAction is the kind of a change that a fit made. The values print as they are.

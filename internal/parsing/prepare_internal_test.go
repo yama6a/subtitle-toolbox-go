@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func controlWarning(line int) model.ParseWarning {
@@ -160,7 +160,7 @@ func TestPrepareRejectsNULInStrictMode(t *testing.T) {
 			assert.Equal(t, model.ParseError{
 				Format: model.SubRip,
 				Line:   tt.line,
-				Msg:    "Line " + strconv.Itoa(tt.line) + " has a NUL character. Check the encoding of the file.",
+				Msg:    "line " + strconv.Itoa(tt.line) + " has a NUL character. Check the encoding of the file",
 			}, *perr)
 			assert.Nil(t, got)
 			assert.False(t, ok)
@@ -172,7 +172,7 @@ func TestPrepareRejectsNULInStrictMode(t *testing.T) {
 func TestNoCues(t *testing.T) {
 	t.Parallel()
 
-	const msg = "The file has text but no cues."
+	const msg = "the file has text but no cues"
 	found := func() (int, bool) { return 2, true }
 	tests := []struct {
 		name     string
@@ -184,7 +184,7 @@ func TestNoCues(t *testing.T) {
 		warnings []model.ParseWarning
 	}{
 		{name: "strict text without cues", textLine: found, wantErr: true},
-		{name: "lenient text without cues", lenient: true, textLine: found, warnings: []model.ParseWarning{{Message: msg, Line: 2, Block: model.NoBlock, Action: model.Skipped}}},
+		{name: "lenient text without cues", lenient: true, textLine: found, warnings: []model.ParseWarning{{Message: Sentence(msg), Line: 2, Block: model.NoBlock, Action: model.Skipped}}},
 		{name: "no text line", textLine: func() (int, bool) { return 0, false }},
 		{name: "cues", cues: 1, textLine: func() (int, bool) { panic("the hook runs only without cues") }},
 		{
@@ -222,7 +222,7 @@ func TestPrepareInvalidUTF8(t *testing.T) {
 
 	const (
 		content = "\ufeffCaf\u00e9 noir, caf\xE9 noir\x01\n"
-		msg     = "The content is not valid UTF-8. The first bad byte is at offset 18. Set the source encoding of the file."
+		msg     = "the content is not valid UTF-8. The first bad byte is at offset 18. Set the source encoding of the file"
 	)
 	tests := []struct {
 		name     string
@@ -237,7 +237,7 @@ func TestPrepareInvalidUTF8(t *testing.T) {
 			name:     "lenient keeps the bytes and warns first",
 			lenient:  true,
 			want:     "Caf\u00e9 noir, caf\xE9 noir\n",
-			warnings: []model.ParseWarning{{Message: msg, Line: model.NoLine, Block: model.NoBlock, Action: model.Repaired}, controlWarning(1)},
+			warnings: []model.ParseWarning{{Message: Sentence(msg), Line: model.NoLine, Block: model.NoBlock, Action: model.Repaired}, controlWarning(1)},
 		},
 		{name: "strict fails for a format that replaces", replaces: true, wantErr: true},
 		{
@@ -245,7 +245,7 @@ func TestPrepareInvalidUTF8(t *testing.T) {
 			lenient:  true,
 			replaces: true,
 			want:     "Caf\u00e9 noir, caf\ufffd noir\n",
-			warnings: []model.ParseWarning{{Message: msg + " The parser read the bad bytes as U+FFFD.", Line: model.NoLine, Block: model.NoBlock, Action: model.Repaired}, controlWarning(1)},
+			warnings: []model.ParseWarning{{Message: Sentence(msg) + " The parser read the bad bytes as U+FFFD.", Line: model.NoLine, Block: model.NoBlock, Action: model.Repaired}, controlWarning(1)},
 		},
 	}
 	for _, tt := range tests {

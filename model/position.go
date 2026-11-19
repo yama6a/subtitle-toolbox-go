@@ -3,7 +3,7 @@ package model
 import (
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
 )
 
 // Position is where a cue shows on the screen.
@@ -117,9 +117,9 @@ func (p Position) Validate() error {
 	}
 	switch {
 	case !(p.Offset.X >= 0 && p.Offset.X <= 100):
-		return positionError("Offset.X", "The offset must be from 0 to 100, got "+timecode.Number(p.Offset.X)+".")
+		return positionError("Offset.X", "the offset must be from 0 to 100, got "+timecode.Number(p.Offset.X))
 	case !(p.Offset.Y >= 0 && p.Offset.Y <= 100):
-		return positionError("Offset.Y", "The offset must be from 0 to 100, got "+timecode.Number(p.Offset.Y)+".")
+		return positionError("Offset.Y", "the offset must be from 0 to 100, got "+timecode.Number(p.Offset.Y))
 	}
 	return nil
 }
@@ -127,13 +127,13 @@ func (p Position) Validate() error {
 func (p Position) validateGrid() error {
 	switch {
 	case p.Grid.Rows < 0 || p.Grid.Columns < 0:
-		return positionError("Grid", "The grid must not have negative rows or columns, got "+strconv.Itoa(p.Grid.Rows)+" rows and "+strconv.Itoa(p.Grid.Columns)+" columns.")
+		return positionError("Grid", "the grid must not have negative rows or columns, got "+strconv.Itoa(p.Grid.Rows)+" rows and "+strconv.Itoa(p.Grid.Columns)+" columns")
 	case p.Row == 0 && p.Column == 0 && p.Grid != Grid{}:
-		return positionError("Grid", "The grid must be zero when the row and the column are 0.")
+		return positionError("Grid", "the grid must be zero when the row and the column are 0")
 	case p.Row < 0 || p.Row > p.Grid.Rows:
-		return positionError("Row", "The row must be from 0 to the grid rows "+strconv.Itoa(p.Grid.Rows)+", got "+strconv.Itoa(p.Row)+".")
+		return positionError("Row", "the row must be from 0 to the grid rows "+strconv.Itoa(p.Grid.Rows)+", got "+strconv.Itoa(p.Row))
 	case p.Column < 0 || p.Column > p.Grid.Columns:
-		return positionError("Column", "The column must be from 0 to the grid columns "+strconv.Itoa(p.Grid.Columns)+", got "+strconv.Itoa(p.Column)+".")
+		return positionError("Column", "the column must be from 0 to the grid columns "+strconv.Itoa(p.Grid.Columns)+", got "+strconv.Itoa(p.Column))
 	}
 	return nil
 }

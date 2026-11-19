@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/chapters"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/chapters"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestReadPodcast(t *testing.T) {
@@ -59,21 +59,21 @@ func TestReadPodcastErrors(t *testing.T) {
 		content string
 		want    string
 	}{
-		{"not JSON", "{", "The content is not valid JSON: Syntax error."},
-		{"root is a list", `[1]`, "The JSON root must be an object."},
-		{"root is a string", `"x"`, "The JSON root must be an object."},
-		{"empty list root", `[]`, `The JSON has no "chapters" list.`},
-		{"no chapters", `{"version": "1.2.0"}`, `The JSON has no "chapters" list.`},
-		{"chapters object", `{"chapters": {"a": 1}}`, `The JSON has no "chapters" list.`},
-		{"start as a string", `{"chapters": [{"startTime": 0}, {"startTime": "1:00"}]}`, "The field chapters[1].startTime must be a number."},
-		{"negative start", `{"chapters": [{"startTime": 0, "title": "A"}, {"startTime": -5, "title": "B"}]}`, "The field chapters[1].startTime must be a number."},
-		{"chapter is no object", `{"chapters": [5]}`, "The field chapters[0].startTime must be a number."},
-		{"infinite start", `{"chapters": [{"startTime": 1e400}]}`, "The field chapters[0].startTime must be a number."},
-		{"infinite end", `{"chapters": [{"startTime": 0, "endTime": 1e400}]}`, "The field chapters[0].endTime must be a number."},
-		{"end as a string", `{"chapters": [{"startTime": 0, "endTime": "x"}]}`, "The field chapters[0].endTime must be a number."},
-		{"100000 hours", `{"chapters": [{"startTime": 0}, {"startTime": 360000000}]}`, "The field chapters[1].startTime is not below 100000 hours."},
-		{"end at 1e20", `{"chapters": [{"startTime": 0, "endTime": 1e20}]}`, "The field chapters[0].endTime is not below 100000 hours."},
-		{"checks come before the limit", `{"chapters": [{"startTime": 360000000, "endTime": "x"}]}`, "The field chapters[0].endTime must be a number."},
+		{"not JSON", "{", "the content is not valid JSON: Syntax error"},
+		{"root is a list", `[1]`, "the JSON root must be an object"},
+		{"root is a string", `"x"`, "the JSON root must be an object"},
+		{"empty list root", `[]`, `the JSON has no "chapters" list`},
+		{"no chapters", `{"version": "1.2.0"}`, `the JSON has no "chapters" list`},
+		{"chapters object", `{"chapters": {"a": 1}}`, `the JSON has no "chapters" list`},
+		{"start as a string", `{"chapters": [{"startTime": 0}, {"startTime": "1:00"}]}`, "the field chapters[1].startTime must be a number"},
+		{"negative start", `{"chapters": [{"startTime": 0, "title": "A"}, {"startTime": -5, "title": "B"}]}`, "the field chapters[1].startTime must be a number"},
+		{"chapter is no object", `{"chapters": [5]}`, "the field chapters[0].startTime must be a number"},
+		{"infinite start", `{"chapters": [{"startTime": 1e400}]}`, "the field chapters[0].startTime must be a number"},
+		{"infinite end", `{"chapters": [{"startTime": 0, "endTime": 1e400}]}`, "the field chapters[0].endTime must be a number"},
+		{"end as a string", `{"chapters": [{"startTime": 0, "endTime": "x"}]}`, "the field chapters[0].endTime must be a number"},
+		{"100000 hours", `{"chapters": [{"startTime": 0}, {"startTime": 360000000}]}`, "the field chapters[1].startTime is not below 100000 hours"},
+		{"end at 1e20", `{"chapters": [{"startTime": 0, "endTime": 1e20}]}`, "the field chapters[0].endTime is not below 100000 hours"},
+		{"checks come before the limit", `{"chapters": [{"startTime": 360000000, "endTime": "x"}]}`, "the field chapters[0].endTime must be a number"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -198,7 +198,7 @@ func TestWritePodcastRejectsBadText(t *testing.T) {
 	t.Parallel()
 
 	s := chaptersOf(model.Cue{Lines: []string{"bad \xff byte"}})
-	err := chapters.WritePodcast(&strings.Builder{}, s, model.CommonWriteOptions{}, chapters.WriteOptions{})
+	_, err := chapters.WritePodcast(&strings.Builder{}, s, model.CommonWriteOptions{}, chapters.WriteOptions{})
 	var uerr *model.UnwritableError
 	require.ErrorAs(t, err, &uerr)
 	assert.ErrorIs(t, err, model.ErrInvalidUTF8)

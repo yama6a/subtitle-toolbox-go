@@ -14,7 +14,7 @@ import (
 
 	"github.com/asticode/go-astits"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -63,7 +63,7 @@ func Open(r io.ReaderAt, size int64) (*File, error) {
 }
 
 func notTS() error {
-	return &model.ParseError{Msg: "The file is not an MPEG-TS file."}
+	return &model.ParseError{Msg: "the file is not an MPEG-TS file"}
 }
 
 // packetSize returns 188 when the sync byte is at the offsets 0, 188 and 376 of head, 192 when it is at 4, 196

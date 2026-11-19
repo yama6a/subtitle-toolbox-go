@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/formatdata"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/formatdata"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // ReadWhisper reads the JSON of the OpenAI transcription API, openai-whisper, faster-whisper, WhisperX and
@@ -57,7 +57,7 @@ func (rd *whisperReader) read(root orderedjson.Value) (*model.Subtitle, error) {
 		items, _ := root.Get("transcription")
 		cues, err = rd.transcription(items.Items())
 	default:
-		err = &model.ParseError{Format: model.Whisper, Msg: `The JSON has no "segments" or "transcription" list.`}
+		err = &model.ParseError{Format: model.Whisper, Msg: `the JSON has no "segments" or "transcription" list`}
 	}
 	if err != nil {
 		return nil, err
@@ -108,12 +108,12 @@ func number(object orderedjson.Value, key, path string, unit time.Duration) (tim
 	v, _ := object.Get(key)
 	path += "." + key
 	if _, ok := v.AsFloat64(); !ok {
-		return 0, fieldError("The field " + path + " must be a number.")
+		return 0, fieldError("the field " + path + " must be a number")
 	}
 	d, state := timeOf(v, unit)
 	switch state {
 	case noTime:
-		return 0, fieldError("The field " + path + " must be a time of 0 or more.")
+		return 0, fieldError("the field " + path + " must be a time of 0 or more")
 	case overLimit:
 		return 0, overLimitError(path)
 	case validTime:

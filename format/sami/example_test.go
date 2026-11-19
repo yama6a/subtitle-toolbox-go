@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/sami"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/sami"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleRead() {
@@ -43,7 +43,9 @@ func ExampleWrite() {
 	s := &model.Subtitle{}
 	s.SetMetadata(model.MetadataTitle, "Station news")
 	s.SetMetadata(model.MetadataLanguage, "en-US")
-	s.AddCues(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"The bridge is <b>open</b>", "again."}})
+	if err := s.AddCues(model.Cue{Start: time.Second, End: 4 * time.Second, Lines: []string{"The bridge is <b>open</b>", "again."}}); err != nil {
+		panic(err)
+	}
 	if _, err := sami.Write(os.Stdout, s, model.CommonWriteOptions{}, sami.WriteOptions{}); err != nil {
 		fmt.Println(err)
 	}
@@ -74,5 +76,5 @@ func ExampleDetect() {
 func ExampleReadOptions_Validate() {
 	fmt.Println(sami.ReadOptions{LanguageClass: " "}.Validate())
 	// Output:
-	// stbox: invalid argument: ReadOptions.SAMI.LanguageClass: The language class must not be empty.
+	// stbox: invalid argument: ReadOptions.SAMI.LanguageClass: the language class must not be empty
 }

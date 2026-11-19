@@ -3,9 +3,8 @@ package srt
 import (
 	"io"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/subrip"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Read reads SubRip text. It expects UTF-8, as stbox.Parse passes it.
@@ -18,7 +17,7 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 	if !ok {
 		return s, st.Warnings(), nil
 	}
-	rd := subrip.NewReader(st)
+	rd := newBlockReader(st)
 	var cues []model.Cue
 	index := 0
 	for b := range rd.Blocks(parsing.Lines(string(content))) {
@@ -29,6 +28,8 @@ func Read(r io.Reader, common model.CommonReadOptions, _ ReadOptions) (*model.Su
 		cues = append(cues, parsed...)
 		index++
 	}
-	s.AddCues(cues...)
+	if err := s.AddCues(cues...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }

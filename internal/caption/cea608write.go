@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea608"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/linewrap"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/caption/cea608"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/linewrap"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const formatDataKey = string(model.SCC)
@@ -182,31 +182,31 @@ func loadWords(f model.Format, c model.Cue, index int, fit bool) ([]uint16, []Fi
 }
 
 func checkLimits(f model.Format, c model.Cue, index int, lines [][]cea608.Char) error {
-	prefix := cuePrefix(index, c.Start) + " has "
+	prefix := "cue " + cueRef(index, c.Start) + " has "
 	fail := func(reason string) error {
 		e := &model.UnwritableError{Format: f, CueIndex: index, Reason: reason}
 		if linewrap.FewestLines(c.Lines, cea608.Columns) <= cea608.MaxLines {
 			e.Err = ErrWrapFirst
-			e.Reason += " Wrap the lines to 4 lines of 32 characters first."
+			e.Reason += ". Wrap the lines to 4 lines of 32 characters first"
 		} else {
 			e.Err = ErrSplitFirst
-			e.Reason += " Split the cue into cues of 4 lines of 32 characters, then wrap the lines."
+			e.Reason += ". Split the cue into cues of 4 lines of 32 characters, then wrap the lines"
 		}
 		return e
 	}
 	if len(lines) > cea608.MaxLines {
-		return fail(prefix + strconv.Itoa(len(lines)) + " lines, but SCC allows " + strconv.Itoa(cea608.MaxLines) + ".")
+		return fail(prefix + strconv.Itoa(len(lines)) + " lines, but SCC allows " + strconv.Itoa(cea608.MaxLines))
 	}
 	for _, chars := range lines {
 		if len(chars) > cea608.Columns {
 			return fail(prefix + "a line with " + strconv.Itoa(len(chars)) + " characters, but SCC allows " +
-				strconv.Itoa(cea608.Columns) + ".")
+				strconv.Itoa(cea608.Columns))
 		}
 		for _, ch := range chars {
 			if !cea608.Encodable(ch.R) {
 				return &model.UnwritableError{
 					Format: f, CueIndex: index,
-					Reason: prefix + `the character "` + string(ch.R) + `", which CEA-608 cannot show.`,
+					Reason: prefix + `the character "` + string(ch.R) + `", which CEA-608 cannot show`,
 				}
 			}
 		}
@@ -323,5 +323,9 @@ func intList(data *model.Data, key string, count int) ([]int, bool) {
 
 // cuePrefix starts the message about a cue with its number and start time.
 func cuePrefix(index int, start time.Duration) string {
-	return "Cue #" + strconv.Itoa(index) + " at " + timecode.Seconds(start) + " s"
+	return "Cue " + cueRef(index, start)
+}
+
+func cueRef(index int, start time.Duration) string {
+	return "#" + strconv.Itoa(index) + " at " + timecode.Seconds(start) + " s"
 }

@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -60,7 +60,7 @@ func ReadFFMetadata(r io.Reader, common model.CommonReadOptions, opts ReadOption
 		return s, st.Warnings(), nil
 	}
 	if !strings.HasPrefix(string(content), ";FFMETADATA") {
-		return nil, nil, parseError(model.FFMetadataChapters, 1, "The content does not start with the ;FFMETADATA header.")
+		return nil, nil, parseError(model.FFMetadataChapters, 1, "the content does not start with the ;FFMETADATA header")
 	}
 	global, streams, chapters, err := readSections(logicalLines(physicalLines(string(content))))
 	if err != nil {
@@ -139,7 +139,7 @@ func readChapterTimes(lines []logicalLine, i int, previousEnd time.Duration) (ch
 	if n, d, line, ok := timeBaseLine(lines, i+1); ok {
 		var valid bool
 		if num, den, valid = parseTimeBase(n, d); !valid {
-			return times, i, parseError(model.FFMetadataChapters, line, "The chapter time base "+n+"/"+d+" is not valid.")
+			return times, i, parseError(model.FFMetadataChapters, line, "the chapter time base "+n+"/"+d+" is not valid")
 		}
 		times.timeBase = strconv.FormatInt(num, 10) + "/" + strconv.FormatInt(den, 10)
 		i++
@@ -337,16 +337,18 @@ func buildFFMetadata(s *model.Subtitle, global *model.Data, streams []any, chapt
 			ends[i] = &ch.end
 		}
 	}
-	s.AddCues(endChapters(cues, ends, media)...)
+	if err := s.AddCues(endChapters(cues, ends, media)...); err != nil {
+		return err
+	}
 	return nil
 }
 
 // WriteFFMetadata writes the ;FFMETADATA1 text of FFmpeg. It takes the global tags, the stream tags, the time base
 // and the other chapter tags from the format data "ffmeta-chapters".
-func WriteFFMetadata(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WriteFFMetadata(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.FFMetadataChapters, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	fileData, _ := s.FormatData(ffmetaKey)
 	var b strings.Builder
@@ -366,9 +368,9 @@ func WriteFFMetadata(w io.Writer, s *model.Subtitle, common model.CommonWriteOpt
 		}
 		num, den, ok := splitTimeBase(timeBase)
 		if !ok {
-			return &model.UnwritableError{
+			return WriteReport{}, &model.UnwritableError{
 				Format: model.FFMetadataChapters, CueIndex: i,
-				Reason: "The stored time base " + timeBase + " has a number beyond 9223372036854775807.",
+				Reason: "the stored time base " + timeBase + " has a number beyond 9223372036854775807",
 			}
 		}
 		fmt.Fprintf(&b, "[CHAPTER]\nTIMEBASE=%s\nSTART=%d\nEND=%d\n", timeBase, timeTicks(c.Start, num, den), timeTicks(c.End, num, den))
@@ -384,7 +386,7 @@ func WriteFFMetadata(w io.Writer, s *model.Subtitle, common model.CommonWriteOpt
 		}
 		writeTags(&b, tags)
 	}
-	return writing.Write(w, model.FFMetadataChapters, []byte(b.String()), common, false)
+	return WriteReport{}, writing.Write(w, model.FFMetadataChapters, []byte(b.String()), common, false)
 }
 
 type tag struct{ key, value string }

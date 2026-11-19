@@ -6,10 +6,13 @@ import (
 	"math"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const defaultLastCueDuration = 5 * time.Second
@@ -88,7 +91,7 @@ func (s *State) warn(msg string, line int, action model.WarningAction) {
 
 // Fail returns err unchanged when it holds no *model.ParseError. In strict mode it returns the parse error, with
 // the format of the read when it has none. In lenient mode it records a Skipped warning with the message of the
-// parse error and returns nil. With line NoLine, the message ends with the line of the parse error.
+// parse error as a sentence and returns nil. With line NoLine, the message ends with the line of the parse error.
 func (s *State) Fail(err error, line, block int, lines []string) error {
 	var perr *model.ParseError
 	if !errors.As(err, &perr) {
@@ -102,7 +105,7 @@ func (s *State) Fail(err error, line, block int, lines []string) error {
 		withFormat.Format = s.format
 		return &withFormat
 	}
-	msg := perr.Msg
+	msg := Sentence(perr.Msg)
 	if msg == "" && perr.Err != nil {
 		msg = perr.Err.Error()
 	}
@@ -113,6 +116,26 @@ func (s *State) Fail(err error, line, block int, lines []string) error {
 	return nil
 }
 
+// Capitalize returns msg with its first letter in upper case. A message that follows an earlier sentence of an
+// error message starts this way.
+func Capitalize(msg string) string {
+	r, size := utf8.DecodeRuneInString(msg)
+	if size == 0 {
+		return msg
+	}
+	return string(unicode.ToUpper(r)) + msg[size:]
+}
+
+// Sentence returns the message of an error as the sentence of a warning: the first letter in upper case and a final
+// period. A lenient read records the sentence, because ParseWarning.Message is a full sentence.
+func Sentence(msg string) string {
+	msg = Capitalize(msg)
+	if msg != "" && !strings.HasSuffix(msg, ".") {
+		msg += "."
+	}
+	return msg
+}
+
 // OrderedTimes returns start and end when end is not before start. Strict mode returns an error otherwise.
 // Lenient mode swaps the times and warns when canSwap is true and the cue then lasts 30 s or less, else it
 // returns the error too, for the caller to pass to Fail.
@@ -120,11 +143,11 @@ func (s *State) OrderedTimes(start, end time.Duration, line, block int, lines []
 	if end >= start {
 		return start, end, nil
 	}
-	msg := "The cue ends at " + timecode.Seconds(end) + " s, before it starts at " + timecode.Seconds(start) + " s."
+	msg := "the cue ends at " + timecode.Seconds(end) + " s, before it starts at " + timecode.Seconds(start) + " s"
 	if !s.Lenient() || !canSwap || start-end > MaxSwappedDuration {
 		return 0, 0, &model.ParseError{Format: s.format, Line: line, Msg: msg}
 	}
-	s.Warn(msg+" The parser swapped the times.", line, block, lines, model.Repaired)
+	s.Warn(Sentence(msg)+" The parser swapped the times.", line, block, lines, model.Repaired)
 	return end, start, nil
 }
 
@@ -143,7 +166,7 @@ func EndAfter(start, d time.Duration) time.Duration {
 	return min(end.Round(time.Millisecond), timecode.MaxValidTime)
 }
 
-// NoCues returns the error "The file has text but no cues." at the line that textLine finds,
+// NoCues returns the error "the file has text but no cues" at the line that textLine finds,
 // when the read gave no cue and skipped no block. Lenient mode records a skipped warning instead.
 // Only a reader that skips unknown text without an error calls it.
 func (s *State) NoCues(cues int, textLine func() (int, bool)) error {
@@ -154,5 +177,5 @@ func (s *State) NoCues(cues int, textLine func() (int, bool)) error {
 	if !ok {
 		return nil
 	}
-	return s.Fail(&model.ParseError{Format: s.format, Line: line, Msg: "The file has text but no cues."}, line, model.NoBlock, nil)
+	return s.Fail(&model.ParseError{Format: s.format, Line: line, Msg: "the file has text but no cues"}, line, model.NoBlock, nil)
 }

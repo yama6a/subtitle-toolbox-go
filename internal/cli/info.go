@@ -9,8 +9,8 @@ import (
 	"slices"
 	"strconv"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/stats"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/inspect/stats"
 )
 
 // infoCommand prints the format, the source encoding, the cue count, the warnings, the statistics and the metadata

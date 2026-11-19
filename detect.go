@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textenc"
 )
 
 // ContainerHeadSize is the number of bytes at the start of a file that Detect needs to find a container: 2*192+5.

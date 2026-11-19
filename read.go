@@ -10,8 +10,8 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/extfallback"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/extfallback"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textenc"
 )
 
 // Load reads the subtitle file at path. On error the subtitle is nil and ReadInfo is the zero value.
@@ -70,7 +70,7 @@ func Parse(r io.ReaderAt, size int64, opts ReadOptions) (*Subtitle, ReadInfo, er
 }
 
 // noFormat is the message of a read whose format detection found nothing.
-const noFormat = "Format detection found no subtitle format."
+const noFormat = "format detection found no subtitle format"
 
 // parse reads the input. path is "" for Parse, which has no extension to fall back to. open is nil for Parse, which
 // finds no second file of a VobSub pair.
@@ -80,7 +80,7 @@ func parse(r io.ReaderAt, size int64, path string, open openFunc, opts ReadOptio
 		return nil, ReadInfo{}, err
 	}
 	if c, ok := containerOf(head); ok {
-		subject := "The content"
+		subject := "the content"
 		if path != "" {
 			subject = path
 		}
@@ -89,7 +89,7 @@ func parse(r io.ReaderAt, size int64, path string, open openFunc, opts ReadOptio
 	if opts.Track != 0 {
 		return nil, ReadInfo{}, &InvalidArgumentError{
 			Option: "ReadOptions.Track",
-			Msg:    "Only MKV, WebM, MP4 and MPEG-TS files have tracks.",
+			Msg:    "only MKV, WebM, MP4 and MPEG-TS files have tracks",
 		}
 	}
 	content := head
@@ -105,7 +105,7 @@ func parse(r io.ReaderAt, size int64, path string, open openFunc, opts ReadOptio
 // bytes than size when r holds less data than size says.
 func readHead(r io.ReaderAt, size int64) ([]byte, error) {
 	if size < 0 {
-		return nil, &InvalidArgumentError{Msg: fmt.Sprintf("The size must be 0 or more, got %d.", size)}
+		return nil, &InvalidArgumentError{Msg: fmt.Sprintf("the size must be 0 or more, got %d", size)}
 	}
 	head := make([]byte, min(size, ContainerHeadSize))
 	if len(head) == 0 {
@@ -280,7 +280,7 @@ func formatOf(text []byte, path string) (f Format, empty bool, err error) {
 		return extfallback.Profile(detected, path), false, nil
 	}
 	if !ok {
-		return "", false, fmt.Errorf("%w: %s", ErrUnknownFormat, noFormat)
+		return "", false, fmt.Errorf("%w: %s", ErrNoFormatDetected, noFormat)
 	}
 	return f, false, nil
 }
@@ -343,7 +343,7 @@ func readable(f Format) error {
 	case f.CanRead():
 		return nil
 	default:
-		return unsupported("The format " + string(f) + " can be written but not read.")
+		return unsupported("the format " + string(f) + " can be written but not read")
 	}
 }
 
@@ -357,13 +357,13 @@ func Write(w io.Writer, s *Subtitle, f Format, opts WriteOptions) (WriteReport, 
 	case !slices.Contains(Formats(), f):
 		return WriteReport{}, notAFormat(f)
 	case !f.CanWrite():
-		return WriteReport{}, unsupported("The format " + string(f) + " can be read but not written.")
+		return WriteReport{}, unsupported("the format " + string(f) + " can be read but not written")
 	}
 	return writeFormat(w, s, f, opts)
 }
 
 func notAFormat(f Format) error {
-	return unsupported("The format " + strconv.Quote(string(f)) + " is unknown.")
+	return unsupported("the format " + strconv.Quote(string(f)) + " is unknown")
 }
 
 // unsupported keeps msg as the full sentence, as docs/errors.md says.

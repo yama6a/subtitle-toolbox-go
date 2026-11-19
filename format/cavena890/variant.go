@@ -8,9 +8,9 @@ import (
 	"unicode/utf16"
 	"unicode/utf8"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/codepage"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/codepage"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 	"golang.org/x/text/encoding/charmap"
 )
 
@@ -174,7 +174,7 @@ func (v variant) encode(line string, stripTags bool, cueIndex int) ([]byte, erro
 	if len(out) > textSize {
 		return nil, &model.UnwritableError{
 			Format: model.Cavena890, CueIndex: cueIndex,
-			Reason: fmt.Sprintf("Cavena 890 holds %d bytes per line, got %d for \"%s\".", textSize, len(out), line),
+			Reason: fmt.Sprintf("Cavena 890 holds %d bytes per line, got %d for \"%s\"", textSize, len(out), line),
 		}
 	}
 	pad := byte(filler)

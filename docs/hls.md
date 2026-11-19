@@ -1,6 +1,6 @@
 # HLS subtitles
 
-HTTP Live Streaming (HLS) delivers a subtitle track as WebVTT segment files that an `.m3u8` media playlist lists. Package `hls` cuts a subtitle into such segments and joins downloaded segments into one subtitle. Example: `stbox hls film.srt --output-dir subs --segment 6` writes `subs/sub0.vtt`, `subs/sub1.vtt` and more, and `subs/subs.m3u8` with one `#EXTINF:6.000,` line per segment.
+HTTP Live Streaming (HLS) delivers a subtitle track as WebVTT segment files that an `.m3u8` media playlist lists. Package `format/hls` cuts a subtitle into such segments and joins downloaded segments into one subtitle. Example: `stbox hls film.srt --output-dir subs --segment 6` writes `subs/sub0.vtt`, `subs/sub1.vtt` and more, and `subs/subs.m3u8` with one `#EXTINF:6.000,` line per segment.
 
 ## Timestamp map
 
@@ -20,11 +20,15 @@ Each segment starts with a header `X-TIMESTAMP-MAP=LOCAL:00:00:00.000,MPEGTS:900
 
 `hls.Segment(s, opts)` returns a `*hls.Rendition`. It writes no segment yet. `EachSegment` writes one segment at a time and calls a function with its file name and content, so the memory does not grow with the media duration. Each call writes the segments again.
 
-<!-- example: hls/ExampleSegment -->
+<!-- example: format/hls/ExampleSegment -->
 ```go
 var s model.Subtitle
-s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"The ferry leaves at noon."}})
-s.AddCue(model.Cue{Start: 5 * time.Second, End: 7500 * time.Millisecond, Lines: []string{"Please keep your tickets ready."}})
+if err := s.AddCue(model.Cue{Start: time.Second, End: 3 * time.Second, Lines: []string{"The ferry leaves at noon."}}); err != nil {
+	panic(err)
+}
+if err := s.AddCue(model.Cue{Start: 5 * time.Second, End: 7500 * time.Millisecond, Lines: []string{"Please keep your tickets ready."}}); err != nil {
+	panic(err)
+}
 
 r, err := hls.Segment(&s, hls.SegmentOptions{})
 if err != nil {
@@ -88,7 +92,7 @@ fmt.Print(string(r.Playlist()))
 
 `hls.Join(segments, hls.JoinOptions{})` reads the segments in playlist order and returns one subtitle. The caller passes the content of each segment. The package fetches nothing and reads no playlist.
 
-<!-- example: hls/ExampleJoin -->
+<!-- example: format/hls/ExampleJoin -->
 ```go
 segments := [][]byte{
 	[]byte("WEBVTT\nX-TIMESTAMP-MAP=LOCAL:00:00:00.000,MPEGTS:900000\n\n00:00:04.000 --> 00:00:06.000\nAll aboard.\n"),

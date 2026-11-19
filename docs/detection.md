@@ -15,8 +15,8 @@ Before step 1, `Detect` looks for a video container in the raw bytes. A containe
 - **Format packages**: each `Detect` of a format package gets the content after steps 2 and 4. So a SubRip file with a BOM and CR LF line endings detects.
 - **Bad UTF-8 in JSON**: `encoding/json` reads each bad byte in a JSON string as U+FFFD, so the decode goes on.
 - **PGS**: a BOM or white space before the header hides the PGS signature, because step 1 reads the raw bytes. A `.sup` file has none. `Load` also reads a file with the extension `.sup` as PGS when no signature matches, because only PGS lists `.sup`.
-- **Never detected**: `Detect` returns only formats that it can find. `Format.IsAutoDetected` says the same, but it is deprecated and version 5 removes it.
-- **No signature**: Cavena 890 has none, so `Detect` finds no result for a `.890` file. `Load` reads it by its extension before any decoding, step 3 below. `Parse` without `ReadOptions.Format` returns `ErrUnknownFormat`.
+- **Never detected**: `Detect` returns only formats with a signature or a JSON check, in the order of this page.
+- **No signature**: Cavena 890 has none, so `Detect` finds no result for a `.890` file. `Load` reads it by its extension before any decoding, step 3 below. `Parse` without `ReadOptions.Format` returns `ErrNoFormatDetected`.
 
 ## JSON checks
 
@@ -94,7 +94,7 @@ Before step 1, `Detect` looks for a video container in the raw bytes. A containe
 | 6 | **Detect** the format of the decoded content |
 | 7 | **Profile by extension**: when `Detect` gives TTML and the extension is `.itt`, `Load` reads the file as iTT |
 | 8 | **Extension fallback**: without a detection result, `Load` uses `FormatFromPath`, when the library can read that format and the extension is not `json`, `txt` or `ffmeta`. CSV and TSV have no signature, so `.csv` and `.tsv` files load only by this step. A binary format from this step reads the raw bytes, not the decoded text |
-| 9 | **No format**: an error that matches `ErrUnknownFormat`, with `Format detection found no subtitle format.` `Parse` has no path, so it skips steps 3, 5, 7 and 8 |
+| 9 | **No format**: an error that matches `ErrNoFormatDetected`, with `format detection found no subtitle format`. `Parse` has no path, so it skips steps 3, 5, 7 and 8 |
 
 | Head | Bytes |
 |:--- |:--- |

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const htmlBenchParagraphs = 12000
@@ -47,7 +47,7 @@ func BenchmarkWriteHTML(b *testing.B) {
 	b.Run(fmt.Sprintf("paragraphs=%d", htmlBenchParagraphs), func(b *testing.B) {
 		b.ReportAllocs()
 		for b.Loop() {
-			if err := transcript.WriteHTML(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+			if _, err := transcript.WriteHTML(io.Discard, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 				b.Fatal(err)
 			}
 		}

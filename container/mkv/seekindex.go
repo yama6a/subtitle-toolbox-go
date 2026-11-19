@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/container/mkv/internal/ebml"
+	"github.com/yama6a/subtitle-toolbox-go/v5/container/mkv/internal/ebml"
 )
 
 var errIncompleteCue = errors.New("a CueTrackPositions without a cluster or block position")

@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/youtube"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/youtube"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Ports testSrv3WindowPositionsAndPens of tests/Parsers/YouTubeTimedTextParserTest.php of subtitle-toolbox-php.
@@ -99,10 +99,10 @@ func TestReadSrv3Errors(t *testing.T) {
 		name, content, want string
 		line                int
 	}{
-		{"no t", `<timedtext format="3"><body><p d="1">a</p></body></timedtext>`, `The <p> element has no valid "t" attribute.`, 1},
-		{"a bad t on line 3", "<timedtext format=\"3\"><body>\n<p t=\"0\" d=\"1\">a</p>\n<p t=\"soon\">b</p>\n</body></timedtext>", `The <p> element has no valid "t" attribute.`, 3},
-		{"a bad span offset", `<timedtext format="3"><body><p t="0"><s t="-5">a</s></p></body></timedtext>`, `The <s> element has no valid "t" attribute.`, 1},
-		{"a span offset over the limit", `<timedtext format="3"><body><p t="359999999999"><s t="2000000">a</s></p></body></timedtext>`, `The time "2000000" is not below 100000 hours.`, 1},
+		{"no t", `<timedtext format="3"><body><p d="1">a</p></body></timedtext>`, `the <p> element has no valid "t" attribute`, 1},
+		{"a bad t on line 3", "<timedtext format=\"3\"><body>\n<p t=\"0\" d=\"1\">a</p>\n<p t=\"soon\">b</p>\n</body></timedtext>", `the <p> element has no valid "t" attribute`, 3},
+		{"a bad span offset", `<timedtext format="3"><body><p t="0"><s t="-5">a</s></p></body></timedtext>`, `the <s> element has no valid "t" attribute`, 1},
+		{"a span offset over the limit", `<timedtext format="3"><body><p t="359999999999"><s t="2000000">a</s></p></body></timedtext>`, `the time "2000000" is not below 100000 hours`, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -124,7 +124,7 @@ func TestReadSrv3LenientReadsTextBeforeTheXML(t *testing.T) {
 	_, _, err := youtube.Read(strings.NewReader(src), model.CommonReadOptions{}, youtube.ReadOptions{})
 	var perr *model.ParseError
 	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, `The file has text before the XML: "Captions by the harbour film club".`, perr.Msg)
+	assert.Equal(t, `the file has text before the XML: "Captions by the harbour film club"`, perr.Msg)
 	assert.Equal(t, 1, perr.Line)
 
 	s, warnings, err := youtube.Read(strings.NewReader(src), model.CommonReadOptions{Lenient: true}, youtube.ReadOptions{})

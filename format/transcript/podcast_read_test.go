@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func readPodcast(t *testing.T, content string, opts transcript.ReadOptions) *model.Subtitle {
@@ -147,22 +147,22 @@ func TestReadPodcastErrors(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct{ name, content, want string }{
-		{"no JSON", "{", "The content is not valid JSON: Syntax error."},
-		{"root list", "[1]", "The JSON root must be an object."},
-		{"no segments", `{"version": "1.0.0"}`, `The JSON has no "segments" list.`},
-		{"segments as an object", `{"segments": {"0": {"startTime": 0, "body": "a"}}}`, `The JSON has no "segments" list.`},
-		{"segment no object", `{"segments": ["x"]}`, "The field segments[0] must be an object."},
-		{"segment an empty list", `{"segments": [[]]}`, "The field segments[0] must be an object."},
-		{"start a string", `{"segments": [{"startTime": 0, "body": "Hi"}, {"startTime": "0:01", "body": "Bye"}]}`, "The field segments[1].startTime must be a number."},
-		{"no start", `{"segments": [{"body": "Hi"}]}`, "The field segments[0].startTime must be a number."},
-		{"negative start", `{"segments": [{"startTime": -1, "body": "Hi"}]}`, "The field segments[0].startTime must be a number."},
-		{"end a string", `{"segments": [{"startTime": 0, "endTime": "1", "body": "Hi"}]}`, "The field segments[0].endTime must be a number."},
-		{"speaker a number", `{"segments": [{"startTime": 0, "speaker": 7, "body": "Hi"}]}`, "The field segments[0].speaker must be a string."},
-		{"body a number", `{"segments": [{"startTime": 0, "body": 7}]}`, "The field segments[0].body must be a string."},
-		{"type errors come before limit errors", `{"segments": [{"startTime": 1e12, "body": 7}]}`, "The field segments[0].body must be a string."},
-		{"start of 100000 hours", `{"segments": [{"startTime": 360000000, "body": "Hi"}]}`, "The field segments[0].startTime is not below 100000 hours."},
-		{"end of 100000 hours", `{"segments": [{"startTime": 0, "endTime": 359999999.9996, "body": "Hi"}]}`, "The field segments[0].endTime is not below 100000 hours."},
-		{"end before start", `{"segments": [{"startTime": 2, "endTime": 1.5, "body": "Hi"}]}`, "The cue ends at 1.5 s, before it starts at 2 s."},
+		{"no JSON", "{", "the content is not valid JSON: Syntax error"},
+		{"root list", "[1]", "the JSON root must be an object"},
+		{"no segments", `{"version": "1.0.0"}`, `the JSON has no "segments" list`},
+		{"segments as an object", `{"segments": {"0": {"startTime": 0, "body": "a"}}}`, `the JSON has no "segments" list`},
+		{"segment no object", `{"segments": ["x"]}`, "the field segments[0] must be an object"},
+		{"segment an empty list", `{"segments": [[]]}`, "the field segments[0] must be an object"},
+		{"start a string", `{"segments": [{"startTime": 0, "body": "Hi"}, {"startTime": "0:01", "body": "Bye"}]}`, "the field segments[1].startTime must be a number"},
+		{"no start", `{"segments": [{"body": "Hi"}]}`, "the field segments[0].startTime must be a number"},
+		{"negative start", `{"segments": [{"startTime": -1, "body": "Hi"}]}`, "the field segments[0].startTime must be a number"},
+		{"end a string", `{"segments": [{"startTime": 0, "endTime": "1", "body": "Hi"}]}`, "the field segments[0].endTime must be a number"},
+		{"speaker a number", `{"segments": [{"startTime": 0, "speaker": 7, "body": "Hi"}]}`, "the field segments[0].speaker must be a string"},
+		{"body a number", `{"segments": [{"startTime": 0, "body": 7}]}`, "the field segments[0].body must be a string"},
+		{"type errors come before limit errors", `{"segments": [{"startTime": 1e12, "body": 7}]}`, "the field segments[0].body must be a string"},
+		{"start of 100000 hours", `{"segments": [{"startTime": 360000000, "body": "Hi"}]}`, "the field segments[0].startTime is not below 100000 hours"},
+		{"end of 100000 hours", `{"segments": [{"startTime": 0, "endTime": 359999999.9996, "body": "Hi"}]}`, "the field segments[0].endTime is not below 100000 hours"},
+		{"end before start", `{"segments": [{"startTime": 2, "endTime": 1.5, "body": "Hi"}]}`, "the cue ends at 1.5 s, before it starts at 2 s"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

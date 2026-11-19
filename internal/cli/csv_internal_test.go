@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/csv"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/csv"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
 )
 
 const framesCSV = "csv/own_frame_times.csv"
@@ -39,7 +39,7 @@ func TestCSVFrameTimesNeedARate(t *testing.T) {
 	dir := fixtureDir(t, map[string]string{"frames.csv": framesCSV})
 	want := result{
 		Code:   exitFile,
-		Stderr: `frames.csv: line 2: The time "00:00:01:12" counts frames and needs a frame rate. Pass --fps or --input-fps.` + "\n" + lenientHint + "\n",
+		Stderr: `frames.csv: line 2: the time "00:00:01:12" counts frames and needs a frame rate. Pass --fps or --input-fps.` + "\n" + lenientHint + "\n",
 	}
 	assert.Equal(t, want, call{dir: dir}.run(t, "convert", "frames.csv", "--to", "srt", "-o", "-"))
 	assert.Equal(t, want, call{dir: dir}.run(t, "info", "frames.csv"))

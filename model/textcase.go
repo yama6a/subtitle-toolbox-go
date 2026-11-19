@@ -8,7 +8,7 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
 )
 
 // CaseMode is the target case of ChangeCase.
@@ -55,7 +55,7 @@ func (s *Subtitle) ChangeCase(mode CaseMode, language string) error {
 	case CaseSentence:
 		s.sentenceCase(turkic, language == "" || markupcore.PrimaryLanguage(language) == "en")
 	default:
-		return invalidArgument(fmt.Sprintf("The case mode %s is not upper, lower or sentence.", quote(string(mode))))
+		return invalidArgument(fmt.Sprintf("the case mode %s is not upper, lower or sentence", quote(string(mode))))
 	}
 	return nil
 }

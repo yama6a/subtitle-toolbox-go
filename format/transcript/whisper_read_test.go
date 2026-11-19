@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const twoSegmentsWithWords = `{
@@ -179,37 +179,37 @@ func TestReadWhisperErrors(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct{ name, content, want string }{
-		{"no JSON", "{", "The content is not valid JSON: Syntax error."},
-		{"root list", "[1]", "The JSON root must be an object."},
-		{"empty root list", "[]", "The JSON root must be an object."},
-		{"only text", `{"text": "Hello"}`, `The JSON has no "segments" or "transcription" list.`},
-		{"only words", `{"words": [{"word": "Hi", "start": 0, "end": 1}]}`, `The JSON has no "segments" or "transcription" list.`},
-		{"segments as an object", `{"segments": {"0": {"start": 0, "end": 1, "text": "a"}}}`, `The JSON has no "segments" or "transcription" list.`},
-		{"start no number", `{"segments": [{"start": "0", "end": 1, "text": "Hi"}]}`, "The field segments[0].start must be a number."},
-		{"segment no object", `{"segments": [5]}`, "The field segments[0].start must be a number."},
-		{"no text", `{"segments": [{"start": 0, "end": 1}]}`, "The field segments[0].text must be a string."},
-		{"text a number", `{"segments": [{"start": 0, "end": 1, "text": 5}]}`, "The field segments[0].text must be a string."},
-		{"whisper.cpp offsets", `{"transcription": [{"offsets": {"from": 0}, "text": "Hi"}]}`, "The field transcription[0].offsets.to must be a number."},
-		{"whisper.cpp no offsets", `{"transcription": [{"text": "Hi"}]}`, "The field transcription[0].offsets.from must be a number."},
-		{"negative start", `{"segments": [{"id": 0, "start": -0.5, "end": 1.0, "text": "Hello there"}]}`, "The field segments[0].start must be a time of 0 or more."},
-		{"negative offsets", `{"transcription": [{"offsets": {"from": -500, "to": 1000}, "text": "Hi"}]}`, "The field transcription[0].offsets.from must be a time of 0 or more."},
-		{"a number out of range", `{"segments": [{"start": 0, "end": 1e400, "text": "Hi"}]}`, "The field segments[0].end must be a number."},
-		{"start of 100000 hours", `{"segments": [{"start": 360000000, "end": 360000001, "text": "Hi"}]}`, "The field segments[0].start is not below 100000 hours."},
-		{"start that rounds to 100000 hours", `{"segments": [{"start": 359999999.9996, "end": 360000000, "text": "Hi"}]}`, "The field segments[0].start is not below 100000 hours."},
-		{"offset of 100000 hours", `{"transcription": [{"offsets": {"from": 0, "to": 360000000000}, "text": "Hi"}]}`, "The field transcription[0].offsets.to is not below 100000 hours."},
+		{"no JSON", "{", "the content is not valid JSON: Syntax error"},
+		{"root list", "[1]", "the JSON root must be an object"},
+		{"empty root list", "[]", "the JSON root must be an object"},
+		{"only text", `{"text": "Hello"}`, `the JSON has no "segments" or "transcription" list`},
+		{"only words", `{"words": [{"word": "Hi", "start": 0, "end": 1}]}`, `the JSON has no "segments" or "transcription" list`},
+		{"segments as an object", `{"segments": {"0": {"start": 0, "end": 1, "text": "a"}}}`, `the JSON has no "segments" or "transcription" list`},
+		{"start no number", `{"segments": [{"start": "0", "end": 1, "text": "Hi"}]}`, "the field segments[0].start must be a number"},
+		{"segment no object", `{"segments": [5]}`, "the field segments[0].start must be a number"},
+		{"no text", `{"segments": [{"start": 0, "end": 1}]}`, "the field segments[0].text must be a string"},
+		{"text a number", `{"segments": [{"start": 0, "end": 1, "text": 5}]}`, "the field segments[0].text must be a string"},
+		{"whisper.cpp offsets", `{"transcription": [{"offsets": {"from": 0}, "text": "Hi"}]}`, "the field transcription[0].offsets.to must be a number"},
+		{"whisper.cpp no offsets", `{"transcription": [{"text": "Hi"}]}`, "the field transcription[0].offsets.from must be a number"},
+		{"negative start", `{"segments": [{"id": 0, "start": -0.5, "end": 1.0, "text": "Hello there"}]}`, "the field segments[0].start must be a time of 0 or more"},
+		{"negative offsets", `{"transcription": [{"offsets": {"from": -500, "to": 1000}, "text": "Hi"}]}`, "the field transcription[0].offsets.from must be a time of 0 or more"},
+		{"a number out of range", `{"segments": [{"start": 0, "end": 1e400, "text": "Hi"}]}`, "the field segments[0].end must be a number"},
+		{"start of 100000 hours", `{"segments": [{"start": 360000000, "end": 360000001, "text": "Hi"}]}`, "the field segments[0].start is not below 100000 hours"},
+		{"start that rounds to 100000 hours", `{"segments": [{"start": 359999999.9996, "end": 360000000, "text": "Hi"}]}`, "the field segments[0].start is not below 100000 hours"},
+		{"offset of 100000 hours", `{"transcription": [{"offsets": {"from": 0, "to": 360000000000}, "text": "Hi"}]}`, "the field transcription[0].offsets.to is not below 100000 hours"},
 		{
 			"word start of 100000 hours", `{"segments": [{"start": 0, "end": 1, "text": "a", "words": [{"word": "a", "start": 1e12}]}]}`,
-			"The field segments[0].words[0].start is not below 100000 hours.",
+			"the field segments[0].words[0].start is not below 100000 hours",
 		},
 		{
 			"top-level word start of 100000 hours",
 			`{"segments": [{"start": 0, "end": 1, "text": "a"}], "words": [{"word": "a", "start": 0}, {"word": "b", "start": 1e12}]}`,
-			"The field words[1].start is not below 100000 hours.",
+			"the field words[1].start is not below 100000 hours",
 		},
 		{
 			"token start of 100000 hours",
 			`{"transcription": [{"offsets": {"from": 0, "to": 1}, "text": "a", "tokens": [{"text": "[_BEG_]"}, {"text": " a", "offsets": {"from": 1e15}}]}]}`,
-			"The field transcription[0].tokens[1].offsets.from is not below 100000 hours.",
+			"the field transcription[0].tokens[1].offsets.from is not below 100000 hours",
 		},
 	}
 	for _, tt := range tests {
@@ -232,7 +232,7 @@ func TestReadWhisperOutOfRangeFile(t *testing.T) {
 	_, _, err := transcript.ReadWhisper(strings.NewReader(content), model.CommonReadOptions{}, transcript.ReadOptions{})
 	var perr *model.ParseError
 	require.ErrorAs(t, err, &perr)
-	assert.Equal(t, "The field segments[1].start must be a number.", perr.Msg)
+	assert.Equal(t, "the field segments[1].start must be a number", perr.Msg)
 
 	s, warnings, err := transcript.ReadWhisper(strings.NewReader(content), model.CommonReadOptions{Lenient: true}, transcript.ReadOptions{})
 	require.NoError(t, err)
@@ -369,7 +369,7 @@ func TestReadWhisperWordFields(t *testing.T) {
 	}
 }
 
-func TestReadWhisperWordWithOddSpaceRoundTrips(t *testing.T) {
+func TestReadWhisperWordWithOddSpaceHoldsAPlainSpace(t *testing.T) {
 	t.Parallel()
 
 	for _, space := range []string{"\u00a0", "\u2003"} {
@@ -379,12 +379,13 @@ func TestReadWhisperWordWithOddSpaceRoundTrips(t *testing.T) {
 			content := `{"segments": [{"start": 0, "end": 3, "text": " a` + space + `b c", "words": [` +
 				`{"word": " a` + space + `b", "start": 0, "end": 1}, {"word": " c", "start": 1, "end": 2}]}]}`
 			c, _ := readWhisper(t, content, withWords).Cue(0)
-			want := []model.Word{{Text: "a" + space + "b", Start: 0, End: ms(1000)}, {Text: "c", Start: ms(1000), End: ms(2000)}}
+			want := []model.Word{{Text: "a b", Start: 0, End: ms(1000)}, {Text: "c", Start: ms(1000), End: ms(2000)}}
 			assert.Equal(t, want, c.Words)
 
 			var out bytes.Buffer
 			s := readWhisper(t, content, withWords)
-			require.NoError(t, transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}))
+			_, err := transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{})
+			require.NoError(t, err)
 			again, _ := readWhisper(t, out.String(), withWords).Cue(0)
 			assert.Equal(t, want, again.Words)
 		})

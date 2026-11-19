@@ -9,11 +9,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/mcc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/scc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/caption/cea708"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/mcc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/scc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/caption/cea708"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const (
@@ -149,35 +150,35 @@ func TestReadErrors(t *testing.T) {
 	}{
 		{
 			name: "no header", content: "\nScenarist_SCC V1.0\n", line: 2,
-			msg: `An MCC file must start with the line "File Format=MacCaption_MCC V2.0" or "File Format=MacCaption_MCC V1.0".`,
+			msg: `an MCC file must start with the line "File Format=MacCaption_MCC V2.0" or "File Format=MacCaption_MCC V1.0"`,
 		},
 		{
 			name: "unknown version", content: "File Format=MacCaption_MCC V3.0\n", line: 1,
-			msg: "The MCC version 3.0 is unknown. The parser reads 1.0 and 2.0.",
+			msg: "the MCC version 3.0 is unknown. The parser reads 1.0 and 2.0",
 		},
-		{name: "no time code", content: header2 + "captions\n", line: 4, msg: `The MCC line "captions" does not start with a time code.`},
-		{name: "invalid letter", content: header2 + data("T49SV") + "\n", line: 4, msg: `The MCC data has the invalid character "V" at position 5.`},
-		{name: "half a byte", content: header2 + data("T4") + "\n", line: 4, msg: "The MCC data ends with half a byte."},
-		{name: "no CDP identifier", content: header2 + data("T0A9670ZZZZZZZZZZZZZZ") + "\n", line: 4, msg: "The data holds no caption distribution packet."},
+		{name: "no time code", content: header2 + "captions\n", line: 4, msg: `the MCC line "captions" does not start with a time code`},
+		{name: "invalid letter", content: header2 + data("T49SV") + "\n", line: 4, msg: `the MCC data has the invalid character "V" at position 5`},
+		{name: "half a byte", content: header2 + data("T4") + "\n", line: 4, msg: "the MCC data ends with half a byte"},
+		{name: "no CDP identifier", content: header2 + data("T0A9670ZZZZZZZZZZZZZZ") + "\n", line: 4, msg: "the data holds no caption distribution packet"},
 		{
 			name: "short cc_data", content: header2 + data("T0BS0B4F43ZZ72F4FC") + "\n", line: 4,
-			msg: "The caption distribution packet is shorter than its 20 cc_data triplets.",
+			msg: "the caption distribution packet is shorter than its 20 cc_data triplets",
 		},
 		{
 			name: "no Time Code Rate", content: "File Format=MacCaption_MCC V2.0\n\n" + data(packet(edm)) + "\n", repaired: true,
-			msg: "The MCC file has no Time Code Rate line.",
+			msg: "the MCC file has no Time Code Rate line",
 		},
 		{
 			name: "unknown Time Code Rate", content: "File Format=MacCaption_MCC V2.0\nTime Code Rate=25DF\n", repaired: true,
-			msg: `The MCC Time Code Rate "25DF" is unknown.`,
+			msg: `the MCC Time Code Rate "25DF" is unknown`,
 		},
 		{
 			name: "time above 100000 hours", content: header2 + "100001:00:00:00\t" + packet(edm) + "\n", line: 4,
-			msg: `The time "100001:00:00:00" is not below 100000 hours.`,
+			msg: `the time "100001:00:00:00" is not below 100000 hours`,
 		},
 		{
 			name: "time of 999998 hours", content: header2 + "999998:00:00:00\t" + packet(edm) + "\n", line: 4,
-			msg: `The time "999998:00:00:00" is not below 100000 hours.`,
+			msg: `the time "999998:00:00:00" is not below 100000 hours`,
 		},
 		{name: "time below the limit with 5 hour digits", content: header2 + "99999:59:59:00\t" + packet(edm) + "\n", clean: true},
 		{name: "AFD packet", content: header2 + data("4105080800000000000000005E") + "\n", clean: true},
@@ -212,14 +213,14 @@ func TestReadErrors(t *testing.T) {
 				assert.Empty(t, warnings)
 			case tt.repaired:
 				require.Len(t, warnings, 1)
-				assert.Equal(t, tt.msg+" The parser read 30DF.", warnings[0].Message)
+				assert.Equal(t, parsing.Sentence(tt.msg)+" The parser read 30DF.", warnings[0].Message)
 				assert.Equal(t, model.Repaired, warnings[0].Action)
 				file, _ := s.FormatData("mcc")
 				dropFrame, _ := file.Bool("dropFrame")
 				assert.True(t, dropFrame)
 			default:
 				require.Len(t, warnings, 1)
-				assert.Equal(t, tt.msg, warnings[0].Message)
+				assert.Equal(t, parsing.Sentence(tt.msg), warnings[0].Message)
 				assert.Equal(t, 4, warnings[0].Line)
 				assert.Equal(t, model.Skipped, warnings[0].Action)
 			}

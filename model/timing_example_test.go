@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleSubtitle_AddLeadInOut() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: time.Second, End: 2 * time.Second, Lines: []string{"Is the ferry running today?"}},
 		model.Cue{Start: 2100 * time.Millisecond, End: 3 * time.Second, Lines: []string{"Only the morning one."}},
-	)
+	); err != nil {
+		panic(err)
+	}
 
 	if err := s.AddLeadInOut(200*time.Millisecond, 300*time.Millisecond, 40*time.Millisecond); err != nil {
 		fmt.Println(err)
@@ -29,10 +31,12 @@ func ExampleSubtitle_AddLeadInOut() {
 
 func ExampleSubtitle_FixOverlaps() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: time.Second, End: 5200 * time.Millisecond, Lines: []string{"Where is the harbour?"}},
 		model.Cue{Start: 5100 * time.Millisecond, End: 7 * time.Second, Lines: []string{"Down the hill."}},
-	)
+	); err != nil {
+		panic(err)
+	}
 
 	if err := s.FixOverlaps(time.Second * 2 / 24); err != nil {
 		fmt.Println(err)
@@ -49,10 +53,12 @@ func ExampleSubtitle_FixOverlaps() {
 
 func ExampleSubtitle_ExtendShortCues() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: time.Second, End: 1300 * time.Millisecond, Lines: []string{"Yes."}},
 		model.Cue{Start: 1500 * time.Millisecond, End: 3 * time.Second, Lines: []string{"Then we go."}},
-	)
+	); err != nil {
+		panic(err)
+	}
 
 	if err := s.ExtendShortCues(time.Second, 100*time.Millisecond); err != nil {
 		fmt.Println(err)
@@ -69,7 +75,9 @@ func ExampleSubtitle_ExtendShortCues() {
 
 func ExampleSubtitle_LimitLongCues() {
 	var s model.Subtitle
-	s.AddCue(model.Cue{Start: time.Second, End: 26 * time.Second, Lines: []string{"Good morning."}})
+	if err := s.AddCue(model.Cue{Start: time.Second, End: 26 * time.Second, Lines: []string{"Good morning."}}); err != nil {
+		panic(err)
+	}
 
 	if err := s.LimitLongCues(model.DefaultMaxDuration); err != nil {
 		fmt.Println(err)
@@ -83,11 +91,13 @@ func ExampleSubtitle_LimitLongCues() {
 
 func ExampleSubtitle_MergeShortCues() {
 	var s model.Subtitle
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 62100 * time.Millisecond, End: 62600 * time.Millisecond, Lines: []string{"Wait."}},
 		model.Cue{Start: 62640 * time.Millisecond, End: 63300 * time.Millisecond, Lines: []string{"Where are you"}},
 		model.Cue{Start: 63320 * time.Millisecond, End: 64100 * time.Millisecond, Lines: []string{"going?"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 
 	if err := s.MergeShortCues(model.MergeShortCuesOptions{}); err != nil {
 		fmt.Println(err)

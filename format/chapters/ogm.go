@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const space = `[ \t\n\v\f\r]*`
@@ -53,12 +53,14 @@ func ReadOGM(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*mo
 		}
 		m := ogmName.FindStringSubmatch(line)
 		if m == nil {
-			return nil, nil, parseError(model.OGMChapters, i+1, `The line "`+line+`" is not a CHAPTERxxNAME= line.`)
+			return nil, nil, parseError(model.OGMChapters, i+1, `the line "`+line+`" is not a CHAPTERxxNAME= line`)
 		}
 		cues = append(cues, escapedCue(start, m[1]))
 		pending = false
 	}
-	s.AddCues(endChapters(cues, nil, opts.MediaDuration)...)
+	if err := s.AddCues(endChapters(cues, nil, opts.MediaDuration)...); err != nil {
+		return nil, nil, err
+	}
 	return s, st.Warnings(), nil
 }
 
@@ -66,11 +68,11 @@ func ReadOGM(r io.Reader, common model.CommonReadOptions, opts ReadOptions) (*mo
 func ogmStart(line string, number int) (time.Duration, error) {
 	m := ogmTimestamp.FindStringSubmatch(line)
 	if m == nil {
-		return 0, parseError(model.OGMChapters, number, `The line "`+line+`" is not a CHAPTERxx= line.`)
+		return 0, parseError(model.OGMChapters, number, `the line "`+line+`" is not a CHAPTERxx= line`)
 	}
 	hours, minutes, seconds := capped(m[1]), capped(m[2]), capped(m[3])
 	if minutes > 59 || seconds > 59 {
-		return 0, parseError(model.OGMChapters, number, `The line "`+line+`" has a minute or second above 59.`)
+		return 0, parseError(model.OGMChapters, number, `the line "`+line+`" has a minute or second above 59`)
 	}
 	fraction, _ := strconv.ParseInt((m[4] + "00000000")[:9], 10, 64)
 	ms := (hours*3600+minutes*60+seconds)*1000 + (fraction+500_000)/1_000_000
@@ -83,15 +85,15 @@ func ogmStart(line string, number int) (time.Duration, error) {
 }
 
 // WriteOGM writes the simple chapter format of mkvmerge. Ends are lost.
-func WriteOGM(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WriteOGM(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.OGMChapters, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	var b strings.Builder
 	for i, c := range s.All() {
 		fmt.Fprintf(&b, "CHAPTER%02d=%s\nCHAPTER%02dNAME=%s\n", i+1, markupcore.CoreTimestamp(c.Start), i+1,
 			strings.Join(markupcore.PlainLines(c.Lines), " "))
 	}
-	return writing.Write(w, model.OGMChapters, []byte(b.String()), common, false)
+	return WriteReport{}, writing.Write(w, model.OGMChapters, []byte(b.String()), common, false)
 }

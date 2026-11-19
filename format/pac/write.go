@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // Adapted from Subtitle Edit, src/libse/SubtitleFormats/Pac.cs
@@ -66,11 +66,11 @@ func Write(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ Wr
 // appendRecord appends the record of cue number index to body.
 func appendRecord(body []byte, c model.Cue, index int, number int64, codePage CodePage, rate model.FrameRate, stripTags bool) ([]byte, error) {
 	if number > maxNumber {
-		return nil, &model.UnwritableError{Format: model.PAC, CueIndex: index, Reason: "PAC allows subtitle numbers up to 65535."}
+		return nil, &model.UnwritableError{Format: model.PAC, CueIndex: index, Reason: "PAC allows subtitle numbers up to 65535"}
 	}
 	vp, text := cueText(c, codePage, stripTags)
 	if len(text) >= maxNumber {
-		return nil, &model.UnwritableError{Format: model.PAC, CueIndex: index, Reason: "PAC allows cue text of up to 65534 bytes."}
+		return nil, &model.UnwritableError{Format: model.PAC, CueIndex: index, Reason: "PAC allows cue text of up to 65534 bytes"}
 	}
 	body = append(body, recordStart)
 	body = binary.LittleEndian.AppendUint16(body, uint16(number))

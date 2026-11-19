@@ -5,9 +5,9 @@ import (
 	"slices"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/timecode"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/timecode"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // textState is the text that a screen shows from start on. No lines clear the screen.
@@ -64,7 +64,7 @@ func mergeStates(states []textState) []textState {
 func ticksToTime(number int, ticks int64) (time.Duration, error) {
 	ms := timecode.PTSMilliseconds(ticks)
 	if ms >= int64(timecode.MaxTime/time.Millisecond) {
-		return 0, &model.ParseError{Msg: fmt.Sprintf("The cue times of track %d reach %s s. Times must be below %d hours.",
+		return 0, &model.ParseError{Msg: fmt.Sprintf("the cue times of track %d reach %s s. Times must be below %d hours",
 			number, timecode.Number(float64(ms)/1000), timecode.MaxHours)}
 	}
 	return time.Duration(ms) * time.Millisecond, nil

@@ -2,7 +2,7 @@
     "name": "SubViewer 1 with minutes and seconds of 60 or more",
     "format": "subviewer",
     "strict": {
-        "error": "The time \"[00:00:75]\" is not valid.",
+        "error": "the time \"[00:00:75]\" is not valid",
         "line": 17
     },
     "cues": [

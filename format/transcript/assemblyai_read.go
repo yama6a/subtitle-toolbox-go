@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const assemblyAIKey = string(model.AssemblyAI)
@@ -26,7 +26,7 @@ func ReadAssemblyAI(r io.Reader, common model.CommonReadOptions, opts ReadOption
 	words, utterances := cloudGet(root, "words"), cloudGet(root, "utterances")
 	hasUtterances := utterances.Kind() == orderedjson.Array && len(utterances.Items()) > 0
 	if !hasUtterances && words.Kind() != orderedjson.Array {
-		return nil, nil, &model.ParseError{Format: model.AssemblyAI, Msg: `The JSON has no "words" or "utterances" list.`}
+		return nil, nil, &model.ParseError{Format: model.AssemblyAI, Msg: `the JSON has no "words" or "utterances" list`}
 	}
 	reader := wordgroup.NewReader(st, wordgroup.Options{WordTimestamps: opts.WordTimestamps, SpeakerVoices: opts.SpeakerVoices}, assemblyAIKey)
 	var cues []*model.Cue

@@ -5,31 +5,31 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/wordgroup"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/writing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/wordgroup"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/writing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // WriteAssemblyAI writes s to w as the JSON of an AssemblyAI transcript: the text and the words of the cues, with
 // times in whole milliseconds. It writes one utterance per cue when the source had utterances, when a cue has a
 // speaker, or when a cue has no words, because the words alone cannot hold such a cue. Else "utterances" is null, as
 // AssemblyAI writes it. A value that a cue did not change stays as the reader stored it.
-func WriteAssemblyAI(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) error {
+func WriteAssemblyAI(w io.Writer, s *model.Subtitle, common model.CommonWriteOptions, _ WriteOptions) (WriteReport, error) {
 	s, err := writing.SkipImageCues(s, model.AssemblyAI, common)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	doc, err := assemblyAIDocument(s)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
 	body, err := encodeDocument(model.AssemblyAI, "AssemblyAI JSON", doc, false)
 	if err != nil {
-		return err
+		return WriteReport{}, err
 	}
-	return writing.Write(w, model.AssemblyAI, body, common, false)
+	return WriteReport{}, writing.Write(w, model.AssemblyAI, body, common, false)
 }
 
 func assemblyAIDocument(s *model.Subtitle) (orderedjson.Value, error) {

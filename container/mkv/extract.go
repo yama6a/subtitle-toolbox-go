@@ -5,11 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/ass"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/srt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/webvtt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/ass"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/srt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/webvtt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const codecDVB = "S_DVBSUB"
@@ -21,8 +21,11 @@ type timedBlock struct {
 	additional string
 }
 
+// ExtractOptions holds the settings of Extract. Matroska has none yet.
+type ExtractOptions struct{}
+
 // Extract reads all blocks of the subtitle track with the TrackNumber number.
-func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
+func (f *File) Extract(number int, common model.CommonReadOptions, _ ExtractOptions) (*model.Subtitle, []model.ParseWarning, error) {
 	s, warnings, err := f.extract(number, common)
 	return s, warnings, wrap(err)
 }
@@ -30,10 +33,10 @@ func (f *File) Extract(number int, common model.CommonReadOptions) (*model.Subti
 func (f *File) extract(number int, common model.CommonReadOptions) (*model.Subtitle, []model.ParseWarning, error) {
 	t, ok := f.track(number)
 	if !ok {
-		return nil, nil, &model.InvalidArgumentError{Option: "ReadOptions.Track", Msg: fmt.Sprintf("The file has no subtitle track with the number %d.", number)}
+		return nil, nil, &model.InvalidArgumentError{Option: "ReadOptions.Track", Msg: fmt.Sprintf("the file has no subtitle track with the number %d", number)}
 	}
 	if t.Format == "" {
-		return nil, nil, damaged("Track %d has the codec %s. The reader extracts only %s.", number, t.CodecID, readableCodecIDs())
+		return nil, nil, damaged("track %d has the codec %s. The reader extracts only %s", number, t.CodecID, readableCodecIDs())
 	}
 	privateBudget := f.inflateCap
 	private, err := f.decode(t, t.codecPrivate, scopeCodecPriv, &privateBudget)

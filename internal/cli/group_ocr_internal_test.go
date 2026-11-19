@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -16,10 +17,11 @@ import (
 
 	glyphocr "github.com/yama6a/go-glyph-ocr"
 
-	stbox "github.com/yama6a/subtitle-toolbox-go/v4"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/markup"
-	"github.com/yama6a/subtitle-toolbox-go/v4/ocr/ocrtest"
+	stbox "github.com/yama6a/subtitle-toolbox-go/v5"
+	"github.com/yama6a/subtitle-toolbox-go/v5/edit/ocr/ocrtest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model/markup"
 )
 
 // ocrDir returns a directory with the CLI fixtures and the PGS files.
@@ -213,4 +215,44 @@ func plain(lines []string) string {
 		out[i] = markup.PlainText(l)
 	}
 	return strings.Join(out, "\n")
+}
+
+func TestChooseEngine(t *testing.T) {
+	t.Parallel()
+
+	if runtime.GOOS == "windows" {
+		t.Skip("the fake program is a shell script")
+	}
+	fake := testfiles.Path(t, "ocr/fake-tesseract/tesseract")
+	missing := testfiles.Path(t, "ocr/no-such-tesseract")
+	tests := []struct {
+		name    string
+		engine  string
+		program string
+		want    string
+		wantErr string
+	}{
+		{"default picks Tesseract when it is installed", "", fake, engineTesseract, ""},
+		{"default falls back to glyph", "", missing, engineGlyph, ""},
+		{"explicit glyph skips the check", engineGlyph, fake, engineGlyph, ""},
+		{"explicit Tesseract that runs", engineTesseract, fake, engineTesseract, ""},
+		{
+			"explicit Tesseract that is missing", engineTesseract, missing, "",
+			"cannot run OCR with Tesseract: the program \"" + missing + "\" is missing. Install Tesseract with: ",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := chooseEngine(t.Context(), tt.engine, tt.program)
+			if tt.wantErr != "" {
+				require.ErrorIs(t, err, model.ErrInvalidArgument)
+				assert.Contains(t, err.Error(), tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }

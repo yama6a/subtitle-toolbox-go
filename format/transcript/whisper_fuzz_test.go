@@ -5,10 +5,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/formattest"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/testfiles"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/formattest"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/testfiles"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func FuzzReadWhisper(f *testing.F) {
@@ -37,7 +37,7 @@ func FuzzReadWhisper(f *testing.F) {
 				}
 				checkWords(t, s)
 				var out bytes.Buffer
-				if err := transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
+				if _, err := transcript.WriteWhisper(&out, s, model.CommonWriteOptions{}, transcript.WriteOptions{}); err != nil {
 					if !errors.Is(err, model.ErrUnwritable) {
 						t.Fatalf("WriteWhisper returned %v, which does not match ErrUnwritable", err)
 					}

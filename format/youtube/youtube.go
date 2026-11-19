@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/internal/xmlraw"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/markupcore"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/orderedjson"
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/textenc"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/internal/xmlraw"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/markupcore"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/orderedjson"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/textenc"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const formatDataKey = string(model.YouTubeTimedText)
@@ -39,6 +39,9 @@ type ReadOptions struct {
 
 // WriteOptions holds the settings of the YouTube timed text writer. It has no fields yet. The writer takes the variant from the file format data.
 type WriteOptions struct{}
+
+// WriteReport holds what the writer reports. It has no fields yet.
+type WriteReport struct{}
 
 var signatureRegexp = regexp.MustCompile(xmlraw.Prolog + `<(?:timedtext|transcript)[\t\n\v\f\r />]`)
 

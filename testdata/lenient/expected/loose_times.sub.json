@@ -2,7 +2,7 @@
     "name": "SubViewer 2 with 4 fraction digits, no fraction and 1-digit fields",
     "format": "subviewer",
     "strict": {
-        "error": "The timing line \"00:00:03.5004,00:00:04.0000\" is not in the form hh:mm:ss.ff,hh:mm:ss.ff.",
+        "error": "the timing line \"00:00:03.5004,00:00:04.0000\" is not in the form hh:mm:ss.ff,hh:mm:ss.ff",
         "line": 8
     },
     "cues": [

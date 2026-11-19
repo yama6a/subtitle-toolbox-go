@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/itt"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/itt"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 var (
@@ -21,7 +21,7 @@ var (
 	rate2997  = model.FrameRate{Num: 2997, Den: 100}
 )
 
-const noRateError = "stbox: invalid argument: WriteOptions.ITT.FrameRate: iTT output needs the frame rate of the video."
+const noRateError = "stbox: invalid argument: WriteOptions.ITT.FrameRate: iTT output needs the frame rate of the video"
 
 // cue is a cue with its times in seconds.
 type cue struct {
@@ -50,7 +50,7 @@ func subtitle(t *testing.T, stored []string, cues ...cue) *model.Subtitle {
 		if text == "" {
 			text = "Hello"
 		}
-		s.AddCue(model.Cue{Start: seconds(c.start), End: seconds(c.end), Lines: []string{text}})
+		require.NoError(t, s.AddCue(model.Cue{Start: seconds(c.start), End: seconds(c.end), Lines: []string{text}}))
 	}
 	return s
 }
@@ -66,7 +66,7 @@ func write(t *testing.T, s *model.Subtitle, common model.CommonWriteOptions, opt
 func TestWriteOptions(t *testing.T) {
 	t.Parallel()
 
-	const bad = "stbox: invalid argument: WriteOptions.ITT.FrameRate: The ITT formatter accepts the frame rates 23.976, 24, 25, 29.97 and 30, got "
+	const bad = "stbox: invalid argument: WriteOptions.ITT.FrameRate: the ITT formatter accepts the frame rates 23.976, 24, 25, 29.97 and 30, got "
 	root := func(frameRate, multiplier string) string {
 		return `ttp:timeBase="smpte" ttp:frameRate="` + frameRate + `" ttp:frameRateMultiplier="` + multiplier + `" ttp:dropMode="nonDrop"`
 	}
@@ -119,8 +119,8 @@ func TestWriteOptions(t *testing.T) {
 		{name: "no rate", cues: []cue{{1, 2, ""}}, wantErr: noRateError},
 		{name: "an unsupported stored rate and no option", stored: []string{"frameRate", "50"}, wantErr: noRateError},
 		{name: "a stored rate that is not a number", stored: []string{"frameRate", "fast"}, wantErr: noRateError},
-		{name: "a rate outside the table", rate: model.FrameRate50, wantErr: bad + "50."},
-		{name: "a rate that is not valid", rate: model.FrameRate{Num: 25}, wantErr: bad + "0."},
+		{name: "a rate outside the table", rate: model.FrameRate50, wantErr: bad + "50"},
+		{name: "a rate that is not valid", rate: model.FrameRate{Num: 25}, wantErr: bad + "0"},
 		{name: "strip tags", rate: model.FrameRate25, cues: []cue{{1, 2, "<b>Hi</b> <i>you</i>"}}, common: model.CommonWriteOptions{StripTags: true}, want: []string{">Hi you</p>"}},
 		{name: "keep tags", rate: model.FrameRate25, cues: []cue{{1, 2, "<b>Hi</b>"}}, want: []string{`<span tts:fontWeight="bold">Hi</span>`}},
 		{name: "CRLF", rate: model.FrameRate25, cues: []cue{{1, 2, ""}}, common: model.CommonWriteOptions{LineEnding: model.CRLF}, want: []string{"?>\r\n<tt ", "</tt>\r\n"}},
@@ -181,11 +181,11 @@ func TestWriteDocument(t *testing.T) {
 		t.Helper()
 
 		s := subtitle(t, []string{"frameRate", "25"})
-		s.AddCue(model.Cue{
+		require.NoError(t, s.AddCue(model.Cue{
 			Start: time.Second, End: 2 * time.Second, Position: model.Position{Alignment: model.TopCenter},
 			Lines: []string{`<s>gone</s> <v Ann>said</v> <c.yellow>yellow</c> <font color='#FF0000' size="5">red</font> <font face="x">plain</font> <lang en>kept</lang>`},
-		})
-		s.AddCue(model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Position: model.Position{Alignment: model.MiddleRight}, Lines: []string{"middle"}})
+		}))
+		require.NoError(t, s.AddCue(model.Cue{Start: 3 * time.Second, End: 4 * time.Second, Position: model.Position{Alignment: model.MiddleRight}, Lines: []string{"middle"}}))
 		return s
 	}
 	tests := []struct {
@@ -340,4 +340,13 @@ func TestRoundTrip(t *testing.T) {
 		labels = append(labels, m[1], m[2])
 	}
 	assert.Equal(t, []string{"00:59:56:12", "01:01:36:09", "01:59:52:24", "02:01:32:21"}, labels)
+}
+
+func TestWriteAcceptsACueThatReplaceCuesStored(t *testing.T) {
+	t.Parallel()
+
+	s := subtitle(t, []string{"frameRate", "25"})
+	s.ReplaceCues([]model.Cue{{Start: time.Second, End: 2 * time.Second, Lines: []string{"a"}, Position: model.Position{Row: 2}}}, nil)
+	_, err := itt.Write(&bytes.Buffer{}, s, model.CommonWriteOptions{}, itt.WriteOptions{})
+	require.NoError(t, err)
 }

@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/transcript"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/transcript"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 var googleFormat = cloudFormat{folder: "google-speech", read: transcript.ReadGoogleSpeech, write: transcript.WriteGoogleSpeech}
@@ -97,47 +97,47 @@ func TestReadGoogleSpeechErrors(t *testing.T) {
 	words := func(list string) string {
 		return `{"results": [{"alternatives": [{"transcript": "hi there", "words": [` + list + `]}]}]}`
 	}
-	prefix := "The field results[0].alternatives[0].words[0]"
+	prefix := "the field results[0].alternatives[0].words[0]"
 	googleFormat.testBroken(t, []cloudBroken{
 		{
 			"start", words(`{"word": "hi", "startTime": "soon", "endTime": "1s"}, {"word": "there", "startTime": "1s", "endTime": "2s"}`),
-			prefix + ".startTime must be a time.",
+			prefix + ".startTime must be a time",
 			[]string{"1-2 hi there"},
 			0,
 		},
 		{
 			"V2 end", words(`{"word": "hi", "startOffset": "0s", "endOffset": "-1s"}, {"word": "there", "startTime": "1s", "endTime": "2s"}`),
-			prefix + ".endTime must be a time.",
+			prefix + ".endTime must be a time",
 			[]string{"1-2 hi there"},
 			0,
 		},
 		{
 			"word", words(`{"word": 5, "startTime": "0s", "endTime": "1s"}, {"word": "there", "startTime": "1s", "endTime": "2s"}`),
-			prefix + ".word must be a string.",
+			prefix + ".word must be a string",
 			[]string{"1-2 hi there"},
 			0,
 		},
 		{
 			"over the limit", words(`{"word": "x", "startTime": "999999999999s", "endTime": "1s"}, {"word": "there", "startTime": "1s", "endTime": "2s"}`),
-			prefix + ".startTime is not below 100000 hours.",
+			"the field results[0].alternatives[0].words[0].startTime is not below 100000 hours",
 			[]string{"1-2 hi there"},
 			0,
 		},
 		{
 			"result end", `{"results": [{"alternatives": [{"transcript": "a"}], "resultEndTime": "x"}, {"alternatives": [{"transcript": "b"}], "resultEndTime": "2s"}]}`,
-			"The field results[0].resultEndTime must be a time.",
+			"the field results[0].resultEndTime must be a time",
 			[]string{"0-2 b"},
 			0,
 		},
 		{
 			"transcript", `{"results": [{"alternatives": [{"words": []}], "resultEndTime": "1s"}, {"alternatives": [{"transcript": "b"}], "resultEndTime": "2s"}]}`,
-			"The field results[0].alternatives[0].transcript must be a string.",
+			"the field results[0].alternatives[0].transcript must be a string",
 			[]string{"0-2 b"},
 			0,
 		},
 		{
 			"alternatives", `{"results": [{"alternatives": [5], "resultEndTime": "1s"}, {"alternatives": [{"transcript": "b"}], "resultEndTime": "2s"}]}`,
-			"The field results[0].alternatives must be a list of objects.",
+			"the field results[0].alternatives must be a list of objects",
 			[]string{"0-2 b"},
 			0,
 		},
@@ -147,7 +147,7 @@ func TestReadGoogleSpeechErrors(t *testing.T) {
 		_, _, err := transcript.ReadGoogleSpeech(strings.NewReader(content), model.CommonReadOptions{Lenient: true}, transcript.ReadOptions{})
 		var perr *model.ParseError
 		require.ErrorAs(t, err, &perr, content)
-		assert.Equal(t, `The JSON has no "results" list.`, perr.Msg)
+		assert.Equal(t, `the JSON has no "results" list`, perr.Msg)
 	}
 }
 

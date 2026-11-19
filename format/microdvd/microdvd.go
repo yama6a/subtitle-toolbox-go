@@ -8,8 +8,8 @@ package microdvd
 import (
 	"regexp"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/internal/parsing"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/internal/parsing"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 const formatDataKey = string(model.MicroDVD)
@@ -22,7 +22,7 @@ type ReadOptions struct {
 
 // Validate returns an error that matches model.ErrInvalidArgument for a frame rate that fails model.FrameRate.Validate.
 func (o ReadOptions) Validate() error {
-	return parsing.ValidateFrameRate(o.FrameRate, "ReadOptions.MicroDVD.FrameRate", "The frame rate")
+	return parsing.ValidateFrameRate(o.FrameRate, "ReadOptions.MicroDVD.FrameRate", "the frame rate")
 }
 
 // WriteReport holds what the writer reports. It has no fields yet.
@@ -38,7 +38,7 @@ type WriteOptions struct {
 
 // Validate returns an error that matches model.ErrInvalidArgument for a frame rate that fails model.FrameRate.Validate.
 func (o WriteOptions) Validate() error {
-	return parsing.ValidateFrameRate(o.FrameRate, "WriteOptions.MicroDVD.FrameRate", "The MicroDVD frame rate")
+	return parsing.ValidateFrameRate(o.FrameRate, "WriteOptions.MicroDVD.FrameRate", "the MicroDVD frame rate")
 }
 
 var signatureRegexp = regexp.MustCompile(`\A\{\d+\}\{\d*\}`)

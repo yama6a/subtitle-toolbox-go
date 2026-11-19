@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/format/subviewer"
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/format/subviewer"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func ExampleRead() {
@@ -34,10 +34,12 @@ func ExampleRead() {
 
 func ExampleWrite() {
 	s := &model.Subtitle{}
-	s.AddCues(
+	if err := s.AddCues(
 		model.Cue{Start: 1500 * time.Millisecond, End: 4 * time.Second, Lines: []string{"First", "line"}},
 		model.Cue{Start: 5 * time.Second, End: 7400 * time.Millisecond, Lines: []string{"<i>Second</i>"}},
-	)
+	); err != nil {
+		panic(err)
+	}
 	opts := subviewer.WriteOptions{Version: subviewer.V1}
 	if _, err := subviewer.Write(os.Stdout, s, model.CommonWriteOptions{}, opts); err != nil {
 		fmt.Println(err)
@@ -71,7 +73,7 @@ func ExampleWriteOptions_Validate() {
 	fmt.Println(subviewer.WriteOptions{Version: subviewer.Version(3)}.Validate())
 	// Output:
 	// <nil>
-	// stbox: invalid argument: WriteOptions.SubViewer.Version: The SubViewer version must be 1 or 2, got 3.
+	// stbox: invalid argument: WriteOptions.SubViewer.Version: the SubViewer version must be 1 or 2, got 3
 }
 
 func ExampleDetect() {

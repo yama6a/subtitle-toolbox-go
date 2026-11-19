@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func TestErrorMessages(t *testing.T) {
@@ -111,7 +111,7 @@ func TestErrorsMatchTheirSentinel(t *testing.T) {
 	sentinels := []error{
 		model.ErrParse,
 		model.ErrUnsupportedFormat,
-		model.ErrUnknownFormat,
+		model.ErrNoFormatDetected,
 		model.ErrInvalidArgument,
 		model.ErrCueNotFound,
 		model.ErrUnwritable,
@@ -130,7 +130,7 @@ func TestErrorsMatchTheirSentinel(t *testing.T) {
 			[]error{model.ErrUnwritable, model.ErrInvalidUTF8},
 		},
 		{"invalid argument error", &model.InvalidArgumentError{Msg: "The sync points must not be empty."}, []error{model.ErrInvalidArgument}},
-		{"unknown format", model.ErrUnknownFormat, []error{model.ErrUnknownFormat, model.ErrUnsupportedFormat}},
+		{"unknown format", model.ErrNoFormatDetected, []error{model.ErrNoFormatDetected, model.ErrUnsupportedFormat}},
 		{"unsupported format", model.ErrUnsupportedFormat, []error{model.ErrUnsupportedFormat}},
 		{
 			"wrapped cue not found",

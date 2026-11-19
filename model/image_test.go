@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 func testImage() *model.Image {
@@ -22,13 +22,13 @@ func TestImageValidate(t *testing.T) {
 		width, height int
 		want          string
 	}{
-		{"zero side", 0, 1, "Cannot create a cue image of 0x1 pixels on a screen of 8000x8000 pixels: every size must be at least 1."},
+		{"zero side", 0, 1, "cannot create a cue image of 0x1 pixels on a screen of 8000x8000 pixels: every size must be at least 1"},
 		{"widest side", 7680, 1, ""},
-		{"side too long", 7681, 1, "Cannot create a cue image of 7681x1 pixels on a screen of 8000x8000 pixels: an image of 7681x1 pixels is larger " +
-			"than the limit of 7680 pixels per side and 8294400 pixels in total."},
+		{"side too long", 7681, 1, "cannot create a cue image of 7681x1 pixels on a screen of 8000x8000 pixels: an image of 7681x1 pixels is larger " +
+			"than the limit of 7680 pixels per side and 8294400 pixels in total"},
 		{"4K frame", 3840, 2160, ""},
-		{"one row too many", 3840, 2161, "Cannot create a cue image of 3840x2161 pixels on a screen of 8000x8000 pixels: an image of 3840x2161 pixels is larger " +
-			"than the limit of 7680 pixels per side and 8294400 pixels in total."},
+		{"one row too many", 3840, 2161, "cannot create a cue image of 3840x2161 pixels on a screen of 8000x8000 pixels: an image of 3840x2161 pixels is larger " +
+			"than the limit of 7680 pixels per side and 8294400 pixels in total"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -50,7 +50,7 @@ func TestImageCueIsCopiedAndChecked(t *testing.T) {
 	t.Parallel()
 
 	s := &model.Subtitle{}
-	s.AddCue(model.Cue{End: time.Second, Image: testImage()})
+	require.NoError(t, s.AddCue(model.Cue{End: time.Second, Image: testImage()}))
 
 	got, _ := s.Cue(0)
 	got.Image.PNG[0] = 'X'

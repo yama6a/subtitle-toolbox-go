@@ -2,7 +2,7 @@
     "name": "SubRip without any cue numbers",
     "format": "srt",
     "strict": {
-        "error": "Block #0 has no cue number on its first line. The line is \"00:00:01,000 --> 00:00:02,500\".",
+        "error": "block #0 has no cue number on its first line. The line is \"00:00:01,000 --> 00:00:02,500\"",
         "line": 1
     },
     "cues": [

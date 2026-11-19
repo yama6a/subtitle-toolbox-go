@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/yama6a/subtitle-toolbox-go/v4/model"
+	"github.com/yama6a/subtitle-toolbox-go/v5/model"
 )
 
 // formatDataHolder is the format data API that Subtitle and Cue share.
@@ -112,7 +112,7 @@ func TestSetFormatDataKeepsTheOldDataOnError(t *testing.T) {
 
 	err := s.SetFormatData("scc", data("dropFrame", "yes"))
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
-	require.EqualError(t, err, "stbox: invalid argument: The field formatData.scc.dropFrame must be a boolean.")
+	require.EqualError(t, err, "stbox: invalid argument: the field formatData.scc.dropFrame must be a boolean")
 	got, _ = s.FormatData("scc")
 	assert.Equal(t, data("dropFrame", true, "note", int64(5)), got)
 
@@ -120,7 +120,7 @@ func TestSetFormatDataKeepsTheOldDataOnError(t *testing.T) {
 	require.NoError(t, c.SetFormatData("srt", data("coordinates", data("x1", int64(1), "x2", int64(2), "y1", int64(3), "y2", int64(4)))))
 	err = c.SetFormatData("srt", data("coordinates", data("x1", int64(1))))
 	require.ErrorIs(t, err, model.ErrInvalidArgument)
-	require.EqualError(t, err, "stbox: invalid argument: The field formatData.srt.coordinates.x2 is missing.")
+	require.EqualError(t, err, "stbox: invalid argument: the field formatData.srt.coordinates.x2 is missing")
 	gotCue, _ := c.FormatData("srt")
 	coordinates, ok := gotCue.Object("coordinates")
 	require.True(t, ok)
@@ -176,7 +176,7 @@ func TestSubtitleKeepsCueFormatData(t *testing.T) {
 	require.NoError(t, c.SetFormatData("vtt", data("line", "0", "alignment", int64(8))))
 
 	s := &model.Subtitle{}
-	s.AddCue(c)
+	require.NoError(t, s.AddCue(c))
 	require.NoError(t, c.SetFormatData("vtt", data("line", "100%")))
 
 	stored, ok := s.Cue(0)
@@ -200,7 +200,7 @@ func TestCloneKeepsFormatData(t *testing.T) {
 	s := &model.Subtitle{}
 	var c model.Cue
 	require.NoError(t, c.SetFormatData("vtt", data("line", "0")))
-	s.AddCue(c)
+	require.NoError(t, s.AddCue(c))
 	require.NoError(t, s.SetFormatData("srt", data("key", "value")))
 
 	clone := s.Clone()
