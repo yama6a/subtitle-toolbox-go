@@ -3,7 +3,7 @@ module github.com/yama6a/subtitle-toolbox-go/v5
 go 1.27.4
 
 require (
-	github.com/Eyevinn/mp4ff v0.63.0
+	github.com/Eyevinn/mp4ff v0.64.0
 	github.com/asticode/go-astits v1.17.0
 	github.com/dlclark/regexp2/v2 v2.13.2
 	github.com/rivo/uniseg v0.4.7
