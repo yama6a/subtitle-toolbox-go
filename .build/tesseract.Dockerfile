@@ -29,7 +29,8 @@ RUN git init -q . \
     && rm -rf .git
 
 FROM alpine:3@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf
-RUN apk add --no-cache tesseract-ocr
+RUN apk upgrade --no-cache \
+    && apk add --no-cache tesseract-ocr
 COPY --from=tessdata /tessdata/*.traineddata /usr/share/tessdata/
 COPY --from=tessdata /tessdata/LICENSE /usr/share/doc/tessdata_fast/LICENSE
 COPY --from=build /stbox /stbox
