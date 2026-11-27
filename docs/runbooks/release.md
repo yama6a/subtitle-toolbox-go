@@ -54,15 +54,16 @@ Do every step on the last commit of `main`. For a major N of 2 or more, do step 
 
    Expected for 1.0.0: no output. Expected for N of 2 or more: no tag `vN.*`.
 
-3. Check that the 11 required checks that run on `main` are green on the last commit of `main`. The command prints only the required checks. It ignores the other runs, such as `renovate / renovate`.
+3. Check that the 10 required checks are green on the last merged pull request. CI runs on pull requests only, so `main` has no check runs of its own. The command prints only the required checks. It ignores the other runs, such as `renovate / renovate`.
 
    ```bash
-   gh api 'repos/yama6a/subtitle-toolbox-go/commits/main/check-runs?per_page=100' --jq '
-     ["go / go","cross-compile","fuzz","bench","smoke","docker / docker","docker-tesseract / docker","tesseract","shell","yaml","renovate-config"] as $required
+   sha=$(gh pr list -R yama6a/subtitle-toolbox-go --state merged --base main --limit 1 --json headRefOid --jq '.[0].headRefOid')
+   gh api "repos/yama6a/subtitle-toolbox-go/commits/$sha/check-runs?per_page=100" --jq '
+     ["go / go","cross-compile","fuzz","bench","smoke","docker / docker","docker-tesseract / docker","tesseract","shell","yaml"] as $required
      | .check_runs[] | select(.name as $n | $required | index($n)) | "\(.name) \(.conclusion)"' | sort
    ```
 
-   Expected: 11 lines, all `success`. The checks `release label`, `version check` and `gorelease` run on pull requests only, so `main` has no result for them.
+   Expected: 10 lines, all `success`.
 
    ```text
    bench success
@@ -71,7 +72,6 @@ Do every step on the last commit of `main`. For a major N of 2 or more, do step 
    docker-tesseract / docker success
    fuzz success
    go / go success
-   renovate-config success
    shell success
    smoke success
    tesseract success

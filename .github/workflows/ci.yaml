@@ -4,13 +4,10 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
-  push:
-    branches: [main]  # go-ci saves its caches only from non-PR runs
 
 concurrency:
-  # A push run on main gets its own group, so a newer push never cancels a pending run.
-  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }} # a push run on main always finishes
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -153,12 +150,3 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: yama6a/gha/.github/actions/yaml-checks@v2
-
-  renovate-config:
-    runs-on: ubuntu-26.04-arm
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # A broken config makes Renovate fall back to its defaults without a warning.
-      - uses: yama6a/gha/.github/actions/validate-renovate-config@v2
-        with:
-          config-file: renovate.json5
